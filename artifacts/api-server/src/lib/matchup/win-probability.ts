@@ -8,7 +8,7 @@
  *   WP = Φ((margin + spread × f) / (13.5 × √f))
  *
  * where margin is home minus away, spread is the points the home side was
- * favoured by (negative when it was the underdog), and f is the fraction of
+ * favored by (negative when it was the underdog), and f is the fraction of
  * the game left. At f = 0 it is 1, 0 or ½. Overtime is a fresh period of its
  * own length, with f measured against a full game so a tied overtime starts
  * close to a coin flip. The line drifts as the clock runs and jumps only at a
@@ -46,13 +46,13 @@ export function normalCdf(x: number): number {
   return x >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
 }
 
-/** The home side's chance, from the margin, its spread in points favoured and the fraction left. */
+/** The home side's chance, from the margin, its spread in points favored and the fraction left. */
 export function homeWinProbability(margin: number, spread: number, fraction: number): number {
   if (fraction <= 0) return margin > 0 ? 1 : margin < 0 ? 0 : 0.5;
   return normalCdf((margin + spread * fraction) / (SIGMA * Math.sqrt(fraction)));
 }
 
-/** Points the home side was favoured by: 3.5 for "LAR −3.5" at home, −3.5 for the road favourite. */
+/** Points the home side was favored by: 3.5 for "LAR −3.5" at home, −3.5 for the road favorite. */
 export function homeSpread(game: ScoreboardGame, odds: GameOdds | null): number {
   if (!odds || odds.favorite === null) return 0;
   if (odds.favorite === game.home.abbr) return odds.line;

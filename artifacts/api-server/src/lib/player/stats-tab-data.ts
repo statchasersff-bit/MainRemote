@@ -15,7 +15,7 @@
  *
  * The spec's tracking metrics that no file here has (NGS separation, cushion,
  * rush yards over expected, eight-man boxes, tight-window rate) are replaced
- * by the nearest metric the tables do have, and labelled as what they are.
+ * by the nearest metric the tables do have, and labeled as what they are.
  */
 
 import fs from "node:fs";

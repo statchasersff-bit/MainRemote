@@ -69,7 +69,7 @@ import {
 
 const e = escapeHtml;
 
-/* ------------------------------------------------------------------ colour */
+/* ------------------------------------------------------------------ color */
 
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
@@ -118,7 +118,7 @@ const GRAYS = ["#94a3b8", "#cbd5e1", "#e2e8f0"];
  * A secondary that cannot carry a segment - white (Colts, Jets), black
  * (Bengals), or near the primary - is swapped for a darkened tint of the
  * primary's complement in the house palette, so every club still gets four
- * distinguishable data colours.
+ * distinguishable data colors.
  */
 export function segmentPalette(team: NflTeam): string[] {
   const primary = team.primaryColor;
@@ -287,7 +287,7 @@ function introCta(): string {
 /**
  * "RB1, 48% of RB touches", with the slot as the hub's position chip - the
  * one Depth Chart, News and the Outlook cards print, so a position wears the
- * same colour on every tab. A role that is not a plain slot stays text.
+ * same color on every tab. A role that is not a plain slot stays text.
  */
 function roleCell(row: UsageRow): string {
   const line = roleLine(row);
@@ -520,7 +520,7 @@ function passMap(view: UsageView, team: NflTeam, links: UsageLinks): string {
     const z = zones[k];
     const share = z?.share ?? 0;
     const owner = zoneOwner(view, k);
-    // Heat: a team-colour tint weighted by volume. The gold zone overrides it.
+    // Heat: a team-color tint weighted by volume. The gold zone overrides it.
     const alpha = (0.05 + 0.3 * (share / maxShare)).toFixed(2);
     return (
       `<li class="sct-us-zone${k === best ? " is-best" : ""}"` +
@@ -988,8 +988,8 @@ export function renderUsageSection(
     `</div>`;
 
   // mak's question list (2026-10-05), in the FAQPage too (usage FAQ schema
-  // approved 2026-09-30). The link sits outside every .sct-faq-a so the
-  // schema's answers and the visible answers are the same text.
+  // approved 2026-09-30). No "See the full usage report" link under the
+  // questions (removed 2026-10-09 at mak's request).
   const faq = usageFaq(view, team);
   const faqHtml = faq.length
     ? `<div class="sct-block">` +
@@ -1005,7 +1005,6 @@ export function renderUsageSection(
         )
         .join("") +
       `</div>` +
-      `<p class="sct-faq-more"><a class="sct-textlink" href="#usage">See the full usage report</a></p>` +
       `</div>`
     : "";
   return { html, faqHtml, faq };

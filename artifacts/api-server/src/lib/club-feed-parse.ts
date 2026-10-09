@@ -53,7 +53,7 @@ export function clubFeedUrl(team: ClubFeedTeam): string {
  *
  * "patriots.com", not "New England Patriots" - this field names the
  * publication, which is the thing `source` means everywhere else in the
- * archive, and the site is the publication. Not title-cased: capitalising the
+ * archive, and the site is the publication. Not title-cased: capitalizing the
  * first letter gives "Patriots.com" for the clubs whose domain is one word and
  * "Therams.com", "Azcardinals.com", "Neworleanssaints.com" for the fifteen it
  * is not, and there is no rule that recovers the word boundaries the domain
@@ -161,7 +161,7 @@ function toItem(team: ClubFeedTeam, raw: RssItem): ClubNewsItem | null {
  *
  * Items that cannot be identified - no title, or neither a guid nor a link -
  * are dropped rather than stored under a generated id. A row whose identity is
- * invented is a row the next ingest cannot recognise, which is how an archive
+ * invented is a row the next ingest cannot recognize, which is how an archive
  * fills up with copies of the same story.
  */
 export function parseClubFeed(

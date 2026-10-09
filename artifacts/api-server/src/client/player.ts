@@ -6,17 +6,17 @@
  * the tab strip works with JavaScript disabled.
  *
  * It adds six things:
- *   1. tab behaviour for the section bar, from client/enhance.ts;
+ *   1. tab behavior for the section bar, from client/enhance.ts;
  *   2. relative timestamps on the news list, likewise;
  *   3. height reporting for the legacy iframe mount, likewise;
  *   4. the player search above the header, from client/player-search.ts -
  *      the one control on the page that does not exist until this file runs,
  *      because a search box with no script behind it swallows typing and
  *      answers nothing;
- *   5. the behaviours particular to this page: a hover layer on the weekly
+ *   5. the behaviors particular to this page: a hover layer on the weekly
  *      chart, sortable columns on the game log and the career table, the
  *      per-week detail the game log folds away behind each week number, the
- *      header's fallback silhouette and its per-tab subtitle, and centring the
+ *      header's fallback silhouette and its per-tab subtitle, and centering the
  *      peers rail on the card the reader is standing on;
  *   6. the state swap: the two season selectors change the page WITHOUT
  *      changing its address. See wireStateSwap.
@@ -352,7 +352,7 @@ function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void
 /* ------------------------------------------------------------ peers rail */
 
 /**
- * Centre the "You are here" card in the positional peers rail.
+ * Center the "You are here" card in the positional peers rail.
  *
  * The rail is complete and readable without this - it simply starts at its
  * best-ranked end, which is a reasonable place to begin reading - but the card
@@ -368,7 +368,7 @@ function wirePeerRail(root: HTMLElement): void {
   for (const rail of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-peers]"))) {
     const current = rail.querySelector<HTMLElement>(".scp-peer.is-current");
     if (!current) continue;
-    // A rail that fits has nothing to centre, and every card is already in
+    // A rail that fits has nothing to center, and every card is already in
     // view - which is the desktop case.
     if (rail.scrollWidth <= rail.clientWidth) continue;
 
@@ -485,7 +485,7 @@ function restoreTab(root: HTMLElement, panelId: string): void {
  *
  * The response is the whole page - the WordPress mount wraps the fragment in a
  * theme - and all that is taken from it is the profile root, which is the unit
- * the server renders and the unit every behaviour here is wired against.
+ * the server renders and the unit every behavior here is wired against.
  *
  * When anything goes wrong the browser is handed the navigation it was about to
  * make. A reader who clicks "Half" must end up looking at half-PPR; a dirty URL

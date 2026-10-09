@@ -6,13 +6,13 @@
  *   e.g. php preview-render.php /nfl/nfl-depth-charts/fantasy/houston-texans/ data/depth-charts
  *
  * Runs the same request lifecycle as render-url.php (rewrite simulation,
- * parse_request -> wp -> template_redirect, the Rank Math filters, the H1
- * buffer) against the snapshot snapshot.php wrote, and prints one JSON object:
+ * parse_request -> wp -> template_redirect) against the snapshot snapshot.php
+ * wrote, and prints one JSON object:
  *
  *   { status, redirect, title, description, heading, fragment }
  *
- * `heading` is the host page's H1 after the plugin's H1 rewrite, as markup;
- * `fragment` is the shortcode output. URLs are left as the plugin builds them
+ * `heading` is the host page's H1, as markup; `fragment` is the shortcode
+ * output. A pre-1.7.0 URL comes back as its 301. URLs are left as the plugin builds them
  * (https://statchasers.com/...) - the preview route maps them onto itself.
  */
 
@@ -50,11 +50,15 @@ if ( $request === $base || 0 === strpos( $request, $base . '/' ) ) {
 require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php';
 do_action( 'plugins_loaded' );
 
-// wp_safe_redirect() in the stubs echoes; nothing but the JSON may reach stdout.
+// Nothing but the JSON may reach stdout.
 ob_start();
-do_action( 'parse_request' );
-do_action( 'wp' );
-do_action( 'template_redirect' );
+try {
+	do_action( 'parse_request' );
+	do_action( 'wp' );
+	do_action( 'template_redirect' );
+} catch ( SCDC_Test_Redirect $redirect ) {
+	// Recorded in $GLOBALS['wp_redirect']; reported below.
+}
 ob_end_clean();
 
 $out = array(
@@ -75,17 +79,11 @@ if ( ! empty( $GLOBALS['wp_redirect'] ) ) {
 } elseif ( ! empty( $GLOBALS['wp_is_404'] ) ) {
 	$out['status'] = 404;
 } else {
-	// What Rank Math would print, through the plugin's filters.
-	$out['title']       = apply_filters( 'rank_math/frontend/title', 'NFL Depth Charts for Fantasy Football | All 32 Teams' );
-	$out['description'] = apply_filters( 'rank_math/frontend/description', 'Free NFL depth charts for all 32 teams, updated for fantasy football.' );
-
-	// The theme's page-title H1 and the shortcode, through the H1 buffer, so
-	// the page carries the one H1 the live site would.
-	$split = '<!--scdc-preview-split-->';
-	$body  = '<h1 class="hp-h1">' . esc_html( get_the_title( 42 ) ) . '</h1>' . $split
-		. call_user_func( $GLOBALS['shortcodes']['statchasers_depth_charts'], array() );
-	$body  = SCDC_SEO::rewrite_h1( $body );
-	list( $out['heading'], $out['fragment'] ) = explode( $split, $body, 2 );
+	// The page's own title and H1: the plugin filters neither any more.
+	$out['title']       = 'NFL Depth Charts for Fantasy Football | All 32 Teams';
+	$out['description'] = 'Free NFL depth charts for all 32 teams, updated for fantasy football.';
+	$out['heading']     = '<h1 class="hp-h1">' . esc_html( get_the_title( 42 ) ) . '</h1>';
+	$out['fragment']    = call_user_func( $GLOBALS['shortcodes']['statchasers_depth_charts'], array() );
 }
 
 echo json_encode( $out, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );

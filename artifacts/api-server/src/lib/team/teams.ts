@@ -14,10 +14,10 @@
  * between them. ESPN's own ids are carried alongside as provider fields; they
  * are for talking to ESPN and never for identifying a team internally.
  *
- * Colours are imported from lib/render.ts rather than restated. The news card
+ * Colors are imported from lib/render.ts rather than restated. The news card
  * already tints itself with them, and a second copy here would be a second
  * thing to keep in sync - the failure mode being a team whose page and whose
- * news cards disagree about its own colour.
+ * news cards disagree about its own color.
  */
 
 import { TEAM_ACCENTS, TEAM_COLORS, TEAM_NAMES } from "../render";

@@ -85,7 +85,7 @@ export function renderHeadTags(meta: PageMeta): string {
     `<meta name="description" content="${d}" />`,
     // Placed directly in the HTML rather than injected by script - Google
     // treats an in-HTML canonical as the strong signal, and a JS-applied one
-    // is only honoured if the page is rendered.
+    // is only honored if the page is rendered.
     `<link rel="canonical" href="${url}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${escapeHtml(meta.siteName)}" />`,

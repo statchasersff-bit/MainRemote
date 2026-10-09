@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       StatChasers Depth Charts
  * Plugin URI:        https://statchasers.com/
- * Description:        Private admin tool that pulls NFL depth charts, caches them locally as JSON, and renders them on the front end via the [statchasers_depth_charts] shortcode. Serves 32 server-recognized, SEO-optimized team routes from the same tool. No external host required.
- * Version:           1.6.6
+ * Description:        Private admin tool that pulls NFL depth charts, caches them locally as JSON, and renders them on the front end via the [statchasers_depth_charts] shortcode. Lives at one address. No external host required.
+ * Version:           1.7.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'SCDC_VERSION', '1.6.6' );
+define( 'SCDC_VERSION', '1.7.0' );
 define( 'SCDC_PLUGIN_FILE', __FILE__ );
 define( 'SCDC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCDC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -46,9 +46,6 @@ require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-refresh.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-rewrite.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-pages.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-route.php';
-require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-seo.php';
-require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-team-content.php';
-require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-sitemap.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-admin.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-shortcode.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-hub.php';
@@ -59,8 +56,6 @@ require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-hub.php';
 function scdc_bootstrap() {
 	SCDC_Rewrite::instance()->hooks();
 	SCDC_Route::instance()->hooks();
-	SCDC_SEO::instance()->hooks();
-	SCDC_Sitemap::instance()->hooks();
 	SCDC_Admin::instance()->hooks();
 	SCDC_Shortcode::instance()->hooks();
 	SCDC_Hub::instance()->hooks();
@@ -69,7 +64,7 @@ add_action( 'plugins_loaded', 'scdc_bootstrap' );
 
 /**
  * Activation: provision the /nfl/ + /nfl/nfl-depth-charts/ pages, then register the
- * rewrite rules and flush so the nested filter URLs resolve immediately.
+ * rewrite rules and flush so the pre-1.7.0 nested URLs redirect immediately.
  *
  * @return void
  */

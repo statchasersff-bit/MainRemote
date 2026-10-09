@@ -106,7 +106,7 @@ export interface SleeperPlayer {
  * Kept separate from RosterPlayer because this index covers EVERY player with a
  * team, not only the four fantasy positions - an X post about an offensive
  * lineman or a head coach's quarterback still names a person, and refusing to
- * recognise him because he cannot be started at flex would be the wrong reason.
+ * recognize him because he cannot be started at flex would be the wrong reason.
  */
 export interface NamedPlayer {
   id: string;
@@ -148,7 +148,7 @@ function isSkill(position: string | null | undefined): position is SkillPosition
 
 /**
  * A designation that means "not available", as opposed to a game-time question.
- * Used only to decide how a badge is coloured and worded - never to reorder or
+ * Used only to decide how a badge is colored and worded - never to reorder or
  * remove anyone from the depth chart, which is Sleeper's to state, not ours.
  */
 const OUT_DESIGNATIONS = new Set([
@@ -368,13 +368,13 @@ export function nameKeysForTeam(team: string): string[] {
  * The key is the same folding Sleeper's own search index uses - see
  * teamForPlayerName above, whose key() this is deliberately identical to. The
  * caller does the folding because it is matching many candidate substrings
- * against this index and should not pay to re-normalise on every one.
+ * against this index and should not pay to re-normalize on every one.
  */
 export function playerForSearchKey(key: string): NamedPlayer | null {
   return index.playerByName.get(key) ?? null;
 }
 
-/** How many players the free-text matcher can currently recognise. */
+/** How many players the free-text matcher can currently recognize. */
 export function namedPlayerCount(): number {
   return index.playerByName.size;
 }
@@ -403,7 +403,7 @@ export function restoreRosterIndex(
   };
 }
 
-/** Serialisable form of the index, for the disk cache. */
+/** Serializable form of the index, for the disk cache. */
 export function snapshotRosterIndex(): {
   byTeam: Record<string, TeamRoster>;
   teamByPlayerName: Record<string, string>;
@@ -431,7 +431,7 @@ export const DEPTH_PREVIEW_LIMITS: Record<SkillPosition, number> = {
   TE: 2,
 };
 
-/** The condensed offence-only depth chart shown on the team page. */
+/** The condensed offense-only depth chart shown on the team page. */
 export function depthPreview(
   roster: TeamRoster | null,
 ): Record<SkillPosition, DepthChartEntry[]> {

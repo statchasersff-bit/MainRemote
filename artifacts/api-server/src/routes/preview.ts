@@ -813,10 +813,10 @@ function depthRequest(req: Request): { rest: string; query: string } {
 }
 
 /**
- * [statchasers_depth_charts] as it renders on a page, at any of the plugin's
- * routes: /preview/depth-charts/fantasy/houston-texans/ is the live
- * /nfl/nfl-depth-charts/fantasy/houston-texans/. The plugin's redirects and
- * 404s come through as they would live.
+ * [statchasers_depth_charts] as it renders on a page. /preview/depth-charts/
+ * is the live /nfl/nfl-depth-charts/, the tool's one address; a pre-1.7.0
+ * nested path such as /preview/depth-charts/fantasy/houston-texans/ comes
+ * through as the plugin's own 301 or 404, as it would live.
  */
 router.get(/^\/preview\/depth-charts(?:\/(.*))?$/, (req, res) => {
   void (async () => {

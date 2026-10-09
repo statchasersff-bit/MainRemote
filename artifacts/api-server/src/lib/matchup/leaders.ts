@@ -138,7 +138,7 @@ export function gameLeaders(list: Appearance[]): GameLeaders | null {
         // Left for the caller to fill with the week's positional finish, which
         // needs the whole league and so is not knowable from this game alone.
         // It used to carry the position, which the tag above the name now
-        // spells out in that position's own colour - the card was printing
+        // spells out in that position's own color - the card was printing
         // "WR" twice.
         line: "",
       }),

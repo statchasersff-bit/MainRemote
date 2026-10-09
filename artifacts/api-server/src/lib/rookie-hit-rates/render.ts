@@ -17,8 +17,8 @@
  * explorer. The dress is this app's, per the house-style rule for ported
  * tools: rookie-hit-rates.css, Inter, the brand navy and gold, no Tailwind.
  * Kept from the source because they carry meaning, not decoration: the
- * position colours (QB red, RB green, WR blue, TE gold), the heat scale's
- * five steps, the confidence dots and the chart line colours.
+ * position colors (QB red, RB green, WR blue, TE gold), the heat scale's
+ * five steps, the confidence dots and the chart line colors.
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
@@ -135,7 +135,7 @@ function confidence(total: number): { level: "high" | "med" | "low"; label: stri
   return { level: "low", label: "Low confidence (small sample)" };
 }
 
-/** The position, in its colour: the heatmaps' row heads and the board's pills. */
+/** The position, in its color: the heatmaps' row heads and the board's pills. */
 function posText(pos: Pos): string {
   return `<span class="schr-pos" data-pos="${pos}">${pos}</span>`;
 }

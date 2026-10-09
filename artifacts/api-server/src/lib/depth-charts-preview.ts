@@ -14,6 +14,7 @@
  * calls it and maps the plugin's statchasers.com URLs onto the preview's own:
  *
  *   https://statchasers.com/nfl/nfl-depth-charts/...        -> /preview/depth-charts/...
+ *   https://statchasers.com/nfl/teams/<slug>/depth-chart/   -> /team/<slug>/depth-chart/
  *   .../wp-content/plugins/statchasers-depth-charts/assets  -> /preview/depth-charts-assets/
  *   .../wp-content/uploads/statchasers/depth-charts.json    -> /preview/depth-charts-data.json
  *
@@ -29,6 +30,9 @@ import { DATA_ROOT } from "./data-dir";
 
 const ORIGIN = "https://statchasers.com";
 const LIVE_BASE = "/nfl/nfl-depth-charts/";
+/** Where the plugin 301s its pre-1.7.0 team routes; this server's own hub route. */
+const LIVE_TEAM_BASE = "/nfl/teams/";
+const PREVIEW_TEAM_BASE = "/team/";
 export const PREVIEW_BASE = "/preview/depth-charts/";
 export const PREVIEW_ASSETS = "/preview/depth-charts-assets/";
 export const PREVIEW_DATA = "/preview/depth-charts-data.json";
@@ -76,7 +80,7 @@ export interface DepthChartsRender {
   redirect: string | null;
   title: string;
   description: string;
-  /** The host page's H1 after the plugin's H1 rewrite, as markup. */
+  /** The host page's H1, as markup. */
   heading: string;
   /** The shortcode output, URLs mapped onto the preview. */
   fragment: string;
@@ -92,7 +96,9 @@ function mapUrls(html: string): string {
       PREVIEW_DATA,
     )
     .split(`${ORIGIN}${LIVE_BASE}`)
-    .join(PREVIEW_BASE);
+    .join(PREVIEW_BASE)
+    .split(`${ORIGIN}${LIVE_TEAM_BASE}`)
+    .join(PREVIEW_TEAM_BASE);
 }
 
 /**

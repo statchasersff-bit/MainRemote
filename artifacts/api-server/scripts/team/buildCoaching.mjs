@@ -546,17 +546,17 @@ const METRics_SPEC = [
   { key: "passRate", label: "Pass rate (all downs)", unit: "%", feed: "passRate", places: 1,
     def: "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here." },
   { key: "proe", label: "Pass rate over expected", sub: "situation-adjusted", unit: "%", feed: "proe", signed: true, places: 1,
-    def: "The average of nflverse's pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts." },
+    def: "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts." },
   { key: "pace", label: "Neutral pace", sub: "sec/play, neutral game state", unit: "s", feed: "pace", invert: true, places: 1,
     def: "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster." },
   { key: "earlyDownPassRate", label: "Early-down pass rate", sub: "1st & 2nd down", unit: "%", places: 1,
     def: "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes." },
   { key: "noHuddleRate", label: "No-huddle rate", sub: "share of offensive snaps", unit: "%", places: 1,
     def: "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate." },
-  { key: "paRate", label: "Play-action rate", sub: "share of dropbacks, FTN charting", unit: "%", places: 1,
-    def: "Share of dropbacks that FTN charting marks as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it." },
-  { key: "motionRate", label: "Pre-snap motion", sub: "before or at the snap, FTN charting", unit: "%", places: 1,
-    def: "Share of FTN-charted snaps with motion before or at the snap, as FTN defines it. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is." },
+  { key: "paRate", label: "Play-action rate", sub: "share of dropbacks, charted", unit: "%", places: 1,
+    def: "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it." },
+  { key: "motionRate", label: "Pre-snap motion", sub: "before or at the snap, charted", unit: "%", places: 1,
+    def: "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is." },
   { key: "shotgunRate", label: "Shotgun rate", sub: "share of offensive snaps", unit: "%", places: 1,
     def: "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun." },
   { key: "rzPassRate", label: "Red-zone pass rate", sub: "inside the opponent's 20", feed: "rzPassRate", unit: "%", places: 0,
@@ -797,7 +797,7 @@ function composeEntry({
   // The scheme note is the card's sub line; the body picks up after it.
   const dcBody =
     `Through Week ${throughWeek} the defense allows ${cur.defEpaPlay} EPA per play` +
-    `${defRank ? ` (${ordinal(defRank)} of 32, ranked on pass and run snaps in nflverse play-by-play)` : ""}. ` +
+    `${defRank ? ` (${ordinal(defRank)} of 32, ranked on pass and run snaps in the play-by-play)` : ""}. ` +
     // What a defense does to game script is a tendency, not a result: the
     // offense still has to score for a lead to happen.
     (defRank != null && defRank >= 23
@@ -1007,8 +1007,8 @@ function composeEntry({
     ? " A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
     : "";
   const finishesNote = newCaller
-    ? `${callerLast} has ${finishRows.length - 1 ? `${finishRows.length - 1} prior play-calling season${finishRows.length - 1 === 1 ? "" : "s"} in this table` : "no prior NFL play-calling seasons"}, so read the history as background and the ${season} pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data.${windowNote}`
-    : `Positional finishes are season-long PPR ranks from nflverse scoring data.${windowNote} ${goodCount >= 4 ? `${callerLast}'s offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before.` : `Top-ten positional seasons have been scarce under ${callerLast} - price this offense on volume and matchup, not system history.`}`;
+    ? `${callerLast} has ${finishRows.length - 1 ? `${finishRows.length - 1} prior play-calling season${finishRows.length - 1 === 1 ? "" : "s"} in this table` : "no prior NFL play-calling seasons"}, so read the history as background and the ${season} pace row as the live read. Positional finishes are season-long PPR ranks.${windowNote}`
+    : `Positional finishes are season-long PPR ranks.${windowNote} ${goodCount >= 4 ? `${callerLast}'s offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before.` : `Top-ten positional seasons have been scarce under ${callerLast} - price this offense on volume and matchup, not system history.`}`;
 
   /* -- distribution ------------------------------------------------------- */
   const distSeasons = finishSeasons.map((f) => ({ yr: f.yr, c: club(f.stop.team) ?? f.stop.team.toLowerCase(), stop: f.stop }));
@@ -1174,7 +1174,7 @@ function composeEntry({
       distLean && Math.abs(distLean.d) >= 3
         ? `, and the target split leans toward ${distLean.label.toLowerCase()} (${distLean.pct}% vs a ${distLean.nfl}% league average)`
         : ""
-    }. The play-calling and tendency metrics on this page are computed from nflverse play-by-play and FTN charting data. Coaching roles, history and staff information are sourced separately from team and league reporting.`;
+    }. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting.`;
 
   return {
     // Sign-off lives in the staff research file: set "verified": true on a

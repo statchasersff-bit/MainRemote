@@ -22,7 +22,7 @@ import { ESPN_CORE } from "./upstream";
 
 export interface SnapshotMetric {
   /**
-   * Matches the `key` of the same metric's offence row on the Stats tab, minus
+   * Matches the `key` of the same metric's offense row on the Stats tab, minus
    * that row's `off-` prefix. The two come from different ESPN documents and
    * neither needs the other to render, but the Stats rows carry last season's
    * rank and these do not - so the renderer joins on this to put a movement
@@ -36,7 +36,7 @@ export interface SnapshotMetric {
   value: string;
   /** Ordinal rank among the 32 teams, e.g. "4th". Null when ESPN omits it. */
   rank: string | null;
-  /** 1-32, for the tint that shows good/bad without relying on colour alone. */
+  /** 1-32, for the tint that shows good/bad without relying on color alone. */
   rankValue: number | null;
   /** Read out to assistive tech in place of the abbreviated label. */
   description: string;
@@ -65,7 +65,7 @@ interface EspnStatsResponse {
 /**
  * The four metrics, in the order they appear on the page.
  *
- * `netYardsPerGame` inside the passing category is ESPN's total-offence figure
+ * `netYardsPerGame` inside the passing category is ESPN's total-offense figure
  * (it is exactly net passing + rushing), not a passing-only number - which is
  * why the label says Total.
  */

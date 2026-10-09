@@ -315,7 +315,7 @@ What was shipped:
 
 1. **API** (`src/lib/player/header.ts`): the headshot prints
    `loading="eager"` and `data-no-lazy="1"`. Rocket's LazyLoad skips a tag
-   carrying either by default, as do the other lazy-load plugins that honour
+   carrying either by default, as do the other lazy-load plugins that honor
    `data-no-lazy`.
 2. **API** (`public/player.css`): `.scp-pwell-img` gets
    `aspect-ratio: 350 / 254` with `object-fit: contain` anchored to the

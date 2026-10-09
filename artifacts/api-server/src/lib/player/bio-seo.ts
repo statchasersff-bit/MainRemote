@@ -75,11 +75,6 @@ export function bioDescription(data: PlayerPageData, page: BioPageFacts): string
   return frames.find((f) => f.length <= MAX_DESCRIPTION) ?? null;
 }
 
-/** A Wikipedia title to its URL. */
-function wikiUrl(title: string): string {
-  return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_")).replace(/%2C/g, ",")}`;
-}
-
 /**
  * The Person node, without @id and url: the plugin knows the public profile
  * address and adds both. sameAs comes from the ID crosswalk (spec 2.11).
@@ -89,12 +84,6 @@ export function bioPersonNode(data: PlayerPageData, page: BioPageFacts): Record<
   const pos = POSITION_WORDS[data.player.position ?? ""] ?? null;
   const node: Record<string, unknown> = { "@type": "Person", name: data.player.name };
   if (data.player.headshotUrl) node["image"] = data.player.headshotUrl;
-  const sameAs: string[] = [];
-  if (raw.ids.pfr) sameAs.push(`https://www.pro-football-reference.com/players/${raw.ids.pfr[0]}/${raw.ids.pfr}.htm`);
-  if (raw.ids.espn) sameAs.push(`https://www.espn.com/nfl/player/_/id/${raw.ids.espn}`);
-  if (raw.ids.wikipedia) sameAs.push(wikiUrl(raw.ids.wikipedia));
-  if (raw.ids.wikidata) sameAs.push(`https://www.wikidata.org/wiki/${raw.ids.wikidata}`);
-  if (sameAs.length) node["sameAs"] = sameAs;
   if (raw.birthDate) node["birthDate"] = raw.birthDate;
   if (raw.birthPlace) node["birthPlace"] = { "@type": "Place", name: raw.birthPlace };
   if (raw.heightIn) node["height"] = { "@type": "QuantitativeValue", value: raw.heightIn, unitCode: "INH" };

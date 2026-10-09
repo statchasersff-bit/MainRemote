@@ -39,7 +39,7 @@ describe("club feed identity", () => {
   });
 
   test("the outlet is the domain, not a title-cased guess at it", () => {
-    // "Therams.com" and "Azcardinals.com" are what capitalising the first
+    // "Therams.com" and "Azcardinals.com" are what capitalizing the first
     // letter produces, and there is no rule that recovers the word boundaries
     // the domain threw away.
     assert.equal(clubOutlet(NE), "patriots.com");

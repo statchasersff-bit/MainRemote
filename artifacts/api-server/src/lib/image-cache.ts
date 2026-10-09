@@ -242,13 +242,13 @@ async function buildVariants(id: string, version: string, source: Buffer): Promi
         // 254px-tall source allows, so it is the one derivative that is
         // upscaled; it serves 3x phones, where a 108px box would otherwise
         // read a 256px image at 1.27x. Club art is a landscape photograph
-        // with its subject in the middle, so that crops from the centre; a
+        // with its subject in the middle, so that crops from the center; a
         // YouTube thumbnail is already 4:3 and is only scaled.
         image.resize({
           width: shape.width,
           height: shape.height,
           fit: "cover",
-          position: source_ === "player" || source_ === "espn" ? "top" : "centre",
+          position: source_ === "player" || source_ === "espn" ? "top" : "center",
         });
     const body = await resized
       .webp({ quality: WEBP_QUALITY_FOR[source_] ?? WEBP_QUALITY, alphaQuality: 90, effort: 4 })

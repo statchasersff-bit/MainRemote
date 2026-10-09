@@ -67,7 +67,7 @@ export interface RivalryInput {
 export interface RivalryTeam {
   abbr: string;
   short: string;
-  /** Text colour for this side's figures, already safe on the card. */
+  /** Text color for this side's figures, already safe on the card. */
   ink: string;
 }
 

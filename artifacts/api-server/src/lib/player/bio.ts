@@ -25,7 +25,7 @@
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { BioFacts, DraftRecord, Player } from "./types";
 
-/** One labelled fact in the identity block. */
+/** One labeled fact in the identity block. */
 export interface BioFact {
   label: string;
   value: string;

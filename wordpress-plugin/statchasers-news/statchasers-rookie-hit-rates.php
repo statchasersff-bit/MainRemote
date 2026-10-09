@@ -167,7 +167,7 @@ function statchasers_rhr_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out in
  * statchasers-team.php: Divi swaps the global post while rendering a Theme
- * Builder layout. Memoised for the same reason too.
+ * Builder layout. Memoized for the same reason too.
  */
 function statchasers_rhr_post_has_shortcode(): bool {
 	static $answer = null;
@@ -321,7 +321,7 @@ add_shortcode( STATCHASERS_RHR_SHORTCODE, 'statchasers_rhr_shortcode' );
 /* -------------------------------------------------- titles and headings */
 
 /**
- * The fetch this request's page prints, memoised: what the title filters and
+ * The fetch this request's page prints, memoized: what the title filters and
  * the H1 read. The same cached transient the shortcode prints.
  *
  * @return array{html:string,version:string}|null

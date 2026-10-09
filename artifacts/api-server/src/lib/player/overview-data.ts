@@ -9,7 +9,7 @@
  * The meters are NOT lib/player/benchmarks.ts. Those four readings are the
  * receiving line for every position - yards per catch for a running back -
  * which is the right frame for the Stats tab's efficiency rows and the wrong
- * one for a meter labelled "yards per carry". These are per position, and
+ * one for a meter labeled "yards per carry". These are per position, and
  * where a metric the spec names needs data the logs do not carry (routes, yards
  * after contact, sacks), the nearest one they do carry stands in, under its own
  * honest label.

@@ -371,7 +371,7 @@ function is( $got, $want, $label ) {
 /*
  * Two groups, two processes.
  *
- * Several predicates memoise their answer in a `static` - which is right in
+ * Several predicates memoize their answer in a `static` - which is right in
  * WordPress, where a request renders one page and a Divi template asks the same
  * question hundreds of times, and which means a process can only ever see ONE
  * answer from each of them. `statchasers_team_post_has_index_shortcode()` is
@@ -544,7 +544,7 @@ is(
 );
 
 echo "\nH1 verdict logic\n";
-is( statchasers_h1_normalise( "<span>New  England\nPatriots</span> " ), 'New England Patriots', 'normalise' );
+is( statchasers_h1_normalise( "<span>New  England\nPatriots</span> " ), 'New England Patriots', 'normalize' );
 is( statchasers_h1_should_print(), false, 'no verdict -> prints nothing' );
 
 $GLOBALS['options'][ STATCHASERS_H1_OPTION ] = array(
@@ -827,7 +827,7 @@ for ( $i = 0; $i < 32; $i++ ) {
 	$stub .= '<li><a href="/' . STATCHASERS_TEAM_PATH . '/team-' . $i . '/">Team</a></li>';
 }
 
-is( statchasers_team_index_is_stub( $stub ), true, 'the generated stub is recognised' );
+is( statchasers_team_index_is_stub( $stub ), true, 'the generated stub is recognized' );
 is( statchasers_team_index_is_stub( '' ), false, 'an empty body is not the stub' );
 is(
 	statchasers_team_index_is_stub( '<p>My own words about the teams.</p>' ),
@@ -852,7 +852,7 @@ for ( $i = 0; $i < 60; $i++ ) {
 	$pstub .= '<li><a href="/' . STATCHASERS_PLAYER_PATH . '/player-' . $i . '/">Name</a> (WR)</li>';
 }
 
-is( statchasers_player_index_is_stub( $pstub ), true, 'the generated stub is recognised' );
+is( statchasers_player_index_is_stub( $pstub ), true, 'the generated stub is recognized' );
 is( statchasers_player_index_is_stub( '' ), false, 'an empty body is not the stub' );
 is(
 	statchasers_player_index_is_stub( '<p>My own words about the players.</p>' ),
@@ -924,7 +924,7 @@ $stray            = wp_insert_post(
 	)
 );
 
-is( statchasers_matchup_stray_holder(), $stray, 'the misplaced holder is recognised' );
+is( statchasers_matchup_stray_holder(), $stray, 'the misplaced holder is recognized' );
 
 $error = '';
 $built = statchasers_matchup_build_holder( $error );
@@ -1134,7 +1134,7 @@ is( $args['view'], 'adjusted', 'and only the key it set' );
 
 $_GET = array( 'format' => 'PPR ', 'view' => 'Adjusted' );
 $args = statchasers_fpa_args( array() );
-is( $args['format'], 'ppr', 'case and padding are normalised' );
+is( $args['format'], 'ppr', 'case and padding are normalized' );
 is( $args['view'], 'adjusted', 'on both' );
 
 $_GET = array( 'format' => 'superflex', 'view' => '<script>' );
@@ -1276,7 +1276,7 @@ $post = new WP_Post();
 $post->post_content = "<p>Some page copy.</p>\n[statchasers_schedule view=\"week\" week=\"3\"]";
 $GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $post );
 
-// Memoised, so this process only ever sees this one post. The resolution below
+// Memoized, so this process only ever sees this one post. The resolution below
 // is a pure function and can be asked as often as we like.
 $atts = statchasers_schedule_mounted_atts();
 is( $atts['view'] ?? '', 'week', 'the mounted view is read off the post' );
@@ -1316,7 +1316,7 @@ is(
 );
 // The filter itself is asserted in the `week` group, where the request is a
 // week URL. Running it here would measure the matchup file's `the_title`
-// filter instead: this process set a pair up earlier and that answer memoised.
+// filter instead: this process set a pair up earlier and that answer memoized.
 
 /*
  * Retired player addresses. The old section-first layout
@@ -1363,7 +1363,7 @@ if ( null === $saved_by_path ) {
 
 /*
  * A rankings position URL. Not a group of its own: the position is read off
- * the query var on every call, not memoised, so it can be set and unset here.
+ * the query var on every call, not memoized, so it can be set and unset here.
  */
 echo "\nrankings position URLs\n";
 
@@ -1442,7 +1442,7 @@ is( statchasers_player_stats_canonical(), '', 'and its own canonical' );
 
 // A position address - the address outranking the attribute, its title and
 // its canonical - is asserted in smoke-headings.php: the "does this page mount
-// the table" answer those read is memoised, and an earlier group has already
+// the table" answer those read is memoized, and an earlier group has already
 // asked it about a page of its own.
 
 $GLOBALS['query'] = array( 'sc_stats_pos' => 'k' );
@@ -1904,10 +1904,10 @@ is( statchasers_player_sitemap_skips( 'injury', null ), false, 'and a page with 
 
 // The dead players sitemap is taken out of the index; the others stay.
 $sm_index = "\t<sitemap>\n\t\t<loc>https://statchasers.com/sitemap-players.xml</loc>\n\t\t<lastmod>2026-09-07T00:00:00+00:00</lastmod>\n\t</sitemap>\n" .
-	"\t<sitemap>\n\t\t<loc>https://statchasers.com/nfl-depth-charts-sitemap.xml</loc>\n\t</sitemap>\n";
+	"\t<sitemap>\n\t\t<loc>https://statchasers.com/page-sitemap.xml</loc>\n\t</sitemap>\n";
 $sm_index = statchasers_sitemap_drop_dead_players( $sm_index );
 is( false === strpos( $sm_index, 'sitemap-players.xml' ), true, 'the 404ing players sitemap leaves the index' );
-is( false !== strpos( $sm_index, '<loc>https://statchasers.com/nfl-depth-charts-sitemap.xml</loc>' ), true, 'and the depth charts sitemap stays' );
+is( false !== strpos( $sm_index, '<loc>https://statchasers.com/page-sitemap.xml</loc>' ), true, 'and the other sitemaps stay' );
 
 // A player who has left the roster: noindex, and out of the sitemap.
 $sm_roster = array( array( 'slug' => 'josh-allen' ), array( 'slug' => 'dj-moore' ) );
@@ -1960,7 +1960,7 @@ if ( null === $saved_pages ) {
  * current one read as custom the moment the season moved on and all 32 hubs
  * stayed on last season's year.
  */
-echo "\nthe hub retitle recognises both generated titles, any season\n";
+echo "\nthe hub retitle recognizes both generated titles, any season\n";
 
 $patriots = 'New England Patriots';
 is( statchasers_team_title_is_generated( '2025 New England Patriots Fantasy Football Hub | StatChasers', $patriots ), true, 'the old template' );

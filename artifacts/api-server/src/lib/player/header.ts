@@ -56,7 +56,7 @@ export const STARTSIT_BASE =
 /**
  * Three bands, for a restrained tint rather than a red-to-green ramp.
  *
- * The rank is the reading and the colour is a hint underneath it, so only the
+ * The rank is the reading and the color is a hint underneath it, so only the
  * top and bottom thirds are tinted at all and the middle is left alone. A card
  * per fixture in full green or full red turns a schedule into a traffic light
  * and buries the thing the block is actually for, which is who and when.
@@ -73,7 +73,7 @@ export function matchupBand(rank: number): MatchupBand {
  * How severe a designation is, for the pill's accent.
  *
  * Four buckets, matching the team hub's `injurySeverity` exactly so the same
- * status is the same colour on both pages. Anything unrecognised is treated as
+ * status is the same color on both pages. Anything unrecognized is treated as
  * "questionable" rather than dropped - an unfamiliar designation is still a
  * designation, and guessing it is harmless while hiding it is not.
  */
@@ -177,7 +177,7 @@ function longestWord(name: string): string {
 
 /* ------------------------------------------------------------ team ink */
 
-/** WCAG relative luminance of a #rrggbb colour, or null for anything else. */
+/** WCAG relative luminance of a #rrggbb color, or null for anything else. */
 function luminance(hex: string): number | null {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return null;
@@ -193,13 +193,13 @@ function luminance(hex: string): number | null {
   );
 }
 
-/** Contrast of white text on this colour. 0 for a colour that did not parse. */
+/** Contrast of white text on this color. 0 for a color that did not parse. */
 function whiteContrast(hex: string): number {
   const l = luminance(hex);
   return l === null ? 0 : 1.05 / (l + 0.05);
 }
 
-/** The colour mixed toward black by `amount` (0–1). */
+/** The color mixed toward black by `amount` (0–1). */
 function darken(hex: string, amount: number): string {
   const n = Number.parseInt(hex.replace("#", ""), 16);
   const mix = (v: number): string =>
@@ -207,18 +207,18 @@ function darken(hex: string, amount: number): string {
   return `#${mix((n >> 16) & 255)}${mix((n >> 8) & 255)}${mix(n & 255)}`;
 }
 
-/** WCAG AA for the 12px position tag, which is white text on this colour. */
+/** WCAG AA for the 12px position tag, which is white text on this color. */
 const TEAM_INK_CONTRAST = 4.5;
 
 /**
- * The club colour the header paints with: the photo well, the position tag,
+ * The club color the header paints with: the photo well, the position tag,
  * the start of the accent bar.
  *
  * The primary where white text on it passes AA, else the secondary where
  * that passes, else the primary taken darker until it does. The third case is
  * real: Carolina, Miami and the Chargers all have a light primary AND a light
- * secondary, and swapping to a second failing colour fixes nothing. Darkening
- * keeps the club recognisable where a fallback to navy would not.
+ * secondary, and swapping to a second failing color fixes nothing. Darkening
+ * keeps the club recognizable where a fallback to navy would not.
  *
  * Null for a player with no club; the stylesheet's default (ink-2) answers.
  */
@@ -363,7 +363,7 @@ function headerBoard(data: PlayerPageData): { caption: string; cells: BoardCell[
   const pos = player.position ?? "";
 
   return {
-    // "2026 Season", centred above the board (mak, 2026-09-30); the "final"
+    // "2026 Season", centered above the board (mak, 2026-09-30); the "final"
     // and "Through Week N" wording inside the board is gone.
     caption: `${data.season} Season`,
     cells: [
@@ -393,7 +393,7 @@ const SILHOUETTE =
   `</svg>`;
 
 /**
- * The photo well: the club's colour, cut on the diagonal, with the jersey
+ * The photo well: the club's color, cut on the diagonal, with the jersey
  * number drawn in outline behind the headshot.
  *
  * Sleeper's thumbnails are transparent cutouts cropped at the chest, so the
@@ -416,7 +416,7 @@ function renderPhotoWell(data: PlayerPageData): string {
   // swapped the src for a blank SVG and parked the real URLs in data-lazy-*,
   // which defeats the priority hint. Rocket leaves alone any <img> carrying
   // loading="eager" or data-no-lazy, and so do the other lazy-load plugins
-  // that honour that attribute; the news plugin also names this class in
+  // that honor that attribute; the news plugin also names this class in
   // Rocket's exclusion filter. A player known to have no photo ships the
   // silhouette.
   const img =

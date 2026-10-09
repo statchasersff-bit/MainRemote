@@ -8,7 +8,7 @@
  * in this game and what did they do" - and each of them computing its own pass
  * over a season of logs would be three extra passes for one answer.
  *
- * Nothing here fetches. `loadGameLogs(season)` is the memoised read the game
+ * Nothing here fetches. `loadGameLogs(season)` is the memoized read the game
  * log on a player page already does, and the player dictionary is the one
  * links.ts keeps warm.
  */

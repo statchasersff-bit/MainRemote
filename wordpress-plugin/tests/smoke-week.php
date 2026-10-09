@@ -3,7 +3,7 @@
  * What a week URL is, in a process of its own.
  *
  * Split out for the reason smoke-containers.php gives: the week a request names
- * is memoised - deliberately, because a Divi page asks for it many times - so
+ * is memoized - deliberately, because a Divi page asks for it many times - so
  * one process can answer "this is /week-7/" or "this is the bare page" but not
  * both. The main group is the bare page, because that is the common case and
  * everything else there depends on it. This is the week.
@@ -123,7 +123,7 @@ is(
 
 // And the rule that holds that hero flush with the board is printed with it.
 // It was gated on the modes where the plugin normally prints a heading, so in
-// this one the site's centred hero shell indented it on desktop only.
+// this one the site's centered hero shell indented it on desktop only.
 ob_start();
 // Every head hook runs; the ones this stub harness cannot satisfy are skipped,
 // since only the heading rule's output is being asked about.

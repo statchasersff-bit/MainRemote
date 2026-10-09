@@ -265,7 +265,7 @@ body.scs-page.is-embed {
 /* --------------------------------------------------------------- the bar */
 
 /*
- * The source's <header>: a card-coloured strip with a hairline under it and the
+ * The source's <header>: a card-colored strip with a hairline under it and the
  * view tabs on the left.
  *
  * It is `scs-controlbar`, not `scs-bar`: while the two shared a name this strip
@@ -580,15 +580,15 @@ body.scs-page.is-embed {
   letter-spacing: 0.14em;
 }
 
-/* TV is the third of four, and its heading is centred over the marks, which
-   are centred in the column below it (mak's call, 2026-09-22 - the source
+/* TV is the third of four, and its heading is centered over the marks, which
+   are centered in the column below it (mak's call, 2026-09-22 - the source
    ranges both right). `:nth-child` because the fourth cell is the empty
    heading over the row's link and wants no alignment at all. */
 .scs-board-head span:nth-child(3) {
   text-align: center;
 }
 
-/* The board's middle heading sits over a centred column, so it is centred
+/* The board's middle heading sits over a centered column, so it is centered
    too. */
 .scs-board-head span:nth-child(2) {
   text-align: center;
@@ -639,7 +639,7 @@ body.scs-page.is-embed {
 }
 
 /*
- * Live is the one state the board says in colour, and the colour is the gold.
+ * Live is the one state the board says in color, and the color is the gold.
  *
  * A red dot on a schedule reads as an error; the only thing this tool ever has
  * to announce is "this one is happening now". It is never the only signal - the
@@ -800,7 +800,7 @@ a.scs-game-name:focus-visible {
 .scs-game-meta {
   display: flex;
   flex-direction: column;
-  /* Centred under the TV heading. The phone layout, which has no heading,
+  /* Centered under the TV heading. The phone layout, which has no heading,
      puts it back against the right edge beside the matchup link. */
   align-items: center;
   gap: 2px;
@@ -921,7 +921,7 @@ a.scs-game-name:focus-visible {
 }
 
 /*
- * The artwork is full colour with dark elements in it - the ABC circle, "FOX
+ * The artwork is full color with dark elements in it - the ABC circle, "FOX
  * SPORTS", the NBC wordmark - which all but vanish on the dark card. A light
  * chip keeps the column readable there; the light theme needs nothing.
  */
@@ -1279,7 +1279,7 @@ a.scs-game-name:focus-visible {
  * Two things do NOT come across, because this sheet is the source repo's design
  * system and not the house one (see the file header):
  *
- *   - The colours are this page's tokens, not the house names. That is what
+ *   - The colors are this page's tokens, not the house names. That is what
  *     makes the block work in dark, where `--scs-primary` is the gold; a
  *     hardcoded navy heading would vanish on the dark card.
  *   - The heading keeps Space Grotesk and the display face's tracking, like
@@ -1372,7 +1372,7 @@ a.scs-game-name:focus-visible {
 }
 
 /* 800 in the hub; 700 here, which is the heaviest DM Sans this sheet loads and
-   so the nearest thing to it that is not a synthesised bold. */
+   so the nearest thing to it that is not a synthesized bold. */
 .scs-faq-q {
   margin: 0;
   color: hsl(var(--scs-foreground));
@@ -1523,7 +1523,7 @@ a.scs-game-name:focus-visible {
 
   /*
    * The row becomes a card: when on the left and TV in the top right, the
-   * matchup across the middle a size up, and the link centred under "at".
+   * matchup across the middle a size up, and the link centered under "at".
    * Named areas, because the cells arrive in row order (when, teams, TV,
    * link) and the TV has to climb above the teams.
    *
@@ -1564,13 +1564,13 @@ a.scs-game-name:focus-visible {
   }
 
   /* The two sides are equal flex tracks either side of "at", so the middle of
-     the row IS "at", and centring the link puts it directly beneath. */
+     the row IS "at", and centering the link puts it directly beneath. */
   .scs-game-go {
     grid-area: go;
     justify-content: center;
   }
 
-  /* Even padding, or the link's box centres and its text sits 3px right. */
+  /* Even padding, or the link's box centers and its text sits 3px right. */
   .scs-go {
     padding-left: 3px;
     padding-right: 3px;
@@ -1637,7 +1637,7 @@ a.scs-game-name:focus-visible {
  *   font-family  Declared on the root and inherited everywhere else, and
  *                inheritance loses to ANY rule that names the element. A
  *                theme's `h1, h2, h3 { font-family: <serif> }` therefore took
- *                every heading, while this file's own colour and size rules
+ *                every heading, while this file's own color and size rules
  *                kept winning.
  *   list-style   Set on the <ul>, which a theme's `li` rule outranks, because
  *                the marker is drawn by the <li>.
@@ -1731,11 +1731,11 @@ a.scs-game-name:focus-visible {
   padding-bottom: 6px;
 }
 
-/* Colour and weight on the header cells: the week row and the team column.
+/* Color and weight on the header cells: the week row and the team column.
    `.entry-content tr th { color: #555; font-weight: 700 }` is (0,1,2) and
    outweighs `.scs-matrix th`; `#left-area table th { color: #666 }` is an id,
-   which only `!important` beats. Measured: all 32 team names went grey and
-   bold, and the week numbers a neighbouring grey. The links inside inherit
+   which only `!important` beats. Measured: all 32 team names went gray and
+   bold, and the week numbers a neighboring gray. The links inside inherit
    both, so this is where they are kept. */
 .scs .scs-matrix th {
   color: hsl(var(--scs-primary)) !important;
@@ -1747,8 +1747,8 @@ a.scs-game-name:focus-visible {
   font-weight: 700;
 }
 
-/* Every link in the grid is a whole cell, coloured by the cell it fills - the
-   week header's muted grey, the team's ink, the tinted home/away wash. A theme
+/* Every link in the grid is a whole cell, colored by the cell it fills - the
+   week header's muted gray, the team's ink, the tinted home/away wash. A theme
    repainting them one blue erases all three distinctions at once. */
 .scs .scs-matrix a {
   color: inherit;

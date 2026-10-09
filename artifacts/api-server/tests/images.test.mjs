@@ -284,7 +284,7 @@ describe("the other sources", () => {
     const first = await get("/news-image/espn/77/latest/160.webp");
     assert.equal(first.res.status, 302);
     const location = first.res.headers.get("location");
-    const m = /^\/news-image\/espn\/77\/([0-9a-f]{10})\/160\.webp$/.exec(location);
+    const m = /^\/news-image\/athlete\/77\/([0-9a-f]{10})\/160\.webp$/.exec(location);
     assert.ok(m, `versioned redirect target, got ${location}`);
     const { res, body } = await get(location);
     assert.equal(res.status, 200);
@@ -294,7 +294,7 @@ describe("the other sources", () => {
     assert.equal(upstreamHits.filter((h) => h.url === "/i/headshots/nfl/players/full/77.png").length, 1);
   });
 
-  test("club art: a 16:9 band at the well's width, a centred square for the news card", async () => {
+  test("club art: a 16:9 band at the well's width, a centered square for the news card", async () => {
     const band = await get(`/news-image/club/${clubKeyId}/latest/b640.webp`);
     assert.equal(band.res.status, 302, "latest redirects");
     const location = band.res.headers.get("location");
@@ -328,7 +328,7 @@ describe("the other sources", () => {
     const first = await get("/news-image/yt/dQw4w9WgXcQ/latest/r480.webp");
     assert.equal(first.res.status, 302);
     const location = first.res.headers.get("location");
-    assert.match(location, /^\/news-image\/yt\/dQw4w9WgXcQ\/[0-9a-f]{10}\/r480\.webp$/);
+    assert.match(location, /^\/news-image\/video\/dQw4w9WgXcQ\/[0-9a-f]{10}\/r480\.webp$/);
     const big = await get(location);
     assert.equal(big.res.status, 200);
     const meta = await sharp(big.body).metadata();
@@ -425,7 +425,7 @@ describe("rendered news cards", () => {
     }
   });
 
-  test("the LCP image is eager and prioritised; later cards are lazy and async", () => {
+  test("the LCP image is eager and prioritized; later cards are lazy and async", () => {
     const imgs = [...doc.querySelectorAll("img.sc-card-photo")];
     const priority = imgs.filter((i) => i.getAttribute("fetchpriority") === "high");
     assert.equal(priority.length, 1);
@@ -483,7 +483,7 @@ describe("team hub and player pages", () => {
     for (const img of ours) {
       assert.match(
         img.getAttribute("src"),
-        /^https:\/\/news\.statchasers\.com\/news-image\/(player|espn)\/\d+\/(latest|[0-9a-f]{10})\/\d+\.webp$/,
+        /^https:\/\/news\.statchasers\.com\/news-image\/(player|athlete)\/\d+\/(latest|[0-9a-f]{10})\/\d+\.webp$/,
         img.outerHTML,
       );
     }

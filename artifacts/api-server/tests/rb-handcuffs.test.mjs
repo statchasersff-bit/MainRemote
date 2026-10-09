@@ -11,7 +11,7 @@
  * HTML is asserted with no JavaScript run, because the point of the port is
  * that the board arrives complete. Then the real bundle is run against that
  * HTML in jsdom, because the weights, sorting, the open rows, compare and the
- * card are the app's behaviour and have to survive the move out of React.
+ * card are the app's behavior and have to survive the move out of React.
  */
 
 import test, { before, after, describe } from "node:test";
@@ -156,6 +156,32 @@ describe("the model", () => {
       assert.ok(depth.players[stats.normalizeName(fixed.rb2)]?.sleeperId, "a pinned back keeps his Sleeper record");
     }
     assert.equal(BOARD.updatedAt, new Date(depth.generated_at).toISOString());
+  });
+
+  test("every backup on the board carries a badge", () => {
+    const labels = new Set(["Premium Handcuff", "Premium Contingency", "Talent Stash", "Opportunity Stash", "Trap Handcuff", "Low-Ceiling Backup", "Dead-Zone Handcuff"]);
+    for (const p of BOARD.players) assert.ok(labels.has(p.handcuffType), `${p.playerName}: "${p.handcuffType}"`);
+  });
+
+  test("a back no archetype fits exactly takes the closest one", async () => {
+    const { getHandcuffBadge, nearestHandcuffBadge } = await importModule("lib/rb-handcuffs/engine/scoring");
+    const n = 32;
+    // Exact fits are the strict rule's answer and the nearest one agrees.
+    assert.equal(getHandcuffBadge(6, 1, 4, n), "Premium Handcuff");
+    assert.equal(nearestHandcuffBadge(6, 1, 4, n), "Premium Handcuff");
+    assert.equal(nearestHandcuffBadge(29, 30, 30, n), getHandcuffBadge(29, 30, 30, n));
+    // Near misses go to the archetype missed by the fewest places.
+    assert.equal(getHandcuffBadge(3, 8, 15, n), "");
+    assert.equal(nearestHandcuffBadge(3, 8, 15, n), "Talent Stash");
+    assert.equal(nearestHandcuffBadge(25, 12, 13, n), "Low-Ceiling Backup");
+    assert.equal(nearestHandcuffBadge(25, 11, 24, n), "Dead-Zone Handcuff");
+    assert.equal(nearestHandcuffBadge(23, 18, 21, n), "Trap Handcuff");
+    // A mid-pack talent in a top backfield is an Opportunity Stash, never premium.
+    assert.equal(nearestHandcuffBadge(18, 25, 1, n), "Opportunity Stash");
+    // A lower-half talent is never a Talent Stash.
+    assert.notEqual(nearestHandcuffBadge(18, 5, 25, n), "Talent Stash");
+    // Without a rank on every pillar there is nothing to measure.
+    assert.equal(nearestHandcuffBadge(null, 5, 5, n), "");
   });
 
   test("the board is ranked the way the bundle re-ranks it", () => {
@@ -579,7 +605,7 @@ describe("the bundle", () => {
     assert.deepEqual(ranks, ranks.map((_, i) => i + 1), "numbered in the new order");
     const scores = [...doc.querySelectorAll("tr.rbh-row")].map((r) => Number(r.dataset.score));
     assert.deepEqual(scores, [...scores].sort((a, b) => b - a));
-    // Each detail row travelled with its player.
+    // Each detail row traveled with its player.
     for (const row of doc.querySelectorAll("tr.rbh-row")) {
       assert.equal(row.nextElementSibling.dataset.rbhDetail, row.dataset.id);
     }

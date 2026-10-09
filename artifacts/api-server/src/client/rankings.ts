@@ -8,7 +8,7 @@
  * row.
  *
  * It adds two things:
- *   1. real tab behaviour for the position strip, from client/enhance.ts - the
+ *   1. real tab behavior for the position strip, from client/enhance.ts - the
  *      ARIA roles, arrow keys, and switching without a reload. Each tab is the
  *      position's own address (`/rest-of-season-rankings/te`), so choosing
  *      "TE" pushes that address, and Back walks back through the tabs;

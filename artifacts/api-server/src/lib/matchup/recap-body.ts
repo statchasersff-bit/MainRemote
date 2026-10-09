@@ -244,7 +244,7 @@ function section(id: string, heading: string, body: string, extraClass = ""): st
   );
 }
 
-/** Each club's text and fill colour on this page, told apart - see pairColors(). */
+/** Each club's text and fill color on this page, told apart - see pairColors(). */
 function colorsOf(input: RecapBodyInput, abbr: string): { ink: string; fill: string } {
   const colors = pairColors(input.game.away.abbr, input.game.home.abbr);
   return abbr === input.game.home.abbr ? colors.home : colors.away;
@@ -357,8 +357,8 @@ export function awayShare(row: { away: number; home: number; better: Better }): 
   return Math.round((mine / total) * 1000) / 10;
 }
 
-/** Which side the row favours, or null for none (or a "neither" metric). */
-function favoured(row: Pick<StatRow, "away" | "home" | "better">): "away" | "home" | null {
+/** Which side the row favors, or null for none (or a "neither" metric). */
+function favored(row: Pick<StatRow, "away" | "home" | "better">): "away" | "home" | null {
   if (row.away === null || row.home === null || row.better === "neither") return null;
   if (row.away === row.home) return null;
   const awayHigher = row.away > row.home;
@@ -386,7 +386,7 @@ function battlesLine(input: RecapBodyInput, rows: StatRow[]): string {
   const won: Record<"away" | "home", string[]> = { away: [], home: [] };
   for (const battle of BATTLES) {
     const row = byLabel.get(battle.label);
-    const side = row ? favoured(row) : null;
+    const side = row ? favored(row) : null;
     if (side) won[side].push(battle.name);
   }
   const battles = (names: string[]): string =>
@@ -500,7 +500,7 @@ export interface CompareRow {
 
 /**
  * The two-team comparison table "Why won" draws: the figure either side of the
- * stat name, the better one emphasised, and a split bar under each row. Season
+ * stat name, the better one emphasized, and a split bar under each row. Season
  * Form uses it too, so the two sections read as one design.
  */
 export function renderStatCompare(opts: {
@@ -512,7 +512,7 @@ export function renderStatCompare(opts: {
   rows: CompareRow[];
 }): string {
   const value = (row: CompareRow, side: "away" | "home"): string => {
-    const better = favoured(row) === side;
+    const better = favored(row) === side;
     return (
       `<td class="sct-rb-val is-${side}${better ? " is-better" : ""}">` +
       escapeHtml(side === "away" ? row.awayText : row.homeText) +
@@ -613,7 +613,7 @@ export function renderWhyWon(input: RecapBodyInput): string {
 
 /**
  * The winner's key advantages ("+1.8 yards/play", "SEA 5.9 · NE 4.1") under a
- * "Key advantages" label, in the winner's colour, or "" for a tie or a game
+ * "Key advantages" label, in the winner's color, or "" for a tie or a game
  * without team stats. In the recap story, under its text.
  */
 export function renderTakeaways(input: RecapBodyInput, extra = ""): string {
@@ -640,7 +640,7 @@ export function renderTakeaways(input: RecapBodyInput, extra = ""): string {
 
 /* ------------------------------------------------ section 2: head-to-head */
 
-/** Both sides as the all-time tiles name and colour them. */
+/** Both sides as the all-time tiles name and color them. */
 function rivalryTeams(input: RecapBodyInput): [RivalryTeam, RivalryTeam] {
   const side = (abbr: string, short: string): RivalryTeam => ({ abbr, short, ink: colorsOf(input, abbr).ink });
   return [side(input.game.away.abbr, input.game.away.short), side(input.game.home.abbr, input.game.home.short)];

@@ -60,14 +60,14 @@ const FEED_CONCURRENCY = 6;
  *
  * The feeds are not uniform archives. Most carry a few weeks; some carry a
  * single stale outlier (Dallas serves one 2018 article); and one - Washington -
- * is an abandoned feed whose newest item is months old and whose back catalogue
+ * is an abandoned feed whose newest item is months old and whose back catalog
  * is Redskins-era. Without a cutoff, the first ingest would backfill the archive
  * with years-old stories that would then sit in it permanently, because nothing
  * here ever deletes a row.
  *
  * 45 days rather than the team page's 180: this provider's job is what the club
  * is saying now. The archive deepens by accumulating, which is the same way the
- * wire's back catalogue was built.
+ * wire's back catalog was built.
  */
 const MAX_ITEM_AGE_DAYS = 45;
 

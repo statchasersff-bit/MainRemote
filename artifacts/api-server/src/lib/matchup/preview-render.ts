@@ -7,7 +7,7 @@
  * render unchanged under all of this so the two can be compared.
  *
  * Every chip carries its word as text; tables are real tables; the script
- * meter's lean is also written out. Colours come from the team tokens on the
+ * meter's lean is also written out. Colors come from the team tokens on the
  * root (--pv-away / --pv-home), never from here.
  */
 
@@ -205,7 +205,7 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
       cell("Moneyline", `${code(home.team)} ${ml(line.moneyline.home)}`, `${code(away.team)} ${ml(line.moneyline.away)}`) +
       `</div>` +
       // The book note sits with the lines it is about, not in the byline.
-      `<p class="sct-pv-bets-note">Lines${line.provider ? ` are ${e(line.provider)} numbers via ESPN and` : ""} move - check your book.</p>`;
+      `<p class="sct-pv-bets-note">Lines move - check your book.</p>`;
   }
 
   const updated = new Intl.DateTimeFormat("en-US", {
@@ -214,8 +214,8 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     timeZone: "America/New_York",
   }).format(p.updatedMs || Date.now());
 
-  // Each side's wash is the club's own primary colour, darkened in the CSS -
-  // not the pair-contrast colour, which gave the Jets their white (grey here).
+  // Each side's wash is the club's own primary color, darkened in the CSS -
+  // not the pair-contrast color, which gave the Jets their white (gray here).
   const heroStyle = `--pv-hero-away:${away.team.primaryColor};--pv-hero-home:${home.team.primaryColor}`;
 
   return (
@@ -665,7 +665,7 @@ function findRow(stats: TeamStats | null, key: string): StatRow | null {
   return null;
 }
 
-/** Colour only the outliers (top or bottom 5); every other rank stays slate. */
+/** Color only the outliers (top or bottom 5); every other rank stays slate. */
 function tier(rank: number | null): string {
   if (rank === null) return "none";
   if (rank <= 5) return "good";
@@ -736,7 +736,7 @@ function renderSnapshot(p: Preview, ctx: PreviewRenderContext): string {
   ].join("");
 
   // Fantasy points allowed: green = soft (good for the opposing offense),
-  // coloured only at the extremes.
+  // colored only at the extremes.
   const fpaTier = (rank: number) => (rank <= 5 ? "good" : rank >= 28 ? "poor" : "mid");
   const barOf = (rank: number) => (33 - rank) / 32;
   const fpaRows =
@@ -816,7 +816,7 @@ function renderInjuries(p: Preview): string {
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-inj">` +
     h2("pv-inj", `${pairOf(p)} Injury Report & Fantasy Impact`) +
-    `<p class="sct-pv-lede">Designations and practice notes from the official report via Sleeper; each line says what the injury changes for lineups.</p>` +
+    `<p class="sct-pv-lede">Designations and practice notes from the official report; each line says what the injury changes for lineups.</p>` +
     injuryImpactStrip(p) +
     `<div class="sct-pv-cards">${card(p.away)}${card(p.home)}</div>` +
     `</section>`

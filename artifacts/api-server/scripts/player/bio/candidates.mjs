@@ -11,7 +11,7 @@
  * in data/player/bio_wikipedia_text/{slug}.json.
  *
  * Every fact is checked in code before it is kept (spec Stage 2):
- *   - the quote is in the saved text, exactly, after whitespace is normalised
+ *   - the quote is in the saved text, exactly, after whitespace is normalized
  *   - the date is a real date and is written in the quote: "March 11, 2025",
  *     "11 March 2025", or "March 11" with the quote's nearest year before it
  *     (or, failing one, after it in the same sentence) being 2025 ("On March 3, 2025, ... On

@@ -77,7 +77,7 @@ export interface EspnScoringPlay {
 
 const NAME = "([A-Z][\\w.'’ -]*?)";
 
-/** The try, from the parenthesised tail of a touchdown's text. */
+/** The try, from the parenthesized tail of a touchdown's text. */
 function pointAfter(tail: string): PointAfter | undefined {
   const t = tail.trim();
   if (!t) return undefined;

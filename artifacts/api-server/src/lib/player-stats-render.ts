@@ -128,9 +128,9 @@ export function formatCell(value: unknown, column: StatsColumn): string | null {
 }
 
 /**
- * The grade's colour band. The bands are the standalone app's - 90 elite,
+ * The grade's color band. The bands are the standalone app's - 90 elite,
  * 80 strong, 70 good, 50 average, below that poor - and the number is always
- * printed, so the colour is a second reading of it and never the only one.
+ * printed, so the color is a second reading of it and never the only one.
  */
 function scoreBand(value: number): string {
   if (value >= 90) return "t90";

@@ -111,7 +111,7 @@ export function backoffCapMs(): number {
 /**
  * Pause between the requests inside one tick.
  *
- * Observed, not theorised: the public endpoint rate-limits by IP, and four
+ * Observed, not theorized: the public endpoint rate-limits by IP, and four
  * requests in under a second from this machine earned a 429 on all four. The
  * batch is checked one account at a time anyway (see runXSweep), and this
  * spreads those few requests over the front of the tick instead of firing them

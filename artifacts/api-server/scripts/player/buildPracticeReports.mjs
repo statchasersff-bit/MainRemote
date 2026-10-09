@@ -130,7 +130,7 @@ export function mergeWeek(stored, parsed, { date, fetchedAt, url, live = true })
         continue;
       }
       const days = { ...(old?.days ?? {}) };
-      // Only the week being practised for gets a day filed: an earlier week's
+      // Only the week being practiced for gets a day filed: an earlier week's
       // page is its final report, whatever day it is read.
       if (live) days[date] = row.estimated ? `${row.practice}*` : row.practice;
       players[slug] = {
@@ -197,7 +197,7 @@ async function main() {
     pages.push({ week, parsed, url: page.url, rows });
   }
 
-  // The newest published week is the one being practised for.
+  // The newest published week is the one being practiced for.
   pages.forEach(({ week, parsed, url, rows }, i) => {
     const live = i === pages.length - 1;
     doc.weeks[String(week)] = mergeWeek(doc.weeks[String(week)], parsed, {

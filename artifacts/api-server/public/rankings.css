@@ -55,14 +55,14 @@
    *
    * All seven sit at ~95% lightness and low chroma. That is deliberate and it
    * is the accessibility argument: at this lightness every tint keeps
-   * --sc-ink's contrast ratio against it above 13:1, so the colour never
+   * --sc-ink's contrast ratio against it above 13:1, so the color never
    * carries any of the text's legibility. It is doing one job - telling a
    * reader which cells belong together as their eye runs down a column.
    *
-   * Colour is never the only encoding. Every tinted cell in the All board also
+   * Color is never the only encoding. Every tinted cell in the All board also
    * prints the row's rank in the leftmost column, and the per-position tables
    * print the tier number in a column of its own, so nothing here is lost to a
-   * colour-blind reader or a monochrome print - the tint is a grouping cue on
+   * color-blind reader or a monochrome print - the tint is a grouping cue on
    * top of two textual ones, which is the only role a nominal scale of seven
    * hues can safely play.
    */
@@ -676,7 +676,7 @@ a.scr-player-link:hover {
 
 /* Nudged down to sit on the first line of the question rather than on the
    middle of a question that wrapped: `align-items: flex-start` puts the
-   chevron's box at the top, and this centres it on that line's cap height. */
+   chevron's box at the top, and this centers it on that line's cap height. */
 .scr-faq-q-row::before {
   content: "";
   flex: none;
@@ -804,7 +804,7 @@ a.scr-player-link:hover {
  *   font-family  Declared on the root and inherited everywhere else, and
  *                inheritance loses to ANY rule that names the element. A
  *                theme's `h1, h2, h3 { font-family: <serif> }` therefore took
- *                every heading, while this file's own colour and size rules
+ *                every heading, while this file's own color and size rules
  *                kept winning.
  *   list-style   Set on the <ul>, which a theme's `li` rule outranks, because
  *                the marker is drawn by the <li>.
@@ -877,7 +877,7 @@ a.scr-player-link:hover {
   padding: 5px 14px;
 }
 
-/* The tier board's rows. Divi takes the padding outright and recolours the
+/* The tier board's rows. Divi takes the padding outright and recolors the
    separator to its own #eee, which is a heavier line than this board draws. */
 .scr .scr-row td,
 .scr .scr-row th {
@@ -902,7 +902,7 @@ a.scr-player-link:hover {
   border-top: 0;
 }
 
-/* Links. Each of these is a brand colour doing a job - the player's name in
+/* Links. Each of these is a brand color doing a job - the player's name in
    the tool's ink, the muted CSV and profile controls - and a theme's one link
    blue flattens the distinction between all of them. */
 .scr .scr-all-name,
@@ -929,11 +929,11 @@ a.scr-player-link:hover {
   border: 0;
 }
 
-/* Header and player cells. `.entry-content tr th` sets colour and weight as
-   well as the padding restated above, and `#left-area table th` sets colour
+/* Header and player cells. `.entry-content tr th` sets color and weight as
+   well as the padding restated above, and `#left-area table th` sets color
    through an id, which only `!important` beats - the navy header bands'
-   labels went grey, the tier bands' too, and every player name on the tier
-   board went grey and bold. Colour is armed; weight is restated at a
+   labels went gray, the tier bands' too, and every player name on the tier
+   board went gray and bold. Color is armed; weight is restated at a
    specificity that wins. */
 .scr .scr-all-table thead th,
 .scr .scr-table thead th,
@@ -986,7 +986,7 @@ a.scr-player-link:hover {
 
 /* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
    on statchasers.com - the team hub's section headings rendered at 50px from
-   it. Armed on size and colour only, as team.css does; the clamp keeps
+   it. Armed on size and color only, as team.css does; the clamp keeps
    scaling because the value is the same expression. */
 .scr .scr-faq-title {
   color: var(--sc-navy) !important;

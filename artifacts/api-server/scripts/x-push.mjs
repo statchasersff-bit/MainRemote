@@ -65,7 +65,7 @@ function read() {
  *
  * Deliberately shallow: the server does the real (recursive, shape-tolerant)
  * search. This only needs to get an array to chunk, and anything it cannot
- * recognise is posted whole and judged there - the server's answer is the one
+ * recognize is posted whole and judged there - the server's answer is the one
  * that matters, and it reports exactly what it rejected.
  */
 function toArray(data) {

@@ -59,7 +59,7 @@ export interface DepthChartsDoc {
 export interface DepthColumnDef {
   /** The document's positions[] key: "FAN_QB", "LT". */
   key: string;
-  /** What the column header prints, and the slot chip's colour key. */
+  /** What the column header prints, and the slot chip's color key. */
   pos: string;
   /** Spelled out, for the screen reader and the tooltip. */
   label: string;

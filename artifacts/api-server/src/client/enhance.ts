@@ -1,15 +1,15 @@
 /**
- * The enhancement behaviours the tool pages share.
+ * The enhancement behaviors the tool pages share.
  *
  * Three of the four things client/team.ts does are not about team hubs at all:
  * turning a `:target` section bar into a real tab strip, upgrading absolute
  * timestamps to relative ones, and reporting height to a parent frame. The
- * player pages need the same three, so they live here parameterised by
+ * player pages need the same three, so they live here parameterized by
  * selector rather than copied.
  *
  * Everything here obeys the same contract as the bundles that call it: the page
  * is COMPLETE before any of this runs. Nothing fetches, nothing renders, and
- * every behaviour below degrades to the markup the server already sent.
+ * every behavior below degrades to the markup the server already sent.
  *
  * client/team.ts still carries its own copies. It predates this module and is
  * shipped; folding it in is a worthwhile follow-up, not something to do in the
@@ -29,7 +29,7 @@ export interface TabOptions {
    * The dataset key naming the panel, e.g. "scpPanelId".
    *
    * Its presence is what tells this function the strip links to ADDRESSES
-   * rather than to anchors, and switches on the address behaviour: the URL is
+   * rather than to anchors, and switches on the address behavior: the URL is
    * pushed instead of the hash cleared, and the page's heading is rewritten
    * from the link (when `headingKey` names one). Left unset, the strip is
    * anchors and everything below behaves exactly as it did.
@@ -226,7 +226,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   /**
    * Take the hash OUT of the address bar.
    *
-   * A link INTO the page still works: fromHash() honours an arriving hash and
+   * A link INTO the page still works: fromHash() honors an arriving hash and
    * every tab link keeps its href, so a middle-click or a copied link opens on
    * the right panel. What this prevents is clicking a tab rewriting the URL of
    * the page the reader is already on - and a reader who arrived at #injury and

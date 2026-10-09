@@ -739,7 +739,7 @@ function renderSection(
   );
 }
 
-/** One driver: metric, measured value, and its rank, coloured by its score. DriverRow. */
+/** One driver: metric, measured value, and its rank, colored by its score. DriverRow. */
 function renderDriver(
   label: string,
   score: string,
@@ -762,7 +762,7 @@ function rankText(rank: { rank: number } | undefined, fallback: string): string 
   return rank ? `#${rank.rank}` : fallback;
 }
 
-/** Coloured by the rank the row shows; by the score only when it shows the score. */
+/** Colored by the rank the row shows; by the score only when it shows the score. */
 function driverTone(rank: { rank: number; poolSize: number } | undefined, score: number | null): string {
   return rank ? rankTone(rank.rank, rank.poolSize) : scoreTone(score);
 }

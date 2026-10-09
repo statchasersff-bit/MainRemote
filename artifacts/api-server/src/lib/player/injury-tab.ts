@@ -772,7 +772,7 @@ function renderMap(m: Model): string {
 
   // One overall read instead of four "Low risk" rows (mak, 2026-09-30): the
   // worst factor sets it, and each factor's evidence follows on one line; a
-  // factor that isn't low keeps its own colour there.
+  // factor that isn't low keeps its own color there.
   let factors = "";
   if (m.t.injuries > 0 && m.factors.length) {
     const rank = { good: 0, mid: 1, bad: 2 } as const;
@@ -1190,7 +1190,7 @@ export function injuryTabParts(
   const doc = loadPracticeReports(data.leagueSeason);
   const checked = m.checkedMs > 0 ? ` Status last checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}.` : "";
   const practice = doc?.updatedAt
-    ? ` Practice participation is from the league's official injury report on NFL.com, last read ${timeTag(Date.parse(doc.updatedAt), stampText(Date.parse(doc.updatedAt)))}.`
+    ? ` Practice participation is from the league's official injury report, last read ${timeTag(Date.parse(doc.updatedAt), stampText(Date.parse(doc.updatedAt)))}.`
     : "";
   const foot =
     `<footer class="scp-st-foot"><p>` +

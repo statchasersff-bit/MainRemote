@@ -12,7 +12,7 @@
  *
  * Divi's Theme Builder can render one body template across all 32 team pages,
  * and its dynamic content covers the post title and the featured image. It has
- * no notion of "this page's team colour" - so a hero that is meant to be the
+ * no notion of "this page's team color" - so a hero that is meant to be the
  * Eagles' hero rather than a generic one needs the team's own values from
  * somewhere. This file is that somewhere: the same 32 rows the API renders
  * from, exposed to Divi as CSS custom properties and a shortcode.
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Mirrors artifacts/api-server/src/lib/team/teams.ts and the TEAM_COLORS /
  * TEAM_ACCENTS maps in src/lib/render.ts - the same values the hub paints its
- * own hero with, so a Divi hero above it cannot disagree about what colour a
+ * own hero with, so a Divi hero above it cannot disagree about what color a
  * team is. If a team ever moves or rebrands, both sides change together.
  */
 const STATCHASERS_DIVI_TEAMS = array(
@@ -234,9 +234,9 @@ function statchasers_divi_fullwidth_body_class( array $classes ): array {
 add_filter( 'body_class', 'statchasers_divi_fullwidth_body_class', 20 );
 
 /**
- * The team's colours and crest, as custom properties on <body>.
+ * The team's colors and crest, as custom properties on <body>.
  *
- * This is the whole trick behind "one Divi template, 32 team-coloured heroes":
+ * This is the whole trick behind "one Divi template, 32 team-colored heroes":
  * the template's modules are given `var(--sc-team-primary)` in their custom
  * CSS fields once, and each page paints itself.
  *
@@ -263,7 +263,7 @@ add_action( 'wp_head', 'statchasers_divi_head_vars', 1 );
  *
  * Divi's own dynamic content already covers the page title and the featured
  * image; this covers what it cannot know - the division, the nickname, the
- * colours, the crest URL.
+ * colors, the crest URL.
  *
  *   [sc_team]                    Philadelphia Eagles
  *   [sc_team field="division"]   NFC East

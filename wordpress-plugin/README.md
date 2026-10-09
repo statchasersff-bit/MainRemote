@@ -637,7 +637,7 @@ it does on a hub.
 ## Fantasy Points Allowed - `[statchasers_fpa]`
 
 One page, at `/nfl/fantasy-points-allowed-by-position/`. It mounts the table
-the API serves at `/fpa`: how many fantasy points each of the 32 defences gives
+the API serves at `/fpa`: how many fantasy points each of the 32 defenses gives
 up per game to QBs, RBs, WRs and TEs, with ranks, three scoring formats, raw
 and schedule-adjusted views, and a CSV export.
 
@@ -721,12 +721,12 @@ The table's own format and view controls are ordinary links. Left unset they
 point at the API's own `/fpa`, so a reader changing scoring format inside your
 page would leave the site for the bare tool.
 
-`SC_TEAM_PATH_PREFIX` matters here too: every row's defence name links to that
+`SC_TEAM_PATH_PREFIX` matters here too: every row's defense name links to that
 team's hub.
 
-### What the colours mean
+### What the colors mean
 
-The cells are tinted on a **diverging** scale - rank 1 is the softest defence,
+The cells are tinted on a **diverging** scale - rank 1 is the softest defense,
 rank 32 the toughest, league average in the middle - so it takes two hues either
 side of a neutral rather than one ramp. Blue is the exploitable pole, red the
 one to avoid. Every tinted cell also prints its rank, so the tint is a second
@@ -989,17 +989,17 @@ player page. A player the API's dictionary cannot place - a free agent, usually
 - keeps his row and his rank and is rendered as plain text rather than as a link
 to a page that does not exist.
 
-### What the colours mean
+### What the colors mean
 
 The all-positions board tints each cell by tier. That scale is **nominal**, not
 ordered: tier 3 is not "more" than tier 2, it is a different group, so it is
 seven distinct hues held at one lightness rather than a ramp. Every tint sits at
 about 95% lightness, which keeps the player's name at full contrast against it -
-the colour is doing grouping work only.
+the color is doing grouping work only.
 
-Colour is never the only encoding. Every tinted cell's row prints its rank, and
+Color is never the only encoding. Every tinted cell's row prints its rank, and
 the per-position tables print the tier in a column of its own, so nothing is
-lost to a colour-blind reader or to a monochrome print.
+lost to a color-blind reader or to a monochrome print.
 
 ## NFL schedule - `[statchasers_schedule]`
 
@@ -1399,7 +1399,7 @@ workarounds are gone: nothing breaks if WP Rocket / Perfmatters / LiteSpeed
 delay JavaScript. The tool's content is in the HTML, so a delayed bundle only
 delays pagination and relative timestamps - never the news itself.
 
-Do **not** exclude the stylesheet from optimisation and then also defer it; the
+Do **not** exclude the stylesheet from optimization and then also defer it; the
 markup ships styled-by-stylesheet and will flash unstyled if the CSS is pushed
 to the footer.
 

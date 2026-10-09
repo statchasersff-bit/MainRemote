@@ -1,21 +1,27 @@
 <?php
 /**
- * Server-side route detection for the depth-chart tool.
+ * The depth-chart tool has one address: the page the shortcode sits on
+ * (/nfl/nfl-depth-charts/). Filter state lives in the URL fragment, which the
+ * browser never sends and search engines never index, so the tool cannot mint
+ * a second URL.
  *
- * The rewrite rules in SCDC_Rewrite already turn
+ * Until 1.7.0 the same page also served 32 "team routes"
+ * (/nfl/nfl-depth-charts/fantasy/houston-texans/) with their own titles,
+ * canonicals and sitemap. Those competed with the team pages, which now own
+ * every team-specific address (/nfl/teams/houston-texans/depth-chart/). The
+ * rewrite rules in SCDC_Rewrite still recognise the old shapes so that this
+ * class can send them where they belong:
  *
- *   /nfl/nfl-depth-charts/{view}/{team}/{position?}/
- *
- * into the sc_view / sc_team / sc_position query vars. This class validates
- * those segments against SCDC_Teams (the only accepted values) and classifies
- * the request *before* anything renders, so SEO metadata, the H1, the intro copy
- * and the tool's initial state all read from one server-side decision.
+ *   /{view}/{team}/{position?}/   team known      -> 301 to the team's depth chart page
+ *   /{view}/ and /{view}/all-teams/{position?}/   -> 301 to the tool
+ *   ?team= / ?view= / ?position= on the tool      -> 301 likewise
+ *   anything else under the tool's path           -> 404
  *
  * Route types:
- *   none    - not the depth-chart tool at all.
- *   main    - the general all-teams landing route (/, /fantasy/, /fantasy/all-teams/…).
- *   team    - one of the 32 recognized team routes (/fantasy/houston-texans/…).
- *   invalid - the tool's path with an unrecognized view/team/position segment → 404.
+ *   none    - not the depth-chart page at all.
+ *   main    - the tool's one address.
+ *   legacy  - a pre-1.7.0 nested URL, about to be redirected.
+ *   invalid - the tool's path with an unrecognised segment -> 404.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,10 +32,13 @@ class SCDC_Route {
 
 	const TYPE_NONE    = 'none';
 	const TYPE_MAIN    = 'main';
-	const TYPE_TEAM    = 'team';
+	const TYPE_LEGACY  = 'legacy';
 	const TYPE_INVALID = 'invalid';
 
 	const DEFAULT_VIEW = 'fantasy';
+
+	/** The team pages' section that replaced the team routes. */
+	const TEAM_SECTION = 'depth-chart';
 
 	/** @var SCDC_Route|null */
 	private static $instance = null;
@@ -48,12 +57,13 @@ class SCDC_Route {
 	}
 
 	/**
-	 * Register routing hooks: invalid-slug 404s and URL normalization.
+	 * Register routing hooks: 404s for junk, 301s for the pre-1.7.0 URLs.
 	 *
 	 * @return void
 	 */
 	public function hooks() {
-		// Runs right after the main query is set up, before any output.
+		// Runs right after the main query is set up, before any output and before
+		// WordPress's own canonical redirect.
 		add_action( 'wp', array( __CLASS__, 'handle_request' ), 1 );
 	}
 
@@ -98,23 +108,27 @@ class SCDC_Route {
 		$raw_team     = sanitize_title( (string) get_query_var( 'sc_team' ) );
 		$raw_position = sanitize_title( (string) get_query_var( 'sc_position' ) );
 
-		// --- view ---
-		$views = SCDC_Teams::views();
+		// --- the one address ---
 		if ( '' === $raw_view ) {
-			$route['view'] = self::DEFAULT_VIEW; // bare /nfl/nfl-depth-charts/
-		} elseif ( isset( $views[ $raw_view ] ) ) {
-			$route['view'] = $raw_view;
-		} else {
+			$route['type']   = self::TYPE_MAIN;
+			$route['reason'] = 'tool-page';
+			self::$route     = $route;
+			return self::$route;
+		}
+
+		// --- a pre-1.7.0 nested URL: validate every segment, then redirect ---
+		$views = SCDC_Teams::views();
+		if ( ! isset( $views[ $raw_view ] ) ) {
 			$route['type']   = self::TYPE_INVALID;
 			$route['reason'] = 'unknown-view';
 			self::$route     = $route;
 			return self::$route;
 		}
+		$route['view'] = $raw_view;
 
-		// --- team ---
 		if ( '' === $raw_team || 'all-teams' === $raw_team ) {
-			$route['type']   = self::TYPE_MAIN;
-			$route['reason'] = 'general-route';
+			$route['type']   = self::TYPE_LEGACY;
+			$route['reason'] = 'legacy-view-route';
 		} else {
 			$team = SCDC_Teams::get( $raw_team );
 			if ( null === $team ) {
@@ -123,13 +137,12 @@ class SCDC_Route {
 				self::$route     = $route;
 				return self::$route;
 			}
-			$route['type']      = self::TYPE_TEAM;
+			$route['type']      = self::TYPE_LEGACY;
 			$route['team']      = $team;
 			$route['team_slug'] = $team['slug'];
-			$route['reason']    = 'team-route';
+			$route['reason']    = 'legacy-team-route';
 		}
 
-		// --- position (optional) ---
 		if ( '' !== $raw_position ) {
 			if ( in_array( $raw_position, SCDC_Teams::positions( $route['view'] ), true ) ) {
 				$route['position'] = $raw_position;
@@ -176,43 +189,31 @@ class SCDC_Route {
 		return $route['type'];
 	}
 
-	/** @return bool True on the 32 recognized team routes. */
-	public static function is_team() {
-		return self::TYPE_TEAM === self::type();
-	}
-
-	/** @return bool True on the general (all-teams) routes of the tool. */
+	/** @return bool True on the tool's one address. */
 	public static function is_main() {
 		return self::TYPE_MAIN === self::type();
 	}
 
-	/** @return bool True anywhere in the tool (team or general). */
-	public static function is_tool() {
-		return in_array( self::type(), array( self::TYPE_MAIN, self::TYPE_TEAM ), true );
+	/** @return bool True on a pre-1.7.0 nested URL (which is about to redirect). */
+	public static function is_legacy() {
+		return self::TYPE_LEGACY === self::type();
 	}
 
-	/** @return array|null The detected team row, or null. */
+	/** @return bool True anywhere under the tool's path that is not a 404. */
+	public static function is_tool() {
+		return in_array( self::type(), array( self::TYPE_MAIN, self::TYPE_LEGACY ), true );
+	}
+
+	/** @return array|null The team a legacy URL named, or null. */
 	public static function team() {
 		$route = self::get();
 		return $route['team'];
 	}
 
-	/** @return string Detected view slug. */
-	public static function view() {
-		$route = self::get();
-		return $route['view'];
-	}
-
-	/** @return string Detected position slug ('' = all positions). */
-	public static function position() {
-		$route = self::get();
-		return $route['position'];
-	}
-
 	// ---------------------------------------------------------------------- URLs
 
 	/**
-	 * Trailing-slashed base URL of the tool page, e.g.
+	 * Trailing-slashed URL of the tool page, e.g.
 	 * https://statchasers.com/nfl/nfl-depth-charts/
 	 *
 	 * @return string
@@ -222,87 +223,85 @@ class SCDC_Route {
 	}
 
 	/**
-	 * Build a tool URL from validated parts. Always lowercase, hyphenated,
-	 * trailing-slashed, no query string.
-	 *
-	 * @param string $team_slug Team slug, or '' / 'all-teams' for the general view.
-	 * @param string $view      View slug (defaults to fantasy).
-	 * @param string $position  Position slug ('' = all positions).
-	 * @return string
-	 */
-	public static function url( $team_slug = '', $view = self::DEFAULT_VIEW, $position = '' ) {
-		$views = SCDC_Teams::views();
-		$view  = isset( $views[ $view ] ) ? $view : self::DEFAULT_VIEW;
-		$url   = trailingslashit( self::base_url() ) . $view . '/';
-
-		$team_slug = strtolower( (string) $team_slug );
-		if ( '' !== $team_slug && SCDC_Teams::is_valid( $team_slug ) ) {
-			$url .= $team_slug . '/';
-		} elseif ( 'all-teams' === $team_slug ) {
-			$url .= 'all-teams/';
-		}
-
-		if ( '' !== $position && in_array( $position, SCDC_Teams::positions( $view ), true ) ) {
-			$url .= $position . '/';
-		}
-
-		return $url;
-	}
-
-	/**
-	 * Canonical URL for a team's landing page (the indexable target).
-	 *
-	 * @param string $team_slug Team slug.
-	 * @return string
-	 */
-	public static function team_url( $team_slug ) {
-		return self::url( $team_slug, self::DEFAULT_VIEW, '' );
-	}
-
-	/**
-	 * Canonical URL for the general all-teams landing page.
+	 * The tool's one indexable address. Same as base_url(); kept as its own
+	 * name so callers say what they mean.
 	 *
 	 * @return string
 	 */
 	public static function main_url() {
-		return trailingslashit( self::base_url() ) . self::DEFAULT_VIEW . '/';
+		return self::base_url();
 	}
 
 	/**
-	 * The exact URL of the current route (self URL, before canonical
-	 * consolidation). Used for trailing-slash / letter-case normalization.
+	 * Where a team's depth chart lives now: the team page's Depth Chart section
+	 * (statchasers-news/statchasers-team-pages.php), /nfl/teams/{slug}/depth-chart/.
 	 *
+	 * Built from the team-pages plugin's own constants when it is active so the
+	 * two can never disagree; the defaults match its defaults. Overridable with
+	 * the `scdc_team_page_url` filter.
+	 *
+	 * @param string $team_slug Team slug, e.g. "houston-texans".
 	 * @return string
 	 */
-	public static function self_url() {
-		$route = self::get();
-		if ( self::TYPE_TEAM === $route['type'] ) {
-			return self::url( $route['team_slug'], $route['view'], $route['position'] );
+	public static function team_page_url( $team_slug ) {
+		$base = defined( 'STATCHASERS_TEAM_PATH' ) ? trim( (string) constant( 'STATCHASERS_TEAM_PATH' ), '/' ) : 'nfl/teams';
+
+		// Section addresses can be switched off site-wide; then the hub itself is
+		// the nearest page.
+		$sections_on = function_exists( 'statchasers_team_section_urls_enabled' )
+			? (bool) statchasers_team_section_urls_enabled()
+			: true;
+
+		$path = '/' . $base . '/' . strtolower( (string) $team_slug ) . '/';
+		if ( $sections_on ) {
+			$path .= self::TEAM_SECTION . '/';
 		}
-		return self::url( '', $route['view'], $route['position'] );
+
+		return (string) apply_filters( 'scdc_team_page_url', home_url( $path ), $team_slug );
 	}
 
 	/**
-	 * The canonical URL search engines should consolidate this route onto:
-	 * team routes → that team's fantasy landing page (self-referencing for the
-	 * 32 target URLs); general/filtered routes → the main landing page.
+	 * Where the current request should go, if it is a pre-1.7.0 URL.
+	 *
+	 * @return string '' when the request is not one.
+	 */
+	public static function legacy_destination() {
+		$route = self::get();
+		if ( self::TYPE_LEGACY !== $route['type'] ) {
+			return '';
+		}
+		// /fantasy/?team=houston-texans named its team in the query string.
+		$slug = '' !== $route['team_slug'] ? $route['team_slug'] : self::query_team_slug();
+		return '' !== $slug ? self::team_page_url( $slug ) : self::main_url();
+	}
+
+	/**
+	 * A valid team slug named by a ?team= query argument, or ''.
 	 *
 	 * @return string
 	 */
-	public static function canonical_url() {
-		$route = self::get();
-		if ( self::TYPE_TEAM === $route['type'] ) {
-			return apply_filters( 'scdc_seo_team_canonical', self::team_url( $route['team_slug'] ), $route['team'] );
+	private static function query_team_slug() {
+		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+			return '';
 		}
-		return apply_filters( 'scdc_seo_main_canonical', self::main_url() );
+		$query_string = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_QUERY ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		if ( '' === $query_string ) {
+			return '';
+		}
+		$args = array();
+		wp_parse_str( $query_string, $args );
+		if ( ! isset( $args['team'] ) ) {
+			return '';
+		}
+		$candidate = sanitize_title( (string) $args['team'] );
+		return SCDC_Teams::is_valid( $candidate ) ? $candidate : '';
 	}
 
 	// ------------------------------------------------------------------ requests
 
 	/**
-	 * Invalid slugs 404; valid ones are normalized to the canonical URL shape
-	 * (lowercase + trailing slash) and to the pretty path when legacy
-	 * ?team=…/?view=… query args are used.
+	 * Junk slugs 404; the pre-1.7.0 nested URLs and the older ?team=/?view=
+	 * query arguments 301 to the page that serves that request now.
 	 *
 	 * @return void
 	 */
@@ -314,11 +313,14 @@ class SCDC_Route {
 			return;
 		}
 
-		if ( ! self::is_tool() ) {
+		if ( self::TYPE_LEGACY === $route['type'] ) {
+			self::redirect( self::legacy_destination() );
 			return;
 		}
 
-		self::maybe_redirect();
+		if ( self::TYPE_MAIN === $route['type'] ) {
+			self::maybe_redirect_query_args();
+		}
 	}
 
 	/**
@@ -339,20 +341,26 @@ class SCDC_Route {
 		nocache_headers();
 	}
 
+	/**
+	 * @param string $destination Absolute URL.
+	 * @return void
+	 */
+	private static function redirect( $destination ) {
+		if ( '' === $destination || is_customize_preview() || is_preview() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			return;
+		}
+		wp_safe_redirect( $destination, 301 );
+		exit;
+	}
 
 	/**
-	 * Fold legacy query-string filters (?team=houston-texans, ?view=offense) into
-	 * the pretty path with a 301, so only the clean URL is ever indexable.
-	 *
-	 * Trailing-slash and letter-case normalization is handled inside WordPress's
-	 * own canonical-redirect pass, in SCDC_Rewrite::block_canonical_redirect().
+	 * The oldest URL shape, ?team=houston-texans / ?view=offense on the tool page,
+	 * goes the same way as the nested one: a named team to its team page, the
+	 * rest to the tool. Unrelated query arguments are carried over.
 	 *
 	 * @return void
 	 */
-	private static function maybe_redirect() {
-		if ( is_customize_preview() || is_preview() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			return;
-		}
+	private static function maybe_redirect_query_args() {
 		if ( empty( $_SERVER['REQUEST_URI'] ) || empty( $_SERVER['REQUEST_METHOD'] ) || 'GET' !== $_SERVER['REQUEST_METHOD'] ) {
 			return;
 		}
@@ -369,42 +377,14 @@ class SCDC_Route {
 			return;
 		}
 
-		$route     = self::get();
-		$team_slug = $route['team_slug'];
-		$view      = $route['view'];
-		$position  = $route['position'];
+		$slug        = self::query_team_slug();
+		$destination = '' !== $slug ? self::team_page_url( $slug ) : self::main_url();
+		unset( $args['team'], $args['view'], $args['position'] );
 
-		if ( isset( $args['team'] ) ) {
-			$candidate = sanitize_title( (string) $args['team'] );
-			if ( SCDC_Teams::is_valid( $candidate ) ) {
-				$team_slug = $candidate;
-				$position  = '';
-			}
-			unset( $args['team'] );
-		}
-		if ( isset( $args['view'] ) ) {
-			$candidate = sanitize_title( (string) $args['view'] );
-			$views     = SCDC_Teams::views();
-			if ( isset( $views[ $candidate ] ) ) {
-				$view     = $candidate;
-				$position = '';
-			}
-			unset( $args['view'] );
-		}
-		if ( isset( $args['position'] ) ) {
-			$candidate = sanitize_title( (string) $args['position'] );
-			if ( in_array( $candidate, SCDC_Teams::positions( $view ), true ) ) {
-				$position = $candidate;
-			}
-			unset( $args['position'] );
-		}
-
-		$destination = self::url( $team_slug, $view, $position );
 		if ( ! empty( $args ) ) {
 			$destination = add_query_arg( $args, $destination );
 		}
 
-		wp_safe_redirect( $destination, 301 );
-		exit;
+		self::redirect( $destination );
 	}
 }

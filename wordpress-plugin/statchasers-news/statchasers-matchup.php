@@ -1135,7 +1135,7 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
  * holder's crumb is taken out, and the pair is appended in its place, then the
  * game on a dated address: Home › NFL › Patriots vs Eagles › Week 1 2026.
  *
- * The holder is recognised by its address rather than by position, because
+ * The holder is recognized by its address rather than by position, because
  * which crumbs Rank Math prints (a Home label, the ancestors) is a setting.
  * Only on a canonical pair: the reversed spelling and a bad game segment have
  * already left through the 301 and 404 in template_redirect.

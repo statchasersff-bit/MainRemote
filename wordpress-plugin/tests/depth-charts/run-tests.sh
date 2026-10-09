@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Route + SEO sweep. Runs the plugin's routing/SEO code against WordPress stubs
-# and prints what each URL would return, then runs the assertions in checks.php
-# (the only part that can fail). Uses php on PATH, else the Nix store's.
+# Route sweep. Runs the plugin's routing code against WordPress stubs and
+# prints what each URL would return (the tool page, a 301 to where a pre-1.7.0
+# URL lives now, or a 404), then runs the assertions in checks.php (the only
+# part that can fail). Uses php on PATH, else the Nix store's.
 set -u
 cd "$(dirname "$0")"
 
@@ -20,7 +21,6 @@ urls=(
   "/nfl/nfl-depth-charts/bogus-view/houston-texans/"
   "/nfl/nfl-depth-charts/fantasy/Houston-Texans"
   "/nfl/nfl-depth-charts/fantasy/?team=houston-texans"
-  "/nfl-depth-charts-sitemap.xml"
 )
 
 for url in "${urls[@]}"; do
@@ -28,9 +28,5 @@ for url in "${urls[@]}"; do
   echo
 done
 
-echo "=== H1 resolution across theme/Divi layouts ==="
-php h1-test.php
-
-echo
 echo "=== Assertions ==="
 php checks.php

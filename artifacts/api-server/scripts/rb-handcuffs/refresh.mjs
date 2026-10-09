@@ -70,10 +70,10 @@ function parseOurladsName(raw) {
   return `${first.join(" ")} ${last}`.trim().split(/\s+/).map(recaseToken).join(" ");
 }
 
-/** One back known by two names. The engine's NAME_ALIASES, keyed normalised. */
+/** One back known by two names. The engine's NAME_ALIASES, keyed normalized. */
 const NAME_ALIASES = { "bam knight": "zonovan knight" };
 
-/** The same normalisation the engine matches names with. */
+/** The same normalization the engine matches names with. */
 export function normalizeName(name) {
   const key = String(name)
     .toLowerCase()

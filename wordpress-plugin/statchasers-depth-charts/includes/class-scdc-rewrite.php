@@ -1,16 +1,17 @@
 <?php
 /**
- * Pretty-URL routing for the depth charts page.
+ * Rewrite rules for the depth charts page.
  *
- * The page lives at /nfl/nfl-depth-charts/ and accepts nested filter segments:
+ * The tool has one address, /nfl/nfl-depth-charts/. Until 1.7.0 it also
+ * answered nested filter URLs:
  *
  *   /nfl/nfl-depth-charts/{view}/{team}/{position?}/
  *
- * e.g. /nfl/nfl-depth-charts/fantasy/buffalo-bills/rb/
- *
- * Rewrite rules map those segments to the query vars sc_view / sc_team /
- * sc_position and route the request back to the real page (via `pagename`), so
- * nested URLs render the page + shortcode instead of 404ing.
+ * Those are still recognised - the rules below map the segments to the query
+ * vars sc_view / sc_team / sc_position and route the request to the real page
+ * via `pagename` - but only so that SCDC_Route can 301 them to the page that
+ * serves the request now (a team's own page, or the tool). Nothing links to
+ * them any more.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -51,12 +52,13 @@ class SCDC_Rewrite {
 	public function hooks() {
 		add_action( 'init', array( __CLASS__, 'add_rules' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'add_query_vars' ) );
-		// Stop WordPress from "correcting" our nested URLs back to the bare page.
-		add_filter( 'redirect_canonical', array( __CLASS__, 'block_canonical_redirect' ) );
+		// WordPress's own canonical redirect is left alone: SCDC_Route sends the
+		// nested URLs on their way at `wp`, before it runs.
 	}
 
 	/**
-	 * Register the rewrite rules for the nested filter segments.
+	 * Register the rewrite rules for the pre-1.7.0 nested segments, so those
+	 * URLs reach SCDC_Route instead of 404ing.
 	 *
 	 * @return void
 	 */
@@ -95,37 +97,6 @@ class SCDC_Rewrite {
 		$vars[] = 'sc_team';
 		$vars[] = 'sc_position';
 		return $vars;
-	}
-
-	/**
-	 * WordPress's canonical redirect would strip our filter segments and bounce
-	 * nested URLs back to /nfl/nfl-depth-charts/, so it is disabled there - except
-	 * for the two normalizations we *do* want: a missing trailing slash and an
-	 * uppercase slug both 301 to the route's own clean URL.
-	 *
-	 * @param string|false $redirect_url Proposed canonical URL.
-	 * @return string|false
-	 */
-	public static function block_canonical_redirect( $redirect_url ) {
-		if ( '' === (string) get_query_var( 'sc_view' ) ) {
-			return $redirect_url;
-		}
-
-		if ( class_exists( 'SCDC_Route' ) && SCDC_Route::is_tool() && ! empty( $_SERVER['REQUEST_URI'] ) ) {
-			$self         = SCDC_Route::self_url();
-			$self_path    = (string) wp_parse_url( $self, PHP_URL_PATH );
-			$request_path = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-
-			$differs_only_in_shape = '' !== $self_path
-				&& $request_path !== $self_path
-				&& 0 === strcasecmp( untrailingslashit( $request_path ), untrailingslashit( $self_path ) );
-
-			if ( $differs_only_in_shape ) {
-				return $self;
-			}
-		}
-
-		return false;
 	}
 
 	/**

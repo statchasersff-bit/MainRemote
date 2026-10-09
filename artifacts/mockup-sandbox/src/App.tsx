@@ -30,7 +30,7 @@ function PreviewRenderer({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
 
     setComponent(null);
     setError(null);
@@ -45,7 +45,7 @@ function PreviewRenderer({
 
       try {
         const mod = await loader();
-        if (cancelled) {
+        if (canceled) {
           return;
         }
         const name = componentPath.split("/").pop()!;
@@ -58,7 +58,7 @@ function PreviewRenderer({
         }
         setComponent(() => comp);
       } catch (e) {
-        if (cancelled) {
+        if (canceled) {
           return;
         }
 
@@ -70,7 +70,7 @@ function PreviewRenderer({
     void loadComponent();
 
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [componentPath, modules]);
 

@@ -154,7 +154,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     }
   });
 
-  test("the turnovers bar favours the side with fewer turnovers", () => {
+  test("the turnovers bar favors the side with fewer turnovers", () => {
     const bars = [...doc.querySelectorAll("tr.sct-rb-barrow")];
     const turnovers = bars[1].querySelector(".sct-rb-bar-away").getAttribute("style");
     assert.equal(turnovers, "width:0%", "Arizona's two turnovers get none of the bar");
@@ -328,7 +328,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     ]);
   });
 
-  test("related pages: a labelled nav with four descriptive pills", () => {
+  test("related pages: a labeled nav with four descriptive pills", () => {
     const nav = doc.querySelector('nav[aria-label="Related pages"]');
     assert.deepEqual([...nav.querySelectorAll("a")].map(text), [
       "Arizona Cardinals hub",

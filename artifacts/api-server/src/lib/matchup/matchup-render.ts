@@ -146,7 +146,7 @@ import {
   type FaqScorer,
   type RecapBodyInput,
 } from "./recap-body";
-import { headshotUrl } from "../team/roster";
+import { headshotImg } from "../headshot-html";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
 import type { ScheduleGame } from "../team/schedule";
 import type { TeamPageData } from "../team/team-data";
@@ -506,7 +506,7 @@ const playersCache = new WeakMap<MatchupData, GamePlayers>();
 
 /**
  * Everyone with a line in the featured game: ESPN's box score, or the
- * Sleeper logs when it has no player block. Memoised per page data, because
+ * Sleeper logs when it has no player block. Memoized per page data, because
  * the recap's links, the leaders strip and the scoring summary all ask.
  */
 function gamePlayers(data: MatchupData): GamePlayers {
@@ -978,7 +978,7 @@ function startSitCompareFor(a: string, b: string): string | null {
 
 const fantasyCache = new WeakMap<MatchupData, FantasySectionInput | null>();
 
-/** The fantasy section's input, memoised: the section, the game logs and the FAQ all read it. */
+/** The fantasy section's input, memoized: the section, the game logs and the FAQ all read it. */
 function fantasyInput(data: MatchupData): FantasySectionInput | null {
   if (fantasyCache.has(data)) return fantasyCache.get(data)!;
   const meeting = data.featured;
@@ -1499,12 +1499,12 @@ function compareCaption(
 }
 
 /**
- * "QB · SEA", with the position carrying its own colour.
+ * "QB · SEA", with the position carrying its own color.
  *
- * The four skill positions are colour-coded across the whole site - the depth
+ * The four skill positions are color-coded across the whole site - the depth
  * chart's slot chips and the outlook cards use the same four inks, and they are
  * tokens rather than literals so a page cannot drift from the others. Split
- * into its own element because only the POSITION is coloured: the team code
+ * into its own element because only the POSITION is colored: the team code
  * beside it stays muted, or a row of these becomes a row of two-tone text with
  * no hierarchy in it.
  *
@@ -1540,12 +1540,10 @@ function positionTag(
  * disc rather than a broken-image glyph.
  */
 function playerPhoto(playerId: string, className: string, size: number): string {
-  return (
-    `<span class="${className}" aria-hidden="true">` +
-    `<img src="${escapeHtml(headshotUrl(playerId))}" alt=""` +
-    ` width="${size}" height="${size}" loading="lazy" decoding="async" />` +
-    `</span>`
-  );
+  // The locally served derivative, never the CDN the original came from.
+  const img =
+    headshotImg({ src: null, id: playerId, className: "sct-mu-ps-img", alt: "", variants: ["160"], width: size, height: size, loading: "lazy" }) ?? "";
+  return `<span class="${className}" aria-hidden="true">${img}</span>`;
 }
 
 /**
@@ -2364,20 +2362,20 @@ function usagePercent(share: number | null): string {
 /** The ring's geometry, in the user units of its own 120-square viewBox. */
 const USAGE_RING_RADIUS = 42;
 const USAGE_RING_LENGTH = 2 * Math.PI * USAGE_RING_RADIUS;
-/** The hairline of white between two neighbouring slices. */
+/** The hairline of white between two neighboring slices. */
 const USAGE_SLICE_GAP = 2;
 
-/** The pooled tail. Grey on purpose: "Other" is not a player and must not read as one. */
+/** The pooled tail. Gray on purpose: "Other" is not a player and must not read as one. */
 const USAGE_INK_OTHER = "#c2c8d2";
 
 /**
  * One team's ink, a step lighter per slice.
  *
- * Six unrelated saturated colours in a 90px ring is a pie chart from a
+ * Six unrelated saturated colors in a 90px ring is a pie chart from a
  * spreadsheet. The slices of one team are one hue instead, separated by
  * lightness, and the legend beside them carries the name and the percentage -
- * so the colour is what groups the ring to its team, not what carries the
- * meaning. Nothing here is legible only in colour.
+ * so the color is what groups the ring to its team, not what carries the
+ * meaning. Nothing here is legible only in color.
  *
  * A pale ink - Green Bay's yellow, Cincinnati's orange - is darkened toward the
  * page's navy before the ramp starts, because five steps lighter than #FFB612
@@ -2669,7 +2667,7 @@ function renderUsage(data: MatchupData): string {
     rows,
   );
 
-  // One colour per team for the whole page, the same resolution the Snapshot
+  // One color per team for the whole page, the same resolution the Snapshot
   // and the Fantasy Matchups table use, so a reader learns the pair's two inks
   // once and carries them down.
   const color = matchupColors(data.pair);
@@ -2772,14 +2770,14 @@ function renderWatch(data: MatchupData): string {
 /**
  * The Snapshot's rows: one team down each side, the metric between them.
  *
- * This used to be three tables - both offences, then each offence against the
- * other defence - which printed the same nine figures twice under captions a
+ * This used to be three tables - both offenses, then each offense against the
+ * other defense - which printed the same nine figures twice under captions a
  * reader had to parse ("Patriots offense vs Seahawks defense") before any of
  * the numbers meant anything. One team per column says the same thing in a
  * sixth of the space: the left column IS the Patriots, all the way down.
  *
  * Both halves of the ladder are here rather than only the offensive one,
- * because "scores 24, allows 17" is the shape of a team and two offence rows
+ * because "scores 24, allows 17" is the shape of a team and two offense rows
  * alone are half a scouting report. The labels are written out here instead of
  * taken from the metric: the Stats tab calls both rows "Points/G" and relies on
  * an Offense/Defense heading above them, which this table does not have.
@@ -2799,7 +2797,7 @@ const SNAPSHOT_ROWS: ReadonlyArray<{ key: string; label: string; description: st
  * The record as a row of the table.
  *
  * Not a ranked metric and not pretending to be: no rank chip, no bar, and
- * `volume` so the renderer gives it no tier colour either. It leads the table
+ * `volume` so the renderer gives it no tier color either. It leads the table
  * because it is the first thing anyone wants from two team names.
  */
 function recordRow(side: TeamPageData): StatRow | null {
@@ -2831,9 +2829,9 @@ function findRow(stats: TeamStats | null, key: string): StatRow | null {
  * How full this side's bar is: 1st fills it, 32nd barely registers.
  *
  * Rank rather than the raw figure, because the raw figures are not comparable.
- * Two of these rows put an offence beside a defence, where 20 points scored and
+ * Two of these rows put an offense beside a defense, where 20 points scored and
  * 20 allowed are the same number meaning opposite things, and a bar drawn from
- * the values would show the better defence as the shorter bar. Rank already has
+ * the values would show the better defense as the shorter bar. Rank already has
  * the direction folded in - 1st is the best of the thirty-two either way - so a
  * bar drawn from it reads the same on every row.
  *
@@ -2862,7 +2860,7 @@ function cell(row: StatRow | null, side: "a" | "b"): string {
       : "") +
     `</span>` +
     // Decorative: the rank beside it is the same fact in words, and a screen
-    // reader reading "83 percent" for a 6th-place defence would be inventing a
+    // reader reading "83 percent" for a 6th-place defense would be inventing a
     // number the page never claims.
     (pct === null
       ? ""
@@ -2873,9 +2871,9 @@ function cell(row: StatRow | null, side: "a" | "b"): string {
   );
 }
 
-/* ----------------------------------------------------------------- colour */
+/* ----------------------------------------------------------------- color */
 
-/** A hex colour as three channels. Anything unparseable reads as black. */
+/** A hex color as three channels. Anything unparseable reads as black. */
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.trim().replace(/^#/, "");
   const n = Number.parseInt(
@@ -2903,21 +2901,21 @@ function luminance(hex: string): number {
 }
 
 /**
- * Two colours a reader can tell apart, for the two sides of a comparison.
+ * Two colors a reader can tell apart, for the two sides of a comparison.
  *
  * Several pairings share a primary. The Patriots and the Seahawks are both
  * #002244, and the Raiders, Saints and Steelers all wear the same near-black,
  * so a bar keyed straight to `primaryColor` would draw both sides of those
- * pages in one colour and the comparison would lose the only thing the colour
+ * pages in one color and the comparison would lose the only thing the color
  * was there to carry.
  *
- * The right-hand side falls back to its own accent, which is the colour that
+ * The right-hand side falls back to its own accent, which is the color that
  * actually distinguishes it - Seattle's green against New England's navy, which
- * is the pair a reader expects anyway - and to a neutral grey in the case where
- * that clashes too, rather than to a third team's colour.
+ * is the pair a reader expects anyway - and to a neutral gray in the case where
+ * that clashes too, rather than to a third team's color.
  *
  * Compared with a small distance rather than for equality: #101820 and #0B162A
- * are not the same value and are the same colour to the eye.
+ * are not the same value and are the same color to the eye.
  */
 function pairColors(a: NflTeam, b: NflTeam): [string, string] {
   const tooClose = (x: string, y: string): boolean => {
@@ -2935,11 +2933,11 @@ function pairColors(a: NflTeam, b: NflTeam): [string, string] {
 }
 
 /**
- * One colour per team, fixed for the whole page.
+ * One color per team, fixed for the whole page.
  *
- * Resolved from the pair once rather than per table. Deciding the colours
+ * Resolved from the pair once rather than per table. Deciding the colors
  * inside each table made Seattle green in one and navy in the next - the reader
- * has to be able to learn a colour once and carry it down the page, past the
+ * has to be able to learn a color once and carry it down the page, past the
  * Snapshot and into the Fantasy Matchups table under it.
  */
 function matchupColors(pair: MatchupData["pair"]): (team: NflTeam) => string {
@@ -2950,7 +2948,7 @@ function matchupColors(pair: MatchupData["pair"]): (team: NflTeam) => string {
 /**
  * The two sides in the hero's order: the featured game's away team on the
  * left, its home team on the right, as the scoreboard reads. The pair's own
- * (alphabetical) order only when there is no game to read sides from. Colours
+ * (alphabetical) order only when there is no game to read sides from. Colors
  * stay keyed to the team, not the column - see matchupColors().
  */
 function sides(data: MatchupData): {
@@ -2990,10 +2988,10 @@ function sides(data: MatchupData): {
  * screen reader moving cell by cell still needs to hear which side it is on -
  * what came off the page is the repetition, not the information.
  *
- * `left.team`/`right.team` colour the bars and follow the TEAM rather than the
+ * `left.team`/`right.team` color the bars and follow the TEAM rather than the
  * column. The Snapshot puts one team in each column so the two agree there, but
- * the Fantasy block below compares the two defences and reuses this, so the
- * colour has to be resolved from the team either way.
+ * the Fantasy block below compares the two defenses and reuses this, so the
+ * color has to be resolved from the team either way.
  */
 function compareTable(
   caption: string,
@@ -3062,7 +3060,7 @@ function renderSnapshot(data: MatchupData): string {
   const sb = rightPage.stats;
   if (!sa && !sb) return "";
 
-  // One colour per team for the whole page, so a reader learns it once.
+  // One color per team for the whole page, so a reader learns it once.
   const color = matchupColors(data.pair);
 
   const body = compareTable(
@@ -3113,7 +3111,7 @@ function formatWord(format: string): string {
  * deliberate rather than an oversight: there, a full bar is a better unit;
  * here, a full bar is a softer defense, because a soft defense is the good news
  * on a fantasy page. The note under the block says so in words, and each side
- * is labelled "<team> defense" so neither bar can be read as an offense's.
+ * is labeled "<team> defense" so neither bar can be read as an offense's.
  */
 function renderFantasy(data: MatchupData): string {
   if (!describesNow(data)) return "";
@@ -3320,9 +3318,9 @@ function renderInjuries(data: MatchupData): string {
 /**
  * One past meeting, written the way a result is written.
  *
- * "2024 · SEA 23 - NE 20", winner first and emphasised, rather than a fixture
+ * "2024 · SEA 23 - NE 20", winner first and emphasized, rather than a fixture
  * line and a verdict in separate columns at the same weight. The loser is still
- * at full opacity - this is a result, not a ranking, and greying a team out
+ * at full opacity - this is a result, not a ranking, and graying a team out
  * reads as missing data.
  */
 function meetingRow(
@@ -3526,11 +3524,11 @@ function contrast(a: string, b: string): number {
   return (hi! + 0.05) / (lo! + 0.05);
 }
 
-/** The dark-mode card, which a team's text colour has to read against. */
+/** The dark-mode card, which a team's text color has to read against. */
 const DARK_CARD = "#12213a";
 
 /**
- * A team colour lightened until it passes AA as text on the dark card: the
+ * A team color lightened until it passes AA as text on the dark card: the
  * build spec's "dark variant" (Rams #003594 → a light blue).
  */
 export function darkInk(hex: string): string {
@@ -3542,9 +3540,9 @@ export function darkInk(hex: string): string {
 }
 
 /**
- * A recap fragment with each team's TEXT colour routed through a custom
+ * A recap fragment with each team's TEXT color routed through a custom
  * property, so the dark theme can swap in the lighter variant. Fills under
- * white text (chips, tiles) keep their colour in both themes.
+ * white text (chips, tiles) keep their color in both themes.
  */
 function themeInks(html: string, game: ScoreboardGame): { html: string; style: string[] } {
   const colors = heroPairColors(game.away.abbr, game.home.abbr);
@@ -3568,7 +3566,7 @@ function themeInks(html: string, game: ScoreboardGame): { html: string; style: s
  * headline keeps its sentence case.
  */
 function sectionTitleCase(html: string): string {
-  // titleCase() capitalises the first letter of a word, which for "(through"
+  // titleCase() capitalizes the first letter of a word, which for "(through"
   // is the bracket; "(Through Week 3)" is the title-case form.
   const cased = (text: string): string => titleCase(text).replace(/\(([a-z])/g, (_, c: string) => `(${c.toUpperCase()}`);
   const titles = (part: string): string =>

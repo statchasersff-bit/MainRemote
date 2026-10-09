@@ -41,6 +41,7 @@ import {
   computeRoleScoreCurrent,
   detectCommittee,
   getHandcuffBadge,
+  nearestHandcuffBadge,
   getRiskFlags,
   getTopReasons,
   touchesToWorkloadScore,
@@ -518,7 +519,9 @@ function rankAndFinish(scored: Scored[], curation: Curation, weights: HandcuffWe
     const c = curatedFor(curation, p.playerName);
     const forced = samePairing(c, p.starterName) ? c?.handcuffType : undefined;
     p.handcuffType =
-      forced ?? getHandcuffBadge(p.playerQualityRank, p.pathToOpportunityRank, p.contingentUpsideRank, poolSize);
+      forced ??
+      (getHandcuffBadge(p.playerQualityRank, p.pathToOpportunityRank, p.contingentUpsideRank, poolSize) ||
+        nearestHandcuffBadge(p.playerQualityRank, p.pathToOpportunityRank, p.contingentUpsideRank, poolSize));
   }
 
   // Every displayed score as a percentile of the pool (mean rank). Monotonic,

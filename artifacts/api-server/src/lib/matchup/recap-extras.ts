@@ -386,7 +386,7 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
       .join("") +
     `</dl>`;
 
-  // Implied team totals: the favourite (total + spread) / 2, the underdog the rest.
+  // Implied team totals: the favorite (total + spread) / 2, the underdog the rest.
   const implied: Record<"away" | "home", number> = fav
     ? {
         [fav]: (odds.total + odds.line) / 2,
@@ -494,7 +494,7 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
     `<p class="sct-rb-note sct-bet-take">${takeaway}</p>` +
     trends +
     `<div class="sct-bet-fine">` +
-    `<p>Lines: ESPN's consensus, captured at kickoff. Individual sportsbooks varied.</p>` +
+    `<p>Lines: the consensus captured at kickoff. Individual sportsbooks varied.</p>` +
     `<p>21+. Gambling problem? Call 1-800-GAMBLER. Betting availability depends on your state.</p>` +
     `</div>` +
     `</section>`

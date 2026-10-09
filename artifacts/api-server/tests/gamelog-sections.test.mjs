@@ -308,9 +308,9 @@ describe("ten or more games", () => {
   const doc = dom(mod.renderLadderSection(games, { ...SEASON, seasonRank: 8 }));
 
   test("only the best and worst weeks keep labels", () => {
-    const labelled = [...doc.querySelectorAll(".scp-gl-pin:not(.is-nolabel)")];
-    assert.equal(labelled.length, 2);
-    const texts = labelled.map((p) => p.querySelector("strong").textContent).sort();
+    const labeled = [...doc.querySelectorAll(".scp-gl-pin:not(.is-nolabel)")];
+    assert.equal(labeled.length, 2);
+    const texts = labeled.map((p) => p.querySelector("strong").textContent).sort();
     assert.deepEqual(texts, ["QB12", "QB3"]);
   });
 
@@ -322,7 +322,7 @@ describe("ten or more games", () => {
 });
 
 describe("edges", () => {
-  test("a single game gets the one-game lede and one labelled pin", () => {
+  test("a single game gets the one-game lede and one labeled pin", () => {
     const doc = dom(
       mod.renderLadderSection([game({ week: 1, rank: 4, pts: 25 })], SEASON),
     );
@@ -399,7 +399,7 @@ describe("edges", () => {
   });
 });
 
-/* ----------------------------------------------- second-half deficit maths */
+/* ----------------------------------------------- second-half deficit math */
 
 describe("trailing by 10 in the second half", () => {
   const td = (team, quarter) => ({

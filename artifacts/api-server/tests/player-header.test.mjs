@@ -279,7 +279,7 @@ describe("player header", () => {
     assert.equal(owned(100), "100%");
   });
 
-  test("a light club colour is replaced by one white text can sit on", () => {
+  test("a light club color is replaced by one white text can sit on", () => {
     const luminance = (hex) => {
       const n = Number.parseInt(hex.slice(1), 16);
       const c = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);

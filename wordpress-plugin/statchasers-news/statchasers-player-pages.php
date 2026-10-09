@@ -307,7 +307,7 @@ function statchasers_player_page_status( bool $fresh = false ): array {
  *
  * Not statchasers_player_page_status()'s list, which counts drafts too - right
  * for "does the builder need to write this one", wrong for "will this link
- * 404". Memoised for the request; a page renders a few hundred player links.
+ * 404". Memoized for the request; a page renders a few hundred player links.
  *
  * @return array<string,true> post_name => true. Empty when there is no container.
  */
@@ -690,10 +690,10 @@ const STATCHASERS_PLAYER_INDEX_LEAD = 'Fantasy football profiles for every roste
  * shipped looking nothing like the profiles it points at. The shortcode
  * replaces it.
  *
- * Recognised by its own lead sentence plus a wall of links to the player path
+ * Recognized by its own lead sentence plus a wall of links to the player path
  * and no shortcode of any kind. Nobody's hand-written page looks like that,
  * which is what makes replacing it safe: anything we do not positively
- * recognise is left alone, because an index somebody has edited is theirs.
+ * recognize is left alone, because an index somebody has edited is theirs.
  *
  * @param string $content Page body.
  */
@@ -839,7 +839,7 @@ function statchasers_player_old_slug_redirect(): void {
 /**
  * The profile page that used to answer at this slug, or 0.
  *
- * @param string $slug A sanitised slug.
+ * @param string $slug A sanitized slug.
  * @return int
  */
 function statchasers_player_page_by_old_slug( string $slug ): int {
@@ -872,7 +872,7 @@ function statchasers_player_page_by_old_slug( string $slug ): int {
 /**
  * The profile page for a slug, current or former, or 0.
  *
- * @param string $slug A sanitised slug.
+ * @param string $slug A sanitized slug.
  * @return int
  */
 function statchasers_player_page_for_slug( string $slug ): int {

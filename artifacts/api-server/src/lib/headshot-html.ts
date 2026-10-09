@@ -11,7 +11,7 @@
  * background so the next render has it. A player Sleeper has no photo for
  * prints nothing, so each caller can draw its own empty well. The same for
  * an ESPN headshot (the depth charts) and a club's editorial art (the club
- * feeds): anything imageKeyFor() recognises. An image from any other host is
+ * feeds): anything imageKeyFor() recognizes. An image from any other host is
  * printed as the data supplied it.
  */
 

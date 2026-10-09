@@ -9,7 +9,7 @@
  *   - the descriptive User-Agent on every request;
  *   - conditional requests: the last ETag / Last-Modified is kept in the raw
  *     cache and sent back, and a 304 is served from the cached body;
- *   - retries on 429 and 5xx that honour Retry-After, else exponential backoff
+ *   - retries on 429 and 5xx that honor Retry-After, else exponential backoff
  *     with jitter (1s, 2s, 4s ... capped at 5 minutes), up to 6 attempts;
  *   - a circuit breaker: 3 consecutive 429s or 403s trips the source for 30
  *     minutes. Every later call throws `SourcePaused` at once, so a run moves
@@ -157,7 +157,7 @@ export function politeClient(name, { minGapMs, fetchImpl = globalThis.fetch, now
 
   return {
     name,
-    /** Serialised: a second call waits for the first, so the source sees one at a time. */
+    /** Serialized: a second call waits for the first, so the source sees one at a time. */
     fetch(url, init = {}) {
       const run = queue.then(() => once(url, init));
       queue = run.catch(() => {});

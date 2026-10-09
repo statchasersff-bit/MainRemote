@@ -9,7 +9,7 @@
  * Kept as ESPN's own shape rather than as the parsed box score, so the page
  * still runs its parser over the stored copy. A parser fix then reaches every
  * stored game without a rebuild, and the team objects the parser attaches
- * (names, colours) come from the current team table, not from the day the game
+ * (names, colors) come from the current team table, not from the day the game
  * was saved.
  *
  * THE CONTRACT. `SHAPE` mirrors the `EspnSummary` interface in boxscore.ts and

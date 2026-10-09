@@ -268,7 +268,7 @@ function statchasers_sos_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out in
  * statchasers-team.php: Divi swaps the global post while rendering a Theme
- * Builder layout. Memoised for the same reason too.
+ * Builder layout. Memoized for the same reason too.
  */
 function statchasers_sos_post_has_shortcode(): bool {
 	static $answer = null;
@@ -427,7 +427,7 @@ add_shortcode( STATCHASERS_SOS_SHORTCODE, 'statchasers_sos_shortcode' );
 /* -------------------------------------------------- titles and headings */
 
 /**
- * The fetch this request's page prints, memoised: what the title filters and
+ * The fetch this request's page prints, memoized: what the title filters and
  * the H1 read. The same view the shortcode resolves with no attributes, so on a
  * page whose shortcode carries none it is the same cached transient.
  *

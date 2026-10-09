@@ -98,7 +98,7 @@ DYNASTY_NEWS_API_URL = https://dynasty-command.replit.app/api/news/nfl,https://a
 ```
 
 Keep `api.statchasers.com` **last**. The list is tried in order, so if the direct
-route ever breaks you degrade to the old behaviour instead of going dark.
+route ever breaks you degrade to the old behavior instead of going dark.
 `.replit`'s `[userenv.shared]` carries the same value, but that configures the
 workspace only.
 
@@ -131,7 +131,7 @@ node artifacts/api-server/scripts/ingest.mjs
 
 Setting `FEED_URL` is what switches the script into push mode: it reads the feed
 itself and posts the items. Without it, it just asks the server to pull (the old
-behaviour).
+behavior).
 
 - [ ] Make it automatic - point a **Replit Scheduled Deployment** at that command
       every 10 minutes, with the same three environment variables
@@ -366,7 +366,7 @@ DYNASTY_NEWS_API_URL = https://dynasty-command.replit.app/api/news/nfl,https://a
 ```
 
 Keep `api.statchasers.com` **last**. The list is tried in order, so if the direct
-route ever breaks you degrade to the old behaviour instead of going dark.
+route ever breaks you degrade to the old behavior instead of going dark.
 `.replit`'s `[userenv.shared]` carries the same value, but that configures the
 workspace only.
 
@@ -399,7 +399,7 @@ node artifacts/api-server/scripts/ingest.mjs
 
 Setting `FEED_URL` is what switches the script into push mode: it reads the feed
 itself and posts the items. Without it, it just asks the server to pull (the old
-behaviour).
+behavior).
 
 - [ ] Make it automatic - point a **Replit Scheduled Deployment** at that command
       every 10 minutes, with the same three environment variables

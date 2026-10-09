@@ -99,7 +99,7 @@ async function dropCaches(): Promise<void> {
     const { invalidateMatchupRenderCache } = await import("../matchup/matchup-ssr");
     invalidateMatchupRenderCache();
 
-    // The memoised table behind the player pages' fixtures, and the rendered
+    // The memoized table behind the player pages' fixtures, and the rendered
     // player fragments built from it. The memo alone is not enough: it has a
     // ten-minute window, but a player fragment is held until its own version
     // moves, and the FPA figures are not part of that version.

@@ -563,8 +563,19 @@ export interface RenderListOptions {
  */
 export function itemsSignature(items: NewsItem[]): string {
   return items
-    .map((item) => `${item.id}:${item.pubDateMs ?? 0}:${item.summary ? 1 : 0}`)
+    .map((item) => `${sigHash(item.id)}:${item.pubDateMs ?? 0}:${item.summary ? 1 : 0}`)
     .join(",");
+}
+
+/**
+ * A short hash of an item id for the signature. The ids name the feed they
+ * came from, and the signature is printed into the page as an attribute; the
+ * page only ever compares signatures, so a digest serves it as well as the id.
+ */
+function sigHash(text: string): string {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = (Math.imul(h, 33) ^ text.charCodeAt(i)) >>> 0;
+  return h.toString(36);
 }
 
 /**
@@ -814,7 +825,7 @@ export function renderCategoryOptions(
   );
 }
 
-/** One labelled <select>, in the same shape as the search field beside it. */
+/** One labeled <select>, in the same shape as the search field beside it. */
 function renderSelectFilter(
   id: string,
   label: string,

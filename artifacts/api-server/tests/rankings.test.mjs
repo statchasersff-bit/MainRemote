@@ -119,7 +119,7 @@ describe("tier rules", () => {
     }
   });
 
-  test("names normalise across suffix and punctuation spellings", () => {
+  test("names normalize across suffix and punctuation spellings", () => {
     assert.equal(mod.normalizeName("Michael Pittman Jr."), "michael pittman");
     assert.equal(mod.normalizeName("Ja'Marr Chase"), "jamarr chase");
     assert.equal(mod.normalizeName("Marvin Harrison Jr"), "marvin harrison");
@@ -345,7 +345,7 @@ describe("the rankings page", () => {
     for (const link of links) {
       // role="tab" promises arrow keys. The server cannot keep that promise,
       // so it does not make it - client/rankings.ts adds the roles when it
-      // adds the behaviour.
+      // adds the behavior.
       assert.equal(link.getAttribute("role"), null);
     }
   });

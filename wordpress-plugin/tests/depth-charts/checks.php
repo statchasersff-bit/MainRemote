@@ -4,7 +4,9 @@
  *
  *   php checks.php
  *
- * - The bare tool page canonicalises (and og:url) to the URL the sitemap lists.
+ * - The tool answers at one address: the pre-1.7.0 team routes 301 to the
+ *   team pages, the view routes and ?team= to the tool, junk 404s, and the
+ *   page carries no team links and no SEO filters.
  * - A refresh keeps a failed team's previous entry, and never writes when
  *   nothing was fetched.
  * - SCDC_Store::write() replaces the file by rename, so a reader holding the
@@ -55,24 +57,54 @@ function get_category_by_slug( $slug ) { return false; }
 require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php';
 do_action( 'plugins_loaded' );
 
-// ------------------------------------------------------------ 1. canonical
+// ---------------------------------------------------------- 1. one address
 
-$sitemap_main = 'https://statchasers.com/nfl/nfl-depth-charts/fantasy/';
-$out          = shell_exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/render-url.php' ) . ' /nfl/nfl-depth-charts/' );
-preg_match( '#<link rel="canonical" href="([^"]*)"#', (string) $out, $canon );
-preg_match( '#<meta property="og:url" content="([^"]*)"#', (string) $out, $og );
-check( 'bare main page canonical is the sitemap URL', isset( $canon[1] ) && $sitemap_main === $canon[1], 'got ' . ( isset( $canon[1] ) ? $canon[1] : '(none)' ) );
-check( 'bare main page og:url is the sitemap URL', isset( $og[1] ) && $sitemap_main === $og[1], 'got ' . ( isset( $og[1] ) ? $og[1] : '(none)' ) );
+$render = function ( $url ) {
+	return (string) shell_exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/render-url.php' ) . ' ' . escapeshellarg( $url ) );
+};
+$redirect_of = function ( $out ) {
+	return preg_match( '#^HTTP (\d+) redirect -> (\S+)#m', $out, $m ) ? array( (int) $m[1], $m[2] ) : null;
+};
+$tool = 'https://statchasers.com/nfl/nfl-depth-charts/';
 
-// ------------------------------------------------------------ 1b. sitemap
+$out = $render( '/nfl/nfl-depth-charts/' );
+check( 'tool page: 200, route main', false !== strpos( $out, 'HTTP status              : 200' ) && false !== strpos( $out, 'Route type               : main' ), $out );
+check( 'tool page: no crawlable team anchors', false !== strpos( $out, 'Crawlable team anchors   : 0' ) );
+check( 'tool page: no anchors at all in the shortcode markup', false !== strpos( $out, 'Anchors in the markup    : 0' ) );
+check( 'tool page: no SEO filter is hooked', false === strpos( $out, 'UNEXPECTED' ), $out );
+check( 'tool page: exactly one H1, the theme\'s', false !== strpos( $out, 'H1 elements in the initial HTML (1)' ) && false !== strpos( $out, 'NFL Depth Charts</h1>' ) );
+check( 'tool page: no team chrome', false === strpos( $out, 'scdc-seo-' ) && false === strpos( $out, 'scdc-page-team' ) );
 
-$bare = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/nfl-depth-charts/' ), 'post', (object) array( 'ID' => 42 ) );
-check( 'sitemap: the bare tool page is dropped from Rank Math by id', false === $bare );
-$bare = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/nfl-depth-charts/' ), 'post', null );
-check( 'sitemap: the bare tool page is dropped from Rank Math by path', false === $bare );
-$kept = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/' ), 'post', (object) array( 'ID' => 7 ) );
-check( 'sitemap: other pages are kept', is_array( $kept ) );
-check( 'sitemap: the filter is hooked', ! empty( $GLOBALS['wp_filters']['rank_math/sitemap/entry'] ) );
+foreach ( array( 'houston-texans', 'dallas-cowboys', 'buffalo-bills' ) as $slug ) {
+	$r = $redirect_of( $render( "/nfl/nfl-depth-charts/fantasy/{$slug}/" ) );
+	check( "team route {$slug}: 301 to the team page", $r && 301 === $r[0] && "https://statchasers.com/nfl/teams/{$slug}/depth-chart/" === $r[1], wp_json_encode( $r ) );
+}
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/fantasy/houston-texans/rb/' ) );
+check( 'team route with a position: 301 to the team page', $r && 'https://statchasers.com/nfl/teams/houston-texans/depth-chart/' === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/offense/houston-texans/' ) );
+check( 'team route in another view: 301 to the team page', $r && 'https://statchasers.com/nfl/teams/houston-texans/depth-chart/' === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/fantasy/Houston-Texans' ) );
+check( 'uppercase, no trailing slash: still the team page', $r && 'https://statchasers.com/nfl/teams/houston-texans/depth-chart/' === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/fantasy/' ) );
+check( 'view route: 301 to the tool', $r && 301 === $r[0] && $tool === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/defense/all-teams/cb/' ) );
+check( 'all-teams position route: 301 to the tool', $r && $tool === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/?team=houston-texans' ) );
+check( '?team=: 301 to the team page', $r && 'https://statchasers.com/nfl/teams/houston-texans/depth-chart/' === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/fantasy/?team=houston-texans' ) );
+check( 'view route with ?team=: 301 to the team page', $r && 'https://statchasers.com/nfl/teams/houston-texans/depth-chart/' === $r[1], wp_json_encode( $r ) );
+$r = $redirect_of( $render( '/nfl/nfl-depth-charts/?view=offense&utm_source=x' ) );
+check( '?view=: 301 to the tool, other args kept', $r && 'https://statchasers.com/nfl/nfl-depth-charts/?utm_source=x' === $r[1], wp_json_encode( $r ) );
+foreach ( array( '/nfl/nfl-depth-charts/fantasy/not-a-real-team/', '/nfl/nfl-depth-charts/bogus-view/houston-texans/', '/nfl/nfl-depth-charts/fantasy/houston-texans/goalie/' ) as $bad ) {
+	$out = $render( $bad );
+	check( "junk {$bad}: 404", false !== strpos( $out, 'HTTP status              : 404' ), $out );
+}
+
+// The team page address follows the team-pages plugin's switch and filter.
+check( 'team page url: default', 'https://statchasers.com/nfl/teams/buffalo-bills/depth-chart/' === SCDC_Route::team_page_url( 'buffalo-bills' ) );
+add_filter( 'scdc_team_page_url', function ( $url, $slug ) { return "https://example.com/t/{$slug}/"; }, 10, 2 );
+check( 'team page url: filterable', 'https://example.com/t/buffalo-bills/' === SCDC_Route::team_page_url( 'buffalo-bills' ) );
+unset( $GLOBALS['wp_filters']['scdc_team_page_url'] );
 
 // -------------------------------------------------------------- 2. refresh
 
@@ -238,7 +270,7 @@ foreach ( $tags as $tag ) {
 	$max    = max( $max, $depth );
 }
 check( 'hub: no <a> nested inside an <a>', 1 === $max && 0 === $depth, "max depth $max" );
-check( 'hub: popular views still render', false !== strpos( $hub, 'fantasy/all-teams/rb/' ) );
+check( 'hub: popular views are fragments on the one address', false !== strpos( $hub, 'nfl-depth-charts/#fantasy/all-teams/rb' ) && false === strpos( $hub, 'nfl-depth-charts/fantasy/' ), $hub );
 
 echo $GLOBALS['scdc_fail'] ? "\n{$GLOBALS['scdc_fail']} check(s) failed\n" : "\nall checks passed\n";
 exit( $GLOBALS['scdc_fail'] ? 1 : 0 );

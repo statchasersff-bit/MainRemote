@@ -81,7 +81,7 @@ function fragmentLinkQuery(prefix: string): string {
 /**
  * A season, or undefined.
  *
- * Honoured only when it is plausibly one, so a hand-edited URL falls through to
+ * Honored only when it is plausibly one, so a hand-edited URL falls through to
  * the configured current season rather than querying for the year 3000.
  */
 function season(value: unknown): number | undefined {

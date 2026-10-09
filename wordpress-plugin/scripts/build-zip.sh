@@ -5,7 +5,7 @@
 #
 #   bash wordpress-plugin/scripts/build-zip.sh
 #
-# The zip in dist/ is the artefact that actually gets uploaded, and the one
+# The zip in dist/ is the artifact that actually gets uploaded, and the one
 # thing nobody notices going stale: it is built by hand, it looks fine in the
 # directory listing, and a file added to the plugin since the last build simply
 # is not in it. That is how a deployment ends up missing half its shortcodes.

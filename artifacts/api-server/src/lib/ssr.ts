@@ -116,7 +116,7 @@ function cacheKey(options: SsrOptions, limit: number): string {
 
 /**
  * Render the embeddable fragment. Awaits the team map on the first call so the
- * very first server-rendered page already has team colours; later calls hit the
+ * very first server-rendered page already has team colors; later calls hit the
  * warm in-memory map and return synchronously fast.
  */
 export async function renderNewsFragment(

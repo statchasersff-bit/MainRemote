@@ -82,7 +82,7 @@ export interface WeeklyRange {
  *
  * Observed, not projected - this is the Overview's answer to "what kind of week
  * does he give you", and it is measured off the weeks he has played. The
- * Outlook tab carries the projected version, which is authored and labelled as
+ * Outlook tab carries the projected version, which is authored and labeled as
  * a projection; these two must never be confused, so this one is always stamped
  * with how many weeks it is drawn from.
  *
@@ -159,7 +159,7 @@ export function fantasyProfile(input: {
   }
 
   // Under four games the spread is arithmetic rather than a tendency, and the
-  // row says so instead of labelling noise as "consistent".
+  // row says so instead of labeling noise as "consistent".
   rows.push({
     label: "Consistency",
     value: stats.gamesPlayed < 4 ? "Low sample" : input.volatilityLabel,

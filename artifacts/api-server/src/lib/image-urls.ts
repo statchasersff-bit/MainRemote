@@ -91,7 +91,7 @@ export type ImageSource = "player" | "espn" | "club" | "yt";
  * The derivatives each source produces. The headshot sources share the
  * card squares, the full figures and the hub's 16:9 band. Club art is
  * landscape editorial photography, often 1920px wide, drawn in the news
- * card's square and in the hub's news wells at up to 640px: squares (centre
+ * card's square and in the hub's news wells at up to 640px: squares (center
  * crop) and bands at the widths those wells are drawn, never the figures.
  */
 export const VARIANTS_FOR: Record<ImageSource, readonly HeadshotVariant[]> = {
@@ -179,7 +179,31 @@ export function parseImageKey(key: string | null | undefined): ImageKeyParts | n
 }
 
 /** The key the route builds from its path segments, or null when they name none. */
-export function imageKeyFrom(source: string, id: string): string | null {
+/**
+ * The path segment each source is served under. The internal names say where
+ * an original came from; the public address does not, so the page source
+ * names no outside host. The old segments stay accepted (imageKeyFrom) for
+ * addresses already printed and cached.
+ */
+export const PUBLIC_SEGMENT: Record<ImageSource, string> = {
+  player: "player",
+  espn: "athlete",
+  club: "club",
+  yt: "video",
+};
+
+const SOURCE_FOR_SEGMENT: Record<string, ImageSource> = {
+  player: "player",
+  athlete: "espn",
+  espn: "espn",
+  club: "club",
+  video: "yt",
+  yt: "yt",
+};
+
+export function imageKeyFrom(segment: string, id: string): string | null {
+  const source = SOURCE_FOR_SEGMENT[segment];
+  if (!source) return null;
   const key =
     source === "player"
       ? id
@@ -226,7 +250,7 @@ export function imagePath(
   const parts = parseImageKey(key);
   const source = parts?.source ?? "player";
   const id = parts?.id ?? key;
-  return `/news-image/${source}/${id}/${version || LATEST_VERSION}/${variant}.webp`;
+  return `/news-image/${PUBLIC_SEGMENT[source]}/${id}/${version || LATEST_VERSION}/${variant}.webp`;
 }
 
 /** imagePath() by its older name: `id` is a key (a bare Sleeper id is one). */

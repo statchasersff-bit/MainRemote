@@ -234,7 +234,7 @@ function statchasers_player_stats_query_season(): string {
 }
 
 /**
- * Normalise the shortcode attributes.
+ * Normalize the shortcode attributes.
  *
  * The position: the address first, because it IS the address - a page reached
  * at /rb/ that rendered quarterbacks would be a wrong answer at a
@@ -398,7 +398,7 @@ function statchasers_player_stats_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out in
  * statchasers-team.php: Divi swaps the global post while rendering a Theme
- * Builder layout. Memoised for the same reason too.
+ * Builder layout. Memoized for the same reason too.
  */
 function statchasers_player_stats_post_has_shortcode(): bool {
 	static $answer = null;
@@ -568,7 +568,7 @@ add_shortcode( STATCHASERS_PLAYER_STATS_SHORTCODE, 'statchasers_player_stats_sho
 /* -------------------------------------------------- titles and headings */
 
 /**
- * The fetch this request's page prints, memoised: what the titles, the H1 and
+ * The fetch this request's page prints, memoized: what the titles, the H1 and
  * the FAQ schema below are read from. The same arguments the shortcode passes,
  * so it is the same cached transient and costs no second request.
  *

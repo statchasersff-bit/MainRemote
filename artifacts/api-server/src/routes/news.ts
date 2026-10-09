@@ -768,7 +768,7 @@ export async function storeItems(
         // sentence can.
         teamAbbr,
         // Same category of fact, and for the same reason: the lane a row was
-        // written by is not a judgement that can go stale.
+        // written by is not a judgment that can go stale.
         sourceType,
         authorHandle: item.authorHandle?.toString().trim().toLowerCase() || null,
       };

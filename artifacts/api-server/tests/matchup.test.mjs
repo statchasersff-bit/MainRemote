@@ -629,14 +629,14 @@ describe("fantasy matchups", () => {
     }
   });
 
-  test("a team's colour is the same everywhere on the page", async () => {
+  test("a team's color is the same everywhere on the page", async () => {
     // Several pairings share a primary - Patriots and Seahawks are both
-    // #002244 - and a team that changes colour between two tables is worse
-    // than no colour at all.
+    // #002244 - and a team that changes color between two tables is worse
+    // than no color at all.
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
     // The Snapshot is one table now, so the comparison that matters is across
     // BLOCKS - Snapshot against Fantasy Matchups - rather than within one.
-    // On a recap every comparison is a "Why won" table, coloured by
+    // On a recap every comparison is a "Why won" table, colored by
     // --rb-away / --rb-home and named in its header.
     const recapTables = [...doc.querySelectorAll(".sct-rb-table[style*='--rb-away']")];
     if (recapTables.length) {
@@ -647,7 +647,7 @@ describe("fantasy matchups", () => {
         assert.notEqual(colors[0], colors[1], "the two sides must be told apart");
         const names = [...table.querySelectorAll("thead th")].map((n) => n.textContent.trim().split(" ")[0]);
         for (const [i, name] of [[0, names[0]], [1, names[2]]]) {
-          if (seen.has(name)) assert.equal(seen.get(name), colors[i], `${name} changed colour`);
+          if (seen.has(name)) assert.equal(seen.get(name), colors[i], `${name} changed color`);
           else seen.set(name, colors[i]);
         }
       }
@@ -671,7 +671,7 @@ describe("fantasy matchups", () => {
           .split(" ")[0];
         if (!name) continue;
         if (seen.has(name)) {
-          assert.equal(seen.get(name), color, `${name} changed colour`);
+          assert.equal(seen.get(name), color, `${name} changed color`);
         } else {
           seen.set(name, color);
         }
@@ -950,7 +950,7 @@ describe("the postgame page", () => {
     assert.equal(page.doc.querySelector(".sct-mu-fantasy"), null);
   });
 
-  test("every ring slice is named and measured in text, not only in colour", async () => {
+  test("every ring slice is named and measured in text, not only in color", async () => {
     const page = await postgamePage();
     if (!page) return;
     const block = page.doc.querySelector(".sct-mu-usage");
@@ -962,7 +962,7 @@ describe("the postgame page", () => {
     for (const row of rows) {
       const arcs = [...row.querySelectorAll(".sct-mu-usage-arc")];
       const keys = [...row.querySelectorAll(".sct-mu-usage-key")];
-      // A slice with no legend entry is a slice whose meaning is its colour.
+      // A slice with no legend entry is a slice whose meaning is its color.
       assert.equal(keys.length, arcs.length, "one legend row per slice");
 
       // The ring itself is decoration: everything in it is written beside it.
@@ -1034,7 +1034,7 @@ describe("the postgame page", () => {
     assert.ok(![...page.doc.querySelectorAll("h2")].some((h) => /Fantasy Takeaways/.test(h.textContent)));
   });
 
-  test("a position is named in its own colour, and only the position", async () => {
+  test("a position is named in its own color, and only the position", async () => {
     const page = await postgamePage();
     if (!page) return;
     const { doc } = page;
@@ -1043,17 +1043,17 @@ describe("the postgame page", () => {
     assert.ok(tags.length >= 4, "positions are marked up, not baked into a string");
 
     // The four skill positions carry an ink; anything else - a kicker in the
-    // fantasy table - is left to inherit rather than given a fifth colour.
-    const coloured = new Set(["QB", "RB", "WR", "TE"]);
+    // fantasy table - is left to inherit rather than given a fifth color.
+    const colored = new Set(["QB", "RB", "WR", "TE"]);
     let seen = 0;
     for (const tag of tags) {
       const pos = tag.getAttribute("data-pos");
       assert.equal(tag.textContent.trim().toUpperCase(), pos, "the element holds the position alone");
-      if (coloured.has(pos)) seen += 1;
+      if (colored.has(pos)) seen += 1;
     }
     assert.ok(seen >= 3, "at least three of the four appeared");
 
-    // The team code is a sibling, not inside the coloured element: colouring
+    // The team code is a sibling, not inside the colored element: coloring
     // "QB · SEA" wholesale is a row of two-tone text with no hierarchy.
     for (const tag of tags) {
       assert.equal(tag.querySelector(".sct-pos-team"), null);

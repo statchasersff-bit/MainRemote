@@ -41,7 +41,7 @@ export function barBand(value: number | null): string {
 
 export interface HandcuffType {
   label: string;
-  /** The CSS hook for its colour and icon. */
+  /** The CSS hook for its color and icon. */
   key: string;
   meaning: string;
   desc: string;

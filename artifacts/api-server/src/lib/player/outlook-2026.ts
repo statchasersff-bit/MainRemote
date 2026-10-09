@@ -35,7 +35,7 @@ function h3(text: string): string {
  * from here, and what do I do with him - and it is the one place on the page
  * where the answer is allowed to be forward-looking. Rule 3 at the top of this
  * file is not suspended here so much as quarantined to here: the tab is named
- * for the season it is about, the projected numbers are labelled as projections,
+ * for the season it is about, the projected numbers are labeled as projections,
  * and the measured strip beneath them is stamped with the season it was
  * measured from, so the two can never be read as the same kind of claim.
  *
@@ -145,7 +145,7 @@ function renderOutlookRange(data: OutlookSource): string {
  *
  * Two columns of plain text under two headings, split by a rule. Not a green
  * box and a red box: the two lists are not a good thing and a bad thing, they
- * are the two directions the same season can go, and colouring them as a verdict
+ * are the two directions the same season can go, and coloring them as a verdict
  * makes the page assert something the bullets themselves do not.
  *
  * It is also the block that ages best - these are the lines to rewrite in

@@ -111,7 +111,7 @@ function fragmentLinkQuery(prefix: string): string {
 }
 
 /**
- * A season is honoured only when it is plausibly one; anything else falls
+ * A season is honored only when it is plausibly one; anything else falls
  * through to the newest published board. A hard-coded season is a page that
  * silently shows last year's rankings next August.
  */

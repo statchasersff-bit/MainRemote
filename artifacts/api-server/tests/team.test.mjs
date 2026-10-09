@@ -104,7 +104,7 @@ const windows = [];
  * The page with its own JavaScript actually run.
  *
  * Everything else in this file asserts on the HTML as sent, which is what a
- * crawler reads. The tab strip is the one place where the scripted behaviour is
+ * crawler reads. The tab strip is the one place where the scripted behavior is
  * different in kind rather than in polish - it switches the panel, rewrites the
  * heading above the fragment and puts a different URL in the address bar - and
  * none of that is visible in the served markup.
@@ -865,7 +865,7 @@ describe("tab FAQs", () => {
     // A per-game rate with no denominator is the one way this block can
     // mislead, and early in a season it is the whole story.
     // Case-insensitive: the window is a leading clause in some answers and a
-    // trailing one in others, so it is capitalised in some of them.
+    // trailing one in others, so it is capitalized in some of them.
     const framed = entries.filter((e) =>
       /through \d+ games?|in the \d{4} regular season/i.test(e.answer),
     );
@@ -988,7 +988,7 @@ describe("tab FAQs", () => {
       answer: q.acceptedAnswer.text,
     }));
     // Markup that says something the page does not is the whole reason schema
-    // gets a page penalised, so this is equality rather than a spot check.
+    // gets a page penalized, so this is equality rather than a spot check.
     assert.deepEqual(asked, entries);
   });
 
@@ -1019,7 +1019,7 @@ describe("tab FAQs", () => {
 
       // The island has to describe what is on the page, not a second version of
       // it: markup that says something the page does not is the whole reason
-      // schema gets a page penalised. Same equality the standalone node gets.
+      // schema gets a page penalized. Same equality the standalone node gets.
       const carried = JSON.parse(island[1]).map((entry) => ({
         question: entry.q,
         answer: entry.a,
@@ -1156,15 +1156,15 @@ describe("mobile layout", () => {
   /**
    * The watermark, in the stacked hero, is bottom-right and bigger.
    *
-   * Centred on the right edge is a desktop arrangement: there, half of an
+   * Centered on the right edge is a desktop arrangement: there, half of an
    * 1100px hero is empty. Stacked there is no empty half - the chips and the
-   * switcher are opaque cards filling the width - so a 240px mark centred
+   * switcher are opaque cards filling the width - so a 240px mark centered
    * behind them showed in the gaps between cards and nowhere else, which is
    * what mak reported as too small to see. The corner under the switcher is
    * the one part of this hero that is reliably not a card.
    *
    * The transform is the trap and the reason this is pinned: the desktop rule
-   * centres with `translateY(-50%)`, which pairs with `top: 50%`. Left in
+   * centers with `translateY(-50%)`, which pairs with `top: 50%`. Left in
    * place alongside `bottom`, it lifts the mark by half its own height and
    * puts it back behind the cards - a change that looks like nothing in the
    * diff and undoes the whole rule.
@@ -1175,7 +1175,7 @@ describe("mobile layout", () => {
     const desktopAt = css.indexOf("\n.sct-hero-watermark {");
     assert.ok(desktopAt > 0, "located the desktop watermark rule");
     const desktop = css.slice(desktopAt, css.indexOf("}", desktopAt));
-    assert.match(desktop, /top:\s*50%/, "the desktop mark is centred");
+    assert.match(desktop, /top:\s*50%/, "the desktop mark is centered");
     assert.match(desktop, /transform:\s*translateY\(-50%\)/);
 
     const phone = css.slice(
@@ -1186,12 +1186,12 @@ describe("mobile layout", () => {
     assert.ok(phoneAt > 0, "the phone block places it again");
     const stacked = phone.slice(phoneAt, phone.indexOf("}", phoneAt));
 
-    assert.match(stacked, /top:\s*auto/, "off the vertical centre");
+    assert.match(stacked, /top:\s*auto/, "off the vertical center");
     assert.match(stacked, /bottom:\s*-?\d+px/, "and anchored to the bottom");
     assert.match(
       stacked,
       /transform:\s*none/,
-      "with the centring transform cancelled - see this test's note",
+      "with the centering transform canceled - see this test's note",
     );
 
     const size = (block) => Number(block.match(/width:\s*(\d+)px/)[1]);
@@ -1239,7 +1239,7 @@ describe("mobile layout", () => {
    * wrapping to two lines for fifty pixels. The row is a flex line now, and
    * what makes it break is the name's own width - which is only true while the
    * name cannot wrap and the block holding it keeps its automatic minimum.
-   * Both halves are asserted because either alone puts the old behaviour back:
+   * Both halves are asserted because either alone puts the old behavior back:
    * a wrapping name shrinks to nothing and the switcher never moves, and
    * `min-width: 0` lets the row squeeze the name instead of breaking.
    */
@@ -1347,13 +1347,13 @@ describe("mobile layout", () => {
       "and the name may wrap in the column the crest left it",
     );
 
-    // The timestamp is the 2x2 grid's footnote, so it is centred under it:
-    // the grid has two columns and a centre rather than a left end for a line
+    // The timestamp is the 2x2 grid's footnote, so it is centered under it:
+    // the grid has two columns and a center rather than a left end for a line
     // to hang off. Left-aligned on a desktop, where the chips are a row.
     assert.match(
       phone,
       /\.sct-hero-updated \{[^}]*text-align:\s*center/,
-      "the timestamp is centred under the stacked chips",
+      "the timestamp is centered under the stacked chips",
     );
     const deskAt = css.indexOf("\n.sct-hero-updated {");
     assert.ok(deskAt > 0, "located the desktop timestamp rule");
@@ -1808,7 +1808,7 @@ describe("the preview switcher never leaves the pane", () => {
  * oEmbed template instead of the page - 31 of them per team page, each a
  * crawlable variant of a URL that already exists clean.
  *
- * Booted separately from the suite above because the behaviour IS the
+ * Booted separately from the suite above because the behavior IS the
  * environment: one server cannot answer for both configurations.
  */
 describe("the WordPress fragment's team switcher", () => {
@@ -1968,7 +1968,7 @@ describe("the team index", () => {
   test("the standalone page opens on the index, with no hero of its own", async () => {
     // It used to carry one: an eyebrow, an H1 and a subtitle over the grid.
     // Both mounts now sit under the heading their host page supplies, which is
-    // the division of labour every other fragment here already followed - and
+    // the division of labor every other fragment here already followed - and
     // the reason this asserts rather than merely no longer testing the hero is
     // that the markup is easy to put back by habit.
     const { doc } = await dom("/team");
@@ -2047,7 +2047,7 @@ describe("team.css survives a host theme", () => {
     const sheet = await css();
 
     // Inheritance loses to any rule naming the element, so `h2 { font-family }`
-    // in a theme took every heading in the hub while our own colour and size
+    // in a theme took every heading in the hub while our own color and size
     // rules kept winning. And the marker belongs to the <li>, so `list-style:
     // none` on the <ul> alone left the tab strip reading "• Stats • News".
     assert.match(
@@ -2070,8 +2070,8 @@ describe("team.css survives a host theme", () => {
    * to it unless it says !important; `.sct-faq-q` did not, and shipped an FAQ
    * whose questions rendered at 38px and read as section headings.
    *
-   * The size is what is asserted. Colour is armed alongside it on most of
-   * these but not all - .sct-band-label and friends take a colour the theme
+   * The size is what is asserted. Color is armed alongside it on most of
+   * these but not all - .sct-band-label and friends take a color the theme
    * cannot reach - whereas font-size is the one Divi always sets.
    */
   test("every heading class the hub prints is armoured", async () => {
@@ -2166,11 +2166,11 @@ describe("team.css survives a host theme", () => {
     assert.match(
       rules,
       /#left-area\{[^}]*margin-left:auto!important;margin-right:auto!important/,
-      "and centred in it, as the rest of the site's content is",
+      "and centered in it, as the rest of the site's content is",
     );
 
     // Both of these are the difference between "full width" and "full width
-    // with a grey line down it and the widgets dumped underneath".
+    // with a gray line down it and the widgets dumped underneath".
     assert.match(
       rules,
       /#main-content \.container:before\{display:\s*none\s*!important/,
@@ -2228,7 +2228,7 @@ describe("team.css survives a host theme", () => {
     const sheet = await css();
 
     // Same bar as .sct-h2::after. The token is out of reach outside .sct, so
-    // the colour is written out - keep it equal to --sc-gold.
+    // the color is written out - keep it equal to --sc-gold.
     const gold = sheet.match(/--sc-gold:\s*(#[0-9a-f]{6})/i);
     assert.ok(gold, "--sc-gold is defined");
     assert.match(
@@ -2702,7 +2702,7 @@ describe("team section URLs", () => {
     }
   });
 
-  test("an unrecognised ?section= still falls through to the hub", async () => {
+  test("an unrecognized ?section= still falls through to the hub", async () => {
     // Defensive: a stale link is worth a full page, not a 404 - the pretty
     // route is where a bad section is refused.
     for (const query of ["?section=bogus", "?section=", ""]) {

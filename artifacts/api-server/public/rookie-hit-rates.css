@@ -8,9 +8,9 @@
  *
  * The layout is the standalone Rookie-Hit-Rate app's (at 9c69b00); the dress
  * is this app's (house style for ported tools). Kept from the source because
- * they carry meaning: the position colours (QB red, RB green, WR blue, TE
+ * they carry meaning: the position colors (QB red, RB green, WR blue, TE
  * gold), the heat scale's five steps on the source's blue, the confidence
- * dots, and the chart lines' colours.
+ * dots, and the chart lines' colors.
  *
  * Theme armour. Divi styles bare elements and ids inside the content column -
  * `p` padding, `#left-area ul` list padding, `.entry-content table:not(.variations)`
@@ -286,7 +286,7 @@ body.schr-page {
   color: var(--sc-navy);
 }
 
-/* Position pills carry their colour, as the source's: tinted text off, filled on. */
+/* Position pills carry their color, as the source's: tinted text off, filled on. */
 :is(.schr, #schr-armour) button.schr-opt.is-pos[data-pos="QB"] { color: var(--schr-qb); }
 :is(.schr, #schr-armour) button.schr-opt.is-pos[data-pos="RB"] { color: var(--schr-rb); }
 :is(.schr, #schr-armour) button.schr-opt.is-pos[data-pos="WR"] { color: var(--schr-wr); }
@@ -517,7 +517,7 @@ body.schr-page {
   font-variant-numeric: tabular-nums;
 }
 
-/* One grey for every card's body, whatever its tone, as the source's since 9c69b00. */
+/* One gray for every card's body, whatever its tone, as the source's since 9c69b00. */
 .schr-card-context {
   margin: 5px 0 0;
   color: var(--sc-muted);
@@ -613,7 +613,7 @@ body.schr-page {
   text-align: right;
 }
 
-/* A position, in its colour: the heatmaps' row heads, the class table's columns. */
+/* A position, in its color: the heatmaps' row heads, the class table's columns. */
 .schr-pos {
   display: inline-block;
   font-size: 12px;
@@ -1104,7 +1104,7 @@ body.schr-page {
   color: #fff !important;
 }
 
-/* The position columns in their colours; the sorted column in gold, over them. */
+/* The position columns in their colors; the sorted column in gold, over them. */
 :is(.schr, #schr-armour) .schr-class-table thead th[data-pos="QB"] { color: #f87171 !important; }
 :is(.schr, #schr-armour) .schr-class-table thead th[data-pos="RB"] { color: #34d399 !important; }
 :is(.schr, #schr-armour) .schr-class-table thead th[data-pos="WR"] { color: #60a5fa !important; }

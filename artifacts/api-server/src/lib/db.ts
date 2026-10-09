@@ -12,7 +12,7 @@
  *
  * Everything here is async, unlike better-sqlite3. The one place that could not
  * absorb that - the ETag/cache-key path, which runs synchronously while a
- * response is being composed - reads a memoised snapshot instead; see
+ * response is being composed - reads a memoized snapshot instead; see
  * lib/freshness.ts.
  */
 

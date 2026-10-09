@@ -461,7 +461,7 @@ function teamPicker(context: DevBarContext, subject: Subject): string {
   ).join("");
 
   // The option VALUE is the destination, so the one line of script below is the
-  // whole behaviour. Keeping the current mount in every value is what makes the
+  // whole behavior. Keeping the current mount in every value is what makes the
   // picker change the team without also changing which view you are in.
   return (
     `<span class="scdev-group">` +
@@ -515,7 +515,7 @@ function playerPicker(context: DevBarContext, subject: Subject): string {
     })
     .join("");
 
-  // Same one-line behaviour as the team picker: the option VALUE is the
+  // Same one-line behavior as the team picker: the option VALUE is the
   // destination, and keeping the current mount in every value is what makes the
   // picker change the player without also changing which view you are in.
   return (

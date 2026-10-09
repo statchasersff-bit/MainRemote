@@ -174,7 +174,7 @@ function statchasers_host_css_strings( $value ): string {
  * active block, text and custom-HTML widget instances. Posts in an archive
  * loop are not read: Divi prints excerpts there, which strip shortcodes.
  *
- * Deliberately not memoised: WordPress asks once per request, and a static
+ * Deliberately not memoized: WordPress asks once per request, and a static
  * would let a test process see only one page.
  */
 function statchasers_host_css_haystack(): string {

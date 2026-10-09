@@ -3,7 +3,7 @@
  *
  * Ported from statchasersff-bit/Rookie-Hit-Rate at 9c69b00 (2026-10-08) -
  * client/src/lib/cohort.ts, ranks.ts and data-context.tsx for the numbers, and
- * the insight generators, patience maths and class-table logic that live
+ * the insight generators, patience math and class-table logic that live
  * inside its page components (pages/overview.tsx, components/trends-chart.tsx,
  * components/cohort-survival-chart.tsx). Every threshold, sample floor and
  * tie-break is the source's, including the ones that look accidental - the
@@ -266,7 +266,7 @@ function inScope(d: RookieDraft, filters: Filters, latestSeason: number, positio
 }
 
 /** The body of computeCohorts / computePickRangeCohorts, which the source wrote out twice. */
-function summarise(group: RookieDraft[], ranks: RankMap, filters: Filters, pos: Pos, round: number): CohortSummary {
+function summarize(group: RookieDraft[], ranks: RankMap, filters: Filters, pos: Pos, round: number): CohortSummary {
   let hits = 0;
   let eliteHits = 0;
   let starterHits = 0;
@@ -370,7 +370,7 @@ export function computeCohorts(
   const results: CohortSummary[] = [];
   for (const [key, group] of groups) {
     const [pos, round] = key.split("-");
-    results.push(summarise(group, ranks, filters, pos as Pos, parseInt(round!, 10)));
+    results.push(summarize(group, ranks, filters, pos as Pos, parseInt(round!, 10)));
   }
   return results.sort((a, b) => posIndex(a.pos) - posIndex(b.pos) || a.rookie_round - b.rookie_round);
 }
@@ -411,7 +411,7 @@ export function computePickRangeCohorts(
     const pickStart = parseInt(parts[2]!, 10);
     const pickEnd = parseInt(parts[3]!, 10);
     results.push({
-      ...summarise(group, ranks, filters, pos, round),
+      ...summarize(group, ranks, filters, pos, round),
       pickStart,
       pickEnd,
       rangeLabel: `${round}.${pad2(pickStart)}-${round}.${pad2(pickEnd)}`,

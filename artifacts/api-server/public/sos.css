@@ -7,7 +7,7 @@
  * imported.
  *
  * The layout is the standalone Strength-of-Schedule-SOS app's; the dress is
- * this app's (house style for ported tools). The five matchup colours are the
+ * this app's (house style for ported tools). The five matchup colors are the
  * FPA table's diverging washes and inks, so a green cell here means what a
  * green cell there means.
  *
@@ -46,7 +46,7 @@
 
   /* The FPA table's scale (fpa.css explains the derivation): green the
      exploitable pole, red the one to avoid, red the darker arm so the two
-     survive red-green colour blindness. Neutral is the page's sink tint. */
+     survive red-green color blindness. Neutral is the page's sink tint. */
   --scsos-smash-wash: #77c488;
   --scsos-smash-ink: #004f21;
   --scsos-favorable-wash: #aee2b7;
@@ -805,7 +805,7 @@ body.scsos-page {
   border-radius: 4px;
   background: var(--sc-surface);
   box-shadow: 2px 0 0 var(--sc-surface), 3px 0 0 var(--sc-border);
-  /* Stated: `#left-area table th` greys every th it can reach. */
+  /* Stated: `#left-area table th` grays every th it can reach. */
   color: var(--sc-ink);
   font-weight: 800;
   text-align: left;
@@ -900,7 +900,7 @@ body.scsos-page {
   font-weight: 800;
 }
 
-/* The five matchup colours, and the bye - on the cells and the legend alike. */
+/* The five matchup colors, and the bye - on the cells and the legend alike. */
 :is(.scsos, #scsos-armour) [data-bucket="smash"] {
   background: var(--scsos-smash-wash);
   color: var(--scsos-smash-ink);
@@ -1035,11 +1035,11 @@ body.scsos-page {
 
 /* Under the board on every view: the team hubs' fold-per-question
    arrangement (team.css .sct-faq), in this board's tokens. The two headings
-   carry `!important` on size and colour for the hubs' reason: Divi's
+   carry `!important` on size and color for the hubs' reason: Divi's
    typography panel reaches them through `#left-area h2/h3`, an id no class
    here can outweigh. */
 .scsos-faq {
-  /* Full board width, like the hubs' .sct-faq: a centred 880px cap left it
+  /* Full board width, like the hubs' .sct-faq: a centered 880px cap left it
      looking indented against the table's left edge on wide screens. */
   margin: 36px 0 0;
   padding-top: 30px;

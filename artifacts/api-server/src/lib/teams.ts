@@ -2,8 +2,8 @@
  * Server-side player -> NFL team map.
  *
  * This used to run in the browser: every visitor downloaded Sleeper's full
- * player dictionary (several megabytes) just to colour a card and pick a logo.
- * That can't work for server rendering - the team colours have to be in the
+ * player dictionary (several megabytes) just to color a card and pick a logo.
+ * That can't work for server rendering - the team colors have to be in the
  * HTML we send - and it was a large third-party fetch on every cold visit, so
  * the lookup now lives here. The team abbreviation rides along on each item in
  * the API response, and the client no longer talks to Sleeper at all.
@@ -54,7 +54,7 @@ const CACHE_PATH = dataPath("player-teams.json");
  * The roster index gets its own file rather than being folded into the one
  * above: it is an order of magnitude larger, and keeping them apart means a
  * corrupt or absent roster cache costs the team pages one refresh instead of
- * taking the news tool's team colours down with it.
+ * taking the news tool's team colors down with it.
  */
 const ROSTER_CACHE_PATH = dataPath("team-roster.json");
 
@@ -160,7 +160,7 @@ async function fetchTeams(): Promise<void> {
   }
 
   // A empty/short response means something is wrong upstream; keep what we have
-  // rather than blanking every card's colours.
+  // rather than blanking every card's colors.
   if (Object.keys(next).length === 0) {
     throw new Error("Sleeper returned no teams");
   }
@@ -172,7 +172,7 @@ async function fetchTeams(): Promise<void> {
 
   // Second pass over the payload already in hand: depth chart, injuries and
   // headshots for the team pages. Wrapped so a change in the shape of the
-  // fields it reads can never take the team-colour map down with it.
+  // fields it reads can never take the team-color map down with it.
   try {
     indexRoster(data, fetchedAt);
     writeRosterDiskCache();
@@ -183,7 +183,7 @@ async function fetchTeams(): Promise<void> {
 
 /**
  * Refresh the map if it's missing or stale. Never throws - a failure just means
- * cards render without team colours, which is cosmetic.
+ * cards render without team colors, which is cosmetic.
  */
 export async function ensureTeams(): Promise<void> {
   const warm =

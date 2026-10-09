@@ -208,7 +208,7 @@ function statchasers_rb_handcuffs_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out in
  * statchasers-team.php: Divi swaps the global post while rendering a Theme
- * Builder layout. Memoised for the same reason too.
+ * Builder layout. Memoized for the same reason too.
  */
 function statchasers_rb_handcuffs_post_has_shortcode(): bool {
 	static $answer = null;
@@ -523,7 +523,7 @@ add_action( 'wp_footer', 'statchasers_rb_handcuffs_print_fallback_schema', 99 );
  *
  * The rankings' arrangement (statchasers-rankings.php): the fragment ships its
  * FAQ as an inert JSON island, lifted here into one FAQPage on Rank Math's
- * graph, and stripped from what is printed. The fetch is the memoised one the
+ * graph, and stripped from what is printed. The fetch is the memoized one the
  * shortcode makes, so this costs no second round trip.
  *
  * @return array<int,array{q:string,a:string}>

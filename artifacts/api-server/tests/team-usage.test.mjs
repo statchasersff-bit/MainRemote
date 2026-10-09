@@ -145,7 +145,7 @@ describe("the ten components, in order", () => {
     );
   });
 
-  test("each hub is labelled with its own last game, not the league's latest week", async () => {
+  test("each hub is labeled with its own last game, not the league's latest week", async () => {
     // A Thursday game puts one matchup's week into the feed days before the
     // rest: only the teams that played it may say that week.
     for (const [abbr, slug] of [["ne", "new-england-patriots"], ["cle", "cleveland-browns"]]) {
@@ -191,7 +191,7 @@ describe("the highlights", () => {
     for (const row of rows) assert.ok(row.querySelectorAll(".is-owner").length >= 1);
   });
 
-  test("trend colours follow the sign of the delta", async () => {
+  test("trend colors follow the sign of the delta", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     for (const d of doc.querySelectorAll(".sct-us-delta.is-up")) assert.match(d.textContent, /^\+/);
     for (const d of doc.querySelectorAll(".sct-us-delta.is-down")) assert.match(d.textContent, /^−/);
@@ -251,12 +251,12 @@ describe("profiles", () => {
 });
 
 describe("FAQ", () => {
-  test("the questions are visible and link to #usage", async () => {
+  test("the questions are visible, with no report link under them", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const tail = doc.querySelector('[data-sct-faq-for="usage"]');
     assert.equal(tail.querySelector(".sct-faq-q").textContent, "Who leads the Bills in target share?");
     assert.equal(tail.querySelectorAll(".sct-faq-item").length, 15);
-    assert.equal(tail.querySelector(".sct-faq-more a").getAttribute("href"), "#usage");
+    assert.equal(tail.querySelector(".sct-faq-more"), null);
   });
 
   test("…and is in the FAQPage with the answer the page shows", async () => {

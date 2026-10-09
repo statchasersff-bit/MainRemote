@@ -39,7 +39,7 @@ const SOURCES_FILE = path.join(DATA_DIR, "bio_sources.json");
 export const VERIFY_FILE = path.join(DATA_DIR, "bio_verification.json");
 const WINDOW_DAYS = 10;
 
-/** Log verbs to move kinds, written against normalised text ("re-sign" -> "re sign"). */
+/** Log verbs to move kinds, written against normalized text ("re-sign" -> "re sign"). */
 const VERBS = [
   ["re sign|re signs|re signed|re signing", "re-sign"],
   ["sign|signs|signed|signing|agree to terms|agreed to terms|agree|agrees", "sign"],
@@ -83,7 +83,7 @@ const days = (a, b) => Math.round((Date.parse(a) - Date.parse(b)) / 86400000);
 
 /**
  * The moves in one log sentence for the given player names:
- * [{ slug, kind, detail }]. `names` is [[slug, normalisedName]].
+ * [{ slug, kind, detail }]. `names` is [[slug, normalizedName]].
  */
 export function movesIn(text, names) {
   const out = [];

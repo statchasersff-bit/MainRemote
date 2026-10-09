@@ -65,7 +65,7 @@ const STATCHASERS_TEAM_TIMEOUT = 8;
  * for the pages where that isn't true.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
- * @return string Sanitised slug, or '' if there is nothing usable.
+ * @return string Sanitized slug, or '' if there is nothing usable.
  */
 function statchasers_team_slug( array $atts ): string {
 	$atts = shortcode_atts(
@@ -349,7 +349,7 @@ function statchasers_team_enqueue_assets(): void {
  * the LAYOUT - whose content has no shortcode in it - and the page would answer
  * "no" to a question about itself. The queried object is the page either way.
  *
- * Memoised because the layout hooks below ask on every post-meta read, which on
+ * Memoized because the layout hooks below ask on every post-meta read, which on
  * a Divi page is hundreds of times per request.
  */
 function statchasers_team_post_has_shortcode(): bool {
@@ -549,7 +549,7 @@ function statchasers_team_auto_index( string $content ): string {
 	return $content . "\n" . $html;
 }
 // After do_shortcode (priority 11), so a page that mounts the index itself has
-// already rendered it and is recognised as mounted.
+// already rendered it and is recognized as mounted.
 add_filter( 'the_content', 'statchasers_team_auto_index', 20 );
 
 add_action(
@@ -594,7 +594,7 @@ function statchasers_team_is_divi(): bool {
  *
  * Divi gives `#left-area` 79.125% of the row above 980px and reserves the rest
  * for a sidebar widget area. On a team page that widget area is empty, so what
- * a reader sees is the hub squeezed into three quarters of the page, a 1px grey
+ * a reader sees is the hub squeezed into three quarters of the page, a 1px gray
  * rule down the boundary, and a tall band of nothing beside it. Below 980px
  * Divi collapses the split by itself, which is why it looks fine on every phone
  * you check it on.
@@ -848,7 +848,7 @@ function statchasers_team_full_width_css(): string {
 			'#left-area{width:100%!important;max-width:' . statchasers_team_content_width() . '!important;' .
 				'margin-left:auto!important;margin-right:auto!important;' .
 				'float:none!important;padding-right:0!important;padding-left:0!important}',
-			// The 1px grey rule Divi draws down the column boundary, which
+			// The 1px gray rule Divi draws down the column boundary, which
 			// without a sidebar beside it is a line down the middle of nothing.
 			// And the tool itself, capped at the same width. The rule above
 			// caps `#left-area`, which Divi prints only on a page that has NOT
@@ -865,7 +865,7 @@ function statchasers_team_full_width_css(): string {
 			// The generated hero (statchasers_page_heading_html()) is printed
 			// just before the tool, outside its root, so it takes the same cap
 			// or the page's H1 starts at the window's edge while the tool beneath
-			// it sits centred - measured on a builder page at 1780px, H1 at 0px
+			// it sits centered - measured on a builder page at 1780px, H1 at 0px
 			// and the table at 343px. Both are block siblings in one column, so
 			// the same cap and auto margins put their left edges together.
 			'#main-content ' . statchasers_tool_root_selector() . ',#main-content .sc-lo-hero--generated{max-width:' . statchasers_team_content_width() . '!important;' .
@@ -1152,7 +1152,7 @@ function statchasers_team_shortcode_heading( string $slug, string $section ): st
  * this produces one node for the page rather than one per tab.
  *
  * Reads the cached fetch the shortcode is about to hit rather than costing a
- * second request, and is memoised because the filter and the fallback printer
+ * second request, and is memoized because the filter and the fallback printer
  * both ask.
  *
  * The slug comes off the QUERIED object for the reason given on

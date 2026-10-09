@@ -2,12 +2,12 @@
  * Broadcaster logos for the schedule.
  *
  * Every broadcaster the NFL schedule actually names is here, drawn in its own
- * colours: a schedule column that is part logo and part abbreviation reads as
+ * colors: a schedule column that is part logo and part abbreviation reads as
  * two columns, and the point of the column is that a reader finds "the red one"
- * or "the peacock" without reading at all. Colour is what makes that work, so
+ * or "the peacock" without reading at all. Color is what makes that work, so
  * these are the real marks - the ABC roundel's ink and off-white, NBC's six
  * peacock feathers, ESPN red, the NFL Network shield's navy and red - rather
- * than one-colour silhouettes tinted to match.
+ * than one-color silhouettes tinted to match.
  *
  * The artwork is vendored under public/networks rather than hot-linked, so a
  * schedule row never waits on a CDN, and each mark is cropped from the frame
@@ -25,7 +25,7 @@
  */
 
 export interface NetworkMarkPath {
-  /** A six-digit hex; the mark carries its own colour rather than inheriting. */
+  /** A six-digit hex; the mark carries its own color rather than inheriting. */
   fill: string;
   /** Set only where the shape needs it - nonzero is SVG's default. */
   evenOdd?: boolean;

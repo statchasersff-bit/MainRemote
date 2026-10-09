@@ -139,7 +139,12 @@ function get_post_field( $field, $id ) { return 42 === (int) $id ? 'NFL Depth Ch
 function get_the_title( $id = 0 ) { return 7 === (int) $id ? 'NFL' : apply_filters( 'the_title', 'NFL Depth Charts', $id ); }
 function status_header( $code ) { $GLOBALS['wp_status'] = $code; }
 function nocache_headers() {}
-function wp_safe_redirect( $url, $status = 302 ) { $GLOBALS['wp_redirect'] = array( $url, $status ); echo "HTTP $status redirect -> $url\n"; return true; }
+// The plugin calls exit right after this, which would end the harness before
+// it printed anything. Throwing instead lets the lifecycle unwind to the
+// harness's catch, which reports the redirect; nothing after the throw runs,
+// exactly as nothing after the real exit would.
+class SCDC_Test_Redirect extends RuntimeException {}
+function wp_safe_redirect( $url, $status = 302 ) { $GLOBALS['wp_redirect'] = array( $url, $status ); throw new SCDC_Test_Redirect( "HTTP $status redirect -> $url" ); }
 function wp_enqueue_style( $h ) {}
 function wp_enqueue_script( $h ) {}
 function wp_register_style( $h, $s = '', $d = array(), $v = '' ) {}

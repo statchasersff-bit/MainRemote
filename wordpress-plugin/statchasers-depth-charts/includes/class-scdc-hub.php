@@ -99,18 +99,20 @@ class SCDC_Hub {
 	}
 
 	/**
-	 * Popular depth-chart views (label => relative path under the tool base).
-	 * Filterable via `scdc_nfl_popular_views`.
+	 * Popular depth-chart views (label => the tool's fragment state, without
+	 * the "#"; '' is the tool's default view). The tool has one address, so a
+	 * view is a fragment on it, never a path. Filterable via
+	 * `scdc_nfl_popular_views`.
 	 *
 	 * @return array
 	 */
 	private function popular_views() {
 		$views = array(
-			__( 'Fantasy - All Teams', 'statchasers-depth-charts' )    => 'fantasy/all-teams/',
-			__( 'Fantasy RBs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/rb/',
-			__( 'Fantasy WRs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/wr/',
-			__( 'Offense - WRs', 'statchasers-depth-charts' )          => 'offense/all-teams/wr/',
-			__( 'Defense - CBs', 'statchasers-depth-charts' )          => 'defense/all-teams/cb/',
+			__( 'Fantasy - All Teams', 'statchasers-depth-charts' )    => '',
+			__( 'Fantasy RBs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/rb',
+			__( 'Fantasy WRs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/wr',
+			__( 'Offense - WRs', 'statchasers-depth-charts' )          => 'offense/all-teams/wr',
+			__( 'Defense - CBs', 'statchasers-depth-charts' )          => 'defense/all-teams/cb',
 		);
 		return apply_filters( 'scdc_nfl_popular_views', $views );
 	}
@@ -216,7 +218,7 @@ class SCDC_Hub {
 									<ul>
 										<?php foreach ( $views as $label => $path ) : ?>
 											<li>
-												<a href="<?php echo esc_url( $dc_base . ltrim( $path, '/' ) ); ?>"><?php echo esc_html( $label ); ?></a>
+												<a href="<?php echo esc_url( '' === $path ? $dc_base : $dc_base . '#' . ltrim( $path, '#/' ) ); ?>"><?php echo esc_html( $label ); ?></a>
 											</li>
 										<?php endforeach; ?>
 									</ul>

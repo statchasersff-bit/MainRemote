@@ -273,7 +273,7 @@ const HASHED_ASSETS = new Set(
 
 let builtAssetVersion: string | null = null;
 
-// The bundles' source maps are a build artefact for this workspace, not
+// The bundles' source maps are a build artifact for this workspace, not
 // something to publish: in production they 404 like any other unknown path.
 app.use((req, res, next) => {
   if (process.env["NODE_ENV"] === "production" && req.path.endsWith(".map")) {

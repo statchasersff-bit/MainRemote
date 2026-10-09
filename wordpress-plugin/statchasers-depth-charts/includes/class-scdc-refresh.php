@@ -31,7 +31,7 @@ class SCDC_Refresh {
 	const LOCK_OPTION = 'scdc_refresh_lock';
 
 	/**
-	 * How long a lock is honoured. Past the 720s budget with room to spare, so
+	 * How long a lock is honored. Past the 720s budget with room to spare, so
 	 * only a run that died without releasing it (a fatal, a killed worker) is
 	 * ever taken over.
 	 */

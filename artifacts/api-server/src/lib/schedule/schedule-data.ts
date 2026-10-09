@@ -63,7 +63,7 @@ const FEED_TIME_ZONE = "America/New_York";
  * The identity we send upstream.
  *
  * Separate from TEAM_USER_AGENT only because it names a different tool; the
- * bare-hostname form is copied deliberately, because the parenthesised URL form
+ * bare-hostname form is copied deliberately, because the parenthesized URL form
  * is what ESPN's edge rejects with a 403. See lib/team/cache.ts.
  */
 const SCHEDULE_USER_AGENT = "StatChasersSchedule/1.0 (+statchasers.com)";

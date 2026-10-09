@@ -3,7 +3,7 @@
  *
  * The promise this feature makes is "switching where posts come from is a
  * config change". For the commercial APIs that resell X data, that promise
- * lives entirely in one normaliser - so it is tested against the three shapes
+ * lives entirely in one normalizer - so it is tested against the three shapes
  * those vendors actually ship: X's own v1.1 tweet object (which most mirrors
  * copy), X API v2's flatter object with `referenced_tweets`, and the camelCase
  * shape the newer resellers prefer.
@@ -96,7 +96,7 @@ describe("reading a vendor's post object", () => {
     assert.equal(post.url, "https://x.com/RapSheet/status/1900000000000000003");
   });
 
-  test("a repost is recognised however the vendor reports it", () => {
+  test("a repost is recognized however the vendor reports it", () => {
     const nested = normalizeApiTweet(
       { ...LEGACY, retweeted_status: { id_str: "1", full_text: "original" } },
       "x",

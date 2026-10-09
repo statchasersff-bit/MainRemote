@@ -70,7 +70,7 @@ function sectionOpen(id: string, heading: string, lede: string): string {
   );
 }
 
-/** A link inside running text: the club colour, underlined. */
+/** A link inside running text: the club color, underlined. */
 function a(href: string, text: string, attrs = ""): string {
   return `<a href="${escapeHtml(href)}"${attrs}>${escapeHtml(text)}</a>`;
 }

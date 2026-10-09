@@ -681,7 +681,7 @@ function outcomeLine(c: TeamCoaching, fpYear: string): string {
 }
 
 /**
- * A stop's fingerprint as two labelled groups - target share, then backfield
+ * A stop's fingerprint as two labeled groups - target share, then backfield
  * - since a WR share and a lead back's weighted opportunities are different
  * measures. A stop before target tracking says so in a few muted words; the
  * section note above explains why.
@@ -915,7 +915,7 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     `<th scope="col" class="sct-co-th">WR1</th>` +
     `<th scope="col" class="sct-co-th">TE1</th>` +
     `</tr></thead><tbody>${rows}</tbody></table></div>` +
-    `<p class="sct-co-fnote">${e(`PPR positional finishes from nflverse. Partial-season rows rank only the games ${last} called. Historical outcomes, not projections.`)}</p>` +
+    `<p class="sct-co-fnote">${e(`PPR positional finishes. Partial-season rows rank only the games ${last} called. Historical outcomes, not projections.`)}</p>` +
     `<details class="sct-co-more"><summary class="sct-co-more-q">How finishes are calculated</summary>` +
     `<p class="sct-co-more-a">${e(c.finishes.note)}</p></details>` +
     `</div>`
@@ -935,8 +935,8 @@ function rookieNote(c: TeamCoaching): string {
 }
 
 /**
- * One labelled bar: fill = the share, an optional thin marker = the league
- * average. The number always rides beside the bar - never colour-only.
+ * One labeled bar: fill = the share, an optional thin marker = the league
+ * average. The number always rides beside the bar - never color-only.
  */
 function barRow(row: BarRow, label: string, value: string, extra = ""): string {
   const width = row.pct ?? row.share ?? 0;
@@ -1117,7 +1117,7 @@ function scoreState(c: TeamCoaching): string {
 }
 
 /**
- * The StatChasers bottom line as a recognisable component: last season's
+ * The StatChasers bottom line as a recognizable component: last season's
  * carryover, this season's signals, the caller's historical leans and the
  * sample, each one line. Every item is read off the module above; the
  * builder's full paragraph stays one click down.

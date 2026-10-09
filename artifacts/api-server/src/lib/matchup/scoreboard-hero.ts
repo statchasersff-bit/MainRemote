@@ -86,9 +86,9 @@ export interface ScoreboardHeroOptions {
   heading?: string;
 }
 
-/* ----------------------------------------------------------------- colours */
+/* ----------------------------------------------------------------- colors */
 
-/** The panel's navy, and what a side colour falls back to. */
+/** The panel's navy, and what a side color falls back to. */
 const NAVY = "#0F1E33";
 const FALLBACK_COLOR = "#1E3A5F";
 /** Each side is laid over the navy at this opacity. */
@@ -97,10 +97,10 @@ const SIDE_ALPHA = 0.9;
 const AA_CONTRAST = 4.5;
 
 /**
- * Every club's official primary and secondary colour, keyed by display code.
+ * Every club's official primary and secondary color, keyed by display code.
  *
  * Built from the team table rather than restated: teams.ts is the one place a
- * team's colours live (it takes them from render.ts, which the news cards use),
+ * team's colors live (it takes them from render.ts, which the news cards use),
  * and a second copy here would be a second thing to keep in sync.
  */
 export const teamColors: Record<string, { primary: string; secondary: string }> =
@@ -118,7 +118,7 @@ function rgb(hex: string): [number, number, number] | null {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** The colour as it actually shows: laid over the navy at SIDE_ALPHA. */
+/** The color as it actually shows: laid over the navy at SIDE_ALPHA. */
 function overNavy(hex: string): [number, number, number] {
   const top = rgb(hex) ?? rgb(FALLBACK_COLOR)!;
   const base = rgb(NAVY)!;
@@ -127,7 +127,7 @@ function overNavy(hex: string): [number, number, number] {
   ) as [number, number, number];
 }
 
-/** WCAG contrast of white text on a colour. */
+/** WCAG contrast of white text on a color. */
 function whiteContrast([r, g, b]: [number, number, number]): number {
   const linear = (c: number): number => {
     const s = c / 255;
@@ -145,7 +145,7 @@ function darken(hex: string, amount: number): string {
 }
 
 /**
- * The colour a side of the panel is painted, as a hex string.
+ * The color a side of the panel is painted, as a hex string.
  *
  * The primary when white text on it passes AA; otherwise the secondary when
  * that does (Cincinnati's orange gives way to its black, Denver's to its navy);
@@ -178,7 +178,7 @@ function luminanceOf([r, g, b]: [number, number, number]): number {
   return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
 }
 
-/** WCAG contrast between two hex colours. */
+/** WCAG contrast between two hex colors. */
 export function contrastRatio(a: string, b: string): number {
   const la = luminanceOf(rgb(a) ?? [0, 0, 0]);
   const lb = luminanceOf(rgb(b) ?? [0, 0, 0]);
@@ -199,7 +199,7 @@ function passing(candidates: string[], against: string): string {
 }
 
 /**
- * A club's colour as TEXT on the page and its cards: the primary when it
+ * A club's color as TEXT on the page and its cards: the primary when it
  * passes AA there, otherwise the primary darkened until it does. Not the secondary -
  * for most clubs that is the paler of the two.
  */
@@ -211,7 +211,7 @@ export function teamInk(abbr: string, useSecondary = false): string {
   return passing([useSecondary ? colors.secondary : colors.primary], "#F5F7FA");
 }
 
-/** Two colours a reader could mistake for one: #002244 and #0B162A, say. */
+/** Two colors a reader could mistake for one: #002244 and #0B162A, say. */
 export function tooClose(a: string, b: string): boolean {
   const x = rgb(a);
   const y = rgb(b);
@@ -220,11 +220,11 @@ export function tooClose(a: string, b: string): boolean {
 }
 
 /**
- * Text and fill colours for both sides of one page, told apart.
+ * Text and fill colors for both sides of one page, told apart.
  *
  * Several clubs share a primary - the Patriots and the Seahawks are both
  * #002244, and the Raiders, Saints and Steelers the same near-black - and a
- * comparison drawn in one colour on both sides has lost what the colour was
+ * comparison drawn in one color on both sides has lost what the color was
  * for. The home side then takes its secondary instead (Seattle's green),
  * made safe for text the same way, and a neutral slate if even that clashes.
  */
@@ -246,7 +246,7 @@ export function pairColors(
 }
 
 /**
- * A club's colour as a FILL under white text (the series tiles, the result
+ * A club's color as a FILL under white text (the series tiles, the result
  * chips): primary, then secondary, then the primary darkened.
  */
 export function teamFill(abbr: string): string {

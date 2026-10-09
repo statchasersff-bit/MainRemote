@@ -68,7 +68,7 @@ export interface ListNewsOptions {
 
 /**
  * Newest first. The team abbreviation is resolved here rather than in the
- * browser (see lib/teams.ts) so server-rendered cards carry their team colours
+ * browser (see lib/teams.ts) so server-rendered cards carry their team colors
  * in the initial HTML.
  *
  * The player wire only, unless asked otherwise. This is the reader behind the
@@ -151,7 +151,7 @@ export async function listNews(
  * fact to null.
  *
  * Everything else is the wire, where team is derived: from the headshot first -
- * that is the existing, unchanged behaviour the news feed relies on - and then,
+ * that is the existing, unchanged behavior the news feed relies on - and then,
  * only when there is no headshot to read, from the player's name against the
  * same Sleeper index. The archive genuinely contains rows with a null image
  * ("Vita Vea: Agrees to one-year extension"), and without the fallback those

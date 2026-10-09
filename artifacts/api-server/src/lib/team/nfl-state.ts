@@ -8,7 +8,7 @@
  *
  *   - A win-loss record. ESPN's team document reports whatever record is
  *     current, which in August is the PRESEASON record. Printing "1-0-1" in a
- *     hero labelled 2026 would be a plain falsehood about a season that has not
+ *     hero labeled 2026 would be a plain falsehood about a season that has not
  *     kicked off, so the record is shown only once `season_type` says the
  *     regular season is under way.
  *   - Which season the Team Snapshot describes. Per-game averages and NFL ranks

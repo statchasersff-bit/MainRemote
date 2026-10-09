@@ -28,7 +28,7 @@
  * restart may or may not re-establish the proxy route (both incidents were
  * cured by a full republish), but it is the strongest self-help available
  * from inside the VM, and a repeating [watchdog] exit line in the pane turns
- * a silent outage into a labelled, timestamped one.
+ * a silent outage into a labeled, timestamped one.
  *
  * Local down too is not the proxy's fault - the app is wedged - and exiting
  * for a restart is then simply correct.

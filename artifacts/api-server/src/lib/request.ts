@@ -91,7 +91,7 @@ function trustedHost(host: string): boolean {
  * fragment deliberately discarded.
  *
  * Tool state must never change the canonical. Sorting/filtering parameters are
- * a classic source of duplicate URLs, so `/?a=1` and `/?a=2` both canonicalise
+ * a classic source of duplicate URLs, so `/?a=1` and `/?a=2` both canonicalize
  * to the bare page. `PUBLIC_CANONICAL_URL` overrides this entirely for
  * deployments that sit behind a different public URL.
  */
@@ -99,7 +99,7 @@ export function canonicalUrl(req: Request): string {
   const override = process.env["PUBLIC_CANONICAL_URL"]?.trim();
   if (override) return override;
 
-  // req.path excludes the query string; normalise so "/index.html" and "/" -
+  // req.path excludes the query string; normalize so "/index.html" and "/" -
   // the two ways to reach the app - agree on one canonical.
   // Lower-cased: routing matches /Schedule and /player/Lamar-Jackson too, and
   // each used to name itself as its own canonical.

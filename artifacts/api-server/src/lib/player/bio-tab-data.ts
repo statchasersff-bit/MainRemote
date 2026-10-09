@@ -301,7 +301,7 @@ function surname(full: string): string {
 
 /**
  * Clubs that moved or were renamed inside the game logs' span (2009 on). A
- * stop is named, and coloured, for the era of its last season.
+ * stop is named, and colored, for the era of its last season.
  */
 const ERAS: Record<string, { until: number; name: string; nickname: string; primary: string; accent: string }[]> = {
   LV: [{ until: 2019, name: "Oakland Raiders", nickname: "Raiders", primary: "#000000", accent: "#A5ACAF" }],

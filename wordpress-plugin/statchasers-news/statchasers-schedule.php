@@ -214,7 +214,7 @@ add_action(
 );
 
 /**
- * Normalise the shortcode attributes.
+ * Normalize the shortcode attributes.
  *
  * `team` is no longer read: the API dropped the team view, so sending it only
  * split this file's cache for renders that came back identical.
@@ -468,7 +468,7 @@ function statchasers_schedule_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out at
  * length in statchasers-team.php: Divi swaps the global post while rendering a
- * Theme Builder layout. Memoised for the same reason too.
+ * Theme Builder layout. Memoized for the same reason too.
  */
 function statchasers_schedule_post_has_shortcode(): bool {
 	static $answer = null;
@@ -925,7 +925,7 @@ function statchasers_schedule_mounted_atts(): array {
  *
  * The fetch is the cached one the shortcode is about to hit - same arguments,
  * same transient key - so this costs no second round trip, and the result is
- * memoised because the Rank Math filter and the fallback printer both ask.
+ * memoized because the Rank Math filter and the fallback printer both ask.
  *
  * @return array<int,array{q:string,a:string}>
  */

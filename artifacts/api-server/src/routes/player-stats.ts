@@ -16,7 +16,7 @@
  * **The path says which position this is.** That is the standalone app's own
  * routing (`/nfl/nfl-player-stats/qb|rb|wr|te`), kept because each position is
  * a different table of different players. The quarterback table is the bare
- * path, as it was there - the app normalised a bare address to `/qb` on load -
+ * path, as it was there - the app normalized a bare address to `/qb` on load -
  * and `/qb` answers with a 301 back to it, so one table has one address. A
  * position the tool does not have, or a second spelling of one it does
  * (`/RB`), is a 404 rather than a copy.

@@ -28,13 +28,13 @@
  *    at the same pick. The caption says which of the two it is, because the
  *    shape of the table invites the wrong one.
  *
- * A note on colour. Tiers are nominal, not ordered: tier 3 is not "more" than
+ * A note on color. Tiers are nominal, not ordered: tier 3 is not "more" than
  * tier 2, it is a different group, so the tints are seven distinct hues at one
  * lightness rather than a ramp. They run at ~95% lightness, which keeps every
- * cell's text at its full contrast ratio against the tint and means the colour
+ * cell's text at its full contrast ratio against the tint and means the color
  * is doing grouping work only. Every tinted cell also prints its rank, and the
  * tier tables print the tier number in its own column, so nothing here is
- * encoded in colour alone.
+ * encoded in color alone.
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
@@ -411,7 +411,7 @@ function renderTierRow(
  * looking down the right edge of the table for something to click rather than
  * at the names. It is deliberately NOT a second stop for anyone navigating by
  * keyboard or by a screen reader's link list: two links per row, both landing
- * on the same page and the second one labelled generically, is noise in both
+ * on the same page and the second one labeled generically, is noise in both
  * of those. `tabindex="-1"` and `aria-hidden="true"` leave the row with one
  * announced, focusable link - the name - and give the pointer a bigger one.
  *
@@ -509,8 +509,8 @@ function renderPositionBoard(
 /**
  * The tier legend.
  *
- * Present because the All board's cells are tinted, and a colour scale with no
- * key is decoration. It names each tier in words as well as in colour, and it
+ * Present because the All board's cells are tinted, and a color scale with no
+ * key is decoration. It names each tier in words as well as in color, and it
  * sits with the All panel because that is the only board where the tint is the
  * only place the tier appears - the position tables print it in a column.
  */

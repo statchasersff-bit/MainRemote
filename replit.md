@@ -46,7 +46,7 @@ _Replace the heading above with the project's name, and this line with one sente
   `yt` (a YouTube video's hqdefault thumbnail by video id, for the matchup
   highlights box). One key string names an image everywhere: `4046`,
   `espn:4040715`, `club:<base64url>`, `yt:<video id>`; `imageKeyFor(url)`
-  makes it, `parseImageKey()` reads it. Club art gets centre-cropped squares
+  makes it, `parseImageKey()` reads it. Club art gets center-cropped squares
   plus 16:9 bands to 960px; video thumbs 4:3 at 320 and 480; headshots keep
   the top-anchored squares, figures and 350 band. `ESPN_CDN_BASE_URL`,
   `CLUB_CDN_BASE_URL` and `YT_IMG_BASE_URL` stub the upstreams in tests. The standalone depth charts
@@ -168,7 +168,8 @@ _Replace the heading above with the project's name, and this line with one sente
   removes that link everywhere rather than pointing it at a 404:
   `SC_SITE_ORIGIN` (default `https://statchasers.com`),
   `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE` (default
-  `/nfl/nfl-depth-charts/fantasy/{slug}/`, the depth-charts plugin's team route),
+  `/nfl/nfl-depth-charts/`, the league-wide tool; its per-team routes were
+  retired in the depth-charts plugin's 1.7.0),
   `SC_TEAM_SCHEDULE_URL_TEMPLATE` (default `/nfl/nfl-schedule/`: the link reads
   "View full NFL schedule"; the old `/nfl/schedule/{slug}/` never existed),
   `SC_TOOLS_URL` (the "Explore StatChasers" tool index),
@@ -267,7 +268,7 @@ _Replace the heading above with the project's name, and this line with one sente
   both populations and both denominators: the bars follow the table and leave
   quarterbacks out, the rings include them because a quarterback's carries are
   a real part of a backfield. Five named slices at most, the tail pooled into a
-  grey "Other", nothing drawn for a player who did not record the stat, and a
+  gray "Other", nothing drawn for a player who did not record the stat, and a
   zero denominator prints "Target share data unavailable" rather than an empty
   ring. Every name, percentage and raw count is text beside the chart: the SVG
   is `aria-hidden` and carries only tooltips. No chart dependency - a ring is
@@ -347,7 +348,7 @@ _Replace the heading above with the project's name, and this line with one sente
   changed; drives the "Last updated" stamp, ETags, and the render cache key.
 - `artifacts/api-server/public/statchasers-logo-on-{dark,light}.png` - the mark
   shown in place of a missing player headshot, named for the surface it belongs
-  on rather than for its own colour. The thumbnail tile is dark for every team,
+  on rather than for its own color. The thumbnail tile is dark for every team,
   so the card uses the on-dark (white) file; the on-light (navy) one is its
   counterpart for a light surface. Referenced only from `styles.css`, so both
   resolve against the tool origin in either mount. Regenerate from the sources in
@@ -390,7 +391,7 @@ A second tool in the same app, sharing the news pipeline, the player→team map
 and the deployment. It does not touch the news page.
 
 - `src/lib/team/teams.ts` - **the canonical 32-team table**. One row per
-  franchise: id, slug, names, division, colours, ESPN ids. Nothing else may
+  franchise: id, slug, names, division, colors, ESPN ids. Nothing else may
   carry a team mapping. `getTeamBySlug`, `getTeamByAbbreviation` and
   `normalizeTeamName` are the only ways to turn a string into a team;
   `normalizeTeamName` also accepts nicknames, ESPN codes and retired ones
@@ -454,7 +455,7 @@ tool and the hubs work - and Rank Math keeps the SEO.
   and it carries that season and week inside it. Sleeper publishes two cuts of
   the research endpoint and neither is filtered by how many quarterbacks a
   league starts: the default (673 players) and `league_type=2`, the dynasty one
-  (1662). The default is what the header reads and the figure is labelled
+  (1662). The default is what the header reads and the figure is labeled
   "Sleeper redraft", not "1QB", because that is the claim the source supports -
   the same week had Jacoby Brissett at 11.8% in the default cut and 71.8% in
   the dynasty one.
@@ -501,7 +502,7 @@ tool and the hubs work - and Rank Math keeps the SEO.
 - `src/client/player.ts` → `public/dist/statchasers-player.js` - enhancement
   only: tabs, relative timestamps, a hover layer on the weekly chart, sortable
   game-log columns. `public/player.css` is its stylesheet.
-- `src/client/enhance.ts` - the tab/timestamp/iframe-height behaviours shared
+- `src/client/enhance.ts` - the tab/timestamp/iframe-height behaviors shared
   with the hubs. `client/team.ts` still carries its own copies; it predates this
   module and folding it in is a follow-up, not something to do while adding a
   third tool.
@@ -535,7 +536,7 @@ first response and all covering 32 teams:
 No toggle, because nothing is fetched: hiding half the tab behind a button only
 made sense when the other half cost a request. And no impact tags or generated
 blurbs: the original had them, this app does not produce them, and inventing a
-"high impact" label would be the page asserting an editorial judgement nobody
+"high impact" label would be the page asserting an editorial judgment nobody
 made.
 
 The designation card renders **only when a designation exists**. There is no
@@ -546,7 +547,7 @@ clubs have filed, and "nothing filed" is not the same claim as "fit".
 **The charts are specified, not styled.** The four finish tiers are an *ordinal*
 scale, so they take one hue in four monotone lightness steps (OKLCH L 0.359 /
 0.500 / 0.628 / 0.754, palest still ≥2:1 on white) rather than four hues - the
-order is visible in the colour, and every tier is labelled in text as well. The
+order is visible in the color, and every tier is labeled in text as well. The
 weekly chart's two series were validated as a pair (ΔE 23.7 under protanopia).
 Those values are in `public/player.css` with the reasoning beside them; changing
 them means re-validating, not re-eyeballing.
@@ -563,9 +564,9 @@ an empty container. Here the API renders the table and `[statchasers_fpa]`
 prints it, like the other three.
 
 - `lib/db/src/schema/fpa.ts` - two tables. `fantasy_points_allowed_games` is the
-  granular record (season, week, defence, position, format) and exists so a
+  granular record (season, week, defense, position, format) and exists so a
   served figure can be traced to the weeks that made it;
-  `fantasy_points_allowed_snapshots` is the one-row-per-(defence, format) figure
+  `fantasy_points_allowed_snapshots` is the one-row-per-(defense, format) figure
   the page serves.
 - `src/lib/fpa/nflverse.ts` - fetch, RFC-4180 CSV parse, and the scoring formula
   for all three formats. Written out rather than read off upstream's own
@@ -580,7 +581,7 @@ prints it, like the other three.
 - `src/lib/fpa/ingest.ts` - aggregation, the strength-of-schedule adjustment,
   and the blend. Replaces rather than accumulates, in one transaction.
 - `src/lib/fpa/fpa-data.ts` - the read: one query, ranked. **Rank 1 is the
-  softest defence** (the industry convention, and the one that matches how the
+  softest defense** (the industry convention, and the one that matches how the
   table is read); the page says so in words and `tests/fpa.test.mjs` asserts the
   direction off the rendered HTML.
 - `src/lib/fpa-render.ts` / `fpa-ssr.ts` / `fpa-seo.ts` - markup, fragment cache
@@ -648,7 +649,7 @@ immediately; concurrent requests share the in-flight promise, and a failure
 backs off for a minute. Scheduled ingest is still the intended path - this is
 the safety net under it, not the mechanism.
 
-**The colour scale is diverging, not ordinal.** Rank 1 is softest, 32 toughest,
+**The color scale is diverging, not ordinal.** Rank 1 is softest, 32 toughest,
 league average in the middle, so it takes two hues either side of a neutral
 rather than one ramp. The poles were validated as a pair (ΔE 19.1 under
 protanopia, both above 6:1 on white) and the arms are lightness-symmetric. Every
@@ -676,7 +677,7 @@ they were not on the page. Here the API renders all five panels per request and
   loader discovers seasons by filename and serves the newest.
 - `src/lib/rankings/rankings-data.ts` - the read, and the domain. `TIER_RULES`
   is where a tier boundary moves; it is **editorial**, not computed, because the
-  cliff between QB5 and QB6 is a judgement about the position. `POSITION_LIMITS`
+  cliff between QB5 and QB6 is a judgment about the position. `POSITION_LIMITS`
   is how deep each board goes (40/50/100/40) - the source files run to 362
   players and the page has no business printing all of them.
 - Team abbreviations and player links come from `data/player/players.json`, the
@@ -697,7 +698,7 @@ they were not on the page. Here the API renders all five panels per request and
   has a `download.csv` (built from the same load the page renders, and carrying
   the derived tier and team columns the source file does not have), and
   `/embed/rankings` serves either.
-- `src/client/rankings.ts` - tab behaviour only: switch in place, push the
+- `src/client/rankings.ts` - tab behavior only: switch in place, push the
   board's address, Back walks the tabs (`wireTabs` address mode, as the player
   pages' section bar uses it). Deliberately no sorting: a
   tiered board has one meaningful order, the one it is published in, and letting
@@ -712,7 +713,7 @@ says. The caption states the positional reading explicitly, and
 is a different group, so the tints are seven distinct hues at one lightness
 rather than a ramp. All of them sit near 95% lightness, which keeps the name at
 full contrast; the rank column and the tier column carry the same information in
-text, so nothing is encoded in colour alone.
+text, so nothing is encoded in color alone.
 
 ### NFL Schedule (`/schedule`)
 
@@ -786,7 +787,7 @@ and most of what is distinctive about it follows from that.
   second formatter in the browser, which is how they drift. The fragment still
   takes its week as a query argument, because there it is an argument to a
   render rather than an address; the WordPress plugin owns the address.
-- `src/client/schedule.ts` - kickoffs relabelled into the reader's own time zone
+- `src/client/schedule.ts` - kickoffs relabeled into the reader's own time zone
   (the server says ET because it has no idea where the reader is), the week
   strip scrolled to where you are, and a team picker that submits itself. That
   is all; the board is complete before it runs.
@@ -820,7 +821,7 @@ lighter navy: navy on navy disappears, so the source promotes the accent into
 the primary slot and everything that was navy text becomes gold text.
 
 What did NOT come across is structure, which stays server-rendered: the three
-views, the When/Matchup/TV grid, the market coverage floor, the centred sidebar
+views, the When/Matchup/TV grid, the market coverage floor, the centered sidebar
 cards, and the rule that home and
 away are always stated in words and never carried by position alone.
 
@@ -1000,7 +1001,7 @@ fragment's `scsos-page-data` island. No schema, no FAQ. The view is
 `?tab&pos&scoring` on the page's own URL (the plugin reads it, the bundle writes
 it) and never part of a canonical. CSV: `/sos/download.csv` (public).
 
-**Divergences from the source:** house dress (FPA's colour scale), link pills
+**Divergences from the source:** house dress (FPA's color scale), link pills
 instead of select dropdowns, `title`s and `<details>` instead of Radix
 tooltips/popovers, the baseline badge names the live blend phase instead of a
 fixed "Preseason Baseline Active", CSV has 17 week columns (the source's
@@ -1147,7 +1148,7 @@ header said 18) plus PO2/PO3, and card deltas print one decimal.
   the wrong team's page.
 
 - **One Sleeper download feeds both tools.** The player dictionary is ~14MB and
-  `lib/teams.ts` was already pulling it to colour news cards. The team pages'
+  `lib/teams.ts` was already pulling it to color news cards. The team pages'
   depth chart, injuries and headshots are a second pass over that same payload
   (`lib/team/roster.ts`), not a second fetch. Its refresh dropped from 24h to
   12h when injuries moved onto it - a designation a day old is exactly the
@@ -1200,7 +1201,7 @@ header said 18) plus PO2/PO3, and card deltas print one decimal.
 - **Reads are async; the ETag path is not.** Moving off better-sqlite3 made every
   query a promise, but `contentVersion()` runs mid-response while an ETag and a
   render-cache key are being assembled. Rather than thread awaits through those
-  callers, `lib/freshness.ts` keeps a memoised snapshot: `ensureFreshness()` is
+  callers, `lib/freshness.ts` keeps a memoized snapshot: `ensureFreshness()` is
   awaited once per content version at the top of a request path, and
   `freshness()`/`contentVersion()` read it synchronously afterwards.
 
@@ -1229,7 +1230,7 @@ header said 18) plus PO2/PO3, and card deltas print one decimal.
   statchasers.com URL. The legacy iframe still works and the framed app is
   served `noindex, indexifembedded`, but it leaves the parent page's HTML empty.
 - **Player→team map moved to the server** (`src/lib/teams.ts`). SSR needs team
-  colours at render time, and it removes a multi-megabyte Sleeper fetch that
+  colors at render time, and it removes a multi-megabyte Sleeper fetch that
   every visitor used to make. `team` now rides along on each `/api/news` item.
 - **Metadata is server-rendered and JS never touches it.** Title, description,
   canonical and OG tags come from `src/lib/seo.ts` and are injected at the
@@ -1333,7 +1334,7 @@ _Populate as you build - explicit user instructions worth remembering across ses
 - Don't add filter/sort UI as `<a href="?...">`. Use `<button>` and keep the
   state in the DOM - anchors here would create a crawlable duplicate URL space
   and undo the canonical work. Links to *other pages* are fine and wanted; it's
-  parameterised self-links that cause the problem. Production pins its origin to
+  parameterized self-links that cause the problem. Production pins its origin to
   `https://news.statchasers.com` (see Run & Operate); `PUBLIC_CANONICAL_URL`
   overrides the whole canonical for a deployment behind a different URL.
 - `.sc-card-player` must stay above the headline's stretched `::after` overlay
@@ -1341,7 +1342,7 @@ _Populate as you build - explicit user instructions worth remembering across ses
   still being followable by crawlers - a silent, easy-to-miss regression.
 - Don't add schema types to the plugin because the data happens to be there.
   Article/ItemList/Dataset/FAQPage on this page would be inaccurate, and ratings
-  must never be synthesised.
+  must never be synthesized.
 - **Run `pnpm --filter @workspace/api-server test` before shipping any change to
   rendering, the plugin, or the build.** It is specifically there to catch a
   change that makes the tool invisible to crawlers again.
@@ -1362,7 +1363,7 @@ _Populate as you build - explicit user instructions worth remembering across ses
 - `tests/ingest.test.mjs` is the only suite that writes rows, and it cleans up
   its own `test:`-prefixed row afterwards. Its stub feed serves an empty list for
   the throttle tests precisely so they cannot touch real data.
-- Two Postgres behaviours differ from the SQLite they replaced, and both are
+- Two Postgres behaviors differ from the SQLite they replaced, and both are
   load-bearing: `LIKE` is case-sensitive here (search uses `ilike`), and `DESC`
   sorts NULLs **first** (ordering is spelled `desc nulls last`, or an item with an
   unparseable pubDate jumps to the top of the page).

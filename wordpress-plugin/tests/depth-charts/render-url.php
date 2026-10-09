@@ -3,13 +3,14 @@
  * Test harness: boots the plugin against the WordPress shims and simulates a
  * request, printing what a browser/Googlebot would receive.
  *
- * Usage: php harness.php <path> [--admin]
- *   e.g. php harness.php /nfl/nfl-depth-charts/fantasy/houston-texans/
+ * Usage: php render-url.php <path> [body]
+ *   e.g. php render-url.php /nfl/nfl-depth-charts/fantasy/houston-texans/   (a 301)
+ *        php render-url.php /nfl/nfl-depth-charts/ body                      (the markup)
  */
 
 require __DIR__ . '/wp-stubs.php';
 
-$path  = isset( $argv[1] ) ? $argv[1] : '/nfl/nfl-depth-charts/fantasy/';
+$path  = isset( $argv[1] ) ? $argv[1] : '/nfl/nfl-depth-charts/';
 $parts = explode( '?', $path, 2 );
 $only  = isset( $argv[2] ) ? $argv[2] : '';
 
@@ -34,9 +35,13 @@ require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php'
 do_action( 'plugins_loaded' );
 
 // --- The request lifecycle WordPress would run ---
-do_action( 'parse_request' );          // sitemap interception happens here
-do_action( 'wp' );                     // routing: 404s + normalization
-do_action( 'template_redirect' );      // H1 buffering, fallback head registration
+try {
+	do_action( 'parse_request' );
+	do_action( 'wp' );                     // routing: 404s + the pre-1.7.0 301s
+	do_action( 'template_redirect' );      // nothing of ours runs here any more
+} catch ( SCDC_Test_Redirect $redirect ) {
+	// Recorded in $GLOBALS['wp_redirect']; reported below.
+}
 
 $route = SCDC_Route::get();
 $team  = SCDC_Route::team();
@@ -46,10 +51,13 @@ echo str_repeat( '=', 78 ) . "\n";
 
 if ( ! empty( $GLOBALS['wp_redirect'] ) ) {
 	echo "HTTP {$GLOBALS['wp_redirect'][1]} redirect -> {$GLOBALS['wp_redirect'][0]}\n";
+	echo "Route type               : {$route['type']} ({$route['reason']})\n";
+	echo 'Named team               : ' . ( $team ? $team['name'] . ' [' . $team['abbr'] . ']' : '-' ) . "\n";
 	exit;
 }
 
-// WordPress's own canonical-redirect pass (redirect_canonical filter).
+// WordPress's own canonical-redirect pass (redirect_canonical filter) - the
+// plugin no longer touches it, so a missing trailing slash is WordPress's call.
 $canonical_redirect = apply_filters( 'redirect_canonical', false );
 if ( $canonical_redirect ) {
 	echo "HTTP 301 redirect (URL normalization) -> {$canonical_redirect}\n";
@@ -59,77 +67,26 @@ if ( $canonical_redirect ) {
 $status = ! empty( $GLOBALS['wp_is_404'] ) ? 404 : 200;
 echo "HTTP status              : {$status}" . ( 404 === $status ? "  (404 template, nocache headers)" : '' ) . "\n";
 echo "Route type               : {$route['type']} ({$route['reason']})\n";
-echo 'Detected team            : ' . ( $team ? $team['name'] . ' [' . $team['abbr'] . ']' : '-' ) . "\n";
-echo 'X-SCDC-Route header      : ' . $route['type'] . ( $route['team_slug'] ? ':' . $route['team_slug'] : '' ) . "\n";
 echo "Season                   : " . SCDC_Teams::season() . "\n";
 
 if ( 404 === $status ) {
-	echo "\nNo team SEO is generated for this URL - it is not one of the 32 slugs.\n";
+	echo "\nNot one of the recognised view/team/position slugs.\n";
 	exit;
 }
 
-// --- What Rank Math would emit, run through the plugin's filters ---
-$generic_title = 'NFL Depth Charts for Fantasy Football | All 32 Teams';
-$generic_desc  = 'Free NFL depth charts for all 32 teams, updated for fantasy football.';
-$generic_canon = 'https://statchasers.com/nfl/nfl-depth-charts/';
-
-$title     = apply_filters( 'rank_math/frontend/title', $generic_title );
-$desc      = apply_filters( 'rank_math/frontend/description', $generic_desc );
-$canonical = apply_filters( 'rank_math/frontend/canonical', $generic_canon );
-$robots    = apply_filters( 'rank_math/frontend/robots', array( 'index' => 'noindex', 'follow' => 'follow' ) );
-$og_title  = apply_filters( 'rank_math/opengraph/facebook/og_title', $generic_title );
-$og_desc   = apply_filters( 'rank_math/opengraph/facebook/og_description', $generic_desc );
-$og_url    = apply_filters( 'rank_math/opengraph/facebook/og_url', $generic_canon );
-
-echo "\n--- Initial HTTP response <head> (Rank Math filters applied) ---\n";
-echo '<title>' . esc_html( $title ) . "</title>\n";
-echo '<meta name="description" content="' . esc_attr( $desc ) . '" />' . "\n";
-echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
-echo '<meta name="robots" content="' . esc_attr( implode( ', ', $robots ) ) . '" />' . "\n";
-echo '<meta property="og:title" content="' . esc_attr( $og_title ) . '" />' . "\n";
-echo '<meta property="og:description" content="' . esc_attr( $og_desc ) . '" />' . "\n";
-echo '<meta property="og:url" content="' . esc_url( $og_url ) . '" />' . "\n";
-
-// --- Breadcrumbs + schema ---
-$crumbs = apply_filters(
-	'rank_math/frontend/breadcrumb/items',
-	array(
-		array( 'Home', 'https://statchasers.com/' ),
-		array( 'NFL', 'https://statchasers.com/nfl/' ),
-		array( 'NFL Depth Charts', '' ),
-	),
-	null
-);
-echo "\n--- Breadcrumb trail (visible + BreadcrumbList schema) ---\n";
-foreach ( $crumbs as $i => $crumb ) {
-	echo ( $i ? ' > ' : '' ) . $crumb[0];
+// --- The head is the page's own: the plugin registers no title, description,
+// canonical, robots, breadcrumb, schema or Open Graph filter any more. ---
+foreach ( array( 'rank_math/frontend/title', 'rank_math/frontend/canonical', 'rank_math/json_ld', 'rank_math/sitemap/index', 'rank_math/sitemap/entry', 'the_title', 'template_redirect' ) as $hook ) {
+	if ( ! empty( $GLOBALS['wp_filters'][ $hook ] ) ) {
+		echo "UNEXPECTED: a callback is hooked to {$hook}\n";
+	}
 }
-echo "\n";
 
-$graph = apply_filters(
-	'rank_math/json_ld',
-	array(
-		'WebPage' => array(
-			'@type'       => 'WebPage',
-			'@id'         => $canonical . '#webpage',
-			'url'         => $generic_canon,
-			'name'        => $generic_title,
-			'description' => $generic_desc,
-		),
-	),
-	null
-);
-echo "\n--- Rank Math WebPage entity ---\n";
-echo 'name: ' . $graph['WebPage']['name'] . "\n";
-echo 'url : ' . $graph['WebPage']['url'] . "\n";
-
-// --- Rendered body (theme title + shortcode), through the H1 buffer ---
+// --- Rendered body (theme title + shortcode) ---
 $body  = "<body>\n<header><a class=\"logo\">StatChasers</a></header>\n";
 $body .= '<h1 class="entry-title">' . get_the_title( 42 ) . "</h1>\n";
 $body .= call_user_func( $GLOBALS['shortcodes']['statchasers_depth_charts'], array() );
 $body .= "\n</body>";
-
-$body = SCDC_SEO::rewrite_h1( $body );
 
 preg_match_all( '#<h1\b[^>]*>(.*?)</h1>#is', $body, $h1s );
 echo "\n--- H1 elements in the initial HTML (" . count( $h1s[0] ) . ") ---\n";
@@ -140,22 +97,9 @@ if ( 'body' === $only ) {
 	exit;
 }
 
-echo "\n--- Server-rendered content above the tool ---\n";
-if ( preg_match( '#<nav class="scdc-breadcrumbs".*?</nav>#is', $body, $m ) ) { echo trim( preg_replace( '/\s+/', ' ', strip_tags( $m[0], '' ) ) ) . "\n"; }
-if ( preg_match( '#<p class="scdc-team-intro"[^>]*>(.*?)</p>#is', $body, $m ) ) { echo 'intro   : ' . $m[1] . "\n"; }
-if ( preg_match( '#<p class="scdc-team-summary-lead">(.*?)</p>#is', $body, $m ) ) { echo 'summary : ' . $m[1] . "\n"; }
-preg_match_all( '#<span class="scdc-team-summary-pos">(.*?)</span>\s*<span class="scdc-team-summary-players">(.*?)</span>#is', $body, $rows, PREG_SET_ORDER );
-foreach ( $rows as $row ) { echo '          ' . str_pad( $row[1], 15 ) . $row[2] . "\n"; }
-
 preg_match_all( '#<a\s[^>]*data-scdc-team-link[^>]*>#i', $body, $links );
-echo "\nCrawlable team anchors   : " . count( $links[0] ) . "\n";
-if ( ! empty( $links[0] ) ) {
-	preg_match( '#<a[^>]*href="([^"]+)"[^>]*data-scdc-team-slug="houston-texans"[^>]*>(?:</a>)?#i', $body, $hou );
-	preg_match( '#<li><a[^>]*href="([^"]*houston-texans[^"]*)"[^>]*>([^<]*)#i', $body, $hou2 );
-	if ( ! empty( $hou2 ) ) { echo 'e.g.                     : <a href="' . $hou2[1] . '">' . trim( $hou2[2] ) . "</a>\n"; }
-}
-
-// --- Tool initialization ---
-if ( preg_match( '#data-team="([^"]*)"#', $body, $m ) ) { echo 'Tool initial team slug   : ' . $m[1] . "\n"; }
-if ( preg_match( '#data-team-abbr="([^"]*)"#', $body, $m ) ) { echo 'Tool initial team abbr   : ' . $m[1] . "\n"; }
-if ( preg_match( '#data-view="([^"]*)"#', $body, $m ) ) { echo 'Tool initial view        : ' . $m[1] . "\n"; }
+echo "\nCrawlable team anchors   : " . count( $links[0] ) . " (must be 0 since 1.7.0)\n";
+preg_match_all( '#<a\s[^>]*href="([^"]*)"#i', $body, $hrefs );
+echo 'Anchors in the markup    : ' . count( $hrefs[1] ) . ( $hrefs[1] ? ' (' . implode( ', ', $hrefs[1] ) . ')' : '' ) . "\n";
+if ( preg_match( '#<div class="scdc-page"#', $body ) ) { echo "Page wrapper             : .scdc-page (no team class)\n"; }
+if ( preg_match( '#data-endpoint="([^"]*)"#', $body, $m ) ) { echo 'Data endpoint            : ' . $m[1] . "\n"; }

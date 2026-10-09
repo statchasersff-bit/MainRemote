@@ -111,7 +111,7 @@ describe("iframe auto-resize listener", () => {
 
   test("acknowledges the height so the frame can stop scrolling", async () => {
     // The frame only disables its own scrollbar once told its height is being
-    // honoured. Without this message it must keep scrolling, or a frame stuck at
+    // honored. Without this message it must keep scrolling, or a frame stuck at
     // the placeholder height would hide everything below the fold.
     const { frame, send } = await loadListener();
 

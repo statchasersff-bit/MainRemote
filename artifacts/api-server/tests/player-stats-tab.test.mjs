@@ -191,13 +191,13 @@ describe("stats tab", () => {
     assert.equal(ypa.querySelector(".scp-st-pb.is-bad .scp-st-bar i").getAttribute("style"), "width:8%");
     // 0-24 red, 25-74 navy, 75+ green.
     assert.ok(epa.querySelector("td.is-now .scp-st-pb.is-mid"));
-    // A style reading is grey, and the footnote says what grey means.
+    // A style reading is gray, and the footnote says what gray means.
     const ttt = rows.find((r) => text(r.querySelector("th")) === "Time to throw");
     assert.equal(text(ttt.querySelector("td.is-now .scp-st-pb.is-muted")), "-");
     assert.equal(text(ttt.querySelector("td.is-prev .scp-st-pb.is-muted")), "76th");
     assert.equal(
       text(doc.querySelector(".scp-st-foot-note")),
-      "Percentiles: 2026 through Week 3 among 36 qualified QBs · 2025 (13 games, weeks 1–17) among 41. Grey bars describe style, not quality.",
+      "Percentiles: 2026 through Week 3 among 36 qualified QBs · 2025 (13 games, weeks 1–17) among 41. Gray bars describe style, not quality.",
     );
     assert.equal(doc.querySelector(".scp-st-src"), null, "mak removed the sources line, 2026-09-30");
     // The SC Analysis module: the profile, then the fantasy impact.

@@ -19,12 +19,12 @@
  *    lying by omission. The data-mode line is therefore not a footnote - it sits
  *    above the table, before anything it qualifies.
  *
- * A note on colour. Rank 1 is the softest defense and rank 32 the toughest,
+ * A note on color. Rank 1 is the softest defense and rank 32 the toughest,
  * with league average in the middle - that is a DIVERGING scale, not an ordinal
  * one, so it takes two hues either side of a neutral rather than one ramp.
  * Green is the exploitable pole and red the one to avoid, and only the top and
  * bottom twelve are tinted at all - the eight ranks around the median stay white.
- * Red-green is the pair colour blindness erases, so the arms are NOT symmetric:
+ * Red-green is the pair color blindness erases, so the arms are NOT symmetric:
  * red runs 0.080 darker than its green mirror, which is what keeps the mirrored
  * pairs at ΔE 15.6 under protanopia and 7.5 under deuteranopia rather than ~1.
  * 7.5 is the floor band, legal only because there is a second encoding - every
@@ -145,7 +145,7 @@ export type MatchupTier = "soft-2" | "soft-1" | "mid" | "tough-1" | "tough-2";
  * the shape is the point - a defense two places either side of average is not
  * a matchup, so tinting it spends the reader's attention on noise. Only the
  * twelve that are genuinely exploitable and the twelve that are genuinely
- * hard get a colour.
+ * hard get a color.
  */
 export function matchupTier(rank: number): MatchupTier {
   if (rank <= 6) return "soft-2";
@@ -379,7 +379,7 @@ function renderTable(data: FpaTableData, options: FpaRenderOptions): string {
 /**
  * The legend.
  *
- * Present because the cells are tinted, and a colour scale with no key is a
+ * Present because the cells are tinted, and a color scale with no key is a
  * decoration. Every swatch names its arm in words as well.
  */
 function renderLegend(): string {
@@ -508,7 +508,7 @@ const FAQ: readonly (readonly [string, readonly string[]])[] = [
         "Adjusted FPA accounts for the quality of the opponents that produced those " +
         "points.",
       "Raw FPA tells you what happened. Adjusted FPA helps provide context for why " +
-        "it happened. The View switch above the table holds both, labelled FPA and " +
+        "it happened. The View switch above the table holds both, labeled FPA and " +
         "aFPA.",
     ],
   ],

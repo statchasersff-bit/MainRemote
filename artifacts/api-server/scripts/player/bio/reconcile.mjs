@@ -92,7 +92,7 @@ export function sameSchool(a, b) {
   return short.length > 0 && short.every((w) => long.includes(w));
 }
 
-/** Names one school goes by in different feeds. Keys and values are normalised. */
+/** Names one school goes by in different feeds. Keys and values are normalized. */
 const COLLEGE_ALIASES = {
   usc: "southern california",
   "ole miss": "mississippi",

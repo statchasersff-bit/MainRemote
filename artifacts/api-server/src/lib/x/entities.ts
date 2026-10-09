@@ -4,7 +4,7 @@
  * This is the step that lets an X post join the rest of the archive rather than
  * sit beside it. Everything it resolves against is the index the news tool
  * already maintains - the Sleeper player dictionary behind the headshots, the
- * team map behind the card colours - so a post tagged here lands on the same
+ * team map behind the card colors - so a post tagged here lands on the same
  * player, the same team code and the same team page as a wire story about the
  * same person, with no second source of truth about who plays where.
  *

@@ -105,7 +105,7 @@ function safeSlug(value: unknown): string {
  * Which section this URL is scoped to, if any.
  *
  * A closed list, not free text: `?section=` reaches renderPlayerPage, and an
- * unrecognised id there would silently fall through to the full page under a
+ * unrecognized id there would silently fall through to the full page under a
  * URL that promised one section. Ids match the tab ids in player-render.ts.
  */
 const SECTIONS = new Set([
@@ -302,10 +302,10 @@ router.get("/player", (req, res) => {
  * WordPress page for each would be several thousand thin pages, which is the
  * opposite of what these pages are for.
  *
- * Team defences are excluded for the same reason one step further on. They are
+ * Team defenses are excluded for the same reason one step further on. They are
  * in the indexed list because the news tool ranks them, but nothing this page
  * renders applies to one: no game log, no efficiency percentiles, no injury
- * history, no bio. A defence's page already exists and it is the team hub.
+ * history, no bio. A defense's page already exists and it is the team hub.
  */
 /** djb2, as in the *-ssr modules: short, stable, and never a security claim. */
 function indexHash(value: string): string {
@@ -518,7 +518,7 @@ router.get("/player/:slug", (req, res) => {
 router.get("/player/:slug/:section", (req, res) => {
   void (async () => {
     const slug = safeSlug(req.params.slug);
-    // Exact, not normalised: /Stats/ resolving would be a second address for
+    // Exact, not normalized: /Stats/ resolving would be a second address for
     // the same page, and the point of this route is that there is one.
     const scoped = String(req.params.section ?? "");
 

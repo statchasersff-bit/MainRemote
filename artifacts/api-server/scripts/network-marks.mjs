@@ -46,7 +46,7 @@ function bbox(d, hit) {
   }
 }
 
-/** Every <path> in document order - the order the colours have to be painted in. */
+/** Every <path> in document order - the order the colors have to be painted in. */
 function paths(svg) {
   return [...svg.matchAll(/<path\b([^>]*)\/?>/g)].map((m) => {
     const attr = (name) => m[1].match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? null;
