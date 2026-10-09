@@ -470,13 +470,20 @@ function statchasers_matchup_shortcode(): string {
 	// The H1 belongs inside the scoreboard hero. When this page supplies the
 	// heading, the hero's is promoted and nothing is printed above it; an API
 	// render with no hero heading to promote gets the separate block as before.
-	$heading = '';
-	if ( apply_filters( 'statchasers_matchup_shortcode_h1', false ) ) {
+	//
+	// In the "tool supplies the heading" mode the theme's title is emptied
+	// (statchasers_h1_should_replace) and the per-tool filter answers no, so
+	// until 1.10.34 the matchup pages had no H1 at all: the hero's wording sat
+	// in an <h2> under an emptied title. The hero IS the heading this tool
+	// supplies, so that mode promotes it too (mak, 2026-10-09).
+	$heading   = '';
+	$tool_mode = function_exists( 'statchasers_h1_tool_supplies_heading' ) && statchasers_h1_tool_supplies_heading();
+	if ( $tool_mode || apply_filters( 'statchasers_matchup_shortcode_h1', false ) ) {
 		$promoted = statchasers_matchup_promote_heading( $html );
-		if ( null === $promoted ) {
-			$heading = statchasers_matchup_shortcode_heading();
-		} else {
+		if ( null !== $promoted ) {
 			$html = $promoted;
+		} elseif ( ! $tool_mode ) {
+			$heading = statchasers_matchup_shortcode_heading();
 		}
 	}
 
@@ -1226,6 +1233,105 @@ function statchasers_matchup_all_slugs(): array {
 	return $pairs;
 }
 
+/** How long the game index is kept; a game joins the list two weeks after kickoff, so an hour is plenty. */
+const STATCHASERS_MATCHUP_GAMES_TTL = HOUR_IN_SECONDS;
+/** After a failed fetch, how long the last good list is served without asking again. */
+const STATCHASERS_MATCHUP_GAMES_RETRY = 10 * MINUTE_IN_SECONDS;
+
+/**
+ * Every dated game page that exists this season, from the API's
+ * /embed/matchup-games.json (lib/matchup/game-index.ts), as
+ * `[ [ 'pair-slug', '2026-week-2', '2026-09-20T17:00:00.000Z' ], ... ]`.
+ *
+ * The API applies the one rule that decides when a dated address exists (two
+ * weeks after kickoff, or at once with a rematch ahead), so the plugin keeps
+ * no copy of it. Cached an hour with a backup, like the roster: a sitemap
+ * request must never wait on the API, and a failed fetch serves the last list.
+ *
+ * @return array<int,array{0:string,1:string,2:string}>
+ */
+function statchasers_matchup_games(): array {
+	$key    = 'sc_matchup_games';
+	$cached = get_transient( $key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	$backup = get_transient( $key . '_bak' );
+	if ( get_transient( $key . '_fail' ) ) {
+		return is_array( $backup ) ? $backup : array();
+	}
+
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return is_array( $backup ) ? $backup : array();
+	}
+
+	$response = wp_remote_get(
+		$origin . '/embed/matchup-games.json',
+		array(
+			'timeout' => 8,
+			'headers' => array( 'Accept' => 'application/json' ),
+		)
+	);
+	$body = is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response )
+		? null
+		: json_decode( (string) wp_remote_retrieve_body( $response ), true );
+
+	$rows = statchasers_matchup_games_rows( is_array( $body ) ? $body : array() );
+	if ( null === $rows ) {
+		set_transient( $key . '_fail', 1, STATCHASERS_MATCHUP_GAMES_RETRY );
+		return is_array( $backup ) ? $backup : array();
+	}
+
+	set_transient( $key, $rows, STATCHASERS_MATCHUP_GAMES_TTL );
+	set_transient( $key . '_bak', $rows, WEEK_IN_SECONDS );
+	return $rows;
+}
+
+/**
+ * The index's rows, validated, or null for a body that is not the index.
+ *
+ * An empty `games` list is a valid answer (the first fortnight of a season);
+ * a body with no `ok` or no list is not, and must not replace the backup.
+ *
+ * @param array<string,mixed> $body Decoded JSON.
+ * @return array<int,array{0:string,1:string,2:string}>|null
+ */
+function statchasers_matchup_games_rows( array $body ): ?array {
+	if ( empty( $body['ok'] ) || ! isset( $body['games'] ) || ! is_array( $body['games'] ) ) {
+		return null;
+	}
+	$rows = array();
+	foreach ( $body['games'] as $game ) {
+		if ( ! is_array( $game ) ) {
+			continue;
+		}
+		$pair    = (string) ( $game['pair'] ?? '' );
+		$segment = (string) ( $game['game'] ?? '' );
+		$kickoff = (string) ( $game['kickoff'] ?? '' );
+		if ( ! preg_match( '/^[a-z0-9-]+-vs-[a-z0-9-]+$/', $pair ) || ! preg_match( '/^' . STATCHASERS_MATCHUP_GAME_SHAPE . '$/', $segment ) ) {
+			continue;
+		}
+		$rows[] = array( $pair, $segment, substr( $kickoff, 0, 10 ) );
+	}
+	return $rows;
+}
+
+/**
+ * The sitemap entries for the dated game pages: one per game, the kickoff
+ * date as lastmod (a recap does not change after the game).
+ *
+ * @param array<int,array{0:string,1:string,2:string}> $games statchasers_matchup_games().
+ */
+function statchasers_matchup_games_sitemap( array $games ): string {
+	$extra = '';
+	foreach ( $games as $row ) {
+		$lastmod = preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) ( $row[2] ?? '' ) ) ? $row[2] : '';
+		$extra  .= statchasers_team_sitemap_entry( statchasers_matchup_url( $row[0], $row[1] ), $lastmod );
+	}
+	return $extra;
+}
+
 add_filter(
 	'rank_math/sitemap/page_content',
 	function ( $content ) {
@@ -1244,6 +1350,8 @@ add_filter(
 		foreach ( statchasers_matchup_all_slugs() as $slug ) {
 			$extra .= statchasers_team_sitemap_entry( statchasers_matchup_url( $slug ), '' );
 		}
+		// The dated game pages beside the pairs (mak, 2026-10-09).
+		$extra .= statchasers_matchup_games_sitemap( statchasers_matchup_games() );
 		return $content . $extra;
 	}
 );

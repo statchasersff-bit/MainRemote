@@ -25,6 +25,7 @@
 define( 'ABSPATH', '/tmp/fake-wp/' );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
+define( 'WEEK_IN_SECONDS', 604800 );
 define( 'DAY_IN_SECONDS', 86400 );
 
 $GLOBALS['hooks']   = array();
@@ -420,7 +421,7 @@ if ( 'containers' === $group ) {
 	exit( $fail ? 1 : 0 );
 }
 
-if ( 'sos' === $group || 'sosleak' === $group ) {
+if ( in_array( $group, array( 'sos', 'sosleak', 'sospage', 'sosfallback' ), true ) ) {
 	require __DIR__ . '/smoke-sos.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
@@ -1706,8 +1707,38 @@ is( statchasers_matchup_event_node(), null, 'an Event with no startDate is dropp
 $GLOBALS['http_headers'] = array();
 $GLOBALS['http_body']    = $hero_html;
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'with no heading header, the pair order stands' );
+
+// "The tool supplies the heading": the theme's title is emptied, so the hero
+// heading has to become the H1 here or the page has none (mak, 2026-10-09).
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'tool';
+$printed = statchasers_matchup_shortcode();
+is( substr_count( $printed, '<h1' ), 1, 'tool mode: the hero heading is the one H1' );
+is( false !== strpos( $printed, '<h1 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>' ), true, 'promoted in place, inside the hero' );
+is( false === strpos( $printed, 'sc-lo-hero' ), true, 'and no separate heading block above it' );
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
+is( substr_count( statchasers_matchup_shortcode(), '<h1' ), 0, 'off: nothing promoted, the theme keeps its title' );
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 unset( $GLOBALS['http_body'] );
 $GLOBALS['http_headers'] = array();
+
+echo "\nmatchup game pages in the sitemap\n";
+$rows = statchasers_matchup_games_rows( array(
+	'ok'    => true,
+	'games' => array(
+		array( 'pair' => 'cleveland-browns-vs-tampa-bay-buccaneers', 'game' => '2026-week-2', 'kickoff' => '2026-09-20T17:00:00.000Z' ),
+		array( 'pair' => 'arizona-cardinals-vs-los-angeles-rams', 'game' => '2025-super-bowl', 'kickoff' => '2026-02-08T23:30:00.000Z' ),
+		array( 'pair' => 'bad slug', 'game' => '2026-week-2', 'kickoff' => '' ),
+		array( 'pair' => 'arizona-cardinals-vs-los-angeles-rams', 'game' => '2026-week-99x', 'kickoff' => '' ),
+	),
+) );
+is( count( $rows ), 2, 'rows: a pair slug and a game segment of the right shape, nothing else' );
+is( $rows[0], array( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2', '2026-09-20' ), 'the kickoff date is kept for lastmod' );
+is( statchasers_matchup_games_rows( array( 'games' => array() ) ), null, 'a body without ok is not the index' );
+is( statchasers_matchup_games_rows( array( 'ok' => true, 'games' => array() ) ), array(), 'an empty index is a valid answer' );
+$xml = statchasers_matchup_games_sitemap( $rows );
+is( substr_count( $xml, '<url>' ), 2, 'one entry per game' );
+is( false !== strpos( $xml, '<loc>' . statchasers_matchup_url( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2' ) . '</loc>' ), true, 'at the dated address' );
+is( false !== strpos( $xml, '<lastmod>2026-09-20</lastmod>' ), true, 'with the kickoff date as lastmod' );
 
 /*
  * The matchup trail. Rank Math builds it from the holder, so it ended at the
@@ -2021,7 +2052,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'rhr', 'rhrleak', 'bdp', 'hostcss' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'sospage', 'sosfallback', 'rhr', 'rhrleak', 'bdp', 'hostcss' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

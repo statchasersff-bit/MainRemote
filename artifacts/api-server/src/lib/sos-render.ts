@@ -21,19 +21,24 @@
 import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
 import { renderSosFaq, type SosFaqFacts } from "./sos-faq";
-import { getFPAUrl, getPlayerPageUrl } from "./team/links";
+import { getFPAUrl, getPlayerPageUrl, getTeamHubUrl } from "./team/links";
 import type { FantasyPosition } from "./fpa/nflverse";
+import type { NflTeam } from "./team/teams";
 import {
   BUCKET_LABELS,
   BUCKET_RANGES,
   BUCKETS,
   FANTASY_WEEKS,
+  PO3_WEEKS,
+  pagePosition,
   SCORING_LABELS,
   SOS_POSITIONS,
   SOS_SCORINGS,
+  SOS_SUB_PAGES,
   type SosBoard,
   type SosCard,
   type SosCell,
+  type SosPage,
   type SosPlayerRow,
   type SosScoring,
   type SosSpan,
@@ -56,9 +61,48 @@ export interface SosRenderOptions {
    * the FAQ still prints with those answers pointing at the cards instead.
    */
   faq?: SosFaqFacts | null;
+  /**
+   * Which page this render is (sos-model.ts). The overview unless said
+   * otherwise; a position page's board is that position's.
+   */
+  page?: SosPage;
+  /**
+   * Where the five sub-pages live, which is where the position controls
+   * link: this app's own `/strength-of-schedule` by default, the WordPress
+   * page's path in the embed fragment. A trailing slash is followed, as
+   * rankingsPositionPath() does.
+   */
+  pageBase?: string;
+  /** When the FPA table behind the board was written, for the "Updated" line. */
+  updatedAt?: number | null;
+  /** The playoffs page reads all four positions' boards; keyed by position. */
+  boards?: Partial<Record<FantasyPosition, SosBoard>>;
 }
 
 export const SOS_H1 = "Fantasy Football Strength of Schedule";
+
+/** This app's own page, which the sub-page links default to. */
+export const SOS_DEFAULT_PAGE_BASE = "/strength-of-schedule";
+
+/**
+ * A sub-page's address under a base: `/strength-of-schedule/rb` here,
+ * `/nfl/fantasy-football-strength-of-schedule/rb/` under the WordPress page.
+ * The overview is the base itself.
+ */
+export function sosPagePath(base: string, page: SosPage): string {
+  const trimmed = base.replace(/\/+$/, "") || "";
+  if (page === "all") return base;
+  const slash = base.endsWith("/") ? "/" : "";
+  return `${trimmed}/${page}${slash}`;
+}
+
+const PAGE_LABELS: Record<Exclude<SosPage, "all">, string> = {
+  qb: "QB",
+  rb: "RB",
+  wr: "WR",
+  te: "TE",
+  playoffs: "Playoffs",
+};
 
 /** The paragraph under the H1 on the WordPress page (mak, 2026-10-08). */
 export const SOS_LEAD =
@@ -73,20 +117,134 @@ export const SOS_LEAD =
  * the old standalone plugin's hero paragraph, supplied by mak 2026-10-08; the
  * WordPress plugin prints it under the H1 as the hero's description.
  */
-export function sosPageCopy(season: number): {
+export function sosPageCopy(
+  season: number,
+  page: SosPage = "all",
+  answer = "",
+): {
   title: string;
   h1: string;
   description: string;
   lead: string;
 } {
-  return {
-    title: `${SOS_H1} | ${season} SOS by Team & Player`,
-    h1: SOS_H1,
-    description:
-      `View ${season} fantasy football strength of schedule by team, player, position, ` +
-      `scoring format, rest-of-season, and fantasy playoff weeks.`,
-    lead: SOS_LEAD,
+  if (page === "all") {
+    return {
+      title: `${SOS_H1} | ${season} SOS by Team & Player`,
+      h1: SOS_H1,
+      description:
+        `View ${season} fantasy football strength of schedule by team, player, position, ` +
+        `scoring format, rest-of-season, and fantasy playoff weeks.`,
+      lead: SOS_LEAD,
+    };
+  }
+  // The five sub-pages' words are mak's (spec of 2026-10-09, "Strength of
+  // schedule: one real page per position"), as written there. The lead under
+  // the H1 is the page's answer sentence, so it stands above the table.
+  if (page === "playoffs") {
+    return {
+      title: "Fantasy Playoff Strength of Schedule (Weeks 15\u201317)",
+      h1: "Fantasy Playoff Strength of Schedule",
+      description:
+        "Which teams have the easiest fantasy playoff schedule? Weeks 15\u201317 strength of " +
+        "schedule for QB, RB, WR and TE, for all 32 teams.",
+      lead: answer,
+    };
+  }
+  const pos = page.toUpperCase();
+  const tail: Record<string, string> = {
+    QB: ", based on fantasy points allowed. Updated weekly.",
+    RB: ", based on fantasy points allowed to running backs.",
+    WR: ", based on fantasy points allowed to wide receivers.",
+    TE: ", based on fantasy points allowed to tight ends.",
   };
+  return {
+    title: `${pos} Strength of Schedule ${season}: Fantasy Matchups`,
+    h1: `${pos} Strength of Schedule`,
+    description:
+      `Fantasy ${pos} strength of schedule for ${season}: rest-of-season and playoff matchups ` +
+      `for all 32 teams${tail[pos] ?? "."}`,
+    lead: answer,
+  };
+}
+
+/* ---------------------------------------------------------------- answers */
+
+/** "RBs", the plural the answer sentences use. */
+function posPlural(position: FantasyPosition): string {
+  return `${position}s`;
+}
+
+/**
+ * The one-sentence answer above a position page's table (mak's wording):
+ * "Easiest rest-of-season RB schedule: {Team} ({n} fantasy points allowed per
+ * game to RBs by remaining opponents). Hardest: {Team}." Once the regular
+ * fantasy season is over there is no rest of it, and the sentence reads the
+ * full season instead. Empty when the board has no averages at all.
+ */
+export function sosPositionAnswer(board: SosBoard): string {
+  const pos = board.position;
+  const ros = board.teams.filter((t) => t.ros !== null);
+  if (ros.length >= 2) {
+    const sorted = [...ros].sort((a, b) => a.rosRank - b.rosRank);
+    const easiest = sorted[0]!;
+    const hardest = sorted[sorted.length - 1]!;
+    return (
+      `Easiest rest-of-season ${pos} schedule: ${easiest.team.fullName} ` +
+      `(${one(easiest.ros!.afpa)} fantasy points allowed per game to ${posPlural(pos)} by remaining opponents). ` +
+      `Hardest: ${hardest.team.fullName}.`
+    );
+  }
+  const full = board.teams.filter((t) => t.fullAfpa !== null);
+  if (full.length < 2) return "";
+  const sorted = [...full].sort((a, b) => a.overallRank - b.overallRank);
+  const easiest = sorted[0]!;
+  const hardest = sorted[sorted.length - 1]!;
+  return (
+    `Easiest full-season ${pos} schedule: ${easiest.team.fullName} ` +
+    `(${one(easiest.fullAfpa)} fantasy points allowed per game to ${posPlural(pos)} by its opponents). ` +
+    `Hardest: ${hardest.team.fullName}.`
+  );
+}
+
+/**
+ * The playoffs page's answer: the easiest and hardest Weeks 15-17 slate for
+ * each position, from each board's playoff rank (1 = easiest).
+ */
+export function sosPlayoffAnswer(boards: Partial<Record<FantasyPosition, SosBoard>>): string {
+  const easiest: string[] = [];
+  const hardest: string[] = [];
+  for (const pos of SOS_POSITIONS) {
+    const board = boards[pos];
+    if (!board) continue;
+    const ranked = board.teams.filter((t) => t.po3 !== null).sort((a, b) => a.playoffRank - b.playoffRank);
+    if (ranked.length < 2) continue;
+    easiest.push(`${pos} ${ranked[0]!.team.fullName}`);
+    hardest.push(`${pos} ${ranked[ranked.length - 1]!.team.fullName}`);
+  }
+  if (!easiest.length) return "";
+  return (
+    `Easiest fantasy playoff schedule (Weeks 15-17): ${easiest.join(", ")}. ` +
+    `Hardest: ${hardest.join(", ")}.`
+  );
+}
+
+/** The answer for whichever page is being rendered; "" on the overview. */
+export function sosAnswerFor(
+  page: SosPage,
+  board: SosBoard,
+  boards?: Partial<Record<FantasyPosition, SosBoard>>,
+): string {
+  if (page === "all") return "";
+  if (page === "playoffs") return sosPlayoffAnswer(boards ?? { [board.position]: board });
+  return sosPositionAnswer(board);
+}
+
+/** "Updated Oct 9", in Eastern time, as the FPA table's own date. */
+function renderUpdated(ms: number | null | undefined): string {
+  if (!ms || !Number.isFinite(ms)) return "";
+  const d = new Date(ms);
+  const text = d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+  return `<p class="scsos-updated">Updated <time datetime="${escapeHtml(d.toISOString().slice(0, 10))}">${escapeHtml(text)}</time></p>`;
 }
 
 const TAB_LABELS: Record<SosTab, string> = { team: "Team SOS", player: "Player SOS" };
@@ -115,12 +273,29 @@ export function abbreviateName(name: string): string {
   return `${name[0]}. ${last.includes("-") ? last.split("-")[0] : last}`;
 }
 
+/**
+ * A view of the current page: the tab and the scoring in the query string.
+ * The position is the page's own since the per-position pages (2026-10-09),
+ * and `?pos=` 301s to that page, so no link writes it any more.
+ */
 function viewHref(state: SosState, options: SosRenderOptions): string {
   const extra = (options.linkQuery ?? "").replace(/^\?/, "");
-  const q =
-    `?tab=${state.tab}&pos=${state.position.toLowerCase()}&scoring=${state.scoring}` +
-    (extra ? `&${extra}` : "");
+  const q = `?tab=${state.tab}&scoring=${state.scoring}` + (extra ? `&${extra}` : "");
   return q;
+}
+
+/**
+ * A sub-page's link, carrying a non-default scoring (and the Player tab,
+ * which the playoffs page does not have) so the reader's view follows them.
+ */
+function pageHref(page: Exclude<SosPage, "all">, state: SosState, options: SosRenderOptions): string {
+  const params: string[] = [];
+  if (state.tab !== "team" && page !== "playoffs") params.push(`tab=${state.tab}`);
+  if (state.scoring !== "ppr") params.push(`scoring=${state.scoring}`);
+  const extra = (options.linkQuery ?? "").replace(/^\?/, "");
+  if (extra) params.push(extra);
+  const base = options.pageBase ?? SOS_DEFAULT_PAGE_BASE;
+  return sosPagePath(base, page) + (params.length ? `?${params.join("&")}` : "");
 }
 
 function csvHref(state: SosState, options: SosRenderOptions): string {
@@ -131,6 +306,7 @@ function csvHref(state: SosState, options: SosRenderOptions): string {
 /* ------------------------------------------------------------------- bar */
 
 function renderBar(board: SosBoard, state: SosState, options: SosRenderOptions): string {
+  const page = options.page ?? "all";
   const tabs = (["team", "player"] as const)
     .map((tab) => {
       const active = tab === state.tab;
@@ -164,11 +340,32 @@ function renderBar(board: SosBoard, state: SosState, options: SosRenderOptions):
       .join("") +
     `</div></div>`;
 
+  // The five sub-pages, as plain links (mak, 2026-10-09): each position is a
+  // page of its own now, so the control navigates rather than swapping the
+  // board in place. No data-tab/pos/scoring on these, which is how the bundle
+  // knows to leave them alone. The board's own position is marked, so the
+  // overview (which opens on the RB board) still shows which one it is on.
+  const pages =
+    `<div class="scsos-control">` +
+    `<span class="scsos-control-label">Position</span>` +
+    `<div class="scsos-opts" role="group" aria-label="Position">` +
+    SOS_SUB_PAGES.map((p) => {
+      const current = p === page;
+      const active = current || (page === "all" && pagePosition(p) === board.position);
+      return (
+        `<a class="scsos-opt is-page${active ? " is-active" : ""}" href="${escapeHtml(pageHref(p, state, options))}"` +
+        ` data-page="${p}"${current ? ` aria-current="page"` : ""}>${PAGE_LABELS[p]}</a>`
+      );
+    }).join("") +
+    `</div></div>`;
+
+  const playoffs = page === "playoffs";
+
   return (
     `<div class="scsos-bar">` +
-    `<nav class="scsos-tabs" aria-label="Board">${tabs}</nav>` +
+    (playoffs ? "" : `<nav class="scsos-tabs" aria-label="Board">${tabs}</nav>`) +
     `<div class="scsos-filters">` +
-    group("Position", SOS_POSITIONS, state.position, (p) => p, (p) => ({ ...state, position: p })) +
+    pages +
     group<SosScoring>(
       "Scoring",
       SOS_SCORINGS,
@@ -176,15 +373,60 @@ function renderBar(board: SosBoard, state: SosState, options: SosRenderOptions):
       (s) => (s === "std" ? "Std" : s === "half-ppr" ? "Half" : "PPR"),
       (s) => ({ ...state, scoring: s }),
     ) +
-    `<a class="scsos-export" href="${escapeHtml(csvHref(state, options))}" rel="nofollow" download` +
-    ` title="${escapeHtml(`Download the ${TAB_LABELS[state.tab]} board as CSV`)}">` +
-    `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
-    `Export</a>` +
+    (playoffs
+      ? ""
+      : `<a class="scsos-export" href="${escapeHtml(csvHref(state, options))}" rel="nofollow" download` +
+        ` title="${escapeHtml(`Download the ${TAB_LABELS[state.tab]} board as CSV`)}">` +
+        `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+        `Export</a>`) +
     `</div>` +
     `</div>` +
     // The bar does not say which season; the board does, once, for anyone
     // arriving mid-year wondering whether the grid is last year's.
-    `<p class="scsos-sr">${escapeHtml(`${board.season} season, ${SCORING_LABELS[state.scoring]} scoring, ${POSITION_NAMES[state.position]}.`)}</p>`
+    `<p class="scsos-sr">${escapeHtml(
+      playoffs
+        ? `${board.season} season, ${SCORING_LABELS[state.scoring]} scoring, fantasy playoff weeks 15-17, all four positions.`
+        : `${board.season} season, ${SCORING_LABELS[state.scoring]} scoring, ${POSITION_NAMES[state.position]}.`,
+    )}</p>`
+  );
+}
+
+/* --------------------------------------------------------------- related */
+
+/**
+ * The "Related" block on the sub-pages (mak's spec): the position's
+ * rest-of-season rankings and projections, the FPA table, and Start/Sit.
+ * The playoffs page links the two position tools at their bases.
+ */
+export function sosRelatedLinks(page: SosPage): { label: string; href: string }[] {
+  if (page === "all") return [];
+  const site = "https://statchasers.com";
+  const pos = pagePosition(page);
+  const seg = pos ? pos.toLowerCase() : "";
+  const links: { label: string; href: string }[] = [
+    {
+      label: pos ? `Rest-of-Season ${pos} Rankings` : "Rest-of-Season Rankings",
+      href: `${site}/fantasy-football/rest-of-season-rankings/${seg ? `${seg}/` : ""}`,
+    },
+    {
+      label: pos ? `${pos} Fantasy Projections` : "Fantasy Football Projections",
+      href: `${site}/redraft-command/fantasy-football-projections${seg ? `/${seg}` : ""}`,
+    },
+    { label: "Fantasy Points Allowed by Position", href: `${site}/nfl/fantasy-points-allowed-by-position/` },
+    { label: "Who Should I Start?", href: `${site}/redraft-command/who-should-i-start` },
+  ];
+  return links;
+}
+
+function renderRelated(page: SosPage): string {
+  const links = sosRelatedLinks(page);
+  if (!links.length) return "";
+  return (
+    `<nav class="scsos-related" aria-labelledby="scsos-related-title">` +
+    `<h2 id="scsos-related-title" class="scsos-related-title">Related</h2>` +
+    `<ul class="scsos-related-list">` +
+    links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join("") +
+    `</ul></nav>`
   );
 }
 
@@ -407,6 +649,23 @@ function headRow(first: Column[], rest: Column[]): string {
   return `<tr>${first.map((c) => th(c, true)).join("")}${rest.map((c) => th(c)).join("")}</tr>`;
 }
 
+/** The team's schedule page on statchasers.com: the hub's /schedule/ section (mak's spec). */
+export function teamScheduleHref(team: NflTeam): string | null {
+  const hub = getTeamHubUrl(team);
+  return hub ? `${hub.replace(/\/+$/, "")}/schedule/` : null;
+}
+
+/** The team cell: crest and code, linked to the team's schedule when the site has one. */
+function teamCell(team: NflTeam): string {
+  const inner =
+    `<img src="${escapeHtml(team.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />` +
+    `<span>${escapeHtml(team.code)}</span>`;
+  const href = teamScheduleHref(team);
+  return href
+    ? `<a class="scsos-team" href="${escapeHtml(href)}" title="${escapeHtml(`${team.fullName} schedule`)}">${inner}</a>`
+    : `<span class="scsos-team">${inner}</span>`;
+}
+
 function renderTeamTable(board: SosBoard): string {
   const columns = [
     ...RANK_COLUMNS,
@@ -419,8 +678,8 @@ function renderTeamTable(board: SosBoard): string {
   const row = (r: SosTeamRow) =>
     `<tr data-row="team-${escapeHtml(r.team.abbreviation)}">` +
     `<th scope="row" class="scsos-first" data-sort="${escapeHtml(r.team.code)}">` +
-    `<span class="scsos-team"><img src="${escapeHtml(r.team.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />` +
-    `<span>${escapeHtml(r.team.code)}</span></span></th>` +
+    teamCell(r.team) +
+    `</th>` +
     rankCell(r.overallRank) +
     rankCell(r.rosRank, true) +
     rankCell(r.playoffRank) +
@@ -492,13 +751,107 @@ function renderPlayerTable(board: SosBoard): string {
   );
 }
 
+/* --------------------------------------------------------- playoffs table */
+
+/**
+ * The playoffs page's grid: every team's Weeks 15-17 opponents, then the
+ * PO3 average aFPA and its rank for each of the four positions, shaded by
+ * that span's bucket, and the mean of the four schedule ranks, which is the
+ * default order (easiest overall slate first).
+ */
+function renderPlayoffTable(
+  season: number,
+  scoring: SosScoring,
+  boards: Partial<Record<FantasyPosition, SosBoard>>,
+): string {
+  const present = SOS_POSITIONS.filter((p) => boards[p]);
+  const anchor = present.length ? boards[present[0]!]! : null;
+  if (!anchor) return `<p class="scsos-empty">No playoff data found.</p>`;
+
+  const first: Column = { key: "team", label: "Team", title: "NFL team. The weekly cells are its fantasy playoff opponents.", type: "text" };
+  const columns: Column[] = [
+    { key: "avg", label: "Avg", title: "Average of the four positions' playoff schedule ranks (1 = easiest).", cls: "is-playoff" },
+    ...PO3_WEEKS.map((w) => ({ key: `w${w}`, label: `W${w}`, title: `Week ${w} opponent.`, cls: "is-week", type: "text" as const })),
+    ...present.map((p) => ({
+      key: `po3-${p.toLowerCase()}`,
+      label: p,
+      title: `Weeks 15-17: average opponent adjusted fantasy points allowed to ${POSITION_NAMES[p]}, and the playoff schedule rank (1 = easiest).`,
+      dir: "desc" as const,
+      cls: "is-week",
+    })),
+  ];
+
+  const rowsByTeam = new Map<string, Partial<Record<FantasyPosition, SosTeamRow>>>();
+  for (const p of present) {
+    for (const r of boards[p]!.teams) {
+      let entry = rowsByTeam.get(r.team.abbreviation);
+      if (!entry) rowsByTeam.set(r.team.abbreviation, (entry = {}));
+      entry[p] = r;
+    }
+  }
+
+  const rows = anchor.teams
+    .map((r) => {
+      const perPos = rowsByTeam.get(r.team.abbreviation) ?? {};
+      const ranks = present.map((p) => perPos[p]?.playoffRank).filter((v): v is number => typeof v === "number");
+      const avg = ranks.length ? ranks.reduce((a, b) => a + b, 0) / ranks.length : null;
+      return { team: r.team, weeks: r.weeks, perPos, avg };
+    })
+    .sort((a, b) => (a.avg ?? 99) - (b.avg ?? 99) || a.team.code.localeCompare(b.team.code));
+
+  const weekCellPlain = (cells: SosCell[], week: number) => {
+    const cell = cells.find((c) => c.week === week);
+    if (!cell || cell.isBye) return `<td class="scsos-wk" data-bucket="bye" data-sort="">BYE</td>`;
+    const opp = cell.opponent!;
+    return (
+      `<td class="scsos-wk is-plain" data-sort="${escapeHtml(opp.code)}" title="${escapeHtml(`Week ${week} ${cell.isHome ? "vs" : "at"} ${opp.fullName}`)}">` +
+      `<span class="scsos-opp">${cell.isHome ? "" : "@"}${escapeHtml(opp.code)}</span></td>`
+    );
+  };
+
+  const po3Cell = (row: SosTeamRow | undefined, p: FantasyPosition) => {
+    const span = row?.po3 ?? null;
+    if (!row || !span) return `<td class="scsos-wk is-span" data-sort="">-</td>`;
+    return (
+      `<td class="scsos-wk is-span" data-bucket="${span.bucket}" data-sort="${span.afpa.toFixed(3)}"` +
+      ` title="${escapeHtml(`${p}, Weeks 15-17: ${one(span.afpa)} average aFPA allowed to ${POSITION_NAMES[p]}, playoff schedule rank ${row.playoffRank} of 32 (1 = easiest)`)}">` +
+      `<span class="scsos-afpa-only">${escapeHtml(one(span.afpa))}</span>` +
+      `<span class="scsos-po-rank">#${row.playoffRank}</span></td>`
+    );
+  };
+
+  const body = rows
+    .map(
+      (r) =>
+        `<tr data-row="team-${escapeHtml(r.team.abbreviation)}">` +
+        `<th scope="row" class="scsos-first" data-sort="${escapeHtml(r.team.code)}">${teamCell(r.team)}</th>` +
+        `<td class="scsos-rank" data-sort="${r.avg === null ? "" : r.avg.toFixed(2)}">${r.avg === null ? "-" : escapeHtml(one(r.avg))}</td>` +
+        PO3_WEEKS.map((w) => weekCellPlain(r.weeks, w)).join("") +
+        present.map((p) => po3Cell(r.perPos[p], p)).join("") +
+        `</tr>`,
+    )
+    .join("");
+
+  return (
+    `<table class="scsos-table is-playoffs" data-scsos-table data-kind="playoffs">` +
+    `<caption class="scsos-sr">${escapeHtml(
+      `${season} fantasy playoff strength of schedule, Weeks 15-17, ${SCORING_LABELS[scoring]} scoring, for all 32 NFL teams: ` +
+        `each week's opponent and the average adjusted fantasy points allowed to quarterbacks, running backs, wide receivers and tight ends. ` +
+        `Schedule ranks: 1 is the easiest.`,
+    )}</caption>` +
+    `<thead>${headRow([first], columns)}</thead>` +
+    `<tbody>${body}</tbody></table>`
+  );
+}
+
 /* --------------------------------------------------------- page assembly */
 
 function renderMetaIsland(board: SosBoard, options: SosRenderOptions): string {
   if (!options.embed) return "";
+  const page = options.page ?? "all";
   return (
     `<script type="application/json" class="scsos-page-data">` +
-    escapeJsonLd(JSON.stringify(sosPageCopy(board.season))) +
+    escapeJsonLd(JSON.stringify(sosPageCopy(board.season, page, sosAnswerFor(page, board, options.boards)))) +
     `</script>`
   );
 }
@@ -512,25 +865,42 @@ export function renderSosPage(
   state: SosState,
   options: SosRenderOptions = {},
 ): string {
+  const page = options.page ?? "all";
+  const playoffs = page === "playoffs";
+  const copy = sosPageCopy(board.season, page, sosAnswerFor(page, board, options.boards));
+  const table = playoffs
+    ? renderPlayoffTable(board.season, state.scoring, options.boards ?? { [board.position]: board })
+    : state.tab === "player"
+      ? renderPlayerTable(board)
+      : renderTeamTable(board);
   return (
     `<div class="scsos${options.embed ? " is-embed" : ""}" data-scsos-root="1"` +
     ` data-season="${board.season}" data-tab="${state.tab}"` +
     ` data-pos="${state.position.toLowerCase()}" data-scoring="${state.scoring}"` +
+    ` data-page="${page}"` +
     (options.endpoint ? ` data-scsos-endpoint="${escapeHtml(options.endpoint)}"` : "") +
     `>` +
-    (options.embed ? "" : `<h1 class="scsos-h1">${escapeHtml(SOS_H1)}</h1>`) +
+    // Standalone, the page prints its own heading and the answer under it;
+    // embedded, the host page prints both from the island.
+    (options.embed
+      ? ""
+      : `<h1 class="scsos-h1">${escapeHtml(copy.h1)}</h1>` +
+        (page !== "all" && copy.lead ? `<p class="scsos-answer">${escapeHtml(copy.lead)}</p>` : "")) +
+    (page === "all" ? "" : renderUpdated(options.updatedAt)) +
     renderBar(board, state, options) +
     `<div class="scsos-view">` +
-    renderCards(board, state) +
+    (playoffs ? "" : renderCards(board, state)) +
     renderReadLine() +
     `<hr class="scsos-rule" />` +
     `<div class="scsos-legend-row">${renderLegend()}${renderBaseline(board)}</div>` +
     `<div class="scsos-scroll">` +
-    (state.tab === "player" ? renderPlayerTable(board) : renderTeamTable(board)) +
+    table +
     `</div>` +
     `</div>` +
-    // Outside .scsos-view, so a view swap (client/sos.ts) leaves it alone.
-    renderSosFaq(board.season, options.faq ?? null) +
+    // Outside .scsos-view, so a view swap (client/sos.ts) leaves them alone.
+    // The FAQ is the overview's (mak, 2026-10-08); the sub-pages carry the
+    // Related block instead of a sixth copy of it.
+    (page === "all" ? renderSosFaq(board.season, options.faq ?? null) : renderRelated(page)) +
     renderMetaIsland(board, options) +
     `</div>`
   );
