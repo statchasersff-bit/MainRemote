@@ -2,13 +2,12 @@
    Everything is scoped under .scdc-root and defines its own design tokens so it
    blends onto a white page without inheriting/leaking the host theme's styles. */
 
-/* The index and all-teams routes render their whole grid in the browser, so
-   until the script runs the root is one line of "Loading…" with the 32 team
-   links right under it, on screen. Reserving a viewport of height keeps those
-   links below the fold while the grid (far taller than this) drops in above
-   them, so the page does not visibly jump. Team routes print their content
-   server-side and do not need it. */
-.scdc-page:not(.scdc-page-team) .scdc-root {
+/* The grid is rendered in the browser, so until the script runs the root is
+   one line of "Loading…" with whatever the host page puts under the shortcode
+   right beneath it, on screen. Reserving a viewport of height keeps that below
+   the fold while the grid (far taller than this) drops in above it, so the
+   page does not visibly jump. */
+.scdc-page .scdc-root {
 	min-height: 100vh;
 }
 
@@ -561,22 +560,18 @@
 .scdc-badge-out { background: #fee2e2; color: #dc2626; }
 
 
-/* ---- SEO chrome for the team routes ------------------------------------
-   Breadcrumbs, H1, intro, "at a glance" summary and the crawlable team-link
-   grid live outside .scdc-root (they wrap it), so the same design tokens are
-   redeclared here. Deliberately quiet: the interactive tool stays the focus.
+/* ---- The page wrapper ---------------------------------------------------
+   .scdc-page wraps .scdc-root and owns the tool's width and gutter. (Until
+   1.7.0 it also held the team routes' breadcrumbs, H1, intro, summary and
+   32-team link grid; those went with the routes.)
 
-   NOTE: everything here uses the scdc-seo-* namespace. The tool's own card
-   internals use scdc-team-* - .scdc-team-summary is already the per-card
-   "3 QB · 6 RB · …" strip, so reusing that name boxed it in and pushed the
-   team name out of line with its logo. Keep the two namespaces apart. */
-/* Width: fill the container up to 1240px, then stop and centre - so the tool
+   Width: fill the container up to 1240px, then stop and center - so the tool
    lines up with the rest of the page instead of tracking the viewport as it is
    zoomed out.
 
    width:100% is what makes it *fill* the cap; max-width is what stops it. Both
    margins are auto together, never one alone: a lone auto margin in a flex or
-   grid parent doesn't centre anything, it shoves the tool to one side and opens
+   grid parent doesn't center anything, it shoves the tool to one side and opens
    a gap down the other.
 
    The gutter is explicit rather than inherited from whatever space the cap
@@ -618,142 +613,9 @@
 	box-sizing: border-box;
 }
 
-/* Breadcrumbs (only rendered when no SEO plugin is printing its own). */
-.scdc-breadcrumbs {
-	font-size: 13px;
-	color: var(--sc-muted);
-	margin: 0 0 10px;
-}
-.scdc-breadcrumb-list {
-	list-style: none;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 0;
-	padding: 0;
-}
-.scdc-breadcrumb-list li {
-	margin: 0;
-}
-.scdc-breadcrumbs a {
-	color: var(--sc-muted);
-	text-decoration: none;
-}
-.scdc-breadcrumbs a:hover {
-	color: var(--sc-blue);
-	text-decoration: underline;
-}
-.scdc-breadcrumb-sep {
-	margin-left: 6px;
-	color: #b6c2d4;
-}
-
-/* Team H1 - only rendered when the theme/Divi has no title to rename. */
-.scdc-seo-h1 {
-	margin: 0 0 8px;
-}
-
-.scdc-seo-intro {
-	margin: 0 0 14px;
-	color: var(--sc-muted);
-	font-size: 15px;
-	line-height: 1.55;
-}
-
-/* "At a glance" - built server-side from the same cached depth-chart data. */
-.scdc-seo-summary {
-	/* Belt and braces: this block is prose and must always wrap, whatever
-	   white-space/overflow rule the theme (or a stale stylesheet) hands down. */
-	white-space: normal;
-	overflow-wrap: break-word;
-	text-overflow: clip;
-	border: 1px solid var(--sc-border);
-	border-radius: 10px;
-	background: var(--sc-card);
-	padding: 14px 16px;
-	margin: 0 0 16px;
-}
-.scdc-seo-summary-title {
-	margin: 0 0 8px;
-	font-size: 16px;
-	line-height: 1.3;
-}
-.scdc-seo-summary-lead {
-	margin: 0 0 10px;
-	font-size: 14px;
-	line-height: 1.55;
-}
-.scdc-seo-summary-list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: grid;
-	gap: 6px;
-}
-.scdc-seo-summary-list li {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	margin: 0;
-	font-size: 14px;
-	padding-bottom: 6px;
-	border-bottom: 1px solid var(--sc-rule);
-}
-.scdc-seo-summary-list li:last-child {
-	border-bottom: 0;
-	padding-bottom: 0;
-}
-.scdc-seo-summary-pos {
-	min-width: 130px;
-	color: var(--sc-muted);
-	font-weight: 600;
-}
-.scdc-seo-summary-meta {
-	margin: 10px 0 0;
-	font-size: 12px;
-	color: var(--sc-muted);
-}
-
-/* Crawlable links to all 32 team routes. */
-.scdc-seo-links {
-	margin: 22px 0 0;
-	padding-top: 16px;
-	border-top: 1px solid var(--sc-border);
-}
-.scdc-seo-links-title {
-	margin: 0 0 10px;
-	font-size: 17px;
-	line-height: 1.3;
-}
-.scdc-seo-links-grid {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-	gap: 4px 16px;
-}
-.scdc-seo-links-grid li {
-	margin: 0;
-}
-.scdc-seo-link {
-	display: block;
-	padding: 5px 0;
-	font-size: 14px;
-	color: var(--sc-blue);
-	text-decoration: none;
-}
-.scdc-seo-link:hover {
-	text-decoration: underline;
-}
-.scdc-seo-link.is-current {
-	color: var(--sc-ink);
-	font-weight: 600;
-}
-
 /* ---- Imagery-capable select (team + position filters) -------------------
    Native <option> elements are rendered by the OS and can't hold an image or
-   a per-row colour, so these two filters are a button + listbox instead. The
+   a per-row color, so these two filters are a button + listbox instead. The
    trigger deliberately matches .scdc-select's metrics so the toolbar is
    unchanged; only the row contents are richer. */
 .scdc-cs {
@@ -851,7 +713,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-/* Colour-coded position code; inline colour comes from POSITION_COLOR. */
+/* Color-coded position code; inline color comes from POSITION_COLOR. */
 .scdc-cs-badge {
 	flex: 0 0 auto;
 	min-width: 1.75rem;

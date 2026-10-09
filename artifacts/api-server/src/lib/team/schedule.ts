@@ -34,7 +34,7 @@ export type SeasonType = keyof typeof SEASON_TYPE;
  * postseason means nothing to anybody.
  *
  * Week 4 is the Pro Bowl. It is not a meeting between two teams in any sense
- * this page means and is dropped rather than labelled - see parse().
+ * this page means and is dropped rather than labeled - see parse().
  */
 const POSTSEASON_WEEKS: Record<number, string> = {
   1: "Wild Card",

@@ -1,5 +1,5 @@
 /**
- * The X integration's judgement calls, tested without a network or a database.
+ * The X integration's judgment calls, tested without a network or a database.
  *
  * Everything here is one of the decisions that actually shapes the feed: which
  * posts are reporting and which are chatter, what a post is about, what kind of
@@ -178,7 +178,7 @@ describe("the public timeline parser", () => {
     );
   });
 
-  test("normalises an original post, media and all", () => {
+  test("normalizes an original post, media and all", () => {
     const post = normalizeTweet(ORIGINAL, "adamschefter");
     assert.equal(post.externalId, ORIGINAL.id_str);
     assert.equal(post.authorUsername, "AdamSchefter");

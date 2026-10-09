@@ -85,7 +85,7 @@ describe("win probability, score-only", () => {
   test("the story sentence opens at the home side's own chance", () => {
     const at = (line, favorite) => wp.wpSubtitle(GAME, wp.winProbabilityModel({ game: GAME, plays: PLAYS, odds: { favorite, line, total: 49.5 } }));
     assert.match(at(3.5, "LAR"), /^Los Angeles opened at 60% win probability/);
-    // The regression: the home underdog was printed with the favourite's 60%.
+    // The regression: the home underdog was printed with the favorite's 60%.
     assert.match(at(3.5, "ARI"), /^Los Angeles opened at 40% win probability/);
     assert.match(at(13, "LAR"), /^Los Angeles opened at 83% win probability/);
     // One sentence, ending on how it finished (mak, 2026-09-30).

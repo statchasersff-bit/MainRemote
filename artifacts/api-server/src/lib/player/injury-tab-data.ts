@@ -29,7 +29,7 @@ export type Side = "R" | "L" | null;
  * table (4.3): the player's right is the viewer's left.
  */
 interface Spot {
-  /** [player's right, player's left], or one point for the centre line. */
+  /** [player's right, player's left], or one point for the center line. */
   at: [number, number] | [number, number, number, number];
   center?: boolean;
 }
@@ -488,8 +488,8 @@ export function bodyMap(events: InjuryEvent[]): BodyMap {
   // Draw big to small, so a small marker is never hidden under a big one.
   markers.sort((a, b) => b.r - a.r || a.y - b.y);
 
-  // Labels: the viewer's left for markers left of centre, right for right;
-  // centre markers go wherever there is more room.
+  // Labels: the viewer's left for markers left of center, right for right;
+  // center markers go wherever there is more room.
   const left: Marker[] = [];
   const right: Marker[] = [];
   for (const m of [...markers].sort((a, b) => a.y - b.y)) {

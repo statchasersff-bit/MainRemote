@@ -74,7 +74,7 @@ function localizeKickoffs(root: HTMLElement): void {
 }
 
 /** Bring the current week into view inside the strip, without moving the page. */
-function centreWeekRail(root: HTMLElement): void {
+function centerWeekRail(root: HTMLElement): void {
   const rail = root.querySelector<HTMLElement>("[data-scs-rail] .scs-rail-list");
   const active = rail?.querySelector<HTMLElement>(".is-active");
   if (!rail || !active) return;
@@ -92,7 +92,7 @@ function boot(): void {
     document.querySelectorAll<HTMLElement>(ROOT_SELECTOR),
   )) {
     localizeKickoffs(root);
-    centreWeekRail(root);
+    centerWeekRail(root);
     wireFrameHeight(root);
   }
 }

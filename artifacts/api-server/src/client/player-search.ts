@@ -2,7 +2,7 @@
  * The player search above the header.
  *
  * The server ships the box hidden, the whole roster inlined beside it as a
- * JSON island, and no behaviour at all - see renderPlayerSearch() in
+ * JSON island, and no behavior at all - see renderPlayerSearch() in
  * lib/player-render.ts for why it is hidden and why the roster is inlined
  * rather than fetched. This file is what turns that markup into a control:
  * it reveals the box, parses the island once (lazily, on the first keystroke
@@ -69,7 +69,7 @@ interface Searchable {
   /**
    * The key with its spaces closed up.
    *
-   * searchKey() folds punctuation to a SPACE, so "Ja'Marr" normalises to
+   * searchKey() folds punctuation to a SPACE, so "Ja'Marr" normalizes to
    * "ja marr" and a reader typing "jamarr" - the spelling the slug itself
    * uses - matches nothing without this. Closing the spaces on both sides
    * makes the two spellings one string, which is the same trade the name's
@@ -97,7 +97,7 @@ interface TeamEntry extends Searchable {
   logo: string;
 }
 
-/** One row of the inlined roster, split and normalised once. */
+/** One row of the inlined roster, split and normalized once. */
 interface Entry extends Searchable {
   kind: "player";
   slug: string;
@@ -197,7 +197,7 @@ let shotBase = "";
 function portraitUrl(id: string): string {
   return shotBase
     ? `${shotBase}${encodeURIComponent(id)}/latest/160.webp`
-    : `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(id)}.jpg`;
+    : `/news-image/player/${encodeURIComponent(id)}/latest/160.webp`;
 }
 
 function cdnImage(src: string, className: string): HTMLImageElement {
@@ -224,7 +224,7 @@ function cdnImage(src: string, className: string): HTMLImageElement {
  *   1  it appears anywhere in the name - the fallback that catches a middle
  *      name, or a half of a hyphenated one nobody thinks of as a word.
  *
- * Both sides are normalised by searchKey, which is what makes "andre" find
+ * Both sides are normalized by searchKey, which is what makes "andre" find
  * "André" and "aj" find "A.J." without this function knowing about either
  * spelling.
  */
@@ -307,7 +307,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
     "scpClubFilter" in widget.dataset && root.querySelector("[data-scp-dir]") !== null;
 
   // The roles go on now rather than in the server's markup: they promise
-  // behaviour - a list that opens, an option that can be highlighted with the
+  // behavior - a list that opens, an option that can be highlighted with the
   // arrow keys - and until this file runs there is none to deliver.
   list.id = id;
   list.setAttribute("role", "listbox");
@@ -506,10 +506,10 @@ export function wirePlayerSearch(root: HTMLElement): void {
       if (entry.position) {
         const pos = document.createElement("span");
         pos.className = "scp-search-pos";
-        // The stylesheet colours it from here - the site's four position inks,
+        // The stylesheet colors it from here - the site's four position inks,
         // the same ones the depth chart and the matchup tables use. A position
-        // without an ink of its own (a kicker) keeps the muted grey around it
-        // rather than being given a fifth colour to mean "other".
+        // without an ink of its own (a kicker) keeps the muted gray around it
+        // rather than being given a fifth color to mean "other".
         pos.dataset["pos"] = entry.position;
         pos.textContent = entry.position;
         meta.appendChild(pos);
@@ -549,7 +549,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
   };
 
   const update = (): void => {
-    // Parsed on demand: several hundred rows split and normalised is work
+    // Parsed on demand: several hundred rows split and normalized is work
     // worth doing for a reader who searches and worth skipping for one who
     // does not.
     if (!entries) entries = parseRoster(island);

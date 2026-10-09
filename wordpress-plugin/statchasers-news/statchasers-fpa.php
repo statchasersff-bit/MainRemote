@@ -95,7 +95,7 @@ function statchasers_fpa_query_choice( string $key, array $allowed ): string {
 }
 
 /**
- * Normalise the shortcode attributes.
+ * Normalize the shortcode attributes.
  *
  * Precedence is attribute, then query string, then default. A page that writes
  * `[statchasers_fpa format="ppr"]` has made a decision about what that page
@@ -142,7 +142,7 @@ function statchasers_fpa_args( array $atts ): array {
 		$view = 'raw';
 	}
 
-	// A season is honoured only when it is plausibly one. Left at 0 the API
+	// A season is honored only when it is plausibly one. Left at 0 the API
 	// serves whatever it is configured to treat as current, which is what a
 	// page should normally do - a hard-coded season is a page that silently
 	// shows last year's table next September.
@@ -284,7 +284,7 @@ function statchasers_fpa_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out at
  * length in statchasers-team.php: Divi swaps the global post while rendering a
- * Theme Builder layout. Memoised for the same reason too.
+ * Theme Builder layout. Memoized for the same reason too.
  */
 function statchasers_fpa_post_has_shortcode(): bool {
 	static $answer = null;
@@ -460,7 +460,7 @@ add_shortcode( STATCHASERS_FPA_SHORTCODE, 'statchasers_fpa_shortcode' );
  * A page that hard-codes format="ppr" costs one extra fetch against a
  * fifteen-minute TTL, and asks the same nineteen questions either way.
  *
- * Memoised because the Rank Math filter and the fallback printer both ask.
+ * Memoized because the Rank Math filter and the fallback printer both ask.
  *
  * @return array<int,array{q:string,a:string}>
  */

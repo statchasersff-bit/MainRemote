@@ -125,7 +125,7 @@ const log = (msg) => console.log(`[bio-sources] ${msg}`);
 /* ------------------------------------------------------------------ csv */
 
 // A generator, one row object at a time: the weekly roster and snap count
-// files run to 16MB each, and materialising every row of every season as an
+// files run to 16MB each, and materializing every row of every season as an
 // object took this script to 1.5GB RSS - enough to OOM the production VM,
 // which runs it from the daily chain beside the server (outage 2026-10-03).
 // The few callers that need the rows twice spread it into an array.

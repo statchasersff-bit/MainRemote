@@ -10,7 +10,7 @@
  * The store holds one document per season. Before each read the server merges
  * it into the file (days are a union, so nothing either side holds is lost);
  * after each read it saves the file back. Off without DATABASE_URL, which
- * leaves the file-only behaviour.
+ * leaves the file-only behavior.
  */
 
 import fs from "node:fs";

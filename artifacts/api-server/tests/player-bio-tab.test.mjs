@@ -59,7 +59,7 @@ describe("reconcile (Stage 3)", () => {
 describe("polite client (Part 7.1)", () => {
   const res = (status, body = "", headers = {}) => new Response(status === 304 ? null : body, { status, headers });
 
-  test("Retry-After is honoured, and a 304 is served from the cache", async () => {
+  test("Retry-After is honored, and a 304 is served from the cache", async () => {
     const waits = [];
     const calls = [];
     const replies = [res(429, "", { "retry-after": "7" }), res(200, "hello", { etag: '"v1"' }), res(304)];

@@ -77,7 +77,7 @@ export interface SeedAccount {
  *
  * `category` says what kind of reporter this is, not what a post is about -
  * the news category is derived per post (lib/news-category.ts). Only the
- * national insiders are labelled, because that is the one claim about these
+ * national insiders are labeled, because that is the one claim about these
  * accounts that can be made without guessing someone's beat.
  */
 export const SEED_ACCOUNTS: SeedAccount[] = [

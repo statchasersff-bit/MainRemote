@@ -59,7 +59,7 @@ Paths are relative to the repo root.
 >
 > - **P1-1, rescoped:**
 >   - The player and matchup app pages build their data once instead of twice.
->   - The FPA table is memoised for 5 min, with in-flight dedupe, and dropped by every in-process ingest.
+>   - The FPA table is memoized for 5 min, with in-flight dedupe, and dropped by every in-process ingest.
 >   - Not done: a version check before the data build. WordPress sends no conditional requests, and a crawl rarely repeats a key within a minute, so it would add risk for little saving. The per-build cost that remains is P1-2.
 >
 > - **Found at deploy check, pre-existing:** `/embed/assets.json` answered `"version":"0"` in production. `assetVersion()` read version.json from `process.cwd()`, the same bug class `lib/data-dir.ts` fixed for `data/`. As a result WordPress enqueued every asset as `?ver=1.7.0`, and no deploy ever busted an asset cache. Fixed by resolving from the module (`tests/asset-version.test.mjs`); needs the next deploy.
@@ -85,7 +85,7 @@ Paths are relative to the repo root.
 >
 > Still open, by decision:
 > - **Roster island:** 30 KB raw / 12 KB gzipped per player page. Inert JSON, parsed only when someone types. Inlining it was a deliberate design choice (no cross-origin fetch), and the saving did not justify reversing that.
-> - **Owner decisions:** the six `[statchasers_nfl_hub]` links (verify live first); the depth-charts "popular view" links that canonicalise to `/fantasy/`; server-rendering the depth-chart table; data-dated section `lastmod`; app-host trailing-slash canonicals (noindex host, low value).
+> - **Owner decisions:** the six `[statchasers_nfl_hub]` links (verify live first); the depth-charts "popular view" links that canonicalize to `/fantasy/`; server-rendering the depth-chart table; data-dated section `lastmod`; app-host trailing-slash canonicals (noindex host, low value).
 > - **Needs a live check:** everything marked REQUIRES RUNTIME VERIFICATION.
 
 # Executive Summary
@@ -223,7 +223,7 @@ Paths are relative to the repo root.
 - **Recommended fix:**
   - Store the team on each row at ingest (the code already resolves it).
   - Query `team_abbr = X` using the existing `(team_abbr, pub_date_ms)` index.
-  - Match players on a normalised `player_key` column, not with ILIKE.
+  - Match players on a normalized `player_key` column, not with ILIKE.
 
 ## 6. A failed Sleeper roster fetch (14.6 MB) is retried on every page request, and page requests block on it
 
@@ -325,7 +325,7 @@ Paths are relative to the repo root.
 Browser / Googlebot
    │  GET https://statchasers.com/nfl/players/josh-allen/stats/
    ▼
-Cloudflare (statchasers.com) ── edge cache behaviour: REQUIRES RUNTIME VERIFICATION
+Cloudflare (statchasers.com) ── edge cache behavior: REQUIRES RUNTIME VERIFICATION
    ▼
 Bluehost ─ WordPress + Divi + Rank Math
    │  rewrite: ^nfl/players/([^/]+)/(stats|…)/?$ → pagename=…&sc_section=stats   (WP/statchasers-player.php:1158-1176)
@@ -426,19 +426,19 @@ Counts come from `artifacts/api-server/data/player/indexed_players.json` (643 pl
 | `/nfl/nfl-player-stats/` + `/{rb,wr,te}/` | 4 (`/qb/` → 301) | yes | 3 appended | self | yes | – |
 | `?season=` on player stats | ~10,000 × 4 | canonical is bare | no | bare | yes | HIGH (#9, load not SEO) |
 | FPA, RB handcuffs, news | 1 each | yes | Rank Math | self | yes | – |
-| `/nfl/nfl-depth-charts/` + `/fantasy/` + 32 teams | 34 indexable; 952 valid routes canonicalise to 33 | yes | own sitemap (33) + Rank Math page | `/fantasy/`, team | **table is JS-only** | MEDIUM (duplicate main, JS content) |
+| `/nfl/nfl-depth-charts/` + `/fantasy/` + 32 teams | 34 indexable; 952 valid routes canonicalize to 33 | yes | own sitemap (33) + Rank Math page | `/fantasy/`, team | **table is JS-only** | MEDIUM (duplicate main, JS content) |
 | `/nfl/` hub links to `/nfl/rankings/`, `/nfl/waiver-wire/`, etc. | 6 | – | – | – | – | MEDIUM (LIKELY 404s) |
 
 **Totals**
 
 - **Intended indexable URLs:** about 5,030 in sitemaps, plus about 1,400 dated matchup games that are discovered through links.
 - **Unintended crawlable URLs on statchasers.com:**
-  - bounded parameter variants (`?format`, `?log`, `?adv`, `?utm…`), all canonicalised;
+  - bounded parameter variants (`?format`, `?log`, `?adv`, `?utm…`), all canonicalized;
   - `?season=` on player stats (unbounded);
   - `?sc_sched_week=` and `?sc_section=` on any URL (unbounded, but only if linked);
-  - 952 depth-chart route variants (canonicalised).
+  - 952 depth-chart route variants (canonicalized).
 - **App host `newsfeed.replit.app` (all noindex but crawlable; `robots.txt` is `Allow: /`):**
-  - 4,389 dictionary players × 7 sections ≈ 30,700 URLs, plus case and trailing-slash variants that each self-canonicalise;
+  - 4,389 dictionary players × 7 sections ≈ 30,700 URLs, plus case and trailing-slash variants that each self-canonicalize;
   - `?season=1999..2100` on the FPA, schedule, rankings and player-stats routes.
 
 ---
@@ -459,7 +459,7 @@ Every outbound HTTP call. Severity reflects frequency × fanout.
 | WP/statchasers-rankings.php:550 | statchasers_rankings_fetch | `/embed/rankings` | title + json_ld + body | per miss | 1 h / 30 d | 1–3 | MED |
 | WP/statchasers-schedule.php:338 | statchasers_schedule_fetch | `/embed/schedule` | json_ld + body | per miss | 30 s–15 min / 7 d | 1–2 | MED |
 | WP/statchasers-player-stats.php:296 | statchasers_player_stats_fetch | `/embed/player-stats` | title + body | per miss | 1 h / 30 d | 1–2; key unbounded | HIGH |
-| WP/statchasers-rb-handcuffs.php:90 | statchasers_rb_handcuffs_fetch | `/embed/rb-handcuffs` | body (memoised) | per miss | 1 h / 30 d | 1 | LOW |
+| WP/statchasers-rb-handcuffs.php:90 | statchasers_rb_handcuffs_fetch | `/embed/rb-handcuffs` | body (memoized) | per miss | 1 h / 30 d | 1 | LOW |
 | WP/statchasers-h1.php:355 | statchasers_h1_measure | own site (loopback) | admin button only | manual | option | 3 | – |
 | DC/includes/class-scdc-espn.php:77 | fetch_team | ESPN depthcharts | admin refresh | manual | JSON file | 32 sequential | LOW |
 | DC/includes/class-scdc-fantasypros.php:61 | fetch_team | fantasypros.com | admin refresh | manual | JSON file | 32 sequential | LOW |
@@ -496,7 +496,7 @@ Assumptions:
 → **1 Replit request** (`/embed/player/{slug}`, about 41–104 KB, uncompressed)
 → **3 Postgres queries** (1 leading-wildcard ILIKE; 2 news lanes, one of which reads up to 4,000 full rows) plus a freshness query at most once per 60 s
 → **0 api.statchasers.com calls**
-→ third-party calls: about 0 per crawl, amortised. The roster refreshes every 12 h and ESPN schedules every 6 h per team. They rise to 1 × 14.6 MB Sleeper call per request while Sleeper is failing.
+→ third-party calls: about 0 per crawl, amortized. The roster refreshes every 12 h and ESPN schedules every 6 h per team. They rise to 1 × 14.6 MB Sleeper call per request while Sleeper is failing.
 → 0–2 CSS/JS revalidations against Replit, from rendering
 
 | Crawled URLs/day (player-heavy mix) | Bluehost requests | wp_options writes | Replit requests | Postgres queries | api.statchasers.com | Third-party (healthy / degraded) |
@@ -585,7 +585,7 @@ The requested loop-shaped patterns (`foreach $players → API`, `players.map(fet
   - The stats chain is sequential (current, then fallback, then 4 history seasons), with up to about 30 s cold (`API/lib/team/stats.ts:906-923`), which exceeds WordPress's 8 s timeout.
   - **Completed-season documents are re-fetched every 6 hours** even though they are immutable.
 - **Stale-and-failing ESPN is retried on every request (MEDIUM, CONFIRMED).** `createKeyedCache.ensure` backs off only when the value is null (`API/lib/team/cache.ts:99-139`). A stale value with a failing refresh therefore costs one ESPN attempt per request per key, and a team page touches about 10 keys.
-- **Depth-chart overlap (LOW, POSSIBLE cannibalisation).**
+- **Depth-chart overlap (LOW, POSSIBLE cannibalization).**
   - `/nfl/teams/{slug}/depth-chart/` (160-section family) and `/nfl/nfl-depth-charts/fantasy/{slug}/` (depth-charts plugin) both target "{Team} depth chart", both are indexable, and both are in sitemaps.
 - **Team build flush.** `statchasers_team_build_pages` calls `statchasers_news_flush()`, which deletes **all** caches and backups. That creates a cold herd on the next crawl and removes the outage fallback (`WP/statchasers-team-pages.php:345-348`, `WP/statchasers-news.php:651-673`).
 
@@ -603,7 +603,7 @@ The requested loop-shaped patterns (`foreach $players → API`, `players.map(fet
 
 # Rankings Findings
 
-- Data comes from CSV on disk, memoised by mtime, with **no third-party calls and no DB** on any path.
+- Data comes from CSV on disk, memoized by mtime, with **no third-party calls and no DB** on any path.
   - The fragment is the complete board. Position tabs on the ROS board are separate URLs (`/qb|rb|wr|te/`), each with its own fetch and key; there are 5 keys in total.
 - WordPress URLs: `^fantasy-football/rest-of-season-rankings/(qb|rb|wr|te)/?$`.
   - These are self-canonical, carry their own titles, and are in the sitemap.
@@ -634,7 +634,7 @@ The requested loop-shaped patterns (`foreach $players → API`, `players.map(fet
 
 # Advanced Stats Findings
 
-- **Bulk-loaded** from committed JSON (`data/player-stats`, 7 MB), memoised by mtime. It is not per-player, not per-stat, not from the DB, and involves no third party.
+- **Bulk-loaded** from committed JSON (`data/player-stats`, 7 MB), memoized by mtime. It is not per-player, not per-stat, not from the DB, and involves no third party.
   - Page sizes: `/embed/player-stats?pos=wr` 234 KB; `season=all` 330 KB, uncompressed.
 - The API whitelists `season` against files on disk and silently falls back for unknown values. The **WordPress side does not whitelist it** (#9).
 - Positions are path URLs `(rb|wr|te)`, and `/qb/` 301s to the bare URL, scoped to the page (fixed).
@@ -663,7 +663,7 @@ The requested loop-shaped patterns (`foreach $players → API`, `players.map(fet
 
 - Data is computed from disk JSON, cached by the mtime and size of every input. There is no DB and no third party.
   - Data is refreshed weekly by `scripts/rb-handcuffs/refresh.mjs` and `buildStats.mjs` (Ourlads, Sleeper and nflverse), **offline**.
-- There is one WordPress key, memoised per request, and it is **the model the other fetchers should copy**.
+- There is one WordPress key, memoized per request, and it is **the model the other fetchers should copy**.
 - **Overlap.** Its depth data (Ourlads) and the depth-charts plugin (ESPN, FantasyPros, Footballguys) and the team hub's depth-chart section (ESPN) are **three independent depth-chart pipelines**. They are not fetched per request, so there is no load cost, but they can disagree. That is a content consistency and ownership decision (OWNER DECISION).
 - **Schema (LOW, POSSIBLE).** The CreativeWork filter at priority 99 sets `mainEntity` on the first node whose `@type` contains "Page". FAQPage matches too, so its questions could be overwritten if Rank Math's WebPage node comes later (`WP/statchasers-rb-handcuffs.php:370-397`).
 - `BASIS_SEASON = 2026` is hardcoded (`API/lib/rb-handcuffs/handcuffs-data.ts:70`).
@@ -672,13 +672,13 @@ The requested loop-shaped patterns (`foreach $players → API`, `players.map(fet
 
 # Crawler Traps
 
-| URL pattern | Potential combos | How discovered | Index status | Canonical behaviour | Severity |
+| URL pattern | Potential combos | How discovered | Index status | Canonical behavior | Severity |
 |---|---|---|---|---|---|
 | statchasers.com `/nfl/nfl-player-stats/[pos/]?season=NNNN` | ~10,000 × 4 | nofollow chips for real seasons only; anything else needs an external link | indexable page, canonical bare | canonical drops the param; **origin fetch plus 2 transients per value** | HIGH (load) |
-| statchasers.com `any-url/?sc_sched_week=N` | every URL × 18 (+ 404 variants) | only if linked | retitled, canonicalised to the schedule week | hijacks the canonical | MEDIUM |
+| statchasers.com `any-url/?sc_sched_week=N` | every URL × 18 (+ 404 variants) | only if linked | retitled, canonicalized to the schedule week | hijacks the canonical | MEDIUM |
 | statchasers.com `/nfl/players/x/?sc_section=overview`, `/nfl/teams/x/?sc_section=outlook` | 611 + 32 | only if linked | – | **infinite 301 loop** | LOW |
 | statchasers.com player `?format×?log×?adv` | 3 × ~29 × ~4 per URL | nofollow chips (`log`, `adv`); `format` is not a link | index page, canonical bare | fine; transient keys bounded by whitelists | LOW |
-| statchasers.com depth-chart `{view}/{team}/{pos}` | 952 | 32 team links + 5 "popular views"; tabs are buttons | indexable, canonicalised to 33 | 5 popular-view links point at non-canonical URLs | LOW |
+| statchasers.com depth-chart `{view}/{team}/{pos}` | 952 | 32 team links + 5 "popular views"; tabs are buttons | indexable, canonicalized to 33 | 5 popular-view links point at non-canonical URLs | LOW |
 | statchasers.com matchup game pages | ~1,400 and growing | links from pair and team pages | self-canonical, not in sitemap | – | LOW (intended), plus about 65 postseason links that likely 404 |
 | newsfeed.replit.app `?season=1999..2100` on /fpa, /schedule, /rankings, /player-stats | 102 × 4 routes × variants | `carriedQuery` spreads `season` through the schedule's links | noindex | canonical is the path | **CRITICAL (/fpa), HIGH (/schedule)** for load |
 | newsfeed.replit.app `/player/{4,389 slugs}/{7 sections}` × case × trailing slash | ~30,700 × 2–4 | the player index links 643; the rest need guessing | noindex | canonical echoes the path, including case and slash | MEDIUM (load: every hit runs 3–6 queries) |
@@ -688,12 +688,12 @@ No calendar or date traps exist. No next/previous season links are crawlable on 
 # Canonical Problems
 
 1. `sc_sched_week` hijack on any URL (#10). MEDIUM, CONFIRMED.
-2. **App host:** `canonicalUrl()` echoes `req.path`, so `/player/Lamar-Jackson`, `/team/Kansas-City-Chiefs/`, `/Schedule`, and slash and no-slash variants all self-canonicalise (`API/lib/request.ts:36-37`).
+2. **App host:** `canonicalUrl()` echoes `req.path`, so `/player/Lamar-Jackson`, `/team/Kansas-City-Chiefs/`, `/Schedule`, and slash and no-slash variants all self-canonicalize (`API/lib/request.ts:36-37`).
    - The matchup 301 target has a trailing slash, while the no-slash URL's canonical has none.
    - It is noindex, so SEO impact is small. MEDIUM for load.
 3. **App host:** `publicOrigin()` trusts `X-Forwarded-Host`. A local test produced `canonical=http://evil.example/schedule` (`API/lib/request.ts:17`). LOW (no shared cache in front).
 4. **Depth charts:** the bare `/nfl/nfl-depth-charts/` keeps Rank Math's self-canonical, and `/fantasy/` is also self-canonical. Both are in sitemaps, so they are duplicates. MEDIUM, CONFIRMED (`DC/includes/class-scdc-seo.php` `canonical_for_request`, `DC/includes/class-scdc-sitemap.php:77`).
-5. **Depth charts:** `offense/all-teams/wr/` (a "popular view" link) canonicalises to `/fantasy/`, which is a content mismatch. LOW.
+5. **Depth charts:** `offense/all-teams/wr/` (a "popular view" link) canonicalizes to `/fantasy/`, which is a content mismatch. LOW.
 6. The **player-stats** `?season=2024` title and H1 say 2024 while the canonical is the bare page, which shows the current season. LOW, by design.
 7. **Team fallback WebPage node** (no Rank Math only) uses `get_permalink()`, so on section URLs its `url` is the hub (`WP/statchasers-news.php:459-517`). LOW.
 8. `PUBLIC_CANONICAL_URL`, if ever set, would replace **every** canonical with one URL (`API/lib/request.ts:31-32`). It is not set in production (CONFIRMED). This is a hazard to document.
@@ -706,7 +706,7 @@ HTTP vs HTTPS, www vs non-www, and multiple canonicals: none found. Rank Math re
 - **Outage duplicates:** player sections temporarily share the profile's title and description when the fetch fails with no backup (CONFIRMED mechanism).
 - **App host `newsfeed.replit.app` vs statchasers.com:** every tool exists on both, but the app host is `noindex, indexifembedded` in the header and meta. Not a duplicate-content problem, as long as that header stays.
 - **Player index vs players JSON:** not an issue.
-- Ranking position pages vs the full board, and schedule week pages vs the grid, have distinct content and titles. **Not cannibalisation.**
+- Ranking position pages vs the full board, and schedule week pages vs the grid, have distinct content and titles. **Not cannibalization.**
 
 # Soft 404 / HTTP Status Problems
 
@@ -753,7 +753,7 @@ HTTP vs HTTPS, www vs non-www, and multiple canonicals: none found. Rank Math re
   - team section titles and descriptions (`WP/statchasers-team-pages.php:1237`, `:1360`);
   - the matchup fallback season (`WP/statchasers-matchup.php:472`, `:518`).
 - **Stored fields are only filled when empty** (`statchasers_team_fill_meta`), so 2026 descriptions persist into 2027.
-- The retitle tool recognises only the **old** hub title template (`WP/statchasers-team-pages.php:1679-1688`), so it will treat current titles as custom and skip them.
+- The retitle tool recognizes only the **old** hub title template (`WP/statchasers-team-pages.php:1679-1688`), so it will treat current titles as custom and skip them.
 - The build scripts still write the old template (`scripts/create-team-pages.sh:226`, `scripts/sc-build-pages.php:521`).
 - **Four independent season clocks:**
   - the Sleeper state API (team, player and matchup pages);
@@ -834,7 +834,7 @@ HTTP vs HTTPS, www vs non-www, and multiple canonicals: none found. Rank Math re
 | `claimDueAccounts` (`API/lib/x/accounts.ts:135-160`) | X tick (disabled) | 2,880 ticks/day if enabled | – | latent |
 
 - **Index opportunities (do not apply yet):**
-  - a trigram index or a normalised player-key column;
+  - a trigram index or a normalized player-key column;
   - `(pub_date_ms DESC NULLS LAST, first_seen_at DESC)` matching the ORDER BY;
   - storing `team_abbr` on wire rows at ingest, to use the existing `(team_abbr, pub_date_ms)` index.
 - **Pool:** pg defaults (max 10), with **no `statement_timeout` and no `connectionTimeoutMillis`** (`lib/db/src/index.ts:13`). A hung DB parks requests indefinitely.
@@ -950,32 +950,32 @@ Line numbers are for the files as of this audit.
 
 **P0-1. Stop anonymous FPA ingests** (#1)
 - **Where:** `API/lib/fpa-ssr.ts`, `kickLazyIngest()` at `:66-100` and its trigger in `renderFpaFragment()` at `:111-114`; `API/routes/fpa.ts` season parse at `:45-48` (per report); `API/lib/fpa/nflverse.ts:243`.
-- **Current behaviour:** any season with no snapshots triggers a full re-ingest. There is no throttle after success and no fetch timeout.
-- **Desired behaviour:** lazy-ingest only when the default season has zero rows, at most once per process, or behind a long backoff. Unknown seasons return 404 (or the default). Add `AbortSignal.timeout` to the fetch.
+- **Current behavior:** any season with no snapshots triggers a full re-ingest. There is no throttle after success and no fetch timeout.
+- **Desired behavior:** lazy-ingest only when the default season has zero rows, at most once per process, or behind a long backoff. Unknown seasons return 404 (or the default). Add `AbortSignal.timeout` to the fetch.
 - **SEO impact:** none.
 - **Traffic impact:** removes an unbounded DB-write and GitHub-download trigger.
 - **Implementation risk:** low. Keep the cold-DB seeding path working.
 
-**P0-2. Negative-cache on failure and memoise per request in every WordPress fetcher** (#2)
+**P0-2. Negative-cache on failure and memoize per request in every WordPress fetcher** (#2)
 - **Where:**
   - `WP/statchasers-player.php` `statchasers_player_fetch` `:268-273`
   - `WP/statchasers-team.php` `statchasers_team_fetch` `:150-154`
-  - `WP/statchasers-matchup.php` `statchasers_matchup_fetch` `:299-303`, and memoise `statchasers_matchup_request_meta` `:542-568`
+  - `WP/statchasers-matchup.php` `statchasers_matchup_fetch` `:299-303`, and memoize `statchasers_matchup_request_meta` `:542-568`
   - `WP/statchasers-fpa.php` `:203-210`
   - `WP/statchasers-rankings.php` `:563-571`
   - `WP/statchasers-schedule.php` `:353-361`
   - `WP/statchasers-player-stats.php` `:309-317`
   - `WP/statchasers-news.php` `:204-215`
-- **Current behaviour:** when a backup exists, a failure returns it without writing the primary key, so every view re-fetches. Multiple callers per request each fetch.
-- **Desired behaviour:** on failure, `set_transient($cache_key, $backup ?? sentinel, 60)`. A static per-request memo keyed like the transient, as in `WP/statchasers-rb-handcuffs.php:70-73`.
+- **Current behavior:** when a backup exists, a failure returns it without writing the primary key, so every view re-fetches. Multiple callers per request each fetch.
+- **Desired behavior:** on failure, `set_transient($cache_key, $backup ?? sentinel, 60)`. A static per-request memo keyed like the transient, as in `WP/statchasers-rb-handcuffs.php:70-73`.
 - **SEO impact:** keeps TTFB flat during outages, so crawl rate holds.
 - **Traffic impact:** outage load on Replit drops 2–6× per view, and Bluehost worker blocking drops to at most 1 per key per minute.
 - **Implementation risk:** low. This is mechanical and the pattern already exists in the codebase.
 
 **P0-3. Take the roster fetch off the front-end hot path** (#3)
 - **Where:** `WP/statchasers-player-pages.php` `statchasers_player_roster()` `:78-155`, called from the `the_title` filter at `:880-907`.
-- **Current behaviour:** a 20 s blocking fetch on any player view when the transient is absent, and failures are never cached.
-- **Desired behaviour:** negative-cache failures (60–300 s), keep a long backup, and use a short timeout on the front end. Better still, store the heading data in post meta at build time.
+- **Current behavior:** a 20 s blocking fetch on any player view when the transient is absent, and failures are never cached.
+- **Desired behavior:** negative-cache failures (60–300 s), keep a long backup, and use a short timeout on the front end. Better still, store the heading data in post meta at build time.
 - **SEO impact:** H1 stability.
 - **Traffic impact:** removes up to 20 s per player view in an outage, and the 6-hourly stampede.
 - **Implementation risk:** low–medium, because the H1 wording must stay identical.
@@ -984,72 +984,72 @@ Line numbers are for the files as of this audit.
 
 **P1-1. Check the version and cache before building page data; add memos** (#4)
 - **Where:** `API/lib/player-ssr.ts` `renderPlayerFragment` `:86-99` and `renderPlayerAppPage` `:166-172`; `API/lib/matchup/matchup-ssr.ts:126-129`; `API/lib/team-ssr.ts:72`.
-- **Current behaviour:** 3–10 DB queries per request, including 304s. Player and matchup pages build their data twice.
-- **Desired behaviour:** a cheap version key (data-file mtimes, `contentVersion()`, options), then return the cached fragment or a 304 before `get*PageData`. Build the data once per request.
+- **Current behavior:** 3–10 DB queries per request, including 304s. Player and matchup pages build their data twice.
+- **Desired behavior:** a cheap version key (data-file mtimes, `contentVersion()`, options), then return the cached fragment or a 304 before `get*PageData`. Build the data once per request.
 - **SEO impact:** faster TTFB.
 - **Traffic impact:** ≈ 3,000 fewer DB queries per 1,000 crawled pages; the 4,000-row scans drop in proportion.
 - **Implementation risk:** medium. The version key must include every input: news freshness, the Sleeper roster and ESPN cache stamps.
 
 **P1-2. Replace the 4,000-row wire scan and the ILIKE player search** (#5)
 - **Where:** `API/lib/news-query.ts:43`, `:54`, `:113-123`, `:239-272`; `API/lib/player/player-data.ts:445-448`, `:471`; `API/routes/news.ts` `storeItems` (write `team_abbr` and a player key at ingest).
-- **Current behaviour:** reads up to 4,000 full rows and filters in JS; a leading-wildcard ILIKE.
-- **Desired behaviour:** indexed `team_abbr` and `player_key` lookups with small LIMITs, plus a one-off backfill.
+- **Current behavior:** reads up to 4,000 full rows and filters in JS; a leading-wildcard ILIKE.
+- **Desired behavior:** indexed `team_abbr` and `player_key` lookups with small LIMITs, plus a one-off backfill.
 - **SEO impact:** a correct News tab for common surnames.
 - **Traffic impact:** removes MB-scale DB reads per render.
 - **Implementation risk:** medium. It needs a migration and backfill, which were **not** done in this audit.
 
 **P1-3. Stale-while-revalidate and failure backoff for the Sleeper roster** (#6)
 - **Where:** `API/lib/teams.ts` `ensureTeams()` `:183-208`.
-- **Current behaviour:** the request blocks on a 14.6 MB fetch when the copy is 12 h stale, and retries on every request after a failure.
-- **Desired behaviour:** serve the existing map and refresh in the background. On failure, set `fetchedAt` forward by a backoff (for example 15 min doubling to 2 h).
+- **Current behavior:** the request blocks on a 14.6 MB fetch when the copy is 12 h stale, and retries on every request after a failure.
+- **Desired behavior:** serve the existing map and refresh in the background. On failure, set `fetchedAt` forward by a backoff (for example 15 min doubling to 2 h).
 - **SEO impact:** none directly.
 - **Traffic impact:** removes a per-request multi-MB third-party call during Sleeper incidents.
 - **Implementation risk:** low.
 
 **P1-4. Schedule: whitelist seasons, deduplicate ESPN, back off when blocked** (#7)
 - **Where:** `API/routes/schedule.ts:46-51` and `:88-103`; `API/lib/schedule/schedule-data.ts` `loadEspn` (~`:395-420`) and the slate cache `:399-418`; `API/lib/team/cache.ts:87`.
-- **Current behaviour:** user-supplied season keys; 18 ESPN calls per miss with no dedupe; repeated full sweeps when blocked; CSV re-download every 60 s for empty seasons.
-- **Desired behaviour:** accept only seasons present in `games.csv` (cache the season list once), and return 404 otherwise. One in-flight promise per season. After a total failure, advance `fullRefreshAt` or back off to hours. Stop carrying `season` into links.
+- **Current behavior:** user-supplied season keys; 18 ESPN calls per miss with no dedupe; repeated full sweeps when blocked; CSV re-download every 60 s for empty seasons.
+- **Desired behavior:** accept only seasons present in `games.csv` (cache the season list once), and return 404 otherwise. One in-flight promise per season. After a total failure, advance `fullRefreshAt` or back off to hours. Stop carrying `season` into links.
 - **SEO impact:** removes app-host soft-404s.
 - **Traffic impact:** ESPN falls from potentially thousands of calls a day to the healthy ~170/day.
 - **Implementation risk:** low–medium.
 
 **P1-5. Stop re-seen items counting as updates** (#8)
 - **Where:** `API/routes/news.ts` `storeItems` `:711-727` and the invalidation at `:764-771`.
-- **Current behaviour:** a per-row UPDATE and `updated++` for every re-seen row, which invalidates all caches.
-- **Desired behaviour:** compare content fields and count only real changes. Batch the `lastSeenAt` touch into one UPDATE, or drop it.
+- **Current behavior:** a per-row UPDATE and `updated++` for every re-seen row, which invalidates all caches.
+- **Desired behavior:** compare content fields and count only real changes. Batch the `lastSeenAt` touch into one UPDATE, or drop it.
 - **SEO impact:** "Last updated" becomes truthful.
 - **Traffic impact:** ~86k fewer UPDATEs a day; render cache and 304s start working.
 - **Implementation risk:** low.
 
 **P1-6. Whitelist `?season=` on WordPress player stats** (#9)
 - **Where:** `WP/statchasers-player-stats.php` `statchasers_player_stats_query_season()` `:216-224`.
-- **Current behaviour:** any 4-digit year is accepted, keyed and fetched.
-- **Desired behaviour:** accept only the seasons listed by the API (or 2023..current plus `all`). Drop everything else so it is served as the default page.
+- **Current behavior:** any 4-digit year is accepted, keyed and fetched.
+- **Desired behavior:** accept only the seasons listed by the API (or 2023..current plus `all`). Drop everything else so it is served as the default page.
 - **SEO impact:** none.
 - **Traffic impact:** bounds the `wp_options` rows and origin fetches.
 - **Implementation risk:** low.
 
 **P1-7. Scope `sc_sched_week` to the schedule page** (#10)
 - **Where:** `WP/statchasers-schedule.php` `statchasers_schedule_request_week()` `:153-171` (and hence `:180-192`, `:772-801`).
-- **Current behaviour:** any URL with `?sc_sched_week=N` is retitled and canonicalised to the schedule, and `=99` 404s any page.
-- **Desired behaviour:** return 0 unless the queried object is the schedule page, matching `WP/statchasers-rankings.php:260-263`.
+- **Current behavior:** any URL with `?sc_sched_week=N` is retitled and canonicalized to the schedule, and `=99` 404s any page.
+- **Desired behavior:** return 0 unless the queried object is the schedule page, matching `WP/statchasers-rankings.php:260-263`.
 - **SEO impact:** closes a canonical-hijack surface.
 - **Traffic impact:** none.
 - **Implementation risk:** low.
 
 **P1-8. Catch `ensureFreshness()` failures and add DB timeouts**
 - **Where:** `API/lib/player-ssr.ts:90`, `API/lib/team-ssr.ts:72`, `API/lib/matchup/matchup-ssr.ts:79`; `lib/db/src/index.ts:13`.
-- **Current behaviour:** any DB error returns 500/503 for every player, team and matchup page. There are no statement or connect timeouts.
-- **Desired behaviour:** treat freshness as best-effort (fall back to the last value), and set `statement_timeout` and `connectionTimeoutMillis`.
+- **Current behavior:** any DB error returns 500/503 for every player, team and matchup page. There are no statement or connect timeouts.
+- **Desired behavior:** treat freshness as best-effort (fall back to the last value), and set `statement_timeout` and `connectionTimeoutMillis`.
 - **SEO impact:** fewer 5xx seen by crawlers. The WordPress backups mask these, but only for 24 h.
 - **Traffic impact:** fail fast instead of piling up.
 - **Implementation risk:** low.
 
 **P1-9. Make static assets cacheable and compressed**
 - **Where:** `API/app.ts:202` (`express.static(publicDir)`); there is no compression middleware.
-- **Current behaviour:** `max-age=0` and uncompressed. Every WordPress page view revalidates 200–250 KB of CSS plus JS against Replit.
-- **Desired behaviour:** `Cache-Control: public, max-age=31536000, immutable` for `?ver=`-versioned assets, plus gzip/brotli (a compression middleware or pre-compressed files). Optionally serve the CSS from statchasers.com itself.
+- **Current behavior:** `max-age=0` and uncompressed. Every WordPress page view revalidates 200–250 KB of CSS plus JS against Replit.
+- **Desired behavior:** `Cache-Control: public, max-age=31536000, immutable` for `?ver=`-versioned assets, plus gzip/brotli (a compression middleware or pre-compressed files). Optionally serve the CSS from statchasers.com itself.
 - **SEO impact:** better LCP/FCP on every tool page.
 - **Traffic impact:** removes most browser-driven Replit requests and cuts transfer by about 80%.
 - **Implementation risk:** low. `ver` already busts the cache per build.
@@ -1061,7 +1061,7 @@ Line numbers are for the files as of this audit.
 - Add WordPress rewrites for postseason matchup game slugs (`WP/statchasers-matchup.php:113`, `:143`), or stop emitting those links.
 - Fix or remove the `[statchasers_nfl_hub]` links to non-existent paths (`DC/includes/class-scdc-hub.php:57-122`), after verifying them live.
 - Depth charts:
-  - Make the bare main page canonicalise to `/fantasy/` (or the reverse), and list only one.
+  - Make the bare main page canonicalize to `/fantasy/` (or the reverse), and list only one.
   - Server-render at least the team table.
   - On a partial refresh, keep the previous data for failed teams (`DC/includes/class-scdc-refresh.php:38-42`).
 - Write a season-rollover plan: schedule empty state, `seasonYear` vs data, constants, stored meta, retitle regex (see Year/Week Staleness).
@@ -1071,7 +1071,7 @@ Line numbers are for the files as of this audit.
 - Strip the 30 KB `data-scp-roster` island from WordPress player pages, or lazy-load it for search.
 - Add a shortcode or parent check to `statchasers_player_sitemap_sections` (`WP/statchasers-player.php:1534-1557`), and emit meaningful lastmod values (the data version date).
 - App host `robots.txt`: disallow `/*?season=` (OWNER DECISION on a broader disallow).
-- Normalise the case and trailing slash of app-host canonicals, or 301 them.
+- Normalize the case and trailing slash of app-host canonicals, or 301 them.
 - Verify live: Divi Theme Builder H1 on player and matchup pages; Rank Math sitemap hook output; Bluehost object and page cache; `SC_*_PATH_PREFIX` in production.
 
 ## P3 - cleanup

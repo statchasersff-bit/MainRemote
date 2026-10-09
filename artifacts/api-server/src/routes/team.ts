@@ -68,7 +68,7 @@ const TEAM_PATH_PREFIX = "/team/";
  * Which section this URL is scoped to, if any.
  *
  * A closed list, not free text: `?section=` reaches the renderer, and an
- * unrecognised id there would silently fall through to the hub under a URL that
+ * unrecognized id there would silently fall through to the hub under a URL that
  * promised one section. Ids match the tab ids in team-render.ts, and the list
  * is mirrored by STATCHASERS_TEAM_SECTIONS in the WordPress plugin - that is
  * what mints these URLs, so the two lists cannot drift without a rewrite rule
@@ -316,7 +316,7 @@ router.get("/team/:slug", (req, res) => {
 router.get("/team/:slug/:section", (req, res) => {
   void (async () => {
     const raw = String(req.params.slug ?? "");
-    // Exact, not normalised: /Stats/ resolving would be a second address for
+    // Exact, not normalized: /Stats/ resolving would be a second address for
     // the same page, and the point of this route is that there is one.
     const scoped = String(req.params.section ?? "");
     const canonicalTeam = getTeamBySlug(raw);

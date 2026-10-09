@@ -6,7 +6,7 @@
 #   bash wordpress-plugin/scripts/build-zip-depth.sh
 #
 # Sibling to build-zip.sh, which does the same job for statchasers-news. They
-# are two scripts rather than one parameterised script because the two plugins
+# are two scripts rather than one parameterized script because the two plugins
 # are not the same shape: statchasers-news is a flat directory of shortcode
 # files whose loader requires each of them by name, while this one is a class
 # per concern under includes/. The checks below are the same three ideas, asked

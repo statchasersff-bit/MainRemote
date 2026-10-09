@@ -20,7 +20,7 @@
  *
  * First, the board was only as fresh as the last BUILD. Updating a ranking
  * meant re-running the prerender and redeploying the app, because the HTML
- * WordPress served was a build artefact. Here the rankings are a CSV the API
+ * WordPress served was a build artifact. Here the rankings are a CSV the API
  * reads per request, cached on its mtime - publishing a new one is a commit,
  * and the shortcode picks it up within the TTL below.
  *
@@ -101,7 +101,7 @@ const STATCHASERS_RANKINGS_TIMEOUT = 6;
 const STATCHASERS_RANKINGS_POSITIONS = array( 'all', 'qb', 'rb', 'wr', 'te' );
 
 /**
- * Normalise the shortcode attributes.
+ * Normalize the shortcode attributes.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
  * @param string              $board 'redraft', 'ros', or '' for the page's.
@@ -136,7 +136,7 @@ function statchasers_rankings_args( array $atts, string $board = '' ): array {
 		$pos = $from_url;
 	}
 
-	// A season is honoured only when it is plausibly one. Left at 0 the API
+	// A season is honored only when it is plausibly one. Left at 0 the API
 	// serves the newest board it has, which is what a page should normally do -
 	// a hard-coded season is a page that silently shows last year's rankings
 	// next August.
@@ -253,7 +253,7 @@ add_action(
 /**
  * The position this request's address names, or '' on the page itself.
  *
- * Not memoised, unlike the schedule's week: it is one array lookup, and a
+ * Not memoized, unlike the schedule's week: it is one array lookup, and a
  * static here is a value no test can change within a process.
  */
 function statchasers_rankings_request_pos(): string {
@@ -644,7 +644,7 @@ function statchasers_rankings_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason set out at
  * length in statchasers-team.php: Divi swaps the global post while rendering a
- * Theme Builder layout. Memoised for the same reason too.
+ * Theme Builder layout. Memoized for the same reason too.
  */
 function statchasers_rankings_post_has_shortcode(): bool {
 	return '' !== statchasers_rankings_page_board();
@@ -823,7 +823,7 @@ function statchasers_rankings_render( array $atts, string $board ): string {
 
 	if ( null === $data || '' === $data['html'] ) {
 		// No client-side render to fall back to: the bundle only adds tab
-		// behaviour to markup that is already there. An empty string leaves the
+		// behavior to markup that is already there. An empty string leaves the
 		// rest of the page - the H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return '<p><strong>StatChasers Rankings:</strong> the API returned nothing. Check that the deployment is up and that it has a <code>data/rankings/' . ( 'ros' === $board ? 'ros' : 'redraft' ) . '-&lt;season&gt;.csv</code> file.</p>';
@@ -863,7 +863,7 @@ add_shortcode( STATCHASERS_ROS_RANKINGS_SHORTCODE, 'statchasers_ros_rankings_sho
  * Simpler than the team hub's equivalent: there is one mount, one fragment and
  * one FAQ, and the questions do not vary by tab - the position changes which
  * panel opens and nothing about what is asked. The fetch is the cached one the shortcode is about to hit, so this
- * costs no second round trip, and the result is memoised because the Rank Math
+ * costs no second round trip, and the result is memoized because the Rank Math
  * filter and the fallback printer both ask.
  *
  * @return array<int,array{q:string,a:string}>

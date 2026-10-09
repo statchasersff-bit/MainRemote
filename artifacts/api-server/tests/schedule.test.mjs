@@ -192,7 +192,7 @@ describe("the slate", () => {
     assert.equal(mod.easternToUtcMs("2024-12-08", ""), null);
   });
 
-  test("the holiday games are labelled", async () => {
+  test("the holiday games are labeled", async () => {
     const data = await mod.getSchedule(SEASON);
     const thanksgiving = data.games.filter(
       (game) => game.holiday === "THANKSGIVING",
@@ -229,7 +229,7 @@ describe("the slate", () => {
     assert.equal(mod.parseWeek("abc"), null);
   });
 
-  test("the season pin is honoured", () => {
+  test("the season pin is honored", () => {
     const previous = process.env.SC_SCHEDULE_SEASON;
     try {
       process.env.SC_SCHEDULE_SEASON = "2019";
@@ -278,7 +278,7 @@ describe("the slate", () => {
       assert.equal(mod.scheduleSeason(), SEASON + 1);
       const data = await mod.getSchedule(SEASON + 1);
       assert.ok(data, "not an empty board");
-      assert.equal(data.season, SEASON, "the season just played, labelled as such");
+      assert.equal(data.season, SEASON, "the season just played, labeled as such");
     } finally {
       t.mock.timers.reset();
       if (previous !== undefined) process.env.SC_SCHEDULE_SEASON = previous;
@@ -838,7 +838,7 @@ describe("the schedule page", () => {
     };
 
     // What is left of the query string is ways of LOOKING at a page rather
-    // than names of a different one, so each canonicalises to the path it is
+    // than names of a different one, so each canonicalizes to the path it is
     // looked at from.
     for (const query of ["?season=2024", "?embed=1"]) {
       assert.equal(
@@ -1424,7 +1424,7 @@ describe("the schedule stylesheet outranks the host theme", () => {
     }
   });
 
-  test("links keep the colour of the cell they fill", () => {
+  test("links keep the color of the cell they fill", () => {
     const armed = css.slice(css.indexOf("Theme armour"));
     assert.ok(armed.includes(".scs .scs-matrix a {"), "the grid's links are unarmed");
     assert.ok(armed.includes(".scs .scs-rail-link"), "the week rail is unarmed");

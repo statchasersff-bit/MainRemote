@@ -13,7 +13,7 @@ Most of what follows comes down to not letting a year label move before the data
 
 | What | How | Since |
 |---|---|---|
-| Schedule, March to the release (≈ mid-May) | With nflverse holding no 2027 games, the board shows the 2026 season, labelled 2026, instead of an empty page and a 503. It retries the new season every 30 min, not every minute. It switches to 2027 as soon as nflverse publishes. (`getSchedule`, `lib/schedule/schedule-data.ts`) | 2026-09-28 |
+| Schedule, March to the release (≈ mid-May) | With nflverse holding no 2027 games, the board shows the 2026 season, labeled 2026, instead of an empty page and a 503. It retries the new season every 30 min, not every minute. It switches to 2027 as soon as nflverse publishes. (`getSchedule`, `lib/schedule/schedule-data.ts`) | 2026-09-28 |
 | Schedule `?season=` | Limited to 1999 through the current season. | 2026-09-28 |
 | Game logs and W/L scores | The production refresh (`lib/player/live-refresh.ts`) asks for `seasonYear()`. From March 1 that is 2027, which has no games. The builder then writes nothing, so no empty `2027.json` appears. From week 1 it fills 2027 by itself. | 2026-09-28 |
 | Player pages' "active season" | Each player page picks the newest season the player actually played in (`getPlayerPageData`), so it moves to 2027 at a player's first 2027 game. | before |
@@ -39,7 +39,7 @@ Outlooks are hand-written per season. There is nothing to flip until the new one
 
 ### 2. August: FPA preseason mode
 
-FPA has a preseason mode (`preseason_baseline`) that ranks defences on the previous season until 2027 games exist. To switch to it:
+FPA has a preseason mode (`preseason_baseline`) that ranks defenses on the previous season until 2027 games exist. To switch to it:
 
 - Set the Replit production secrets `FPA_CURRENT_SEASON=2027` and `FPA_BASELINE_SEASON=2026`. The code defaults are 2026/2025, in `lib/fpa/fpa-data.ts:95-97` and `:257`, and `lib/fpa/ingest.ts:52-55`. Setting the secrets needs no code change.
 - Then run `node scripts/refresh-fpa.mjs` once. It POSTs to the deployment, as in the weekly FPA refresh.
@@ -63,7 +63,7 @@ Bump the plugin version, rebuild the zip (`bash wordpress-plugin/scripts/build-z
 **Stored meta does not follow the constant.** Rank Math titles and descriptions are written into each page's meta *only when empty*, so the 611 player descriptions ("… 2026 game log …") and 32 team hub titles keep saying 2026. Two ways to refresh them:
 
 - **Player descriptions:** re-run `create-player-pages.sh` with `--force`, or clear `rank_math_description` on the player pages and press **Build player pages** (it refills empty fields).
-- **Team hub titles:** the Tools-screen retitle only recognises the old `YYYY {Team} Fantasy Football Hub | StatChasers` template (`statchasers-team-pages.php` ≈ 1679-1688). It will treat the current "{Team} 2026: Record, …" titles as custom and skip them. Either update that pattern to recognise the current template before the rollover, or clear `rank_math_title` on the hubs and rebuild.
+- **Team hub titles:** the Tools-screen retitle only recognizes the old `YYYY {Team} Fantasy Football Hub | StatChasers` template (`statchasers-team-pages.php` ≈ 1679-1688). It will treat the current "{Team} 2026: Record, …" titles as custom and skip them. Either update that pattern to recognize the current template before the rollover, or clear `rank_math_title` on the hubs and rebuild.
 
 ### 4. RB handcuffs: owner decision
 

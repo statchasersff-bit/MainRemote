@@ -83,7 +83,7 @@ interface CacheEntry {
 }
 
 /**
- * The points-allowed table, memoised per scoring format.
+ * The points-allowed table, memoized per scoring format.
  *
  * `getFpaTable` runs a query per call, and this is now on the path of every
  * player page - several hundred of them, three formats each. The numbers move
@@ -117,7 +117,7 @@ export async function matchupTable(
   }
 }
 
-/** Drops the memoised tables. For the tests and the dev reload path. */
+/** Drops the memoized tables. For the tests and the dev reload path. */
 export function resetMatchupTableCache(): void {
   tableCache.clear();
 }

@@ -75,7 +75,7 @@ describe("turning a watchlist into filter rules", () => {
     }
   });
 
-  test("handles are normalised, so @Name and name are one term", () => {
+  test("handles are normalized, so @Name and name are one term", () => {
     assert.deepEqual(buildFilterRules(["@AdamSchefter", " RapSheet "]), [
       "from:adamschefter OR from:rapsheet",
     ]);

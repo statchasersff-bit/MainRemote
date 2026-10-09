@@ -252,7 +252,7 @@ body {
    set rather than a hole in it.
    Two artwork files ship, named for the surface they belong on. This one is
    always the on-dark (white) mark: both stops of the tile's gradient are
-   colour-mixed toward black, so the square is dark whatever the team colour -
+   color-mixed toward black, so the square is dark whatever the team color -
    there is no team for which the navy artwork would read. Its counterpart,
    statchasers-logo-on-light.png, is for any light surface.
    The URL is relative to THIS stylesheet, so it resolves against the tool server

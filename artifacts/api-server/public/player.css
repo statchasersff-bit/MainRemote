@@ -20,7 +20,7 @@
  *             top of the page. A shadow is what separates them, so they are
  *             the only things allowed to be white on white.
  *   RECESSED - `--sc-surface-soft` fill, hairline border, no shadow.
- *             Everything else. On a grey page these could be white and still
+ *             Everything else. On a gray page these could be white and still
  *             have an edge; on a white one a white card is only its hairline,
  *             which is not enough to hold a grid of them together.
  *
@@ -29,7 +29,7 @@
  * the team's news list drops to the sink to stay a step behind the player's.
  *
  * Both selectors carry the tokens: `.scp` is the fragment as embedded, and
- * `body.scp-page` is the standalone page, whose own background/colour/font
+ * `body.scp-page` is the standalone page, whose own background/color/font
  * rules need to see them too.
  */
 
@@ -48,7 +48,7 @@
    * `--sc-gold-deep` is 3.6:1 on the hero - fine for the 30px rank, short of
    * the 4.5:1 an 11px eyebrow owes. This is the same hue two steps down: 5.2:1
    * on the hero, 5.7:1 on white. Deliberately not #8a6205, which is the
-   * moderate-risk status colour and must not double as a brand accent.
+   * moderate-risk status color and must not double as a brand accent.
    */
   --sc-gold-ink: #856005;
 
@@ -63,7 +63,7 @@
   /*
    * Bar and meter tracks, one step below the sink.
    *
-   * The sink was enough when a track only ever sat on a white card over a grey
+   * The sink was enough when a track only ever sat on a white card over a gray
    * page. Now that the page itself is white and the cards carrying bars are the
    * tinted ones, a sink-filled track lands within ~2% lightness of its own card
    * and effectively disappears; this keeps the empty half of a bar visible on
@@ -85,11 +85,11 @@
    * The finish-tier ramp: ONE hue in four monotone lightness steps.
    *
    * POS1 through Bust is an order, not four identities, so it takes an ordinal
-   * ramp rather than four hues - the reader sees the order in the colour. The
+   * ramp rather than four hues - the reader sees the order in the color. The
    * steps are validated, not chosen: OKLCH lightness ascends 0.359 / 0.500 /
    * 0.628 / 0.754 in even increments, and the palest still clears 2:1 against
    * the white surface, which is the floor an ordinal ramp's light end has to
-   * hold. Every tier is also labelled in text, so the pale end never carries
+   * hold. Every tier is also labeled in text, so the pale end never carries
    * meaning alone.
    */
   --scp-tier-1: #0b3a7a;
@@ -110,14 +110,14 @@
    * WordPress page mounting [statchasers_player] must not need the team hub's
    * stylesheet to render. Each clears 4.5:1 on white at the 11px they are read
    * at here, and a position with no ink of its own - a kicker - keeps the
-   * muted grey around it rather than taking a fifth colour that means "other".
+   * muted gray around it rather than taking a fifth color that means "other".
    */
   --sc-pos-qb: #99323a;
   --sc-pos-rb: #0f6b4f;
   --sc-pos-wr: #1d4e8c;
   --sc-pos-te: #a87905;
 
-  /* Status, for the injury risk rows only - never reused as a series colour. */
+  /* Status, for the injury risk rows only - never reused as a series color. */
   --scp-risk-low: #0f6b4f;
   --scp-risk-moderate: #8a6205;
   --scp-risk-high: #99323a;
@@ -328,7 +328,7 @@ body.scp-page {
  *
  * On the index a club row filters the page instead of leaving it, so it is a
  * <button> - see the head of client/player-search.ts for why it cannot be an
- * anchor. A button arrives with the browser's own chrome on it: a grey fill, a
+ * anchor. A button arrives with the browser's own chrome on it: a gray fill, a
  * border, a font of its own and a width that hugs its content rather than
  * filling the panel. Every one of those has to be given back, because a reader
  * scanning eight results must not be able to see which of them is which kind
@@ -339,7 +339,7 @@ button.scp-search-opt {
   border: 0;
   background: transparent;
   font: inherit;
-  /* A button centres its content; every other row in the list reads from the
+  /* A button centers its content; every other row in the list reads from the
      left edge of the portrait well. */
   text-align: left;
   cursor: pointer;
@@ -432,7 +432,7 @@ button.scp-search-opt {
 }
 
 /* The position, in its own ink. Four of them; anything else - a kicker, a
-   player the dictionary has no position for - inherits the muted grey. */
+   player the dictionary has no position for - inherits the muted gray. */
 .scp-search-pos {
   color: var(--sc-muted);
   text-transform: uppercase;
@@ -470,7 +470,7 @@ button.scp-search-opt {
   object-fit: contain;
 }
 
-/* The club's own colour is not available on a search row - the panel is one
+/* The club's own color is not available on a search row - the panel is one
    list over many clubs - so the well behind a mark stays the neutral sink it
    is behind a portrait. */
 .scp-search-opt[data-kind="team"] .scp-search-face {
@@ -478,8 +478,8 @@ button.scp-search-opt {
 }
 
 /* Where a player's row carries his position, a club's carries what it is. The
-   same slot, the same size, the muted grey a position without an ink takes -
-   this word places the row, it does not colour it. */
+   same slot, the same size, the muted gray a position without an ink takes -
+   this word places the row, it does not color it. */
 .scp-search-kind {
   color: var(--sc-muted);
   text-transform: uppercase;
@@ -510,7 +510,7 @@ button.scp-search-opt {
  * Its own design, to mak's spec of 2026-09-29, rather than the house cards the
  * rest of this file draws: its own tokens, its own face (Archivo, loaded with
  * the width axis - the name and the big numbers are set condensed), and the
- * club's colour as a surface rather than a hairline. Everything here reads the
+ * club's color as a surface rather than a hairline. Everything here reads the
  * tokens below; `--scp-team` is set per player by teamInk() in
  * player-render.ts, which has already made it dark enough for white text.
  *
@@ -573,7 +573,7 @@ button.scp-search-opt {
   scroll-margin-top: calc(var(--scp-nav-h) + var(--scp-nav-offset) + 16px);
 }
 
-/* The accent bar: club colour into gold, across the top edge. */
+/* The accent bar: club color into gold, across the top edge. */
 .scp .scp-phead::before {
   content: "";
   position: absolute;
@@ -792,7 +792,7 @@ button.scp-search-opt {
 
 /* ---- scoreboard ---- */
 
-/* The label and the board: "2026 Season" centred above it (mak, 2026-09-30). */
+/* The label and the board: "2026 Season" centered above it (mak, 2026-09-30). */
 .scp .scp-pboard-wrap {
   align-self: center;
   min-width: 280px;
@@ -1875,7 +1875,7 @@ button.scp-search-opt {
 /*
  * The stat rail (mak, 2026-10-03): one light-gray band split by faint vertical
  * separators, each cell an uppercase label, the figure and a muted second
- * line. The separators are the band's 1px gaps showing the line colour
+ * line. The separators are the band's 1px gaps showing the line color
  * through, so a wrapped row on a narrow column is split the same way; cells
  * grow to fill their row, so no gap is left uncovered.
  */
@@ -2673,7 +2673,7 @@ button.scp-search-opt {
    A compact card: eyebrow, headline, the fantasy result as the hero metric
    with the impact read beside it, compact stat rows, one SC Takeaway line,
    then Box score / Game log. About a third shorter than the 09-30 card. The
-   impact still colours the left edge. */
+   impact still colors the left edge. */
 
 /* The panel heading's dek: "Fantasy-relevant news, game recaps and role changes". */
 .scp .scp-nw p.scp-nw-dek {
@@ -3270,7 +3270,7 @@ button.scp-search-opt {
 }
 
 /* No card around the take (mak, 2026-09-30): it sits on the page. */
-/* Top-aligned since the tier line went to lede size (2026-10-05): centred,
+/* Top-aligned since the tier line went to lede size (2026-10-05): centered,
    the short left column dropped the heading below the Best fit column. */
 .scp .scp-ol .scp-ol-take {
   display: grid;
@@ -4680,7 +4680,7 @@ button.scp-search-opt {
  * being re-rendered from another scoring format or another season, which takes
  * one request, so the controls that started it say so and stop taking clicks.
  * Only the controls dim: the numbers on screen are still the true answer to the
- * question the reader asked a moment ago, and greying the page would suggest
+ * question the reader asked a moment ago, and graying the page would suggest
  * otherwise. With scripting off the attribute is never set and none of this
  * applies.
  */
@@ -4859,7 +4859,7 @@ button.scp-search-opt {
 
 /* A link inside a caption: the phrase the caption is defining, pointing at the
    table it is defined from. Underlined in gold like .scp-crosslink, but
-   inheriting the caption's size and muted colour - a caption that grew one
+   inheriting the caption's size and muted color - a caption that grew one
    navy-bold phrase would read as the loudest thing under the section. */
 .scp-caption-link {
   color: inherit;
@@ -4993,7 +4993,7 @@ button.scp-search-opt {
   flex: 0 0 auto;
 }
 
-/* Text wears text tokens, never the series colour - the swatch beside it
+/* Text wears text tokens, never the series color - the swatch beside it
    carries the identity. */
 .scp-legend-label {
   color: var(--sc-muted-strong);
@@ -5200,7 +5200,7 @@ button.scp-search-opt {
  */
 .scp .scp-table--filled thead th:first-child {
   background: var(--sc-navy);
-  /* Beats the colour rule above that paints the first head navy, and the game
+  /* Beats the color rule above that paints the first head navy, and the game
      log's per-column ink, which are both set for a white row. */
   color: #ffffff;
   border-bottom-color: var(--sc-navy);
@@ -5230,11 +5230,11 @@ button.scp-search-opt {
 }
 
 /*
- * And a rule under the cell, because one word of colour in a twelve-wide band
+ * And a rule under the cell, because one word of color in a twelve-wide band
  * is a thin signal.
  *
  * Gold on this page means "the current thing" and nothing else - no column is
- * inked gold at rest any more - so the colour is unambiguous. The bar is what
+ * inked gold at rest any more - so the color is unambiguous. The bar is what
  * makes it legible: it is the device the tab strip above already uses for "you
  * are here", it spans the whole cell rather than a few characters of label,
  * and it survives a reader who does not separate gold from white at a glance.
@@ -5270,7 +5270,7 @@ button.scp-search-opt {
  *
  * border-collapse is `collapse`, so the frame's bottom edge collapses with the
  * last row's own hairline - one line, not two - and its top edge takes the
- * navy, because a grey hairline above the navy band reads as a seam over the
+ * navy, because a gray hairline above the navy band reads as a seam over the
  * header rather than as the top of the table.
  */
 .scp .scp-table--filled {
@@ -5798,7 +5798,7 @@ button.scp-search-opt {
 }
 
 /* The arrow is the only mark distinguishing the two columns, and it is a
-   direction rather than a judgement. */
+   direction rather than a judgment. */
 .scp-moves-mark {
   font-size: 14px;
   line-height: 1;
@@ -6230,7 +6230,7 @@ button.scp-search-opt {
   border-bottom: 1px solid var(--sc-border);
   /* The severity rail is the entry's only accent, and it is a rail rather than
      a wash so a major injury is marked without the paragraph beside it being
-     coloured like a warning. */
+     colored like a warning. */
   border-left: 3px solid var(--sc-border);
 }
 
@@ -6317,7 +6317,7 @@ button.scp-search-opt {
 
 /* Nudged down to sit on the FIRST line of the question rather than on the
    middle of one that wrapped - `align-items: flex-start` puts the chevron's
-   box at the top, and this centres it on that line's cap height. */
+   box at the top, and this centers it on that line's cap height. */
 .scp-faq-q-row::before {
   content: "";
   flex: none;
@@ -7256,7 +7256,7 @@ button.scp-search-opt {
  * eleven year chips and a heading do not share a phone's width: the chips drop
  * under the title rather than squeezing it.
  *
- * Centred rather than baseline-aligned - the title carries its gold rule as
+ * Centered rather than baseline-aligned - the title carries its gold rule as
  * 10px of padding under the text, so a baseline would hang the pill row above
  * the block it belongs to.
  */
@@ -7601,13 +7601,13 @@ button.scp-search-opt {
 }
 
 /*
- * Centred, every column.
+ * Centered, every column.
  *
  * The shared table sets numbers right and the two naming columns left, which
  * is the right default for a sheet a reader runs a total down. This one is
  * read across a season at a time - eleven short, equal-width figures - and
  * ragged alignment down the middle of it made the columns hard to follow. So
- * the whole grid centres: the season, GP, the group labels over their spans,
+ * the whole grid centers: the season, GP, the group labels over their spans,
  * the body, and the Career line.
  *
  * Spelled out one selector per default it overrides, because each of those
@@ -7615,7 +7615,7 @@ button.scp-search-opt {
  * The GP column takes two of them - `tbody` and `tfoot` - because the shared
  * table's `td:nth-child(2)` is left-aligned for every row of the table at
  * once, and a rule that only names the body leaves the Career line's games
- * count sitting under a centred column, hard against its left edge.
+ * count sitting under a centered column, hard against its left edge.
  */
 .scp .scp-table--career th,
 .scp .scp-table--career td,
@@ -7638,13 +7638,13 @@ button.scp-search-opt {
  * 2019's INT count had only the gap between two numbers to hold the line. So
  * every cell gets all four edges and the table gets a frame around them.
  *
- * border-collapse is `collapse`, so neighbouring cells share one line - the
+ * border-collapse is `collapse`, so neighboring cells share one line - the
  * grid is 1px throughout, not 2px everywhere but the outside.
  */
 .scp .scp-table--career {
   border: 1px solid var(--sc-border);
   /* Same reading as .scp-table--filled: the navy band is the top of the
-     table, so a grey hairline above it would read as a seam. */
+     table, so a gray hairline above it would read as a seam. */
   border-top-color: var(--sc-navy);
 }
 
@@ -7653,7 +7653,7 @@ button.scp-search-opt {
   border: 1px solid var(--sc-border);
 }
 
-/* Both header rows are navy. A grey rule inside a navy band is a smudge, so
+/* Both header rows are navy. A gray rule inside a navy band is a smudge, so
    the header's own grid is drawn in white at the weight the group row already
    used for its underline. */
 .scp .scp-table--career thead th,
@@ -7743,7 +7743,7 @@ button.scp-search-opt {
     left: 0;
     z-index: 1;
     /* The collapsed borders leave a sliver at the left edge that the
-       scrolled cells show through; the -4px shadow in the cell's own colour
+       scrolled cells show through; the -4px shadow in the cell's own color
        covers it, the 1px one is the column's right rule. */
     --scp-cell: var(--sc-surface);
     background: var(--scp-cell);
@@ -7786,13 +7786,13 @@ button.scp-search-opt {
  * Ported from the standalone app's card rail and rebuilt in this page's own
  * tokens: raised cards (white fill, hairline, shadow - they float over the
  * page's white ground, so the shadow is what makes them cards), the club's
- * colour as the one accent, and the gold the rest of the page uses for "this
+ * color as the one accent, and the gold the rest of the page uses for "this
  * is the one" on the card the reader is standing on.
  *
  * Seven 150px cards and their six 10px gaps come to 1,110px, which fits inside
- * the shell's 1,132px of content - so on a laptop the whole neighbourhood is
+ * the shell's 1,132px of content - so on a laptop the whole neighborhood is
  * one row with nothing clipped, and narrower than that it becomes a swipe. It
- * scrolls rather than wraps because a neighbourhood is an ORDER: rank 12
+ * scrolls rather than wraps because a neighborhood is an ORDER: rank 12
  * through rank 19 reading left to right is the whole point, and a second line
  * of it reads as a second group.
  */
@@ -7890,7 +7890,7 @@ a.scp-peer:focus-visible {
   justify-content: center;
   height: 98px;
   overflow: hidden;
-  /* The club's colour, washed out to a ground the portrait sits on - the
+  /* The club's color, washed out to a ground the portrait sits on - the
      hero's device at card scale. */
   background:
     radial-gradient(
@@ -8036,8 +8036,8 @@ a.scp-peer:focus-visible {
  *                left rule and a wash behind the heading - the peer card's
  *                --peer-team device at card scale.
  *
- * The club colour arrives as --club on the section, from the same team table
- * the hero paints itself with, so a club cannot be one colour here and another
+ * The club color arrives as --club on the section, from the same team table
+ * the hero paints itself with, so a club cannot be one color here and another
  * one page deeper.
  */
 
@@ -8262,7 +8262,7 @@ a.scp-peer:focus-visible {
   line-height: 1.2;
   /* Stated rather than inherited from `.scp`, because this is a heading and a
      host theme's heading rule beats inheritance. Not enough on its own - see
-     the armed copy in "host overrides" - but the component's own colour
+     the armed copy in "host overrides" - but the component's own color
      belongs with the component. */
   color: var(--sc-ink) !important;
 }
@@ -8352,13 +8352,13 @@ a.scp-peer:focus-visible {
 }
 
 /*
- * The club's own colour, washed right out.
+ * The club's own color, washed right out.
  *
  * The sink was the honest default when every row looked alike. Now that the
  * rows carry weight of their own, a hover has to be legible over the elite
- * row's tint as well as under the quietest one, and a wash of the club colour
+ * row's tint as well as under the quietest one, and a wash of the club color
  * the card is already ruled and headed in is the one that reads as this card
- * responding rather than as another grey.
+ * responding rather than as another gray.
  */
 .scp-dir-row:hover,
 .scp-dir-row:focus-visible {
@@ -8382,7 +8382,7 @@ a.scp-peer:focus-visible {
   height: 38px;
   border-radius: var(--sc-radius-xs);
   overflow: hidden;
-  /* The club's colour washed out behind the portrait - the peer well's
+  /* The club's color washed out behind the portrait - the peer well's
      device, at the search row's size. A player Sleeper has no thumbnail for
      is left with this, which is the well doing its own job. */
   background:
@@ -8418,8 +8418,8 @@ a.scp-peer:focus-visible {
   overflow-wrap: anywhere;
 }
 
-/* The site's four position inks. A kicker keeps the muted grey rather than
-   taking a fifth colour that would only ever mean "other". */
+/* The site's four position inks. A kicker keeps the muted gray rather than
+   taking a fifth color that would only ever mean "other". */
 .scp-dir-pos {
   font-size: 10px;
   font-weight: 800;
@@ -8500,10 +8500,10 @@ a.scp-peer:focus-visible {
  *
  * The bands are finishBadge()'s - see directoryBand() in player-render.ts -
  * and they are painted in the ordinal tier ramp this file already declares:
- * ONE hue in four lightness steps, so the reader sees an ORDER in the colour
+ * ONE hue in four lightness steps, so the reader sees an ORDER in the color
  * rather than four identities. The same ramp, in the same order, that
  * .scp-finish-badge uses on every profile. Weight, fill and tint all move
- * together down the ramp; nothing here is carried by colour alone, because
+ * together down the ramp; nothing here is carried by color alone, because
  * the pill spells the rank out and the ink beside the name spells the
  * position out on every row regardless of band.
  */
@@ -8729,11 +8729,11 @@ a.scp-peer:focus-visible {
  * stepping back below.
  *
  * Every per-column ink rule in this group is scoped to `td`, and has to be.
- * These colours are chosen for a white row, but the head of a `--filled` table
+ * These colors are chosen for a white row, but the head of a `--filled` table
  * is a navy band whose white text comes from `.scp-table--filled thead th` at
  * (0,1,2) - which a bare `.scp-table--log .scp-col-fin` outweighs at (0,2,0).
  * Unscoped, each of these reached into the header and painted a label in a
- * colour meant for white: the box-score heads went grey-on-navy, and Finish
+ * color meant for white: the box-score heads went gray-on-navy, and Finish
  * went navy-on-navy and disappeared until a pointer landed on it and the hover
  * rule lifted it to gold.
  */
@@ -8770,7 +8770,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
 }
 
-/* The finish pill carries its own colour, so it only needs the room. */
+/* The finish pill carries its own color, so it only needs the room. */
 .scp .scp-table--log td.scp-col-fin .scp-tier {
   padding: 3px 10px;
   font-size: 11.5px;
@@ -9256,7 +9256,7 @@ a.scp-peer:focus-visible {
  * The card's one action, at its foot.
  *
  * `margin-top: auto` rather than a fixed gap: a fixture with no kickoff time
- * yet is a line shorter than its neighbours, and without this the four buttons
+ * yet is a line shorter than its neighbors, and without this the four buttons
  * would sit at four different heights across the row. Pinned to the bottom,
  * they line up whatever the card above them holds.
  *
@@ -9362,7 +9362,7 @@ a.scp-peer:focus-visible {
 /*
  * A restrained tint, and only at the ends.
  *
- * The rank is the reading; the colour is a hint under it. Only the softest and
+ * The rank is the reading; the color is a hint under it. Only the softest and
  * toughest thirds are tinted at all - a card per fixture in full green or red
  * turns a schedule into a traffic light and buries the who and the when, which
  * is what the block is actually for.
@@ -9788,7 +9788,7 @@ a.scp-peer:focus-visible {
 }
 
 /*
- * Forced colours: the ordinal ramp collapses to system colours, so the tier
+ * Forced colors: the ordinal ramp collapses to system colors, so the tier
  * segments would become indistinguishable. Borders restore the boundaries,
  * and every tier's text label is already present to carry the meaning.
  */
@@ -9813,7 +9813,7 @@ a.scp-peer:focus-visible {
  *   font-family  Declared on the root and inherited everywhere else, and
  *                inheritance loses to ANY rule that names the element. A
  *                theme's `h1, h2, h3 { font-family: <serif> }` therefore took
- *                every heading, while this file's own colour and size rules
+ *                every heading, while this file's own color and size rules
  *                kept winning.
  *   list-style   Set on the <ul>, which a theme's `li` rule outranks, because
  *                the marker is drawn by the <li>.
@@ -9890,7 +9890,7 @@ a.scp-peer:focus-visible {
 }
 
 /* The News tab's headlines and quick answers read in ink, its panel link in
-   white; the armour above would paint every one of them in the club colour. */
+   white; the armour above would paint every one of them in the club color. */
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a,
 .scp .scp-nw a.scp-nw-h,
 .scp .scp-nw .scp-nw-meta a {
@@ -9898,7 +9898,7 @@ a.scp-peer:focus-visible {
 }
 
 /* Divi's id-scoped `#left-area ol` pads and spaces the timeline list, and its
-   bare h3 rule greys an unlinked headline (Divi sim, 2026-10-05). The team
+   bare h3 rule grays an unlinked headline (Divi sim, 2026-10-05). The team
    and teammate lists had the same exposure. */
 .scp .scp-nw :is(ol.scp-nw-feed, ul.scp-nw-list) {
   padding: 0 !important;
@@ -9919,7 +9919,7 @@ a.scp-peer:focus-visible {
   line-height: 1.5 !important;
 }
 
-/* An anchor that takes the colour around it, kept.
+/* An anchor that takes the color around it, kept.
  *
  * `color: inherit` is inheritance, and inheritance loses to any rule that names
  * the element - so a theme's `#main-content a { color: #fff }` repaints every
@@ -9927,7 +9927,7 @@ a.scp-peer:focus-visible {
  * player page the team name beside the position was white on white.
  *
  * Listed by class rather than armed as `ROOT a`, deliberately: the tool has two
- * kinds of link, the ones that take the colour around them and the ones that
+ * kinds of link, the ones that take the color around them and the ones that
  * declare their own, and a blanket rule here would flatten the second kind into
  * the first. These are the first kind, and there are only a few. */
 .scp .scp-ptag-team,
@@ -9936,9 +9936,9 @@ a.scp-peer:focus-visible {
   color: inherit !important;
 }
 
-/* A heading whose colour is this file's, kept.
+/* A heading whose color is this file's, kept.
  *
- * The rule above arms the links that take the colour around them. This is the
+ * The rule above arms the links that take the color around them. This is the
  * other kind, and the reason the block could not simply grow: the club name
  * heading each card on the player index opens with states its own ink, so
  * handing it `inherit` would hand it whatever the theme painted the <h2> -
@@ -9951,7 +9951,7 @@ a.scp-peer:focus-visible {
  * single class and stay ink - the theme's rule is scoped to headings, so the
  * heading is the only thing in the tool that goes.
  *
- * Both states are armed. `!important` on the resting colour outranks the hover
+ * Both states are armed. `!important` on the resting color outranks the hover
  * as readily as it outranks the theme, and an unarmed hover would leave the
  * name the one thing on the card that stops answering the pointer.
  *
@@ -9973,14 +9973,14 @@ a.scp-peer:focus-visible {
  * project already reaches for in team.css to take the sidebar back - and an id
  * outranks every class in this file no matter how many are stacked. A rule of
  * the shape `#left-area th { color: #666 }` therefore takes the three tables
- * that scroll under a filled header and greys their labels out on the navy,
+ * that scroll under a filled header and grays their labels out on the navy,
  * which is the one place in the tool where the text is white because the band
  * behind it is dark.
  *
  * Only `color`, and only on the filled header. The band's background is set by
  * the same rule that lost and is evidently still arriving, so nothing here
- * arms it; the plain table's muted head is a grey the theme would repaint a
- * neighbouring grey, which is not worth a rule.
+ * arms it; the plain table's muted head is a gray the theme would repaint a
+ * neighboring gray, which is not worth a rule.
  *
  * The two gold states come along because they are the same band and the same
  * class of host rule, and arming the white without them would leave the sorted
@@ -10011,7 +10011,7 @@ a.scp-peer:focus-visible {
  *   and `.entry-content tr th { padding: 9px 24px; color: #555; font-weight:
  *   700 }` are (0,1,2). The shared table's cells were (0,1,1) and lost
  *   outright: every row of the game log, the career table and the injury
- *   regions went to 24px a side with a grey rule on top. The career table's
+ *   regions went to 24px a side with a gray rule on top. The career table's
  *   own padding was (0,1,2) - a tie, so it only looked safe while the theme
  *   loaded first. Every table selector in this file now starts with `.scp`,
  *   which lifts the whole family by one class at once and leaves how its rules

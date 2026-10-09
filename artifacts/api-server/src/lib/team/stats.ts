@@ -1,25 +1,25 @@
 /**
- * Advanced team statistics - offence and defence, every number carrying its
+ * Advanced team statistics - offense and defense, every number carrying its
  * league rank.
  *
  * ── Why this is not four more per-team fetches ──────────────────────────────
  * lib/team/snapshot.ts reads ESPN's per-team statistics document, which is the
  * right shape for four headline numbers and the wrong shape for this tab. It
  * carries only the team's OWN production - its `pointsAllowed` and
- * `yardsAllowed` fields are present and always zero - so a defence built from
+ * `yardsAllowed` fields are present and always zero - so a defense built from
  * it would be a table of nothing, and ranking anything ourselves would mean
  * thirty-two requests to render one page.
  *
  * ESPN's `statistics/byteam` document solves both at once: all 32 teams, each
  * split into an "Own" and an "Opponent" half, in a single response. Opponent is
- * the defence - what this team allowed - which is the half no per-team endpoint
+ * the defense - what this team allowed - which is the half no per-team endpoint
  * gives us. One fetch per season serves all 32 hubs, so this tab adds one
  * upstream document to the whole application rather than one per page.
  *
  * ── Why the ranks are computed here ─────────────────────────────────────────
  * The document ships ranks of its own and they are NOT used for the opponent
  * split, because their direction is not stated anywhere and is not consistent:
- * a team allowing 193.5 net passing yards a game - top-ten defence - is handed
+ * a team allowing 193.5 net passing yards a game - top-ten defense - is handed
  * back as 24th. Whether that is "24th most allowed" or a straight mistake is
  * not something a reader should have to work out, and printing it beside a
  * green tint would be an outright falsehood about the team.
@@ -28,7 +28,7 @@
  * the direction declared per metric (see `DIRECTION` on each definition):
  * fewest points allowed is 1st, most points scored is 1st, and a volume metric
  * with no better or worse end is ranked most-to-least and rendered without any
- * judgement attached. Ties share a rank and are marked as tied.
+ * judgment attached. Ties share a rank and are marked as tied.
  *
  * The two rules from team-render.ts hold here as everywhere: a value ESPN does
  * not report is null and its row is dropped, and nothing is defaulted to zero.
@@ -44,7 +44,7 @@ import { ESPN_WEB } from "./upstream";
  *
  * `volume` is the honest answer for pace and play-mix: 61 plays a game is not
  * better or worse than 58, it is just more, and the renderer draws those
- * without a tier colour. It is still ranked (most first) because "18th" is how
+ * without a tier color. It is still ranked (most first) because "18th" is how
  * a reader places a pace figure among 32 teams.
  */
 export type StatDirection = "high" | "low" | "volume";
@@ -102,17 +102,17 @@ export interface TeamStats {
   season: number;
   /** Games behind every per-game figure, so the page can say how many. */
   gamesPlayed: number | null;
-  /** Efficiency ladder for this team's offence. */
+  /** Efficiency ladder for this team's offense. */
   offense: StatRow[];
-  /** The same ladder, row for row, for what the defence allowed. */
+  /** The same ladder, row for row, for what the defense allowed. */
   defense: StatRow[];
   /** Downs, pressure and ball security. */
   situational: StatRow[];
   /** Pace and play mix - what actually decides fantasy opportunity. */
   volume: StatRow[];
-  /** This offence's pass/run split. */
+  /** This offense's pass/run split. */
   balance: PlayBalance | null;
-  /** The split opponents used against this defence. */
+  /** The split opponents used against this defense. */
   balanceFaced: PlayBalance | null;
   /**
    * Recent seasons, newest first, `season` included as the first row.
@@ -132,7 +132,7 @@ const HISTORY_SEASONS = 5;
  *
  * A deliberately short list. The point of five seasons side by side is the
  * shape of the trend, and a 30-column matrix has no shape - these are the three
- * numbers that describe an offence, the two that describe a defence, and the
+ * numbers that describe an offense, the two that describe a defense, and the
  * one that describes neither and decides games anyway.
  */
 const HISTORY_KEYS: readonly string[] = [
@@ -309,7 +309,7 @@ function deriveSide(
     passRate: pct(ratio(passPlays, plays)),
     pointsPerGame: read("passing", split, "totalPointsPerGame"),
     // "Net" throughout, matching lib/team/snapshot.ts - sack yardage is charged
-    // to the offence there and it must not be charged differently here, or the
+    // to the offense there and it must not be charged differently here, or the
     // Outlook tab and this one would print two different totals for one team.
     yardsPerGame: read("passing", split, "netYardsPerGame"),
     yardsPerPlay: ratio(netTotalYards, plays),
@@ -390,7 +390,7 @@ interface MetricDef {
 }
 
 /**
- * The offence ladder and the defence ladder are deliberately the SAME metrics
+ * The offense ladder and the defense ladder are deliberately the SAME metrics
  * in the SAME order, one read from the team's own half of the document and one
  * from its opponents'. Side by side the reader can run a finger down two
  * columns and compare a team against itself - points scored against points
@@ -505,7 +505,7 @@ const DEFENSE: MetricDef[] = LADDER.map((row) => ({
   label: row.defenseLabel,
   description: row.defenseDescription,
   split: "opponent",
-  // Every row in the ladder is something a defence wants less of, including
+  // Every row in the ladder is something a defense wants less of, including
   // the passer rating it allows. Fewest is 1st.
   direction: "low",
   pick: row.pick,
@@ -518,7 +518,7 @@ const DEFENSE: MetricDef[] = LADDER.map((row) => ({
  * Two of these read from the opposite split to the one their name suggests, and
  * the reason is worth stating: sacks in the "Own" passing category are sacks
  * this team's QUARTERBACK took, and sacks in the "Opponent" category are sacks
- * its DEFENCE recorded. Reading them the intuitive way round would print the
+ * its DEFENSE recorded. Reading them the intuitive way round would print the
  * pass rush's number under "Sacks Allowed" for all 32 teams.
  */
 const SITUATIONAL: MetricDef[] = [
@@ -603,7 +603,7 @@ const SITUATIONAL: MetricDef[] = [
  * All `volume`: none of these has a good end. A team running 66 plays a game is
  * not a better team than one running 59, it is a team whose skill players get
  * more chances - which is the only question a fantasy manager is asking of this
- * block, and why the rank is shown while the tier colour is not.
+ * block, and why the rank is shown while the tier color is not.
  */
 const VOLUME: MetricDef[] = [
   {
@@ -820,7 +820,7 @@ const cache = createKeyedCache<LeagueStats>({
   ttlMs: 6 * 60 * 60 * 1000,
   // A finished season does not change; see ttlFor in ./cache.
   ttlFor: (key) => (Number(key) < seasonYear() ? PAST_SEASON_TTL_MS : 6 * 60 * 60 * 1000),
-  // Larger than its neighbours: this is 370KB rather than a few KB, and the one
+  // Larger than its neighbors: this is 370KB rather than a few KB, and the one
   // caller who pays for it is the first visitor to any team page in the season.
   timeoutMs: 10_000,
   load: async (key, signal) => {
@@ -882,7 +882,7 @@ function withPreviousRanks(
  * This team's stats, with the seasons behind them.
  *
  * ── The fallback ────────────────────────────────────────────────────────────
- * The same judgement lib/team/nfl-state.ts already makes one step earlier,
+ * The same judgment lib/team/nfl-state.ts already makes one step earlier,
  * applied one step later. `statsSeason` switches to the current year the moment
  * Sleeper says Week 1, but ESPN has nothing to average until games have
  * actually been played - through the opening week its document for the new

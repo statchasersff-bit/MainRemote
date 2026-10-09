@@ -25,7 +25,7 @@ import type { GameLogEntry, GameLogStats, GameScore, Player } from "./types";
  * Delegates to the one team table (`lib/team/teams.ts`), so "JAC", "WSH",
  * "OAK" and "LA" land where they should without this module carrying a mapping
  * of its own. Unknown strings are passed through upper-cased rather than
- * dropped - an unrecognised opponent should still group with itself.
+ * dropped - an unrecognized opponent should still group with itself.
  */
 export function teamCode(abbr: string | null | undefined): string {
   if (!abbr) return "";
@@ -138,7 +138,7 @@ export function attachRanks(
 const oppRanksCache = new Map<string, Map<string, number>>();
 
 /**
- * How generous each defence is to each position, ranked 1 (softest) to 32.
+ * How generous each defense is to each position, ranked 1 (softest) to 32.
  *
  * Season-long points allowed per game to the position, which is the crude but
  * honest version of this number. It is used only to tint a matchup column; the
@@ -190,7 +190,7 @@ export function buildOppRanks(
 
   const ranks = new Map<string, number>();
   for (const [pos, teams] of byPosition) {
-    // Descending: most points allowed first, so rank 1 is the softest defence.
+    // Descending: most points allowed first, so rank 1 is the softest defense.
     teams.sort((a, b) => b.avg - a.avg);
     teams.forEach((row, i) => ranks.set(`${row.team}:${pos}`, i + 1));
   }

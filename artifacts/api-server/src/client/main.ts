@@ -252,7 +252,7 @@ class NewsWidget {
     filters.addEventListener("input", (event) => {
       const target = event.target as HTMLElement | null;
       if (target?.id !== "scFilterPlayer") return;
-      // Normalised the same way the cards were, so "jamarr" matches "Ja'Marr".
+      // Normalized the same way the cards were, so "jamarr" matches "Ja'Marr".
       this.playerQuery = searchKey((target as HTMLInputElement).value);
       this.applyFilters();
     });
@@ -290,7 +290,7 @@ class NewsWidget {
     });
 
     // Arrow keys walk the open menu, Escape closes it. The rows are buttons, so
-    // Tab and Enter already work; this is the roving behaviour a reader expects
+    // Tab and Enter already work; this is the roving behavior a reader expects
     // from something shaped like a dropdown.
     filters.addEventListener("keydown", (event) => {
       const menu = this.teamMenu;
@@ -561,7 +561,7 @@ class NewsWidget {
   /** Apply every enhancement to the current markup. Safe to re-run. */
   private enhance(): void {
     // Adopt the signature the server stamped on the list, so the first
-    // background poll recognises unchanged data and skips the rebuild instead
+    // background poll recognizes unchanged data and skips the rebuild instead
     // of redrawing markup the server produced moments earlier.
     const sig = this.list?.dataset["sig"];
     if (sig !== undefined) this.signature = sig;

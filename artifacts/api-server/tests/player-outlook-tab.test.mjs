@@ -123,7 +123,7 @@ describe("in season", () => {
     assert.equal(doc.querySelector(".scp-ol-fithead").textContent, "Best fit");
   });
 
-  test("rank strips: N bars from the server, his highlighted, labelled", () => {
+  test("rank strips: N bars from the server, his highlighted, labeled", () => {
     const strips = [...doc.querySelectorAll(".scp-ol-dots")];
     assert.equal(strips.length, 3);
     const first = strips[0];

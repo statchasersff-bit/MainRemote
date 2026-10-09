@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.31
+ * Version:           1.10.32
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.31';
+const STATCHASERS_NEWS_VERSION       = '1.10.32';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -170,7 +170,7 @@ function statchasers_public_origin(): string {
 }
 
 /**
- * Normalise shortcode attributes into the query the API understands.
+ * Normalize shortcode attributes into the query the API understands.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
  * @return array{limit:int,page_size:int,heading:int,heading_text:string}
@@ -478,7 +478,7 @@ function statchasers_news_shortcode( $atts = array() ): string {
 	 *
 	 * Deliberately not escaped: this is first-party markup from the same origin
 	 * the page already loads its executable bundle from, and escaping it would
-	 * print tags as text. Sites that want belt-and-braces sanitising can run
+	 * print tags as text. Sites that want belt-and-braces sanitizing can run
 	 * wp_kses() here - note the fragment includes a <noscript><style> block.
 	 *
 	 * @param string $html Rendered fragment.

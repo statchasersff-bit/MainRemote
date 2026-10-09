@@ -8,7 +8,7 @@
    for the other's markup. The design tokens below are the shared language; the
    selectors are not shared.
 
-   The team's own colours enter through exactly three custom properties, set on
+   The team's own colors enter through exactly three custom properties, set on
    the .sct root by the renderer: --team-primary, --team-secondary, --team-logo.
    Nothing else in this file knows which team it is drawing. That is what keeps
    a Patriots page reading as StatChasers-with-Patriots-accents rather than as a
@@ -38,7 +38,7 @@
  * specificity.
  *
  * Both selectors carry the same values: `.sct` is the fragment as embedded, and
- * `body.sct-page` is the standalone page, whose own background/colour/font
+ * `body.sct-page` is the standalone page, whose own background/color/font
  * rules need to see the tokens too.
  */
 :where(.sct),
@@ -51,7 +51,7 @@
   --sc-gold-soft: #f2d36b;
   --sc-gold-deep: #a87905;
 
-  /* The skill positions, colour-coded wherever a position is named: the depth
+  /* The skill positions, color-coded wherever a position is named: the depth
      chart's slot chips, the outlook cards, and the matchup page's stat tables
      and leader cards. Defined once because three of those had the same four
      hex values written out separately, which is how a fifth place ends up a
@@ -212,7 +212,7 @@ body.sct-page.is-embed {
  *                `body.sct-page`, and inherited everywhere else. Inheritance
  *                loses to ANY rule that names the element, so a theme's
  *                `h1, h2, h3 { font-family: <serif> }` took every heading in
- *                the hub while our own colour and size rules kept winning -
+ *                the hub while our own color and size rules kept winning -
  *                which is how the published page ended up as StatChasers navy
  *                typeset in the theme's serif.
  *   list-style   Set on the <ul> (`.sct-nav-list`), which a theme's `li` rule
@@ -243,13 +243,13 @@ body.sct-page.is-embed {
  * id - `#left-area h2 { font-size: 50px; color: #0e0c19 }` is the shape - and
  * an id beats every class in this file. The published hub showed it exactly:
  * `.sct-h2`'s margin, padding and weight all arrived, while its font-size and
- * colour did not, and `line-height: 1.2` and `letter-spacing: -0.02em` then
+ * color did not, and `line-height: 1.2` and `letter-spacing: -0.02em` then
  * computed off the theme's 50px instead of this file's 1.7rem. A section
  * heading meant to be 27px rendered at 50, and the depth chart's position
  * labels with it.
  *
  * Only `!important` beats an id, so the two properties Divi's panel takes -
- * font-size and colour - are armed ON the heading rules themselves rather than
+ * font-size and color - are armed ON the heading rules themselves rather than
  * restated here. That keeps one value in one place: the clamp stays where a
  * reader changes it, and the media-query variants further down the file, which
  * are the same weight and come later, still win over the base rule.
@@ -288,7 +288,7 @@ body.sct-page.is-embed {
  * behind it.
  *
  * On a hub page the reserved column has no widgets in it, so the page rendered
- * as three quarters of a tool, a 1px grey rule, and a tall band of nothing.
+ * as three quarters of a tool, a 1px gray rule, and a tall band of nothing.
  * Only above 980px - below that Divi collapses the columns itself, which is why
  * it survived every check anyone did on a phone.
  *
@@ -406,7 +406,7 @@ body.sct-page.is-embed {
 
 /* The hero is a light card, in the same vocabulary as the player page's
    (.scp-hero in player.css): the soft-to-sunk gradient, an outline rather than
-   a shadow, the team's colours entering as a hairline along the top edge, an
+   a shadow, the team's colors entering as a hairline along the top edge, an
    aura behind the crest and an almost invisible watermark. The page is one
    light surface from the hero down.
 
@@ -419,8 +419,8 @@ body.sct-page.is-embed {
    What the change costs, and where that cost is paid: every piece of text in
    here used to be white or a white at some opacity, which is a contrast ratio
    that comes free. On a light ground each one has to be chosen - see the
-   colours on .sct-eyebrow, .sct-fact-label and .sct-hero-updated, all of which
-   are darker than the white-alpha they replaced rather than the same grey at a
+   colors on .sct-eyebrow, .sct-fact-label and .sct-hero-updated, all of which
+   are darker than the white-alpha they replaced rather than the same gray at a
    different lightness.
 
    Note the absence of `overflow: hidden`; the clip lives one level in, on
@@ -467,7 +467,7 @@ body.sct-page.is-embed {
   pointer-events: none;
 }
 
-/* The single hairline of team colour on the whole page, running the width of
+/* The single hairline of team color on the whole page, running the width of
    the hero and fading into gold. */
 .sct-hero-decor::before {
   content: "";
@@ -482,12 +482,12 @@ body.sct-page.is-embed {
   );
 }
 
-/* Team-coloured aura behind the crest. Low opacity and heavily blurred: it
+/* Team-colored aura behind the crest. Low opacity and heavily blurred: it
    should be felt rather than seen, and it must never fight the text.
 
    Much fainter than it was on navy, and blurred harder. A wash that read as a
    glow against a dark ground reads as a stain against a near-white one, and
-   the colours it is painted in are not ours to moderate - several clubs are
+   the colors it is painted in are not ours to moderate - several clubs are
    pure black or a saturated red. At this weight the strongest of the 32 is a
    tint under the crest and the quietest is still visible. */
 .sct-hero-aura {
@@ -512,8 +512,8 @@ body.sct-page.is-embed {
    hero reads as a mistake at this opacity, where a whole one reads as a
    watermark.
 
-   On its weight, and why that is not normalised across the league: a mark
-   drawn in the club's own colours lands differently on every one of the 32
+   On its weight, and why that is not normalized across the league: a mark
+   drawn in the club's own colors lands differently on every one of the 32
    pages, and on a light ground the spread is visible - the Bills' blue
    buffalo is a whisper where the Raiders' black shield is a picture. On navy
    it was the same problem upside down, with the dark marks disappearing, and
@@ -835,7 +835,7 @@ body.sct-page.is-embed {
 /* --------------------------------------------------------- team switcher */
 
 /* <details> rather than a scripted menu - see teamSwitcher() in
-   team-render.ts. Everything below is presentation on top of behaviour the
+   team-render.ts. Everything below is presentation on top of behavior the
    browser already provides. */
 .sct-switch {
   position: relative;
@@ -994,7 +994,7 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
 }
 
-/* A host colouring list links, outranked.
+/* A host coloring list links, outranked.
  *
  * The switcher's teams are `<ul><li><a>`, which is the shape a theme's own
  * link styling is most likely to be written against - `#main-content ul li a`
@@ -1008,7 +1008,7 @@ body.sct-page.is-embed {
  * defect follows the markup shape rather than the fragment, so the fix is
  * pinned to the same three shapes rather than to every anchor - a blanket
  * `.sct a { color: … !important }` would also break a host that is retuning
- * these colours deliberately, which the tokens exist to allow.
+ * these colors deliberately, which the tokens exist to allow.
  *
  * `!important` because there is no other lever. Specificity cannot be won
  * against an id from a stylesheet that must not know the host's selectors, and
@@ -1125,7 +1125,7 @@ body.sct-page.is-embed {
   min-width: 0;
 }
 
-/* The row's only affordance. There is no underline and no link colour - the
+/* The row's only affordance. There is no underline and no link color - the
    crest and the name are the row - so the arrow arrives with the hover tint
    and says it is clickable. Hidden at rest rather than dimmed, because 32
    permanent arrows are 32 marks competing with the crests; on a touch screen,
@@ -1143,7 +1143,7 @@ body.sct-page.is-embed {
 
 /* White against the card's soft ground, so the row a cursor is on lifts out of
    the list. The shared hover tint cannot do it here: --sc-surface-sink on
-   --sc-surface-soft is two greys apart, which is a difference you have to look
+   --sc-surface-soft is two grays apart, which is a difference you have to look
    for. */
 .sct-index-div .sct-switch-team:hover {
   background: var(--sc-surface);
@@ -1631,7 +1631,7 @@ body.sct-page.is-embed {
 }
 
 /* Flat, not a pill. A filled capsule behind every ordinal put a second block of
-   colour under a value that is already the loudest thing on the card; the dot
+   color under a value that is already the loudest thing on the card; the dot
    says the same thing in 6px and lets the ordinal itself carry the tint. */
 .sct-metric-rank {
   display: inline-flex;
@@ -1708,8 +1708,8 @@ body.sct-page.is-embed {
 .sct-metric-fill {
   display: block;
   height: 100%;
-  /* Mid is a lightened navy rather than a grey, as in the ladders and tiles:
-     grey between green and red reads as "no data", and the middle of the league
+  /* Mid is a lightened navy rather than a gray, as in the ladders and tiles:
+     gray between green and red reads as "no data", and the middle of the league
      is a result rather than a gap. */
   background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
 }
@@ -1735,7 +1735,7 @@ body.sct-page.is-embed {
  * hub. What holds it to the page is that it is built from parts the page
  * already has and not from new ones: the card is .sct-player's shell, the
  * headshot is the depth chart's round tinted well at a larger size, the
- * position chip is .sct-slot unchanged, the position colours on the card edge
+ * position chip is .sct-slot unchanged, the position colors on the card edge
  * are that chip's own palette, and the closing line is marked with the gold
  * inset the history table uses on its current season.
  *
@@ -1854,7 +1854,7 @@ body.sct-page.is-embed {
 
 /* ------------------------------------------------------------ player bands */
 
-/* A band: a labelled run of content inside a section. The outlook's player
+/* A band: a labeled run of content inside a section. The outlook's player
    groups, and the FAQ that closes the Outlook and Stats tabs. */
 .sct-band {
   margin: 26px 0 0;
@@ -1877,7 +1877,7 @@ body.sct-page.is-embed {
 
    `align-items: stretch` is grid's default and is what makes the cards in one
    ROW share a height while a later row is free to be shorter. That is the
-   behaviour wanted here: a row should look level, and a band of three should
+   behavior wanted here: a row should look level, and a band of three should
    not be padded to match a band of four. */
 .sct-outlook-players {
   display: grid;
@@ -1907,11 +1907,11 @@ body.sct-page.is-embed {
  * one. The padding is tighter than it was for the same reason - the card gained
  * two rows of content and should not also gain height.
  *
- * The left edge carries the position's own colour, at 2px, using the gold-inset
+ * The left edge carries the position's own color, at 2px, using the gold-inset
  * device the history table already uses. It is a tint, not a border: enough to
  * sort a row of cards by position at a glance, not enough to make the section a
- * colour chart. --sct-pos-ink defaults to the same gold .sct-slot falls back to
- * for a position the depth chart does not recognise. */
+ * color chart. --sct-pos-ink defaults to the same gold .sct-slot falls back to
+ * for a position the depth chart does not recognize. */
 .sct-outlook-player {
   --sct-pos-ink: #8a6205;
   position: relative;
@@ -1961,9 +1961,9 @@ body.sct-page.is-embed {
      the headshot and the name - the two things on this card that are already
      pictures of something.
 
-     Positioned by its CENTRE, as on the news card and for the same reason: the
+     Positioned by its CENTER, as on the news card and for the same reason: the
      mark is taller than the card, so anchoring its bottom edge hangs all of the
-     overhang upwards and moves the crest UP. Top past 50% with the centring
+     overhang upwards and moves the crest UP. Top past 50% with the centering
      transform says where the middle of the mark goes, which is what is being
      aimed. */
   top: 68%;
@@ -2011,7 +2011,7 @@ body.sct-page.is-embed {
     var(--sc-shadow-lift);
 }
 
-/* The well and the name stack. Centred rather than top-aligned: the stack is
+/* The well and the name stack. Centered rather than top-aligned: the stack is
    two short lines against a 64px disc, and hung from the top it sat visibly
    above the middle of the face beside it. */
 .sct-outlook-head {
@@ -2021,7 +2021,7 @@ body.sct-page.is-embed {
 }
 
 /* The depth chart's well at 64px instead of 38. Same recipe - a disc of team
-   colour mixed hard toward white, a hairline drawn inside so it has an edge on
+   color mixed hard toward white, a hairline drawn inside so it has an edge on
    a white card - because this is the same object at a different scale, and the
    page should not carry two ways of drawing a headshot.
 
@@ -2039,7 +2039,7 @@ body.sct-page.is-embed {
 }
 
 /* Top-anchored for the same reason as every other headshot on the page: these
-   are shoulders-up crops, and centring them cuts the forehead off. */
+   are shoulders-up crops, and centering them cuts the forehead off. */
 .sct-outlook-photo {
   display: block;
   width: 100%;
@@ -2239,7 +2239,7 @@ body.sct-page.is-embed {
 
 /* Nudged down to sit on the first line of the question rather than on the
    middle of a question that wrapped - `align-items: flex-start` puts the
-   chevron's box at the top, and this centres it on that line's cap height. */
+   chevron's box at the top, and this centers it on that line's cap height. */
 .sct-faq-q-row::before {
   content: "";
   flex: none;
@@ -2288,8 +2288,9 @@ body.sct-page.is-embed {
   line-height: 1.6;
 }
 
-/* A link under an answer (the Usage question's "See the full usage report"),
-   kept out of .sct-faq-a so the schema answer and the visible one match. */
+/* A link under the questions (the Coaching tab's "See the full coaching
+   profile"), kept out of .sct-faq-a so the schema answer and the visible one
+   match. The Usage tab dropped its copy on 2026-10-09. */
 .sct-faq-more {
   margin: 4px 0 0 20px;
   padding: 0;
@@ -2336,7 +2337,7 @@ body.sct-page.is-embed {
 /* A short bar in the margin rather than a rule underneath: the .sct-h2 above it
    already owns the gold underline, and repeating it here would read as two
    headings of equal rank. Gold marks the side that scores, navy the side that
-   stops - the only place on this tab where colour carries a label. */
+   stops - the only place on this tab where color carries a label. */
 .sct-ladder-title::before {
   content: "";
   position: absolute;
@@ -2411,7 +2412,7 @@ body.sct-page.is-embed {
   display: block;
   height: 100%;
   border-radius: 999px;
-  /* Mid is a lightened navy rather than a grey: grey next to green and red
+  /* Mid is a lightened navy rather than a gray: gray next to green and red
      reads as "no data", and the middle of the league is a result, not a gap. */
   background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
 }
@@ -2426,7 +2427,7 @@ body.sct-page.is-embed {
 
 /* Only reachable from a volume metric, which is never drawn with a bar today.
    Kept so a future volume row in a ladder gets the neutral team accent instead
-   of inheriting a judgement it has not earned. */
+   of inheriting a judgment it has not earned. */
 .sct-stat-bar[data-tier="none"] .sct-stat-fill {
   background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
 }
@@ -2555,7 +2556,7 @@ body.sct-page.is-embed {
 }
 
 /* The tier as a dot rather than as a filled pill. A pill behind every ordinal
-   put a second block of colour under a value that is already the loudest thing
+   put a second block of color under a value that is already the loudest thing
    on the card; the dot says the same thing in 6px and lets the ordinal itself
    carry the tint. */
 .sct-tile-dot {
@@ -2619,7 +2620,7 @@ body.sct-page.is-embed {
 .sct-tile-fill {
   display: block;
   height: 100%;
-  /* Mid is a lightened navy rather than a grey, as in the ladders: grey between
+  /* Mid is a lightened navy rather than a gray, as in the ladders: gray between
      green and red reads as "no data", and the middle of the league is a result
      rather than a gap. */
   background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
@@ -2638,7 +2639,7 @@ body.sct-page.is-embed {
 }
 
 /* A volume metric is ranked but never judged - the neutral team accent, the
-   same licence the play-mix bar takes. */
+   same license the play-mix bar takes. */
 .sct-tile-track[data-tier="none"] .sct-tile-fill {
   background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
 }
@@ -2683,7 +2684,7 @@ body.sct-page.is-embed {
   height: 100%;
 }
 
-/* The one place on this tab the team's own colour appears - the same licence
+/* The one place on this tab the team's own color appears - the same license
    the player card's photo well takes, and for the same reason: a proportion has
    no good end, so there is no tier tint competing for the slot. */
 .sct-mix-seg[data-kind="pass"],
@@ -2731,8 +2732,8 @@ body.sct-page.is-embed {
 /* ------------------------------------------------------- rank movement */
 
 /* Deliberately quiet. The rank chip beside it is already carrying a tier
-   colour, and two tinted things in one row would compete for the same glance -
-   so movement is a muted arrow and a number, and only the arrow is coloured. */
+   color, and two tinted things in one row would compete for the same glance -
+   so movement is a muted arrow and a number, and only the arrow is colored. */
 .sct-stat-move {
   justify-self: end;
   min-width: 26px;
@@ -2798,7 +2799,7 @@ body.sct-page.is-embed {
 /* Measured 2026-09-29 against a simulated Divi page with the theme loaded  */
 /* after this file: every cell took 24px a side, every header went #666 -   */
 /* the white labels on the player-stats band included - and each table     */
-/* gained a grey frame. The alternative was an `!important` per colour,     */
+/* gained a gray frame. The alternative was an `!important` per color,     */
 /* and there are a dozen. One prefix on the whole family lifts it evenly,   */
 /* so the rules rank against EACH OTHER exactly as they did before.         */
 /* A new table rule here needs the prefix too, or it is back to losing.     */
@@ -2837,19 +2838,19 @@ body.sct-page.is-embed {
   /* Every figure in here is compared down a column, and proportional digits
      put the decimal point of 6.18 and 27.2 in different places. */
   font-variant-numeric: tabular-nums;
-  /* A hint of a stripe, not a grey row. The zebra is there to stop the eye
+  /* A hint of a stripe, not a gray row. The zebra is there to stop the eye
      sliding between seasons on a wide table; at --sc-surface-soft it was doing
      more than that and competing with the rank tints, which are the thing in
-     here that is supposed to carry colour. */
+     here that is supposed to carry color. */
   --sct-hist-stripe: #fcfdfe;
 }
 
 :is(.sct, #sct-table-armour) .sct-hist th,
 :is(.sct, #sct-table-armour) .sct-hist td {
   padding: 10px 12px;
-  /* Centred under the head it belongs to. The tabular figures above keep every
-     digit the same width, so a centred column of 379.4 and 91.2 still stacks
-     evenly, and centring puts the value and the rank pill under it on one axis
+  /* Centered under the head it belongs to. The tabular figures above keep every
+     digit the same width, so a centered column of 379.4 and 91.2 still stacks
+     evenly, and centering puts the value and the rank pill under it on one axis
      rather than hanging both off the right edge. */
   text-align: center;
   white-space: nowrap;
@@ -2869,7 +2870,7 @@ body.sct-page.is-embed {
   text-transform: uppercase;
   /* The one place wrapping is allowed. Every column width here is a fraction of
      a fixed layout, so a head that does not fit has nowhere to go but over its
-     neighbour; two lines is the graceful version of that, and the numbers below
+     neighbor; two lines is the graceful version of that, and the numbers below
      stay on one line either way. */
   white-space: normal;
   background: var(--sc-surface-soft);
@@ -2935,7 +2936,7 @@ body.sct-page.is-embed {
   gap: 3px 7px;
 }
 
-/* Says in words what the gold hairline down the row's left edge says in colour. */
+/* Says in words what the gold hairline down the row's left edge says in color. */
 :is(.sct, #sct-table-armour) .sct-hist-now {
   padding: 1px 6px;
   border-radius: 999px;
@@ -3074,7 +3075,7 @@ body.sct-page.is-embed {
 }
 
 /* Stretched hit area, so the whole card is clickable while the accessible name
-   stays on one labelled link rather than the card's entire text. */
+   stays on one labeled link rather than the card's entire text. */
 .sct-player-hit {
   position: absolute;
   inset: 0;
@@ -3087,9 +3088,9 @@ body.sct-page.is-embed {
   border-radius: var(--sc-radius);
 }
 
-/* The photo well is the one place a player card carries team colour, and it is
+/* The photo well is the one place a player card carries team color, and it is
    mixed heavily toward white so six of them in a row do not turn the section
-   into a colour swatch. The percentages are set by the worst case rather than
+   into a color swatch. The percentages are set by the worst case rather than
    the average: navy at 22% is a tasteful wash, but Kansas City red at 22% is
    pink, and the same number has to work for all 32.
 
@@ -3120,7 +3121,7 @@ body.sct-page.is-embed {
   object-position: center top;
 }
 
-/* Centred under a centred photo. Left-aligned text under a full-bleed square
+/* Centered under a centered photo. Left-aligned text under a full-bleed square
    image left the card looking hung off its left edge - the name is the card's
    subject and sits on the same axis as the face above it. */
 .sct-player-body {
@@ -3133,9 +3134,9 @@ body.sct-page.is-embed {
 }
 
 /* Bare text, not a pill. The chip used to carry a tinted background and border;
-   with six cards in a row that was six coloured lozenges competing with the
-   headshots above them. The colour alone carries the position, so only the ink
-   varies here - the default is gold, which is both TE's colour and the
+   with six cards in a row that was six colored lozenges competing with the
+   headshots above them. The color alone carries the position, so only the ink
+   varies here - the default is gold, which is both TE's color and the
    fallback for any position the depth chart hands us that is not one of the
    four. */
 .sct-slot {
@@ -3152,7 +3153,7 @@ body.sct-page.is-embed {
   letter-spacing: 0.06em;
 }
 
-/* Position colours. The red and the green are the two the metric tiers already
+/* Position colors. The red and the green are the two the metric tiers already
    use (see .sct-metric-rank), so the page carries one palette rather than a
    second set of nearly-the-same hues; the blue is picked to sit at the same
    darkness as those two. With no tint behind them these are now the only thing
@@ -3219,7 +3220,7 @@ body.sct-page.is-embed {
 }
 
 /* Yellow, and filled rather than tinted: at four characters the chip is small
-   enough that a 10%-alpha wash read as no colour at all. The ink is a dark
+   enough that a 10%-alpha wash read as no color at all. The ink is a dark
    amber on that fill (7.93:1) - yellow text on white is the one thing this
    cannot be. "Out" stays red below. */
 .sct-injury-badge {
@@ -3262,7 +3263,7 @@ body.sct-page.is-embed {
 }
 
 .sct-injury-badge.is-pinned[data-severity="out"] {
-  /* The tinted red is 10% alpha, which over a headshot is not a colour. The
+  /* The tinted red is 10% alpha, which over a headshot is not a color. The
      body-copy version keeps its wash; this one is opaque. */
   background: #f6dede;
 }
@@ -3349,12 +3350,12 @@ body.sct-page.is-embed {
 }
 
 /* The team crest as a watermark behind the card's words, set the way the hero's
-   is (.sct-hero-watermark): the whole mark, vertically centred, held inside the
+   is (.sct-hero-watermark): the whole mark, vertically centered, held inside the
    right edge rather than run off the corner. A crest cropped by the card reads
    as a mistake at this opacity; a whole one reads as a watermark.
    Painted from --team-logo as a background because it is decoration, not
    content, and hung on the BODY rather than on the card - the card's top half
-   is now an opaque picture, and a mark centred on the card would spend half of
+   is now an opaque picture, and a mark centered on the card would spend half of
    itself behind it. */
 .sct-news-body::before {
   content: "";
@@ -3362,11 +3363,11 @@ body.sct-page.is-embed {
   /* Low and right in the grid cards, so the crest sits behind the byline and
      the CTA rather than behind the headline.
 
-     Positioned by its CENTRE, not by its bottom edge. The mark is two thirds
+     Positioned by its CENTER, not by its bottom edge. The mark is two thirds
      taller than the body it sits in, so anchoring `bottom` near the body's
      floor hangs all of that overhang upwards and moves the crest UP the card -
      the opposite of what the offset reads like. `top` past 50% with the
-     centring transform says where the middle of the mark goes, which is the
+     centering transform says where the middle of the mark goes, which is the
      thing being aimed. */
   top: 72%;
   right: 4px;
@@ -3393,10 +3394,10 @@ body.sct-page.is-embed {
 /* The lead's body is twice as wide, so a crest sized for the grid card reads as
    a smaller mark on it. Scaled with the body instead. */
 /* The lead's body is twice as wide and half again as tall: room enough for the
-   hero's own treatment, set against the right edge and only just below centre,
+   hero's own treatment, set against the right edge and only just below center,
    where the grid cards drop theirs into the corner. Its own proportion rather
    than the grid cards' - at this size that ratio would put a 340px crest behind
-   four lines of text. Positioned by the mark's centre, as they are. */
+   four lines of text. Positioned by the mark's center, as they are. */
 .sct-news.is-featured .sct-news-body::before {
   top: 58%;
   right: 22px;
@@ -3816,7 +3817,7 @@ body.sct-page.is-embed {
 }
 
 /* Four bands, matched to the badge on the cornerstone cards so a designation is
-   one colour wherever the page prints it. Every ink clears 4.5:1 on its own
+   one color wherever the page prints it. Every ink clears 4.5:1 on its own
    fill and on white. */
 .sct-injury-status {
   padding: 1px 7px;
@@ -3869,7 +3870,7 @@ body.sct-page.is-embed {
   text-transform: uppercase;
 }
 
-/* The card's centrepiece, and the reason it no longer reads as a mostly empty
+/* The card's centerpiece, and the reason it no longer reads as a mostly empty
    box: away side, "@", home side, in the order every scoreboard uses. The old
    card said "at Seahawks" - one crest and a preposition - which told a reader
    who already knew the fixture nothing they could not have guessed. */
@@ -3962,7 +3963,7 @@ body.sct-page.is-embed {
 /* One line of context, not a second stats panel: the opponent's points allowed
    per game and its rank, which is the number a manager is actually asking about
    and the only one this card carries. Pushed to the card's bottom edge so Next
-   Game ends level with its neighbours. */
+   Game ends level with its neighbors. */
 .sct-matchup-note {
   display: flex;
   align-items: baseline;
@@ -4182,7 +4183,7 @@ body.sct-page.is-embed {
 /* The starter, marked. QB1 and QB2 were the same weight on the same ground and
    the only thing separating them was a chip two characters wide - so the one
    fact a reader wants first took as long to find as the one they wanted
-   second. A wash of the team's own colour at 5% and a heavier name is enough;
+   second. A wash of the team's own color at 5% and a heavier name is enough;
    anything stronger turns a list into a leaderboard. */
 .sct-depth-row:first-child {
   background: color-mix(in srgb, var(--team-primary, #0b1634) 5%, #fff);
@@ -4202,8 +4203,8 @@ body.sct-page.is-embed {
    on the rows that had a headshot and doing nothing but adding a second mark
    under a 38px face on the rows that did not. The tinted disc is still the
    fallback - a player the CDN has no thumbnail for sits in a filled circle
-   rather than a hole - it is simply the team colour doing it alone. Mixed to
-   white so a column of them does not become a stripe of team colour, the same
+   rather than a hole - it is simply the team color doing it alone. Mixed to
+   white so a column of them does not become a stripe of team color, the same
    recipe as the cornerstone cards and the news wells. */
 .sct-depth-well {
   position: relative;
@@ -4217,7 +4218,7 @@ body.sct-page.is-embed {
 }
 
 /* Top-anchored for the same reason as every other headshot on the page: these
-   are shoulders-up crops, and centring them cuts the forehead off. */
+   are shoulders-up crops, and centering them cuts the forehead off. */
 .sct-depth-photo {
   display: block;
   width: 100%;
@@ -4248,7 +4249,7 @@ body.sct-page.is-embed {
 }
 
 /* On the meta line the chip is the first thing on a line rather than a column
-   of its own, so the 34px that centred it in a grid track would only push the
+   of its own, so the 34px that centered it in a grid track would only push the
    status chip away from it. */
 .sct-depth-meta .sct-slot.is-small {
   min-width: 0;
@@ -4266,7 +4267,7 @@ body.sct-page.is-embed {
  * and the row set back so the running order still reads 1, 2, 3, 4 down the
  * column without him in it.
  *
- * Dimmed, not greyed out. He is not unavailable information - he is the most
+ * Dimmed, not grayed out. He is not unavailable information - he is the most
  * important name in the column for anyone deciding whether to start the player
  * above him - so the name stays at full contrast and only the photo drops back. */
 .sct-depth-row.is-out {
@@ -4352,7 +4353,7 @@ body.sct-page.is-embed {
 }
 
 /* The next game. A gold rule across the top and a label, rather than a tint:
-   the row needs one card to be first, not one card to be a different colour.
+   the row needs one card to be first, not one card to be a different color.
    The top padding gives back the pixel the thicker border takes, so all three
    cards still start their content on the same line. */
 .sct-game[data-next] {
@@ -4371,7 +4372,7 @@ body.sct-page.is-embed {
 
 /* The opponent's mark, bled off the bottom-right corner behind the content.
    2.5% was below the threshold at which anyone could tell it from a compression
-   artefact - present in the markup, absent from the design. 6% is a watermark:
+   artifact - present in the markup, absent from the design. 6% is a watermark:
    still nowhere near competing with the real crest in the matchup line, but
    deliberate enough that three cards in a row read as one treatment. */
 .sct-game-mark {
@@ -4671,7 +4672,7 @@ body.sct-page.is-embed {
  * It was a Home/Away chip in a column of its own while the cell held a bare
  * nickname. Beside a full team name the preposition reads as part of the
  * fixture, which is what it is - so it joins the cell and its column goes to
- * the name. Fixed width and centred so seventeen crests still line up down the
+ * the name. Fixed width and centered so seventeen crests still line up down the
  * table: "VS" and "AT" are two characters each but not the same two widths. */
 .sct-srow-ha {
   display: flex;
@@ -4760,12 +4761,12 @@ body.sct-page.is-embed {
   font-variant-numeric: tabular-nums;
 }
 
-/* The broadcaster: a slot of a fixed size, with the logo centred in it.
+/* The broadcaster: a slot of a fixed size, with the logo centered in it.
  *
  * The sizing is the part that matters and it stays. Twelve logos this column has
  * to hold run from the CBS eye to the YouTube wordmark - a square against
  * something four and a half times as wide - so a cell that hugs its contents
- * gives the column a ragged edge down both sides. Stretched and centred, the
+ * gives the column a ragged edge down both sides. Stretched and centered, the
  * column reads as a column and the raggedness stays inside the slot.
  *
  * What is gone is the frame around it: this drew a bordered, filled chip, and a
@@ -4802,7 +4803,7 @@ body.sct-page.is-embed {
    of width first and is drawn shorter, a roundel runs out of height first and
    is drawn narrower. `min()` against the mark's own ratio picks the smaller of
    the two, so the element ends up exactly the size of the fitted artwork and
-   the chip centres real ink rather than a box with air in it. The SVG's
+   the chip centers real ink rather than a box with air in it. The SVG's
    `preserveAspectRatio` is the backstop: if the two ever disagree the logo
    letterboxes, and no arithmetic here can stretch it. */
 .sct-net-mark {
@@ -4837,7 +4838,7 @@ body.sct-page.is-embed {
 }
 
 /* The score as ink, not as a chip. Two played rows in a table of seventeen do
-   not need a filled pill apiece to be found - the colour is the signal, and the
+   not need a filled pill apiece to be found - the color is the signal, and the
    source sets it the same way. */
 .sct-result {
   justify-self: start;
@@ -4893,11 +4894,11 @@ body.sct-page.is-embed {
  * strip, the thirds and the slate list, which have no equivalent on the other
  * tabs.
  *
- * The colour pair is the play-mix bar's, deliberately: the team's own primary
+ * The color pair is the play-mix bar's, deliberately: the team's own primary
  * mixed hard toward white for home, the gold for away. Those two already mean
  * "the two halves of one whole" on the Stats tab, which is what a season split
  * between home and road is, and a third pairing invented for this card would
- * make the page carry two colour languages for the same idea.
+ * make the page carry two color languages for the same idea.
  */
 
 /* Fixtures and rail. 300px is the source's own figure for this column, and the
@@ -4926,7 +4927,7 @@ body.sct-page.is-embed {
   margin-top: 18px;
 }
 
-/* Centred, which is the source's own arrangement for these four and the reason
+/* Centered, which is the source's own arrangement for these four and the reason
    they read as a rail rather than as four more left-ranged blocks under the
    table. The bars and the slate rows range themselves back where the eye needs
    a column to run down. */
@@ -4939,7 +4940,7 @@ body.sct-page.is-embed {
 
 /* The one filled card on the tab. Navy ground, gold eyebrow, white figures -
    the source's single strongest move, and the thing that makes a rail of four
-   cards have a head. Both colours are the house pair, so nothing foreign comes
+   cards have a head. Both colors are the house pair, so nothing foreign comes
    with it. */
 .sct-shape [data-kind="snapshot"] {
   border-color: var(--sc-navy);
@@ -5055,7 +5056,7 @@ body.sct-page.is-embed {
 }
 
 /* Filled for home, hollow for away, dashed for the bye - the source's strip,
-   and a stronger one than the two-colour version this used to be: home and road
+   and a stronger one than the two-color version this used to be: home and road
    are not two kinds of the same thing, they are a thing and its absence, and
    filled-against-empty says that where navy-against-gold did not. */
 .sct-path-week {
@@ -5161,7 +5162,7 @@ body.sct-page.is-embed {
 }
 
 /* The one line on the card that asserts something rather than counting. Ruled
-   off and set centred in the gold, which is the source's treatment - the deep
+   off and set centered in the gold, which is the source's treatment - the deep
    bronze rather than the gold itself, because gold text on white does not clear
    4.5:1 and this is the sentence the card is for. */
 .sct-shape-take {
@@ -5197,8 +5198,8 @@ body.sct-page.is-embed {
   }
 
   /* Ranged left together. Stacked they are a label and its value on one line,
-     which centring reads fine; side by side they are three columns, and a
-     centred heading over a left-ranged line is two alignments in one cell. */
+     which centering reads fine; side by side they are three columns, and a
+     centered heading over a left-ranged line is two alignments in one cell. */
   .sct-seg {
     flex-direction: column;
     align-items: stretch;
@@ -5233,7 +5234,7 @@ body.sct-page.is-embed {
   padding: 2px 0;
 }
 
-/* The week ranges left against the card's centred text, because six of them are
+/* The week ranges left against the card's centered text, because six of them are
    a column a reader runs an eye down. */
 .sct-slate-week {
   flex: 0 0 auto;
@@ -5253,7 +5254,7 @@ body.sct-page.is-embed {
   object-fit: contain;
 }
 
-/* Centred in what the week and the crest leave, which is the source's line. */
+/* Centered in what the week and the crest leave, which is the source's line. */
 .sct-slate-name {
   min-width: 0;
   flex: 1 1 auto;
@@ -5291,8 +5292,8 @@ body.sct-page.is-embed {
   padding: 3px 0;
 }
 
-/* Ranged left against the card's centred text: six division names are a column
-   to read down, and centring them would stagger their first letters. */
+/* Ranged left against the card's centered text: six division names are a column
+   to read down, and centering them would stagger their first letters. */
 .sct-shape-bar-label {
   text-align: left;
   color: var(--sc-navy);
@@ -5314,7 +5315,7 @@ body.sct-page.is-embed {
 }
 
 /* The ladder bar's geometry at the source's weight: these count meetings rather
-   than rank anything, so the fill takes the gold and never a tier colour. */
+   than rank anything, so the fill takes the gold and never a tier color. */
 .sct-shape-bar-track {
   height: 6px;
   border-radius: 999px;
@@ -5523,7 +5524,7 @@ body.sct-page.is-embed {
   }
 
   /* The split bars go beside the figures rather than under them - at this width
-     a full-width track is a bar chart of two things drawn a metre long. */
+     a full-width track is a bar chart of two things drawn a meter long. */
   .sct-snap-bars {
     max-width: 420px;
   }
@@ -5766,19 +5767,19 @@ body.sct-page.is-embed {
   /* The bottom-right corner, and bigger than the desktop mark rather than
      smaller.
      *
-     * The desktop watermark is centred on the right edge because that is the
+     * The desktop watermark is centered on the right edge because that is the
      * half of a 1100px hero with nothing in it. Stacked, there is no such
      * half: the chips and the switcher are opaque white cards that fill the
-     * width, so a 240px mark centred behind them showed through the gaps
+     * width, so a 240px mark centered behind them showed through the gaps
      * between cards and nowhere else - which is what mak is describing when
      * the mark reads as too small to see. It was also anchored by
-     * `translateY(-50%)`, so `bottom` could not be used without cancelling
+     * `translateY(-50%)`, so `bottom` could not be used without canceling
      * the transform first.
      *
      * The corner is the one part of a stacked hero that is reliably not a
      * card: the gutter under the switcher and outside its rounded end. So the
      * mark is hung there, big enough that what shows in the corner is a
-     * recognisable part of the crest rather than a sliver of one, and bled
+     * recognizable part of the crest rather than a sliver of one, and bled
      * past both edges so the crop reads as a mark running off the card
      * instead of a small logo placed badly.
      *
@@ -5798,7 +5799,7 @@ body.sct-page.is-embed {
     right: -1px;
     width: 300px;
     height: 300px;
-    /* The desktop rule's vertical centring, cancelled: it belongs to `top:
+    /* The desktop rule's vertical centering, canceled: it belongs to `top:
        50%` and would lift this by half its own height. */
     transform: none;
     opacity: 0.07;
@@ -5856,12 +5857,12 @@ body.sct-page.is-embed {
     overflow-wrap: anywhere;
   }
 
-  /* Centred, because the thing above it is no longer a row.
+  /* Centered, because the thing above it is no longer a row.
    *
    * On a desktop the chips are a left-aligned flex row and the timestamp is
    * the line under its left end, which is where the row starts and where the
    * eye comes back to. Stacked, the chips are a 2x2 grid that fills the width
-   * and has no left end in that sense - it has two columns and a centre - so a
+   * and has no left end in that sense - it has two columns and a center - so a
    * line hanging off the left of it reads as a stray caption rather than as
    * the grid's own footnote. mak's call, and it is the same reasoning as the
    * grid above it: what is symmetrical gets a symmetrical label. */
@@ -6035,7 +6036,7 @@ body.sct-page.is-embed {
   }
 
   /* Restated because the rule above resets padding wholesale at this width and
-     the group gap is the only thing separating offence from defence once the
+     the group gap is the only thing separating offense from defense once the
      header divider is scrolled off the left edge. */
   :is(.sct, #sct-table-armour) .sct-hist th.is-group-start,
   :is(.sct, #sct-table-armour) .sct-hist td.is-group-start {
@@ -6459,7 +6460,7 @@ body.sct-page.is-embed {
 }
 
 /* The winner, not a ranking: the loser stays legible at full opacity, because
-   a greyed-out team in a results list reads as data that failed to load. */
+   a grayed-out team in a results list reads as data that failed to load. */
 .sct-mu-res-side.is-winner {
   color: var(--sc-navy);
 }
@@ -6560,7 +6561,7 @@ body.sct-page.is-embed {
   position: absolute;
   /* Low and to the right: behind the number, not behind the headshot and the
      name, which are the two things on this card that are already pictures of
-     something. Positioned by its CENTRE, as the outlook card is - the mark is
+     something. Positioned by its CENTER, as the outlook card is - the mark is
      taller than the card, so anchoring its bottom edge would hang the whole
      overhang upwards and push the crest back over the face. */
   top: 70%;
@@ -6756,9 +6757,9 @@ body.sct-page.is-embed {
   gap: 8px;
 }
 
-/* The team's own colour, as a marker rather than a fill. A 3px rule under the
+/* The team's own color, as a marker rather than a fill. A 3px rule under the
    unit name is enough to tell the two sides apart on every row below; tinting
-   the cells themselves put two brand colours behind a table of numbers and made
+   the cells themselves put two brand colors behind a table of numbers and made
    the numbers the second thing you saw. */
 :is(.sct, #sct-table-armour) .sct-mu-cmp-side {
   justify-self: center;
@@ -6831,7 +6832,7 @@ body.sct-page.is-embed {
   border-radius: 999px;
   background: var(--mu-cmp-left, var(--sc-navy));
   /* Muted on purpose. These are a supporting reading of the ranks beside them,
-     not the point of the row, and two saturated brand colours repeated down
+     not the point of the row, and two saturated brand colors repeated down
      five rows fought with every number on the table. */
   opacity: 0.55;
 }
@@ -6857,7 +6858,7 @@ body.sct-page.is-embed {
  *
  * "Seahawks lead 2–0" was a line of body text carrying the strongest fact in
  * the section. It is now a figure: the tally at display size, the leader named
- * under it, and a rule in that team's colour down the left so the block reads
+ * under it, and a rule in that team's color down the left so the block reads
  * as belonging to somebody. */
 .sct-mu-h2h {
   display: grid;
@@ -6966,7 +6967,7 @@ body.sct-page.is-embed {
  * - renderSeriesIndex() in team-render.ts. It sits under the schedule board
  * and at the foot of the Matchups page, so a pair the club does not play this
  * season still has a door on both hubs. The pills are deliberately small and
- * grey: this is an index, not a call to action, and it must not outweigh the
+ * gray: this is an index, not a call to action, and it must not outweigh the
  * "View matchup" links in the rows above it. */
 .sct-series {
   margin: 28px 0 0;
@@ -7042,7 +7043,7 @@ body.sct-page.is-embed {
 
 /* The matchup hero: see scoreboard-hero.ts.
  *
- * A navy panel with each club's colour on its own side, split on a diagonal,
+ * A navy panel with each club's color on its own side, split on a diagonal,
  * and four rows inside it: the meta bar, the H1, the score, the quarter table.
  * It is dressed in its own type, Barlow and Barlow Condensed, rather than the
  * hub's Inter, because the score is the page and a condensed face is what lets
@@ -7134,7 +7135,7 @@ body.sct-page.is-embed {
   opacity: 0.6;
 }
 
-/* Row 2: the page's one H1. Font-size and colour are `!important` for the
+/* Row 2: the page's one H1. Font-size and color are `!important` for the
    reason the heading armour at the top of this file gives: Divi styles bare
    headings through an id, and only `!important` beats an id. */
 .sct-sbh .sct-sbh-title {
@@ -7476,7 +7477,7 @@ body.sct-page.is-embed {
   margin-bottom: 0;
 }
 
-/* Divi colours bare links through the content column's id, so the ink needs
+/* Divi colors bare links through the content column's id, so the ink needs
    `!important` to stay ours. */
 .sct .sct-mu-story-body a {
   color: var(--sc-navy) !important;
@@ -8000,7 +8001,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   text-align: right;
 }
 
-/* Quarter labels as thin scorebook separators, not grey bands (mak, 2026-09-30). */
+/* Quarter labels as thin scorebook separators, not gray bands (mak, 2026-09-30). */
 :is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-period th {
   padding: 14px 0 3px;
   border-top: 0;
@@ -8937,7 +8938,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding-bottom: 7px;
 }
 
-/* Every stat column centred, header and cells (mak, 2026-09-30); the player
+/* Every stat column centered, header and cells (mak, 2026-09-30); the player
    stays left and Start/Sit right. */
 :is(.sct, #sct-table-armour) .sct-mu-playerstats .sct-mu-ps-table :is(thead th, td):not(:first-child):not(.sct-mu-ps-act),
 :is(.sct, #sct-table-armour) .sct-mu-playerstats .sct-mu-ps-table td.sct-mu-fin {
@@ -9083,7 +9084,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   margin-top: 3px;
 }
 
-/* Carry Share as compact bars in the team's colour. */
+/* Carry Share as compact bars in the team's color. */
 .sct .sct-mu-usage-shares {
   display: grid;
   gap: 7px;
@@ -11099,7 +11100,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* StatChasers navy, reversed. The header is the one row that is not data, and
-   at 10px uppercase in muted grey it read as a caption floating above the
+   at 10px uppercase in muted gray it read as a caption floating above the
    table rather than as its top edge. */
 :is(.sct, #sct-table-armour) .sct-mu-ps-table thead th {
   padding: 9px 8px;
@@ -11257,8 +11258,8 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* The position, wherever one is named beside a player. The four inks are the
    site's, set once at the top of this file; a position with no ink of its own -
-   a kicker in the fantasy table - inherits the muted grey around it rather
-   than being given a fifth colour to mean "other". */
+   a kicker in the fantasy table - inherits the muted gray around it rather
+   than being given a fifth color to mean "other". */
 .sct-pos {
   font-weight: 800;
 }
@@ -11296,7 +11297,7 @@ a.sct-ex-game:hover .sct-ex-line {
 /* Who controlled the snaps, the targets and the backfield, per team.
  *
  * This was a sixth table on a page that already had five. The numbers were
- * right and the shape was wrong: "what share of this offence was he" is a
+ * right and the shape was wrong: "what share of this offense was he" is a
  * question about proportion, and proportion is a picture. So the section is
  * two mirrored team panels - the same metric in the same place on both sides,
  * which is what makes the comparison a glance instead of a reading - and the
@@ -11324,8 +11325,8 @@ a.sct-ex-game:hover .sct-ex-line {
   padding-top: 12px;
 }
 
-/* The only place the team's colour is a fill rather than a rule is the bar,
-   and even there it is held back. A panel headed by a block of club colour is
+/* The only place the team's color is a fill rather than a rule is the bar,
+   and even there it is held back. A panel headed by a block of club color is
    a club's page; this is an editorial one. */
 .sct-mu-usage-team-name {
   display: flex;
@@ -11661,7 +11662,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 }
 
-/* An anchor that takes the colour around it, kept.
+/* An anchor that takes the color around it, kept.
  *
  * `color: inherit` is inheritance, and inheritance loses to any rule that names
  * the element - so a theme's `#main-content a { color: #fff }` repaints every
@@ -11669,7 +11670,7 @@ a.sct-ex-game:hover .sct-ex-line {
  * player page the team name beside the position was white on white.
  *
  * Listed by class rather than armed as `ROOT a`, deliberately: the tool has two
- * kinds of link, the ones that take the colour around them and the ones that
+ * kinds of link, the ones that take the color around them and the ones that
  * declare their own, and a blanket rule here would flatten the second kind into
  * the first. These are the first kind, and there are only a few. */
 .sct .sct-outlook-link,
@@ -11700,7 +11701,7 @@ a.sct-ex-game:hover .sct-ex-line {
   --rb-ink: #13233a;
   --rb-slate: #5b6778;
   --rb-line: #dce1e8;
-  /* Plain white, the same as the tab bar and the cards: mak wants no grey
+  /* Plain white, the same as the tab bar and the cards: mak wants no gray
      ground behind the tool. The cards keep their borders to stand apart. */
   --rb-paper: #ffffff;
   --rb-card: #ffffff;
@@ -12353,7 +12354,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 4px;
 }
 
-/* Gains and losses, by sign as well as colour. */
+/* Gains and losses, by sign as well as color. */
 .sct-mu .sct-fp-diff.is-pos {
   color: var(--rb-green);
 }
@@ -12428,7 +12429,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-color: var(--rb-line);
 }
 
-/* ...but a leader card keeps its team's colour along the top: the same
+/* ...but a leader card keeps its team's color along the top: the same
    navy and green as the bars, chips and scores. */
 .sct-mu:has(.sct-rb) .sct-ls-card {
   border-top-color: var(--ls-team, var(--rb-ink));
@@ -12462,8 +12463,8 @@ a.sct-ex-game:hover .sct-ex-line {
  * The Usage tab (src/lib/team/usage-render.ts). Light cards on the hub's
  * surface tokens; numbers in a condensed display face set through `--sc-font`
  * (the theme armour pins every element to that token, so a plain font-family
- * would lose - see .sct-sbh); semantic colours as tokens below. The team's own
- * colours only reach the data: bar segments (inline, computed server-side so
+ * would lose - see .sct-sbh); semantic colors as tokens below. The team's own
+ * colors only reach the data: bar segments (inline, computed server-side so
  * ink contrast is known) and the pass map's heat tint.
  *
  * Responsive through a container query on the section rather than the window:
@@ -13996,7 +13997,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0;
 }
 
-/* The rating word rides a soft chip so the semantic colour reads on any of
+/* The rating word rides a soft chip so the semantic color reads on any of
    the 32 primaries behind it. */
 :is(.sct, #sct-table-armour) .sct-co-rating {
   padding: 2px 9px;
@@ -14111,21 +14112,14 @@ a.sct-ex-game:hover .sct-ex-line {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px 20px 14px;
+  /* 4px extra on top matches the card's team-colour top border, so the title
+     and the card's kicker share a top edge. */
+  padding: 24px 20px 14px;
 }
 
-/* When the card runs taller, the pane drops only slightly: a quarter of the
-   spare height above it, the rest below. */
-:is(.sct, #sct-table-armour) .sct-co-tend::before,
-:is(.sct, #sct-table-armour) .sct-co-tend::after {
-  content: "";
-  flex: 1 1 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-tend::after {
-  flex-grow: 3;
-}
-
+/* When the card runs taller, the pane stays pinned to the top so its title
+   lines up with the coach card's (mak, 2026-10-09); the spare height sits
+   below the table. */
 :is(.sct, #sct-table-armour) .sct-co-tend-title {
   margin: 0 0 2px;
   padding: 0;
@@ -14253,7 +14247,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
 }
 
-/* The tendencies table: ~42px rows, values centre-aligned on the row, 2026
+/* The tendencies table: ~42px rows, values center-aligned on the row, 2026
    the focal column, the prior season and NFL average stepped back. */
 :is(.sct, #sct-table-armour) .sct-co-table .sct-co-td {
   height: 44px;
@@ -14419,7 +14413,7 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
-/* Changes are direction, not judgement: up in navy, down in slate. Green and
+/* Changes are direction, not judgment: up in navy, down in slate. Green and
    red stay for places that grade quality (finishes, reliability). */
 :is(.sct, #sct-table-armour) .sct-co-change {
   font-size: 0.84rem;
@@ -14468,7 +14462,7 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.25;
 }
 
-/* The section's hero cards: a faint navy-grey fill and a thin gold top rule
+/* The section's hero cards: a faint navy-gray fill and a thin gold top rule
    set the insights apart from the white staff cards under them (mak,
    2026-10-05). Compact type; the sample note is a quiet footer. */
 :is(.sct, #sct-table-armour) .sct-co-shifts {
@@ -14988,7 +14982,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* The finish leads as a pill tinted by tier (top 5 / 6-12 / 13-24 / 25+);
-   the player's name sits under it, never coloured. The in-season row's pills
+   the player's name sits under it, never colored. The in-season row's pills
    are dashed outlines: a pace, not a finish. */
 :is(.sct, #sct-table-armour) .sct-co-fpill {
   display: inline-block;
@@ -15488,7 +15482,7 @@ a.sct-ex-game:hover .sct-ex-line {
 /* Upcoming matchup decision layer (.sct-pv, mak's 2026-10-03 spec).       */
 /* preview-render.ts. Every rule carries the table armour prefix so Divi's */
 /* id-scoped table, heading and paragraph rules cannot repaint it. Team    */
-/* fills arrive on the root as --pv-away / --pv-home (teams.ts colours).   */
+/* fills arrive on the root as --pv-away / --pv-home (teams.ts colors).   */
 /* ====================================================================== */
 .sct-mu {
   --pv-ink: var(--sc-navy, #0b1634);
@@ -15587,7 +15581,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ---- 1. hero (mak's 2026-10-05 notes): two equal team halves around a
-   centre AT badge, each half washed in its club's own primary darkened toward
+   center AT badge, each half washed in its club's own primary darkened toward
    navy-black; orange only in the divider, the eyebrow and the badge. */
 :is(.sct, #sct-table-armour) .sct-pv-hero {
   --pv-gold: #ffa300;
@@ -15605,7 +15599,7 @@ a.sct-ex-game:hover .sct-ex-line {
   isolation: isolate;
 }
 
-/* A faint lift at the top so the text block does not sit on flat colour. */
+/* A faint lift at the top so the text block does not sit on flat color. */
 :is(.sct, #sct-table-armour) .sct-pv-hero::before {
   content: "";
   position: absolute;
@@ -15746,7 +15740,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-bottom-color: var(--pv-gold);
 }
 
-/* The centre badge, on the divider. */
+/* The center badge, on the divider. */
 :is(.sct, #sct-table-armour) .sct-pv-at {
   display: grid;
   place-items: center;
@@ -15996,7 +15990,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* No team swatch beside the label: the kept sections name the team in words
-   only, and a white club colour (the Jets) read as a stray indent. */
+   only, and a white club color (the Jets) read as a stray indent. */
 :is(.sct, #sct-table-armour) .sct-pv-swatch {
   display: none;
 }
@@ -16044,7 +16038,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ---- the board's cards (mak, 2026-10-05): the call drives the card. A 3px
-   rail and a faint tint in the call's colour, so the board scans before it
+   rail and a faint tint in the call's color, so the board scans before it
    reads; the pill stays. Tints mix into --pv-card, so dark mode follows. */
 :is(.sct, #sct-table-armour) .sct-pv-col .sct-pv-row {
   --pv-rail: var(--pv-border);
@@ -16190,7 +16184,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* Team bars over each column: the club's mark, its name, a small subhead,
-   on a soft surface with a rail in the club's colour. */
+   on a soft surface with a rail in the club's color. */
 :is(.sct, #sct-table-armour) .sct-pv-teambar {
   display: flex;
   align-items: center;
@@ -17073,7 +17067,7 @@ a.sct-ex-game:hover .sct-ex-line {
  * green for the good end, red for the poor end, slate otherwise, and slate
  * wherever a rank is not graded (Coaching's tendencies). It replaces four
  * treatments: the dot + flat ordinal on the Stats cards, the lighter history
- * pills, Usage's coloured text, and Coaching's gold "#N NFL" badges. */
+ * pills, Usage's colored text, and Coaching's gold "#N NFL" badges. */
 :is(.sct, #sct-table-armour) :is(.sct-metric-rank-value, .sct-tile-rank-value, .sct-hist-rank, .sct-us-rank, .sct-co-badge, .sct-co-sig-pill.is-rank) {
   display: inline-block;
   min-height: 0;
@@ -17121,7 +17115,7 @@ a.sct-ex-game:hover .sct-ex-line {
  * --sc-shadow, which Stats' ladders, News, Depth Chart and "Use this research"
  * already wore. Usage and Coaching had their own flat 14px card and Stats'
  * stat cards and Schedule's game cards sat at 12-14px with lighter drops.
- * Only the corner and the shadow change: borders keep their colour, so the
+ * Only the corner and the shadow change: borders keep their color, so the
  * accent rules (Coaching's gold signal top, Usage's buy/sell edge, the next
  * game's gold top) stay where they were. Nested tiles keep their own. */
 :is(.sct, #sct-table-armour) .sct-section :is(
@@ -17157,7 +17151,7 @@ a.sct-ex-game:hover .sct-ex-line {
  *
  * Injury Watch spells the designation out ("Questionable") where the cards
  * abbreviate it ("Q"), but both wear the same chip: the cards' size, weight
- * and case, and the same colours by severity. */
+ * and case, and the same colors by severity. */
 :is(.sct, #sct-table-armour) .sct-injury-status {
   padding: 2px 7px;
   font-size: 0.68rem;

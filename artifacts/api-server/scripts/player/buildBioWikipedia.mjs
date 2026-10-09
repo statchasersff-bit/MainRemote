@@ -17,7 +17,7 @@
  *      candidate's quote can be checked against the exact text it came from.
  *
  * Etiquette (spec Part 7.1): one request at a time, one per second, the
- * StatChasersBot User-Agent, Retry-After honoured, the source paused after
+ * StatChasersBot User-Agent, Retry-After honored, the source paused after
  * repeated 429/403s; the conditional cache in bio/polite.mjs means a rerun
  * re-downloads nothing that has not changed.
  *
@@ -58,7 +58,7 @@ const readJson = (file, fallback) => {
 const pageUrl = (title, revid) =>
   `https://en.wikipedia.org/w/index.php?title=${encodeURIComponent(title.replace(/ /g, "_"))}&oldid=${revid}`;
 
-/** A query's pages, keyed by the title that was asked for (through normalisation and redirects). */
+/** A query's pages, keyed by the title that was asked for (through normalization and redirects). */
 function byAskedTitle(json) {
   const q = json.query ?? {};
   const to = new Map();

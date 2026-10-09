@@ -57,7 +57,7 @@ export async function importModule(relative) {
 /**
  * Bundle a one-off entry module written for a test, and return its exports.
  *
- * For the cases importModule() cannot reach: a module's behaviour that depends
+ * For the cases importModule() cannot reach: a module's behavior that depends
  * on state held in ANOTHER module it imports. Bundling the two separately gives
  * two copies of that state, so the test would be configuring an index its
  * subject never reads. One entry that re-exports both gives one copy, which is

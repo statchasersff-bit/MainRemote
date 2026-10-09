@@ -25,8 +25,8 @@ export function parseFpaView(value: unknown): FpaView {
  * How much the current season is worth, given how many weeks it has run.
  *
  * Rises quickly and then stops: by week 4 last season is a fifth of the number,
- * and from week 12 it is gone entirely in favour of a rolling window. The shape
- * is a judgement about sample size, not a fitted curve, and it is stated here
+ * and from week 12 it is gone entirely in favor of a rolling window. The shape
+ * is a judgment about sample size, not a fitted curve, and it is stated here
  * rather than buried so it can be argued with.
  */
 export function currentSeasonWeight(weeksPlayed: number): number {

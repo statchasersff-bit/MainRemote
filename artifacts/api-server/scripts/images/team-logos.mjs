@@ -10,7 +10,7 @@
  * app was sized for a square), and writes it to public/team-logos/ under a
  * content-hashed name. src/lib/team-logo-files.ts is regenerated to map each
  * club to its file, and data/team-logos/sources.json records where every
- * file came from and under what licence Wikipedia lists it.
+ * file came from and under what license Wikipedia lists it.
  *
  * Re-run when a club changes its mark. A changed file gets a new hash and
  * therefore a new URL, which is what lets the server cache the files for a
@@ -83,7 +83,7 @@ function rootAttributes(svg) {
   return { open, attrs };
 }
 
-/** Rewrite the root so the drawing sits centred in a square viewBox. */
+/** Rewrite the root so the drawing sits centered in a square viewBox. */
 function squareViewBox(svg) {
   const { open, attrs } = rootAttributes(svg);
   let [minX, minY, w, h] = (attrs.viewBox ?? "")

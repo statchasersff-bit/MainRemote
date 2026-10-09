@@ -327,7 +327,7 @@ export function buildUsageView(
   // The team's own last game, not the league's: from Thursday night until the
   // Monday game is in, the feed's latest week holds two teams, and every other
   // page would claim a week it has not played (NE 2026-10-03: three games,
-  // labelled "through Week 4"). A bye keeps the last week played.
+  // labeled "through Week 4"). A bye keeps the last week played.
   const through = team.games.length ? Math.max(...team.games) : doc.throughWeek;
   const rzLeader = [...here].sort((a, b) => b.rzTouches - a.rzTouches)[0];
 
@@ -368,7 +368,7 @@ export function buildUsageView(
 /**
  * The three cards: one riser to buy, one faller to sell, one player to watch.
  *
- * Every pick is a rule over the trend numbers, never a judgement typed in, so
+ * Every pick is a rule over the trend numbers, never a judgment typed in, so
  * the cards move with the data every week. A card with no qualifying player is
  * left out rather than filled with a weak one.
  */

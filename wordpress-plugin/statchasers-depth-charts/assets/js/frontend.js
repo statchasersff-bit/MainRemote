@@ -117,7 +117,7 @@
 		}
 	}
 
-	// Image props with the opt-outs the common lazy-load plugins honour. These
+	// Image props with the opt-outs the common lazy-load plugins honor. These
 	// images are created after page load, and several optimizers still swap their
 	// src for a placeholder that never resolves inside a popover that was never
 	// "scrolled into view" - leaving an empty box where the logo should be.
@@ -158,9 +158,9 @@
 	}
 
 	// A select that can show imagery. Native <option> elements render as OS
-	// widgets and cannot contain an <img> or per-option colour, so the team and
-	// position filters use this instead - same behaviour as a <select> (value,
-	// change event, keyboard), but each row can carry a team logo or a coloured
+	// widgets and cannot contain an <img> or per-option color, so the team and
+	// position filters use this instead - same behavior as a <select> (value,
+	// change event, keyboard), but each row can carry a team logo or a colored
 	// position code, matching the rows in the search dropdown.
 	function customSelect(config) {
 		var options = [];
@@ -192,7 +192,7 @@
 		}
 
 		// Row content: optional logo (or abbreviation placeholder), the label, and
-		// an optional colour-coded position code.
+		// an optional color-coded position code.
 		function fillRow(node, opt) {
 			node.innerHTML = "";
 			if (opt.logo) {
@@ -514,7 +514,7 @@
 			Object.keys(positions).forEach(function (key) {
 				(Array.isArray(positions[key]) ? positions[key] : []).forEach(function (p) {
 					var m = p && typeof p.headshot === "string" ? ESPN_HEADSHOT.exec(p.headshot) : null;
-					if (m) p.headshot = origin + "/news-image/espn/" + m[1] + "/latest/160.webp";
+					if (m) p.headshot = origin + "/news-image/athlete/" + m[1] + "/latest/160.webp";
 				});
 			});
 		});
@@ -584,7 +584,13 @@
 				.join(" ");
 		}
 
-		// ---- Pretty-URL helpers --------------------------------------------
+		// ---- Fragment state ---------------------------------------------------
+		// The page has one address. The view/team/position filters are kept in
+		// the URL fragment (#fantasy/buffalo-bills/rb), so a filtered view can
+		// still be copied, reloaded and stepped through with back/forward, while
+		// the browser never sends the fragment and search engines never index it.
+		// The slugs are the ones the pre-1.7.0 paths used, so an old deep link's
+		// tail still means the same thing here.
 		function teamSlugFor(abbr) {
 			if (abbr === "ALL") return "all-teams";
 			return abbrToSlug[abbr] || "all-teams";
@@ -597,15 +603,23 @@
 			}
 			return "";
 		}
-		function buildUrl() {
-			var url = ctx.basePath + VIEW_TO_SLUG[state.tab] + "/";
+		function buildHash() {
+			var view = VIEW_TO_SLUG[state.tab];
 			var teamSlug = teamSlugFor(state.team);
 			var ps = positionSlugFor(state.position);
-			// "all-teams" is only needed as a placeholder when a position follows it;
-			// otherwise /{view}/ is the canonical general URL the server advertises.
-			if (teamSlug !== "all-teams" || ps) url += teamSlug + "/";
-			if (ps) url += ps + "/";
-			return url;
+			// The default state is the bare address, no fragment at all.
+			if (view === "fantasy" && teamSlug === "all-teams" && !ps) return "";
+			var hash = "#" + view;
+			// "all-teams" is only needed as a placeholder when a position follows it.
+			if (teamSlug !== "all-teams" || ps) hash += "/" + teamSlug;
+			if (ps) hash += "/" + ps;
+			return hash;
+		}
+		function buildUrl() {
+			return window.location.pathname + window.location.search + buildHash();
+		}
+		function currentUrl() {
+			return window.location.pathname + window.location.search + window.location.hash;
 		}
 		// Resolve raw URL slugs into a validated state, with safe fallbacks (#11).
 		function resolveSlugs(slugs) {
@@ -625,20 +639,10 @@
 			}
 			return { tab: tab, team: team, position: position };
 		}
-		// Read the current location into raw slugs relative to the base path.
-		function parsePath() {
-			var path = window.location.pathname;
-			var base = ctx.basePath;
-			var rest = "";
-			if (path.indexOf(base) === 0) {
-				rest = path.slice(base.length);
-			} else {
-				var bareBase = base.replace(/\/$/, "");
-				if (path.indexOf(bareBase) === 0) {
-					rest = path.slice(bareBase.length).replace(/^\//, "");
-				}
-			}
-			var segs = rest.split("/").filter(Boolean);
+		// Read the fragment into raw slugs.
+		function parseHash() {
+			var raw = String(window.location.hash || "").replace(/^#\/?/, "");
+			var segs = raw.split("/").filter(Boolean);
 			return { view: segs[0] || "", team: segs[1] || "", position: segs[2] || "" };
 		}
 
@@ -1120,12 +1124,11 @@
 			syncPosOptions();
 			teamSelect.setValue(state.team);
 			draw();
-			syncSeoChrome();
 			if (mode === "push" || mode === "replace") {
 				var url = buildUrl();
 				if (mode === "replace") {
 					window.history.replaceState(null, "", url);
-				} else if (url !== window.location.pathname) {
+				} else if (url !== currentUrl()) {
 					window.history.pushState(null, "", url);
 				}
 			}
@@ -1138,246 +1141,13 @@
 			state.position = resolved.position;
 		}
 
-		// ---- Page chrome (H1 / intro / summary / document metadata) ----------
-		// The initial HTML already carries the correct, server-generated values for
-		// the requested URL - this only keeps them true when a visitor switches
-		// teams in-page, so the displayed team, URL, H1 and title never disagree.
-		var pageEl = root.parentNode || document.body;
-		var initialDocTitle = document.title;
-		var initialDocDesc = (function () {
-			var node = document.querySelector('meta[name="description"]');
-			return node ? node.getAttribute("content") : "";
-		})();
-
-		function fillTemplate(tpl, values) {
-			var out = String(tpl || "");
-			Object.keys(values).forEach(function (key) {
-				out = out.split("{" + key + "}").join(values[key]);
-			});
-			return out;
-		}
-		function teamMetaFor(abbr) {
-			return (ctx.teams && ctx.teams[abbr]) || null;
-		}
-		function teamRowFor(abbr) {
-			for (var i = 0; i < teams.length; i++) {
-				if (teams[i].team.abbr === abbr) return teams[i];
-			}
-			return null;
-		}
-		function teamPageUrl(abbr) {
-			var meta = teamMetaFor(abbr);
-			if (!meta) return ctx.mainUrl;
-			return window.location.origin + ctx.basePath + "fantasy/" + meta.s + "/";
-		}
-
-		// The H1 is server-rendered: either the theme/Divi title (retitled in PHP and
-		// tagged data-scdc-h1) or the tool's own. Fall back to recognizing it by text
-		// when the visitor landed on the general page, where nothing was tagged.
-		function headingEl() {
-			var tagged = document.querySelector("[data-scdc-h1]");
-			if (tagged) return tagged;
-			var candidates = document.querySelectorAll("h1");
-			for (var i = 0; i < candidates.length; i++) {
-				var text = (candidates[i].textContent || "").trim().toLowerCase();
-				var isMain = ctx.mainH1 && text === ctx.mainH1.toLowerCase();
-				if (isMain || text.indexOf("depth chart") !== -1) {
-					candidates[i].setAttribute("data-scdc-h1", "theme");
-					return candidates[i];
-				}
-			}
-			return null;
-		}
-		function chromeEl(selector, tag, className, create) {
-			var node = pageEl.querySelector(selector);
-			if (node || !create) return node;
-			node = el(tag, { class: className });
-			node.setAttribute(selector.replace(/[\[\]]/g, ""), "");
-			pageEl.insertBefore(node, root);
-			return node;
-		}
-
-		function topNames(row, keys, limit) {
-			for (var i = 0; i < keys.length; i++) {
-				var players = getPlayers(row, keys[i]);
-				if (!players.length) continue;
-				var names = [];
-				for (var j = 0; j < players.length && names.length < limit; j++) {
-					if (players[j].name) names.push(players[j].name);
-				}
-				if (names.length) return names;
-			}
-			return [];
-		}
-
-		function renderSummary(abbr) {
-			var host = chromeEl("[data-scdc-summary]", "section", "scdc-seo-summary", false);
-			var meta = abbr ? teamMetaFor(abbr) : null;
-			var row = abbr ? teamRowFor(abbr) : null;
-			if (!meta || !row) {
-				if (host) host.hidden = true;
-				return;
-			}
-
-			var picked = {
-				QB: topNames(row, ["FAN_QB", "QB"], 1),
-				RB: topNames(row, ["FAN_RB", "RB"], 3),
-				WR: topNames(row, ["FAN_WR", "WR"], 3),
-				TE: topNames(row, ["FAN_TE", "TE"], 2)
-			};
-			if (!picked.QB.length && !picked.RB.length) {
-				if (host) host.hidden = true;
-				return;
-			}
-
-			host = chromeEl("[data-scdc-summary]", "section", "scdc-seo-summary", true);
-			host.hidden = false;
-			host.innerHTML = "";
-			host.appendChild(
-				el("h2", {
-					class: "scdc-seo-summary-title",
-					text: fillTemplate(ctx.tpl.sumTitle, { team: meta.n })
-				})
-			);
-			if (picked.QB.length && picked.RB.length) {
-				host.appendChild(
-					el("p", {
-						class: "scdc-seo-summary-lead",
-						text: fillTemplate(ctx.tpl.sumLead, {
-							team: meta.n,
-							qb: picked.QB[0],
-							rb: picked.RB[0],
-							city: meta.c
-						})
-					})
-				);
-			}
-			var list = el("ul", { class: "scdc-seo-summary-list" });
-			["QB", "RB", "WR", "TE"].forEach(function (key) {
-				if (!picked[key].length) return;
-				list.appendChild(
-					el("li", null, [
-						el("span", { class: "scdc-seo-summary-pos", text: ctx.tpl.sumLabels[key] || key }),
-						el("span", { class: "scdc-seo-summary-players", text: picked[key].join(", ") })
-					])
-				);
-			});
-			host.appendChild(list);
-			if (ctx.lastUpdated) {
-				host.appendChild(
-					el("p", {
-						class: "scdc-seo-summary-meta",
-						text: fillTemplate(ctx.tpl.updated, { date: ctx.lastUpdated })
-					})
-				);
-			}
-		}
-
-		function setMetaContent(selector, attribute, value) {
-			var node = document.querySelector(selector);
-			// Only ever updates tags the server already emitted - no SEO tag is
-			// created client-side.
-			if (node) node.setAttribute(attribute, value);
-		}
-
-		var chromeInitialized = false;
-
-		function syncSeoChrome() {
-			// The first pass is the server's own render - leave the initial HTML
-			// (H1, intro, summary, title, canonical) exactly as it was delivered.
-			if (!chromeInitialized) {
-				chromeInitialized = true;
-				return;
-			}
-
-			var abbr = state.team;
-			var meta = abbr !== "ALL" ? teamMetaFor(abbr) : null;
-			var name = meta ? meta.n : "";
-
-			var heading = headingEl();
-			if (heading) {
-				heading.textContent = meta
-					? fillTemplate(ctx.tpl.h1, { team: name })
-					: ctx.mainH1 || heading.textContent;
-			}
-
-			var intro = chromeEl("[data-scdc-intro]", "p", "scdc-seo-intro", !!meta);
-			if (intro) {
-				if (meta) {
-					intro.textContent = fillTemplate(ctx.tpl.intro, { team: name });
-					intro.hidden = false;
-				} else {
-					intro.hidden = true;
-				}
-			}
-
-			renderSummary(meta ? abbr : null);
-
-			if (meta) {
-				document.title = fillTemplate(ctx.tpl.title, { team: name });
-				setMetaContent('meta[name="description"]', "content", fillTemplate(ctx.tpl.desc, { team: name }));
-				setMetaContent('link[rel="canonical"]', "href", teamPageUrl(abbr));
-			} else {
-				document.title = ctx.route === "main" ? initialDocTitle : ctx.mainH1 || document.title;
-				if (ctx.route === "main" && initialDocDesc) {
-					setMetaContent('meta[name="description"]', "content", initialDocDesc);
-				}
-				setMetaContent('link[rel="canonical"]', "href", ctx.mainUrl);
-			}
-
-			var links = document.querySelectorAll("[data-scdc-team-link]");
-			Array.prototype.forEach.call(links, function (link) {
-				var isCurrent = meta && link.getAttribute("data-scdc-team-link") === abbr;
-				if (isCurrent) {
-					link.classList.add("is-current");
-					link.setAttribute("aria-current", "page");
-				} else {
-					link.classList.remove("is-current");
-					link.removeAttribute("aria-current");
-				}
-			});
-		}
-
-		// The 32 team links are real anchors with real hrefs (crawlable, copyable,
-		// middle-clickable). For a plain left click we keep the SPA behaviour and
-		// let pushState move to the very same URL.
-		function bindTeamLinks() {
-			document.addEventListener("click", function (event) {
-				if (event.defaultPrevented || event.button !== 0) return;
-				if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-				var target = event.target;
-				var link = target && target.closest ? target.closest("[data-scdc-team-link]") : null;
-				if (!link) return;
-				var abbr = link.getAttribute("data-scdc-team-link");
-				if (!abbr || !teamMetaFor(abbr)) return; // Unknown team: follow the href.
-
-				event.preventDefault();
-				state.team = abbr;
-				state.tab = "fantasy";
-				state.position = "ALL";
-				state.search = "";
-				search.value = "";
-				closeSuggest();
-				commit("push");
-				if (pageEl.scrollIntoView) pageEl.scrollIntoView({ behavior: "smooth", block: "start" });
-			});
-		}
-
-		// ---- Initialize from the server-resolved route ----
-		// PHP validated {view}/{team}/{position} before the page was sent, so the
-		// first (and only) render is already the right team - no "all teams first,
-		// then switch" flash. The path is re-parsed purely as a fallback.
-		var pathSlugs = parsePath();
-		var initialSlugs = ctx.initialSlugs.view ? ctx.initialSlugs : pathSlugs;
-		applyResolved(resolveSlugs(initialSlugs));
-		bindTeamLinks();
-		// No replaceState here: the URL that was requested is the URL the server
-		// generated the title/canonical/H1 for, so it is left exactly as-is.
+		// ---- Initialize from the fragment ----
+		applyResolved(resolveSlugs(parseHash()));
 		commit("");
 
-		// Browser back/forward: re-read the path and re-apply, no new history entry.
+		// Back/forward (and a hand-edited fragment): re-read it, no new history entry.
 		window.addEventListener("popstate", function () {
-			applyResolved(resolveSlugs(parsePath()));
+			applyResolved(resolveSlugs(parseHash()));
 			commit("");
 		});
 	}
@@ -1386,41 +1156,13 @@
 		var endpoint = root.getAttribute("data-endpoint");
 		if (!endpoint) return;
 
-		// Base path for building pretty URLs, e.g. "/nfl/depth-charts/".
-		var baseAttr = root.getAttribute("data-base") || window.location.href;
-		var basePath;
-		try {
-			basePath = new URL(baseAttr, window.location.origin).pathname;
-		} catch (e) {
-			basePath = window.location.pathname;
-		}
-		if (basePath.charAt(basePath.length - 1) !== "/") basePath += "/";
-
 		var ctx = {
-			basePath: basePath,
 			imageOrigin: root.getAttribute("data-image-origin") || "",
 			lastUpdated: root.getAttribute("data-last-updated") || "",
-			// Route + copy resolved server-side (see SCDC_Route / SCDC_SEO).
-			route: root.getAttribute("data-route") || "main",
 			season: root.getAttribute("data-season") || "",
-			mainH1: root.getAttribute("data-main-h1") || "",
-			mainUrl: root.getAttribute("data-main-url") || "",
-			teams: jsonAttr(root, "data-teams", {}),
-			tpl: {
-				h1: root.getAttribute("data-tpl-h1") || "",
-				intro: root.getAttribute("data-tpl-intro") || "",
-				title: root.getAttribute("data-tpl-title") || "",
-				desc: root.getAttribute("data-tpl-desc") || "",
-				sumTitle: root.getAttribute("data-tpl-sum-title") || "",
-				sumLead: root.getAttribute("data-tpl-sum-lead") || "",
-				sumLabels: jsonAttr(root, "data-tpl-sum-labels", {}),
-				updated: root.getAttribute("data-tpl-updated") || ""
-			},
-			initialSlugs: {
-				view: root.getAttribute("data-view") || "",
-				team: root.getAttribute("data-team") || "",
-				position: root.getAttribute("data-position") || ""
-			}
+			// The 32-team config (abbr => { n, c, s }), so the fragment uses the
+			// server's slugs.
+			teams: jsonAttr(root, "data-teams", {})
 		};
 
 		fetch(endpoint, { credentials: "same-origin" })

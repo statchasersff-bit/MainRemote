@@ -152,7 +152,7 @@ describe("leaders strip", () => {
     assert.equal(strip.statLine(byName("Kyler Murray")), "19/34, 137 YDS, 2 INT");
   });
 
-  test("is a labelled section with no heading, names linked where a page exists", () => {
+  test("is a labeled section with no heading, names linked where a page exists", () => {
     const section = doc.querySelector("section");
     assert.equal(section.getAttribute("aria-label"), "Game leaders");
     assert.equal(doc.querySelectorAll("h1, h2, h3").length, 0);

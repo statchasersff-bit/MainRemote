@@ -209,7 +209,7 @@ Return ONLY a JSON object, no markdown fence, with exactly these keys:
   "headline"      - a punchy <=12-word summary.
   "body"          - two short paragraphs, ~110-170 words total, as one string with \\n\\n between them.
   "quickTake"     - TWO OR THREE SENTENCES, max ~55 words. The whole take for a reader who reads nothing else. Not a teaser for the body; a standalone answer to "what should I expect from him?".
-  "weeklyRole"    - 1-3 words for his role in the offence: e.g. "Starter", "Spot Starter", "Lead Back", "Committee Back", "Rotational WR", "Backup".
+  "weeklyRole"    - 1-3 words for his role in the offense: e.g. "Starter", "Spot Starter", "Lead Back", "Committee Back", "Rotational WR", "Backup".
   "restOfSeason"  - the rest-of-season call in the site's shorthand: a positional tier and a use, joined by " / ". e.g. "QB3 / Matchup Play", "RB2 / Weekly Starter", "WR4 / Bench Stash".
   "confidence"    - exactly one of "High", "Moderate", "Low". How sure you are of "restOfSeason", given role certainty and how stable his production has been. A player whose role is contested or whose sample is thin is NOT "High".
 

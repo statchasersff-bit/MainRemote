@@ -408,7 +408,7 @@ describe("filters", () => {
 
   test("player search matches through punctuation and accents", async () => {
     const { doc, player, visible } = await withFilters();
-    // data-player is pre-normalised by the renderer; type a word out of one.
+    // data-player is pre-normalized by the renderer; type a word out of one.
     const sample = [...doc.querySelectorAll(".sc-card-item[data-player]")]
       .map((li) => li.dataset.player)
       .find((v) => v && v.includes(" "));
@@ -496,7 +496,7 @@ describe("WordPress mount", () => {
     );
   });
 
-  test("refresh uses the cross-origin API base and honours the limit", async () => {
+  test("refresh uses the cross-origin API base and honors the limit", async () => {
     const { doc, window } = await renderMounted("?limit=20&page_size=5");
 
     let requested = null;

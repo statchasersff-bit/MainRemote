@@ -551,7 +551,7 @@ export function scheduleFaq(input: {
             `no broadcast assigned yet and ${unassigned === 1 ? "reads" : "read"} TBD.`
           : `.`)
       : `Broadcast assignments for Week ${week} have not been published yet, so the ` +
-        `TV column of the schedule above reads TBD. It fills in from ESPN as the ` +
+        `TV column of the schedule above reads TBD. It fills in as the ` +
         `networks are announced.`,
   });
 

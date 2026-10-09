@@ -8,7 +8,7 @@
  *   teams [{team, from, to, offseason}], highlights {superBowls[], proBowls,
  *   allProFirst}.
  * A field the template leaves blank, or writes in a shape this file does not
- * recognise, is left out rather than guessed.
+ * recognize, is left out rather than guessed.
  */
 
 /** Club names in Wikipedia's pastteams lists, by era, to StatChasers codes. */
@@ -169,7 +169,7 @@ function highlights(raw) {
   return out;
 }
 
-/** The infobox's facts, or null when the article has no recognised infobox. */
+/** The infobox's facts, or null when the article has no recognized infobox. */
 export function parseInfobox(wikitext) {
   const p = infoboxParams(wikitext);
   if (!p) return null;

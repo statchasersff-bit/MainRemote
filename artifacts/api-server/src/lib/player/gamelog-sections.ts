@@ -238,7 +238,7 @@ interface Pin {
   game: StoryGame;
   x: number;
   best: boolean;
-  /** "above" is the default; "below" dodges a neighbour; "none" is sr-only. */
+  /** "above" is the default; "below" dodges a neighbor; "none" is sr-only. */
   label: "above" | "below" | "none";
 }
 

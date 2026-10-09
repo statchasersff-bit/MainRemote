@@ -116,7 +116,7 @@ const windows = [];
  * The page with its own JavaScript actually run.
  *
  * Everything else in this file asserts on the HTML as sent, which is what a
- * crawler reads. Two behaviours are different in kind rather than in polish and
+ * crawler reads. Two behaviors are different in kind rather than in polish and
  * invisible in the served markup: the tab strip, which switches the panel,
  * rewrites the heading above the fragment and puts a different URL in the
  * address bar; and the state swap, which re-renders the page from another
@@ -144,7 +144,7 @@ async function hydrated(pathname) {
   });
   windows.push(jsdom.window);
   // jsdom ships no fetch, and the bundle's state swap - the scoring toggle and
-  // the season chips - is the one behaviour that needs one. Bridged to Node's,
+  // the season chips - is the one behavior that needs one. Bridged to Node's,
   // against the same test server the page was loaded from, so a click here goes
   // through the real route and comes back as real HTML.
   jsdom.window.fetch = async (input, init) => {
@@ -259,7 +259,7 @@ describe("player page content", () => {
     assert.equal(new Set(kinds).size, kinds.length, "and no two tabs share one");
   });
 
-  test("the scoreboard is three labelled figures, the first in gold", async () => {
+  test("the scoreboard is three labeled figures, the first in gold", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const cells = [...doc.querySelectorAll(".scp-pboard-stats > div")];
     assert.equal(cells.length, 3);
@@ -290,7 +290,7 @@ describe("player page content", () => {
       assert.match(
         chip.textContent,
         /^\d+(st|nd|rd|th) vs\. [A-Z]+s, (favorable|neutral|tough)$/,
-        "the chip says its reading in words, not colour alone",
+        "the chip says its reading in words, not color alone",
       );
     }
   });
@@ -500,10 +500,10 @@ describe("player page content", () => {
     }
 
     // The stacked bar labels every tier in its legend, so identity never rests
-    // on colour alone. The legend may name MORE tiers than the bar draws - a
+    // on color alone. The legend may name MORE tiers than the bar draws - a
     // tier he never reached is a reading worth printing and has no width to
     // give it a segment - but never fewer, which is the direction that would
-    // leave a colour unexplained.
+    // leave a color unexplained.
     const stack = doc.querySelector(".scp-stack");
     if (stack) {
       const segments = stack.querySelectorAll(".scp-stack-seg").length;
@@ -973,7 +973,7 @@ describe("the game log tab", () => {
     const year = Number(other.textContent.trim());
     const pinned = await dom(`${other.getAttribute("href")}`);
 
-    // The whole point of the selector's new behaviour: picking 2025 ADDS 2025.
+    // The whole point of the selector's new behavior: picking 2025 ADDS 2025.
     // The current season's heading, tiles, prose, table and fixtures have to
     // come back byte for byte, or "do not touch the current season" is a
     // comment rather than a property.
@@ -1111,7 +1111,7 @@ describe("the game log tab", () => {
     assert.ok(text.includes(fixture.name), "it names the player");
 
     const summary = intro.querySelector(".scp-note");
-    assert.ok(summary, "a season of games is summarised per game");
+    assert.ok(summary, "a season of games is summarized per game");
     assert.ok(/per game/.test(summary.textContent), "it talks in per-game terms");
 
     // Rule 3: this page describes what happened and never what happens next.
@@ -1538,7 +1538,7 @@ describe("the outlook tab", () => {
   test("an unwritten decision layer is absent, not an empty label", async () => {
     // Every block below is authored into fantasy_outlook_2026.json and none of
     // it can be derived. A record without those fields must produce a SHORTER
-    // tab - never a labelled hole, a dash, or a chip with nothing in it.
+    // tab - never a labeled hole, a dash, or a chip with nothing in it.
     const found = await withOutlook();
     assert.ok(found.size > 0);
 
@@ -2234,12 +2234,12 @@ describe("the player search", () => {
     assert.equal(widget.querySelectorAll("form").length, 0, "never a form");
     assert.equal(widget.querySelectorAll("input").length, 1);
 
-    // The roles are the client's to add, because they promise behaviour that
+    // The roles are the client's to add, because they promise behavior that
     // does not exist until it runs.
     const input = widget.querySelector("input");
     assert.equal(input.getAttribute("role"), null);
     assert.equal(input.getAttribute("type"), "search");
-    assert.ok(widget.querySelector(".scp-sr"), "the field is labelled");
+    assert.ok(widget.querySelector(".scp-sr"), "the field is labeled");
   });
 
   test("carries the whole roster inline, and nothing that runs", async () => {
@@ -2344,7 +2344,7 @@ describe("the player search", () => {
   });
 
   /*
-   * Booted separately, because the behaviour IS the environment: the fragment's
+   * Booted separately, because the behavior IS the environment: the fragment's
    * links are built from SC_PLAYER_PATH_PREFIX, and one server cannot answer
    * for both configurations. Same shape as the team switcher's test.
    */
@@ -2499,7 +2499,7 @@ describe("the positional peers rail", () => {
     assert.ok(rail, "the rail is server-rendered, not fetched");
 
     const cards = [...rail.querySelectorAll(".scp-peer")];
-    assert.ok(cards.length >= 2, "a neighbourhood, not a card on its own");
+    assert.ok(cards.length >= 2, "a neighborhood, not a card on its own");
     assert.ok(cards.length <= 7, "three either side and the player himself");
 
     const ranks = cards.map((card) =>
@@ -2560,7 +2560,7 @@ describe("the positional peers rail", () => {
     assert.ok(hrefs.length > 0);
 
     // The dictionary is thousands of names deep and only the indexed players
-    // have a page, so the neighbourhood skips the ones that do not - the whole
+    // have a page, so the neighborhood skips the ones that do not - the whole
     // reason it is walked outwards rather than sliced.
     for (const href of hrefs) {
       const res = await get(href);
@@ -3418,7 +3418,7 @@ describe("player section URLs", () => {
     assert.ok(doc.querySelectorAll("[data-scp-panel]").length > 1);
   });
 
-  test("an unrecognised ?section= still falls through to the profile", async () => {
+  test("an unrecognized ?section= still falls through to the profile", async () => {
     // Defensive: a stale link is worth a full page, not a 404 - the pretty
     // route is where a bad section is refused.
     for (const query of ["?section=bogus", "?section=", ""]) {
@@ -3604,7 +3604,7 @@ describe("a state swap", () => {
     });
     year.dispatchEvent(event);
 
-    assert.equal(event.defaultPrevented, false, "the navigation was not cancelled");
+    assert.equal(event.defaultPrevented, false, "the navigation was not canceled");
     assert.equal(
       doc.querySelector("[data-scp-root]").getAttribute("data-archive-season"),
       null,

@@ -419,7 +419,7 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], to
         `${game.home.short} ${th.targets} targets and ${th.carries} carries. ` +
         `Shares are from the box score. ` +
         (hasSnaps
-          ? "Snap counts are from the weekly player logs (Sleeper), and include plays wiped out by penalties. "
+          ? "Snap counts are from the weekly player logs, and include plays wiped out by penalties. "
           : "Snap counts aren't available for this game. ") +
         `Route counts, air yards and red-zone touches appear when the tracking feed is connected. ` +
         `League-average rates from the ${rates.season} season: ${perTarget(rates, "ppr").toFixed(2)} PPR points per target ` +

@@ -19,9 +19,9 @@
  *
  * The questions are the searched forms rather than the section's own language:
  * "Who is the Patriots WR2", "Is X worth drafting". That is the whole reason a
- * block like this exists, and it is why the generated text says "offense" while
- * the hand-written notes above it say "offence" - the query is spelled the
- * American way and the FAQ is answering the query.
+ * block like this exists, and it is why the generated text spells "offense"
+ * the American way, like the hand-written notes above it - the query is
+ * spelled that way and the FAQ is answering the query.
  *
  * Entries are skipped rather than padded. A team whose outlook names one
  * running back gets no "is the backup worth drafting" question, because there
@@ -76,7 +76,7 @@ const VOWEL_INITIALS = new Set([
 /**
  * A tier as it reads mid-sentence: "an elite QB1", "an RB2 / FLEX".
  *
- * The card prints the tier as a label, capitalised and standing alone. A
+ * The card prints the tier as a label, capitalized and standing alone. A
  * sentence needs it lowercased and behind an article - but only when it is a
  * word. "RB2 / FLEX" is a position code and lowercasing it produces "rB2",
  * so the capitals survive whenever the first token carries none of its own.

@@ -28,7 +28,7 @@ Every field is optional. Leave one out and the page writes that part itself.
 |---|---|
 | `prod_lede` | The line under "{Name} {season} stats" |
 | `adv_lede` | The line under "Advanced … stats" |
-| `adv_fantasy_note` | The grey box under the advanced cards. It is printed after "What it means for fantasy:" |
+| `adv_fantasy_note` | The gray box under the advanced cards. It is printed after "What it means for fantasy:" |
 | `career_paragraphs` | The analysis under "What his career numbers say". One to three paragraphs. The Redraft Command link paragraph always follows yours |
 | `updated_date` | The byline date, as `YYYY-MM-DD` |
 | `author` | The byline name. Without it the byline says "the StatChasers staff" |

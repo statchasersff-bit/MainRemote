@@ -3,8 +3,8 @@
  * Single source of truth for the 32 NFL teams and the current season.
  *
  * Everything team-related (route validation, SEO titles/descriptions, canonical
- * URLs, H1 text, breadcrumbs, internal links, tool initialization and the XML
- * sitemap) reads from this class, so a team rename or a season roll-over is a
+ * URLs, H1 text, breadcrumbs, internal links and tool initialization) reads
+ * from this class, so a team rename or a season roll-over is a
  * one-place edit.
  *
  * Season: NFL season naming does not roll over on January 1, so the value is a

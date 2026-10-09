@@ -29,7 +29,7 @@
  * than to all of them, because appending it to "how often do they pass" would
  * be noise on a question the sample answers perfectly well.
  *
- * On rank direction: the ladders carry a note saying 1st on defence means
+ * On rank direction: the ladders carry a note saying 1st on defense means
  * fewest allowed, because a column of ranks needs it. A sentence does not get
  * that note, so defensive and volume ranks are spelled out as "the 5th-fewest"
  * and "the 3rd-most" instead. The reader never has to know which way the
@@ -52,7 +52,7 @@ function findRow(rows: readonly StatRow[], key: string): StatRow | undefined {
  * A rank as a sentence reads it.
  *
  * `superlative` is what removes the ambiguity a bare ordinal carries outside a
- * labelled column: "5th in points allowed" is read as fifth-worst by about half
+ * labeled column: "5th in points allowed" is read as fifth-worst by about half
  * of everyone, and "the 5th-fewest" cannot be. 1st drops the ordinal entirely,
  * because "the 1st-fewest" is not English.
  *

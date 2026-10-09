@@ -236,7 +236,7 @@ export function againstSpread(g: SeasonGame, club: string): Cover | null {
   const side = g.away === club ? "away" : g.home === club ? "home" : null;
   if (!side) return null;
   const margin = side === "away" ? g.awayScore - g.homeScore : g.homeScore - g.awayScore;
-  // The club's own line: minus the spread when it was favoured, plus when not.
+  // The club's own line: minus the spread when it was favored, plus when not.
   const line = o.favorite === null ? 0 : o.favorite === club ? -o.line : o.line;
   const result = margin + line;
   return result > 0 ? "cover" : result < 0 ? "fail" : "push";

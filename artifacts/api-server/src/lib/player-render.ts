@@ -15,7 +15,7 @@
  *    actually rendered.
  *
  * 2. The team is an accent, not a repaint. Surfaces, headings and controls are
- *    StatChasers navy/gold/white; the player's team colour appears as an aura
+ *    StatChasers navy/gold/white; the player's team color appears as an aura
  *    behind the headshot and a hairline on the hero, and nowhere else.
  *
  * And one this page adds, because it is the one that gets broken:
@@ -30,10 +30,10 @@
  *    removed by request; the tab and the heading are what is left doing that
  *    job, so neither should be softened into something vaguer.
  *
- * A note on colour. The four finish tiers are an ORDINAL scale - POS1 through
+ * A note on color. The four finish tiers are an ORDINAL scale - POS1 through
  * Bust is an order, not a set of identities - so they take one hue in four
  * monotone lightness steps rather than four hues. The order is then visible in
- * the colour itself, and the page stays on-brand instead of becoming a chart
+ * the color itself, and the page stays on-brand instead of becoming a chart
  * with a fruit salad in it. Every tier also carries its own text label, so the
  * palest step never has to carry meaning alone.
  */
@@ -629,7 +629,7 @@ interface SparkPoint {
 /**
  * Weekly points with a three-game trailing average over them.
  *
- * Two series, so it carries a legend - identity is never colour alone. The
+ * Two series, so it carries a legend - identity is never color alone. The
  * points line is 2px and the average is drawn beneath it; markers sit at 8px so
  * they are a real hit target for the tooltip client/player.ts attaches, and the
  * <title> on each keeps the bare SVG readable with no script at all.
@@ -858,7 +858,7 @@ interface TabParts {
  * Plain anchors switched by `:target` in CSS, exactly as the team hub does it:
  * every tab's content is in the initial HTML, the strip works with scripting
  * disabled, and the only URL state it can produce is a `#hash` - not a second
- * crawlable address for the same page. The tab roles and arrow-key behaviour
+ * crawlable address for the same page. The tab roles and arrow-key behavior
  * are added by client/player.ts, which can deliver what those roles promise.
  */
 /**
@@ -1087,8 +1087,8 @@ function renderFantasySnapshot(data: PlayerPageData): string {
  * Usage rather than production, deliberately. Points are the outcome and
  * touches are the input, and a role that is growing shows up in the input
  * first - which is the only reason a "trending" section is worth printing at
- * all. Metrics marked `context` are the team's behaviour rather than the
- * player's, and are labelled as such instead of being scored as their doing.
+ * all. Metrics marked `context` are the team's behavior rather than the
+ * player's, and are labeled as such instead of being scored as their doing.
  */
 function renderRoleDirection(data: PlayerPageData): string {
   const played = data.gameLog.filter((e) => e.game_status === "active");
@@ -1173,7 +1173,7 @@ function renderList(items: unknown, className: string): string {
  *   2. the career timeline - every club, with its years and its badge
  *   3. the questions, answered directly
  *
- * The labelled fact grid - age, height, weight, born, college, high school,
+ * The labeled fact grid - age, height, weight, born, college, high school,
  * experience, draft - used to sit between one and two, and every one of those
  * facts is a clause of the paragraph above it. "Born on December 11, 1992,
  * Brissett attended William T. Dwyer (FL) and played college football at North
@@ -1540,7 +1540,7 @@ function renderLogIntro(data: PlayerPageData): string {
 /**
  * What one week's points were made of.
  *
- * The coefficients from scoring.ts, itemised. The total this is printed under
+ * The coefficients from scoring.ts, itemized. The total this is printed under
  * can come from Sleeper and carries scoring the breakdown does not model -
  * return yardage, two-point conversions, fumbles - so the difference is printed
  * as its own line rather than folded into one of the others. A breakdown that
@@ -1551,8 +1551,8 @@ function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): str
   if (parts.length === 0) return "";
 
   const total = fpts(entry, format);
-  const modelled = parts.reduce((sum, part) => sum + part.points, 0);
-  const remainder = Math.round((total - modelled) * 100) / 100;
+  const modeled = parts.reduce((sum, part) => sum + part.points, 0);
+  const remainder = Math.round((total - modeled) * 100) / 100;
 
   const rows = [
     ...parts,
@@ -2067,8 +2067,8 @@ function renderUpcoming(
       // empty slot is the honest rendering of that.
       //
       // The band does two jobs now: the tint it always carried, and the word
-      // underneath it. One function so the colour and the word can never
-      // disagree - a rank tinted as favourable and captioned "Tough" is worse
+      // underneath it. One function so the color and the word can never
+      // disagree - a rank tinted as favorable and captioned "Tough" is worse
       // than either signal on its own.
       const band = game.matchup ? matchupBand(game.matchup.rank) : null;
       const matchup = game.matchup
@@ -2186,9 +2186,9 @@ function renderUpcoming(
  * This is that sentence applied, one word per card.
  *
  * It follows the site's scale and not the other one: the points-allowed table
- * ranks DESCENDING, so 1st allows the most and is the soft matchup. A defence
+ * ranks DESCENDING, so 1st allows the most and is the soft matchup. A defense
  * ranked 30th against the position is one of the stingiest in the league, which
- * is why 30th reads "Tough" here rather than favourable.
+ * is why 30th reads "Tough" here rather than favorable.
  */
 const BAND_READ: Record<MatchupBand, string> = {
   soft: "Favorable matchup",
@@ -2839,7 +2839,7 @@ function renderPlayerFaqSchema(
  * Three deliberate differences from the app it came from:
  *
  *   It is rendered here, not fetched. The original called /api/players/:slug/
- *   related from the browser; the whole neighbourhood is arithmetic over logs
+ *   related from the browser; the whole neighborhood is arithmetic over logs
  *   already in memory, so it ships in the HTML like the rest of the page.
  *
  *   It survives September. The original ranked on points per game with a
@@ -2850,7 +2850,7 @@ function renderPlayerFaqSchema(
  *
  *   Its cards are this site's, not that app's. Same structure - portrait well,
  *   rank pill, name, club, the figure - in the player page's own tokens, with
- *   the club's colour as the one accent, which is the rule the hero follows.
+ *   the club's color as the one accent, which is the rule the hero follows.
  *
  * Outside the tab panels, so it stands under whichever tab is open. That is
  * where the original put it, and it is right for the reason a tab is not: this
@@ -2955,7 +2955,7 @@ function renderPositionPeers(
     // more section of the page, like the FAQ above it.
     // "QBs like Jacoby Brissett" (mak, 2026-09-30), not "Nearby Positional Peers".
     `<h2 class="scp-ox-h2" id="scp-peers-h">${escapeHtml(titleCase(`${pos}s like ${data.player.name}`))}</h2>` +
-    // Scrolled to centre the marked card by client/player.ts. Without it the
+    // Scrolled to center the marked card by client/player.ts. Without it the
     // rail simply starts at its best-ranked end, which is a fine place to
     // start reading and needs nothing.
     `<div class="scp-peer-rail" data-scp-peers>${cards}</div>` +
@@ -3250,7 +3250,7 @@ export function renderPlayerPage(
  *
  * It used to be six hundred names in thirty-two <ul>s. That was honest about
  * what it had - a list of slugs - and it was the one surface here that looked
- * nothing like the pages it points at: no portrait, no club colour, no
+ * nothing like the pages it points at: no portrait, no club color, no
  * position ink, no number, and no way to find a player on it but the browser's
  * own find-in-page.
  *
@@ -3608,7 +3608,7 @@ function renderPlayerDirectory(
  * The index as a bare fragment, for the WordPress container page to print.
  *
  * No heading: the page at /nfl/players/ supplies it, the same division of
- * labour every other mount here follows - and, since the hero came off the
+ * labor every other mount here follows - and, since the hero came off the
  * standalone page too, the only thing this fragment now drops is the shell.
  */
 export function renderPlayerIndexFragment(

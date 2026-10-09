@@ -2,7 +2,7 @@
  * The 2025 RB stats and injury history, merged into one record per back.
  *
  * Ported from the standalone app's server/rb-data-service.ts. What decides the
- * numbers is unchanged - the name normalisation, the per-game conversions,
+ * numbers is unchanged - the name normalization, the per-game conversions,
  * the talent-only strip for a back who changed teams, the "season's starter is
  * the back with the most touches" rule for Backfield Opportunity. What changed
  * is the shape: these are pure functions over already-parsed rows, where the
@@ -62,7 +62,7 @@ export interface DataNorms {
 
 const TEAM_ALIASES: Record<string, string> = { LA: "LAR", JAC: "JAX", WSH: "WAS" };
 
-/** Known by a nickname in one source and a legal name in another. Normalised on both sides. */
+/** Known by a nickname in one source and a legal name in another. Normalized on both sides. */
 const NAME_ALIASES: Record<string, string> = { "bam knight": "zonovan knight" };
 
 /** Lower case, no diacritics, punctuation to spaces, no Jr/Sr/II–V. MIRRORS normalizeName(). */
@@ -210,7 +210,7 @@ function maxOf(values: Array<number | null>): number {
   return Math.max(m || 1, 1);
 }
 
-/** The pool maxima the role score normalises against. MIRRORS computeNorms(). */
+/** The pool maxima the role score normalizes against. MIRRORS computeNorms(). */
 export function computeNorms(data: Map<string, MergedRBData>): DataNorms {
   const all = Array.from(data.values());
   return {

@@ -11,7 +11,7 @@ import {
  *
  * Rows arrive on a timer from two providers - Dynasty Command's player wire and
  * the 32 clubs' own RSS feeds - and are never deleted. This is the store of
- * record for what the tool renders, and the reason it can show a back catalogue
+ * record for what the tool renders, and the reason it can show a back catalog
  * neither source still carries: the wire returns only its latest ~25 items, and
  * a club feed only its latest 5 to 100.
  */
@@ -21,7 +21,7 @@ export const newsItems = pgTable(
     id: text("id").primaryKey(),
 
     /**
-     * Content fingerprint (normalised title) - what an ingest dedupes on, NOT
+     * Content fingerprint (normalized title) - what an ingest dedupes on, NOT
      * the upstream id. The feed has changed both its id scheme and its pubDate
      * formatting before, and keying on either stored the same story twice. The
      * unique index below is what makes that impossible rather than merely

@@ -1,8 +1,8 @@
 /**
  * GET /news-image/player/<sleeperId>/<version>/<size>.webp
- * GET /news-image/espn/<athleteId>/<version>/<size>.webp
+ * GET /news-image/athlete/<athleteId>/<version>/<size>.webp
  * GET /news-image/club/<base64url path>/<version>/<size>.webp
- * GET /news-image/yt/<video id>/<version>/<size>.webp
+ * GET /news-image/video/<video id>/<version>/<size>.webp
  *
  * The StatChasers-hosted headshot derivatives the news cards, team hub and
  * player pages point at instead of the Sleeper CDN (lib/image-urls.ts says

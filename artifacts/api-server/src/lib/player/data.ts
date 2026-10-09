@@ -121,7 +121,7 @@ let playersCheckedAt = 0;
  * The full player dictionary.
  *
  * Team abbreviations are left exactly as the file has them (upper case, and
- * occasionally an alias like JAC or WSH). Normalising happens at the point of
+ * occasionally an alias like JAC or WSH). Normalizing happens at the point of
  * use through `lib/team/teams.ts`, which is the only thing in this codebase
  * allowed to hold a team mapping.
  */
@@ -177,7 +177,7 @@ export function getPlayerBySlug(slug: string): Player | null {
  *
  * The ledger is the build's output and this is the only thing that reads it at
  * runtime. A deployment without the file simply has no aliases, which is the
- * behaviour every other optional data file here has.
+ * behavior every other optional data file here has.
  */
 interface SlugLedger {
   players?: Record<string, { slug?: string; previous?: string[] }>;
@@ -263,7 +263,7 @@ function buildSlugsByName(): Map<string, string> {
   // failure the caller in team/links.ts exists to avoid.
   const indexed = new Set(loadIndexedSlugs());
   const byName = new Map<string, string>();
-  // Names that are not unique once normalised. "Michael Thomas" has been two
+  // Names that are not unique once normalized. "Michael Thomas" has been two
   // players; a link then has to pick one, and picking wrong is worse than
   // leaving the name as text, so an ambiguous key is dropped entirely.
   const ambiguous = new Set<string>();
@@ -286,7 +286,7 @@ function buildSlugsByName(): Map<string, string> {
 /**
  * The slug of the player with this name, or null.
  *
- * Matched on `searchKey`, the same normalisation the rest of the app compares
+ * Matched on `searchKey`, the same normalization the rest of the app compares
  * names with, so the punctuation the sources disagree about ("A.J." vs "AJ",
  * "Ja'Marr" vs "JaMarr") does not decide whether a name resolves.
  *

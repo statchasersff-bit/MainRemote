@@ -86,7 +86,7 @@ export function splitHeadline(item: NewsItem): string {
  *
  * The item's derived category for the wire and the club feeds, and the reporter
  * for an X post: these pages have their own card renderers, so a post arriving
- * on one would otherwise be labelled as something it is not. The feed's card
+ * on one would otherwise be labeled as something it is not. The feed's card
  * makes the same substitution in the same slot - see renderCardLabel in
  * lib/render.ts, which is also where the reasoning for showing the category
  * rather than a fixed "Player News" is written down.

@@ -108,7 +108,7 @@ app.listen(port, (err) => {
   // it can do - not a bad configuration, not an unreachable provider, not a
   // database it cannot read - may be allowed to stop a server that has already
   // bound its port from serving the news it already has. startXScheduler() is
-  // itself written not to throw; this is the second line of that defence.
+  // itself written not to throw; this is the second line of that defense.
   try {
     startXScheduler();
   } catch (err) {

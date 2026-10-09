@@ -5,6 +5,12 @@
  * Renders the StatChasers depth-chart UI from the locally cached JSON. The cache
  * file is fetched client-side from its uploads URL; if no cache exists yet, a
  * fallback message is shown and no assets are loaded.
+ *
+ * The page has one address. Nothing team-specific is rendered here any more:
+ * the per-team H1, intro, summary and the 32-team link grid went with the team
+ * routes in 1.7.0, because the team pages carry a team's depth chart now
+ * (/nfl/teams/{slug}/depth-chart/). The view/team/position filters are client
+ * state, kept in the URL fragment by assets/js/frontend.js.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -196,70 +202,10 @@ class SCDC_Shortcode {
 	}
 
 	/**
-	 * Initial tool state, resolved server-side by SCDC_Route.
-	 *
-	 * The rewrite rules put {view}/{team}/{position} in query vars; SCDC_Route
-	 * validates them against the 32-team config. Handing the resolved values to
-	 * the renderer means a direct hit on /fantasy/houston-texans/ starts on
-	 * Houston - it never renders another team first.
-	 *
-	 * @return array{base:string,view:string,team:string,position:string,abbr:string}
-	 */
-	private function initial_filters() {
-		$route = SCDC_Route::get();
-		$team  = SCDC_Route::team();
-
-		$base = SCDC_Route::base_url();
-
-		return array(
-			'base'     => $base,
-			'view'     => $route['view'],
-			'team'     => $team ? $team['slug'] : 'all-teams',
-			'position' => $route['position'],
-			'abbr'     => $team ? $team['abbr'] : 'ALL',
-		);
-	}
-
-	/**
-	 * Copy templates handed to the front end so SPA navigation can keep the H1,
-	 * intro, title and canonical in step with the displayed team. The server
-	 * already rendered the correct values for *this* URL - these are only for
-	 * in-page team switches.
-	 *
-	 * @return array<string,string>
-	 */
-	private function copy_templates() {
-		$placeholder = array(
-			'name'     => '{team}',
-			'city'     => '{team}',
-			'nickname' => '{team}',
-			'slug'     => '',
-			'abbr'     => '',
-		);
-
-		return array(
-			'h1'       => SCDC_SEO::heading( $placeholder ),
-			'intro'    => SCDC_SEO::intro( $placeholder ),
-			'title'    => SCDC_SEO::title( $placeholder ),
-			'desc'     => SCDC_SEO::description( $placeholder ),
-			'sumTitle' => SCDC_Team_Content::summary_title( '{team}' ),
-			'sumLead'  => SCDC_Team_Content::lead_sentence( '{team}', '{qb}', '{rb}', '{city}' ),
-			'sumLabels' => (string) wp_json_encode( SCDC_Team_Content::summary_labels() ),
-			'updated'  => sprintf(
-				/* translators: %s: formatted date/time of the last data refresh. */
-				__( 'Depth chart data last updated %s.', 'statchasers-depth-charts' ),
-				'{date}'
-			),
-			'mainH1'   => SCDC_SEO::original_page_title(),
-			'mainUrl'  => SCDC_Route::main_url(),
-		);
-	}
-
-	/**
 	 * The 32-team config as compact JSON for the front end: abbreviation =>
-	 * { n: name, c: city, s: slug }. Lets an in-page team switch build the same
-	 * URLs, headings and copy the server just rendered, from the same source of
-	 * truth, without a second request.
+	 * { n: name, c: city, s: slug }. The fragment the script keeps its filter
+	 * state in (#fantasy/buffalo-bills/rb) uses these slugs, the same ones the
+	 * pre-1.7.0 URLs used, so an old deep link's fragment still resolves.
 	 *
 	 * @return string
 	 */
@@ -279,9 +225,9 @@ class SCDC_Shortcode {
 	 * Maximum width of the tool, as a CSS length ("1080px", "70rem") or "none".
 	 *
 	 * The tool fills whatever box the page builder gives it, which on a
-	 * full-width section is the entire viewport - wider than the neighbouring
+	 * full-width section is the entire viewport - wider than the neighboring
 	 * modules, and growing further as the page is zoomed out. This caps it at the
-	 * site's content width and centres it. Returning an empty string leaves the
+	 * site's content width and centers it. Returning an empty string leaves the
 	 * stylesheet's default (1080px) in place.
 	 *
 	 * @return string
@@ -306,7 +252,7 @@ class SCDC_Shortcode {
 	 * ESPN serves 350x254 PNG headshots and 500px PNG crests, which the script
 	 * drew into boxes of 20 to 40 pixels. With the app's origin known, the
 	 * script points those at the app's own resized WebP headshots
-	 * (/news-image/espn/<id>/...) and its SVG crests (/team-logos/<abbr>.svg)
+	 * (/news-image/athlete/<id>/...) and its SVG crests (/team-logos/<abbr>.svg)
 	 * instead. The public name, as the StatChasers plugin defines it, not the
 	 * fetch origin SCDC_Push uses. SCDC_IMAGE_ORIGIN overrides; '' (no
 	 * StatChasers plugin and no constant) keeps ESPN's files.
@@ -355,54 +301,22 @@ class SCDC_Shortcode {
 			);
 		}
 
-		$initial   = $this->initial_filters();
-		$templates = $this->copy_templates();
-		$team      = SCDC_Route::team();
-		$id        = 'scdc-' . wp_rand( 1000, 9999 );
+		$id = 'scdc-' . wp_rand( 1000, 9999 );
 
 		ob_start();
 		?>
-		<div class="scdc-page<?php echo $team ? ' scdc-page-team' : ''; ?>"<?php echo $this->max_width_style(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-			<?php
-			if ( $team ) {
-				// Server-rendered, present in the very first HTTP response.
-				echo SCDC_Team_Content::breadcrumbs( $team ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo SCDC_Team_Content::heading( $team );     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo SCDC_Team_Content::intro( $team );       // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo SCDC_Team_Content::summary( $team );     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			?>
+		<div class="scdc-page"<?php echo $this->max_width_style(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<div
 				id="<?php echo esc_attr( $id ); ?>"
 				class="scdc-root"
 				data-endpoint="<?php echo esc_url( $endpoint ); ?>"
 				data-image-origin="<?php echo esc_url( self::image_origin() ); ?>"
 				data-last-updated="<?php echo esc_attr( $last_updated ); ?>"
-				data-base="<?php echo esc_url( $initial['base'] ); ?>"
-				data-view="<?php echo esc_attr( $initial['view'] ); ?>"
-				data-team="<?php echo esc_attr( $initial['team'] ); ?>"
-				data-team-abbr="<?php echo esc_attr( $initial['abbr'] ); ?>"
-				data-position="<?php echo esc_attr( $initial['position'] ); ?>"
-				data-route="<?php echo esc_attr( SCDC_Route::type() ); ?>"
 				data-season="<?php echo esc_attr( (string) SCDC_Teams::season() ); ?>"
-				data-tpl-h1="<?php echo esc_attr( $templates['h1'] ); ?>"
-				data-tpl-intro="<?php echo esc_attr( $templates['intro'] ); ?>"
-				data-tpl-title="<?php echo esc_attr( $templates['title'] ); ?>"
-				data-tpl-desc="<?php echo esc_attr( $templates['desc'] ); ?>"
-				data-tpl-sum-title="<?php echo esc_attr( $templates['sumTitle'] ); ?>"
-				data-tpl-sum-lead="<?php echo esc_attr( $templates['sumLead'] ); ?>"
-				data-tpl-sum-labels="<?php echo esc_attr( $templates['sumLabels'] ); ?>"
-				data-tpl-updated="<?php echo esc_attr( $templates['updated'] ); ?>"
 				data-teams="<?php echo esc_attr( $this->teams_json() ); ?>"
-				data-main-h1="<?php echo esc_attr( $templates['mainH1'] ); ?>"
-				data-main-url="<?php echo esc_url( $templates['mainUrl'] ); ?>"
 			>
 				<div class="scdc-loading"><?php esc_html_e( 'Loading depth charts…', 'statchasers-depth-charts' ); ?></div>
 			</div>
-			<?php
-			// Crawlable anchors for all 32 team routes (the SPA hijacks the clicks).
-			echo SCDC_Team_Content::team_links( $team ? $team['slug'] : '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			?>
 		</div>
 		<?php
 		return (string) ob_get_clean();

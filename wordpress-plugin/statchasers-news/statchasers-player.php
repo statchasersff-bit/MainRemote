@@ -155,7 +155,7 @@ function statchasers_player_args( array $atts ): array {
 	$adv  = ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) + 1 ) ? (string) $year : '';
 
 	// A closed list, matching SECTIONS in the API's routes/player.ts. An
-	// unrecognised value is dropped rather than passed through: the API would
+	// unrecognized value is dropped rather than passed through: the API would
 	// ignore it and serve the full profile, which at a URL promising one section
 	// is the whole page duplicated at a second address.
 	$section = strtolower( trim( (string) $atts['section'] ) );
@@ -188,7 +188,7 @@ function statchasers_player_args( array $atts ): array {
  *
  * Everything read through here is validated against a closed list or a numeric
  * range by its caller before it reaches a URL or a cache key - these values
- * come from the address bar, so "sanitised" is the floor and not the bar.
+ * come from the address bar, so "sanitized" is the floor and not the bar.
  */
 function statchasers_player_query_value( string $key ): string {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -535,7 +535,7 @@ add_filter( 'rocket_lazyload_excluded_attributes', 'statchasers_player_lazyload_
  * content has no shortcode in it - and the page would answer "no" to a question
  * about itself.
  *
- * Memoised because the layout hooks ask on every post-meta read, which on a
+ * Memoized because the layout hooks ask on every post-meta read, which on a
  * Divi page is hundreds of times per request.
  */
 function statchasers_player_post_has_shortcode(): bool {
@@ -728,7 +728,7 @@ function statchasers_player_auto_index( string $content ): string {
 	return $content . "\n" . $html;
 }
 // After do_shortcode (priority 11), so a page that mounts the index itself has
-// already rendered it and is recognised as mounted.
+// already rendered it and is recognized as mounted.
 add_filter( 'the_content', 'statchasers_player_auto_index', 20 );
 
 add_action(
@@ -757,7 +757,7 @@ add_action(
  * `statchasers_team_wants_full_width()`. Divi gives `#left-area` 79.125% of the
  * row above 980px and reserves the rest for a sidebar that these pages do not
  * have, so without this the profile renders in three quarters of the page with
- * a grey rule and a tall band of nothing beside it.
+ * a gray rule and a tall band of nothing beside it.
  *
  * The CSS and the meta/body-class filters are the team file's; only the
  * "does this page mount the tool" question is different, so only that is
@@ -946,7 +946,7 @@ add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
  * on exactly the arguments the shortcode will use, so this warms the cache the
  * shortcode then hits rather than costing a second request.
  *
- * Memoised: the filter and the fallback printer both ask.
+ * Memoized: the filter and the fallback printer both ask.
  *
  * @return array<int,array{q:string,a:string}>
  */
@@ -1721,7 +1721,7 @@ function statchasers_player_post_left_roster( $post ): bool {
 	if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
 		return false;
 	}
-	// Memoised: the sitemap asks once per page, ~650 times a build.
+	// Memoized: the sitemap asks once per page, ~650 times a build.
 	static $container = null;
 	if ( null === $container ) {
 		$container = statchasers_player_container();

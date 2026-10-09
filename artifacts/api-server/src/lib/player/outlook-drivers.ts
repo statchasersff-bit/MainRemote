@@ -2,7 +2,7 @@
  * The four things driving a player's outlook, measured rather than written.
  *
  * The Outlook tab's decision layer is authored - a rest-of-season rank, a floor,
- * a buy/hold call are judgements, and they live in fantasy_outlook_2026.json.
+ * a buy/hold call are judgments, and they live in fantasy_outlook_2026.json.
  * This strip is the opposite: four numbers off the player's own advanced line,
  * each read against the distribution every other player at that position
  * produced in the same season. Nobody has to rewrite it for it to stay true.
@@ -20,7 +20,7 @@
  *   TE   Routes · Targets · Red Zone · Role Security
  *
  * One substitution from the obvious set is worth naming. The natural fourth QB
- * card is "Environment" - how good the offence around him is - and this server
+ * card is "Environment" - how good the offense around him is - and this server
  * has no measure of that which is about the quarterback rather than about his
  * team. Efficiency (EPA per play, against the position) is a real number about
  * the player, so that is the card. A card the data cannot fill is not rendered
@@ -277,7 +277,7 @@ export function resetDriverCache(): void {
  * Read off the depth chart rather than off last season, because it is the only
  * card here that should describe 2026: a back who changed teams in March has a
  * new role and an unchanged stat line. The snap share underneath it is last
- * season's and is labelled as the supporting number, not as the claim.
+ * season's and is labeled as the supporting number, not as the claim.
  */
 function roleDriver(
   player: Player,

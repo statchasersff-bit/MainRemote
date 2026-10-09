@@ -3,7 +3,7 @@
  *
  * Three halves. The model (lib/rookie-hit-rates/model.ts) is held to the
  * standalone app's own output: tests/fixtures/rookie-hit-rates-source-2026-10-08.json
- * is what the app's cohort.ts, insight generators, patience maths and class
+ * is what the app's cohort.ts, insight generators, patience math and class
  * table computed from its CSVs (at 9c69b00) for six filter combinations, and
  * every number, sample size and sentence here must match it. The charts' path
  * and tick helpers and the draft board's layout ladder are pinned on their

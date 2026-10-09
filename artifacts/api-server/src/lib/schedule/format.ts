@@ -11,7 +11,7 @@
  *
  * The feed's dates are calendar dates and its times are US Eastern wall clock,
  * always, whatever the venue - see schedule-data.ts. Nothing here converts
- * either; the zone is labelled instead, and the client bundle does the
+ * either; the zone is labeled instead, and the client bundle does the
  * conversion once it can actually ask the browser where the reader is.
  */
 
@@ -104,7 +104,7 @@ export function weekdayName(
 /**
  * "1:00 PM ET".
  *
- * The zone is labelled rather than converted. Every kickoff in the feed is US
+ * The zone is labeled rather than converted. Every kickoff in the feed is US
  * Eastern, and the server has no idea what zone the reader is in - rendering it
  * as the server's local time would be wrong for almost everyone, and silently.
  * The client bundle converts to the reader's own zone once it can actually ask

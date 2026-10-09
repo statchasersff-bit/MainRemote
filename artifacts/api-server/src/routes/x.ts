@@ -41,7 +41,7 @@ import { tick } from "../lib/x/scheduler";
 /**
  * Bounds on one pushed batch.
  *
- * A request is parsed, normalised and written inside one handler, so its size
+ * A request is parsed, normalized and written inside one handler, so its size
  * is the size of a unit of work this server cannot decline halfway through. A
  * collector with a backlog sends several batches, which is also how it finds
  * out early that something is wrong.
@@ -315,7 +315,7 @@ router.post("/api/x/ingest", (req, res) => {
  * to the news tool.
  *
  * The body is tolerant on purpose: it accepts a bare array or `{posts: [...]}`,
- * and each post may be in the normalised shape or in any of the vendor shapes
+ * and each post may be in the normalized shape or in any of the vendor shapes
  * the API provider already understands (X's v1.1 object, X API v2, or the
  * camelCase reseller shape). Whatever your collector already has in hand is
  * very likely postable without reshaping it.

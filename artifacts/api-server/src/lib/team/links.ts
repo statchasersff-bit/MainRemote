@@ -41,8 +41,13 @@ function template(envKey: string, fallback: string): string {
 const TEMPLATES = {
   /** The team hub itself - the URL these pages are embedded at. */
   teamHub: template("SC_TEAM_HUB_URL_TEMPLATE", "/nfl/teams/{slug}/"),
-  /** The depth-charts plugin's team route: /<page>/<view>/<team>/, fantasy view. */
-  depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/nfl-depth-charts/fantasy/{slug}/"),
+  /**
+   * The league-wide depth charts tool. It has one address since the plugin's
+   * 1.7.0: the per-team routes (/nfl/nfl-depth-charts/fantasy/{slug}/) are
+   * gone, because the team's own depth chart is the hub section this link is
+   * printed on. `{slug}` is still accepted for an override that wants it.
+   */
+  depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/nfl-depth-charts/"),
   /**
    * "View full NFL schedule": the league schedule page. The team's own schedule
    * is the hub's /schedule/ section, which is the page this link is printed on.

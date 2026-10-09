@@ -284,7 +284,7 @@ function statchasers_bdp_inline_icons_enabled(): bool {
 /**
  * The CSS that makes an inline SVG sit where the font glyph sat.
  *
- * Font Awesome's base class is an inline-block 1.25em wide, centred, with a
+ * Font Awesome's base class is an inline-block 1.25em wide, centered, with a
  * line-height of 1; the glyph itself is 1em tall on a baseline nudged down
  * an eighth. The plugin's own rules then size the post-format badge
  * (.bdpp-format-icon .bdpp-post-icon: 40px round, 18px type) with more

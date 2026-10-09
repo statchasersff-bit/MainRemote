@@ -50,7 +50,7 @@
  *
  * Player per-game numbers (weighted opps, xFP, FPOE) divide by the games the
  * player was active (a snap or a touch that week), not the team's games, so a
- * back who missed time is not penalised. The page labels them "per active
+ * back who missed time is not penalized. The page labels them "per active
  * game" and the RB ranks compare like with like. Weighted opportunities =
  * carries + 2 x targets; backfield shares use season totals.
  *

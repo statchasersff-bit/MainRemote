@@ -7,7 +7,7 @@
  * Nothing here fetches anything and nothing here renders anything.
  *
  * It adds five things:
- *   1. tab behaviour for the section bar - switching in place instead of
+ *   1. tab behavior for the section bar - switching in place instead of
  *      navigating to an anchor, plus the ARIA roles and arrow keys that CSS
  *      `:target` cannot supply on its own;
  *   2. outside-click and Escape closing for the team switcher;
@@ -621,7 +621,7 @@ function sortValue(
 /**
  * Make the marked stat tables sortable by any column.
  *
- * Same behaviour as the game log on the player pages and the FPA table: the
+ * Same behavior as the game log on the player pages and the FPA table: the
  * header text becomes a button, numeric columns open descending and text
  * columns ascending, and a second click on the same column reverses it.
  *
@@ -940,7 +940,7 @@ function wireScoring(root: HTMLElement): void {
  * and this swaps the text in place - the widths are tabular, so nothing moves.
  * Then each fantasy table is re-sorted by its rows' data-sort-<format>, the
  * top-scorer marker moves to the new first row, and the +/- cells are
- * recoloured by their new sign. The choice is shared with the matchup page's
+ * recolored by their new sign. The choice is shared with the matchup page's
  * own switch through the same storage key.
  */
 function wireFantasyFormat(root: HTMLElement): void {
@@ -1005,7 +1005,7 @@ function wireFantasyFormat(root: HTMLElement): void {
 /**
  * The highlights box: a thumbnail and a play button until pressed, then the
  * youtube-nocookie player in its place. A thumbnail that fails leaves the
- * team-colour ground.
+ * team-color ground.
  */
 function wireHighlights(root: HTMLElement): void {
   for (const img of Array.from(root.querySelectorAll<HTMLImageElement>("img[data-hl-thumb]"))) {
@@ -1036,7 +1036,7 @@ function wireHighlights(root: HTMLElement): void {
 /**
  * Report content height to a parent frame.
  *
- * Mirrors the news tool's behaviour (src/client/main.ts) so a page embedded the
+ * Mirrors the news tool's behavior (src/client/main.ts) so a page embedded the
  * legacy way resizes instead of scrolling inside its own box. Measures the
  * root's bottom edge in document coordinates rather than its height, because
  * anything rendered above it shifts content down without making it taller -
@@ -1294,7 +1294,7 @@ function boot(): void {
     wireHeroLead(root);
     wireTimestamps(root);
     wireSortableTables(root);
-    // After the sort buttons exist, so the relabelled header is the button.
+    // After the sort buttons exist, so the relabeled header is the button.
     wireScoring(root);
     wireFantasyFormat(root);
     wireHighlights(root);

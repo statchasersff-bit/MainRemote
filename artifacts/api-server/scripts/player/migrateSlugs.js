@@ -90,7 +90,7 @@ function rewrite(node, map, counts) {
 }
 
 /**
- * Serialise `value` the way `original` was serialised.
+ * Serialize `value` the way `original` was serialized.
  *
  * Indentation is read off the first nested line, so a file written with two
  * spaces comes back with two and a minified one comes back minified. The
@@ -150,7 +150,7 @@ function main() {
     if (!dryRun) {
       // Written back in the shape it arrived in. These files do not agree on a
       // format - bios.json and draft.json are indented two, bio_facts.json and
-      // the outlook are minified - and a migration that normalised them would
+      // the outlook are minified - and a migration that normalized them would
       // bury four renamed keys in a million-line diff.
       fs.writeFileSync(file, serializeLike(before, after));
     }

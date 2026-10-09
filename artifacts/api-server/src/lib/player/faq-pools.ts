@@ -182,7 +182,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
   // 4. Rosterability, league by league (the Outlook tab's calls).
   const fit = leagueFit(data);
   if (fit) {
-    const rostered = data.rosterPct ? ` He is rostered in ${Math.round(data.rosterPct.owned)}% of Sleeper leagues.` : "";
+    const rostered = data.rosterPct ? ` He is rostered in ${Math.round(data.rosterPct.owned)}% of leagues.` : "";
     out.push({
       key: "roster",
       q: `Is ${c.name} worth rostering in fantasy football?`,

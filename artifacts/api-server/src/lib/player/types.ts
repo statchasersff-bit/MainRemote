@@ -159,7 +159,7 @@ export interface OutlookKeyStats {
  * them and the tab must render what it has rather than a row of empty labels.
  *
  * All of it is authored, not derived: a rest-of-season rank, a floor and a
- * ceiling, and a buy/hold call are judgements, and this server has no data from
+ * ceiling, and a buy/hold call are judgments, and this server has no data from
  * which to compute one. They are written by the same pass that writes `body`
  * (scripts/player/buildFantasyOutlook2026.js) and a record marked
  * `edited: true` is never overwritten by it.

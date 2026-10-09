@@ -1027,11 +1027,11 @@ function renderViewNav(
 function renderSource(schedule: ScheduleSeason): string {
   const hasNetworks = schedule.games.some((game) => game.network !== null);
   return (
-    `<p class="scs-source">Slate from nflverse. ` +
+    `<p class="scs-source">` +
     (hasNetworks
-      ? `Broadcast and live scoring from ESPN.`
-      : `Broadcast assignments are not available right now, so the TV column reads TBD.`) +
-    ` Kickoffs are US Eastern.</p>`
+      ? ``
+      : `Broadcast assignments are not available right now, so the TV column reads TBD. `) +
+    `Kickoffs are US Eastern.</p>`
   );
 }
 

@@ -122,7 +122,7 @@ async function mount() {
   // The widget polls for fresh items on a timer and on load. There is no server
   // here, and a refresh that replaced the list would be replacing the very
   // markup under test - so the fetch fails and the bundle keeps what it has,
-  // which is its documented behaviour.
+  // which is its documented behavior.
   window.fetch = async () => {
     throw new Error("offline");
   };

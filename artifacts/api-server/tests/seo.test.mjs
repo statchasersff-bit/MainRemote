@@ -147,10 +147,10 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.ok(node.name && node.description && node.url);
 
     // Fabricated review data is a policy violation, not a shortcut.
-    const serialised = JSON.stringify(node);
+    const serialized = JSON.stringify(node);
     for (const banned of ["aggregateRating", "ratingValue", "reviewCount", "review"]) {
       assert.ok(
-        !serialised.includes(banned),
+        !serialized.includes(banned),
         `structured data must not contain ${banned}`,
       );
     }
@@ -224,7 +224,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.equal(pager.querySelectorAll("a").length, 0, "pager must not use anchors");
     assert.equal(pager.querySelectorAll("button").length, 2);
 
-    const parameterised = [...pageDoc.querySelectorAll("a[href]")].filter((a) => {
+    const parameterized = [...pageDoc.querySelectorAll("a[href]")].filter((a) => {
       const href = a.getAttribute("href");
       return (
         (href.startsWith("/") || href.startsWith("?") || href.startsWith("#")) &&
@@ -232,7 +232,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       );
     });
     assert.equal(
-      parameterised.length,
+      parameterized.length,
       0,
       "internal links must not carry tool state as parameters",
     );
@@ -285,14 +285,14 @@ describe("crawlable HTML (no JavaScript executed)", () => {
         .closest(".sc-card-item")
         .getAttribute("data-player");
       if (player) {
-        // data-player is the normalised name; normalise the byline the same way.
-        const normalised = text
+        // data-player is the normalized name; normalize the byline the same way.
+        const normalized = text
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/[^a-z0-9]+/g, " ")
           .trim();
-        assert.notEqual(normalised, player, "byline is repeating the player");
+        assert.notEqual(normalized, player, "byline is repeating the player");
       }
     }
     assert.ok(teamNames.size > 1, "expected bylines to differ by team");

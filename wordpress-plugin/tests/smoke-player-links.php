@@ -2,7 +2,7 @@
 /**
  * A link to a player page this site has not published becomes a plain name.
  *
- * The published-slug list is memoised per request, so it gets a process of its
+ * The published-slug list is memoized per request, so it gets a process of its
  * own. smoke.php runs it as STATCHASERS_SMOKE_GROUP=playerlinks.
  *
  * @package StatChasers\Tests

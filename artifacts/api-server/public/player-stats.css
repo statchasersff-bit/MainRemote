@@ -69,10 +69,10 @@
   /*
    * The grade bands: 90+, 80+, 70+, 50+, below.
    *
-   * The standalone app's scale - two greens, the brand blue, gold, grey - with
+   * The standalone app's scale - two greens, the brand blue, gold, gray - with
    * each ink darkened until it clears 4.5:1 on white and on the zebra stripe.
    * Its gold (#d4af37) was 2.1:1, a number that could not be read without
-   * the colour telling you what it said. The number is always printed, so
+   * the color telling you what it said. The number is always printed, so
    * the ink is a second reading of it and never the only one.
    */
   --sca-t90: #166534;
@@ -156,7 +156,7 @@ body.sca-page {
  *   H1              large, heavy, navy - the page's one loud line
  *   section label   tiny uppercase gold - "2026 WIDE RECEIVERS"
  *   section heading navy, a size down from the H1 and lighter
- *   supporting copy muted grey, smaller than body text
+ *   supporting copy muted gray, smaller than body text
  *
  * The H1 is printed here only standalone; embedded, the WordPress page
  * prints it.
@@ -616,7 +616,7 @@ body.sca-page {
    (378px of them with More Filters' count, in a 342px column at 390px), so
    the season menu moves up beside the position menu, left of search, and
    Totals / Per Game and More Filters make the row under them. The buttons tighten a little so search keeps its room, and
-   every row is centred rather than pushed to the edges. */
+   every row is centered rather than pushed to the edges. */
 @container sca (max-width: 400px) {
   .sca-controls {
     column-gap: 8px;
@@ -1240,7 +1240,7 @@ th[aria-sort="ascending"] .sca-sort::after {
   }
 }
 
-/* --------------------------------------------------------- theme defences */
+/* --------------------------------------------------------- theme defenses */
 
 /* font-family and list-style are the two properties a theme reaches through
    inheritance. `!important` because a theme that sets fonts from an options
@@ -1309,9 +1309,9 @@ th[aria-sort="ascending"] .sca-sort::after {
   color: #c9d3ea !important;
 }
 
-/* Header colours are `!important` because Divi also sets
+/* Header colors are `!important` because Divi also sets
    `#left-area table th { color: #666 }`, and an id outranks any number of
-   classes: measured 2026-09-24, every column label went grey, the sorted
+   classes: measured 2026-09-24, every column label went gray, the sorted
    column lost its gold and the banner its pale blue. The order below still
    decides between them - sorted beats score beats plain. */
 .sca .sca-table .sca-head th {
@@ -1326,7 +1326,7 @@ th[aria-sort="ascending"] .sca-sort::after {
   color: var(--sc-gold-deep) !important;
 }
 
-/* The player cell is a <th>, so the same two rules grey it and embolden it. */
+/* The player cell is a <th>, so the same two rules gray it and embolden it. */
 .sca .sca-table tbody th.sca-player {
   color: var(--sc-ink) !important;
   font-weight: 700;
@@ -1386,7 +1386,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 
 /* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
    on statchasers.com, which only `!important` beats - measured, both section
-   headings rendered at 50px. Size and colour only, as team.css arms its own;
+   headings rendered at 50px. Size and color only, as team.css arms its own;
    the h3s ride along because the panel styles every level. */
 .sca .sca-section-title {
   color: var(--sc-navy) !important;

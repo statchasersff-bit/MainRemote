@@ -147,7 +147,7 @@ function context(data: PlayerPageData, options: PlayerRenderOptions): NewsContex
  * panel is gone; it outweighed the headline.
  */
 
-/** Hidden text for the colour cue on a feed item's left edge (spec 4.7). */
+/** Hidden text for the color cue on a feed item's left edge (spec 4.7). */
 const impactSr = (impact: Impact): string => `<span class="scp-nw-sr">Fantasy impact: ${IMPACT_WORD[impact]}. </span>`;
 
 function readLink(i: FeedItem, cta: boolean): string {
@@ -221,7 +221,7 @@ function renderLatest(
 
 /**
  * A timeline entry (mak, 2026-09-30): the headline, one result or type line,
- * one summary, one link. The impact is the colour of the left edge, with the
+ * one summary, one link. The impact is the color of the left edge, with the
  * word in hidden text; a recap's take is its result line.
  */
 function renderItem(i: FeedItem): string {

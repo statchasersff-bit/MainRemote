@@ -11,7 +11,7 @@
  * games and an injury that appeared on a report and was played through. A count
  * of "injuries" mixes the two and makes every veteran look fragile, so games
  * missed is what drives the risk rows, and the played-through issues are
- * summarised separately in the insight line.
+ * summarized separately in the insight line.
  *
  * Nothing here is a medical claim or a prediction. Every output is a
  * restatement of the record with a label attached, and where there is no record
@@ -144,7 +144,7 @@ export interface RiskRow {
   /**
    * What the row actually says.
    *
-   * A level word for the three rows that ARE a judgement, and a count for
+   * A level word for the three rows that ARE a judgment, and a count for
    * career time lost, where the number is the fact and a word would only hide
    * it. The row is not a score with a gloss; it is a reading with the record
    * printed beside it.

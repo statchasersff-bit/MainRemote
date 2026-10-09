@@ -2,7 +2,7 @@
 /**
  * The rookie hit rate tool, in processes of its own.
  *
- * The tool memoises "does this page mount me" and the fetch its title filters
+ * The tool memoizes "does this page mount me" and the fetch its title filters
  * read, so the page that does and the article that does not cannot be asked
  * about in one process. smoke.php runs this twice: STATCHASERS_SMOKE_GROUP=
  * rhrleak for an ordinary article, and =rhr for the page that mounts the tool,

@@ -3,7 +3,7 @@
  *
  * Server-only, unlike lib/render.ts - the team page ships complete HTML and the
  * client bundle only enhances what is already there (sticky-nav highlighting,
- * closing the team switcher, relabelling timestamps). Nothing on this page is
+ * closing the team switcher, relabeling timestamps). Nothing on this page is
  * built in the browser, so nothing here has to be re-runnable there.
  *
  * Two rules run through every function below.
@@ -11,10 +11,10 @@
  * 1. A field we do not have is not rendered. There is no "N/A", no "--", no
  *    zero standing in for a number nobody measured. Sections whose data failed
  *    to load are dropped entirely and the section navigation is built from what
- *    actually rendered, so the page is never a set of labelled holes.
+ *    actually rendered, so the page is never a set of labeled holes.
  *
  * 2. The team is an accent, not a repaint. Every surface, border, heading and
- *    button is StatChasers navy/gold/white; the team's own colours appear as a
+ *    button is StatChasers navy/gold/white; the team's own colors appear as a
  *    faint aura behind the logo, a hairline above the hero, and the tint on a
  *    player card's photo well. A Patriots page has to read as StatChasers first.
  */
@@ -280,7 +280,7 @@ function promoteHeading(html: string, text?: string): string {
  * `target="_top"` because these pages are read inside statchasers.com, and in
  * the legacy iframe mount a plain link would load the destination *inside the
  * frame* - a full site rendered in a 900px box. Breaking out is the correct
- * behaviour in the frame and a no-op when the markup is mounted directly.
+ * behavior in the frame and a no-op when the markup is mounted directly.
  */
 function siteLink(
   href: string | null,
@@ -514,10 +514,10 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
 
   return (
     `<header class="sct-hero">` +
-    // Two decorative layers: the team-coloured aura behind the crest and the
+    // Two decorative layers: the team-colored aura behind the crest and the
     // oversized crest itself at 4% opacity. Both aria-hidden, both painted from
     // custom properties set on the root element so there is one place a team's
-    // colours enter the page.
+    // colors enter the page.
     //
     // They are wrapped rather than being direct children of the hero because
     // the wrapper is what carries the clip. The hero itself used to, and an
@@ -740,13 +740,13 @@ export const TIER_WORD: Record<string, string> = {
 /**
  * The accent a card paints a rank with - the tier, plus a top-five band.
  *
- * A shade finer than the tier itself, and only ever a colour. The tier is the
+ * A shade finer than the tier itself, and only ever a color. The tier is the
  * page's verdict and stays three buckets wide everywhere it is spoken aloud,
  * because the difference between 11th and 13th is noise. This exists because a
  * row of cards has to be sortable at a glance, and 2nd earns the right to
  * separate itself from 8th when the two are sitting side by side. Gold rather
  * than a deeper green: the top of the league is the one result on this page
- * worth spending the brand colour on.
+ * worth spending the brand color on.
  */
 function rankAccent(tier: string, rank: number | null): string {
   if (tier === "good" && rank !== null && rank <= 5) return "elite";
@@ -754,7 +754,7 @@ function rankAccent(tier: string, rank: number | null): string {
 }
 
 /**
- * The Stats tab's offence row for a snapshot metric, or null.
+ * The Stats tab's offense row for a snapshot metric, or null.
  *
  * Only used for the movement arrow, and deliberately fussy about earning it.
  * The two blocks are fetched from different ESPN documents in parallel, each
@@ -817,8 +817,8 @@ function snapshotCard(
   // ordinal.
   const foot = metric.rank
     ? `<p class="sct-metric-foot">` +
-      // The tier is carried as a word as well as a colour and a dot, so a
-      // reader who cannot separate the tints still gets the judgement.
+      // The tier is carried as a word as well as a color and a dot, so a
+      // reader who cannot separate the tints still gets the judgment.
       `<span class="sct-metric-rank" data-tier="${tier}" data-accent="${accent}">` +
       `<span class="sct-metric-dot" aria-hidden="true"></span>` +
       `<span class="sct-metric-rank-value">${escapeHtml(metric.rank)}</span>` +
@@ -915,8 +915,8 @@ function statTier(row: StatRow): "good" | "mid" | "poor" | "none" {
  * One row of a ladder: label, rank bar, value, rank.
  *
  * The bar carries `aria-hidden` because it says nothing the rank chip beside it
- * does not already say in words - the same reasoning as the tier colour on the
- * snapshot cards, which is doubled by TIER_WORD rather than left to colour.
+ * does not already say in words - the same reasoning as the tier color on the
+ * snapshot cards, which is doubled by TIER_WORD rather than left to color.
  */
 function statRow(row: StatRow): string {
   const tier = statTier(row);
@@ -992,7 +992,7 @@ function rankMove(row: StatRow, unit = false): string {
  * One unit's ladder.
  *
  * `data-unit` is what the stylesheet uses to put the gold rule beside Offense
- * and the navy one beside Defense; nothing here decides colour.
+ * and the navy one beside Defense; nothing here decides color.
  */
 function statLadder(
   unit: "offense" | "defense",
@@ -1037,8 +1037,8 @@ function statTile(row: StatRow): string {
   // ordinal. The rule under the value is what makes the split legible.
   const foot = row.rankLabel
     ? `<p class="sct-tile-foot">` +
-      // The tier is carried as a word as well as a colour and a dot - a reader
-      // who cannot distinguish the tints still gets the judgement.
+      // The tier is carried as a word as well as a color and a dot - a reader
+      // who cannot distinguish the tints still gets the judgment.
       `<span class="sct-tile-rank" data-tier="${tier}" data-accent="${accent}">` +
       `<span class="sct-tile-dot" aria-hidden="true"></span>` +
       `<span class="sct-tile-rank-value">${escapeHtml(row.rankLabel)}</span>` +
@@ -1217,7 +1217,7 @@ function renderHistory(stats: TeamStats): string {
           const tier = historyTier(cell);
           const best =
             bests.has(key) && historyNumber(cell.value) === bests.get(key);
-          // The gold mark is a colour, so it says nothing on its own. The note
+          // The gold mark is a color, so it says nothing on its own. The note
           // is what actually carries it to a reader who is not looking at the
           // table, and it is per-cell rather than a legend because a legend
           // several rows away is not an explanation of this number.
@@ -1459,11 +1459,11 @@ function renderTeamStats(
 /**
  * The depth-chart slot chip: "WR2", "QB1".
  *
- * `data-pos` carries the bare position so the stylesheet can colour it - QB
+ * `data-pos` carries the bare position so the stylesheet can color it - QB
  * red, RB green, WR blue, TE gold - while the text keeps the depth number,
  * which is the part that says whether this is the starter. Derived here rather
  * than passed in because the slot string is already the only thing the three
- * call sites have, and an unrecognised position simply falls back to the
+ * call sites have, and an unrecognized position simply falls back to the
  * stylesheet's neutral gold.
  */
 export function slotChip(slot: string, small = false): string {
@@ -1487,10 +1487,10 @@ export function slotChip(slot: string, small = false): string {
  * "Out" and "questionable" collapsed a real distinction: doubtful is a player
  * who is probably not playing and questionable is a coin toss, and a manager
  * setting a lineup is doing nothing else but telling those two apart. The
- * colours run the way the risk does - red for gone, red-orange for doubtful,
+ * colors run the way the risk does - red for gone, red-orange for doubtful,
  * gold for the coin toss, green for a designation that is close to good news.
  *
- * Anything unrecognised lands on "questionable", the neutral middle: an
+ * Anything unrecognized lands on "questionable", the neutral middle: an
  * unfamiliar designation is a reason to look, not a reason to assume the worst
  * or the best.
  */
@@ -1685,7 +1685,7 @@ function outlookStats(stats: string[]): string {
  * asked for all of that attention or none of it.
  *
  * `data-pos` is on the card as well as the chip so the stylesheet can put the
- * position's colour on the card's edge - see the inset accent in team.css.
+ * position's color on the card's edge - see the inset accent in team.css.
  *
  * `live` is whatever the roster could match by name, and null is an ordinary
  * outcome: an outlook can name a rookie Sleeper has not indexed yet. The well is
@@ -1794,13 +1794,13 @@ function outlookGroup(
 /**
  * The live roster entry for a name the outlook mentions.
  *
- * Matched on searchKey rather than the raw string, the same normalisation the
+ * Matched on searchKey rather than the raw string, the same normalization the
  * news pipeline attributes stories with - the outlook is written by hand and
  * "A.J. Brown" should find "AJ Brown" whichever way Sleeper spells it.
  *
  * It used to return the headshot alone. The whole entry, because the outlook is
  * a written opinion with no idea what has happened since: a paragraph about the
- * alpha this offence just traded for reads very differently beside an IR badge,
+ * alpha this offense just traded for reads very differently beside an IR badge,
  * and the badge is the only part of that card the page can keep current.
  */
 function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
@@ -2012,7 +2012,7 @@ function renderOutlook(
   // than dated. "A.J. Brown arrives" is true for one offseason and misleading
   // forever after, and a heading reading 2026 on a 2027 page does not rescue
   // the sentence under it - the reader has already taken the advice. Nothing
-  // rewrites these but a person, so the page removes them instead of ageing
+  // rewrites these but a person, so the page removes them instead of aging
   // them.
   if (outlook.season < data.state.season) return "";
 
@@ -2285,7 +2285,7 @@ function renderInjuryPanel(data: TeamPageData): string {
             ` data-severity="${injurySeverity(player.injuryStatus)}">` +
             `${escapeHtml(player.injuryStatus ?? "")}</span>` +
             // Body part and practice status share the line under the name. Two
-            // stacked lines of grey footnote made a two-player card as tall as
+            // stacked lines of gray footnote made a two-player card as tall as
             // the news column beside it, and the pair reads as one qualifier.
             ((player.injuryBodyPart ? 1 : 0) + (player.practice ? 1 : 0)
               ? `<span class="sct-injury-detail">` +
@@ -2383,7 +2383,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
   const away = next.homeAway === "away";
 
   // Away side first, home side second - the order every scoreboard uses, so the
-  // card says who is travelling without a word for it. A neutral-site game has
+  // card says who is traveling without a word for it. A neutral-site game has
   // no host to put second, so it reads "vs" and keeps this team on the left.
   const left = away || next.neutralSite ? data.team : next.opponent;
   const right = away || next.neutralSite ? next.opponent : data.team;
@@ -2560,7 +2560,7 @@ function renderSeriesIndex(team: NflTeam, options: TeamRenderOptions): string {
  * "who are they playing and how do the two compare" - every row is a door into
  * the pair's own page. Two meetings with a divisional opponent are two rows,
  * each with its own week, both opening the same evergreen page: the pair is
- * canonicalised once, in matchup/pair.ts, and nothing here can produce a
+ * canonicalized once, in matchup/pair.ts, and nothing here can produce a
  * second address for it.
  */
 function renderMatchups(
@@ -3010,7 +3010,7 @@ function shortNetwork(network: string): string {
  * The <svg> carries the crop twice over, and both copies earn their place.
  * `viewBox` with `meet` is what guarantees the artwork can never be stretched:
  * whatever box the stylesheet gives it, the logo scales to fit inside and
- * centres, so a box that is a rounding off the ratio costs a stray pixel of air
+ * centers, so a box that is a rounding off the ratio costs a stray pixel of air
  * rather than a squashed wordmark. `--sct-net-aspect` is the same crop as a
  * number, which is what lets the stylesheet size the box to the shape instead
  * of leaving that air - see .sct-net-mark. The label is the broadcaster's full
@@ -3047,7 +3047,7 @@ export function networkHtml(network: string, className: string): string {
  * with the only thing that references it.
  *
  * Each part carries its own fill, because these are the broadcasters' real
- * marks and their colours are the point. Paint order is the table's order: the
+ * marks and their colors are the point. Paint order is the table's order: the
  * NFL shield's white stars are shapes laid over its navy field, not holes in
  * it, and drawing them first would lose them under it.
  */
@@ -3354,10 +3354,10 @@ function renderFullSchedule(
  *
  * House components, not the source's: `.sct-mix` is the card, `.sct-mix-label`
  * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the ladder's
- * geometry. The one thing carried over intact is the colour logic - home takes
+ * geometry. The one thing carried over intact is the color logic - home takes
  * the team's own primary, away takes the gold - because that is the pair
  * `.sct-mix-seg` already uses one tab over for the pass/run split, and two
- * different meanings for the same two colours on one page is worse than either
+ * different meanings for the same two colors on one page is worse than either
  * choice.
  *
  * The five figures are plain `<dt>`/`<dd>` pairs inside the snapshot card
@@ -3437,7 +3437,7 @@ function renderSeasonShape(
   // Eighteen weeks as eighteen blocks, and no number in them: filled for home,
   // hollow for away, dashed for the bye, which is the source's strip exactly.
   // At the rail's twelve pixels a week there is nowhere to put a number anyway.
-  // Never colour alone - every block carries its week and its opponent in a
+  // Never color alone - every block carries its week and its opponent in a
   // title and in a hidden label.
   const strip =
     `<ol class="sct-path">` +
@@ -3861,7 +3861,7 @@ export function renderTeamPage(
     { id: "matchups", label: "Matchups", html: matchups, hubTab: false },
   ].filter((section) => section.html !== "");
 
-  // One place a team's colours enter the page. Everything team-tinted below
+  // One place a team's colors enter the page. Everything team-tinted below
   // reads these custom properties, so there is no per-team CSS and no component
   // that has to know which team it is drawing.
   const rootStyle = styleAttr([
@@ -4016,7 +4016,7 @@ function renderTeamIndexGrid(
               `<img class="sct-switch-logo" src="${escapeHtml(team.logo)}" alt=""` +
               ` width="24" height="24" loading="lazy" decoding="async" />` +
               `<span class="sct-index-name">${escapeHtml(team.fullName)}</span>` +
-              // The row has no underline and no link colour of its own, so the
+              // The row has no underline and no link color of its own, so the
               // arrow is what says it is one. It is drawn on hover and rests
               // visible on a touch screen; see .sct-index-div .sct-arrow.
               ARROW +
@@ -4046,7 +4046,7 @@ function renderTeamIndexGrid(
  * The index as a bare fragment, for the WordPress container page to print.
  *
  * No hero and no H1: the page at /nfl/teams/ supplies both, the same division
- * of labour every other mount here follows. Without this the container page is
+ * of labor every other mount here follows. Without this the container page is
  * whatever WordPress content happens to sit in it - which is what it was, a
  * stub list of 32 links in the theme's own styling, looking nothing like the
  * hubs it points at.

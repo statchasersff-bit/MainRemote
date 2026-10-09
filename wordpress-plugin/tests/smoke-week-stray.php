@@ -2,7 +2,7 @@
 /**
  * `?sc_sched_week=` on a page that is not the schedule, in a process of its own.
  *
- * Split out for the reason smoke-week.php gives: the week is memoised, so one
+ * Split out for the reason smoke-week.php gives: the week is memoized, so one
  * process answers for one request. The query var is public, so any URL on the
  * site can carry it; only the page that mounts the schedule may act on it.
  *

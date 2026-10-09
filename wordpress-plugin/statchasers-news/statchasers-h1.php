@@ -119,7 +119,7 @@ function statchasers_h1_verdict_any(): ?array {
  * A published page that mounts one of the shortcodes, and the H1 it should have.
  *
  * A team hub is the first choice because it is the one page type whose heading
- * this file can recognise when it sees it.
+ * this file can recognize when it sees it.
  *
  * Two strings come back, and the second is the one that does the work.
  * `expect` is the heading the plugin would print. `anchor` is the team's name
@@ -717,10 +717,10 @@ add_filter(
  * 1. The gutter. A hand-built hero is a full-width module: it spans the window
  *    and constrains its own contents, with side padding - 40px on desktop, 28
  *    and 18 further down - and an inner shell held to the site's content width
- *    and centred. The generated one is printed into the same container as the
+ *    and centered. The generated one is printed into the same container as the
  *    fragment beneath it, and an embedded fragment runs flush to that container
  *    because the host owns the page gutter (`.sct.is-embed { --sct-gutter: 0 }`).
- *    So both halves of the module's own centring indent the heading past the
+ *    So both halves of the module's own centering indent the heading past the
  *    tool it heads, and both have to go: the padding, and the max-width with
  *    the auto margins that go with it. Zeroing only the padding left the larger
  *    of the two in place - a container wider than the shell still inset the
@@ -732,7 +732,7 @@ add_filter(
  *    equal specificity the winner is whichever hook fired last, which is not
  *    something this file can know or should depend on. The element being forced
  *    is one the plugin generated itself, four lines down, and the declarations
- *    only ever undo centring - so the cost is bounded to the plugin's own copy,
+ *    only ever undo centering - so the cost is bounded to the plugin's own copy,
  *    and the hand-written heroes on every other page are untouched.
  *
  * 2. The husk, when the theme's title has been emptied. `:empty` matches an

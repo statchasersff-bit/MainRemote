@@ -238,7 +238,7 @@ now contains.
       and View controls point at the API's own `/fpa`, so a middle-click - or
       any click before the bundle loads - takes the reader off the site to the
       bare tool.
-- [ ] `SC_TEAM_PATH_PREFIX=/nfl/teams/` is set, or every defence name in the
+- [ ] `SC_TEAM_PATH_PREFIX=/nfl/teams/` is set, or every defense name in the
       table links to the bare tool instead of to its hub.
 - [ ] the ingest has run against the production database:
       `pnpm --filter @workspace/api-server run ingest-fpa`. **Nothing renders
@@ -250,7 +250,7 @@ now contains.
 Then on the live page, reading the **source**, not the screen - the whole point
 of the port is that the markup is in the page rather than fetched into it:
 
-- [ ] all 32 defence rows are in `view-source:`. The old build shipped an empty
+- [ ] all 32 defense rows are in `view-source:`. The old build shipped an empty
       container and drew the table in the browser; if the rows are not in the
       source, the old plugin is still the one answering.
 - [ ] the FAQ's questions are in the source too, all of them.
@@ -342,7 +342,7 @@ Order matters: the API first, then the plugin, then the pages.
 - [ ] **Look at it on desktop above 1100px and on a phone.** The tool is as wide
       as an ordinary page on the site, not the window, and has a hair of gutter
       on a phone rather than ~40px. The table headers are white on navy (not
-      grey), player names are dark (not grey or blue), the RB/WR tabs are not
+      gray), player names are dark (not gray or blue), the RB/WR tabs are not
       link blue, and no section heading is enormous. Those are the Divi rules
       1.10.2 was measured against. If one shows up anyway, the site has a rule
       the simulation did not, and the fix goes in the tool's CSS (API deploy).

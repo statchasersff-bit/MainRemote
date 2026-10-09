@@ -3,7 +3,7 @@
  * The rankings board's and the stats table's addresses and headings, in
  * processes of their own.
  *
- * Both tools memoise "does this page mount me", so the page that does not and
+ * Both tools memoize "does this page mount me", so the page that does not and
  * the page that does cannot be asked about in one process - nor after anything
  * in the main group has asked about a page of its own. smoke.php runs this
  * twice: STATCHASERS_SMOKE_GROUP=leak for an ordinary article, and =headings
@@ -21,7 +21,7 @@ if ( 'leak' === $group ) {
 	/*
 	 * Both position query vars are public, so anyone can put them on any URL.
 	 * Before 1.10.2 an article at `?sc_stats_pos=rb` was retitled "NFL Running
-	 * Back Stats…" and canonicalised to the stats page, and `?sc_rank_pos=rb`
+	 * Back Stats…" and canonicalized to the stats page, and `?sc_rank_pos=rb`
 	 * did the same with the rankings.
 	 */
 	echo "\nthe position query vars mean nothing off their own pages\n";

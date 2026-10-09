@@ -3,7 +3,7 @@
  * A player section URL describes itself, in a process of its own.
  *
  * The fragment fetch, the shortcode check and the section metadata are all
- * memoised per request, so a section request has to be the first and only one
+ * memoized per request, so a section request has to be the first and only one
  * this process asks about. smoke.php runs it as STATCHASERS_SMOKE_GROUP=playersection.
  *
  * @package StatChasers\Tests

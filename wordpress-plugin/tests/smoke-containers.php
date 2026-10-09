@@ -3,7 +3,7 @@
  * The container-page checks, in a process of their own.
  *
  * Split out of smoke.php rather than sitting at the bottom of it for the reason
- * given there: the predicates these call memoise, so the answers this file
+ * given there: the predicates these call memoize, so the answers this file
  * needs and the answers the main group needs cannot both exist in one process.
  * smoke.php includes this with STATCHASERS_SMOKE_GROUP=containers set; running
  * it directly does nothing, because the plugin is not loaded.
@@ -23,7 +23,7 @@ echo "\nthe players container mounts itself\n";
  * it is the editor's page - and /nfl/players/ ships with a heading, a sentence
  * and no roster under it. The container is the one page that mounts itself.
  *
- * Only the positive case is asserted, and only once: the predicate memoises,
+ * Only the positive case is asserted, and only once: the predicate memoizes,
  * which is what makes it cheap on a Divi page that asks hundreds of times.
  */
 $container = new WP_Post();
@@ -58,7 +58,7 @@ echo "\nthe teams container mounts itself\n";
  * - no grid, and no team.css either, because the enqueue gate only asked about
  * shortcodes and the container carries none.
  *
- * Asserted the same way and for the same reason: the predicate memoises, so the
+ * Asserted the same way and for the same reason: the predicate memoizes, so the
  * positive case is the one case a process can see.
  */
 $teams = new WP_Post();

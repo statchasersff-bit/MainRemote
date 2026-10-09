@@ -62,7 +62,7 @@
 
   /*
    * The tier bars under each score: the app's gold, blue, green and slate.
-   * Bars only - a tier colour never carries text, so it needs no contrast
+   * Bars only - a tier color never carries text, so it needs no contrast
    * against white, and the number above it is always printed.
    */
   --rbh-tier-elite: #e8b21e;
@@ -80,7 +80,7 @@
   /*
    * The handcuff types. The app's hues - emerald, purple, sky, amber, red,
    * orange, zinc - each darkened until it clears 4.5:1 on white and on the
-   * zebra stripe: they are text colours here, and the app's were drawn on
+   * zebra stripe: they are text colors here, and the app's were drawn on
    * navy.
    */
   --rbh-type-premium: #047857;
@@ -91,7 +91,7 @@
   --rbh-type-ceiling: #c2410c;
   --rbh-type-deadzone: #52525b;
 
-  /* Good, moderate, concern: the card's one colour language. */
+  /* Good, moderate, concern: the card's one color language. */
   --rbh-good: #047857;
   --rbh-warn: #a16207;
   --rbh-bad: #b91c1c;
@@ -2425,7 +2425,7 @@ html.rbh-locked body {
   text-align: right;
 }
 
-/* --------------------------------------------------------- theme defences */
+/* --------------------------------------------------------- theme defenses */
 
 /* font-family and list-style are the two properties a theme reaches through
    inheritance. `!important` because a theme that sets fonts from an options
@@ -2456,7 +2456,7 @@ html.rbh-locked body {
 
 /* Divi's table rule is `.entry-content table:not(.variations)` - (0,2,1),
    because `:not()` counts its argument - and it beat the `.rbh .rbh-table`
-   this used to be: measured 2026-09-29, the grey frame and 15px of margin were
+   this used to be: measured 2026-09-29, the gray frame and 15px of margin were
    still arriving. The repeated `:not()` keeps this one class ahead. */
 .rbh table.rbh-table:not(.variations) {
   border: 0;
@@ -2473,9 +2473,9 @@ html.rbh-locked body {
   padding: 0;
 }
 
-/* `!important` on the header colours: `#left-area table th { color: #666 }`
+/* `!important` on the header colors: `#left-area table th { color: #666 }`
    is an id, which no number of classes beats, and every label on the navy
-   band went grey. The sorted column's gold keeps its place above the white
+   band went gray. The sorted column's gold keeps its place above the white
    because its selector is the heavier of the two. */
 .rbh .rbh-table thead th {
   color: #fff !important;
@@ -2526,7 +2526,7 @@ html.rbh-locked body {
   color: var(--sc-muted);
 }
 
-/* Divi's heading rules (`h2`, `.entry-content h2`, `h3`) set size, colour,
+/* Divi's heading rules (`h2`, `.entry-content h2`, `h3`) set size, color,
    weight and line height; a second class clears `.entry-content h2`. */
 .rbh .rbh-best-title,
 .rbh .rbh-faq-title {

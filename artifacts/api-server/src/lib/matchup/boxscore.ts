@@ -108,9 +108,9 @@ export interface Drive {
 
 /** The consensus closing line, when ESPN carries one. */
 export interface GameOdds {
-  /** The favourite's display code, or null for a pick'em. */
+  /** The favorite's display code, or null for a pick'em. */
   favorite: string | null;
-  /** Points the favourite laid, as a positive number: 3.5. */
+  /** Points the favorite laid, as a positive number: 3.5. */
   line: number;
   /** The closing total, or null. */
   total: number | null;
@@ -429,7 +429,7 @@ function drivesOf(payload: EspnSummary): Drive[] {
 
 /**
  * The consensus closing line: the provider ESPN ranks first. "LAR -3.5" names
- * the favourite; a spread of 0 or "EVEN" is a pick'em.
+ * the favorite; a spread of 0 or "EVEN" is a pick'em.
  */
 function oddsOf(payload: EspnSummary): GameOdds | null {
   const lines = [...(payload.pickcenter ?? [])].sort(

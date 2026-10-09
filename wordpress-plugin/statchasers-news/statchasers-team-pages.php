@@ -442,9 +442,9 @@ const STATCHASERS_TEAM_INDEX_LEAD = 'Every NFL team hub: player news, injury des
  * the parent was not a thin page in the sitemap, and it shipped looking nothing
  * like the 32 hubs it points at. The shortcode replaces it.
  *
- * Recognised by its own lead sentence plus a wall of links to the team path and
+ * Recognized by its own lead sentence plus a wall of links to the team path and
  * no shortcode of any kind. Nobody's hand-written page looks like that, which
- * is what makes replacing it safe: anything we do not positively recognise is
+ * is what makes replacing it safe: anything we do not positively recognize is
  * left alone, because an index somebody has edited is theirs.
  *
  * @param string $content Page body.
@@ -617,7 +617,7 @@ function statchasers_team_write_index( int $container ): void {
  *
  * @param int      $container Container page ID, 0 when it does not exist.
  * @param string   $shortcode The index shortcode the page should carry.
- * @param callable $is_stub   Predicate recognising the generated stub.
+ * @param callable $is_stub   Predicate recognizing the generated stub.
  * @return string  missing|mounted|empty|stub|custom
  */
 function statchasers_index_state( int $container, string $shortcode, callable $is_stub ): string {
@@ -674,7 +674,7 @@ function statchasers_index_containers(): array {
 }
 
 /**
- * Why a container was not recognised.
+ * Why a container was not recognized.
  *
  * "Your own content" is the right answer for a page somebody wrote, and a
  * useless one for a page that IS the stub but fails a test - which is how the
@@ -805,7 +805,7 @@ function statchasers_index_panel(): void {
  *
  * The same shape as the build handler above and for the same reason: redirect
  * before any output, so a refresh cannot run it twice. Both writes are
- * idempotent and both decline on a page they do not recognise, so the worst a
+ * idempotent and both decline on a page they do not recognize, so the worst a
  * double press does is nothing.
  */
 add_action(
@@ -1635,7 +1635,7 @@ add_filter(
  * Title and canonical without Rank Math.
  *
  * Core prints the canonical from the post's permalink, which on a section URL
- * is the hub - five addresses all canonicalising to one, which is the split
+ * is the hub - five addresses all canonicalizing to one, which is the split
  * buying nothing. Rank Math short-circuits both of these when it is active.
  */
 add_filter(
@@ -1782,7 +1782,7 @@ add_filter(
  *     brand (mak, 2026-10-08) - statchasers_team_section_meta() with no
  *     section, which is what the builder writes now.
  *
- * The second is what makes the season rollover a button press. Recognising
+ * The second is what makes the season rollover a button press. Recognizing
  * only the old wording meant every hub built with the current one read as
  * CUSTOM the moment STATCHASERS_TEAM_SEASON moved on - "New England Patriots
  * 2026: Record, …" is not the 2027 title, and nothing said it was ours - so

@@ -922,7 +922,7 @@ export function getStatsTable(
   });
   const scored = feedRows.map((row, i) => ({ ...row, ...scores[i] }));
 
-  // Every column that could be shown: the feed's visible columns, relabelled,
+  // Every column that could be shown: the feed's visible columns, relabeled,
   // then the grade columns.
   const available = new Map<string, StatsColumn>();
   const fullSeason = new Set(Array.isArray(raw.fullSeason) ? raw.fullSeason : []);

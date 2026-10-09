@@ -99,7 +99,7 @@ export function embedScript(origin: string): string {
     if (h > 0) {
       f.style.setProperty('height', h + 'px', 'important');
       f.style.setProperty('min-height', '0', 'important');
-      // Tell the frame its height is being honoured. That acknowledgement is
+      // Tell the frame its height is being honored. That acknowledgement is
       // what lets it stop scrolling internally: the frame is now exactly as tall
       // as its content, so a scrollbar inside it would be scrolling nothing. It
       // waits to be told rather than assuming, because if THIS script never runs

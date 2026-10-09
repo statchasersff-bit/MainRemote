@@ -138,7 +138,7 @@ function mediaUrls(tweet: RawTweet): string[] {
 }
 
 /**
- * One raw tweet to the normalised shape, or null when it is not usable.
+ * One raw tweet to the normalized shape, or null when it is not usable.
  *
  * A repost is reported as a repost of the ORIGINAL author's text, with the
  * reposting account as the author - the poller decides whether to keep it, and

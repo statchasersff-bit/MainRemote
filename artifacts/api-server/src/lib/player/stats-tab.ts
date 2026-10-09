@@ -467,7 +467,7 @@ interface AdvColumn {
 
 /**
  * A percentile's tint (mak, 2026-10-03): 0-24 red, 25-74 navy, 75-100 green,
- * all subdued, and grey for a style reading, which is neither good nor bad.
+ * all subdued, and gray for a style reading, which is neither good nor bad.
  */
 function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
   if (m.standing === "muted" || m.pctl == null) return "muted";
@@ -760,9 +760,9 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
         : `${prev.season} (${plural(prev.games, "game")}, weeks 1–17): below the qualifying line, so no percentiles`,
     );
   }
-  // One short line (mak, 2026-09-30): the seasons joined, then the grey rule.
-  const grey = cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))
-    ? " Grey bars describe style, not quality."
+  // One short line (mak, 2026-09-30): the seasons joined, then the gray rule.
+  const gray = cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))
+    ? " Gray bars describe style, not quality."
     : "";
 
   const copy = data.statsCopy;
@@ -782,7 +782,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(cats)} Stats`)}</h2>` +
     (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
     renderAdvTable(cols) +
-    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${grey}`)}</p>` +
+    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${gray}`)}</p>` +
     note +
     `</section>`
   );
@@ -886,7 +886,7 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
 
   // 1. Career-level context.
   // Top-12 seasons at every position, as the spec words it; the table's
-  // colours run deeper at RB and WR.
+  // colors run deeper at RB and WR.
   const good = 12;
   const topSeasons = done.filter((r) => r.finish && r.finish <= good).sort((x, y) => x.season - y.season);
   const starter = rows.filter((r) => isStarterSeason(pos, r.line));
@@ -1083,7 +1083,7 @@ function renderFooter(data: PlayerPageData): string {
         `${rec}1 per 25 passing yards, 4 per passing TD, ${MINUS}1 per interception, 1 per 10 rushing or receiving yards and 6 per rushing or receiving TD.` +
         // PPR and half-PPR are Sleeper's stored points (scoring.ts), which also
         // count what the formula above leaves out.
-        (data.format === "standard" ? "" : " Two-point conversions and lost fumbles count as Sleeper scores them."),
+        (data.format === "standard" ? "" : " Two-point conversions and lost fumbles are counted too."),
     )}</p></footer>`
   );
 }

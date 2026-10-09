@@ -148,7 +148,7 @@ export function targetLeaders(players: GamePlayers, team: string): string {
 
 /**
  * The two teams side by side, one row a measure (mak, 2026-09-30): the better
- * efficiency figure in its team's colour, volume and pass rate neutral.
+ * efficiency figure in its team's color, volume and pass rate neutral.
  */
 function comparison(input: PossessionsInput, colors: ReturnType<typeof pairColors>): string {
   const { game } = input;

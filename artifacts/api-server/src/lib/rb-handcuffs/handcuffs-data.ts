@@ -135,7 +135,7 @@ export interface Pillar {
   intro: string;
   factors: Array<{ name: string; desc: string }>;
   closingNote?: string;
-  /** The CSS hook for its accent colour. */
+  /** The CSS hook for its accent color. */
   accent: "blue" | "teal" | "gold";
 }
 
@@ -467,10 +467,10 @@ export function toneOf(score: number | null | undefined): { key: string; band: s
 }
 
 /**
- * The colour for a displayed rank, by where it sits in its pool: top third
+ * The color for a displayed rank, by where it sits in its pool: top third
  * green, middle amber, bottom third red. The card shows ranks, not scores, and
  * the scores sit on different scales per metric (Durability is absolute,
- * Workload is percentiled), so colouring by score put a gold #4 beside a
+ * Workload is percentiled), so coloring by score put a gold #4 beside a
  * green #10.
  */
 export function rankTone(rank: number | null | undefined, poolSize: number | null | undefined): string {
@@ -481,7 +481,7 @@ export function rankTone(rank: number | null | undefined, poolSize: number | nul
   return "warn";
 }
 
-/** A driver's score colour. scoreToneText(), which has no "Elite" step. */
+/** A driver's score color. scoreToneText(), which has no "Elite" step. */
 export function scoreTone(v: number | null | undefined): string {
   if (v == null) return "none";
   if (v >= 65) return "good";

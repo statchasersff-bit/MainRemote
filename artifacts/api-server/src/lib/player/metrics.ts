@@ -62,7 +62,7 @@ export function weeklyTier(rank: number | null | undefined): WeeklyTier | null {
  * 0.754 in even steps, and the palest step still clears 2:1 against the white
  * surface these pages render on, which is the floor an ordinal ramp's light end
  * has to hold. Anchored on SC Blue so the page's data and the page's brand are
- * the same colour.
+ * the same color.
  */
 export const TIER_FILL: Record<WeeklyTier, string> = {
   pos1: "#0b3a7a",
@@ -131,7 +131,7 @@ export function finishBadge(
    * The cuts are the QB/TE branch's, for the reason they are the QB/TE
    * branch's: one starter per club. The wording is this branch's own, because
    * "Backup range" describes a quarterback holding a clipboard and not a
-   * kicker whose offence does not reach field-goal range - so these say where
+   * kicker whose offense does not reach field-goal range - so these say where
    * a finish landed and leave the role out of it.
    */
   if (pos === "K") {

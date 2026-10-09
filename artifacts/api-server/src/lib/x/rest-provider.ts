@@ -19,7 +19,7 @@
  *     X_API_URL=https://<vendor>/...?userName={username}&sinceId={sinceId}
  *     X_API_KEY=...            # sent as X-API-Key unless X_API_KEY_HEADER says otherwise
  *
- * and a normaliser below that accepts the aliases those vendors actually use.
+ * and a normalizer below that accepts the aliases those vendors actually use.
  * Nothing about the rest of the news tool changes, which is the whole point of
  * the XPostProvider boundary.
  *
@@ -429,7 +429,7 @@ export class RestXProvider implements XPostProvider {
     // most accounts most of the time. A response that parsed to nothing AND
     // carried no watermark is the suspicious case, and is reported.
     if (posts.length === 0 && !options.sinceId && raw.length === 0) {
-      throw new Error("responded 200 but carried no recognisable posts");
+      throw new Error("responded 200 but carried no recognizable posts");
     }
 
     posts.sort((a, b) => (b.createdAtMs ?? 0) - (a.createdAtMs ?? 0));

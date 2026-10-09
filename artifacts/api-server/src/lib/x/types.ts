@@ -1,7 +1,7 @@
 /**
  * The boundary between "where X posts come from" and everything else.
  *
- * Nothing downstream of this file - not the poller, not the normaliser, not the
+ * Nothing downstream of this file - not the poller, not the normalizer, not the
  * news store, not the feed - knows how a post was obtained. That is the whole
  * point: the first ingestion route is a public, unauthenticated one, and the
  * likely second is the paid official API. Swapping them must be a provider
@@ -13,7 +13,7 @@
  * rendered - happens on this side of the interface and is written once.
  */
 
-/** One post, normalised. The only shape the rest of the app ever sees. */
+/** One post, normalized. The only shape the rest of the app ever sees. */
 export interface XPost {
   /** X's own post id. The deduplication identity, end to end. */
   externalId: string;
@@ -46,7 +46,7 @@ export interface FetchOptions {
    * Return only posts newer than this id, when the provider can express that.
    *
    * Advisory. A provider that cannot filter server-side may return more, and
-   * the caller filters again - the watermark is an optimisation, and post-id
+   * the caller filters again - the watermark is an optimization, and post-id
    * deduplication is what actually guarantees no double storage.
    */
   sinceId?: string | null;
@@ -75,8 +75,8 @@ export interface XPostProvider {
  * The stored form of a handle: lowercase, no leading @.
  *
  * Here rather than beside the account table, because both halves of the feature
- * need it and only one of them has a database - the admin route normalising
- * what an operator typed, and the post shaper normalising what a provider
+ * need it and only one of them has a database - the admin route normalizing
+ * what an operator typed, and the post shaper normalizing what a provider
  * returned, must agree exactly or the same reporter ends up as two rows.
  */
 export function normalizeHandle(value: string): string {

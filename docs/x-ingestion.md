@@ -42,7 +42,7 @@ XPostProvider         (public timeline | official API | anything later)
 polling queue         (claim-by-UPDATE, staggered, backed off)
         │
         ▼
-normalise  →  dedupe on post id  →  storeItems()   ← the SAME call the wire
+normalize  →  dedupe on post id  →  storeItems()   ← the SAME call the wire
         │                                             and the club feeds use
         ▼
 player / team / category detection (the tool's own indexes)
@@ -123,7 +123,7 @@ X_API_KEY=...                 # sent as X-API-Key; override with X_API_KEY_HEADE
 placeholder resolves to empty is dropped rather than sent blank.
 
 One adapter rather than one per vendor, because they all mirror X's own tweet
-object and differ only in spelling. The normaliser reads `id_str` / `id` /
+object and differ only in spelling. The normalizer reads `id_str` / `id` /
 `tweet_id` / `rest_id`, `full_text` / `text` / `content`, `created_at` /
 `createdAt` / epoch seconds or milliseconds, `user.screen_name` /
 `author.userName`, and detects reposts, replies and quotes from nested objects,
@@ -157,7 +157,7 @@ a polled post does - deduplicated on its post id, filtered by its author's
 toggles, tagged with player, team and category, rendered on the same card.
 
 The body is tolerant: a bare array or `{posts: [...]}`, with each post in the
-normalised shape or any vendor shape the `api` provider understands. Whatever
+normalized shape or any vendor shape the `api` provider understands. Whatever
 your collector already holds is very likely postable unchanged.
 
 ```

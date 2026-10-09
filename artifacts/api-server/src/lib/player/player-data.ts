@@ -259,11 +259,11 @@ export interface PositionPeers {
    * Which table the rail is a slice of, and so what `value` means.
    *
    * "ppg" once the player has the four games a rate rank needs; "total" until
-   * then. Never a mix: a rail ordered by one measure and labelled with the
+   * then. Never a mix: a rail ordered by one measure and labeled with the
    * other is a list that looks mis-sorted.
    */
   measure: "ppg" | "total";
-  /** The neighbourhood in rank order, the current player included. */
+  /** The neighborhood in rank order, the current player included. */
   rows: PositionPeer[];
 }
 
@@ -482,7 +482,7 @@ export interface PlayerPageData {
 /**
  * The player's own news, from this app's archive.
  *
- * Matched on the normalised player name rather than a substring, because the
+ * Matched on the normalized player name rather than a substring, because the
  * wire tags each item with the player it is about and a substring match on a
  * common surname turns one player's page into another's. Items with no player
  * tag are dropped rather than guessed at.
@@ -641,7 +641,7 @@ function productionSeasons(
  * How far either side of the player the peers rail reaches.
  *
  * Three, as the app this page was ported from used: with the player himself
- * that is seven cards, which is a neighbourhood - near enough that every name
+ * that is seven cards, which is a neighborhood - near enough that every name
  * on it is a player he is genuinely being compared with, and short enough to
  * read without scrolling on a laptop.
  */
@@ -659,7 +659,7 @@ const PEER_RADIUS = 3;
  * QB15 missing, which is the honest rendering of "the nearest players who have
  * a page" rather than a renumbered list that claims QB15 is somebody else.
  */
-function neighbourhood(
+function neighborhood(
   table: Array<{ id: string; value: number }>,
   index: number,
   playerById: Map<string, Player>,
@@ -719,7 +719,7 @@ function positionalFinish(
   // The peers belong to the CURRENT season only - the rail is a reading of
   // where the player stands now, and the career table's caller wants the one
   // number. Built on request rather than always, so eleven seasons of career
-  // rows do not each assemble a neighbourhood that is then thrown away.
+  // rows do not each assemble a neighborhood that is then thrown away.
   wantPeers = false,
 ): { ppg: number | null; total: number | null; peers: PositionPeers | null } {
   const position = player.position;
@@ -757,9 +757,9 @@ function positionalFinish(
   let peers: PositionPeers | null = null;
   if (wantPeers && index >= 0) {
     const indexed = new Set(loadIndexedSlugs());
-    const around = neighbourhood(table, index, playerById, indexed);
-    // One card is not a neighbourhood. A player nobody else at his position is
-    // near - the last name in the table, or one whose neighbours all lack a
+    const around = neighborhood(table, index, playerById, indexed);
+    // One card is not a neighborhood. A player nobody else at his position is
+    // near - the last name in the table, or one whose neighbors all lack a
     // page - gets no rail rather than a rail of himself.
     if (around.length > 0) {
       const rows: PositionPeer[] = around.map((row) => {
@@ -1015,7 +1015,7 @@ export async function getPlayerPageData(
    * Extracted because it is now called twice. The Game Log tab can be pinned to
    * a season other than the active one, and a reader asking for 2023 has to get
    * 2023's weekly ranks and 2023's opponent ranks with it - the alternative,
-   * re-labelling the active season's log, is the kind of bug that produces a
+   * re-labeling the active season's log, is the kind of bug that produces a
    * page that is wrong rather than empty.
    */
   const buildLog = (candidate: number): GameLogEntry[] => {
@@ -1393,9 +1393,9 @@ export function playerDataVersion(
  * the exclusion rule below is exactly the kind of thing that gets fixed in one
  * of three copies.
  *
- * **Team defences are excluded.** They are in the indexed list because the news
+ * **Team defenses are excluded.** They are in the indexed list because the news
  * tool ranks them, but nothing a player page renders applies to one - no game
- * log, no efficiency percentiles, no injury history, no bio. A defence's page
+ * log, no efficiency percentiles, no injury history, no bio. A defense's page
  * already exists and it is the team hub.
  */
 export interface IndexedPlayer {

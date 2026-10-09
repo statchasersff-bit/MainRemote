@@ -14,7 +14,7 @@
  * The canonical stays self-referencing and always points at the PPR URL. The
  * scoring format is the one piece of genuine state these pages carry in a query
  * string, and three formats of the same profile are three renderings of one
- * page, not three pages - so `?format=half` canonicalises to the bare slug.
+ * page, not three pages - so `?format=half` canonicalizes to the bare slug.
  */
 
 import { escapeHtml } from "./render";

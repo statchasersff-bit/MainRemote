@@ -15,7 +15,7 @@ opportunities (carries + 2 x targets); "the room" is every back on the roster.
 
 | Type | Meaning | Safe when |
 |---|---|---|
-| **Data** | Restates a number we measured | The number is right and labelled with its real definition |
+| **Data** | Restates a number we measured | The number is right and labeled with its real definition |
 | **Derived** | A threshold or arithmetic on our numbers ("drops to 33% (49% overall)") | The comparison is like-for-like and the sample is stated |
 | **Model** | A StatChasers projection | It says it is a projection |
 | **Opinion** | Fantasy advice ("Trade for him this week") | The reader can tell it is our take |
@@ -126,7 +126,7 @@ opportunities.
   carries + targets behind him), projecting {RB2} for ~{x}% of backfield
   weighted opportunities (~{y} per active game) if {RB1} is inactive - {grade}"
   + " - and why he's a STASH, not a cut." (top-24 and tiered Stash) / " - worth
-  a bench spot in deeper leagues." (top-24 otherwise). Type: **Model**, labelled.
+  a bench spot in deeper leagues." (top-24 otherwise). Type: **Model**, labeled.
 - No back at 5%: "No clear handcuff behind {RB1}: ... a {RB1} absence would be
   settled on the waiver wire, not by a stash on your bench." (Opinion)
 
@@ -235,7 +235,7 @@ Week 4, then from three games back.
 
 - 2026-10-03, first pass: "buy signal", "hurry-up snaps", aDOT as the deep
   slice, "pocket passer", plus PROE, plays-per-game, red-zone pass-rate and
-  per-active-game labelling fixes.
+  per-active-game labeling fixes.
 - 2026-10-03, second pass (the eight that failed the test): red-zone card
   cause-and-effect, "isn't a talent question", the two "best stat" claims, the
   run-game "engine" and "plan", the rushing-QB line built from the team's in-10

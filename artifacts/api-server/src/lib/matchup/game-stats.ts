@@ -175,7 +175,7 @@ export interface GameStats {
  *
  * Four components, each capped to the range the formula defines - without the
  * clamp a 3-for-3, 2-touchdown line rates above the 158.3 maximum, which is
- * not a rating anybody recognises. Null under one attempt, where the formula
+ * not a rating anybody recognizes. Null under one attempt, where the formula
  * divides by zero.
  */
 export function passerRating(
@@ -356,7 +356,7 @@ function usageRows(list: Appearance[]): UsageRow[] {
     })
     // By share rather than by raw snaps. The two teams did not run the same
     // number of plays - 67 against 48 in a game this table was built on - so
-    // sorting on the count ranks the busier offence's bench above the other
+    // sorting on the count ranks the busier offense's bench above the other
     // side's every-down players, which is the opposite of what the column
     // beside it is for.
     .sort(
@@ -370,7 +370,7 @@ function usageRows(list: Appearance[]): UsageRow[] {
  * Wider than USAGE_POSITIONS by one - the quarterback - because he is a real
  * part of a backfield's carries even though his snap count says nothing. Anyone
  * outside this set still counts toward the denominator; he simply lands in
- * "Other" rather than taking a labelled slice.
+ * "Other" rather than taking a labeled slice.
  */
 const SLICE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "FB"]);
 
@@ -489,7 +489,7 @@ function percent(share: number | null): string | null {
  * The chip elsewhere on the page prints the designation as it comes - "IR",
  * "Questionable" - and lower-casing that for a sentence produced "is listed ir",
  * which is not how anybody writes it. The acronyms get the phrase they are short
- * for; the words that already are words get lower-cased; anything unrecognised
+ * for; the words that already are words get lower-cased; anything unrecognized
  * is left exactly as upstream sent it rather than mangled to fit.
  */
 /**

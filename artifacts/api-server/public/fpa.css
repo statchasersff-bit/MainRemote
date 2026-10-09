@@ -24,7 +24,7 @@
   --sc-muted-strong: #475569;
   --sc-border: #e5e7eb;
   /* The team hub's row rule, brought over with its FAQ: a tinted hairline
-     rather than a flat grey, so a long list of them stays quiet. */
+     rather than a flat gray, so a long list of them stays quiet. */
   --sc-hairline: rgba(15, 23, 42, 0.08);
   --sc-surface: #ffffff;
   --sc-surface-soft: #f7f9fc;
@@ -60,7 +60,7 @@
    * rather than one ramp. Green is the exploitable pole and red the one to
    * avoid, which is the convention every fantasy reader already has.
    *
-   * The middle is not a colour, it is the absence of one. The scale tints the
+   * The middle is not a color, it is the absence of one. The scale tints the
    * top six, the next six, the bottom six and the six above them; ranks 13–20
    * stay the white of the page. A defense a place or two off the median is not
    * a matchup either way, and a tint there would be the table asserting a
@@ -69,9 +69,9 @@
    * simulated, so a tinted cell is unmistakably tinted and an untinted one is
    * unmistakably ordinary.
    *
-   * Green against red is the one pair that red-green colour blindness takes
+   * Green against red is the one pair that red-green color blindness takes
    * away, and no choice of hues gets it back - at equal lightness the two arms
-   * simulate to a ΔE of about 1, i.e. the same colour. Three things are doing
+   * simulate to a ΔE of about 1, i.e. the same color. Three things are doing
    * the work instead:
    *
    * 1. **The arms are NOT lightness-symmetric.** Red runs 0.080 darker than its
@@ -84,17 +84,17 @@
    * 2. **Every cell prints its rank**, in the arm's ink. The tint is a second
    *    reading of a number that is already there, never the only one.
    * 3. **The table arrives sorted by rank**, so position carries the ordering
-   *    even for a reader who sees no colour at all.
+   *    even for a reader who sees no color at all.
    *
    * Red is the darker arm rather than the lighter one on purpose: protanopes
    * see red darker than its luminance implies, so darkening it adds to the
-   * lightness cue instead of cancelling it. The opposite tilt measured ΔE 2.7.
+   * lightness cue instead of canceling it. The opposite tilt measured ΔE 2.7.
    *
    * The washes are what the table cells wear; the inks are the rank digits.
    * Within each arm the steps are ΔL ≈ 0.11 apart, above the 0.06 ramp floor,
    * and the outer bands sit at 2.09:1 and 3.11:1 against white. The dark figure
    * on top clears 6:1 everywhere and the rank digit 4.6:1 on its own wash; on an
-   * untinted cell that digit is the muted grey, 4.76:1 on white.
+   * untinted cell that digit is the muted gray, 4.76:1 on white.
    */
   --scf-soft-2-ink: #004f21;
   --scf-soft-1-ink: #096a30;
@@ -193,7 +193,7 @@ body.scf-page {
 
 .scf-controls {
   display: flex;
-  /* Bottom, not centre: the groups are now two rows tall, and the CSV link
+  /* Bottom, not center: the groups are now two rows tall, and the CSV link
      belongs on the line the pills sit on. */
   align-items: flex-end;
   gap: 12px 20px;
@@ -492,9 +492,9 @@ body.scf-page {
   white-space: nowrap;
 }
 
-/* The two headers that are not centred. Each sits over a column that is not
-   centred either: the team names run left, the games count runs right. Only the
-   position columns - read as a block, left to right - take the centred label. */
+/* The two headers that are not centered. Each sits over a column that is not
+   centered either: the team names run left, the games count runs right. Only the
+   position columns - read as a block, left to right - take the centered label. */
 .scf-table thead .scf-th-team {
   text-align: left;
 }
@@ -535,7 +535,7 @@ body.scf-page {
   line-height: 1.15;
 }
 
-/* The line a reader scans. Its colour is the link's, so hover moves both. */
+/* The line a reader scans. Its color is the link's, so hover moves both. */
 .scf-team-abbr {
   font-size: 12px;
   font-weight: 800;
@@ -573,17 +573,17 @@ body.scf-page {
    * Nothing looked wrong where they were - they are clipped to invisibility -
    * but the page scrolled sideways, and once a document is wider than the
    * viewport every percentage width on it resolves against the wider box. That
-   * is the grey band down the side of the tool on a phone.
+   * is the gray band down the side of the tool on a phone.
    *
    * The cell is the right place for it: it is inside the scroller, so anything
    * contained by it is clipped with the rest of the table.
    */
   position: relative;
   padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
-  /* The team cell is two lines now, so everything beside it centres against it
+  /* The team cell is two lines now, so everything beside it centers against it
      rather than sitting on the first line's baseline. */
   vertical-align: middle;
-  /* Centred under the centred QB / RB / WR / TE / OFF labels (mak, 2026-10-08).
+  /* Centered under the centered QB / RB / WR / TE / OFF labels (mak, 2026-10-08).
      The figure and its rank move together as one block, so the numbers still
      line up down a column: tabular numerals and a fixed-width rank box. The
      games column keeps ranging right under its right-ranged label. */
@@ -603,8 +603,8 @@ body.scf-page {
  *
  * Every cell draws its own right and bottom line, and the last of each is
  * dropped so the table's own border is not doubled up against it. On the navy
- * header the line is a light tint of the navy instead of the page's grey - a
- * grey rule on a dark band reads as a gap in the band.
+ * header the line is a light tint of the navy instead of the page's gray - a
+ * gray rule on a dark band reads as a gap in the band.
  */
 .scf-table thead th,
 .scf-table tbody th,
@@ -634,7 +634,7 @@ body.scf-page {
 /* The rank beside the figure, hidden from sight at every width (mak,
    2026-10-08: the figure alone is what the table shows). Hidden VISUALLY, not
    removed: the rank is the tint's second reading, and on a page whose scale is
-   green against red that second reading is what a colourblind reader relies on.
+   green against red that second reading is what a colorblind reader relies on.
    Clipping it rather than displaying it none keeps it in the accessibility
    tree, so a screen reader still hears "23.7, 4th most points allowed". This
    is the treatment the phone layout used below 540px; it is now the base rule.
@@ -713,7 +713,7 @@ body.scf-page {
 .scf-legend-swatch[data-tier="tough-1"] { background: var(--scf-tough-1-wash); }
 .scf-legend-swatch[data-tier="tough-2"] { background: var(--scf-tough-2-wash); }
 
-/* Text wears text tokens, never the scale's colour. */
+/* Text wears text tokens, never the scale's color. */
 .scf-legend-label {
   color: var(--sc-muted-strong);
   font-weight: 600;
@@ -938,7 +938,7 @@ body.scf-page {
 }
 
 /*
- * Forced colours: the washes collapse to system colours, so the tint stops
+ * Forced colors: the washes collapse to system colors, so the tint stops
  * distinguishing anything. The rank digit in every cell already carries the
  * meaning; the border restores the cell boundaries.
  */
@@ -964,7 +964,7 @@ body.scf-page {
  *   font-family  Declared on the root and inherited everywhere else, and
  *                inheritance loses to ANY rule that names the element. A
  *                theme's `h1, h2, h3 { font-family: <serif> }` therefore took
- *                every heading, while this file's own colour and size rules
+ *                every heading, while this file's own color and size rules
  *                kept winning.
  *   list-style   Set on the <ul>, which a theme's `li` rule outranks, because
  *                the marker is drawn by the <li>.
@@ -1012,7 +1012,7 @@ body.scf-page {
 /* declare at all, so the theme's is simply adopted.                       */
 /*                                                                         */
 /* Two symptoms were reported from the live site and both are here: the    */
-/* column headers went grey (Divi colouring the <button> the sort control  */
+/* column headers went gray (Divi coloring the <button> the sort control  */
 /* is built from - `.scf-sort` sets `color: inherit`, and a theme's        */
 /* `button` rule outranks it) and every row grew (Divi's 6px cell padding  */
 /* replacing our 2px, over 32 rows).                                       */
@@ -1071,13 +1071,13 @@ body.scf-page {
 .scf .scf-table thead th {
   padding: 5px var(--scf-cell-pad-x);
   /* `!important` for `#left-area table th { color: #666 }`: an id outranks
-     every class here, and the labels went grey on the navy band. The sort
-     button inherits this, so it is the one colour the whole header hangs on. */
+     every class here, and the labels went gray on the navy band. The sort
+     button inherits this, so it is the one color the whole header hangs on. */
   color: #fff !important;
 }
 
-/* The team column is a <th> too, and took the same grey. Its link and name
-   state their own colours; this is the ink everything else in the cell
+/* The team column is a <th> too, and took the same gray. Its link and name
+   state their own colors; this is the ink everything else in the cell
    inherits. */
 .scf .scf-table tbody th {
   color: var(--sc-ink) !important;
@@ -1097,7 +1097,7 @@ body.scf-page {
   color: var(--sc-gold-soft);
 }
 
-/* Links. Each of these is a brand colour doing a job - the muted pill, the
+/* Links. Each of these is a brand color doing a job - the muted pill, the
    active pill, the gold-ruled CSV, the team's navy - and a theme's one link
    blue flattens the distinction between all four. */
 .scf .scf-opt {

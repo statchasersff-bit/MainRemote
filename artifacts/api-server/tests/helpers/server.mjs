@@ -1,6 +1,6 @@
 /**
  * Boots the built server on a free port for the test run and tears it down
- * afterwards. Tests run against the real compiled artefacts - dist/index.mjs
+ * afterwards. Tests run against the real compiled artifacts - dist/index.mjs
  * and public/dist/*.js - because the point of this suite is to catch a build
  * or plugin change that quietly breaks the crawlable output, and testing
  * source modules directly would miss exactly that.

@@ -4,7 +4,7 @@ StatChasers depth chart — layout diagnostic
 WHAT THIS DOES
   Walks up from the depth-chart tool through every ancestor and prints each
   one's width, position, padding, margins and display mode — then compares the
-  tool's width against a neighbouring Divi module in the same row. That tells
+  tool's width against a neighboring Divi module in the same row. That tells
   us exactly which element is setting the width or creating a gap, instead of
   guessing from a description.
 
@@ -19,7 +19,7 @@ HOW TO RUN IT
   5. Copy the printed block and send it back to me.
 
   Run it on a desktop-width window, since that is where the width behaves
-  differently from the neighbouring modules.
+  differently from the neighboring modules.
 
 ==== COPY FROM HERE ====
 (() => {
@@ -58,7 +58,7 @@ HOW TO RUN IT
     .filter(el => !el.contains(tool))
     .slice(0, 6);
   out.push('');
-  out.push('NEIGHBOURING MODULES (for comparison)');
+  out.push('NEIGHBORING MODULES (for comparison)');
   if (!others.length) out.push('  none found');
   others.forEach(el => {
     const r = el.getBoundingClientRect();
@@ -93,14 +93,14 @@ HOW TO RUN IT
 ==== COPY TO HERE ====
 
 WHAT I LEARN FROM IT
-  - "TOOL width" vs the neighbouring modules' widths: whether the tool really is
+  - "TOOL width" vs the neighboring modules' widths: whether the tool really is
     wider/narrower, and by how many pixels.
   - The ancestor rows: which element is full-width, or which one carries the
     padding your other modules get and the tool's container does not.
   - PLUGIN STYLESHEET / VERSION: confirms the deployed build is the one I think
     it is, and is not being served stale from a cache.
   - SUGGEST-DROPDOWN RULES PRESENT: if this says false, the "Remove Unused CSS"
-    optimisation is stripping the rules for the team logos and position codes in
+    optimization is stripping the rules for the team logos and position codes in
     the search dropdown.
 
 
@@ -206,7 +206,7 @@ StatChasers depth chart — layout diagnostic
 WHAT THIS DOES
   Walks up from the depth-chart tool through every ancestor and prints each
   one's width, position, padding, margins and display mode — then compares the
-  tool's width against a neighbouring Divi module in the same row. That tells
+  tool's width against a neighboring Divi module in the same row. That tells
   us exactly which element is setting the width or creating a gap, instead of
   guessing from a description.
 
@@ -221,7 +221,7 @@ HOW TO RUN IT
   5. Copy the printed block and send it back to me.
 
   Run it on a desktop-width window, since that is where the width behaves
-  differently from the neighbouring modules.
+  differently from the neighboring modules.
 
 ==== COPY FROM HERE ====
 (() => {
@@ -260,7 +260,7 @@ HOW TO RUN IT
     .filter(el => !el.contains(tool))
     .slice(0, 6);
   out.push('');
-  out.push('NEIGHBOURING MODULES (for comparison)');
+  out.push('NEIGHBORING MODULES (for comparison)');
   if (!others.length) out.push('  none found');
   others.forEach(el => {
     const r = el.getBoundingClientRect();
@@ -295,14 +295,14 @@ HOW TO RUN IT
 ==== COPY TO HERE ====
 
 WHAT I LEARN FROM IT
-  - "TOOL width" vs the neighbouring modules' widths: whether the tool really is
+  - "TOOL width" vs the neighboring modules' widths: whether the tool really is
     wider/narrower, and by how many pixels.
   - The ancestor rows: which element is full-width, or which one carries the
     padding your other modules get and the tool's container does not.
   - PLUGIN STYLESHEET / VERSION: confirms the deployed build is the one I think
     it is, and is not being served stale from a cache.
   - SUGGEST-DROPDOWN RULES PRESENT: if this says false, the "Remove Unused CSS"
-    optimisation is stripping the rules for the team logos and position codes in
+    optimization is stripping the rules for the team logos and position codes in
     the search dropdown.
 
 
@@ -408,7 +408,7 @@ StatChasers depth chart — layout diagnostic
 WHAT THIS DOES
   Walks up from the depth-chart tool through every ancestor and prints each
   one's width, position, padding, margins and display mode — then compares the
-  tool's width against a neighbouring Divi module in the same row. That tells
+  tool's width against a neighboring Divi module in the same row. That tells
   us exactly which element is setting the width or creating a gap, instead of
   guessing from a description.
 
@@ -423,7 +423,7 @@ HOW TO RUN IT
   5. Copy the printed block and send it back to me.
 
   Run it on a desktop-width window, since that is where the width behaves
-  differently from the neighbouring modules.
+  differently from the neighboring modules.
 
 ==== COPY FROM HERE ====
 (() => {
@@ -462,7 +462,7 @@ HOW TO RUN IT
     .filter(el => !el.contains(tool))
     .slice(0, 6);
   out.push('');
-  out.push('NEIGHBOURING MODULES (for comparison)');
+  out.push('NEIGHBORING MODULES (for comparison)');
   if (!others.length) out.push('  none found');
   others.forEach(el => {
     const r = el.getBoundingClientRect();
@@ -497,14 +497,14 @@ HOW TO RUN IT
 ==== COPY TO HERE ====
 
 WHAT I LEARN FROM IT
-  - "TOOL width" vs the neighbouring modules' widths: whether the tool really is
+  - "TOOL width" vs the neighboring modules' widths: whether the tool really is
     wider/narrower, and by how many pixels.
   - The ancestor rows: which element is full-width, or which one carries the
     padding your other modules get and the tool's container does not.
   - PLUGIN STYLESHEET / VERSION: confirms the deployed build is the one I think
     it is, and is not being served stale from a cache.
   - SUGGEST-DROPDOWN RULES PRESENT: if this says false, the "Remove Unused CSS"
-    optimisation is stripping the rules for the team logos and position codes in
+    optimization is stripping the rules for the team logos and position codes in
     the search dropdown.
 
 
@@ -610,7 +610,7 @@ StatChasers depth chart — layout diagnostic
 WHAT THIS DOES
   Walks up from the depth-chart tool through every ancestor and prints each
   one's width, position, padding, margins and display mode — then compares the
-  tool's width against a neighbouring Divi module in the same row. That tells
+  tool's width against a neighboring Divi module in the same row. That tells
   us exactly which element is setting the width or creating a gap, instead of
   guessing from a description.
 
@@ -625,7 +625,7 @@ HOW TO RUN IT
   5. Copy the printed block and send it back to me.
 
   Run it on a desktop-width window, since that is where the width behaves
-  differently from the neighbouring modules.
+  differently from the neighboring modules.
 
 ==== COPY FROM HERE ====
 (() => {
@@ -664,7 +664,7 @@ HOW TO RUN IT
     .filter(el => !el.contains(tool))
     .slice(0, 6);
   out.push('');
-  out.push('NEIGHBOURING MODULES (for comparison)');
+  out.push('NEIGHBORING MODULES (for comparison)');
   if (!others.length) out.push('  none found');
   others.forEach(el => {
     const r = el.getBoundingClientRect();
@@ -699,14 +699,14 @@ HOW TO RUN IT
 ==== COPY TO HERE ====
 
 WHAT I LEARN FROM IT
-  - "TOOL width" vs the neighbouring modules' widths: whether the tool really is
+  - "TOOL width" vs the neighboring modules' widths: whether the tool really is
     wider/narrower, and by how many pixels.
   - The ancestor rows: which element is full-width, or which one carries the
     padding your other modules get and the tool's container does not.
   - PLUGIN STYLESHEET / VERSION: confirms the deployed build is the one I think
     it is, and is not being served stale from a cache.
   - SUGGEST-DROPDOWN RULES PRESENT: if this says false, the "Remove Unused CSS"
-    optimisation is stripping the rules for the team logos and position codes in
+    optimization is stripping the rules for the team logos and position codes in
     the search dropdown.
 
 

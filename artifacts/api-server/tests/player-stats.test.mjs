@@ -6,7 +6,7 @@
  * complete - the standalone app it replaced was an empty iframe to anything
  * that did not execute a React bundle. Then the real bundle is run against
  * that HTML in jsdom, because sorting, the filter bar, the section pills and
- * the season switch are the standalone app's behaviour and have to survive
+ * the season switch are the standalone app's behavior and have to survive
  * the move from React state to enhancement.
  *
  * The data is the committed `data/player-stats/` tables, not a fixture: they

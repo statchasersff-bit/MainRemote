@@ -97,7 +97,7 @@ export interface XSweepResult {
  * Posts we have already stored, out of a candidate batch.
  *
  * One query for the batch rather than one per post, and a second line of
- * defence rather than the only one: the insert below is ON CONFLICT DO NOTHING
+ * defense rather than the only one: the insert below is ON CONFLICT DO NOTHING
  * on the post id, so even two jobs racing on the same account between this
  * SELECT and that INSERT cannot produce a second row.
  */
@@ -231,7 +231,7 @@ export interface StorePostsResult {
  * Store a batch of posts. Never fetches anything.
  *
  * The half of the pipeline below the provider: filter by the author's rules and
- * the age cutoff, drop what is already stored, normalise, and write. Both entry
+ * the age cutoff, drop what is already stored, normalize, and write. Both entry
  * points go through here - the poller, and the push route - so a pushed post
  * and a polled post are treated identically in every respect that matters.
  * There is no second path into the archive for X, in the same way the wire's

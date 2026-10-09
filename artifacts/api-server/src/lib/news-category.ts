@@ -3,7 +3,7 @@
  *
  * DERIVED at read time, never stored. That is the same call the archive already
  * makes about a wire row's team (see the team_abbr comment in the schema): this
- * is a keyword judgement about a headline, not a fact the provider told us, and
+ * is a keyword judgment about a headline, not a fact the provider told us, and
  * a guess written into a column becomes indistinguishable from a fact the
  * moment it is stored. Deriving it also means the rules can be improved in one
  * place and every row in the archive - including the ones ingested before the
@@ -52,7 +52,7 @@ export const CATEGORY_LABELS: Record<NewsCategory, string> = {
 /**
  * Ordered rules: the first pattern that matches wins.
  *
- * The order is the judgement, and it is deliberate. "Limited in practice with a
+ * The order is the judgment, and it is deliberate. "Limited in practice with a
  * hamstring" is an injury note that happens to mention practice, so injury is
  * tested first; "signed off the practice squad" is a transaction that happens
  * to mention practice, so transaction is tested before practice too. Fantasy
@@ -104,7 +104,7 @@ const RULES: Array<{ category: NewsCategory; pattern: RegExp }> = [
     // body part, no transaction and no practice, so it fell through to "other"
     // along with a third of the feed. It is deliberately NOT folded into
     // injury: a rested starter and a hamstring are the same fact to a fantasy
-    // manager setting a lineup, but labelling the first one "Injury" is simply
+    // manager setting a lineup, but labeling the first one "Injury" is simply
     // false.
     //
     // It sits below practice and depth-chart so a participation note and a

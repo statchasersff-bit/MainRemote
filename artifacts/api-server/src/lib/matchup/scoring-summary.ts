@@ -406,7 +406,7 @@ export function renderScoringSummary(input: ScoringSummaryInput): string {
     game.away.ot !== null || game.home.ot !== null ? 5 : 4,
   );
 
-  // The side ahead (or level) in its team's colour, as everywhere on the page.
+  // The side ahead (or level) in its team's color, as everywhere on the page.
   const score = (mine: number, theirs: number, abbr: string): string =>
     `<td class="sct-ss-score${mine >= theirs ? " is-ahead" : ""}" style="${escapeHtml(`--ss-ink:${inkOf(abbr)}`)}">${mine}</td>`;
 

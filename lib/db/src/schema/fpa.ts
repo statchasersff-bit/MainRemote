@@ -1,14 +1,14 @@
 /**
- * Fantasy Points Allowed - how many fantasy points each defence gives up to
+ * Fantasy Points Allowed - how many fantasy points each defense gives up to
  * each position, per game.
  *
  * Two tables, and the split is the point of the design:
  *
  *   - `fantasy_points_allowed_games` is the granular record: one row per
- *     (season, week, defence, position, scoring format). It is what the
+ *     (season, week, defense, position, scoring format). It is what the
  *     numbers are DERIVED from, and it is kept so a served figure can be
  *     traced back to the weeks that produced it rather than taken on trust.
- *   - `fantasy_points_allowed_snapshots` is one row per (defence, format) -
+ *   - `fantasy_points_allowed_snapshots` is one row per (defense, format) -
  *     the blended figure the page actually serves. Precomputed because the
  *     blend is a weighted mix of last season and a rolling window of this one,
  *     and recomputing that per request would put a 7MB CSV parse in front of
@@ -32,7 +32,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-/** One (season, week, defence, position, format) grouping. */
+/** One (season, week, defense, position, format) grouping. */
 export const fpaGames = pgTable(
   "fantasy_points_allowed_games",
   {
@@ -63,7 +63,7 @@ export const fpaGames = pgTable(
   ],
 );
 
-/** The served figure: one row per defence per scoring format. */
+/** The served figure: one row per defense per scoring format. */
 export const fpaSnapshots = pgTable(
   "fantasy_points_allowed_snapshots",
   {
@@ -82,7 +82,7 @@ export const fpaSnapshots = pgTable(
     teFpaRaw: numeric("te_fpa_raw", { precision: 8, scale: 2 }).notNull(),
     offFpaRaw: numeric("off_fpa_raw", { precision: 8, scale: 2 }).notNull(),
 
-    /** The same, corrected for the strength of the offences faced. */
+    /** The same, corrected for the strength of the offenses faced. */
     qbFpaAdj: numeric("qb_fpa_adj", { precision: 8, scale: 2 }).notNull(),
     rbFpaAdj: numeric("rb_fpa_adj", { precision: 8, scale: 2 }).notNull(),
     wrFpaAdj: numeric("wr_fpa_adj", { precision: 8, scale: 2 }).notNull(),

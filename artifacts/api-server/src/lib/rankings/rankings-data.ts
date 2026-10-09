@@ -115,7 +115,7 @@ export const POSITION_PLURALS: Record<StatPosition, string> = {
  * Where each tier ends, as `[lastRank, tier]` in ascending order.
  *
  * These are editorial, not computed - the cliff between QB5 and QB6 is a
- * judgement about the position, and the whole point of a tiered board is that
+ * judgment about the position, and the whole point of a tiered board is that
  * somebody drew the lines. Copied verbatim from the standalone app.
  */
 export const TIER_RULES: Record<StatPosition, Array<[number, number]>> = {
@@ -219,7 +219,7 @@ let resolverCache: Map<string, Resolved> | null = null;
 /**
  * name+position → team and page slug, from the player dictionary.
  *
- * Keyed on the position too, because normalised names are not unique across the
+ * Keyed on the position too, because normalized names are not unique across the
  * league and matching a wide receiver against a quarterback of the same name
  * would print the wrong team. Where several entries collide on one key the one
  * with a page wins, then the active one - the dictionary carries retired

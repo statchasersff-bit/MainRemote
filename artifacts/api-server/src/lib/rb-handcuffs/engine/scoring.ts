@@ -205,3 +205,62 @@ export function getHandcuffBadge(
   if (bottom8(bf) && bottom24(path)) return "Dead-Zone Handcuff";
   return "";
 }
+
+/** A pillar's rank band for one archetype, inclusive; null is "any rank". */
+type Band = readonly [lo: number, hi: number] | null;
+
+/**
+ * The archetypes above as rank bands - Player Quality, Path to Opportunity,
+ * Backfield Opportunity - in the same order, so a back who fits one exactly
+ * gets the same answer from either function.
+ */
+function archetypeBands(n: number): Array<[label: string, bands: readonly [Band, Band, Band]]> {
+  const top8: Band = [1, 8];
+  const top12: Band = [1, 12];
+  const outside8: Band = [9, n];
+  const outside12: Band = [13, n];
+  const bottom8: Band = [n - 7, n];
+  const bottom12: Band = [n - 11, n];
+  const bottom24: Band = [n - 23, n];
+  return [
+    ["Premium Handcuff", [top8, top12, top12]],
+    ["Premium Contingency", [top8, outside12, top12]],
+    ["Talent Stash", [top12, outside8, outside8]],
+    ["Opportunity Stash", [[9, n - 12], top12, top12]],
+    ["Trap Handcuff", [bottom12, bottom12, bottom12]],
+    ["Low-Ceiling Backup", [bottom12, top12, top12]],
+    ["Dead-Zone Handcuff", [null, bottom24, bottom8]],
+  ];
+}
+
+/**
+ * The badge for a back no archetype fits exactly: the closest one. Each
+ * archetype is three rank bands; the back takes the one he misses by the
+ * fewest places in total, the legend's order breaking ties. Two guards keep
+ * the player-driven badges honest: the Premium badges need a top-12 Player
+ * Quality and Talent Stash an upper-half one, so a mid-pack talent in a good
+ * spot reads as an Opportunity Stash, not a premium piece. A back with no
+ * rank on a pillar is left unbadged, as before.
+ *
+ * Only reached when getHandcuffBadge() returns "", so every exact fit keeps
+ * its badge (mak, 2026-10-09: no backup should sit on the board without one).
+ */
+export function nearestHandcuffBadge(
+  playerQualityRank: number | null | undefined,
+  pathToOpportunityRank: number | null | undefined,
+  backfieldOpportunityRank: number | null | undefined,
+  poolSize: number,
+): string {
+  if (playerQualityRank == null || pathToOpportunityRank == null || backfieldOpportunityRank == null) return "";
+  const ranks = [playerQualityRank, pathToOpportunityRank, backfieldOpportunityRank];
+  const miss = (r: number, band: Band): number =>
+    band == null ? 0 : r < band[0] ? band[0] - r : r > band[1] ? r - band[1] : 0;
+  let best: { label: string; distance: number } | null = null;
+  for (const [label, bands] of archetypeBands(poolSize)) {
+    if (label.startsWith("Premium") && playerQualityRank > 12) continue;
+    if (label === "Talent Stash" && playerQualityRank > Math.floor(poolSize / 2)) continue;
+    const distance = bands.reduce((sum, band, i) => sum + miss(ranks[i]!, band), 0);
+    if (!best || distance < best.distance) best = { label, distance };
+  }
+  return best?.label ?? "";
+}

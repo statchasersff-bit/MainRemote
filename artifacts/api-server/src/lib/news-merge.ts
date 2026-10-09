@@ -3,7 +3,7 @@
  *
  * Its own module, and deliberately importing nothing. This is the one piece of
  * the read path that is a policy rather than a query - it decides what a reader
- * sees above the fold - so it is worth being able to state its behaviour in a
+ * sees above the fold - so it is worth being able to state its behavior in a
  * test without a database, a connection pool, or a log transport in the way.
  */
 

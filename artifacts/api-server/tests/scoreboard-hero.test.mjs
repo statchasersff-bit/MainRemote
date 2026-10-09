@@ -91,7 +91,7 @@ describe("the Cardinals–Rams Wild Card", () => {
   const doc = render(WILD_CARD);
   const header = doc.querySelector("header.sct-sbh");
 
-  test("is a header labelled by its one H1", () => {
+  test("is a header labeled by its one H1", () => {
     assert.ok(header);
     assert.equal(doc.querySelectorAll("h1").length, 1);
     const h1 = doc.querySelector("h1");
@@ -287,7 +287,7 @@ describe("a Super Bowl", () => {
   });
 });
 
-describe("the team colours", () => {
+describe("the team colors", () => {
   const luminance = (hex) => {
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
     const lin = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -324,7 +324,7 @@ describe("the team colours", () => {
     assert.equal(hero.heroSideColor("CIN"), hero.teamColors.CIN.secondary);
   });
 
-  test("every club's text colour and tile fill pass AA against white", () => {
+  test("every club's text color and tile fill pass AA against white", () => {
     for (const abbr of Object.keys(hero.teamColors)) {
       const ink = hero.teamInk(abbr);
       const fill = hero.teamFill(abbr);

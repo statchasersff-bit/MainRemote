@@ -8,7 +8,7 @@
  *     season falls back to the one just played, and the file used to keep the
  *     name of the season that was asked for.
  *
- * The fixture is the real 2024 slate relabelled as last season, so the current
+ * The fixture is the real 2024 slate relabeled as last season, so the current
  * season has no rows and the fallback is what serves.
  */
 

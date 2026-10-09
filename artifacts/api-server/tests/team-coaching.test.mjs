@@ -191,7 +191,7 @@ describe("the tendencies table", () => {
 });
 
 describe("staff, dossier and finishes", () => {
-  test("the OC card wears the delegation watch; the DC card speaks to offence fantasy", async () => {
+  test("the OC card wears the delegation watch; the DC card speaks to offense fantasy", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const cards = [...doc.querySelectorAll(".sct-co-staffcard")];
     assert.equal(cards.length, 3);
@@ -221,7 +221,7 @@ describe("staff, dossier and finishes", () => {
     const now = finishes[finishes.length - 1];
     assert.match(now.textContent, /Through Week \d+In-season/);
     assert.equal(now.querySelectorAll(".sct-co-fpill.is-provisional").length, 4);
-    // Settled rows: the rank leads as a tier pill, the player under it, uncoloured.
+    // Settled rows: the rank leads as a tier pill, the player under it, uncolored.
     const first = finishes[0].querySelectorAll("td")[0];
     assert.match(first.querySelector(".sct-co-fpill").className, /is-(elite|strong|mid|low)$/);
     assert.ok(first.querySelector(".sct-co-fwho").textContent.length > 0);
@@ -427,7 +427,7 @@ describe("fantasy finishes by coaching stop", () => {
     assert.deepEqual(best, ["QB2Maye · 2025", "RB3Jacobs · 2022", "WR3Adams · 2022", "TE9Henry · 2025"]);
     assert.equal(
       block.querySelector(".sct-co-fnote").textContent,
-      "PPR positional finishes from nflverse. Partial-season rows rank only the games McDaniels called. Historical outcomes, not projections.",
+      "PPR positional finishes. Partial-season rows rank only the games McDaniels called. Historical outcomes, not projections.",
     );
     assert.ok(block.querySelector("details.sct-co-more").textContent.includes("McDaniels's offenses have put up repeated top-ten"));
     const stop = block.querySelector("tbody tr .sct-co-fstop").textContent;

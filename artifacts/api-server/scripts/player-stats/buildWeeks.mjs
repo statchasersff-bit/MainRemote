@@ -386,7 +386,7 @@ export function definitions(position, tally) {
       completions: (p) => g(p, "cmp"),
       completionPct: (p) => ratio(g(p, "cmp"), g(p, "att"), 100),
       passingYards: (p) => g(p, "passYds"),
-      // Labelled "Yds / Comp", but the snapshot's figure is yards per attempt.
+      // Labeled "Yds / Comp", but the snapshot's figure is yards per attempt.
       yardsPerCatch: (p) => ratio(g(p, "passYds"), g(p, "att")),
       passingTouchdowns: (p) => g(p, "passTd"),
       interceptions: (p) => g(p, "int"),

@@ -44,7 +44,7 @@
  *
  * No canonical, no <title>, no meta description of its own - Rank Math owns
  * those, and the three meta values written below are the page's only ones.
- * Same division of labour as the plugin.
+ * Same division of labor as the plugin.
  *
  * @package StatChasers\Scripts
  */
@@ -654,7 +654,7 @@ if ( $sc_teams_parent ) {
 	 * other way the page gets built and it was never brought in step.
 	 *
 	 * Written when the page is empty, and OVER the stub the old version of this
-	 * block wrote - recognised the same way the plugin recognises it: our own
+	 * block wrote - recognized the same way the plugin recognizes it: our own
 	 * lead sentence, a wall of links to the team path, and no shortcode of any
 	 * kind. Anything else is somebody's own page and is left alone.
 	 */

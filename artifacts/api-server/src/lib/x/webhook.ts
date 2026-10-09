@@ -23,7 +23,7 @@ import type { XPost } from "./types";
  * 255 characters, which is the whole reason this file has a chunker in it: the
  * 37 seeded reporters come to roughly 740 characters as `from:` terms, so the
  * watchlist does not fit in one rule and never will. Splitting is not an
- * optimisation, it is the only way to express the question.
+ * optimization, it is the only way to express the question.
  */
 export const MAX_RULE_LENGTH = 255;
 

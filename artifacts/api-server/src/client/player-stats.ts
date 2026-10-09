@@ -507,7 +507,7 @@ function wire(root: HTMLElement): void {
   });
 
   // A blank number box reads as zero while it is being typed in, and shows it
-  // once the reader moves on - the standalone app's blur behaviour.
+  // once the reader moves on - the standalone app's blur behavior.
   root.addEventListener("focusout", (event) => {
     const input = event.target as HTMLInputElement | null;
     if (!input || input.type !== "number" || !input.closest("[data-sca-filters]")) return;

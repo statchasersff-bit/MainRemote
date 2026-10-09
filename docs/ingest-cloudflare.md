@@ -128,7 +128,7 @@ DYNASTY_NEWS_API_URL = https://dynasty-command.replit.app/api/news/nfl,https://a
 ```
 
 `api.statchasers.com` stays **last** on purpose: the list is tried in order, so if
-the direct route ever breaks, behaviour degrades to the old path rather than going
+the direct route ever breaks, behavior degrades to the old path rather than going
 dark. `.replit`'s `[userenv.shared]` carries the same value but configures the
 workspace only.
 

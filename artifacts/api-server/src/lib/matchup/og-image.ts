@@ -1,6 +1,6 @@
 /**
  * The recap's share image: a 1200×630 PNG per completed game, drawn as SVG and
- * rasterised with resvg in the site's own display face (Barlow Condensed,
+ * rasterized with resvg in the site's own display face (Barlow Condensed,
  * shipped in assets/fonts under the OFL).
  *
  * Served at /og/<away-slug>-vs-<home-slug>-<season>-<round-slug>.png. The
@@ -88,7 +88,7 @@ export function shareImageSvg(input: ShareImageInput): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
     `<rect width="${W}" height="${H}" fill="${NAVY}"/>` +
-    // Each side's colour on its outer third, the inner edges slanted like the hero's.
+    // Each side's color on its outer third, the inner edges slanted like the hero's.
     `<polygon points="0,0 470,0 390,${strip} 0,${strip}" fill="${away}"/>` +
     `<polygon points="810,0 ${W},0 ${W},${strip} 730,${strip}" fill="${home}"/>` +
     `<g fill="#FFFFFF" fill-opacity="0.06">${lines}</g>` +

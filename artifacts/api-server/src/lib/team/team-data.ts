@@ -84,7 +84,7 @@ export interface TeamPageData {
   profile: TeamProfile | null;
   snapshot: TeamSnapshot | null;
   /**
-   * Offence and defence with league ranks, for the Stats tab. Shares its season
+   * Offense and defense with league ranks, for the Stats tab. Shares its season
    * with the snapshot rather than picking its own: both describe completed
    * football, so before Week 1 both describe last season and the page has one
    * season to explain instead of two.
@@ -92,7 +92,7 @@ export interface TeamPageData {
   stats: TeamStats | null;
 
   /**
-   * How the next opponent's defence is doing, for the one line of context on
+   * How the next opponent's defense is doing, for the one line of context on
    * the Next Game card.
    *
    * Deliberately one number, and a real one: points allowed per game with its
@@ -123,7 +123,7 @@ function settled<T>(result: PromiseSettledResult<T | null>): T | null {
 }
 
 /**
- * Does ESPN's win-loss record describe the season this page is labelled with?
+ * Does ESPN's win-loss record describe the season this page is labeled with?
  *
  * The calendar cannot answer this. Sleeper flips `season_type` to "regular" and
  * `week` to 1 as soon as the preseason ends - days before anybody plays a
