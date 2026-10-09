@@ -135,14 +135,25 @@ describe("the model", () => {
     assert.equal(moved.notes, null, "a different starter means the note is out of date");
   });
 
-  test("this week's board: one handcuff per team, straight from the depth charts", async () => {
+  test("this week's board: one handcuff per team, from the depth charts plus any hand correction", async () => {
     const depth = await readJson("data", "rb-handcuffs", "depth.json");
-    const expected = Object.values(depth.teams).filter((t) => t.rb2).length;
-    assert.equal(BOARD.players.length, expected);
+    const curation = await readJson("data", "rb-handcuffs", "curation.json");
+    const pairings = data.pairingsFrom(depth, curation);
+    assert.equal(BOARD.players.length, pairings.length);
     for (const p of BOARD.players) {
-      const chart = Object.entries(depth.teams).find(([, t]) => t.rb2 === p.playerName);
-      assert.ok(chart, `${p.playerName} is an RB2 this week`);
-      assert.equal(p.starterName, chart[1].rb1, `${p.playerName} is behind his RB1`);
+      const pairing = pairings.find((x) => x.backup === p.playerName);
+      assert.ok(pairing, `${p.playerName} is an RB2 this week`);
+      assert.equal(p.starterName, pairing.starter, `${p.playerName} is behind his RB1`);
+    }
+    // The one correction in force: Minnesota's handcuff is Jordan Mason, not
+    // the RB2 Ourlads lists (mak, 2026-10-09).
+    const fixed = curation.depth?.MIN;
+    if (fixed) {
+      assert.equal(depth.teams.MIN.rb1, fixed.rb1, "the correction only replaces the handcuff");
+      assert.notEqual(depth.teams.MIN.rb2, fixed.rb2, "the correction still differs from Ourlads; drop it when it no longer does");
+      assert.ok(BOARD.players.some((p) => p.team === "MIN" && p.playerName === fixed.rb2));
+      assert.ok(!BOARD.players.some((p) => p.playerName === depth.teams.MIN.rb2));
+      assert.ok(depth.players[stats.normalizeName(fixed.rb2)]?.sleeperId, "a pinned back keeps his Sleeper record");
     }
     assert.equal(BOARD.updatedAt, new Date(depth.generated_at).toISOString());
   });
@@ -288,6 +299,71 @@ describe("the model", () => {
     assert.equal(data.seasonOf("2026-08-17T14:10:35.443Z"), 2026);
     assert.equal(data.seasonOf("2027-02-10T00:00:00Z"), 2026);
     assert.equal(data.seasonOf("2027-03-01T00:00:00Z"), 2027);
+  });
+});
+
+describe("the starter efficiency flags", () => {
+  // mak, 2026-10-08: "Starter is excelling" fired for Saquon Barkley in week 4
+  // on 36 carries at 5.06, with one 42-yard run as the whole margin. The flag
+  // now needs a sample, a lead back's share, and an average that survives
+  // losing the longest run; the "poor efficiency" reason shares the floor.
+  let scoring;
+  before(async () => {
+    scoring = await importModule("lib/rb-handcuffs/engine/scoring");
+  });
+  after(async () => {
+    await cleanupBundles();
+  });
+
+  const quiet = { workloadIfStarterOut: 50, offenseQuality: 50, roleClarity: 50, talentBackup: 50, oLine: 50 };
+  const starter = (carries, yards, longest, games) => ({
+    ...quiet,
+    starterYpc: Math.round((yards / carries) * 10) / 10,
+    starterCarries: carries,
+    starterGames: games,
+    starterYpcWithoutLongest: scoring.ypcWithoutLongest(carries, yards, longest),
+  });
+  const EXCELLING = "Starter is excelling - low bench risk";
+  const POOR = "Starter showing poor efficiency";
+
+  test("Barkley, week 4: 36 carries, 182 yards, a 42-yard run - not excelling", () => {
+    const ctx = starter(36, 182, 42, 4);
+    assert.equal(ctx.starterYpc, 5.1, "the bare average clears 5.0");
+    assert.equal(ctx.starterYpcWithoutLongest, 4);
+    assert.ok(!scoring.getRiskFlags(ctx, null, false).includes(EXCELLING));
+  });
+
+  test("a lead back on a real sample who stays efficient without his best run is excelling", () => {
+    // Bijan through week 4: 85 for 494, longest 59.
+    assert.ok(scoring.getRiskFlags(starter(85, 494, 59, 4), null, false).includes(EXCELLING));
+    // Hubbard: 61 for 306, longest 32 - 5.02, and 4.57 without it.
+    assert.ok(scoring.getRiskFlags(starter(61, 306, 32, 4), null, false).includes(EXCELLING));
+  });
+
+  test("one long run on a thin line does not make a starter good", () => {
+    // mak's example: 180 yards, 90 of them on one carry, the rest at a low clip.
+    // Volume and share are fine; the outlier check is what says no.
+    const ctx = starter(48, 180, 90, 4);
+    assert.ok(ctx.starterCarries / ctx.starterGames >= scoring.STARTER_LEAD_CARRIES_PER_GAME);
+    assert.ok(!scoring.getRiskFlags(ctx, null, false).includes(EXCELLING));
+    // The same average spread across the carries is.
+    assert.ok(scoring.getRiskFlags(starter(48, 250, 20, 4), null, false).includes(EXCELLING));
+  });
+
+  test("a part-time role is not excelling, however efficient", () => {
+    // 45 carries at 5.5 but 7.5 a game.
+    assert.ok(!scoring.getRiskFlags(starter(45, 248, 20, 6), null, false).includes(EXCELLING));
+  });
+
+  test("the poor-efficiency reason needs the same sample", () => {
+    assert.ok(!scoring.getTopReasons(starter(20, 55, 9, 2), null, false).includes(POOR), "20 carries at 2.75: too few to say");
+    assert.ok(scoring.getTopReasons(starter(60, 165, 14, 4), null, false).includes(POOR), "60 carries at 2.75: say it");
+  });
+
+  test("ypcWithoutLongest wants two carries and all three figures", () => {
+    assert.equal(scoring.ypcWithoutLongest(1, 42, 42), null);
+    assert.equal(scoring.ypcWithoutLongest(36, 182, null), null);
+    assert.equal(scoring.ypcWithoutLongest(36, 182, 42), 4);
   });
 });
 

@@ -241,6 +241,33 @@ add_action( 'untrashed_post', 'statchasers_team_forget_status' );
  * @param string $key   Meta key.
  * @param mixed  $value Meta value.
  */
+/**
+ * The longest title that fits a results page.
+ *
+ * Google shows about 60 characters of a title and rewrites or cuts the rest,
+ * and the 2026-10-08 crawl found 2,373 of the site's generated titles past it.
+ * A player's or a team's name is the part people search, so it stays whole and
+ * the tail after it gives way: every generated title is a ladder of candidates,
+ * most descriptive first, the first that fits is used, and the last rung is
+ * written short enough for every name there is (and is returned even when it
+ * is not). No " | StatChasers" on any of them (mak, 2026-10-08): the brand
+ * spent fourteen of the sixty on every page.
+ *
+ * MIRRORS fitTitle() in the API's src/lib/title-fit.ts. Change one and change
+ * the other.
+ *
+ * @param string[] $candidates Titles, most descriptive first.
+ * @param int      $max        The budget, in bytes - the strings are ASCII.
+ */
+function statchasers_fit_title( array $candidates, int $max = 60 ): string {
+	foreach ( $candidates as $candidate ) {
+		if ( strlen( $candidate ) <= $max ) {
+			return $candidate;
+		}
+	}
+	return (string) end( $candidates );
+}
+
 function statchasers_team_fill_meta( int $id, string $key, $value ): void {
 	$current = get_post_meta( $id, $key, true );
 	if ( empty( $current ) ) {
@@ -319,11 +346,7 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 		// see the note in README.md on updating the 32 that already exist.
 		$root = statchasers_team_section_meta( $slug, '' );
 
-		statchasers_team_fill_meta(
-			$id,
-			'rank_math_title',
-			$root['title'] . ' | StatChasers'
-		);
+		statchasers_team_fill_meta( $id, 'rank_math_title', $root['title'] );
 		statchasers_team_fill_meta( $id, 'rank_math_description', $root['description'] );
 		statchasers_team_fill_meta( $id, 'rank_math_robots', array( 'index', 'follow' ) );
 
@@ -1052,6 +1075,7 @@ function statchasers_team_pages_screen(): void {
 	statchasers_team_retitle_panel();
 	statchasers_index_panel();
 	statchasers_player_panel();
+	statchasers_player_retitle_panel();
 	statchasers_matchup_panel();
 	statchasers_h1_panel();
 	statchasers_flush_panel();
@@ -1276,7 +1300,15 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 		case 'usage':
 			return array(
-				'title'       => sprintf( '%s Target Share & Snap Counts %s: Usage Report', $name, $season ),
+				// Every title is a statchasers_fit_title() ladder: the fullest
+				// wording that fits sixty characters, then a shorter rung for
+				// the long names (mak approved the wording, 2026-10-08).
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Target Share & Snap Counts %s: Usage Report', $name, $season ),
+						sprintf( '%s Target Share & Snap Counts %s', $name, $season ),
+					)
+				),
 				'description' => sprintf(
 					'%1$s target share, snap share and red-zone touches for %2$s, updated every Tuesday: the %3$s target tree, backfield split, pass map and buy-low / sell-high signals.',
 					$name,
@@ -1287,7 +1319,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 		case 'stats':
 			return array(
-				'title'       => sprintf( '%s Stats %s: Offense, Defense & NFL Rankings', $name, $season ),
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Stats %s: Offense, Defense & NFL Rankings', $name, $season ),
+						sprintf( '%s Stats %s: Offense & Defense Rankings', $name, $season ),
+					)
+				),
 				'description' => sprintf(
 					'%1$s team stats for %2$s: points, yards, pace and play mix on offense and defense, each with the %3$s rank among all 32 teams.',
 					$name,
@@ -1298,7 +1335,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 		case 'schedule':
 			return array(
-				'title'       => sprintf( '%s Schedule %s: Dates, Opponents & Results', $name, $season ),
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Schedule %s: Dates, Opponents & Results', $name, $season ),
+						sprintf( '%s Schedule %s: Opponents & Results', $name, $season ),
+					)
+				),
 				'description' => sprintf(
 					'The full %1$s %2$s schedule: every opponent, kickoff time and result, plus the %3$s bye week and what is next on the calendar.',
 					$season,
@@ -1309,7 +1351,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 		case 'matchups':
 			return array(
-				'title'       => sprintf( '%s Matchups %s: Opponents, Results & Head-to-Head', $name, $season ),
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Matchups %s: Opponents & Head-to-Head', $name, $season ),
+						sprintf( '%s Matchups %s: Opponents & Results', $name, $season ),
+					)
+				),
 				'description' => sprintf(
 					'Every %1$s opponent in %2$s, week by week, with results and a matchup page for each pair: team stats side by side, injuries and the head-to-head record.',
 					$name,
@@ -1319,7 +1366,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 		case 'news':
 			return array(
-				'title'       => sprintf( '%s News %s: Injuries, Roster Moves & Fantasy Impact', $name, $season ),
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s News %s: Injuries, Moves & Fantasy Impact', $name, $season ),
+						sprintf( '%s News %s: Injuries & Roster Moves', $name, $season ),
+					)
+				),
 				'description' => sprintf(
 					'The latest %1$s news: injury designations, roster moves and depth-chart changes through the %2$s season, each with what it means for %3$s fantasy value.',
 					$name,
@@ -1341,7 +1393,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 	}
 
 	return array(
-		'title'       => sprintf( '%1$s %2$s: Record, Schedule, Stats & Fantasy Football', $name, $season ),
+		'title'       => statchasers_fit_title(
+			array(
+				sprintf( '%1$s %2$s: Record, Schedule, Stats & Fantasy', $name, $season ),
+				sprintf( '%1$s %2$s: Record, Schedule & Stats', $name, $season ),
+			)
+		),
 		'description' => sprintf(
 			'Live %1$s player news and injury updates, the offensive depth chart, %2$s schedule, team stats with NFL ranks and a weekly fantasy outlook.',
 			$nick,
@@ -1525,7 +1582,7 @@ add_filter(
 	'rank_math/frontend/title',
 	function ( $title ) {
 		$meta = statchasers_team_request_meta();
-		return $meta ? $meta['title'] . ' | StatChasers' : $title;
+		return $meta ? $meta['title'] : $title;
 	}
 );
 
@@ -1715,12 +1772,15 @@ add_filter(
 /**
  * Whether a stored hub title is one this plugin wrote, in any season.
  *
- * Two templates, both with the season as any four digits:
+ * Three templates, each with the season as any four digits:
  *
- *   - the old one, "<season> <team> Fantasy Football Hub | StatChasers";
- *   - the current one, "<team> <season>: Record, Schedule, Stats & Fantasy
- *     Football | StatChasers" - statchasers_team_section_meta() with no
- *     section, which is what the builder has written since.
+ *   - the oldest, "<season> <team> Fantasy Football Hub | StatChasers";
+ *   - the 2026-09 one, "<team> <season>: Record, Schedule, Stats & Fantasy
+ *     Football | StatChasers";
+ *   - the current one, "<team> <season>: Record, Schedule, Stats & Fantasy"
+ *     or its shorter rung "<team> <season>: Record, Schedule & Stats", with no
+ *     brand (mak, 2026-10-08) - statchasers_team_section_meta() with no
+ *     section, which is what the builder writes now.
  *
  * The second is what makes the season rollover a button press. Recognising
  * only the old wording meant every hub built with the current one read as
@@ -1739,7 +1799,8 @@ function statchasers_team_title_is_generated( string $title, string $name ): boo
 	}
 	$team = preg_quote( $name, '/' );
 	return 1 === preg_match(
-		'/^(?:\d{4} ' . $team . ' Fantasy Football Hub|' . $team . ' \d{4}: Record, Schedule, Stats & Fantasy Football) \| StatChasers$/',
+		'/^(?:(?:\d{4} ' . $team . ' Fantasy Football Hub|' . $team . ' \d{4}: Record, Schedule, Stats & Fantasy Football) \| StatChasers' .
+		'|' . $team . ' \d{4}: Record, Schedule(?:, Stats & Fantasy| & Stats))$/',
 		$title
 	);
 }
@@ -1765,7 +1826,7 @@ function statchasers_team_retitle_plan(): array {
 		}
 
 		$current = (string) get_post_meta( $id, 'rank_math_title', true );
-		$wanted  = statchasers_team_section_meta( $slug, '' )['title'] . ' | StatChasers';
+		$wanted  = statchasers_team_section_meta( $slug, '' )['title'];
 
 		if ( $current === $wanted ) {
 			continue; // Already there.
@@ -1789,11 +1850,7 @@ function statchasers_team_retitle_plan(): array {
 function statchasers_team_retitle_apply(): int {
 	$done = 0;
 	foreach ( statchasers_team_retitle_plan()['eligible'] as $id => $slug ) {
-		update_post_meta(
-			$id,
-			'rank_math_title',
-			statchasers_team_section_meta( $slug, '' )['title'] . ' | StatChasers'
-		);
+		update_post_meta( $id, 'rank_math_title', statchasers_team_section_meta( $slug, '' )['title'] );
 		++$done;
 	}
 	return $done;
@@ -1838,10 +1895,11 @@ function statchasers_team_retitle_panel(): void {
 	echo '<h2>Hub titles</h2>';
 	printf(
 		'<p>The hub title is now <code>%s</code>. Pages still carrying the old ' .
-		'<code>&lt;season&gt; &lt;team&gt; Fantasy Football Hub</code> wording, this wording with an earlier season, ' .
-		'or no title, can be moved to it here. ' .
+		'<code>&lt;season&gt; &lt;team&gt; Fantasy Football Hub</code> or ' .
+		'<code>&lt;team&gt; &lt;season&gt;: Record, Schedule, Stats &amp; Fantasy Football | StatChasers</code> wording, ' .
+		'this wording with an earlier season, or no title, can be moved to it here. ' .
 		'A title someone typed by hand is never touched.</p>',
-		esc_html( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] . ' | StatChasers' )
+		esc_html( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] )
 	);
 	printf(
 		'<p><strong>%d eligible &middot; %d custom title%s left alone%s</strong></p>',

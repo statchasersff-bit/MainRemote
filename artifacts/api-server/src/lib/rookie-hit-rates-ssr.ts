@@ -15,7 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { logger } from "./logger";
 import { renderRhrEmpty, renderRhrPage, rhrPageCopy, type RhrRenderOptions } from "./rookie-hit-rates/render";
-import { defaultState, getRhrData, rhrDataVersion } from "./rookie-hit-rates/data";
+import { defaultState, getRhrData, rhrDataVersion, rhrProfiles } from "./rookie-hit-rates/data";
 import { renderRhrHeadTags } from "./rookie-hit-rates-seo";
 import { LruCache } from "./lru";
 import { currentAssetOrigin } from "./asset-origin";
@@ -77,15 +77,17 @@ export function renderRhrFragment(options: RhrRenderOptions = {}): RhrSsrResult 
   if (!data) {
     return { html: renderRhrEmpty(options), version: "empty", ok: false, firstClass: null, lastClass: null };
   }
-  // The origin and the known headshot versions are in the markup, so both
-  // key the cache alongside the options.
+  // The origin, the known headshot versions and the profile links are in the
+  // markup (the player explorer links each name the site has a page for), so
+  // all of them key the cache alongside the options.
   const assets = rhrAssets(data);
+  const profiles = rhrProfiles();
   const key = JSON.stringify([options.embed ?? false, options.dataUrl ?? "", assets.origin]);
-  const version = `${rhrDataVersion()}-${imageVersionsEpoch()}-${hash(key)}`;
+  const version = `${rhrDataVersion()}-${imageVersionsEpoch()}-${Object.keys(profiles).length}-${hash(key)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
   const result: RhrSsrResult = {
-    html: renderRhrPage({ ...data, assets }, defaultState(data), options),
+    html: renderRhrPage({ ...data, assets, profiles }, defaultState(data), options),
     version,
     ok: true,
     firstClass: data.firstClass,

@@ -40,14 +40,30 @@ export const ROS_RANKINGS_URL = "https://statchasers.com/fantasy-football/rest-o
  * address here and the CTAs and the footer pick it up.
  */
 export const LINEUP_OPTIMIZER_URL: string | null = null;
-export const WAIVER_WIRE_URL: string | null = null;
+/**
+ * Redraft Command's waiver tool, at the address its own nav links
+ * (2026-10-08). Setting it switched on the usage report's waiver lines and
+ * the preview's "Check waivers" / "Need a replacement?" CTAs.
+ */
+export const WAIVER_WIRE_URL: string | null =
+  "https://statchasers.com/redraft-command/fantasy-football-waiver-wire-assistant";
 /** Confirmed by mak 2026-10-05 (the team hub footer); it also turns on the preview's Dynasty bridge. */
 export const DYNASTY_COMMAND_URL: string | null = "https://statchasers.com/dynasty-command/";
-/* The usage report's bridges (mak, 2026-10-05), addresses not given yet. */
+/*
+ * The usage report's bridges (mak, 2026-10-05). Redraft Command's nav also
+ * links /redraft-command/fantasy-football-trade-finder and
+ * /redraft-command/buy-low-sell-high-trade-targets; they stay null until mak
+ * wants them on the page (the board would add a sentence to a usage FAQ
+ * answer, see seo-changes-need-approval).
+ */
 export const TRADE_FINDER_URL: string | null = null;
 export const BUY_LOW_SELL_HIGH_URL: string | null = null;
-export const DYNASTY_RANKINGS_URL: string | null = null;
-export const DYNASTY_TRADE_CALCULATOR_URL: string | null = null;
+/* Dynasty Command's tools, at the routes its app registers (2026-10-08). */
+export const DYNASTY_RANKINGS_URL: string | null = "https://statchasers.com/dynasty-command/dynasty-rankings";
+export const DYNASTY_TRADE_CALCULATOR_URL: string | null =
+  "https://statchasers.com/dynasty-command/dynasty-trade-calculator";
+export const DYNASTY_LEAGUE_ANALYZER_URL: string | null =
+  "https://statchasers.com/dynasty-command/dynasty-league-analyzer";
 /** The handcuff rankings tool on statchasers.com, the waiver line's stand-in until WAIVER_WIRE_URL is set. */
 export const RB_HANDCUFF_RANKINGS_URL = "https://statchasers.com/rb-handcuff-rankings/";
 

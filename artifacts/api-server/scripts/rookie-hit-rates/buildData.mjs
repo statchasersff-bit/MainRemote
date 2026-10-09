@@ -5,7 +5,8 @@
  *
  * Reads the standalone app's committed inputs, copied unchanged into
  * `data/rookie-hit-rates/source/` from statchasersff-bit/Rookie-Hit-Rate
- * (client/public/data/*.csv and client/src/lib/player-headshots.json), and
+ * (client/public/data/*.csv and client/src/lib/player-headshots.json; copied
+ * at 696e330 on 2026-10-05 and byte-identical at 9c69b00, 2026-10-08), and
  * writes `data/rookie-hit-rates/hit-rates.json`: the same rows, packed.
  *
  * Nothing is recomputed here. The positional ranks in season_finishes.csv were

@@ -546,6 +546,14 @@ button.scp-search-opt {
 
 .scp .scp-phead {
   position: relative;
+  /* Its own stacking context, so the accent bar's z-index below is read
+     against the card and nothing else. Without this the bar is a z-index of 2
+     in the PAGE, and on statchasers.com that ties Divi's header wrapper
+     (header .et_builder_inner_content is relative at 2, and the .et-l--header
+     around it has no position, so the plugin's 99999 on it does nothing).
+     A tie goes to the later element, which is this card: the Tools dropdown
+     drew over the whole header except for a 4px line through its items. */
+  isolation: isolate;
   margin: 18px 0 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
   border: 1px solid var(--scp-ph-line);

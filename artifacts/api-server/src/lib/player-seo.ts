@@ -21,6 +21,7 @@ import { escapeHtml } from "./render";
 import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
 import { bioDescription } from "./player/bio-seo";
+import { fitTitle } from "./title-fit";
 
 export interface PlayerPageMeta {
   title: string;
@@ -54,9 +55,13 @@ function sectionMeta(
 
   if (section === "stats") {
     return {
-      title: `${player.name} Stats ${season}: Fantasy Points, ${
-        player.position === "QB" ? "Passing & Rushing" : "Receiving & Rushing"
-      } Stats | ${SITE_NAME}`,
+      // Every section title is a ladder for fitTitle(): the fullest wording
+      // that fits sixty characters, and a shorter rung for the longest names
+      // (mak approved the wording, 2026-10-08).
+      title: fitTitle([
+        `${player.name} Stats ${season}: Fantasy Points & Career Stats`,
+        `${player.name} Stats ${season}: Fantasy Points & Rank`,
+      ]),
       description:
         `${player.name} ${season} stats: ${position}season totals, fantasy ` +
         `points and positional rank, career stats by season from his rookie ` +
@@ -66,7 +71,10 @@ function sectionMeta(
 
   if (section === "injury") {
     return {
-      title: `${player.name} Injury Update, Status & History ${season} | ${SITE_NAME}`,
+      title: fitTitle([
+        `${player.name} Injury Update, Status & History ${season}`,
+        `${player.name} Injury Update & History ${season}`,
+      ]),
       description:
         `${player.name} injury update: current status and designation, ` +
         `${season} games missed, and every logged injury of his career with ` +
@@ -84,7 +92,7 @@ function sectionMeta(
     const profile = data.bioProfile;
     const born = profile.facts.find((fact) => fact.label === "Born")?.value;
     const college = profile.college;
-    const title = `${player.name} Bio: Age, Height, College, Draft & Career Teams | ${SITE_NAME}`;
+    const title = `${player.name} Bio: Age, Height, College & Draft`;
     const specDescription = data.bioPage ? bioDescription(data, data.bioPage) : null;
     if (specDescription) return { title, description: specDescription };
 
@@ -103,7 +111,10 @@ function sectionMeta(
     // 2026 outlook for everybody, and a player with no 2026 snaps yet got a
     // "2025" title over a 2026 H1.
     return {
-      title: `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role, Usage & Draft Value | ${SITE_NAME}`,
+      title: fitTitle([
+        `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role, Usage & Value`,
+        `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role & Usage`,
+      ]),
       description:
         `${player.name} ${OUTLOOK_SEASON} fantasy outlook: his ${position}role, the ` +
         `usage behind it and what it is worth on draft day.`,
@@ -112,7 +123,7 @@ function sectionMeta(
 
   if (section === "news") {
     return {
-      title: `${player.name} News & Fantasy Analysis | ${SITE_NAME}`,
+      title: `${player.name} News & Fantasy Analysis`,
       description:
         `The latest ${player.name} news and updates, and what each item ` +
         `changes for fantasy.`,
@@ -126,8 +137,10 @@ function sectionMeta(
     // title naming 2023 would describe the block at the bottom of it.
     const year = data.season;
     return {
-      title:
-        `${player.name} Game Log ${year}: Fantasy Points & Stats by Week | ${SITE_NAME}`,
+      title: fitTitle([
+        `${player.name} Game Log ${year}: Fantasy Points by Week`,
+        `${player.name} Game Log ${year}: Week by Week`,
+      ]),
       description:
         `${player.name} ${year} game log: fantasy points by week, ` +
         `${position}stats game by game, weekly positional finish and the ` +
@@ -143,9 +156,8 @@ export function playerPageMeta(
   canonical: string,
   section?: string,
 ): PlayerPageMeta {
-  const { player, team, season } = data;
+  const { player, season } = data;
   const position = player.position ? `${player.position} ` : "";
-  const teamName = team ? ` | ${team.fullName}` : "";
 
   const scoped = section ? sectionMeta(data, section) : null;
 
@@ -159,9 +171,9 @@ export function playerPageMeta(
       `history and fantasy outlook.`;
 
   return {
-    title:
-      scoped?.title ??
-      `${player.name} Fantasy Football Stats & Analysis${teamName} | ${SITE_NAME}`,
+    // The profile's title is the one the WordPress page builder stores
+    // (statchasers_player_page_meta); the two must say the same thing.
+    title: scoped?.title ?? `${player.name} Fantasy Football Stats & Analysis`,
     description,
     canonical,
     siteName: SITE_NAME,

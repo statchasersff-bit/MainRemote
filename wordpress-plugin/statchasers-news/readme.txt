@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.29
+Stable tag: 1.10.31
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule and the dynasty rookie hit rates into WordPress pages.
@@ -19,6 +19,12 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.31 =
+* Titles fit a results page. The 2026-10-08 crawl found 2,373 of about 4,850 pages with titles over 60 characters, nearly all from the generated templates, so every generated title is now a ladder: the fullest wording that fits sixty characters, then a shorter rung for the long names (statchasers_fit_title(), mirroring the API's src/lib/title-fit.ts). None carries " | StatChasers" any more - the brand spent fourteen of the sixty on every page and the name already carries the site. Team hub tabs: "Buffalo Bills 2026: Record, Schedule, Stats & Fantasy", "... Stats 2026: Offense, Defense & NFL Rankings", "... Schedule 2026: Dates, Opponents & Results", "... Matchups 2026: Opponents & Head-to-Head", "... News 2026: Injuries, Moves & Fantasy Impact", "... Target Share & Snap Counts 2026: Usage Report", each with its short rung; Outlook and Depth Chart only lose the brand. Matchup pages: the budget is 60 (was 70 with the brand tried first) and the head-to-head page reads "Arizona Cardinals vs Buffalo Bills: Head-to-Head History", or "Chargers vs Commanders: Head-to-Head Record & History" when the full names leave no room. Player profiles: "<player> Fantasy Football Stats & Analysis" with no brand; the section titles come from the API ("<player> Stats 2026: Fantasy Points & Career Stats", "... Bio: Age, Height, College & Draft", "... Fantasy Outlook 2026: Role, Usage & Value", "... Game Log 2026: Fantasy Points by Week") and need the matching API deploy. Two titles are stored on the pages themselves and need a button press on Tools > Team Pages after installing: "Hub titles" (the 32 team hubs; the retitle now recognises the 2026-09 wording too) and the new "Profile titles" (every player page carrying the old branded wording, or no title; a title typed by hand is never touched). Purge Rocket after both.
+
+= 1.10.30 =
+* The site's header now really outranks the tools on a Divi Theme Builder header: the lift rule (statchasers_tool_header_layer_css, printed with every tool stylesheet) also names header.et-l--header>.et_builder_inner_content. The .et-l--header element has no position on statchasers.com, so the 99999 on it did nothing and the header sat at Divi's own z-index of 2 on that inner wrapper. Seen on player pages as the Tools dropdown drawing behind the card's 4px accent bar, and on phones as the player tab bar printing through the open mobile menu once the page is scrolled. The matching API deploy also gives the player header card its own stacking context (isolation: isolate), which cures the desktop dropdown by itself; the mobile menu needs this plugin. Purge Rocket after installing.
 
 = 1.10.29 =
 * Player pages: the header headshot (class scp-pwell-img, the page's LCP image, fetchpriority="high") is excluded from WP Rocket's LazyLoad through the rocket_lazyload_excluded_attributes filter, along with any other image marked fetchpriority="high". Rocket had been swapping the headshot's src for a blank SVG and loading the real file only after its script ran, which defeats the priority hint. The matching API deploy prints loading="eager" and data-no-lazy="1" on the tag and pins the image to its 350x254 box with aspect-ratio, so the well is the same height before and after the file arrives. Purge Rocket after installing: cached pages still carry the rewritten tag.

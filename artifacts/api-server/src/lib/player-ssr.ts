@@ -172,7 +172,7 @@ function pageDataIsland(
     `<script type="application/json" class="scp-page-data">` +
     escapeJsonLd(
       JSON.stringify({
-        title: meta.title.replace(/ \| StatChasers$/, ""),
+        title: meta.title,
         description: meta.description,
         // Bio (spec 2.11): the Person node the plugin makes the ProfilePage's
         // mainEntity, and the index rule it applies to robots and the sitemap.

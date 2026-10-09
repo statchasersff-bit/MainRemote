@@ -648,7 +648,10 @@ function statchasers_player_page_meta( array $row ): array {
 	$where    = '' === $row['teamName'] ? '' : ' ' . $row['teamName'];
 
 	return array(
-		'title'       => sprintf( '%s Fantasy Football Stats & Analysis | StatChasers', $row['name'] ),
+		// No " | StatChasers" since 2026-10-08 (mak): with it, every name past
+		// twelve letters ran over the sixty characters a results page shows.
+		// statchasers_player_retitle_apply() moves the stored titles over.
+		'title'       => sprintf( '%s Fantasy Football Stats & Analysis', $row['name'] ),
 		'description' => trim(
 			sprintf(
 				'%1$s%2$s %3$s fantasy football profile: %4$s game log, weekly finishes, advanced metrics, injury history and career production.',
@@ -1290,6 +1293,168 @@ add_action(
 		exit;
 	}
 );
+
+/* ---------------------------------------------------------- the retitle */
+
+/**
+ * The profile title the builder writes for a player, from the stored title it
+ * wrote before, or '' when the stored title is not one of ours.
+ *
+ * One template, with and without the brand: "<name> Fantasy Football Stats &
+ * Analysis | StatChasers" was the builder's wording until 2026-10-08, and the
+ * same words without the brand are the wording since. Anything else that is
+ * not empty was typed by a person and is theirs.
+ *
+ * @param string $title Stored rank_math_title.
+ * @return string The current wording for that name, or '' for a custom title.
+ */
+function statchasers_player_generated_title( string $title ): string {
+	if ( 1 === preg_match( '/^(.+) Fantasy Football Stats & Analysis(?: \| StatChasers)?$/', trim( $title ), $m ) ) {
+		return $m[1] . ' Fantasy Football Stats & Analysis';
+	}
+	return '';
+}
+
+/**
+ * Which profile pages the retitle would touch, and which it would leave alone.
+ *
+ * Every page under the container, not the roster's: a player who has left the
+ * index keeps his page (see statchasers_player_page_status()) and it carries
+ * the old wording like the rest. A page with no title at all is filled from
+ * the roster when the player is on it, and left alone when he is not - there
+ * is nothing to write it from.
+ *
+ * @return array{eligible:array<int,string>,custom:array<int,string>}
+ */
+function statchasers_player_retitle_plan(): array {
+	global $wpdb;
+
+	$plan      = array( 'eligible' => array(), 'custom' => array() );
+	$container = statchasers_player_container();
+	if ( ! $container ) {
+		return $plan;
+	}
+
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT ID, post_name FROM {$wpdb->posts}
+			 WHERE post_type = 'page' AND post_parent = %d AND post_status != 'trash'",
+			$container
+		)
+	);
+	$ids = array_map( static fn( $row ) => (int) $row->ID, (array) $rows );
+	if ( $ids ) {
+		update_meta_cache( 'post', $ids ); // One query for all the titles, not one each.
+	}
+
+	$roster = array();
+	foreach ( statchasers_player_roster() as $row ) {
+		$roster[ $row['slug'] ] = $row['name'];
+	}
+
+	foreach ( (array) $rows as $row ) {
+		$id      = (int) $row->ID;
+		$slug    = (string) $row->post_name;
+		$current = trim( (string) get_post_meta( $id, 'rank_math_title', true ) );
+
+		if ( '' === $current ) {
+			if ( isset( $roster[ $slug ] ) ) {
+				$plan['eligible'][ $id ] = $roster[ $slug ] . ' Fantasy Football Stats & Analysis';
+			}
+			continue;
+		}
+
+		$wanted = statchasers_player_generated_title( $current );
+		if ( '' === $wanted ) {
+			$plan['custom'][ $id ] = $slug;
+		} elseif ( $wanted !== $current ) {
+			$plan['eligible'][ $id ] = $wanted;
+		}
+	}
+
+	return $plan;
+}
+
+/**
+ * Apply the plan: the eligible pages only.
+ *
+ * @return int Pages updated.
+ */
+function statchasers_player_retitle_apply(): int {
+	$done = 0;
+	foreach ( statchasers_player_retitle_plan()['eligible'] as $id => $title ) {
+		update_post_meta( $id, 'rank_math_title', $title );
+		++$done;
+	}
+	return $done;
+}
+
+add_action(
+	'admin_init',
+	static function (): void {
+		if ( ! isset( $_POST['statchasers_player_retitle'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'You do not have permission to do this.' );
+		}
+
+		check_admin_referer( 'statchasers_player_retitle' );
+
+		set_transient( 'statchasers_player_retitle_result', statchasers_player_retitle_apply(), MINUTE_IN_SECONDS );
+
+		wp_safe_redirect( add_query_arg( 'page', STATCHASERS_TEAM_PAGES_SCREEN, admin_url( 'tools.php' ) ) );
+		exit;
+	}
+);
+
+/** The retitle panel on the Tools screen. Printed by statchasers_team_pages_screen(). */
+function statchasers_player_retitle_panel(): void {
+	$result = get_transient( 'statchasers_player_retitle_result' );
+	if ( false !== $result ) {
+		delete_transient( 'statchasers_player_retitle_result' );
+		printf(
+			'<div class="notice notice-success is-dismissible"><p><strong>Done.</strong> %d profile title%s updated.</p></div>',
+			(int) $result,
+			1 === (int) $result ? '' : 's'
+		);
+	}
+
+	$plan     = statchasers_player_retitle_plan();
+	$eligible = count( $plan['eligible'] );
+	$custom   = count( $plan['custom'] );
+
+	echo '<h2>Profile titles</h2>';
+	echo '<p>The profile title is now <code>&lt;player&gt; Fantasy Football Stats &amp; Analysis</code>, with no ' .
+		'<code>| StatChasers</code>: with the brand, every name past twelve letters ran over the sixty characters ' .
+		'a results page shows. Pages still carrying it, or no title, can be moved here. ' .
+		'A title someone typed by hand is never touched.</p>';
+	printf(
+		'<p><strong>%d eligible &middot; %d custom title%s left alone</strong></p>',
+		$eligible,
+		$custom,
+		1 === $custom ? '' : 's'
+	);
+
+	if ( $custom ) {
+		echo '<p class="description">Custom: <code>' . esc_html( implode( '</code>, <code>', array_slice( $plan['custom'], 0, 40 ) ) ) . '</code>' .
+			( $custom > 40 ? esc_html( sprintf( ' and %d more', $custom - 40 ) ) : '' ) . '</p>';
+	}
+
+	if ( $eligible ) {
+		echo '<form method="post">';
+		wp_nonce_field( 'statchasers_player_retitle' );
+		printf(
+			'<p><button type="submit" name="statchasers_player_retitle" value="1" class="button button-primary">Update %d title%s</button></p>',
+			$eligible,
+			1 === $eligible ? '' : 's'
+		);
+		echo '</form>';
+	} else {
+		echo '<p>Nothing to update.</p>';
+	}
+}
 
 /* ------------------------------------------------ the daily automatic build */
 

@@ -196,6 +196,8 @@ describe("player header", () => {
       state({
         season: 2025,
         leagueWeek: 0,
+        // A written take, so the player has an Outlook tab for the button to open.
+        fantasyOutlook2026: { season: 2026, body: "A take." },
         production: [{ season: 2025, posFinishPpg: 22, posFinishTotal: 20 }],
         stats: { gamesPlayed: 17, ppg: 14.2 },
       }),
@@ -204,6 +206,23 @@ describe("player header", () => {
     assert.equal(text(h.querySelector(".scp-pbtn--dark")), "See Brissett's 2026 outlook");
     assert.match(h.querySelector(".scp-pbtn--dark").getAttribute("href"), /\/jacoby-brissett\/outlook\/$/);
     assert.equal(text(h.querySelector(".scp-phead-kind")), "Fantasy outlook and stats for 2026");
+  });
+
+  test("before Week 1 with no Outlook tab, the button is not drawn", () => {
+    // A record with nothing written and no drivers renders no tab, so the
+    // header offers no way to a page that would only redirect back.
+    const h = header(
+      state({
+        season: 2025,
+        leagueWeek: 0,
+        fantasyOutlook2026: { season: 2026 },
+        production: [{ season: 2025, posFinishPpg: 22, posFinishTotal: 20 }],
+        stats: { gamesPlayed: 17, ppg: 14.2 },
+      }),
+    );
+    assert.equal(h.querySelector(".scp-pbtn--dark"), null);
+    assert.equal(h.querySelector('a[href$="/outlook/"]'), null);
+    assert.ok(h.querySelector(".scp-pbtn--line"), "the Redraft Command button stays");
   });
 
   test("no games played: dashes, never 0.0", () => {
@@ -222,8 +241,9 @@ describe("player header", () => {
   });
 
   test("a designation is a pill linking to the Injury tab", () => {
+    // An injury record behind the designation, so the player has an Injury page.
     const pill = (status) =>
-      header(state({ designation: { injuryStatus: status } })).querySelector(".scp-ptag-inj");
+      header(state({ designation: { injuryStatus: status }, injury: { summary: { totalMissed: 0 } } })).querySelector(".scp-ptag-inj");
     assert.equal(text(pill("Questionable")), "Questionable");
     assert.ok(pill("Questionable").classList.contains("is-mid"));
     assert.ok(pill("Out").classList.contains("is-bad"));
@@ -232,6 +252,16 @@ describe("player header", () => {
     assert.equal(text(pill("Injured Reserve")), "IR");
     assert.ok(pill("IR").classList.contains("is-bad"));
     assert.match(pill("Out").getAttribute("href"), /\/jacoby-brissett\/injury\/$/);
+  });
+
+  test("a designation with no injury record is a pill, not a link", () => {
+    // No Injury page to go to: /injury/ would only 302 back to the profile.
+    const h = header(state({ designation: { injuryStatus: "Questionable" }, injury: null }));
+    const pill = h.querySelector(".scp-ptag-inj");
+    assert.equal(text(pill), "Questionable");
+    assert.equal(pill.tagName, "SPAN");
+    assert.equal(pill.getAttribute("href"), null);
+    assert.equal(h.querySelector('a[href$="/injury/"]'), null, "nothing in the header links to the absent tab");
   });
 
   test("rookies, surname particles and ownership rounding", () => {

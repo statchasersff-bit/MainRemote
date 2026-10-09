@@ -1,15 +1,15 @@
 /**
  * The rookie hit rate model: the standalone app's arithmetic, unchanged.
  *
- * Ported from statchasersff-bit/Rookie-Hit-Rate - client/src/lib/cohort.ts,
- * ranks.ts and data-context.tsx for the numbers, and the insight generators
- * that lived inside its page components (pages/overview.tsx,
- * pages/pick-range.tsx, components/trends-chart.tsx,
+ * Ported from statchasersff-bit/Rookie-Hit-Rate at 9c69b00 (2026-10-08) -
+ * client/src/lib/cohort.ts, ranks.ts and data-context.tsx for the numbers, and
+ * the insight generators, patience maths and class-table logic that live
+ * inside its page components (pages/overview.tsx, components/trends-chart.tsx,
  * components/cohort-survival-chart.tsx). Every threshold, sample floor and
  * tie-break is the source's, including the ones that look accidental - the
- * Trends and Cohorts tabs, for one, ignore the season range, because the
- * source's do. A difference from the app would be a difference in a number a
- * reader has already seen there.
+ * Draft Classes cards and the Year-by-Year tab, for one, ignore the season
+ * range, because the source's do. A difference from the app would be a
+ * difference in a number a reader has already seen there.
  *
  * Pure and dependency-free on purpose: the server renders the default view
  * with it and the browser bundle (client/rookie-hit-rates.ts) recomputes every
@@ -22,18 +22,15 @@ export type Pos = "QB" | "RB" | "WR" | "TE";
 export type Outcome = "elite" | "starter" | "flex";
 export type HitType = "elite" | "starter" | "flex" | "bust" | "too_early";
 export type Tab = "overview" | "trends" | "cohorts" | "players";
-export type ViewMode = "yearly" | "rolling3" | "cumulative";
+/** The Overview's one table, shown as the heatmap ("Simple") or the pick ranges ("Detailed"). */
+export type TableView = "simple" | "detailed";
 export type GroupBy = "pos" | "round";
 export type Tone = "positive" | "negative" | "neutral";
 export type Accent = "gold" | "blue" | "emerald" | "violet" | "rose" | "sky" | "red" | "slate";
-export type SortField =
-  | "player_name"
-  | "current_nfl_team"
-  | "rookie_year"
-  | "rookie_round"
-  | "best_finish"
-  | "best_finish_year"
-  | "breakout_time";
+export type SortDir = "asc" | "desc";
+export type SortField = "player_name" | "current_nfl_team" | "rookie_year" | "rookie_round" | "best_finish" | "breakout_time";
+/** The Draft Classes table's columns. */
+export type ClassSortKey = "year" | Pos | "total";
 
 export const POSITIONS: readonly Pos[] = ["QB", "RB", "WR", "TE"];
 export const ROUNDS: readonly number[] = [1, 2, 3, 4, 5];
@@ -160,13 +157,15 @@ export interface Filters {
 export interface State {
   tab: Tab;
   filters: Filters;
-  /** The heatmap cell the Pick Lens reads; null falls back to the first cohort, as the source. */
+  /** The heatmap cell the Best Finish card reads; null falls back to the first cohort, as the source. */
   selected: { pos: Pos; round: number } | null;
-  viewMode: ViewMode;
-  movingAvg: boolean;
+  tableView: TableView;
+  /** The Draft Classes table's sort and which classes are open to their draft board. */
+  classSort: { key: ClassSortKey; dir: SortDir };
+  expandedYears: number[];
   groupBy: GroupBy;
   sortField: SortField;
-  sortDir: "asc" | "desc";
+  sortDir: SortDir;
   page: number;
   search: string;
 }
@@ -190,8 +189,9 @@ export function defaultState(data: Pick<PackedDataset, "firstClass" | "lastClass
     tab: "overview",
     filters: defaultFilters(data),
     selected: null,
-    viewMode: "yearly",
-    movingAvg: false,
+    tableView: "simple",
+    classSort: { key: "year", dir: "asc" },
+    expandedYears: [],
     groupBy: "pos",
     sortField: "rookie_year",
     sortDir: "desc",
@@ -517,36 +517,7 @@ export function trendSeries(
   return list;
 }
 
-/** The view mode, then the optional 3-year smoothing on top of it, as the source applied them. */
-export function transformTrend(raw: TrendPoint[], viewMode: ViewMode, movingAvg: boolean): TrendPoint[] {
-  let out = raw;
-  if (viewMode === "cumulative") {
-    let totalN = 0;
-    let totalHits = 0;
-    out = raw.map((t) => {
-      totalN += t.n;
-      totalHits += t.hits;
-      return { ...t, hitRate: totalN > 0 ? totalHits / totalN : 0 };
-    });
-  } else if (viewMode === "rolling3") {
-    out = raw.map((t, i) => {
-      const slice = raw.slice(Math.max(0, i - 2), i + 1);
-      const totalN = slice.reduce((s, d) => s + d.n, 0);
-      const totalHits = slice.reduce((s, d) => s + d.hits, 0);
-      return { ...t, hitRate: totalN > 0 ? totalHits / totalN : 0 };
-    });
-  }
-  if (movingAvg) {
-    const base = out;
-    out = base.map((t, i) => {
-      const slice = base.slice(Math.max(0, i - 2), i + 1);
-      return { ...t, hitRate: slice.reduce((s, d) => s + d.hitRate, 0) / slice.length };
-    });
-  }
-  return out;
-}
-
-/** Every selected cohort pooled by class year: what the insights, stability and average line read. */
+/** Every selected cohort pooled by class year: what the class cards read. */
 export function pooledTrend(series: TrendSeries[]): TrendPoint[] {
   const byYear = new Map<number, TrendPoint>();
   for (const s of series) {
@@ -568,20 +539,119 @@ export function pooledTrend(series: TrendSeries[]): TrendPoint[] {
   return rows;
 }
 
-export interface Stability {
-  score: number;
-  label: "Stable" | "Moderate" | "Volatile";
-  stdDev: number;
-  avg: number;
+export interface PosAgg {
+  pos: Pos;
+  hits: number;
+  n: number;
+  hitRate: number;
 }
 
-export function stabilityOf(pooled: TrendPoint[]): Stability {
-  const rates = pooled.map((d) => d.hitRate);
-  const avg = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : 0;
-  const variance = rates.length > 0 ? rates.reduce((sum, r) => sum + (r - avg) ** 2, 0) / rates.length : 0;
-  const stdDev = Math.sqrt(variance);
-  const score = Math.max(0, Math.min(100, Math.round((1 - stdDev / 0.5) * 100)));
-  return { score, label: score >= 70 ? "Stable" : score >= 40 ? "Moderate" : "Volatile", stdDev, avg };
+/** Every selected series pooled by position, across rounds and classes: the position cards. */
+export function trendByPosition(series: TrendSeries[]): PosAgg[] {
+  const map = new Map<Pos, PosAgg>();
+  for (const s of series) {
+    const cur = map.get(s.pos) ?? { pos: s.pos, hits: 0, n: 0, hitRate: 0 };
+    for (const t of s.raw) {
+      cur.hits += t.hits;
+      cur.n += t.n;
+    }
+    map.set(s.pos, cur);
+  }
+  const rows = Array.from(map.values());
+  for (const r of rows) r.hitRate = r.n > 0 ? r.hits / r.n : 0;
+  return rows;
+}
+
+/* --------------------------------------------------------- draft classes */
+
+/** One draft class: how many rookies hit at each position, pooled across every round. */
+export interface ClassRow {
+  year: number;
+  QB: number;
+  RB: number;
+  WR: number;
+  TE: number;
+  total: number;
+}
+
+/** A drafted rookie on a class's draft board. */
+export interface BoardPlayer {
+  id: string;
+  name: string;
+  pos: Pos;
+  round: number;
+  pick: number;
+  sleeperId: string | null;
+  hit: boolean;
+}
+
+/**
+ * trends-chart.tsx classRows: one row per class in the season range (and no
+ * later than the latest season with data). Always every position and round,
+ * whatever the Position/Round filters say; the outcome and games floor apply.
+ * A class that drafted nobody on this board is left out, one that hit nobody
+ * is kept.
+ */
+export function classRows(drafts: RookieDraft[], ranks: RankMap, filters: Filters, latestSeason: number): ClassRow[] {
+  const hitsByPos = new Map<Pos, Map<number, number>>();
+  const drafted = new Map<number, number>();
+  for (const pos of POSITIONS) {
+    const m = new Map<number, number>();
+    for (const round of ROUNDS) {
+      for (const t of computeTrends(drafts, ranks, pos, round, filters.outcome, filters.minGames, latestSeason)) {
+        m.set(t.year, (m.get(t.year) ?? 0) + t.hits);
+        drafted.set(t.year, (drafted.get(t.year) ?? 0) + t.n);
+      }
+    }
+    hitsByPos.set(pos, m);
+  }
+  const rows: ClassRow[] = [];
+  const end = Math.min(filters.yearEnd, latestSeason);
+  for (let y = filters.yearStart; y <= end; y++) {
+    if ((drafted.get(y) ?? 0) === 0) continue;
+    const at = (pos: Pos) => hitsByPos.get(pos)!.get(y) ?? 0;
+    rows.push({ year: y, QB: at("QB"), RB: at("RB"), WR: at("WR"), TE: at("TE"), total: POSITIONS.reduce((s, p) => s + at(p), 0) });
+  }
+  return rows;
+}
+
+/** The class table sorted as the source's: ties fall back to the year, ascending. */
+export function sortClassRows(rows: ClassRow[], sort: State["classSort"]): ClassRow[] {
+  const dir = sort.dir === "asc" ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    const diff = a[sort.key] - b[sort.key];
+    return diff !== 0 ? diff * dir : a.year - b.year;
+  });
+}
+
+/**
+ * trends-chart.tsx boardsByYear: every rookie drafted in a class, rounds 1-5,
+ * in pick order, flagged with the same hit rule the class counts use.
+ */
+export function draftBoard(drafts: RookieDraft[], ranks: RankMap, filters: Filters, year: number): BoardPlayer[] {
+  const threshold = outcomeThreshold(filters.outcome);
+  const players: BoardPlayer[] = [];
+  for (const d of drafts) {
+    if (d.rookie_year !== year || !ROUNDS.includes(d.rookie_round)) continue;
+    const seasons = ranks.get(d.player_id) ?? [];
+    players.push({
+      id: d.player_id,
+      name: d.player_name,
+      pos: d.pos,
+      round: d.rookie_round,
+      pick: d.rookie_pick,
+      sleeperId: d.sleeper_id,
+      hit: seasons.some((s) => s.games >= filters.minGames && s.season >= d.rookie_year && s.pos_rank <= threshold),
+    });
+  }
+  return players.sort((a, b) => a.round - b.round || a.pick - b.pick);
+}
+
+/** "Ja'Marr Chase" -> "J. Chase", keeping a multi-word surname or suffix. */
+export function abbreviateName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length < 2 || !parts[0]) return name;
+  return `${parts[0][0]}. ${parts.slice(1).join(" ")}`;
 }
 
 /* ------------------------------------------------------------- survival */
@@ -651,10 +721,32 @@ export function computeSurvival(
 
 const pctAt = (g: SurvivalGroup, year: number) => g.data.find((d) => d.year === year)?.pct ?? 0;
 
-/** Share of eventual hits that came after Year 1. */
-export function patienceIndex(group: SurvivalGroup): number {
-  const ceiling = Math.max(...group.data.map((d) => d.pct), 0.001);
-  return Math.round((1 - pctAt(group, 1) / ceiling) * 100);
+/**
+ * Given a player has NOT hit by a checkpoint, the chance he still records a
+ * first hit later: (ceiling - Hk) / (1 - Hk), where Hk is the cumulative hit
+ * share by the checkpoint and the ceiling is the eventual (career) hit rate.
+ * A 0-1 fraction; 0 when everyone has already hit, so nobody is left waiting.
+ */
+export function conditionalHitOdds(ceiling: number, hitByCheckpoint: number): number {
+  const notYetHit = 1 - hitByCheckpoint;
+  if (notYetHit <= 0) return 0;
+  return Math.max(0, (ceiling - hitByCheckpoint) / notYetHit);
+}
+
+const ceilingOf = (g: SurvivalGroup) => Math.max(...g.data.map((d) => d.pct), 0);
+
+export interface PatienceRow {
+  group: string;
+  n: number;
+  /** Odds, in percent, of an eventual hit for a player who did not hit as a rookie. */
+  odds: number;
+}
+
+/** The "Hit Rates After Year 1" table: Year 1 is the checkpoint. Highest odds first. */
+export function patienceRows(survival: SurvivalGroup[]): PatienceRow[] {
+  return survival
+    .map((g) => ({ group: g.group, n: g.n, odds: conditionalHitOdds(ceilingOf(g), pctAt(g, 1)) * 100 }))
+    .sort((a, b) => b.odds - a.odds);
 }
 
 export interface RosterRow {
@@ -664,16 +756,34 @@ export interface RosterRow {
   y2: number;
   y3: number;
   ceiling: number;
+  /** The conditional odds after each checkpoint; remY3 is afterY3, the sort key. */
+  afterY1: number;
+  afterY2: number;
+  afterY3: number;
   remY3: number;
 }
 
-/** The Remaining Hit Odds table, sorted by what is left after Year 3, and its takeaway line. */
+/** The Remaining Hit Odds table, sorted by the odds left after Year 3, and its takeaway line. */
 export function rosterOdds(survival: SurvivalGroup[]): { rows: RosterRow[]; takeaway: string } {
   const rows = survival
     .map((g) => {
-      const ceiling = Math.max(...g.data.map((d) => d.pct), 0.001);
+      const ceiling = ceilingOf(g);
+      const y1 = pctAt(g, 1);
+      const y2 = pctAt(g, 2);
       const y3 = pctAt(g, 3);
-      return { group: g.group, n: g.n, y1: pctAt(g, 1), y2: pctAt(g, 2), y3, ceiling, remY3: Math.max(0, ceiling - y3) };
+      const afterY3 = conditionalHitOdds(ceiling, y3);
+      return {
+        group: g.group,
+        n: g.n,
+        y1,
+        y2,
+        y3,
+        ceiling,
+        afterY1: conditionalHitOdds(ceiling, y1),
+        afterY2: conditionalHitOdds(ceiling, y2),
+        afterY3,
+        remY3: afterY3,
+      };
     })
     .sort((a, b) => b.remY3 - a.remY3);
   if (rows.length === 0) return { rows, takeaway: "" };
@@ -711,7 +821,10 @@ export interface PlayerSummary {
 /**
  * Each rookie's best finish, breakout year and outcome. The source's quirks
  * stand: Best Finish counts any season (even under the games minimum) while
- * the outcome badge counts only qualifying ones.
+ * the outcome badge counts only qualifying ones. Only seasons from the rookie
+ * year on count: a few source rows carry an earlier player's history under
+ * the same id, which read as a hit (and a negative breakout year) before the
+ * rookie entered the league.
  */
 export function computePlayerSummaries(
   drafts: RookieDraft[],
@@ -722,7 +835,9 @@ export function computePlayerSummaries(
 ): PlayerSummary[] {
   const threshold = outcomeThreshold(outcome);
   return drafts.map((d) => {
-    const seasons = [...(ranks.get(d.player_id) ?? [])].sort((a, b) => a.season - b.season);
+    const seasons = (ranks.get(d.player_id) ?? [])
+      .filter((s) => s.season >= d.rookie_year)
+      .sort((a, b) => a.season - b.season);
     let bestRank = Infinity;
     let bestYear = d.rookie_year;
     let firstHitSeason: number | null = null;
@@ -764,6 +879,17 @@ export function computePlayerSummaries(
 
 export const PAGE_SIZE = 50;
 
+/**
+ * A row with no value ("-") sorts last whichever way the column runs; null
+ * when both rows have one, so the caller compares them.
+ */
+function missingLast(aMissing: boolean, bMissing: boolean): number | null {
+  if (aMissing && bMissing) return 0;
+  if (aMissing) return 1;
+  if (bMissing) return -1;
+  return null;
+}
+
 /** player-table.tsx: the season range, position, round and search filters, then the sort. */
 export function filterPlayers(players: PlayerSummary[], state: State): PlayerSummary[] {
   const f = state.filters;
@@ -790,16 +916,18 @@ export function filterPlayers(players: PlayerSummary[], state: State): PlayerSum
       case "rookie_round":
         cmp = a.rookie_round - b.rookie_round || a.rookie_pick - b.rookie_pick;
         break;
-      case "best_finish":
-        // No finish is Infinity, and two of them compare equal, as the source's NaN did.
-        cmp = a.best_rank - b.best_rank || 0;
+      case "best_finish": {
+        const m = missingLast(a.best_finish === "N/A", b.best_finish === "N/A");
+        if (m !== null) return m;
+        cmp = a.best_rank - b.best_rank;
         break;
-      case "best_finish_year":
-        cmp = a.best_finish_year - b.best_finish_year;
+      }
+      case "breakout_time": {
+        const m = missingLast(a.breakout_time === null, b.breakout_time === null);
+        if (m !== null) return m;
+        cmp = (a.breakout_time as number) - (b.breakout_time as number);
         break;
-      case "breakout_time":
-        cmp = (a.breakout_time ?? 99) - (b.breakout_time ?? 99);
-        break;
+      }
     }
     return cmp * dir;
   });
@@ -818,7 +946,7 @@ export interface Insight {
 const pct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
 const pct0 = (v: number) => `${(v * 100).toFixed(0)}%`;
 
-/** pages/overview.tsx generateOverviewInsights. The page shows the first four. */
+/** pages/overview.tsx generateOverviewInsights. The page shows the first six. */
 export function overviewInsights(cohorts: CohortSummary[], outcomeName: string): Insight[] {
   if (cohorts.length < 2) return [];
   const insights: Insight[] = [];
@@ -831,34 +959,42 @@ export function overviewInsights(cohorts: CohortSummary[], outcomeName: string):
     title: "Overall Hit Rate",
     stat: pct1(overallRate),
     body: `${totalHits} of ${totalPlayers} rookies reached the ${lower} threshold.`,
-    tone: overallRate > 0.3 ? "positive" : overallRate > 0.15 ? "neutral" : "negative",
+    tone: "neutral",
     accent: "slate",
   });
 
-  const withHits = cohorts.filter((c) => c.total >= 5);
-  if (withHits.length > 0) {
-    const best = withHits.reduce((a, b) => (b.hit_rate > a.hit_rate ? b : a));
+  const byPosition = new Map<Pos, { hits: number; total: number }>();
+  for (const c of cohorts) {
+    const agg = byPosition.get(c.pos) ?? { hits: 0, total: 0 };
+    agg.hits += c.hits;
+    agg.total += c.total;
+    byPosition.set(c.pos, agg);
+  }
+  const positionRates = Array.from(byPosition.entries())
+    .filter(([, v]) => v.total > 0)
+    .map(([pos, v]) => ({ pos, hits: v.hits, total: v.total, rate: v.hits / v.total }));
+  if (positionRates.length > 1) {
+    const bestPos = positionRates.reduce((a, b) => (b.rate > a.rate ? b : a));
     insights.push({
-      title: "Best Cohort",
-      stat: pct1(best.hit_rate),
-      body:
-        `${best.pos} Round ${best.rookie_round} (${best.hits}/${best.total} players).` +
-        (best.elite_rate > 0.2 ? ` ${pct0(best.elite_rate)} reach Top-12.` : ""),
-      tone: "positive",
+      title: "Highest Position Hit Rate",
+      stat: pct1(bestPos.rate),
+      body: `${bestPos.pos} hits most often: ${bestPos.hits}/${bestPos.total} rookies reached the ${lower} threshold.`,
+      tone: "neutral",
       accent: "gold",
     });
-    const worst = withHits.reduce((a, b) => (b.hit_rate < a.hit_rate ? b : a));
-    if (worst.hit_rate < best.hit_rate) {
+    const worstPos = positionRates.reduce((a, b) => (b.rate < a.rate ? b : a));
+    if (worstPos.pos !== bestPos.pos) {
       insights.push({
-        title: "Toughest Cohort",
-        stat: `${((1 - worst.hit_rate) * 100).toFixed(0)}% Miss`,
-        body: `${worst.pos} Round ${worst.rookie_round} - only ${worst.hits}/${worst.total} players hit at the ${lower} threshold.`,
-        tone: "negative",
+        title: "Lowest Position Hit Rate",
+        stat: pct1(worstPos.rate),
+        body: `${worstPos.pos} hits least often: ${worstPos.hits}/${worstPos.total} rookies reached the ${lower} threshold.`,
+        tone: "neutral",
         accent: "red",
       });
     }
   }
 
+  const withHits = cohorts.filter((c) => c.total >= 5);
   const fast = withHits
     .filter((c) => c.hit_by_year.year1 > 0.4 && c.hits >= 3)
     .sort((a, b) => b.hit_by_year.year1 - a.hit_by_year.year1);
@@ -871,211 +1007,61 @@ export function overviewInsights(cohorts: CohortSummary[], outcomeName: string):
       body:
         `${top.pos} Rd${top.rookie_round} hits break out immediately.` +
         (second ? ` ${second.pos} Rd${second.rookie_round}: ${pct0(second.hit_by_year.year1)}.` : ""),
-      tone: "positive",
-      accent: "slate",
-    });
-  }
-
-  const slow = withHits
-    .filter((c) => c.hit_by_year.year3_plus > 0.4 && c.hits >= 3)
-    .sort((a, b) => b.hit_by_year.year3_plus - a.hit_by_year.year3_plus);
-  if (slow.length > 0) {
-    const top = slow[0]!;
-    insights.push({
-      title: "Slow Developers",
-      stat: "Year 3+",
-      body: `${top.pos} Rd${top.rookie_round} - ${pct0(top.hit_by_year.year3_plus)} of hits don't break out until Year 3 or later.`,
       tone: "neutral",
       accent: "slate",
     });
   }
-
-  const highBust = withHits.filter((c) => c.bust_rate > 0.7 && c.total >= 10).sort((a, b) => b.bust_rate - a.bust_rate);
-  if (highBust.length > 0) {
-    insights.push({
-      title: "High Bust Zones",
-      stat: `${pct0(highBust[0]!.bust_rate)}+`,
-      body: `${highBust
-        .slice(0, 3)
-        .map((c) => `${c.pos} Rd${c.rookie_round} (${pct0(c.bust_rate)})`)
-        .join(", ")}. Manage expectations from these slots.`,
-      tone: "negative",
-      accent: "red",
-    });
-  }
   return insights;
 }
 
-/** pages/pick-range.tsx generateInsights. */
-export function pickRangeInsights(cohorts: PickRangeCohortSummary[], outcomeName: string): Insight[] {
-  if (cohorts.length < 2) return [];
+/** components/trends-chart.tsx generateInsights: the best and worst class, then position. */
+export function trendInsights(data: TrendPoint[], byPosition: PosAgg[], outcomeName: string): Insight[] {
+  if (data.length < 1) return [];
   const insights: Insight[] = [];
-  const withData = cohorts.filter((c) => c.total >= 3);
-
-  if (withData.length > 0) {
-    const best = withData.reduce((a, b) => (b.hit_rate > a.hit_rate ? b : a));
-    insights.push({
-      title: "Best Pick Range",
-      stat: pct1(best.hit_rate),
-      body:
-        `${best.pos} picks ${best.rangeLabel} (${best.hits}/${best.total}).` +
-        (best.elite_rate > 0.2 ? ` ${pct0(best.elite_rate)} reach Top-12.` : ""),
-      tone: "positive",
-      accent: "emerald",
-    });
-  }
-
-  for (const round of [1, 2, 3]) {
-    const roundCohorts = withData.filter((c) => c.rookie_round === round && c.total >= 3);
-    if (roundCohorts.length < 2) continue;
-    const top3 = roundCohorts.filter((c) => c.pickStart === 1);
-    const late = roundCohorts.filter((c) => c.pickStart === 10);
-    if (top3.length > 0 && late.length > 0) {
-      const topRate = top3.reduce((s, c) => s + c.hit_rate * c.total, 0) / top3.reduce((s, c) => s + c.total, 0);
-      const lateRate = late.reduce((s, c) => s + c.hit_rate * c.total, 0) / late.reduce((s, c) => s + c.total, 0);
-      const diff = topRate - lateRate;
-      if (Math.abs(diff) > 0.1) {
-        insights.push({
-          title: `Rd ${round} Drop-off`,
-          stat: `${diff > 0 ? "+" : ""}${(diff * 100).toFixed(0)}pp`,
-          body: `Picks ${round}.01-${round}.03 hit at ${pct0(topRate)} vs ${pct0(lateRate)} for ${round}.10-${round}.12.`,
-          tone: diff > 0.2 ? "negative" : "neutral",
-          accent: "violet",
-        });
-        break;
-      }
-    }
-  }
-
-  const fast = withData
-    .filter((c) => c.hit_by_year.year1 > 0.5 && c.hits >= 3)
-    .sort((a, b) => b.hit_by_year.year1 - a.hit_by_year.year1);
-  if (fast.length > 0) {
-    const top = fast[0]!;
-    insights.push({
-      title: "Instant Impact Range",
-      stat: `${pct0(top.hit_by_year.year1)} Year 1`,
-      body: `${top.pos} picks ${top.rangeLabel} - most hits break out immediately as rookies.`,
-      tone: "positive",
-      accent: "gold",
-    });
-  }
-
-  const highBust = withData.filter((c) => c.bust_rate > 0.75 && c.total >= 5).sort((a, b) => b.bust_rate - a.bust_rate);
-  if (highBust.length > 0) {
-    insights.push({
-      title: "High Bust Ranges",
-      stat: `${pct0(highBust[0]!.bust_rate)}+`,
-      body: `${highBust
-        .slice(0, 3)
-        .map((c) => `${c.pos} ${c.rangeLabel} (${pct0(c.bust_rate)})`)
-        .join(", ")}. Pick placement within the round matters.`,
-      tone: "negative",
-      accent: "red",
-    });
-  }
-
-  const worst = withData.filter((c) => c.total >= 5).sort((a, b) => a.hit_rate - b.hit_rate)[0];
-  if (worst && worst.hit_rate < 0.15) {
-    insights.push({
-      title: "Toughest Range",
-      stat: `${((1 - worst.hit_rate) * 100).toFixed(0)}% Miss`,
-      body: `${worst.pos} picks ${worst.rangeLabel} - only ${worst.hits}/${worst.total} ever hit at ${outcomeName.toLowerCase()} level.`,
-      tone: "negative",
-      accent: "rose",
-    });
-  }
-  return insights;
-}
-
-/** components/trends-chart.tsx generateInsights, over the pooled selection. */
-export function trendInsights(data: TrendPoint[], label: string, outcomeName: string): Insight[] {
-  if (data.length < 2) return [];
-  const insights: Insight[] = [];
-  const rates = data.map((d) => d.hitRate);
-  const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
-  const total = data.reduce((a, d) => a + d.n, 0);
-
-  insights.push({
-    title: "Overall Average",
-    stat: pct1(avg),
-    body: `${data.length} classes, ${total} players. ${label} produce a ${outcomeName.toLowerCase()} at this rate.`,
-    tone: avg > 0.4 ? "positive" : avg > 0.2 ? "neutral" : "negative",
-    accent: "blue",
-  });
+  const lower = outcomeName.toLowerCase();
 
   const best = data.reduce((a, b) => (b.hitRate > a.hitRate ? b : a));
-  if (best.hitRate > 0) {
-    insights.push({
-      title: "Best Class",
-      stat: `${pct0(best.hitRate)} (${best.year})`,
-      body: `${best.hits}/${best.n} players hit.${best.n < 5 ? " (Small sample)" : ""}`,
-      tone: "positive",
-      accent: "emerald",
-    });
-  }
+  insights.push({
+    title: "Best Overall Class",
+    stat: `${pct0(best.hitRate)} (${best.year})`,
+    body: `${best.hits}/${best.n} players hit ${lower}.${best.n < 5 ? " (Small sample)" : ""}`,
+    tone: "positive",
+    accent: "emerald",
+  });
 
   const worst = data.reduce((a, b) => (b.hitRate < a.hitRate ? b : a));
-  if (worst.hitRate < best.hitRate) {
+  if (worst.year !== best.year) {
     insights.push({
-      title: "Weakest Class",
+      title: "Worst Overall Class",
       stat: `${pct0(worst.hitRate)} (${worst.year})`,
-      body: `${worst.hits}/${worst.n} players.${worst.hitRate === 0 ? " Complete shutout." : ""}`,
+      body: `${worst.hits}/${worst.n} players hit ${lower}.${worst.hitRate === 0 ? " Complete shutout." : ""}`,
       tone: "negative",
       accent: "rose",
     });
   }
 
-  const recent = data.slice(-3);
-  const older = data.slice(0, Math.max(1, data.length - 3));
-  if (recent.length >= 2 && older.length >= 1) {
-    const recentAvg = recent.reduce((a, d) => a + d.hitRate, 0) / recent.length;
-    const olderAvg = older.reduce((a, d) => a + d.hitRate, 0) / older.length;
-    const diff = recentAvg - olderAvg;
-    if (Math.abs(diff) > 0.05) {
-      insights.push({
-        title: "Recent Trend",
-        stat: `${diff > 0 ? "+" : ""}${(diff * 100).toFixed(1)}pts`,
-        body: `Last 3 classes: ${pct1(recentAvg)} vs earlier ${pct1(olderAvg)}.`,
-        tone: diff > 0 ? "positive" : "negative",
-        accent: diff > 0 ? "emerald" : "red",
-      });
-    } else {
-      insights.push({
-        title: "Stable Trend",
-        stat: `±${(Math.abs(diff) * 100).toFixed(1)}pts`,
-        body: `Recent classes (${pct1(recentAvg)}) track close to historical (${pct1(olderAvg)}).`,
-        tone: "neutral",
-        accent: "slate",
-      });
-    }
-  }
-
-  const stability = stabilityOf(data);
-  const sd = stability.stdDev;
-  insights.push({
-    title: "Stability Score",
-    stat: `${stability.score}/100`,
-    body:
-      `${stability.label} (±${(sd * 100).toFixed(1)}% volatility). ` +
-      (sd > 0.15
-        ? "Outcomes vary heavily by class."
-        : sd < 0.08
-          ? "Consistent, predictable slot."
-          : "Moderate year-to-year variation."),
-    tone: sd > 0.15 ? "negative" : sd < 0.08 ? "positive" : "neutral",
-    accent: "gold",
-  });
-
-  const zero = data.filter((d) => d.hitRate === 0);
-  if (zero.length > 0 && zero.length < data.length) {
+  const posWithData = byPosition.filter((p) => p.n > 0);
+  if (posWithData.length > 0) {
+    const bestPos = posWithData.reduce((a, b) => (b.hitRate > a.hitRate ? b : a));
     insights.push({
-      title: "Shutout Classes",
-      stat: `${zero.length}/${data.length}`,
-      body: `Zero-hit years: ${zero.map((d) => d.year).join(", ")}.${zero.length >= 3 ? " High bust risk." : ""}`,
-      tone: "negative",
-      accent: "red",
+      title: "Best Overall Position",
+      stat: `${pct0(bestPos.hitRate)} (${bestPos.pos})`,
+      body: `${bestPos.hits}/${bestPos.n} hit ${lower} across ${data.length} classes.`,
+      tone: "positive",
+      accent: "emerald",
     });
+    if (posWithData.length > 1) {
+      const worstPos = posWithData.reduce((a, b) => (b.hitRate < a.hitRate ? b : a));
+      if (worstPos.pos !== bestPos.pos) {
+        insights.push({
+          title: "Worst Overall Position",
+          stat: `${pct0(worstPos.hitRate)} (${worstPos.pos})`,
+          body: `${worstPos.hits}/${worstPos.n} hit ${lower} across ${data.length} classes.`,
+          tone: "negative",
+          accent: "rose",
+        });
+      }
+    }
   }
   return insights;
 }
@@ -1094,9 +1080,9 @@ export function cohortInsights(survival: SurvivalGroup[]): Insight[] {
     const slowest = withY1[withY1.length - 1]!;
     insights.push({
       title: "Fastest to Hit",
-      stat: `${pct1(fastest.y1)} Year 1`,
+      stat: fastest.group,
       body:
-        `${fastest.group} (N=${fastest.n}) breaks out fastest.` +
+        `${pct1(fastest.y1)} by Year 1 (N=${fastest.n}). Breaks out fastest.` +
         (withY1.length > 1 ? ` ${slowest.group}: just ${pct1(slowest.y1)}.` : ""),
       tone: "positive",
       accent: "gold",
@@ -1110,10 +1096,10 @@ export function cohortInsights(survival: SurvivalGroup[]): Insight[] {
     const highest = withCeiling[0]!;
     const lowest = withCeiling[withCeiling.length - 1]!;
     insights.push({
-      title: "Highest Ceiling",
-      stat: pct1(highest.ceiling),
+      title: "Highest Chance to Hit",
+      stat: highest.group,
       body:
-        `${highest.group} leads long-term (N=${highest.n}).` +
+        `${pct1(highest.ceiling)} long-term (N=${highest.n}). Leads the field.` +
         (withCeiling.length > 1 && lowest.ceiling < highest.ceiling
           ? ` ${lowest.group} caps at ${pct1(lowest.ceiling)}.`
           : ""),
@@ -1131,23 +1117,12 @@ export function cohortInsights(survival: SurvivalGroup[]): Insight[] {
     .filter((g) => g.y3 > 0)
     .sort((a, b) => b.delta - a.delta);
 
-  if (deltaAfter3.length > 0 && deltaAfter3[0]!.delta > 0.02) {
-    const top = deltaAfter3[0]!;
-    insights.push({
-      title: "Post-Year 3 Growth",
-      stat: `+${(top.delta * 100).toFixed(1)}pts`,
-      body: `${top.group}: ${pct1(top.y3)} → ${pct1(top.y6)} between Years 3–6. Patience rewarded.`,
-      tone: "neutral",
-      accent: "sky",
-    });
-  }
-
   const plateau = deltaAfter3.filter((g) => g.delta < 0.03 && g.y3 > 0.1);
   if (plateau.length > 0) {
     insights.push({
       title: "Early Plateau",
-      stat: "Year 3",
-      body: `${plateau.map((g) => g.group).join(", ")} plateau by Year 3. If they haven't hit, they likely won't.`,
+      stat: plateau.map((g) => g.group).join(", "),
+      body: "Plateau by Year 3. If they haven't hit, they likely won't.",
       tone: "negative",
       accent: "rose",
     });
@@ -1157,27 +1132,11 @@ export function cohortInsights(survival: SurvivalGroup[]): Insight[] {
   if (late.length > 0) {
     insights.push({
       title: "Late Bloomers",
-      stat: `+${late.map((g) => (g.delta * 100).toFixed(1)).join(", ")}pts`,
-      body: `${late.map((g) => g.group).join(", ")} develop well past Year 3. Hold longer before cutting.`,
+      stat: late.map((g) => g.group).join(", "),
+      body: `+${late.map((g) => (g.delta * 100).toFixed(1)).join(", ")}pts past Year 3, so they develop late. Hold longer before cutting.`,
       tone: "neutral",
       accent: "violet",
     });
-  }
-
-  if (survival.length >= 3) {
-    const y6 = survival.map((g) => ({ group: g.group, y6: pctAt(g, 6) })).sort((a, b) => b.y6 - a.y6);
-    const top = y6[0]!;
-    const bottom = y6[y6.length - 1]!;
-    const spread = top.y6 - bottom.y6;
-    if (spread > 0.15) {
-      insights.push({
-        title: "Wide Separation",
-        stat: `${(spread * 100).toFixed(1)}pt gap`,
-        body: `${top.group} (${pct1(top.y6)}) vs ${bottom.group} (${pct1(bottom.y6)}). Draft capital matters.`,
-        tone: "neutral",
-        accent: "blue",
-      });
-    }
   }
   return insights;
 }
@@ -1210,45 +1169,45 @@ export interface OverviewView {
   cohorts: CohortSummary[];
   insights: Insight[];
   pickRange: PickRangeCohortSummary[];
-  pickRangeInsights: Insight[];
 }
 
 export function overviewView(board: Board, filters: Filters): OverviewView {
   const latest = board.data.latestSeason;
-  const name = OUTCOME_LABELS[filters.outcome];
   const cohorts = computeCohorts(board.drafts, board.ranks, filters, latest);
-  const pickRange = computePickRangeCohorts(board.drafts, board.ranks, filters, latest);
   return {
     cohorts,
-    insights: overviewInsights(cohorts, name).slice(0, 4),
-    pickRange,
-    pickRangeInsights: pickRangeInsights(pickRange, name),
+    insights: overviewInsights(cohorts, OUTCOME_LABELS[filters.outcome]).slice(0, 6),
+    pickRange: computePickRangeCohorts(board.drafts, board.ranks, filters, latest),
   };
 }
 
 export interface TrendsView {
+  /** One per selected position x round: what the cards pool. */
   series: TrendSeries[];
   pooled: TrendPoint[];
-  stability: Stability;
+  byPosition: PosAgg[];
   insights: Insight[];
+  /** The class table: every position and round, in the season range. */
+  classes: ClassRow[];
 }
 
 export function trendsView(board: Board, filters: Filters): TrendsView {
   const series = trendSeries(board.drafts, board.ranks, filters, board.data.latestSeason);
   const pooled = pooledTrend(series);
-  const label = `${selectedPositions(filters).join("/")} Rd ${selectedRounds(filters).join("/")}`;
+  const byPosition = trendByPosition(series);
   return {
     series,
     pooled,
-    stability: stabilityOf(pooled),
-    insights: trendInsights(pooled, label, OUTCOME_LABELS[filters.outcome]),
+    byPosition,
+    insights: trendInsights(pooled, byPosition, OUTCOME_LABELS[filters.outcome]),
+    classes: classRows(board.drafts, board.ranks, filters, board.data.latestSeason),
   };
 }
 
 export interface CohortsView {
   survival: SurvivalGroup[];
   insights: Insight[];
-  patience: { group: string; n: number; pi: number }[];
+  patience: PatienceRow[];
   roster: { rows: RosterRow[]; takeaway: string };
 }
 
@@ -1266,7 +1225,7 @@ export function cohortsView(board: Board, filters: Filters, groupBy: GroupBy): C
   return {
     survival,
     insights: cohortInsights(survival),
-    patience: survival.map((g) => ({ group: g.group, n: g.n, pi: patienceIndex(g) })).sort((a, b) => b.pi - a.pi),
+    patience: patienceRows(survival),
     roster: rosterOdds(survival),
   };
 }

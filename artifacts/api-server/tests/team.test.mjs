@@ -395,6 +395,31 @@ describe("embedded mode", () => {
     }
   });
 
+  test("the Schedule tab indexes every pair page this team is half of", async () => {
+    // 294 of the 496 pair pages had no inbound link (Rank Math crawl,
+    // 2026-10-08): the schedule rows only reach this season's opponents, and
+    // a finished meeting's row moves on to the game's dated page. The index
+    // under the board names all 31 opponents, so every pair is reached from
+    // both of its hubs whether or not the clubs meet this year.
+    const { doc } = await dom("/team/new-england-patriots");
+    const links = [...doc.querySelectorAll("#schedule .sct-series a.sct-series-link")];
+    assert.equal(links.length, 31, "one link per opponent");
+    const hrefs = links.map((a) => a.getAttribute("href"));
+    assert.equal(new Set(hrefs).size, 31, "every link opens a different pair page");
+    for (const href of hrefs) {
+      assert.match(href, /^\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\/$/);
+      assert.ok(href.includes("new-england-patriots"), `${href} is one of this team's pairs`);
+      assert.notEqual(href, "/nfl/new-england-patriots-vs-new-england-patriots/");
+    }
+    // The anchor text carries both clubs even though only the opponent shows.
+    assert.match(links[0].textContent, /^Patriots vs \S/);
+    // Eight division groups, the Patriots' own with three teams in it.
+    const groups = [...doc.querySelectorAll("#schedule .sct-series-group")];
+    assert.equal(groups.length, 8);
+    const east = groups.find((g) => g.querySelector(".sct-series-div").textContent === "AFC East");
+    assert.equal(east.querySelectorAll("a").length, 3);
+  });
+
   test("the Schedule tab links every game to its pair page, so Matchups need not", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     // The Matchups tab was the same fixture list a second time. It came off the
@@ -767,41 +792,21 @@ describe("embedded mode", () => {
     );
   });
 
-  test("links into StatChasers break out of the frame", async () => {
-    const { doc } = await dom("/team/new-england-patriots?embed=1");
-    const resources = [...doc.querySelectorAll(".sct-resource-link")];
-    assert.ok(resources.length > 0, "resource cards rendered");
-    for (const link of resources) {
-      const href = link.getAttribute("href");
-      // Products are absolute and break out of the frame (a plain link would
-      // load the whole site inside it); the team's own pages are root-relative
-      // plain anchors, like the tab nav and matchup links beside them.
-      if (/^https?:\/\//.test(href)) assert.equal(link.getAttribute("target"), "_top");
-      else {
-        assert.match(href, /^\//);
-        assert.equal(link.getAttribute("target"), null);
-      }
+  test("'Use this research' is off the team pages (mak, 2026-10-09)", async () => {
+    // The block (products + usage report + next matchup) used to close every
+    // tab. It is unmounted, not deleted - renderResources() still exists - so
+    // this guards against it quietly coming back at either mount point.
+    for (const path of [
+      "/team/new-england-patriots/",
+      "/team/new-england-patriots?embed=1",
+      "/team/new-england-patriots/usage/",
+    ]) {
+      const { doc } = await dom(path);
+      assert.equal(doc.getElementById("resources"), null, `${path}: block rendered`);
+      assert.equal(doc.querySelectorAll(".sct-resource-link").length, 0, `${path}: cards rendered`);
     }
-  });
-
-  test("'Use this research': the two products, then this club's usage report and next matchup", async () => {
-    const { doc } = await dom("/team/new-england-patriots/");
-    const block = doc.getElementById("resources");
-    assert.equal(block.querySelector("h2").textContent, "Use this research");
-    const cards = [...block.querySelectorAll(".sct-resource")].map((li) => [
-      li.querySelector(".sct-resource-title").textContent,
-      li.querySelector("a").getAttribute("href"),
-    ]);
-    assert.deepEqual(cards.slice(0, 3), [
-      ["Redraft Command", "https://statchasers.com/redraft-command/"],
-      ["Dynasty Command", "https://statchasers.com/dynasty-command/"],
-      ["Patriots Usage Report", "/team/new-england-patriots/usage/"],
-    ]);
-    // The next game's preview, when the schedule has one.
-    if (cards[3]) assert.match(cards[3][1], /^\/nfl\/[a-z0-9-]+\/$/);
-    // The /usage/ page closes on its own conversion block instead.
+    // The /usage/ page keeps its own conversion block.
     const usage = await dom("/team/new-england-patriots/usage/");
-    assert.equal(usage.doc.getElementById("resources"), null);
     assert.ok(usage.doc.querySelector(".sct-us-convert"));
   });
 });
@@ -892,20 +897,16 @@ describe("tab FAQs", () => {
         1,
         `one FAQ block on the ${id} tail`,
       );
-      // Out of the panel, and after the tools block it now follows.
+      // Out of the panel: the tail is a sibling of it, after the panels.
       assert.equal(
         doc.querySelector(`#${id} .sct-faq`),
         null,
         `${id}: the questions left the panel`,
       );
-      // querySelectorAll returns document order, so the tool list coming back
-      // first is the assertion.
-      const order = [...doc.querySelectorAll(`#resources, ${scope}`)];
-      assert.equal(order.length, 2, `${id}: both blocks on the page`);
       assert.equal(
-        order[0].id,
-        "resources",
-        `${id}: the questions come after the tools block`,
+        doc.querySelector(`#${id} ~ ${scope}`) !== null,
+        true,
+        `${id}: the tail follows its panel`,
       );
     }
   });
@@ -2650,15 +2651,19 @@ describe("team section URLs", () => {
     // MIRRORED IN PHP: statchasers_team_section_meta() builds the same strings
     // for Rank Math, which is what actually ranks. If these change, that
     // changes too.
+    // Sixty characters at most and no " | StatChasers" (mak, 2026-10-08):
+    // a twenty-letter name lands on the shorter rung of each ladder.
     const expected = {
-      stats: "New England Patriots Stats 2026: Offense, Defense & NFL Rankings",
+      stats: "New England Patriots Stats 2026: Offense & Defense Rankings",
       schedule: "New England Patriots Schedule 2026: Dates, Opponents & Results",
       "depth-chart": "New England Patriots Depth Chart 2026: Starters & Backups",
-      news: "New England Patriots News 2026: Injuries, Roster Moves & Fantasy Impact",
+      news: "New England Patriots News 2026: Injuries & Roster Moves",
+      matchups: "New England Patriots Matchups 2026: Opponents & Head-to-Head",
     };
     for (const [id, title] of Object.entries(expected)) {
       const { doc } = await dom(at(id));
-      assert.equal(doc.querySelector("title").textContent, `${title} | StatChasers`);
+      assert.equal(doc.querySelector("title").textContent, title);
+      assert.ok(title.length <= 60, `${id}: ${title.length} characters`);
       assert.ok(
         (doc.querySelector('meta[name="description"]')?.content ?? "").length > 80,
         `${id}: carries its own description`,

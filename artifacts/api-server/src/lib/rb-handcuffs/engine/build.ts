@@ -37,6 +37,7 @@ import {
 } from "./stats";
 import { computeBackfieldVolumeScores } from "./volume";
 import {
+  ypcWithoutLongest,
   computeRoleScoreCurrent,
   detectCommittee,
   getHandcuffBadge,
@@ -336,6 +337,13 @@ export function buildBoard(inputs: EngineInputs): EnginePlayer[] {
       roleClarity: override?.roleClarity ?? 50,
       talentBackup: curated?.talentBackup ?? 50,
       starterYpc: starterProfile?.yards_per_carry != null ? Math.round(starterProfile.yards_per_carry * 10) / 10 : null,
+      starterCarries: starterProfile?.rush_att ?? null,
+      starterGames: starterProfile?.games ?? null,
+      starterYpcWithoutLongest: ypcWithoutLongest(
+        starterProfile?.rush_att,
+        starterProfile?.rush_yards,
+        starterProfile?.longest_rush,
+      ),
     };
     const drivers = pathDetail ? pathToOpportunityTopDrivers(pathDetail) : [];
     const topReasons = Array.from(new Set([...drivers, ...getTopReasons(ctx, backupData, committeeRisk)])).slice(0, 4);

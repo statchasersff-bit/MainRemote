@@ -5,7 +5,8 @@
  *
  * Writes `data/rb-handcuffs/depth.json`: every team's RB1/RB2/RB3 from
  * Ourlads, and for every running back on those charts his Sleeper id, current
- * age and current injury status. The server scores the board from that file
+ * age and current injury status - plus the same for any back pinned in
+ * curation.json's `depth` overrides. The server scores the board from that file
  * plus the committed 2025 stats and injury history, so running this and
  * committing the result is the whole refresh. Run it weekly in season, after
  * Tuesday's transactions, and again whenever a starter goes down.
@@ -24,6 +25,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, "..", "..", "data", "rb-handcuffs", "depth.json");
+const CURATION = path.resolve(here, "..", "..", "data", "rb-handcuffs", "curation.json");
 
 const OURLADS_URL = "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB";
 const SLEEPER_URL = "https://api.sleeper.app/v1/players/nfl";
@@ -141,10 +143,16 @@ async function main() {
     byName.set(key, byName.has(key) ? null : p);
   }
 
+  // A back pinned in curation.json's `depth` (a hand correction to Ourlads)
+  // needs his id, age and status too, even when Ourlads lists him lower
+  // down or not at all - he is the one the board shows.
+  const pinned = JSON.parse(fs.readFileSync(CURATION, "utf8")).depth ?? {};
+
   const players = {};
   let unmatched = [];
   for (const [team, chart] of Object.entries(teams)) {
-    for (const name of [chart.rb1, chart.rb2, chart.rb3]) {
+    const fixed = pinned[team] ?? {};
+    for (const name of [chart.rb1, chart.rb2, chart.rb3, fixed.rb1, fixed.rb2]) {
       if (!name) continue;
       const key = normalizeName(name);
       const p = byTeamName.get(`${key}|${team}`) ?? byName.get(key) ?? null;

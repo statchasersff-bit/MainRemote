@@ -283,5 +283,10 @@
       "notes": "Marks profiles as a PPR-friendly backup and passing-down specialist behind David Montgomery in Houston's backfield. His standalone value may be limited if Montgomery controls the early-down and short-yardage work, but Marks' receiving role gives him some deep-league appeal. If Montgomery misses time, Marks has already shown he can handle expanded volume, making him an intriguing late-round handcuff with RB2 upside."
     }
   },
-  "depth": {}
+  "depth": {
+    "MIN": {
+      "rb1": "Aaron Jones SR.",
+      "rb2": "Jordan Mason"
+    }
+  }
 }

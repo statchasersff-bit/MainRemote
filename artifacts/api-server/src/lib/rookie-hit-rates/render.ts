@@ -7,22 +7,24 @@
  * a filter changes, so a view the bundle draws is the view the server would
  * have drawn.
  *
- * The layout is the standalone app's (statchasersff-bit/Rookie-Hit-Rate,
- * client/src): the Overview / Trends / Cohorts / Players tabs over one filter
- * bar, and in each tab the same sections in the same order - insight cards,
- * then the heatmap with the Pick Lens beside it, the pick range breakdown, the
- * trend and breakout charts, the patience module, the player explorer and its
- * drawer. The dress is this app's, per the house-style rule for ported tools:
- * rookie-hit-rates.css, Inter, the brand navy and gold, no Tailwind. Kept from
- * the source because they carry meaning, not decoration: the position colours
- * (QB red, RB green, WR blue, TE gold), the heat scale's five steps, the
- * confidence dots and the chart line colours and dashes.
+ * The layout is the standalone app's (statchasersff-bit/Rookie-Hit-Rate at
+ * 9c69b00, client/src): the Overview / Draft Classes / Year-by-Year / Players
+ * tabs over one filter bar, and in each tab the same sections in the same
+ * order - insight cards, then the Overview's one table (the heatmap with the
+ * Best Finish card beside it, or the pick-range breakdown, by a Simple /
+ * Detailed toggle), the Players Who Hit by Class table with its expandable
+ * draft boards, the breakout chart with the patience tables, the player
+ * explorer. The dress is this app's, per the house-style rule for ported
+ * tools: rookie-hit-rates.css, Inter, the brand navy and gold, no Tailwind.
+ * Kept from the source because they carry meaning, not decoration: the
+ * position colours (QB red, RB green, WR blue, TE gold), the heat scale's
+ * five steps, the confidence dots and the chart line colours.
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
 import { headshotPath } from "../image-urls";
 import { TEAM_LOGO_FILES } from "../team-logo-files";
-import { renderBarChart, renderLineChart, niceTicks, type LineSeries } from "./charts";
+import { renderBarChart, renderLineChart, niceTicks } from "./charts";
 import {
   OUTCOME_LABELS,
   PAGE_SIZE,
@@ -30,16 +32,19 @@ import {
   POSITIONS,
   ROUNDS,
   TABS,
+  abbreviateName,
   cohortsView,
+  draftBoard,
   filterPlayers,
   makeBoard,
-  outcomeThreshold,
   overviewView,
   pad2,
   playerSummaries,
-  transformTrend,
+  sortClassRows,
   trendsView,
   type Board,
+  type BoardPlayer,
+  type ClassSortKey,
   type CohortSummary,
   type CohortsView,
   type Filters,
@@ -48,10 +53,11 @@ import {
   type PickRangeCohortSummary,
   type PlayerSummary,
   type Pos,
+  type RosterRow,
   type SortField,
   type State,
   type Tab,
-  type TrendsView,
+  type TableView,
   type RhrAssets,
 } from "./model";
 
@@ -67,7 +73,7 @@ export interface Widths {
   lens: number;
 }
 
-export const DEFAULT_WIDTHS: Widths = { chart: 760, lens: 268 };
+export const DEFAULT_WIDTHS: Widths = { chart: 760, lens: 240 };
 
 export const RHR_H1 = "Dynasty Rookie Hit Rates";
 
@@ -78,15 +84,20 @@ export const RHR_H1 = "Dynasty Rookie Hit Rates";
  */
 export function rhrPageCopy(first: number, last: number): { title: string; h1: string; description: string } {
   return {
-    title: `${RHR_H1} by Position, Round & Pick (${first}-${last})`,
+    title: `Dynasty Rookie Hit Rates ${first}–${last} | StatChasers`,
     h1: RHR_H1,
     description:
-      `How often dynasty rookie picks hit: Top-12, Top-24 and Top-36 rates by position, round and pick ` +
-      `for every rookie class from ${first} to ${last}, with breakout timing and every player's best finish.`,
+      `How often drafted rookies become fantasy starters: Top-12, Top-24 and Top-36 hit rates by position, ` +
+      `rookie draft round and pick range for the ${first}–${last} classes, with breakout timing and every player's best finish.`,
   };
 }
 
-const TAB_LABELS: Record<Tab, string> = { overview: "Overview", trends: "Trends", cohorts: "Cohorts", players: "Players" };
+const TAB_LABELS: Record<Tab, string> = {
+  overview: "Overview",
+  trends: "Draft Classes",
+  cohorts: "Year-by-Year",
+  players: "Players",
+};
 
 const POS_LINE: Record<Pos, string> = { QB: "#dc2626", RB: "#059669", WR: "#2563eb", TE: "#d4af37" };
 const ROUND_LINE: Record<string, string> = {
@@ -96,13 +107,17 @@ const ROUND_LINE: Record<string, string> = {
   "Round 4": "#9333ea",
   "Round 5": "#059669",
 };
-const ROUND_DASH: Record<number, string> = { 1: "", 2: "6 3", 3: "2 3", 4: "8 3 2 3", 5: "10 4" };
 
 const pct0 = (v: number) => `${(v * 100).toFixed(0)}%`;
 const pct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
 
 export function groupColor(group: string): string {
   return POS_LINE[group as Pos] ?? ROUND_LINE[group] ?? "#0b3a7a";
+}
+
+/** "Round 2" reads "2" in the patience tables' Round column, as the source's. */
+function groupLabel(group: string): string {
+  return group.replace(/^Round\s+/, "");
 }
 
 /** The heat scale's step: 0-14% · 15-29% · 30-49% · 50-69% · 70%+. */
@@ -120,8 +135,9 @@ function confidence(total: number): { level: "high" | "med" | "low"; label: stri
   return { level: "low", label: "Low confidence (small sample)" };
 }
 
-function posBadge(pos: Pos, extra = ""): string {
-  return `<span class="schr-pos${extra ? ` ${extra}` : ""}" data-pos="${pos}">${pos}</span>`;
+/** The position, in its colour: the heatmaps' row heads and the board's pills. */
+function posText(pos: Pos): string {
+  return `<span class="schr-pos" data-pos="${pos}">${pos}</span>`;
 }
 
 /**
@@ -156,6 +172,25 @@ function seasonRange(f: Filters): string {
   return `${f.yearStart}–${f.yearEnd}`;
 }
 
+function avatar(name: string, sleeperId: string | null, assets: RhrAssets | undefined): string {
+  const src = headshot(sleeperId, assets);
+  return (
+    `<span class="schr-avatar" aria-hidden="true">` +
+    (src
+      ? `<img src="${escapeHtml(src)}" alt="" width="24" height="24" loading="lazy" decoding="async" data-fallback="${escapeHtml(initials(name))}" />`
+      : `<span>${escapeHtml(initials(name))}</span>`) +
+    `</span>`
+  );
+}
+
+/** A name in both lengths; the stylesheet shows one, by the table's `is-abbrev`. */
+function nameSpans(name: string): string {
+  return (
+    `<span class="schr-name-full">${escapeHtml(name)}</span>` +
+    `<span class="schr-name-short">${escapeHtml(abbreviateName(name))}</span>`
+  );
+}
+
 /* ----------------------------------------------------------------- cards */
 
 function renderCards(insights: Insight[], kind: string): string {
@@ -168,7 +203,7 @@ function renderCards(insights: Insight[], kind: string): string {
           `<article class="schr-card" data-accent="${i.accent}">` +
           `<p class="schr-card-label">${escapeHtml(i.title)}</p>` +
           `<p class="schr-card-value">${escapeHtml(i.stat)}</p>` +
-          `<p class="schr-card-context is-${i.tone}">${escapeHtml(i.body)}</p>` +
+          `<p class="schr-card-context">${escapeHtml(i.body)}</p>` +
           `</article>`,
       )
       .join("") +
@@ -176,10 +211,10 @@ function renderCards(insights: Insight[], kind: string): string {
   );
 }
 
-function head(title: string, sub: string, level: 2 | 3 = 2): string {
+function head(id: string, title: string, sub: string): string {
   return (
     `<div class="schr-head">` +
-    `<h${level} class="schr-h${level}">${escapeHtml(title)}</h${level}>` +
+    `<h2 class="schr-h2" id="${id}">${escapeHtml(title)}</h2>` +
     (sub ? `<p class="schr-sub">${sub}</p>` : "") +
     `</div>`
   );
@@ -224,12 +259,13 @@ function cellTitle(c: CohortSummary | undefined, title: string): string {
   );
 }
 
-/* ------------------------------------------------------------- pick lens */
+/* ------------------------------------------------------------ best finish */
 
+/** The card beside the heatmap: the hovered or pinned cohort's outcomes and hit-by-year bars. */
 export function renderLens(c: CohortSummary | null, filters: Filters, width: number = DEFAULT_WIDTHS.lens): string {
   if (!c) {
     return (
-      `<div class="schr-lens-empty"><p class="schr-lens-eyebrow">Pick Lens</p>` +
+      `<div class="schr-lens-empty"><p class="schr-lens-eyebrow">Best Finish</p>` +
       `<p>Hover or tap any cell in the grid to break down that cohort's outcomes.</p></div>`
     );
   }
@@ -242,27 +278,26 @@ export function renderLens(c: CohortSummary | null, filters: Filters, width: num
       { name: "Year 2", value: c.hit_by_year.year2, color: "#1a5ab8" },
       { name: "Year 3+", value: c.hit_by_year.year3_plus, color: "#d4af37" },
     ],
-    Math.max(160, width - 28),
-    120,
+    Math.max(120, width - 12),
+    110,
     `${name} hits by breakout year, ${c.pos} round ${c.rookie_round}`,
   );
   return (
-    `<p class="schr-lens-eyebrow">Pick Lens</p>` +
-    `<div class="schr-lens-title">${posBadge(c.pos, "is-sm")}<h3>${c.pos} · Round ${c.rookie_round}</h3></div>` +
-    `<p class="schr-lens-meta">${seasonRange(filters)} · ${c.total} players</p>` +
-    (c.total < 10 ? `<p class="schr-lens-low">Low sample · Directional only</p>` : "") +
+    `<div class="schr-lens-card">` +
+    `<div class="schr-lens-card-head"><p class="schr-lens-eyebrow">Best Finish</p>` +
+    (c.total < 10 ? `<span class="schr-lens-low">Low sample</span>` : "") +
+    `</div>` +
+    `<p class="schr-sr">${c.pos} round ${c.rookie_round}, ${c.total} players, ${seasonRange(filters)}</p>` +
     `<div class="schr-lens-stats">` +
     stat("Top-12", c.elite_rate, " is-gold") +
-    stat("Top-24", c.starter_rate) +
-    stat("Top-36", c.flex_rate) +
+    stat("13-24", c.starter_rate) +
+    stat("25-36", c.flex_rate) +
     stat("Bust", c.bust_rate, " is-bad") +
-    `</div>` +
-    `<div class="schr-lens-breakout"><span>Med. Breakout</span>` +
-    `<strong>${c.median_breakout ? `Yr ${c.median_breakout.toFixed(1)}` : "N/A"}</strong></div>` +
-    `<p class="schr-lens-counts"><span class="is-gold">${c.elite_hits} Top-12</span> · ${c.starter_hits} Top-24 · ` +
-    `${c.flex_hits} Top-36 · <span class="is-bad">${c.bust_count} bust</span></p>` +
+    `</div></div>` +
+    `<div class="schr-lens-card is-chart">` +
     `<p class="schr-lens-chart-title">${name} Hit by Year</p>` +
-    `<div class="schr-lens-chart" data-chart="lens">${bars}</div>`
+    `<div class="schr-lens-chart" data-chart="lens">${bars}</div>` +
+    `</div>`
   );
 }
 
@@ -273,22 +308,31 @@ export function lensCohort(cohorts: CohortSummary[], selected: State["selected"]
   return cohorts.find((c) => c.pos === selected.pos && c.rookie_round === selected.round) ?? null;
 }
 
-function legendScale(): string {
+/** The legend both Overview tables share, as the source's HeatLegend. */
+function renderHeatLegend(): string {
   return (
-    `<span class="schr-legend-item"><strong>Scale</strong>` +
-    `<span class="schr-swatches">${[0, 1, 2, 3, 4].map((t) => `<i class="schr-swatch" data-tier="${t}"></i>`).join("")}</span>` +
-    `<span class="schr-legend-nums">0 · 15 · 30 · 50 · 70%+</span></span>`
-  );
-}
-
-function legendConfidence(withLowSample: boolean): string {
-  return (
-    `<span class="schr-legend-item"><strong>Confidence</strong>` +
+    `<div class="schr-legend"><span class="schr-legend-item"><strong>Hit Rate:</strong>` +
+    [0, 1, 2, 3, 4]
+      .map((t, i) => `<span><i class="schr-swatch" data-tier="${t}"></i>${["0%", "15%", "30%", "50%", "70%+"][i]}</span>`)
+      .join("") +
+    `</span><span class="schr-legend-item"><i class="schr-legend-bar">|</i><strong>Confidence:</strong>` +
     `<span><i class="schr-dot" data-conf="high"></i>High</span>` +
     `<span><i class="schr-dot" data-conf="med"></i>Med</span>` +
     `<span><i class="schr-dot" data-conf="low"></i>Low</span>` +
-    (withLowSample ? `<span><i class="schr-swatch is-dashed"></i>Low sample</span>` : "") +
-    `</span>`
+    `</span></div>`
+  );
+}
+
+/** The Simple / Detailed switch in each Overview table's heading row. */
+function tableToggle(view: TableView): string {
+  const btn = (id: TableView, label: string) =>
+    `<button type="button" class="schr-opt${view === id ? " is-active" : ""}" role="tab" data-table-view="${id}"` +
+    ` aria-selected="${view === id}">${label}</button>`;
+  return (
+    `<div class="schr-opts is-small schr-view-toggle" role="tablist" aria-label="Table view">` +
+    btn("simple", "Simple") +
+    btn("detailed", "Detailed") +
+    `</div>`
   );
 }
 
@@ -315,28 +359,32 @@ function renderHeatmap(cohorts: CohortSummary[], state: State, widths: Widths): 
         `</button></td>`
       );
     }).join("");
-    return `<tr><th scope="row">${posBadge(pos)}</th>${cells}</tr>`;
+    return `<tr><th scope="row">${posText(pos)}</th>${cells}</tr>`;
   }).join("");
 
   return (
-    `<section class="schr-section schr-heat" aria-labelledby="schr-heat-h">` +
-    `<div class="schr-head"><h2 class="schr-h2" id="schr-heat-h">Rookie Hit Rates</h2>` +
-    `<p class="schr-sub"><strong>Hit Rate</strong> = share of rookies who reached a ${name}-or-better finish ` +
-    `(top ${outcomeThreshold(f.outcome)} at their position), by rookie draft round · ${seasonRange(f)}.</p></div>` +
+    `<div class="schr-table-view" data-table-view-panel="simple"${state.tableView === "simple" ? "" : " hidden"}>` +
+    `<div class="schr-head-row">` +
+    head(
+      "schr-heat-h",
+      "Rookie Hit Rates",
+      `<strong>Hit Rate</strong> = share of rookies who reached a ${name.toLowerCase()}-or-better finish at their position at one point in their career.`,
+    ) +
+    tableToggle("simple") +
+    `</div>` +
     `<div class="schr-heat-row">` +
     `<div class="schr-scroll"><table class="schr-table schr-heat-table">` +
     `<caption class="schr-sr">${escapeHtml(`${name} hit rate by position and rookie draft round, ${seasonRange(f)} classes. Select a cell for its breakdown.`)}</caption>` +
-    `<thead><tr><td></td>${ROUNDS.map((r) => `<th scope="col">Rd ${r}</th>`).join("")}</tr></thead>` +
+    `<thead><tr><th scope="col">Pos</th>${ROUNDS.map((r) => `<th scope="col">Rd ${r}</th>`).join("")}</tr></thead>` +
     `<tbody>${rows}</tbody></table></div>` +
     `<aside class="schr-lens" data-schr-lens aria-live="polite">${renderLens(lens, f, widths.lens)}</aside>` +
     `</div>` +
-    `<div class="schr-legend">${legendScale()}${legendConfidence(true)}</div>` +
-    `<p class="schr-note">Low-confidence cells (dashed border) use smaller samples - treat them as directional, not predictive.</p>` +
-    `</section>`
+    renderHeatLegend() +
+    `</div>`
   );
 }
 
-function renderPickRange(cohorts: PickRangeCohortSummary[], insights: Insight[], state: State): string {
+function renderPickRange(cohorts: PickRangeCohortSummary[], state: State): string {
   const f = state.filters;
   const map = new Map(cohorts.map((c) => [`${c.pos}-${c.rookie_round}-${c.pickStart}`, c]));
   const head2 = ROUNDS.map((r, ri) =>
@@ -360,32 +408,26 @@ function renderPickRange(cohorts: PickRangeCohortSummary[], insights: Insight[],
           ` data-pos="${pos}" data-round="${round}" data-pick="${pr.start}" title="${escapeHtml(cellTitle(c, label))}">` +
           `<span class="schr-cell-pct">${c ? pct0(rate) : "-"}</span>` +
           `<span class="schr-cell-n">${conf ? `<i class="schr-dot" data-conf="${conf.level}" title="${conf.label}"></i>` : ""}` +
-          `<span>N=${c?.total ?? 0}</span></span>` +
-          (c
-            ? `<span class="schr-cell-esfb"><b>${c.elite_hits}E</b> · ${c.starter_hits}S · ${c.flex_hits}F · ${c.bust_count}B</span>`
-            : "") +
+          `<span>n=${c?.total ?? 0}</span></span>` +
           `</button></td>`
         );
       }).join(""),
     ).join("");
-    return `<tr><th scope="row">${posBadge(pos, "is-pill")}</th>${cells}</tr>`;
+    return `<tr><th scope="row">${posText(pos)}</th>${cells}</tr>`;
   }).join("");
 
   return (
-    `<section class="schr-section schr-pr" aria-labelledby="schr-pr-h">` +
-    renderCards(insights, "pick-range") +
-    `<div class="schr-head"><h2 class="schr-h2" id="schr-pr-h">Pick Range Breakdown</h2>` +
-    `<p class="schr-sub">Hit rates by 3-pick ranges within each round (${seasonRange(f)})</p></div>` +
+    `<div class="schr-table-view" data-table-view-panel="detailed"${state.tableView === "detailed" ? "" : " hidden"}>` +
+    `<div class="schr-head-row">` +
+    head("schr-pr-h", "Pick Range Breakdown", `Hit rates by 3-pick ranges within each round (${seasonRange(f)})`) +
+    tableToggle("detailed") +
+    `</div>` +
     `<div class="schr-scroll"><table class="schr-table schr-pr-table">` +
     `<caption class="schr-sr">${escapeHtml(`${OUTCOME_LABELS[f.outcome]} hit rate by position and 3-pick range within each rookie round, ${seasonRange(f)} classes.`)}</caption>` +
     `<thead><tr><th scope="col" class="schr-pr-pos">Pos</th>${head2}</tr></thead>` +
     `<tbody>${rows}</tbody></table></div>` +
-    `<div class="schr-legend"><span class="schr-legend-item"><strong>Hit Rate</strong>` +
-    [0, 1, 2, 3, 4]
-      .map((t, i) => `<span><i class="schr-swatch" data-tier="${t}"></i>${["0%", "15%", "30%", "50%", "70%+"][i]}</span>`)
-      .join("") +
-    `</span>${legendConfidence(false)}</div>` +
-    `</section>`
+    renderHeatLegend() +
+    `</div>`
   );
 }
 
@@ -393,120 +435,123 @@ export function renderOverviewPanel(board: Board, state: State, widths: Widths =
   const view = overviewView(board, state.filters);
   return (
     renderCards(view.insights, "overview") +
+    `<section class="schr-section schr-overview-table" aria-label="Rookie hit rates by draft slot">` +
     renderHeatmap(view.cohorts, state, widths) +
-    renderPickRange(view.pickRange, view.pickRangeInsights, state)
+    renderPickRange(view.pickRange, state) +
+    `</section>`
   );
 }
 
-/* ---------------------------------------------------------------- trends */
+/* --------------------------------------------------------- draft classes */
 
-/** The merged rows the chart and its tooltip read: one per class year, one value per series. */
-export function trendRows(view: TrendsView, state: State): Map<number, Map<string, { rate: number; n: number; hits: number }>> {
-  const rows = new Map<number, Map<string, { rate: number; n: number; hits: number }>>();
-  for (const s of view.series) {
-    for (const t of transformTrend(s.raw, state.viewMode, state.movingAvg)) {
-      let row = rows.get(t.year);
-      if (!row) rows.set(t.year, (row = new Map()));
-      row.set(s.key, { rate: t.hitRate, n: t.n, hits: t.hits });
-    }
+const CLASS_COLUMNS: { key: ClassSortKey; label: string; right: boolean }[] = [
+  { key: "year", label: "Draft Class", right: false },
+  ...POSITIONS.map((pos) => ({ key: pos as ClassSortKey, label: pos, right: true })),
+  { key: "total", label: "Total", right: true },
+];
+
+const CHEVRON_UPDOWN =
+  `<svg class="schr-sort-icon" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">` +
+  `<path d="M3.5 4.5 6 2l2.5 2.5M3.5 7.5 6 10l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEVRON_UP =
+  `<svg class="schr-sort-icon" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">` +
+  `<path d="M3 7.5 6 4.5l3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEVRON_DOWN =
+  `<svg class="schr-sort-icon" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">` +
+  `<path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEVRON_RIGHT =
+  `<svg class="schr-class-chevron" viewBox="0 0 12 12" width="14" height="14" aria-hidden="true">` +
+  `<path d="M4.5 3 7.5 6l-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/**
+ * One class's draft board: every rookie drafted that year, a column per
+ * round, in pick order. Hits at full strength, misses faded. The bundle picks
+ * the layout rung (board-layout.ts) once it can measure the names; until then
+ * this is the roomy default.
+ */
+export function renderDraftBoard(players: BoardPlayer[], assets: RhrAssets | undefined): string {
+  if (!players.length) return `<p class="schr-board-empty">No draft board available for this class.</p>`;
+  const byRound = new Map<number, BoardPlayer[]>();
+  for (const p of players) {
+    const list = byRound.get(p.round);
+    if (list) list.push(p);
+    else byRound.set(p.round, [p]);
   }
-  return rows;
-}
-
-export function renderTrendTip(view: TrendsView, state: State, year: number): string {
-  const row = trendRows(view, state).get(year);
-  if (!row) return "";
+  const rounds = Array.from(byRound.keys()).sort((a, b) => a - b);
   return (
-    `<p class="schr-tip-title">${year}</p>` +
-    `<div class="schr-tip-rows">` +
-    view.series
-      .filter((s) => row.has(s.key))
-      .map((s) => {
-        const v = row.get(s.key)!;
-        return (
-          `<span><i class="schr-dot" style="background:${POS_LINE[s.pos]}"></i>${escapeHtml(s.name)}</span>` +
-          `<strong>${pct1(v.rate)} <small>(${v.hits}/${v.n})</small></strong>`
-        );
-      })
+    `<div class="schr-board" data-board data-cols="${rounds.length}" data-chrome="normal" style="grid-template-columns:repeat(${rounds.length},minmax(0,1fr))">` +
+    rounds
+      .map(
+        (rd) =>
+          `<div class="schr-board-round"><p class="schr-board-round-title">Round ${rd}</p>` +
+          `<ul class="schr-board-list">` +
+          byRound
+            .get(rd)!
+            .map(
+              (p) =>
+                `<li class="schr-board-pill${p.hit ? " is-hit" : " is-miss"}" data-pos="${p.pos}" data-round="${p.round}" data-name="${escapeHtml(p.name)}">` +
+                avatar(p.name, p.sleeperId, assets) +
+                `<span class="schr-board-text"><span class="schr-board-name">${nameSpans(p.name)}</span>` +
+                `<span class="schr-board-meta"><span class="schr-num">${p.round}.${pad2(p.pick)}</span>` +
+                `<b${p.hit ? ` data-pos="${p.pos}"` : ""}>${p.pos}</b></span></span>` +
+                `</li>`,
+            )
+            .join("") +
+          `</ul></div>`,
+      )
       .join("") +
     `</div>`
   );
 }
 
-function trendChart(view: TrendsView, state: State, width: number): string {
-  const rows = trendRows(view, state);
-  const xs = Array.from(rows.keys()).sort((a, b) => a - b);
-  const series: LineSeries[] = view.series.map((s) => ({
-    key: s.key,
-    name: s.name,
-    color: POS_LINE[s.pos],
-    dash: ROUND_DASH[s.round],
-    points: xs.filter((x) => rows.get(x)!.has(s.key)).map((x) => ({ x, y: rows.get(x)!.get(s.key)!.rate })),
-  }));
-  return renderLineChart({
-    width,
-    height: 288,
-    xs,
-    yMax: 1,
-    yTicks: [0, 0.25, 0.5, 0.75, 1],
-    series,
-    refY: view.stability.avg,
-    label: `${OUTCOME_LABELS[state.filters.outcome]} hit rate by draft class year`,
-  });
-}
-
-function lineLegend(items: { name: string; color: string; dash?: string }[]): string {
-  return (
-    `<ul class="schr-line-legend">` +
-    items
-      .map(
-        (i) =>
-          `<li><svg viewBox="0 0 22 8" width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="${i.color}" stroke-width="2"` +
-          (i.dash ? ` stroke-dasharray="${i.dash}"` : "") +
-          ` /></svg>${escapeHtml(i.name)}</li>`,
-      )
-      .join("") +
-    `</ul>`
-  );
-}
-
-export function renderTrendsPanel(board: Board, state: State, widths: Widths = DEFAULT_WIDTHS): string {
+export function renderTrendsPanel(board: Board, state: State, _widths: Widths = DEFAULT_WIDTHS): string {
   const view = trendsView(board, state.filters);
   const name = OUTCOME_LABELS[state.filters.outcome];
-  const modes: [State["viewMode"], string][] = [
-    ["yearly", "By Year"],
-    ["rolling3", "Rolling 3-Yr"],
-    ["cumulative", "Cumulative"],
-  ];
+  const sort = state.classSort;
+  const open = new Set(state.expandedYears);
+
+  const th = CLASS_COLUMNS.map((col) => {
+    const active = sort.key === col.key;
+    const ariaSort = active ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
+    const icon = active ? (sort.dir === "asc" ? CHEVRON_UP : CHEVRON_DOWN) : CHEVRON_UPDOWN;
+    return (
+      `<th scope="col" class="${col.right ? "is-right" : ""}${active ? " is-active" : ""}" aria-sort="${ariaSort}"` +
+      (col.key !== "year" && col.key !== "total" ? ` data-pos="${col.key}"` : "") +
+      `><button type="button" class="schr-sort" data-class-sort="${col.key}">` +
+      `<span>${col.label}</span>${icon}</button></th>`
+    );
+  }).join("");
+
+  const body = sortClassRows(view.classes, sort)
+    .map((r) => {
+      const isOpen = open.has(r.year);
+      return (
+        `<tr class="schr-class-row${isOpen ? " is-open" : ""}" data-class-row="${r.year}">` +
+        `<th scope="row"><button type="button" class="schr-class-toggle" id="schr-class-${r.year}" data-class-toggle="${r.year}"` +
+        ` aria-expanded="${isOpen}" aria-controls="schr-board-${r.year}">${CHEVRON_RIGHT}<span>${r.year}</span></button></th>` +
+        POSITIONS.map((pos) => `<td class="schr-num is-right">${r[pos]}</td>`).join("") +
+        `<td class="schr-num is-right is-total">${r.total}</td>` +
+        `</tr>` +
+        `<tr class="schr-board-row" id="schr-board-${r.year}"${isOpen ? "" : " hidden"}><td colspan="${CLASS_COLUMNS.length}">` +
+        (isOpen ? renderDraftBoard(draftBoard(board.drafts, board.ranks, state.filters, r.year), board.data.assets) : "") +
+        `</td></tr>`
+      );
+    })
+    .join("");
+
   return (
     renderCards(view.insights, "trends") +
-    `<section class="schr-section schr-trends" aria-labelledby="schr-trends-h">` +
-    `<div class="schr-head"><h2 class="schr-h2" id="schr-trends-h">Hit Rate Trends</h2>` +
-    `<p class="schr-sub">${name} hit rate by draft class year - one line per selected position &amp; round</p></div>` +
-    `<div class="schr-chart-controls">` +
-    `<div class="schr-control"><span class="schr-control-label">View Mode</span>` +
-    `<div class="schr-opts is-small" role="group" aria-label="View mode">` +
-    modes
-      .map(
-        ([id, label]) =>
-          `<button type="button" class="schr-opt${state.viewMode === id ? " is-active" : ""}" data-view-mode="${id}"` +
-          ` aria-pressed="${state.viewMode === id}">${label}</button>`,
-      )
-      .join("") +
-    `</div></div>` +
-    `<div class="schr-control is-inline"><span class="schr-control-label" id="schr-ma-l">3-Yr Avg</span>` +
-    `<button type="button" class="schr-switch" role="switch" aria-checked="${state.movingAvg}" aria-labelledby="schr-ma-l" data-moving-avg>` +
-    `<span class="schr-switch-knob"></span></button></div>` +
-    `</div>` +
-    `<div class="schr-stability" data-level="${view.stability.label.toLowerCase()}">` +
-    `<span class="schr-control-label">Stability</span>` +
-    `<span class="schr-meter"><i style="width:${view.stability.score}%"></i></span>` +
-    `<strong>${view.stability.score}/100</strong><span class="schr-stability-label">(${view.stability.label})</span>` +
-    `</div>` +
-    `<div class="schr-chart-card">` +
-    `<div class="schr-chart" data-chart="trends">${trendChart(view, state, widths.chart)}</div>` +
-    lineLegend(view.series.map((s) => ({ name: s.name, color: POS_LINE[s.pos], dash: ROUND_DASH[s.round] }))) +
-    `</div>` +
+    `<section class="schr-section schr-classes" aria-labelledby="schr-classes-h">` +
+    head(
+      "schr-classes-h",
+      "Players Who Hit by Class",
+      `Number of players who hit ${name.toLowerCase()} at each position per draft class, pooled across every rookie round. Click a class to see its full draft board.`,
+    ) +
+    (view.classes.length === 0
+      ? `<p class="schr-note">No draft classes in the selected range.</p>`
+      : `<div class="schr-scroll"><table class="schr-table schr-class-table">` +
+        `<caption class="schr-sr">${escapeHtml(`Rookies who hit ${name} by draft class and position, ${seasonRange(state.filters)}. Each class opens to its draft board.`)}</caption>` +
+        `<thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>`) +
     `</section>`
   );
 }
@@ -533,14 +578,22 @@ export function renderSurvivalTip(view: CohortsView, year: number): string {
 
 function survivalChart(view: CohortsView, state: State, width: number): string {
   const xs = [1, 2, 3, 4, 5, 6];
-  const max = Math.max(0, ...view.survival.flatMap((g) => g.data.map((d) => d.pct)));
+  const all = view.survival.flatMap((g) => g.data.map((d) => d.pct));
+  const max = Math.max(0, ...all);
   const { max: yMax, ticks } = niceTicks(max);
+  // The axis starts just under the lowest point (5 points below, floored at
+  // 0), as the source's `domain={[yMin, "auto"]}`, so the lines fill the plot.
+  const step = ticks.length > 1 ? ticks[1]! - ticks[0]! : yMax;
+  const low = all.length ? Math.max(0, Math.min(...all) - 0.05) : 0;
+  const yMin = step > 0 ? Math.floor(low / step + 1e-9) * step : 0;
+  const yTicks = ticks.filter((t) => t >= yMin - 1e-9);
   return renderLineChart({
     width,
     height: 320,
     xs,
+    yMin,
     yMax,
-    yTicks: ticks,
+    yTicks,
     xLabel: "Years After Entry",
     refX: { x: 3, label: "Year 3" },
     series: view.survival.map((g) => ({
@@ -556,64 +609,74 @@ function survivalChart(view: CohortsView, state: State, width: number): string {
   });
 }
 
+function lineLegend(items: { name: string; color: string }[]): string {
+  return (
+    `<ul class="schr-line-legend">` +
+    items
+      .map(
+        (i) =>
+          `<li><svg viewBox="0 0 22 8" width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="${i.color}" stroke-width="2" /></svg>${escapeHtml(i.name)}</li>`,
+      )
+      .join("") +
+    `</ul>`
+  );
+}
+
+function oddsCell(r: RosterRow, v: number): string {
+  if (r.ceiling <= 0) return `<td class="is-right is-muted">-</td>`;
+  const cls = v >= 0.15 ? " is-strong" : v < 0.05 ? " is-faint" : "";
+  return `<td class="schr-num is-right${cls}">${pct1(Math.max(0, v))}</td>`;
+}
+
 export function renderCohortsPanel(board: Board, state: State, widths: Widths = DEFAULT_WIDTHS): string {
   const view = cohortsView(board, state.filters, state.groupBy);
   const name = OUTCOME_LABELS[state.filters.outcome];
+  const groupHead = state.groupBy === "round" ? "Round" : "Pos";
   const groupBtn = (id: State["groupBy"], label: string) =>
     `<button type="button" class="schr-opt${state.groupBy === id ? " is-active" : ""}" data-group-by="${id}"` +
     ` aria-pressed="${state.groupBy === id}">${label}</button>`;
+  const groupCell = (group: string) =>
+    `<th scope="row" class="schr-group" style="color:${groupColor(group)}">${escapeHtml(groupLabel(group))}</th>`;
 
   const patience = view.patience
     .map(
       (p) =>
-        `<li><i class="schr-dot" style="background:${groupColor(p.group)}"></i>` +
-        `<span class="schr-pi-group">${escapeHtml(p.group)}</span>` +
-        `<strong>${p.pi}%</strong><span class="schr-meter is-thin"><i style="width:${Math.max(0, Math.min(100, p.pi))}%"></i></span></li>`,
+        `<tr>${groupCell(p.group)}` +
+        `<td class="schr-num is-right is-strong">${p.odds.toFixed(1)}%</td>` +
+        `<td class="schr-odds-gauge"><span class="schr-meter"><i style="width:${Math.min(100, Math.max(0, p.odds)).toFixed(1)}%"></i></span></td>` +
+        `</tr>`,
     )
     .join("");
 
-  const cell = (r: (typeof view.roster.rows)[number], v: number) => {
-    if (r.ceiling <= 0) return `<td class="is-muted">-</td>`;
-    const cls = v >= 0.15 ? " is-strong" : v < 0.05 ? " is-faint" : "";
-    return `<td class="schr-num${cls}">${pct1(Math.max(0, v))}</td>`;
-  };
   const roster = view.roster.rows
-    .map((r) => {
-      const color = groupColor(r.group);
-      return (
-        `<tr><th scope="row"><span class="schr-group-chip" style="color:${color};background:${color}1f">${escapeHtml(r.group)}</span></th>` +
-        cell(r, r.ceiling - r.y1) +
-        cell(r, r.ceiling - r.y2) +
-        cell(r, r.ceiling - r.y3) +
-        `</tr>`
-      );
-    })
+    .map((r) => `<tr>${groupCell(r.group)}${oddsCell(r, r.afterY1)}${oddsCell(r, r.afterY2)}${oddsCell(r, r.afterY3)}</tr>`)
     .join("");
 
   return (
     renderCards(view.insights, "cohorts") +
     `<section class="schr-section schr-cohorts" aria-labelledby="schr-cohorts-h">` +
-    `<div class="schr-head-row"><div class="schr-head"><h2 class="schr-h2" id="schr-cohorts-h">Time to Breakout</h2>` +
-    `<p class="schr-sub">Cumulative % who have achieved first ${name} hit by years after entering the league</p></div>` +
+    `<div class="schr-head-row">` +
+    head("schr-cohorts-h", "Time to Breakout", `Cumulative % who have achieved first ${name} hit by years after entering the league`) +
     `<div class="schr-opts is-small" role="group" aria-label="Group by">${groupBtn("pos", "Position")}${groupBtn("round", "Round")}</div>` +
     `</div>` +
     `<div class="schr-chart-card">` +
-    lineLegend(view.survival.map((g) => ({ name: `${g.group} (N=${g.n})`, color: groupColor(g.group) }))) +
+    lineLegend(view.survival.map((g) => ({ name: g.group, color: groupColor(g.group) }))) +
     `<div class="schr-chart" data-chart="survival">${survivalChart(view, state, widths.chart)}</div>` +
     `</div>` +
     `<div class="schr-patience">` +
-    head("Patience & Roster Decision Aid", "How long should dynasty managers wait before moving on?", 3) +
+    head("schr-patience-h", "Patience & Roster Decision Aid", "How long should dynasty managers wait before moving on?") +
     `<div class="schr-patience-grid">` +
-    `<div class="schr-patience-block"><p class="schr-block-title">Patience Index</p>` +
-    `<p class="schr-block-sub">Share of eventual hits that came after Year 1 · higher = more patience required before declaring a miss</p>` +
-    `<ul class="schr-pi">${patience}</ul></div>` +
+    `<div class="schr-patience-block"><p class="schr-block-title">Hit Rates After Year 1</p>` +
+    `<p class="schr-block-sub">Odds of an eventual ${name} hit if a player doesn't hit in his rookie season</p>` +
+    `<table class="schr-table schr-odds is-patience"><thead><tr><th scope="col">${groupHead}</th><th scope="col" class="is-right">Hit %</th>` +
+    `<th scope="col" class="schr-odds-gauge"><span class="schr-sr">Hit odds gauge</span></th></tr></thead><tbody>${patience}</tbody></table></div>` +
     `<div class="schr-patience-block"><p class="schr-block-title">Remaining Hit Odds</p>` +
     `<p class="schr-block-sub">Odds of an eventual ${name} hit if a player has not hit by each season checkpoint</p>` +
-    `<table class="schr-table schr-odds"><thead><tr><th scope="col">Pos</th><th scope="col">After Y1</th>` +
-    `<th scope="col">After Y2</th><th scope="col">After Y3</th></tr></thead><tbody>${roster}</tbody></table></div>` +
+    `<table class="schr-table schr-odds"><thead><tr><th scope="col">${groupHead}</th><th scope="col" class="is-right">After Y1</th>` +
+    `<th scope="col" class="is-right">After Y2</th><th scope="col" class="is-right">After Y3</th></tr></thead><tbody>${roster}</tbody></table></div>` +
     `</div>` +
     (view.roster.takeaway
-      ? `<p class="schr-takeaway"><strong>Key Takeaway:</strong> ${escapeHtml(view.roster.takeaway)}</p>`
+      ? `<div class="schr-takeaway"><p class="schr-takeaway-label">Key Takeaway</p><p>${escapeHtml(view.roster.takeaway)}</p></div>`
       : "") +
     `</div>` +
     `</section>`
@@ -628,20 +691,8 @@ const COLUMNS: { field: SortField; label: string }[] = [
   { field: "rookie_year", label: "Drafted" },
   { field: "rookie_round", label: "Pick" },
   { field: "best_finish", label: "Best Finish" },
-  { field: "best_finish_year", label: "Finish Yr" },
   { field: "breakout_time", label: "Breakout" },
 ];
-
-function avatar(p: Pick<PlayerSummary, "player_name" | "sleeper_id">, assets: RhrAssets | undefined): string {
-  const src = headshot(p.sleeper_id, assets);
-  return (
-    `<span class="schr-avatar" aria-hidden="true">` +
-    (src
-      ? `<img src="${escapeHtml(src)}" alt="" width="24" height="24" loading="lazy" decoding="async" data-fallback="${escapeHtml(initials(p.player_name))}" />`
-      : `<span>${escapeHtml(initials(p.player_name))}</span>`) +
-    `</span>`
-  );
-}
 
 function team(code: string, assets: RhrAssets | undefined): string {
   const src = teamLogo(code, assets);
@@ -654,6 +705,11 @@ function team(code: string, assets: RhrAssets | undefined): string {
   );
 }
 
+function breakoutLabel(time: number | null): string {
+  if (!time) return "-";
+  return time === 1 ? "Rookie" : `Year ${time}`;
+}
+
 export function renderPlayersPanel(board: Board, state: State, summaries?: PlayerSummary[]): string {
   const all = summaries ?? playerSummaries(board, state.filters);
   const rows = filterPlayers(all, state);
@@ -661,25 +717,29 @@ export function renderPlayersPanel(board: Board, state: State, summaries?: Playe
   const page = Math.min(state.page, pages - 1);
   const start = page * PAGE_SIZE;
   const shown = rows.slice(start, start + PAGE_SIZE);
+  const profiles = board.data.profiles ?? {};
+  const assets = board.data.assets;
 
   const th = COLUMNS.map((c, i) => {
     const active = state.sortField === c.field;
     const sort = active ? (state.sortDir === "asc" ? "ascending" : "descending") : "none";
     return (
       `<th scope="col"${i >= 2 ? ` class="is-center"` : ""} aria-sort="${sort}">` +
-      `<button type="button" class="schr-sort${active ? " is-active" : ""}" data-sort="${c.field}">${c.label}` +
-      (active ? `<span class="schr-sort-dir" aria-hidden="true">${state.sortDir === "asc" ? "▲" : "▼"}</span>` : "") +
-      `</button></th>`
+      `<button type="button" class="schr-sort${active ? " is-active" : ""}" data-sort="${c.field}">${c.label}</button></th>`
     );
   }).join("");
 
   const body = shown.length
     ? shown
-        .map(
-          (p) =>
-            `<tr data-player="${escapeHtml(p.player_id)}" tabindex="0" aria-label="${escapeHtml(`${p.player_name} details`)}">` +
-            `<th scope="row" class="schr-pname">${avatar(p, board.data.assets)}<span>${escapeHtml(p.player_name)}</span></th>` +
-            `<td>${team(p.current_nfl_team, board.data.assets)}</td>` +
+        .map((p) => {
+          const url = profiles[p.player_id];
+          const name = url
+            ? `<a class="schr-plink" href="${escapeHtml(url)}">${nameSpans(p.player_name)}</a>`
+            : `<span class="schr-pname-text">${nameSpans(p.player_name)}</span>`;
+          return (
+            `<tr data-player="${escapeHtml(p.player_id)}">` +
+            `<th scope="row" class="schr-pname">${avatar(p.player_name, p.sleeper_id, assets)}${name}</th>` +
+            `<td>${team(p.current_nfl_team, assets)}</td>` +
             `<td class="is-center schr-num is-muted">${p.rookie_year}</td>` +
             `<td class="is-center schr-num is-muted">${p.rookie_round}.${pad2(p.rookie_pick)}</td>` +
             `<td class="is-center">` +
@@ -687,12 +747,12 @@ export function renderPlayersPanel(board: Board, state: State, summaries?: Playe
               ? `<span class="is-muted">-</span>`
               : `<span class="schr-finish" data-pos="${p.pos}">${escapeHtml(p.best_finish.split(" (")[0]!)}</span>`) +
             `</td>` +
-            `<td class="is-center schr-num is-muted">${p.best_finish === "N/A" ? "-" : p.best_finish_year}</td>` +
-            `<td class="is-center schr-num">${p.breakout_time ? `Year ${p.breakout_time}` : "-"}</td>` +
-            `</tr>`,
-        )
+            `<td class="is-center schr-num">${breakoutLabel(p.breakout_time)}</td>` +
+            `</tr>`
+          );
+        })
         .join("")
-    : `<tr><td colspan="7" class="schr-empty"><strong>No players match your filters</strong>` +
+    : `<tr><td colspan="${COLUMNS.length}" class="schr-empty"><strong>No players match your filters</strong>` +
       `<span>Try widening the season range or clearing position/round filters${state.search ? " and the search box" : ""}.</span></td></tr>`;
 
   const pager = rows.length
@@ -707,69 +767,13 @@ export function renderPlayersPanel(board: Board, state: State, summaries?: Playe
 
   return (
     `<section class="schr-section schr-players" aria-labelledby="schr-players-h">` +
-    `<div class="schr-head"><h2 class="schr-h2" id="schr-players-h">Player Explorer</h2>` +
-    `<p class="schr-sub">Every drafted rookie in range with their best positional finish, breakout timing, and outcome.</p></div>` +
+    head("schr-players-h", "Player Explorer", "Every drafted rookie in range with their best positional finish, breakout timing, and outcome.") +
     `<p class="schr-count"><strong>${rows.length}</strong> player${rows.length === 1 ? "" : "s"}</p>` +
-    `<div class="schr-scroll schr-players-scroll"><table class="schr-table schr-players-table">` +
-    `<caption class="schr-sr">Drafted rookies with their best positional finish and breakout year. Select a row for the season history.</caption>` +
+    `<div class="schr-scroll schr-players-scroll" data-players-scroll><table class="schr-table schr-players-table">` +
+    `<caption class="schr-sr">Drafted rookies with their best positional finish and breakout year. A player's name opens his profile.</caption>` +
     `<thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>` +
     pager +
     `</section>`
-  );
-}
-
-const HIT_LABELS: Record<PlayerSummary["hit_type"], string> = {
-  elite: "Top-12",
-  starter: "Top-24",
-  flex: "Top-36",
-  bust: "Bust",
-  too_early: "Too Early",
-};
-
-/** The player drawer: the source's slide-in panel, opened over the page by the bundle. */
-export function renderDrawer(p: PlayerSummary, profileUrl: string | null): string {
-  const firstHit = p.breakout_time ? p.rookie_year + p.breakout_time - 1 : null;
-  const vitals = [
-    p.current_age ? `Age ${p.current_age}` : "",
-    p.height ? escapeHtml(p.height) : "",
-    p.weight ? `${p.weight} lbs` : "",
-  ].filter(Boolean);
-  const seasons = p.seasons.length
-    ? p.seasons
-        .map((s) => {
-          const isFirst = firstHit === s.season;
-          return (
-            `<li${isFirst ? ` class="is-first-hit"` : ""}><span class="schr-season-year">${s.season}` +
-            (isFirst ? `<span class="schr-first-hit">First Hit</span>` : "") +
-            `</span><span class="schr-season-stat"><span>${s.games} GP</span><strong>${s.pos}${s.pos_rank}</strong></span></li>`
-          );
-        })
-        .join("")
-    : `<li class="is-empty">No qualifying seasons</li>`;
-  return (
-    `<div class="schr-drawer" role="dialog" aria-modal="true" aria-labelledby="schr-drawer-name">` +
-    `<div class="schr-drawer-scrim" data-close></div>` +
-    `<div class="schr-drawer-panel">` +
-    `<header class="schr-drawer-head">` +
-    `<div><h2 class="schr-drawer-name" id="schr-drawer-name">${escapeHtml(p.player_name)}</h2>` +
-    `<p class="schr-drawer-meta"><span>${p.pos}</span><span>${escapeHtml(p.current_nfl_team)}</span>` +
-    `<span>Class of ${p.rookie_year}</span><span>Rd ${p.rookie_round}, Pick ${p.rookie_pick}</span></p>` +
-    (vitals.length ? `<p class="schr-drawer-vitals">${vitals.map((v) => `<span>${v}</span>`).join("")}</p>` : "") +
-    (profileUrl
-      ? `<a class="schr-drawer-link" href="${escapeHtml(profileUrl)}">View full profile →</a>`
-      : "") +
-    `</div>` +
-    `<button type="button" class="schr-drawer-close" data-close aria-label="Close">×</button>` +
-    `</header>` +
-    `<div class="schr-drawer-body">` +
-    `<div class="schr-drawer-stats">` +
-    `<div><span>Status</span><strong class="schr-hit-badge" data-hit="${p.hit_type}">${HIT_LABELS[p.hit_type]}</strong></div>` +
-    `<div><span>Best Finish</span><strong>${escapeHtml(p.best_finish)}</strong></div>` +
-    `<div><span>Breakout</span><strong>${p.breakout_time ? `Year ${p.breakout_time}` : "N/A"}</strong></div>` +
-    `</div>` +
-    `<h3 class="schr-h3">Season History</h3>` +
-    `<ul class="schr-seasons">${seasons}</ul>` +
-    `</div></div></div>`
   );
 }
 
@@ -790,29 +794,16 @@ function control(label: string, inner: string, tabs?: Tab[], cls = ""): string {
   );
 }
 
-/** How many filters differ from the defaults: the mobile toggle's badge. */
-export function activeFilterCount(f: Filters, tab: Tab, first: number, last: number): number {
-  let n = 0;
-  if (f.yearStart !== first || f.yearEnd !== last) n++;
-  if (f.format !== "sf") n++;
-  if (f.scoring !== "ppr") n++;
-  if (f.outcome !== "elite") n++;
-  if (tab !== "overview" && f.positions.length < POSITIONS.length) n += f.positions.length;
-  if (tab !== "overview" && f.rounds.length < ROUNDS.length) n += f.rounds.length;
-  if (f.minGames !== 8) n++;
-  return n;
-}
-
+/**
+ * The filter bar. Every control is printed and the tab hides the ones it does
+ * not use: the Overview spans every position and round, the Draft Classes
+ * table every position (its cards still read the Round filter), and only the
+ * Players tab searches.
+ */
 function renderFilterBar(state: State, first: number, last: number): string {
   const f = state.filters;
-  const notOverview: Tab[] = ["trends", "cohorts", "players"];
-  const count = activeFilterCount(f, state.tab, first, last);
   return (
     `<div class="schr-filters" data-schr-filters>` +
-    `<button type="button" class="schr-filter-toggle" aria-expanded="true" aria-controls="schr-filter-panel" data-filter-toggle>` +
-    `<span>Filters</span><span class="schr-filter-count" data-filter-count${count ? "" : " hidden"}>${count}</span>` +
-    `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
-    `</button>` +
     `<div class="schr-filter-panel" id="schr-filter-panel">` +
     control(
       "Search",
@@ -862,22 +853,22 @@ function renderFilterBar(state: State, first: number, last: number): string {
           ` data-pos="${p}" aria-pressed="${f.positions.includes(p)}">${p}</button>`,
         ).join("") +
         `</div>`,
-      notOverview,
+      ["cohorts", "players"],
     ) +
     control(
       "Round",
       `<div class="schr-opts" role="group" aria-label="Round">` +
         ROUNDS.map((r) =>
           `<button type="button" class="schr-opt is-round${f.rounds.includes(r) ? " is-active" : ""}" data-round-toggle="${r}"` +
-          ` aria-pressed="${f.rounds.includes(r)}" aria-label="Round ${r}">${r}</button>`,
+          ` aria-pressed="${f.rounds.includes(r)}" aria-label="Round ${r}"><span class="schr-long">${r}</span><span class="schr-short">R${r}</span></button>`,
         ).join("") +
         `</div>`,
-      notOverview,
+      ["trends", "cohorts", "players"],
     ) +
     control(
       "Min Games",
       `<span class="schr-games"><input type="number" inputmode="numeric" min="1" max="17" value="${f.minGames}"` +
-        ` aria-label="Minimum games played" data-schr-min-games /><span>games</span></span>`,
+        ` aria-label="Minimum games played" data-schr-min-games /><span class="schr-short">min games</span></span>`,
     ) +
     `</div></div>`
   );

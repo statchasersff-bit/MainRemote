@@ -37,6 +37,7 @@ import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, teamInk } from "./header";
 import { outlookMeasures, type DriverRow, type OutlookMeasures } from "./outlook-tab-data";
+import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
 
@@ -899,7 +900,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       key: "risk",
       q: `What could hurt ${m.name}'s fantasy value?`,
       a: `${m.name}'s risks: ${listWords(risks)}.`,
-      link: { href: `${options.playerPathPrefix ?? "/player/"}${m.slug}/injury/${options.linkQuery ?? ""}`, text: `See his injury status and history.` },
+      link: ((href) => (href ? { href, text: `See his injury status and history.` } : null))(sectionHref(data, options, "injury")),
     });
   }
 

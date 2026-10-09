@@ -91,7 +91,7 @@ describe("placement", () => {
     const doc = new JSDOM(body).window.document;
     const panels = [...doc.querySelectorAll("[data-sct-panel]")].map((s) => s.id);
     assert.deepEqual(panels, ["usage"]);
-    assert.equal(doc.title, "Buffalo Bills Target Share & Snap Counts 2026: Usage Report | StatChasers");
+    assert.equal(doc.title, "Buffalo Bills Target Share & Snap Counts 2026: Usage Report");
     assert.match(
       doc.querySelector('meta[name="description"]').getAttribute("content"),
       /^Buffalo Bills target share, snap share and red-zone touches for 2026, updated every Tuesday/,
@@ -165,9 +165,19 @@ describe("the ten components, in order", () => {
     assert.equal(doc.querySelector(".sct-us-keys .is-def"), null);
   });
 
-  test("Redraft Command is linked in the closing paragraph", async () => {
+  test("the closing line names each Command once, as umbrella branding, and nothing else does", async () => {
     const { doc } = await page("/team/buffalo-bills/");
-    assert.equal(doc.querySelector(".sct-us-close a").getAttribute("href"), "https://statchasers.com/redraft-command/");
+    const close = doc.querySelector(".sct-us-close");
+    assert.equal(close.querySelector("a").getAttribute("href"), "https://statchasers.com/redraft-command/");
+    assert.equal(close.querySelectorAll("a")[1].getAttribute("href"), "https://statchasers.com/dynasty-command/");
+    // The umbrella line is the last thing in the block, after the tool row.
+    assert.equal(close.previousElementSibling.className, "sct-us-toolrow");
+    const us = doc.querySelector(".sct-us");
+    const commands = [...us.querySelectorAll("a")].filter((a) => /^(Redraft|Dynasty) Command$/.test(a.textContent.trim()));
+    assert.equal(commands.length, 2);
+    assert.equal(us.querySelector(".sct-us-btn[href='https://statchasers.com/redraft-command/']"), null);
+    assert.ok(!us.textContent.includes("Open Redraft Command"));
+    assert.ok(!us.textContent.includes("Open Dynasty Command"));
   });
 });
 
@@ -339,27 +349,82 @@ describe("all 32 clubs", () => {
   });
 });
 
-describe("product bridges (mak, 2026-10-05)", () => {
-  test("each section hands off to the tool that answers its next question", async () => {
+describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
+  test("each section hands off to the specific tool that answers its next question", async () => {
     const res = await fetch(`${server.origin}/team/new-england-patriots/`);
     const doc = new JSDOM(await res.text()).window.document;
     const us = doc.querySelector(".sct-us");
     const ctas = [...us.querySelectorAll("[data-cta]")].map((a) => a.getAttribute("data-cta"));
-    // Intro, tree, pass map, projections, trade block and the close.
+    // Intro, tree, handcuff, pass map, projections, trade block, the close
+    // cards, the tool row and the umbrella line.
     for (const want of [
-      "redraft-command-usage-intro",
+      "trade-analyzer-usage-intro",
+      "ros-rankings-usage-intro",
+      "league-analyzer-usage-intro",
       "ros-rankings-usage-tree",
+      "trade-analyzer-usage-tree",
+      "rb-handcuffs-usage-handcuff",
+      "waiver-wire-usage-handcuff",
+      "dynasty-trade-calc-usage-handcuff",
+      "dynasty-league-analyzer-usage-handcuff",
+      "dynasty-rankings-usage-handcuff",
       "matchup-preview-usage-passmap",
+      "startsit-usage-passmap",
+      "projections-usage-passmap",
       "projections-usage-xfp",
-      "redraft-command-usage-footer",
-      "dynasty-command-usage-footer",
-      "trade-analyzer-usage-footer",
+      "ros-rankings-usage-xfp",
+      "startsit-usage-xfp",
+      "trade-analyzer-usage-signals",
+      "trade-analyzer-usage-close",
+      "startsit-usage-close",
+      "ros-rankings-usage-close",
+      "projections-usage-close",
+      "waiver-wire-usage-close",
+      "league-analyzer-usage-close",
+      "dynasty-trade-calc-usage-close",
+      "dynasty-league-analyzer-usage-close",
+      "dynasty-rankings-usage-close",
+      "redraft-command-usage-close",
+      "dynasty-command-usage-close",
     ]) assert.ok(ctas.includes(want), `missing ${want}`);
     // Unconfirmed tools stay off the page.
-    assert.ok(!ctas.some((c) => /trade-finder|blsh|waiver-wire|dynasty-rankings|dynasty-trade-calc/.test(c)));
+    assert.ok(!ctas.some((c) => /trade-finder|blsh|lineup-optimizer/.test(c)));
+    // The Commands are umbrella branding, once each, never a CTA.
+    assert.deepEqual(ctas.filter((c) => c.startsWith("redraft-command")), ["redraft-command-usage-close"]);
+    assert.deepEqual(ctas.filter((c) => c.startsWith("dynasty-command")), ["dynasty-command-usage-close"]);
     // Dynasty stays a minority of the product links.
     const dynasty = ctas.filter((c) => c.startsWith("dynasty")).length;
     assert.ok(dynasty <= Math.ceil(ctas.length * 0.3), `${dynasty} of ${ctas.length} links are dynasty`);
+    // The close: six decision cards, then a row of eight tools.
     assert.equal(us.querySelector(".sct-us-convert h3").textContent, "Put this usage data to work");
+    assert.deepEqual(
+      [...us.querySelectorAll(".sct-us-product.is-ask .sct-us-product-title")].map((p) => p.textContent),
+      ["Making a trade?", "Setting your lineup?", "Looking ahead?", "Working the waiver wire?", "Evaluating your whole league?", "Playing dynasty?"],
+    );
+    assert.deepEqual(
+      [...us.querySelectorAll(".sct-us-toolrow a")].map((a) => a.textContent),
+      [
+        "Trade Analyzer",
+        "Start/Sit",
+        "League Analyzer",
+        "Waiver Wire Scanner",
+        "Rest-of-Season Rankings",
+        "Fantasy Football Projections",
+        "Dynasty Trade Calculator",
+        "Dynasty League Analyzer",
+      ],
+    );
+    // The anchors carry the tool's name, which is the search signal.
+    const trade = us.querySelector("[data-cta='trade-analyzer-usage-intro']");
+    assert.equal(trade.textContent, "Fantasy Football Trade Analyzer");
+    assert.equal(trade.getAttribute("href"), "https://statchasers.com/redraft-command/fantasy-football-trade-calculator");
+    assert.equal(
+      us.querySelector("[data-cta='dynasty-trade-calc-usage-close']").getAttribute("href"),
+      "https://statchasers.com/dynasty-command/dynasty-trade-calculator",
+    );
+    // The trade box reads the two cards above it, then one button.
+    const tradeBox = us.querySelector(".sct-us-cta.is-trade");
+    assert.match(tradeBox.querySelector(".sct-us-cta-lead").textContent, /' role is growing\.|' opportunity is/);
+    assert.equal(tradeBox.querySelector(".sct-us-btn").textContent, "Open Fantasy Football Trade Analyzer");
   });
 });

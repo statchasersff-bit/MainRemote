@@ -16,6 +16,7 @@
 
 import { escapeHtml } from "./render";
 import type { NflTeam } from "./team/teams";
+import { fitTitle } from "./title-fit";
 
 export interface TeamPageMeta {
   title: string;
@@ -66,7 +67,10 @@ function sectionMeta(
   // Approved by mak 2026-09-30 with the Usage tab's own address.
   if (section === "usage") {
     return {
-      title: `${name} Target Share & Snap Counts ${season}: Usage Report`,
+      title: fitTitle([
+        `${name} Target Share & Snap Counts ${season}: Usage Report`,
+        `${name} Target Share & Snap Counts ${season}`,
+      ]),
       description:
         `${name} target share, snap share and red-zone touches for ${season}, updated every ` +
         `Tuesday: the ${nick} target tree, backfield split, pass map and buy-low / sell-high signals.`,
@@ -75,7 +79,10 @@ function sectionMeta(
 
   if (section === "stats") {
     return {
-      title: `${name} Stats ${season}: Offense, Defense & NFL Rankings`,
+      title: fitTitle([
+        `${name} Stats ${season}: Offense, Defense & NFL Rankings`,
+        `${name} Stats ${season}: Offense & Defense Rankings`,
+      ]),
       description:
         `${name} team stats for ${season}: points, yards, pace and play mix on offense ` +
         `and defense, each with the ${nick} rank among all 32 teams.`,
@@ -84,7 +91,10 @@ function sectionMeta(
 
   if (section === "schedule") {
     return {
-      title: `${name} Schedule ${season}: Dates, Opponents & Results`,
+      title: fitTitle([
+        `${name} Schedule ${season}: Dates, Opponents & Results`,
+        `${name} Schedule ${season}: Opponents & Results`,
+      ]),
       description:
         `The full ${season} ${name} schedule: every opponent, kickoff time and result, ` +
         `plus the ${nick} bye week and what is next on the calendar.`,
@@ -93,7 +103,10 @@ function sectionMeta(
 
   if (section === "matchups") {
     return {
-      title: `${name} Matchups ${season}: Opponents, Results & Head-to-Head`,
+      title: fitTitle([
+        `${name} Matchups ${season}: Opponents & Head-to-Head`,
+        `${name} Matchups ${season}: Opponents & Results`,
+      ]),
       description:
         `Every ${name} opponent in ${season}, week by week, with results and a matchup ` +
         `page for each pair: team stats side by side, injuries and the head-to-head record.`,
@@ -102,7 +115,10 @@ function sectionMeta(
 
   if (section === "news") {
     return {
-      title: `${name} News ${season}: Injuries, Roster Moves & Fantasy Impact`,
+      title: fitTitle([
+        `${name} News ${season}: Injuries, Moves & Fantasy Impact`,
+        `${name} News ${season}: Injuries & Roster Moves`,
+      ]),
       description:
         `The latest ${name} news: injury designations, roster moves and depth-chart ` +
         `changes through the ${season} season, each with what it means for ${nick} fantasy value.`,
@@ -121,6 +137,14 @@ function sectionMeta(
   return null;
 }
 
+/** The hub's own title: "Buffalo Bills 2026: Record, Schedule, Stats & Fantasy". */
+export function teamHubTitle(team: NflTeam, season: number): string {
+  return fitTitle([
+    `${team.fullName} ${season}: Record, Schedule, Stats & Fantasy`,
+    `${team.fullName} ${season}: Record, Schedule & Stats`,
+  ]);
+}
+
 export function teamPageMeta(
   team: NflTeam,
   season: number,
@@ -130,9 +154,10 @@ export function teamPageMeta(
   const scoped = section ? sectionMeta(team, season, section) : null;
 
   return {
-    title: scoped
-      ? `${scoped.title} | ${SITE_NAME}`
-      : `${season} ${team.fullName} Fantasy Football Hub | ${SITE_NAME}`,
+    // Every title is a fitTitle() ladder and none carries " | StatChasers"
+    // (mak, 2026-10-08). The hub's is the one the WordPress page builder
+    // stores - statchasers_team_section_meta() with no section.
+    title: scoped?.title ?? teamHubTitle(team, season),
     description:
       scoped?.description ??
       `${team.fullName} fantasy football hub: the latest ${team.nickname} player news, ` +
