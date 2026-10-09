@@ -418,6 +418,14 @@ leaders, every player-stat table, the takeaways and the snap counts - headed
 `New England Patriots vs Seattle Seahawks, Week 1 2026` so it cannot compete
 with the pair's own page for the pair's own query. It is its own canonical.
 
+**Sitemap.** Since 1.10.34 the dated pages are listed in Rank Math's page
+sitemap beside the 496 pair URLs. The API decides which exist - every finished
+game two weeks past kickoff, or at once when the pair has a rematch ahead, the
+same rule the redirect applies - and publishes them at
+`/embed/matchup-games.json`; the plugin fetches that list (cached an hour, with
+a backup served on a failed fetch) and prints one entry per game with the
+kickoff date as `lastmod`. Nothing is listed that would 301.
+
 **It exists only once the pair has let go.** Inside the two-week window the
 dated URL 301s up to the pair, on this origin and in the plugin both, so the
 recap has exactly one address at any moment and the two are never near
@@ -1270,8 +1278,8 @@ plugins add a schema node for the tool.
 
 ## Fantasy football strength of schedule - `[statchasers_strength_of_schedule]`
 
-One page, at `/nfl/fantasy-football-strength-of-schedule/`: the page the old
-standalone "StatChasers Strength of Schedule" plugin (`[statchasers_sos]`)
+One WordPress page, at `/nfl/fantasy-football-strength-of-schedule/`: the page
+the old standalone "StatChasers Strength of Schedule" plugin (`[statchasers_sos]`)
 mounted on, and the address the team hubs already link to (`SC_SOS_URL`).
 
 ```
@@ -1281,20 +1289,39 @@ mounted on, and the address the team hubs already link to (`SC_SOS_URL`).
 
 The attributes are the page's default view: `tab` (`team`, `player`), `pos`
 (`rb`, `qb`, `wr`, `te`) and `scoring` (`ppr`, `half-ppr`, `std`); anything
-else falls back to Team / RB / PPR. The bundle reflects the view the reader
-picks in the page's query string (`?tab=player&pos=wr&scoring=ppr`) so it can be
-shared, and the shortcode reads those three back, on this page only and only
-from those lists, to print the same view with scripting off. They are not
-registered query vars. The canonical is always the bare page.
+else falls back to Team / RB / PPR.
+
+**Six addresses (1.10.35, mak's spec of 2026-10-09).** The page itself is the
+overview. Beneath it `/qb/`, `/rb/`, `/wr/`, `/te/` and `/playoffs/` are
+pages of their own: rewrite rules onto the same post (`sc_sos_page`, the way
+`statchasers-rankings.php` does its position boards), each with its own title
+("RB Strength of Schedule 2026: Fantasy Matchups"), H1 ("RB Strength of
+Schedule"), meta description and self-canonical, and each in Rank Math's page
+sitemap. A position page's board is that position's whatever the attribute
+says; it opens with a one-sentence answer under the H1 (the fragment's `lead`:
+"Easiest rest-of-season RB schedule: {Team} ({n} fantasy points allowed per
+game to RBs by remaining opponents). Hardest: {Team}.") and an "Updated {Mon
+D}" line, and closes with a "Related" block instead of the overview's FAQ. The
+playoffs page is a Weeks 15-17 grid of all four positions. The Position
+controls on every page are plain links to those addresses. The Team/Player tab
+and the scoring stay in the query string (`?tab=player&scoring=half-ppr`),
+read back on this page only and only from those lists, never registered and
+never a canonical. `?pos=rb` 301s to `/rb/` (a non-default tab or scoring
+rides along; the defaults are dropped). The page path and the rules are
+filterable (`statchasers_sos_page_path`, `statchasers_sos_page_urls`); with
+the rules off the page is one address again and `?pos=` is read as before.
+The spec's words are also kept in the plugin (`STATCHASERS_SOS_PAGE_COPY`) as
+the fallback against an API older than the sub-pages.
 
 It prints the fragment from `/embed/sos`, cached for an hour per view with a
 30-day fallback. The board is computed by the API from the live FPA table and
 the season's schedule, so it moves when the FPA ingest does. The fragment's
 `scsos-page-data` island carries the page's title, H1 and meta description
-(approved by mak, 2026-09-30) and, since 1.10.29, the lead paragraph under
-the H1 (the old standalone plugin's hero copy); the plugin applies the first
-three through Rank Math and core, prints the lead in the hero, and strips the
-island.
+(approved by mak, 2026-09-30; the sub-pages' from the 2026-10-09 spec) and,
+since 1.10.29, the lead paragraph under the H1 (the old standalone plugin's
+hero copy on the overview, the answer sentence on a sub-page); the plugin
+applies the first three through Rank Math and core, prints the lead in the
+hero, and strips the island. A sub-page's fragment is fetched with `page=rb`.
 
 The fragment ends with the page's FAQ (mak's twenty questions, 2026-10-08,
 `src/lib/sos-faq.ts` in the API): the four answers that name teams quote the

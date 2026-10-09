@@ -29,12 +29,20 @@
  *
  * ## Addresses
  *
- * One page. The view (Team or Player SOS, the position, the scoring format) is
- * reflected in the page's own query string - `?tab=player&pos=wr&scoring=ppr` -
- * so a view can be shared, and this file reads those three to print the right
- * board with scripting off. They are NOT registered query vars, and they are
- * read only on the page that mounts the shortcode. The canonical is always the
- * bare page: 24 views of one board are one page.
+ * Six, since 1.10.35 (mak's spec of 2026-10-09, "Strength of schedule: one
+ * real page per position"): the page itself is the overview, and beneath it
+ * `/qb/`, `/rb/`, `/wr/`, `/te/` and `/playoffs/` are pages of their own, each
+ * with its own title, H1, description and self-canonical, each in the sitemap.
+ * They are rewrite rules onto the one WordPress page (`sc_sos_page`), the way
+ * the rest-of-season rankings' position addresses are (statchasers-rankings.php),
+ * so there is one post and one shortcode to keep.
+ *
+ * The tab (Team or Player SOS) and the scoring format stay in the query string
+ * - `?tab=player&scoring=half-ppr` - so a view can be shared, and this file
+ * reads them to print the right board with scripting off. They are NOT
+ * registered query vars, and they are read only on the page that mounts the
+ * shortcode. They never move the canonical. `?pos=rb`, the old spelling of a
+ * position, 301s to `/rb/`.
  *
  * @package StatChasers\News
  */
@@ -69,6 +77,186 @@ const STATCHASERS_SOS_VIEWS = array(
 	'pos'     => array( 'rb', 'qb', 'wr', 'te' ),
 	'scoring' => array( 'ppr', 'half-ppr', 'std' ),
 );
+
+/** The five sub-pages, in the order the controls list them. */
+const STATCHASERS_SOS_PAGES = array( 'qb', 'rb', 'wr', 'te', 'playoffs' );
+
+/**
+ * Each sub-page's words (mak's spec of 2026-10-09), the fallback when the API
+ * is older than the island that carries them. The API's copy wins when it is
+ * there, so the season in the titles lives in one place; `%d` is the season.
+ */
+const STATCHASERS_SOS_PAGE_COPY = array(
+	'qb'       => array(
+		'title'       => 'QB Strength of Schedule %d: Fantasy Matchups',
+		'h1'          => 'QB Strength of Schedule',
+		'description' => 'Fantasy QB strength of schedule for %d: rest-of-season and playoff matchups for all 32 teams, based on fantasy points allowed. Updated weekly.',
+	),
+	'rb'       => array(
+		'title'       => 'RB Strength of Schedule %d: Fantasy Matchups',
+		'h1'          => 'RB Strength of Schedule',
+		'description' => 'Fantasy RB strength of schedule for %d: rest-of-season and playoff matchups for all 32 teams, based on fantasy points allowed to running backs.',
+	),
+	'wr'       => array(
+		'title'       => 'WR Strength of Schedule %d: Fantasy Matchups',
+		'h1'          => 'WR Strength of Schedule',
+		'description' => 'Fantasy WR strength of schedule for %d: rest-of-season and playoff matchups for all 32 teams, based on fantasy points allowed to wide receivers.',
+	),
+	'te'       => array(
+		'title'       => 'TE Strength of Schedule %d: Fantasy Matchups',
+		'h1'          => 'TE Strength of Schedule',
+		'description' => 'Fantasy TE strength of schedule for %d: rest-of-season and playoff matchups for all 32 teams, based on fantasy points allowed to tight ends.',
+	),
+	'playoffs' => array(
+		'title'       => 'Fantasy Playoff Strength of Schedule (Weeks 15–17)',
+		'h1'          => 'Fantasy Playoff Strength of Schedule',
+		'description' => 'Which teams have the easiest fantasy playoff schedule? Weeks 15–17 strength of schedule for QB, RB, WR and TE, for all 32 teams.',
+	),
+);
+
+/* -------------------------------------------------------------- the pages */
+
+/**
+ * The SOS page's path, no leading or trailing slash: where the overview lives
+ * and what the five sub-page rules hang off. Filterable for a site that
+ * mounts the board somewhere else.
+ */
+function statchasers_sos_page_path(): string {
+	$path = (string) apply_filters(
+		'statchasers_sos_page_path',
+		'nfl/fantasy-football-strength-of-schedule'
+	);
+	return trim( $path, '/' );
+}
+
+/**
+ * Whether the sub-page addresses are live. On by default.
+ *
+ *     add_filter( 'statchasers_sos_page_urls', '__return_false' );
+ *
+ * Off, the page is one address again, the controls' links 404 and `?pos=`
+ * is read as it was before 1.10.35.
+ */
+function statchasers_sos_page_urls_enabled(): bool {
+	return (bool) apply_filters( 'statchasers_sos_page_urls', true );
+}
+
+/** A sub-page's public address, or the overview's for anything else. */
+function statchasers_sos_page_url( string $page ): string {
+	$path = '/' . statchasers_sos_page_path();
+	if ( in_array( $page, STATCHASERS_SOS_PAGES, true ) ) {
+		$path .= '/' . $page;
+	}
+	return user_trailingslashit( home_url( $path ) );
+}
+
+add_filter(
+	'query_vars',
+	static function ( array $vars ): array {
+		$vars[] = 'sc_sos_page';
+		return $vars;
+	}
+);
+
+add_action(
+	'init',
+	static function (): void {
+		if ( ! statchasers_sos_page_urls_enabled() ) {
+			return;
+		}
+		$page = statchasers_sos_page_path();
+		if ( '' === $page ) {
+			return;
+		}
+		// The page itself is resolved by pagename, exactly as WordPress would
+		// have resolved the bare address; only sc_sos_page is added. No new
+		// post, no template, nothing for an editor to keep in sync.
+		$rule = '^' . preg_quote( $page, '#' ) . '/(' . implode( '|', STATCHASERS_SOS_PAGES ) . ')/?$';
+		add_rewrite_rule(
+			$rule,
+			'index.php?pagename=' . $page . '&sc_sos_page=$matches[1]',
+			'top'
+		);
+
+		// A new rule is dead until the rule table is rebuilt, and an upgrade
+		// does not run the activation hook that asks for that. Same remedy as
+		// the rankings and matchup rules: remember the rule's signature and ask
+		// for the flush that statchasers-news.php performs at the end of `init`.
+		$signature = md5( $rule );
+		if ( get_option( 'statchasers_sos_rules' ) !== $signature ) {
+			update_option( 'statchasers_sos_rules', $signature, false );
+			update_option( 'statchasers_needs_flush', 1, false );
+		}
+	}
+);
+
+/**
+ * The sub-page this request's address names, or '' on the overview and off
+ * the SOS page altogether. The query var is public, so without the page guard
+ * `?sc_sos_page=rb` on any article would retitle it as the RB page.
+ */
+function statchasers_sos_request_page(): string {
+	if ( ! statchasers_sos_page_urls_enabled() || ! statchasers_sos_post_has_shortcode() ) {
+		return '';
+	}
+	$raw = strtolower( trim( (string) get_query_var( 'sc_sos_page' ) ) );
+	return in_array( $raw, STATCHASERS_SOS_PAGES, true ) ? $raw : '';
+}
+
+/**
+ * Where `?pos=` sends a request, or '' when it stays put: the position's own
+ * page, with the rest of the query along minus the defaults (`tab=team`,
+ * `scoring=ppr`), so `?tab=team&pos=rb` lands on a clean `/rb/`. Pure, for
+ * the smoke test; the redirect below calls it.
+ *
+ * @param array<string,mixed> $get  The request's query ($_GET).
+ * @param string              $page The sub-page the address already names, or ''.
+ */
+function statchasers_sos_redirect_target( array $get, string $page ): string {
+	if ( ! isset( $get['pos'] ) ) {
+		return '';
+	}
+	$pos = statchasers_sos_clean( 'pos', $get['pos'] );
+	// A position the board lacks goes to the page the address already names,
+	// or the overview: the bad parameter is dropped either way.
+	$target = '' !== $pos ? $pos : $page;
+
+	$keep = array();
+	foreach ( $get as $key => $value ) {
+		if ( 'pos' === $key || 'sc_sos_page' === $key || ! is_scalar( $value ) ) {
+			continue;
+		}
+		$clean = strtolower( trim( (string) $value ) );
+		if ( 'tab' === $key && ( 'team' === $clean || '' === $clean ) ) {
+			continue;
+		}
+		if ( 'scoring' === $key && ( 'ppr' === $clean || '' === $clean ) ) {
+			continue;
+		}
+		$keep[ (string) $key ] = (string) $value;
+	}
+
+	$url = statchasers_sos_page_url( $target );
+	return $keep ? add_query_arg( $keep, $url ) : $url;
+}
+
+/**
+ * `?pos=rb` is the RB page's address: 301 there, before anything renders, so
+ * the old spelling is never an indexable copy of the new page.
+ */
+function statchasers_sos_pos_redirect(): void {
+	if ( ! statchasers_sos_page_urls_enabled() || ! statchasers_sos_post_has_shortcode() ) {
+		return;
+	}
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only redirect.
+	$target = statchasers_sos_redirect_target( wp_unslash( $_GET ), statchasers_sos_request_page() );
+	if ( '' === $target ) {
+		return;
+	}
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'statchasers_sos_pos_redirect', 9 );
 
 /* ------------------------------------------------------------- the view */
 
@@ -106,6 +294,12 @@ function statchasers_sos_query_view(): array {
 	}
 
 	foreach ( array_keys( $view ) as $key ) {
+		// With the sub-pages on, the position is the address's, never the
+		// query's: `?pos=` redirects (statchasers_sos_pos_redirect) and so
+		// is never printed from.
+		if ( 'pos' === $key && statchasers_sos_page_urls_enabled() ) {
+			continue;
+		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
 		if ( isset( $_GET[ $key ] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
@@ -139,6 +333,15 @@ function statchasers_sos_args( array $atts ): array {
 		$args[ $key ] = '' !== $from[ $key ] ? $from[ $key ] : ( '' !== $given ? $given : $default );
 	}
 
+	// A sub-page's board is its own: /rb/ is the running backs whatever the
+	// attribute says, and the playoffs page has no player half.
+	$page = statchasers_sos_request_page();
+	if ( in_array( $page, STATCHASERS_SOS_VIEWS['pos'], true ) ) {
+		$args['pos'] = $page;
+	} elseif ( 'playoffs' === $page ) {
+		$args['tab'] = 'team';
+	}
+
 	return $args;
 }
 
@@ -161,6 +364,12 @@ function statchasers_sos_fetch( array $args ): ?array {
 		'pos'     => $args['pos'],
 		'scoring' => $args['scoring'],
 	);
+	// The sub-page's fragment: its own answer, Updated line, controls and
+	// Related block (sos-render.ts). The overview sends nothing.
+	$page = statchasers_sos_request_page();
+	if ( '' !== $page ) {
+		$query['page'] = $page;
+	}
 
 	$key        = md5( $origin . '|' . wp_json_encode( $query ) );
 	$cache_key  = 'sc_sos_ssr_' . $key;
@@ -463,6 +672,22 @@ function statchasers_sos_page_copy(): array {
 	$data = statchasers_sos_request_data();
 	$copy = statchasers_sos_parse_copy( null === $data ? '' : (string) $data['html'] );
 
+	// An API older than the sub-pages answers with the overview's island (or
+	// none); on a sub-page the spec's own words stand in, so the address, the
+	// title and the H1 agree whatever the API's age.
+	$page = statchasers_sos_request_page();
+	if ( '' !== $page && ( ! isset( $copy['h1'] ) || STATCHASERS_SOS_PAGE_COPY[ $page ]['h1'] !== $copy['h1'] ) ) {
+		$season = (int) gmdate( 'Y' );
+		if ( null !== $data && preg_match( '/data-season="(\d{4})"/', (string) $data['html'], $m ) ) {
+			$season = (int) $m[1];
+		}
+		$copy = array(
+			'title'       => sprintf( STATCHASERS_SOS_PAGE_COPY[ $page ]['title'], $season ),
+			'h1'          => STATCHASERS_SOS_PAGE_COPY[ $page ]['h1'],
+			'description' => sprintf( STATCHASERS_SOS_PAGE_COPY[ $page ]['description'], $season ),
+		);
+	}
+
 	return $copy;
 }
 
@@ -525,14 +750,20 @@ function statchasers_sos_description(): string {
 }
 
 /**
- * The page's canonical: the bare permalink, whatever view the query string
- * asks for, or '' off the SOS page. Stated rather than left to Rank Math,
- * because `?tab=&pos=&scoring=` is 24 addresses for one board and none of them
- * may become a canonical of its own.
+ * The page's canonical: the sub-page's address on one, else the bare
+ * permalink, whatever view the query string asks for; '' off the SOS page.
+ * Stated rather than left to Rank Math, because `?tab=&scoring=` is six
+ * addresses for one board and none of them may become a canonical of its own.
  */
 function statchasers_sos_canonical(): string {
 	if ( ! statchasers_sos_post_has_shortcode() ) {
 		return '';
+	}
+	// A sub-page is its own canonical: it is the page someone searching "RB
+	// strength of schedule" should land on, which is the point of it.
+	$page = statchasers_sos_request_page();
+	if ( '' !== $page ) {
+		return statchasers_sos_page_url( $page );
 	}
 	$id = get_queried_object_id();
 	return $id ? (string) get_permalink( $id ) : '';
@@ -650,6 +881,44 @@ function statchasers_sos_strip_islands( string $html ): string {
 		$html
 	);
 }
+
+/* ------------------------------------------------------------- the sitemap */
+
+/**
+ * The five sub-page URLs, appended to Rank Math's page sitemap.
+ *
+ * Each is its own canonical, and an address with no post behind it is one
+ * Rank Math cannot list by itself - the rankings' boards are added the same
+ * way. Only while the page exists, is published and still mounts the board,
+ * and only while the sub-page addresses are on.
+ */
+function statchasers_sos_sitemap_entries(): string {
+	if ( ! statchasers_sos_page_urls_enabled() ) {
+		return '';
+	}
+	$page = get_page_by_path( statchasers_sos_page_path() );
+	if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
+		return '';
+	}
+	if ( ! has_shortcode( (string) $page->post_content, STATCHASERS_SOS_SHORTCODE ) ) {
+		return '';
+	}
+	$extra = '';
+	foreach ( STATCHASERS_SOS_PAGES as $sub ) {
+		$extra .= statchasers_team_sitemap_entry( statchasers_sos_page_url( $sub ), '' );
+	}
+	return $extra;
+}
+
+add_filter(
+	'rank_math/sitemap/page_content',
+	static function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+		return $content . statchasers_sos_sitemap_entries();
+	}
+);
 
 /**
  * Clear cached renders. Called by statchasers_news_flush().

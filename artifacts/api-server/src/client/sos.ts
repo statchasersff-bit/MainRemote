@@ -235,6 +235,9 @@ async function swapTo(root: HTMLElement, view: View): Promise<boolean> {
   url.searchParams.set("tab", view.tab);
   url.searchParams.set("pos", view.pos);
   url.searchParams.set("scoring", view.scoring);
+  // A position page's fragment is that page's: same bar, same Related block.
+  const page = root.dataset["page"];
+  if (page && page !== "all") url.searchParams.set("page", page);
 
   let markup: string;
   try {
@@ -267,10 +270,15 @@ async function swapTo(root: HTMLElement, view: View): Promise<boolean> {
   return true;
 }
 
+/**
+ * The tab and the scoring go in the address; the position never does. It is
+ * the page's own since the per-position pages, and `?pos=` 301s away, so a
+ * reload of an address this wrote would leave the page.
+ */
 function writeAddress(view: View, push: boolean): void {
   const u = new URL(window.location.href);
   u.searchParams.set("tab", view.tab);
-  u.searchParams.set("pos", view.pos);
+  u.searchParams.delete("pos");
   u.searchParams.set("scoring", view.scoring);
   if (u.href === window.location.href) return;
   const data = { scsos: view };
@@ -287,6 +295,8 @@ function wireViews(root: HTMLElement): void {
     if (mouse.button !== 0 || mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey) return;
     const link = (event.target as Element).closest<HTMLAnchorElement>("a.scsos-tab, a.scsos-opt");
     if (!link || !root.contains(link)) return;
+    // A position link is a page of its own: an ordinary navigation.
+    if (link.classList.contains("is-page")) return;
     const view = viewOf(link);
     if (!view) return;
     event.preventDefault();
@@ -310,7 +320,8 @@ function wireHistory(): void {
     for (const root of Array.from(document.querySelectorAll<HTMLElement>(ROOT_SELECTOR))) {
       const view: View = {
         tab: p.get("tab") ?? "team",
-        pos: p.get("pos") ?? "rb",
+        // The position is the page's, not the address's.
+        pos: root.dataset["pos"] ?? "rb",
         scoring: p.get("scoring") ?? "ppr",
       };
       if (

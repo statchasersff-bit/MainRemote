@@ -52,6 +52,42 @@ export interface SosState {
   scoring: SosScoring;
 }
 
+/**
+ * Which page of the tool is being served (mak's spec of 2026-10-09, "one real
+ * page per position"). "all" is the overview at the bare address; a position
+ * is that position's own indexable page; "playoffs" is the Weeks 15-17 page
+ * that reads all four positions at once. A position page's board is that
+ * position's, whatever `pos=` says.
+ */
+export type SosPage = "all" | "qb" | "rb" | "wr" | "te" | "playoffs";
+
+export const SOS_PAGES: readonly SosPage[] = ["all", "qb", "rb", "wr", "te", "playoffs"];
+
+/** The five pages beneath the overview, in the order the controls list them. */
+export const SOS_SUB_PAGES: readonly Exclude<SosPage, "all">[] = ["qb", "rb", "wr", "te", "playoffs"];
+
+/** One spelling, lower case; anything else is the overview. */
+export function parseSosPage(value: unknown): SosPage {
+  const page = lower(value);
+  return (SOS_PAGES as readonly string[]).includes(page) ? (page as SosPage) : "all";
+}
+
+/** The position a page is about, or null for the overview and the playoffs page. */
+export function pagePosition(page: SosPage): FantasyPosition | null {
+  return page === "all" || page === "playoffs" ? null : (page.toUpperCase() as FantasyPosition);
+}
+
+/**
+ * The state a page opens on: the page's own position when it has one, and the
+ * Team board on the playoffs page, which has no player half.
+ */
+export function stateForPage(page: SosPage, state: SosState): SosState {
+  const position = pagePosition(page);
+  if (position) return { ...state, position };
+  if (page === "playoffs") return { ...state, tab: "team" };
+  return state;
+}
+
 export const SCORING_LABELS: Record<SosScoring, string> = {
   ppr: "PPR",
   "half-ppr": "Half-PPR",

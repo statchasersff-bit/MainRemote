@@ -266,11 +266,109 @@ describe("the markup", () => {
     assert.match(html, />BYE</);
   });
 
-  test("the controls are links to each view", () => {
+  test("the controls: tab and scoring are views of the page, the positions are pages of their own", () => {
     const html = render.renderSosPage(board, team, { embed: true });
-    assert.match(html, /class="scsos-tab" href="\?tab=player&amp;pos=rb&amp;scoring=ppr"/);
-    assert.match(html, /class="scsos-opt" href="\?tab=team&amp;pos=wr&amp;scoring=ppr"/);
-    assert.match(html, /class="scsos-opt is-active" href="\?tab=team&amp;pos=rb&amp;scoring=ppr"/);
+    assert.match(html, /class="scsos-tab" href="\?tab=player&amp;scoring=ppr"/, "no pos in a view link");
+    assert.match(html, /class="scsos-opt is-active" href="\?tab=team&amp;scoring=ppr" data-tab="team" data-pos="rb" data-scoring="ppr"/);
+    assert.doesNotMatch(html, /[?&]pos=/, "nothing writes ?pos= any more");
+    // The five sub-pages, as plain links the bundle leaves alone (no data-tab/pos/scoring).
+    for (const page of ["qb", "rb", "wr", "te", "playoffs"]) {
+      assert.match(html, new RegExp(`<a class="scsos-opt is-page( is-active)?" href="/strength-of-schedule/${page}" data-page="${page}"`));
+    }
+    assert.match(html, /is-page is-active" href="\/strength-of-schedule\/rb" data-page="rb">RB</, "the overview marks the board it opened on");
+    assert.doesNotMatch(html, /data-page="rb" aria-current/, "but is not the RB page");
+    assert.match(html, /data-page="all"/);
+
+    // Under the WordPress page, with a non-default view carried across.
+    const wp = render.renderSosPage(board, { ...team, tab: "player", scoring: "std" }, {
+      embed: true,
+      pageBase: "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/",
+    });
+    assert.match(wp, /href="https:\/\/statchasers\.com\/nfl\/fantasy-football-strength-of-schedule\/wr\/\?tab=player&amp;scoring=std" data-page="wr"/);
+    assert.match(wp, /href="https:\/\/statchasers\.com\/nfl\/fantasy-football-strength-of-schedule\/playoffs\/\?scoring=std" data-page="playoffs"/, "the playoffs page has no player half");
+    assert.equal(render.sosPagePath("/strength-of-schedule", "all"), "/strength-of-schedule");
+    assert.equal(render.sosPagePath("/x/", "te"), "/x/te/");
+  });
+
+  test("a position page: mak's copy, the answer above the table, the Updated line, team links and Related, no FAQ", () => {
+    const html = render.renderSosPage(board, team, { embed: true, page: "rb", updatedAt: Date.UTC(2026, 9, 9, 16) });
+    const island = JSON.parse(html.match(/class="scsos-page-data">(.*?)<\/script>/)[1]);
+    assert.equal(island.title, "RB Strength of Schedule 2026: Fantasy Matchups");
+    assert.equal(island.h1, "RB Strength of Schedule");
+    assert.equal(
+      island.description,
+      "Fantasy RB strength of schedule for 2026: rest-of-season and playoff matchups for all 32 teams, based on fantasy points allowed to running backs.",
+    );
+    // The answer: easiest and hardest by ROS rank, with the easiest team's remaining-opponent average.
+    const byRos = [...board.teams].sort((a, b) => a.rosRank - b.rosRank);
+    const easiest = byRos[0];
+    const hardest = byRos[byRos.length - 1];
+    assert.equal(
+      island.lead,
+      `Easiest rest-of-season RB schedule: ${easiest.team.fullName} (${easiest.ros.afpa.toFixed(1)} fantasy points allowed per game to RBs by remaining opponents). Hardest: ${hardest.team.fullName}.`,
+    );
+    assert.equal(render.sosPositionAnswer(board), island.lead);
+    assert.match(html, /data-page="rb"/);
+    assert.match(html, /<p class="scsos-updated">Updated <time datetime="2026-10-09">Oct 9<\/time><\/p>/);
+    assert.ok(html.indexOf("scsos-updated") < html.indexOf('<div class="scsos-bar">'), "above the bar");
+    assert.match(html, /aria-current="page">RB</);
+    // Every team links to its schedule page.
+    assert.equal(
+      (html.match(/<a class="scsos-team" href="https:\/\/statchasers\.com\/nfl\/teams\/[a-z0-9-]+\/schedule\/"/g) ?? []).length,
+      32,
+    );
+    assert.equal(render.teamScheduleHref(TEAMS[0]), `https://statchasers.com/nfl/teams/${TEAMS[0].slug}/schedule/`);
+    // The Related block replaces the FAQ, outside the swapped view.
+    assert.doesNotMatch(html, /scsos-faq/);
+    const related = html.indexOf('<nav class="scsos-related"');
+    assert.ok(related > html.lastIndexOf("</table>") && related < html.indexOf("scsos-page-data"));
+    assert.deepEqual(
+      render.sosRelatedLinks("rb").map((l) => l.href),
+      [
+        "https://statchasers.com/fantasy-football/rest-of-season-rankings/rb/",
+        "https://statchasers.com/redraft-command/fantasy-football-projections/rb",
+        "https://statchasers.com/nfl/fantasy-points-allowed-by-position/",
+        "https://statchasers.com/redraft-command/who-should-i-start",
+      ],
+    );
+    assert.equal(render.sosRelatedLinks("all").length, 0);
+    assert.doesNotMatch(html, /\u2014/, "no em dashes");
+
+    // Standalone, the page prints the answer under its own H1.
+    const alone = render.renderSosPage(board, team, { page: "rb" });
+    assert.match(alone, /<h1 class="scsos-h1">RB Strength of Schedule<\/h1><p class="scsos-answer">Easiest rest-of-season RB schedule:/);
+
+    // The copy for the other three, as the spec wrote them.
+    assert.equal(render.sosPageCopy(2026, "qb").title, "QB Strength of Schedule 2026: Fantasy Matchups");
+    assert.match(render.sosPageCopy(2026, "qb").description, /based on fantasy points allowed\. Updated weekly\.$/);
+    assert.match(render.sosPageCopy(2026, "wr").description, /to wide receivers\.$/);
+    assert.match(render.sosPageCopy(2026, "te").description, /to tight ends\.$/);
+    assert.equal(render.sosPageCopy(2026).h1, "Fantasy Football Strength of Schedule", "the overview is unchanged");
+  });
+
+  test("the playoffs page: all four positions' Weeks 15-17, no tabs, cards or export", () => {
+    const boards = {};
+    for (const pos of ["QB", "RB", "WR", "TE"]) boards[pos] = model.buildSosBoard(fpaTable(), schedule(), POOL, pos, "ppr");
+    const html = render.renderSosPage(board, team, { embed: true, page: "playoffs", boards });
+    const island = JSON.parse(html.match(/class="scsos-page-data">(.*?)<\/script>/)[1]);
+    assert.equal(island.title, "Fantasy Playoff Strength of Schedule (Weeks 15\u201317)");
+    assert.equal(island.h1, "Fantasy Playoff Strength of Schedule");
+    assert.equal(
+      island.description,
+      "Which teams have the easiest fantasy playoff schedule? Weeks 15\u201317 strength of schedule for QB, RB, WR and TE, for all 32 teams.",
+    );
+    const rbEasiest = [...boards.RB.teams].sort((a, b) => a.playoffRank - b.playoffRank)[0];
+    assert.match(island.lead, /^Easiest fantasy playoff schedule \(Weeks 15-17\): QB [A-Za-z0-9 .]+, RB [A-Za-z0-9 .]+, WR [A-Za-z0-9 .]+, TE [A-Za-z0-9 .]+\. Hardest: QB /);
+    assert.ok(island.lead.includes(`RB ${rbEasiest.team.fullName}`));
+    assert.match(html, /data-page="playoffs"/);
+    assert.match(html, /data-kind="playoffs"/);
+    assert.equal(html.match(/<tr data-row="team-/g).length, 32);
+    for (const k of ["avg", "w15", "w16", "w17", "po3-qb", "po3-rb", "po3-wr", "po3-te"]) assert.match(html, new RegExp(`data-key="${k}"`));
+    assert.doesNotMatch(html, /data-key="w14"/);
+    assert.doesNotMatch(html, /scsos-tabs|scsos-export|scsos-card /);
+    assert.match(html, /data-page="playoffs" aria-current="page">Playoffs</);
+    assert.match(html, /<span class="scsos-po-rank">#\d+<\/span>/);
+    assert.match(html, /rest-of-season-rankings\/"/, "Related links the rankings at their base");
   });
 
   test("the player grid: full and short names, and a link only where there is a page", () => {
@@ -312,17 +410,72 @@ describe("the routes", () => {
 
   const get = (p) => fetch(`${server.origin}${p}`, { redirect: "manual" });
 
-  test("the page is noindex, and every view shares one canonical", async (t) => {
+  const canonical = (h) => h.match(/<link rel="canonical" href="([^"]+)"/)[1];
+
+  test("the overview is noindex, and the tab and scoring share its canonical", async (t) => {
     const a = await get("/strength-of-schedule");
     assert.equal(a.status, 200);
     assert.equal(a.headers.get("x-robots-tag"), "noindex, indexifembedded");
     const html = await a.text();
     assert.match(html, /<title>Fantasy Football Strength of Schedule \| \d{4} SOS by Team &amp; Player<\/title>/);
-    const canonical = (h) => h.match(/<link rel="canonical" href="([^"]+)"/)[1];
-    const b = await (await get("/strength-of-schedule?tab=player&pos=wr&scoring=std")).text();
+    const b = await (await get("/strength-of-schedule?tab=player&scoring=std")).text();
     assert.equal(canonical(b), canonical(html));
     assert.ok(canonical(html).endsWith("/strength-of-schedule"));
     if (!hasData) t.diagnostic("no FPA ingested: data assertions skipped");
+  });
+
+  test("each position is a page of its own, and ?pos= 301s to it", async () => {
+    const rb = await get("/strength-of-schedule/rb");
+    assert.equal(rb.status, 200);
+    assert.equal(rb.headers.get("x-robots-tag"), "noindex, indexifembedded");
+    const html = await rb.text();
+    assert.match(html, /<title>RB Strength of Schedule \d{4}: Fantasy Matchups<\/title>/);
+    assert.ok(canonical(html).endsWith("/strength-of-schedule/rb"));
+    assert.match(html, /<h1 class="scsos-h1">RB Strength of Schedule<\/h1>/);
+    if (hasData) {
+      assert.match(html, /<p class="scsos-answer">Easiest (rest-of-season|full-season) RB schedule: /);
+      assert.match(html, /class="scsos-updated">Updated <time datetime="\d{4}-\d{2}-\d{2}">/);
+      assert.equal(html.match(/<tr data-row="team-/g).length, 32);
+    }
+    const po = await get("/strength-of-schedule/playoffs");
+    assert.equal(po.status, 200);
+    const poHtml = await po.text();
+    assert.match(poHtml, /<title>Fantasy Playoff Strength of Schedule \(Weeks 15\u201317\)<\/title>/);
+    assert.ok(canonical(poHtml).endsWith("/strength-of-schedule/playoffs"));
+    if (hasData) assert.match(poHtml, /data-kind="playoffs"/);
+
+    const redirects = [
+      ["/strength-of-schedule?pos=rb", "/strength-of-schedule/rb"],
+      ["/strength-of-schedule?tab=team&pos=rb&scoring=ppr", "/strength-of-schedule/rb"],
+      ["/strength-of-schedule?tab=player&pos=wr&scoring=std", "/strength-of-schedule/wr?tab=player&scoring=std"],
+      ["/strength-of-schedule/rb?pos=te", "/strength-of-schedule/rb"],
+      ["/strength-of-schedule/RB", "/strength-of-schedule/rb"],
+      ["/strength-of-schedule/Playoffs?scoring=half-ppr", "/strength-of-schedule/playoffs?scoring=half-ppr"],
+    ];
+    for (const [from, to] of redirects) {
+      const r = await get(from);
+      assert.equal(r.status, 301, from);
+      assert.equal(r.headers.get("location"), to, from);
+    }
+    assert.equal((await get("/strength-of-schedule/k")).status, 404);
+    assert.equal((await get("/strength-of-schedule/all")).status, 404, "the overview has one address");
+  });
+
+  test("the fragment serves a page, with the WordPress addresses on its controls", async (t) => {
+    if (!hasData) return t.skip("no FPA ingested");
+    const html = await (await get("/embed/sos?page=rb&tab=team&scoring=ppr")).text();
+    assert.match(html, /data-pos="rb" data-scoring="ppr" data-page="rb"/);
+    assert.match(html, /href="https:\/\/statchasers\.com\/nfl\/fantasy-football-strength-of-schedule\/qb\/" data-page="qb"/);
+    assert.match(html, /<nav class="scsos-related"/);
+    assert.doesNotMatch(html, /scsos-faq/);
+    const pinned = await (await get("/embed/sos?page=wr&pos=te")).text();
+    assert.match(pinned, /data-pos="wr" data-scoring="ppr" data-page="wr"/, "a page's board is its own, whatever ?pos= says");
+    const po = await (await get("/embed/sos?page=playoffs&tab=player")).text();
+    assert.match(po, /data-tab="team" data-pos="rb" data-scoring="ppr" data-page="playoffs"/);
+    assert.match(po, /data-kind="playoffs"/);
+    const overview = await (await get("/embed/sos")).text();
+    assert.match(overview, /data-page="all"/);
+    assert.match(overview, /scsos-faq/);
   });
 
   test("the fragment serves each view, and bad values fall back to the default", async (t) => {

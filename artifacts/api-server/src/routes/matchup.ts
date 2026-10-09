@@ -21,6 +21,7 @@ import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { gamePath, matchupPath, matchupShare } from "../lib/matchup/matchup-render";
 import { getMatchupData } from "../lib/matchup/matchup-data";
+import { archivedGames } from "../lib/matchup/game-index";
 import { renderShareImage } from "../lib/matchup/og-image";
 import { renderMatchupAppPage, renderMatchupFragment } from "../lib/matchup/matchup-ssr";
 import {
@@ -71,6 +72,23 @@ function notFound(res: Response): void {
       `<a href="/team">Browse all 32 teams</a></p></body></html>`,
   );
 }
+
+/**
+ * GET /embed/matchup-games.json - every dated game page that exists this
+ * season, for the WordPress sitemap. See lib/matchup/game-index.ts.
+ */
+router.get("/embed/matchup-games.json", (req, res) => {
+  void (async () => {
+    try {
+      const { matchup } = publicPrefixes();
+      const index = await archivedGames(matchup);
+      res.set("Cache-Control", "public, max-age=1800").json({ ok: true, ...index });
+    } catch (err) {
+      logger.warn({ err }, "matchup game index failed");
+      res.status(503).set("Cache-Control", "no-store").json({ ok: false, error: "unavailable" });
+    }
+  })();
+});
 
 router.get("/nfl/:pair", (req, res) => {
   void (async () => {
