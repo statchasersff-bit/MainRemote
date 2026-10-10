@@ -1,0 +1,2060 @@
+{
+ "generated": "2026-10-10T16:03:16.535Z",
+ "source": "RESEARCH-Redraft-Draft-Analysis 33f0cb3",
+ "combos": {
+  "one_qb__ppr__no_tep__12__2025": {
+   "merged_names": [
+    "Late QB",
+    "Robust RB",
+    "Double Hero RB",
+    "Late TE",
+    "Balanced Start",
+    "Zero RB",
+    "Elite QB",
+    "Hero RB",
+    "Elite TE",
+    "Fragile RB"
+   ],
+   "scored": [
+    {
+     "strategy": "Late QB",
+     "safety_score": 100,
+     "upside_score": 96
+    },
+    {
+     "strategy": "Robust RB",
+     "safety_score": 99,
+     "upside_score": 100
+    },
+    {
+     "strategy": "Double Hero RB",
+     "safety_score": 91,
+     "upside_score": 79
+    },
+    {
+     "strategy": "Late TE",
+     "safety_score": 84,
+     "upside_score": 71
+    },
+    {
+     "strategy": "Balanced Start",
+     "safety_score": 80,
+     "upside_score": 74
+    },
+    {
+     "strategy": "Zero RB",
+     "safety_score": 0,
+     "upside_score": 0
+    },
+    {
+     "strategy": "Elite QB",
+     "safety_score": 43,
+     "upside_score": 40
+    },
+    {
+     "strategy": "Hero RB",
+     "safety_score": 47,
+     "upside_score": 45
+    },
+    {
+     "strategy": "Elite TE",
+     "safety_score": 58,
+     "upside_score": 49
+    },
+    {
+     "strategy": "Fragile RB",
+     "safety_score": 70,
+     "upside_score": 70
+    }
+   ],
+   "by_lift": [
+    "Late QB",
+    "Robust RB",
+    "Double Hero RB",
+    "Late TE",
+    "Balanced Start",
+    "Fragile RB",
+    "Elite TE",
+    "Hero RB",
+    "Elite QB",
+    "Zero RB"
+   ],
+   "by_name": [
+    "Balanced Start",
+    "Double Hero RB",
+    "Elite QB",
+    "Elite TE",
+    "Fragile RB",
+    "Hero RB",
+    "Late QB",
+    "Late TE",
+    "Robust RB",
+    "Zero RB"
+   ],
+   "explanations": [
+    "In this sample, Late QB teams made the playoffs at a 54.2% rate — 4.2 percentage points above the overall baseline of 50.0%. 95% confidence interval: [53.5%, 54.9%] (n=18,722). Teams using this build also finished in the top 3 for points scored 29.6% of the time. Championship rate (a secondary, higher-variance result): 9.0%. Confidence: High.",
+    "In this sample, Robust RB teams made the playoffs at a 54.1% rate — 4.1 percentage points above the overall baseline of 50.0%. 95% confidence interval: [53.0%, 55.1%] (n=8,648). Teams using this build also finished in the top 3 for points scored 29.7% of the time. Championship rate (a secondary, higher-variance result): 9.5%. Confidence: High.",
+    "In this sample, Double Hero RB teams made the playoffs at a 52.8% rate — 2.8 percentage points above the overall baseline of 50.0%. 95% confidence interval: [52.1%, 53.5%] (n=17,664). Teams using this build also finished in the top 3 for points scored 27.5% of the time. Championship rate (a secondary, higher-variance result): 8.1%. Confidence: High.",
+    "In this sample, Late TE teams made the playoffs at a 51.6% rate — 1.6 percentage points above the overall baseline of 50.0%. 95% confidence interval: [50.9%, 52.3%] (n=19,418). Teams using this build also finished in the top 3 for points scored 26.4% of the time. Championship rate (a secondary, higher-variance result): 7.8%. Confidence: High.",
+    "In this sample, Balanced Start teams made the playoffs at a 51.0% rate — 1.0 percentage points above the overall baseline of 50.0%. 95% confidence interval: [50.5%, 51.5%] (n=41,017). Teams using this build also finished in the top 3 for points scored 26.1% of the time. Championship rate (a secondary, higher-variance result): 8.4%. Confidence: High.",
+    "In this sample, Zero RB teams made the playoffs at a 38.1% rate — 11.9 percentage points below the overall baseline of 50.0%. 95% confidence interval: [35.6%, 40.7%] (n=1,422). Teams using this build also finished in the top 3 for points scored 14.9% of the time. Championship rate (a secondary, higher-variance result): 5.7%. Confidence: High.",
+    "In this sample, Elite QB teams made the playoffs at a 45.1% rate — 4.9 percentage points below the overall baseline of 50.0%. 95% confidence interval: [44.4%, 45.8%] (n=19,931). Teams using this build also finished in the top 3 for points scored 20.3% of the time. Championship rate (a secondary, higher-variance result): 7.6%. Confidence: High.",
+    "In this sample, Hero RB teams made the playoffs at a 45.6% rate — 4.4 percentage points below the overall baseline of 50.0%. 95% confidence interval: [44.7%, 46.5%] (n=12,109). Teams using this build also finished in the top 3 for points scored 21.2% of the time. Championship rate (a secondary, higher-variance result): 7.6%. Confidence: High.",
+    "In this sample, Elite TE teams made the playoffs at a 47.4% rate — 2.6 percentage points below the overall baseline of 50.0%. 95% confidence interval: [45.9%, 48.9%] (n=4,367). Teams using this build also finished in the top 3 for points scored 22.3% of the time. Championship rate (a secondary, higher-variance result): 7.5%. Confidence: High.",
+    "In this sample, Fragile RB teams made the playoffs at a 49.4% rate — 0.6 percentage points below the overall baseline of 50.0%. 95% confidence interval: [48.4%, 50.4%] (n=9,010). Teams using this build also finished in the top 3 for points scored 25.3% of the time. Championship rate (a secondary, higher-variance result): 8.3%. Confidence: High."
+   ],
+   "first_five_hidden": 8,
+   "first_five_scored": [
+    [
+     "RB/RB/TE/WR/WR",
+     100,
+     100
+    ],
+    [
+     "RB/RB/WR/WR/WR",
+     0,
+     0
+    ]
+   ],
+   "bar_colors": [
+    [
+     "Zero RB",
+     "#a83232"
+    ],
+    [
+     "Elite QB",
+     "#cf9191"
+    ],
+    [
+     "Hero RB",
+     "#cf9191"
+    ],
+    [
+     "Elite TE",
+     "#cf9191"
+    ],
+    [
+     "Fragile RB",
+     "#94a3b8"
+    ],
+    [
+     "Balanced Start",
+     "#94a3b8"
+    ],
+    [
+     "Late TE",
+     "#94a3b8"
+    ],
+    [
+     "Double Hero RB",
+     "#5ea982"
+    ],
+    [
+     "Robust RB",
+     "#5ea982"
+    ],
+    [
+     "Late QB",
+     "#5ea982"
+    ]
+   ],
+   "round1": [
+    "RB",
+    "WR",
+    "QB"
+   ],
+   "trust": [
+    "Elite Sample",
+    "Elite Sample",
+    "Elite Sample",
+    "Elite Sample",
+    "Elite Sample",
+    "Strong Sample",
+    "Elite Sample",
+    "Elite Sample",
+    "Strong Sample",
+    "Elite Sample"
+   ]
+  },
+  "superflex__half_ppr__tep__12__2023": {
+   "merged_names": [
+    "WR Heavy",
+    "Fragile RB",
+    "Hero RB",
+    "Elite QB",
+    "Balanced Start",
+    "Late TE"
+   ],
+   "scored": [
+    {
+     "strategy": "WR Heavy",
+     "safety_score": 100,
+     "upside_score": 100
+    },
+    {
+     "strategy": "Fragile RB",
+     "safety_score": 58,
+     "upside_score": 0
+    },
+    {
+     "strategy": "Hero RB",
+     "safety_score": 54,
+     "upside_score": 17
+    },
+    {
+     "strategy": "Elite QB",
+     "safety_score": 42,
+     "upside_score": 19
+    },
+    {
+     "strategy": "Balanced Start",
+     "safety_score": 4,
+     "upside_score": 19
+    },
+    {
+     "strategy": "Late TE",
+     "safety_score": 0,
+     "upside_score": 30
+    }
+   ],
+   "by_lift": [
+    "WR Heavy",
+    "Fragile RB",
+    "Hero RB",
+    "Elite QB",
+    "Balanced Start",
+    "Late TE"
+   ],
+   "by_name": [
+    "Balanced Start",
+    "Elite QB",
+    "Fragile RB",
+    "Hero RB",
+    "Late TE",
+    "WR Heavy"
+   ],
+   "explanations": [
+    "In this sample, WR Heavy teams made the playoffs at a 56.0% rate — 6.0 percentage points above the overall baseline of 50.0%. 95% confidence interval: [37.1%, 73.3%] (n=25). Teams using this build also finished in the top 3 for points scored 40.0% of the time. Championship rate (a secondary, higher-variance result): 16.0%. Confidence: Low.",
+    "In this sample, Fragile RB teams made the playoffs at a 50.0% rate — 0.0 percentage points above the overall baseline of 50.0%. 95% confidence interval: [34.1%, 65.9%] (n=34). Teams using this build also finished in the top 3 for points scored 26.5% of the time. Championship rate (a secondary, higher-variance result): 2.9%. Confidence: Low.",
+    "In this sample, Hero RB teams made the playoffs at a 49.5% rate — 0.5 percentage points below the overall baseline of 50.0%. 95% confidence interval: [40.2%, 58.8%] (n=107). Teams using this build also finished in the top 3 for points scored 22.4% of the time. Championship rate (a secondary, higher-variance result): 9.3%. Confidence: Medium.",
+    "In this sample, Elite QB teams made the playoffs at a 47.7% rate — 2.3 percentage points below the overall baseline of 50.0%. 95% confidence interval: [41.2%, 54.3%] (n=222). Teams using this build also finished in the top 3 for points scored 24.3% of the time. Championship rate (a secondary, higher-variance result): 8.6%. Confidence: Medium.",
+    "In this sample, Balanced Start teams made the playoffs at a 42.3% rate — 7.7 percentage points below the overall baseline of 50.0%. 95% confidence interval: [32.0%, 53.4%] (n=78). Teams using this build also finished in the top 3 for points scored 25.6% of the time. Championship rate (a secondary, higher-variance result): 7.7%. Confidence: Medium.",
+    "In this sample, Late TE teams made the playoffs at a 41.8% rate — 8.2 percentage points below the overall baseline of 50.0%. 95% confidence interval: [32.5%, 51.7%] (n=98). Teams using this build also finished in the top 3 for points scored 25.5% of the time. Championship rate (a secondary, higher-variance result): 10.2%. Confidence: Medium."
+   ],
+   "first_five_hidden": 0,
+   "first_five_scored": [],
+   "bar_colors": [
+    [
+     "Late TE",
+     "#a83232"
+    ],
+    [
+     "Balanced Start",
+     "#a83232"
+    ],
+    [
+     "Elite QB",
+     "#cf9191"
+    ],
+    [
+     "Hero RB",
+     "#94a3b8"
+    ],
+    [
+     "Fragile RB",
+     "#94a3b8"
+    ],
+    [
+     "WR Heavy",
+     "#15803d"
+    ]
+   ],
+   "round1": [],
+   "trust": [
+    "Insufficient",
+    "Insufficient",
+    "Directional",
+    "Directional",
+    "Directional",
+    "Directional"
+   ]
+  },
+  "one_qb__ppr__tep__10__2021": {
+   "merged_names": [
+    "Robust RB",
+    "WR Heavy",
+    "Hero RB",
+    "Balanced Start",
+    "Late QB",
+    "Fragile RB",
+    "Double Hero RB",
+    "Elite QB",
+    "Late TE",
+    "Elite TE"
+   ],
+   "scored": [
+    {
+     "strategy": "Robust RB",
+     "safety_score": 100,
+     "upside_score": 100
+    },
+    {
+     "strategy": "WR Heavy",
+     "safety_score": 99,
+     "upside_score": 90
+    },
+    {
+     "strategy": "Hero RB",
+     "safety_score": 76,
+     "upside_score": 30
+    },
+    {
+     "strategy": "Balanced Start",
+     "safety_score": 71,
+     "upside_score": 49
+    },
+    {
+     "strategy": "Late QB",
+     "safety_score": 71,
+     "upside_score": 50
+    },
+    {
+     "strategy": "Fragile RB",
+     "safety_score": 0,
+     "upside_score": 0
+    },
+    {
+     "strategy": "Double Hero RB",
+     "safety_score": 43,
+     "upside_score": 47
+    },
+    {
+     "strategy": "Elite QB",
+     "safety_score": 51,
+     "upside_score": 39
+    },
+    {
+     "strategy": "Late TE",
+     "safety_score": 67,
+     "upside_score": 33
+    },
+    {
+     "strategy": "Elite TE",
+     "safety_score": 68,
+     "upside_score": 37
+    }
+   ],
+   "by_lift": [
+    "Robust RB",
+    "WR Heavy",
+    "Hero RB",
+    "Balanced Start",
+    "Late QB",
+    "Elite TE",
+    "Late TE",
+    "Elite QB",
+    "Double Hero RB",
+    "Fragile RB"
+   ],
+   "by_name": [
+    "Balanced Start",
+    "Double Hero RB",
+    "Elite QB",
+    "Elite TE",
+    "Fragile RB",
+    "Hero RB",
+    "Late QB",
+    "Late TE",
+    "Robust RB",
+    "WR Heavy"
+   ],
+   "explanations": [
+    "In this sample, Robust RB teams made the playoffs at a 63.1% rate — 3.1 percentage points above the overall baseline of 60.0%. 95% confidence interval: [54.3%, 71.1%] (n=122). Teams using this build also finished in the top 3 for points scored 37.7% of the time. Championship rate (a secondary, higher-variance result): 11.5%. Confidence: Medium.",
+    "In this sample, WR Heavy teams made the playoffs at a 62.9% rate — 2.9 percentage points above the overall baseline of 60.0%. 95% confidence interval: [52.5%, 72.2%] (n=89). Teams using this build also finished in the top 3 for points scored 36.0% of the time. Championship rate (a secondary, higher-variance result): 11.2%. Confidence: Medium.",
+    "In this sample, Hero RB teams made the playoffs at a 56.9% rate — 3.1 percentage points below the overall baseline of 60.0%. 95% confidence interval: [45.4%, 67.7%] (n=72). Teams using this build also finished in the top 3 for points scored 27.8% of the time. Championship rate (a secondary, higher-variance result): 8.3%. Confidence: Low.",
+    "In this sample, Balanced Start teams made the playoffs at a 55.7% rate — 4.3 percentage points below the overall baseline of 60.0%. 95% confidence interval: [50.1%, 61.2%] (n=305). Teams using this build also finished in the top 3 for points scored 30.5% of the time. Championship rate (a secondary, higher-variance result): 9.2%. Confidence: High.",
+    "In this sample, Late QB teams made the playoffs at a 55.7% rate — 4.3 percentage points below the overall baseline of 60.0%. 95% confidence interval: [46.6%, 64.4%] (n=115). Teams using this build also finished in the top 3 for points scored 31.3% of the time. Championship rate (a secondary, higher-variance result): 8.7%. Confidence: Medium.",
+    "In this sample, Fragile RB teams made the playoffs at a 37.3% rate — 22.7 percentage points below the overall baseline of 60.0%. 95% confidence interval: [26.1%, 50.1%] (n=59). Teams using this build also finished in the top 3 for points scored 23.7% of the time. Championship rate (a secondary, higher-variance result): 6.8%. Confidence: Low.",
+    "In this sample, Double Hero RB teams made the playoffs at a 48.5% rate — 11.5 percentage points below the overall baseline of 60.0%. 95% confidence interval: [38.8%, 58.3%] (n=97). Teams using this build also finished in the top 3 for points scored 29.9% of the time. Championship rate (a secondary, higher-variance result): 9.3%. Confidence: Medium.",
+    "In this sample, Elite QB teams made the playoffs at a 50.5% rate — 9.5 percentage points below the overall baseline of 60.0%. 95% confidence interval: [41.3%, 59.7%] (n=109). Teams using this build also finished in the top 3 for points scored 25.7% of the time. Championship rate (a secondary, higher-variance result): 11.0%. Confidence: Medium.",
+    "In this sample, Late TE teams made the playoffs at a 54.5% rate — 5.5 percentage points below the overall baseline of 60.0%. 95% confidence interval: [46.3%, 62.4%] (n=143). Teams using this build also finished in the top 3 for points scored 29.4% of the time. Championship rate (a secondary, higher-variance result): 7.7%. Confidence: Medium.",
+    "In this sample, Elite TE teams made the playoffs at a 54.9% rate — 5.1 percentage points below the overall baseline of 60.0%. 95% confidence interval: [43.4%, 65.9%] (n=71). Teams using this build also finished in the top 3 for points scored 26.8% of the time. Championship rate (a secondary, higher-variance result): 9.9%. Confidence: Low."
+   ],
+   "first_five_hidden": 0,
+   "first_five_scored": [],
+   "bar_colors": [
+    [
+     "Fragile RB",
+     "#a83232"
+    ],
+    [
+     "Double Hero RB",
+     "#a83232"
+    ],
+    [
+     "Elite QB",
+     "#a83232"
+    ],
+    [
+     "Late TE",
+     "#a83232"
+    ],
+    [
+     "Elite TE",
+     "#a83232"
+    ],
+    [
+     "Balanced Start",
+     "#cf9191"
+    ],
+    [
+     "Late QB",
+     "#cf9191"
+    ],
+    [
+     "Hero RB",
+     "#cf9191"
+    ],
+    [
+     "WR Heavy",
+     "#5ea982"
+    ],
+    [
+     "Robust RB",
+     "#5ea982"
+    ]
+   ],
+   "round1": [
+    "RB"
+   ],
+   "trust": [
+    "Directional",
+    "Directional",
+    "Directional",
+    "Reliable",
+    "Directional",
+    "Directional",
+    "Directional",
+    "Directional",
+    "Directional",
+    "Directional"
+   ]
+  },
+  "superflex__ppr__no_tep__10__2024": {
+   "merged_names": [
+    "Robust RB",
+    "Double Hero RB",
+    "Late TE",
+    "Late QB",
+    "Balanced Start",
+    "Elite TE",
+    "Zero RB",
+    "WR Heavy",
+    "Hero RB",
+    "Fragile RB"
+   ],
+   "scored": [
+    {
+     "strategy": "Robust RB",
+     "safety_score": 100,
+     "upside_score": 84
+    },
+    {
+     "strategy": "Double Hero RB",
+     "safety_score": 71,
+     "upside_score": 77
+    },
+    {
+     "strategy": "Late TE",
+     "safety_score": 69,
+     "upside_score": 91
+    },
+    {
+     "strategy": "Late QB",
+     "safety_score": 68,
+     "upside_score": 100
+    },
+    {
+     "strategy": "Balanced Start",
+     "safety_score": 66,
+     "upside_score": 88
+    },
+    {
+     "strategy": "Elite TE",
+     "safety_score": 0,
+     "upside_score": 0
+    },
+    {
+     "strategy": "Zero RB",
+     "safety_score": 13,
+     "upside_score": 32
+    },
+    {
+     "strategy": "WR Heavy",
+     "safety_score": 47,
+     "upside_score": 95
+    },
+    {
+     "strategy": "Hero RB",
+     "safety_score": 48,
+     "upside_score": 88
+    },
+    {
+     "strategy": "Fragile RB",
+     "safety_score": 53,
+     "upside_score": 67
+    }
+   ],
+   "by_lift": [
+    "Robust RB",
+    "Double Hero RB",
+    "Late TE",
+    "Late QB",
+    "Balanced Start",
+    "Fragile RB",
+    "Hero RB",
+    "WR Heavy",
+    "Zero RB",
+    "Elite TE"
+   ],
+   "by_name": [
+    "Balanced Start",
+    "Double Hero RB",
+    "Elite TE",
+    "Fragile RB",
+    "Hero RB",
+    "Late QB",
+    "Late TE",
+    "Robust RB",
+    "WR Heavy",
+    "Zero RB"
+   ],
+   "explanations": [
+    "In this sample, Robust RB teams made the playoffs at a 68.9% rate — 8.9 percentage points above the overall baseline of 60.0%. 95% confidence interval: [62.8%, 74.4%] (n=241). Teams using this build also finished in the top 3 for points scored 36.9% of the time. Championship rate (a secondary, higher-variance result): 5.8%. Confidence: Medium.",
+    "In this sample, Double Hero RB teams made the playoffs at a 63.0% rate — 3.0 percentage points above the overall baseline of 60.0%. 95% confidence interval: [58.4%, 67.4%] (n=433). Teams using this build also finished in the top 3 for points scored 33.0% of the time. Championship rate (a secondary, higher-variance result): 7.6%. Confidence: High.",
+    "In this sample, Late TE teams made the playoffs at a 62.6% rate — 2.6 percentage points above the overall baseline of 60.0%. 95% confidence interval: [60.1%, 65.0%] (n=1,480). Teams using this build also finished in the top 3 for points scored 33.4% of the time. Championship rate (a secondary, higher-variance result): 8.9%. Confidence: High.",
+    "In this sample, Late QB teams made the playoffs at a 62.4% rate — 2.4 percentage points above the overall baseline of 60.0%. 95% confidence interval: [55.3%, 69.0%] (n=186). Teams using this build also finished in the top 3 for points scored 35.5% of the time. Championship rate (a secondary, higher-variance result): 8.6%. Confidence: Medium.",
+    "In this sample, Balanced Start teams made the playoffs at a 62.0% rate — 2.0 percentage points above the overall baseline of 60.0%. 95% confidence interval: [59.5%, 64.4%] (n=1,520). Teams using this build also finished in the top 3 for points scored 32.6% of the time. Championship rate (a secondary, higher-variance result): 9.1%. Confidence: High.",
+    "In this sample, Elite TE teams made the playoffs at a 48.9% rate — 11.1 percentage points below the overall baseline of 60.0%. 95% confidence interval: [39.0%, 58.8%] (n=94). Teams using this build also finished in the top 3 for points scored 14.9% of the time. Championship rate (a secondary, higher-variance result): 10.6%. Confidence: Medium.",
+    "In this sample, Zero RB teams made the playoffs at a 51.4% rate — 8.6 percentage points below the overall baseline of 60.0%. 95% confidence interval: [46.9%, 55.8%] (n=481). Teams using this build also finished in the top 3 for points scored 21.8% of the time. Championship rate (a secondary, higher-variance result): 9.8%. Confidence: High.",
+    "In this sample, WR Heavy teams made the playoffs at a 58.2% rate — 1.8 percentage points below the overall baseline of 60.0%. 95% confidence interval: [54.9%, 61.4%] (n=868). Teams using this build also finished in the top 3 for points scored 30.8% of the time. Championship rate (a secondary, higher-variance result): 11.1%. Confidence: High.",
+    "In this sample, Hero RB teams made the playoffs at a 58.5% rate — 1.5 percentage points below the overall baseline of 60.0%. 95% confidence interval: [56.3%, 60.6%] (n=2,010). Teams using this build also finished in the top 3 for points scored 29.1% of the time. Championship rate (a secondary, higher-variance result): 11.4%. Confidence: High.",
+    "In this sample, Fragile RB teams made the playoffs at a 59.5% rate — 0.5 percentage points below the overall baseline of 60.0%. 95% confidence interval: [56.3%, 62.6%] (n=944). Teams using this build also finished in the top 3 for points scored 29.7% of the time. Championship rate (a secondary, higher-variance result): 8.6%. Confidence: High."
+   ],
+   "first_five_hidden": 4,
+   "first_five_scored": [],
+   "bar_colors": [
+    [
+     "Elite TE",
+     "#a83232"
+    ],
+    [
+     "Zero RB",
+     "#a83232"
+    ],
+    [
+     "WR Heavy",
+     "#94a3b8"
+    ],
+    [
+     "Hero RB",
+     "#94a3b8"
+    ],
+    [
+     "Fragile RB",
+     "#94a3b8"
+    ],
+    [
+     "Balanced Start",
+     "#5ea982"
+    ],
+    [
+     "Late QB",
+     "#5ea982"
+    ],
+    [
+     "Late TE",
+     "#5ea982"
+    ],
+    [
+     "Double Hero RB",
+     "#5ea982"
+    ],
+    [
+     "Robust RB",
+     "#15803d"
+    ]
+   ],
+   "round1": [
+    "WR",
+    "QB",
+    "RB"
+   ],
+   "trust": [
+    "Directional",
+    "Reliable",
+    "Strong Sample",
+    "Directional",
+    "Strong Sample",
+    "Directional",
+    "Reliable",
+    "Reliable",
+    "Strong Sample",
+    "Reliable"
+   ]
+  }
+ },
+ "trends": {
+  "one_qb__ppr__no_tep__12": {
+   "overall": {
+    "playoff_pooled": [
+     {
+      "name": "Zero RB",
+      "rate": 0.4542269911504425,
+      "n": 6780,
+      "ci": {
+       "low": 0.44240445589013744,
+       "high": 0.4661013677128194,
+       "halfWidth": 0.011848455911340983
+      },
+      "vol": 8.671885608101618
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.4919327083079671,
+      "n": 49278,
+      "ci": {
+       "low": 0.48751940067988986,
+       "high": 0.4963472736531571,
+       "halfWidth": 0.0044139364866336295
+      },
+      "vol": 3.5745768980398234
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.49863925883034166,
+      "n": 31086,
+      "ci": {
+       "low": 0.4930814695799771,
+       "high": 0.5041973843592465,
+       "halfWidth": 0.005557957389634716
+      },
+      "vol": 5.251133211031691
+     },
+     {
+      "name": "WR Heavy",
+      "rate": 0.5201669206155721,
+      "n": 26252,
+      "ci": {
+       "low": 0.5141208723059245,
+       "high": 0.5262070675152846,
+       "halfWidth": 0.0060430976046800255
+      },
+      "vol": 1.5147276983009204
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.4994247459005286,
+      "n": 73790,
+      "ci": {
+       "low": 0.49581719785884065,
+       "high": 0.503032353835999,
+       "halfWidth": 0.0036075779885791637
+      },
+      "vol": 0.8212186067059133
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.489199947056037,
+      "n": 71774,
+      "ci": {
+       "low": 0.4855434864607182,
+       "high": 0.49285756370404443,
+       "halfWidth": 0.0036570386216631112
+      },
+      "vol": 3.0798701271319873
+     },
+     {
+      "name": "Elite TE",
+      "rate": 0.5049386224381999,
+      "n": 18932,
+      "ci": {
+       "low": 0.497816266302095,
+       "high": 0.5120589747328744,
+       "halfWidth": 0.0071213542153897025
+      },
+      "vol": 5.244959485067543
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.5047792091545712,
+      "n": 56977,
+      "ci": {
+       "low": 0.5006736161734968,
+       "high": 0.5088841577151921,
+       "halfWidth": 0.004105270770847658
+      },
+      "vol": 3.68640746527022
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.5156832813454675,
+      "n": 62194,
+      "ci": {
+       "low": 0.511754735898444,
+       "high": 0.5196098894618033,
+       "halfWidth": 0.003927576781679654
+      },
+      "vol": 0.8423775875461084
+     }
+    ],
+    "playoff_balanced": [
+     {
+      "name": "Zero RB",
+      "rate": 0.4788,
+      "n": 6780,
+      "ci": {
+       "low": 0.46082244744798906,
+       "high": 0.49677755255201095,
+       "halfWidth": 0.017977552552010955
+      },
+      "vol": 8.671885608101618
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.4992,
+      "n": 49278,
+      "ci": {
+       "low": 0.493390819896341,
+       "high": 0.505009180103659,
+       "halfWidth": 0.005809180103659011
+      },
+      "vol": 3.5745768980398234
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.5075999999999999,
+      "n": 31086,
+      "ci": {
+       "low": 0.5013541617752955,
+       "high": 0.5138458382247044,
+       "halfWidth": 0.006245838224704531
+      },
+      "vol": 5.251133211031691
+     },
+     {
+      "name": "WR Heavy",
+      "rate": 0.5224,
+      "n": 26252,
+      "ci": {
+       "low": 0.5148740095480464,
+       "high": 0.5299259904519535,
+       "halfWidth": 0.007525990451953545
+      },
+      "vol": 1.5147276983009204
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.49940000000000007,
+      "n": 73790,
+      "ci": {
+       "low": 0.4952376123417355,
+       "high": 0.5035623876582647,
+       "halfWidth": 0.004162387658264548
+      },
+      "vol": 0.8212186067059133
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.4878,
+      "n": 71774,
+      "ci": {
+       "low": 0.48326721575762016,
+       "high": 0.49233278424237986,
+       "halfWidth": 0.004532784242379857
+      },
+      "vol": 3.0798701271319873
+     },
+     {
+      "name": "Elite TE",
+      "rate": 0.4888,
+      "n": 18932,
+      "ci": {
+       "low": 0.4808559911846546,
+       "high": 0.4967440088153454,
+       "halfWidth": 0.007944008815345393
+      },
+      "vol": 5.244959485067543
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.5042,
+      "n": 56977,
+      "ci": {
+       "low": 0.4993061714010737,
+       "high": 0.5090938285989263,
+       "halfWidth": 0.0048938285989263055
+      },
+      "vol": 3.68640746527022
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.5142,
+      "n": 62194,
+      "ci": {
+       "low": 0.5096692186747689,
+       "high": 0.5187307813252311,
+       "halfWidth": 0.004530781325231123
+      },
+      "vol": 0.8423775875461084
+     }
+    ],
+    "pf_pooled": [
+     {
+      "name": "Zero RB",
+      "rate": 0.2202856932153392,
+      "n": 6780,
+      "ci": {
+       "low": 0.21058049912642177,
+       "high": 0.23030768434767343,
+       "halfWidth": 0.009863592610625832
+      },
+      "vol": 8.390089391657279
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.24382570315353708,
+      "n": 49278,
+      "ci": {
+       "low": 0.24005453665548865,
+       "high": 0.24763680806081756,
+       "halfWidth": 0.0037911357026644554
+      },
+      "vol": 3.224034739266933
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.2536005597375024,
+      "n": 31086,
+      "ci": {
+       "low": 0.24879467314513137,
+       "high": 0.2584673387655372,
+       "halfWidth": 0.0048363328102029035
+      },
+      "vol": 5.121327952787245
+     },
+     {
+      "name": "WR Heavy",
+      "rate": 0.2644660978211184,
+      "n": 26252,
+      "ci": {
+       "low": 0.2591655095388366,
+       "high": 0.26983560996822203,
+       "halfWidth": 0.005335050214692716
+      },
+      "vol": 1.7359723500102189
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.25019680173465236,
+      "n": 73790,
+      "ci": {
+       "low": 0.24708470343429775,
+       "high": 0.2533349088169229,
+       "halfWidth": 0.0031251026913125673
+      },
+      "vol": 1.1412274094149695
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.2430531668849444,
+      "n": 71774,
+      "ci": {
+       "low": 0.23992895183870716,
+       "high": 0.24620488587758327,
+       "halfWidth": 0.003137967019438054
+      },
+      "vol": 2.927524551562291
+     },
+     {
+      "name": "Elite TE",
+      "rate": 0.2566140925417283,
+      "n": 18932,
+      "ci": {
+       "low": 0.2504422593921012,
+       "high": 0.2628846792954298,
+       "halfWidth": 0.006221209951664308
+      },
+      "vol": 5.577239460521666
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.2544947259420468,
+      "n": 56977,
+      "ci": {
+       "low": 0.2509347545053465,
+       "high": 0.25808780089334393,
+       "halfWidth": 0.003576523193998704
+      },
+      "vol": 3.5702100778525625
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.2620493134385954,
+      "n": 62194,
+      "ci": {
+       "low": 0.25860798010373737,
+       "high": 0.265520040441593,
+       "halfWidth": 0.003456030168927815
+      },
+      "vol": 1.0862780491200226
+     }
+    ],
+    "pf_balanced": [
+     {
+      "name": "Zero RB",
+      "rate": 0.2432,
+      "n": 6780,
+      "ci": {
+       "low": 0.227527560887268,
+       "high": 0.258872439112732,
+       "halfWidth": 0.015672439112732008
+      },
+      "vol": 8.390089391657279
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.2506,
+      "n": 49278,
+      "ci": {
+       "low": 0.24551385085858105,
+       "high": 0.25568614914141896,
+       "halfWidth": 0.005086149141418949
+      },
+      "vol": 3.224034739266933
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.26199999999999996,
+      "n": 31086,
+      "ci": {
+       "low": 0.2564691537393545,
+       "high": 0.2675308462606454,
+       "halfWidth": 0.0055308462606454036
+      },
+      "vol": 5.121327952787245
+     },
+     {
+      "name": "WR Heavy",
+      "rate": 0.26680000000000004,
+      "n": 26252,
+      "ci": {
+       "low": 0.26008647437074706,
+       "high": 0.273513525629253,
+       "halfWidth": 0.006713525629253007
+      },
+      "vol": 1.7359723500102189
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.24939999999999998,
+      "n": 73790,
+      "ci": {
+       "low": 0.24581049697469765,
+       "high": 0.2529895030253023,
+       "halfWidth": 0.0035895030253023457
+      },
+      "vol": 1.1412274094149695
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.2414,
+      "n": 71774,
+      "ci": {
+       "low": 0.23757210685129973,
+       "high": 0.24522789314870028,
+       "halfWidth": 0.003827893148700264
+      },
+      "vol": 2.927524551562291
+     },
+     {
+      "name": "Elite TE",
+      "rate": 0.2372,
+      "n": 18932,
+      "ci": {
+       "low": 0.23056231467648827,
+       "high": 0.24383768532351172,
+       "halfWidth": 0.006637685323511722
+      },
+      "vol": 5.577239460521666
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.2536,
+      "n": 56977,
+      "ci": {
+       "low": 0.24933677809478355,
+       "high": 0.25786322190521643,
+       "halfWidth": 0.004263221905216455
+      },
+      "vol": 3.5702100778525625
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.26,
+      "n": 62194,
+      "ci": {
+       "low": 0.2560501090371077,
+       "high": 0.26394989096289234,
+       "halfWidth": 0.003949890962892346
+      },
+      "vol": 1.0862780491200226
+     }
+    ]
+   },
+   "first_two": {
+    "playoff_pooled": [
+     {
+      "name": "RB/RB",
+      "rate": 0.5060931453301689,
+      "n": 35815,
+      "ci": {
+       "low": 0.5009147777973326,
+       "high": 0.5112702058733845,
+       "halfWidth": 0.005177714038025916
+      },
+      "vol": 6.4796913506740434
+     },
+     {
+      "name": "RB/WR",
+      "rate": 0.4837305319878051,
+      "n": 42313,
+      "ci": {
+       "low": 0.4789705566349587,
+       "high": 0.4884934612845636,
+       "halfWidth": 0.004761452324802462
+      },
+      "vol": 1.9022092419079448
+     },
+     {
+      "name": "WR/RB",
+      "rate": 0.5252587450372354,
+      "n": 42567,
+      "ci": {
+       "low": 0.5205127883984523,
+       "high": 0.530000142969106,
+       "halfWidth": 0.004743677285326875
+      },
+      "vol": 3.188981028479159
+     },
+     {
+      "name": "WR/WR",
+      "rate": 0.4899258746787903,
+      "n": 30354,
+      "ci": {
+       "low": 0.48430370423370045,
+       "high": 0.4955505947623125,
+       "halfWidth": 0.005623445264306026
+      },
+      "vol": 6.234228099773057
+     }
+    ],
+    "pf_balanced": [
+     {
+      "name": "RB/RB",
+      "rate": 0.2684,
+      "n": 35815,
+      "ci": {
+       "low": 0.2631726027191654,
+       "high": 0.27362739728083463,
+       "halfWidth": 0.0052273972808346055
+      },
+      "vol": 7.110443024172264
+     },
+     {
+      "name": "RB/WR",
+      "rate": 0.2346,
+      "n": 42313,
+      "ci": {
+       "low": 0.23027069108939757,
+       "high": 0.23892930891060243,
+       "halfWidth": 0.004329308910602426
+      },
+      "vol": 2.235710177997139
+     },
+     {
+      "name": "WR/RB",
+      "rate": 0.28159999999999996,
+      "n": 42567,
+      "ci": {
+       "low": 0.2741355337492076,
+       "high": 0.2890644662507923,
+       "halfWidth": 0.007464466250792346
+      },
+      "vol": 3.8784532999637875
+     },
+     {
+      "name": "WR/WR",
+      "rate": 0.24979999999999997,
+      "n": 30354,
+      "ci": {
+       "low": 0.24183812958654036,
+       "high": 0.2577618704134596,
+       "halfWidth": 0.007961870413459611
+      },
+      "vol": 6.260479214884433
+     }
+    ]
+   },
+   "rounds": {
+    "1": [
+     {
+      "position": "RB",
+      "avg": 0.49400000000000005,
+      "vol": 2.8913664589601944
+     },
+     {
+      "position": "WR",
+      "avg": 0.5186000000000001,
+      "vol": 3.3314261210478624
+     },
+     {
+      "position": "TE",
+      "avg": 0.47519999999999996,
+      "vol": 7.803947718943278
+     },
+     {
+      "position": "QB",
+      "avg": 0.355,
+      "vol": 3.377573093213527
+     }
+    ],
+    "2": [
+     {
+      "position": "RB",
+      "avg": 0.518,
+      "vol": 3.2796341259353925
+     },
+     {
+      "position": "TE",
+      "avg": 0.48200000000000004,
+      "vol": 5.293769923221067
+     },
+     {
+      "position": "WR",
+      "avg": 0.48339999999999994,
+      "vol": 2.450795789126463
+     },
+     {
+      "position": "QB",
+      "avg": 0.46580000000000005,
+      "vol": 4.231973534888893
+     }
+    ],
+    "3": [
+     {
+      "position": "TE",
+      "avg": 0.487,
+      "vol": 5.111946791585373
+     },
+     {
+      "position": "WR",
+      "avg": 0.4976,
+      "vol": 0.8380930735902794
+     },
+     {
+      "position": "RB",
+      "avg": 0.5025999999999999,
+      "vol": 1.4907716122867394
+     },
+     {
+      "position": "QB",
+      "avg": 0.5102,
+      "vol": 4.471867618791951
+     }
+    ],
+    "4": [
+     {
+      "position": "WR",
+      "avg": 0.5096,
+      "vol": 1.8227451824103131
+     },
+     {
+      "position": "TE",
+      "avg": 0.4824,
+      "vol": 2.5912159307938816
+     },
+     {
+      "position": "QB",
+      "avg": 0.4888,
+      "vol": 2.5716920499935454
+     },
+     {
+      "position": "RB",
+      "avg": 0.49660000000000004,
+      "vol": 3.262269148920733
+     }
+    ],
+    "5": [
+     {
+      "position": "WR",
+      "avg": 0.5068,
+      "vol": 1.8701871564097552
+     },
+     {
+      "position": "QB",
+      "avg": 0.49720000000000003,
+      "vol": 2.331866205424318
+     },
+     {
+      "position": "RB",
+      "avg": 0.4894,
+      "vol": 3.1947456862792696
+     },
+     {
+      "position": "TE",
+      "avg": 0.48599999999999993,
+      "vol": 3.394701754204631
+     }
+    ],
+    "6": [
+     {
+      "position": "WR",
+      "avg": 0.5012000000000001,
+      "vol": 1.43443368616329
+     },
+     {
+      "position": "QB",
+      "avg": 0.5029999999999999,
+      "vol": 2.1118712081942896
+     },
+     {
+      "position": "RB",
+      "avg": 0.49860000000000004,
+      "vol": 1.297073629367278
+     },
+     {
+      "position": "TE",
+      "avg": 0.48440000000000005,
+      "vol": 2.5710698162438135
+     }
+    ],
+    "7": [
+     {
+      "position": "WR",
+      "avg": 0.4997999999999999,
+      "vol": 1.2172099243762362
+     },
+     {
+      "position": "QB",
+      "avg": 0.4984,
+      "vol": 2.788978307552787
+     },
+     {
+      "position": "RB",
+      "avg": 0.5027999999999999,
+      "vol": 1.9903768487399585
+     },
+     {
+      "position": "TE",
+      "avg": 0.4902,
+      "vol": 3.495368363992558
+     }
+    ],
+    "8": [
+     {
+      "position": "RB",
+      "avg": 0.5078,
+      "vol": 1.7622712617528569
+     },
+     {
+      "position": "QB",
+      "avg": 0.48640000000000005,
+      "vol": 3.2806096994308858
+     },
+     {
+      "position": "WR",
+      "avg": 0.49939999999999996,
+      "vol": 0.8822698000045118
+     },
+     {
+      "position": "TE",
+      "avg": 0.49940000000000007,
+      "vol": 2.611972434770322
+     }
+    ]
+   },
+   "robust": {
+    "early": {
+     "rate": 0.46093565883228754,
+     "n": 18806,
+     "seasons": 3,
+     "ci": {
+      "low": 0.4538199599021072,
+      "high": 0.46806731425760706,
+      "halfWidth": 0.007123677177749921
+     }
+    },
+    "late": {
+     "rate": 0.5563798045602606,
+     "n": 12280,
+     "seasons": 2,
+     "ci": {
+      "low": 0.5475763753430839,
+      "high": 0.5651479697836067,
+      "halfWidth": 0.008785797220261404
+     }
+    }
+   },
+   "zero": {
+    "early": {
+     "rate": 0.5584895336026441,
+     "n": 2723,
+     "seasons": 3,
+     "ci": {
+      "low": 0.5397687435887242,
+      "high": 0.5770455224104449,
+      "halfWidth": 0.01863838941086038
+     }
+    },
+    "late": {
+     "rate": 0.38424747350258814,
+     "n": 4057,
+     "seasons": 2,
+     "ci": {
+      "low": 0.3693957124853946,
+      "high": 0.39931824079956,
+      "halfWidth": 0.01496126415708271
+     }
+    }
+   }
+  },
+  "superflex__half_ppr__no_tep__10": {
+   "overall": {
+    "playoff_pooled": [
+     {
+      "name": "Zero RB",
+      "rate": 0.4858263888888889,
+      "n": 144,
+      "ci": {
+       "low": 0.4056275853850176,
+       "high": 0.5667617826954144,
+       "halfWidth": 0.08056709865519843
+      },
+      "vol": 14.402222050780914
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.5792955801104972,
+      "n": 1086,
+      "ci": {
+       "low": 0.5497049256127865,
+       "high": 0.6083272141036639,
+       "halfWidth": 0.02931114424543868
+      },
+      "vol": 4.4770526018799455
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.6496182336182336,
+      "n": 351,
+      "ci": {
+       "low": 0.5983312233183001,
+       "high": 0.6976656383799898,
+       "halfWidth": 0.04966720753084486
+      },
+      "vol": 7.205664438481716
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.6113881000676132,
+      "n": 1479,
+      "ci": {
+       "low": 0.5862879362538123,
+       "high": 0.6359111172391569,
+       "halfWidth": 0.024811590492672342
+      },
+      "vol": 3.8207852596030607
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.5900416988416989,
+      "n": 2590,
+      "ci": {
+       "low": 0.5709802735054501,
+       "high": 0.6088364122937135,
+       "halfWidth": 0.01892806939413172
+      },
+      "vol": 1.101998185116474
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.7305826086956523,
+      "n": 115,
+      "ci": {
+       "low": 0.6430151712233201,
+       "high": 0.8032427048066224,
+       "halfWidth": 0.08011376679165116
+      },
+      "vol": 10.848225661369696
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.6271108527131782,
+      "n": 1290,
+      "ci": {
+       "low": 0.6003809262551143,
+       "high": 0.6530859587175128,
+       "halfWidth": 0.026352516231199274
+      },
+      "vol": 2.7918452679186956
+     }
+    ],
+    "playoff_balanced": [
+     {
+      "name": "Zero RB",
+      "rate": 0.45600000000000007,
+      "n": 144,
+      "ci": {
+       "low": 0.36564196432784035,
+       "high": 0.5463580356721598,
+       "halfWidth": 0.0903580356721597
+      },
+      "vol": 14.402222050780914
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.562,
+      "n": 1086,
+      "ci": {
+       "low": 0.5272584472757722,
+       "high": 0.5967415527242279,
+       "halfWidth": 0.0347415527242278
+      },
+      "vol": 4.4770526018799455
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.6801999999999999,
+      "n": 351,
+      "ci": {
+       "low": 0.6236163494008723,
+       "high": 0.7367836505991275,
+       "halfWidth": 0.05658365059912758
+      },
+      "vol": 7.205664438481716
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.6284,
+      "n": 1479,
+      "ci": {
+       "low": 0.6000655082960688,
+       "high": 0.6567344917039312,
+       "halfWidth": 0.028334491703931174
+      },
+      "vol": 3.8207852596030607
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.5873999999999999,
+      "n": 2590,
+      "ci": {
+       "low": 0.5653762963376895,
+       "high": 0.6094237036623104,
+       "halfWidth": 0.022023703662310413
+      },
+      "vol": 1.101998185116474
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.724,
+      "n": 115,
+      "ci": {
+       "low": 0.6367138237777268,
+       "high": 0.8112861762222732,
+       "halfWidth": 0.08728617622227325
+      },
+      "vol": 10.848225661369696
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.6306,
+      "n": 1290,
+      "ci": {
+       "low": 0.6005347637374054,
+       "high": 0.6606652362625947,
+       "halfWidth": 0.030065236262594563
+      },
+      "vol": 2.7918452679186956
+     }
+    ],
+    "pf_pooled": [
+     {
+      "name": "Zero RB",
+      "rate": 0.2014722222222222,
+      "n": 144,
+      "ci": {
+       "low": 0.14410944551328375,
+       "high": 0.27434922917638405,
+       "halfWidth": 0.06511989183155015
+      },
+      "vol": 12.59196569245644
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.2845893186003683,
+      "n": 1086,
+      "ci": {
+       "low": 0.25854856317963754,
+       "high": 0.3121486830990878,
+       "halfWidth": 0.02680005995972512
+      },
+      "vol": 3.4828723777939388
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.35354415954415946,
+      "n": 351,
+      "ci": {
+       "low": 0.30536167953187043,
+       "high": 0.4048977714456924,
+       "halfWidth": 0.04976804595691098
+      },
+      "vol": 6.491039978308562
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.3030060851926977,
+      "n": 1479,
+      "ci": {
+       "low": 0.28011986699461183,
+       "high": 0.32691300826327135,
+       "halfWidth": 0.02339657063432976
+      },
+      "vol": 2.08269056751117
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.2933776061776062,
+      "n": 2590,
+      "ci": {
+       "low": 0.2761586348877709,
+       "high": 0.3112086122101244,
+       "halfWidth": 0.017524988661176744
+      },
+      "vol": 1.0796295661012607
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.39160000000000006,
+      "n": 115,
+      "ci": {
+       "low": 0.3072759298011378,
+       "high": 0.4829322128021257,
+       "halfWidth": 0.08782814150049395
+      },
+      "vol": 3.765315391836387
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.31996744186046516,
+      "n": 1290,
+      "ci": {
+       "low": 0.2950788387045635,
+       "high": 0.34592512963282823,
+       "halfWidth": 0.02542314546413238
+      },
+      "vol": 3.370697257245153
+     }
+    ],
+    "pf_balanced": [
+     {
+      "name": "Zero RB",
+      "rate": 0.15819999999999998,
+      "n": 144,
+      "ci": {
+       "low": 0.09124326356050064,
+       "high": 0.22515673643949932,
+       "halfWidth": 0.06695673643949934
+      },
+      "vol": 12.59196569245644
+     },
+     {
+      "name": "Hero RB",
+      "rate": 0.2646,
+      "n": 1086,
+      "ci": {
+       "low": 0.2342193475766886,
+       "high": 0.2949806524233114,
+       "halfWidth": 0.030380652423311404
+      },
+      "vol": 3.4828723777939388
+     },
+     {
+      "name": "Robust RB",
+      "rate": 0.3928,
+      "n": 351,
+      "ci": {
+       "low": 0.33295120710067116,
+       "high": 0.4526487928993288,
+       "halfWidth": 0.05984879289932883
+      },
+      "vol": 6.491039978308562
+     },
+     {
+      "name": "Balanced",
+      "rate": 0.31620000000000004,
+      "n": 1479,
+      "ci": {
+       "low": 0.28859026219708633,
+       "high": 0.34380973780291374,
+       "halfWidth": 0.027609737802913686
+      },
+      "vol": 2.08269056751117
+     },
+     {
+      "name": "Elite QB",
+      "rate": 0.2912,
+      "n": 2590,
+      "ci": {
+       "low": 0.27085270230178815,
+       "high": 0.3115472976982119,
+       "halfWidth": 0.02034729769821184
+      },
+      "vol": 1.0796295661012607
+     },
+     {
+      "name": "Late QB",
+      "rate": 0.4128,
+      "n": 115,
+      "ci": {
+       "low": 0.31614253304053586,
+       "high": 0.5094574669594641,
+       "halfWidth": 0.09665746695946414
+      },
+      "vol": 3.765315391836387
+     },
+     {
+      "name": "Late TE",
+      "rate": 0.3228,
+      "n": 1290,
+      "ci": {
+       "low": 0.2937644398190067,
+       "high": 0.35183556018099327,
+       "halfWidth": 0.029035560180993264
+      },
+      "vol": 3.370697257245153
+     }
+    ]
+   },
+   "first_two": {
+    "playoff_pooled": [
+     {
+      "name": "RB/RB",
+      "rate": 0.6263987341772153,
+      "n": 316,
+      "ci": {
+       "low": 0.5718414610757137,
+       "high": 0.6779196706845079,
+       "halfWidth": 0.05303910480439711
+      },
+      "vol": 7.889588075432079
+     },
+     {
+      "name": "RB/WR",
+      "rate": 0.6292679127725856,
+      "n": 321,
+      "ci": {
+       "low": 0.5751916887306934,
+       "high": 0.6802866736465392,
+       "halfWidth": 0.052547492457922895
+      },
+      "vol": 9.32630687893123
+     },
+     {
+      "name": "WR/RB",
+      "rate": 0.5619418604651163,
+      "n": 258,
+      "ci": {
+       "low": 0.5009298309418921,
+       "high": 0.62113633425111,
+       "halfWidth": 0.06010325165460895
+      },
+      "vol": 11.200249997209884
+     },
+     {
+      "name": "WR/WR",
+      "rate": 0.6170851063829788,
+      "n": 141,
+      "ci": {
+       "low": 0.5347538258049777,
+       "high": 0.6932055449835252,
+       "halfWidth": 0.07922585958927375
+      },
+      "vol": 11.574212716206661
+     }
+    ],
+    "pf_balanced": [
+     {
+      "name": "RB/RB",
+      "rate": 0.3788,
+      "n": 316,
+      "ci": {
+       "low": 0.3141727750281563,
+       "high": 0.4434272249718437,
+       "halfWidth": 0.06462722497184369
+      },
+      "vol": 11.237152664265091
+     },
+     {
+      "name": "RB/WR",
+      "rate": 0.359,
+      "n": 321,
+      "ci": {
+       "low": 0.29808320816402223,
+       "high": 0.41991679183597774,
+       "halfWidth": 0.060916791835977736
+      },
+      "vol": 10.45428141959073
+     },
+     {
+      "name": "WR/RB",
+      "rate": 0.2742,
+      "n": 258,
+      "ci": {
+       "low": 0.1993219681641649,
+       "high": 0.3490780318358351,
+       "halfWidth": 0.07487803183583511
+      },
+      "vol": 6.90576570700165
+     },
+     {
+      "name": "WR/WR",
+      "rate": 0.2732,
+      "n": 141,
+      "ci": {
+       "low": 0.18057844311816384,
+       "high": 0.36582155688183615,
+       "halfWidth": 0.09262155688183614
+      },
+      "vol": 8.045470775535762
+     }
+    ]
+   },
+   "rounds": {
+    "1": [
+     {
+      "position": "RB",
+      "avg": 0.6154,
+      "vol": 7.538859330163948
+     },
+     {
+      "position": "QB",
+      "avg": 0.595,
+      "vol": 4.670331893987834
+     },
+     {
+      "position": "WR",
+      "avg": 0.5912,
+      "vol": 6.441552607873352
+     }
+    ],
+    "2": [
+     {
+      "position": "RB",
+      "avg": 0.6328,
+      "vol": 3.0261526729496016
+     },
+     {
+      "position": "WR",
+      "avg": 0.6035999999999999,
+      "vol": 4.928123375078997
+     },
+     {
+      "position": "QB",
+      "avg": 0.5346,
+      "vol": 3.9832649924402457
+     }
+    ],
+    "3": [
+     {
+      "position": "RB",
+      "avg": 0.6512,
+      "vol": 3.556627616155507
+     },
+     {
+      "position": "QB",
+      "avg": 0.5710000000000001,
+      "vol": 3.479655155327893
+     },
+     {
+      "position": "WR",
+      "avg": 0.5940000000000001,
+      "vol": 4.494441010848847
+     }
+    ],
+    "4": [
+     {
+      "position": "TE",
+      "avg": 0.5422,
+      "vol": 8.806225070937037
+     },
+     {
+      "position": "QB",
+      "avg": 0.6132,
+      "vol": 2.473378256555194
+     },
+     {
+      "position": "WR",
+      "avg": 0.5940000000000001,
+      "vol": 1.7239489551607974
+     },
+     {
+      "position": "RB",
+      "avg": 0.6125999999999999,
+      "vol": 1.9734234213670436
+     }
+    ],
+    "5": [
+     {
+      "position": "QB",
+      "avg": 0.5836,
+      "vol": 3.326619906150987
+     },
+     {
+      "position": "RB",
+      "avg": 0.5955999999999999,
+      "vol": 4.953221174145164
+     },
+     {
+      "position": "WR",
+      "avg": 0.6215999999999999,
+      "vol": 4.94190246767376
+     }
+    ],
+    "6": [
+     {
+      "position": "WR",
+      "avg": 0.6028,
+      "vol": 3.0472282487532825
+     },
+     {
+      "position": "QB",
+      "avg": 0.6439999999999999,
+      "vol": 1.7297398648351738
+     },
+     {
+      "position": "RB",
+      "avg": 0.5651999999999999,
+      "vol": 3.791253090997749
+     }
+    ],
+    "7": [
+     {
+      "position": "WR",
+      "avg": 0.5892,
+      "vol": 3.152395914221435
+     },
+     {
+      "position": "QB",
+      "avg": 0.6406,
+      "vol": 4.381597882051707
+     },
+     {
+      "position": "RB",
+      "avg": 0.5803999999999999,
+      "vol": 2.5429117169103597
+     }
+    ],
+    "8": [
+     {
+      "position": "WR",
+      "avg": 0.6007999999999999,
+      "vol": 2.7665140520156397
+     },
+     {
+      "position": "QB",
+      "avg": 0.5904,
+      "vol": 3.2320891076825204
+     },
+     {
+      "position": "TE",
+      "avg": 0.6003999999999999,
+      "vol": 6.014183236317296
+     },
+     {
+      "position": "RB",
+      "avg": 0.6073999999999999,
+      "vol": 3.7887201005088778
+     }
+    ]
+   },
+   "robust": {
+    "early": {
+     "rate": 0.6122509505703422,
+     "n": 263,
+     "seasons": 3,
+     "ci": {
+      "low": 0.5521511656383868,
+      "high": 0.669118681341994,
+      "halfWidth": 0.0584837578518036
+     }
+    },
+    "late": {
+     "rate": 0.7612954545454546,
+     "n": 88,
+     "seasons": 2,
+     "ci": {
+      "low": 0.6624981369992679,
+      "high": 0.8382335575705132,
+      "halfWidth": 0.08786771028562268
+     }
+    }
+   },
+   "zero": {
+    "early": {
+     "rate": 0.616054794520548,
+     "n": 73,
+     "seasons": 3,
+     "ci": {
+      "low": 0.5013548913869195,
+      "high": 0.719150668101691,
+      "halfWidth": 0.10889788835738579
+     }
+    },
+    "late": {
+     "rate": 0.3519295774647887,
+     "n": 71,
+     "seasons": 2,
+     "ci": {
+      "low": 0.25106430875454144,
+      "high": 0.46799567927350716,
+      "halfWidth": 0.10846568525948286
+     }
+    }
+   }
+  }
+ },
+ "filters": {
+  "unsupported": [
+   [
+    {
+     "qb": "one_qb",
+     "scoring": "half_ppr",
+     "tep": "tep",
+     "size": "10"
+    },
+    true
+   ],
+   [
+    {
+     "qb": "superflex",
+     "scoring": "half_ppr",
+     "tep": "tep",
+     "size": "10"
+    },
+    true
+   ],
+   [
+    {
+     "qb": "one_qb",
+     "scoring": "half_ppr",
+     "tep": "tep",
+     "size": "12"
+    },
+    false
+   ]
+  ],
+  "would": [
+   [
+    "qb",
+    "one_qb",
+    {
+     "qb": "superflex",
+     "scoring": "half_ppr",
+     "tep": "tep",
+     "size": "10"
+    },
+    true
+   ],
+   [
+    "tep",
+    "tep",
+    {
+     "qb": "one_qb",
+     "scoring": "half_ppr",
+     "tep": "no_tep",
+     "size": "10"
+    },
+    true
+   ],
+   [
+    "size",
+    "10",
+    {
+     "qb": "one_qb",
+     "scoring": "ppr",
+     "tep": "tep",
+     "size": "12"
+    },
+    false
+   ]
+  ],
+  "coerce": {
+   "qb": "one_qb",
+   "scoring": "half_ppr",
+   "tep": "tep",
+   "size": "12",
+   "season": "2024"
+  },
+  "key": "superflex__half_ppr__tep__12__compare"
+ },
+ "stats": {
+  "wilson": [
+   {
+    "low": 0.40382982859014716,
+    "high": 0.5961701714098528,
+    "halfWidth": 0.09617017140985284
+   },
+   {
+    "low": 0.35611116799543757,
+    "high": 0.40653006788939,
+    "halfWidth": 0.025209449946976215
+   },
+   {
+    "low": 0.4629364425892607,
+    "high": 0.9894703616090744,
+    "halfWidth": 0.26326695950990686
+   },
+   {
+    "low": 0,
+    "high": 0.2775401687666166,
+    "halfWidth": 0.1387700843833083
+   },
+   null
+  ],
+  "pooled": {
+   "rate": 0.575,
+   "n": 400,
+   "seasons": 2,
+   "ci": {
+    "low": 0.5260666333045342,
+    "high": 0.6225064706055136,
+    "halfWidth": 0.04821991865048969
+   }
+  },
+  "balanced": {
+   "rate": 0.55,
+   "n": 400,
+   "seasons": 2,
+   "ci": {
+    "low": 0.49458176376029706,
+    "high": 0.605418236239703,
+    "halfWidth": 0.05541823623970298
+   }
+  },
+  "ciPp": "±9.6 pp",
+  "ciRange": "[35.6%, 40.7%]"
+ }
+}

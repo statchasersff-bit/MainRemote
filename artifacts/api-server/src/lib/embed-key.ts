@@ -76,6 +76,7 @@ export function isProtectedPath(path: string): boolean {
   if (path === "/rb-handcuff-rankings" || path.startsWith("/rb-handcuff-rankings/")) return true;
   if (path === "/strength-of-schedule") return true;
   if (path === "/rookie-hit-rates") return true;
+  if (path === "/redraft-strategy") return true;
   return false;
 }
 

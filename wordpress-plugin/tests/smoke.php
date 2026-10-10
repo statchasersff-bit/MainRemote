@@ -324,6 +324,9 @@ $GLOBALS['wpdb'] = new class {
 
 $dir = __DIR__ . '/../statchasers-news';
 
+// The Rank Math pieces the game sitemap implements and calls (namespaced, so
+// a file of its own).
+require_once __DIR__ . '/stubs-rankmath.php';
 require_once "$dir/statchasers-assets.php";
 require_once "$dir/statchasers-bdp-assets.php";
 require_once "$dir/statchasers-host-css.php";
@@ -341,6 +344,7 @@ require_once "$dir/statchasers-player-stats.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
 require_once "$dir/statchasers-sos.php";
 require_once "$dir/statchasers-rookie-hit-rates.php";
+require_once "$dir/statchasers-redraft-strategy.php";
 // And for its position URLs, near the bottom.
 require_once "$dir/statchasers-rankings.php";
 // The key header and the browser proxy's allowlist, against the stubbed
@@ -394,10 +398,10 @@ if ( 'main' === $group ) {
 	is( isset( $other['headers']['X-StatChasers-Key'] ), false, 'a look-alike host never gets the key' );
 	$third = statchasers_add_embed_key( array(), 'https://api.sleeper.app/v1/players' );
 	is( isset( $third['headers']['X-StatChasers-Key'] ), false, 'another service never gets the key' );
-	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
+	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/redraft-strategy/data/combo/one_qb__ppr__no_tep__12__2025', 'embed/redraft-strategy/data/trends/superflex__half_ppr__tep__12', 'embed/redraft-strategy/data/boards', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
 		is( statchasers_proxy_allowed( $ok_path ), true, "proxy forwards $ok_path" );
 	}
-	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'api/x/accounts', '' ) as $no_path ) {
+	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'api/x/accounts', '' ) as $no_path ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
 	echo "\n";
@@ -427,8 +431,20 @@ if ( in_array( $group, array( 'sos', 'sosleak', 'sospage', 'sosfallback' ), true
 	exit( $fail ? 1 : 0 );
 }
 
+if ( in_array( $group, array( 'fpa', 'fpaleak', 'fpaarchive' ), true ) ) {
+	require __DIR__ . '/smoke-fpa.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 if ( 'rhr' === $group || 'rhrleak' === $group ) {
 	require __DIR__ . '/smoke-rhr.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'rds' === $group || 'rdsleak' === $group ) {
+	require __DIR__ . '/smoke-rds.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -1078,7 +1094,7 @@ is( false !== strpos( $layer, 'header.et-l--header>.et_builder_inner_content' ),
  */
 echo "\nevery tool enqueues the host rules\n";
 
-foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos', 'rookie-hit-rates' ) as $tool ) {
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos', 'rookie-hit-rates', 'redraft-strategy' ) as $tool ) {
 	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
 	is(
 		false !== strpos( $src, 'statchasers_tool_header_layer_css()' ),
@@ -1094,7 +1110,7 @@ foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats'
 
 // And the width cap, which is what holds a tool at the site's content width.
 // rb-handcuffs shipped without it and grew with the window when zoomed out.
-foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos', 'rookie-hit-rates' ) as $tool ) {
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos', 'rookie-hit-rates', 'redraft-strategy' ) as $tool ) {
 	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
 	is(
 		false !== strpos( $src, 'statchasers_team_full_width_css()' ),
@@ -1735,10 +1751,44 @@ is( count( $rows ), 2, 'rows: a pair slug and a game segment of the right shape,
 is( $rows[0], array( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2', '2026-09-20' ), 'the kickoff date is kept for lastmod' );
 is( statchasers_matchup_games_rows( array( 'games' => array() ) ), null, 'a body without ok is not the index' );
 is( statchasers_matchup_games_rows( array( 'ok' => true, 'games' => array() ) ), array(), 'an empty index is a valid answer' );
-$xml = statchasers_matchup_games_sitemap( $rows );
-is( substr_count( $xml, '<url>' ), 2, 'one entry per game' );
-is( false !== strpos( $xml, '<loc>' . statchasers_matchup_url( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2' ) . '</loc>' ), true, 'at the dated address' );
-is( false !== strpos( $xml, '<lastmod>2026-09-20</lastmod>' ), true, 'with the kickoff date as lastmod' );
+$links = statchasers_matchup_games_links( $rows );
+is( count( $links ), 2, 'one link per game' );
+is( $links[0], array( 'loc' => statchasers_matchup_url( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2' ), 'mod' => '2026-09-20' ), 'at the dated address, the kickoff date as lastmod' );
+is( statchasers_matchup_games_links( array( array( 'a-vs-b', '2026-week-1', '' ) ) ), array( array( 'loc' => statchasers_matchup_url( 'a-vs-b', '2026-week-1' ) ) ), 'no date, no lastmod' );
+
+echo "\n/game-sitemap.xml, the game pages' own sitemap\n";
+is( statchasers_matchup_games_sitemap_url(), 'https://example.com/game-sitemap.xml', 'named by Rank Math\'s router' );
+is( statchasers_matchup_games_sitemap_url( 2 ), 'https://example.com/game-sitemap2.xml', 'and numbered past the first page' );
+is( statchasers_matchup_games_index_links( array(), 100 ), array(), 'no games, no index entry: the index never advertises an empty file' );
+is(
+	statchasers_matchup_games_index_links( $links, 100 ),
+	array( array( 'loc' => 'https://example.com/game-sitemap.xml', 'lastmod' => '2026-09-20' ) ),
+	'one index entry, lastmod the newest game'
+);
+is( count( statchasers_matchup_games_index_links( $links, 1 ) ), 2, 'paginated at Rank Math\'s items-per-page' );
+
+$saved_by_path = $GLOBALS['pages_by_path'] ?? null;
+$holder                     = new WP_Post();
+$holder->ID                 = 77;
+$holder->post_status        = 'publish';
+$GLOBALS['pages_by_path']   = array( STATCHASERS_MATCHUP_HOLDER => $holder );
+$providers                  = apply_filters( 'rank_math/sitemap/providers', array() );
+is( count( $providers ), 1, 'one provider joins Rank Math\'s' );
+$provider = $providers[0];
+is( $provider instanceof \RankMath\Sitemap\Providers\Provider, true, 'of the shape Rank Math asks for' );
+is( $provider->handles_type( 'game' ), true, 'it answers for game-sitemap.xml' );
+is( $provider->handles_type( 'page' ), false, 'and nothing else' );
+// The index fetch: no origin is configured in this harness, so the list is
+// empty and the provider stays out of the index rather than listing a 404.
+is( $provider->get_index_links( 100 ), array(), 'no games fetched, no index entry' );
+is( $provider->get_sitemap_links( 'game', 100, 1 ), array(), 'and an empty file' );
+$GLOBALS['pages_by_path'] = array();
+is( apply_filters( 'rank_math/sitemap/providers', array() ), array(), 'no holder page, no provider' );
+is( apply_filters( 'rank_math/sitemap/providers', 'not-an-array' ), 'not-an-array', 'a value that is not the list is left alone' );
+$GLOBALS['pages_by_path'] = $saved_by_path ?? array();
+$GLOBALS['rank_math_invalidated'] = array();
+statchasers_matchup_games_invalidate_sitemap();
+is( $GLOBALS['rank_math_invalidated'], array( 'game' ), 'a changed list drops only Rank Math\'s copy of this file' );
 
 /*
  * The matchup trail. Rank Math builds it from the holder, so it ended at the
@@ -1876,9 +1926,11 @@ $flush_rows = array(
 	'_transient_sc_sos_ssr_bak_6',
 	'_transient_sc_rhr_ssr_7',
 	'_transient_sc_rhr_ssr_bak_7',
+	'_transient_sc_rds_ssr_8',
+	'_transient_sc_rds_ssr_bak_8',
 );
 $GLOBALS['wpdb']->rows = $flush_rows;
-foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush', 'statchasers_rhr_flush' ) as $flush ) {
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush', 'statchasers_rhr_flush', 'statchasers_rds_flush' ) as $flush ) {
 	$flush();
 }
 is(
@@ -1897,12 +1949,13 @@ is(
 		'_transient_sc_rbh_ssr_bak_5',
 		'_transient_sc_sos_ssr_bak_6',
 		'_transient_sc_rhr_ssr_bak_7',
+		'_transient_sc_rds_ssr_bak_8',
 	),
 	'every tool\'s fresh copies go and every backup stays'
 );
 
 $GLOBALS['wpdb']->rows = $flush_rows;
-foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush', 'statchasers_rhr_flush' ) as $flush ) {
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush', 'statchasers_rhr_flush', 'statchasers_rds_flush' ) as $flush ) {
 	$flush( true );
 }
 is( array_values( $GLOBALS['wpdb']->rows ), array( '_transient_sc_teamXssr_ccc' ), 'the full cleanup takes the backups and indexes too, and nothing that only looks similar' );
@@ -2052,7 +2105,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'sospage', 'sosfallback', 'rhr', 'rhrleak', 'bdp', 'hostcss' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'bdp', 'hostcss' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

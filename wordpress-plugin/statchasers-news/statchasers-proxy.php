@@ -45,6 +45,8 @@ const STATCHASERS_PROXY_PATHS = array(
 	'#^embed/player-stats$#',
 	'#^embed/sos$#',
 	'#^embed/rookie-hit-rates/data$#',
+	'#^embed/redraft-strategy/data/(?:combo|trends)/[a-z0-9_]{1,60}$#',
+	'#^embed/redraft-strategy/data/boards$#',
 	'#^embed/rb-handcuffs/player/[A-Za-z0-9_-]{1,40}$#',
 	'#^api/news$#',
 );

@@ -283,6 +283,109 @@ body.scf-page {
   color: var(--sc-gold-deep);
 }
 
+
+/* ---------------------------------------------- answer, updated, seasons */
+
+/* The one sentence under the heading (fpa-seo.ts): the softest defense per
+   position. Reads as copy, not as chrome, so it sits in the text color at the
+   lead size rather than in a tinted box. */
+.scf-answer {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--sc-ink, #0b1220);
+  max-width: 72ch;
+}
+
+/* "Updated Oct 8, through Week 5". Standalone only; the WordPress page prints
+   the same line under its own H1. */
+.scf-updated {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+/* The link between the current table and the archive, one line of small type. */
+.scf-seasons {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--sc-muted-strong);
+}
+
+.scf-seasons-label {
+  font-weight: 700;
+}
+
+.scf-season-link {
+  color: var(--sc-navy);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+  padding-bottom: 1px;
+}
+
+.scf-season-link:hover {
+  color: var(--sc-gold-deep);
+}
+
+/* ---------------------------------------------------------------- related */
+
+/* The Related links, in the FAQ title's dress: the gold-barred heading and a
+   hairline list, the same block the SOS position pages close with. */
+.scf-related {
+  margin-top: 36px;
+}
+
+.scf-related-title {
+  position: relative;
+  margin: 0 0 6px;
+  padding-bottom: 10px;
+  color: var(--sc-navy);
+  font-size: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.scf-related-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.scf-related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scf-related-list a {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc-navy);
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+  padding-bottom: 1px;
+}
+
+.scf-related-list a:hover {
+  color: var(--sc-gold-deep);
+}
+
+/* The FAQ follows Related now, so it needs less of its own air above. */
+.scf-related + .scf-faq {
+  margin-top: 44px;
+}
+
 /* -------------------------------------------------------------------- faq */
 
 /*

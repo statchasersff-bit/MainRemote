@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr" | "depth";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr" | "rds" | "depth";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -204,6 +204,17 @@ const TOOLS: Tool[] = [
       path.startsWith("/rookie-hit-rates") ||
       path.startsWith("/preview/rookie-hit-rates") ||
       path.startsWith("/preview/raw/rookie-hit-rates"),
+  },
+  {
+    key: "rds",
+    label: "Redraft Strategy",
+    shortLabel: "Redraft",
+    shortcode: "statchasers_redraft_strategy",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/redraft-strategy") ||
+      path.startsWith("/preview/redraft-strategy") ||
+      path.startsWith("/preview/raw/redraft-strategy"),
   },
   {
     key: "depth",
@@ -375,6 +386,13 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/rookie-hit-rates";
     if (mount === "shortcode") return "/preview/rookie-hit-rates";
     return mount === "embed" ? "/rookie-hit-rates?embed=1" : "/rookie-hit-rates";
+  }
+
+  if (tool.key === "rds") {
+    // One page; the filters are its own controls.
+    if (mount === "fragment") return "/preview/raw/redraft-strategy";
+    if (mount === "shortcode") return "/preview/redraft-strategy";
+    return mount === "embed" ? "/redraft-strategy?embed=1" : "/redraft-strategy";
   }
 
   if (tool.key === "depth") {
