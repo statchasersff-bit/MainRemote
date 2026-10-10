@@ -37,6 +37,7 @@ import {
   renderView,
   type Widths,
 } from "../lib/redraft-strategy/render";
+import { rdsFaqFacts, renderRdsFaq } from "../lib/redraft-strategy/faq";
 import {
   chartView,
   compareChartRows,
@@ -189,6 +190,17 @@ function redrawView(t: Tool): void {
   hideTip(t);
 }
 
+/** The FAQ's sample sentences quote the open view; redrawn with the filters, open folds kept. */
+function redrawFaq(t: Tool): void {
+  const faq = el(t, "[data-scds-faq]");
+  if (!faq) return;
+  const open = new Set([...faq.querySelectorAll<HTMLDetailsElement>("details[open]")].map((d) => d.querySelector("h3")?.textContent ?? ""));
+  faq.outerHTML = renderRdsFaq(rdsFaqFacts(t.data, t.state.filters));
+  el(t, "[data-scds-faq]")?.querySelectorAll<HTMLDetailsElement>("details").forEach((d) => {
+    if (open.has(d.querySelector("h3")?.textContent ?? "")) d.open = true;
+  });
+}
+
 function redrawBar(t: Tool): void {
   const bar = el(t, "[data-scds-bar]");
   if (bar) bar.outerHTML = renderFilterBar(t.state.filters, t.state.glossaryOpen);
@@ -251,8 +263,10 @@ async function setFilters(t: Tool, change: Partial<Filters>): Promise<void> {
   // The reader may have moved on while this loaded.
   if (JSON.stringify(next) !== JSON.stringify(t.state.filters)) return;
   redrawBar(t);
-  if (ok) redrawView(t);
-  else {
+  if (ok) {
+    redrawView(t);
+    redrawFaq(t);
+  } else {
     const view = el(t, "[data-scds-view]");
     if (view) view.innerHTML = `<div class="scds-callout is-warn"><p>This view could not be loaded. Please try again.</p></div>`;
   }

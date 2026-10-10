@@ -10,6 +10,7 @@
  */
 
 import type { PlayerRenderOptions } from "../player-render";
+import { possessive } from "./title-case";
 import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
 import type { ScheduleGame } from "../team/schedule";
@@ -204,7 +205,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
     const share = snaps && team && c.pos !== "QB" ? `, on ${Math.round((snaps / team) * 100)}% of the offensive snaps` : "";
     out.push({
       key: "role",
-      q: `What is ${c.name}'s fantasy football role?`,
+      q: `What is ${possessive(c.name)} fantasy football role?`,
       a: `${c.name} is ${depth.order === 1 ? `the ${possessive(data.team?.nickname ?? "team")} starting ${depth.position}` : `${depth.position}${depth.order} on the ${data.team?.nickname ?? "team"} depth chart`}` +
         `${depth.next && depth.order === 1 ? `, with ${depth.next.name} behind him` : ""}. ` +
         `He is averaging ${usage}${share} in ${c.season}.`,
@@ -222,8 +223,8 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
     const soft = strip.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
     out.push({
       key: "matchups",
-      q: `What are ${c.name}'s upcoming fantasy football matchups?`,
-      a: `${c.name}'s next ${word(strip.length)} games are ${listWords(parts)}. ${cap(word(soft))} of them ${soft === 1 ? "is" : "are"} favorable by points allowed to the position.`,
+      q: `What are ${possessive(c.name)} upcoming fantasy football matchups?`,
+      a: `${possessive(c.name)} next ${word(strip.length)} games are ${listWords(parts)}. ${cap(word(soft))} of them ${soft === 1 ? "is" : "are"} favorable by points allowed to the position.`,
     });
   }
 
@@ -243,10 +244,10 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
     const lo = byPts[0]!, hi = byPts[byPts.length - 1]!;
     out.push({
       key: "range",
-      q: `What is ${c.name}'s fantasy floor and ceiling?`,
-      a: `This season ${c.name}'s floor has been ${one(c.pts(lo))} ${c.fmt} points (Week ${lo.week}${lo.pos_rank ? `, ${c.pos}${lo.pos_rank}` : ""}) and his ceiling ${one(c.pts(hi))} (Week ${hi.week}${hi.pos_rank ? `, ${c.pos}${hi.pos_rank}` : ""}). ` +
+      q: `What is ${possessive(c.name)} fantasy floor and ceiling?`,
+      a: `This season ${possessive(c.name)} floor has been ${one(c.pts(lo))} ${c.fmt} points (Week ${lo.week}${lo.pos_rank ? `, ${c.pos}${lo.pos_rank}` : ""}) and his ceiling ${one(c.pts(hi))} (Week ${hi.week}${hi.pos_rank ? `, ${c.pos}${hi.pos_rank}` : ""}). ` +
         `His median week has been ${one(median(c.played.map(c.pts)))} points.`,
-      link: { href: tabHref(data, options, "game-log"), text: `See ${c.last}'s full game log.` },
+      link: { href: tabHref(data, options, "game-log"), text: `See ${possessive(c.last)} full game log.` },
     });
   }
 
@@ -255,7 +256,6 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 /** "Cardinals'", "Jets'", but "Arizona's". */
-const possessive = (s: string): string => (s.endsWith("s") ? `${s}'` : `${s}'s`);
 function median(v: number[]): number {
   const s = [...v].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
@@ -318,7 +318,7 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
       if (t.passAtt) {
         out.push({
           key: "cmp",
-          q: `What is ${c.name}'s completion percentage?`,
+          q: `What is ${possessive(c.name)} completion percentage?`,
           a: `${c.name} is completing ${((t.passCmp / t.passAtt) * 100).toFixed(1)}% of his passes in ${c.season}, ${t.passCmp} of ${t.passAtt}, at ${(t.passYd / t.passAtt).toFixed(1)} yards per attempt.`,
         });
       }
@@ -422,7 +422,7 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
           : `caught ${p.rec} of ${count(p.tgt, "target")} for ${whole(p.recYd)} yards and ${count(p.recTd, "touchdown")}`;
     out.push({
       key: "last",
-      q: `What were ${c.name}'s stats last season?`,
+      q: `What were ${possessive(c.name)} stats last season?`,
       a: `In ${prev.season}, ${c.name} ${body} in ${count(prev.gamesPlayed, "game")}. That was ${one(prev.points)} ${c.fmt} points (${one(prev.ppg)} per game)` +
         (prev.finish ? `, ${aPos(c.pos)} ${c.pos}${prev.finish} finish.` : "."),
     });
@@ -439,7 +439,7 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
           : `${k.rec} catches for ${whole(k.recYd)} yards and ${count(k.recTd, "touchdown")}`;
     out.push({
       key: "career",
-      q: `What are ${c.name}'s career NFL stats?`,
+      q: `What are ${possessive(c.name)} career NFL stats?`,
       a: `Across ${count(tot.seasons, "season")} and ${count(tot.gamesPlayed, "game")}, ${c.name} has ${body}, for ${one(tot.points)} ${c.fmt} fantasy points (${one(tot.ppg)} per game).`,
     });
     const tds = k.passTd + k.rushTd + k.recTd;
@@ -550,7 +550,7 @@ export function gameLogPool(data: PlayerPageData, options: PlayerRenderOptions):
   if (before) {
     out.push({
       key: "week",
-      q: `What were ${c.name}'s stats in Week ${before.week}?`,
+      q: `What were ${possessive(c.name)} stats in Week ${before.week}?`,
       a: `In Week ${before.week} ${vs(c, before.week, before.opp)}, ${result(c, before)}, ${c.name} ${line(c, before)}. That was ${one(c.pts(before))} ${c.fmt} points${finishOf(c, before)}.`,
     });
   }
@@ -560,13 +560,13 @@ export function gameLogPool(data: PlayerPageData, options: PlayerRenderOptions):
     const best = sorted[0]!, worst = sorted[sorted.length - 1]!;
     out.push({
       key: "best",
-      q: `What was ${c.name}'s best game this season?`,
-      a: `${c.name}'s best ${c.season} game was Week ${best.week} ${vs(c, best.week, best.opp)}: ${one(c.pts(best))} ${c.fmt} points${finishOf(c, best)}. He ${line(c, best)}.`,
+      q: `What was ${possessive(c.name)} best game this season?`,
+      a: `${possessive(c.name)} best ${c.season} game was Week ${best.week} ${vs(c, best.week, best.opp)}: ${one(c.pts(best))} ${c.fmt} points${finishOf(c, best)}. He ${line(c, best)}.`,
     });
     out.push({
       key: "worst",
-      q: `What was ${c.name}'s worst game this season?`,
-      a: `${c.name}'s lowest-scoring ${c.season} game was Week ${worst.week} ${vs(c, worst.week, worst.opp)}: ${one(c.pts(worst))} ${c.fmt} points${finishOf(c, worst)}. He ${line(c, worst)}.`,
+      q: `What was ${possessive(c.name)} worst game this season?`,
+      a: `${possessive(c.name)} lowest-scoring ${c.season} game was Week ${worst.week} ${vs(c, worst.week, worst.opp)}: ${one(c.pts(worst))} ${c.fmt} points${finishOf(c, worst)}. He ${line(c, worst)}.`,
     });
   }
 
@@ -591,10 +591,10 @@ export function gameLogPool(data: PlayerPageData, options: PlayerRenderOptions):
   if (seasons.length) {
     out.push({
       key: "archive",
-      q: `Can I see ${c.name}'s game logs from previous seasons?`,
+      q: `Can I see ${possessive(c.name)} game logs from previous seasons?`,
       a: seasons.length === 1
-        ? `Yes. The season selector above the game log switches it to ${c.last}'s weekly results from ${seasons[0]}.`
-        : `Yes. The season selector above the game log switches it to ${c.last}'s weekly results from any season from ${Math.min(...seasons)} through ${Math.max(...seasons)}.`,
+        ? `Yes. The season selector above the game log switches it to ${possessive(c.last)} weekly results from ${seasons[0]}.`
+        : `Yes. The season selector above the game log switches it to ${possessive(c.last)} weekly results from any season from ${Math.min(...seasons)} through ${Math.max(...seasons)}.`,
     });
   }
   return out;

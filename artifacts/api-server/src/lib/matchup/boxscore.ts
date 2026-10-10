@@ -540,6 +540,7 @@ const cache = createKeyedCache<GameBoxscore>({
 const STORE_DIR = dataPath("matchup", "boxscores");
 let storeStamp = "";
 let storedSummaries = new Map<string, EspnSummary>();
+let storedFetchedAt = new Map<string, string>();
 const storedParsed = new Map<string, GameBoxscore | null>();
 
 function storeFiles(): Array<{ file: string; stamp: string }> {
@@ -561,23 +562,37 @@ function storedSummary(eventId: string): EspnSummary | undefined {
   const stamp = files.map((f) => f.stamp).join("|");
   if (stamp !== storeStamp) {
     const next = new Map<string, EspnSummary>();
+    const fetched = new Map<string, string>();
     for (const { file } of files) {
       try {
         const games = (JSON.parse(fs.readFileSync(file, "utf8")) as {
-          games?: Record<string, { summary?: EspnSummary }>;
+          games?: Record<string, { summary?: EspnSummary; fetchedAt?: string }>;
         }).games;
         for (const [id, game] of Object.entries(games ?? {})) {
           if (game.summary) next.set(id, game.summary);
+          if (typeof game.fetchedAt === "string") fetched.set(id, game.fetchedAt);
         }
       } catch {
         // An unreadable season falls through to ESPN, the same as a missing one.
       }
     }
     storedSummaries = next;
+    storedFetchedAt = fetched;
     storedParsed.clear();
     storeStamp = stamp;
   }
   return storedSummaries.get(eventId);
+}
+
+/**
+ * When the stored copy of a game's stats was last pulled, ISO, or null for a
+ * game not in the store. The sitemap's lastmod for a dated page: a box score
+ * changes only when the builder re-pulls it after a stat correction.
+ */
+export function storedBoxscoreFetchedAt(eventId: string | null): string | null {
+  if (!eventId) return null;
+  storedSummary(eventId);
+  return storedFetchedAt.get(eventId) ?? null;
 }
 
 /** Exposed for tests: the summary document as the page reads it. */

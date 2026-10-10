@@ -31,6 +31,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
@@ -392,16 +393,16 @@ function renderTake(m: Model): string {
 function outlookLede(m: Model): string {
   if (!m.preseason && m.now?.rank) {
     return (
-      `${m.name}'s fantasy outlook for the rest of ${m.season}: ${m.pos}${m.now.rank} through ` +
+      `${possessive(m.name)} fantasy outlook for the rest of ${m.season}: ${m.pos}${m.now.rank} through ` +
       `Week ${m.week} at ${one(m.now.ppg)} ${m.scoring} points per game.`
     );
   }
   if (!m.preseason) {
-    return `${m.name}'s fantasy outlook for the rest of ${m.season}, from his role, his usage and the matchups ahead.`;
+    return `${possessive(m.name)} fantasy outlook for the rest of ${m.season}, from his role, his usage and the matchups ahead.`;
   }
   const projected = m.projected ? `: projected as ${preseasonWords(m.pos, m.projected)}` : "";
   const prior = m.prior?.rank ? ` He finished ${m.pos}${m.prior.rank} in ${m.prior.season} at ${one(m.prior.ppg)} points per game.` : "";
-  return `${m.name}'s ${m.season} fantasy outlook${projected}.${prior}`;
+  return `${possessive(m.name)} ${m.season} fantasy outlook${projected}.${prior}`;
 }
 
 /* --------------------------------------------- section 2: expectation check */
@@ -589,7 +590,7 @@ function renderRead(m: Model, data: PlayerPageData): string {
   const rc =
     `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
     `<p>${escapeHtml(
-      `This outlook explains the why. Redraft Command gives you the number: ${m.last}'s rest-of-season rank and trade value for your league's scoring, updated after every game.`,
+      `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rest-of-season rank and trade value for your league's scoring, updated after every game.`,
     )}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}</a>` +
     `</div>`;
@@ -835,7 +836,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   if (tier && m.chips) {
     pool.push({
       key: "outlook",
-      q: `What is ${m.name}'s fantasy outlook for ${ros}?`,
+      q: `What is ${possessive(m.name)} fantasy outlook for ${ros}?`,
       a: `${m.name} projects as ${/^[aeiou]/i.test(tier) ? "an" : "a"} ${tier.charAt(0).toLowerCase() + tier.slice(1)} for ${ros}: ${fitSentence(m)}.` +
         (top && top.tier === "good" ? ` His ${drv(top)} supports that.` : "") +
         (weak ? ` His ${drv(weak)} holds him back.` : ""),
@@ -847,7 +848,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   if (m.rank !== null) {
     pool.push({
       key: "rosrank",
-      q: `What is ${m.name}'s rest-of-season fantasy ranking?`,
+      q: `What is ${possessive(m.name)} rest-of-season fantasy ranking?`,
       a: `${m.name} is the ${m.pos}${m.rank} in ${m.scoring} points per game${through}` +
         (m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
         `. That puts him in ${bucket(m.pos, m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
@@ -874,7 +875,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   if (depth) {
     pool.push({
       key: "role",
-      q: `What is ${m.name}'s projected role going forward?`,
+      q: `What is ${possessive(m.name)} projected role going forward?`,
       a: depth.order === 1
         ? `${m.name} is the listed starting ${depth.position}${depth.next ? `, with ${depth.next.name} next on the depth chart` : ""}. ` +
           (m.injured ? `He is ${m.injured.toLowerCase()} for now, which puts that role on hold.` : `Nothing on the chart threatens the job, so the role is his to lose on performance.`)
@@ -891,7 +892,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     pool.push({
       key: "volume",
       q: `Will ${m.name} get more ${noun}?`,
-      a: `${m.name}'s ${noun} are ${steady ? "holding steady" : diff > 0 ? "trending up" : "trending down"}: ${one(recent)} a game over his last two games against ${one(season)} for the season.` +
+      a: `${possessive(m.name)} ${noun} are ${steady ? "holding steady" : diff > 0 ? "trending up" : "trending down"}: ${one(recent)} a game over his last two games against ${one(season)} for the season.` +
         (m.pos === "QB" ? ` Game script drives much of that, and trailing teams throw more.` : ` His share of the offense is what his fantasy value rides on.`),
     });
   }
@@ -906,8 +907,8 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     if (fav.length) parts.push(`${matchupList(fav)} ${fav.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s`);
     pool.push({
       key: "upside",
-      q: `What is ${m.name}'s fantasy football upside?`,
-      a: `${m.name}'s upside: ${listWords(parts)}.`,
+      q: `What is ${possessive(m.name)} fantasy football upside?`,
+      a: `${possessive(m.name)} upside: ${listWords(parts)}.`,
     });
   }
 
@@ -921,8 +922,8 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   if (risks.length) {
     pool.push({
       key: "risk",
-      q: `What could hurt ${m.name}'s fantasy value?`,
-      a: `${m.name}'s risks: ${listWords(risks)}.`,
+      q: `What could hurt ${possessive(m.name)} fantasy value?`,
+      a: `${possessive(m.name)} risks: ${listWords(risks)}.`,
       link: ((href) => (href ? { href, text: `See his injury status and history.` } : null))(sectionHref(data, options, "injury")),
     });
   }
@@ -934,7 +935,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     const hard = strip.filter((g) => matchupBand(g.matchup!.rank) === "tough").length;
     pool.push({
       key: "schedule",
-      q: `How difficult is ${m.name}'s remaining fantasy schedule?`,
+      q: `How difficult is ${possessive(m.name)} remaining fantasy schedule?`,
       a: `${soft > hard ? "Favorable" : hard > soft ? "Difficult" : "About average"}: of his next ${word(strip.length)} games, ${soft} ${soft === 1 ? "comes" : "come"} against a top-10 matchup for ${m.pos}s and ${hard} against one of the stingiest defenses, by ${m.scoring} points allowed to the position.`,
     });
   }

@@ -24,6 +24,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.join(HERE, "..", "data", "redraft-strategy");
 const model = await importModule("lib/redraft-strategy/model");
 const charts = await importModule("lib/redraft-strategy/charts");
+const faq = await importModule("lib/redraft-strategy/faq");
 const fixture = JSON.parse(readFileSync(path.join(HERE, "fixtures", "redraft-strategy-source-2026-10-10.json"), "utf8"));
 const combo = (key) => JSON.parse(readFileSync(path.join(DATA, "combos", `${key}.json`), "utf8"));
 const trend = (key) => JSON.parse(readFileSync(path.join(DATA, "trends", `${key}.json`), "utf8"));
@@ -153,6 +154,46 @@ describe("the model reproduces the standalone app", () => {
   });
 });
 
+describe("the FAQ", () => {
+  const data = () => ({
+    summary: {}, boards: [],
+    combos: { one_qb__ppr__no_tep__12__2025: combo("one_qb__ppr__no_tep__12__2025") },
+    trends: { one_qb__ppr__no_tep__12: trend("one_qb__ppr__no_tep__12") },
+  });
+
+  test("quotes the open sample: season, format, counts, the two best strategies and Robust RB", () => {
+    const facts = faq.rdsFaqFacts(data(), model.DEFAULT_FILTERS);
+    assert.equal(facts.sample, "2025, 12-team, 1QB, PPR");
+    assert.equal(facts.leagues, 4208);
+    assert.equal(facts.teams, 50496);
+    assert.deepEqual(facts.top.map((r) => r.strategy), ["Late QB", "Robust RB"]);
+    const entries = faq.rdsFaqEntries(facts);
+    assert.equal(entries.length, 26);
+    assert.match(entries[0].answer, /For the currently selected 2025, 12-team, 1QB, PPR sample, Late QB and Robust RB produced the highest playoff rates/);
+    assert.match(entries[0].answer, /Late QB teams made the playoffs 54\.2% of the time, while Robust RB teams reached the playoffs at a 54\.1% rate\./);
+    assert.match(entries[2].answer, /includes 4,208 leagues and 50,496 drafted teams/);
+    assert.match(entries[4].answer, /if the league-average playoff rate is 50\.0% and a strategy has a 54\.2% playoff rate, it is shown as \+4\.2 percentage points/);
+    assert.match(entries[8].answer, /Robust RB teams posted a 54\.1% playoff rate and a 9\.5% championship rate/);
+    assert.doesNotMatch(entries.map((x) => x.answer).join(" "), /—/, "no em dashes");
+  });
+
+  test("names the comparison and its team total when 2021-2025 is open", () => {
+    const facts = faq.rdsFaqFacts(data(), { ...model.DEFAULT_FILTERS, season: "compare" });
+    assert.equal(facts.sample, "2021-2025, 12-team, 1QB, PPR");
+    assert.equal(facts.leagues, null);
+    assert.equal(facts.teams, 10857 + 49527 + 35404 + 40902 + 50496);
+    assert.match(faq.rdsFaqEntries(facts)[2].answer, /comparison includes 187,186 drafted teams across the five seasons/);
+  });
+
+  test("leaves the sample sentences out when the view's data is not loaded", () => {
+    assert.equal(faq.rdsFaqFacts(data(), { ...model.DEFAULT_FILTERS, size: "10" }), null);
+    const entries = faq.rdsFaqEntries(null);
+    assert.equal(entries.length, 26);
+    assert.doesNotMatch(entries[0].answer, /currently selected/);
+    assert.match(entries[4].answer, /\+4\.2 percentage points/);
+  });
+});
+
 describe("the chart", () => {
   test("snaps its axis to 5pp steps around the bars and marks the neutral band", () => {
     const data = combo("one_qb__ppr__no_tep__12__2025");
@@ -215,6 +256,10 @@ describe("routes", () => {
     assert.equal((html.match(/class="scds-cell is-/g) ?? []).length, 180, "a 12-team, 15-round board");
     assert.match(html, /data-board-label="12-Team PPR · Slot 1 goes Robust RB"/);
     assert.match(html, /data-scds-data="\/embed\/redraft-strategy\/data"/);
+    assert.equal((html.match(/<details class="scds-faq-item">/g) ?? []).length, 26, "the FAQ, every question folded");
+    assert.match(html, /<h2 id="scds-faq-title" class="scds-faq-title">Frequently Asked Questions<\/h2>/);
+    assert.match(html, /Late QB teams made the playoffs 54\.2% of the time/);
+    assert.doesNotMatch(html, /FAQPage/, "no FAQ schema without approval");
     assert.doesNotMatch(html, /—/, "no em dashes");
     assert.doesNotMatch(html, /sleeper/i, "no source names");
     assert.doesNotMatch(html, /sleepercdn|espncdn/, "no outside image hosts");

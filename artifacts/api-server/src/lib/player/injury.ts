@@ -19,6 +19,7 @@
  */
 
 import { surname } from "./bio";
+import { possessive } from "./title-case";
 import { loadInjuries } from "./data";
 
 export type InjurySeverity = "minor" | "moderate" | "major";
@@ -481,7 +482,7 @@ export function injuryFaq(input: {
   const worstMissed = worst?.gamesMissed ?? 0;
 
   faq.push({
-    question: `What is ${name}'s injury history?`,
+    question: `What is ${possessive(name)} injury history?`,
     answer:
       `${last} has ${history.length} logged NFL ` +
       `injur${history.length === 1 ? "y" : "ies"}, affecting the ` +
@@ -501,9 +502,9 @@ export function injuryFaq(input: {
   if (latest) {
     const when = latest.week === 0 ? `in the ${latest.season} preseason` : `in ${latest.season}`;
     faq.push({
-      question: `What was ${name}'s most recent injury?`,
+      question: `What was ${possessive(name)} most recent injury?`,
       answer:
-        `${last}'s most recent recorded injury was ${article(injuryName(latest))} ` +
+        `${possessive(last)} most recent recorded injury was ${article(injuryName(latest))} ` +
         `${injuryName(latest)} ${when}.` +
         ((latest.gamesMissed ?? 0) > 0
           ? ` It cost ${games(latest.gamesMissed ?? 0)}.`
@@ -553,7 +554,7 @@ export function injuryFaq(input: {
     faq.push({
       question: `Has ${name} had any recurring injuries?`,
       answer:
-        `No. ${last}'s logged injuries have affected ${parts.length} different ` +
+        `No. ${possessive(last)} logged injuries have affected ${parts.length} different ` +
         `areas of the body rather than the same one repeatedly, so the record ` +
         `shows no recurring pattern.`,
     });
@@ -563,10 +564,10 @@ export function injuryFaq(input: {
 
   if (worst) {
     faq.push({
-      question: `What was ${name}'s worst injury?`,
+      question: `What was ${possessive(name)} worst injury?`,
       answer:
         worstMissed > 0
-          ? `The ${worstName} caused the longest absence in ${last}'s record, ` +
+          ? `The ${worstName} caused the longest absence in ${possessive(last)} record, ` +
             `costing ${games(worstMissed)}.`
           : `No logged injury has cost ${last} a regular-season game. The most ` +
             `serious on record is the ${worstName}.`,

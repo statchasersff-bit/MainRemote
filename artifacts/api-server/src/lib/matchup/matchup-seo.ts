@@ -12,7 +12,7 @@ import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
 import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
-import { scoreboardTitleCandidates } from "./scoreboard-hero";
+import { scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
 import { fitTitle, TITLE_MAX } from "../title-fit";
 
 const SITE_NAME = "StatChasers";
@@ -64,7 +64,10 @@ export function matchupScoreLine(data: MatchupData): string {
  */
 function withRecap(meta: TeamPageMeta, data: MatchupData, canonical: string): TeamPageMeta {
   const share = matchupShare(data);
-  const description = recapDescription(data);
+  // A game address wrote its own description (the brief's "Winner pts, Loser
+  // pts on Mon D, Year: full box score..."); only the pair's page takes the
+  // recap's.
+  const description = data.pinned ? meta.description : recapDescription(data);
   if (!share || !description) return meta;
   let url: string | null = null;
   try {
@@ -104,23 +107,24 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     const label = data.pinned.weekLabel;
     const game = matchupScoreboardGame(data);
     return {
-      // "Cardinals vs Rams Wild Card 2021: Final Score 34–11, Stats & Recap",
-      // from the same game object the hero draws, so the two cannot disagree
-      // about the order, the round or the score.
+      // "Steelers vs Browns Player Stats & Box Score, Week 4 2026" (the SEO
+      // brief of 2026-10-10), from the same game object the hero draws, so
+      // the two cannot disagree about the order or the round. MIRRORED by
+      // statchasers_matchup_game_meta() in the plugin for an API that sends
+      // no title header.
       title: fitMatchupTitle(
         game
           ? scoreboardTitleCandidates(game)
           : [
-              `${names}, ${label} ${gameSeason} Box Score`,
-              `${short}, ${label} ${gameSeason} Box Score`,
-              `${short}, ${label} ${gameSeason}`,
+              `${short} Player Stats & Box Score, ${label} ${gameSeason}`,
+              `${short} Box Score, ${label} ${gameSeason}`,
+              `${short} Box Score, ${label}`,
             ],
       ),
-      description:
-        `${scored ? `${scored} ` : ""}Full box score from ${a.nickname} vs ` +
-        `${b.nickname} in ${data.pinned.seasonType === "post" ? "the " : ""}${label} of ` +
-        `${gameSeason}: quarter-by-quarter scoring, every passing, rushing and ` +
-        `receiving line, snap counts and fantasy points.`,
+      description: game
+        ? scoreboardPageDescription(game)
+        : `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname}, ${label} ${gameSeason}: ` +
+          `full box score, fantasy points for every player, scoring summary and team stats.`,
       canonical,
       siteName: SITE_NAME,
     };
@@ -137,8 +141,19 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     const long =
       `${label} ${week} fantasy football preview with start/sit recommendations, projections, ` +
       `matchup data, injuries, usage and points allowed by position.`;
+    // With a last meeting summarized above the preview (the SEO brief of
+    // 2026-10-10) the title says so: "Falcons vs Saints Week 17 2026:
+    // Fantasy Preview & Last Meeting Stats", the year dropped when it runs
+    // past sixty. A pair meeting for the first time keeps the 2026-10-05
+    // wording.
+    const title = data.lastMeeting
+      ? fitMatchupTitle([
+          `${label} ${week} ${pv.meeting.season}: Fantasy Preview & Last Meeting Stats`,
+          `${label} ${week}: Fantasy Preview & Stats`,
+        ])
+      : fitMatchupTitle([`${label} Fantasy Football Matchup Preview - ${week}`]);
     return {
-      title: fitMatchupTitle([`${label} Fantasy Football Matchup Preview - ${week}`]),
+      title,
       description:
         long.length <= 160
           ? long

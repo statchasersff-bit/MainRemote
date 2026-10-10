@@ -7,9 +7,11 @@
  * team hub: a URL under /nfl/ that is not a matchup is not a page.
  *
  * Beneath the pair, one address per meeting: /nfl/<a>-vs-<b>/2026-week-1/. It
- * exists only once the pair's own page has stopped leading with that game -
- * inside RECENT_WINDOW_MS the dated URL 301s up to the pair, so the recap has
- * exactly one address at any moment and the two never compete.
+ * is canonical at its own address only once the pair's own page has stopped
+ * owning that game (pairOwnsMeeting in lib/matchup/pair.ts) - while the pair's
+ * page owns it the dated URL renders with its canonical pointing up at the
+ * pair, so the recap has exactly one canonical address at any moment and the
+ * two never compete. (A 301 until 2026-10-10.)
  */
 
 import { Router, type IRouter, type Request, type Response } from "express";
@@ -139,27 +141,23 @@ async function sendMatchupPage(
 ): Promise<void> {
   const embed = isEmbed(req);
   try {
+    const canonical = canonicalUrl(req);
     const result = await renderMatchupAppPage(publicDir, pair, {
-      canonical: canonicalUrl(req),
+      canonical,
+      // The pair's address on this origin, spelled from the game's: the
+      // owned dated page's canonical.
+      pairCanonical: game ? canonical.replace(/\/[^/]+\/?$/, "/") : undefined,
       embed,
       linkQuery: embed ? "?embed=1" : "",
       game,
     });
 
-    // Both answers are cheap to reach and expensive to guess: whether the week
-    // exists, and whether the pair page has let go of it, are facts about the
-    // schedule that only the data layer has. The render that produced them is
-    // discarded on these two paths, which costs one cached build on a request
-    // that was never going to be a page.
+    // Whether the week exists is a fact about the schedule that only the data
+    // layer has. The render that produced the answer is discarded on this
+    // path, which costs one cached build on a request that was never going to
+    // be a page.
     if (result.pinnedMissing) {
       notFound(res);
-      return;
-    }
-    if (result.pinnedIsCurrent) {
-      res.redirect(
-        301,
-        `${matchupPath(MATCHUP_PATH_PREFIX, pair.slug)}${embed ? "?embed=1" : ""}`,
-      );
       return;
     }
     const dev = liveReload().enabled;
@@ -284,9 +282,10 @@ router.get("/embed/matchup/:pair", (req, res) => {
         .set("X-Matchup-Description", encodeURIComponent(result.description))
         .set("X-Matchup-Image", result.shareImage?.path ?? "")
         .set("X-Matchup-Image-Alt", encodeURIComponent(result.shareImage?.alt ?? ""))
-        // "current" tells the plugin the pair page is still leading with this
-        // game, so the dated WordPress URL must 301 up to the pair's - the
-        // mirror of what this origin's own route does above. Empty when the
+        // "current" tells the plugin the pair page owns this game, so the
+        // dated WordPress URL canonicalizes up to the pair's and prints no
+        // SportsEvent - the mirror of what this origin's own page does.
+        // "archived" is a page canonical at its own address. Empty when the
         // request was not a game address at all.
         .set(
           "X-Matchup-Game",

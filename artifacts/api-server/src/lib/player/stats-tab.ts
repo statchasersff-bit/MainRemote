@@ -36,6 +36,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation } from "../team/teams";
@@ -950,7 +951,7 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
   // 3. The forward call.
   paragraphs.push(
     escapeHtml("Career numbers describe the past; for what he is worth from here, ") +
-      a(redraft, `see ${last}'s rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
+      a(redraft, `see ${possessive(last)} rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
       ".",
   );
 

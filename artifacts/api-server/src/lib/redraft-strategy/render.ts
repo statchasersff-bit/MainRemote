@@ -22,6 +22,7 @@
 import { escapeHtml, escapeJsonLd } from "../render";
 import { headshotPath } from "../image-urls";
 import { renderRankingChart } from "./charts";
+import { rdsFaqFacts, renderRdsFaq } from "./faq";
 import {
   CHART_METRICS,
   COMPARE_ROUND_MIN_SAMPLE,
@@ -802,6 +803,9 @@ export function renderRdsPage(data: Dataset, state: State, options: RdsRenderOpt
     renderGlossary(state.glossaryOpen) +
     renderContextBar(f, combo, trend, data.summary) +
     `<div class="scds-view" data-scds-view>${renderView(data, state, widths)}</div>` +
+    // Outside .scds-view, so a view redraw leaves the open folds alone; the
+    // bundle redraws it on a filter change, when its sample sentences move.
+    renderRdsFaq(rdsFaqFacts(data, f)) +
     `<div class="scds-tip" data-scds-tip hidden role="tooltip"></div>` +
     renderMetaIsland(options) +
     `</div>`

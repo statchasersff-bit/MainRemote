@@ -29,7 +29,7 @@ import {
   type PlayerPageData,
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
-import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
+import { dataModified, hubPersonNode, playerPageMeta, renderPlayerHeadTags } from "./player-seo";
 import { bioPersonNode } from "./player/bio-seo";
 import { injuryAnswer } from "./player/injury-tab";
 import { LruCache } from "./lru";
@@ -183,9 +183,18 @@ function pageDataIsland(
         ...(options.section === "bio" && data.bioPage
           ? { person: bioPersonNode(data, data.bioPage), index: data.bioPage.indexable }
           : {}),
+        // The hub (the SEO brief of 2026-10-10): the same Person with his
+        // club, for a ProfilePage of its own.
+        ...(!options.section && hubPersonNode(data) ? { person: hubPersonNode(data) } : {}),
         // Injury: the date in the title, for the WebPage node's dateModified
-        // (mak, 2026-10-09). ISO, Eastern.
-        ...(options.section === "injury" ? { modified: injuryAnswer(data)?.updated ?? null } : {}),
+        // (mak, 2026-10-09). ISO, Eastern. The hub, Stats, Game Log and
+        // Outlook: the day of his latest game (dataModified), for the same
+        // node (the brief of 2026-10-10).
+        ...(options.section === "injury"
+          ? { modified: injuryAnswer(data)?.updated ?? null }
+          : !options.section || ["stats", "game-log", "outlook"].includes(options.section)
+            ? { modified: dataModified(data) }
+            : {}),
       }),
     ) +
     `</script>`

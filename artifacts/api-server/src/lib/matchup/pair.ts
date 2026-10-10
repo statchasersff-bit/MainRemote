@@ -30,23 +30,30 @@ export interface MatchupPair {
 const SEPARATOR = "-vs-";
 
 /**
- * How long a finished meeting keeps the pair's own address to itself.
+ * How close the pair's next meeting has to be before the pair's own address
+ * turns into its preview.
  *
- * Two weeks: long enough that a result is still the thing a reader arriving at
- * the pair's address is asking about, and short enough that the takeaways -
- * which are advice for the coming week - come off the page while they are still
- * true. A Sunday game therefore keeps the recap layout through the Sunday after
- * it, and lets go on the second Monday.
+ * Six days (the SEO brief of 2026-10-10): the searches a pair's address earns
+ * are "{team} vs {team} match player stats", and a page that switched to a
+ * preview the Tuesday after a divisional game was answering them with a game
+ * thirteen weeks away. So the pair's page keeps the latest result - the full
+ * recap and box score - until the rematch is within six days, and goes back
+ * to it once the rematch has been played.
  *
  * It lives here, beside the two functions that spell an address, because it is
- * the rule that decides WHICH address a finished game has: inside the window
- * the recap is the pair's page and the dated URL 301s up to it, outside it the
- * dated URL is the page. matchup-data.ts applies it when it decides what to
- * lead with, and anything building a link to a past meeting - the schedule
- * board's row links, for one - has to ask the same question or it generates
- * redirects.
+ * the rule that decides WHICH address a finished game is canonical at: while
+ * the pair's page owns a game, the dated URL canonicalizes up to it and stays
+ * out of the sitemap; once the pair's page has moved on, the dated URL is the
+ * page. matchup-data.ts applies it when it decides what to lead with, and
+ * anything building a link to a past meeting - the schedule board's row
+ * links, for one - has to ask the same question or it links to a page that
+ * declares itself a copy.
+ *
+ * Was a fourteen-day window ("RECENT_WINDOW_MS") until 2026-10-10, after which
+ * the pair's page let the game go whatever came next; a pair with no rematch
+ * now keeps its latest game for the rest of the season.
  */
-export const RECENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+export const PREVIEW_WINDOW_MS = 6 * 24 * 60 * 60 * 1000;
 
 /** A game still counts as upcoming this long after its listed kickoff. */
 export const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000;
@@ -61,25 +68,77 @@ export function isUpcomingFixture(isFinal: boolean, kickoffMs: number | null, no
   return !isFinal && (kickoffMs === null || kickoffMs + IN_PROGRESS_GRACE_MS > now);
 }
 
+/** What the ownership rule needs to know about one of a pair's meetings. */
+export interface MeetingFacts {
+  kickoffMs: number | null;
+  isFinal: boolean;
+}
+
 /**
- * Does this finished meeting have a dated address of its own yet?
+ * Is the pair's own address in preview mode for its next meeting?
  *
- * False while it is still what the pair's page leads with, and false for
+ * `meetings` is every meeting between the two this season, played or not.
+ * Preview mode when there is a meeting ahead and either nothing has been
+ * played yet (there is no result to own) or the meeting ahead kicks off
+ * within PREVIEW_WINDOW_MS. An undated fixture is not within six days of
+ * anything, so a played game keeps the page until the league dates it.
+ */
+export function pairInPreviewMode(meetings: readonly MeetingFacts[], now: number): boolean {
+  const next = nextMeeting(meetings, now);
+  if (!next) return false;
+  if (!meetings.some((m) => m.isFinal && m.kickoffMs !== null)) return true;
+  return next.kickoffMs !== null && next.kickoffMs - now <= PREVIEW_WINDOW_MS;
+}
+
+/** The earliest upcoming meeting, undated ones last. */
+function nextMeeting(meetings: readonly MeetingFacts[], now: number): MeetingFacts | null {
+  let next: MeetingFacts | null = null;
+  for (const m of meetings) {
+    if (!isUpcomingFixture(m.isFinal, m.kickoffMs, now)) continue;
+    if (!next) next = m;
+    else if (m.kickoffMs !== null && (next.kickoffMs === null || m.kickoffMs < next.kickoffMs)) next = m;
+  }
+  return next;
+}
+
+/**
+ * Is this finished meeting the one the pair's own address owns right now?
+ *
+ * The latest played meeting of the current season, while the pair's page is
+ * not in preview mode. Only one game is ever owned, and a game from an
+ * earlier season never is: those are archives at their own addresses.
+ */
+export function pairOwnsMeeting(
+  game: MeetingFacts & { season: number },
+  meetings: readonly MeetingFacts[],
+  currentSeason: number,
+  now: number,
+): boolean {
+  if (!game.isFinal || game.kickoffMs === null || game.season !== currentSeason) return false;
+  const later = meetings.some((m) => m.isFinal && m.kickoffMs !== null && m.kickoffMs > game.kickoffMs!);
+  if (later) return false;
+  return !pairInPreviewMode(meetings, now);
+}
+
+/**
+ * Is this finished meeting canonical at a dated address of its own?
+ *
+ * False while the pair's page owns it (pairOwnsMeeting), and false for
  * anything that is not a finished game with a kickoff behind it - there is no
  * recap of a fixture, so there is no dated page for one either.
  *
- * `rematchAhead` is whether the two clubs still have an upcoming meeting this
- * season. Upcoming beats recent on the pair's page, so a divisional game
- * inside the window is already let go of and its recap lives at the dated URL.
+ * `meetings` is every meeting between the two in the game's season,
+ * including this one; `currentSeason` is the league's. A game from a season
+ * before it always has its own address.
  */
 export function meetingHasOwnAddress(
-  kickoffMs: number | null,
-  isFinal: boolean,
+  game: MeetingFacts & { season: number },
+  meetings: readonly MeetingFacts[],
+  currentSeason: number,
   now: number,
-  rematchAhead = false,
 ): boolean {
-  if (!isFinal || kickoffMs === null) return false;
-  return rematchAhead || now - kickoffMs > RECENT_WINDOW_MS;
+  if (!game.isFinal || game.kickoffMs === null) return false;
+  return !pairOwnsMeeting(game, meetings, currentSeason, now);
 }
 
 /**

@@ -1060,7 +1060,9 @@ describe("the game log tab", () => {
     // The header's strip asks the question now; a second copy in the bar put
     // two versions of it above the fold. The scoring toggle stays gone too.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    assert.equal(doc.querySelectorAll(".scp-controls a:not(.scp-nav-link)").length, 0);
+    // The strip's outside links (Dynasty value, Start/sit; 2026-10-10) are
+    // nav links, not a button of the bar's own.
+    assert.equal(doc.querySelectorAll(".scp-controls a:not(.scp-nav-link):not(.scp-nav-out)").length, 0);
     assert.equal(doc.querySelectorAll(".scp-startsit").length, 0);
     assert.equal(doc.querySelectorAll(".scp-format, .scp-format-opt").length, 0);
   });
@@ -2950,7 +2952,8 @@ describe("the embedded fragment", () => {
   test("each tab carries the title its own address wears, for the history push", async () => {
     const res = await get(`/embed/player/${fixture.slug}`);
     const doc = new JSDOM(res.body).window.document;
-    const titles = [...doc.querySelectorAll("[data-scp-nav] a")].map((a) => a.dataset.scTitle);
+    // The tabs only: the strip's outside links (Dynasty value, Start/sit) push no history.
+    const titles = [...doc.querySelectorAll("[data-scp-nav] a.scp-nav-link")].map((a) => a.dataset.scTitle);
     assert.ok(titles.length >= 5 && titles.every(Boolean), "every tab has a title");
     assert.equal(new Set(titles).size, titles.length, "and no two share one");
   });

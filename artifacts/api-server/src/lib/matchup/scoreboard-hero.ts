@@ -305,6 +305,28 @@ export function scoreboardHeading(game: ScoreboardGame): string {
   );
 }
 
+/**
+ * A dated game page's H1: "Steelers vs Browns Box Score & Player Stats:
+ * Week 4, 2026" (the SEO brief of 2026-10-10), away then home like the
+ * scoreboard, nicknames because the full names leave no room for the words
+ * the searches carry. scoreboardHeading() stays the SportsEvent's name.
+ */
+export function scoreboardPageHeading(game: ScoreboardGame): string {
+  return (
+    `${game.away.short} vs ${game.home.short} Box Score & Player Stats: ` +
+    `${roundWithoutConference(game.roundLabel)}, ${game.seasonLabel}`
+  );
+}
+
+/** "Sep 14, 2026" - the kickoff's date in the Eastern calendar, or null. */
+export function scoreboardKickoffDate(game: ScoreboardGame): string | null {
+  if (!game.kickoff) return null;
+  const date = new Date(game.kickoff);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = easternParts(date);
+  return `${parts["month"]} ${parts["day"]}, ${parts["year"]}`;
+}
+
 /** The badge: "Final", "Final/OT", "Final, tie", "Live" or "Upcoming". */
 export function scoreboardBadge(game: ScoreboardGame): string {
   if (game.status === "upcoming") return "Upcoming";
@@ -370,20 +392,40 @@ export function scoreboardKickoff(game: ScoreboardGame): KickoffText | null {
  * candidate that the length budget allows - see fitMatchupTitle().
  */
 export function scoreboardTitleCandidates(game: ScoreboardGame): string[] {
-  const lead =
-    `${game.away.short} vs ${game.home.short} ` +
-    `${roundWithoutConference(game.roundLabel)} ${game.seasonLabel}`;
-  const result = scoreboardResult(game);
-  if (!result) return [`${lead}: Stats & Recap`, lead];
-  const high = Math.max(result.away, result.home);
-  const low = Math.min(result.away, result.home);
-  const score = `${high}–${low}`;
+  // "Steelers vs Browns Player Stats & Box Score, Week 4 2026" (the SEO brief
+  // of 2026-10-10): the words people type, in the order they type them. The
+  // rungs drop "Player Stats" first, then the year; the last fits every pair
+  // and every round. The score moved from the title to the description. Was
+  // "Browns vs Buccaneers Week 2 2026: Final Score 23–19, Stats & Recap"
+  // until 2026-10-10.
+  const pair = `${game.away.short} vs ${game.home.short}`;
+  const when = `${roundWithoutConference(game.roundLabel)} ${game.seasonLabel}`;
   return [
-    `${lead}: Final Score ${score}, Stats & Recap`,
-    `${lead}: Final Score ${score}`,
-    `${lead} Final Score ${score}`,
-    `${lead}: ${score}`,
+    `${pair} Player Stats & Box Score, ${when}`,
+    `${pair} Box Score, ${when}`,
+    `${pair} Box Score, ${roundWithoutConference(game.roundLabel)}`,
   ];
+}
+
+/**
+ * A dated game page's meta description: "Browns 27, Steelers 24 on Sep 14,
+ * 2026: full box score, fantasy points for every player, scoring summary
+ * and team stats." Winner first; a tie reads away then home. The kickoff
+ * date is left out when the schedule has none.
+ */
+export function scoreboardPageDescription(game: ScoreboardGame): string {
+  const result = scoreboardResult(game);
+  const date = scoreboardKickoffDate(game);
+  const on = date ? ` on ${date}` : "";
+  const tail = "full box score, fantasy points for every player, scoring summary and team stats.";
+  if (!result) return `${game.away.short} vs ${game.home.short}${on}: ${tail}`;
+  const sides = [
+    { team: game.away, points: result.away },
+    { team: game.home, points: result.home },
+  ];
+  if (result.winner === "home") sides.reverse();
+  const score = sides.map((s) => `${s.team.short} ${s.points}`).join(", ");
+  return `${score}${result.winner === null ? " (tie)" : ""}${on}: ${tail}`;
 }
 
 /** "Final: Los Angeles Rams 34, Arizona Cardinals 11." - winner first. */
@@ -436,7 +478,12 @@ export function scoreboardSportsEvent(game: ScoreboardGame): Node | null {
     name: scoreboardHeading(game),
     sport: "American football",
     startDate: game.kickoff,
-    eventStatus: "https://schema.org/EventScheduled",
+    // Completed once the game is final (the SEO brief of 2026-10-10); the
+    // description under it carries the final score.
+    eventStatus:
+      game.status === "final" && scoreboardResult(game)
+        ? "https://schema.org/EventCompleted"
+        : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
       "@type": "StadiumOrArena",

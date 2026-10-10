@@ -111,6 +111,10 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
       tab.panel.classList.toggle("is-active", on);
       tab.link.classList.toggle("is-active", on);
       tab.link.setAttribute("aria-selected", on ? "true" : "false");
+      // The server marks the tab the address names; keep that in step with
+      // the panel on screen, since the address moves with it.
+      if (on) tab.link.setAttribute("aria-current", "page");
+      else tab.link.removeAttribute("aria-current");
       // Roving tabindex: one stop for the whole strip, arrows move within it.
       tab.link.tabIndex = on ? 0 : -1;
     }

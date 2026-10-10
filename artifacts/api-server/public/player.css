@@ -4638,7 +4638,8 @@ button.scp-search-opt {
   list-style: none;
 }
 
-.scp-nav-link {
+.scp-nav-link,
+.scp-nav-out {
   display: block;
   padding: 12px 14px;
   border-bottom: 2px solid transparent;
@@ -4649,7 +4650,8 @@ button.scp-search-opt {
   white-space: nowrap;
 }
 
-.scp-nav-link:hover {
+.scp-nav-link:hover,
+.scp-nav-out:hover {
   color: var(--sc-ink);
 }
 
@@ -10698,4 +10700,36 @@ a.scp-peer:focus-visible {
     grid-column: 1 / -1;
     grid-row: 2;
   }
+}
+
+/* ---- the strip's two outside pages (Dynasty value, Start/sit) and the
+   hub's trade value line (the SEO brief of 2026-10-10). The outside links
+   wear the tab look so the strip reads as one row; the arrow marks them as
+   leaving. */
+.scp .scp-nav-out::after {
+  content: " \2197";
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+.scp .scp-ox-trade {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--sc-border, #e3e8ef);
+  border-radius: 8px;
+  background: var(--sc-surface, #fff);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.scp .scp-ox-trade a {
+  font-weight: 700;
+}
+
+.scp .scp-row-dnp,
+.scp .scp-ox-wk-dnp {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
 }

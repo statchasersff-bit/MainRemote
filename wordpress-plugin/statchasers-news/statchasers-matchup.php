@@ -324,10 +324,13 @@ add_action(
 		}
 
 		if ( 'current' === $data['game'] ) {
-			// Inside the two-week window the recap has exactly one address, and
-			// it is the pair's. Mirrors the 301 the API's own route sends.
-			wp_safe_redirect( statchasers_matchup_url( $pair['slug'] ), 301 );
-			exit;
+			// The pair's own page owns this game (this season's latest result,
+			// until the rematch is within six days): the dated page renders,
+			// with its canonical pointing at the pair's address and no
+			// SportsEvent of its own (statchasers_matchup_canonical,
+			// statchasers_matchup_event_node). Mirrors the API's own page.
+			// Was a 301 until 1.10.38 (the SEO brief of 2026-10-10).
+			return;
 		}
 	}
 );
@@ -580,9 +583,14 @@ function statchasers_matchup_heading(): string {
 		return $names;
 	}
 
-	// "Week 1 2026" or "Super Bowl 2025": the API's meeting.weekLabel, which
-	// is what heroHeading() prints after the names.
-	return sprintf( '%s, %s %d', $names, $parsed['label'], $parsed['season'] );
+	// A game page's H1 (the SEO brief of 2026-10-10): "{Away} vs {Home} Box
+	// Score & Player Stats: Week {N}, {Year}", MIRRORING scoreboardPageHeading()
+	// in the API's scoreboard-hero.ts - nicknames, in the pair's order here
+	// since only the API knows which side was away.
+	$table  = statchasers_team_table();
+	$nick_a = substr( strrchr( ' ' . ( $table[ $pair['a'] ][0] ?? $pair['a'] ), ' ' ), 1 );
+	$nick_b = substr( strrchr( ' ' . ( $table[ $pair['b'] ][0] ?? $pair['b'] ), ' ' ), 1 );
+	return sprintf( '%s vs %s Box Score & Player Stats: %s, %d', $nick_a, $nick_b, $parsed['label'], $parsed['season'] );
 }
 
 /**
@@ -767,14 +775,13 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
  * Title and description for one meeting's own page.
  *
  * MIRRORS the `data.pinned` branch of matchupPageMeta() in the API's
- * src/lib/matchup/matchup-seo.ts. Answered before the pair's three states,
- * there and here, because "patriots seahawks week 1 2026" is a different search
- * from "patriots vs seahawks" and two pages must not answer it with one string.
- *
- * One deliberate difference: a postseason game is named by its round here
- * ("Super Bowl 2025"), where the API's pinned branch still prints ESPN's
- * postseason week number ("Week 5 2025"). The heading already used the round
- * on both sides; the API's meta is the half that has yet to catch up.
+ * src/lib/matchup/matchup-seo.ts (the SEO brief of 2026-10-10: "{Away} vs
+ * {Home} Player Stats & Box Score, Week {N} {Year}"). Answered before the
+ * pair's three states, there and here, because "patriots seahawks week 1
+ * 2026" is a different search from "patriots vs seahawks" and two pages must
+ * not answer it with one string. The API's title header wins whenever it is
+ * sent (it knows which side was away); these are the strings for an API
+ * that sent none, and they name the pair in its canonical order.
  *
  * @param string $a     Pair's first team slug.
  * @param string $b     Pair's second team slug.
@@ -804,21 +811,19 @@ function statchasers_matchup_game_meta( string $a, string $b, string $game, stri
 	return array(
 		'title'       => statchasers_matchup_fit_title(
 			array(
-				"$names, $label $season: Box Score & Fantasy Recap",
-				"$names, $label $season Box Score",
-				"$short, $label $season: Box Score & Fantasy Recap",
-				"$short, $label $season Box Score",
-				// "Buccaneers vs Commanders, Conference Championship 2025": the
-				// longest nicknames with the longest round still fit sixty.
-				"$short, $label $season",
+				"$short Player Stats & Box Score, $label $season",
+				"$short Box Score, $label $season",
+				// "Buccaneers vs Commanders Box Score, Conference Championship":
+				// the longest nicknames with the longest round still fit sixty.
+				"$short Box Score, $label",
 			)
 		),
 		'description' => sprintf(
-			'%1$sFull box score from %2$s vs %3$s in %4$s of %5$s: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
+			'%1$s%2$s vs %3$s, %4$s %5$s: full box score, fantasy points for every player, scoring summary and team stats.',
 			$lead,
 			$nick_a,
 			$nick_b,
-			$in,
+			$label,
 			$season
 		),
 	);
@@ -917,6 +922,12 @@ function statchasers_matchup_event_node() {
 
 	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
 	$html = is_array( $data ) ? (string) ( $data['html'] ?? '' ) : '';
+	// A dated page the pair's page owns canonicalizes up to it, and the
+	// pair's page carries the event. The API leaves the island out of such a
+	// fragment; this is the same rule for an API that did not.
+	if ( is_array( $data ) && 'current' === ( $data['game'] ?? '' ) ) {
+		return null;
+	}
 
 	if ( ! preg_match( '#<script type="application/json" class="sct-matchup-event-data">(.*?)</script>#s', $html, $match ) ) {
 		return null;
@@ -1061,11 +1072,32 @@ add_action( 'wp_head', 'statchasers_matchup_print_fallback_schema', 20 );
 
 function statchasers_matchup_canonical(): string {
 	$pair = statchasers_matchup_current();
-	// A dated page is its own canonical. It is not a variant of the pair's page
-	// - it is the only address that game has, once the pair has let it go.
-	return null === $pair
-		? ''
-		: statchasers_matchup_url( $pair['slug'], statchasers_matchup_game() );
+	if ( null === $pair ) {
+		return '';
+	}
+	$game = statchasers_matchup_game();
+	// A dated page the pair's page still owns (X-Matchup-Game: current) is a
+	// copy of the pair's page and says so; once the pair has moved on, the
+	// dated page is the only canonical address that game has.
+	if ( '' !== $game && statchasers_matchup_game_is_owned( $pair['slug'], $game ) ) {
+		return statchasers_matchup_url( $pair['slug'] );
+	}
+	return statchasers_matchup_url( $pair['slug'], $game );
+}
+
+/**
+ * Does the pair's own page own this dated game (X-Matchup-Game: current)?
+ *
+ * Read from the same cached fetch the shortcode uses. An unreachable origin
+ * answers false, so the page keeps its own canonical rather than switching
+ * on an outage.
+ */
+function statchasers_matchup_game_is_owned( string $slug, string $game ): bool {
+	if ( '' === $game ) {
+		return false;
+	}
+	$data = statchasers_matchup_fetch( $slug, $game );
+	return is_array( $data ) && 'current' === ( $data['game'] ?? '' );
 }
 
 add_filter( 'rank_math/frontend/title', function ( $title ) {
@@ -1233,20 +1265,24 @@ function statchasers_matchup_all_slugs(): array {
 	return $pairs;
 }
 
-/** How long the game index is kept; a game joins the list two weeks after kickoff, so an hour is plenty. */
+/** How long the game index is kept; a game joins the list when the pair's page moves on, so an hour is plenty. */
 const STATCHASERS_MATCHUP_GAMES_TTL = HOUR_IN_SECONDS;
 /** After a failed fetch, how long the last good list is served without asking again. */
 const STATCHASERS_MATCHUP_GAMES_RETRY = 10 * MINUTE_IN_SECONDS;
 
 /**
- * Every dated game page that exists this season, from the API's
- * /embed/matchup-games.json (lib/matchup/game-index.ts), as
- * `[ [ 'pair-slug', '2026-week-2', '2026-09-20T17:00:00.000Z' ], ... ]`.
+ * Every dated game page canonical at its own address - this season by the
+ * ownership rule, the whole of the season before as archives - from the
+ * API's /embed/matchup-games.json (lib/matchup/game-index.ts), as
+ * `[ [ 'pair-slug', '2026-week-2', '2026-09-30' ], ... ]`, the third value
+ * the page's lastmod: the day the stored stats were last pulled (a stat
+ * correction moves it), else the kickoff.
  *
- * The API applies the one rule that decides when a dated address exists (two
- * weeks after kickoff, or at once with a rematch ahead), so the plugin keeps
- * no copy of it. Cached an hour with a backup, like the roster: a sitemap
- * request must never wait on the API, and a failed fetch serves the last list.
+ * The API applies the one rule that decides when a dated address is canonical
+ * (the pair's page owns this season's latest result until the rematch is
+ * within six days), so the plugin keeps no copy of it. Cached an hour with a
+ * backup, like the roster: a sitemap request must never wait on the API, and
+ * a failed fetch serves the last list.
  *
  * @return array<int,array{0:string,1:string,2:string}>
  */
@@ -1325,19 +1361,20 @@ function statchasers_matchup_games_rows( array $body ): ?array {
 		}
 		$pair    = (string) ( $game['pair'] ?? '' );
 		$segment = (string) ( $game['game'] ?? '' );
-		$kickoff = (string) ( $game['kickoff'] ?? '' );
+		// The last stat pull when the API sends one (1.10.38), the kickoff before.
+		$modified = (string) ( $game['modified'] ?? $game['kickoff'] ?? '' );
 		if ( ! preg_match( '/^[a-z0-9-]+-vs-[a-z0-9-]+$/', $pair ) || ! preg_match( '/^' . STATCHASERS_MATCHUP_GAME_SHAPE . '$/', $segment ) ) {
 			continue;
 		}
-		$rows[] = array( $pair, $segment, substr( $kickoff, 0, 10 ) );
+		$rows[] = array( $pair, $segment, substr( $modified, 0, 10 ) );
 	}
 	return $rows;
 }
 
 /**
- * The dated game pages as Rank Math sitemap links: one per game, the kickoff
- * date as lastmod (a recap does not change after the game), newest first as
- * the API lists them.
+ * The dated game pages as Rank Math sitemap links: one per game, the day its
+ * stats were last pulled as lastmod (the kickoff for a game whose stats are
+ * not stored), newest first as the API lists them.
  *
  * @param array<int,array{0:string,1:string,2:string}> $games statchasers_matchup_games().
  * @return array<int,array{loc:string,mod?:string}>
