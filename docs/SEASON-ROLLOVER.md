@@ -46,6 +46,8 @@ FPA has a preseason mode (`preseason_baseline`) that ranks defenses on the previ
 
 Do this before week 1, or the FPA table keeps showing 2026 through the start of the season.
 
+**The archive follows the switch by itself.** Since 2026-10-10 the page's base URL always carries the current season and every finished season the database holds game rows for is a page of its own at `/nfl/fantasy-points-allowed-by-position/<season>/` (the full season, weeks 1-17, no blend; `lib/fpa/fpa-data.ts` `readFpaArchiveTable`). "Current" is `FPA_CURRENT_SEASON`, so once that secret says 2027 and the preseason ingest has run, `/2026/` becomes an archive and the base page says 2027 - no code or WordPress change. The 2025 game rows stay in the table when the baseline moves to 2026 (the ingest deletes only the seasons it re-reads), so `/2025/` keeps working. The plugin lists the archive seasons in the sitemap from the island the API's fragment carries (`scf-page-data`).
+
 **Strength of Schedule follows this switch.** It reads the FPA table's configured season (not the schedule's), so from March to August it maps the 2027 slate onto the finished 2026 FPA, which is the right baseline. The baseline badge then still describes 2026's blend phase until the preseason ingest; after it, "Preseason Baseline Active". The Player SOS list (`scripts/sos/buildPlayerPool.mjs`) follows Sleeper's own season and needs nothing.
 
 ### 3. Week 1 (early September): the year labels

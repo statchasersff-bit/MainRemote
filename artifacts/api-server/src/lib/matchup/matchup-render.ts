@@ -60,6 +60,8 @@ import {
   storedMeetings,
   storedSeasons,
   type TeamSeason,
+  ALLOWED_POSITIONS,
+  type AllowedPosition,
 } from "./season-data";
 import { statLine } from "./leaders-strip";
 import { shareImageAlt, shareImageFile, type ShareImageInput } from "./og-image";
@@ -1039,6 +1041,24 @@ function startSitCompareFor(a: string, b: string): string | null {
   return slugA && slugB && slugA !== slugB ? startSitCompareUrl(slugA, slugB) : null;
 }
 
+/**
+ * The two defenses' FPA ranks for the start/sit block, keyed by team code -
+ * only when the table describes the season the game was played in. A 2024
+ * recap against this season's table would be a line about the wrong year.
+ */
+function allowedRanks(data: MatchupData, season: number): FantasySectionInput["allowed"] {
+  const fpa = data.fpa;
+  if (!fpa || fpa.season !== season) return null;
+  const byTeam: NonNullable<FantasySectionInput["allowed"]>["byTeam"] = {};
+  for (const row of [fpa.a, fpa.b]) {
+    if (!row) continue;
+    byTeam[row.team?.code ?? row.abbr] = Object.fromEntries(
+      ALLOWED_POSITIONS.map((p) => [p, { rank: row.byPos[p].rank, fpa: row.byPos[p].fpa }]),
+    ) as Record<AllowedPosition, { rank: number; fpa: number }>;
+  }
+  return { url: getFPAUrl(), byTeam };
+}
+
 const fantasyCache = new WeakMap<MatchupData, FantasySectionInput | null>();
 
 /** The fantasy section's input, memoized: the section, the game logs and the FAQ all read it. */
@@ -1082,6 +1102,7 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
       next: live ? next : null,
       injuries: notes.injuries ?? null,
       links: { redraftCommand: REDRAFT_COMMAND_URL, projections: PROJECTIONS_URL, tradeCalculator: TRADE_CALCULATOR_URL },
+      allowed: allowedRanks(data, meeting.season),
     };
   }
   fantasyCache.set(data, input);

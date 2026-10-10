@@ -1285,7 +1285,24 @@ function statchasers_matchup_games(): array {
 
 	set_transient( $key, $rows, STATCHASERS_MATCHUP_GAMES_TTL );
 	set_transient( $key . '_bak', $rows, WEEK_IN_SECONDS );
+
+	// A new game joined (or one left): Rank Math's copy of /game-sitemap.xml
+	// is a file it rebuilds only when told, and nothing else tells it about
+	// addresses that have no post behind them.
+	if ( ! is_array( $backup ) || $backup !== $rows ) {
+		statchasers_matchup_games_invalidate_sitemap();
+	}
 	return $rows;
+}
+
+/** The Rank Math sitemap type the game pages are published under: /game-sitemap.xml. */
+const STATCHASERS_MATCHUP_SITEMAP_TYPE = 'game';
+
+/** Drop Rank Math's cached /game-sitemap.xml so the next request rebuilds it. */
+function statchasers_matchup_games_invalidate_sitemap(): void {
+	if ( class_exists( '\RankMath\Sitemap\Cache' ) && method_exists( '\RankMath\Sitemap\Cache', 'invalidate_storage' ) ) {
+		\RankMath\Sitemap\Cache::invalidate_storage( STATCHASERS_MATCHUP_SITEMAP_TYPE );
+	}
 }
 
 /**
@@ -1318,19 +1335,128 @@ function statchasers_matchup_games_rows( array $body ): ?array {
 }
 
 /**
- * The sitemap entries for the dated game pages: one per game, the kickoff
- * date as lastmod (a recap does not change after the game).
+ * The dated game pages as Rank Math sitemap links: one per game, the kickoff
+ * date as lastmod (a recap does not change after the game), newest first as
+ * the API lists them.
  *
  * @param array<int,array{0:string,1:string,2:string}> $games statchasers_matchup_games().
+ * @return array<int,array{loc:string,mod?:string}>
  */
-function statchasers_matchup_games_sitemap( array $games ): string {
-	$extra = '';
+function statchasers_matchup_games_links( array $games ): array {
+	$links = array();
 	foreach ( $games as $row ) {
-		$lastmod = preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) ( $row[2] ?? '' ) ) ? $row[2] : '';
-		$extra  .= statchasers_team_sitemap_entry( statchasers_matchup_url( $row[0], $row[1] ), $lastmod );
+		$link = array( 'loc' => statchasers_matchup_url( $row[0], $row[1] ) );
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) ( $row[2] ?? '' ) ) ) {
+			$link['mod'] = $row[2];
+		}
+		$links[] = $link;
 	}
-	return $extra;
+	return $links;
 }
+
+/**
+ * The game sitemap's own address: Rank Math's base when it is loaded, so a
+ * site that serves its sitemaps from a sub-directory gets the right one.
+ *
+ * @param int $page The sitemap page, 0 for the unnumbered first file.
+ */
+function statchasers_matchup_games_sitemap_url( int $page = 0 ): string {
+	$file = STATCHASERS_MATCHUP_SITEMAP_TYPE . '-sitemap' . ( $page > 1 ? $page : '' ) . '.xml';
+	if ( class_exists( '\RankMath\Sitemap\Router' ) && method_exists( '\RankMath\Sitemap\Router', 'get_base_url' ) ) {
+		return (string) \RankMath\Sitemap\Router::get_base_url( $file );
+	}
+	return home_url( '/' . $file );
+}
+
+/**
+ * The index entries for /game-sitemap.xml: one per page of games, none while
+ * there are no games (the first fortnight of a season), so the index never
+ * advertises an empty file. Pure, for the smoke test; the provider calls it.
+ *
+ * @param array<int,array{loc:string,mod?:string}> $links       statchasers_matchup_games_links().
+ * @param int                                     $max_entries Rank Math's items-per-page setting.
+ * @return array<int,array{loc:string,lastmod:string}>
+ */
+function statchasers_matchup_games_index_links( array $links, int $max_entries ): array {
+	if ( ! $links ) {
+		return array();
+	}
+	$per   = max( 1, $max_entries );
+	$pages = (int) ceil( count( $links ) / $per );
+	$index = array();
+	for ( $n = 1; $n <= $pages; $n++ ) {
+		$slice   = array_slice( $links, ( $n - 1 ) * $per, $per );
+		$newest  = '';
+		foreach ( $slice as $link ) {
+			if ( isset( $link['mod'] ) && $link['mod'] > $newest ) {
+				$newest = $link['mod'];
+			}
+		}
+		$index[] = array(
+			'loc'     => statchasers_matchup_games_sitemap_url( $n ),
+			'lastmod' => $newest,
+		);
+	}
+	return $index;
+}
+
+/**
+ * The game pages' own sitemap, /game-sitemap.xml, in Rank Math's index
+ * (mak, 2026-10-09: "add a sitemap for the game pages").
+ *
+ * Until 1.10.36 the dated pages sat in the page sitemap beside 4,300 other
+ * URLs; a file of their own is the one a reader of the index can find, and
+ * the one whose lastmod moves when a game is added. Rank Math takes outside
+ * sitemaps through `rank_math/sitemap/providers`: an object with the three
+ * Provider methods, which its router serves at `<type>-sitemap.xml` and
+ * caches like its own (invalidated above when the list changes). The class
+ * is declared inside the filter because the interface it implements exists
+ * only once Rank Math has loaded.
+ */
+add_filter(
+	'rank_math/sitemap/providers',
+	static function ( $providers ) {
+		if ( ! is_array( $providers ) || ! interface_exists( '\RankMath\Sitemap\Providers\Provider' ) ) {
+			return $providers;
+		}
+		if ( ! statchasers_matchup_urls_enabled() ) {
+			return $providers;
+		}
+		$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
+		if ( ! $holder instanceof WP_Post || 'publish' !== $holder->post_status ) {
+			return $providers;
+		}
+
+		$providers[] = new class() implements \RankMath\Sitemap\Providers\Provider {
+			/** @param string $type */
+			public function handles_type( $type ) {
+				return STATCHASERS_MATCHUP_SITEMAP_TYPE === $type;
+			}
+
+			/** @param int $max_entries */
+			public function get_index_links( $max_entries ) {
+				return statchasers_matchup_games_index_links(
+					statchasers_matchup_games_links( statchasers_matchup_games() ),
+					(int) $max_entries
+				);
+			}
+
+			/**
+			 * @param string $type
+			 * @param int    $max_entries
+			 * @param int    $current_page
+			 */
+			public function get_sitemap_links( $type, $max_entries, $current_page ) {
+				$links = statchasers_matchup_games_links( statchasers_matchup_games() );
+				$per   = max( 1, (int) $max_entries );
+				$page  = max( 1, (int) $current_page );
+				return array_slice( $links, ( $page - 1 ) * $per, $per );
+			}
+		};
+
+		return $providers;
+	}
+);
 
 add_filter(
 	'rank_math/sitemap/page_content',
@@ -1350,8 +1476,8 @@ add_filter(
 		foreach ( statchasers_matchup_all_slugs() as $slug ) {
 			$extra .= statchasers_team_sitemap_entry( statchasers_matchup_url( $slug ), '' );
 		}
-		// The dated game pages beside the pairs (mak, 2026-10-09).
-		$extra .= statchasers_matchup_games_sitemap( statchasers_matchup_games() );
+		// The dated game pages have a sitemap of their own since 1.10.36
+		// (/game-sitemap.xml, the provider above), so they are not repeated here.
 		return $content . $extra;
 	}
 );

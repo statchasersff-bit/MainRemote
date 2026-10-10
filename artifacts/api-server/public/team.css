@@ -10628,6 +10628,73 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   line-height: 1.5;
 }
 
+/* Start/sit checks: one card per team, the stock card's dress, a position
+   tag before each linked name and the FPA line under the list. */
+.sct-rb .sct-fp-ss-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sct-fp-ss-card {
+  padding: 4px 16px 12px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 10px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-fp-ss-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb .sct-fp-ss-card li {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.sct-fp-ss-pos {
+  display: inline-block;
+  min-width: 2.4em;
+  margin-right: 4px;
+  font-family: var(--rb-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--rb-muted, #64748b);
+}
+
+.sct-rb .sct-fp-ss-link {
+  color: var(--rb-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-team, var(--rb-ink));
+  text-underline-offset: 2px;
+}
+
+.sct-rb .sct-fp-ss-fpa {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sct-rb .sct-fp-ss-fpa a {
+  color: var(--rb-ink);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .sct-rb .sct-fp-ss-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .sct-fp-stock-card li > span[aria-hidden] {
   margin-right: 6px;
 }

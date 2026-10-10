@@ -194,7 +194,7 @@ describe("fpa routes", () => {
     // exception and are checked in the embed suite below.
     assert.equal(doc.querySelectorAll("h1").length, 0, "no H1 of its own");
     assert.equal(
-      doc.querySelectorAll(".scf h2:not(.scf-faq-title)").length,
+      doc.querySelectorAll(".scf h2:not(.scf-faq-title):not(.scf-related-title)").length,
       0,
       "no heading above the table",
     );
@@ -209,13 +209,74 @@ describe("fpa routes", () => {
     }
   });
 
-  test("the caveat sits above the table it qualifies", async () => {
+  test("the week range leads, the blend note follows the table (mak, 2026-10-10)", async () => {
     requireData();
     const res = await get("/fpa");
-    const mode = res.body.indexOf("scf-mode");
-    const table = res.body.indexOf("scf-table");
-    assert.ok(mode > 0 && table > 0);
-    assert.ok(mode < table, "the data-mode note must precede the table");
+    const at = (needle) => res.body.indexOf(needle);
+    for (const needle of ["scf-updated", "scf-answer", "scf-controls", "scf-table", "scf-mode", "scf-legend-wrap", "scf-related", "scf-faq-title"]) {
+      assert.ok(at(needle) > 0, needle);
+    }
+    assert.ok(at("scf-updated") < at("scf-answer"), "the Updated line opens the page");
+    assert.ok(at("scf-answer") < at("scf-controls"), "the answer sentence sits above the controls");
+    assert.ok(at("scf-table") < at("scf-mode"), "the blend note sits directly under the table");
+    assert.ok(at("scf-mode") < at("scf-legend-wrap"), "and before the legend");
+    assert.ok(at("scf-related") < at("scf-faq-title"), "Related comes before the FAQ");
+
+    const doc = new JSDOM(res.body).window.document;
+    assert.match(doc.title, /^Fantasy Points Allowed by Position \d{4} \((Weeks 1\u2013\d{1,2}|Preseason)\)$/);
+    assert.ok(doc.title.length <= 60, `title within 60 characters: ${doc.title}`);
+    const description = doc.querySelector('meta[name="description"]').getAttribute("content");
+    assert.ok(description.length <= 155, `description within 155 characters: ${description}`);
+    assert.match(description, /by all 32 NFL defenses/);
+    assert.match(doc.querySelector(".scf-answer").textContent, /^Softest matchups (through Week \d{1,2}|on the \d{4} baseline): .+ allows the most fantasy points to (QB|RB|WR|TE)s \(\d+\.\d per game\)/);
+    assert.match(doc.querySelector(".scf-updated").textContent, /^(Updated [A-Z][a-z]{2} \d{1,2}, (through Week \d{1,2}|before Week 1)|Through Week \d{1,2}, \d{4}|Before Week 1 of \d{4})$/);
+
+    // Every team links to its schedule page, not its hub (mak, 2026-10-10).
+    const teamLinks = Array.from(doc.querySelectorAll(".scf-team-link[href]")).map((a) => a.getAttribute("href"));
+    assert.equal(teamLinks.length, 32);
+    for (const href of teamLinks) assert.match(href, /^\/team\/[a-z0-9-]+\/schedule\/$/);
+
+    // Related: the four position SOS pages, the projections and the start/sit tool.
+    const related = Array.from(doc.querySelectorAll(".scf-related-list a")).map((a) => a.getAttribute("href"));
+    assert.deepEqual(related, [
+      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/qb/",
+      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/rb/",
+      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/wr/",
+      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/te/",
+      "https://statchasers.com/redraft-command/fantasy-football-projections",
+      "https://statchasers.com/redraft-command/who-should-i-start",
+    ]);
+  });
+
+  test("a finished season is a full-season archive of its own", async () => {
+    requireData();
+    const live = await get("/fpa");
+    const liveDoc = new JSDOM(live.body).window.document;
+    const archiveLinks = Array.from(liveDoc.querySelectorAll(".scf-season-link")).map((a) => a.getAttribute("href"));
+    assert.ok(archiveLinks.length >= 1, "the current table links to at least one finished season");
+    assert.match(archiveLinks[0], /^\/fpa\?season=\d{4}$/);
+    const season = Number(archiveLinks[0].match(/\d{4}/)[0]);
+
+    const res = await get(`/fpa?season=${season}`);
+    assert.equal(res.status, 200);
+    const doc = new JSDOM(res.body).window.document;
+    assert.equal(doc.title, `Fantasy Points Allowed by Position ${season} (Full Season)`);
+    assert.equal(doc.querySelectorAll(".scf-row").length, 32, "the whole season's table");
+    assert.equal(doc.querySelector("[data-scf-root]").getAttribute("data-kind"), "archive");
+    assert.match(doc.querySelector(".scf-answer").textContent, new RegExp(`^Softest matchups of the ${season} season: `));
+    assert.match(doc.querySelector(".scf-mode-body").textContent, new RegExp(`^The complete ${season} regular season, weeks 1-17: `));
+    assert.equal(doc.querySelector(".scf-season-link").textContent, `Current ${liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")} data`);
+    assert.equal(doc.querySelector(".scf-faq"), null, "the FAQ belongs to the current page only");
+    assert.equal(doc.querySelector('script[type="application/ld+json"]'), null, "and so does its schema");
+    assert.ok(doc.querySelector(".scf-related"), "Related still closes the page");
+    assert.equal(doc.querySelectorAll(".scf-season-link").length, 1, "an archive links to the current table, not to itself");
+
+    // The current season under its own name is the default table, and a season
+    // with no rows is a 404.
+    const current = Number(liveDoc.querySelector("[data-scf-root]").getAttribute("data-season"));
+    const byName = await get(`/fpa?season=${current}`);
+    assert.equal(new JSDOM(byName.body).window.document.querySelector("[data-scf-root]").getAttribute("data-kind"), "live");
+    assert.equal((await get("/fpa?season=2001")).status, 404);
   });
 
   test("format and view change the numbers and the URL, not the canonical", async () => {
@@ -387,8 +448,10 @@ describe("fpa routes", () => {
 });
 
 describe("the embedded fpa fragment", () => {
+  // The two inert islands the plugin reads and strips: the FAQ's questions
+  // and the page's own words (title, H1, description, Updated line).
   const INERT_FAQ =
-    /<script type="application\/json" class="scf-faq-data">.*?<\/script>/gs;
+    /<script type="application\/json" class="scf-(?:faq|page)-data">.*?<\/script>/gs;
 
   test("serves markup with no document around it", async () => {
     requireData();
@@ -462,6 +525,36 @@ describe("the embedded fpa fragment", () => {
     );
   });
 
+  test("carries its title, H1, description and Updated line as data for the plugin", async () => {
+    requireData();
+    const res = await get("/embed/fpa");
+    const islands = res.body.match(/<script type="application\/json" class="scf-page-data">(.*?)<\/script>/s);
+    assert.ok(islands, "the page-data island is in the fragment");
+    const copy = JSON.parse(islands[1].replace(/<\\\//g, "</"));
+    assert.match(copy.title, /^Fantasy Points Allowed by Position \d{4} \((Weeks 1\u2013\d{1,2}|Preseason)\)$/);
+    assert.match(copy.h1, /^Fantasy Points Allowed by Position: (Weeks 1\u2013\d{1,2}, \d{4}|\d{4} Preseason)$/);
+    assert.ok(copy.description.length <= 155);
+    assert.equal(copy.kind, "live");
+    assert.ok(Number.isInteger(copy.season));
+    assert.ok(Array.isArray(copy.archiveSeasons));
+    assert.match(copy.updatedIso, /^\d{4}-\d{2}-\d{2}$/);
+    assert.match(copy.updatedAt, /^\d{4}-\d{2}-\d{2}T/);
+    assert.match(copy.updatedLine, /^Updated [A-Z][a-z]{2} \d{1,2}, /);
+    // The fragment does not print the Updated line itself: the plugin puts it
+    // under the page's own H1 from the island.
+    assert.doesNotMatch(res.body, /class="scf-updated"/);
+    // An archive fragment says so, and carries no FAQ island.
+    if (copy.archiveSeasons.length) {
+      const archive = await get(`/embed/fpa?season=${copy.archiveSeasons[0]}`);
+      assert.equal(archive.status, 200);
+      const island = JSON.parse(archive.body.match(/class="scf-page-data">(.*?)<\/script>/s)[1].replace(/<\\\//g, "</"));
+      assert.equal(island.kind, "archive");
+      assert.equal(island.title, `Fantasy Points Allowed by Position ${copy.archiveSeasons[0]} (Full Season)`);
+      assert.equal(island.h1, `${copy.archiveSeasons[0]} Fantasy Points Allowed by Position`);
+      assert.doesNotMatch(archive.body, /scf-faq-data/);
+    }
+  });
+
   test("no H1 inside a host page that already has one", async () => {
     requireData();
     const res = await get("/embed/fpa");
@@ -470,17 +563,20 @@ describe("the embedded fpa fragment", () => {
     // No H1: that one belongs to the WordPress page this mounts into.
     assert.equal(doc.querySelectorAll("h1").length, 0, "the host page owns the H1");
 
-    // Below it, only the FAQ has headings, and every question is an H3 under
-    // the section's one H2. The tool's own chrome - controls, note, table,
-    // legend - still ships none, so nothing but the FAQ enters the outline.
+    // Below it, only the FAQ and the Related block have headings, and every
+    // question is an H3 under the FAQ's one H2. The tool's own chrome -
+    // controls, answer, note, table, legend - still ships none, so nothing
+    // above the table enters the outline.
     const headings = [...doc.querySelectorAll("h2, h3")];
     assert.ok(headings.length > 0, "the FAQ is in the fragment");
     for (const heading of headings) {
       assert.ok(
-        heading.closest(".scf-faq"),
-        `${heading.tagName} "${heading.textContent}" is outside the FAQ`,
+        heading.closest(".scf-faq") || heading.closest(".scf-related"),
+        `${heading.tagName} "${heading.textContent}" is outside the FAQ and Related`,
       );
     }
+    assert.equal(doc.querySelectorAll(".scf-related h2").length, 1, "Related has one H2 and no H3s");
+    assert.equal(doc.querySelectorAll(".scf-related h3").length, 0);
     assert.equal(doc.querySelectorAll(".scf-faq h2").length, 1);
     assert.equal(
       doc.querySelectorAll(".scf-faq h3").length,

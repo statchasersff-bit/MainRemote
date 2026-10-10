@@ -71,6 +71,16 @@ export interface FantasySectionInput {
   next: Record<string, { label: string; opponent: string } | null> | null;
   injuries: GameInjuryNotes | null;
   links: { redraftCommand: string; projections: string; tradeCalculator: string };
+  /**
+   * What each of this game's two defenses allows per game by position, with
+   * its league rank (1 = the most), from the Fantasy Points Allowed table when
+   * that table describes this season; null otherwise. `url` is the FPA page.
+   * Feeds the start/sit block's one line per team (mak, 2026-10-10).
+   */
+  allowed: {
+    url: string | null;
+    byTeam: Record<string, Record<AllowedPosition, { rank: number; fpa: number }>>;
+  } | null;
 }
 
 type Format = "ppr" | "half" | "std";
@@ -872,6 +882,7 @@ export function renderFantasySection(input: FantasySectionInput, matchups = ""):
       : "") +
     wrap("stock", stockBlock) +
     wrap("injuries", injuries) +
+    wrap("start-sit", renderStartSit(input, rows)) +
     wrap("matchups", matchups) +
     `</section>`
   );
@@ -1013,6 +1024,105 @@ export function topScorers(input: Pick<FantasySectionInput, "players">): Array<{
     })
     .map((p) => ({ name: p.name, ppr: fantasyPoints(p.stats, "ppr"), player: p }))
     .sort((a, b) => b.ppr - a.ppr || a.name.localeCompare(b.name));
+}
+
+/* ----------------------------------------------------------- start / sit */
+
+/** How many of each position the start/sit block names per team (mak, 2026-10-10). */
+const START_SIT_QUOTA: Record<string, number> = { QB: 1, RB: 2, WR: 3, TE: 1 };
+const START_SIT_ORDER = ["QB", "RB", "WR", "TE"] as const;
+
+function ordinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
+/**
+ * "Saints allow the 3rd-most fantasy points to RBs", linked to the FPA page:
+ * the position where this defense ranks softest, so the line names the
+ * matchup worth attacking. Rank 1 reads "the most". "" without the table.
+ */
+function allowedLine(input: FantasySectionInput, defense: ScoreboardGame["away"]): string {
+  const ranks = input.allowed?.byTeam[defense.abbr];
+  if (!ranks) return "";
+  let best: AllowedPosition | null = null;
+  for (const pos of ALLOWED_POSITIONS) {
+    if (!best || ranks[pos].rank < ranks[best].rank) best = pos;
+  }
+  if (!best) return "";
+  const rank = ranks[best].rank;
+  const text = `${defense.short} ${defense.short.endsWith("s") ? "allow" : "allows"} the ${
+    rank === 1 ? "most" : `${ordinal(rank)}-most`
+  } fantasy points to ${best}s`;
+  const url = input.allowed?.url;
+  return (
+    `<p class="sct-fp-ss-fpa">` +
+    (url ? `<a href="${escapeHtml(url)}" target="_top" data-cta="startsit-fpa">${escapeHtml(text)}</a>` : escapeHtml(text)) +
+    `</p>`
+  );
+}
+
+/**
+ * Start/sit checks (mak, 2026-10-10): each team's top fantasy players from
+ * this game - the QB, two RBs, three WRs and the TE by PPR points - each
+ * linked to Redraft Command's Start/Sit tool for that player, and under them
+ * one line on what the opposing defense allows, linked to the Fantasy Points
+ * Allowed page. A player with no page of his own, or not on an active roster,
+ * is left out rather than linked nowhere; a team with nobody left prints no
+ * card. Nothing for a playoff game: there is no next week to decide.
+ */
+function renderStartSit(input: FantasySectionInput, rows: Row[]): string {
+  if (!input.countsInSeasonLong) return "";
+  const { game } = input;
+  const colors = pairColors(game.away.abbr, game.home.abbr);
+
+  const cards = (["away", "home"] as const)
+    .map((side) => {
+      const team = game[side];
+      const other = game[side === "away" ? "home" : "away"];
+      const taken: Record<string, number> = {};
+      const picks = rows
+        .filter((r) => r.p.team === team.abbr && (r.group === "qb" || r.group === "flex"))
+        .filter((r) => r.p.pos && START_SIT_QUOTA[r.p.pos] !== undefined)
+        .filter((r) => !r.ctx || r.ctx.active)
+        .sort((a, b) => b.pts.ppr - a.pts.ppr || a.p.name.localeCompare(b.p.name))
+        .map((r) => ({ r, href: input.startSitUrl(r.p.name) }))
+        .filter((x): x is { r: Row; href: string } => x.href !== null)
+        .filter(({ r }) => {
+          const pos = r.p.pos!;
+          taken[pos] = (taken[pos] ?? 0) + 1;
+          return taken[pos] <= START_SIT_QUOTA[pos]!;
+        })
+        .sort(
+          (a, b) =>
+            START_SIT_ORDER.indexOf(a.r.p.pos as (typeof START_SIT_ORDER)[number]) -
+              START_SIT_ORDER.indexOf(b.r.p.pos as (typeof START_SIT_ORDER)[number]) || b.r.pts.ppr - a.r.pts.ppr,
+        );
+      if (picks.length === 0) return "";
+      return (
+        `<div class="sct-fp-ss-card" style="--rb-team:${colors[side].ink}">` +
+        `<h4 class="sct-fp-team" style="color:${colors[side].ink}">${escapeHtml(team.name)}</h4>` +
+        `<ul class="sct-fp-ss-list">` +
+        picks
+          .map(
+            ({ r, href }) =>
+              `<li><span class="sct-fp-ss-pos">${escapeHtml(r.p.pos ?? "")}</span> ` +
+              `<a class="sct-fp-ss-link" href="${escapeHtml(href)}" target="_top" data-cta="startsit-player">${escapeHtml(r.p.name)}</a></li>`,
+          )
+          .join("") +
+        `</ul>` +
+        allowedLine(input, other) +
+        `</div>`
+      );
+    })
+    .join("");
+  if (!cards) return "";
+  return (
+    `<h3 class="sct-rb-h3" id="start-sit">Start/sit checks</h3>` +
+    `<p class="sct-rb-sub">Each name opens the Start/Sit tool for that player. The line under each team is what the defense it faced here allows by position this season.</p>` +
+    `<div class="sct-fp-ss-grid">${cards}</div>`
+  );
 }
 
 /* -------------------------------------------------------- fantasy matchups */

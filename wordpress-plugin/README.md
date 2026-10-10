@@ -418,13 +418,17 @@ leaders, every player-stat table, the takeaways and the snap counts - headed
 `New England Patriots vs Seattle Seahawks, Week 1 2026` so it cannot compete
 with the pair's own page for the pair's own query. It is its own canonical.
 
-**Sitemap.** Since 1.10.34 the dated pages are listed in Rank Math's page
-sitemap beside the 496 pair URLs. The API decides which exist - every finished
-game two weeks past kickoff, or at once when the pair has a rematch ahead, the
-same rule the redirect applies - and publishes them at
-`/embed/matchup-games.json`; the plugin fetches that list (cached an hour, with
-a backup served on a failed fetch) and prints one entry per game with the
-kickoff date as `lastmod`. Nothing is listed that would 301.
+**Sitemap.** The dated pages have a sitemap of their own, `/game-sitemap.xml`
+in Rank Math's index (1.10.36; from 1.10.34 to 1.10.35 they sat in the page
+sitemap beside the 496 pair URLs, which stay there). The API decides which
+exist - every finished game two weeks past kickoff, or at once when the pair
+has a rematch ahead, the same rule the redirect applies - and publishes them
+at `/embed/matchup-games.json`; the plugin fetches that list (cached an hour,
+with a backup served on a failed fetch) and hands Rank Math one link per game
+with the kickoff date as `lastmod`, through its `rank_math/sitemap/providers`
+hook, so the file is rendered and cached by Rank Math like its own. The plugin
+invalidates that cache whenever the fetched list changes. No file is listed in
+the index while there are no game pages. Nothing is listed that would 301.
 
 **It exists only once the pair has let go.** Inside the two-week window the
 dated URL 301s up to the pair, on this origin and in the plugin both, so the
@@ -700,6 +704,40 @@ and schedule-adjusted views, and a CSV export.
 current, so an unpinned page rolls over by itself; a hard-coded season is a page
 that quietly shows last year's table next September.
 
+### The current table and the archive (1.10.37, mak's spec of 2026-10-10)
+
+The page itself always carries the current season. Beneath it, every finished
+season the API holds game rows for is a page of its own:
+
+| Address | Table | Title |
+|---------|-------|-------|
+| `/nfl/fantasy-points-allowed-by-position/` | the current season's blended figure | `Fantasy Points Allowed by Position 2026 (Weeks 1–5)` |
+| `/nfl/fantasy-points-allowed-by-position/2025/` | the full 2025 season, weeks 1-17, no blend | `Fantasy Points Allowed by Position 2025 (Full Season)` |
+
+The archive address is a rewrite rule onto the one WordPress page
+(`sc_fpa_season`), the way the strength of schedule's position pages work: one
+post, one shortcode, nothing to keep in sync. Which seasons are finished is the
+API's call (`FPA_CURRENT_SEASON` on the deployment), so next September `/2026/`
+becomes an archive by itself and the base page carries 2027. `?season=2025` on
+the page 301s to `/2025/`; `/2026/`, the current season by name, 301s to the
+page; a season the API has no table for is a 404. The two link to each other
+("2025 full season" under the current table's heading, "Current 2026 data" on
+the archive), and the archive addresses join Rank Math's page sitemap. Switch
+them off with `add_filter( 'statchasers_fpa_page_urls', '__return_false' )`.
+
+**The title, H1, description and "Updated" line are the data's.** The API's
+fragment carries them in a `scf-page-data` island (`lib/fpa-seo.ts`) and this
+file hands them to Rank Math and the document title, with no " | StatChasers"
+suffix - they move when the ingest runs, never when the page is edited. The
+page's heading is a hand-written `.sc-lo-hero` block in a Divi Code module, so
+a `the_content` filter rewrites that H1's text in place and puts the
+"Updated Oct 8, through Week 5" line under its gold rule; a page with no hero
+gets the line above the table instead (and, in "Let the tool supply the
+heading" mode, a generated hero). `og:updated_time`, `article:modified_time`
+and a WebPage `dateModified` in the graph are the data's date too. An archive
+page carries no FAQ of its own: the nineteen answers belong to the current
+page, and the archive closes with the Related block.
+
 ### Switching scoring format does not change the URL
 
 The table's Scoring and View controls are ordinary links, and the bundle
@@ -766,7 +804,7 @@ point at the API's own `/fpa`, so a reader changing scoring format inside your
 page would leave the site for the bare tool.
 
 `SC_TEAM_PATH_PREFIX` matters here too: every row's defense name links to that
-team's hub.
+team's `/schedule/` page under the hub (mak, 2026-10-10).
 
 ### What the colors mean
 
@@ -1365,6 +1403,41 @@ title, H1 and meta description; the plugin applies them through Rank Math and
 core and strips the island. **Those words are not yet approved by mak** - see
 the API's replit.md, "Rookie Hit Rates", before publishing the page. No schema
 node is added. In tool heading mode the shortcode prints the H1 itself.
+
+## Redraft draft strategy analysis - `[statchasers_redraft_strategy]`
+
+The page at /redraft-draft-strategy/. Ported from the standalone
+RESEARCH-Redraft-Draft-Analysis app, which the page ran until now through its
+own "StatChasers Redraft Analyzer" plugin and `[statchasers_redraft]`.
+
+```
+[statchasers_redraft_strategy]
+```
+
+No attributes and no query string: the app's WordPress build kept its five
+filters in memory and never wrote them to the address, and neither does this.
+The canonical is always the bare page.
+
+It prints the fragment from `/embed/redraft-strategy`, cached for an hour with
+a 30-day fallback: the default view (1QB, PPR, no TE premium, 12 teams, 2025)
+with the Strategy Ranking chart, Overall Strategies, Round Value, First Two
+Picks, First Five Rounds and the Real Draft Examples board in the page's HTML.
+Every other view - the other formats and seasons, the 2021-2025 comparison with
+its "Why Did Robust RB Rebound?" essay, the sorts, the round selects, the board
+carousel - is drawn in the reader's browser from 12-20 KB slices at
+`embed/redraft-strategy/data/combo/<key>`, `.../trends/<key>` and
+`.../boards`, which go through the browser proxy once the embed key is on.
+
+The page's heading is its editor's: the Divi code module above the shortcode
+holds the H1, so this shortcode is not in `statchasers_h1_mounts_a_tool()` and
+prints no H1 unless a theme answers `statchasers_rds_shortcode_h1`. The
+fragment's `scds-page-data` island carries the page's own title and
+description (the Rank Math values as of 2026-10-10), which the plugin applies
+and strips; any new wording needs mak's approval. No schema node is added.
+
+**Switching over:** install this version, swap `[statchasers_redraft]` for
+`[statchasers_redraft_strategy]` on the page, then deactivate and delete the
+standalone plugin. The two share no function names, so either order works.
 
 ## Locking the app to WordPress
 

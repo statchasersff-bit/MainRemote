@@ -224,6 +224,44 @@ describe("one address per meeting", () => {
     );
   });
 
+  test("a game-week page links its top fantasy players to the start/sit tool (mak, 2026-10-10)", async () => {
+    const { doc } = await dom(CANON);
+    const season = Number(doc.querySelector("[data-sct-root]").getAttribute("data-season"));
+    // A game from the season in progress, with a box score: the block is for
+    // decisions still to be made, so a playoff game or an old season prints none.
+    const href = [...doc.querySelectorAll("a.sct-mu-recap")]
+      .map((a) => a.getAttribute("href"))
+      .find((h) => Number(/(\d{4})-week-/.exec(h)[1]) === season);
+    if (!href) return;
+    const page = await dom(href);
+    const block = page.doc.querySelector('[data-fp-block="start-sit"]');
+    if (!block) return; // No box score stored for this game, so no Fantasy tab.
+
+    assert.equal(block.querySelector("h3").textContent, "Start/sit checks");
+    const cards = [...block.querySelectorAll(".sct-fp-ss-card")];
+    assert.ok(cards.length >= 1 && cards.length <= 2, "one card per team");
+    for (const card of cards) {
+      const links = [...card.querySelectorAll("a.sct-fp-ss-link")];
+      assert.ok(links.length >= 1);
+      const byPos = {};
+      for (const a of links) {
+        assert.match(a.getAttribute("href"), /^https:\/\/statchasers\.com\/redraft-command\/who-should-i-start\/[a-z0-9-]+$/);
+        const pos = a.previousElementSibling.textContent;
+        byPos[pos] = (byPos[pos] ?? 0) + 1;
+      }
+      // The QB, two RBs, three WRs and the TE at most.
+      for (const [pos, max] of Object.entries({ QB: 1, RB: 2, WR: 3, TE: 1 })) {
+        assert.ok((byPos[pos] ?? 0) <= max, `${pos} within its quota`);
+      }
+      assert.deepEqual(Object.keys(byPos).filter((p) => !["QB", "RB", "WR", "TE"].includes(p)), []);
+      const fpa = card.querySelector(".sct-fp-ss-fpa a");
+      if (fpa) {
+        assert.equal(fpa.getAttribute("href"), "https://statchasers.com/nfl/fantasy-points-allowed-by-position/");
+        assert.match(fpa.textContent, /^[A-Z][A-Za-z0-9 .]+ allows? the (most|\d{1,2}(st|nd|rd|th)-most) fantasy points to (QB|RB|WR|TE)s$/);
+      }
+    }
+  });
+
   test("a recap from an earlier season carries nothing that describes now", async () => {
     const { doc } = await dom(CANON);
     const pageSeason = Number(

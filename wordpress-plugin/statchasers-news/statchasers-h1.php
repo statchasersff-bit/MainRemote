@@ -961,6 +961,9 @@ function statchasers_h1_filter( $value ): bool {
 		'statchasers_player_stats_shortcode_h1' => 'player_stats',
 		'statchasers_sos_shortcode_h1'          => 'sos',
 		'statchasers_rhr_shortcode_h1'          => 'rhr',
+		// The redraft strategy page's heading is its editor's hero, like the
+		// redraft rankings board's; the tool prints one only when asked.
+		'statchasers_rds_shortcode_h1'          => 'rds',
 	);
 
 	return statchasers_h1_should_print( $map[ current_filter() ] ?? '' );
@@ -973,6 +976,7 @@ add_filter( 'statchasers_rankings_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_player_stats_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_sos_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_rhr_shortcode_h1', 'statchasers_h1_filter' );
+add_filter( 'statchasers_rds_shortcode_h1', 'statchasers_h1_filter' );
 
 /**
  * A theme switch retires the verdict.

@@ -134,6 +134,17 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     );
   });
 
+  test("every redraft-strategy.css selector naming a table, list, link, button, select or input carries the id-weight prefix", () => {
+    const all = selectors(read("redraft-strategy.css"));
+    const loose = all.filter(
+      (s) =>
+        /\.scds-[a-z-]*table\b|\btable\.scds-|\b(?:ul|a|button|input|select|th|td)\.scds-|\bbutton\b|\binput\b|\bselect\b|\.scds-table\b/.test(s) &&
+        !s.startsWith(":is(.scds, #scds-armour) "),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's rules on an embedded page");
+    assert.ok(all.includes(":is(.scds, #scds-armour) table.scds-table"), "the table frame itself must be armed");
+  });
+
   test("every rookie-hit-rates.css selector naming a table, list, link, button or input carries the id-weight prefix", () => {
     // The drawer lives on <body>, outside the tool, so it carries its own root in the prefix.
     const all = selectors(read("rookie-hit-rates.css"));

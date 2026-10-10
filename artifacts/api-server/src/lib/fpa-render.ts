@@ -16,8 +16,12 @@
  *
  * 3. **The number says what it is a mix of.** Early in a season the figure is
  *    mostly last season's, and a rank presented without that caveat is the page
- *    lying by omission. The data-mode line is therefore not a footnote - it sits
- *    above the table, before anything it qualifies.
+ *    lying by omission. The data-mode note sat above the table for that reason;
+ *    since 2026-10-10 (mak's spec) it sits directly under it, so that the first
+ *    thing read is the week range in the heading and the answer sentence, and
+ *    the note is still met before the legend and the FAQ. The "Updated ...,
+ *    through Week N" line under the H1 carries the currency the note used to
+ *    lead with.
  *
  * A note on color. Rank 1 is the softest defense and rank 32 the toughest,
  * with league average in the middle - that is a DIVERGING scale, not an ordinal
@@ -36,6 +40,10 @@
 import { escapeHtml, escapeJsonLd } from "./render";
 import type { FpaRow, FpaTableData, FpaView } from "./fpa/fpa-data";
 import { FANTASY_POSITIONS, type ScoringFormat } from "./fpa/nflverse";
+import { fpaPageCopy, type FpaPageCopy } from "./fpa-seo";
+
+/** Where the Related links point. Absolute: this markup is printed inside statchasers.com. */
+const SITE = "https://statchasers.com";
 
 export interface FpaRenderOptions {
   /**
@@ -267,8 +275,9 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
 /**
  * What the numbers currently are.
  *
- * Above the table, not below it: it qualifies everything underneath, and a
- * caveat a reader meets after forming an opinion has not done its job.
+ * Under the table since 2026-10-10 (mak's spec): the heading and the answer
+ * sentence now say which weeks the figures cover, and the blend note follows
+ * the table it qualifies, ahead of the legend and the FAQ.
  */
 function renderDataMode(data: FpaTableData): string {
   return (
@@ -318,9 +327,11 @@ function renderRow(row: FpaRow, options: FpaRenderOptions): string {
     `<span class="scf-team-name">${escapeHtml(row.name)}</span>` +
     `</span>`;
 
+  // The team's schedule page rather than its hub (mak, 2026-10-10): a reader
+  // looking at what a defense allows wants to see who it plays next.
   const name = row.team
     ? `<a class="scf-team-link" href="${escapeHtml(
-        `${prefix}${row.team.slug}/${query}`,
+        `${prefix}${row.team.slug}/schedule/${query}`,
       )}" target="_top">` +
       `<img class="scf-team-logo" src="${escapeHtml(row.team.logo)}" alt=""` +
       ` width="22" height="22" loading="lazy" decoding="async" />` +
@@ -675,30 +686,145 @@ function renderFaqSchema(options: FpaRenderOptions): string {
   );
 }
 
+/* ------------------------------------------------- answer, seasons, related */
+
+/**
+ * The one sentence a crawler can quote: the softest defense per position,
+ * from the table's own ranks (fpa-seo.ts). Above the controls, so it is the
+ * first thing under the heading. Swapped with the table when the format or
+ * view changes, because its figures are that view's.
+ */
+function renderAnswer(copy: FpaPageCopy): string {
+  return copy.answer ? `<p class="scf-answer">${escapeHtml(copy.answer)}</p>` : "";
+}
+
+/**
+ * "Updated Oct 8, through Week 5", under the heading. Standalone only: on a
+ * WordPress page the plugin prints it under the page's own H1, from the
+ * island, so the fragment leaves it out rather than print it twice.
+ */
+function renderUpdated(copy: FpaPageCopy): string {
+  if (!copy.updatedLine) return "";
+  const time = copy.updatedIso
+    ? `<time datetime="${escapeHtml(copy.updatedIso)}">${escapeHtml(copy.updatedLine)}</time>`
+    : escapeHtml(copy.updatedLine);
+  return `<p class="scf-updated">${time}</p>`;
+}
+
+/**
+ * Where an archive season lives: `<base>/2025/` on the WordPress page, and
+ * `/fpa?season=2025` on this app's own page, which has no path for it.
+ */
+export function fpaSeasonPath(base: string, season: number): string {
+  const trimmed = base.replace(/\/+$/, "");
+  return trimmed === "/fpa" || trimmed === "" ? `/fpa?season=${season}` : `${trimmed}/${season}/`;
+}
+
+/**
+ * The link between the current table and the archive (mak, 2026-10-10: "link
+ * the two pages to each other"). On the current page: each finished season's
+ * full-season table. On an archive page: the current season's table. Nothing
+ * when there is no other season to show.
+ */
+function renderSeasons(data: FpaTableData, options: FpaRenderOptions): string {
+  const base = options.basePath ?? "/fpa";
+  // `linkQuery` is "?embed=1" or ""; a path that already carries a query takes
+  // it as a second parameter.
+  const query = options.linkQuery ?? "";
+  const withQuery = (path: string): string =>
+    !query ? path : path.includes("?") ? `${path}&${query.replace(/^\?/, "")}` : `${path}${query}`;
+  const items =
+    data.kind === "archive"
+      ? [{ href: withQuery(base), text: `Current ${data.currentSeason} data` }]
+      : data.archiveSeasons.map((season) => ({
+          href: withQuery(fpaSeasonPath(base, season)),
+          text: `${season} full season`,
+        }));
+  if (items.length === 0) return "";
+  return (
+    `<nav class="scf-seasons" aria-label="Other seasons">` +
+    (data.kind === "archive" ? "" : `<span class="scf-seasons-label">Archive:</span> `) +
+    items
+      .map((item) => `<a class="scf-season-link" href="${escapeHtml(item.href)}" target="_top">${escapeHtml(item.text)}</a>`)
+      .join(`<span class="scf-seasons-sep" aria-hidden="true"> · </span>`) +
+    `</nav>`
+  );
+}
+
+/**
+ * Related tools (mak, 2026-10-10): the position strength-of-schedule pages,
+ * the projections and the start/sit tool. Under the table and the blend
+ * note, above the FAQ; the same shape the SOS pages' Related block has.
+ */
+function renderRelated(): string {
+  const links: { label: string; href: string }[] = [
+    ...(["qb", "rb", "wr", "te"] as const).map((pos) => ({
+      label: `${pos.toUpperCase()} Strength of Schedule`,
+      href: `${SITE}/nfl/fantasy-football-strength-of-schedule/${pos}/`,
+    })),
+    { label: "Fantasy Football Projections", href: `${SITE}/redraft-command/fantasy-football-projections` },
+    { label: "Who Should I Start?", href: `${SITE}/redraft-command/who-should-i-start` },
+  ];
+  return (
+    `<nav class="scf-related" aria-labelledby="scf-related-title">` +
+    `<h2 id="scf-related-title" class="scf-related-title">Related</h2>` +
+    `<ul class="scf-related-list">` +
+    links.map((l) => `<li><a href="${escapeHtml(l.href)}" target="_top">${escapeHtml(l.label)}</a></li>`).join("") +
+    `</ul></nav>`
+  );
+}
+
+/**
+ * The page's words, as data, for the WordPress plugin: title, H1, description,
+ * the Updated line and the date behind it, which season and kind this is, and
+ * the archive seasons the sitemap should list. statchasers-fpa.php reads it
+ * into Rank Math's title, description and graph and strips it before printing.
+ * Embedded only; standalone the page prints the same words itself.
+ */
+function renderMetaIsland(copy: FpaPageCopy, options: FpaRenderOptions): string {
+  if (!options.embed) return "";
+  return (
+    `<script type="application/json" class="scf-page-data">` +
+    escapeJsonLd(JSON.stringify(copy)) +
+    `</script>`
+  );
+}
+
 /* --------------------------------------------------------- page assembly */
 
 export function renderFpaPage(
   data: FpaTableData,
   options: FpaRenderOptions = {},
 ): string {
+  const copy = fpaPageCopy(data);
+  // The FAQ describes fantasy points allowed in general, and the current page
+  // carries it. An archive page repeating the nineteen answers would be the
+  // same copy at a second address, so it links to Related and stops there.
+  const live = data.kind === "live";
   return (
     `<div class="scf${options.embed ? " is-embed" : ""}" data-scf-root="1"` +
     ` data-season="${escapeHtml(String(data.season))}"` +
+    ` data-kind="${escapeHtml(data.kind)}"` +
     ` data-format="${escapeHtml(data.format)}"` +
     ` data-view="${escapeHtml(data.view)}"` +
     (options.endpoint
       ? ` data-scf-endpoint="${escapeHtml(options.endpoint)}"`
       : "") +
     `>` +
+    (options.embed ? "" : renderUpdated(copy)) +
+    renderAnswer(copy) +
+    renderSeasons(data, options) +
     renderControls(data, options) +
-    renderDataMode(data) +
     renderTable(data, options) +
+    renderDataMode(data) +
     renderLegend() +
-    renderFaq() +
+    renderRelated() +
+    (live ? renderFaq() : "") +
     `</div>` +
     // Outside the root div, like the other tools put it: the node describes the
     // page, and the plugin strips the embedded form before printing anyway.
-    renderFaqSchema(options)
+    (live ? renderFaqSchema(options) : "") +
+    renderMetaIsland(copy, options)
   );
 }
 

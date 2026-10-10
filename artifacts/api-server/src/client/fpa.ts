@@ -100,14 +100,15 @@ function wireSortableTable(root: HTMLElement): void {
 }
 
 /*
- * The three blocks a format or view change rewrites.
+ * The four blocks a format or view change rewrites.
  *
- * Not the whole root: the legend, the FAQ and its schema island are the same
- * in all six combinations, and replacing them would throw away any <details>
- * the reader had opened. The controls are in the list because the active
- * states and the CSV link live there.
+ * Not the whole root: the legend, the Related links, the FAQ and its schema
+ * island are the same in all six combinations, and replacing them would throw
+ * away any <details> the reader had opened. The controls are in the list
+ * because the active states and the CSV link live there; the answer sentence
+ * because its figures are the view's.
  */
-const SWAPPABLE = [".scf-controls", ".scf-mode", ".scf-scroll"] as const;
+const SWAPPABLE = [".scf-answer", ".scf-controls", ".scf-mode", ".scf-scroll"] as const;
 
 /** The combination a control selects, or null if it is not one. */
 function selection(

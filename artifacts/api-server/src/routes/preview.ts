@@ -21,6 +21,7 @@
  *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
  *   [statchasers_strength_of_schedule] -> /preview/sos
  *   [statchasers_rookie_hit_rates] -> /preview/rookie-hit-rates
+ *   [statchasers_redraft_strategy] -> /preview/redraft-strategy
  *   [statchasers_depth_charts] -> /preview/depth-charts[/view/team/pos]
  *
  * The depth charts are the exception to "same renderer as /embed": they are
@@ -59,6 +60,7 @@ import { renderHandcuffFragment } from "../lib/rb-handcuffs-ssr";
 import { renderSosFragment } from "../lib/sos-ssr";
 import { parseSosState } from "../lib/sos/sos-data";
 import { renderRhrFragment } from "../lib/rookie-hit-rates-ssr";
+import { renderRdsFragment } from "../lib/redraft-strategy-ssr";
 import {
   PLUGIN_DIR as DEPTH_PLUGIN_DIR,
   PREVIEW_ASSETS as DEPTH_ASSETS,
@@ -734,6 +736,45 @@ router.get("/preview/raw/rookie-hit-rates", (req, res) => {
     send(req, res, sourcePage("[statchasers_rookie_hit_rates]", "/embed/rookie-hit-rates", result.html));
   } catch (err) {
     logger.error({ err }, "Rookie hit rates fragment source view failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
+/**
+ * [statchasers_redraft_strategy] as it renders on a page. One view, the
+ * default; every other is the bundle's, from the real data routes.
+ */
+router.get("/preview/redraft-strategy", (req, res) => {
+  try {
+    const result = renderRdsFragment({ embed: true, dataUrl: "/embed/redraft-strategy/data" });
+    if (!result.ok) {
+      res.status(404).type("text/plain").send("Not found");
+      return;
+    }
+    send(
+      req,
+      res,
+      hostPage({
+        title: "Redraft Draft Strategy Analysis",
+        shortcode: "[statchasers_redraft_strategy]",
+        styles: ["/redraft-strategy.css"],
+        scripts: ["/dist/statchasers-redraft-strategy.js"],
+        fragment: result.html,
+      }),
+    );
+  } catch (err) {
+    logger.error({ err }, "Redraft strategy shortcode preview failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
+/** The redraft strategy fragment as source. */
+router.get("/preview/raw/redraft-strategy", (req, res) => {
+  try {
+    const result = renderRdsFragment({ embed: true });
+    send(req, res, sourcePage("[statchasers_redraft_strategy]", "/embed/redraft-strategy", result.html));
+  } catch (err) {
+    logger.error({ err }, "Redraft strategy fragment source view failed");
     res.status(500).type("html").send("<h1>Preview failed</h1>");
   }
 });
