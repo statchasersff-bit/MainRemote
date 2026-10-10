@@ -1183,9 +1183,11 @@ export function renderPreviewTop(p: Preview, ctx: PreviewRenderContext): string 
   return renderHero(p, ctx);
 }
 
-export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[]): string {
+/** `lead` is markup placed above the intro: the pair page's "Last meeting" block. */
+export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[], lead = ""): string {
   return (
     `<div class="sct-pv">` +
+    lead +
     renderIntro(p) +
     renderOutlook(p) +
     renderCall(p, ctx) +

@@ -38,9 +38,9 @@ import {
 import {
   canonicalizeMatchupPair,
   gameSegment,
-  isUpcomingFixture,
   meetingHasOwnAddress,
   type MatchupGameRef,
+  type MeetingFacts,
 } from "./pair";
 import { getPlayerSlugByName, loadRosterPct } from "../player/data";
 import type { DefenseLine } from "./fantasy-points";
@@ -109,6 +109,7 @@ import {
   pairColors as heroPairColors,
   renderScoreboardHero,
   scoreboardHeading,
+  scoreboardPageHeading,
   scoreboardResult,
   scoreboardSportsEvent,
   type ScoreboardGame,
@@ -237,7 +238,7 @@ export function seasonGameHeading(data: MatchupData, meeting: Meeting): string {
  */
 export function matchupPageHeading(data: MatchupData): string {
   const game = data.pinned ? matchupScoreboardGame(data) : null;
-  if (game) return scoreboardHeading(game);
+  if (game) return scoreboardPageHeading(game);
   const lead = seasonGameLead(data);
   return lead ? seasonGameHeading(data, lead) : matchupTitle(data);
 }
@@ -456,7 +457,7 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
       renderScoreboardHero(game, {
         headingTag,
         headingId: HERO_HEADING_ID,
-        heading: data.pinned ? undefined : matchupPageHeading(data),
+        heading: matchupPageHeading(data),
       }) + renderSeasonGameLink(data, options)
     );
   }
@@ -947,9 +948,11 @@ function playSentenceShort(play: ScoringPlay, teamShort: string): string {
 /* ------------------------------------------- the recap's added sections */
 
 /**
- * A club's schedule row as a link: its game page once it has one, the pair page before.
- * `games` is that club's season, which says whether the two meet again - see
- * meetingHasOwnAddress().
+ * A club's schedule row as a link: its game page once it has one, the pair page
+ * while the pair's page owns it. `games` is that club's season, which says
+ * whether the two meet again and which meeting was the latest - see
+ * meetingHasOwnAddress(); `currentSeason` is the league's, so a row from an
+ * earlier season always links to its archive.
  */
 function scheduleGameUrl(
   team: NflTeam,
@@ -957,6 +960,7 @@ function scheduleGameUrl(
   season: number,
   options: MatchupRenderOptions,
   games: ScheduleGame[],
+  currentSeason: number,
 ): string | null {
   const pair = g.opponent ? canonicalizeMatchupPair(team, g.opponent) : null;
   if (!pair) return null;
@@ -964,12 +968,10 @@ function scheduleGameUrl(
   const query = options.linkQuery ?? "";
   const final = g.status === "final" && g.result !== null;
   const now = options.now ?? Date.now();
-  const rematchAhead = games.some(
-    (other) =>
-      other.opponent?.abbreviation === g.opponent?.abbreviation &&
-      isUpcomingFixture(other.status === "final", other.kickoffMs, now),
-  );
-  return meetingHasOwnAddress(g.kickoffMs, final, now, rematchAhead)
+  const meetings: MeetingFacts[] = games
+    .filter((other) => other.opponent?.abbreviation === g.opponent?.abbreviation)
+    .map((other) => ({ kickoffMs: other.kickoffMs, isFinal: other.status === "final" && other.result !== null }));
+  return meetingHasOwnAddress({ kickoffMs: g.kickoffMs, isFinal: final, season }, meetings, currentSeason, now)
     ? `${gamePath(prefix, pair.slug, { season, week: g.week, seasonType: g.seasonType })}${query}`
     : `${matchupPath(prefix, pair.slug)}${query}`;
 }
@@ -1183,7 +1185,7 @@ function winnerPath(data: MatchupData, game: ScoreboardGame, options: MatchupRen
       home: home ? { short: team.nickname, score: mine } : { short: opp, score: theirs },
       neutral: g.neutralSite,
       meta: `${g.weekLabel}${date}`,
-      url: scheduleGameUrl(team, g, meeting.season, options, side.games),
+      url: scheduleGameUrl(team, g, meeting.season, options, side.games, data.state.season),
     };
   });
   const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
@@ -1263,7 +1265,7 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
   if (!game || !meeting) return "";
   const teams = [meeting.away, meeting.home];
   const sides = seasonSides(data)
-    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games)))
+    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games, data.state.season)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
   // The winner's next games follow, as their own card.
   return renderBeforeAfter(game, sides) + renderExploreCard(winnerPath(data, game, options));
@@ -1531,6 +1533,10 @@ export function matchupFaqSchema(
  * from inside the fragment would compete with the host's graph, not join it.
  */
 export function matchupEventSchema(data: MatchupData, embed: boolean): string {
+  // A dated page the pair's page still owns canonicalizes up to it, and the
+  // pair's page carries the event; a second copy here would be a second
+  // SportsEvent for one game.
+  if (data.pinnedIsCurrent) return "";
   const game = matchupScoreboardGame(data);
   const node = game ? scoreboardSportsEvent(game) : null;
   if (!node) return "";
@@ -3812,6 +3818,74 @@ function renderTabBar(
  * What the decision layer needs from this file: links, the date line and the
  * team fills. Null when the page is not an upcoming pair page with a preview.
  */
+/**
+ * The "Last meeting" block above the preview (the SEO brief of 2026-10-10):
+ * the result in one line, linked to the dated page's full box score, and
+ * the top six fantasy scorers from it, each linked to his profile. The pair's
+ * address earns its searches for "{team} vs {team} player stats", and a
+ * preview that said nothing about the game just played was answering none of
+ * them. Server-rendered, compact, and absent when the two have never met.
+ */
+function renderLastMeeting(data: MatchupData, options: MatchupRenderOptions): string {
+  const last = data.lastMeeting;
+  if (!last || last.meeting.kickoffMs === null) return "";
+  const { meeting, boxscore } = last;
+  const score = meeting.score;
+  if (!score) return "";
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const href = `${gamePath(prefix, data.pair.slug, {
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+  })}${options.linkQuery ?? ""}`;
+
+  // Winner first: "Falcons 45, Saints 24"; a tie reads away then home.
+  const sides = [
+    { team: meeting.away, points: score.away },
+    { team: meeting.home, points: score.home },
+  ];
+  if (meeting.winner && meeting.winner.abbreviation === meeting.home.abbreviation) sides.reverse();
+  const result = sides.map((s) => `${s.team.nickname} ${s.points}`).join(", ");
+  // The kickoff's own calendar year, not the season's: a Week 18 game of the
+  // 2025 season was played in January 2026.
+  const when = gameDateLine(asGame(meeting)).date.replace(/^[A-Za-z]+, /, "");
+  const year = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric" }).format(meeting.kickoffMs);
+  const line = `Last meeting: ${result}${meeting.winner ? "" : " (tie)"} (${meeting.weekLabel}, ${when}, ${year})`;
+
+  // The box score's players, through the same builder the recap uses, so the
+  // points here are the points the dated page prints.
+  const players = boxscore
+    ? buildGamePlayers(boxscore.players, null, boxscore.scoringPlays, dictionaryPosition)
+    : {};
+  const top = topScorers({ players }).slice(0, 6);
+  const rows = top
+    .map(({ name, ppr, player }) => {
+      const url = getPlayerProfileUrl(name);
+      const who = url ? `<a href="${escapeHtml(url)}">${escapeHtml(name)}</a>` : escapeHtml(name);
+      return (
+        `<li class="sct-mu-last-row">` +
+        `<span class="sct-mu-last-who">${who}` +
+        `<span class="sct-mu-last-team">${escapeHtml(player.team)}${player.pos ? ` · ${escapeHtml(player.pos)}` : ""}</span></span>` +
+        `<span class="sct-mu-last-pts">${escapeHtml(ppr.toFixed(1))}<small> PPR</small></span>` +
+        `<span class="sct-mu-last-line">${escapeHtml(statLine(player))}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+
+  return (
+    `<section class="sct-pv-sec sct-mu-last" aria-labelledby="sct-mu-last-h">` +
+    `<h2 class="sct-h2 sct-pv-h2" id="sct-mu-last-h">${escapeHtml(line)}</h2>` +
+    `<p class="sct-mu-last-link"><a class="sct-textlink" href="${escapeHtml(href)}">` +
+    `${escapeHtml(`${meeting.away.nickname} vs ${meeting.home.nickname} full box score and player stats`)} ${ARROW}</a></p>` +
+    (rows
+      ? `<p class="sct-pv-sub">Top fantasy scorers from that game (PPR)</p>` +
+        `<ol class="sct-mu-last-list">${rows}</ol>`
+      : "") +
+    `</section>`
+  );
+}
+
 export function previewContext(data: MatchupData, options: MatchupRenderOptions): PreviewRenderContext | null {
   const p = data.preview;
   if (!p) return null;
@@ -3902,7 +3976,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
           // Watch, Snapshot, Fantasy Matchups, Injury Watch and Head-to-Head
           // blocks that sat below it for comparison are gone, and so are the
           // hub links under them - the layer's own footer carries those.
-          renderPreviewBody(data.preview, pv, pvFaq)
+          renderPreviewBody(data.preview, pv, pvFaq, renderLastMeeting(data, options))
         : renderWatch(data) +
           renderSnapshot(data) +
           renderFantasy(data) +

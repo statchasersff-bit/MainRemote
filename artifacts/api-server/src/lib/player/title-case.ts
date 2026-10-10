@@ -29,3 +29,12 @@ export function titleCase(text: string): string {
     )
     .join(" ");
 }
+
+/**
+ * "Bijan Robinson's", "Zay Flowers'": the possessive of a name, with the
+ * bare apostrophe after a final s (the SEO brief of 2026-10-10: "Zay
+ * Flowers's 2026 Season" should read "Zay Flowers' 2026 Season").
+ */
+export function possessive(name: string): string {
+  return name.endsWith("s") || name.endsWith("S") ? `${name}'` : `${name}'s`;
+}

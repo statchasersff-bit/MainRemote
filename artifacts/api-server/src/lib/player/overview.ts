@@ -18,12 +18,15 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { titleCase } from "./title-case";
 import { renderFaqSection, selectFaq } from "./faq-engine";
 import { overviewPool } from "./faq-pools";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
 import { sectionHref } from "./sections";
+import { didNotPlayLabel, injuryForWeek } from "./injury-week";
+import { dynastyPageUrl } from "./data";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { CareerStatRow } from "./stats-profile";
 import type { PlayerPageData } from "./player-data";
@@ -305,11 +308,17 @@ function renderStrip(data: PlayerPageData, s: Season, options: PlayerRenderOptio
       }
       const result = c.result ? RESULT_WORD[c.result] : "";
       if (c.kind === "dnp" || c.pts === null) {
+        // The reason when the injury record knows it, linked to the Injury
+        // tab when he has one (the brief of 2026-10-10).
+        const label = didNotPlayLabel(injuryForWeek(data, s.leagueSeason, c.week));
+        const injuryHref = sectionHref(data, options, "injury");
         return (
           `<li class="scp-ox-wk is-dnp">` + top(result) +
           `<div class="scp-ox-wk-opp">${oppMark(c)}</div>${SEP}<div class="scp-ox-wk-bar"></div>` +
           `<div class="scp-ox-wk-pts">${DASH}</div>${SEP}` +
-          `<div class="scp-ox-wk-fin is-muted">Did not play</div></li>`
+          `<div class="scp-ox-wk-fin is-muted">` +
+          (injuryHref ? `<a class="scp-ox-wk-dnp" href="${escapeHtml(injuryHref)}">${escapeHtml(label)}</a>` : escapeHtml(label)) +
+          `</div></li>`
         );
       }
       const height = Math.max(4, maxPts > 0 ? (c.pts / maxPts) * 100 : 4);
@@ -359,7 +368,7 @@ function renderStrip(data: PlayerPageData, s: Season, options: PlayerRenderOptio
     `. 1st allows the most, 32nd the fewest.`;
 
   return (
-    sectionOpen("scp-ox-strip-h", `${name}'s ${s.leagueSeason} season, week by week`, escapeHtml(lede.trim())) +
+    sectionOpen("scp-ox-strip-h", `${possessive(name)} ${s.leagueSeason} season, week by week`, escapeHtml(lede.trim())) +
     `<ol class="scp-ox-strip" role="list">${cells.replaceAll("<li ", '<li role="listitem" ')}</ol>` +
     (timeline.some((c) => c.kind === "future") ? `<p class="scp-ox-note">${note}</p>` : "") +
     `</section>`
@@ -514,21 +523,60 @@ function renderRead(data: PlayerPageData, s: Season, options: PlayerRenderOption
   const rc =
     `<div class="scp-ox-panel is-rc">` +
     `<h3>Redraft Command</h3>` +
-    `<p>${escapeHtml(`Rest-of-season rankings, trade values and waiver priorities for your league settings. ${last}'s value updates after every game.`)}</p>` +
+    `<p>${escapeHtml(`Rest-of-season rankings, trade values and waiver priorities for your league settings. ${possessive(last)} value updates after every game.`)}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(redraft)}" data-cta="redraft-command-sidebar">` +
     `${escapeHtml(`Open ${last} in Redraft Command`)}</a>` +
     `</div>`;
 
   const profile = renderProfile(data, s);
+  const trade = renderTradeValue(data);
 
   return (
     sectionOpen("scp-ox-read-h", `Should you start or roster ${name}?`, "") +
     `<div class="scp-ox-read">` +
     `<div>` +
     `<div class="scp-ox-prose">${paragraphs.map((p) => `<p>${p}</p>`).join("")}</div>` +
+    trade +
     `</div>` +
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${last} in Redraft Command and fantasy profile`)}">${rc}${profile}</aside>` +
     `</div></section>`
+  );
+}
+
+/** The redraft trade values board. */
+const TRADE_VALUES_URL = "https://statchasers.com/redraft-command/fantasy-football-trade-values";
+
+/**
+ * His trade value, under the read (the SEO brief of 2026-10-10): the hub's
+ * description promises "trade value" and the dynasty value page is the one
+ * page of his the hub never linked. One line from the stored dynasty
+ * rankings when he is in them, then the two links - the dynasty page only
+ * when it exists (data/player/dynasty_pages.json), the redraft board always.
+ */
+function renderTradeValue(data: PlayerPageData): string {
+  const name = data.player.name;
+  const dynastyUrl = dynastyPageUrl(data.player.slug);
+  const dyn = data.dynasty;
+  const pos = dyn?.position || data.player.position || "";
+  const value =
+    dyn && pos
+      ? `Dynasty value: ${pos}${dyn.positionalRank}, ${dyn.value.toLocaleString("en-US")} on the StatChasers market consensus`
+      : null;
+  const links = [
+    dynastyUrl
+      ? `<a href="${escapeHtml(dynastyUrl)}" data-cta="dynasty-value">${escapeHtml(`${name} dynasty value and trade value`)}</a>`
+      : null,
+    `<a href="${escapeHtml(TRADE_VALUES_URL)}" data-cta="redraft-trade-value">${escapeHtml(`${name} redraft trade value`)}</a>`,
+  ].filter((l): l is string => l !== null);
+  return (
+    `<p class="scp-ox-trade">` +
+    (value
+      ? (dynastyUrl
+          ? `<a href="${escapeHtml(dynastyUrl)}" data-cta="dynasty-value-line">${escapeHtml(value)}</a>`
+          : escapeHtml(value)) + `. `
+      : "") +
+    links.join(" · ") +
+    `</p>`
   );
 }
 

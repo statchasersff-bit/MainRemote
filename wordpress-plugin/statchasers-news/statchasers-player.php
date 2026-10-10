@@ -1509,8 +1509,10 @@ function statchasers_player_indexed_section(): string {
  * the island is ignored and the stored copy stands.
  *
  * On /bio/ the island also carries the Bio spec's Person node and index
- * decision (mak, 2026-09-30), kept here as `person` and `index`; on /injury/
- * the date of the latest report, as `modified`, for the WebPage node.
+ * decision (mak, 2026-09-30), kept here as `person` and `index`; the profile
+ * carries the Person too since 2026-10-10, with his club. `modified` is the
+ * page's data date: the latest report on /injury/, the day of his latest
+ * game on the profile, /stats/, /game-log/ and /outlook/.
  *
  * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool,modified?:string}|null
  */
@@ -1587,10 +1589,14 @@ function statchasers_player_profile_takes_live_meta(): bool {
 }
 
 /**
- * The injury page's dateModified (mak, 2026-10-09): the date in its title,
- * on the graph's WebPage node. Rank Math's graph on these pages carries no
- * WebPage of its own (BreadcrumbList and the FAQ only), so one is added when
- * none is there, and the FAQ is made part of it.
+ * The page's dateModified, on the graph's page node: the injury page's is
+ * the date in its title (mak, 2026-10-09); the profile's, the Stats, Game
+ * Log and Outlook tabs' is the day of his latest game (the SEO brief of
+ * 2026-10-10) - all read from the API's island as `modified`. Rank Math's
+ * graph on these pages carries no WebPage of its own (BreadcrumbList and the
+ * FAQ only), so one is added when none is there - a ProfilePage when the
+ * island carries a Person (statchasers_player_bio_schema ran first) - and
+ * the FAQ is made part of it.
  *
  * @param array<string,mixed> $data Rank Math's schema nodes.
  * @return array<string,mixed>
@@ -1609,6 +1615,10 @@ function statchasers_player_modified_schema( $data ) {
 	// claim a precision the report does not have.
 	$modified = $meta['modified'];
 	$url      = statchasers_player_section_canonical();
+	if ( '' === $url ) {
+		$queried = get_queried_object();
+		$url     = $queried instanceof WP_Post ? trailingslashit( (string) get_permalink( $queried->ID ) ) : '';
+	}
 
 	foreach ( $data as $key => $node ) {
 		if ( ! is_array( $node ) || empty( $node['@type'] ) ) {
@@ -1646,20 +1656,29 @@ add_filter( 'rank_math/json_ld', 'statchasers_player_modified_schema', 30 );
 /* ------------------------------------------------------------- bio schema */
 
 /**
- * The Bio section as a ProfilePage about a Person (Bio spec 2.11, approved by
- * mak 2026-09-30).
+ * The Bio section, and the profile itself, as a ProfilePage about a Person
+ * (Bio spec 2.11, approved by mak 2026-09-30; the profile since the SEO
+ * brief of 2026-10-10, which found the hub carrying FAQPage and
+ * BreadcrumbList only).
  *
- * The Person arrives from the API (bio-seo.ts) without an address; it gets
- * the profile's permalink as its url and `<profile>#person` as its @id, the
- * one every section can share. Rank Math's page node becomes a ProfilePage
- * whose mainEntity is that Person. Its BreadcrumbList already ends at Bio
+ * The Person arrives from the API (bio-seo.ts; hubPersonNode in
+ * player-seo.ts for the profile, with his club as an affiliation) without an
+ * address; it gets the profile's permalink as its url and `<profile>#person`
+ * as its @id, the one every section can share. Rank Math's page node becomes
+ * a ProfilePage whose mainEntity is that Person; when the graph has no page
+ * node at all one is added, named for the page, so the ProfilePage exists
+ * on the profile too. Its BreadcrumbList already ends at the section
  * (statchasers_player_breadcrumbs) and the FAQPage is grafted separately.
  *
  * @param array<string,mixed> $data Rank Math's schema nodes.
  * @return array<string,mixed>
  */
 function statchasers_player_bio_schema( $data ) {
-	if ( ! is_array( $data ) || 'bio' !== statchasers_player_indexed_section() ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+	$section = statchasers_player_indexed_section();
+	if ( 'bio' !== $section && ( '' !== $section || ! statchasers_player_profile_takes_live_meta() ) ) {
 		return $data;
 	}
 
@@ -1683,9 +1702,29 @@ function statchasers_player_bio_schema( $data ) {
 			if ( is_string( $type ) && 'WebPage' === $type ) {
 				$data[ $key ]['@type']      = 'ProfilePage';
 				$data[ $key ]['mainEntity'] = array( '@id' => $person['@id'] );
-				break 2;
+				return $data;
 			}
 		}
+	}
+
+	// No page node to promote: add the ProfilePage itself, at the address
+	// the request is for (the profile, or /bio/), so
+	// statchasers_player_modified_schema finds a page to date.
+	$url     = '' === $section ? $profile : statchasers_player_section_canonical();
+	$page_id = '' === $url ? '' : $url . '#webpage';
+	$page    = array(
+		'@type'       => 'ProfilePage',
+		'name'        => $meta['title'],
+		'description' => $meta['description'],
+		'mainEntity'  => array( '@id' => $person['@id'] ),
+	);
+	if ( '' !== $page_id ) {
+		$page['@id'] = $page_id;
+		$page['url'] = $url;
+	}
+	$data = array( 'statchasersPlayerPage' => $page ) + $data;
+	if ( '' !== $page_id && isset( $data['statchasersPlayerFaq'] ) && is_array( $data['statchasersPlayerFaq'] ) ) {
+		$data['statchasersPlayerFaq']['isPartOf'] = array( '@id' => $page_id );
 	}
 
 	return $data;

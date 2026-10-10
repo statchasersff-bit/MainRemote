@@ -1580,11 +1580,11 @@ foreach ( array( '2026-week-01', '2026-WEEK-1', '2026-wk-1', '2025-pro-bowl', '2
 }
 
 $GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
-is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Super Bowl 2025', 'a Super Bowl is headed by its round' );
+is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Super Bowl, 2025', 'a Super Bowl is headed by its round' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
-	'Patriots vs Eagles, Super Bowl 2025 Box Score',
-	'and titled by it (the nickname rung: the full names run past sixty)'
+	'Patriots vs Eagles Player Stats & Box Score, Super Bowl 2025',
+	'and titled by it: the brief\'s "{Away} vs {Home} Player Stats & Box Score, {round} {year}" (2026-10-10)'
 );
 
 // Every matchup title fits in 60 characters: all 496 pairs, every state, and
@@ -1614,8 +1614,8 @@ foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 is( strlen( $longest ) <= 60, true, "no matchup title is over 60 characters (longest: $longest)" );
 is(
 	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
-	'Miami Dolphins vs New York Jets, Week 1 2026 Box Score',
-	'no brand, even when it would fit'
+	'Dolphins vs Jets Player Stats & Box Score, Week 1 2026',
+	'no brand and nicknames, even when the full names would fit'
 );
 is(
 	statchasers_matchup_meta( 'arizona-cardinals', 'buffalo-bills', 'historical', '2026' )['title'],
@@ -1655,10 +1655,10 @@ is(
 	'season game: a week header does not retitle an upcoming pair'
 );
 $GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
-is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'a regular-season game is still "Week N"' );
+is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Week 1, 2026', 'a regular-season game is still "Week N"' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2026-week-1' )['description'],
-	'Full box score from Patriots vs Eagles in Week 1 of 2026: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
+	'Patriots vs Eagles, Week 1 2026: full box score, fantasy points for every player, scoring summary and team stats.',
 	'with the API\'s own regular-season description'
 );
 
@@ -1722,7 +1722,7 @@ is( statchasers_matchup_event_node(), null, 'an Event with no startDate is dropp
 // An API from before the headers: the plugin's own builders stand in.
 $GLOBALS['http_headers'] = array();
 $GLOBALS['http_body']    = $hero_html;
-is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'with no heading header, the pair order stands' );
+is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Week 1, 2026', 'with no heading header, the pair order stands' );
 
 // "The tool supplies the heading": the theme's title is emptied, so the hero
 // heading has to become the H1 here or the page has none (mak, 2026-10-09).

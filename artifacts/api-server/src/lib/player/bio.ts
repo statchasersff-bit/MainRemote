@@ -23,6 +23,7 @@
  */
 
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import { possessive } from "./title-case";
 import type { BioFacts, DraftRecord, Player } from "./types";
 
 /** One labeled fact in the identity block. */
@@ -464,7 +465,7 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
 
   if (player.years_exp) {
     narrative.push(
-      `${currentSeason} is ${last}'s ${ordinal(player.years_exp + 1)} NFL season.`,
+      `${currentSeason} is ${possessive(last)} ${ordinal(player.years_exp + 1)} NFL season.`,
     );
   }
 
@@ -594,8 +595,8 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
   if (born) {
     faq.push({
       key: "birthday",
-      question: `When is ${name}'s birthday?`,
-      answer: `${name}'s birthday is ${born.replace(/, \d{4}$/, "")}. He was born on ${born}` +
+      question: `When is ${possessive(name)} birthday?`,
+      answer: `${possessive(name)} birthday is ${born.replace(/, \d{4}$/, "")}. He was born on ${born}` +
         (age !== null ? ` and is ${age} years old.` : "."),
     });
   }
@@ -606,7 +607,7 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
       question: `How long has ${name} been in the NFL?`,
       answer: seasonNo === 1
         ? `${name} is an NFL rookie in ${currentSeason}.`
-        : `${currentSeason} is ${name}'s ${ordinal(seasonNo)} NFL season` +
+        : `${currentSeason} is ${possessive(name)} ${ordinal(seasonNo)} NFL season` +
           (firstSeason ? `; he entered the league in ${firstSeason}` : "") +
           (pickRow ? ` as a ${roundWord(pickRow.round)}-round pick of the ${pickRow.by}.` : "."),
     });

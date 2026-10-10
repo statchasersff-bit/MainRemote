@@ -19,7 +19,7 @@ import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/s
 import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-data";
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
-import { RECENT_WINDOW_MS, isUpcomingFixture, type MatchupGameRef, type MatchupPair } from "./pair";
+import { isUpcomingFixture, pairInPreviewMode, type MatchupGameRef, type MatchupPair, type MeetingFacts } from "./pair";
 import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
@@ -142,14 +142,23 @@ export interface MatchupData {
    */
   pinnedRequested: boolean;
   /**
-   * Whether the pinned game is the one the pair's own address is already
-   * leading with.
+   * Whether the pinned game is the one the pair's own address owns
+   * (pairOwnsMeeting in pair.ts): this season's latest result, while the
+   * pair's page is not yet in preview mode for the rematch.
    *
-   * The dated URL exists only once the pair page has let the game go. While it
-   * is still inside RECENT_WINDOW_MS the recap has exactly one address, and the
-   * route reads this to send the dated one there.
+   * The dated page still renders, but it canonicalizes up to the pair's
+   * address, carries no SportsEvent of its own and stays out of the game
+   * sitemap, so the recap has exactly one canonical address at any moment.
+   * Was a 301 until 2026-10-10.
    */
   pinnedIsCurrent: boolean;
+  /**
+   * The meeting the pair's page summarizes above its preview: the latest
+   * played meeting this season, else the latest from the seasons before,
+   * with its box score when one is stored. Null on every page but the
+   * pair's own in preview mode, and when the two have never met.
+   */
+  lastMeeting: { meeting: Meeting; boxscore: GameBoxscore | null } | null;
   /** Latest fetch stamp across the history schedules, for the cache key. */
   historyFetchedAt: number;
   /**
@@ -236,34 +245,40 @@ function isUpcoming(meeting: Meeting, now: number): boolean {
   return isUpcomingFixture(meeting.status === "final", meeting.kickoffMs, now);
 }
 
+/** A meeting as the ownership rule in pair.ts reads it. */
+function facts(meeting: Meeting): MeetingFacts {
+  return { kickoffMs: meeting.kickoffMs, isFinal: meeting.status === "final" };
+}
+
 /**
  * Which state the page is in, and the meeting it leads with.
  *
- * Upcoming beats recent: with a meeting behind and another ahead - a divisional
- * pair in the back half of the season - the reader wants the one they can
- * still watch. Recent means final within RECENT_WINDOW_MS of kickoff, which is
- * long enough to cover the week after and short enough that a September result
- * is not still "recent" in November.
+ * The latest result keeps the page (pairInPreviewMode in pair.ts): with a
+ * meeting behind and another ahead - a divisional pair in the back half of
+ * the season - the page stays the recap of the one played until the rematch
+ * is within six days, then turns into the preview, then goes back to being a
+ * recap once the rematch is played. "recently_completed" is therefore the
+ * state of every pair that has met this season and is not previewing a
+ * rematch, however long ago the game was: it is the recap the dated URL
+ * canonicalizes up to. A pair that has not met this season is "historical",
+ * leading with the latest meeting of the seasons before.
  */
 function decide(
   thisSeason: Meeting[],
   history: Meeting[],
   now: number,
 ): { matchupState: MatchupState; featured: Meeting | null } {
-  const next = thisSeason.find((meeting) => isUpcoming(meeting, now));
-  if (next) return { matchupState: "upcoming", featured: next };
-
   const played = thisSeason.filter((meeting) => meeting.status === "final");
   const last = played[played.length - 1];
-  if (
-    last &&
-    last.kickoffMs !== null &&
-    now - last.kickoffMs <= RECENT_WINDOW_MS
-  ) {
-    return { matchupState: "recently_completed", featured: last };
+
+  if (pairInPreviewMode(thisSeason.map(facts), now)) {
+    const next = thisSeason.find((meeting) => isUpcoming(meeting, now));
+    if (next) return { matchupState: "upcoming", featured: next };
   }
 
-  return { matchupState: "historical", featured: last ?? history[0] ?? null };
+  if (last) return { matchupState: "recently_completed", featured: last };
+
+  return { matchupState: "historical", featured: history[0] ?? null };
 }
 
 function tally(meetings: Meeting[], a: NflTeam, b: NflTeam): HeadToHead {
@@ -354,10 +369,25 @@ export async function getMatchupData(
 
   const featured = pinned ?? natural.featured;
   const matchupState = natural.matchupState;
+  // Owned by the pair's page: the same game the pair's own address is the
+  // recap of. Matched on the meeting itself rather than the event id, which
+  // a schedule row can lack.
   const pinnedIsCurrent =
     pinned !== null &&
     natural.matchupState === "recently_completed" &&
-    natural.featured?.espnEventId === pinned.espnEventId;
+    natural.featured === pinned;
+
+  // What the preview summarizes: the latest meeting played, this season
+  // first. Its box score is one stored read; a refusal costs the scorers,
+  // not the line.
+  let lastMeeting: MatchupData["lastMeeting"] = null;
+  if (matchupState === "upcoming" && !game) {
+    const played = thisSeason.filter((m) => m.status === "final" && m.score !== null);
+    const meeting = played[played.length - 1] ?? history.find((m) => m.score !== null) ?? null;
+    if (meeting) {
+      lastMeeting = { meeting, boxscore: await getGameBoxscore(meeting.espnEventId) };
+    }
+  }
 
   // Allowed to fail on its own, like the prior-season schedules above: an FPA
   // table that will not load costs this page one block, not the page.
@@ -437,6 +467,7 @@ export async function getMatchupData(
     pinned,
     pinnedRequested: game !== null,
     pinnedIsCurrent,
+    lastMeeting,
     // Across both documents of every prior season, so a postseason that
     // refreshes on its own still moves the fragment's cache key.
     historyFetchedAt: prior
@@ -484,5 +515,10 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     data.winnerPostseason ? `post${data.winnerPostseason.length}` : "",
     data.gameStats ? "stats" : "",
     data.preview ? `pv${data.preview.updatedMs}` : "",
+    // The preview's "Last meeting" block: which game, and whether its box
+    // score was there to draw the scorers from.
+    data.lastMeeting
+      ? `last${data.lastMeeting.meeting.season}${data.lastMeeting.meeting.seasonType === "post" ? "p" : "w"}${data.lastMeeting.meeting.week}${data.lastMeeting.boxscore ? "box" : ""}`
+      : "",
   ].join("|");
 }

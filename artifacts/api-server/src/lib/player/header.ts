@@ -11,6 +11,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { headshotImg } from "../headshot-html";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
@@ -600,7 +601,7 @@ export function renderHero(
       primary =
         `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(outlookHref)}"` +
         ` target="_top" data-cta="outlook-header-${cta}" data-scp-cta="outlook-header">` +
-        `${escapeHtml(`See ${last}'s ${OUTLOOK_SEASON} outlook`)}</a>`;
+        `${escapeHtml(`See ${possessive(last)} ${OUTLOOK_SEASON} outlook`)}</a>`;
     }
     const redraft =
       `<a class="scp-pbtn scp-pbtn--line"` +

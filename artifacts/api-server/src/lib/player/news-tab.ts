@@ -16,6 +16,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { itemTimestamp, type NewsItem } from "../render";
 import { easternParts } from "../news-card";
 import { categoryLabel } from "../news-category";
@@ -410,10 +411,10 @@ function renderMates(data: PlayerPageData, ctx: NewsContext, options: PlayerRend
   const q = options.linkQuery ?? "";
   const lede =
     ctx.pos === "QB"
-      ? `Updates on the players who catch ${ctx.last}'s passes.`
+      ? `Updates on the players who catch ${possessive(ctx.last)} passes.`
       : ctx.pos === "RB"
-        ? `Updates on ${ctx.last}'s backfield partners and quarterback.`
-        : `Updates on ${ctx.last}'s quarterback and target competition.`;
+        ? `Updates on ${possessive(ctx.last)} backfield partners and quarterback.`
+        : `Updates on ${possessive(ctx.last)} quarterback and target competition.`;
   const rows = items
     .map(({ item, mate }) => {
       const ts = itemTimestamp(item);
@@ -506,7 +507,7 @@ function newsPool(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lea
   }
   const newest = (pred: (i: FeedItem) => boolean): FeedItem | null => items.filter(pred).sort((a, b) => b.ms - a.ms)[0] ?? null;
   const depth = newest((i) => i.type === "depth");
-  if (depth) pool.push({ key: "role", q: `Has ${ctx.name}'s role changed?`, a: `The latest depth-chart news on ${ctx.last}: ${tell(depth)}` });
+  if (depth) pool.push({ key: "role", q: `Has ${possessive(ctx.name)} role changed?`, a: `The latest depth-chart news on ${ctx.last}: ${tell(depth)}` });
   const trade = newest((i) => i.type === "transaction" && /\btrade/i.test(i.headline + " " + i.summary));
   if (trade) pool.push({ key: "trade", q: `Was ${ctx.name} traded?`, a: `The latest trade news on ${ctx.last}: ${tell(trade)}` });
   const signed = newest((i) => i.type === "transaction" && /\bsign/i.test(i.headline + " " + i.summary));

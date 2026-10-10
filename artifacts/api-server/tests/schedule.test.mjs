@@ -425,25 +425,43 @@ describe("a divisional rematch still to come", () => {
   }
 
   /**
-   * The regression this exists for: inside the fourteen days a finished game
-   * linked to the pair's page, but for a pair that meets again the page leads
-   * with the rematch - so a Week 2 result opened a January preview.
+   * The rule since 2026-10-10 (pairOwnsMeeting in matchup/pair.ts): the
+   * pair's page owns this season's latest result until the rematch is within
+   * six days, so a Week 2 result links to the pair's page in September
+   * whether or not the two meet again in January - and to its own dated
+   * page once the rematch is a week away, when the pair's page is the
+   * preview. The board's season is the one the server is pinned to.
    */
-  test("the recent result links to its dated recap, the one-off to the pair", () => {
-    const html = render.renderSchedulePage(
-      {
-        season: 2026, liveNow: false, fetchedAt: 0, version: "t",
-        games: [
-          game("2026_02_WAS_DAL", 2, "WAS", "DAL", WEEK_2, true),
-          game("2026_02_NE_PIT", 2, "PIT", "NE", WEEK_2, true),
-          game("2026_18_DAL_WAS", 18, "DAL", "WAS", Date.UTC(2027, 0, 10, 18), false),
-        ],
-      },
-      { view: "week", week: 2, now: WEEK_2 + 5 * DAY },
-    );
-    const hrefs = [...html.matchAll(/class="scs-go" href="([^"]+)"/g)].map((m) => m[1]);
-    assert.ok(hrefs.includes("/nfl/dallas-cowboys-vs-washington-commanders/2026-week-2/"), hrefs.join(" "));
-    assert.ok(hrefs.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), hrefs.join(" "));
+  test("the latest result links to the pair until the rematch is near, then to its dated recap", () => {
+    const board = (now) =>
+      render.renderSchedulePage(
+        {
+          season: 2024, liveNow: false, fetchedAt: 0, version: "t",
+          games: [
+            game("2024_02_WAS_DAL", 2, "WAS", "DAL", WEEK_2, true),
+            game("2024_02_NE_PIT", 2, "PIT", "NE", WEEK_2, true),
+            game("2024_18_DAL_WAS", 18, "DAL", "WAS", WEEK_2 + 112 * DAY, false),
+          ],
+        },
+        { view: "week", week: 2, now },
+      );
+    const hrefsAt = (now) => [...board(now).matchAll(/class="scs-go" href="([^"]+)"/g)].map((m) => m[1]);
+
+    // The rule reads the server's season pin; this process is not the server.
+    const previous = process.env.SC_SCHEDULE_SEASON;
+    process.env.SC_SCHEDULE_SEASON = "2024";
+    try {
+      const september = hrefsAt(WEEK_2 + 5 * DAY);
+      assert.ok(september.includes("/nfl/dallas-cowboys-vs-washington-commanders/"), september.join(" "));
+      assert.ok(september.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), september.join(" "));
+
+      const january = hrefsAt(WEEK_2 + 112 * DAY - 5 * DAY);
+      assert.ok(january.includes("/nfl/dallas-cowboys-vs-washington-commanders/2024-week-2/"), january.join(" "));
+      assert.ok(january.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), january.join(" "));
+    } finally {
+      if (previous === undefined) delete process.env.SC_SCHEDULE_SEASON;
+      else process.env.SC_SCHEDULE_SEASON = previous;
+    }
   });
 });
 
@@ -469,26 +487,32 @@ describe("the schedule page", () => {
    * Every row is a door into the two clubs' own page.
    *
    * The link is the point, but the ADDRESS is what this asserts. There are two
-   * of them and matchup/pair.ts owns the rule that picks between them: a
-   * finished game the pair's page has let go of has a dated address of its own,
-   * and everything else is the pair. The fixture is the whole of 2024, so every
-   * row here is on the far side of that fourteen-day window - which makes this
-   * the dated case, and the one a reader opening a past week actually wants.
+   * of them and matchup/pair.ts owns the rule that picks between them: the
+   * pair's page owns this season's latest meeting, so a one-off game links to
+   * the pair, and a game the two played again later in the season has a dated
+   * address of its own. The fixture is the whole of 2024 and the server is
+   * pinned to it, so a Week 3 divisional game is the dated case and a
+   * Week 3 one-off is the pair.
    */
   test("every game on the board opens the two clubs' own page", async () => {
     const { doc } = await page("/schedule/week-3");
     const rows = [...doc.querySelectorAll("article.scs-game")];
     assert.ok(rows.length > 0);
 
+    let dated = 0;
     for (const row of rows) {
       const link = row.querySelector(".scs-game-go a.scs-go");
       assert.ok(link, `a row with no matchup link: ${row.id}`);
+      const href = link.getAttribute("href");
       assert.match(
-        link.getAttribute("href"),
-        /^\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\/2024-week-3\/$/,
-        "a finished game long past has a dated address of its own",
+        href,
+        /^\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\/(2024-week-3\/)?$/,
+        "the pair's page, or the game's own dated page",
       );
+      if (/2024-week-3\/$/.test(href)) dated += 1;
     }
+    assert.ok(dated > 0, "the divisional games of Week 3 were played again, so they have their own pages");
+    assert.ok(dated < rows.length, "a one-off game is the pair page's own recap");
   });
 
   /**
@@ -1142,8 +1166,9 @@ describe("the WordPress mount", () => {
     );
     assert.ok(hrefs.length > 0, "the embedded board still carries the links");
     for (const href of hrefs) {
-      assert.match(href, /^\/nfl\/head-to-head\/[a-z0-9-]+-vs-[a-z0-9-]+\/2024-week-3\/$/, href);
+      assert.match(href, /^\/nfl\/head-to-head\/[a-z0-9-]+-vs-[a-z0-9-]+\/(2024-week-3\/)?$/, href);
     }
+    assert.ok(hrefs.some((href) => /2024-week-3\/$/.test(href)), "the rematched games carry their dated address");
     // Same reasoning as the week rail above: ?embed=1 is meaningless once the
     // links point at the site.
     assert.ok(!hrefs.some((href) => href.includes("?")));

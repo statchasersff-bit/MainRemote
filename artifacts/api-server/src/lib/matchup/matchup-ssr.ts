@@ -50,9 +50,10 @@ export interface MatchupSsrResult {
    */
   pinnedMissing: boolean;
   /**
-   * A game address asked for the meeting the pair's own address is still
-   * leading with. The route 301s to the pair, so that inside the two-week
-   * window exactly one URL carries the recap.
+   * A game address asked for the meeting the pair's own address owns. The
+   * page renders, but its canonical is the pair's address and it carries no
+   * SportsEvent, so the recap has exactly one canonical URL. (A 301 until
+   * 2026-10-10.)
    */
   pinnedIsCurrent: boolean;
   /**
@@ -160,6 +161,11 @@ function readTemplate(publicDir: string): string {
 
 export interface RenderMatchupAppPageOptions extends MatchupRenderOptions {
   canonical: string;
+  /**
+   * The pair's own absolute address, for a dated page the pair's page owns:
+   * its canonical then points here rather than at itself.
+   */
+  pairCanonical?: string;
 }
 
 export async function renderMatchupAppPage(
@@ -171,7 +177,10 @@ export async function renderMatchupAppPage(
   // The meta reads the same data the fragment was drawn from, so the title
   // and the page cannot disagree about the state.
   const { result: fragment, data } = await renderWithData(pair, options);
-  const meta = matchupPageMeta(data, options.canonical);
+  const meta = matchupPageMeta(
+    data,
+    data.pinnedIsCurrent && options.pairCanonical ? options.pairCanonical : options.canonical,
+  );
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
     if (!template.includes(marker)) logger.warn({ marker }, "matchup.html is missing an SSR marker");

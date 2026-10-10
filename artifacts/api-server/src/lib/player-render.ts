@@ -96,6 +96,8 @@ import {
   STARTSIT_BASE,
   type MatchupBand,
 } from "./player/header";
+import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
+import { dynastyPageUrl } from "./player/data";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
 import { currentRank, nextGame, oneDecimal, seasonPpg } from "./player/season-phase";
@@ -928,6 +930,9 @@ function renderNav(
         `<li><a class="scp-nav-link${section.id === active ? " is-active" : ""}"` +
         ` id="${escapeHtml(section.id)}-tab"` +
         ` href="${escapeHtml(href)}"` +
+        // The tab the address names, for a crawler and a screen reader alike
+        // (the brief of 2026-10-10); the bundle moves it with the panel.
+        (section.id === active ? ` aria-current="page"` : "") +
         ` data-scp-panel-id="${escapeHtml(section.id)}"` +
         ` data-scp-heading="${escapeHtml(heading)}"` +
         ` data-scp-lead="${escapeHtml(lead)}"` +
@@ -939,9 +944,23 @@ function renderNav(
     })
     .join("");
 
+  // The two pages of his that live outside this tool, on the strip with the
+  // seven (the brief of 2026-10-10): the dynasty value page when it exists
+  // (data/player/dynasty_pages.json) and his start/sit page. Plain links
+  // with no panel to switch to, under their own class so the bundle (and
+  // everything that reads .scp-nav-link as "a tab") leaves them alone.
+  const dynasty = dynastyPageUrl(data.player.slug);
+  const outside =
+    (dynasty
+      ? `<li><a class="scp-nav-out" href="${escapeHtml(dynasty)}">Dynasty value</a></li>`
+      : "") +
+    `<li><a class="scp-nav-out" href="${escapeHtml(
+      `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`,
+    )}">Start/sit</a></li>`;
+
   return (
     `<nav class="scp-nav" aria-label="Player sections" data-scp-nav>` +
-    `<ul class="scp-nav-list">${items}</ul>` +
+    `<ul class="scp-nav-list">${items}${outside}</ul>` +
     `</nav>`
   );
 }
@@ -1744,7 +1763,7 @@ function renderWeekDetail(
  * is what folds it up. A server-rendered [hidden] plus a server-rendered toggle
  * would be a control that does nothing and content nobody can reach.
  */
-function renderWeeklyLog(data: PlayerPageData): string {
+function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): string {
   const { seasonLog, player, format } = data;
   if (seasonLog.length === 0) return "";
 
@@ -1793,12 +1812,19 @@ function renderWeeklyLog(data: PlayerPageData): string {
     .map((entry) => {
       const status = entry.game_status ?? "out";
       if (status !== "active") {
+        // The reason when the injury record knows it, linked to the Injury
+        // tab when the player has one (the brief of 2026-10-10).
+        const injuryHref = status === "bye" ? null : sectionHref(data, options, "injury");
+        const label =
+          status === "bye" ? "Bye week" : didNotPlayLabel(injuryForWeek(data, data.logSeason, entry.week));
         return (
           `<tr class="scp-row" data-status="${escapeHtml(status)}">` +
           `<th scope="row">${entry.week}</th>` +
-          `<td colspan="${span - 1}" class="scp-row-empty">${escapeHtml(
-            status === "bye" ? "Bye week" : "Did not play",
-          )}</td>` +
+          `<td colspan="${span - 1}" class="scp-row-empty">` +
+          (injuryHref
+            ? `<a class="scp-row-dnp" href="${escapeHtml(injuryHref)}">${escapeHtml(label)}</a>`
+            : escapeHtml(label)) +
+          `</td>` +
           `</tr>`
         );
       }
@@ -2306,7 +2332,7 @@ function renderGameLog(
     // reading past a paragraph to reach it.
     renderLogTiles(current) +
     renderLogIntro(current) +
-    renderWeeklyLog(current) +
+    renderWeeklyLog(current, options) +
     // The two sections of mak's 2026-10-01 Game Log spec, directly after the
     // week-by-week table as it places them: the finish ladder and the per-game
     // cards. Everything below them predates the spec and stays.
@@ -2378,7 +2404,7 @@ function renderArchiveSeason(
     sectionHead(`${data.player.name} Game Log ${data.logSeason}`, "", seasonNav) +
     renderLogTiles(data) +
     renderLogIntro(data) +
-    renderWeeklyLog(data) +
+    renderWeeklyLog(data, options) +
     // The spec's two sections follow the pinned year's table too, in the past
     // tense; seasons with no stored box scores render neither, silently.
     renderGamelogStory(data, { archive: true }) +

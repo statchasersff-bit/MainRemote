@@ -52,6 +52,7 @@ const BYE_WEEKS_FILE = path.join(DATA_DIR, "bye_weeks.json");
 const DEPTH_CHARTS_FILE = path.join(DATA_DIR, "depth_charts.json");
 const GAME_SCORES_FILE = path.join(DATA_DIR, "game_scores.json");
 const DYNASTY_FILE = path.join(DATA_DIR, "dynasty_rankings.json");
+const DYNASTY_PAGES_FILE = path.join(DATA_DIR, "dynasty_pages.json");
 const BIOS_FILE = path.join(DATA_DIR, "bios.json");
 const BIO_FACTS_FILE = path.join(DATA_DIR, "bio_facts.json");
 const BIO_SOURCES_FILE = path.join(DATA_DIR, "bio_sources.json");
@@ -374,6 +375,29 @@ export const loadDynastyRankings = lazy<Record<string, DynastyData>>(
 );
 
 export const loadBios = lazy<Record<string, PlayerBio>>(BIOS_FILE, {});
+
+/**
+ * Which players have a dynasty value page, our slug to the dynasty page's:
+ * data/player/dynasty_pages.json, built by scripts/player/buildDynastyPages.mjs
+ * from the live index. The hub links /dynasty/players/{slug}/ only for a
+ * player in this list (the SEO brief of 2026-10-10). Empty when the file is
+ * missing, which drops the links rather than the page.
+ */
+const loadDynastyPagesFile = lazy<{ pages?: Record<string, unknown> }>(DYNASTY_PAGES_FILE, {});
+
+export function loadDynastyPages(): Record<string, string> {
+  const pages: Record<string, string> = {};
+  for (const [slug, dslug] of Object.entries(loadDynastyPagesFile().pages ?? {})) {
+    if (typeof dslug === "string" && /^[a-z0-9-]+$/.test(dslug)) pages[slug] = dslug;
+  }
+  return pages;
+}
+
+/** The player's dynasty value page on statchasers.com, or null when there is none. */
+export function dynastyPageUrl(slug: string): string | null {
+  const dslug = loadDynastyPages()[slug];
+  return dslug ? `https://statchasers.com/dynasty/players/${dslug}/` : null;
+}
 
 /**
  * Birth date, college, high school and the season-by-season team history.

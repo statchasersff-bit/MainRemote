@@ -1061,6 +1061,13 @@ bundle with the data in wp-content) under `[statchasers_redraft]`; plugin
   the live page and stays so - fixing it is an SEO change for mak). The page's
   H1 is its editor's Divi hero, so the shortcode prints none (the redraft
   rankings precedent), and it is not in the H1 mount list.
+- **FAQ** (mak's 26 questions, 2026-10-10): `src/lib/redraft-strategy/faq.ts`,
+  rendered under the view outside `.scds-view` in SOS-FAQ folds. The sentences
+  that quote "the currently selected" sample (season + format label, league
+  and team counts, the two highest playoff-rate strategies, Robust RB's
+  rates, the vs-Average example) are filled from the open combo (or the
+  weighted comparison rows) and the bundle redraws them on a filter change,
+  keeping open folds. No FAQ schema (needs mak's OK).
 - **Divergences from the app**: house dress (no Tailwind, Inter, navy/gold);
   section titles are the house H2 with the gold rule; the draft board uses
   CSS grid instead of measured pixel widths and serves headshots from this

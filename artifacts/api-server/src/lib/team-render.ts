@@ -2471,11 +2471,12 @@ function matchupHref(
  * The page for one meeting on this team's schedule, or null.
  *
  * matchupHref() names the pair; this names the game. A finished meeting the
- * pair's page has let go of - past the recent window, or with a rematch still
- * to come, which the pair's page leads with instead - has a dated address of
- * its own, and a row for that week has to point there or it opens the other
+ * pair's page has stopped owning - an earlier meeting this season, or the
+ * latest once the rematch is within six days - has a dated address of its
+ * own, and a row for that week has to point there or it opens the other
  * meeting's preview. The rule is meetingHasOwnAddress(), asked the same way
- * schedule-render.ts asks it, so neither side keeps its own copy of it.
+ * schedule-render.ts asks it, so neither side keeps its own copy of it. The
+ * hub's schedule is the season in progress, so its season is the current one.
  */
 function gameMatchupHref(
   team: NflTeam,
@@ -2486,13 +2487,16 @@ function gameMatchupHref(
 ): string | null {
   const base = matchupHref(team, game.opponent, options);
   if (!base || !game.opponent) return base;
-  const rematchAhead = schedule.games.some(
-    (other) =>
-      other !== game &&
-      other.opponent?.abbreviation === game.opponent?.abbreviation &&
-      isUpcomingFixture(other.status === "final", other.kickoffMs, now),
+  const meetings = schedule.games
+    .filter((other) => other.opponent?.abbreviation === game.opponent?.abbreviation)
+    .map((other) => ({ kickoffMs: other.kickoffMs, isFinal: other.status === "final" && !!other.result }));
+  const own = meetingHasOwnAddress(
+    { kickoffMs: game.kickoffMs, isFinal: game.status === "final" && !!game.result, season: schedule.season },
+    meetings,
+    schedule.season,
+    now,
   );
-  if (!meetingHasOwnAddress(game.kickoffMs, game.status === "final" && !!game.result, now, rematchAhead)) {
+  if (!own) {
     return base;
   }
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();

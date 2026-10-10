@@ -24,6 +24,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { possessive } from "./title-case";
 import { titleCase } from "./title-case";
 import { renderFaqSection, selectFaq, type FaqCandidate, type FaqItem } from "./faq-engine";
 import { etDay } from "./news-tab-data";
@@ -897,7 +898,7 @@ function renderSvg(m: Model): string {
     .join("");
   const aria =
     map.markers.length > 0
-      ? `Body map of ${m.name}'s injuries: ${map.markers.map((mk) => mk.aria).join("; ")}.`
+      ? `Body map of ${possessive(m.name)} injuries: ${map.markers.map((mk) => mk.aria).join("; ")}.`
       : `Body map of ${m.name}: no logged injuries.`;
   return (
     `<svg viewBox="0 0 300 400" role="img" aria-label="${escapeHtml(aria)}">` +
@@ -1039,14 +1040,14 @@ function renderHistory(m: Model): string {
   } else if (high >= 2 || recentGames >= 6) {
     impact =
       escapeHtml(
-        `Injury is a real part of ${m.last}'s risk: ${missedSince}. Build in a backup plan; the rest of the picture is in our `,
+        `Injury is a real part of ${possessive(m.last)} risk: ${missedSince}. Build in a backup plan; the rest of the picture is in our `,
       ) +
       outlook +
       ".";
   } else {
     impact =
       escapeHtml(
-        `Injury isn't the main risk to ${m.last}'s value: ${missedSince}. The bigger question is ${roleRisk}, which our `,
+        `Injury isn't the main risk to ${possessive(m.last)} value: ${missedSince}. The bigger question is ${roleRisk}, which our `,
       ) +
       outlook +
       " covers.";
@@ -1063,7 +1064,7 @@ function renderHistory(m: Model): string {
     `<aside aria-label="Fantasy impact">` +
     `<div class="scp-ox-panel"><h3>Fantasy impact</h3><p class="scp-in-impact">${impact}</p></div>` +
     `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
-    `<p>${escapeHtml(`${lead}: see how Redraft Command weighs that in ${m.last}'s rest-of-season rank and trade value.`)}</p>` +
+    `<p>${escapeHtml(`${lead}: see how Redraft Command weighs that in ${possessive(m.last)} rest-of-season rank and trade value.`)}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-injury-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}</a>` +
     `</div></aside>`;
 
@@ -1214,7 +1215,7 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
               key: "practice",
               q: `Did ${m.name} practice this week?`,
               a: onReport
-                ? `${m.name}'s Week ${row.week} practice report: ${days}.${m.practiceNote ? ` ${m.practiceNote}` : ""}`
+                ? `${possessive(m.name)} Week ${row.week} practice report: ${days}.${m.practiceNote ? ` ${m.practiceNote}` : ""}`
                 : `${m.name} has not been on the Week ${row.week} injury report, which lists only players with an injury, so he has practiced without limits.`,
             },
       );
@@ -1256,7 +1257,7 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
   if (m.t.injuries > 0) {
     pool.push({
       key: "history",
-      q: `What is ${m.name}'s injury history?`,
+      q: `What is ${possessive(m.name)} injury history?`,
       a: `${m.name} has ${m.t.injuries} logged NFL injur${m.t.injuries === 1 ? "y" : "ies"}` +
         (m.t.games > 0
           ? `, which ${m.t.injuries === 1 ? "has" : "have"} cost him ${games(m.t.games)} in all: ${listWords(missed.map((e) => `${e.games} for ${article(named(e))} in ${e.season}`))}.`
@@ -1270,8 +1271,8 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       latest.phase === "PRE" ? `the ${latest.season} preseason` : latest.week ? `Week ${latest.week} of ${latest.season}` : String(latest.season);
     pool.push({
       key: "latest",
-      q: `What was ${m.name}'s most recent injury?`,
-      a: `${m.name}'s most recent logged injury was ${article(named(latest))} in ${when}. ` +
+      q: `What was ${possessive(m.name)} most recent injury?`,
+      a: `${possessive(m.name)} most recent logged injury was ${article(named(latest))} in ${when}. ` +
         (latest.games > 0 ? `It cost him ${games(latest.games)}.` : "He played through it and missed no regular-season games."),
     });
   }
@@ -1283,7 +1284,7 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       key: "recurring",
       q: `Does ${m.name} have any recurring injuries?`,
       a: repeats.length === 0
-        ? `No. ${m.name}'s ${word(m.t.injuries)} logged ${m.t.injuries === 1 ? "injury was" : `injuries were to ${word(m.t.parts)} different body parts`}, so the record shows no recurring pattern.`
+        ? `No. ${possessive(m.name)} ${word(m.t.injuries)} logged ${m.t.injuries === 1 ? "injury was" : `injuries were to ${word(m.t.parts)} different body parts`}, so the record shows no recurring pattern.`
         : `Yes: ${listWords(repeats.map(([cat, evs]) => {
             const yrs = [...new Set(evs.map((e) => e.season))].sort((x, y) => x - y);
             const g = evs.reduce((n, e) => n + e.games, 0);
@@ -1295,8 +1296,8 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
   if (worst && worst.games > 0) {
     pool.push({
       key: "worst",
-      q: `What was ${m.name}'s worst injury?`,
-      a: `${m.name}'s longest absence came from ${article(named(worst))} in ${worst.season}, which cost him ${games(worst.games)}` +
+      q: `What was ${possessive(m.name)} worst injury?`,
+      a: `${possessive(m.name)} longest absence came from ${article(named(worst))} in ${worst.season}, which cost him ${games(worst.games)}` +
         (m.t.games > worst.games ? ` of the ${m.t.games} he has missed in his career.` : `, all of the games he has missed to injury.`),
     });
   }

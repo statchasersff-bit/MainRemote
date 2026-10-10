@@ -161,7 +161,7 @@ describe("the Cardinals–Rams Wild Card", () => {
   test("the title and the structured data come from the same object", () => {
     assert.equal(
       hero.scoreboardTitleCandidates(WILD_CARD)[0],
-      "Cardinals vs Rams Wild Card 2021: Final Score 34–11, Stats & Recap",
+      "Cardinals vs Rams Player Stats & Box Score, Wild Card 2021",
     );
     const event = hero.scoreboardSportsEvent(WILD_CARD);
     assert.equal(event["@type"], "SportsEvent");
@@ -250,9 +250,9 @@ describe("an upcoming game", () => {
     assert.equal(text(doc.querySelector(".sct-sbh-kickoff-time")), "4:25 PM ET");
   });
 
-  test("drops the score from the title", () => {
+  test("the title carries no score, played or not", () => {
     const [first] = hero.scoreboardTitleCandidates(UPCOMING);
-    assert.equal(first, "Cardinals vs Rams Week 6 2026: Stats & Recap");
+    assert.equal(first, "Cardinals vs Rams Player Stats & Box Score, Week 6 2026");
   });
 });
 

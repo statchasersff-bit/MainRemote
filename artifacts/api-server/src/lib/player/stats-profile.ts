@@ -25,6 +25,7 @@
  */
 
 import type { CareerSeasonStat } from "./types";
+import { possessive } from "./title-case";
 import type { ProductionSeason, ProductionTotals } from "./player-data";
 
 /** One row of the career table. */
@@ -420,7 +421,7 @@ export function statsFaq(input: {
   });
 
   faq.push({
-    question: `What are ${name}'s career stats?`,
+    question: `What are ${possessive(name)} career stats?`,
     answer:
       `Across ${totals.seasons} season${totals.seasons === 1 ? "" : "s"} and ` +
       `${totals.gamesPlayed} games, ${name} has ` +

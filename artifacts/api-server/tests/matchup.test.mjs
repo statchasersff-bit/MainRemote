@@ -205,22 +205,26 @@ describe("one address per meeting", () => {
     const [, season, week] = /(\d{4})-week-(\d{1,2})\/$/.exec(href);
     const h1 = page.doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    // Away then home, whichever way round that was - see scoreboardHeading().
+    // Away then home, whichever way round that was - see
+    // scoreboardPageHeading(): the brief's "{Away} vs {Home} Box Score &
+    // Player Stats: Week {N}, {Year}" (2026-10-10).
     assert.match(
       h1[0].textContent.trim(),
       new RegExp(
-        `^(New England Patriots vs Philadelphia Eagles|Philadelphia Eagles vs New England Patriots), Week ${week} ${season}$`,
+        `^(Patriots vs Eagles|Eagles vs Patriots) Box Score & Player Stats: Week ${week}, ${season}$`,
       ),
       "the H1 names the game, so it cannot compete with the pair's own page",
     );
     assert.ok(h1[0].closest("header.sct-sbh"), "and it is inside the hero");
 
+    // The pair page links only to games it does not own, so the page it
+    // linked is canonical at its own address.
     const canonical = page.doc.querySelector('link[rel="canonical"]').getAttribute("href");
-    assert.ok(canonical.endsWith(href), "a dated page is its own canonical");
+    assert.ok(canonical.endsWith(href), "a dated page the pair page linked is its own canonical");
     assert.match(
       page.doc.querySelector("title").textContent,
-      new RegExp(`Week ${week} ${season}`),
-      "the title names the game too",
+      new RegExp(`^(Patriots vs Eagles|Eagles vs Patriots) (Player Stats & )?Box Score, Week ${week}( ${season})?$`),
+      "the title carries the words the searches do",
     );
   });
 
@@ -867,22 +871,20 @@ describe("the postgame page", () => {
     assert.deepEqual(lineTotals, heroScores, "the line score and the hero agree");
   });
 
-  test("the sections run score, how, who, what it meant, then history", async () => {
+  test("the recap is tabbed: the story first, head-to-head on its own tab, no pregame wording", async () => {
     const page = await postgamePage();
     if (!page) return;
-    const headings = [...page.doc.querySelectorAll(".sct-section .sct-h2")].map((n) =>
+    const { doc } = page;
+    // The tabbed recap (recapTabs): Recap leads, Head-to-Head is a tab of its
+    // own rather than a section closing the page, and the fantasy tables sit
+    // on the Fantasy tab.
+    const tabs = [...doc.querySelectorAll("[data-mu-tab]")].map((n) => n.getAttribute("data-mu-tab"));
+    assert.equal(tabs[0], "recap", tabs.join(" / "));
+    assert.ok(tabs.includes("head-to-head"), tabs.join(" / "));
+    const headings = [...doc.querySelectorAll(".sct-section .sct-h2, .sct-section h2")].map((n) =>
       n.textContent.trim(),
     );
     assert.ok(headings.length >= 4, headings.join(" / "));
-
-    // Head-to-Head is evergreen context, not the answer to "what was the
-    // score", so it closes the page rather than opening it.
-    assert.equal(headings[headings.length - 1], "Head-to-Head", headings.join(" / "));
-
-    // The game itself comes before the season-long comparison.
-    const glance = headings.findIndex((h) => /^(Why the |How the Game)/.test(h));
-    const form = headings.indexOf("Season Form");
-    if (glance >= 0 && form >= 0) assert.ok(glance < form, headings.join(" / "));
 
     // Pregame wording must not survive into a page about a played game.
     assert.ok(!headings.includes("Matchup Snapshot"), "Snapshot is renamed postgame");
@@ -896,7 +898,7 @@ describe("the postgame page", () => {
     if (!block) return;
 
     const headings = [...block.querySelectorAll("h3")].map((n) => n.textContent.trim());
-    assert.ok(headings.includes("Fantasy"), headings.join(" / "));
+    assert.ok(headings.includes("Quarterbacks"), headings.join(" / "));
 
     for (const table of block.querySelectorAll(".sct-mu-ps-table")) {
       const rows = [...table.querySelectorAll("tbody tr")];
@@ -1126,10 +1128,11 @@ describe("the postgame page", () => {
       `the row holds ${inRow.join(", ")}`,
     );
 
+    // The fantasy table is the Fantasy tab's, not a third block here.
     const outside = [...section.querySelectorAll(".sct-mu-ps-block")]
       .filter((block) => !row.contains(block))
       .map(heading);
-    assert.deepEqual(outside, ["Fantasy"], `outside the row: ${outside.join(", ")}`);
+    assert.deepEqual(outside, [], `outside the row: ${outside.join(", ")}`);
   });
 
   test("a stat table has a header row and a caption that spans its columns", async () => {
@@ -1180,6 +1183,8 @@ describe("sortable stat tables", () => {
     for (const table of page.doc.querySelectorAll("table[data-sct-sortable]")) {
       const headers = [...table.querySelectorAll("thead th")];
       for (const header of headers) {
+        // The Start/Sit action column has nothing to sort on and says so.
+        if (header.hasAttribute("data-no-sort")) continue;
         assert.ok(
           ["number", "text"].includes(header.getAttribute("data-sort-type")),
           `${header.textContent.trim()} declares a sort type`,
@@ -1343,7 +1348,11 @@ describe("sortable stat tables", () => {
 
     const headers = [...table.querySelectorAll("thead th")];
     const buttons = headers.map((h) => h.querySelector(".sct-sort"));
-    for (const button of buttons) assert.ok(button, "each header became a button");
+    headers.forEach((h, i) => {
+      // The Start/Sit action column stays a plain header.
+      if (h.hasAttribute("data-no-sort")) return;
+      assert.ok(buttons[i], "each sortable header became a button");
+    });
 
     // The declared default is announced, not "none".
     const defaultAt = headers.findIndex((h) => h.hasAttribute("data-sort-default"));
@@ -1632,9 +1641,11 @@ describe("the recap's share card", () => {
     const page = await pinnedGame("2021-wild-card");
     if (!page) return;
     const meta = (sel) => page.doc.head.querySelector(sel)?.getAttribute("content");
+    // The brief's game-page description (2026-10-10): winner first, the
+    // date, then what the page holds.
     assert.equal(
       meta('meta[name="description"]'),
-      "Rams beat the Cardinals 34\u201311 at SoFi Stadium: scoring summary, fantasy points for every player, team stats and the head-to-head.",
+      "Rams 34, Cardinals 11 on Jan 17, 2022: full box score, fantasy points for every player, scoring summary and team stats.",
     );
     assert.ok(meta('meta[name="description"]').length <= 160);
     assert.equal(meta('meta[property="og:type"]'), "article");
@@ -1665,7 +1676,7 @@ describe("the recap's share card", () => {
     const res = await fetch(`${server.origin}/embed/matchup/arizona-cardinals-vs-los-angeles-rams?game=2021-wild-card`);
     if (!res.ok) return;
     assert.equal(res.headers.get("x-matchup-image"), IMAGE);
-    assert.match(decodeURIComponent(res.headers.get("x-matchup-description")), /^Rams beat the Cardinals 34–11/);
+    assert.match(decodeURIComponent(res.headers.get("x-matchup-description")), /^Rams 34, Cardinals 11 on Jan 17, 2022: full box score/);
     assert.match(await res.text(), /class="sct-matchup-video-data"/);
   });
 });
@@ -1678,7 +1689,7 @@ describe("the Cardinals–Rams games", () => {
 
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(h1[0].textContent, "Arizona Cardinals vs Los Angeles Rams, Wild Card 2021");
+    assert.equal(h1[0].textContent, "Cardinals vs Rams Box Score & Player Stats: Wild Card, 2021");
     const hero = h1[0].closest("header.sct-sbh");
     assert.equal(hero.getAttribute("aria-labelledby"), h1[0].id);
 
@@ -1692,7 +1703,7 @@ describe("the Cardinals–Rams games", () => {
 
     assert.equal(
       doc.querySelector("title").textContent,
-      "Cardinals vs Rams Wild Card 2021: Final Score 34–11",
+      "Cardinals vs Rams Player Stats & Box Score, Wild Card 2021",
     );
 
     // In the served HTML, no script run: the head carries the SportsEvent.
@@ -1700,6 +1711,9 @@ describe("the Cardinals–Rams games", () => {
       .map((s) => JSON.parse(s.textContent))
       .find((n) => n["@type"] === "SportsEvent");
     assert.ok(ld, "a SportsEvent in the head");
+    assert.equal(ld.name, "Arizona Cardinals vs Los Angeles Rams, Wild Card 2021");
+    assert.equal(ld.eventStatus, "https://schema.org/EventCompleted");
+    assert.equal(ld.startDate, "2022-01-18T01:15:00.000Z");
     assert.equal(ld.homeTeam.name, "Los Angeles Rams");
     assert.equal(ld.awayTeam.name, "Arizona Cardinals");
     assert.equal(ld.location.name, "SoFi Stadium");
@@ -1829,7 +1843,79 @@ describe("the Cardinals–Rams games", () => {
       assert.ok(away.classList.contains("is-winner"), "Arizona won");
       assert.equal(away.querySelector(".sct-sbh-score").textContent, String(arizona));
       assert.equal(home.querySelector(".sct-sbh-score").textContent, String(rams));
-      assert.match(page.doc.querySelector("h1").textContent, /^Arizona Cardinals vs Los Angeles Rams, Week \d+ 202\d$/);
+      assert.match(page.doc.querySelector("h1").textContent, /^Cardinals vs Rams Box Score & Player Stats: Week \d+, 202\d$/);
     });
   }
+});
+
+/*
+ * One owner per game (the SEO brief of 2026-10-10).
+ *
+ * The pair's page owns this season's latest result until the rematch is
+ * within six days; the dated page of an owned game renders, canonicalizes up
+ * to the pair and carries no SportsEvent. In preview mode the pair's page
+ * summarizes the last meeting above the preview. Each test finds a pair in
+ * the state it needs among a few candidates and skips cleanly when none is.
+ */
+describe("one owner per game", () => {
+  const PAIRS = [
+    "/nfl/new-england-patriots-vs-seattle-seahawks/",
+    "/nfl/atlanta-falcons-vs-new-orleans-saints/",
+    "/nfl/cleveland-browns-vs-tampa-bay-buccaneers/",
+    CANON,
+  ];
+
+  test("an owned dated page canonicalizes to the pair and prints no SportsEvent", async () => {
+    for (const path of PAIRS) {
+      const { doc } = await dom(path);
+      const root = doc.querySelector("[data-sct-root]");
+      if (root.getAttribute("data-matchup-state") !== "recently_completed") continue;
+      const season = root.getAttribute("data-season");
+      const h1 = doc.querySelector("h1").textContent;
+      const week = /\(Week (\d+), \d{4}\)$/.exec(h1)?.[1];
+      if (!week) continue;
+      const dated = `${path}${season}-week-${week}/`;
+      const res = await get(dated);
+      assert.equal(res.status, 200, `${dated} renders rather than redirecting`);
+      const page = await dom(dated);
+      const canonical = page.doc.querySelector('link[rel="canonical"]').getAttribute("href");
+      assert.ok(canonical.endsWith(path), `${canonical} is the pair's address`);
+      const types = [...page.doc.head.querySelectorAll('script[type="application/ld+json"]')]
+        .map((s) => JSON.parse(s.textContent)["@type"]);
+      assert.ok(!types.includes("SportsEvent"), "the pair's page carries the event");
+      // The pair's page, by contrast, is self-canonical and carries it.
+      const pairTypes = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
+        .map((s) => JSON.parse(s.textContent)["@type"]);
+      assert.ok(pairTypes.includes("SportsEvent"));
+      assert.equal(
+        (await fetch(`${server.origin}/embed/matchup/${path.split("/")[2]}?game=${season}-week-${week}`)).headers.get("x-matchup-game"),
+        "current",
+      );
+      return;
+    }
+  });
+
+  test("in preview mode the pair page keeps the last meeting's stats above the preview", async () => {
+    for (const path of PAIRS) {
+      const { doc } = await dom(path);
+      const root = doc.querySelector("[data-sct-root]");
+      if (root.getAttribute("data-matchup-state") !== "upcoming") continue;
+      const block = doc.querySelector(".sct-mu-last");
+      if (!block) continue; // The two have never met.
+      assert.ok(block.closest(".sct-pv"), "inside the preview, above the intro");
+      assert.equal(block.nextElementSibling?.className, "sct-pv-sec sct-pv-intro");
+      assert.match(block.querySelector("h2").textContent, /^Last meeting: [A-Za-z0-9 .]+ \d+, [A-Za-z0-9 .]+ \d+ \(Week \d+, [A-Z][a-z]{2} \d{1,2}, \d{4}\)$/);
+      const link = block.querySelector("a.sct-textlink");
+      assert.match(link.getAttribute("href"), /\/\d{4}-week-\d{1,2}\/$/, "to the dated page");
+      assert.match(link.textContent, /full box score and player stats/);
+      const rows = [...block.querySelectorAll(".sct-mu-last-row")];
+      assert.ok(rows.length <= 6);
+      for (const row of rows) {
+        assert.ok(row.querySelector(".sct-mu-last-who a[href*='/nfl/players/']"), "linked to the profile");
+        assert.match(row.querySelector(".sct-mu-last-pts").textContent, /^\d+\.\d PPR$/);
+      }
+      assert.match(doc.querySelector("title").textContent, /Fantasy Preview & (Last Meeting )?Stats$/);
+      return;
+    }
+  });
 });

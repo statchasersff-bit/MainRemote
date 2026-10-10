@@ -20,7 +20,8 @@
 import { escapeHtml } from "./render";
 import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
-import { bioDescription } from "./player/bio-seo";
+import { bioDescription, bioPersonNode } from "./player/bio-seo";
+import { getTeamHubUrl } from "./team/links";
 import { injuryAnswer } from "./player/injury-tab";
 import { SCORING_SHORT } from "./player/scoring";
 import {
@@ -329,4 +330,44 @@ export function renderPlayerHeadTags(meta: PlayerPageMeta): string {
     tags.push(`<meta property="og:image" content="${escapeHtml(meta.image)}" />`);
   }
   return tags.join("\n  ");
+}
+
+/**
+ * The Person the hub's ProfilePage is about (the SEO brief of 2026-10-10):
+ * the Bio tab's node - name, birth date, height, weight, position - with his
+ * club as an affiliation that links the team hub. Built from the approved
+ * fact store only, like the Bio's; null for a player with no bio record,
+ * who gets no ProfilePage rather than a bare one. No sameAs: nothing on a
+ * page names an outside source (house rule, 2026-10-09).
+ */
+export function hubPersonNode(data: PlayerPageData): Record<string, unknown> | null {
+  if (!data.bioPage) return null;
+  const node = bioPersonNode(data, data.bioPage);
+  if (data.team) {
+    const url = getTeamHubUrl(data.team);
+    node["affiliation"] = { "@type": "SportsTeam", name: data.team.fullName, ...(url ? { url } : {}) };
+  }
+  return node;
+}
+
+/**
+ * The day a page's data last moved, "2026-10-09" in the Eastern calendar:
+ * the kickoff of his latest game played, the one fact every tab's numbers
+ * trail. The ProfilePage's dateModified, and the WebPage's on the Stats,
+ * Game Log and Outlook tabs (the SEO brief of 2026-10-10). Null before he
+ * has played a game the schedule can date.
+ */
+export function dataModified(data: PlayerPageData): string | null {
+  const last = lastGame(data);
+  if (!last) return null;
+  const game = data.schedule.find((g) => g.week === last.week && g.kickoffMs !== null);
+  if (!game || game.kickoffMs === null) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(game.kickoffMs));
+  const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
 }

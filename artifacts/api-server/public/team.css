@@ -17526,3 +17526,82 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
   font-size: 0.85rem;
 }
+
+/* ---- the pair page's "Last meeting" block above the preview (the SEO brief
+   of 2026-10-10): the result as the section title, the dated page's box score
+   as one link, then the top six fantasy scorers from that game. House style:
+   the preview's own section heading and subline, hub card tokens for the
+   list. */
+:is(.sct, #sct-table-armour) .sct-mu-last-link {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "who pts" "line line";
+  align-items: baseline;
+  gap: 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--sc-line, #e3e8ef);
+  border-radius: 8px;
+  background: var(--sc-card, #fff);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-who {
+  grid-area: who;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-team {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-pts {
+  grid-area: pts;
+  font-family: "Barlow Condensed", "Barlow", Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-pts small {
+  font-family: Inter, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-line {
+  grid-area: line;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-mu-last-list { grid-template-columns: minmax(0, 1fr); }
+}
