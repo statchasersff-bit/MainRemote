@@ -141,6 +141,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2024-09-22",
     "publisher": "NFL"
   },
+  "arizona-cardinals-vs-detroit-lions/2026-week-5": {
+    "youtubeId": "a7ixKMcIHHs",
+    "title": "Detroit Lions vs. Arizona Cardinals Game Highlights | NFL 2026 Week 5",
+    "uploadDate": "2026-10-11",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-green-bay-packers/2021-week-8": {
     "youtubeId": "dWeNmTB99FE",
     "title": "Packers vs. Cardinals Week 8 Highlights | NFL 2021",
@@ -865,6 +871,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "5PeYdCZKVvs",
     "title": "New Orleans Saints vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 18",
     "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2026-week-4": {
+    "youtubeId": "8qB8fHEgpkg",
+    "title": "Atlanta Falcons vs New Orleans Saints Game Highlights | 2026 NFL Season Week 4",
+    "uploadDate": "2026-10-05",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-new-york-giants/2021-week-3": {
@@ -2715,6 +2727,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-01-10",
     "publisher": "NFL"
   },
+  "chicago-bears-vs-green-bay-packers/2026-week-5": {
+    "youtubeId": "SWAC-z8sGjQ",
+    "title": "Chicago Bears vs. Green Bay Packers Game Highlights | NFL 2026 Season Week 5",
+    "uploadDate": "2026-10-11",
+    "publisher": "NFL"
+  },
   "chicago-bears-vs-houston-texans/2022-week-3": {
     "youtubeId": "-nHhxmtFNnw",
     "title": "Houston Texans vs. Chicago Bears | Week 3 2022 Game Highlights",
@@ -3249,6 +3267,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2025-12-21",
     "publisher": "NFL"
   },
+  "cincinnati-bengals-vs-miami-dolphins/2026-week-5": {
+    "youtubeId": "veMELeUzxeo",
+    "title": "Cincinnati Bengals vs Miami Dolphins Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
+    "publisher": "NFL"
+  },
   "cincinnati-bengals-vs-minnesota-vikings/2021-week-1": {
     "youtubeId": "bqkdUIOmxNc",
     "title": "Vikings vs. Bengals Week 1 Highlights | NFL 2021",
@@ -3673,6 +3697,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "qYU7B35HzlY",
     "title": "Cleveland Browns vs New York Jets Game Highlights | 2025 NFL Season Week 10",
     "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-york-jets/2026-week-5": {
+    "youtubeId": "p_DHFA3Sfys",
+    "title": "Cleveland Browns vs New York Jets Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "cleveland-browns-vs-pittsburgh-steelers/2021-week-17": {
@@ -4167,6 +4197,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2024-12-22",
     "publisher": "NFL"
   },
+  "dallas-cowboys-vs-tampa-bay-buccaneers/2026-week-5": {
+    "youtubeId": "OmJqJI7pJpI",
+    "title": "Tampa Bay Buccaneers vs Dallas Cowboys Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-08",
+    "publisher": "NFL"
+  },
   "dallas-cowboys-vs-tennessee-titans/2022-week-17": {
     "youtubeId": "xOAvj3-ZUnw",
     "title": "Dallas Cowboys vs. Tennessee Titans | 2022 Week 17 Game Highlights",
@@ -4507,6 +4543,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "hvYB3_22q6E",
     "title": "Denver Broncos vs. Los Angeles Chargers Game Highlights | 2025 NFL Season Week 3",
     "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2026-week-5": {
+    "youtubeId": "EjqZq2newqk",
+    "title": "Denver Broncos vs. Los Angeles Chargers Game Highlights | NFL 2026 Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "denver-broncos-vs-los-angeles-rams/2022-week-16": {
@@ -5715,6 +5757,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2025-09-28",
     "publisher": "NFL"
   },
+  "houston-texans-vs-tennessee-titans/2026-week-5": {
+    "youtubeId": "K4ZVwiL_Tf4",
+    "title": "Houston Texans vs. Tennessee Titans Game Highlights | NFL 2026 Season Week 5",
+    "uploadDate": "2026-10-11",
+    "publisher": "NFL"
+  },
   "houston-texans-vs-washington-commanders/2022-week-11": {
     "youtubeId": "n7HRvK-ajMM",
     "title": "Washington Commanders vs. Houston Texans | 2022 Week 11 Game Highlights",
@@ -5965,6 +6013,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "l6ly2Wh6cOk",
     "title": "Indianapolis Colts vs. Pittsburgh Steelers Game Highlights | NFL 2025 Season Week 9",
     "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-pittsburgh-steelers/2026-week-5": {
+    "youtubeId": "padeBx3DEdM",
+    "title": "Indianapolis Colts vs. Pittsburgh Steelers Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "indianapolis-colts-vs-san-francisco-49ers/2021-week-7": {
@@ -6223,6 +6277,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "wyti1nLurpc",
     "title": "Jacksonville Jaguars vs. Philadelphia Eagles Game Highlights | NFL 2024 Season Week 9",
     "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-philadelphia-eagles/2026-week-5": {
+    "youtubeId": "WXw2IIj01Sg",
+    "title": "Philadelphia Eagles vs. Jacksonville Jaguars Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "jacksonville-jaguars-vs-pittsburgh-steelers/2023-week-8": {
@@ -6757,6 +6817,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "8ynnyBJX_J0",
     "title": "Las Vegas Raiders vs. New England Patriots Game Highlights | NFL 2025 Season Week 1",
     "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-england-patriots/2026-week-5": {
+    "youtubeId": "fLKLrtqun84",
+    "title": "Las Vegas Raiders vs. New England Patriots Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "las-vegas-raiders-vs-new-orleans-saints/2022-week-8": {
@@ -8241,6 +8307,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2025-09-07",
     "publisher": "NFL"
   },
+  "new-york-giants-vs-washington-commanders/2026-week-5": {
+    "youtubeId": "E9KI_S2-vwo",
+    "title": "New York Giants vs Washington Commanders Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
+    "publisher": "NFL"
+  },
   "new-york-jets-vs-philadelphia-eagles/2021-week-13": {
     "youtubeId": "ThCPrSxnMTU",
     "title": "Eagles vs. Jets Week 13 Highlights | NFL 2021",
@@ -8599,6 +8671,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "m9_i5axNo9w",
     "title": "Seattle Seahawks vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 18",
     "uploadDate": "2026-01-03",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2026-week-5": {
+    "youtubeId": "B1hjRUzIduc",
+    "title": "San Francisco 49ers vs Seattle Seahawks Game Highlights | 2026 NFL Season Week 5",
+    "uploadDate": "2026-10-11",
     "publisher": "NFL"
   },
   "san-francisco-49ers-vs-tampa-bay-buccaneers/2022-week-14": {

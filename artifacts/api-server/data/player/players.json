@@ -81,7 +81,7 @@
     "position": "QB",
     "team": "LV",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 28,
     "height": "75",
     "weight": "206",
@@ -199,14 +199,14 @@
     "name": "Andy Dalton",
     "slug": "andy-dalton",
     "position": "QB",
-    "team": "PHI",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 38,
     "height": "74",
     "weight": "220",
     "number": 14,
-    "depth_chart_order": 2,
+    "depth_chart_order": null,
     "years_exp": 15
   },
   {
@@ -281,7 +281,7 @@
     "height": "74",
     "weight": "216",
     "number": 16,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -426,7 +426,7 @@
     "position": "QB",
     "team": "NE",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "74",
     "weight": "218",
@@ -591,12 +591,12 @@
     "position": "QB",
     "team": "MIA",
     "status": "Active",
-    "injury_status": "Out",
-    "age": 24,
+    "injury_status": null,
+    "age": 25,
     "height": "74",
     "weight": "215",
     "number": 15,
-    "depth_chart_order": 2,
+    "depth_chart_order": null,
     "years_exp": 1
   },
   {
@@ -997,11 +997,11 @@
     "team": "NYJ",
     "status": "Active",
     "injury_status": null,
-    "age": 22,
+    "age": 23,
     "height": "74",
     "weight": "207",
     "number": 10,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 0
   },
   {
@@ -1041,12 +1041,12 @@
     "position": "QB",
     "team": "CHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 24,
     "height": "73",
     "weight": "226",
     "number": 18,
-    "depth_chart_order": 3,
+    "depth_chart_order": 1,
     "years_exp": 2
   },
   {
@@ -1116,7 +1116,7 @@
     "position": "QB",
     "team": "ARI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "76",
     "weight": "233",
@@ -1566,12 +1566,12 @@
     "position": "QB",
     "team": "PHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "74",
     "weight": "232",
     "number": 18,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -2091,7 +2091,7 @@
     "position": "QB",
     "team": "LAC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "76",
     "weight": "252",
@@ -2166,7 +2166,7 @@
     "position": "QB",
     "team": "PIT",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "77",
     "weight": "228",
@@ -2211,7 +2211,7 @@
     "position": "QB",
     "team": "SEA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 29,
     "height": "76",
     "weight": "228",
@@ -2541,7 +2541,7 @@
     "position": "QB",
     "team": "KC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "73",
     "weight": "205",
@@ -2572,7 +2572,7 @@
     "team": "NYJ",
     "status": "Active",
     "injury_status": null,
-    "age": 35,
+    "age": 36,
     "height": "74",
     "weight": "221",
     "number": 7,
@@ -2661,7 +2661,7 @@
     "position": "QB",
     "team": "CAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "75",
     "weight": "215",
@@ -2944,14 +2944,14 @@
     "name": "Jake Browning",
     "slug": "jake-browning",
     "position": "QB",
-    "team": "FA",
+    "team": "LAC",
     "status": "Active",
     "injury_status": null,
     "age": 30,
     "height": "74",
     "weight": "209",
     "number": 5,
-    "depth_chart_order": null,
+    "depth_chart_order": 2,
     "years_exp": 7
   },
   {
@@ -2996,7 +2996,7 @@
     "height": "73",
     "weight": "200",
     "number": 13,
-    "depth_chart_order": null,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -3111,7 +3111,7 @@
     "position": "QB",
     "team": "SEA",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "74",
     "weight": "216",
@@ -3247,7 +3247,7 @@
     "team": "DET",
     "status": "Active",
     "injury_status": null,
-    "age": 31,
+    "age": 32,
     "height": "76",
     "weight": "217",
     "number": 16,
@@ -3341,7 +3341,7 @@
     "height": "74",
     "weight": "223",
     "number": 6,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -3366,12 +3366,12 @@
     "position": "QB",
     "team": "WAS",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "76",
     "weight": "210",
     "number": 5,
-    "depth_chart_order": 2,
+    "depth_chart_order": 1,
     "years_exp": 2
   },
   {
@@ -3546,7 +3546,7 @@
     "position": "QB",
     "team": "BAL",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "75",
     "weight": "230",
@@ -4266,7 +4266,7 @@
     "position": "QB",
     "team": "SF",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "76",
     "weight": "220",
@@ -4611,12 +4611,12 @@
     "position": "QB",
     "team": "WAS",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Doubtful",
     "age": 32,
     "height": "76",
     "weight": "222",
     "number": 8,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 11
   },
   {
@@ -4624,10 +4624,10 @@
     "name": "Mark Gronowski",
     "slug": "mark-gronowski",
     "position": "QB",
-    "team": "FA",
+    "team": "HOU",
     "status": "Active",
     "injury_status": null,
-    "age": 24,
+    "age": 25,
     "height": "74",
     "weight": "234",
     "number": 16,
@@ -4986,7 +4986,7 @@
     "position": "QB",
     "team": "ATL",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 26,
     "height": "75",
     "weight": "220",
@@ -5691,7 +5691,7 @@
     "position": "QB",
     "team": "IND",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "76",
     "weight": "213",
@@ -5946,7 +5946,7 @@
     "position": "QB",
     "team": "DEN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 28,
     "height": "73",
     "weight": "222",
@@ -6371,7 +6371,7 @@
     "height": "78",
     "weight": "231",
     "number": 16,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -6456,7 +6456,7 @@
     "position": "QB",
     "team": "CLE",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "78",
     "weight": "230",
@@ -6742,7 +6742,7 @@
     "team": "JAX",
     "status": "Active",
     "injury_status": null,
-    "age": 26,
+    "age": 27,
     "height": "78",
     "weight": "220",
     "number": 16,
@@ -6770,8 +6770,8 @@
     "slug": "trey-lance",
     "position": "QB",
     "team": "LAC",
-    "status": "Active",
-    "injury_status": null,
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 26,
     "height": "76",
     "weight": "226",
@@ -6816,7 +6816,7 @@
     "position": "QB",
     "team": "LAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "74",
     "weight": "208",
@@ -6911,7 +6911,7 @@
     "height": "75",
     "weight": "212",
     "number": 17,
-    "depth_chart_order": 1,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -6981,7 +6981,7 @@
     "position": "QB",
     "team": "PIT",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "76",
     "weight": "235",
@@ -7206,7 +7206,7 @@
     "position": "RB",
     "team": "MIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 31,
     "height": "70",
     "weight": "208",
@@ -7346,7 +7346,7 @@
     "height": "75",
     "weight": "240",
     "number": 23,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 0
   },
   {
@@ -7736,7 +7736,7 @@
     "height": "69",
     "weight": "203",
     "number": 20,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 11
   },
   {
@@ -7796,7 +7796,7 @@
     "height": "75",
     "weight": "255",
     "number": 47,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 7
   },
   {
@@ -7931,7 +7931,7 @@
     "height": "73",
     "weight": "222",
     "number": 34,
-    "depth_chart_order": 6,
+    "depth_chart_order": null,
     "years_exp": 1
   },
   {
@@ -8044,14 +8044,14 @@
     "name": "Audric Estime",
     "slug": "audric-estime",
     "position": "RB",
-    "team": "MIN",
+    "team": "CLE",
     "status": "Active",
     "injury_status": null,
     "age": 23,
     "height": "71",
     "weight": "227",
-    "number": 30,
-    "depth_chart_order": null,
+    "number": 36,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -8066,7 +8066,7 @@
     "height": "70",
     "weight": "200",
     "number": 30,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 9
   },
   {
@@ -8516,7 +8516,7 @@
     "height": "75",
     "weight": "250",
     "number": 38,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -8531,7 +8531,7 @@
     "height": "73",
     "weight": "235",
     "number": 0,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 2
   },
   {
@@ -8736,12 +8736,12 @@
     "position": "RB",
     "team": "NYJ",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 25,
     "height": "71",
     "weight": "217",
     "number": 20,
-    "depth_chart_order": 5,
+    "depth_chart_order": 1,
     "years_exp": 4
   },
   {
@@ -8831,7 +8831,7 @@
     "height": "71",
     "weight": "225",
     "number": 44,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 2
   },
   {
@@ -8842,7 +8842,7 @@
     "team": "CHI",
     "status": "Inactive",
     "injury_status": "IR",
-    "age": 28,
+    "age": 29,
     "height": "73",
     "weight": "205",
     "number": 38,
@@ -9221,7 +9221,7 @@
     "height": "71",
     "weight": "210",
     "number": 26,
-    "depth_chart_order": 4,
+    "depth_chart_order": null,
     "years_exp": 3
   },
   {
@@ -9236,7 +9236,7 @@
     "height": "72",
     "weight": "228",
     "number": 34,
-    "depth_chart_order": null,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -9244,7 +9244,7 @@
     "name": "Cash Jones",
     "slug": "cash-jones",
     "position": "RB",
-    "team": "ATL",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 24,
@@ -9425,13 +9425,13 @@
     "slug": "chris-brooks",
     "position": "RB",
     "team": "GB",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 26,
     "height": "73",
     "weight": "219",
     "number": 30,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -9866,7 +9866,7 @@
     "height": "72",
     "weight": "230",
     "number": 34,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -9956,7 +9956,7 @@
     "height": "69",
     "weight": "209",
     "number": 9,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 1
   },
   {
@@ -10211,7 +10211,7 @@
     "height": "70",
     "weight": "218",
     "number": 39,
-    "depth_chart_order": null,
+    "depth_chart_order": 2,
     "years_exp": 4
   },
   {
@@ -10264,7 +10264,7 @@
     "name": "Damon Bankston",
     "slug": "damon-bankston",
     "position": "RB",
-    "team": "FA",
+    "team": "GB",
     "status": "Active",
     "injury_status": null,
     "age": 23,
@@ -10371,7 +10371,7 @@
     "position": "RB",
     "team": "FA",
     "status": "Inactive",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 27,
     "height": "69",
     "weight": "200",
@@ -10391,7 +10391,7 @@
     "height": "70",
     "weight": "205",
     "number": 23,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 9
   },
   {
@@ -10746,12 +10746,12 @@
     "position": "RB",
     "team": "HOU",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Doubtful",
     "age": 29,
     "height": "71",
     "weight": "230",
     "number": 32,
-    "depth_chart_order": 1,
+    "depth_chart_order": 3,
     "years_exp": 7
   },
   {
@@ -10882,11 +10882,11 @@
     "team": "MIA",
     "status": "Inactive",
     "injury_status": "IR",
-    "age": 24,
+    "age": 25,
     "height": "69",
     "weight": "195",
     "number": 28,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -10991,7 +10991,7 @@
     "height": "70",
     "weight": "225",
     "number": 31,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 6
   },
   {
@@ -11077,11 +11077,11 @@
     "team": "MIN",
     "status": "Active",
     "injury_status": null,
-    "age": 22,
+    "age": 23,
     "height": "70",
     "weight": "188",
     "number": 21,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 0
   },
   {
@@ -11269,7 +11269,7 @@
     "name": "Deuce Vaughn",
     "slug": "deuce-vaughn",
     "position": "RB",
-    "team": "FA",
+    "team": "HOU",
     "status": "Active",
     "injury_status": null,
     "age": 24,
@@ -11299,13 +11299,13 @@
     "name": "Devin Neal",
     "slug": "devin-neal",
     "position": "RB",
-    "team": "MIN",
+    "team": "WAS",
     "status": "Active",
     "injury_status": null,
     "age": 23,
     "height": "71",
     "weight": "213",
-    "number": 34,
+    "number": 31,
     "depth_chart_order": null,
     "years_exp": 1
   },
@@ -11316,12 +11316,12 @@
     "position": "RB",
     "team": "NYG",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 29,
     "height": "67",
     "weight": "203",
     "number": 26,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 7
   },
   {
@@ -11526,7 +11526,7 @@
     "position": "RB",
     "team": "IND",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "72",
     "weight": "212",
@@ -11659,13 +11659,13 @@
     "name": "Dontae McMillan",
     "slug": "dontae-mcmillan",
     "position": "RB",
-    "team": "FA",
+    "team": "SEA",
     "status": "Active",
     "injury_status": null,
-    "age": 24,
+    "age": 25,
     "height": "70",
-    "weight": "203",
-    "number": 36,
+    "weight": "204",
+    "number": 25,
     "depth_chart_order": null,
     "years_exp": 0
   },
@@ -11831,7 +11831,7 @@
     "height": "69",
     "weight": "204",
     "number": 23,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -11861,7 +11861,7 @@
     "height": "68",
     "weight": "200",
     "number": 22,
-    "depth_chart_order": 6,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -11916,12 +11916,12 @@
     "position": "RB",
     "team": "PIT",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "72",
     "weight": "198",
     "number": 29,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -12111,12 +12111,12 @@
     "position": "RB",
     "team": "DAL",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "69",
     "weight": "215",
     "number": 31,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 3
   },
   {
@@ -12142,7 +12142,7 @@
     "team": "KC",
     "status": "Active",
     "injury_status": null,
-    "age": 22,
+    "age": 23,
     "height": "71",
     "weight": "200",
     "number": 10,
@@ -12169,7 +12169,7 @@
     "name": "Eric Gray",
     "slug": "eric-gray",
     "position": "RB",
-    "team": "CLE",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 26,
@@ -12694,7 +12694,7 @@
     "name": "Hassan Haskins",
     "slug": "hassan-haskins",
     "position": "RB",
-    "team": "FA",
+    "team": "NE",
     "status": "Active",
     "injury_status": null,
     "age": 26,
@@ -12776,7 +12776,7 @@
     "height": "73",
     "weight": "250",
     "number": 30,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -12821,7 +12821,7 @@
     "height": "72",
     "weight": "221",
     "number": 31,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 2
   },
   {
@@ -12866,7 +12866,7 @@
     "height": "73",
     "weight": "220",
     "number": 32,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -13041,7 +13041,7 @@
     "position": "RB",
     "team": "FA",
     "status": "Inactive",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 24,
     "height": "74",
     "weight": "233",
@@ -13071,12 +13071,12 @@
     "position": "RB",
     "team": "SEA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 26,
     "height": "72",
     "weight": "218",
     "number": 31,
-    "depth_chart_order": null,
+    "depth_chart_order": 7,
     "years_exp": 1
   },
   {
@@ -13207,7 +13207,7 @@
     "team": "SEA",
     "status": "Inactive",
     "injury_status": "IR",
-    "age": 22,
+    "age": 23,
     "height": "71",
     "weight": "209",
     "number": 8,
@@ -13361,7 +13361,7 @@
     "height": "67",
     "weight": "187",
     "number": 38,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -13474,13 +13474,13 @@
     "name": "Jam Miller",
     "slug": "jam-miller",
     "position": "RB",
-    "team": "FA",
+    "team": "ATL",
     "status": "Active",
     "injury_status": null,
     "age": null,
     "height": "70",
     "weight": "209",
-    "number": 30,
+    "number": 38,
     "depth_chart_order": null,
     "years_exp": 0
   },
@@ -13759,13 +13759,13 @@
     "name": "Jaret Patterson",
     "slug": "jaret-patterson",
     "position": "RB",
-    "team": "FA",
+    "team": "CLE",
     "status": "Active",
     "injury_status": null,
     "age": 26,
     "height": "68",
     "weight": "195",
-    "number": 30,
+    "number": 41,
     "depth_chart_order": null,
     "years_exp": 5
   },
@@ -13774,7 +13774,7 @@
     "name": "Jarquez Hunter",
     "slug": "jarquez-hunter",
     "position": "RB",
-    "team": "MIA",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 23,
@@ -14111,7 +14111,7 @@
     "height": "70",
     "weight": "205",
     "number": 5,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 2
   },
   {
@@ -14451,8 +14451,8 @@
     "position": "RB",
     "team": "FA",
     "status": "Active",
-    "injury_status": "Active",
-    "age": 29,
+    "injury_status": "Questionable",
+    "age": 30,
     "height": "73",
     "weight": "220",
     "number": 28,
@@ -14856,12 +14856,12 @@
     "position": "RB",
     "team": "SF",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "69",
     "weight": "208",
     "number": 29,
-    "depth_chart_order": 6,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -14906,7 +14906,7 @@
     "height": "71",
     "weight": "230",
     "number": 27,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -15146,7 +15146,7 @@
     "height": "70",
     "weight": "223",
     "number": 8,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 7
   },
   {
@@ -15521,7 +15521,7 @@
     "height": "73",
     "weight": "224",
     "number": 26,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -15664,14 +15664,14 @@
     "name": "Kaytron Allen",
     "slug": "kaytron-allen",
     "position": "RB",
-    "team": "WAS",
+    "team": "MIA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 23,
     "height": "71",
     "weight": "217",
     "number": 31,
-    "depth_chart_order": 3,
+    "depth_chart_order": 6,
     "years_exp": 0
   },
   {
@@ -15896,7 +15896,7 @@
     "height": "73",
     "weight": "210",
     "number": 3,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -16416,12 +16416,12 @@
     "position": "RB",
     "team": "SF",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 35,
     "height": "74",
     "weight": "235",
     "number": 44,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 13
   },
   {
@@ -16582,7 +16582,7 @@
     "team": "NE",
     "status": "Active",
     "injury_status": null,
-    "age": 24,
+    "age": 25,
     "height": "71",
     "weight": "209",
     "number": 34,
@@ -16841,7 +16841,7 @@
     "height": "72",
     "weight": "201",
     "number": 5,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -16999,7 +16999,7 @@
     "name": "Lucas Scott",
     "slug": "lucas-scott",
     "position": "RB",
-    "team": "FA",
+    "team": "BAL",
     "status": "Active",
     "injury_status": null,
     "age": 23,
@@ -17111,7 +17111,7 @@
     "height": "70",
     "weight": "205",
     "number": 20,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 4
   },
   {
@@ -17681,7 +17681,7 @@
     "height": "74",
     "weight": "252",
     "number": 45,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -17741,7 +17741,7 @@
     "height": "72",
     "weight": "247",
     "number": 34,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 11
   },
   {
@@ -17751,7 +17751,7 @@
     "position": "RB",
     "team": "TEN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "68",
     "weight": "201",
@@ -18401,7 +18401,7 @@
     "height": "68",
     "weight": "203",
     "number": 26,
-    "depth_chart_order": 6,
+    "depth_chart_order": 7,
     "years_exp": 0
   },
   {
@@ -18426,12 +18426,12 @@
     "position": "RB",
     "team": "MIA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 22,
     "height": "74",
     "weight": "225",
     "number": 0,
-    "depth_chart_order": 2,
+    "depth_chart_order": 1,
     "years_exp": 1
   },
   {
@@ -18551,7 +18551,7 @@
     "height": "75",
     "weight": "300",
     "number": 45,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 9
   },
   {
@@ -18711,12 +18711,12 @@
     "position": "RB",
     "team": "GB",
     "status": "Active",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 27,
     "height": "71",
     "weight": "207",
     "number": 22,
-    "depth_chart_order": null,
+    "depth_chart_order": 2,
     "years_exp": 4
   },
   {
@@ -19101,7 +19101,7 @@
     "position": "RB",
     "team": "CLE",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 22,
     "height": "72",
     "weight": "221",
@@ -19116,12 +19116,12 @@
     "position": "RB",
     "team": "WAS",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "72",
     "weight": "214",
     "number": 1,
-    "depth_chart_order": 5,
+    "depth_chart_order": 2,
     "years_exp": 4
   },
   {
@@ -19160,13 +19160,13 @@
     "slug": "raheim-sanders",
     "position": "RB",
     "team": "CLE",
-    "status": "Active",
-    "injury_status": null,
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 24,
     "height": "72",
     "weight": "230",
     "number": 23,
-    "depth_chart_order": 2,
+    "depth_chart_order": 4,
     "years_exp": 1
   },
   {
@@ -19460,13 +19460,13 @@
     "slug": "reggie-gilliam",
     "position": "RB",
     "team": "NE",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 29,
     "height": "73",
     "weight": "255",
     "number": 44,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 6
   },
   {
@@ -19551,13 +19551,28 @@
     "position": "RB",
     "team": "PIT",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 28,
     "height": "71",
     "weight": "218",
     "number": 13,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 6
+  },
+  {
+    "id": "13433",
+    "name": "Riley Nowakowski",
+    "slug": "riley-nowakowski",
+    "position": "RB",
+    "team": "PIT",
+    "status": "Active",
+    "injury_status": null,
+    "age": 24,
+    "height": "74",
+    "weight": "250",
+    "number": 37,
+    "depth_chart_order": 5,
+    "years_exp": 0
   },
   {
     "id": "12489",
@@ -19639,14 +19654,14 @@
     "name": "Robert Henry",
     "slug": "robert-henry",
     "position": "RB",
-    "team": "WAS",
+    "team": "SEA",
     "status": "Active",
     "injury_status": null,
     "age": 24,
     "height": "69",
-    "weight": "196",
+    "weight": "199",
     "number": 34,
-    "depth_chart_order": null,
+    "depth_chart_order": 9,
     "years_exp": 0
   },
   {
@@ -20241,7 +20256,7 @@
     "position": "RB",
     "team": "PHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 29,
     "height": "72",
     "weight": "233",
@@ -20975,13 +20990,13 @@
     "slug": "tank-bigsby",
     "position": "RB",
     "team": "PHI",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 24,
     "height": "71",
     "weight": "215",
     "number": 8,
-    "depth_chart_order": 2,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -21641,7 +21656,7 @@
     "height": "70",
     "weight": "211",
     "number": 21,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 7
   },
   {
@@ -21831,12 +21846,12 @@
     "position": "RB",
     "team": "NE",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Doubtful",
     "age": 23,
     "height": "70",
     "weight": "202",
     "number": 32,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -21866,7 +21881,7 @@
     "height": "72",
     "weight": "225",
     "number": 33,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 2
   },
   {
@@ -22431,12 +22446,12 @@
     "position": "RB",
     "team": "PHI",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Doubtful",
     "age": 24,
     "height": "71",
     "weight": "209",
     "number": 28,
-    "depth_chart_order": 3,
+    "depth_chart_order": 5,
     "years_exp": 2
   },
   {
@@ -22496,7 +22511,7 @@
     "height": "70",
     "weight": "208",
     "number": 4,
-    "depth_chart_order": 2,
+    "depth_chart_order": 1,
     "years_exp": 1
   },
   {
@@ -22586,7 +22601,7 @@
     "height": "73",
     "weight": "220",
     "number": 26,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -23001,12 +23016,12 @@
     "position": "WR",
     "team": "NYJ",
     "status": "Active",
-    "injury_status": "Out",
-    "age": 23,
+    "injury_status": "Questionable",
+    "age": 24,
     "height": "74",
     "weight": "205",
     "number": 15,
-    "depth_chart_order": 7,
+    "depth_chart_order": 2,
     "years_exp": 2
   },
   {
@@ -23261,7 +23276,7 @@
     "height": "72",
     "weight": "190",
     "number": 11,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 7
   },
   {
@@ -23891,7 +23906,7 @@
     "height": "68",
     "weight": "174",
     "number": 6,
-    "depth_chart_order": 5,
+    "depth_chart_order": 7,
     "years_exp": 2
   },
   {
@@ -24116,7 +24131,7 @@
     "height": "71",
     "weight": "195",
     "number": 14,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -24202,11 +24217,11 @@
     "team": "NYJ",
     "status": "Inactive",
     "injury_status": "IR",
-    "age": 24,
+    "age": 25,
     "height": "72",
     "weight": "179",
     "number": 82,
-    "depth_chart_order": 9,
+    "depth_chart_order": 8,
     "years_exp": 1
   },
   {
@@ -24306,12 +24321,12 @@
     "position": "WR",
     "team": "IND",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 29,
     "height": "74",
     "weight": "215",
     "number": 16,
-    "depth_chart_order": 3,
+    "depth_chart_order": 5,
     "years_exp": 7
   },
   {
@@ -24696,12 +24711,12 @@
     "position": "WR",
     "team": "PIT",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 29,
     "height": "75",
     "weight": "224",
     "number": 15,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 5
   },
   {
@@ -24821,7 +24836,7 @@
     "height": "71",
     "weight": "189",
     "number": 16,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -24941,7 +24956,7 @@
     "height": "70",
     "weight": "189",
     "number": 84,
-    "depth_chart_order": 5,
+    "depth_chart_order": 3,
     "years_exp": 12
   },
   {
@@ -24956,7 +24971,7 @@
     "height": "72",
     "weight": "200",
     "number": 11,
-    "depth_chart_order": 10,
+    "depth_chart_order": 9,
     "years_exp": 6
   },
   {
@@ -25206,8 +25221,8 @@
     "position": "WR",
     "team": "NYG",
     "status": "Inactive",
-    "injury_status": "Out",
-    "age": 30,
+    "injury_status": "IR",
+    "age": 31,
     "height": "69",
     "weight": "190",
     "number": 87,
@@ -25341,12 +25356,12 @@
     "position": "WR",
     "team": "LAC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 23,
     "height": "69",
     "weight": "170",
     "number": 89,
-    "depth_chart_order": 9,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -25522,7 +25537,7 @@
     "team": "JAX",
     "status": "Active",
     "injury_status": null,
-    "age": 23,
+    "age": 24,
     "height": "74",
     "weight": "209",
     "number": 7,
@@ -25586,7 +25601,7 @@
     "height": "68",
     "weight": "173",
     "number": 85,
-    "depth_chart_order": 5,
+    "depth_chart_order": 7,
     "years_exp": 4
   },
   {
@@ -25611,7 +25626,7 @@
     "position": "WR",
     "team": "FA",
     "status": "Active",
-    "injury_status": "Sus",
+    "injury_status": null,
     "age": null,
     "height": "74",
     "weight": "225",
@@ -25744,13 +25759,13 @@
     "name": "Bryce Oliver",
     "slug": "bryce-oliver",
     "position": "WR",
-    "team": "FA",
+    "team": "HOU",
     "status": "Active",
     "injury_status": null,
     "age": 26,
     "height": "73",
     "weight": "214",
-    "number": 31,
+    "number": 84,
     "depth_chart_order": null,
     "years_exp": 2
   },
@@ -25781,7 +25796,7 @@
     "height": "76",
     "weight": "212",
     "number": 87,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -26006,7 +26021,7 @@
     "height": "76",
     "weight": "208",
     "number": 7,
-    "depth_chart_order": 9,
+    "depth_chart_order": 7,
     "years_exp": 0
   },
   {
@@ -26036,7 +26051,7 @@
     "height": "69",
     "weight": "162",
     "number": 82,
-    "depth_chart_order": 7,
+    "depth_chart_order": 6,
     "years_exp": 4
   },
   {
@@ -26166,7 +26181,7 @@
     "position": "WR",
     "team": "DAL",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "74",
     "weight": "204",
@@ -26239,13 +26254,13 @@
     "name": "Cameron Ross",
     "slug": "cameron-ross",
     "position": "WR",
-    "team": "FA",
+    "team": "DEN",
     "status": "Active",
     "injury_status": null,
     "age": 25,
     "height": "70",
     "weight": "186",
-    "number": 87,
+    "number": 80,
     "depth_chart_order": null,
     "years_exp": 0
   },
@@ -26421,7 +26436,7 @@
     "position": "WR",
     "team": "DAL",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 27,
     "height": "74",
     "weight": "198",
@@ -26591,7 +26606,7 @@
     "height": "72",
     "weight": "188",
     "number": 89,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -26737,7 +26752,7 @@
     "team": "ATL",
     "status": "Active",
     "injury_status": null,
-    "age": 28,
+    "age": 29,
     "height": "74",
     "weight": "215",
     "number": 19,
@@ -26771,7 +26786,7 @@
     "height": "76",
     "weight": "197",
     "number": 19,
-    "depth_chart_order": 10,
+    "depth_chart_order": 9,
     "years_exp": 0
   },
   {
@@ -26991,12 +27006,12 @@
     "position": "WR",
     "team": "BAL",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 33,
     "height": "73",
     "weight": "200",
     "number": 17,
-    "depth_chart_order": 6,
+    "depth_chart_order": null,
     "years_exp": 10
   },
   {
@@ -27101,7 +27116,7 @@
     "height": "71",
     "weight": "200",
     "number": 3,
-    "depth_chart_order": 7,
+    "depth_chart_order": 6,
     "years_exp": 8
   },
   {
@@ -27156,12 +27171,12 @@
     "position": "WR",
     "team": "LAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "74",
     "weight": "205",
     "number": 6,
-    "depth_chart_order": 8,
+    "depth_chart_order": 7,
     "years_exp": 0
   },
   {
@@ -27171,12 +27186,12 @@
     "position": "WR",
     "team": "JAX",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "73",
     "weight": "205",
     "number": 18,
-    "depth_chart_order": 9,
+    "depth_chart_order": 8,
     "years_exp": 0
   },
   {
@@ -27386,7 +27401,7 @@
     "height": "73",
     "weight": "192",
     "number": 85,
-    "depth_chart_order": 10,
+    "depth_chart_order": 8,
     "years_exp": 3
   },
   {
@@ -27581,7 +27596,7 @@
     "height": "72",
     "weight": "213",
     "number": 82,
-    "depth_chart_order": 11,
+    "depth_chart_order": 10,
     "years_exp": 0
   },
   {
@@ -27697,7 +27712,7 @@
     "team": "DEN",
     "status": "Active",
     "injury_status": null,
-    "age": 30,
+    "age": 31,
     "height": "76",
     "weight": "216",
     "number": 14,
@@ -27776,7 +27791,7 @@
     "height": "71",
     "weight": "180",
     "number": 13,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -28459,9 +28474,9 @@
     "name": "Dante Pettis",
     "slug": "dante-pettis",
     "position": "WR",
-    "team": "SF",
+    "team": "FA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 30,
     "height": "73",
     "weight": "195",
@@ -28511,7 +28526,7 @@
     "height": "74",
     "weight": "224",
     "number": 81,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -28526,7 +28541,7 @@
     "height": "71",
     "weight": "210",
     "number": 80,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 1
   },
   {
@@ -28611,12 +28626,12 @@
     "position": "WR",
     "team": "IND",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 29,
     "height": "73",
     "weight": "198",
     "number": 11,
-    "depth_chart_order": 7,
+    "depth_chart_order": 4,
     "years_exp": 7
   },
   {
@@ -28871,7 +28886,7 @@
     "height": "72",
     "weight": "219",
     "number": 83,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 9
   },
   {
@@ -29126,7 +29141,7 @@
     "height": "74",
     "weight": "207",
     "number": 7,
-    "depth_chart_order": 12,
+    "depth_chart_order": 11,
     "years_exp": 0
   },
   {
@@ -29316,12 +29331,12 @@
     "position": "WR",
     "team": "SF",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 30,
     "height": "72",
     "weight": "215",
     "number": 19,
-    "depth_chart_order": 2,
+    "depth_chart_order": 8,
     "years_exp": 7
   },
   {
@@ -29336,7 +29351,7 @@
     "height": "69",
     "weight": "180",
     "number": 80,
-    "depth_chart_order": 4,
+    "depth_chart_order": 6,
     "years_exp": 0
   },
   {
@@ -29366,7 +29381,7 @@
     "height": "73",
     "weight": "202",
     "number": 11,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 10
   },
   {
@@ -29381,7 +29396,7 @@
     "height": "68",
     "weight": "185",
     "number": 3,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -29921,7 +29936,7 @@
     "height": "71",
     "weight": "202",
     "number": 81,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 6
   },
   {
@@ -30126,12 +30141,12 @@
     "position": "WR",
     "team": "PHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 27,
     "height": "72",
     "weight": "170",
     "number": 6,
-    "depth_chart_order": 7,
+    "depth_chart_order": 1,
     "years_exp": 5
   },
   {
@@ -30611,7 +30626,7 @@
     "height": "77",
     "weight": "205",
     "number": 10,
-    "depth_chart_order": 10,
+    "depth_chart_order": 9,
     "years_exp": 1
   },
   {
@@ -30619,13 +30634,13 @@
     "name": "Dontae Fleming",
     "slug": "dontae-fleming",
     "position": "WR",
-    "team": "FA",
-    "status": "Inactive",
+    "team": "NYG",
+    "status": "Active",
     "injury_status": null,
     "age": 24,
     "height": "74",
     "weight": "180",
-    "number": 19,
+    "number": 37,
     "depth_chart_order": null,
     "years_exp": 1
   },
@@ -30671,7 +30686,7 @@
     "height": "73",
     "weight": "206",
     "number": 13,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 3
   },
   {
@@ -31196,7 +31211,7 @@
     "height": "72",
     "weight": "195",
     "number": 6,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -31376,7 +31391,7 @@
     "height": "70",
     "weight": "198",
     "number": 86,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 1
   },
   {
@@ -31496,7 +31511,7 @@
     "height": "70",
     "weight": "178",
     "number": 19,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -31511,7 +31526,7 @@
     "height": "74",
     "weight": "215",
     "number": 13,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -31552,7 +31567,7 @@
     "team": "TB",
     "status": "Active",
     "injury_status": null,
-    "age": 23,
+    "age": 24,
     "height": "73",
     "weight": "205",
     "number": 2,
@@ -31729,13 +31744,13 @@
     "name": "Erik Ezukanma",
     "slug": "erik-ezukanma",
     "position": "WR",
-    "team": "FA",
+    "team": "PHI",
     "status": "Active",
     "injury_status": null,
     "age": 26,
     "height": "74",
     "weight": "206",
-    "number": 49,
+    "number": 82,
     "depth_chart_order": null,
     "years_exp": 4
   },
@@ -32306,7 +32321,7 @@
     "height": "73",
     "weight": "206",
     "number": 17,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 0
   },
   {
@@ -32516,7 +32531,7 @@
     "height": "72",
     "weight": "190",
     "number": 80,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 7
   },
   {
@@ -32791,12 +32806,12 @@
   },
   {
     "id": "8861",
-    "name": "Irv Charles",
-    "slug": "irv-charles",
+    "name": "Irvin Charles",
+    "slug": "irvin-charles",
     "position": "WR",
     "team": "SEA",
-    "status": "Inactive",
-    "injury_status": "IR",
+    "status": "Active",
+    "injury_status": null,
     "age": 29,
     "height": "76",
     "weight": "219",
@@ -33026,7 +33041,7 @@
     "height": "70",
     "weight": "185",
     "number": 18,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -33176,7 +33191,7 @@
     "height": "75",
     "weight": "207",
     "number": 87,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 0
   },
   {
@@ -33296,7 +33311,7 @@
     "height": "76",
     "weight": "205",
     "number": 6,
-    "depth_chart_order": 9,
+    "depth_chart_order": 6,
     "years_exp": 0
   },
   {
@@ -33336,7 +33351,7 @@
     "position": "WR",
     "team": "CIN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 26,
     "height": "72",
     "weight": "205",
@@ -33431,7 +33446,7 @@
     "height": "73",
     "weight": "214",
     "number": 18,
-    "depth_chart_order": 9,
+    "depth_chart_order": 8,
     "years_exp": 1
   },
   {
@@ -33476,7 +33491,7 @@
     "height": "69",
     "weight": "171",
     "number": 4,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 2
   },
   {
@@ -33546,7 +33561,7 @@
     "position": "WR",
     "team": "FA",
     "status": "Inactive",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 25,
     "height": "75",
     "weight": "228",
@@ -33731,7 +33746,7 @@
     "height": "75",
     "weight": "206",
     "number": 9,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 1
   },
   {
@@ -33911,7 +33926,7 @@
     "height": "74",
     "weight": "205",
     "number": 86,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -33936,12 +33951,12 @@
     "position": "WR",
     "team": "CAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 24,
     "height": "75",
     "weight": "215",
     "number": 18,
-    "depth_chart_order": 7,
+    "depth_chart_order": 2,
     "years_exp": 2
   },
   {
@@ -34091,7 +34106,7 @@
     "height": "72",
     "weight": "195",
     "number": 11,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -34136,7 +34151,7 @@
     "height": "73",
     "weight": "195",
     "number": 1,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -34286,7 +34301,7 @@
     "height": "68",
     "weight": "175",
     "number": 81,
-    "depth_chart_order": 8,
+    "depth_chart_order": null,
     "years_exp": 1
   },
   {
@@ -34354,13 +34369,13 @@
     "name": "Jamari Thrash",
     "slug": "jamari-thrash",
     "position": "WR",
-    "team": "FA",
-    "status": "Inactive",
-    "injury_status": "Questionable",
+    "team": "LV",
+    "status": "Active",
+    "injury_status": null,
     "age": 25,
     "height": "72",
     "weight": "190",
-    "number": 80,
+    "number": 88,
     "depth_chart_order": null,
     "years_exp": 2
   },
@@ -34429,13 +34444,13 @@
     "name": "James Proche",
     "slug": "james-proche",
     "position": "WR",
-    "team": "FA",
+    "team": "CLE",
     "status": "Active",
     "injury_status": null,
-    "age": 29,
+    "age": 30,
     "height": "71",
     "weight": "193",
-    "number": 13,
+    "number": 80,
     "depth_chart_order": null,
     "years_exp": 6
   },
@@ -34684,10 +34699,10 @@
     "name": "Jared Wayne",
     "slug": "jared-wayne",
     "position": "WR",
-    "team": "HOU",
+    "team": "MIA",
     "status": "Active",
     "injury_status": null,
-    "age": 25,
+    "age": 26,
     "height": "75",
     "weight": "210",
     "number": 17,
@@ -35001,7 +35016,7 @@
     "position": "WR",
     "team": "SEA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 24,
     "height": "72",
     "weight": "197",
@@ -35036,7 +35051,7 @@
     "height": "76",
     "weight": "215",
     "number": 81,
-    "depth_chart_order": 8,
+    "depth_chart_order": 6,
     "years_exp": 1
   },
   {
@@ -35120,13 +35135,13 @@
     "slug": "jaylin-lane",
     "position": "WR",
     "team": "WAS",
-    "status": "Active",
-    "injury_status": "Out",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 24,
     "height": "70",
     "weight": "196",
     "number": 83,
-    "depth_chart_order": 5,
+    "depth_chart_order": 8,
     "years_exp": 1
   },
   {
@@ -35141,7 +35156,7 @@
     "height": "71",
     "weight": "201",
     "number": 13,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 1
   },
   {
@@ -35666,7 +35681,7 @@
     "height": "73",
     "weight": "195",
     "number": 3,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 6
   },
   {
@@ -35681,7 +35696,7 @@
     "height": "73",
     "weight": "188",
     "number": 82,
-    "depth_chart_order": 6,
+    "depth_chart_order": null,
     "years_exp": 2
   },
   {
@@ -36146,7 +36161,7 @@
     "height": "72",
     "weight": "204",
     "number": 13,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -36296,7 +36311,7 @@
     "height": "78",
     "weight": "228",
     "number": 89,
-    "depth_chart_order": 8,
+    "depth_chart_order": 9,
     "years_exp": 2
   },
   {
@@ -36471,12 +36486,12 @@
     "position": "WR",
     "team": "MIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 24,
     "height": "71",
     "weight": "179",
     "number": 3,
-    "depth_chart_order": 1,
+    "depth_chart_order": 5,
     "years_exp": 3
   },
   {
@@ -36746,7 +36761,7 @@
     "height": "74",
     "weight": "203",
     "number": 0,
-    "depth_chart_order": 11,
+    "depth_chart_order": 8,
     "years_exp": 0
   },
   {
@@ -37221,7 +37236,7 @@
     "position": "WR",
     "team": "BUF",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 27,
     "height": "73",
     "weight": "210",
@@ -37551,12 +37566,12 @@
     "position": "WR",
     "team": "MIN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "73",
     "weight": "195",
     "number": 18,
-    "depth_chart_order": 5,
+    "depth_chart_order": 1,
     "years_exp": 6
   },
   {
@@ -37639,7 +37654,7 @@
     "name": "Justin Watson",
     "slug": "justin-watson",
     "position": "WR",
-    "team": "FA",
+    "team": "KC",
     "status": "Active",
     "injury_status": null,
     "age": 30,
@@ -37841,7 +37856,7 @@
     "height": "69",
     "weight": "196",
     "number": 10,
-    "depth_chart_order": 6,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -38186,7 +38201,7 @@
     "height": "72",
     "weight": "203",
     "number": 14,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -38211,12 +38226,12 @@
     "position": "WR",
     "team": "CLE",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 22,
     "height": "72",
     "weight": "190",
     "number": 1,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -38246,7 +38261,7 @@
     "height": "73",
     "weight": "182",
     "number": 84,
-    "depth_chart_order": 8,
+    "depth_chart_order": 7,
     "years_exp": 1
   },
   {
@@ -38316,12 +38331,12 @@
     "position": "WR",
     "team": "IND",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 34,
     "height": "74",
     "weight": "211",
     "number": 10,
-    "depth_chart_order": 6,
+    "depth_chart_order": 2,
     "years_exp": 13
   },
   {
@@ -38606,7 +38621,7 @@
     "height": "73",
     "weight": "205",
     "number": 17,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 9
   },
   {
@@ -38899,14 +38914,14 @@
     "name": "Kevin Austin",
     "slug": "kevin-austin",
     "position": "WR",
-    "team": "NO",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 26,
     "height": "74",
     "weight": "200",
     "number": 81,
-    "depth_chart_order": 5,
+    "depth_chart_order": null,
     "years_exp": 4
   },
   {
@@ -39366,7 +39381,7 @@
     "position": "WR",
     "team": "LAR",
     "status": "Active",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 23,
     "height": "73",
     "weight": "188",
@@ -39566,7 +39581,7 @@
     "height": "71",
     "weight": "190",
     "number": 18,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -39666,7 +39681,7 @@
     "position": "WR",
     "team": "LAC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 24,
     "height": "72",
     "weight": "185",
@@ -39686,7 +39701,7 @@
     "height": "69",
     "weight": "180",
     "number": 10,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 1
   },
   {
@@ -39821,7 +39836,7 @@
     "height": "74",
     "weight": "215",
     "number": 13,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 10
   },
   {
@@ -40121,7 +40136,7 @@
     "height": "76",
     "weight": "225",
     "number": 5,
-    "depth_chart_order": null,
+    "depth_chart_order": 5,
     "years_exp": 7
   },
   {
@@ -40234,9 +40249,9 @@
     "name": "Luke Grimm",
     "slug": "luke-grimm",
     "position": "WR",
-    "team": "FA",
-    "status": "Inactive",
-    "injury_status": "Questionable",
+    "team": "LAC",
+    "status": "Active",
+    "injury_status": null,
     "age": 25,
     "height": "72",
     "weight": "190",
@@ -40251,12 +40266,12 @@
     "position": "WR",
     "team": "WAS",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "74",
     "weight": "195",
     "number": 11,
-    "depth_chart_order": 7,
+    "depth_chart_order": 6,
     "years_exp": 2
   },
   {
@@ -40355,13 +40370,13 @@
     "slug": "mack-hollins",
     "position": "WR",
     "team": "NE",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 33,
     "height": "76",
     "weight": "221",
     "number": 13,
-    "depth_chart_order": 2,
+    "depth_chart_order": 5,
     "years_exp": 9
   },
   {
@@ -40376,7 +40391,7 @@
     "height": "71",
     "weight": "192",
     "number": 9,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -40421,7 +40436,7 @@
     "height": "71",
     "weight": "215",
     "number": 11,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 2
   },
   {
@@ -40556,7 +40571,7 @@
     "height": "73",
     "weight": "195",
     "number": 19,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -40657,11 +40672,11 @@
     "team": "NYJ",
     "status": "Active",
     "injury_status": null,
-    "age": 23,
+    "age": 24,
     "height": "76",
     "weight": "195",
     "number": 84,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 0
   },
   {
@@ -40720,7 +40735,7 @@
     "age": 30,
     "height": "74",
     "weight": "202",
-    "number": 81,
+    "number": 6,
     "depth_chart_order": null,
     "years_exp": 8
   },
@@ -41317,7 +41332,7 @@
     "team": "LAC",
     "status": "Active",
     "injury_status": null,
-    "age": 31,
+    "age": 32,
     "height": "76",
     "weight": "206",
     "number": 13,
@@ -41346,7 +41361,7 @@
     "position": "WR",
     "team": "PHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 29,
     "height": "69",
     "weight": "170",
@@ -41434,14 +41449,14 @@
     "name": "Marvin Harrison",
     "slug": "marvin-harrison",
     "position": "WR",
-    "team": "ARI",
+    "team": "HOU",
     "status": "Active",
     "injury_status": null,
     "age": 24,
     "height": "75",
     "weight": "220",
     "number": 18,
-    "depth_chart_order": 2,
+    "depth_chart_order": 5,
     "years_exp": 2
   },
   {
@@ -41471,7 +41486,7 @@
     "height": "71",
     "weight": "182",
     "number": 19,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -41501,7 +41516,7 @@
     "height": "71",
     "weight": "187",
     "number": 15,
-    "depth_chart_order": 9,
+    "depth_chart_order": 6,
     "years_exp": 2
   },
   {
@@ -41945,13 +41960,13 @@
     "slug": "michael-pittman",
     "position": "WR",
     "team": "PIT",
-    "status": "Active",
-    "injury_status": null,
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 29,
     "height": "76",
     "weight": "223",
     "number": 11,
-    "depth_chart_order": 2,
+    "depth_chart_order": 5,
     "years_exp": 6
   },
   {
@@ -42441,7 +42456,7 @@
     "position": "WR",
     "team": "SEA",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "71",
     "weight": "188",
@@ -42679,13 +42694,13 @@
     "name": "Nick DeGennaro",
     "slug": "nick-degennaro",
     "position": "WR",
-    "team": "FA",
+    "team": "WAS",
     "status": "Active",
     "injury_status": null,
     "age": null,
     "height": "72",
     "weight": "196",
-    "number": 23,
+    "number": 88,
     "depth_chart_order": null,
     "years_exp": 0
   },
@@ -42851,7 +42866,7 @@
     "height": "69",
     "weight": "187",
     "number": 81,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 3
   },
   {
@@ -42979,13 +42994,13 @@
     "name": "Odell Beckham",
     "slug": "odell-beckham",
     "position": "WR",
-    "team": "FA",
+    "team": "MIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 33,
     "height": "71",
     "weight": "198",
-    "number": 13,
+    "number": 9,
     "depth_chart_order": null,
     "years_exp": 12
   },
@@ -43016,7 +43031,7 @@
     "height": "68",
     "weight": "194",
     "number": 14,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 7
   },
   {
@@ -43061,7 +43076,7 @@
     "height": "72",
     "weight": "199",
     "number": 11,
-    "depth_chart_order": 10,
+    "depth_chart_order": 9,
     "years_exp": 0
   },
   {
@@ -43175,13 +43190,13 @@
     "slug": "pat-bryant",
     "position": "WR",
     "team": "DEN",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 23,
     "height": "74",
     "weight": "204",
     "number": 13,
-    "depth_chart_order": 3,
+    "depth_chart_order": 7,
     "years_exp": 1
   },
   {
@@ -43836,7 +43851,7 @@
     "position": "WR",
     "team": "LAC",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 25,
     "height": "74",
     "weight": "208",
@@ -43879,13 +43894,13 @@
     "name": "Quez Watkins",
     "slug": "quez-watkins",
     "position": "WR",
-    "team": "FA",
+    "team": "IND",
     "status": "Active",
     "injury_status": null,
     "age": 28,
     "height": "72",
     "weight": "193",
-    "number": 86,
+    "number": 9,
     "depth_chart_order": null,
     "years_exp": 6
   },
@@ -44541,12 +44556,12 @@
     "position": "WR",
     "team": "ARI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "75",
     "weight": "187",
     "number": 82,
-    "depth_chart_order": 7,
+    "depth_chart_order": 5,
     "years_exp": 0
   },
   {
@@ -44681,7 +44696,7 @@
     "height": "73",
     "weight": "189",
     "number": 1,
-    "depth_chart_order": 11,
+    "depth_chart_order": 10,
     "years_exp": 2
   },
   {
@@ -45096,12 +45111,12 @@
     "position": "WR",
     "team": "PIT",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 25,
     "height": "72",
     "weight": "192",
     "number": 14,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 2
   },
   {
@@ -45371,7 +45386,7 @@
     "height": "74",
     "weight": "221",
     "number": 84,
-    "depth_chart_order": 4,
+    "depth_chart_order": null,
     "years_exp": 3
   },
   {
@@ -45641,7 +45656,7 @@
     "height": "76",
     "weight": "222",
     "number": 83,
-    "depth_chart_order": 7,
+    "depth_chart_order": 8,
     "years_exp": 1
   },
   {
@@ -45664,7 +45679,7 @@
     "name": "Scotty Miller",
     "slug": "scotty-miller",
     "position": "WR",
-    "team": "FA",
+    "team": "CHI",
     "status": "Active",
     "injury_status": null,
     "age": 29,
@@ -46166,7 +46181,7 @@
     "height": "76",
     "weight": "225",
     "number": 80,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 5
   },
   {
@@ -46221,12 +46236,12 @@
     "position": "WR",
     "team": "BUF",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "71",
     "weight": "192",
     "number": 13,
-    "depth_chart_order": 9,
+    "depth_chart_order": 5,
     "years_exp": 0
   },
   {
@@ -46236,7 +46251,7 @@
     "position": "WR",
     "team": "GB",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 26,
     "height": "70",
     "weight": "195",
@@ -46386,12 +46401,12 @@
     "position": "WR",
     "team": "WAS",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 32,
     "height": "72",
     "weight": "191",
     "number": 3,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 11
   },
   {
@@ -46811,7 +46826,7 @@
     "height": "70",
     "weight": "165",
     "number": 1,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -47076,7 +47091,7 @@
     "position": "WR",
     "team": "CIN",
     "status": "Active",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 27,
     "height": "76",
     "weight": "220",
@@ -47241,12 +47256,12 @@
     "position": "WR",
     "team": "WAS",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 31,
     "height": "72",
     "weight": "210",
     "number": 17,
-    "depth_chart_order": 6,
+    "depth_chart_order": 1,
     "years_exp": 7
   },
   {
@@ -47366,7 +47381,7 @@
     "height": "74",
     "weight": "210",
     "number": 82,
-    "depth_chart_order": null,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -47450,13 +47465,13 @@
     "slug": "tim-patrick",
     "position": "WR",
     "team": "NYJ",
-    "status": "Inactive",
-    "injury_status": "IR",
+    "status": "Active",
+    "injury_status": null,
     "age": 32,
     "height": "77",
     "weight": "210",
     "number": 17,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 9
   },
   {
@@ -47556,7 +47571,7 @@
     "position": "WR",
     "team": "DET",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 30,
     "height": "70",
     "weight": "195",
@@ -47846,7 +47861,7 @@
     "height": "73",
     "weight": "185",
     "number": 12,
-    "depth_chart_order": 5,
+    "depth_chart_order": 1,
     "years_exp": 1
   },
   {
@@ -48021,7 +48036,7 @@
     "position": "WR",
     "team": "LAC",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Doubtful",
     "age": 24,
     "height": "75",
     "weight": "210",
@@ -48326,7 +48341,7 @@
     "height": "74",
     "weight": "225",
     "number": 13,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -48334,9 +48349,9 @@
     "name": "Treyvhon Saunders",
     "slug": "treyvhon-saunders",
     "position": "WR",
-    "team": "HOU",
+    "team": "FA",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": null,
     "height": "69",
     "weight": "190",
@@ -48401,7 +48416,7 @@
     "height": "75",
     "weight": "180",
     "number": 11,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -48442,11 +48457,11 @@
     "team": "LAR",
     "status": "Active",
     "injury_status": null,
-    "age": 26,
+    "age": 27,
     "height": "69",
     "weight": "165",
     "number": 8,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 5
   },
   {
@@ -48516,12 +48531,12 @@
     "position": "WR",
     "team": "CLE",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": "Questionable",
     "age": 27,
     "height": "71",
     "weight": "200",
     "number": 16,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -48589,7 +48604,7 @@
     "name": "Tyler Johnson",
     "slug": "tyler-johnson",
     "position": "WR",
-    "team": "NYJ",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 28,
@@ -48681,12 +48696,12 @@
     "position": "WR",
     "team": "LV",
     "status": "Active",
-    "injury_status": null,
-    "age": 24,
+    "injury_status": "Out",
+    "age": 25,
     "height": "71",
     "weight": "185",
     "number": 82,
-    "depth_chart_order": null,
+    "depth_chart_order": 8,
     "years_exp": 3
   },
   {
@@ -48755,13 +48770,13 @@
     "slug": "tyquan-thornton",
     "position": "WR",
     "team": "KC",
-    "status": "Active",
-    "injury_status": "Out",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 26,
     "height": "74",
     "weight": "185",
     "number": 2,
-    "depth_chart_order": 3,
+    "depth_chart_order": 6,
     "years_exp": 4
   },
   {
@@ -48956,7 +48971,7 @@
     "height": "72",
     "weight": "204",
     "number": 33,
-    "depth_chart_order": 3,
+    "depth_chart_order": null,
     "years_exp": 4
   },
   {
@@ -49346,7 +49361,7 @@
     "height": "75",
     "weight": "210",
     "number": 19,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -49429,13 +49444,13 @@
     "name": "Xavier Smith",
     "slug": "xavier-smith",
     "position": "WR",
-    "team": "FA",
+    "team": "SF",
     "status": "Active",
     "injury_status": null,
     "age": 29,
     "height": "69",
     "weight": "180",
-    "number": 19,
+    "number": 15,
     "depth_chart_order": null,
     "years_exp": 3
   },
@@ -49571,7 +49586,7 @@
     "height": "70",
     "weight": "180",
     "number": 17,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -49601,7 +49616,7 @@
     "height": "70",
     "weight": "190",
     "number": 13,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -50615,13 +50630,13 @@
     "slug": "ben-yurosek",
     "position": "TE",
     "team": "MIN",
-    "status": "Inactive",
-    "injury_status": "IR",
+    "status": "Active",
+    "injury_status": null,
     "age": 24,
     "height": "76",
     "weight": "251",
     "number": 85,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -50981,7 +50996,7 @@
     "height": "76",
     "weight": "240",
     "number": 9,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 3
   },
   {
@@ -51056,7 +51071,7 @@
     "height": "75",
     "weight": "245",
     "number": 9,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -51416,7 +51431,7 @@
     "height": "76",
     "weight": "251",
     "number": 8,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 2
   },
   {
@@ -51461,7 +51476,7 @@
     "height": "79",
     "weight": "250",
     "number": 84,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 1
   },
   {
@@ -51621,7 +51636,7 @@
     "position": "TE",
     "team": "CLE",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 23,
     "height": "75",
     "weight": "255",
@@ -51801,12 +51816,12 @@
     "position": "TE",
     "team": "LAC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "78",
     "weight": "250",
     "number": 88,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 4
   },
   {
@@ -52042,7 +52057,7 @@
     "team": "LV",
     "status": "Active",
     "injury_status": null,
-    "age": 30,
+    "age": 31,
     "height": "77",
     "weight": "261",
     "number": 41,
@@ -52266,12 +52281,12 @@
     "position": "TE",
     "team": "LAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 27,
     "height": "79",
     "weight": "266",
     "number": 84,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 6
   },
   {
@@ -52626,12 +52641,12 @@
     "position": "TE",
     "team": "PHI",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 31,
     "height": "77",
     "weight": "256",
     "number": 88,
-    "depth_chart_order": 3,
+    "depth_chart_order": 1,
     "years_exp": 8
   },
   {
@@ -52641,12 +52656,12 @@
     "position": "TE",
     "team": "DEN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "76",
     "weight": "253",
     "number": 89,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -53001,7 +53016,7 @@
     "position": "TE",
     "team": "TEN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 26,
     "height": "75",
     "weight": "255",
@@ -53096,7 +53111,7 @@
     "height": "78",
     "weight": "253",
     "number": 87,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -53329,7 +53344,7 @@
     "name": "Devin Culp",
     "slug": "devin-culp",
     "position": "TE",
-    "team": "TB",
+    "team": "CLE",
     "status": "Active",
     "injury_status": null,
     "age": 26,
@@ -53407,7 +53422,7 @@
     "team": "DAL",
     "status": "Inactive",
     "injury_status": "IR",
-    "age": 24,
+    "age": 25,
     "height": "76",
     "weight": "245",
     "number": 49,
@@ -53660,13 +53675,13 @@
     "slug": "durham-smythe",
     "position": "TE",
     "team": "BAL",
-    "status": "Active",
-    "injury_status": "Out",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 31,
     "height": "77",
     "weight": "248",
     "number": 80,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 8
   },
   {
@@ -53801,7 +53816,7 @@
     "height": "78",
     "weight": "245",
     "number": 84,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -53856,7 +53871,7 @@
     "position": "TE",
     "team": "NE",
     "status": "Active",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 22,
     "height": "78",
     "weight": "245",
@@ -53876,7 +53891,7 @@
     "height": "75",
     "weight": "239",
     "number": 87,
-    "depth_chart_order": 5,
+    "depth_chart_order": 6,
     "years_exp": 0
   },
   {
@@ -53921,7 +53936,7 @@
     "height": "77",
     "weight": "254",
     "number": 18,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 1
   },
   {
@@ -54056,7 +54071,7 @@
     "height": "77",
     "weight": "248",
     "number": 81,
-    "depth_chart_order": 3,
+    "depth_chart_order": 2,
     "years_exp": 9
   },
   {
@@ -54101,7 +54116,7 @@
     "height": "77",
     "weight": "255",
     "number": 83,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 2
   },
   {
@@ -54266,7 +54281,7 @@
     "height": "78",
     "weight": "252",
     "number": 81,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 5
   },
   {
@@ -54547,7 +54562,7 @@
     "team": "SF",
     "status": "Active",
     "injury_status": null,
-    "age": 32,
+    "age": 33,
     "height": "76",
     "weight": "250",
     "number": 85,
@@ -54656,7 +54671,7 @@
     "height": "76",
     "weight": "240",
     "number": 81,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 4
   },
   {
@@ -54896,7 +54911,7 @@
     "height": "77",
     "weight": "247",
     "number": 40,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -54995,13 +55010,13 @@
     "slug": "hunter-long",
     "position": "TE",
     "team": "ARI",
-    "status": "Active",
-    "injury_status": "Questionable",
+    "status": "Inactive",
+    "injury_status": "IR",
     "age": 28,
     "height": "77",
     "weight": "253",
     "number": 89,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 5
   },
   {
@@ -55161,12 +55176,12 @@
     "position": "TE",
     "team": "CAR",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "76",
     "weight": "243",
     "number": 0,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 2
   },
   {
@@ -55221,7 +55236,7 @@
     "position": "TE",
     "team": "CIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 22,
     "height": "77",
     "weight": "245",
@@ -55239,7 +55254,7 @@
     "injury_status": null,
     "age": 28,
     "height": "76",
-    "weight": "247",
+    "weight": "245",
     "number": 83,
     "depth_chart_order": null,
     "years_exp": 5
@@ -55326,7 +55341,7 @@
     "position": "TE",
     "team": "DET",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 23,
     "height": "74",
     "weight": "235",
@@ -55451,7 +55466,7 @@
     "height": "78",
     "weight": "240",
     "number": 88,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 1
   },
   {
@@ -55601,7 +55616,7 @@
     "height": "76",
     "weight": "240",
     "number": 88,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 4
   },
   {
@@ -55806,12 +55821,12 @@
     "position": "TE",
     "team": "KC",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "78",
     "weight": "249",
     "number": 12,
-    "depth_chart_order": 5,
+    "depth_chart_order": 3,
     "years_exp": 2
   },
   {
@@ -55987,11 +56002,11 @@
     "team": "NYJ",
     "status": "Active",
     "injury_status": null,
-    "age": 27,
+    "age": 28,
     "height": "79",
     "weight": "253",
     "number": 86,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 4
   },
   {
@@ -56051,7 +56066,7 @@
     "height": "77",
     "weight": "250",
     "number": 89,
-    "depth_chart_order": 2,
+    "depth_chart_order": 3,
     "years_exp": 4
   },
   {
@@ -56576,7 +56591,7 @@
     "height": "76",
     "weight": "245",
     "number": 83,
-    "depth_chart_order": 1,
+    "depth_chart_order": 2,
     "years_exp": 9
   },
   {
@@ -56816,7 +56831,7 @@
     "height": "75",
     "weight": "246",
     "number": 85,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -56861,7 +56876,7 @@
     "height": "77",
     "weight": "264",
     "number": 84,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 7
   },
   {
@@ -56981,7 +56996,7 @@
     "height": "76",
     "weight": "251",
     "number": 80,
-    "depth_chart_order": 5,
+    "depth_chart_order": 3,
     "years_exp": 3
   },
   {
@@ -57319,7 +57334,7 @@
     "name": "Kenny Fletcher",
     "slug": "kenny-fletcher",
     "position": "TE",
-    "team": "IND",
+    "team": "FA",
     "status": "Active",
     "injury_status": null,
     "age": 22,
@@ -57334,13 +57349,13 @@
     "name": "Kenny Yeboah",
     "slug": "kenny-yeboah",
     "position": "TE",
-    "team": "FA",
-    "status": "Inactive",
-    "injury_status": "Questionable",
+    "team": "ARI",
+    "status": "Active",
+    "injury_status": null,
     "age": 27,
     "height": "75",
     "weight": "250",
-    "number": 48,
+    "number": 45,
     "depth_chart_order": null,
     "years_exp": 5
   },
@@ -57366,7 +57381,7 @@
     "position": "TE",
     "team": "NYJ",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Questionable",
     "age": 21,
     "height": "75",
     "weight": "241",
@@ -57471,7 +57486,7 @@
     "position": "TE",
     "team": "TB",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 28,
     "height": "77",
     "weight": "265",
@@ -57577,7 +57592,7 @@
     "team": "ATL",
     "status": "Active",
     "injury_status": null,
-    "age": 25,
+    "age": 26,
     "height": "78",
     "weight": "250",
     "number": 8,
@@ -57606,7 +57621,7 @@
     "position": "TE",
     "team": "TEN",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 28,
     "height": "75",
     "weight": "242",
@@ -57952,7 +57967,7 @@
     "team": "SF",
     "status": "Active",
     "injury_status": null,
-    "age": 28,
+    "age": 29,
     "height": "77",
     "weight": "250",
     "number": 89,
@@ -57986,7 +58001,7 @@
     "height": "78",
     "weight": "253",
     "number": 88,
-    "depth_chart_order": 4,
+    "depth_chart_order": 5,
     "years_exp": 3
   },
   {
@@ -58166,7 +58181,7 @@
     "height": "77",
     "weight": "258",
     "number": 86,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 1
   },
   {
@@ -58191,12 +58206,12 @@
     "position": "TE",
     "team": "HOU",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "78",
     "weight": "250",
     "number": 83,
-    "depth_chart_order": 6,
+    "depth_chart_order": 3,
     "years_exp": 0
   },
   {
@@ -58296,12 +58311,12 @@
     "position": "TE",
     "team": "NYJ",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 22,
     "height": "77",
     "weight": "251",
     "number": 85,
-    "depth_chart_order": 4,
+    "depth_chart_order": 2,
     "years_exp": 1
   },
   {
@@ -58481,7 +58496,7 @@
     "height": "77",
     "weight": "243",
     "number": 86,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -58916,7 +58931,7 @@
     "height": "78",
     "weight": "263",
     "number": 80,
-    "depth_chart_order": 6,
+    "depth_chart_order": 5,
     "years_exp": 1
   },
   {
@@ -59226,7 +59241,7 @@
     "position": "TE",
     "team": "SEA",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 25,
     "height": "77",
     "weight": "266",
@@ -59321,7 +59336,7 @@
     "height": "78",
     "weight": "261",
     "number": 87,
-    "depth_chart_order": null,
+    "depth_chart_order": 4,
     "years_exp": 10
   },
   {
@@ -59361,7 +59376,7 @@
     "position": "TE",
     "team": "NO",
     "status": "Active",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": 28,
     "height": "76",
     "weight": "249",
@@ -59711,7 +59726,7 @@
     "height": "77",
     "weight": "246",
     "number": 49,
-    "depth_chart_order": null,
+    "depth_chart_order": 4,
     "years_exp": 9
   },
   {
@@ -59961,7 +59976,7 @@
     "position": "TE",
     "team": "FA",
     "status": "Inactive",
-    "injury_status": "Questionable",
+    "injury_status": null,
     "age": null,
     "height": "77",
     "weight": "260",
@@ -59981,7 +59996,7 @@
     "height": "74",
     "weight": "243",
     "number": 80,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 5
   },
   {
@@ -60133,21 +60148,6 @@
     "number": 0,
     "depth_chart_order": null,
     "years_exp": 6
-  },
-  {
-    "id": "13433",
-    "name": "Riley Nowakowski",
-    "slug": "riley-nowakowski",
-    "position": "TE",
-    "team": "PIT",
-    "status": "Active",
-    "injury_status": null,
-    "age": 24,
-    "height": "74",
-    "weight": "250",
-    "number": 37,
-    "depth_chart_order": 3,
-    "years_exp": 0
   },
   {
     "id": "12250",
@@ -61056,7 +61056,7 @@
     "position": "TE",
     "team": "MIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 29,
     "height": "77",
     "weight": "248",
@@ -61071,12 +61071,12 @@
     "position": "TE",
     "team": "NE",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 23,
     "height": "76",
     "weight": "262",
     "number": 84,
-    "depth_chart_order": 6,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -61101,12 +61101,12 @@
     "position": "TE",
     "team": "CIN",
     "status": "Active",
-    "injury_status": null,
+    "injury_status": "Out",
     "age": 31,
     "height": "77",
     "weight": "241",
     "number": 87,
-    "depth_chart_order": 4,
+    "depth_chart_order": 3,
     "years_exp": 8
   },
   {
@@ -61121,7 +61121,7 @@
     "height": "79",
     "weight": "250",
     "number": 88,
-    "depth_chart_order": 3,
+    "depth_chart_order": 4,
     "years_exp": 0
   },
   {
@@ -61226,7 +61226,7 @@
     "height": "78",
     "weight": "259",
     "number": 47,
-    "depth_chart_order": null,
+    "depth_chart_order": 3,
     "years_exp": 4
   },
   {
@@ -61341,7 +61341,7 @@
     "position": "TE",
     "team": "NYG",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 24,
     "height": "78",
     "weight": "255",
@@ -61406,7 +61406,7 @@
     "height": "77",
     "weight": "245",
     "number": 84,
-    "depth_chart_order": 5,
+    "depth_chart_order": 7,
     "years_exp": 2
   },
   {
@@ -61642,7 +61642,7 @@
     "team": "MIA",
     "status": "Active",
     "injury_status": null,
-    "age": 23,
+    "age": 24,
     "height": "77",
     "weight": "250",
     "number": 87,
@@ -61781,7 +61781,7 @@
     "height": "76",
     "weight": "240",
     "number": 82,
-    "depth_chart_order": 5,
+    "depth_chart_order": 4,
     "years_exp": 2
   },
   {
@@ -61881,7 +61881,7 @@
     "position": "TE",
     "team": "DET",
     "status": "Active",
-    "injury_status": "Out",
+    "injury_status": null,
     "age": 31,
     "height": "75",
     "weight": "245",
@@ -62734,14 +62734,14 @@
     "name": "Blake Grupe",
     "slug": "blake-grupe",
     "position": "K",
-    "team": "NYJ",
+    "team": "LAR",
     "status": "Active",
     "injury_status": null,
     "age": 27,
     "height": "67",
     "weight": "156",
     "number": 4,
-    "depth_chart_order": null,
+    "depth_chart_order": 1,
     "years_exp": 3
   },
   {
@@ -63596,7 +63596,7 @@
     "height": "71",
     "weight": "243",
     "number": 92,
-    "depth_chart_order": 1,
+    "depth_chart_order": null,
     "years_exp": 2
   },
   {
