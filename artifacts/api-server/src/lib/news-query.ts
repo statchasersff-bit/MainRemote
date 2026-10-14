@@ -5,14 +5,77 @@
 
 import { and, desc, eq, gte, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { db, newsItems } from "./db";
+import { dbAccess } from "./db-access";
 import { logger } from "./logger";
-import { playerIdsForTeam, teamForImage } from "./teams";
-import { nameKeysForTeam, teamForPlayerName } from "./team/roster";
+import { LruCache } from "./lru";
+import { playerIdsForTeam, teamForImage, teamsVersion } from "./teams";
+import { nameKeysForTeam, rosterFetchedAt, teamForPlayerName } from "./team/roster";
 import { categorize } from "./news-category";
 import type { NewsItem } from "./render";
 import { mergeNewsLanes } from "./news-merge";
 import { imageVersionForUrl } from "./image-versions";
 import { imageKeyFor } from "./image-urls";
+
+type Row = typeof newsItems.$inferSelect;
+
+/**
+ * The read cache: raw rows, keyed by the query that produced them.
+ *
+ * Public traffic - the news page, /api/news, a team hub, a player page - used
+ * to reach the database on every render-cache miss, and on a database that
+ * suspends when idle that was enough to keep it awake. The rows for each
+ * distinct query are held here instead, and dropped as one when anything in
+ * this process writes the archive (invalidateNewsReadCache, called from
+ * storeItems and the summary backfill) or when an operator asks for a reload.
+ *
+ * Rows, not items: team and headshot version are derived at read time from
+ * maps that move on their own (the roster, the image versions), so
+ * toNewsItem() still runs on every call and only the SQL is saved.
+ *
+ * Each cache holds the promise, so concurrent misses on one key share one
+ * query. Bounded, with the search variants in their own smaller cache so a
+ * crawl of distinct search strings cannot push the lists everyone reads out.
+ */
+const listCache = new LruCache<Promise<Row[]>>(64);
+const searchCache = new LruCache<Promise<Row[]>>(128);
+const playerCache = new LruCache<Promise<Row[]>>(512);
+const teamCache = new LruCache<Promise<{ stored: Row[]; derivable: Row[] }>>(128);
+/** Longer than this and a search is answered from the database each time. */
+const SEARCH_CACHE_MAX_CHARS = 80;
+let readCacheHits = 0;
+let readCacheMisses = 0;
+
+function cachedRows<T>(cache: LruCache<Promise<T>>, key: string, run: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key);
+  if (hit) {
+    readCacheHits += 1;
+    return hit;
+  }
+  readCacheMisses += 1;
+  const promise = run();
+  cache.set(key, promise);
+  // A failed read is not a result worth keeping: the next caller tries again.
+  promise.catch(() => {
+    if (cache.peek(key) === promise) cache.delete(key);
+  });
+  return promise;
+}
+
+export function invalidateNewsReadCache(): void {
+  listCache.clear();
+  searchCache.clear();
+  playerCache.clear();
+  teamCache.clear();
+}
+
+/** For /api/status. */
+export function newsReadCacheStatus(): { entries: number; hits: number; misses: number } {
+  return {
+    entries: listCache.size + searchCache.size + playerCache.size + teamCache.size,
+    hits: readCacheHits,
+    misses: readCacheMisses,
+  };
+}
 
 /**
  * The X lane's source_type. Declared here rather than imported from lib/x so
@@ -106,34 +169,44 @@ export async function listNews(
     ? undefined
     : or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE));
 
-  const rows = await db
-    .select()
-    .from(newsItems)
-    // ILIKE, not LIKE: SQLite's LIKE was case-insensitive for ASCII by default
-    // and Postgres' is not, so a plain port would have quietly made search
-    // case-sensitive.
-    .where(
-      and(
-        lanes,
-        search
-          ? or(
-              ilike(newsItems.title, `%${search}%`),
-              ilike(newsItems.playerName, `%${search}%`),
-              // The handle, so "schefter" finds his posts. Only X rows have
-              // one, so this costs nothing on the rest of the archive.
-              ilike(newsItems.authorHandle, `%${search}%`),
-            )
-          : undefined,
-      ),
-    )
-    // NULLS LAST is explicit for the same reason: Postgres sorts NULLs FIRST on
-    // DESC, so an item with an unparseable pubDate would have jumped to the top
-    // of the page. SQLite put them last.
-    .orderBy(
-      sql`${newsItems.pubDateMs} desc nulls last`,
-      desc(newsItems.firstSeenAt),
-    )
-    .limit(limit);
+  const query = async (): Promise<Row[]> => {
+    dbAccess("news_read", { kind: search ? "search" : "list" });
+    return db
+      .select()
+      .from(newsItems)
+      // ILIKE, not LIKE: SQLite's LIKE was case-insensitive for ASCII by default
+      // and Postgres' is not, so a plain port would have quietly made search
+      // case-sensitive.
+      .where(
+        and(
+          lanes,
+          search
+            ? or(
+                ilike(newsItems.title, `%${search}%`),
+                ilike(newsItems.playerName, `%${search}%`),
+                // The handle, so "schefter" finds his posts. Only X rows have
+                // one, so this costs nothing on the rest of the archive.
+                ilike(newsItems.authorHandle, `%${search}%`),
+              )
+            : undefined,
+        ),
+      )
+      // NULLS LAST is explicit for the same reason: Postgres sorts NULLs FIRST on
+      // DESC, so an item with an unparseable pubDate would have jumped to the top
+      // of the page. SQLite put them last.
+      .orderBy(
+        sql`${newsItems.pubDateMs} desc nulls last`,
+        desc(newsItems.firstSeenAt),
+      )
+      .limit(limit);
+  };
+
+  const key = JSON.stringify([limit, Boolean(options.includeClubs), search.toLowerCase()]);
+  const rows = search
+    ? search.length > SEARCH_CACHE_MAX_CHARS
+      ? await query()
+      : await cachedRows(searchCache, key, query)
+    : await cachedRows(listCache, key, query);
 
   return rows.map(toNewsItem);
 }
@@ -244,21 +317,24 @@ export async function listNewsForPlayerName(
 ): Promise<NewsItem[]> {
   const key = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   if (!key) return [];
-  const rows = await db
-    .select()
-    .from(newsItems)
-    .where(
-      and(
-        or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE)),
-        or(eq(nameKey, key), nonAsciiName),
-      ),
-    )
-    .orderBy(
-      sql`${newsItems.pubDateMs} desc nulls last`,
-      desc(newsItems.firstSeenAt),
-      desc(newsItems.id),
-    )
-    .limit(Math.max(limit, 1));
+  const rows = await cachedRows(playerCache, JSON.stringify([key, Math.max(limit, 1)]), async () => {
+    dbAccess("news_read", { kind: "player" });
+    return db
+      .select()
+      .from(newsItems)
+      .where(
+        and(
+          or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE)),
+          or(eq(nameKey, key), nonAsciiName),
+        ),
+      )
+      .orderBy(
+        sql`${newsItems.pubDateMs} desc nulls last`,
+        desc(newsItems.firstSeenAt),
+        desc(newsItems.id),
+      )
+      .limit(Math.max(limit, 1));
+  });
   return rows.map(toNewsItem);
 }
 
@@ -307,8 +383,11 @@ export async function listNewsForTeam(
   );
   const windowDays = Math.max(options.windowDays ?? TEAM_WINDOW_DAYS, 1);
   const since = (options.nowMs ?? Date.now()) - windowDays * 86_400_000;
+  // The window's start, to the hour, so the same team page a minute later is
+  // the same cached query. The exact boundary is applied to the rows below.
+  const sinceBucket = Math.floor(since / 3_600_000) * 3_600_000;
 
-  const inWindow = or(gte(newsItems.pubDateMs, since), isNull(newsItems.pubDateMs));
+  const inWindow = or(gte(newsItems.pubDateMs, sinceBucket), isNull(newsItems.pubDateMs));
   const newestFirst = [
     sql`${newsItems.pubDateMs} desc nulls last`,
     desc(newsItems.firstSeenAt),
@@ -317,30 +396,40 @@ export async function listNewsForTeam(
     desc(newsItems.id),
   ] as const;
 
-  const [stored, derivable] = await Promise.all([
-    // (1) The club rows for this team. `limit` and not `scan`: every row this
-    // returns is already this team's, so there is nothing to filter out and no
-    // reason to read past what the caller asked for.
-    db
-      .select()
-      .from(newsItems)
-      .where(and(eq(newsItems.teamAbbr, wanted), inWindow))
-      .orderBy(...newestFirst)
-      .limit(limit),
-    // (2) The wire rows that COULD be this team's. See wireCandidatesFor().
-    db
-      .select()
-      .from(newsItems)
-      .where(and(isNull(newsItems.teamAbbr), inWindow, wireCandidatesFor(wanted)))
-      .orderBy(...newestFirst)
-      .limit(scan),
-  ]);
+  // The candidate superset is built from the roster maps, so a roster
+  // refresh is a different query and keys the cache along with the window.
+  const cacheKey = JSON.stringify([wanted, limit, scan, windowDays, sinceBucket, teamsVersion(), rosterFetchedAt()]);
+  const read = await cachedRows(teamCache, cacheKey, async () => {
+    dbAccess("news_read", { kind: "team" });
+    const [stored, derivable] = await Promise.all([
+      // (1) The club rows for this team. `limit` and not `scan`: every row this
+      // returns is already this team's, so there is nothing to filter out and no
+      // reason to read past what the caller asked for.
+      db
+        .select()
+        .from(newsItems)
+        .where(and(eq(newsItems.teamAbbr, wanted), inWindow))
+        .orderBy(...newestFirst)
+        .limit(limit),
+      // (2) The wire rows that COULD be this team's. See wireCandidatesFor().
+      db
+        .select()
+        .from(newsItems)
+        .where(and(isNull(newsItems.teamAbbr), inWindow, wireCandidatesFor(wanted)))
+        .orderBy(...newestFirst)
+        .limit(scan),
+    ]);
+    return { stored, derivable };
+  });
+  const inExactWindow = (row: Row) => row.pubDateMs === null || row.pubDateMs >= since;
+  const stored = read.stored.filter(inExactWindow);
+  const derivable = read.derivable.filter(inExactWindow);
 
   // The ceiling binding means the scan stopped short of the window, so this
   // team's older wire stories are missing for a reason that has nothing to do
   // with the team. Said out loud, rather than left to be inferred from a page
   // that merely looks quiet.
-  if (derivable.length >= scan) {
+  if (read.derivable.length >= scan) {
     logger.warn(
       { team: wanted, scan, windowDays },
       "Team news hit the row ceiling before the end of its window - older wire stories are being cut off.",

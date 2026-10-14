@@ -14,6 +14,7 @@
 
 import { and, desc, eq, lte, ne, sql } from "drizzle-orm";
 import { db, fpaGames, fpaSnapshots, type FpaSnapshot } from "../db";
+import { dbAccess } from "../db-access";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import {
   FANTASY_POSITIONS,
@@ -173,13 +174,23 @@ export async function getFpaTable(
  * straight away (fpa/refresh.ts); the window only bounds how long an ingest
  * run from another process - scripts/ingest-fpa.mjs - takes to show.
  */
-const TABLE_MEMO_MS = 5 * 60 * 1000;
+/*
+ * A day, not five minutes (Phase 1, 2026-10-14). Every in-process ingest
+ * drops the memo the moment it commits, and an ingest from outside the
+ * process announces itself with POST /api/cache/reload - so re-reading the
+ * table on a timer only woke the database to learn nothing had changed. The
+ * window is now a backstop for a reload nobody sent, not the refresh path.
+ */
+const TABLE_MEMO_MS = 24 * 60 * 60 * 1000;
 const tableMemo = new Map<string, { table: FpaTableData; at: number }>();
 const tableInFlight = new Map<string, Promise<FpaTableData | null>>();
+/** fpaSnapshotState() by season: one query per season per ingest, not per render. */
+const snapshotMemo = new Map<number, Promise<FpaSnapshotState>>();
 
 export function invalidateFpaTableCache(): void {
   tableMemo.clear();
   tableInFlight.clear();
+  snapshotMemo.clear();
   archiveSeasonsMemo = null;
 }
 
@@ -190,6 +201,7 @@ async function readFpaTable(
   view: FpaView,
 ): Promise<FpaTableData | null> {
 
+  dbAccess("fpa_read", { what: "table", season, format, view });
   const snapshots: FpaSnapshot[] = await db
     .select()
     .from(fpaSnapshots)
@@ -316,6 +328,7 @@ async function readFpaArchiveTable(
   format: ScoringFormat,
   view: FpaView,
 ): Promise<FpaTableData | null> {
+  dbAccess("fpa_read", { what: "archive", season, format, view });
   const games = await db
     .select({
       week: fpaGames.week,
@@ -411,6 +424,7 @@ export async function listFpaArchiveSeasons(except?: number): Promise<number[]> 
   const now = Date.now();
   if (!archiveSeasonsMemo || now - archiveSeasonsMemo.at >= TABLE_MEMO_MS) {
     const current = currentFpaSeason();
+    dbAccess("fpa_read", { what: "archive_seasons" });
     const found = await db
       .select({ season: fpaGames.season, weeks: sql<number>`count(distinct ${fpaGames.week})` })
       .from(fpaGames)
@@ -459,6 +473,23 @@ export async function fpaSnapshotState(
 ): Promise<FpaSnapshotState> {
   const target = season ?? Number(process.env["FPA_CURRENT_SEASON"] ?? 2026);
 
+  // Memoized per season and dropped with the table memo: the SOS pages,
+  // /api/status and /api/data/health all ask, and the answer only changes
+  // when an ingest writes a snapshot. A failed read is not kept, so a
+  // database that is down is asked again by the next caller.
+  let pending = snapshotMemo.get(target);
+  if (!pending) {
+    pending = readFpaSnapshotState(target);
+    snapshotMemo.set(target, pending);
+    pending.catch(() => {
+      if (snapshotMemo.get(target) === pending) snapshotMemo.delete(target);
+    });
+  }
+  return pending;
+}
+
+async function readFpaSnapshotState(target: number): Promise<FpaSnapshotState> {
+  dbAccess("fpa_read", { what: "snapshot_state", season: target });
   const [newest] = await db
     .select({
       createdAt: fpaSnapshots.createdAt,

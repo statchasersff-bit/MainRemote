@@ -1,12 +1,43 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { runClubIngest, runIngest, wireIngestEnabled } from "./routes/news";
+import {
+  CLUB_INTERVAL_MS,
+  WIRE_INTERVAL_MS,
+  runClubIngest,
+  runIngest,
+  wireIngestEnabled,
+} from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 import { startWatchdog } from "./lib/watchdog";
 import { loadImageVersions } from "./lib/image-versions";
+import { reloadFreshness } from "./lib/freshness";
+import { loadKnownNews } from "./lib/news-known";
+import { ensureRuntimeTables } from "./lib/db-schema";
+import { dbAccess } from "./lib/db-access";
 // Registers the headshot resolver with the version store (import for effect).
 import "./lib/image-cache";
+
+/**
+ * The one database visit a boot is allowed before serving: the runtime
+ * tables, the headshot versions, the archive's freshness and the known-news
+ * memory (lib/news-known.ts). Everything public is answered from these
+ * in-memory copies afterwards, and the ingest that follows can tell a feed
+ * that has not moved without a query. Each load fails on its own and says
+ * so; none of them can keep the port from being served.
+ */
+async function restoreStartupState(): Promise<void> {
+  dbAccess("startup_restore", { trigger: "boot" });
+  const results = await Promise.allSettled([
+    ensureRuntimeTables(),
+    loadImageVersions().then((count) => logger.info({ count }, "Player image versions loaded")),
+    reloadFreshness().then((f) => logger.info({ items: f.count }, "Archive freshness loaded")),
+    loadKnownNews().then((keys) => logger.info({ keys }, "Known news loaded")),
+  ]);
+  for (const result of results) {
+    if (result.status === "rejected") logger.warn({ err: result.reason }, "Startup restore step failed");
+  }
+}
 
 const rawPort = process.env["PORT"];
 
@@ -33,21 +64,24 @@ app.listen(port, (err) => {
   // Which headshot version each player is at, from the table, so the first
   // renders after a (re)start print versioned image URLs rather than
   // redirects. Not awaited: a render before it lands prints `latest` and the
-  // cache listeners re-render once it has.
-  loadImageVersions()
-    .then((count) => logger.info({ count }, "Player image versions loaded"))
-    .catch((err) => logger.warn({ err }, "Player image versions failed to load"));
+  // cache listeners re-render once it has. The same visit loads the archive's
+  // freshness and the known-news memory; see restoreStartupState().
+  const restored = restoreStartupState();
 
-  // The wire: on startup, then every 10 minutes. Not in the development
-  // workspace unless asked for - see wireIngestEnabled().
+  // The wire: on startup, then every WIRE_INTERVAL_MS (twenty minutes). Not
+  // in the development workspace unless asked for - see wireIngestEnabled().
+  // The startup run waits for the restore so that a feed which has not moved
+  // since the last process is recognized from memory rather than looked up.
   if (wireIngestEnabled()) {
-    runIngest()
-      .then((result) => {
-        logger.info(result, "Startup ingest complete");
-      })
-      .catch((err) => {
-        logger.error({ err }, "Startup ingest failed");
-      });
+    void restored.then(() =>
+      runIngest()
+        .then((result) => {
+          logger.info(result, "Startup ingest complete");
+        })
+        .catch((err) => {
+          logger.error({ err }, "Startup ingest failed");
+        }),
+    );
 
     setInterval(() => {
       runIngest()
@@ -57,17 +91,16 @@ app.listen(port, (err) => {
         .catch((err) => {
           logger.error({ err }, "Scheduled ingest failed");
         });
-    }, 10 * 60 * 1000);
+    }, WIRE_INTERVAL_MS);
   }
 
   // The 32 club feeds, on their own slower cadence.
   //
-  // Half-hourly rather than every ten minutes, and deliberately not attached to
-  // the traffic-triggered refresh the wire uses. One sweep is 32 outbound
-  // requests to 32 independent sites; at the wire's cadence that is ~4,600 a
-  // day to re-read feeds that a club updates a handful of times, and it is the
-  // kind of traffic that earns an IP a rate limit. Clubs publish on a news
-  // cycle, not a wire's.
+  // Hourly (CLUB_INTERVAL_MS), and deliberately not attached to the wire's
+  // timer. One sweep is 32 outbound requests to 32 independent sites; at the
+  // wire's cadence that is thousands a day to re-read feeds that a club
+  // updates a handful of times, and it is the kind of traffic that earns an
+  // IP a rate limit. Clubs publish on a news cycle, not a wire's.
   const clubSweep = () => {
     runClubIngest()
       .then((result) => {
@@ -88,7 +121,7 @@ app.listen(port, (err) => {
   // POST /api/ingest/clubs still runs one by hand.
   if (wireIngestEnabled()) {
     setTimeout(clubSweep, 60 * 1000);
-    setInterval(clubSweep, 30 * 60 * 1000);
+    setInterval(clubSweep, CLUB_INTERVAL_MS);
   }
 
   // Player game logs, refreshed after each game window. Production only unless

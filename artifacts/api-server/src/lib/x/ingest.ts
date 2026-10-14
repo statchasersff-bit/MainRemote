@@ -18,6 +18,7 @@
 import { inArray } from "drizzle-orm";
 import { db, xPosts, type XMonitoredAccountRow } from "@workspace/db";
 import { logger } from "../logger";
+import { dbAccess } from "../db-access";
 import { ensureTeams } from "../teams";
 import { storeItems } from "../../routes/news";
 import {
@@ -103,6 +104,7 @@ export interface XSweepResult {
  */
 async function alreadyStored(ids: string[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
+  dbAccess("x_ingest", { what: "already_stored", ids: ids.length });
   const rows = await db
     .select({ postId: xPosts.postId })
     .from(xPosts)
@@ -299,6 +301,7 @@ export async function ingestPosts(
     X_SOURCE_TYPE,
   );
 
+  dbAccess("x_ingest", { what: "x_posts", posts: prepared.length });
   const written = await db
     .insert(xPosts)
     .values(

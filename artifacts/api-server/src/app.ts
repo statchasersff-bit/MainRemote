@@ -21,7 +21,6 @@ import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import depthChartsRouter from "./routes/depth-charts";
 import imagesRouter from "./routes/images";
-import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
@@ -85,15 +84,11 @@ app.use(depthChartsRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Keep the archive moving on a deployment that idles between requests, where
-// the in-process refresh timer never gets to fire. Hung off "finish" so it runs
-// after the response has been written and can never add latency to it, and
-// throttled inside refreshIfStale() so this costs one ingest per ten minutes
-// however much traffic arrives.
-app.use((_req, res, next) => {
-  res.on("finish", refreshIfStale);
-  next();
-});
+// No request-triggered ingest. A middleware used to kick a refresh after any
+// response once ten minutes had passed, for a deployment that idled between
+// requests. On the Reserved VM the timers in index.ts always fire, and an
+// ingest is a database wake-up whenever the feed has moved, so a visitor must
+// never be what starts one (Phase 1, 2026-10-14).
 
 // With SC_EMBED_KEY set, the fragments, the news feed and the standalone pages
 // answer only WordPress (and anyone who has unlocked them with the key). Ahead
@@ -302,11 +297,20 @@ app.use(
         return;
       }
       if (process.env["NODE_ENV"] !== "production") return;
-      if (!HASHED_ASSETS.has(rel)) return;
-      builtAssetVersion ??= assetVersion();
-      const ver = (res as Response).req?.query["ver"];
-      if (builtAssetVersion !== "0" && ver === builtAssetVersion) {
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      if (HASHED_ASSETS.has(rel)) {
+        builtAssetVersion ??= assetVersion();
+        const ver = (res as Response).req?.query["ver"];
+        if (builtAssetVersion !== "0" && ver === builtAssetVersion) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          return;
+        }
+      }
+      // Any other stylesheet or bundle - no ver, a stale ver, a file the hash
+      // does not cover - is held for an hour rather than revalidated on every
+      // page view. An hour bounds how long the wrong bytes can stick after a
+      // deploy; the versioned URL above is what the plugin actually prints.
+      if (/\.(?:css|js)$/.test(rel)) {
+        res.setHeader("Cache-Control", "public, max-age=3600");
       }
     },
   }),

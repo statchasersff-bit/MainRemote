@@ -14,7 +14,11 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm --filter @workspace/api-server run ingest-fpa` - rebuild Fantasy Points
   Allowed from nflverse. Idempotent. Nothing renders at `/fpa` until this has
   run once. **It writes to the database of the process that runs it**, so from
-  the workspace shell it refreshes the workspace and nothing else.
+  the workspace shell it refreshes the workspace and nothing else. Run against
+  a database a server is serving, it must also tell that server: set
+  `CACHE_RELOAD_URL=https://<deployment>/api/cache/reload` and `INGEST_SECRET`
+  and the script posts the reload itself (same for
+  `scripts/import-sqlite-archive.mjs`); without them it prints a reminder.
 - `FPA_INGEST_URL=https://<deployment>/api/fpa/ingest pnpm --filter
   @workspace/api-server run refresh-fpa` - refresh the **deployment's** FPA
   table. Point a Replit Scheduled Deployment at it weekly in season, after
@@ -320,9 +324,15 @@ _Replace the heading above with the project's name, and this line with one sente
 - `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) -
   one-time import of the legacy SQLite archive
 - `INGEST_URL=https://<deployment>/api/ingest node ./scripts/ingest.mjs` - force a
-  refresh from outside. Point a Replit Scheduled Deployment at this (every 10
-  minutes) so the archive keeps moving even with no visitors; add
-  `INGEST_SECRET` on both sides if the endpoint should not be open
+  refresh from outside. The Reserved VM pulls the wire itself every 20
+  minutes and sweeps the clubs hourly (`WIRE_INTERVAL_MS`, `CLUB_INTERVAL_MS`
+  in routes/news.ts), so this is for a forced refresh, not a schedule; it
+  needs `INGEST_SECRET` on both sides
+- `POST /api/cache/reload` (with `x-ingest-secret`) - after anything writes
+  `news_items` or the FPA tables from OUTSIDE the server process (a manual
+  import, an ingest run from the workspace against production). The server
+  answers every public request from memory since 2026-10-14 and only its own
+  writers keep that memory current, so an outside writer has to say so
 
 ## Stack
 
@@ -1077,35 +1087,43 @@ bundle with the data in wp-content) under `[statchasers_redraft]`; plugin
 
 ## Architecture decisions
 
-- **Refreshes are driven by traffic, not only by a timer.** `index.ts` still runs
-  an ingest every 10 minutes, but that `setInterval` only fires while a process
-  is alive and this deployment idles between requests - observed in production,
-  where an ingest ran at 17:28 and the next never happened while upstream moved
-  on. So a middleware in `app.ts` calls `refreshIfStale()` on every response's
-  `finish` event. It is throttled to one ingest per `REFRESH_MIN_GAP_MS`
-  (10 minutes; `INGEST_MIN_GAP_MS` overrides it, which is how the test exercises
-  the throttle) and never runs two at once, so traffic volume cannot turn into
-  feed load. It is hung off `finish` so it can never add latency to a response.
-  For refreshes that continue through a stretch with no visitors at all, run
-  `scripts/ingest.mjs` on a schedule - it POSTs `/api/ingest`, which both
-  refreshes the data and wakes an idle instance.
+- **Refreshes are driven by timers only, and the database is opened only when
+  the feed has moved (Phase 1 cost work, 2026-10-14).** `index.ts` pulls the wire
+  every 20 minutes and sweeps the clubs hourly (`WIRE_INTERVAL_MS`,
+  `CLUB_INTERVAL_MS` in routes/news.ts). The old middleware that kicked an
+  ingest after any response is gone: on the Reserved VM the timer always
+  fires, and a visitor must never be what wakes the production database. The
+  wake-ups were the bill - Replit's Postgres suspends when idle and bills
+  while awake, so a transaction every ten minutes to learn nothing had changed
+  kept it awake a third of the day for a table of a few thousand rows.
+  `storeItems()` now checks every incoming item against an in-memory record
+  of what the table holds (`lib/news-known.ts`: fingerprint of every column
+  an update would write, keyed by dedupe key, loaded once at boot from the
+  most recently seen rows, bounded at 8,000) and opens the database only for
+  items that record cannot vouch for. Log lines say which happened:
+  `NEWS_INGEST unchanged_skip_db` / `changed_write` / `verified_unchanged_db`,
+  `CLUB_INGEST ...` likewise, and every database touch of any kind logs
+  `DB_ACCESS <reason>` (`lib/db-access.ts`); `/api/status` carries the same
+  counters under `db` and the in-memory state under `caches`. A side effect:
+  `last_seen_at` only advances when a row takes the database path.
 
-- **Caches expire on their own as well as on invalidation.** The freshness
-  snapshot (`lib/freshness.ts`) keys the ETag *and* the rendered-fragment cache
-  in `lib/ssr.ts`, and it used to drop only when `invalidateFreshness()` fired -
-  which happens only for an ingest **in this process** that **succeeded** and
-  **changed something**. Every other case left it warm forever, so a deployment
-  whose ingest failed every time served byte-identical HTML with an unmoving
-  ETag no matter what was in the database: a cache whose only invalidation path
-  was the very thing that was broken. It also missed any other writer - the
-  scheduled deployment POSTing `/api/ingest` to a different instance, a second
-  instance, a manual import. The snapshot now also expires after
-  `FRESHNESS_MAX_AGE_MS` (default 60s, matching the `max-age=60` already on the
-  page and the embed fragment, so it adds no staleness HTTP did not already
-  allow). Invalidation is still what makes a local ingest show up instantly; the
-  bound is the floor under it. `tests/freshness.test.mjs` starts a server with a
-  deliberately broken ingest, writes a row from outside the process, and asserts
-  the page and `/embed/ssr` both pick it up.
+- **Everything public is answered from memory; outside writers call the reload.**
+  The freshness state (`lib/freshness.ts`) is loaded once at boot and moved by
+  this process's own writers (`recordArchiveWrite`), never re-queried by
+  traffic; a failed boot load is retried at most every 15 minutes. The news
+  reads (`lib/news-query.ts`) hold their rows in bounded LRU caches dropped by
+  `invalidateNewsReadCache()` on every write; the FPA table memo lasts a day
+  and `fpaSnapshotState()` is memoized with it, both dropped by
+  `invalidateFpaTableCache()` when an ingest commits; headshot versions are
+  written in one batched flush a minute (`lib/image-versions.ts`); the
+  runtime tables are created once per process (`lib/db-schema.ts`). The one
+  thing this cannot see is a write from another process - a manual import,
+  an FPA ingest run from the workspace against production - and that writer
+  has to call `POST /api/cache/reload` with the ingest secret, which reloads
+  the freshness and known-news state and drops every memo.
+  `tests/freshness.test.mjs` writes a row from outside, asserts the page does
+  NOT pick it up on its own (that would mean traffic reached the database),
+  calls the reload, and asserts it does.
 
 - **`/api/status` reports the ingest; `/api/healthz` only reports the process.**
   healthz answers `ok` as soon as the server is listening, which says nothing

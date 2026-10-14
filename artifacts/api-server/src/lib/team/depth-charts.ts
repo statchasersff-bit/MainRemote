@@ -28,6 +28,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
+import { dbAccess } from "../db-access";
+import { ensureRuntimeTables } from "../db-schema";
 import { logger } from "../logger";
 import { readDataJson } from "./read-json";
 
@@ -322,13 +324,11 @@ const time = (iso: string | null | undefined): number => (iso ? Date.parse(iso) 
 
 /** The database, imported lazily: @workspace/db throws at import without DATABASE_URL. */
 async function database() {
-  if (!process.env["DATABASE_URL"]) return null;
+  // Created once per process by lib/db-schema.ts (same definition as
+  // schema/depth-charts.ts), so a publish that skipped the schema push still
+  // keeps the pushes without a CREATE TABLE round trip on every one.
+  if (!(await ensureRuntimeTables())) return null;
   const { pool } = await import("@workspace/db");
-  // Created here as well as by the drizzle schema, so a publish that skipped
-  // the schema push still keeps the pushes. Same definition as schema/depth-charts.ts.
-  await pool.query(
-    "CREATE TABLE IF NOT EXISTS depth_charts (season integer PRIMARY KEY, doc jsonb NOT NULL, updated_at timestamp with time zone NOT NULL DEFAULT now())",
-  );
   return pool;
 }
 
@@ -354,6 +354,7 @@ export async function ingestDepthCharts(doc: DepthChartsDoc): Promise<IngestResu
   try {
     const pool = await database();
     if (pool) {
+      dbAccess("depth_chart_write", { season: doc.season });
       await pool.query(
         "INSERT INTO depth_charts (season, doc, updated_at) VALUES ($1, $2, now()) ON CONFLICT (season) DO UPDATE SET doc = EXCLUDED.doc, updated_at = now()",
         [doc.season, JSON.stringify(doc)],
@@ -379,6 +380,7 @@ export function restoreDepthCharts(): Promise<void> {
       if (!pool) return;
       // The file's own season: a row for any other season is not this chart.
       const season = readDoc()?.season ?? new Date().getUTCFullYear();
+      dbAccess("depth_chart_read", { season });
       const res = await pool.query<{ doc: DepthChartsDoc }>(
         "SELECT doc FROM depth_charts WHERE season = $1",
         [season],

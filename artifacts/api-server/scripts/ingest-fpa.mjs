@@ -41,6 +41,37 @@ const dir = await mkdtemp(path.join(appDir, ".ingest-fpa-"));
 // the success path left the temporary bundle directory behind on every run.
 let code = 0;
 
+/**
+ * Tell the running server its memory is stale (Phase 1, 2026-10-14).
+ *
+ * This script writes the table directly, so the server that serves it does
+ * not see the write: it answers from in-memory state that only its own
+ * writers move. With CACHE_RELOAD_URL and INGEST_SECRET set, the reload is
+ * posted here; without them it is said out loud, because a silent skip is
+ * how a stale page would go unexplained.
+ */
+async function reloadServerCaches() {
+  const url = process.env.CACHE_RELOAD_URL;
+  const secret = process.env.INGEST_SECRET;
+  if (!url || !secret) {
+    console.log(
+      "Note: the running server still holds its old in-memory state. " +
+        "POST /api/cache/reload with the ingest secret, or set CACHE_RELOAD_URL and INGEST_SECRET here.",
+    );
+    return;
+  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "x-ingest-secret": secret },
+      signal: AbortSignal.timeout(60_000),
+    });
+    console.log(`Cache reload: ${res.status} ${(await res.text()).slice(0, 200)}`);
+  } catch (err) {
+    console.error(`Cache reload failed (the server still holds its old state): ${err?.message ?? err}`);
+  }
+}
+
 try {
   const outfile = path.join(dir, "ingest.mjs");
   await build({
@@ -70,6 +101,7 @@ try {
       `${result.gameRows} game rows, mode ${result.dataMode}` +
       (result.isPreseason ? " (preseason)" : ` (week ${result.weekNumber})`),
   );
+  await reloadServerCaches();
 } catch (err) {
   console.error("FPA ingest failed:", err?.stack ?? err);
   code = 1;
