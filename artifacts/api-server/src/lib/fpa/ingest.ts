@@ -36,6 +36,7 @@ import {
 } from "../db";
 import { eq, inArray, max } from "drizzle-orm";
 import { logger } from "../logger";
+import { dbAccess } from "../db-access";
 import { getTeamByAbbreviation } from "../team/teams";
 import {
   blendWithCurrent,
@@ -213,6 +214,7 @@ export async function ingestFpa(
   // already holds - nflverse briefly publishing a partial file, or a season
   // that 404s after it has been ingested - is a bad upstream day, not news.
   // Refusing keeps the last good table up; the next scheduled run tries again.
+  dbAccess("fpa_read", { what: "stored_week", season: currentSeason });
   const [stored] = await db
     .select({ week: max(fpaSnapshots.weekNumber) })
     .from(fpaSnapshots)
@@ -255,6 +257,7 @@ export async function ingestFpa(
 
   // Replace, in one transaction: a reader must never see half of one ingest and
   // half of the last.
+  dbAccess("fpa_write", { seasons: touchedSeasons, gameRows: gameRows.length });
   await db.transaction(async (tx) => {
     await tx.delete(fpaSnapshots).where(eq(fpaSnapshots.season, currentSeason));
     await tx.delete(fpaGames).where(inArray(fpaGames.season, touchedSeasons));

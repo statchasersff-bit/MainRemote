@@ -1,23 +1,22 @@
 /**
  * The served page must track the archive even when this instance's own ingest
- * is broken.
+ * is broken - once it has been told.
  *
- * This is the production failure. `invalidateFreshness()` / `invalidateRenderCache()`
- * only fire from an ingest *in this process* that *succeeded* and *changed*
- * something - so when the deployment's ingest failed every time (its environment
- * was missing the feed URL; `.replit`'s `[userenv.shared]` configures the
- * workspace, not the deployment), nothing ever invalidated. The ETag never moved,
- * the rendered fragment never dropped, and the page served byte-identical HTML
- * indefinitely no matter what was in the database. A cache whose only
- * invalidation path is the very thing that is broken.
- *
- * The same hole applies whenever anything else writes: the scheduled deployment
- * POSTing /api/ingest to a different instance, a second instance, a manual import.
+ * The freshness state and the render caches only move from an ingest *in this
+ * process* that *succeeded* and *changed* something. That was the production
+ * failure once (a deployment whose environment was missing the feed URL served
+ * byte-identical HTML indefinitely), and the fix then was to re-query the
+ * archive every minute. Phase 1 (2026-10-14) removed that query: on a database
+ * that bills while awake, a COUNT/MAX per minute of traffic was a bill by
+ * itself. The state is loaded once at startup and kept in memory, and anything
+ * that writes the archive from OUTSIDE this process says so by calling
+ * POST /api/cache/reload with the ingest secret.
  *
  * So the server is started here exactly as broken as production was - the helper
- * already sets DYNASTY_NEWS_API_URL to "", which makes every ingest throw - and
- * then a row is written to the archive from *outside* the server process. The
- * page must still pick it up.
+ * already sets DYNASTY_NEWS_API_URL to "", which makes every ingest throw - a row
+ * is written to the archive from *outside* the server process, and the reload is
+ * called. The page must pick it up, and must NOT have picked it up before the
+ * reload (that would mean traffic is still reaching the database).
  */
 
 import test, { before, after, describe } from "node:test";
@@ -25,8 +24,7 @@ import assert from "node:assert/strict";
 import pg from "pg";
 import { startServer } from "./helpers/server.mjs";
 
-/** Short enough for a test to wait out; production runs the 60s default. */
-const MAX_AGE_MS = 1000;
+const SECRET = "freshness-test-secret";
 
 /** Namespaced so the cleanup below cannot touch anything real. */
 const TEST_ID = "test:external-writer";
@@ -37,7 +35,7 @@ let server;
 before(async () => {
   await removeProbe();
   server = await startServer({
-    FRESHNESS_MAX_AGE_MS: String(MAX_AGE_MS),
+    INGEST_SECRET: SECRET,
     // Pinned rather than inherited, so the assertions below stay deterministic
     // once this is set in a real environment.
     DYNASTY_NEWS_API_KEY: "",
@@ -94,6 +92,15 @@ async function getPage() {
   return { etag: res.headers.get("etag"), html: await res.text() };
 }
 
+/** What an external writer calls once it has written. */
+async function reload() {
+  const res = await fetch(`${server.origin}/api/cache/reload`, {
+    method: "POST",
+    headers: { "x-ingest-secret": SECRET },
+  });
+  return { status: res.status, body: await res.json() };
+}
+
 describe("an archive change this server did not make", () => {
   test("reaches the rendered page and moves the ETag", async () => {
     const before = await getPage();
@@ -105,15 +112,21 @@ describe("an archive change this server did not make", () => {
 
     await insertProbe();
 
-    // Generous next to MAX_AGE_MS so this asserts "picked up", not "picked up in
-    // exactly one tick". Before the fix it never arrives at all, at any timeout.
-    const deadline = Date.now() + 15_000;
-    let after = before;
-    while (Date.now() < deadline) {
-      after = await getPage();
-      if (after.html.includes(TEST_TITLE)) break;
-      await new Promise((r) => setTimeout(r, 250));
-    }
+    // Not yet: nothing in this process knows, and traffic must not be what
+    // asks the database.
+    await new Promise((r) => setTimeout(r, 1_500));
+    const unaware = await getPage();
+    assert.ok(
+      !unaware.html.includes(TEST_TITLE),
+      "the page reached the database on its own - the freshness query is back",
+    );
+    assert.equal(unaware.etag, before.etag);
+
+    const reloaded = await reload();
+    assert.equal(reloaded.status, 200, JSON.stringify(reloaded.body));
+    assert.equal(reloaded.body.ok, true);
+
+    const after = await getPage();
 
     assert.ok(
       after.html.includes(TEST_TITLE),

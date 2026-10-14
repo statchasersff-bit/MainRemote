@@ -224,6 +224,11 @@ export async function ensureTeams(): Promise<void> {
 }
 
 /** Sleeper player id embedded in a headshot URL, e.g. .../thumb/4034.jpg */
+/** When the player -> team map was last fetched; a cache key for anything derived from it. */
+export function teamsVersion(): number {
+  return fetchedAt;
+}
+
 export function playerIdFromImage(url: string | null | undefined): string | null {
   const match = /\/players\/thumb\/(\d+)\./.exec(url ?? "");
   return match ? match[1]! : null;

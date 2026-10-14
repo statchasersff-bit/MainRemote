@@ -48,10 +48,13 @@ describe("started from another directory", () => {
     assert.equal(res.status, 404);
   });
 
-  test("any other ver is revalidated, so stale bytes cannot stick", async () => {
+  test("any other ver is held an hour, so stale bytes cannot stick for long", async () => {
+    // Phase 1 (2026-10-14): an hour rather than revalidated on every page
+    // view. The versioned URL above is what the plugin prints; this bounds how
+    // long the wrong bytes can live after a deploy for anything else.
     for (const url of ["/player.css?ver=1.7.0", "/player.css", "/dist/statchasers-vitals.js?ver=" + built]) {
       const res = await fetch(`${server.origin}${url}`);
-      assert.equal(res.headers.get("cache-control"), "public, max-age=0", url);
+      assert.equal(res.headers.get("cache-control"), "public, max-age=3600", url);
     }
   });
 });

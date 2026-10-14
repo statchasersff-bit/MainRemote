@@ -31,7 +31,13 @@ import {
   type LinkTemplates,
 } from "../lib/render";
 
-const REFRESH_MS = 2 * 60 * 1000;
+/**
+ * Ten minutes, not two (2026-10-14). The list is server-rendered and the
+ * origin answers /api/news from memory, but every poll is still a request per
+ * open tab, and the wire itself only moves every twenty minutes now. The
+ * refocus refresh below still covers a reader coming back to the tab.
+ */
+const REFRESH_MS = 10 * 60 * 1000;
 const REFOCUS_MIN_GAP_MS = 60 * 1000;
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 

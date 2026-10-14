@@ -16,6 +16,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
+import { dbAccess } from "../db-access";
+import { ensureRuntimeTables } from "../db-schema";
 
 interface Row {
   name: string;
@@ -90,13 +92,12 @@ function readFile(season: number): PracticeDoc | null {
 
 /** The database, imported lazily: @workspace/db throws at import without DATABASE_URL. */
 async function database() {
-  if (!process.env.DATABASE_URL) return null;
+  // The table is made once per process (lib/db-schema.ts, same definition as
+  // schema/practice.ts), not before every read and write: each CREATE TABLE
+  // IF NOT EXISTS was a round trip, and a round trip is a wake-up on a
+  // database that suspends when idle.
+  if (!(await ensureRuntimeTables())) return null;
   const { pool } = await import("@workspace/db");
-  // Created here as well as by the drizzle schema, so a publish that skipped
-  // the schema push still keeps the reads. Same definition as schema/practice.ts.
-  await pool.query(
-    "CREATE TABLE IF NOT EXISTS practice_reports (season integer PRIMARY KEY, doc jsonb NOT NULL, updated_at timestamp with time zone NOT NULL DEFAULT now())",
-  );
   return pool;
 }
 
@@ -104,6 +105,7 @@ async function database() {
 export async function restorePracticeReports(season: number): Promise<boolean> {
   const pool = await database();
   if (!pool) return false;
+  dbAccess("practice_read", { season });
   const res = await pool.query<{ doc: PracticeDoc }>("SELECT doc FROM practice_reports WHERE season = $1", [season]);
   const stored = res.rows[0]?.doc ?? null;
   if (!stored) return false;
@@ -123,6 +125,7 @@ export async function savePracticeReports(season: number): Promise<void> {
   if (!pool) return;
   const file = readFile(season);
   if (!file) return;
+  dbAccess("practice_write", { season });
   const res = await pool.query<{ doc: PracticeDoc }>("SELECT doc FROM practice_reports WHERE season = $1", [season]);
   const merged = mergePracticeDocs(res.rows[0]?.doc ?? null, file);
   await pool.query(

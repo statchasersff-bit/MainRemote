@@ -4,12 +4,28 @@ import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { dataDirStatus } from "../lib/data-dir";
 import { imageCacheStatus } from "../lib/image-cache";
 import { imageVersionsStatus, stampImageVersions } from "../lib/image-versions";
-import { listNews } from "../lib/news-query";
+import { invalidateNewsReadCache, listNews, newsReadCacheStatus } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
 import { ensureTeams } from "../lib/teams";
-import { ensureFreshness, invalidateFreshness } from "../lib/freshness";
+import {
+  ensureFreshness,
+  freshnessStatus,
+  noteContentRevised,
+  recordArchiveWrite,
+  reloadFreshness,
+} from "../lib/freshness";
 import { invalidateRenderCache } from "../lib/ssr";
+import { dbAccess, dbAccessStatus, type DbAccessReason } from "../lib/db-access";
+import {
+  fingerprintNews,
+  knownNews,
+  knownNewsStatus,
+  loadKnownNews,
+  rememberNews,
+  type NewsFields,
+} from "../lib/news-known";
+import { invalidateFpaTableCache } from "../lib/fpa/fpa-data";
 import { fetchClubNews } from "../lib/club-news";
 import type { RawNewsItem } from "../lib/news-item";
 import { TEAMS } from "../lib/team/teams";
@@ -28,6 +44,7 @@ const SUMMARY_CONCURRENCY = 3;
 async function backfillSummaries(): Promise<void> {
   if (!summariesEnabled()) return;
 
+  dbAccess("summary_backfill");
   const rows = await db
     .select({ id: newsItems.id, title: newsItems.title })
     .from(newsItems)
@@ -61,8 +78,9 @@ async function backfillSummaries(): Promise<void> {
     // Revises existing items rather than adding news: the rendered cards change
     // (so caches must drop), but the archive is not newer, so the public
     // "last updated" date stays put.
-    invalidateFreshness(false);
+    noteContentRevised();
     invalidateRenderCache();
+    invalidateNewsReadCache();
   }
 
   logger.info({ generated, attempted: rows.length }, "Summaries backfilled");
@@ -157,25 +175,17 @@ function makeFallbackId(item: {
 
 
 /**
- * Traffic-triggered refresh.
+ * How often the timers in index.ts pull the wire and sweep the clubs.
  *
- * The 10-minute `setInterval` in index.ts only fires while a process is alive,
- * and this deployment does not stay alive between requests - it idles, the timer
- * never fires, and the archive stops moving until something cold-starts the
- * instance. Observed in production: an ingest ran at 17:28 and the next one
- * never happened, so the page served hours-old news while upstream had more.
- *
- * So requests drive the refresh as well. Any request may kick an ingest, but at
- * most one per REFRESH_MIN_GAP_MS and never more than one at a time - a busy
- * page must not mean an ingest per visitor.
+ * Timers only. Requests used to drive the refresh too (a middleware kicked an
+ * ingest after any response once the gap had passed), from the days when the
+ * deployment idled between requests. On a Reserved VM the timer always fires,
+ * and an ingest costs a database wake-up whenever the feed has moved, so a
+ * visitor must never be what starts one. The cadences are the Phase 1 cost
+ * decision (2026-10-14): twenty minutes for the wire, an hour for the clubs.
  */
-const REFRESH_MIN_GAP_MS = (() => {
-  // Overridable so the throttle can be exercised in a test without waiting ten
-  // minutes. Not meant as production tuning - a smaller value in production just
-  // means more calls to a feed that changes every few minutes at best.
-  const raw = Number(process.env["INGEST_MIN_GAP_MS"]);
-  return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
-})();
+export const WIRE_INTERVAL_MS = 20 * 60 * 1000;
+export const CLUB_INTERVAL_MS = 60 * 60 * 1000;
 
 /**
  * When an ingest is considered *unhealthy* - see GET /api/ingest/health.
@@ -202,10 +212,6 @@ const ALERT_MAX_AGE_MS = (() => {
 
 /** For the age check before the first success - see evaluateIngestHealth(). */
 const PROCESS_STARTED_MS = Date.now();
-
-/** When an ingest last STARTED, whether by timer, by request, or by POST. */
-let lastIngestStartedMs = 0;
-let ingestInFlight: Promise<unknown> | null = null;
 
 /**
  * Outcome of the most recent ingest, for GET /api/status.
@@ -250,18 +256,6 @@ export function ingestStatus(): IngestState & {
     // is to change one and see, which is the loop this endpoint exists to end.
     feedKeyConfigured: Boolean(FEED_KEY),
   };
-}
-
-/**
- * Pure so the throttle can be reasoned about (and tested) without a server.
- * `lastMs` of 0 means "never ingested", which must always pass.
- */
-export function shouldRefresh(
-  nowMs: number,
-  lastMs: number,
-  gapMs: number = REFRESH_MIN_GAP_MS,
-): boolean {
-  return lastMs === 0 || nowMs - lastMs >= gapMs;
 }
 
 export interface IngestHealthVerdict {
@@ -315,11 +309,7 @@ export function evaluateIngestHealth(args: {
 }
 
 /**
- * Start an ingest if one is due. Returns immediately - the caller is a request
- * that has already been answered, and must never wait on this.
- */
-/**
- * Whether this process pulls the wire on its own (startup, timer, traffic).
+ * Whether this process pulls the wire on its own (startup and timer).
  *
  * Not in the development workspace unless SC_DEV_INGEST=1. The workspace runs
  * the same schedulers as the deployment, so it doubled the upstream traffic -
@@ -333,25 +323,6 @@ export function wireIngestEnabled(): boolean {
   return ["1", "true", "on"].includes((process.env["SC_DEV_INGEST"] ?? "").trim().toLowerCase());
 }
 
-export function refreshIfStale(): void {
-  if (!wireIngestEnabled()) return;
-  if (ingestInFlight) return;
-  if (!shouldRefresh(Date.now(), lastIngestStartedMs)) return;
-
-  ingestInFlight = runIngest()
-    .then((result) => {
-      logger.info(result, "Traffic-triggered ingest complete");
-    })
-    .catch((err) => {
-      // Stamped before the attempt, so a feed that is down costs one request
-      // every ten minutes rather than one per visitor.
-      logger.error({ err }, "Traffic-triggered ingest failed");
-    })
-    .finally(() => {
-      ingestInFlight = null;
-    });
-}
-
 export interface IngestResult {
   inserted: number;
   /** Rows the feed changed. */
@@ -359,6 +330,8 @@ export interface IngestResult {
   /** Rows re-sent exactly as stored: seen again, not changed. */
   unchanged: number;
   total: number;
+  /** Whether this run opened the database at all. False: answered from memory. */
+  dbTouched: boolean;
 }
 
 /**
@@ -367,10 +340,7 @@ export interface IngestResult {
  * describes the last real attempt.
  */
 export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
-  // Stamped before the guard: a missing feed URL is still an attempt, and
-  // retrying it on every single request would be pointless load.
-  lastIngestStartedMs = Date.now();
-  ingestState.lastAttemptMs = lastIngestStartedMs;
+  ingestState.lastAttemptMs = Date.now();
 
   try {
     // Pushed items skip the fetch entirely, which is the point of push mode:
@@ -638,7 +608,7 @@ export const CLUB_SOURCE_TYPE = "club";
  */
 function sameFields(
   stored: Record<string, unknown>,
-  fields: Record<string, unknown>,
+  fields: NewsFields,
 ): boolean {
   return Object.entries(fields).every(([key, value]) => stored[key] === value);
 }
@@ -664,6 +634,7 @@ export async function storeItems(
   sourceType: string = WIRE_SOURCE_TYPE,
 ): Promise<IngestResult> {
   const now = new Date();
+  const lane = laneLabel(sourceType);
 
   // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
   // with the same fingerprint already exists we update it in place - keeping its
@@ -691,9 +662,42 @@ export async function storeItems(
   let updated = 0;
   let unchanged = 0;
 
+  // The memory check, before any query. An item whose every column matches
+  // what this process last saw written for its key is the same story re-sent,
+  // and the feeds re-send nearly everything on every run. Only what the memory
+  // cannot vouch for goes to the database - and when that is nothing, the
+  // database is not opened at all. See lib/news-known.ts.
+  const needsDb = new Map<string, { id: string; item: RawNewsItem }>();
+  for (const [dedupeKey, entry] of incoming) {
+    const seen = knownNews(dedupeKey);
+    if (seen && seen.id === entry.id) {
+      const { fields, outlet } = itemFields(entry.item, now, seen.pubDateMs, sourceType);
+      if (fingerprintNews(fields) === seen.fingerprint && (outlet === null || seen.source === outlet)) {
+        unchanged++;
+        continue;
+      }
+    }
+    needsDb.set(dedupeKey, entry);
+  }
+
+  if (needsDb.size === 0) {
+    logger.info(
+      { total: rawItems.length, unchanged, lane: sourceType },
+      `${lane} unchanged_skip_db`,
+    );
+    return { inserted, updated, unchanged, total: rawItems.length, dbTouched: false };
+  }
+
+  dbAccess(dbReasonFor(sourceType), { total: rawItems.length, candidates: needsDb.size });
+
+  /** What the database now holds for each key this batch touched, for the memory. */
+  const learned = new Map<string, { id: string; fields: NewsFields; source: string | null; insert?: true }>();
+  /** Inserted rows, confirmed by RETURNING, so a race's DO NOTHING is not remembered as ours. */
+  const insertedIds = new Set<string>();
+  let newestMs: number | null = null;
+
   await db.transaction(async (tx) => {
-    const keys = [...incoming.keys()];
-    if (keys.length === 0) return;
+    const keys = [...needsDb.keys()];
 
     // Look up by BOTH keys. Matching only on the fingerprint misses the case
     // that upstream keeps an item's id and edits its title: the new title is a
@@ -705,7 +709,7 @@ export async function storeItems(
     //
     // One lookup for the whole batch, so the work is two round trips plus the
     // writes rather than a query per item.
-    const ids = [...incoming.values()].map((entry) => entry.id);
+    const ids = [...needsDb.values()].map((entry) => entry.id);
     // With the columns an update would write, so a row the feed merely
     // re-sent can be told apart from one it changed.
     const existing = await tx
@@ -740,38 +744,13 @@ export async function storeItems(
 
     const inserts: (typeof newsItems.$inferInsert)[] = [];
 
-    for (const [dedupeKey, { id, item }] of incoming) {
-      const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+    for (const [dedupeKey, { id, item }] of needsDb) {
       // A publish time in the future is a bad feed date, not tomorrow's news:
       // it pinned the item to the top of the feed and pushed "last updated"
       // ahead of the clock. Held at the moment it was first seen, so a re-sent
       // copy of it is not an update on every run.
       const prior = rowById.get(idByKey.get(dedupeKey) ?? id);
-      const pubDateMs = Number.isNaN(parsedMs)
-        ? null
-        : parsedMs <= now.getTime()
-          ? parsedMs
-          : prior?.pubDateMs != null && prior.pubDateMs <= now.getTime()
-            ? prior.pubDateMs
-            : now.getTime();
-      const outlet = item.source?.toString().trim() || null;
-      const teamAbbr = item.teamAbbr?.toString().trim().toLowerCase() || null;
-      const fields = {
-        title: item.title ?? "(no title)",
-        link: item.link ?? null,
-        pubDate: item.pubDate ?? null,
-        pubDateMs,
-        playerName: item.playerName ?? null,
-        image: item.image ?? null,
-        // Rewritten on every pass, unlike summary below: this is a fact about
-        // which feed the row came from, and it cannot drift the way a generated
-        // sentence can.
-        teamAbbr,
-        // Same category of fact, and for the same reason: the lane a row was
-        // written by is not a judgment that can go stale.
-        sourceType,
-        authorHandle: item.authorHandle?.toString().trim().toLowerCase() || null,
-      };
+      const { fields, outlet } = itemFields(item, now, prior?.pubDateMs ?? null, sourceType);
 
       // Attribution upgrades but never downgrades. A row that already names the
       // outlet that broke the story must not be flattened back to a relay's
@@ -791,6 +770,7 @@ export async function storeItems(
       ) {
         seenIds.push(existingId);
         unchanged++;
+        learned.set(dedupeKey, { id: existingId, fields, source: stored.source });
       } else if (existingId) {
         // firstSeenAt, summary and the original id are deliberately untouched.
         await tx
@@ -798,6 +778,8 @@ export async function storeItems(
           .set({ ...fields, ...attribution, lastSeenAt: now })
           .where(eq(newsItems.id, existingId));
         updated++;
+        learned.set(dedupeKey, { id: existingId, fields, source: outlet ?? stored?.source ?? null });
+        newestMs = Math.max(newestMs ?? 0, fields.pubDateMs ?? 0) || newestMs;
       } else if (keyById.has(id)) {
         // Same story, reworded upstream. Update in place and move the
         // fingerprint with it, so the next ingest matches on the new title
@@ -807,6 +789,8 @@ export async function storeItems(
           .set({ ...fields, ...attribution, dedupeKey, lastSeenAt: now })
           .where(eq(newsItems.id, id));
         updated++;
+        learned.set(dedupeKey, { id, fields, source: outlet ?? rowById.get(id)?.source ?? null });
+        newestMs = Math.max(newestMs ?? 0, fields.pubDateMs ?? 0) || newestMs;
       } else {
         inserts.push({
           ...fields,
@@ -824,6 +808,7 @@ export async function storeItems(
           firstSeenAt: now,
           lastSeenAt: now,
         });
+        learned.set(dedupeKey, { id, fields, source: outlet ?? provider, insert: true });
       }
     }
 
@@ -835,8 +820,8 @@ export async function storeItems(
     }
 
     if (inserts.length > 0) {
-      // DO NOTHING rather than an error: a concurrent ingest (the 10-minute
-      // timer overlapping a manual POST /api/ingest) can insert the same story
+      // DO NOTHING rather than an error: a concurrent ingest (the timer
+      // overlapping a manual POST /api/ingest) can insert the same story
       // between the SELECT above and this INSERT.
       const written = await tx
         .insert(newsItems)
@@ -848,40 +833,131 @@ export async function storeItems(
         .onConflictDoNothing()
         .returning({ id: newsItems.id });
       inserted = written.length;
+      for (const row of written) insertedIds.add(row.id);
+      // An insert's first_seen_at is now, which is at least as new as any
+      // publish time it carries.
+      if (inserted > 0) newestMs = Math.max(newestMs ?? 0, now.getTime());
     }
   });
 
-  // Only a run that actually changed something invalidates the freshness
-  // timestamp and the render cache. An ingest that re-sees the same items is
-  // not a content change, and must not move the "Last updated" date.
-  if (inserted > 0 || updated > 0) {
-    invalidateFreshness();
-    invalidateRenderCache();
+  // The transaction committed, so what it verified or wrote is what the table
+  // holds: remember it, and the next run can skip these without a query. An
+  // insert that lost a race (DO NOTHING) is left out - the row the other
+  // writer put there is learned next time, from the SELECT.
+  for (const [dedupeKey, entry] of learned) {
+    if (entry.insert && !insertedIds.has(entry.id)) continue;
+    rememberNews(dedupeKey, {
+      id: entry.id,
+      fingerprint: fingerprintNews(entry.fields),
+      pubDateMs: entry.fields.pubDateMs,
+      source: entry.source,
+    });
   }
 
-  logger.info(
-    { total: rawItems.length, inserted, updated, unchanged },
-    "Ingest complete",
-  );
+  // Only a run that actually changed something moves the freshness state and
+  // drops the caches. An ingest that re-sees the same items is not a content
+  // change, and must not move the "Last updated" date.
+  if (inserted > 0 || updated > 0) {
+    recordArchiveWrite({ inserted, newestMs });
+    invalidateRenderCache();
+    invalidateNewsReadCache();
+    logger.info(
+      { total: rawItems.length, inserted, updated, unchanged, lane: sourceType },
+      `${lane} changed_write`,
+    );
+  } else {
+    logger.info(
+      { total: rawItems.length, unchanged, verified: needsDb.size, lane: sourceType },
+      `${lane} verified_unchanged_db`,
+    );
+  }
 
   // After the response, not before it. The summaries are up to 25 LLM calls
   // and the roster a Sleeper fetch, and every ingest caller waited on both,
   // including the X webhook, which has to answer fast.
-  void afterIngest();
+  void afterIngest(inserted);
 
-  return { inserted, updated, unchanged, total: rawItems.length };
+  return { inserted, updated, unchanged, total: rawItems.length, dbTouched: true };
+}
+
+/** The log prefix for a lane: NEWS_INGEST, CLUB_INGEST, X_INGEST. */
+function laneLabel(sourceType: string): string {
+  if (sourceType === WIRE_SOURCE_TYPE) return "NEWS_INGEST";
+  if (sourceType === CLUB_SOURCE_TYPE) return "CLUB_INGEST";
+  return `${sourceType.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_INGEST`;
+}
+
+function dbReasonFor(sourceType: string): DbAccessReason {
+  if (sourceType === WIRE_SOURCE_TYPE) return "news_ingest";
+  if (sourceType === CLUB_SOURCE_TYPE) return "club_ingest";
+  return "x_ingest";
+}
+
+/**
+ * The columns an ingest writes for one item, normalized exactly as the
+ * database path stores them. One function for the memory check and the
+ * transaction, so the two cannot disagree about what "unchanged" means.
+ *
+ * A publish time in the future is a bad feed date, not tomorrow's news: it is
+ * held at the time the row was first seen (`priorPubDateMs`), so a re-sent
+ * copy of it is not an update on every run.
+ */
+function itemFields(
+  item: RawNewsItem,
+  now: Date,
+  priorPubDateMs: number | null,
+  sourceType: string,
+): { fields: NewsFields; outlet: string | null } {
+  const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+  const nowMs = now.getTime();
+  const pubDateMs = Number.isNaN(parsedMs)
+    ? null
+    : parsedMs <= nowMs
+      ? parsedMs
+      : priorPubDateMs != null && priorPubDateMs <= nowMs
+        ? priorPubDateMs
+        : nowMs;
+  const outlet = item.source?.toString().trim() || null;
+  const teamAbbr = item.teamAbbr?.toString().trim().toLowerCase() || null;
+  return {
+    fields: {
+      title: item.title ?? "(no title)",
+      link: item.link ?? null,
+      pubDate: item.pubDate ?? null,
+      pubDateMs,
+      playerName: item.playerName ?? null,
+      image: item.image ?? null,
+      // Rewritten on every pass, unlike summary: this is a fact about which
+      // feed the row came from, and it cannot drift the way a generated
+      // sentence can. Same for the lane.
+      teamAbbr,
+      sourceType,
+      authorHandle: item.authorHandle?.toString().trim().toLowerCase() || null,
+    },
+    outlet,
+  };
 }
 
 let afterIngestRun: Promise<void> | null = null;
+let summariesChecked = false;
 
-/** Summaries, then the player -> team refresh. One at a time; never throws. */
-function afterIngest(): Promise<void> {
+/**
+ * Summaries, then the player -> team refresh. One at a time; never throws.
+ *
+ * The backfill is a query, so it runs when this batch inserted rows that
+ * need one and once per process for whatever an earlier process left
+ * behind, rather than after every ingest of nothing new.
+ */
+function afterIngest(inserted: number): Promise<void> {
   if (afterIngestRun) return afterIngestRun;
   afterIngestRun = (async () => {
-    try {
-      await backfillSummaries();
-    } catch (err) {
-      logger.warn({ err }, "Summary backfill failed");
+    if (inserted > 0 || !summariesChecked) {
+      summariesChecked = true;
+      try {
+        await backfillSummaries();
+      } catch (err) {
+        logger.warn({ err }, "Summary backfill failed");
+      }
     }
     // Self-throttles to once a day and never throws: a convenient heartbeat.
     await ensureTeams();
@@ -1024,7 +1100,7 @@ router.get("/status", (_req, res) => {
           lastResult: ingest.lastResult,
           lastError: ingest.lastError,
           consecutiveFailures: ingest.consecutiveFailures,
-          minGapMs: REFRESH_MIN_GAP_MS,
+          intervalMs: WIRE_INTERVAL_MS,
         },
         // The second provider, reported separately for the reason
         // ClubIngestState gives: these two fail independently, and a single
@@ -1094,6 +1170,15 @@ router.get("/status", (_req, res) => {
           items: count,
           newestContentAt: iso(changedAtMs),
         },
+        // Phase 1 (2026-10-14): how often anything has reached the database
+        // since boot, by reason, and what the in-memory state holds. The
+        // counters are what says whether the wake-up work is working.
+        db: dbAccessStatus(),
+        caches: {
+          freshness: freshnessStatus(),
+          knownNews: knownNewsStatus(),
+          newsRead: newsReadCacheStatus(),
+        },
       });
     } catch (err) {
       // The archive half failed, but the ingest half is the interesting part and
@@ -1128,6 +1213,41 @@ router.get("/status", (_req, res) => {
  * endpoint exists to close - it fires while the page still looks fine, well
  * before the archive visibly falls behind.
  */
+/**
+ * POST /api/cache/reload - the archive or the FPA table changed behind this
+ * process's back; read the state again.
+ *
+ * Everything public is answered from memory now (freshness, the known-news
+ * memory, the news read cache, the FPA memos), and every writer IN this
+ * process keeps that memory current. A writer outside it - a manual import,
+ * an ingest run from the workspace against the production database, a
+ * scheduled job with its own connection - cannot, and this is how it says so.
+ * Guarded like every other write, because it costs a database wake-up.
+ */
+router.post("/cache/reload", (req, res) => {
+  if (!requireIngestSecret(req, res)) return;
+  void (async () => {
+    try {
+      dbAccess("startup_restore", { trigger: "reload" });
+      const [freshnessResult, knownKeys] = await Promise.all([
+        reloadFreshness(),
+        loadKnownNews(),
+      ]);
+      invalidateNewsReadCache();
+      invalidateRenderCache();
+      invalidateFpaTableCache();
+      res.set("Cache-Control", "no-store").json({
+        ok: true,
+        archive: { items: freshnessResult.count, newestContentAt: iso(freshnessResult.changedAtMs) },
+        knownNews: knownKeys,
+      });
+    } catch (err) {
+      req.log.error({ err }, "Cache reload failed");
+      res.status(500).set("Cache-Control", "no-store").json({ ok: false, error: "reload failed" });
+    }
+  })();
+});
+
 router.get("/ingest/health", (_req, res) => {
   const verdict = evaluateIngestHealth({
     nowMs: Date.now(),
@@ -1184,10 +1304,11 @@ router.get("/news", (req, res) => {
       // Current knowledge only; unknown faces resolve in the background.
       await stampImageVersions(items, 0);
 
-      // Every open news tab polls this every two minutes. A short shared
-      // lifetime lets browsers and any cache in front answer the repeats
-      // without a query; the ingest runs every ten minutes, so 30s costs
-      // nothing in freshness.
+      // Every open news tab polls this every ten minutes, and the origin
+      // answers from the read cache (lib/news-query.ts) rather than the
+      // database. A short shared lifetime still lets browsers and any cache
+      // in front answer the repeats without a request at all; the wire runs
+      // every twenty minutes, so 30s costs nothing in freshness.
       res.set("Cache-Control", "public, max-age=30");
       res.json({ ok: true, count: items.length, items });
     } catch (err) {

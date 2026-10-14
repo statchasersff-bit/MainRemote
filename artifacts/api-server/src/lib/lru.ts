@@ -28,6 +28,15 @@ export class LruCache<V> {
     this.entries.set(key, value);
   }
 
+  /** Read without moving the entry to the back. */
+  peek(key: string): V | undefined {
+    return this.entries.get(key);
+  }
+
+  delete(key: string): void {
+    this.entries.delete(key);
+  }
+
   clear(): void {
     this.entries.clear();
   }

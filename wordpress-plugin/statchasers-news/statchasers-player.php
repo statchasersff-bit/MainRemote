@@ -1846,9 +1846,62 @@ function statchasers_player_left_roster( string $slug, array $roster ): bool {
 	return true;
 }
 
-/** Is this post a profile page (under the container, mounting the tool) whose player has left? */
+/**
+ * The fields the roster rules read off a post, from whatever shape it arrives in.
+ *
+ * WordPress hands a WP_Post to a template filter. Rank Math's sitemap does not:
+ * its post-type provider selects rows straight from the posts table and passes
+ * each to `rank_math/sitemap/entry` as a stdClass. The rule below used to
+ * demand a WP_Post, so in the sitemap it answered "not ours" for every page and
+ * never dropped one - noindex profiles of players who had left the roster, and
+ * the duplicate pages a concurrent build made, all stayed listed. A sitemap
+ * that names a noindex URL is a contradiction Google has to resolve on its own.
+ *
+ * So this reads the three fields and nothing else. A row that lacks the body
+ * (the provider does select it, but nothing promises that) is completed from
+ * the post, by id. Anything that is not a post - a term, a user, null - is null.
+ *
+ * @param mixed $post WP_Post, a database row (stdClass), an array, or a post id.
+ * @return array{id:int,name:string,parent:int,content:string}|null
+ */
+function statchasers_player_post_fields( $post ): ?array {
+	if ( is_numeric( $post ) ) {
+		$post = get_post( (int) $post );
+	}
+	if ( is_array( $post ) ) {
+		$post = (object) $post;
+	}
+	if ( ! is_object( $post ) ) {
+		return null;
+	}
+
+	$name = isset( $post->post_name ) ? (string) $post->post_name : '';
+	if ( '' === $name ) {
+		return null;
+	}
+
+	$id      = isset( $post->ID ) ? (int) $post->ID : 0;
+	$content = property_exists( $post, 'post_content' )
+		? (string) $post->post_content
+		: ( $id ? (string) get_post_field( 'post_content', $id ) : '' );
+
+	return array(
+		'id'      => $id,
+		'name'    => $name,
+		'parent'  => isset( $post->post_parent ) ? (int) $post->post_parent : 0,
+		'content' => $content,
+	);
+}
+
+/**
+ * Is this post a profile page (under the container, mounting the tool) whose player has left?
+ *
+ * Takes any shape statchasers_player_post_fields() does, which is the point:
+ * see the note there.
+ */
 function statchasers_player_post_left_roster( $post ): bool {
-	if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
+	$fields = statchasers_player_post_fields( $post );
+	if ( null === $fields || ! has_shortcode( $fields['content'], STATCHASERS_PLAYER_SHORTCODE ) ) {
 		return false;
 	}
 	// Memoized: the sitemap asks once per page, ~650 times a build.
@@ -1856,10 +1909,10 @@ function statchasers_player_post_left_roster( $post ): bool {
 	if ( null === $container ) {
 		$container = statchasers_player_container();
 	}
-	if ( ! $container || (int) $post->post_parent !== $container ) {
+	if ( ! $container || $fields['parent'] !== $container ) {
 		return false;
 	}
-	return statchasers_player_left_roster( (string) $post->post_name, statchasers_player_roster() );
+	return statchasers_player_left_roster( $fields['name'], statchasers_player_roster() );
 }
 
 /** Noindex, follow - the profile and its section URLs alike. Runs after the section rule. */
@@ -1894,6 +1947,9 @@ add_filter(
 
 /**
  * And out of Rank Math's page sitemap.
+ *
+ * `$object` is the row Rank Math's provider read from the posts table - a
+ * stdClass, not a WP_Post. statchasers_player_post_left_roster() accepts both.
  *
  * @param array<string,mixed>|false $url    The entry.
  * @param string                    $type   Sitemap type.

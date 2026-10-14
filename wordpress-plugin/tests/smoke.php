@@ -156,10 +156,35 @@ function wp_insert_post( $a, $b = false ) {
 	if ( ! isset( $GLOBALS['pages'] ) ) {
 		return 1;
 	}
-	$id                 = max( array_keys( $GLOBALS['pages'] ) + array( 0 ) ) + 1;
+	// A second process writing between the caller's check and its insert.
+	// A test sets it to simulate the race the builder's lock and post-insert
+	// check exist for; it runs once and unsets itself.
+	if ( isset( $GLOBALS['before_insert'] ) && is_callable( $GLOBALS['before_insert'] ) ) {
+		$hook = $GLOBALS['before_insert'];
+		unset( $GLOBALS['before_insert'] );
+		$hook( $a );
+	}
+	$id     = max( array_keys( $GLOBALS['pages'] ) + array( 0 ) ) + 1;
+	$name   = (string) ( $a['post_name'] ?? '' );
+	$parent = (int) ( $a['post_parent'] ?? 0 );
+	// wp_unique_post_slug(): a page's slug is unique among its siblings, and
+	// WordPress makes it so by appending -2, -3 rather than refusing. That is
+	// the behavior the builder has to defend against, so the stub has it too.
+	if ( '' !== $name ) {
+		$taken = array();
+		foreach ( $GLOBALS['pages'] as $p ) {
+			if ( (int) $p->post_parent === $parent && 'trash' !== $p->post_status ) {
+				$taken[ $p->post_name ] = true;
+			}
+		}
+		$base = $name;
+		for ( $n = 2; isset( $taken[ $name ] ); $n++ ) {
+			$name = $base . '-' . $n;
+		}
+	}
 	$post               = new WP_Post();
 	$post->ID           = $id;
-	$post->post_name    = (string) ( $a['post_name'] ?? '' );
+	$post->post_name    = $name;
 	$post->post_title   = (string) ( $a['post_title'] ?? '' );
 	$post->post_content = (string) ( $a['post_content'] ?? '' );
 	$post->post_parent  = (int) ( $a['post_parent'] ?? 0 );
@@ -184,6 +209,22 @@ function wp_update_post( $a, $b = false ) {
 	return $id;
 }
 function is_wp_error( $t ) { return false; }
+function wp_delete_post( $id, $force = false ) {
+	$GLOBALS['deleted_posts'][] = (int) $id;
+	if ( isset( $GLOBALS['pages'][ (int) $id ] ) ) {
+		if ( $force ) {
+			unset( $GLOBALS['pages'][ (int) $id ] );
+		} else {
+			$GLOBALS['pages'][ (int) $id ]->post_status = 'trash';
+		}
+	}
+	return true;
+}
+// WP-Cron. What was scheduled is kept so a test can see the builder come back.
+function wp_next_scheduled( $hook, $args = array() ) { return false; }
+function wp_schedule_event( $ts, $recurrence, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, $recurrence ); return true; }
+function wp_schedule_single_event( $ts, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, 'single' ); return true; }
+function wp_clear_scheduled_hook( $hook, $args = array() ) { return 0; }
 // The URL is kept so a test can see what the plugin asked the API for.
 function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; return array(); }
 function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
@@ -280,6 +321,7 @@ function did_action( $h ) { return 1; }
 function do_action( $h ) {}
 function wp_cache_get() { return false; }
 function wp_cache_set() {}
+function wp_cache_delete() { return true; }
 function number_format_i18n( $n ) { return (string) $n; }
 function size_format( $n ) { return (string) $n; }
 function get_page_by_title() { return null; }
@@ -475,6 +517,12 @@ if ( 'rules' === $group ) {
 
 if ( 'playerlinks' === $group ) {
 	require __DIR__ . '/smoke-player-links.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'playerbuilder' === $group ) {
+	require __DIR__ . '/smoke-player-builder.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2105,7 +2153,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'bdp', 'hostcss' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'bdp', 'hostcss' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

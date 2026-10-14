@@ -1,83 +1,48 @@
 /**
- * When the news content last *materially* changed.
+ * When the content last really changed, held in memory.
  *
- * This deliberately does NOT move on every request, every ingest run, or every
- * render. An ingest that finds nothing new leaves the timestamp alone, so a
- * "Last updated" label and a sitemap `lastmod` derived from it stay honest.
- * Faked freshness - bumping a date because a page was served - is worse than
- * no date at all: once the signal is noise, it stops being used.
+ * Drives the "Last updated" stamp, the ETags and every render cache key. It
+ * used to be a COUNT/MAX query re-run whenever a request arrived more than a
+ * minute after the last one, which on a database that suspends when idle
+ * meant ordinary page traffic kept the database awake by itself.
  *
- * The value is derived from the data itself rather than tracked separately, so
- * it survives restarts and can't drift out of sync with what's actually stored.
+ * Now the state is loaded ONCE, at startup (reloadFreshness, from index.ts),
+ * and from then on it is maintained by the writers in this process: every
+ * ingest that inserts or updates rows reports what it wrote
+ * (recordArchiveWrite) and the state moves without a query. Public requests
+ * only ever read the in-memory value.
+ *
+ * Something that writes the archive from OUTSIDE this process - a manual
+ * import, a scheduled job with its own connection - is invisible to this, by
+ * design, and says so by calling POST /api/cache/reload (routes/news.ts),
+ * which runs reloadFreshness() again. There is no timer and no traffic-driven
+ * re-check: the one DB-backed fallback is a startup load that failed, which
+ * is retried at most every RETRY_MS on the next request.
  */
 
 import { sql } from "drizzle-orm";
 import { db, newsItems } from "./db";
+import { dbAccess } from "./db-access";
+import { logger } from "./logger";
 
 export interface Freshness {
-  /** Epoch ms of the most recent content change, or null on an empty archive. */
   changedAtMs: number | null;
-  /** Number of items the value was computed over - part of the cache key. */
   count: number;
 }
 
 const EMPTY: Freshness = { changedAtMs: null, count: 0 };
 
+/** The floor on how often a failed load is retried against the database. */
+const RETRY_MS = 15 * 60 * 1000;
+
 let cached: Freshness | null = null;
-/** In-flight load, so a burst of concurrent requests issues one query. */
 let loading: Promise<Freshness> | null = null;
-/** When `cached` was computed, for the staleness bound below. */
-let loadedAtMs = 0;
-/**
- * Bumped by every invalidation. A load that started before one lands must not
- * overwrite `cached` with the value it read *before* the change - otherwise an
- * ingest that finishes mid-query is silently undone and the snapshot goes back
- * to describing the archive as it was.
- */
+let lastAttemptMs = 0;
 let epoch = 0;
+let mutationSeq = 0;
 
-/**
- * How long a loaded snapshot may be trusted without re-reading the archive.
- *
- * This process is not the only thing that can write to the archive, and - more
- * to the point - it is not guaranteed to notice when it is. `invalidateFreshness()`
- * only fires from an ingest *in this process* that *succeeded* and *changed*
- * something. Every other case leaves the snapshot untouched forever:
- *
- *   - this instance's ingest throws every time (a feed URL missing from the
- *     deployment's environment, an upstream outage, a database error). Nothing
- *     invalidates, so the ETag never moves and the render cache never drops -
- *     the page serves the same HTML indefinitely no matter what is in the
- *     database. This is the failure that kept production frozen: a cache whose
- *     only invalidation path was the very thing that was broken.
- *   - something else writes: the scheduled deployment POSTing /api/ingest to a
- *     different instance, a second instance, a manual import.
- *
- * So the snapshot expires on its own as well. 60s matches the `max-age=60`
- * already on the page and the embed fragment, so this adds no staleness the
- * HTTP layer did not already allow, and costs one small aggregate per minute.
- */
-const MAX_AGE_MS = (() => {
-  const raw = Number(process.env["FRESHNESS_MAX_AGE_MS"]);
-  return Number.isFinite(raw) && raw >= 0 ? raw : 60_000;
-})();
-
-/**
- * Recompute from the store.
- *
- * `lastSeenAt` alone would move on every ingest (it's touched whenever an item
- * is re-seen, even unchanged), so it isn't used here. `firstSeenAt` marks when
- * an item genuinely entered the archive and `pubDateMs` when it was published;
- * the newest of those, plus the row count, changes only when the archive's
- * contents actually change.
- */
 async function compute(): Promise<Freshness> {
-  // Everything is reduced to epoch milliseconds in SQL and read back as a
-  // number. Values from an aggregate arrive as strings from the pg driver -
-  // count(*) and max() over a bigint both do, and max() over a timestamptz
-  // does NOT come back as a Date the way a plain column selection would - so
-  // converting here rather than trusting the shape keeps one rule instead of
-  // three special cases.
+  dbAccess("freshness_read");
   const [row] = await db
     .select({
       count: sql<string>`count(*)`,
@@ -101,78 +66,91 @@ async function compute(): Promise<Freshness> {
 }
 
 /**
- * Load the snapshot if it isn't warm. Await this before anything reads
- * freshness() or contentVersion() for a response - a no-op once loaded.
+ * Read the state from the database and make it the in-memory copy.
  *
- * This exists because the store went async when it moved to Postgres, but the
- * two readers below cannot: they run while an ETag is being assembled and a
- * cache key computed, mid-response. Rather than make those paths async and
- * spread awaits through every caller, the value is loaded once per content
- * version and read synchronously from memory afterwards.
- *
- * "Warm" means loaded *and* younger than MAX_AGE_MS - see that constant for why
- * an invalidation-only snapshot is not enough.
+ * The startup load, and the explicit reload. One at a time: concurrent
+ * callers join the load in flight. A write that lands while a load is
+ * running bumps `epoch`, and the load's result is then discarded rather than
+ * overwriting what the write already recorded.
  */
-export async function ensureFreshness(): Promise<Freshness> {
-  if (cached !== null && Date.now() - loadedAtMs < MAX_AGE_MS) return cached;
-
-  loading ??= (() => {
-    const at = epoch;
-    return compute()
-      .then((value) => {
-        // Dropped if an invalidation landed while this query was running: that
-        // value describes the archive from before the change.
-        if (epoch === at) {
-          cached = value;
-          loadedAtMs = Date.now();
-        }
-        return value;
-      })
-      .finally(() => {
-        loading = null;
-      });
-  })();
-
+export function reloadFreshness(): Promise<Freshness> {
+  if (loading) return loading;
+  lastAttemptMs = Date.now();
+  const at = epoch;
+  loading = compute()
+    .then((value) => {
+      if (epoch === at) cached = value;
+      mutationSeq++;
+      return value;
+    })
+    .finally(() => {
+      loading = null;
+    });
   return loading;
 }
 
 /**
- * The loaded snapshot. Returns the empty value if nothing has loaded it yet,
- * which is why request paths call ensureFreshness() first.
+ * The current state. In memory after the first successful load; a page
+ * request never reaches the database for this once the state is held.
+ *
+ * Before the first load, or after a failed one, the request that gets here
+ * first tries the load itself, and the next tries are held back by RETRY_MS
+ * so a database that is down is not asked again by every visitor. In between,
+ * EMPTY is served: the page renders, with a content version that moves again
+ * once a load succeeds.
  */
+export async function ensureFreshness(): Promise<Freshness> {
+  if (cached !== null) return cached;
+  if (loading) return loading;
+  if (Date.now() - lastAttemptMs < RETRY_MS) return EMPTY;
+  try {
+    return await reloadFreshness();
+  } catch (err) {
+    logger.warn({ err }, "freshness could not be loaded; serving an empty state until the next retry");
+    return EMPTY;
+  }
+}
+
 export function freshness(): Freshness {
   return cached ?? EMPTY;
 }
 
 /**
- * Bumped by ANY stored-content mutation, including ones that don't move the
- * user-visible date - a backfilled summary changes the rendered cards without
- * making the archive newer. Kept separate from `changedAtMs` so cache
- * correctness never has to be traded against date honesty.
+ * A writer in this process changed the archive. Moves the state in memory
+ * with no query: an insert's first_seen_at is `now`, so the newest-content
+ * time is at least that; an update can only move it as far as the newest
+ * publish time it wrote.
  */
-let mutationSeq = 0;
-
-/**
- * Called when stored content changed. A no-op ingest must not reach this.
- *
- * @param movesDate Whether this change should also move the public
- *                  "last updated" date. False for backfills that revise
- *                  existing items rather than adding news.
- */
-export function invalidateFreshness(movesDate = true): void {
+export function recordArchiveWrite(write: { inserted: number; newestMs: number | null }): void {
+  epoch++;
   mutationSeq++;
-  if (movesDate) {
-    epoch++;
-    cached = null;
-    loading = null;
+  if (cached === null) {
+    // Nothing held yet (the startup load failed or has not run). The writer
+    // has just proven the database reachable, so load now rather than guess.
+    void reloadFreshness().catch(() => undefined);
+    return;
   }
+  const candidates = [cached.changedAtMs ?? 0, write.newestMs ?? 0].filter((n) => n > 0);
+  cached = {
+    changedAtMs: candidates.length ? Math.max(...candidates) : cached.changedAtMs,
+    count: cached.count + write.inserted,
+  };
 }
 
 /**
- * A short token identifying the current content state, for ETags and for
- * keying the render cache. Changes on every content mutation.
+ * Rows were revised without the archive getting newer (a summary backfill):
+ * the content version moves so caches drop, the "last updated" date does not.
  */
+export function noteContentRevised(): void {
+  mutationSeq++;
+}
+
 export function contentVersion(): string {
   const { changedAtMs, count } = freshness();
   return `${changedAtMs ?? 0}-${count}-${mutationSeq}`;
+}
+
+/** For /api/status. */
+export function freshnessStatus(): { loaded: boolean; mutationSeq: number } {
+  return { loaded: cached !== null, mutationSeq };
 }

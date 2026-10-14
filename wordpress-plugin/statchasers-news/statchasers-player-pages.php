@@ -75,6 +75,123 @@ const STATCHASERS_PLAYER_ROSTER_BACKUP_TTL = 7 * DAY_IN_SECONDS;
 const STATCHASERS_PLAYER_ROSTER_RETRY = 5 * MINUTE_IN_SECONDS;
 
 /**
+ * The build lock: one builder at a time.
+ *
+ * WHY. On 2026-09-20 two builds ran at once - the daily cron and a press of
+ * the button, or two batches of the browser-driven loop - and each read the
+ * same "no page yet" for the same rookies. Both inserted. WordPress keeps a
+ * slug unique among siblings by appending -2, -3, so the second insert did not
+ * fail: it published `cole-kmet-2` next to `cole-kmet`, an empty shell with a
+ * canonical title, and twenty-seven of them went into the sitemap.
+ *
+ * HOW. The same primitive core uses for its own updater (WP_Upgrader::create_lock):
+ * an `INSERT IGNORE` of one option row, which the database makes atomic - two
+ * processes racing for it get exactly one success - stamped with the time it
+ * was taken. A holder that dies without releasing it leaves a stamp behind, so
+ * the lock is also a lease: a stamp older than the TTL is a crashed build, and
+ * the next builder takes the lock over rather than waiting for somebody to
+ * notice. Nothing else is blocked; a page view never asks for this.
+ *
+ * The TTL is well above the longest honest hold (one batch is ten seconds of
+ * writing, one cron run twenty) and well below the daily cadence, so a crash
+ * costs at most one skipped cron minute.
+ */
+const STATCHASERS_PLAYER_LOCK     = 'statchasers_player_build_lock';
+const STATCHASERS_PLAYER_LOCK_TTL = 5 * MINUTE_IN_SECONDS;
+
+/**
+ * Take the build lock, or report that another build holds it.
+ *
+ * @param int|null $now The clock, for tests.
+ * @return bool True when this process now holds the lock.
+ */
+function statchasers_player_lock_acquire( ?int $now = null ): bool {
+	global $wpdb;
+
+	$now = $now ?? time();
+
+	// INSERT IGNORE: a row that already exists is left alone and the statement
+	// reports zero rows, which is the whole test. No SELECT first, because the
+	// gap between a SELECT and an INSERT is exactly the race this closes.
+	$taken = $wpdb->query(
+		$wpdb->prepare(
+			"INSERT IGNORE INTO `{$wpdb->options}` ( `option_name`, `option_value`, `autoload` ) VALUES ( %s, %s, 'no' )",
+			STATCHASERS_PLAYER_LOCK,
+			(string) $now
+		)
+	);
+
+	if ( $taken ) {
+		// The row went in behind the options cache's back; keep the two in step
+		// so a get_option() in this request sees the lock it holds.
+		wp_cache_delete( STATCHASERS_PLAYER_LOCK, 'options' );
+		return true;
+	}
+
+	// Somebody holds it. Alive, or a leftover from a build that died?
+	wp_cache_delete( STATCHASERS_PLAYER_LOCK, 'options' );
+	$stamp = (int) get_option( STATCHASERS_PLAYER_LOCK, 0 );
+
+	if ( $stamp > 0 && $stamp > $now - STATCHASERS_PLAYER_LOCK_TTL ) {
+		return false;
+	}
+
+	// Expired (or unreadable). Clear it and try once more - once, so two
+	// builders finding the same stale lock still resolve to one winner.
+	statchasers_player_lock_release();
+
+	$taken = $wpdb->query(
+		$wpdb->prepare(
+			"INSERT IGNORE INTO `{$wpdb->options}` ( `option_name`, `option_value`, `autoload` ) VALUES ( %s, %s, 'no' )",
+			STATCHASERS_PLAYER_LOCK,
+			(string) $now
+		)
+	);
+	wp_cache_delete( STATCHASERS_PLAYER_LOCK, 'options' );
+
+	return (bool) $taken;
+}
+
+/** Give the build lock back. Safe to call without holding it. */
+function statchasers_player_lock_release(): void {
+	delete_option( STATCHASERS_PLAYER_LOCK );
+	wp_cache_delete( STATCHASERS_PLAYER_LOCK, 'options' );
+}
+
+/**
+ * The page already published at this slug under the container, or 0.
+ *
+ * A fresh query, not statchasers_player_page_status()'s memo: that list was
+ * read at the top of the batch, and the question here is what the database
+ * holds NOW, a moment before an insert. Any status but trash counts - a draft
+ * at this address would make WordPress rename the new page just the same.
+ *
+ * @param string $slug      The canonical slug.
+ * @param int    $container The /nfl/players/ page.
+ * @return int
+ */
+function statchasers_player_sibling_page( string $slug, int $container ): int {
+	if ( '' === $slug || ! $container ) {
+		return 0;
+	}
+
+	$found = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_parent'      => $container,
+			'post_status'      => 'any',
+			'name'             => $slug,
+			'numberposts'      => 1,
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+		)
+	);
+
+	return empty( $found ) ? 0 : (int) $found[0];
+}
+
+/**
  * The indexed players, as the API lists them.
  *
  * Cached, because a build is two dozen requests and each one needs the whole
@@ -507,7 +624,7 @@ function statchasers_player_move_page( array $row, array $present ) {
  * Write one batch of profile pages.
  *
  * @param int $offset Index into the roster to start at.
- * @return array{next:int,total:int,created:int,existing:int,moved:int,errors:array<int,string>}
+ * @return array{next:int,total:int,created:int,existing:int,moved:int,errors:array<int,string>,locked:bool}
  */
 function statchasers_player_build_batch( int $offset ): array {
 	// A build that starts from the top asks the API afresh. The list is cached
@@ -524,6 +641,9 @@ function statchasers_player_build_batch( int $offset ): array {
 		'existing' => 0,
 		'moved'    => 0,
 		'errors'   => array(),
+		// True when another build held the lock and nothing was written. The
+		// cursor stays where it was, so the caller can simply come back.
+		'locked'   => false,
 	);
 
 	if ( 0 === $total ) {
@@ -531,6 +651,31 @@ function statchasers_player_build_batch( int $offset ): array {
 		return $result;
 	}
 
+	// One builder at a time. See STATCHASERS_PLAYER_LOCK.
+	if ( ! statchasers_player_lock_acquire() ) {
+		$result['next']     = max( 0, $offset );
+		$result['locked']   = true;
+		$result['errors'][] = 'Another build is running. Nothing was written; try again in a minute.';
+		return $result;
+	}
+
+	try {
+		return statchasers_player_build_batch_locked( $offset, $roster, $result );
+	} finally {
+		statchasers_player_lock_release();
+	}
+}
+
+/**
+ * The body of statchasers_player_build_batch(), run while holding the lock.
+ *
+ * @param int                                  $offset Index into the roster.
+ * @param array<int,array<string,mixed>>       $roster The list this build works from.
+ * @param array<string,mixed>                  $result The tally to fill.
+ * @return array<string,mixed>
+ */
+function statchasers_player_build_batch_locked( int $offset, array $roster, array $result ): array {
+	$total     = count( $roster );
 	$container = statchasers_player_container( true );
 
 	if ( ! $container ) {
@@ -578,6 +723,17 @@ function statchasers_player_build_batch( int $offset ): array {
 			}
 		}
 
+		// The list above was read once at the top of the batch. Ask the
+		// database again, right before writing: a page that appeared since -
+		// another batch, a hand-made draft - must be reused, not duplicated.
+		if ( ! $id ) {
+			$id = statchasers_player_sibling_page( (string) $row['slug'], $container );
+			if ( $id ) {
+				++$result['existing'];
+				$status['present'][ $row['slug'] ] = $id;
+			}
+		}
+
 		if ( ! $id ) {
 			// The stored title, which on a normal template is the H1. The
 			// position is in it because six hundred names in an admin list are
@@ -605,7 +761,27 @@ function statchasers_player_build_batch( int $offset ): array {
 			}
 
 			$id = (int) $id;
-			++$result['created'];
+
+			// WordPress never refuses a taken slug; it appends -2 and publishes.
+			// That is how twenty-seven `<slug>-2` pages came to exist. So the
+			// address the page actually got is checked against the one asked
+			// for, and a renamed page is undone on the spot - it is seconds old,
+			// empty, and ours - in favor of the sibling that won the slug.
+			$made = get_post( $id );
+			$got  = $made instanceof WP_Post ? (string) $made->post_name : (string) $row['slug'];
+			if ( $got !== (string) $row['slug'] ) {
+				wp_delete_post( $id, true );
+				$id = statchasers_player_sibling_page( (string) $row['slug'], $container );
+				if ( ! $id ) {
+					$result['errors'][] = sprintf( '%s: the slug "%s" was taken by a page that could not be found.', $row['name'], $row['slug'] );
+					continue;
+				}
+				++$result['existing'];
+				$status['present'][ $row['slug'] ] = $id;
+			} else {
+				++$result['created'];
+				$status['present'][ $row['slug'] ] = $id;
+			}
 		}
 
 		$meta = statchasers_player_page_meta( $row );
@@ -1548,6 +1724,12 @@ function statchasers_player_auto_build(): void {
 	$started = microtime( true );
 	do {
 		$result = statchasers_player_build_batch( $offset );
+		if ( ! empty( $result['locked'] ) ) {
+			// Somebody else is building - the button, most likely. Their
+			// pages are the same pages; come back when they are done.
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, STATCHASERS_PLAYER_AUTO_HOOK );
+			return;
+		}
 		$offset = (int) $result['next'];
 		$total  = (int) $result['total'];
 	} while ( $offset < $total && microtime( true ) - $started < STATCHASERS_PLAYER_AUTO_BUDGET );
