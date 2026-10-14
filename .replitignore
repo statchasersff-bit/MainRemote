@@ -6,3 +6,14 @@
 
 # Claude Code credentials/state - must never ship in a deploy image.
 .claude-home
+
+# Headless Chromium and Playwright leftovers from UI checks in the workspace:
+# gigabytes of throwaway browser profiles (each with dead SingletonSocket
+# symlinks into /tmp) and browser downloads. Nothing in the deployment runs a
+# browser. Shipping them pushed the image past what the deploy would create
+# (2026-10-14: "Deployment container creation failed").
+.cache/chromium-headless
+.cache/ms-playwright
+.cache/pnpm
+.config/chromium-headless
+.config/chromium
