@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.38
+Stable tag: 1.10.39
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.39 =
+* Player page sitemap: profiles the plugin already serves noindex, follow - players who have left the indexed roster, and the duplicate pages below - are now actually left out of Rank Math's page sitemap. The rule was there since 1.10.21 but asked for a WP_Post, and Rank Math's sitemap hands each entry over as a plain database row, so it never matched and every noindex profile stayed listed. Active profiles and their six section URLs are unchanged.
+* Player page builder: one build at a time, and never a second page for one player. On 2026-09-20 two builds overlapped and WordPress's slug suffixing let both inserts through - twenty-seven `<slug>-2` / `-3` shells (cole-kmet-2, luther-burden-3, ...) published beside the real pages; those have been trashed by hand. The builder now takes a lease on an option row (INSERT IGNORE, so two processes racing for it get one winner; a stamp older than five minutes is a crashed build and is taken over, no manual reset), re-checks the slug against the database right before every insert and reuses what it finds, and withdraws a page WordPress renamed on the way in rather than keep the suffixed copy. A build that meets a held lock writes nothing and says so; the daily cron books one retry a minute later.
 
 = 1.10.38 =
 * Matchup pages: one owner per game (the SEO brief of 2026-10-10). The pair's page keeps the latest game's full recap and box score until the rematch is within six days - it no longer switches to the Week 17 preview the Tuesday after a Week 4 game - and a pair with no rematch keeps its latest game for the rest of the season. While the pair's page owns a game, that game's dated page still renders but its canonical is the pair's address, it prints no SportsEvent, and it is left out of /game-sitemap.xml; it was a 301 before. Once the pair's page moves on (or for any earlier meeting this season) the dated page is self-canonical and in the sitemap. Every 2025 game page is in the sitemap as an archive, and each entry's lastmod is the day the game's stats were last pulled. The API decides all of it (X-Matchup-Game: current); the plugin reads the answer off the same fetch the shortcode makes.

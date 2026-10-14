@@ -128,6 +128,9 @@ confirm:
 - [ ] `page-sitemap1.xml` lists `/nfl/players/josh-allen/stats/` (and the
       other five sections) exactly once; `page-sitemap2.xml` does not repeat
       it. No `/overview/` and no `/nfl/players/outlook/<player>/` anywhere.
+- [ ] The page sitemap lists no profile that answers `noindex` (a player off
+      the roster, e.g. `/nfl/players/zach-ertz/`) and no `-2`/`-3` slug. Fetch
+      it with a query string (`?v=1`) to get past the edge cache.
 - [ ] From a machine the site answers (not Replit):
       `cd artifacts/api-server && node scripts/seo-verify.mjs` - every line
       PASS.
