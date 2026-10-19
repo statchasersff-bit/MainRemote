@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T12:48:02.728Z",
+  "generated_at": "2026-10-19T18:28:33.405Z",
   "source": "ourlads.com",
   "teams": {
     "BUF": [
@@ -394,8 +394,15 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Efton Chism III",
+            "name": "A.J. Brown",
             "depth_order": 1,
+            "sleeper_id": "5859",
+            "sleeper_name": "A.J. Brown",
+            "sleeper_slug": "aj-brown"
+          },
+          {
+            "name": "Efton Chism III",
+            "depth_order": 2,
             "sleeper_id": "12542",
             "sleeper_name": "Efton Chism",
             "sleeper_slug": "efton-chism"
@@ -563,8 +570,15 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Isaiah Williams",
+            "name": "Omar Cooper JR.",
             "depth_order": 1,
+            "sleeper_id": "13276",
+            "sleeper_name": "Omar Cooper",
+            "sleeper_slug": "omar-cooper"
+          },
+          {
+            "name": "Isaiah Williams",
+            "depth_order": 2,
             "sleeper_id": "11608",
             "sleeper_name": "Isaiah Williams",
             "sleeper_slug": "isaiah-williams"
@@ -704,6 +718,13 @@
             "sleeper_id": "11629",
             "sleeper_name": "Devontez Walker",
             "sleeper_slug": "devontez-walker"
+          },
+          {
+            "name": "Ja'kobi Lane",
+            "depth_order": 2,
+            "sleeper_id": "13293",
+            "sleeper_name": "Ja'Kobi Lane",
+            "sleeper_slug": "jakobi-lane"
           }
         ]
       },
@@ -1141,15 +1162,22 @@
             "sleeper_slug": "rico-dowdle"
           },
           {
-            "name": "Travis Homer",
+            "name": "Lew Nichols",
             "depth_order": 3,
+            "sleeper_id": "9510",
+            "sleeper_name": "Lew Nichols",
+            "sleeper_slug": "lew-nichols"
+          },
+          {
+            "name": "Travis Homer",
+            "depth_order": 4,
             "sleeper_id": "6012",
             "sleeper_name": "Travis Homer",
             "sleeper_slug": "travis-homer"
           },
           {
             "name": "Eli Heidenreich",
-            "depth_order": 4,
+            "depth_order": 5,
             "sleeper_id": "13423",
             "sleeper_name": "Eli Heidenreich",
             "sleeper_slug": "eli-heidenreich"
@@ -1166,13 +1194,6 @@
             "sleeper_id": "5846",
             "sleeper_name": "DK Metcalf",
             "sleeper_slug": "dk-metcalf"
-          },
-          {
-            "name": "Ben Skowronek",
-            "depth_order": 2,
-            "sleeper_id": "7757",
-            "sleeper_name": "Ben Skowronek",
-            "sleeper_slug": "ben-skowronek"
           }
         ]
       },
@@ -1194,11 +1215,11 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Roman Wilson",
+            "name": "Ben Skowronek",
             "depth_order": 1,
-            "sleeper_id": "11630",
-            "sleeper_name": "Roman Wilson",
-            "sleeper_slug": "roman-wilson"
+            "sleeper_id": "7757",
+            "sleeper_name": "Ben Skowronek",
+            "sleeper_slug": "ben-skowronek"
           },
           {
             "name": "Kaden Wetjen",
@@ -1478,13 +1499,6 @@
             "sleeper_id": "13333",
             "sleeper_name": "Deion Burks",
             "sleeper_slug": "deion-burks"
-          },
-          {
-            "name": "Darius Slayton",
-            "depth_order": 3,
-            "sleeper_id": "6149",
-            "sleeper_name": "Darius Slayton",
-            "sleeper_slug": "darius-slayton"
           }
         ]
       },
@@ -1554,8 +1568,15 @@
             "sleeper_slug": "drew-ogletree"
           },
           {
-            "name": "Pharaoh Brown",
+            "name": "Will Mallory",
             "depth_order": 4,
+            "sleeper_id": "10220",
+            "sleeper_name": "Will Mallory",
+            "sleeper_slug": "will-mallory"
+          },
+          {
+            "name": "Pharaoh Brown",
+            "depth_order": 5,
             "sleeper_id": "4443",
             "sleeper_name": "Pharaoh Brown",
             "sleeper_slug": "pharaoh-brown"
@@ -1636,18 +1657,18 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Brian Thomas JR.",
-            "depth_order": 1,
-            "sleeper_id": "11631",
-            "sleeper_name": "Brian Thomas",
-            "sleeper_slug": "brian-thomas"
-          },
-          {
             "name": "Josh Cameron",
-            "depth_order": 2,
+            "depth_order": 1,
             "sleeper_id": "13394",
             "sleeper_name": "Josh Cameron",
             "sleeper_slug": "josh-cameron"
+          },
+          {
+            "name": "Brian Thomas JR.",
+            "depth_order": 2,
+            "sleeper_id": "11631",
+            "sleeper_name": "Brian Thomas",
+            "sleeper_slug": "brian-thomas"
           }
         ]
       },
@@ -2423,11 +2444,11 @@
             "sleeper_slug": "quentin-johnston"
           },
           {
-            "name": "Marquez Valdes-Scantling",
+            "name": "Keandre Lambert-Smith",
             "depth_order": 2,
-            "sleeper_id": "5086",
-            "sleeper_name": "Marquez Valdes-Scantling",
-            "sleeper_slug": "marquez-valdes-scantling"
+            "sleeper_id": "12670",
+            "sleeper_name": "KeAndre Lambert-Smith",
+            "sleeper_slug": "keandre-lambert-smith"
           },
           {
             "name": "Theo Wease JR.",
@@ -2502,13 +2523,6 @@
             "sleeper_id": "12389",
             "sleeper_name": "Hayden Rucci",
             "sleeper_slug": "hayden-rucci"
-          },
-          {
-            "name": "Scott Matlock",
-            "depth_order": 4,
-            "sleeper_id": null,
-            "sleeper_name": null,
-            "sleeper_slug": null
           }
         ]
       },
@@ -2837,25 +2851,25 @@
         "fantasy_position": "QB",
         "players": [
           {
-            "name": "Jalen Hurts",
-            "depth_order": 1,
-            "sleeper_id": "6904",
-            "sleeper_name": "Jalen Hurts",
-            "sleeper_slug": "jalen-hurts"
-          },
-          {
             "name": "Tanner McKee",
-            "depth_order": 2,
+            "depth_order": 1,
             "sleeper_id": "9230",
             "sleeper_name": "Tanner McKee",
             "sleeper_slug": "tanner-mckee"
           },
           {
             "name": "Cole Payton",
-            "depth_order": 3,
+            "depth_order": 2,
             "sleeper_id": "13335",
             "sleeper_name": "Cole Payton",
             "sleeper_slug": "cole-payton"
+          },
+          {
+            "name": "Joe Milton",
+            "depth_order": 3,
+            "sleeper_id": "11557",
+            "sleeper_name": "Joe Milton",
+            "sleeper_slug": "joe-milton"
           }
         ]
       },
@@ -2871,25 +2885,25 @@
             "sleeper_slug": "saquon-barkley"
           },
           {
-            "name": "Will Shipley",
-            "depth_order": 2,
-            "sleeper_id": "11577",
-            "sleeper_name": "Will Shipley",
-            "sleeper_slug": "will-shipley"
-          },
-          {
             "name": "Dameon Pierce",
-            "depth_order": 3,
+            "depth_order": 2,
             "sleeper_id": "8129",
             "sleeper_name": "Dameon Pierce",
             "sleeper_slug": "dameon-pierce"
           },
           {
             "name": "Carson Steele",
-            "depth_order": 4,
+            "depth_order": 3,
             "sleeper_id": "11582",
             "sleeper_name": "Carson Steele",
             "sleeper_slug": "carson-steele"
+          },
+          {
+            "name": "Jaydon Blue",
+            "depth_order": 4,
+            "sleeper_id": "12457",
+            "sleeper_name": "Jaydon Blue",
+            "sleeper_slug": "jaydon-blue"
           }
         ]
       },
@@ -3404,13 +3418,6 @@
             "sleeper_id": "7547",
             "sleeper_name": "Amon-Ra St. Brown",
             "sleeper_slug": "amon-ra-st-brown"
-          },
-          {
-            "name": "Tom Kennedy",
-            "depth_order": 2,
-            "sleeper_id": "6588",
-            "sleeper_name": "Tom Kennedy",
-            "sleeper_slug": "tom-kennedy"
           }
         ]
       },
@@ -3495,18 +3502,18 @@
             "sleeper_slug": "marshawn-lloyd"
           },
           {
-            "name": "Kaleb Johnson",
-            "depth_order": 2,
-            "sleeper_id": "12504",
-            "sleeper_name": "Kaleb Johnson",
-            "sleeper_slug": "kaleb-johnson"
-          },
-          {
             "name": "Pierre Strong JR.",
-            "depth_order": 3,
+            "depth_order": 2,
             "sleeper_id": "8116",
             "sleeper_name": "Pierre Strong",
             "sleeper_slug": "pierre-strong"
+          },
+          {
+            "name": "Kaleb Johnson",
+            "depth_order": 3,
+            "sleeper_id": "12504",
+            "sleeper_name": "Kaleb Johnson",
+            "sleeper_slug": "kaleb-johnson"
           }
         ]
       },
@@ -3548,11 +3555,11 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Skyy Moore",
+            "name": "Savion Williams",
             "depth_order": 1,
-            "sleeper_id": "8168",
-            "sleeper_name": "Skyy Moore",
-            "sleeper_slug": "skyy-moore"
+            "sleeper_id": "12482",
+            "sleeper_name": "Savion Williams",
+            "sleeper_slug": "savion-williams"
           },
           {
             "name": "Bo Melton",
@@ -3780,11 +3787,11 @@
             "sleeper_slug": "tua-tagovailoa"
           },
           {
-            "name": "Cooper Rush",
+            "name": "Andy Dalton",
             "depth_order": 3,
-            "sleeper_id": "4574",
-            "sleeper_name": "Cooper Rush",
-            "sleeper_slug": "cooper-rush"
+            "sleeper_id": "829",
+            "sleeper_name": "Andy Dalton",
+            "sleeper_slug": "andy-dalton"
           },
           {
             "name": "Jack Strand",
@@ -3956,8 +3963,15 @@
             "sleeper_slug": "chuba-hubbard"
           },
           {
-            "name": "Aj Dillon",
+            "name": "Trevor Etienne",
             "depth_order": 2,
+            "sleeper_id": "12531",
+            "sleeper_name": "Trevor Etienne",
+            "sleeper_slug": "trevor-etienne"
+          },
+          {
+            "name": "Aj Dillon",
+            "depth_order": 3,
             "sleeper_id": "6828",
             "sleeper_name": "AJ Dillon",
             "sleeper_slug": "aj-dillon"
@@ -4509,6 +4523,13 @@
             "sleeper_id": "8227",
             "sleeper_name": "Teagan Quitoriano",
             "sleeper_slug": "teagan-quitoriano"
+          },
+          {
+            "name": "Shawn Bowman",
+            "depth_order": 4,
+            "sleeper_id": "12217",
+            "sleeper_name": "Shawn Bowman",
+            "sleeper_slug": "shawn-bowman"
           }
         ]
       },
@@ -4892,8 +4913,15 @@
             "sleeper_slug": "george-holani"
           },
           {
-            "name": "Robert Henry JR.",
+            "name": "Velus Jones JR.",
             "depth_order": 3,
+            "sleeper_id": "8223",
+            "sleeper_name": "Velus Jones",
+            "sleeper_slug": "velus-jones"
+          },
+          {
+            "name": "Robert Henry JR.",
+            "depth_order": 4,
             "sleeper_id": "13418",
             "sleeper_name": "Robert Henry",
             "sleeper_slug": "robert-henry"
@@ -4930,13 +4958,6 @@
             "sleeper_id": "8676",
             "sleeper_name": "Rashid Shaheed",
             "sleeper_slug": "rashid-shaheed"
-          },
-          {
-            "name": "Irvin Charles",
-            "depth_order": 2,
-            "sleeper_id": "8861",
-            "sleeper_name": "Irvin Charles",
-            "sleeper_slug": "irvin-charles"
           }
         ]
       },
