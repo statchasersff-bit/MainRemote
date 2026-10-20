@@ -3403,7 +3403,10 @@ function positionOrder(position: string | null | undefined): number {
  */
 function directoryBand(row: DirectoryPlayer): string {
   const standing = row.standing;
-  if (!standing || !row.position || standing.value <= 0) return "idle";
+  // Judged on the number the row prints (one decimal), not the raw average:
+  // 0.2 points over six games is 0.03 ppg, which the row shows as "0.0 ppg",
+  // and a row that says nothing must not be painted as if it said "poor".
+  if (!standing || !row.position || standing.value < 0.05) return "idle";
   return finishBadge(standing.rank, row.position)?.tier ?? "idle";
 }
 
