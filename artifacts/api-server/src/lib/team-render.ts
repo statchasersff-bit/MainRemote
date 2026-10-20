@@ -34,6 +34,11 @@ import {
 } from "./news-card";
 import type { NflTeam } from "./team/teams";
 import { TEAM_GROUPS } from "./team/teams";
+import {
+  leagueHasPlayed,
+  type LeagueStandings,
+  type StandingsLine,
+} from "./team/profile";
 import { markFrame, networkMarkFor } from "./team/network-marks";
 import {
   getTeamOutlook,
@@ -3978,6 +3983,25 @@ export function renderTeamPage(
  * that every team resolves, and it gives the 404 page somewhere useful to send
  * a reader. A full document rather than a fragment, because nothing embeds it.
  */
+
+/** What the index renderers take besides the teams. */
+export interface TeamIndexOptions {
+  linkQuery?: string;
+  teamPathPrefix?: string;
+  /**
+   * The league table, keyed by ESPN team id. Null or absent when ESPN could
+   * not supply it, and the cards fall back to the plain list - the index's
+   * job is 32 links, and a standings outage must not cost it that.
+   */
+  standings?: LeagueStandings | null;
+}
+
+/** ".833" - the win percentage the way a standings table prints it. */
+function winPct(value: number): string {
+  const fixed = Math.min(1, Math.max(0, value)).toFixed(3);
+  return fixed.startsWith("0") ? fixed.slice(1) : fixed;
+}
+
 /**
  * The 32 hubs, grouped by conference and division.
  *
@@ -3986,51 +4010,101 @@ export function renderTeamPage(
  * addresses here shares a renderer: two copies of a list of 32 teams is two
  * lists that drift, and the one nobody looks at is the one that goes stale.
  *
- * It was the team switcher's own grid at full page width, and that is what it
- * has stopped being. The switcher's shape is two conference columns, each a
- * stack of four division lists - right for a 620px dropdown, wrong for a page:
- * across a desktop shell it left the right half of the screen empty and spread
- * eight division headings down a scroll, which reads as a sitemap rather than
- * as the front door to 32 hubs.
+ * Each division is a standings card: the four clubs in the order the
+ * tiebreakers put them, with W, L, T and PCT beside each name and a bar for
+ * the percentage, the leader's row tinted. A reader looking for a hub finds
+ * the crest exactly as before; a reader looking at the league finds the table
+ * - which is the page the 32-team index was always being asked to be, where
+ * eight bare lists of names were a sitemap.
  *
- * So the axes swap here. The conference is a full-width band with a ruled
- * heading, and its four divisions sit side by side beneath it - the shape of
- * the league, at about a third of the height. The rows keep the switcher's
- * classes, because the row is genuinely the same thing in both places; only
- * the arrangement around them is the index's own (see .sct-index-* in
- * team.css).
+ * The cards sit two across under each conference's ruled heading, so the
+ * eight tables read as two short bands rather than a column of sixteen rows.
+ *
+ * Without a table (ESPN down, or the one it serves before Week 1, which is
+ * 32 lines of 0-0-0) the cards keep their shape and drop the numbers: no
+ * place, no columns, the division's canonical order. The rows keep the
+ * switcher's classes, because the row is genuinely the same thing in both
+ * places; only the arrangement around them is the index's own (see
+ * .sct-index-* in team.css).
  */
 function renderTeamIndexGrid(
   teams: readonly NflTeam[],
-  options: { linkQuery?: string; teamPathPrefix?: string } = {},
+  options: TeamIndexOptions = {},
 ): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
+  const standings =
+    options.standings && leagueHasPlayed(options.standings)
+      ? options.standings
+      : null;
 
   const groups = TEAM_GROUPS.map((conference) => {
     const divisions = conference.divisions
       .map((division) => {
-        const links = division.teams
-          .filter((team) =>
-            teams.some((t) => t.abbreviation === team.abbreviation),
-          )
-          .map(
-            (team) =>
-              `<li><a class="sct-switch-team" href="${escapeHtml(`${prefix}${team.slug}/${query}`)}">` +
+        const members = division.teams.filter((team) =>
+          teams.some((t) => t.abbreviation === team.abbreviation),
+        );
+        // Only a complete table orders the card: a division with one club
+        // missing from the table is a division whose places cannot be trusted.
+        const lines = standings
+          ? members.map((team) => standings.get(team.espnId) ?? null)
+          : [];
+        const tabled =
+          standings !== null && lines.every((line) => line !== null);
+        const ordered = tabled
+          ? members
+              .map((team, i) => ({ team, line: lines[i] as StandingsLine }))
+              .sort((a, b) => a.line.place - b.line.place)
+          : members.map((team) => ({ team, line: null }));
+
+        const rows = ordered
+          .map(({ team, line }) => {
+            const record = line
+              ? `<span class="sct-index-rec" aria-label="${escapeHtml(
+                  `${line.wins}-${line.losses}-${line.ties}, ${winPct(line.winPercent)}`,
+                )}">` +
+                `<span class="sct-index-num" aria-hidden="true">${line.wins}</span>` +
+                `<span class="sct-index-num" aria-hidden="true">${line.losses}</span>` +
+                `<span class="sct-index-num" aria-hidden="true">${line.ties}</span>` +
+                `<span class="sct-index-num is-pct" aria-hidden="true">${winPct(line.winPercent)}</span>` +
+                `<span class="sct-index-bar" aria-hidden="true">` +
+                `<span class="sct-index-bar-fill" style="width:${Math.round(
+                  Math.min(1, Math.max(0, line.winPercent)) * 100,
+                )}%"></span></span>` +
+                `</span>`
+              : // The row has no underline and no link color of its own, so
+                // the arrow is what says it is one. It is drawn on hover and
+                // rests visible on a touch screen; see .sct-index-div
+                // .sct-arrow. With a record the numbers fill that edge.
+                ARROW;
+            return (
+              `<li${line?.place === 1 ? ` class="is-leader"` : ""}>` +
+              `<a class="sct-switch-team" href="${escapeHtml(`${prefix}${team.slug}/${query}`)}"` +
+              ` title="${escapeHtml(team.fullName)}">` +
+              (line
+                ? `<span class="sct-index-place" aria-hidden="true">${line.place}</span>`
+                : "") +
               `<img class="sct-switch-logo" src="${escapeHtml(team.logo)}" alt=""` +
               ` width="24" height="24" loading="lazy" decoding="async" />` +
-              `<span class="sct-index-name">${escapeHtml(team.fullName)}</span>` +
-              // The row has no underline and no link color of its own, so the
-              // arrow is what says it is one. It is drawn on hover and rests
-              // visible on a touch screen; see .sct-index-div .sct-arrow.
-              ARROW +
-              `</a></li>`,
-          )
+              `<span class="sct-index-name">${escapeHtml(team.nickname)}</span>` +
+              record +
+              `</a></li>`
+            );
+          })
           .join("");
+
+        const columns = tabled
+          ? `<span class="sct-index-cols" aria-hidden="true">` +
+            `<span>W</span><span>L</span><span>T</span><span>PCT</span>` +
+            `</span>`
+          : "";
         return (
-          `<div class="sct-switch-div sct-index-div">` +
+          `<div class="sct-switch-div sct-index-div${tabled ? " has-standings" : ""}">` +
+          `<div class="sct-index-head">` +
           `<p class="sct-switch-div-title">${escapeHtml(division.division)}</p>` +
-          `<ul class="sct-switch-list">${links}</ul>` +
+          columns +
+          `</div>` +
+          `<ul class="sct-switch-list">${rows}</ul>` +
           `</div>`
         );
       })
@@ -4043,7 +4117,7 @@ function renderTeamIndexGrid(
     );
   }).join("");
 
-  return `<div class="sct-switch-grid is-index">${groups}</div>`;
+  return `<div class="sct-switch-grid is-index"${standings ? ` data-standings="1"` : ""}>${groups}</div>`;
 }
 
 /**
@@ -4057,7 +4131,7 @@ function renderTeamIndexGrid(
  */
 export function renderTeamIndexFragment(
   teams: readonly NflTeam[],
-  options: { linkQuery?: string; teamPathPrefix?: string } = {},
+  options: TeamIndexOptions = {},
 ): string {
   return (
     `<div class="sct is-embed" data-sct-index="1">` +
@@ -4069,7 +4143,7 @@ export function renderTeamIndexFragment(
 /** The index as its own page on this origin: /team. */
 export function renderTeamIndex(
   teams: readonly NflTeam[],
-  options: { linkQuery?: string; teamPathPrefix?: string } = {},
+  options: TeamIndexOptions = {},
 ): string {
   return (
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +

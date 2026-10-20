@@ -169,16 +169,50 @@ function ordinal(n: number): string {
 }
 
 /**
- * Every team's division place, keyed by ESPN team id: "3rd in AFC East".
+ * One team's line in the league standings table.
  *
- * The team document's own `standingSummary` cannot be used for this. It gives
- * tied teams the same place and skips the ones below: on 3 October 2026 it had
- * the Jets and Patriots both "2nd in AFC East" at 1-2, and the Falcons, Saints
- * and Panthers all "1st in NFC South". The standings table breaks those ties,
- * and its `playoffSeed` (conference-wide, so it orders a division too) is the
- * order the tiebreakers settled on.
+ * `place` is the division place with the tiebreakers applied - see the cache
+ * below for why the team document's own summary cannot supply it. The record
+ * fields are ESPN's regular-season totals; before Week 1 they are all zero,
+ * and `leagueHasPlayed()` is how a caller tells a table of 0-0s from a season.
  */
-const standingsCache = createKeyedCache<Map<string, string>>({
+export interface StandingsLine {
+  /** 1-4 within the division, ties broken. */
+  place: number;
+  /** "AFC East" - the division the place is in. */
+  division: string;
+  wins: number;
+  losses: number;
+  ties: number;
+  /** 0-1. ESPN's own figure, which counts a tie as half a win. */
+  winPercent: number;
+}
+
+export type LeagueStandings = ReadonlyMap<string, StandingsLine>;
+
+/** Has anybody played? False for the table ESPN serves before Week 1. */
+export function leagueHasPlayed(standings: LeagueStandings): boolean {
+  for (const line of standings.values()) {
+    if (line.wins + line.losses + line.ties > 0) return true;
+  }
+  return false;
+}
+
+/**
+ * Every team's division place and record, keyed by ESPN team id.
+ *
+ * The team document's own `standingSummary` cannot be used for the place. It
+ * gives tied teams the same place and skips the ones below: on 3 October 2026
+ * it had the Jets and Patriots both "2nd in AFC East" at 1-2, and the Falcons,
+ * Saints and Panthers all "1st in NFC South". The standings table breaks those
+ * ties, and its `playoffSeed` (conference-wide, so it orders a division too) is
+ * the order the tiebreakers settled on.
+ *
+ * The record rides along because the same table carries it, and the index of
+ * all 32 hubs prints every team's line at once: one request for the league,
+ * where the team document is one request per club.
+ */
+const standingsCache = createKeyedCache<Map<string, StandingsLine>>({
   name: "espn-standings",
   ttlMs: 3 * 60 * 60 * 1000,
   timeoutMs: 7_000,
@@ -187,26 +221,62 @@ const standingsCache = createKeyedCache<Map<string, string>>({
       `${ESPN_SITE}/apis/v2/sports/football/nfl/standings` +
       `?level=3&season=${encodeURIComponent(seasonRaw)}`;
     const doc = await fetchJson<EspnStandingsResponse>(url, signal, TEAM_USER_AGENT);
-    const places = new Map<string, string>();
+    const lines = new Map<string, StandingsLine>();
     for (const conference of doc.children ?? []) {
       for (const division of conference.children ?? []) {
         const name = division.name?.trim();
         if (!name) continue;
+        const statOf = (
+          entry: { stats?: Array<{ name?: string; value?: number }> },
+          stat: string,
+        ): number | undefined => {
+          const value = entry.stats?.find((s) => s.name === stat)?.value;
+          return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+        };
         const seedOf = (entry: { stats?: Array<{ name?: string; value?: number }> }) =>
-          entry.stats?.find((stat) => stat.name === "playoffSeed")?.value ??
-          Number.POSITIVE_INFINITY;
+          statOf(entry, "playoffSeed") ?? Number.POSITIVE_INFINITY;
         const ranked = [...(division.standings?.entries ?? [])].sort(
           (a, b) => seedOf(a) - seedOf(b),
         );
         ranked.forEach((entry, i) => {
-          if (entry.team?.id) places.set(entry.team.id, `${ordinal(i + 1)} in ${name}`);
+          if (!entry.team?.id) return;
+          const wins = statOf(entry, "wins") ?? 0;
+          const losses = statOf(entry, "losses") ?? 0;
+          const ties = statOf(entry, "ties") ?? 0;
+          const games = wins + losses + ties;
+          lines.set(entry.team.id, {
+            place: i + 1,
+            division: name,
+            wins,
+            losses,
+            ties,
+            winPercent:
+              statOf(entry, "winPercent") ?? (games ? (wins + ties / 2) / games : 0),
+          });
         });
       }
     }
-    if (places.size === 0) throw new Error("standings: no division entries");
-    return places;
+    if (lines.size === 0) throw new Error("standings: no division entries");
+    return lines;
   },
 });
+
+/**
+ * The league table for a season, or null when ESPN could not supply it.
+ *
+ * Null rather than a throw because the one page that wants all 32 lines is
+ * the index, whose job is to link to 32 hubs; a standings outage costs it the
+ * records, not the page.
+ */
+export async function getLeagueStandings(
+  season: number,
+): Promise<LeagueStandings | null> {
+  try {
+    return (await standingsCache.ensure(String(season))) ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function getTeamProfile(
   team: NflTeam,
@@ -219,5 +289,9 @@ export async function getTeamProfile(
   if (!profile) return null;
   // No table, no standing: the summary's tie-blind place is the bug this
   // replaces, so it is not a fallback.
-  return { ...profile, standing: places?.get(team.espnId) ?? null };
+  const line = places?.get(team.espnId);
+  return {
+    ...profile,
+    standing: line ? `${ordinal(line.place)} in ${line.division}` : null,
+  };
 }

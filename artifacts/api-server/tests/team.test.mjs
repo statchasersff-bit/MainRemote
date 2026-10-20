@@ -1895,7 +1895,7 @@ describe("the team index", () => {
     assert.ok(!/<title/i.test(body), "and no title");
   });
 
-  test("it is a conference band of four division cards, with all 32 and their crests", async () => {
+  test("it is two conference bands of four division cards, with all 32 and their crests", async () => {
     const { body } = await indexFragment();
     const doc = new JSDOM(body).window.document;
 
@@ -1922,6 +1922,71 @@ describe("the team index", () => {
       assert.ok(row, "each conference holds its divisions in one row");
       assert.equal(row.querySelectorAll(".sct-index-div").length, 4);
     }
+  });
+
+  test("each division card is a standings table: places, W-L-T, PCT, the leader tinted", async () => {
+    // The league table the hubs place themselves from (recorded 2026-10-03),
+    // printed once for all 32: a reader looking at the league finds the
+    // standings, a reader looking for a hub still finds the crest.
+    const { body } = await indexFragment();
+    const doc = new JSDOM(body).window.document;
+
+    assert.equal(doc.querySelector(".sct-switch-grid.is-index").dataset.standings, "1");
+    const cards = [...doc.querySelectorAll(".sct-index-div")];
+    assert.equal(cards.length, 8);
+    for (const card of cards) {
+      assert.ok(card.classList.contains("has-standings"), "every card has its table");
+      assert.deepEqual(
+        [...card.querySelectorAll(".sct-index-cols span")].map((el) => el.textContent),
+        ["W", "L", "T", "PCT"],
+      );
+      // The four clubs in tiebreaker order, 1 to 4, and exactly one leader.
+      assert.deepEqual(
+        [...card.querySelectorAll(".sct-index-place")].map((el) => el.textContent),
+        ["1", "2", "3", "4"],
+      );
+      const leaders = card.querySelectorAll("li.is-leader");
+      assert.equal(leaders.length, 1);
+      assert.equal(leaders[0].querySelector(".sct-index-place").textContent, "1");
+      // Every row carries a record with four figures and a bar whose width is
+      // the percentage - so a 1.000 is a full bar and a .000 an empty one.
+      for (const row of card.querySelectorAll(".sct-switch-team")) {
+        const nums = [...row.querySelectorAll(".sct-index-num")].map((el) => el.textContent);
+        assert.equal(nums.length, 4, row.textContent);
+        assert.match(nums[3], /^(1\.000|\.\d{3})$/, `PCT prints like a standings table (${nums[3]})`);
+        const pct = Number(nums[3]);
+        const fill = row.querySelector(".sct-index-bar-fill").getAttribute("style");
+        assert.equal(fill, `width:${Math.round(pct * 100)}%`);
+      }
+    }
+
+    // The Bills led the AFC East on the recorded date; the Dolphins were last.
+    const east = cards[0];
+    assert.equal(east.querySelector(".sct-switch-div-title").textContent, "AFC East");
+    const names = [...east.querySelectorAll(".sct-index-name")].map((el) => el.textContent);
+    assert.equal(names[0], "Bills");
+    assert.equal(names[3], "Dolphins");
+    // The nickname is the row; the full club name rides on the link's title.
+    assert.equal(east.querySelector(".sct-switch-team").getAttribute("title"), "Buffalo Bills");
+  });
+
+  test("without the league table the cards keep every link and drop the numbers", async () => {
+    // ESPN down (here: pointed at a path the replay never recorded). The
+    // index is 32 links first; a standings outage must not cost it that.
+    const { body } = await indexFragment({
+      SC_ESPN_SITE_BASE: `${replay.env.SC_ESPN_SITE_BASE}-down`,
+    });
+    const doc = new JSDOM(body).window.document;
+    assert.equal(doc.querySelector(".sct-switch-grid.is-index").dataset.standings, undefined);
+    assert.equal(doc.querySelectorAll(".sct-switch-team").length, 32);
+    assert.equal(doc.querySelectorAll(".sct-index-rec, .sct-index-place, .sct-index-cols, .is-leader").length, 0);
+    // The hover arrow comes back as the row's affordance.
+    assert.equal(doc.querySelectorAll(".sct-switch-team .sct-arrow").length, 32);
+    // Canonical division order, since there is no table to order by.
+    const east = [...doc.querySelector(".sct-index-div").querySelectorAll(".sct-index-name")].map(
+      (el) => el.textContent,
+    );
+    assert.deepEqual(east, ["Bills", "Dolphins", "Patriots", "Jets"]);
   });
 
   test("the links point at the public site, not at this origin", async () => {
