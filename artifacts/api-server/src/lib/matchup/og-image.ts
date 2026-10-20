@@ -17,7 +17,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { escapeHtml } from "../render";
 import { dataPath } from "../data-dir";
-import { heroSideColor, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
+import { heroPairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 
 export const SHARE_WIDTH = 1200;
 export const SHARE_HEIGHT = 630;
@@ -73,8 +73,9 @@ export function shareImageSvg(input: ShareImageInput): string {
   const r = scoreboardResult(game);
   const W = SHARE_WIDTH;
   const H = SHARE_HEIGHT;
-  const away = heroSideColor(game.away.abbr);
-  const home = heroSideColor(game.home.abbr);
+  const sides = heroPairColors(game.away.abbr, game.home.abbr);
+  const away = sides.away;
+  const home = sides.home;
   const venue = game.venue?.name ? ` · ${game.venue.name}` : "";
   const meta = `${game.seasonLabel} ${roundOf(game)}${venue}`;
   const scoreFill = (side: "away" | "home"): string =>

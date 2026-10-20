@@ -21,11 +21,20 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(HERE, "..", "fixtures", "team-upstream-2026-09-30.json.gz");
+const GAMES_FIXTURE = path.join(HERE, "..", "fixtures", "games-2026-10-20.csv.gz");
 
 export async function startUpstreamReplay() {
   const recorded = JSON.parse(zlib.gunzipSync(fs.readFileSync(FIXTURE)).toString("utf8"));
+  // The slate the team hubs read their schedules from since 2026-10-20 (they
+  // used to ask ESPN per team): nflverse's games.csv as snapshotted that day.
+  const gamesCsv = zlib.gunzipSync(fs.readFileSync(GAMES_FIXTURE)).toString("utf8");
   const misses = [];
   const server = http.createServer((req, res) => {
+    if (req.url === "/nflverse/games.csv") {
+      res.writeHead(200, { "Content-Type": "text/csv; charset=utf-8" });
+      res.end(gamesCsv);
+      return;
+    }
     const body = recorded[req.url];
     if (body === undefined) {
       misses.push(req.url);
@@ -44,6 +53,9 @@ export async function startUpstreamReplay() {
       SC_ESPN_WEB_BASE: `${origin}/espn-web`,
       SC_ESPN_CORE_BASE: `${origin}/espn-core`,
       SC_SLEEPER_BASE: `${origin}/sleeper`,
+      SC_SCHEDULE_CSV_URL: `${origin}/nflverse/games.csv`,
+      // No scoreboard layer either: the fixture's scores are nflverse's.
+      SC_SCHEDULE_ESPN: "0",
     },
     misses,
     stop: () => new Promise((resolve) => server.close(resolve)),

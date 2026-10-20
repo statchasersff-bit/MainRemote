@@ -807,6 +807,24 @@ a.scs-game-name:focus-visible {
   min-width: 0;
 }
 
+/* The name and its record share a line on the phone card. Here the wrapper is
+   only what keeps the name a flex item, so its ellipsis still works. */
+.scs-game-sub {
+  display: flex;
+  min-width: 0;
+}
+
+/* The phone card's own lines - record, implied total, the two-color bar and
+   the spread / O/U cells. The board has no column for any of them, so they
+   are in the markup and not drawn until the 640px tier turns the row into a
+   card (mak's reference, 2026-10-20). */
+.scs-game-rec,
+.scs-game-implied,
+.scs-game-bar,
+.scs-game-lines {
+  display: none;
+}
+
 /* ----------------------------------------------------------- the matchup */
 
 /*
@@ -897,8 +915,8 @@ a.scs-game-name:focus-visible {
 .scs-net-mark {
   display: block;
   flex: 0 0 auto;
-  height: var(--scs-net-h, 24px);
-  width: calc(var(--scs-net-h, 24px) * var(--scs-net-aspect, 1));
+  height: var(--scs-net-h, 20.4px);
+  width: calc(var(--scs-net-h, 20.4px) * var(--scs-net-aspect, 1));
 }
 
 .scs-net-text {
@@ -1013,6 +1031,10 @@ a.scs-game-name:focus-visible {
   line-height: 1.2;
   text-transform: uppercase;
   color: hsl(var(--scs-primary));
+  /* Never squeezed: in a 141px sidebar card each side has 54px for a crest,
+     a gap and a code, and "WAS" needs all of it. A code that gave way read
+     as "W…", which is not a code. The side it sits in is what gives. */
+  flex: 0 0 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1046,33 +1068,42 @@ a.scs-game-name:focus-visible {
   gap: 8px;
 }
 
+/* One club per row, stacked and centered like the matchup rows in the cards
+   below it. They were the source's bye chips - each club boxed in its own
+   hairline - until 2026-10-20, when mak asked for the boxes to go: four
+   bordered pills in a 141px card read as four buttons, not a list. */
 .scs-bye-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  /* An inline block, centered by the card's text-align, with the rows
+     left-aligned inside it: the crests line up in one column instead of
+     zigzagging with the length of each name. */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
   margin-top: 6px;
 }
 
-/* Square, with the crest tucked into the left edge - the source's bye chip. */
 .scs-bye {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 6px 2px 4px;
-  border: 1px solid hsl(var(--scs-border));
+  gap: 8px;
+  padding: 0;
+  border: 0;
   color: hsl(var(--scs-primary));
   font-family: var(--scs-font-display);
   --scs-ff: var(--scs-font-display);
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   line-height: 1.2;
   text-decoration: none;
 }
 
-.scs-bye:hover,
-.scs-bye:focus-visible {
-  border-color: hsl(var(--scs-primary));
+/* The name is the link; the crest is the row's mark. */
+.scs-bye:hover span,
+.scs-bye:focus-visible span {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .scs-bye-logo {
@@ -1535,45 +1566,300 @@ a.scs-game-name:focus-visible {
     display: none;
   }
 
+  /* The board's frame goes: the cards are their own frames, with air between
+     them, and a box around a stack of boxes is a box too many. */
+  .scs-board {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  /*
+   * The card (mak's reference, 2026-10-20): a navy card with the two clubs'
+   * colors along its top edge; the kickoff centered above; each club as crest,
+   * code, name · record and implied total, "@" between them; a bar split by
+   * the implied totals in the two colors; and a footer of SPREAD, O/U and the
+   * station. The reference is a dark card; mak asked for it on the tool's
+   * own light tokens instead (2026-10-20), so the card is the board's white
+   * with the board head's tint for the footer, and it follows .scs-dark like
+   * everything else.
+   */
   .scs-game {
-    grid-template-columns: minmax(0, 1fr) auto;
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "when meta"
-      "teams teams"
-      "go go";
-    gap: 6px 10px;
-    padding: 10px 14px;
+      "when"
+      "teams"
+      "meta"
+      "go";
+    gap: 0;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 1px solid hsl(var(--scs-border));
+    border-radius: 10px;
+    background: hsl(var(--scs-card));
+    color: hsl(var(--scs-foreground));
+    box-shadow: var(--scs-shadow-card);
+    overflow: hidden;
+  }
+
+  .scs-game:last-child {
+    margin-bottom: 0;
+    border-bottom: 1px solid hsl(var(--scs-border));
+  }
+
+  .scs-game:hover {
+    background: hsl(var(--scs-card));
+  }
+
+  /* The two colors along the top, away on the left as the matchup reads.
+     Thin and faint (mak, 2026-10-20): a tint of each color rather than the
+     color itself, so the edge places the clubs without competing with the
+     bar below, which carries the same two colors at full strength. */
+  .scs-game::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    opacity: 0.45;
+    background: linear-gradient(
+      90deg,
+      var(--scs-away-c, hsl(var(--scs-accent))) 0 50%,
+      var(--scs-home-c, hsl(var(--scs-accent))) 50% 100%
+    );
   }
 
   .scs-game-when {
     grid-area: when;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0;
+    padding: 12px 14px 6px;
+    color: hsl(var(--scs-muted-foreground));
+    font-size: 0.6875em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.2;
+    text-transform: uppercase;
   }
 
-  /* Everything in the matchup is sized in em - crests, codes, "at", scores -
-     so one font-size takes the whole block up a step together. */
+  .scs-game-date,
+  .scs-game-status {
+    font-size: 1em;
+    font-weight: 700;
+    color: inherit;
+  }
+
+  .scs-game-date::after {
+    content: "\00b7";
+    margin: 0 0.5em;
+  }
+
+  .scs-game[data-status="live"] .scs-game-status {
+    color: hsl(var(--scs-accent));
+  }
+
+  /* Everything in the matchup is sized in em - crests, codes, "@", scores -
+     so one font-size takes the whole block up together. Wraps, so the bar
+     can take a line of its own under the two sides. */
   .scs-game-teams {
     grid-area: teams;
-    gap: 10px;
-    font-size: 1.15em;
+    flex-wrap: wrap;
+    gap: 10px 10px;
+    padding: 4px 14px 14px;
+    font-size: 1em;
   }
 
+  /* Crest on the outside, text against the middle, on both sides. The away
+     side's items are written text-first for the board; reversing both puts
+     each crest at its edge without touching the markup. */
+  .scs-game-side {
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .scs-game-side[data-side="away"] {
+    justify-content: flex-end;
+    text-align: left;
+  }
+
+  .scs-game-side[data-side="home"] {
+    justify-content: flex-start;
+    text-align: right;
+  }
+
+  .scs-game-logo {
+    width: 2.5em;
+    height: 2.5em;
+  }
+
+  .scs-game-text {
+    gap: 3px;
+  }
+
+  /* The code leads, large and italic as the reference sets it. */
+  .scs-game-code {
+    order: -1;
+    font-family: var(--scs-font-display);
+    --scs-ff: var(--scs-font-display);
+    font-size: 1.25em;
+    font-style: italic;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: hsl(var(--scs-primary));
+  }
+
+  .scs-game-sub {
+    gap: 0.35em;
+    align-items: baseline;
+  }
+
+  .scs-game-side[data-side="home"] .scs-game-sub {
+    justify-content: flex-end;
+  }
+
+  .scs-game-name {
+    display: inline;
+    font-family: var(--scs-font);
+    --scs-ff: var(--scs-font);
+    font-size: 0.75em;
+    font-weight: 500;
+    color: hsl(var(--scs-muted-foreground));
+  }
+
+  .scs-game-rec {
+    display: inline;
+    color: hsl(var(--scs-muted-foreground));
+    font-size: 0.75em;
+    white-space: nowrap;
+  }
+
+  .scs-game-rec::before {
+    content: "\00b7";
+    margin-right: 0.35em;
+  }
+
+  .scs-game-implied {
+    display: block;
+    color: hsl(var(--scs-primary));
+    font-size: 0.75em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scs-game-score {
+    font-size: 1.25em;
+  }
+
+  /* "@" between the two, where the board says "at" with a rule under it. */
+  .scs-game-at {
+    font-size: 0.8em;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .scs-game-at::before {
+    content: "@";
+  }
+
+  .scs-game-at-word,
+  .scs-game-at::after {
+    display: none;
+  }
+
+  /* The implied-total bar: away's share in away's color from the left, home's
+     from the right, a hair of card between them. */
+  .scs-game-bar {
+    display: block;
+    flex: 1 0 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--scs-away-c) 0,
+      var(--scs-away-c) calc(var(--scs-bar-split, 50%) - 1.5px),
+      hsl(var(--scs-card)) calc(var(--scs-bar-split, 50%) - 1.5px),
+      hsl(var(--scs-card)) calc(var(--scs-bar-split, 50%) + 1.5px),
+      var(--scs-home-c) calc(var(--scs-bar-split, 50%) + 1.5px)
+    );
+  }
+
+  /* The footer: three equal cells, SPREAD, the station, O/U - the station in
+     the middle (mak, 2026-10-20). The markup is spread, O/U, station; the
+     lines wrapper dissolves so all three are the footer's own flex items and
+     `order` puts the station between the two numbers. */
   .scs-game-meta {
     grid-area: meta;
-    align-self: start;
-    align-items: flex-end;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    border-top: 1px solid hsl(var(--scs-border));
+    background: hsl(var(--scs-secondary) / 0.5);
   }
 
-  /* The two sides are equal flex tracks either side of "at", so the middle of
-     the row IS "at", and centering the link puts it directly beneath. */
+  .scs-game-lines {
+    display: contents;
+  }
+
+  .scs-game-line {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 9px 6px 8px;
+  }
+
+  .scs-game-line:nth-child(2) {
+    order: 2;
+  }
+
+  .scs-game-line-k {
+    color: hsl(var(--scs-muted-foreground));
+    font-size: 0.5625em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .scs-game-line-v {
+    font-family: var(--scs-font-display);
+    --scs-ff: var(--scs-font-display);
+    font-size: 1em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--scs-primary));
+  }
+
+  .scs-game-meta .scs-tv {
+    order: 1;
+    flex: 1 1 0;
+    /* A simulcast is three marks (ESPN / ABC / Disney+); the cell is a third
+       of a phone card, so they wrap to a second line rather than clip. */
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 4px;
+    min-width: 0;
+    padding: 8px 8px;
+    border-left: 1px solid hsl(var(--scs-border));
+    border-right: 1px solid hsl(var(--scs-border));
+  }
+
+  /* The door into the matchup page, on a line of its own under the footer. */
   .scs-game-go {
     grid-area: go;
     justify-content: center;
+    border-top: 1px solid hsl(var(--scs-border));
   }
 
-  /* Even padding, or the link's box centers and its text sits 3px right. */
   .scs-go {
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 7px 3px;
   }
 
   /* The head row is hidden at this width, so a bare chevron would be the only
@@ -1665,6 +1951,28 @@ a.scs-game-name:focus-visible {
 
 .scs :is(ul, ol, li) {
   list-style: none !important;
+}
+
+/* `#left-area ul` is id-weighted: 23px under each list, a 1em indent, and a
+   26px line-height everything in the list inherits. Measured on the live
+   weekly board (2026-10-20): every list in the tool took all three, so the
+   week rail started 16px right of its label, the sidebar cards grew 23px of
+   dead space, and the Divisional Games rows sat 16px off-center with their
+   codes squeezed to "B…". The `:where()` reset above is a class short of the
+   host's `.entry-content ul` and cannot see its id at all, so this is the
+   one lever. These four lists are every <ul> the tool prints, and none of
+   them varies its padding in a media query, so `!important` flattens
+   nothing - each value below is the one the list's own rule already set. */
+.scs .scs-view-list,
+.scs .scs-bye-list,
+.scs .scs-plain-list {
+  padding: 0 !important;
+  line-height: inherit !important;
+}
+
+.scs .scs-rail-list {
+  padding: 0 0 4px !important;
+  line-height: inherit !important;
 }
 
 /* ====================================================================== */

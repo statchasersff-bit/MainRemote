@@ -2357,8 +2357,12 @@ describe("the Stats heading", () => {
     const headingYear = heading.textContent.match(/\b(2\d{3})\b/);
     assert.ok(headingYear, `the heading carries a season: "${heading.textContent.trim()}"`);
 
+    // In season the heading stands alone (mak, 2026-10-20): the "regular
+    // season to date" caption under it is gone. The note renders only in the
+    // fallback window, as a warning that the numbers are last season's - and
+    // then it must name the same season the heading does.
     const note = heading.parentElement.querySelector(".sct-note");
-    assert.ok(note, "and the block states which season it is showing");
+    if (!note) return;
     const noteYear = note.textContent.match(/\b(2\d{3})\b/);
     assert.ok(noteYear, `the note names a season: "${note.textContent.trim()}"`);
 

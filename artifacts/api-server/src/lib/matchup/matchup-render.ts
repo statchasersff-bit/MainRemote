@@ -105,7 +105,8 @@ import {
   type RivalryInput,
 } from "./rivalry";
 import {
-  heroSideFill,
+  heroPairFills,
+  pairPlan,
   pairColors as heroPairColors,
   renderScoreboardHero,
   scoreboardHeading,
@@ -468,8 +469,8 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
   return (
     `<header class="sct-sbh is-bare" data-status="none" aria-labelledby="${HERO_HEADING_ID}"` +
     styleAttr([
-      `--sbh-away:${heroSideFill(data.pair.a.code)}`,
-      `--sbh-home:${heroSideFill(data.pair.b.code)}`,
+      `--sbh-away:${heroPairFills(data.pair.a.code, data.pair.b.code).away}`,
+      `--sbh-home:${heroPairFills(data.pair.a.code, data.pair.b.code).home}`,
     ]) +
     `>` +
     `<${headingTag} class="sct-sbh-title" id="${HERO_HEADING_ID}" data-sct-hero-heading>` +
@@ -3008,18 +3009,17 @@ function luminance(hex: string): number {
  * are not the same value and are the same color to the eye.
  */
 function pairColors(a: NflTeam, b: NflTeam): [string, string] {
-  const tooClose = (x: string, y: string): boolean => {
-    const [r1, g1, b1] = hexToRgb(x);
-    const [r2, g2, b2] = hexToRgb(y);
-    return Math.hypot(r1 - r2, g1 - g2, b1 - b2) < 60;
-  };
-  if (!tooClose(a.primaryColor, b.primaryColor)) {
-    return [a.primaryColor, b.primaryColor];
-  }
-  if (!tooClose(a.primaryColor, b.secondaryColor)) {
-    return [a.primaryColor, b.secondaryColor];
-  }
-  return [a.primaryColor, "#7a8699"];
+  // One rule for the whole site (scoreboard-hero.ts pairPlan): same-hue
+  // primaries count as a clash too, and the side that switches is whichever
+  // club has a secondary worth wearing.
+  const plan = pairPlan(a.code, b.code);
+  const pick = (team: NflTeam, choice: "primary" | "secondary" | "neutral"): string =>
+    choice === "neutral"
+      ? "#7a8699"
+      : choice === "secondary"
+        ? team.secondaryColor
+        : team.primaryColor;
+  return [pick(a, plan.away), pick(b, plan.home)];
 }
 
 /**

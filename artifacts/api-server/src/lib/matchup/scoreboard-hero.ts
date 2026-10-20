@@ -211,12 +211,94 @@ export function teamInk(abbr: string, useSecondary = false): string {
   return passing([useSecondary ? colors.secondary : colors.primary], "#F5F7FA");
 }
 
-/** Two colors a reader could mistake for one: #002244 and #0B162A, say. */
+/** Hue (0-360), saturation and lightness (0-1) of a hex color. */
+function hsl(hex: string): { h: number; s: number; l: number } | null {
+  const c = rgb(hex);
+  if (!c) return null;
+  const [r, g, b] = c.map((v) => v / 255) as [number, number, number];
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (d === 0) return { h: 0, s: 0, l };
+  const s = d / (1 - Math.abs(2 * l - 1));
+  let h =
+    max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h = (h * 60 + 360) % 360;
+  return { h, s, l };
+}
+
+/** How far apart two hues are around the wheel, 0-180. */
+function hueGap(a: number, b: number): number {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+/**
+ * Two colors a reader could mistake for one.
+ *
+ * Two tests, either of which is enough. The first is distance in RGB: #002244
+ * and #0B162A are not the same value and are the same color to the eye. The
+ * second is family (mak, 2026-10-20): the Bills' navy and the Chargers' powder
+ * blue are far apart in RGB and still read as "the blue team" twice on a bar
+ * chart, and the same goes for two reds or two teals. Two saturated colors
+ * within 40 degrees of hue count as one color here, whatever their lightness.
+ */
 export function tooClose(a: string, b: string): boolean {
   const x = rgb(a);
   const y = rgb(b);
   if (!x || !y) return false;
-  return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 60;
+  if (Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 60) return true;
+  const p = hsl(a);
+  const q = hsl(b);
+  if (!p || !q) return false;
+  const chromatic = (c: { s: number; l: number }): boolean =>
+    c.s >= 0.25 && c.l >= 0.1 && c.l <= 0.85;
+  return chromatic(p) && chromatic(q) && hueGap(p.h, q.h) <= 40;
+}
+
+/** Which of a club's colors a side wears on one page. */
+export type SideChoice = "primary" | "secondary" | "neutral";
+
+/** The neutral slate a side falls back to when neither club's colors can be told apart. */
+export const NEUTRAL_SIDE = "#5B6778";
+
+/**
+ * A secondary that is worth switching to: saturated enough to read as a color
+ * of its own and dark enough that making it safe for text does not turn gold
+ * into mustard or silver into charcoal. Measured raw against the paper.
+ */
+function usableSecondary(abbr: string): boolean {
+  const colors = teamColors[abbr.toUpperCase()];
+  if (!colors || !rgb(colors.secondary)) return false;
+  return contrastRatio(colors.secondary, "#F5F7FA") >= 3;
+}
+
+/**
+ * Which color each side of a page wears, decided once so the hero, the bars
+ * and the tables agree.
+ *
+ * Both primaries when they are told apart. On a clash the home side takes
+ * its secondary when that is a real color and distinct from the away side
+ * (Seattle's green against New England's navy). When it is not - the
+ * Chargers' gold is too pale to be anything but mustard as text - the AWAY
+ * side takes its secondary instead (the Bills' red against the Chargers'
+ * blue), and only when neither club has a secondary that works does the home
+ * side go neutral.
+ */
+export function pairPlan(away: string, home: string): Record<"away" | "home", SideChoice> {
+  const awayInk = teamInk(away);
+  const homeInk = teamInk(home);
+  if (!tooClose(awayInk, homeInk) && !tooClose(teamFill(away), teamFill(home))) {
+    return { away: "primary", home: "primary" };
+  }
+  if (usableSecondary(home) && !tooClose(awayInk, teamInk(home, true))) {
+    return { away: "primary", home: "secondary" };
+  }
+  if (usableSecondary(away) && !tooClose(teamInk(away, true), homeInk)) {
+    return { away: "secondary", home: "primary" };
+  }
+  return { away: "primary", home: "neutral" };
 }
 
 /**
@@ -232,17 +314,44 @@ export function pairColors(
   away: string,
   home: string,
 ): Record<"away" | "home", { ink: string; fill: string }> {
-  const awayInk = teamInk(away);
-  const awayFill = teamFill(away);
-  let homeInk = teamInk(home);
-  let homeFill = teamFill(home);
-  if (tooClose(awayInk, homeInk) || tooClose(awayFill, homeFill)) {
-    const alt = teamInk(home, true);
-    const clash = tooClose(awayInk, alt);
-    homeInk = clash ? "#5B6778" : alt;
-    homeFill = clash ? "#5B6778" : alt;
-  }
-  return { away: { ink: awayInk, fill: awayFill }, home: { ink: homeInk, fill: homeFill } };
+  const plan = pairPlan(away, home);
+  const side = (abbr: string, choice: SideChoice): { ink: string; fill: string } => {
+    if (choice === "neutral") return { ink: NEUTRAL_SIDE, fill: NEUTRAL_SIDE };
+    if (choice === "secondary") {
+      const ink = teamInk(abbr, true);
+      return { ink, fill: ink };
+    }
+    return { ink: teamInk(abbr), fill: teamFill(abbr) };
+  };
+  return { away: side(away, plan.away), home: side(home, plan.home) };
+}
+
+/**
+ * The hero's two side colors, told apart the same way the body is - see
+ * pairPlan(). A side switched to its secondary is made safe for white text
+ * over the navy exactly as heroSideColor() does for a primary.
+ */
+export function heroPairColors(away: string, home: string): Record<"away" | "home", string> {
+  const plan = pairPlan(away, home);
+  const passes = (hex: string): boolean => whiteContrast(overNavy(hex)) >= AA_CONTRAST;
+  const side = (abbr: string, choice: SideChoice): string => {
+    if (choice === "neutral") return NEUTRAL_SIDE;
+    if (choice === "primary") return heroSideColor(abbr);
+    const secondary = teamColors[abbr.toUpperCase()]?.secondary ?? FALLBACK_COLOR;
+    if (passes(secondary)) return secondary;
+    for (let amount = 0.1; amount < 1; amount += 0.1) {
+      const darker = darken(secondary, amount);
+      if (passes(darker)) return darker;
+    }
+    return FALLBACK_COLOR;
+  };
+  return { away: side(away, plan.away), home: side(home, plan.home) };
+}
+
+/** Both sides' paint as the panel lays it: heroPairColors() at SIDE_ALPHA. */
+export function heroPairFills(away: string, home: string): Record<"away" | "home", string> {
+  const colors = heroPairColors(away, home);
+  return { away: rgba(colors.away), home: rgba(colors.home) };
 }
 
 /**
@@ -646,7 +755,8 @@ export function renderScoreboardHero(
     `<header class="sct-sbh${tie ? " is-tie" : ""}" data-status="${game.status}"` +
     ` aria-labelledby="${escapeHtml(headingId)}"` +
     ` style="${escapeHtml(
-      `--sbh-away:${heroSideFill(game.away.abbr)};--sbh-home:${heroSideFill(game.home.abbr)}`,
+      `--sbh-away:${heroPairFills(game.away.abbr, game.home.abbr).away};` +
+        `--sbh-home:${heroPairFills(game.away.abbr, game.home.abbr).home}`,
     )}"` +
     `>` +
     meta +

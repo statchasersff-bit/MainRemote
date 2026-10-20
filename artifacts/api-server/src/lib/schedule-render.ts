@@ -56,6 +56,11 @@ import {
 } from "./matchup/pair";
 import { scheduleSeason } from "./schedule/schedule-data";
 import { markFrame, networkMarkFor } from "./team/network-marks";
+import {
+  leagueHasPlayed,
+  type LeagueStandings,
+  type StandingsLine,
+} from "./team/profile";
 import { TEAMS, type NflTeam } from "./team/teams";
 import {
   formatGameDate,
@@ -122,6 +127,12 @@ export interface ScheduleRenderOptions {
   filter?: GameFilter;
   /** Injected for testability; the cache keys on the data, not on this. */
   now?: number;
+  /**
+   * The league table, for the records on the phone cards ("Patriots · 4-2").
+   * Null or absent when ESPN could not supply it, or before Week 1 - the
+   * card prints the name alone and nothing else changes.
+   */
+  standings?: LeagueStandings | null;
 }
 
 /**
@@ -306,8 +317,13 @@ function spreadLabel(game: ScheduleGame): string {
  * square root, and `sqrt()` is too new to rely on inside somebody's WordPress
  * theme.
  */
-const NET_MARK_AREA = 676;
-export const NET_MARK_MAX_HEIGHT = 24;
+// 676 and 24 until 2026-10-20, when mak asked for the marks 15% smaller - CBS,
+// FOX, NBC, ESPN and ABC in particular, which are the five the area rule draws
+// at their fullest. 15% off a length is 27.75% off an area: 676 × 0.85² and
+// 24 × 0.85, so every mark shrinks by the same 15% and the equal-area rule
+// between them is untouched.
+const NET_MARK_AREA = 488;
+export const NET_MARK_MAX_HEIGHT = 20.4;
 
 export function netMarkStyle(aspect: number): string {
   const height = Math.min(
@@ -492,6 +508,161 @@ function matchupHref(
  * schedule.css), so the accessible name is carried by text that is always in
  * the DOM rather than by the label itself.
  */
+/**
+ * The market's two numbers as the phone card prints them.
+ *
+ * `implied` is each side's share of the total: (total ± spread) / 2, the
+ * line's own arithmetic rather than a prediction - rule 2 at the top of this
+ * file. Null until BOTH numbers are posted; a card never shows half a market.
+ * The bar is the away share of the two implied totals, which is what the
+ * reference draws between the crests.
+ */
+function cardLines(game: ScheduleGame): {
+  spread: string;
+  total: string;
+  implied: { away: string; home: string; awayShare: number } | null;
+} {
+  const spread =
+    game.spreadLine === null
+      ? "-"
+      : game.spreadLine === 0
+        ? "PK"
+        : `${game.spreadLine > 0 ? game.homeCode : game.awayCode} −${Math.abs(game.spreadLine).toFixed(1)}`;
+  const total = game.totalLine === null ? "-" : game.totalLine.toFixed(1);
+  if (game.spreadLine === null || game.totalLine === null) {
+    return { spread, total, implied: null };
+  }
+  // spreadLine > 0 is the HOME side favored by that many (see spreadLabel()).
+  const home = (game.totalLine + game.spreadLine) / 2;
+  const away = (game.totalLine - game.spreadLine) / 2;
+  const sum = home + away;
+  return {
+    spread,
+    total,
+    implied: {
+      away: away.toFixed(1),
+      home: home.toFixed(1),
+      awayShare: sum > 0 ? away / sum : 0.5,
+    },
+  };
+}
+
+/**
+ * The two colors a card draws its edge and its bar in, away then home.
+ *
+ * Each club's primary, unless the two primaries are too alike to tell apart:
+ * the Giants and Texans are two navies, the 49ers and Falcons two reds, and
+ * a bar split between them is one bar (mak, 2026-10-20). Then one side
+ * takes its second color - whichever of the two swaps puts the most distance
+ * between the pair, provided that second color still reads on the white card
+ * (a silver, a grey or a white does not, and is never chosen). Distance is
+ * CIE76 ΔE in Lab, which is what "look alike" means to an eye rather than to
+ * a hex string. Calibrated on week 7, 2026: the Giants' and Texans' navies
+ * are 38 apart and still one bar, the Cowboys' navy and the Eagles' teal 33,
+ * so the line is 45; a navy against a red is 75 and up.
+ */
+export function cardColors(
+  away: NflTeam | null,
+  home: NflTeam | null,
+): [string, string] {
+  const a = away ? readable(away.primaryColor, away.secondaryColor) : "#d4af37";
+  const h = home ? readable(home.primaryColor, home.secondaryColor) : "#d4af37";
+  if (deltaE(a, h) >= CARD_COLOR_MIN_DELTA) return [a, h];
+
+  const options: Array<[string, string]> = [];
+  if (away && standsOnWhite(away.secondaryColor)) options.push([away.secondaryColor, h]);
+  if (home && standsOnWhite(home.secondaryColor)) options.push([a, home.secondaryColor]);
+  let best: [string, string] = [a, h];
+  let bestDelta = deltaE(a, h);
+  for (const pair of options) {
+    const d = deltaE(pair[0], pair[1]);
+    if (d > bestDelta) {
+      best = pair;
+      bestDelta = d;
+    }
+  }
+  return best;
+}
+
+const CARD_COLOR_MIN_DELTA = 45;
+
+/**
+ * Can this color be a club's bar on a white card? Dark enough to read, or
+ * saturated enough to read even when bright (the Vikings' gold). A silver,
+ * a grey or a white is neither: it reads as the empty track, not as a club.
+ */
+function standsOnWhite(hex: string): boolean {
+  const lum = luminance(hex);
+  const [, a, b] = lab(hex);
+  const chroma = Math.hypot(a, b);
+  if (lum <= 0.12) return true; // a black or a navy, whatever its hue
+  if (lum <= 0.35) return chroma >= 15; // the 49ers' gold, not the Cowboys' grey
+  return chroma >= 40 && lum <= 0.75; // the Vikings' gold, not a silver
+}
+
+/** The primary, unless it would vanish into a white card; then the darker. */
+function readable(primary: string, secondary: string): string {
+  if (luminance(primary) <= 0.6) return primary;
+  return luminance(secondary) < luminance(primary) ? secondary : primary;
+}
+
+function rgb(hex: string): [number, number, number] | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const v = m[1]!;
+  return [
+    parseInt(v.slice(0, 2), 16),
+    parseInt(v.slice(2, 4), 16),
+    parseInt(v.slice(4, 6), 16),
+  ];
+}
+
+/** sRGB → CIE Lab (D65), the standard conversion. */
+function lab(hex: string): [number, number, number] {
+  const c = rgb(hex) ?? [0, 0, 0];
+  const lin = c.map((v) => {
+    const s = v / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  const [r, g, b] = lin;
+  const x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+  const y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+  const z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+  const f = (t: number): number =>
+    t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  const [fx, fy, fz] = [f(x), f(y), f(z)];
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+
+export function deltaE(a: string, b: string): number {
+  const [l1, a1, b1] = lab(a);
+  const [l2, a2, b2] = lab(b);
+  return Math.sqrt((l1 - l2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2);
+}
+
+function luminance(hex: string): number {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return 1;
+  const channel = (i: number): number => {
+    const c = parseInt(m[1]!.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+}
+
+/** "4-2", or "4-2-1" with a tie. Null when the table has nothing to say. */
+function recordOf(
+  team: NflTeam | null,
+  standings: LeagueStandings | null | undefined,
+): string | null {
+  if (!team || !standings || !leagueHasPlayed(standings)) return null;
+  const line: StandingsLine | undefined = standings.get(team.espnId);
+  if (!line) return null;
+  return line.ties
+    ? `${line.wins}-${line.losses}-${line.ties}`
+    : `${line.wins}-${line.losses}`;
+}
+
 function renderGameRow(
   game: ScheduleGame,
   season: number,
@@ -501,6 +672,7 @@ function renderGameRow(
 ): string {
   const live = game.status === "live";
   const hasScore = game.awayScore !== null && game.homeScore !== null;
+  const lines = cardLines(game);
 
   const side = (
     team: NflTeam | null,
@@ -517,9 +689,21 @@ function renderGameRow(
     const scoreHtml = hasScore
       ? `<strong class="scs-game-score">${escapeHtml(String(score))}</strong>`
       : "";
+    // The record and the implied total are the phone card's lines (see the
+    // 640px tier in schedule.css) and are not drawn on the board at all. They
+    // live inside the existing cell so the row keeps its four grid items.
+    const record = recordOf(team, options.standings);
+    const implied = lines.implied
+      ? `<span class="scs-game-implied">Implied ${align === "away" ? lines.implied.away : lines.implied.home}</span>`
+      : "";
     const text =
-      `<span class="scs-game-text">${label}` +
-      `<span class="scs-game-code">${escapeHtml(code)}</span></span>`;
+      `<span class="scs-game-text">` +
+      `<span class="scs-game-sub">${label}` +
+      (record ? `<span class="scs-game-rec">${escapeHtml(record)}</span>` : "") +
+      `</span>` +
+      `<span class="scs-game-code">${escapeHtml(code)}</span>` +
+      implied +
+      `</span>`;
 
     return (
       `<span class="scs-game-side" data-side="${align}">` +
@@ -530,16 +714,26 @@ function renderGameRow(
     );
   };
 
+  const awayRecord = recordOf(game.away, options.standings);
+  const homeRecord = recordOf(game.home, options.standings);
   const spoken =
-    `${game.away?.fullName ?? game.awayCode} at ` +
-    `${game.home?.fullName ?? game.homeCode}` +
+    `${game.away?.fullName ?? game.awayCode}` +
+    (awayRecord ? ` (${awayRecord})` : "") +
+    ` at ${game.home?.fullName ?? game.homeCode}` +
+    (homeRecord ? ` (${homeRecord})` : "") +
     (hasScore ? `, ${game.awayScore} to ${game.homeScore}` : "") +
     `, ${formatGameDate(game.date, game.weekday)}, ${statusText(game)}`;
+
+  // The clubs' colors, for the card's top edge and the implied-total bar.
+  const [awayColor, homeColor] = cardColors(game.away, game.home);
+  const colors =
+    `--scs-away-c:${escapeHtml(awayColor)};` +
+    `--scs-home-c:${escapeHtml(homeColor)}`;
 
   return (
     `<article class="scs-game" data-status="${game.status}" id="${escapeHtml(
       `scs-game-${game.id}`,
-    )}">` +
+    )}" style="${colors}">` +
     `<p class="scs-visually-hidden">${escapeHtml(spoken)}</p>` +
     `<div class="scs-game-when">` +
     `<span class="scs-game-date">${escapeHtml(
@@ -558,10 +752,23 @@ function renderGameRow(
     `</div>` +
     `<div class="scs-game-teams" aria-hidden="true">` +
     side(game.away, game.awayCode, game.awayScore, "away") +
-    `<span class="scs-game-at">at</span>` +
+    // The word is the board's; the card swaps it for "@" in CSS, which is
+    // why it sits in a span of its own.
+    `<span class="scs-game-at"><span class="scs-game-at-word">at</span></span>` +
     side(game.home, game.homeCode, game.homeScore, "home") +
+    (lines.implied
+      ? `<span class="scs-game-bar" style="--scs-bar-split:${(lines.implied.awayShare * 100).toFixed(1)}%"></span>`
+      : "") +
     `</div>` +
     `<div class="scs-game-meta">` +
+    // The market, card-only (hidden on the board, which has no column for
+    // it). Before the TV mark so the footer reads spread, total, station.
+    `<span class="scs-game-lines">` +
+    `<span class="scs-game-line"><span class="scs-game-line-k">Spread</span>` +
+    `<span class="scs-game-line-v">${escapeHtml(lines.spread)}</span></span>` +
+    `<span class="scs-game-line"><span class="scs-game-line-k">O/U</span>` +
+    `<span class="scs-game-line-v">${escapeHtml(lines.total)}</span></span>` +
+    `</span>` +
     networkHtml(game.network) +
     `</div>` +
     renderMatchupCell(game, season, options, now, meetings) +

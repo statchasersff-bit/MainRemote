@@ -34,12 +34,14 @@
  * the page confidently wrong about the one thing a schedule is for.
  */
 
+import fs from "node:fs";
 import { createKeyedCache } from "../team/cache";
 import { seasonYear } from "../seo";
 import { parseCsv } from "../fpa/nflverse";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { logger } from "../logger";
 import { ESPN_SITE } from "../team/upstream";
+import { dataPath } from "../data-dir";
 
 /**
  * Where the slate comes from. One file, the whole of NFL history.
@@ -52,6 +54,19 @@ import { ESPN_SITE } from "../team/upstream";
 const GAMES_CSV_URL =
   (process.env["SC_SCHEDULE_CSV_URL"] ?? "").trim() ||
   "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv";
+
+/**
+ * The stored copy of the same file, and the tests' way of pinning it.
+ *
+ * `SC_SCHEDULE_CSV_FILE` reads the slate from disk and never fetches. Unset,
+ * nflverse is fetched as before, and `data/schedule/games.csv` - a snapshot
+ * scripts/schedule/snapshot-games.mjs refreshes - is what answers when the
+ * fetch fails. The slate is data this site already has (mak, 2026-10-20),
+ * and a host that cannot reach GitHub for an hour should not lose 32 team
+ * pages' schedules over it.
+ */
+const GAMES_CSV_FILE = (process.env["SC_SCHEDULE_CSV_FILE"] ?? "").trim();
+const GAMES_CSV_SNAPSHOT = dataPath("schedule", "games.csv");
 
 /** A regular season is 18 weeks. Used for the matrix and the bye derivation. */
 export const TOTAL_WEEKS = 18;
@@ -73,6 +88,11 @@ export type GameStatus = "scheduled" | "live" | "final";
 export interface ScheduleGame {
   /** nflverse's own game id, e.g. "2026_03_ATL_GB". Stable across refreshes. */
   id: string;
+  /**
+   * ESPN's id for the same game, as nflverse records it. The box score is
+   * keyed by it (lib/matchup/boxscore.ts); null when the feed has none yet.
+   */
+  espnId: string | null;
   week: number;
   /** ISO date, or null when the week is still flexible. */
   date: string | null;
@@ -395,6 +415,22 @@ async function fetchEspnWeek(
   }
 }
 
+/**
+ * Weeks with a game nflverse has not scored yet. A week whose every game has
+ * a final in the feed is finished: its scores will not change and its TV
+ * assignments are history, so the live layer never asks ESPN about it again
+ * (mak, 2026-10-20: "this is all info we already have and isn't going to
+ * change"). Before this the full refresh re-read all eighteen weeks every six
+ * hours, most of them for games played in September.
+ */
+function openWeeks(rows: RawGame[]): number[] {
+  const open = new Set<number>();
+  for (const row of rows) {
+    if (row.awayScore === null || row.homeScore === null) open.add(row.week);
+  }
+  return [...open].sort((a, b) => a - b);
+}
+
 /** Weeks holding a game today or yesterday - the only scores that can change. */
 function activeWeeks(rows: RawGame[], nowMs: number): number[] {
   const today = easternDate(nowMs);
@@ -439,10 +475,13 @@ async function refreshEspn(
   nowMs: number,
   cached: EspnEntry | undefined,
 ): Promise<Map<string, EspnGame>> {
-  const games = cached?.games ?? new Map<string, EspnGame>();
+  const games = cached?.games ?? loadLayerSeed(season);
   const fullRefresh = !cached || nowMs - cached.fullRefreshAt > ESPN_FULL_TTL_MS;
+  // A full refresh covers the weeks still open in the feed - flexed kickoffs
+  // and late TV assignments land across the season ahead - and never a week
+  // nflverse has already closed with final scores.
   const weeks = fullRefresh
-    ? Array.from({ length: TOTAL_WEEKS }, (_, index) => index + 1)
+    ? [...new Set([...openWeeks(rows), ...activeWeeks(rows, nowMs)])].sort((a, b) => a - b)
     : activeWeeks(rows, nowMs);
 
   let reached = weeks.length === 0;
@@ -458,6 +497,11 @@ async function refreshEspn(
       );
     }
   }
+
+  // Only the season in play is worth remembering: a past season's layer is
+  // never asked for again, and the test suite's 2024 fixture must not leave
+  // a file behind in the repo's data directory.
+  if (reached && weeks.length && season === scheduleSeason()) saveLayer(season, games);
 
   const live = [...games.values()].some((game) => game.state === "in");
   const past = season < scheduleSeason();
@@ -479,11 +523,57 @@ async function refreshEspn(
   return games;
 }
 
+/**
+ * What the live layer learned, kept on disk between processes.
+ *
+ * A network assignment or a final score for a game that has been played is a
+ * fact this site has; losing it on every restart and asking ESPN for it again
+ * was the pattern mak asked to end. Best-effort both ways: a missing or
+ * unwritable file is an empty seed and a skipped save, never an error.
+ */
+function layerPath(season: number): string {
+  return dataPath("schedule", `espn-layer-${season}.json`);
+}
+
+function loadLayerSeed(season: number): Map<string, EspnGame> {
+  const seed = new Map<string, EspnGame>();
+  if (!espnEnabled() || season !== scheduleSeason()) return seed;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(layerPath(season), "utf8")) as Record<
+      string,
+      EspnGame
+    >;
+    for (const [id, game] of Object.entries(parsed)) {
+      // Only what is settled: a live state or a kickoff-less entry would be
+      // stale the moment it was read back.
+      if (game && game.state !== "in") seed.set(id, game);
+    }
+  } catch {
+    // No seed. The refresh fills it.
+  }
+  return seed;
+}
+
+function saveLayer(season: number, games: Map<string, EspnGame>): void {
+  try {
+    const file = layerPath(season);
+    fs.mkdirSync(dataPath("schedule"), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(Object.fromEntries(games)));
+  } catch (err) {
+    logger.debug({ err, season }, "could not store the schedule's ESPN layer");
+  }
+}
+
 /** Test seam: drops the live layer so a suite never depends on ESPN. */
 export function invalidateScheduleCaches(): void {
   espnCache.clear();
   espnInFlight.clear();
   sharedCsv = null;
+  // The slate too: a test that swaps the CSV under the module (the sweep
+  // tests serve a season with open weeks) must not get the rows the last
+  // test parsed.
+  slateCache.clear();
+  postseasonCache.clear();
 }
 
 /* ------------------------------------------------------------- the slate */
@@ -492,6 +582,8 @@ export function invalidateScheduleCaches(): void {
 interface RawGame {
   id: string;
   espnId: string;
+  /** "REG", or a postseason round: "WC", "DIV", "CON", "SB". */
+  gameType: string;
   week: number;
   date: string | null;
   weekday: string | null;
@@ -526,7 +618,15 @@ function numberOrNull(value: string | undefined): number | null {
  * columns and gains one every couple of seasons, and an index would be silently
  * wrong the first time that happened.
  */
-function parseSlate(csv: string, season: number): RawGame[] {
+/** The postseason rounds nflverse names, in order. The Pro Bowl is not a row. */
+export const POSTSEASON_ROUNDS = ["WC", "DIV", "CON", "SB"] as const;
+export type PostseasonRound = (typeof POSTSEASON_ROUNDS)[number];
+
+function parseSlate(
+  csv: string,
+  season: number,
+  keep: (gameType: string) => boolean = (type) => type === "REG",
+): RawGame[] {
   const rows = parseCsv(csv);
   const header = rows.shift();
   if (!header) throw new Error("games.csv had no header row");
@@ -542,7 +642,8 @@ function parseSlate(csv: string, season: number): RawGame[] {
 
   for (const row of rows) {
     if (cell(get(row, "season")) !== seasonText) continue;
-    if (cell(get(row, "game_type")) !== "REG") continue;
+    const gameType = cell(get(row, "game_type"));
+    if (!keep(gameType)) continue;
 
     const week = Number(cell(get(row, "week")));
     if (!Number.isFinite(week) || week < 1) continue;
@@ -556,6 +657,7 @@ function parseSlate(csv: string, season: number): RawGame[] {
     games.push({
       id: cell(get(row, "game_id")) || `${season}-${week}-${awayCode}-${homeCode}`,
       espnId: cell(get(row, "espn")),
+      gameType,
       week,
       date: cell(get(row, "gameday")) || null,
       weekday: cell(get(row, "weekday")) || null,
@@ -593,13 +695,28 @@ function gamesCsv(): Promise<string> {
   if (sharedCsv && now - sharedCsv.at < CSV_SHARE_MS) return sharedCsv.text;
   // Its own timeout, not a caller's signal: one caller giving up must not
   // abort the download every other season is waiting on.
-  const text = fetch(GAMES_CSV_URL, {
-    headers: { Accept: "text/csv", "User-Agent": SCHEDULE_USER_AGENT },
-    signal: AbortSignal.timeout(20_000),
-  }).then((response) => {
-    if (!response.ok) throw new Error(`nflverse responded ${response.status}`);
-    return response.text();
-  });
+  const text = GAMES_CSV_FILE
+    ? fs.promises.readFile(GAMES_CSV_FILE, "utf8")
+    : fetch(GAMES_CSV_URL, {
+        headers: { Accept: "text/csv", "User-Agent": SCHEDULE_USER_AGENT },
+        signal: AbortSignal.timeout(20_000),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error(`nflverse responded ${response.status}`);
+          return response.text();
+        })
+        .catch(async (err: unknown) => {
+          // The stored snapshot answers for a fetch that failed. It is the same
+          // file a few days older: every past result in it is final, and the
+          // slate ahead rarely moves.
+          try {
+            const stored = await fs.promises.readFile(GAMES_CSV_SNAPSHOT, "utf8");
+            logger.warn({ err }, "nflverse games.csv unreachable - serving the stored snapshot");
+            return stored;
+          } catch {
+            throw err;
+          }
+        });
   const entry = { at: now, text };
   sharedCsv = entry;
   // A failure is not shared: the next season to ask tries again.
@@ -673,6 +790,7 @@ function normalize(
 
   return {
     id: row.id,
+    espnId: row.espnId || null,
     week: row.week,
     date: row.date,
     weekday: row.weekday,
@@ -774,6 +892,57 @@ async function getScheduleExact(
   const rows = await slateCache.ensure(String(season));
   if (!rows || rows.length === 0) return null;
   return build(season, rows, nowMs);
+}
+
+/**
+ * The regular season asked for and no other - the team hubs' reader.
+ *
+ * getSchedule() falls back to the season just played when the calendar's
+ * season is unpublished, which is right for the schedule tool's board and
+ * wrong for a hub that labels its table with the year it asked for.
+ */
+export function getSeasonSlate(
+  season: number,
+  nowMs: number = Date.now(),
+): Promise<ScheduleSeason | null> {
+  return getScheduleExact(season, nowMs);
+}
+
+/** One postseason game: the slate's shape plus which round it was. */
+export interface PostseasonGame extends ScheduleGame {
+  round: PostseasonRound;
+}
+
+const postseasonCache = createKeyedCache<RawGame[]>({
+  name: "nflverse-postseason",
+  ttlMs: 6 * 60 * 60 * 1000,
+  timeoutMs: 20_000,
+  errorBackoffMs: 30 * 60 * 1000,
+  load: async (key) => {
+    const season = Number(key);
+    // An empty list is the correct answer for most of the year, not a failure.
+    return parseSlate(await gamesCsv(), season, (type) =>
+      (POSTSEASON_ROUNDS as readonly string[]).includes(type),
+    );
+  },
+});
+
+/**
+ * A season's postseason, from the same file as the slate.
+ *
+ * No live layer: by the time a round is in the feed it has been played, and
+ * the one week a year it is live is not worth a second ESPN clock. Scores are
+ * nflverse's, posted hours after the whistle.
+ */
+export async function getPostseason(season: number): Promise<PostseasonGame[]> {
+  const rows = (await postseasonCache.ensure(String(season))) ?? [];
+  const none = new Map<string, EspnGame>();
+  return rows
+    .map((row) => ({
+      ...normalize(row, season, none),
+      round: row.gameType as PostseasonRound,
+    }))
+    .sort((a, b) => a.week - b.week || a.id.localeCompare(b.id));
 }
 
 async function build(

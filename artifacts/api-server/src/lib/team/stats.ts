@@ -452,6 +452,18 @@ const LADDER: Array<{
     pick: (s) => s.rushYardsPerGame,
     format: one,
   },
+  // Was a Situational tile (offense only). Moved into the ladder pair at
+  // mak's request (2026-10-20): it is basic production, and the defense's
+  // half is the same field read from the opponent split.
+  {
+    key: "first-downs",
+    offenseLabel: "1st Downs/G",
+    defenseLabel: "1st Downs/G",
+    offenseDescription: "First downs gained per game",
+    defenseDescription: "First downs allowed per game",
+    pick: (s) => s.firstDownsPerGame,
+    format: one,
+  },
   {
     key: "yards-per-attempt",
     offenseLabel: "Yds/Pass Att",
@@ -530,15 +542,6 @@ const SITUATIONAL: MetricDef[] = [
     direction: "high",
     pick: (s) => s.fourthDownPct,
     format: percent,
-  },
-  {
-    key: "first-downs",
-    label: "1st Downs/G",
-    description: "First downs gained per game",
-    split: "own",
-    direction: "high",
-    pick: (s) => s.firstDownsPerGame,
-    format: one,
   },
   {
     key: "sacks-allowed",

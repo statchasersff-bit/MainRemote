@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T18:30:44.439Z",
+  "generated_at": "2026-10-20T15:22:56.364Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -61,9 +61,9 @@
       "rb3": "Jacob Saylors"
     },
     "GB": {
-      "rb1": "MarShawn Lloyd",
+      "rb1": "Josh Jacobs",
       "rb2": "Pierre Strong Jr.",
-      "rb3": "Kaleb Johnson"
+      "rb3": "MarShawn Lloyd"
     },
     "HOU": {
       "rb1": "David Montgomery",
@@ -161,9 +161,9 @@
       "rb3": "Nicholas Singleton"
     },
     "WAS": {
-      "rb1": "Jacory Croskey-Merritt",
-      "rb2": "Rachaad White",
-      "rb3": "Austin Ekeler"
+      "rb1": "Rachaad White",
+      "rb2": "Austin Ekeler",
+      "rb3": "Jeremy McNichols"
     }
   },
   "players": {
@@ -479,14 +479,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "jacory croskey merritt": {
-      "name": "Jacory Croskey-Merritt",
-      "team": "WAS",
-      "sleeperId": "12533",
-      "age": 25,
-      "injuryStatus": "Out",
-      "status": "Active"
-    },
     "jahmyr gibbs": {
       "name": "Jahmyr Gibbs",
       "team": "DET",
@@ -543,6 +535,14 @@
       "injuryStatus": "Out",
       "status": "Active"
     },
+    "jeremy mcnichols": {
+      "name": "Jeremy McNichols",
+      "team": "WAS",
+      "sleeperId": "4219",
+      "age": 30,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "jonathan taylor": {
       "name": "Jonathan Taylor",
       "team": "IND",
@@ -567,6 +567,14 @@
       "injuryStatus": "IR",
       "status": "Inactive"
     },
+    "josh jacobs": {
+      "name": "Josh Jacobs",
+      "team": "GB",
+      "sleeperId": "5850",
+      "age": 28,
+      "injuryStatus": "NA",
+      "status": "Active"
+    },
     "justice hill": {
       "name": "Justice Hill",
       "team": "BAL",
@@ -580,14 +588,6 @@
       "team": "SF",
       "sleeperId": "13414",
       "age": 25,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "kaleb johnson": {
-      "name": "Kaleb Johnson",
-      "team": "GB",
-      "sleeperId": "12504",
-      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -619,7 +619,7 @@
       "name": "Kenneth Walker",
       "team": "KC",
       "sleeperId": "8151",
-      "age": 25,
+      "age": 26,
       "injuryStatus": null,
       "status": "Active"
     },

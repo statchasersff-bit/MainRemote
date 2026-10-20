@@ -29,6 +29,7 @@ import {
   type ScheduleRenderOptions,
 } from "./schedule-render";
 import { getSchedule, type ScheduleSeason } from "./schedule/schedule-data";
+import { getLeagueStandings, type LeagueStandings } from "./team/profile";
 import { schedulePageMeta, renderScheduleHeadTags } from "./schedule-seo";
 import { LruCache } from "./lru";
 
@@ -85,18 +86,35 @@ export async function renderScheduleFragment(
   // carry the week that was CHOSEN, not the one that was asked for.
   const resolved = resolveState(data, options);
   const key = optionKey(data.season, { ...options, week: resolved.week });
-  const version = `${data.version}-${hash(key)}`;
+
+  // The week board's phone cards print each club's record from the league
+  // table (the same ESPN table the hubs place themselves from, under its own
+  // 3h cache). The grid prints none, so it does not pay the lookup. The table
+  // is part of what was rendered, so it is part of the version: a Sunday's
+  // results change the fragment without the slate itself changing.
+  const standings =
+    resolved.view === "week" ? await getLeagueStandings(data.season) : null;
+  const version = `${data.version}-${hash(key)}-${hash(standingsKey(standings))}`;
 
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
 
   const result: ScheduleSsrResult = {
-    html: renderSchedulePage(data, options),
+    html: renderSchedulePage(data, { ...options, standings }),
     version,
     data,
   };
   fragmentCache.set(key, result);
   return result;
+}
+
+/** Every record in the table, in one string: the part of the version it owns. */
+function standingsKey(standings: LeagueStandings | null): string {
+  if (!standings) return "none";
+  return [...standings.entries()]
+    .map(([id, line]) => `${id}:${line.wins}-${line.losses}-${line.ties}`)
+    .sort()
+    .join(",");
 }
 
 /** Short, stable, non-cryptographic - this only has to differ, not resist. */
