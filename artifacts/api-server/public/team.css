@@ -1044,7 +1044,7 @@ body.sct-page.is-embed {
 
 /* ------------------------------------------------------------- team index */
 
-/* The /team index is the switcher's rows in the league's own shape.
+/* The /team index is the league's standings, one card per division.
  *
  * It used to be the switcher's whole grid at full page width: AFC beside NFC,
  * each conference a stack of four division lists. That shape is right for a
@@ -1052,9 +1052,15 @@ body.sct-page.is-embed {
  * half empty and pushed the eight division headings down a scroll, so the page
  * read as a sitemap rather than as the front door to 32 hubs.
  *
- * Here the axes swap: one conference per full-width band, its four divisions
- * side by side underneath. Same rows, a third of the height, and the reader
- * sees all eight groups at once.
+ * Now each conference is a full-width band with its gold-ruled heading, and
+ * its four divisions sit two across beneath it as standings cards: the four
+ * clubs in the order the tiebreakers put them, W / L / T / PCT beside each
+ * name, a bar for the percentage, the leader's row tinted. Same rows as the
+ * switcher, with the record where the hover arrow was.
+ *
+ * The record cells and the column labels above them share one grid template,
+ * `--idx-cols`, so the W over the wins column is over the wins column at every
+ * width: the breakpoints retune the variable, never the two rules separately.
  */
 .sct-switch-grid.is-index {
   grid-template-columns: minmax(0, 1fr);
@@ -1074,40 +1080,87 @@ body.sct-page.is-embed {
 
 .sct-index-divs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
-/* Each division is a card rather than four lists sharing one white ground.
-   The reader is looking for one of eight groups, and an edge they can see is
-   what makes that a glance instead of a scan of the headings - which is the
-   whole difference between this and the list it replaced. */
+/* Each division is a card on the hub's own tokens - the 16px radius and the
+   soft drop every top-level card on every tab wears - rather than four lists
+   sharing one white ground. The reader is looking for one of eight groups,
+   and an edge they can see is what makes that a glance instead of a scan. */
 .sct-index-div {
+  /* W, L, T, PCT, bar: the five tracks the record cells and the column
+     labels both lay out on. */
+  --idx-cols: 30px 30px 30px 48px 64px;
+  --idx-gap: 6px;
   /* .sct-switch-div carries 12px for the switcher's stacked divisions; here
      the grid's own gap does that job. */
   margin-top: 0;
-  padding: 12px 10px 10px;
-  border-radius: var(--sc-radius-sm);
+  padding: 14px 16px 10px;
+  border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
-  background: var(--sc-surface-soft);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+/* The card's head: the division on the left, the column labels on the right,
+   on one hairline that the rows then hang from. */
+.sct-index-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 6px;
+  padding: 0 8px 9px;
+  border-bottom: 1px solid var(--sc-hairline);
 }
 
 /* Louder than the switcher's: in the panel the heading only has to separate
    two lists a reader is already scanning, on the page it is the label of the
    card and the thing being looked for. */
 .sct-index-div .sct-switch-div-title {
-  margin: 0 2px 8px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--sc-hairline);
+  margin: 0;
+  padding: 0;
+  border: 0;
   color: var(--sc-navy);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+/* The table head, in the shape every table head on the hub shares (0.66rem,
+   800, uppercase, muted). Five tracks, four labels: the fifth is the bar's,
+   which has no heading, and the empty track is what keeps PCT over PCT. */
+.sct-index-cols {
+  display: grid;
+  flex: none;
+  grid-template-columns: var(--idx-cols);
+  column-gap: var(--idx-gap);
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .sct-index-div .sct-switch-team {
-  gap: 10px;
-  min-height: 32px;
-  padding: 4px 6px;
+  gap: 8px;
+  min-height: 38px;
+  padding: 5px 8px;
+  font-size: 0.9rem;
+}
+
+/* The division place, before the crest. Small and muted: it orders the rows
+   and is not the thing being read. */
+.sct-index-place {
+  flex: none;
+  width: 16px;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 /* Two pixels up from the switcher's. The crest is what a reader actually aims
@@ -1118,14 +1171,78 @@ body.sct-page.is-embed {
   height: 24px;
 }
 
-/* Holds the middle of the row so the arrow keeps the right edge, and shrinks
+/* Holds the middle of the row so the record keeps the right edge, and shrinks
    rather than pushing it off in a narrow column. */
 .sct-index-name {
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* The row's only affordance. There is no underline and no link color - the
+/* The record: four numerals and a bar, on the same tracks as the labels. */
+.sct-index-rec {
+  display: grid;
+  flex: none;
+  grid-template-columns: var(--idx-cols);
+  align-items: center;
+  column-gap: var(--idx-gap);
+}
+
+/* The numerals wear the hub's figure face, Barlow Condensed 700, like every
+   headline number on every tab. Through `--sc-font`, because the theme armour
+   pins font-family to the token and a plain font-family here would lose to
+   it. Wins and the percentage in ink; losses and ties a step back, which is
+   how the eye finds the two numbers a standings table is read for. */
+.sct-index-num {
+  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  color: var(--sc-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+}
+
+.sct-index-rec .sct-index-num:nth-child(2),
+.sct-index-rec .sct-index-num:nth-child(3) {
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+.sct-index-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.sct-index-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sc-gold);
+}
+
+/* The division leader: the gold tint the switcher gives the current team,
+   because it is the same statement - this is the one that matters here. */
+.sct-index-div li.is-leader .sct-switch-team {
+  background: rgba(212, 175, 55, 0.12);
+  font-weight: 800;
+}
+
+.sct-index-div li.is-leader .sct-index-place {
+  color: var(--sc-gold-deep);
+}
+
+.sct-index-div li.is-leader .sct-index-bar-fill {
+  background: var(--sc-gold-deep);
+}
+
+/* The row's only affordance when there is no record to print (the table
+   before Week 1, or ESPN down). There is no underline and no link color - the
    crest and the name are the row - so the arrow arrives with the hover tint
    and says it is clickable. Hidden at rest rather than dimmed, because 32
    permanent arrows are 32 marks competing with the crests; on a touch screen,
@@ -1141,13 +1258,14 @@ body.sct-page.is-embed {
     transform 160ms ease;
 }
 
-/* White against the card's soft ground, so the row a cursor is on lifts out of
-   the list. The shared hover tint cannot do it here: --sc-surface-sink on
-   --sc-surface-soft is two grays apart, which is a difference you have to look
-   for. */
+/* The soft ground under the cursor's row, so it lifts out of the card. */
 .sct-index-div .sct-switch-team:hover {
-  background: var(--sc-surface);
+  background: var(--sc-surface-soft);
   box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+.sct-index-div li.is-leader .sct-switch-team:hover {
+  background: rgba(212, 175, 55, 0.2);
 }
 
 .sct-index-div .sct-switch-team:hover .sct-arrow,
@@ -5483,13 +5601,6 @@ body.sct-page.is-embed {
 }
 
 @media (max-width: 1080px) {
-  /* Four division cards stop fitting here rather than at 900: a column is
-     about 230px by this point, and "New England Patriots" beside a 24px crest
-     wants most of that before the card's own padding. */
-  .sct-index-divs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   /* The rail stops paying for itself here. 300px out of a panel this narrow
      leaves the fixture table about 560px for six columns, and the opponent name
      is what would pay - so the four cards come out from beside the table and go
@@ -6156,16 +6267,59 @@ body.sct-page.is-embed {
   }
 }
 
-@media (max-width: 420px) {
-  /* The index prints full names rather than the sheet's nicknames, and
-     "New England Patriots" in half of a 420px screen is two lines with a crest
-     stranded beside them. One card per row, and the page is a list a thumb
-     runs down - which is what an index is for, where the sheet is something to
-     get out of quickly. */
+/* Two standings cards stop fitting here: a card is about 330px by this point,
+   and a nickname beside a crest, a place and five record tracks wants more
+   than half of that. One card per row, and the page is a list a thumb runs
+   down - which is what an index is for. */
+@media (max-width: 720px) {
   .sct-index-divs {
     grid-template-columns: minmax(0, 1fr);
   }
+}
 
+/* The record tracks come in a step so "Buccaneers" keeps its line on a phone:
+   both the labels and the cells read the one variable, so they move together. */
+@media (max-width: 480px) {
+  .sct-index-div {
+    --idx-cols: 22px 22px 22px 40px 40px;
+    --idx-gap: 4px;
+    padding: 12px 10px 8px;
+  }
+
+  .sct-index-div .sct-switch-team {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 0.86rem;
+  }
+
+  .sct-index-place {
+    width: 14px;
+  }
+
+  .sct-index-num {
+    font-size: 0.98rem;
+  }
+
+  .sct-index-head {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+
+/* Below 400px the bar goes: "Commanders" and "Buccaneers" need its 40px more
+   than the row needs a second reading of the PCT beside it. Four tracks, and
+   the labels follow the cells through the one variable. */
+@media (max-width: 400px) {
+  .sct-index-div {
+    --idx-cols: 22px 22px 22px 40px;
+  }
+
+  .sct-index-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
   .sct-fact {
     padding: 6px 11px;
   }

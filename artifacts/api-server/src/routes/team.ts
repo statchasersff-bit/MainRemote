@@ -36,6 +36,24 @@ import {
   TEAMS,
   type NflTeam,
 } from "../lib/team/teams";
+import { nflState } from "../lib/team/nfl-state";
+import { getLeagueStandings, type LeagueStandings } from "../lib/team/profile";
+
+/**
+ * The league table for the index of 32, or null.
+ *
+ * The same ESPN table the hubs place themselves from, under the same cache
+ * key, so the index and the hero agree on who leads the AFC East. Null on any
+ * failure: the index is 32 links first and a standings table second.
+ */
+async function indexStandings(): Promise<LeagueStandings | null> {
+  try {
+    const state = await nflState();
+    return await getLeagueStandings(state.season);
+  } catch {
+    return null;
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -238,8 +256,11 @@ async function sendTeamPage(
   }
 }
 
-router.get("/team", (req, res) => {
-  const index = renderTeamIndex(TEAMS, { linkQuery: switcherQuery(req) });
+router.get("/team", async (req, res) => {
+  const index = renderTeamIndex(TEAMS, {
+    linkQuery: switcherQuery(req),
+    standings: await indexStandings(),
+  });
   let html = liveReload().enabled
     ? liveReload().injectIntoHtml(index)
     : index;
@@ -381,15 +402,17 @@ function indexHash(value: string): string {
  * fragment's switcher does: a reader clicking a team inside a WordPress page
  * belongs on statchasers.com, not on the bare tool.
  */
-router.get("/embed/teams", (req, res) => {
+router.get("/embed/teams", async (req, res) => {
   const prefix = (process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX).trim();
   const html = renderTeamIndexFragment(TEAMS, {
     teamPathPrefix: prefix,
     linkQuery: fragmentLinkQuery(prefix),
+    standings: await indexStandings(),
   });
 
-  // The list is the 32 teams and their crests - it changes when a team moves,
-  // which is to say never in a season. Fingerprinted over the markup itself, so
+  // The list is the 32 teams, their crests and their records - the records
+  // move once a week, on the standings cache's own clock. Fingerprinted over
+  // the markup itself, so a new result is a new fragment, and so
   // a path-prefix change is a different fragment rather than the old one served
   // for the rest of the TTL. Same djb2 the SSR caches key on.
   res.set("ETag", `W/"${indexHash(html)}"`);
