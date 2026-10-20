@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T18:28:33.405Z",
+  "generated_at": "2026-10-20T15:22:09.428Z",
   "source": "ourlads.com",
   "teams": {
     "BUF": [
@@ -374,11 +374,11 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Romeo Doubs",
+            "name": "Efton Chism III",
             "depth_order": 1,
-            "sleeper_id": "8121",
-            "sleeper_name": "Romeo Doubs",
-            "sleeper_slug": "romeo-doubs"
+            "sleeper_id": "12542",
+            "sleeper_name": "Efton Chism",
+            "sleeper_slug": "efton-chism"
           },
           {
             "name": "Kyle Williams",
@@ -399,13 +399,6 @@
             "sleeper_id": "5859",
             "sleeper_name": "A.J. Brown",
             "sleeper_slug": "aj-brown"
-          },
-          {
-            "name": "Efton Chism III",
-            "depth_order": 2,
-            "sleeper_id": "12542",
-            "sleeper_name": "Efton Chism",
-            "sleeper_slug": "efton-chism"
           }
         ]
       },
@@ -923,15 +916,8 @@
             "sleeper_slug": "erick-all"
           },
           {
-            "name": "Tanner Hudson",
-            "depth_order": 4,
-            "sleeper_id": "5409",
-            "sleeper_name": "Tanner Hudson",
-            "sleeper_slug": "tanner-hudson"
-          },
-          {
             "name": "Jack Endries",
-            "depth_order": 5,
+            "depth_order": 4,
             "sleeper_id": "13282",
             "sleeper_name": "Jack Endries",
             "sleeper_slug": "jack-endries"
@@ -1329,6 +1315,13 @@
             "sleeper_id": "7569",
             "sleeper_name": "Nico Collins",
             "sleeper_slug": "nico-collins"
+          },
+          {
+            "name": "Kayshon Boutte",
+            "depth_order": 2,
+            "sleeper_id": "9504",
+            "sleeper_name": "Kayshon Boutte",
+            "sleeper_slug": "kayshon-boutte"
           }
         ]
       },
@@ -1344,11 +1337,11 @@
             "sleeper_slug": "marvin-harrison"
           },
           {
-            "name": "Kayshon Boutte",
+            "name": "Tank Dell",
             "depth_order": 2,
-            "sleeper_id": "9504",
-            "sleeper_name": "Kayshon Boutte",
-            "sleeper_slug": "kayshon-boutte"
+            "sleeper_id": "9502",
+            "sleeper_name": "Tank Dell",
+            "sleeper_slug": "tank-dell"
           }
         ]
       },
@@ -1357,18 +1350,18 @@
         "fantasy_position": "WR",
         "players": [
           {
-            "name": "Xavier Hutchinson",
-            "depth_order": 1,
-            "sleeper_id": "10218",
-            "sleeper_name": "Xavier Hutchinson",
-            "sleeper_slug": "xavier-hutchinson"
-          },
-          {
             "name": "Jaylin Noel",
-            "depth_order": 2,
+            "depth_order": 1,
             "sleeper_id": "12536",
             "sleeper_name": "Jaylin Noel",
             "sleeper_slug": "jaylin-noel"
+          },
+          {
+            "name": "Xavier Hutchinson",
+            "depth_order": 2,
+            "sleeper_id": "10218",
+            "sleeper_name": "Xavier Hutchinson",
+            "sleeper_slug": "xavier-hutchinson"
           }
         ]
       },
@@ -3048,25 +3041,25 @@
         "fantasy_position": "RB",
         "players": [
           {
-            "name": "Jacory Croskey-Merritt",
-            "depth_order": 1,
-            "sleeper_id": "12533",
-            "sleeper_name": "Jacory Croskey-Merritt",
-            "sleeper_slug": "jacory-croskey-merritt"
-          },
-          {
             "name": "Rachaad White",
-            "depth_order": 2,
+            "depth_order": 1,
             "sleeper_id": "8136",
             "sleeper_name": "Rachaad White",
             "sleeper_slug": "rachaad-white"
           },
           {
             "name": "Austin Ekeler",
-            "depth_order": 3,
+            "depth_order": 2,
             "sleeper_id": "4663",
             "sleeper_name": "Austin Ekeler",
             "sleeper_slug": "austin-ekeler"
+          },
+          {
+            "name": "Jeremy McNichols",
+            "depth_order": 3,
+            "sleeper_id": "4219",
+            "sleeper_name": "Jeremy McNichols",
+            "sleeper_slug": "jeremy-mcnichols"
           }
         ]
       },
@@ -3495,11 +3488,11 @@
         "fantasy_position": "RB",
         "players": [
           {
-            "name": "Marshawn Lloyd",
+            "name": "Josh Jacobs",
             "depth_order": 1,
-            "sleeper_id": "11581",
-            "sleeper_name": "MarShawn Lloyd",
-            "sleeper_slug": "marshawn-lloyd"
+            "sleeper_id": "5850",
+            "sleeper_name": "Josh Jacobs",
+            "sleeper_slug": "josh-jacobs"
           },
           {
             "name": "Pierre Strong JR.",
@@ -3509,8 +3502,15 @@
             "sleeper_slug": "pierre-strong"
           },
           {
-            "name": "Kaleb Johnson",
+            "name": "Marshawn Lloyd",
             "depth_order": 3,
+            "sleeper_id": "11581",
+            "sleeper_name": "MarShawn Lloyd",
+            "sleeper_slug": "marshawn-lloyd"
+          },
+          {
+            "name": "Kaleb Johnson",
+            "depth_order": 4,
             "sleeper_id": "12504",
             "sleeper_name": "Kaleb Johnson",
             "sleeper_slug": "kaleb-johnson"
@@ -4702,19 +4702,6 @@
             "sleeper_slug": "max-klare"
           }
         ]
-      },
-      {
-        "role": "K",
-        "fantasy_position": "K",
-        "players": [
-          {
-            "name": "Blake Grupe",
-            "depth_order": 1,
-            "sleeper_id": "11058",
-            "sleeper_name": "Blake Grupe",
-            "sleeper_slug": "blake-grupe"
-          }
-        ]
       }
     ],
     "SF": [
@@ -4802,6 +4789,13 @@
             "sleeper_id": "11616",
             "sleeper_name": "Jacob Cowing",
             "sleeper_slug": "jacob-cowing"
+          },
+          {
+            "name": "Malik Turner",
+            "depth_order": 2,
+            "sleeper_id": "5781",
+            "sleeper_name": "Malik Turner",
+            "sleeper_slug": "malik-turner"
           }
         ]
       },

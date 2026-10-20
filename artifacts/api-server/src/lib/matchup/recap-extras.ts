@@ -39,7 +39,6 @@ const JUMPS: Array<[string, string]> = [
   ["betting", "Betting"],
   ["sct-rb-outlook", "Fantasy outlook"],
   ["sct-rb-faq", "FAQ"],
-  ["explore", "Keep exploring"],
 ];
 
 /** Links to every section that rendered, found in the page's own markup. */
@@ -590,8 +589,8 @@ export function renderExplore(
     : "";
   if (!cols && !logGrid && !related) return "";
   return (
-    `<section class="sct-rb-section sct-ex" aria-labelledby="explore">` +
-    `<h2 class="sct-rb-h2" id="explore">Keep exploring</h2>` +
+    // No visible heading (mak, 2026-10-20): the columns name themselves.
+    `<section class="sct-rb-section sct-ex" id="explore" aria-label="Keep exploring">` +
     (cols ? `<div class="sct-ex-cols">${cols}</div>` : "") +
     logGrid +
     related +

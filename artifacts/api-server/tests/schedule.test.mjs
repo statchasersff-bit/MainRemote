@@ -246,13 +246,45 @@ describe("the slate", () => {
    * ESPN switched on against a stub, counting scoreboard calls. The slate
    * still comes from the fixture feed; only ESPN's URL is intercepted.
    */
-  async function withEspn(respond, run) {
+  /**
+   * The fixture with its last two weeks unplayed: scores blanked for weeks 17
+   * and 18, which is what the live layer sweeps. The layer never asks about a
+   * week nflverse has closed with finals (mak, 2026-10-20), and the fixture
+   * season is entirely closed, so the sweep tests need a season with
+   * something left to learn.
+   */
+  const OPEN_WEEKS = 2;
+  function openedCsv() {
+    const lines = fs.readFileSync(FIXTURE, "utf8").split("\n");
+    const header = lines[0].split(",");
+    const at = (name) => header.indexOf(name);
+    const [week, away, home] = [at("week"), at("away_score"), at("home_score")];
+    return lines
+      .map((line, i) => {
+        if (i === 0 || !line) return line;
+        const cells = line.split(",");
+        if (Number(cells[week]) >= 17) {
+          cells[away] = "";
+          cells[home] = "";
+        }
+        return cells.join(",");
+      })
+      .join("\n");
+  }
+
+  async function withEspn(respond, run, { open = true } = {}) {
     const realFetch = globalThis.fetch;
     let calls = 0;
     globalThis.fetch = async (url, init) => {
       if (String(url).includes("site.api.espn.com")) {
         calls += 1;
         return respond();
+      }
+      if (open && String(url).includes("games.csv")) {
+        return new Response(openedCsv(), {
+          status: 200,
+          headers: { "Content-Type": "text/csv; charset=utf-8" },
+        });
       }
       return realFetch(url, init);
     };
@@ -296,8 +328,24 @@ describe("the slate", () => {
         await Promise.all(
           Array.from({ length: 5 }, () => mod.getSchedule(SEASON, now)),
         );
-        assert.equal(calls(), mod.TOTAL_WEEKS, "one 18-week sweep, not five");
+        assert.equal(calls(), OPEN_WEEKS, "one sweep of the open weeks, not five");
       },
+    );
+  });
+
+  test("a closed season is never swept", async () => {
+    // Every game in the fixture has its final from nflverse. There is nothing
+    // ESPN could add, so the layer does not ask - not on the first load and
+    // not six hours later.
+    await withEspn(
+      async () => new Response(JSON.stringify({ events: [] }), { status: 200 }),
+      async (calls) => {
+        const now = Date.now();
+        await mod.getSchedule(SEASON, now);
+        await mod.getSchedule(SEASON, now + 7 * 60 * 60 * 1000);
+        assert.equal(calls(), 0, "no request for a week that is already final");
+      },
+      { open: false },
     );
   });
 
@@ -309,11 +357,11 @@ describe("the slate", () => {
       async (calls) => {
         const now = Date.now();
         await mod.getSchedule(SEASON, now);
-        assert.equal(calls(), mod.TOTAL_WEEKS);
+        assert.equal(calls(), OPEN_WEEKS);
         await mod.getSchedule(SEASON, now + 16 * 60 * 1000);
-        assert.equal(calls(), mod.TOTAL_WEEKS, "backed off, not retried");
+        assert.equal(calls(), OPEN_WEEKS, "backed off, not retried");
         await mod.getSchedule(SEASON, now + 61 * 60 * 1000);
-        assert.equal(calls(), 2 * mod.TOTAL_WEEKS, "and tried again after the hour");
+        assert.equal(calls(), 2 * OPEN_WEEKS, "and tried again after the hour");
       },
     );
   });

@@ -1747,7 +1747,6 @@ describe("the Cardinals–Rams games", () => {
       headings(".sct-mu-foot > .sct-rb-section > h2, .sct-mu-foot > nav > h2"),
       [
         "Cardinals vs Rams Fantasy Outlook for 2026",
-        "Keep Exploring",
         "Cardinals vs Rams Game FAQ",
       ].filter((h) => !/Fantasy Outlook/.test(h) || doc.querySelector("#fantasy-outlook")),
     );

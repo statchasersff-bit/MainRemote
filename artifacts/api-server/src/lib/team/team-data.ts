@@ -39,6 +39,7 @@ import {
 import type { NflTeam } from "./teams";
 import { coachingVersion } from "./coaching";
 import { usageVersion } from "./usage";
+import { efficiencyVersion } from "./efficiency";
 import {
   depthChartsVersion,
   getTeamDepthCharts,
@@ -266,6 +267,9 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     // Coaching tab reads one that hand edits and new club entries change.
     usageVersion(data.state.season),
     coachingVersion(data.state.season),
+    // The Stats tab's Efficiency ladders read a file the builder rewrites in
+    // place, keyed on the season the ladders describe.
+    efficiencyVersion(data.state.statsSeason),
     // The depth-charts plugin's push rewrites its file in place.
     depthChartsVersion(),
   ].join("-");

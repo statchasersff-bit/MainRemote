@@ -4695,6 +4695,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2024-09-08",
     "publisher": "NFL"
   },
+  "denver-broncos-vs-seattle-seahawks/2026-week-6": {
+    "youtubeId": "6uFD3NGt0GE",
+    "title": "Seattle Seahawks vs Denver Broncos Game Highlights | 2026 NFL Season Week 6",
+    "uploadDate": "2026-10-15",
+    "publisher": "NFL"
+  },
   "denver-broncos-vs-tampa-bay-buccaneers/2024-week-3": {
     "youtubeId": "OSGg7b3ES14",
     "title": "Denver Broncos vs. Tampa Bay Buccaneers | 2024 Week 3 Game Highlights",

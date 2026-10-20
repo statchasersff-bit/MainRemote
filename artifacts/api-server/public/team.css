@@ -1775,20 +1775,6 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
-/* Deliberately quieter than the ordinal it captions: this is the axis label,
-   not the reading. It is also the whole of what "in NFL" used to cost four
-   cards a line apiece to say. */
-.sct-metric-rank-label {
-  overflow: hidden;
-  color: var(--sc-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Top five. Gold, and one of only two places on the page it is spent on a
    result. Darker than the brand gold because 13px bold on white has to clear
    4.5:1 and --sc-gold-deep only reaches 3.9 - so the text is the deeper bronze
@@ -2434,8 +2420,11 @@ body.sct-page.is-embed {
   margin: 18px 0 0;
 }
 
+/* Compact since 2026-10-20 (mak): about 40% shorter than the first cut.
+   Tighter card padding, rows with 3px of padding instead of 8, a smaller value
+   figure, and the rank as bare tinted text instead of a pill. */
 .sct-ladder {
-  padding: 20px 22px 16px;
+  padding: 12px 18px 10px;
   border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
@@ -2471,8 +2460,37 @@ body.sct-page.is-embed {
   background: var(--sc-navy);
 }
 
+/* The team-level buckets (Possession & Discipline, Pace & Play Style) are
+   neither side, so their mark is neither color: a slate between the two. And
+   they run the width of the grid - one ladder, not a pair. */
+.sct-ladder[data-unit="team"] .sct-ladder-title::before {
+  background: color-mix(in srgb, var(--sc-navy) 45%, #fff);
+}
+
+.sct-ladder.is-wide {
+  grid-column: 1 / -1;
+}
+
+/* The bucket's summary row - turnover margin, over the takeaways and
+   giveaways it is the difference of. A tinted band with the figure a step
+   larger, so the three do not read as three equal cards (mak, 2026-10-20). */
+.sct-stat.is-summary {
+  margin: 0 -18px 4px;
+  padding: 6px 18px;
+  border-bottom: 1px solid var(--sc-hairline);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.sct-stat.is-summary .sct-stat-label {
+  color: var(--sc-navy);
+}
+
+.sct-stat.is-summary .sct-stat-value {
+  font-size: 1rem;
+}
+
 .sct-ladder-caption {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   padding-left: 12px;
   color: var(--sc-muted);
   font-size: 0.78rem;
@@ -2480,23 +2498,26 @@ body.sct-page.is-embed {
 }
 
 .sct-ladder-list {
-  margin: 14px 0 0;
+  margin: 6px 0 0;
   padding: 0;
   list-style: none;
 }
 
-/* label | track | value | rank | movement.
+/* label | track | value | rank.
    The track is given the most room after the label because it is the thing
-   being compared; the other three are short and fixed by their own content.
-   The movement chip is last and optional - a row whose rank did not move simply
-   leaves that column empty, which is why it is last and not in the middle. */
+   being compared. The value and rank columns are fixed widths, not auto: every
+   row is its own grid, so an auto column sized by "4.20" in one row and
+   "102.1" in the next put the numbers on different left edges down the ladder
+   (mak, 2026-10-20). 52px holds the widest value the ladder prints ("102.1",
+   "47.6%") and 64px the widest pill ("T-22nd"). */
 .sct-stat {
   display: grid;
   grid-template-columns:
-    minmax(84px, 0.95fr) minmax(44px, 1.2fr) auto minmax(44px, auto) auto;
+    minmax(84px, 0.95fr) minmax(44px, 1.2fr) 52px 64px;
   align-items: center;
   gap: 10px;
-  padding: 8px 0;
+  padding: 3px 0;
+  line-height: 1.2;
   border-bottom: 1px solid var(--sc-hairline);
 }
 
@@ -2551,21 +2572,19 @@ body.sct-page.is-embed {
 }
 
 .sct-stat-value {
-  justify-self: end;
+  justify-self: stretch;
+  text-align: right;
   color: var(--sc-navy);
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-/* A pill, unlike the flat rank on a snapshot card or a tile: a ladder row has
-   no footer rule to sit on, so the ordinal needs an edge of its own to keep it
-   from reading as a fifth column of numbers. */
+/* Bare tinted text, no pill (mak, 2026-10-20): the tier color and the fixed
+   right-aligned column are what keep the ordinal from reading as a fifth
+   column of numbers. */
 .sct-stat-rank {
   justify-self: end;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--sc-surface-sink);
   color: var(--sc-muted-strong);
   font-size: 0.7rem;
   font-weight: 800;
@@ -2574,12 +2593,10 @@ body.sct-page.is-embed {
 }
 
 .sct-stat-rank[data-tier="good"] {
-  background: rgba(16, 122, 87, 0.1);
   color: #0f6b4f;
 }
 
 .sct-stat-rank[data-tier="poor"] {
-  background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
 
@@ -2687,19 +2704,6 @@ body.sct-page.is-embed {
 }
 
 .sct-tile-rank-value {
-  white-space: nowrap;
-}
-
-/* Deliberately quieter than the ordinal it captions: this is the axis label,
-   not the reading. */
-.sct-tile-rank-label {
-  overflow: hidden;
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -2847,38 +2851,6 @@ body.sct-page.is-embed {
   font-weight: 500;
 }
 
-/* ------------------------------------------------------- rank movement */
-
-/* Deliberately quiet. The rank chip beside it is already carrying a tier
-   color, and two tinted things in one row would compete for the same glance -
-   so movement is a muted arrow and a number, and only the arrow is colored. */
-.sct-stat-move {
-  justify-self: end;
-  min-width: 26px;
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* "spots" is what makes the number unambiguous - four places, not four sacks -
-   so it is the last thing to go, and it only goes where the card is too narrow
-   to hold it beside the rank. */
-.sct-move-unit {
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.sct-stat-move[data-dir="up"] {
-  color: #0f6b4f;
-}
-
-.sct-stat-move[data-dir="down"] {
-  color: #94363a;
-}
-
 /* ------------------------------------------------------- season history */
 
 /* The one block on this tab that scrolls sideways.
@@ -2965,7 +2937,9 @@ body.sct-page.is-embed {
 
 :is(.sct, #sct-table-armour) .sct-hist th,
 :is(.sct, #sct-table-armour) .sct-hist td {
-  padding: 10px 12px;
+  /* 9px, down from 10, with the rank pill gone: a fifth shorter than the
+     table was (mak, 2026-10-20) - 406px to about 320 for five seasons. */
+  padding: 9px 12px;
   /* Centered under the head it belongs to. The tabular figures above keep every
      digit the same width, so a centered column of 379.4 and 91.2 still stacks
      evenly, and centering puts the value and the rank pill under it on one axis
@@ -2979,8 +2953,8 @@ body.sct-page.is-embed {
    crisp where the fade is too faint to read as one. */
 :is(.sct, #sct-table-armour) .sct-hist thead th {
   position: relative;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding-top: 9px;
+  padding-bottom: 9px;
   color: var(--sc-muted);
   font-size: 0.6rem;
   font-weight: 800;
@@ -3041,6 +3015,7 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
   font-size: 0.95rem;
   font-weight: 800;
+  line-height: 1.25;
   letter-spacing: -0.01em;
 }
 
@@ -3119,43 +3094,36 @@ body.sct-page.is-embed {
   text-underline-offset: 3px;
 }
 
-/* Tucked under the number it belongs to - 4px, close enough that the pair reads
-   as one thing. Medium weight rather than heavy: the figure above is the fact
-   and the rank is its footnote, and at 800 the pill was winning that argument. */
+/* Tucked under the number it belongs to, as bare tinted text - the pill went
+   at mak's request (2026-10-20), the same call as the ladders' ranks: the
+   tier color on the ordinal is the whole signal, and a band around every
+   cell of a 30-cell table was thirty bands. */
 :is(.sct, #sct-table-armour) .sct-hist-rank {
-  display: inline-flex;
-  align-items: center;
-  min-height: 21px;
-  margin-top: 4px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(11, 22, 52, 0.05);
+  display: block;
+  margin-top: 1px;
+  padding: 0;
   color: var(--sc-muted-strong);
   font-size: 0.69rem;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 
-/* Four bands, so five seasons sort themselves by eye. Every tint is carried by
-   ink that clears 4.5:1 on both the white and the striped row underneath -
-   the band is the background, never the legibility. */
+/* Four tints, so five seasons sort themselves by eye; every one clears 4.5:1
+   on the white and the striped row. */
 :is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="elite"] {
-  background: rgba(15, 107, 79, 0.17);
   color: #0a5540;
 }
 
 :is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="good"] {
-  background: rgba(15, 107, 79, 0.07);
   color: #146b52;
 }
 
 :is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="mid"] {
-  background: rgba(11, 22, 52, 0.05);
   color: #4a5568;
 }
 
 :is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="poor"] {
-  background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
 
@@ -4445,11 +4413,15 @@ body.sct-page.is-embed {
    is what gives it an edge to sit on.
 
    The rest of this section is about removing air. The card ran to ~265px for
-   six short lines, most of it gaps between groups that were never grouped. */
+   six short lines, most of it gaps between groups that were never grouped;
+   then ~180 for seven. Mak's spec (2026-10-20) is a compact schedule module
+   at 110-130px, not a feature card: four text lines - week, opponent, full
+   name · date · time, venue · network - and the link, with the leading and
+   the gaps between them cut to what the eye needs to tell them apart. */
 .sct-game {
   position: relative;
   overflow: hidden;
-  padding: 12px 16px 13px;
+  padding: 9px 14px 10px;
   border-radius: 14px;
   border: 1px solid rgba(11, 22, 52, 0.09);
   background: var(--sc-surface);
@@ -4475,17 +4447,31 @@ body.sct-page.is-embed {
    The top padding gives back the pixel the thicker border takes, so all three
    cards still start their content on the same line. */
 .sct-game[data-next] {
-  padding-top: 11px;
+  padding-top: 8px;
   border-top: 2px solid var(--sc-gold);
 }
 
+/* "NEXT GAME · WEEK 7": the label is a gold prefix on the week line rather
+   than a line of its own above it. Two spans in one wrapper, so the week
+   span's text stays "Week 7" for anything reading it. */
+.sct-game-label {
+  display: inline-flex;
+  align-items: baseline;
+}
+
 .sct-game-next {
-  margin: 0 0 4px;
   color: var(--sc-gold-deep);
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
   text-transform: uppercase;
+}
+
+.sct-game-next::after {
+  content: "\00b7";
+  margin: 0 0.45em;
+  color: var(--sc-muted);
 }
 
 /* The opponent's mark, bled off the bottom-right corner behind the content.
@@ -4517,30 +4503,34 @@ body.sct-page.is-embed {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-height: 18px;
+  line-height: 1.2;
 }
 
 .sct-game-week {
   color: var(--sc-muted);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.12em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
 .sct-game-pills {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .sct-game-pill,
 .sct-game-tag {
-  padding: 3px 9px;
+  padding: 2px 7px;
   border-radius: 999px;
   border: 1px solid var(--sc-border);
   background: var(--sc-surface-soft);
   color: var(--sc-muted-strong);
-  font-size: 0.6rem;
+  font-size: 0.56rem;
+  line-height: 1.3;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4570,15 +4560,17 @@ body.sct-page.is-embed {
 .sct-game-matchup {
   display: flex;
   align-items: center;
-  gap: 11px;
-  margin: 9px 0 0;
+  gap: 9px;
+  /* 6px more under the head line than the other gaps (mak, 2026-10-20), so
+     the week and pills read as the card's label and the matchup as its body. */
+  margin: 11px 0 0;
 }
 
 .sct-game-logo {
   flex: 0 0 auto;
   display: block;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
 
@@ -4589,38 +4581,35 @@ body.sct-page.is-embed {
   gap: 1px;
 }
 
+/* "Chicago Bears · Thu, Oct 22 · 8:15 PM ET" - one muted line under the
+   nickname, wrapping only when the card is too narrow for it. */
+.sct-game-line {
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
 /* The opponent is what the card is about, and at 1.32rem it was losing to the
    46px crest beside it. Bigger type against a slightly smaller mark puts the
    name back in front - and costs no height, because the two text lines together
    still measure less than the logo. */
 .sct-game-opp {
   color: var(--sc-navy);
-  font-size: 1.46rem;
-  line-height: 1.12;
+  font-size: 1.22rem;
+  line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
 .sct-game-full {
-  color: var(--sc-muted);
-  font-size: 0.76rem;
   font-weight: 600;
 }
 
-/* The hairline is the point of this block: it splits "who" from "when and
-   where" without spending a heading or a gap on saying so. Date and time lead
-   in the darker ink; venue and network follow, smaller and muted, because they
-   are what you check second. */
-.sct-game-meta {
-  margin: 10px 0 0;
-  padding: 9px 0 0;
-  border-top: 1px solid rgba(15, 23, 42, 0.07);
-}
-
+/* Date and time in the darker ink; the venue below them smaller and muted,
+   because it is what you check second. */
 .sct-game-when {
-  margin: 0;
   color: var(--sc-muted-strong);
-  font-size: 0.86rem;
   font-weight: 700;
 }
 
@@ -4629,10 +4618,11 @@ body.sct-page.is-embed {
 }
 
 .sct-game-where {
-  margin: 2px 0 0;
+  margin: 3px 0 0;
   color: var(--sc-muted);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 500;
+  line-height: 1.3;
 }
 
 .sct-badge {
@@ -4781,6 +4771,10 @@ body.sct-page.is-embed {
    one that reveals the nickname - the long name was hidden and the short one
    never replaced it, which took the team name off the row entirely. */
 .sct-srow-name-brief {
+  display: none;
+}
+
+.sct-srow-name-code {
   display: none;
 }
 
@@ -5600,6 +5594,45 @@ body.sct-page.is-embed {
   }
 }
 
+/* The third tier: the code. Below 560px of board the nickname column is
+   under 100px and "Buccaneers" beside a crest and "vs" does not fit, but the
+   row still has room to stay a row if every column gives a little: the name
+   goes to its code (SEA), the link to its arrow, the fixed columns to the
+   width of their widest real value. That holds one line down to 370px of
+   board; stacking (the container query after the 900px block) is only for
+   the band under that. Mak, 2026-10-20: the rows were stacking "when there
+   is still plenty of space to keep them on the same row". */
+@container (max-width: 560px) {
+  .sct-slist-head,
+  .sct-srow {
+    grid-template-columns:
+      30px minmax(0, 1fr) 54px 68px 46px 24px;
+    gap: 8px;
+    padding: 7px 12px;
+  }
+
+  .sct-srow-name-brief {
+    display: none;
+  }
+
+  .sct-srow-name-code {
+    display: inline;
+    letter-spacing: 0.04em;
+  }
+
+  .sct-srow-opp {
+    gap: 6px;
+  }
+
+  .sct-srow-view-label {
+    display: none;
+  }
+
+  .sct-srow-view {
+    justify-content: flex-end;
+  }
+}
+
 @media (max-width: 1080px) {
   /* The rail stops paying for itself here. 300px out of a panel this narrow
      leaves the fixture table about 560px for six columns, and the opponent name
@@ -5695,6 +5728,30 @@ body.sct-page.is-embed {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* Stacked, each unit's extra ladders follow their own unit: Offense,
+     Offense Efficiency, Pass Protection, then Defense, Defense Efficiency,
+     Pass Rush. Two across, the source order already puts each one under its
+     unit. */
+  .sct-ladder[data-unit="offense"][data-kind="efficiency"] {
+    order: 1;
+  }
+
+  .sct-ladder[data-unit="offense"][data-kind="passrush"] {
+    order: 2;
+  }
+
+  .sct-ladder[data-unit="defense"] {
+    order: 3;
+  }
+
+  .sct-ladder[data-unit="defense"][data-kind="efficiency"] {
+    order: 4;
+  }
+
+  .sct-ladder[data-unit="defense"][data-kind="passrush"] {
+    order: 5;
+  }
+
   .sct-tiles,
   .sct-tiles[data-cols="3"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5715,7 +5772,13 @@ body.sct-page.is-embed {
   .sct-switch-grid {
     grid-template-columns: 1fr;
   }
+}
 
+/* Under 370px of board even the code tier runs out, and the row becomes
+   three lines of one card. On the board, not the window: this used to sit in
+   the 900px media query above, which stacked a 700px board on a tablet.
+   The container is the table's shell - see .sct-srow-name-brief. */
+@container (max-width: 370px) {
   /* Six columns cannot survive a narrow screen, and scrolling a schedule
      sideways is worse than stacking it - so the row becomes three lines of one
      card. The first keeps what the row is identified by and how it went; the
@@ -5774,6 +5837,19 @@ body.sct-page.is-embed {
 
   .sct-srow-bye {
     grid-area: 1 / 2 / 2 / -1;
+  }
+
+  /* The stacked row has a whole line for the link and the nickname again. */
+  .sct-srow-view-label {
+    display: inline;
+  }
+
+  .sct-srow-name-code {
+    display: none;
+  }
+
+  .sct-srow-name-brief {
+    display: inline;
   }
 }
 
@@ -6103,27 +6179,28 @@ body.sct-page.is-embed {
     font-size: 1.95rem;
   }
 
-  /* Two cards across a phone leaves the footer about 130px. The ordinal and the
-     arrow are the facts; the caption and the noun are the glosses, and they are
-     what the width takes - the same trade the tiles make below. */
-  .sct-metric-rank-label {
-    display: none;
-  }
-
   /* A ladder row loses its middle column. Four cells across 343px leaves the
      track about 40px wide, which is not a bar, it is a dot - and a label that
      wraps to two lines under a value that does not. Label and numbers on one
      line, the track its own full-width line beneath: the comparison survives
      and it is the only one of the four that needs the room. */
   .sct-ladder {
-    padding: 16px 16px 12px;
+    padding: 12px 14px 10px;
+  }
+
+  /* The summary band bleeds to the card edge, so it follows the padding. */
+  .sct-stat.is-summary {
+    margin-left: -14px;
+    margin-right: -14px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .sct-stat {
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    grid-template-columns: minmax(0, 1fr) 52px 64px;
     column-gap: 8px;
-    row-gap: 7px;
-    padding: 9px 0;
+    row-gap: 4px;
+    padding: 4px 0;
   }
 
   /* Same fade the section nav uses at this width, for the same reason: a row
@@ -6143,7 +6220,7 @@ body.sct-page.is-embed {
 
   :is(.sct, #sct-table-armour) .sct-hist th,
   :is(.sct, #sct-table-armour) .sct-hist td {
-    padding: 10px 9px;
+    padding: 9px 9px;
   }
 
   /* Restated because the rule above resets padding wholesale at this width and
@@ -6180,14 +6257,6 @@ body.sct-page.is-embed {
 
   .sct-tile-value {
     font-size: 1.3rem;
-  }
-
-  /* Two tiles across a phone leaves the footer about 130px. The ordinal and the
-     arrow are the facts; the caption and the noun are the glosses, and they are
-     what the width takes. */
-  .sct-tile-rank-label,
-  .sct-move-unit {
-    display: none;
   }
 
   .sct-players {
@@ -6239,7 +6308,7 @@ body.sct-page.is-embed {
   }
 
   .sct-game {
-    padding: 16px 16px 18px;
+    padding: 10px 14px 11px;
   }
 
   .sct-resource-link {
@@ -7196,9 +7265,37 @@ body.sct-page.is-embed {
   flex: none;
 }
 
+/* Bottom right (mak, 2026-10-20): the link sits where a "go on" control
+   belongs, on the venue's line rather than under it, which also takes a line
+   off the card. The card is a two-column grid for exactly this: the head and
+   the matchup span both columns, the venue takes the first, the link the
+   second, bottom-aligned. A card with no venue still puts the link at the
+   right edge, in a row of its own. */
+.sct-game {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-content: start;
+}
+
+.sct-game-head,
+.sct-game-matchup {
+  grid-column: 1 / -1;
+}
+
+.sct-game-where {
+  grid-column: 1;
+  align-self: end;
+}
+
 .sct-game-cta {
-  margin: 10px 0 0;
-  font-size: 13px;
+  grid-column: 2;
+  align-self: end;
+  justify-self: end;
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 /* ------------------------------------------------ the scoreboard hero */
@@ -9388,6 +9485,21 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 700;
   white-space: nowrap;
   color: var(--rb-ink);
+}
+
+/* Shorter rows (mak, 2026-10-20): the cell padding is 35% of what the other
+   recap tables use, and the two-line player cell sits tight. */
+:is(.sct, #sct-table-armour) .sct-fp-table.is-usage :is(th, td) {
+  padding: 5px 8px;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table.is-usage thead th {
+  padding: 4px 8px 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table.is-usage .sct-fp-sub {
+  line-height: 1.15;
 }
 
 /* The detail columns wait behind "Show detailed usage", once wired. */
@@ -17280,8 +17392,8 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 :is(.sct, #sct-table-armour) .sct-metric-value { font-size: 2.1rem; }
 :is(.sct, #sct-table-armour) .sct-tile-value { font-size: 1.45rem; }
-:is(.sct, #sct-table-armour) .sct-stat-value { font-size: 1.05rem; }
-:is(.sct, #sct-table-armour) .sct-hist-value { font-size: 1.1rem; }
+:is(.sct, #sct-table-armour) .sct-stat-value { font-size: 0.95rem; }
+:is(.sct, #sct-table-armour) .sct-hist-value { font-size: 1.1rem; line-height: 1.2; }
 :is(.sct, #sct-table-armour) .sct-snap-value { font-size: 1.45rem; }
 
 @media (max-width: 720px) {
@@ -17296,8 +17408,11 @@ a.sct-ex-game:hover .sct-ex-line {
  * green for the good end, red for the poor end, slate otherwise, and slate
  * wherever a rank is not graded (Coaching's tendencies). It replaces four
  * treatments: the dot + flat ordinal on the Stats cards, the lighter history
- * pills, Usage's colored text, and Coaching's gold "#N NFL" badges. */
-:is(.sct, #sct-table-armour) :is(.sct-metric-rank-value, .sct-tile-rank-value, .sct-hist-rank, .sct-us-rank, .sct-co-badge, .sct-co-sig-pill.is-rank) {
+ * pills, Usage's colored text, and Coaching's gold "#N NFL" badges.
+ *
+ * The Season History table left this list on 2026-10-20 (mak: no pills, just
+ * the colored ordinal) and wears bare tinted text, like the ladders. */
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank-value, .sct-tile-rank-value, .sct-us-rank, .sct-co-badge, .sct-co-sig-pill.is-rank) {
   display: inline-block;
   min-height: 0;
   padding: 2px 8px;
@@ -17312,13 +17427,11 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 :is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank)[data-tier="good"] :is(.sct-metric-rank-value, .sct-tile-rank-value),
-:is(.sct, #sct-table-armour) .sct-hist-rank:is([data-tier="good"], [data-tier="elite"]),
 :is(.sct, #sct-table-armour) .sct-us-rank.is-good {
   background: rgba(16, 122, 87, 0.1);
   color: #0f6b4f;
 }
-:is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank)[data-tier="poor"] :is(.sct-metric-rank-value, .sct-tile-rank-value),
-:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="poor"] {
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank)[data-tier="poor"] :is(.sct-metric-rank-value, .sct-tile-rank-value) {
   background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
@@ -17330,9 +17443,6 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank) {
   align-items: center;
   color: var(--sc-muted-strong);
-}
-:is(.sct, #sct-table-armour) .sct-hist-rank {
-  margin-top: 4px;
 }
 :is(.sct, #sct-table-armour) .sct-us-rank {
   align-self: flex-start;

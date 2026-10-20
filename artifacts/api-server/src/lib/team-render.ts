@@ -50,6 +50,7 @@ import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
 import { getTeamCoaching } from "./team/coaching";
 import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
 import { buildUsageView } from "./team/usage";
+import { efficiencyRows, getEfficiencyDoc, passRushRows } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq, type FaqEntry } from "./team/depth-faq";
@@ -759,28 +760,6 @@ function rankAccent(tier: string, rank: number | null): string {
 }
 
 /**
- * The Stats tab's offense row for a snapshot metric, or null.
- *
- * Only used for the movement arrow, and deliberately fussy about earning it.
- * The two blocks are fetched from different ESPN documents in parallel, each
- * falls back a season on its own, and each ranks by its own reading of the
- * league - so a row only counts when it is describing the same season and has
- * arrived at the same rank ESPN printed on the card. Anything else would draw
- * "2nd, up 12" out of a delta measured from third place.
- */
-function snapshotMovement(
-  data: TeamPageData,
-  metric: SnapshotMetric,
-  season: number,
-): StatRow | null {
-  const stats = data.stats;
-  if (!stats || stats.season !== season || metric.rankValue === null) return null;
-  const row = stats.offense.find((r) => r.key === `off-${metric.key}`);
-  if (!row || row.rank !== metric.rankValue) return null;
-  return row;
-}
-
-/**
  * One snapshot card: label, number, and a footer that says where the team
  * stands and which way it is going.
  *
@@ -803,7 +782,6 @@ function snapshotCard(
 ): string {
   const tier = rankTier(metric.rankValue);
   const accent = rankAccent(tier, metric.rankValue);
-  const move = snapshotMovement(data, metric, season);
 
   // The percentile groove, flush with the bottom edge: 1st fills the card and
   // 32nd leaves a stub, so a row of four can be read as a shape before any of
@@ -816,10 +794,8 @@ function snapshotCard(
         `</span>`
       : "";
 
-  // Rank left, movement right, a hairline above them. They are two different
-  // facts - where this team stands, and which way it is going - and running
-  // them together as "2nd up 12" invites the arrow to be read as part of the
-  // ordinal.
+  // The rank alone under a hairline. The year-on-year movement arrow that used
+  // to sit beside it was removed at mak's request (2026-10-20).
   const foot = metric.rank
     ? `<p class="sct-metric-foot">` +
       // The tier is carried as a word as well as a color and a dot, so a
@@ -827,15 +803,13 @@ function snapshotCard(
       `<span class="sct-metric-rank" data-tier="${tier}" data-accent="${accent}">` +
       `<span class="sct-metric-dot" aria-hidden="true"></span>` +
       `<span class="sct-metric-rank-value">${escapeHtml(metric.rank)}</span>` +
-      // Hidden from the reading order rather than repeated: "2nd NFL rank of
-      // 32" is the same fact twice. The caption exists to tell an eye what the
-      // ordinal is measuring; a screen reader is told outright.
-      `<span class="sct-metric-rank-label" aria-hidden="true">NFL rank</span>` +
+      // No "NFL rank" caption beside the ordinal (mak, 2026-10-20): the section
+      // heading already names the league. A screen reader is still told the
+      // denominator and the tier outright.
       `<span class="sct-visually-hidden"> of 32` +
       (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
       `</span>` +
       `</span>` +
-      (move ? rankMove(move, true) : "") +
       `</p>`
     : "";
 
@@ -863,10 +837,13 @@ function renderSnapshot(data: TeamPageData): string {
   // season yet, and `state.statsSeasonIsPrior` describes the request - it would
   // caption a block of 2025 numbers as 2026 for the whole of Week 1. The Stats
   // tab labels itself the same way, from the same evidence.
+  // In season the line under the heading is gone (mak, 2026-10-20): the
+  // heading already carries the year. The fallback sentence stays for the
+  // one case where it is a warning rather than a caption.
   const seasonNote =
     snapshot.season < data.state.season
       ? `<p class="sct-note">${escapeHtml(`${snapshot.season} regular season - the ${data.state.season} season has no completed team stats yet.`)}</p>`
-      : `<p class="sct-note">${escapeHtml(`${snapshot.season} regular season to date.`)}</p>`;
+      : "";
 
   return (
     `<div class="sct-block">` +
@@ -923,7 +900,7 @@ function statTier(row: StatRow): "good" | "mid" | "poor" | "none" {
  * does not already say in words - the same reasoning as the tier color on the
  * snapshot cards, which is doubled by TIER_WORD rather than left to color.
  */
-function statRow(row: StatRow): string {
+function statRow(row: StatRow, summary = false): string {
   const tier = statTier(row);
   const bar =
     row.rank !== null
@@ -943,53 +920,13 @@ function statRow(row: StatRow): string {
     : "";
 
   return (
-    `<li class="sct-stat">` +
+    `<li class="sct-stat${summary ? " is-summary" : ""}">` +
     `<span class="sct-stat-label">${escapeHtml(row.label)}` +
     `<span class="sct-visually-hidden"> - ${escapeHtml(row.description)}</span></span>` +
     bar +
     `<span class="sct-stat-value">${escapeHtml(row.value)}</span>` +
     rank +
-    rankMove(row) +
     `</li>`
-  );
-}
-
-/**
- * Year-on-year movement in the rank, as an arrow and a number of places.
- *
- * Direction is read off the rank, not the value: 1st is best on both ladders,
- * so a rank that fell from 11 to 4 is "up 7" whether the metric counts points
- * scored or points allowed. That is the whole reason the ranking direction was
- * settled once in lib/team/stats.ts rather than being decided per component.
- *
- * A rank that did not move renders nothing. An arrow pointing sideways beside
- * thirty other rows is noise, and "no change" is already what an empty slot
- * says.
- */
-function rankMove(row: StatRow, unit = false): string {
-  if (row.rank === null || row.previousRank === null) return "";
-  const places = row.previousRank - row.rank;
-  if (places === 0) return "";
-  const up = places > 0;
-  const size = Math.abs(places);
-  // A stroke arrow rather than a filled triangle. The triangle carried more
-  // weight than a secondary number deserves beside a rank chip that is already
-  // tinted; this says the same thing at a whisper.
-  const arrow = up ? "&#8593;" : "&#8595;";
-  // The noun only where there is room for it. On a tile the arrow ends a line
-  // by itself and "up 4" reads as four sacks unless something says otherwise;
-  // in a ladder row the slot is 26px wide and the rank chip is beside it, so
-  // the word would wrap before it clarified anything.
-  const word = unit
-    ? `<span class="sct-move-unit"> spot${size === 1 ? "" : "s"}</span>`
-    : "";
-  return (
-    `<span class="sct-stat-move" data-dir="${up ? "up" : "down"}">` +
-    `<span aria-hidden="true">${arrow}&#8239;${size}${word}</span>` +
-    // Spelled out, because an arrow and a number is not a sentence.
-    `<span class="sct-visually-hidden"> ${up ? "up" : "down"} ${size} ` +
-    `place${size === 1 ? "" : "s"} from last season</span>` +
-    `</span>`
   );
 }
 
@@ -997,23 +934,82 @@ function rankMove(row: StatRow, unit = false): string {
  * One unit's ladder.
  *
  * `data-unit` is what the stylesheet uses to put the gold rule beside Offense
- * and the navy one beside Defense; nothing here decides color.
+ * and the navy one beside Defense; nothing here decides color. `kind` marks
+ * the Efficiency ladders so the phone layout can slot each one under its own
+ * unit instead of after both.
  */
 function statLadder(
-  unit: "offense" | "defense",
+  unit: "offense" | "defense" | "team",
   title: string,
   caption: string,
   rows: StatRow[],
+  kind = "",
+  options: {
+    /** Spans both columns of the ladder grid: the team-level buckets. */
+    wide?: boolean;
+    /** The row drawn as the bucket's summary - turnover margin. */
+    summaryKey?: string;
+  } = {},
 ): string {
   if (rows.length === 0) return "";
   return (
-    `<section class="sct-ladder" data-unit="${unit}">` +
+    `<section class="sct-ladder${options.wide ? " is-wide" : ""}" data-unit="${unit}"${kind ? ` data-kind="${kind}"` : ""}>` +
     `<h3 class="sct-ladder-title">${escapeHtml(title)}</h3>` +
     `<p class="sct-ladder-caption">${escapeHtml(caption)}</p>` +
-    `<ul class="sct-ladder-list">${rows.map(statRow).join("")}</ul>` +
+    `<ul class="sct-ladder-list">${rows
+      .map((row) => statRow(row, row.key === options.summaryKey))
+      .join("")}</ul>` +
     `</section>`
   );
 }
+
+/** The rows whose keys are listed, in the listed order; absent keys skipped. */
+function pickRows(rows: StatRow[], keys: readonly string[]): StatRow[] {
+  const byKey = new Map(rows.map((row) => [row.key, row]));
+  return keys.map((key) => byKey.get(key)).filter((row): row is StatRow => !!row);
+}
+
+/**
+ * The Stats tab's buckets (mak, 2026-10-20), by row key. The data module keeps
+ * the ladder pair's ten metrics and the situational and volume lists exactly
+ * as before - the history table and the FAQ read them by key - and this is
+ * where each row is dealt to the bucket its meaning belongs to. Before this
+ * Yds/Play, Yds/Pass Att, Yds/Carry and Passer Rtg sat in Offense/Defense
+ * beside the EPA ladders that say the same thing per play, and Sacks lived
+ * under Situational two blocks away from the pass rush.
+ */
+const PRODUCTION_KEYS = [
+  "points",
+  "total-yards",
+  "pass-yards",
+  "rush-yards",
+  "first-downs",
+  "third-down",
+] as const;
+const RATE_KEYS = [
+  "yards-per-play",
+  "yards-per-attempt",
+  "yards-per-carry",
+  "passer-rating",
+] as const;
+const POSSESSION_KEYS = [
+  "turnover-margin",
+  "takeaways",
+  "giveaways",
+  "fourth-down",
+  "penalty-yards",
+] as const;
+const PACE_KEYS = [
+  "plays",
+  "plays-faced",
+  "pass-attempts",
+  "rush-attempts",
+  "pass-td",
+  "rush-td",
+] as const;
+
+const prefixed = (prefix: string, keys: readonly string[]): string[] =>
+  keys.map((key) => `${prefix}-${key}`);
 
 /** A tile footer's accent, from the row's tier. */
 function tileAccent(row: StatRow): string {
@@ -1036,10 +1032,8 @@ function statTile(row: StatRow): string {
         `</span>`
       : "";
 
-  // Rank left, movement right, on one ruled line: they are two different facts
-  // - where this team stands, and which way it is going - and running them
-  // together as "2nd in NFL ▲12" invited the arrow to be read as part of the
-  // ordinal. The rule under the value is what makes the split legible.
+  // The rank alone on one ruled line. The year-on-year movement arrow that
+  // used to sit beside it was removed at mak's request (2026-10-20).
   const foot = row.rankLabel
     ? `<p class="sct-tile-foot">` +
       // The tier is carried as a word as well as a color and a dot - a reader
@@ -1047,15 +1041,13 @@ function statTile(row: StatRow): string {
       `<span class="sct-tile-rank" data-tier="${tier}" data-accent="${accent}">` +
       `<span class="sct-tile-dot" aria-hidden="true"></span>` +
       `<span class="sct-tile-rank-value">${escapeHtml(row.rankLabel)}</span>` +
-      // Hidden from the reading order rather than repeated: "2nd NFL rank of
-      // 32" is the same fact twice. The caption exists to tell an eye which
-      // ladder the ordinal belongs to; a screen reader is told outright.
-      `<span class="sct-tile-rank-label" aria-hidden="true">NFL rank</span>` +
+      // No "NFL rank" caption beside the ordinal (mak, 2026-10-20), matching
+      // the snapshot cards and the ladders. A screen reader is still told the
+      // denominator and the tier outright.
       `<span class="sct-visually-hidden"> of 32` +
       (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
       `</span>` +
       `</span>` +
-      rankMove(row, true) +
       `</p>`
     : "";
 
@@ -1355,12 +1347,100 @@ function renderTeamStats(
   const stats = data.stats;
   if (!stats) return "";
 
+  // The Efficiency ladders (mak, 2026-10-20): the same five per-play rates for
+  // each unit, under its volume ladder. Built from play-by-play by
+  // scripts/team/buildEfficiency.mjs rather than from the stats provider, so
+  // they carry their own "through Week N" and can trail the ladders above by a
+  // few days until the feed posts the week.
+  const effDoc = getEfficiencyDoc(stats.season);
+  const eff = effDoc?.teams[data.team.abbreviation] ?? null;
+  const effThrough = effDoc?.throughWeek ? ` · through Week ${effDoc.throughWeek}` : "";
+  // Production: the volume ladder pair, same six rows each side.
   const ladders =
-    statLadder("offense", "Offense", "What they did", stats.offense) +
-    statLadder("defense", "Defense", "What they allowed", stats.defense);
+    statLadder(
+      "offense",
+      "Offense",
+      "What they did",
+      pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
+    ) +
+    statLadder(
+      "defense",
+      "Defense",
+      "What they allowed",
+      pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
+    );
 
-  const situational = statTiles(stats.situational, 4);
-  const volume = statTiles(stats.volume, 3);
+  // Efficiency: the EPA rows (when the play-by-play doc is there), then the
+  // per-play rates from the stats feed, which are the same idea in yards.
+  const efficiency =
+    statLadder(
+      "offense",
+      "Offense Efficiency",
+      `Per play, what they did${effThrough}`,
+      [
+        ...(eff ? efficiencyRows(eff, "offense") : []),
+        ...pickRows(stats.offense, prefixed("off", RATE_KEYS)),
+      ],
+      "efficiency",
+    ) +
+    statLadder(
+      "defense",
+      "Defense Efficiency",
+      `Per play, what they allowed${effThrough}`,
+      [
+        ...(eff ? efficiencyRows(eff, "defense") : []),
+        ...pickRows(stats.defense, prefixed("def", RATE_KEYS)),
+      ],
+      "efficiency",
+    );
+
+  // Pass Protection / Pass Rush: blitzes faced and sent, with the EPA cost,
+  // time to throw from the passers' side (the defense's is the passers it
+  // faced), and the sacks at each end. Blitz rate and time to throw have no
+  // better end, so those rows rank most to least and come through untinted.
+  const passRush =
+    statLadder(
+      "offense",
+      "Pass Protection",
+      `Under the rush, what they faced${effThrough}`,
+      [
+        ...(eff ? passRushRows(eff, "offense") : []),
+        ...pickRows(stats.situational, ["sacks-allowed"]),
+      ],
+      "passrush",
+    ) +
+    statLadder(
+      "defense",
+      "Pass Rush",
+      `The rush they sent, and what it allowed${effThrough}`,
+      [
+        ...(eff ? passRushRows(eff, "defense") : []),
+        ...pickRows(stats.situational, ["sacks-made"]),
+      ],
+      "passrush",
+    );
+
+  // Possession & Discipline: one wide ladder, turnover margin as its summary
+  // row - takeaways and giveaways are its two halves and sit under it.
+  const possession = statLadder(
+    "team",
+    "Turnovers, Downs & Penalties",
+    "Turnover margin first; takeaways and giveaways are its two halves",
+    pickRows(stats.situational, POSSESSION_KEYS),
+    "possession",
+    { wide: true, summaryKey: "turnover-margin" },
+  );
+
+  // Pace & Play Style: the volume rows, ranked most to least, no better end.
+  const pace = statLadder(
+    "team",
+    "Snaps, Attempts & Scores",
+    "Ranked most to least, with no better end",
+    pickRows(stats.volume, PACE_KEYS),
+    "pace",
+    { wide: true },
+  );
+
   const mix =
     (stats.balance
       ? playMix(
@@ -1379,7 +1459,9 @@ function renderTeamStats(
 
   const history = renderHistory(stats);
 
-  if (!ladders && !situational && !volume && !mix && !history) return "";
+  if (!ladders && !efficiency && !passRush && !possession && !pace && !mix && !history) {
+    return "";
+  }
 
   const games =
     stats.gamesPlayed && stats.gamesPlayed > 0
@@ -1394,45 +1476,63 @@ function renderTeamStats(
     stats.season < data.state.season
       ? `${stats.season} regular season${games} - the ${data.state.season} season has no completed team stats yet.`
       : `${stats.season} regular season to date${games}.`;
-  // The ladder block folds the season line and the rank direction into one
-  // note. Stated plainly because on the defense column a rank runs the way
-  // most people would guess wrong.
-  const ladderNote =
-    stats.season < data.state.season
-      ? `${seasonNote.replace(/\.$/, "")} · Ranked among all 32 teams; 1st = fewest allowed.`
-      : `${stats.season} regular season${games} · Ranked among all 32 teams; 1st = fewest allowed.`;
-
   const blocks: string[] = [];
 
+  // No note under the heading (mak, 2026-10-20): the season and games line
+  // and the "1st = fewest allowed" rule are gone; each row's hidden text still
+  // says "of 32" and its tier for a screen reader.
   if (ladders) {
     blocks.push(
       `<div class="sct-block">` +
         h2("Offense & Defense", "is-sub") +
-        `<p class="sct-note">${escapeHtml(ladderNote)}</p>` +
         `<div class="sct-ladders">${ladders}</div>` +
         `</div>`,
     );
   }
 
-  if (situational) {
+  if (efficiency) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Situational & Ball Security", "is-sub") +
-        `<p class="sct-note">Third and fourth down, the pass rush at both ends of ` +
-        `it, and what each side does with the football.</p>` +
-        situational +
+        h2("Efficiency", "is-sub") +
+        `<p class="sct-note">Per play, how well each side performs - expected ` +
+        `points, success and explosive rates, and yards per play, attempt and ` +
+        `carry. Ranked among all 32 teams; 1st = best on either side.</p>` +
+        `<div class="sct-ladders">${efficiency}</div>` +
         `</div>`,
     );
   }
 
-  if (volume || mix) {
+  if (passRush) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Volume & Play Mix", "is-sub") +
+        h2("Pass Protection & Pass Rush", "is-sub") +
+        `<p class="sct-note">Blitzes faced and sent, what each cost, how long ` +
+        `passers held the ball, and the sacks at both ends. Blitz rate and time ` +
+        `to throw rank most to least, with no better end.</p>` +
+        `<div class="sct-ladders">${passRush}</div>` +
+        `</div>`,
+    );
+  }
+
+  if (possession) {
+    blocks.push(
+      `<div class="sct-block">` +
+        h2("Possession & Discipline", "is-sub") +
+        `<p class="sct-note">What each side does with the football. Turnover ` +
+        `margin is the summary; takeaways and giveaways are its two halves.</p>` +
+        `<div class="sct-ladders">${possession}</div>` +
+        `</div>`,
+    );
+  }
+
+  if (pace || mix) {
+    blocks.push(
+      `<div class="sct-block">` +
+        h2("Pace & Play Style", "is-sub") +
         `<p class="sct-note">Opportunity, not quality: how many snaps there are ` +
         `to go round and how they are divided. Ranks here are most to least, ` +
         `with no better end.</p>` +
-        volume +
+        (pace ? `<div class="sct-ladders">${pace}</div>` : "") +
         (mix ? `<div class="sct-mixes">${mix}</div>` : "") +
         `</div>`,
     );
@@ -3180,9 +3280,16 @@ export function renderUpcomingCard(
       ? `<img class="sct-game-mark" src="${escapeHtml(opponent.logo)}" alt=""` +
         ` aria-hidden="true" width="120" height="120" loading="lazy" decoding="async" />`
       : "") +
-    (index === 0 ? `<p class="sct-game-next">Next game</p>` : "") +
+    // Compact (mak's spec, 2026-10-20): "Next game" is a prefix on the week
+    // line rather than a line of its own, the full name shares a line with
+    // the date and time, and the venue and network follow on one more. Five
+    // lines of text in a card about 115px tall, where the old card was
+    // seven lines in 180.
     `<div class="sct-game-head">` +
+    `<span class="sct-game-label">` +
+    (index === 0 ? `<span class="sct-game-next">Next game</span>` : "") +
     `<span class="sct-game-week">${escapeHtml(`Week ${game.week}`)}</span>` +
+    `</span>` +
     `<span class="sct-game-pills">${tags.join("")}` +
     `<span class="sct-game-pill" data-kind="${game.homeAway}">` +
     `${game.homeAway === "home" ? "Home" : "Away"}</span>` +
@@ -3197,21 +3304,25 @@ export function renderUpcomingCard(
     `<span class="sct-game-opp">` +
     `<span class="sct-homeaway">${game.homeAway === "home" ? "vs" : "at"}</span> ` +
     `${escapeHtml(nickname)}</span>` +
-    (opponent
-      ? `<span class="sct-game-full">${escapeHtml(opponent.fullName)}</span>`
-      : "") +
+    // "Chicago Bears · Thu, Oct 22 · 8:15 PM ET": the full name and the
+    // kickoff on one line under the nickname.
+    `<span class="sct-game-line">` +
+    [
+      opponent ? `<span class="sct-game-full">${escapeHtml(opponent.fullName)}</span>` : "",
+      `<span class="sct-game-when">${escapeHtml(when.date)}` +
+        (when.time
+          ? ` · <span class="sct-game-time">${escapeHtml(when.time)}</span>`
+          : "") +
+        `</span>`,
+    ]
+      .filter(Boolean)
+      .join(" · ") +
+    `</span>` +
     `</span>` +
     `</div>` +
-    `<div class="sct-game-meta">` +
-    `<p class="sct-game-when">${escapeHtml(when.date)}` +
-    (when.time
-      ? ` · <span class="sct-game-time">${escapeHtml(when.time)}</span>`
-      : "") +
-    `</p>` +
     (where.length
       ? `<p class="sct-game-where">${where.join(" · ")}</p>`
       : "") +
-    `</div>` +
     // Last, under the logistics: the card states the fixture first and offers
     // the deeper read once it has. Null for an opponent the pair slug cannot be
     // built from, which is the same rule the rows below follow.
@@ -3272,9 +3383,17 @@ function renderFullSchedule(
     // the aria-hidden of the pair.
     const shown = game.opponent?.fullName ?? game.opponentName;
     const brief = briefTeamName(game.opponent, shown);
+    // Three spellings, narrowest last: "Seattle Seahawks", "Seahawks", "SEA".
+    // The code is the third tier (mak, 2026-10-20): it is what keeps the row
+    // on one line down to 400px of board instead of stacking at 900px of
+    // window with most of the table still empty.
+    const code = brief && game.opponent ? game.opponent.code.trim() : "";
     const nameCell = brief
       ? `<span class="sct-srow-name-long">${escapeHtml(shown)}</span>` +
-        `<span class="sct-srow-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>`
+        `<span class="sct-srow-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>` +
+        (code && code !== brief
+          ? `<span class="sct-srow-name-code" aria-hidden="true">${escapeHtml(code)}</span>`
+          : "")
       : escapeHtml(shown);
     return {
       week: game.week,
@@ -3310,7 +3429,7 @@ function renderFullSchedule(
         (gameMatchupHref(data.team, game, schedule, options, now)
           ? `<a class="sct-textlink sct-srow-view"` +
             ` href="${escapeHtml(gameMatchupHref(data.team, game, schedule, options, now) ?? "")}">` +
-            `View matchup ${ARROW}</a>`
+            `<span class="sct-srow-view-label">View matchup</span> ${ARROW}</a>`
           : `<span class="sct-srow-view"></span>`) +
         `</li>`,
     };

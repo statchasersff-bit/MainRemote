@@ -32,6 +32,8 @@ interface Entry<T> {
 export interface KeyedCache<T> {
   /** Whatever is cached right now, without any network call. */
   peek(key: string): Entry<T>;
+  /** Forget every entry. A test seam; nothing in a request path calls it. */
+  clear(): void;
   /** Cached value, refreshing if stale and awaiting only when cold. */
   ensure(key: string): Promise<T | null>;
 }
@@ -153,7 +155,12 @@ export function createKeyedCache<T>(
     return refresh(key);
   }
 
-  return { peek, ensure };
+  function clear(): void {
+    entries.clear();
+    inFlight.clear();
+  }
+
+  return { peek, ensure, clear };
 }
 
 /**

@@ -429,7 +429,30 @@ function shortcodeText(tool: Tool, subject: Subject): string {
 
 /* ------------------------------------------------------------------ parts */
 
-function toolButtons(context: DevBarContext, subject: Subject): string {
+/**
+ * The tool switch as a dropdown (mak, 2026-10-20: twelve buttons with their
+ * shortcodes took half the preview pane). A native <details>, not a <select>:
+ * the entries stay real links, so every mount still resolves in the tests
+ * and a middle-click still opens a tab, and the news tool keeps its promise
+ * of carrying no <select> at all. Closed, it is one chip naming the view on
+ * screen; open, the list floats over the page instead of pushing it down.
+ */
+function viewMenu(context: DevBarContext, subject: Subject): string {
+  const active = toolFor(context.path);
+  return (
+    `<details class="scdev-menu" data-scdev-menu>` +
+    `<summary>` +
+    `<span class="scdev-label-view">View</span>` +
+    `<span class="scdev-full">${active.label}</span>` +
+    `<span class="scdev-short">${active.shortLabel}</span>` +
+    `<span class="scdev-caret" aria-hidden="true">&#9662;</span>` +
+    `</summary>` +
+    `<div class="scdev-menu-list">${toolLinks(context, subject)}</div>` +
+    `</details>`
+  );
+}
+
+function toolLinks(context: DevBarContext, subject: Subject): string {
   const mount = currentMount(context);
   const active = toolFor(context.path);
   return TOOLS.map((tool) => {
@@ -446,12 +469,26 @@ function toolButtons(context: DevBarContext, subject: Subject): string {
     return (
       `<a href="${escapeAttr(href(tool, keep, target))}"` +
       `${current ? ' aria-current="page"' : ""}>` +
-      `<span class="scdev-full">${tool.label}</span>` +
-      `<span class="scdev-short">${tool.shortLabel}</span>` +
+      `<span>${tool.label}</span>` +
       `<span class="scdev-code">[${tool.shortcode}]</span>` +
       `</a>`
     );
   }).join("");
+}
+
+/** The four standing links, folded into a second dropdown. */
+function linksMenu(): string {
+  return (
+    `<details class="scdev-menu" data-scdev-menu>` +
+    `<summary><span>Links</span>` +
+    `<span class="scdev-caret" aria-hidden="true">&#9662;</span></summary>` +
+    `<div class="scdev-menu-list">` +
+    `<a href="/team">All 32 teams</a>` +
+    `<a href="/player">All players</a>` +
+    `<a href="/fpa/download.csv">FPA CSV</a>` +
+    `<a href="/embed">Embed setup</a>` +
+    `</div></details>`
+  );
 }
 
 function teamPicker(context: DevBarContext, subject: Subject): string {
@@ -588,11 +625,25 @@ function mountButtons(context: DevBarContext, subject: Subject): string {
 function css(): string {
   return `
 .scdev{position:fixed;top:0;left:0;right:0;z-index:2147483000;
- display:flex;align-items:center;gap:10px;
- padding:7px 12px;background:#0b1220;color:#e2e8f0;
- font:600 12px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ display:flex;align-items:center;gap:8px;
+ padding:4px 10px;background:#0b1220;color:#e2e8f0;
+ font:600 11px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
  border-bottom:2px solid #d4af37;box-shadow:0 6px 24px rgba(0,0,0,.35)}
-.scdev-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;flex:1}
+.scdev-body{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;flex:1}
+/* The two dropdowns. Closed they are chips; open, the list floats over the
+   page from under the chip, so the bar's own height never changes. */
+.scdev-menu{position:relative}
+.scdev-menu>summary{list-style:none;cursor:pointer;display:inline-flex;
+ align-items:center;gap:6px;padding:3px 8px;border-radius:6px;
+ border:1px solid #24324d;background:#131c30;color:#fff;white-space:nowrap}
+.scdev-menu>summary::-webkit-details-marker{display:none}
+.scdev-menu>summary:hover,.scdev-menu[open]>summary{border-color:#d4af37;background:#1b2743}
+.scdev-caret{color:#93a4bf;font-size:10px}
+.scdev-menu-list{position:absolute;top:calc(100% + 5px);left:0;z-index:1;
+ display:flex;flex-direction:column;gap:2px;min-width:280px;max-height:70vh;
+ overflow:auto;padding:5px;border-radius:8px;border:1px solid #34415f;
+ background:#0f172a;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.scdev-menu-list a{justify-content:space-between;border-color:transparent}
 /* A label, not a control.
    It used to be a button that collapsed the bar and remembered it in
    localStorage. That is a trap on a bar whose entire job is to be found: one
@@ -600,7 +651,7 @@ function css(): string {
    navigations, so it stayed hidden with no obvious way back. There is nothing to
    collapse away from anyway - the bar is padded out of the content's way rather
    than sitting on top of it. */
-.scdev-tag{flex:0 0 auto;padding:4px 8px;border-radius:4px;
+.scdev-tag{flex:0 0 auto;padding:2px 6px;border-radius:4px;
  background:#d4af37;color:#0b1220;font-weight:800;letter-spacing:.08em}
 .scdev-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .scdev-label{color:#64748b;font-weight:500;font-size:10px;letter-spacing:.1em;
@@ -610,41 +661,35 @@ function css(): string {
 .scdev-label-view{color:#d4af37;font-weight:800;font-size:10px;letter-spacing:.1em;
  text-transform:uppercase}
 .scdev a{display:inline-flex;align-items:baseline;gap:7px;
- padding:6px 11px;border-radius:6px;border:1px solid #24324d;
+ padding:3px 8px;border-radius:6px;border:1px solid #24324d;
  background:#131c30;color:#cbd5e1;text-decoration:none;white-space:nowrap}
 .scdev a:hover{background:#1b2743;border-color:#d4af37;color:#fff}
 .scdev a[aria-current]{background:#1e2b48;border-color:#d4af37;color:#fff}
-.scdev select{padding:6px 9px;border-radius:6px;border:1px solid #24324d;
- background:#131c30;color:#cbd5e1;font:inherit;max-width:44vw}
+.scdev select{padding:3px 6px;border-radius:6px;border:1px solid #24324d;
+ background:#131c30;color:#cbd5e1;font:inherit;max-width:40vw}
 .scdev-code{color:#93a4bf;font-weight:500}
 .scdev-short{display:none}
 .scdev a[aria-current] .scdev-code{color:#e8c766}
-.scdev-sep{width:1px;height:20px;background:#24324d}
-.scdev-now{margin-left:auto;padding:5px 9px;border-radius:6px;
+.scdev-sep{width:1px;height:18px;background:#24324d}
+.scdev-now{margin-left:auto;padding:3px 8px;border-radius:6px;
  background:#131c30;border:1px dashed #34415f;color:#e8c766;font-weight:700;
  white-space:nowrap}
 /* A floor for the no-JS / pre-script case; the script below replaces it with
    the bar's measured height, which is the only number that is right once the
    bar wraps. */
-body{padding-top:44px}
-@media (max-width:860px){.scdev-label{display:none}.scdev-code{display:none}}
-/* Roughly the Replit preview pane. Every control still fits, but only if the
-   labels shrink to the words that distinguish them - at full length the bar
-   wraps to four rows. */
-@media (max-width:720px){.scdev{gap:8px;padding:6px 9px;align-items:flex-start}
-
+body{padding-top:34px}
+@media (max-width:860px){.scdev-label{display:none}}
+/* Roughly the Replit preview pane. With the tools folded into the dropdown
+   the bar is one row here, two at the very narrowest. */
+@media (max-width:720px){.scdev{gap:6px;padding:4px 8px;align-items:flex-start}
  .scdev-body{gap:6px}.scdev-now{display:none}
  .scdev-tag{margin-top:2px}
  /* The dividers cost a gap either side and push the bar to an extra row. The
     groups still read as groups without them at this width. */
  .scdev-sep{display:none}
- /* Qualified by the element: ".scdev a" is (0,1,1) and a bare class is (0,1,0),
-    so an unqualified ".scdev-wide-only{display:none}" loses to it and the link
-    stays on screen. It did exactly that. */
- .scdev a.scdev-wide-only{display:none}
  .scdev-full{display:none}.scdev-short{display:inline}
- .scdev a{padding:6px 9px}
- .scdev select{max-width:100%;flex:1 1 140px}}`;
+ .scdev-menu-list{min-width:240px;max-width:calc(100vw - 16px)}
+ .scdev select{max-width:100%;flex:1 1 120px}}`;
 }
 
 /**
@@ -678,6 +723,11 @@ document.body.style.paddingTop=h+'px';
 var r=document.querySelectorAll('[data-sct-root]');
 for(var i=0;i<r.length;i++){r[i].style.setProperty('--sct-nav-offset',h+'px')}}
 if(s)s.addEventListener('change',function(){location.href=s.value});
+var m=b.querySelectorAll('[data-scdev-menu]');
+function shut(x){for(var i=0;i<m.length;i++){if(m[i]!==x)m[i].open=false}}
+for(var i=0;i<m.length;i++){m[i].addEventListener('toggle',function(){if(this.open)shut(this)})}
+document.addEventListener('click',function(e){if(!b.contains(e.target))shut(null)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')shut(null)});
 // The tool root is parsed after this script, so the first measurement waits.
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',offset)}else{offset()}
 addEventListener('resize',offset);offset();})();`;
@@ -706,21 +756,12 @@ export function injectDevBar(html: string, context: DevBarContext): string {
     `<div class="scdev" data-scdev role="navigation" aria-label="Preview switcher">` +
     `<span class="scdev-tag">DEV</span>` +
     `<div class="scdev-body">` +
-    `<span class="scdev-group"><span class="scdev-label-view">View</span>${toolButtons(context, subject)}</span>` +
+    viewMenu(context, subject) +
     (picker ? `<span class="scdev-sep"></span>${picker}` : "") +
     `<span class="scdev-sep"></span>` +
     mountButtons(context, subject) +
     `<span class="scdev-sep"></span>` +
-    `<span class="scdev-group">` +
-    `<a href="/team">` +
-    `<span class="scdev-full">All 32 teams</span>` +
-    `<span class="scdev-short">All 32</span></a>` +
-    `<a href="/player">` +
-    `<span class="scdev-full">All players</span>` +
-    `<span class="scdev-short">Players</span></a>` +
-    `<a class="scdev-wide-only" href="/fpa/download.csv">FPA CSV</a>` +
-    `<a class="scdev-wide-only" href="/embed">Embed setup</a>` +
-    `</span>` +
+    linksMenu() +
     `<code class="scdev-now">${escapeAttr(shortcodeText(tool, subject))}</code>` +
     `</div></div>`;
 

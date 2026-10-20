@@ -390,6 +390,9 @@ export function refreshDailyData(): Promise<void> {
       // feeds. --force all regenerates every non-hand-written entry (the
       // builder preserves entries it did not generate, i.e. the Bills).
       await step("team coaching", "team/buildCoaching.mjs", [season, "--force", "all"]);
+      // The Stats tab's Efficiency ladders: five per-play rates per unit from
+      // the same play-by-play. Refuses to roll a hub back to fewer weeks.
+      await step("team efficiency", "team/buildEfficiency.mjs", [season]);
       // Then check what the hubs now say: weeks against the games file, the
       // standings feed, head coaches against the research file, and the
       // sentences the 2026-10-03 audit removed. A FAIL here is a page saying
