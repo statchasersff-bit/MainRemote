@@ -42,6 +42,16 @@ describe("planWarmup", () => {
     assert.equal(paths[5], "/embed/team/buffalo-bills?section=usage");
   });
 
+  test("the player cap from the environment: blank is the default, not zero", () => {
+    assert.equal(core.parsePlayerCap(undefined, 150), 150);
+    assert.equal(core.parsePlayerCap("", 150), 150);
+    assert.equal(core.parsePlayerCap("  ", 150), 150);
+    assert.equal(core.parsePlayerCap("0", 150), 0);
+    assert.equal(core.parsePlayerCap("40", 150), 40);
+    assert.equal(core.parsePlayerCap("lots", 150), 150);
+    assert.equal(core.parsePlayerCap("-3", 150), 150);
+  });
+
   test("a player cap of zero warms no players; duplicates are asked once", () => {
     const paths = core.planWarmup({ ...INPUT, maxPlayers: 0, pairs: ["a-vs-b", "a-vs-b"] });
     assert.ok(!paths.some((p) => p.startsWith("/embed/player/")));
@@ -106,6 +116,42 @@ describe("runWarmup", () => {
     assert.equal(summary.failed, 2);
     assert.ok(notes.some((l) => l === "/gone answered 404"));
     assert.ok(notes.some((l) => l.startsWith("/boom failed: socket hang up")));
+  });
+
+  test("stops at the memory floor and reports what it skipped", async () => {
+    const clock = fakeClock();
+    const seen = [];
+    const notes = [];
+    const free = [1500, 1200, 700, 650];
+    const summary = await core.runWarmup(
+      ["/1", "/2", "/3", "/4"],
+      {
+        fetch: async (p) => {
+          seen.push(p);
+          return 200;
+        },
+        sleep: async () => undefined,
+        now: clock.now,
+        note: (l) => notes.push(l),
+        availableMb: () => free.shift(),
+      },
+      { budgetMs: 60_000, yieldMs: 0, minFreeMb: 800 },
+    );
+    assert.deepEqual(seen, ["/1", "/2"]);
+    assert.equal(summary.ok, 2);
+    assert.equal(summary.skipped, 2);
+    assert.ok(notes.some((l) => l.startsWith("memory floor: 700MB available, under 800MB, after 2 pages; 2 skipped")));
+  });
+
+  test("an unreadable memory figure never stops the walk", async () => {
+    const clock = fakeClock();
+    const summary = await core.runWarmup(
+      ["/1", "/2"],
+      { fetch: async () => 200, sleep: async () => undefined, now: clock.now, note: () => undefined, availableMb: () => -1 },
+      { budgetMs: 60_000, yieldMs: 0, minFreeMb: 800 },
+    );
+    assert.equal(summary.ok, 2);
+    assert.equal(summary.skipped, 0);
   });
 
   test("stops when the budget is spent and reports what it skipped", async () => {
