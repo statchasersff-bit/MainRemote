@@ -265,8 +265,10 @@ describe("rendered", () => {
     assert.match(w2.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: Negative/);
     assert.equal(w2.querySelector(".scp-nw-tag").textContent, "Floor");
     assert.equal(w2.querySelector(".scp-nw-tagword"), null, "no read that repeats the tag");
-    assert.equal(w2.querySelector(".scp-nw-result").textContent, "7.5 FPTS · QB28↓ 9.0 below season average");
-    assert.equal(w2.querySelector(".scp-nw-statline").textContent, "17/28 · 95 YDS · 1 TD · 1 INT");
+    // The result row carries the average read and the compact stats (2026-10-21).
+    assert.equal(w2.querySelector(".scp-nw-result").textContent, "7.5 FPTS · QB28↓ 9.0 below season average17/28 · 95 YDS · 1 TD · 1 INT");
+    assert.equal(w2.querySelector(".scp-nw-result .scp-nw-statline").textContent, "17/28 · 95 YDS · 1 TD · 1 INT");
+    assert.ok(w2.querySelector(".scp-nw-head .scp-nw-tag") && w2.querySelector(".scp-nw-head h3"), "tag and headline share a row");
     assert.equal(w2.querySelector(".scp-nw-sum").textContent, "The Seahawks limited Brissett to 3.4 yards per attempt.");
     assert.deepEqual([...doc.querySelectorAll(".scp-nw-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "Practice"]);
     assert.deepEqual([...doc.querySelectorAll(".scp-nw-wklabel b")].map((b) => b.textContent), ["Week 2", "Week 1"]);

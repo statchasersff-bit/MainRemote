@@ -53,12 +53,10 @@ import {
   fpts,
   keyStatSummary,
   metricAverage,
-  perGameRates,
   gameLogColumns,
   RECEIVER_RUSH_COLUMNS,
   type LogColumn,
   positionMomentumMetrics,
-  recentGames,
   TIER_FILL,
   weeklyTier,
   weeklyTierLabel,
@@ -97,7 +95,6 @@ import {
   type MatchupBand,
 } from "./player/header";
 import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
-import { dynastyPageUrl } from "./player/data";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
 import { currentRank, nextGame, oneDecimal, seasonPpg } from "./player/season-phase";
@@ -523,46 +520,6 @@ function ordinal(n: number): string {
   return `${n}${suffix}`;
 }
 
-/* --------------------------------------------------------------- the palette */
-
-/** The weekly-points series and its trailing average. Two hues, validated. */
-const SERIES_POINTS = "#2f63a8";
-const SERIES_AVERAGE = "#a87905";
-
-/* ------------------------------------------------------------ stat tiles */
-
-interface Tile {
-  label: string;
-  value: string;
-  sub?: string;
-  /** A one-word verdict shown under the value, e.g. "Top tier". */
-  note?: string;
-}
-
-/**
- * A stat tile, which is deliberately not a chart.
- *
- * Four numbers with no shared scale and no ordering between them are a set of
- * facts, not a series - drawing them as bars would invite a comparison that
- * means nothing. See the form heuristic: a single headline number is a tile.
- */
-function renderTiles(tiles: Tile[], extraClass = ""): string {
-  const kept = tiles.filter((t) => t.value !== DASH);
-  if (kept.length === 0) return "";
-  const cells = kept
-    .map(
-      (tile) =>
-        `<div class="scp-tile">` +
-        `<p class="scp-tile-label">${escapeHtml(tile.label)}</p>` +
-        `<p class="scp-tile-value">${escapeHtml(tile.value)}</p>` +
-        (tile.note ? `<p class="scp-tile-note">${escapeHtml(tile.note)}</p>` : "") +
-        (tile.sub ? `<p class="scp-tile-sub">${escapeHtml(tile.sub)}</p>` : "") +
-        `</div>`,
-    )
-    .join("");
-  return `<div class="scp-tiles${extraClass ? ` ${extraClass}` : ""}">${cells}</div>`;
-}
-
 /** One figure on a stat rail: the number, what it is, and what it is of. */
 interface RailCell {
   value: string;
@@ -635,122 +592,9 @@ function renderRail(cells: RailCell[], variant: "hero" | "open" = "open"): strin
    The reading in words with the rate and the ordinal under it replaced both,
    and that block (the Stats tab's Efficiency Profile) was removed in turn on
    2026-09-30. */
-
-interface SparkPoint {
-  week: number;
-  opp: string;
-  value: number;
-}
-
-/**
- * Weekly points with a three-game trailing average over them.
- *
- * Two series, so it carries a legend - identity is never color alone. The
- * points line is 2px and the average is drawn beneath it; markers sit at 8px so
- * they are a real hit target for the tooltip client/player.ts attaches, and the
- * <title> on each keeps the bare SVG readable with no script at all.
- */
-function renderSparkline(
-  points: SparkPoint[],
-  average: number[],
-  options: { averageLabel?: string } = {},
-): string {
-  if (points.length < 2) return "";
-
-  // Two series, so the second one is named rather than left to the reader: the
-  // Overview's chart smooths the same points over three games and this tab's
-  // draws a flat season average, and a legend reading "average" on both would
-  // be one word doing two different jobs.
-  const averageLabel = options.averageLabel ?? "3-game average";
-
-  // A fixed aspect ratio, scaled uniformly by the stylesheet. The obvious
-  // alternative - preserveAspectRatio="none" plus a fixed CSS height - stretches
-  // the drawing horizontally, which turns a 2px stroke into a 2px-by-nx one and
-  // every circular marker into an ellipse.
-  const width = 640;
-  const height = 180;
-  const padX = 34;
-  const padTop = 16;
-  const padBottom = 26;
-  const max = Math.max(...points.map((p) => p.value), 1);
-  const stepX = (width - padX * 2) / (points.length - 1);
-
-  const x = (i: number) => padX + i * stepX;
-  const y = (v: number) => height - padBottom - (v / max) * (height - padTop - padBottom);
-
-  const path = (values: number[]) =>
-    values.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
-
-  const markers = points
-    .map(
-      (point, i) =>
-        `<circle class="scp-spark-dot" cx="${x(i).toFixed(1)}" cy="${y(point.value).toFixed(1)}"` +
-        ` r="4" fill="${SERIES_POINTS}" data-week="${point.week}"` +
-        ` data-value="${escapeHtml(point.value.toFixed(1))}" data-opp="${escapeHtml(point.opp)}">` +
-        `<title>${escapeHtml(
-          `Week ${point.week} vs ${point.opp}: ${point.value.toFixed(1)} pts`,
-        )}</title></circle>`,
-    )
-    .join("");
-
-  // Two reference lines and nothing more: the zero baseline the bars are read
-  // against, and the season high. A full gridded axis would be more chart than
-  // five numbers deserve, and no reference at all leaves a line whose height
-  // means nothing.
-  const baselineY = height - padBottom;
-  const maxY = y(max);
-  const axis =
-    `<line class="scp-spark-axis" x1="${padX}" y1="${baselineY}" x2="${width - padX}"` +
-    ` y2="${baselineY}" />` +
-    `<line class="scp-spark-grid" x1="${padX}" y1="${maxY.toFixed(1)}"` +
-    ` x2="${width - padX}" y2="${maxY.toFixed(1)}" stroke-dasharray="3 4" />` +
-    `<text class="scp-spark-tick" x="${padX - 8}" y="${(maxY + 4).toFixed(1)}"` +
-    ` text-anchor="end">${escapeHtml(max.toFixed(0))}</text>` +
-    `<text class="scp-spark-tick" x="${padX - 8}" y="${baselineY + 4}"` +
-    ` text-anchor="end">0</text>`;
-
-  // Week numbers under the first, last and best points only - a label on every
-  // point is noise, and these three are the ones a reader looks for.
-  const bestIndex = points.reduce(
-    (best, point, i) => (point.value > points[best]!.value ? i : best),
-    0,
-  );
-  const ticks = points
-    .map((point, i) =>
-      i === 0 || i === points.length - 1 || i === bestIndex
-        ? `<text class="scp-spark-tick" x="${x(i).toFixed(1)}" y="${height - 8}"` +
-          ` text-anchor="middle">${escapeHtml(`W${point.week}`)}</text>`
-        : "",
-    )
-    .join("");
-
-  return (
-    `<figure class="scp-figure">` +
-    `<svg class="scp-spark" viewBox="0 0 ${width} ${height}"` +
-    ` role="img" aria-label="${escapeHtml(
-      `Weekly fantasy points with ${averageLabel.toLowerCase()} over them`,
-    )}">` +
-    axis +
-    ticks +
-    `<path d="${path(average)}" fill="none" stroke="${SERIES_AVERAGE}" stroke-width="2"` +
-    ` stroke-linecap="round" stroke-linejoin="round" />` +
-    `<path d="${path(points.map((p) => p.value))}" fill="none" stroke="${SERIES_POINTS}"` +
-    ` stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` +
-    markers +
-    `</svg>` +
-    `<figcaption class="scp-figcaption">` +
-    `<ul class="scp-legend">` +
-    `<li class="scp-legend-item"><span class="scp-legend-swatch" aria-hidden="true"` +
-    styleAttr([`background:${SERIES_POINTS}`]) +
-    `></span><span class="scp-legend-label">Weekly points</span></li>` +
-    `<li class="scp-legend-item"><span class="scp-legend-swatch" aria-hidden="true"` +
-    styleAttr([`background:${SERIES_AVERAGE}`]) +
-    `></span><span class="scp-legend-label">${escapeHtml(averageLabel)}</span></li>` +
-    `</ul>` +
-    `</figcaption>` +
-    `</figure>`
-  );
-}
+/* The stat tiles and the weekly-points sparkline that followed the Game Log
+   table went with the tiles row on 2026-10-21; the table's Avg row carries
+   the per-game figures now. */
 
 /* ----------------------------------------------------------------- search */
 
@@ -944,23 +788,9 @@ function renderNav(
     })
     .join("");
 
-  // The two pages of his that live outside this tool, on the strip with the
-  // seven (the brief of 2026-10-10): the dynasty value page when it exists
-  // (data/player/dynasty_pages.json) and his start/sit page. Plain links
-  // with no panel to switch to, under their own class so the bundle (and
-  // everything that reads .scp-nav-link as "a tab") leaves them alone.
-  const dynasty = dynastyPageUrl(data.player.slug);
-  const outside =
-    (dynasty
-      ? `<li><a class="scp-nav-out" href="${escapeHtml(dynasty)}">Dynasty value</a></li>`
-      : "") +
-    `<li><a class="scp-nav-out" href="${escapeHtml(
-      `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`,
-    )}">Start/sit</a></li>`;
-
   return (
     `<nav class="scp-nav" aria-label="Player sections" data-scp-nav>` +
-    `<ul class="scp-nav-list">${items}${outside}</ul>` +
+    `<ul class="scp-nav-list">${items}</ul>` +
     `</nav>`
   );
 }
@@ -1093,15 +923,20 @@ function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOption
 
   const badge = finishBadge(data.seasonRank, player.position);
 
-  const reads: Array<{ label: string; value: string; mod: string }> = [];
+  const reads: Array<{ label: string; value: string; mod: string; sub?: string }> = [];
 
   // Only when there IS a ranked finish. Without one this cell fell back to the
   // scoring rate, which is the next cell along - the same number twice under
   // two labels, which is worse than three cells.
+  //
+  // The rank is the value and the tier is a smaller line under it (mak,
+  // 2026-10-21): "QB20 · Streaming" on one line was doing two jobs at the
+  // size of one, and the lead cell no longer matched the four beside it.
   if (badge) {
     reads.push({
       label: "Producing as",
-      value: `${player.position ?? ""}${data.seasonRank} ${DOT} ${badge.label}`,
+      value: `${player.position ?? ""}${data.seasonRank}`,
+      sub: badge.label,
       mod: badge.tier,
     });
   }
@@ -1144,7 +979,11 @@ function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOption
           `<div class="scp-read-cell" data-mod="${escapeHtml(read.mod)}"` +
           `${i === 0 ? ` data-lead="1"` : ""}>` +
           `<p class="scp-read-label">${escapeHtml(read.label)}</p>` +
-          `<p class="scp-read-value">${escapeHtml(read.value)}</p>` +
+          `<p class="scp-read-value">${escapeHtml(read.value)}` +
+          // Read aloud as "QB20, Streaming"; on screen the tier sits under
+          // the rank in the tier's color at the label's size.
+          (read.sub ? `<span class="scp-read-sub"><span class="scp-sr">, </span>${escapeHtml(read.sub)}</span>` : "") +
+          `</p>` +
           `</div>`,
       )
       .join("") +
@@ -1202,7 +1041,7 @@ function renderRoleDirection(data: PlayerPageData): string {
   return (
     h3("Role Direction") +
     `<table class="scp-table scp-table--role">` +
-    `<caption class="scp-caption">Season average against the last four games played.</caption>` +
+    `<caption class="scp-caption scp-caption--quiet">Season average against the last four games played.</caption>` +
     `<thead><tr><th scope="col">Usage</th><th scope="col">Season</th>` +
     `<th scope="col">Last 4</th><th scope="col">Change</th></tr></thead>` +
     `<tbody>${rows}</tbody></table>`
@@ -1558,58 +1397,6 @@ function renderLogSeasons(
 }
 
 /**
- * The per-game line above the table.
- *
- * Rates, not totals: this tab is about what one week from this player looks
- * like, and the totals are the Stats tab's answer to a different question. Over
- * games PLAYED - per-game over weeks on a roster measures availability while
- * wearing the clothes of production.
- */
-function renderLogTiles(data: PlayerPageData): string {
-  const stats = data.seasonLogStats;
-  if (!stats || stats.gamesPlayed === 0) return "";
-
-  const rates = perGameRates(playedWeeks(data), data.player.position);
-
-  return renderTiles(
-    [
-      {
-        label: "Games played",
-        value: String(stats.gamesPlayed),
-      },
-      {
-        label: `FPTS/G (${SCORING_SHORT[data.format]})`,
-        value: num(stats.ppg),
-      },
-      ...rates.map((rate) => ({
-        label: rate.label,
-        value: rate.pct ? pct(rate.value, rate.digits) : num(rate.value, rate.digits),
-      })),
-    ],
-    "scp-tiles--log",
-  );
-}
-
-/**
- * The season in prose, under the tiles that just gave it in figures.
- *
- * Per-game rates and how many of those weeks were startable, above the table.
- * It used to follow a totals sentence ("has played 3 games ... worth 49.6 PPR
- * fantasy points"); that was removed on request, since the tiles and the
- * table already give the totals.
- */
-function renderLogIntro(data: PlayerPageData): string {
-  const summary = logSummarySentences(data);
-  if (!summary) return "";
-
-  return (
-    `<div class="scp-logintro">` +
-    `<p class="scp-note">${escapeHtml(summary)}</p>` +
-    `</div>`
-  );
-}
-
-/**
  * What one week's points were made of.
  *
  * The coefficients from scoring.ts, itemized. The total this is printed under
@@ -1901,167 +1688,108 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
       `</p>`
     : "";
 
+  const foot = renderLogAverages(data, columns, scored);
+
   return (
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--log" data-scp-sortable data-scp-expandable>` +
-    `<thead>${head}</thead><tbody>${rows}</tbody></table></div>` +
+    `<thead>${head}</thead><tbody>${rows}</tbody>` +
+    (foot ? `<tfoot>${foot}</tfoot>` : "") +
+    `</table></div>` +
     oppNote
   );
 }
 
 /**
- * One chart, of the one column this page is built around.
+ * The Avg row under the log (mak, 2026-10-21).
  *
- * Weekly points against the season average, and nothing else. The Overview tab
- * already draws the same series under a three-game trailing average, which is a
- * question about form; this one is a question about consistency - how many
- * weeks were above the line a manager was starting him on - so the reference is
- * flat and the chart stays a second reading of the FPTS column rather than an
- * analysis of its own. The table is the hero.
+ * It replaces the six rate tiles that stood above the table and the paragraph
+ * that read them back: the same per-game figures, printed in the columns they
+ * average so a reader checks 221 against the PASS YDS cells above it rather
+ * than against a label. Over games PLAYED, as the tiles were - a per-game
+ * figure over roster weeks measures availability wearing production's clothes.
+ *
+ * A <tfoot>, so the client's sort leaves it under the table whatever order
+ * the body is in. A ratio averages both halves ("26.0/39.0"), a "per" column
+ * is the season's quotient, and a count is its mean to one decimal. The
+ * Result cell is the record over those games and Finish is the mean weekly
+ * finish, in the same tier pill the rows wear.
  */
-function renderLogChart(data: PlayerPageData): string {
+function renderLogAverages(
+  data: PlayerPageData,
+  columns: LogColumn[],
+  scored: boolean,
+): string {
   const played = playedWeeks(data);
-  if (played.length < 3) return "";
+  // One game has no average; the row would restate the row above it.
+  if (played.length < 2) return "";
+  const { player, format } = data;
+  const n = played.length;
 
-  const points: SparkPoint[] = played.map((entry) => ({
-    week: entry.week,
-    opp: entry.opp,
-    value: fpts(entry, data.format),
-  }));
+  const total = (key: string): number | null => {
+    const values = played.map((entry) => statOf(entry, key)).filter((v): v is number => v !== null);
+    return values.length === 0 ? null : values.reduce((sum, v) => sum + v, 0);
+  };
+  const mean = (key: string): number | null => {
+    const sum = total(key);
+    return sum === null ? null : sum / n;
+  };
 
-  const average =
-    data.seasonLogStats?.ppg ??
-    points.reduce((sum, point) => sum + point.value, 0) / points.length;
-  if (!Number.isFinite(average)) return "";
+  const cell = (column: LogColumn): string => {
+    if (column.kind === "ratio") {
+      const value = mean(column.key);
+      const over = column.over ? mean(column.over) : null;
+      if (value === null && over === null) return DASH;
+      return `${num(value ?? 0)}/${num(over ?? 0)}`;
+    }
+    if (column.kind === "per") {
+      const value = total(column.key);
+      const over = column.over ? total(column.over) : null;
+      if (!over || value === null) return DASH;
+      return num(value / over);
+    }
+    const value = mean(column.key);
+    return value === null ? DASH : num(value);
+  };
+
+  const ppg = played.reduce((sum, entry) => sum + fpts(entry, format), 0) / n;
+
+  const record = (() => {
+    const tally = { W: 0, L: 0, T: 0 };
+    for (const entry of played) {
+      const r = entry.score?.r;
+      if (r === "W" || r === "L" || r === "T") tally[r] += 1;
+    }
+    if (tally.W + tally.L + tally.T === 0) return DASH;
+    return `${tally.W}-${tally.L}${tally.T ? `-${tally.T}` : ""}`;
+  })();
+
+  const ranks = played.map((entry) => entry.pos_rank).filter((r): r is number => typeof r === "number");
+  const meanRank = ranks.length ? Math.round(ranks.reduce((sum, r) => sum + r, 0) / ranks.length) : null;
+  const tier = weeklyTier(meanRank);
 
   return (
-    h3("Fantasy Points By Week") +
-    renderSparkline(
-      points,
-      points.map(() => average),
-      { averageLabel: `Season average (${num(average)})` },
-    )
+    `<tr class="scp-avg">` +
+    `<th scope="row">Avg</th>` +
+    `<td class="scp-opp"><span class="scp-avg-games">${escapeHtml(`${n} games`)}</span></td>` +
+    (scored ? `<td class="scp-score">${escapeHtml(record)}</td>` : "") +
+    `<td class="scp-pts">${escapeHtml(num(ppg))}</td>` +
+    columns
+      .map(
+        (column) =>
+          `<td class="scp-col-box${column.secondary ? " scp-col-2" : ""}">` +
+          `${escapeHtml(cell(column))}</td>`,
+      )
+      .join("") +
+    `<td class="scp-col-fin">` +
+    (tier && meanRank
+      ? `<span class="scp-tier" data-tier="${tier}"${styleAttr([
+          `--tier-fill:${TIER_FILL[tier]}`,
+        ])}>${escapeHtml(`${player.position ?? ""}${meanRank}`)}</span>`
+      : DASH) +
+    `</td>` +
+    `</tr>`
   );
-}
-
-/**
- * The trailing five games.
- *
- * Dropped entirely when the season IS five games or fewer, because "the last
- * five" and "the season" would then be the same list under two headings. Played
- * games, not calendar weeks: a player back from a three-week absence has played
- * one game recently, not four.
- */
-function renderRecentGames(data: PlayerPageData): string {
-  const played = playedWeeks(data);
-  if (played.length <= 5) return "";
-
-  const recent = recentGames(data.seasonLog, 5);
-  const values = recent.map((entry) => fpts(entry, data.format));
-  const ppg = values.reduce((sum, value) => sum + value, 0) / values.length;
-  const first = recent[0]?.week;
-  const last = recent[recent.length - 1]?.week;
-
-  return (
-    h3("Last Five Games") +
-    renderTiles(
-      [
-        {
-          label: `FPTS/G (${SCORING_SHORT[data.format]})`,
-          value: num(ppg),
-          sub: first && last ? `Weeks ${first}–${last}` : undefined,
-        },
-        { label: "High", value: num(Math.max(...values)) },
-        { label: "Low", value: num(Math.min(...values)) },
-        ...perGameRates(recent, data.player.position)
-          .slice(0, 2)
-          .map((rate) => ({
-            label: rate.label,
-            value: rate.pct ? pct(rate.value, rate.digits) : num(rate.value, rate.digits),
-          })),
-      ],
-      "scp-tiles--log",
-    )
-  );
-}
-
-/**
- * The season divided, under the sentence that added it up.
- *
- * Programmatic and factual, which is the only kind of summary this page is
- * allowed to generate: it restates the table for a reader - and for a crawler -
- * that wants the shape of the season in a sentence rather than in eighteen
- * rows. It says nothing the table does not.
- *
- * ONE GAME IS NOT A SEASON, and this paragraph knows it. Its whole job is to
- * divide a season into rates, and with a single game the quotient is the
- * dividend: "that is worth 16.5 points" and "has averaged 16.5 points per
- * game" are the same sentence twice, which is exactly how it read once the two
- * paragraphs moved next to each other. So at one game the averages are dropped
- * - along with "of those weeks", which has nothing to refer back to - and the
- * paragraph renders as nothing at all. The lede above it has already said
- * everything one game supports, and the week's finish is in the table's own
- * Finish column.
- */
-function logSummarySentences(data: PlayerPageData): string {
-  const stats = data.seasonLogStats;
-  if (!stats || stats.gamesPlayed === 0) return "";
-
-  const { player, format, logSeason } = data;
-  const played = playedWeeks(data);
-  const position = player.position ?? "";
-  const single = stats.gamesPlayed === 1;
-  const sentences: string[] = [];
-
-  if (!single) {
-    // Per-game throughout: the tiles add the season up, this divides it.
-    // Only the rates that have a prose name - a completion percentage is not
-    // something a player "averaged", and a tile label in a sentence reads like
-    // a column header that wandered out of the table.
-    const averages = perGameRates(played, player.position)
-      .filter((rate) => rate.prose)
-      .slice(0, 2)
-      .map((rate) => `${num(rate.value, rate.digits)} ${rate.prose}`);
-
-    averages.push(`${num(stats.ppg)} ${SCORING_LABELS[format]} fantasy points`);
-    const last = averages.pop() as string;
-    const averageLine =
-      averages.length > 0 ? `${averages.join(", ")} and ${last}` : last;
-
-    sentences.push(
-      `Across ${stats.gamesPlayed} games in ${logSeason}, ` +
-        `${player.name} has averaged ${averageLine} per game.`,
-    );
-  }
-
-  // Only when the weeks are actually ranked. Without ranks every count below is
-  // zero, and "finished as a top-12 QB in 0 of 6 weeks" is a false statement
-  // rather than a missing one. And only past one game: counting "of those
-  // weeks" needs weeks to count, and the Finish column prints the single
-  // week's rank a row away from this paragraph.
-  if (!single && played.some((entry) => entry.pos_rank)) {
-    const starter = stats.pos1Games + stats.pos2Games;
-    sentences.push(
-      `${player.name} has finished as a top-12 ${position || "option"} in ` +
-        `${stats.pos1Games} of those weeks, and inside the top 24 in ${starter}.`,
-    );
-  }
-
-  const best = stats.bestWeek;
-  const worst = played.reduce<GameLogEntry | null>(
-    (low, entry) =>
-      !low || fpts(entry, format) < fpts(low, format) ? entry : low,
-    null,
-  );
-  if (best && worst && best.week !== worst.week) {
-    sentences.push(
-      `The best week was Week ${best.week} against ${best.opp} ` +
-        `(${num(fpts(best, format))} points); the lowest was Week ${worst.week} ` +
-        `against ${worst.opp} (${num(fpts(worst, format))}).`,
-    );
-  }
-
-  return sentences.join(" ");
 }
 
 /**
@@ -2177,9 +1905,14 @@ function renderUpcoming(
         //
         // A sibling of the week line rather than inside it: "Week 2" is the
         // card's own label and stays exactly that, whatever sits beside it.
+        //
+        // The kickoff line rides the top row's right side (mak, 2026-10-21),
+        // so the card's body - crest, code, name, rank and verdict - can be
+        // centered beneath it. The "Next" flag keeps to the week label's side.
         `<div class="scp-next-top">` +
         `<p class="scp-next-week">${escapeHtml(`Week ${game.week}`)}</p>` +
         (index === 0 ? `<p class="scp-next-flag">Next</p>` : "") +
+        (when ? `<p class="scp-next-when">${escapeHtml(when)}</p>` : "") +
         `</div>` +
         `<p class="scp-next-team">` +
         logo +
@@ -2193,7 +1926,6 @@ function renderUpcoming(
         `<span class="scp-sr">${away ? "Away at " : "Home vs "}</span>` +
         `${escapeHtml(game.opponentName)}</p>` +
         matchup +
-        (when ? `<p class="scp-next-when">${escapeHtml(when)}</p>` : "") +
         // Pinned to the foot of the card by CSS, so the row of buttons lines
         // up whether or not a fixture has a kickoff time yet.
         (href
@@ -2301,8 +2033,8 @@ function renderGameLog(
    *
    * It read "2026 Season (Through Week 1)" - a caption restating the year the
    * heading had just given, in the one position on the tab where a reader is
-   * most willing to be told something. The tiles give "Games played"
-   * instead, which is how far in we are.
+   * most willing to be told something. The table's Avg row names the
+   * games played instead, which is how far in we are.
    */
   // The tab is the active season, whatever ?log= asks for; the archive season
   // is rendered separately, below the selector.
@@ -2326,19 +2058,17 @@ function renderGameLog(
     // is gone is the control that advertised it, on the page where the numbers
     // it changes live.
     //
-    // Tiles first, prose second. The paragraph reads as a gloss on the tiles -
-    // the same season, in sentences, with the context a grid of six numbers
-    // cannot carry - and a reader who only wants the number gets it without
-    // reading past a paragraph to reach it.
-    renderLogTiles(current) +
-    renderLogIntro(current) +
+    // Straight into the table (mak, 2026-10-21). The six rate tiles and the
+    // generated paragraph that glossed them are gone: the table's own Avg
+    // row carries the per-game figures now, in the columns they average.
     renderWeeklyLog(current, options) +
     // The two sections of mak's 2026-10-01 Game Log spec, directly after the
     // week-by-week table as it places them: the finish ladder and the per-game
     // cards. Everything below them predates the spec and stays.
+    // The weekly points chart and the Last Five Games tiles that followed the
+    // story were removed on the same request; the table and the story carry
+    // both readings.
     renderGamelogStory(current) +
-    renderLogChart(current) +
-    renderRecentGames(current) +
     renderUpcoming(current, options) +
     // One or the other, never both: All is the selector's resting state. The
     // selector itself goes INTO whichever one renders, on its heading's row -
@@ -2377,11 +2107,9 @@ function activeSeasonView(data: PlayerPageData): PlayerPageData {
 /**
  * A pinned archive season, under the selector that pinned it.
  *
- * The same three blocks the active season leads with - the tiles, the
- * paragraph, the table - and none of the ones that only make sense for a
- * season in progress: no fixtures, because a finished year has none; no
- * trailing-five and no consistency chart, because both are readings of current
- * FORM and this block is a record.
+ * The same table the active season leads with, and none of the blocks that
+ * only make sense for a season in progress: no fixtures, because a finished
+ * year has none.
  *
  * Every id inside it is namespaced by season already (`gl-2025-w4`), which is
  * what lets two game-log tables sit on one page without the week-detail
@@ -2402,8 +2130,8 @@ function renderArchiveSeason(
       `${data.player.name} ${data.logSeason} game log`,
     )}">` +
     sectionHead(`${data.player.name} Game Log ${data.logSeason}`, "", seasonNav) +
-    renderLogTiles(data) +
-    renderLogIntro(data) +
+    // The same table the active season leads with, Avg row and all; the
+    // tiles and paragraph left both blocks together (2026-10-21).
     renderWeeklyLog(data, options) +
     // The spec's two sections follow the pinned year's table too, in the past
     // tense; seasons with no stored box scores render neither, silently.

@@ -974,7 +974,7 @@ describe("the game log tab", () => {
     const pinned = await dom(`${other.getAttribute("href")}`);
 
     // The whole point of the selector's new behavior: picking 2025 ADDS 2025.
-    // The current season's heading, tiles, prose, table and fixtures have to
+    // The current season's heading, table and fixtures have to
     // come back byte for byte, or "do not touch the current season" is a
     // comment rather than a property.
     assert.deepEqual(
@@ -1060,65 +1060,57 @@ describe("the game log tab", () => {
     // The header's strip asks the question now; a second copy in the bar put
     // two versions of it above the fold. The scoring toggle stays gone too.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    // The strip's outside links (Dynasty value, Start/sit; 2026-10-10) are
-    // nav links, not a button of the bar's own.
-    assert.equal(doc.querySelectorAll(".scp-controls a:not(.scp-nav-link):not(.scp-nav-out)").length, 0);
+    assert.equal(doc.querySelectorAll(".scp-controls a:not(.scp-nav-link)").length, 0);
+    // The strip's outside links (Dynasty value, Start/sit) are gone (2026-10-21).
+    assert.equal(doc.querySelectorAll(".scp-nav-out").length, 0);
     assert.equal(doc.querySelectorAll(".scp-startsit").length, 0);
     assert.equal(doc.querySelectorAll(".scp-format, .scp-format-opt").length, 0);
   });
 
-  test("the intro restates the table and nothing else", async () => {
-    // It opens the tab now, where the season's caption used to be. Leading with
-    // prose only works if the prose is the same generated restatement it always
-    // was - an opening paragraph is exactly where a claim nobody measured would
-    // get written.
+  test("the table carries its own Avg row, and the tiles and intro are gone", async () => {
+    // The six rate tiles and the generated paragraph that glossed them were
+    // replaced by a <tfoot> averages row on the table itself (mak,
+    // 2026-10-21), so the per-game figures sit in the columns they average.
+    // The weekly-points chart and the Last Five Games tiles went with them.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const intro = doc.querySelector("#game-log .scp-logintro");
-    const games = doc.querySelectorAll(
-      '#game-log table.scp-table--log tbody tr.scp-row[data-status="active"]',
-    ).length;
-    // The totals sentence is gone, so with one game there is nothing left to
-    // say that the table does not: one game is not an average.
-    if (games <= 1) {
-      assert.equal(intro, null, "one game gets no intro");
-      return;
-    }
-    assert.ok(intro, "the generated intro is in the HTML");
-    assert.equal(
-      intro.querySelector(".scp-lede"),
-      null,
-      "the totals sentence was removed on request",
+    assert.equal(doc.querySelector("#game-log .scp-tiles--log"), null, "no tiles");
+    assert.equal(doc.querySelector("#game-log .scp-logintro"), null, "no intro paragraph");
+    assert.equal(doc.querySelector("#game-log .scp-spark"), null, "no weekly points chart");
+    assert.ok(
+      ![...doc.querySelectorAll("#game-log h3")].some((h) => /Last Five Games|Fantasy Points By Week/.test(h.textContent)),
+      "the chart and trailing-five headings are gone",
     );
-    assert.doesNotMatch(intro.textContent, /That is worth/);
 
     const table = doc.querySelector("#game-log table.scp-table--log");
-    if (table) {
-      assert.ok(
-        intro.compareDocumentPosition(table) & 4,
-        "the season in words comes before the season in rows",
-      );
+    const games = [...table.querySelectorAll('tbody tr.scp-row[data-status="active"]')];
+    const avg = table.querySelector("tfoot tr.scp-avg");
+    if (games.length < 2) {
+      assert.equal(avg, null, "one game has no average row");
+      return;
     }
+    assert.ok(avg, "a season of games gets an Avg row under the table");
+    assert.equal(avg.querySelector("th").textContent.trim(), "Avg");
+    assert.equal(avg.querySelector(".scp-avg-games").textContent.trim(), `${games.length} games`);
 
-    // Between the two, not above both: the tiles are the faster answer, and
-    // the paragraph reads as a gloss on them.
-    const tiles = doc.querySelector("#game-log .scp-tiles--log");
-    if (tiles) {
-      assert.ok(
-        tiles.compareDocumentPosition(intro) & 4,
-        "the tiles come before the paragraph that glosses them",
-      );
+    // The row averages the body, column for column: FPTS and every count
+    // column come back as the mean of the cells above them.
+    const headers = [...table.querySelectorAll("thead th")].map((th) => th.textContent.trim());
+    const cellsOf = (tr) => [...tr.children].map((c) => c.textContent.trim());
+    const avgCells = cellsOf(avg);
+    assert.equal(avgCells.length, headers.length, "the Avg row spans every column");
+    const mean = (index) =>
+      games.reduce((sum, tr) => sum + Number(cellsOf(tr)[index]), 0) / games.length;
+    for (const [index, label] of headers.entries()) {
+      if (["FPTS", "PASS YDS", "PASS TD", "INT", "CAR", "RUSH YDS", "RUSH TD", "TGT", "REC", "REC YDS", "REC TD"].includes(label)) {
+        assert.equal(avgCells[index], mean(index).toFixed(1), `${label} averages the column`);
+      }
     }
-
-    const text = intro.textContent;
-    assert.ok(text.includes(fixture.name), "it names the player");
-
-    const summary = intro.querySelector(".scp-note");
-    assert.ok(summary, "a season of games is summarized per game");
-    assert.ok(/per game/.test(summary.textContent), "it talks in per-game terms");
-
-    // Rule 3: this page describes what happened and never what happens next.
-    for (const word of ["will ", "expect", "projected", "should "]) {
-      assert.ok(!text.toLowerCase().includes(word), `the summary avoids "${word.trim()}"`);
+    // The record counts the Result cells.
+    const resultIndex = headers.indexOf("Result");
+    if (resultIndex >= 0) {
+      const wins = games.filter((tr) => /^W/.test(cellsOf(tr)[resultIndex])).length;
+      const losses = games.filter((tr) => /^L/.test(cellsOf(tr)[resultIndex])).length;
+      assert.match(avgCells[resultIndex], new RegExp(`^${wins}-${losses}`));
     }
   });
 
@@ -2952,7 +2944,6 @@ describe("the embedded fragment", () => {
   test("each tab carries the title its own address wears, for the history push", async () => {
     const res = await get(`/embed/player/${fixture.slug}`);
     const doc = new JSDOM(res.body).window.document;
-    // The tabs only: the strip's outside links (Dynasty value, Start/sit) push no history.
     const titles = [...doc.querySelectorAll("[data-scp-nav] a.scp-nav-link")].map((a) => a.dataset.scTitle);
     assert.ok(titles.length >= 5 && titles.every(Boolean), "every tab has a title");
     assert.equal(new Set(titles).size, titles.length, "and no two share one");

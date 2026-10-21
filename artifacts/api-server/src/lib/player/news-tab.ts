@@ -8,6 +8,12 @@
  *   4. Around the {Nickname} - the club's own reporting
  *   5. footer - sources, scoring, last update
  *
+ * Desktop composition (mak, 2026-10-21): two rows of two. Row one is the
+ * lead beside the Current Outlook card; row two is the season timeline
+ * beside a compact "Around the {Nickname}" feed, so the club's reporting
+ * balances the timeline instead of sitting under it. Teammates news keeps
+ * the full width below. One column under 960px, in that DOM order.
+ *
  * The model is news-tab-data.ts. Absolute dates only: nothing here prints a
  * relative time or carries the data-ts the client would turn into one.
  *
@@ -228,11 +234,13 @@ function renderLatest(
 function renderItem(i: FeedItem): string {
   const group = MOVES.includes(i.type) ? ` data-group="moves"` : "";
   const game = i.type === "game" && i.pointsLine;
-  // One anatomy per entry (mak, 2026-10-05): tag, headline, the result with
-  // its distance from his average, compact stats, one line, one link.
+  // One anatomy per entry (mak, 2026-10-05), compressed 2026-10-21: the tag
+  // and headline share a row, the result row carries the distance from his
+  // average and the compact stats, then one line and one link.
   const body = game
-    ? `<p class="scp-nw-result"><b>${escapeHtml(fpts(i))}</b>${avgLine(i)}</p>` +
-      (i.panel ? `<p class="scp-nw-statline">${escapeHtml(timelineStats(i.panel.lines))}</p>` : "") +
+    ? `<p class="scp-nw-result"><b>${escapeHtml(fpts(i))}</b>${avgLine(i)}` +
+      (i.panel ? `<span class="scp-nw-statline">${escapeHtml(timelineStats(i.panel.lines))}</span>` : "") +
+      `</p>` +
       (i.takeaway ? `<p class="scp-nw-sum">${escapeHtml(i.takeaway)}</p>` : "")
     : `<p class="scp-nw-meta">${stamp(i.ms, i.hasTime)}<span>${sourceBits(i)}</span></p>` +
       (i.summary ? `<p class="scp-nw-sum">${escapeHtml(i.summary)}</p>` : "") +
@@ -240,10 +248,12 @@ function renderItem(i: FeedItem): string {
   return (
     `<article class="scp-nw-item is-${i.impact}" data-type="${i.type}" data-impact="${i.impact}"${group}>` +
     impactSr(i.impact) +
+    `<div class="scp-nw-head">` +
     // The read beside the tag only when it says more ("SOLID Volume boost",
     // not "FLOOR Floor game").
     `<p class="scp-nw-tagrow">${tagFor(i.outcome)}${game && !i.outcome.label.toLowerCase().startsWith(i.outcome.tag.toLowerCase()) ? `<span class="scp-nw-tagword">${escapeHtml(i.outcome.label)}</span>` : ""}</p>` +
     `<h3>${link(i.url, i.headline, "", i.external)}</h3>` +
+    `</div>` +
     body +
     readLink(i, true) +
     `</article>`
@@ -273,14 +283,7 @@ function renderGroup(g: WeekGroup, items: FeedItem[], pending: boolean): string 
   );
 }
 
-function renderFeed(
-  data: PlayerPageData,
-  ctx: NewsContext,
-  items: FeedItem[],
-  pendingGroups: WeekGroup[],
-  options: PlayerRenderOptions,
-  injuryHref: string | null,
-): string {
+function renderFeed(items: FeedItem[], pendingGroups: WeekGroup[]): string {
   const groups = new Map<string, { g: WeekGroup; items: FeedItem[]; pending: boolean }>();
   for (const i of items) {
     const hit = groups.get(i.group.key) ?? { g: i.group, items: [], pending: false };
@@ -324,9 +327,22 @@ function renderFeed(
       `<p class="scp-nw-empty" id="scp-nw-empty" role="status" hidden>No updates of this type yet this season.</p>`;
   }
 
-  /* ---- sidebar: one utility card (mak, 2026-09-30) ---- */
-  const prefix = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}`;
-  const q = options.linkQuery ?? "";
+  return (
+    `<section class="scp-ox-sec" aria-labelledby="scp-nw-feed-h">` +
+    // Same label language as "Latest update", no gold rule (mak, 2026-10-05).
+    `<h2 class="scp-ox-h2 scp-nw-label" id="scp-nw-feed-h">${escapeHtml(titleCase("Season timeline"))}</h2>` +
+    (ordered.length ? filters : "") +
+    feed +
+    `</section>`
+  );
+}
+
+/**
+ * The Current Outlook card: one utility card (mak, 2026-09-30), values first.
+ * Since 2026-10-21 it stands beside the lead, not the timeline; its label
+ * sits outside the card so the two columns open on the same line.
+ */
+function renderOutlookCard(data: PlayerPageData, ctx: NewsContext, options: PlayerRenderOptions, injuryHref: string | null): string {
   const rc = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
   const status = ctx.designation ?? "Active";
   const statusKind = !ctx.designation ? "good" : /^(questionable)/i.test(status) ? "mid" : "bad";
@@ -363,20 +379,13 @@ function renderFeed(
     const dir = form.formDirection;
     rows.push(row("Trend", `${dir === "up" ? "↑" : dir === "down" ? "↓" : "→"} ${form.formLabel}`, "", dir === "up" ? "good" : dir === "down" ? "bad" : ""));
   }
-  const aside =
-    `<aside class="scp-ox-aside" aria-label="Current outlook">` +
-    `<div class="scp-ox-panel scp-nw-card"><h3>Current Outlook</h3>` +
+  return (
+    `<aside class="scp-ox-aside scp-nw-side" aria-labelledby="scp-nw-side-h">` +
+    `<h3 class="scp-nw-label" id="scp-nw-side-h">Current Outlook</h3>` +
+    `<div class="scp-ox-panel scp-nw-card">` +
     `<dl class="scp-nw-qa">${rows.join("")}</dl>` +
     `<a class="scp-ox-btn" href="${escapeHtml(rc)}" data-cta="redraft-command-news-sidebar">Open in Redraft Command <span aria-hidden="true">→</span></a>` +
-    `</div></aside>`;
-
-  return (
-    `<section class="scp-ox-sec" aria-labelledby="scp-nw-feed-h"><div class="scp-ox-read"><div>` +
-    // Same label language as "Latest update", no gold rule (mak, 2026-10-05).
-    `<h2 class="scp-ox-h2 scp-nw-label" id="scp-nw-feed-h">${escapeHtml(titleCase("Season timeline"))}</h2>` +
-    (ordered.length ? filters : "") +
-    feed +
-    `</div>${aside}</div></section>`
+    `</div></aside>`
   );
 }
 
@@ -453,19 +462,23 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
     .map((item) => {
       const ts = itemTimestamp(item);
       const label = TEAM_LABEL[item.category ?? ""] ?? (item.category && item.category !== "other" ? categoryLabel(item.category) : "Team news");
+      // A condensed feed row (mak, 2026-10-21): date and type on one small
+      // line, the headline under it. It lives in the rail beside the timeline.
       return (
-        `<li><span class="scp-nw-d">${ts ? stamp(ts, false) : ""}</span>` +
-        `<div>${link(item.link ?? null, sentenceCase(item.title, proper), ` class="scp-nw-h" data-cta="news-team-outbound"`, true)}` +
-        `<span class="scp-nw-who">${escapeHtml(label)}</span></div><span></span></li>`
+        `<li><p class="scp-nw-meta"><span class="scp-nw-d">${ts ? stamp(ts, false) : ""}</span><span class="scp-nw-who">${escapeHtml(label)}</span></p>` +
+        link(item.link ?? null, sentenceCase(item.title, proper), ` class="scp-nw-h" data-cta="news-team-outbound"`, true) +
+        `</li>`
       );
     })
     .join("");
   const prefix = options.teamPathPrefix ?? "/team/";
   const more = `${prefix}${data.team.slug}/news/${options.linkQuery ?? ""}`;
   return (
-    // No "Team reporting from …" lede (mak, 2026-10-02).
-    open("scp-nw-team-h", `Around the ${data.team.nickname}`, "") +
-    `<ul class="scp-nw-list">${rows}</ul>` +
+    // No "Team reporting from …" lede (mak, 2026-10-02); the same small label
+    // as "Season timeline" since the two share a row.
+    `<section class="scp-ox-sec scp-nw-team" aria-labelledby="scp-nw-team-h">` +
+    `<h2 class="scp-ox-h2 scp-nw-label" id="scp-nw-team-h">${escapeHtml(titleCase(`Around the ${data.team.nickname}`))}</h2>` +
+    `<ul class="scp-nw-rail-list">${rows}</ul>` +
     `<a class="scp-ox-more" href="${escapeHtml(more)}" target="_top">${escapeHtml(`All ${data.team.fullName} news`)}</a>` +
     `</section>`
   );
@@ -542,9 +555,16 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   const faq = renderFaqSection("news", data, selectFaq(newsPool(data, ctx, items, lead, options)), options);
   const wrap = (html: string): string =>
     html ? `<div class="scp-ox scp-st scp-nw"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";
+  // Row one: the lead beside the outlook card. Row two: the timeline beside
+  // the club's reporting. With no lead the card moves to row two's rail, so
+  // the page never opens on an empty column.
+  const card = renderOutlookCard(data, ctx, options, injuryHref);
+  const top = latest ? `<div class="scp-nw-row scp-nw-top">${latest}${card}</div>` : "";
+  const rail = `<div class="scp-nw-rail">${latest ? "" : card}${team}</div>`;
+  const main = `<div class="scp-nw-row scp-nw-main">${renderFeed(feedItems, pending)}${rail}</div>`;
   return {
     // The panel heading's one-line dek (mak, 2026-10-05).
-    body: wrap(`<p class="scp-nw-dek">Fantasy-relevant news, game recaps and role changes</p>` + latest + renderFeed(data, ctx, feedItems, pending, options, injuryHref) + mates + team),
+    body: wrap(`<p class="scp-nw-dek">Fantasy-relevant news, game recaps and role changes</p>` + top + main + mates),
     faq: wrap(faq),
   };
 }
