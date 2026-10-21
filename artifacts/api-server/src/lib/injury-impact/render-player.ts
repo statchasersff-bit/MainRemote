@@ -1,7 +1,8 @@
 /**
- * One player's injury panel: the risk profile with its body map, the career
- * timeline, the weekly report table and the play-by-play log. Drawn inline on
- * the database page and in a dialog on the dashboard, from the same slice.
+ * One player's injury panel: the risk profile with its body map, the weekly
+ * report table, the play-by-play log and the affected regions (the career
+ * timeline is unmounted, see renderTimeline). Drawn inline on the database
+ * page and in a dialog on the dashboard, from the same slice.
  * Ported from the app's InjuryRiskProfile.tsx, SeasonTimeline.tsx and
  * PlayerInjuryDialog.tsx.
  */
@@ -98,7 +99,24 @@ export function renderRiskProfile(slice: PlayerSlice): string {
           )
           .join("")}</ul></div>`
       : "") +
-    `<div><div class="scin-pp-k">Affected Regions</div>${
+    `</div>` +
+    `<div class="scin-pp-map"><svg viewBox="0 0 200 430" width="200" height="430" role="img" aria-label="Body map of affected regions">${body}</svg>` +
+    `<div class="scin-pp-legend"><span>No games missed</span>${legend}<span class="scin-legend-sw" style="background:${severityColor(0, true).fill};border-color:${severityColor(0, true).stroke}"></span><span>Season-ending</span></div></div>` +
+    `</div></section>`
+  );
+}
+
+/**
+ * The body regions the weekly reports name, as chips with the games missed.
+ * Its own section (mak, 2026-10-21): it sits under the durability profile's
+ * availability grid when the player has one (the bundle moves it there once
+ * the profile loads), else at the foot of the reports.
+ */
+export function renderAffectedRegions(slice: PlayerSlice): string {
+  const m = riskModel(slice.rows, slice.impacts);
+  const chips = regionChips(m);
+  return (
+    `<section class="scin-pp" data-pp-regions>${h3("Affected Regions")}${
       chips.length
         ? `<div class="scin-chips">${chips
             .map(({ region, stat }) => {
@@ -107,14 +125,16 @@ export function renderRiskProfile(slice: PlayerSlice): string {
             })
             .join("")}</div>`
         : `<p class="scin-body is-muted">No localized injuries recorded from the weekly reports.</p>`
-    }${m.unlocalized > 0 ? `<p class="scin-fine">${m.unlocalized} report mention${m.unlocalized === 1 ? "" : "s"} not tied to a specific body region (e.g. illness / rest).</p>` : ""}</div>` +
-    `</div>` +
-    `<div class="scin-pp-map"><svg viewBox="0 0 200 430" width="200" height="430" role="img" aria-label="Body map of affected regions">${body}</svg>` +
-    `<div class="scin-pp-legend"><span>No games missed</span>${legend}<span class="scin-legend-sw" style="background:${severityColor(0, true).fill};border-color:${severityColor(0, true).stroke}"></span><span>Season-ending</span></div></div>` +
-    `</div></section>`
+    }${m.unlocalized > 0 ? `<p class="scin-fine">${m.unlocalized} report mention${m.unlocalized === 1 ? "" : "s"} not tied to a specific body region (e.g. illness / rest).</p>` : ""}</section>`
   );
 }
 
+/**
+ * The week-by-week career grid. UNMOUNTED since 2026-10-21 at mak's request
+ * ("remove Career Timeline"): the durability profile's availability grid
+ * shows the same seasons one box per game. Kept, like the model behind it,
+ * in case it is wanted back.
+ */
 export function renderTimeline(slice: PlayerSlice): string {
   const seasons = timelineModel(slice.rows, slice.impacts, slice.schedule, slice.audited ?? null);
   if (!seasons.length) return "";
@@ -195,7 +215,7 @@ export function renderPlayerHeader(slice: PlayerSlice, assets: InjuryAssets, siz
 /** Everything under the header, for a player with a slice. */
 export function renderPlayerReports(slice: PlayerSlice, state: PlayerPanelState = DEFAULT_PANEL_STATE): string {
   if (!slice.rows.length) return `<p class="scin-empty">No injury reports on file for ${escapeHtml(slice.name)}.</p>`;
-  return renderRiskProfile(slice) + renderTimeline(slice) + renderWeeklyReports(slice, state.showWeekly) + renderPlayLog(slice, state.showPlays);
+  return renderRiskProfile(slice) + renderWeeklyReports(slice, state.showWeekly) + renderPlayLog(slice, state.showPlays) + renderAffectedRegions(slice);
 }
 
 export { n0 };

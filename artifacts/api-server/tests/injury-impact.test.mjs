@@ -399,6 +399,17 @@ describe("the player panel", () => {
     assert.ok(m.regionsAffected >= 1);
   });
 
+  test("Affected Regions is its own section at the foot of the reports, no longer inside the risk profile", async () => {
+    const renderPlayer = await importModule("lib/injury-impact/render-player");
+    const slice = injuryData.getPlayerSlice("00-0035676");
+    const html = renderPlayer.renderPlayerReports(slice);
+    assert.doesNotMatch(renderPlayer.renderRiskProfile(slice), /Affected Regions/);
+    assert.doesNotMatch(html, /Career Timeline|scin-tl-row/, "the career timeline is unmounted (mak, 2026-10-21)");
+    const regionsAt = html.indexOf('<section class="scin-pp" data-pp-regions>');
+    assert.ok(regionsAt > html.lastIndexOf('data-pp-toggle="plays"'), "after the play-by-play log");
+    assert.match(html.slice(regionsAt), /Affected Regions[\s\S]*scin-chip/);
+  });
+
   test("lays out a season timeline over the team's schedule, byes as gaps", () => {
     const schedule = read("schedule.json");
     const seasons = player.timelineModel(rows, [], { 2021: { CAR: schedule["2021"].CAR } });

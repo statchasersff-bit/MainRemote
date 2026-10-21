@@ -886,7 +886,13 @@ async function openInline(db: Db, gsisId: string | null, name: string, key: stri
   }
   if (db.profile) {
     const html = await db.profile(name, gsisId, key ?? gsisId ?? nameKey(name));
-    if (!host.hidden && db.state.player === opened) host.insertAdjacentHTML("beforeend", html);
+    if (!host.hidden && db.state.player === opened) {
+      host.insertAdjacentHTML("beforeend", html);
+      // Affected Regions reads best under the availability grid (mak, 2026-10-21).
+      const grid = host.querySelector<HTMLElement>("[data-gm-avail]");
+      const regions = host.querySelector<HTMLElement>("[data-pp-regions]");
+      if (grid && regions) grid.insertAdjacentElement("afterend", regions);
+    }
   }
 }
 

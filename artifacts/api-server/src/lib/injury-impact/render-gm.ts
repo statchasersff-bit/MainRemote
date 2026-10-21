@@ -457,7 +457,8 @@ export function renderDurabilityProfile(d: Durability, p: GmPlayer): string {
     `<div class="scin-tiles is-2"><div class="scin-tile"><p class="scin-tile-k">Major injuries</p><p class="scin-tile-big is-ink">${p.major}</p></div><div class="scin-tile"><p class="scin-tile-k">Soft-tissue events</p><p class="scin-tile-big is-ink">${p.soft}</p></div></div>` +
     `<p class="scin-body${p.reinj ? "" : " is-muted"}">${p.reinj ? "Re-injury flag: a body part here caused more than one event, the strongest repeat-risk signal." : "No re-injury pattern in this window."}</p>` +
     h3("Availability: one box per team game") +
-    renderAvailGrid(d, p) +
+    // The player page moves its Affected Regions section in after this grid.
+    `<div data-gm-avail>${renderAvailGrid(d, p)}</div>` +
     `</div>` +
     collegeGrid(p);
   const right =

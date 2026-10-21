@@ -1204,6 +1204,20 @@ theme toggle were not ported (no session-only data; one dress).
   database an inline panel (as the app); the executive summary, question
   tabs and every section's text are the app's verbatim.
 
+**Career Timeline removed (2026-10-21, mak).** `renderPlayerReports` no longer
+mounts `renderTimeline`; the function and `timelineModel()` (with its
+post-audit Out-week rule) stay in render-player.ts / player.ts, unmounted. The
+player page is now: Injury Risk Profile, Weekly Injury Reports, Play-By-Play
+Log, Affected Regions (moved under the durability profile's availability grid
+when one loads).
+
+**Affected Regions under Availability (2026-10-21, mak).** The chips block left
+the risk profile's left column and is its own section (`renderAffectedRegions`,
+`<section data-pp-regions>`) at the foot of `renderPlayerReports`; in the tool,
+once the durability profile is appended, `openInline` moves it to right after
+the availability grid (`<div data-gm-avail>` in `renderDurabilityProfile`). A
+player without a profile, and the Impact study's dialog, keep it at the foot.
+
 **Injury history tab retired (2026-10-21).** mak: "we don't really need the
 injury history tab anymore" once the Injury database carried its columns and
 filters. `TOOL_TABS` is six; `/injury-database` opens on Injury database;
