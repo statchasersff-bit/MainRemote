@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr" | "rds" | "depth";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr" | "rds" | "injury" | "injurydb" | "depth";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -215,6 +215,28 @@ const TOOLS: Tool[] = [
       path.startsWith("/redraft-strategy") ||
       path.startsWith("/preview/redraft-strategy") ||
       path.startsWith("/preview/raw/redraft-strategy"),
+  },
+  {
+    key: "injury",
+    label: "Injury Risk Analysis",
+    shortLabel: "Injury Risk",
+    shortcode: "statchasers_injury_impact",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/injury-impact") ||
+      path.startsWith("/preview/injury-impact") ||
+      path.startsWith("/preview/raw/injury-impact"),
+  },
+  {
+    key: "injurydb",
+    label: "NFL Injury Database",
+    shortLabel: "Injury DB",
+    shortcode: "statchasers_injury_database",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/injury-database") ||
+      path.startsWith("/preview/injury-database") ||
+      path.startsWith("/preview/raw/injury-database"),
   },
   {
     key: "depth",
@@ -393,6 +415,21 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/redraft-strategy";
     if (mount === "shortcode") return "/preview/redraft-strategy";
     return mount === "embed" ? "/redraft-strategy?embed=1" : "/redraft-strategy";
+  }
+
+  if (tool.key === "injury") {
+    // One dashboard; the filters, the player search and the draft simulation
+    // are its own controls.
+    if (mount === "fragment") return "/preview/raw/injury-impact";
+    if (mount === "shortcode") return "/preview/injury-impact";
+    return mount === "embed" ? "/injury-impact?embed=1" : "/injury-impact";
+  }
+
+  if (tool.key === "injurydb") {
+    // One table; the search, filters and paging are its own controls.
+    if (mount === "fragment") return "/preview/raw/injury-database";
+    if (mount === "shortcode") return "/preview/injury-database";
+    return mount === "embed" ? "/injury-database?embed=1" : "/injury-database";
   }
 
   if (tool.key === "depth") {

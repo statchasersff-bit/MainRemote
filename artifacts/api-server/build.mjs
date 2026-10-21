@@ -236,6 +236,16 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-redraft-strategy.js"),
   });
 
+  // The injury impact bundle (the analysis dashboard and the injury database
+  // share it; one page mounts one of the two). It carries the model and the
+  // renderers (src/lib/injury-impact/), so every view after the default is
+  // drawn in the browser with the code the server drew the default with.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/injury-impact.ts")],
+    outfile: path.join(outDir, "statchasers-injury-impact.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -279,6 +289,8 @@ async function buildClient() {
   const rhrCss = await readFile(path.resolve(artifactDir, "public", "rookie-hit-rates.css"));
   const rdsJs = await readFile(path.join(outDir, "statchasers-redraft-strategy.js"));
   const rdsCss = await readFile(path.resolve(artifactDir, "public", "redraft-strategy.css"));
+  const scinJs = await readFile(path.join(outDir, "statchasers-injury-impact.js"));
+  const scinCss = await readFile(path.resolve(artifactDir, "public", "injury-impact.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -302,6 +314,8 @@ async function buildClient() {
     .update(rhrCss)
     .update(rdsJs)
     .update(rdsCss)
+    .update(scinJs)
+    .update(scinCss)
     .digest("hex")
     .slice(0, 12);
 

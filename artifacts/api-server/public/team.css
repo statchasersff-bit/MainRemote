@@ -12913,6 +12913,24 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-bottom: 0;
 }
 
+:is(.sct, #sct-table-armour) .sct-us-intro ul {
+  margin: 0 0 10px;
+  padding: 0 0 0 20px;
+  list-style: disc;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-intro li {
+  margin: 0 0 4px;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-intro strong {
+  color: var(--sc-ink);
+}
+
 /* The Target Tree, the Backfield Split and the pass map sit on the page, not
    in a box (mak, 2026-09-30): same content and spacing between blocks, no
    frame. The class stays as the section grouper the tests select. */
@@ -13120,12 +13138,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-gn {
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-
 :is(.sct, #sct-table-armour) .sct-us-gcell {
   display: flex;
   align-items: center;
@@ -13163,30 +13175,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-gcell.is-owner .sct-us-gval {
   color: var(--us-green);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 16px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface-soft);
-  font-size: 0.8rem;
-  color: var(--sc-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-chip .sct-us-num {
-  color: var(--sc-navy);
-  font-size: 1.4rem;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-takeaways {
@@ -13311,7 +13299,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) table.sct-us-table:not(.variations) {
   width: 100%;
-  min-width: 920px;
+  min-width: 720px;
   margin: 0;
   border: 0;
   border-collapse: collapse;
@@ -13343,7 +13331,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-table th.is-player {
-  min-width: 190px;
+  min-width: 215px;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-detail > td {
@@ -13423,6 +13411,12 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
 }
 
+/* The league rank opens the expanded profile (it used to sit under the role
+   in the collapsed row, where it competed with it). */
+:is(.sct, #sct-table-armour) .sct-us-detail .sct-us-lrank {
+  margin: 0 0 12px;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-sr {
   position: absolute;
   width: 1px;
@@ -13432,56 +13426,36 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-/* WOPR is the table's lead metric: its number outranks the share columns. */
-:is(.sct, #sct-table-armour) .sct-us-num.is-wopr {
-  font-size: 1.7rem;
+/* Opportunity is the table's lead metric: its number outranks Snaps and
+   Red zone. Every collapsed cell is that number plus one caption line
+   (.sct-us-cap), so the row answers who / how involved / which way / the read
+   and leaves the rest to the expanded profile. */
+:is(.sct, #sct-table-armour) .sct-us-num.is-lead {
+  font-size: 1.5rem;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-share .sct-us-num.is-mid {
+:is(.sct, #sct-table-armour) .sct-us-table .sct-us-num.is-mid {
   font-size: 1.2rem;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-gauge {
-  position: relative;
-  display: block;
-  width: 130px;
-  height: 9px;
-  margin-top: 6px;
-  border-radius: 4px;
-  background: var(--sc-surface-sink);
+/* The number and its caption are one line each; when the column is short the
+   wrapper scrolls instead of the caption breaking mid-phrase. */
+:is(.sct, #sct-table-armour) .sct-us-table td > .sct-us-cap,
+:is(.sct, #sct-table-armour) .sct-us-unit {
+  white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-gauge-fill {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--us-gold), var(--us-green));
-}
-
-:is(.sct, #sct-table-armour) .sct-us-gauge.is-plain .sct-us-gauge-fill {
-  background: var(--us-blue);
-  opacity: 0.55;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-gauge-mark {
-  position: absolute;
-  top: -3px;
-  width: 2px;
-  height: 13px;
-  background: var(--sc-navy);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-share {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
+:is(.sct, #sct-table-armour) .sct-us-unit {
+  margin-left: 6px;
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 0.2em;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-delta {
-  display: block;
-  margin-top: 3px;
-  font-size: 0.74rem;
   font-weight: 800;
 }
 
@@ -13497,83 +13471,50 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
-/* The trail is a second read, not a first: faded until the row is hovered or
-   its profile has focus, so the big share + delta carry the column. */
-:is(.sct, #sct-table-armour) .sct-us-spark {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 22px;
-  opacity: 0.35;
-  transition: opacity 120ms ease;
+:is(.sct, #sct-table-armour) .sct-us-leads {
+  color: var(--sc-ink);
+  font-weight: 700;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-row:hover .sct-us-spark,
-:is(.sct, #sct-table-armour) .sct-us-row:focus-within .sct-us-spark {
-  opacity: 1;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-spark-bar {
-  width: 7px;
-  border-radius: 2px 2px 0 0;
-  background: var(--us-blue);
-  opacity: 0.4;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-spark-bar.is-last {
-  opacity: 1;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-spark-bar.is-dnp {
-  background: var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-spark.is-up .sct-us-spark-bar:not(.is-dnp) {
-  background: var(--us-green);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-spark.is-down .sct-us-spark-bar:not(.is-dnp) {
-  background: var(--us-red);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-up {
-  color: var(--us-green);
-  font-size: 0.8rem;
-}
-
+/* The read is colored text behind a dot, not a pastel pill: the far column
+   should not read as a dashboard badge. */
 :is(.sct, #sct-table-armour) .sct-us-tier {
-  display: inline-block;
-  padding: 4px 9px;
-  border-radius: 999px;
-  font-size: 0.66rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+:is(.sct, #sct-table-armour) .sct-us-tier::before {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
 :is(.sct, #sct-table-armour) .sct-us-tier.is-set {
-  background: var(--us-green-soft);
   color: var(--us-green);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-tier.is-starter {
-  background: var(--us-blue-soft);
   color: var(--us-blue);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-tier.is-flex {
-  background: var(--sc-surface-sink);
   color: var(--sc-muted-strong);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-tier.is-volatile {
-  background: var(--us-red-soft);
   color: var(--us-red);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-tier.is-stash {
-  background: var(--us-amber-soft);
   color: var(--us-amber);
 }
 
@@ -13791,7 +13732,17 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
+/* The Target Tree's legend repeats the bar's own labels, so on a desktop it
+   is hidden; it comes back where the segments lose their names (below). */
+:is(.sct, #sct-table-armour) .sct-us-keys.is-narrow-only {
+  display: none;
+}
+
 @container usage (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-keys.is-narrow-only {
+    display: flex;
+  }
+
   :is(.sct, #sct-table-armour) .sct-us-seg-name {
     display: none;
   }
@@ -13804,8 +13755,8 @@ a.sct-ex-game:hover .sct-ex-line {
     font-size: 1.7rem;
   }
 
-  :is(.sct, #sct-table-armour) .sct-us-num.is-wopr {
-    font-size: 1.45rem;
+  :is(.sct, #sct-table-armour) .sct-us-num.is-lead {
+    font-size: 1.3rem;
   }
 
   :is(.sct, #sct-table-armour) .sct-us-gaps {
@@ -13848,8 +13799,19 @@ a.sct-ex-game:hover .sct-ex-line {
   background: #fdf8ec;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-cta.is-trade {
-  margin: 16px 0 26px;
+/* The tools under the call to action, one per line, in the tool's own name. */
+:is(.sct, #sct-table-armour) .sct-us-cta-links {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-cta-links li {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-cta-title {

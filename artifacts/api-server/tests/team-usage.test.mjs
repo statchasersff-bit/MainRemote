@@ -158,8 +158,8 @@ describe("the ten components, in order", () => {
   test("the verbatim definitions stay in plain prose", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const intro = doc.querySelector(".sct-us-intro").textContent;
-    assert.match(intro, /^Fantasy production follows opportunity, not the other way around/);
-    assert.match(intro, /The essentials are target share, snap share, and red-zone touches\./);
+    assert.match(intro, /^Fantasy production follows opportunity\./);
+    assert.match(intro, /Start with target share, snap share, and red-zone touches\./);
     assert.match(intro, /Follow the opportunity before the fantasy points follow it\.$/);
     // The weighted-opportunities caption came off the backfield legend (2026-10-01).
     assert.equal(doc.querySelector(".sct-us-keys .is-def"), null);
@@ -170,8 +170,9 @@ describe("the ten components, in order", () => {
     const close = doc.querySelector(".sct-us-close");
     assert.equal(close.querySelector("a").getAttribute("href"), "https://statchasers.com/redraft-command/");
     assert.equal(close.querySelectorAll("a")[1].getAttribute("href"), "https://statchasers.com/dynasty-command/");
-    // The umbrella line is the last thing in the block, after the tool row.
-    assert.equal(close.previousElementSibling.className, "sct-us-toolrow");
+    // The umbrella line is the last thing in the block, right after the close cards
+    // (the tool row went 2026-10-20 at mak's request).
+    assert.equal(close.previousElementSibling.className, "sct-us-products");
     const us = doc.querySelector(".sct-us");
     const commands = [...us.querySelectorAll("a")].filter((a) => /^(Redraft|Dynasty) Command$/.test(a.textContent.trim()));
     assert.equal(commands.length, 2);
@@ -355,26 +356,21 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     const doc = new JSDOM(await res.text()).window.document;
     const us = doc.querySelector(".sct-us");
     const ctas = [...us.querySelectorAll("[data-cta]")].map((a) => a.getAttribute("data-cta"));
-    // Intro, tree, handcuff, pass map, projections, trade block, the close
-    // cards, the tool row and the umbrella line.
+    // Intro, handcuff, projections, the close cards and the umbrella line.
+    // (The "Turn the usage signal into a trade" block, the target-tree and
+    // pass-map bridges and the footer tool row went 2026-10-20 at mak's request.)
     for (const want of [
       "trade-analyzer-usage-intro",
       "ros-rankings-usage-intro",
       "league-analyzer-usage-intro",
-      "ros-rankings-usage-tree",
-      "trade-analyzer-usage-tree",
       "rb-handcuffs-usage-handcuff",
       "waiver-wire-usage-handcuff",
       "dynasty-trade-calc-usage-handcuff",
       "dynasty-league-analyzer-usage-handcuff",
       "dynasty-rankings-usage-handcuff",
-      "matchup-preview-usage-passmap",
-      "startsit-usage-passmap",
-      "projections-usage-passmap",
       "projections-usage-xfp",
       "ros-rankings-usage-xfp",
       "startsit-usage-xfp",
-      "trade-analyzer-usage-signals",
       "trade-analyzer-usage-close",
       "startsit-usage-close",
       "ros-rankings-usage-close",
@@ -395,25 +391,13 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     // Dynasty stays a minority of the product links.
     const dynasty = ctas.filter((c) => c.startsWith("dynasty")).length;
     assert.ok(dynasty <= Math.ceil(ctas.length * 0.3), `${dynasty} of ${ctas.length} links are dynasty`);
-    // The close: six decision cards, then a row of eight tools.
+    // The close: six decision cards (the tool row under them is gone).
     assert.equal(us.querySelector(".sct-us-convert h3").textContent, "Put this usage data to work");
     assert.deepEqual(
       [...us.querySelectorAll(".sct-us-product.is-ask .sct-us-product-title")].map((p) => p.textContent),
       ["Making a trade?", "Setting your lineup?", "Looking ahead?", "Working the waiver wire?", "Evaluating your whole league?", "Playing dynasty?"],
     );
-    assert.deepEqual(
-      [...us.querySelectorAll(".sct-us-toolrow a")].map((a) => a.textContent),
-      [
-        "Trade Analyzer",
-        "Start/Sit",
-        "League Analyzer",
-        "Waiver Wire Scanner",
-        "Rest-of-Season Rankings",
-        "Fantasy Football Projections",
-        "Dynasty Trade Calculator",
-        "Dynasty League Analyzer",
-      ],
-    );
+    assert.equal(us.querySelector(".sct-us-toolrow"), null);
     // The anchors carry the tool's name, which is the search signal.
     const trade = us.querySelector("[data-cta='trade-analyzer-usage-intro']");
     assert.equal(trade.textContent, "Fantasy Football Trade Analyzer");
@@ -422,9 +406,7 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
       us.querySelector("[data-cta='dynasty-trade-calc-usage-close']").getAttribute("href"),
       "https://statchasers.com/dynasty-command/dynasty-trade-calculator",
     );
-    // The trade box reads the two cards above it, then one button.
-    const tradeBox = us.querySelector(".sct-us-cta.is-trade");
-    assert.match(tradeBox.querySelector(".sct-us-cta-lead").textContent, /' role is growing\.|' opportunity is/);
-    assert.equal(tradeBox.querySelector(".sct-us-btn").textContent, "Open Fantasy Football Trade Analyzer");
+    // The trade box between the signals and the close is gone (2026-10-20).
+    assert.equal(us.querySelector(".sct-us-cta.is-trade"), null);
   });
 });

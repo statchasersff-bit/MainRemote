@@ -22,6 +22,8 @@
  *   [statchasers_strength_of_schedule] -> /preview/sos
  *   [statchasers_rookie_hit_rates] -> /preview/rookie-hit-rates
  *   [statchasers_redraft_strategy] -> /preview/redraft-strategy
+ *   [statchasers_injury_impact] -> /preview/injury-impact
+ *   [statchasers_injury_database] -> /preview/injury-database
  *   [statchasers_depth_charts] -> /preview/depth-charts[/view/team/pos]
  *
  * The depth charts are the exception to "same renderer as /embed": they are
@@ -61,6 +63,7 @@ import { renderSosFragment } from "../lib/sos-ssr";
 import { parseSosState } from "../lib/sos/sos-data";
 import { renderRhrFragment } from "../lib/rookie-hit-rates-ssr";
 import { renderRdsFragment } from "../lib/redraft-strategy-ssr";
+import { renderInjuryFragment } from "../lib/injury-impact-ssr";
 import {
   PLUGIN_DIR as DEPTH_PLUGIN_DIR,
   PREVIEW_ASSETS as DEPTH_ASSETS,
@@ -700,6 +703,14 @@ router.get("/preview/raw/sos", (req, res) => {
   void (async () => {
     try {
       const view = parseSosState({ tab: req.query["tab"], pos: req.query["pos"], scoring: req.query["scoring"] });
+      const result = await renderSosFragment(view, { embed: true });
+      send(req, res, sourcePage("[statchasers_strength_of_schedule]", "/embed/sos", result.html));
+    } catch (err) {
+      logger.error({ err }, "SOS fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
 
 /**
  * [statchasers_rookie_hit_rates] as it renders on a page. One view, the
@@ -778,14 +789,63 @@ router.get("/preview/raw/redraft-strategy", (req, res) => {
     res.status(500).type("html").send("<h1>Preview failed</h1>");
   }
 });
-      const result = await renderSosFragment(view, { embed: true });
-      send(req, res, sourcePage("[statchasers_strength_of_schedule]", "/embed/sos", result.html));
+
+/**
+ * [statchasers_injury_impact] and [statchasers_injury_database] as they
+ * render on a page. One view each, the default; every other is the bundle's,
+ * from the real data routes. The sibling link is left out, as the plugin
+ * leaves it out: it does not know where the other page is mounted.
+ */
+const INJURY_PREVIEWS = [
+  {
+    page: "analysis",
+    route: "injury-impact",
+    title: "Fantasy Football Injury Risk Analysis",
+    shortcode: "[statchasers_injury_impact]",
+  },
+  {
+    page: "database",
+    route: "injury-database",
+    title: "NFL Injury Database",
+    shortcode: "[statchasers_injury_database]",
+  },
+] as const;
+
+for (const { page, route, title, shortcode } of INJURY_PREVIEWS) {
+  router.get(`/preview/${route}`, (req, res) => {
+    try {
+      const result = renderInjuryFragment(page, { embed: true, dataUrl: "/embed/injury-impact/data" });
+      if (!result.ok) {
+        res.status(404).type("text/plain").send("Not found");
+        return;
+      }
+      send(
+        req,
+        res,
+        hostPage({
+          title,
+          shortcode,
+          styles: ["/injury-impact.css"],
+          scripts: ["/dist/statchasers-injury-impact.js"],
+          fragment: result.html,
+        }),
+      );
     } catch (err) {
-      logger.error({ err }, "SOS fragment source view failed");
+      logger.error({ err, page }, "Injury shortcode preview failed");
       res.status(500).type("html").send("<h1>Preview failed</h1>");
     }
-  })();
-});
+  });
+
+  router.get(`/preview/raw/${route}`, (req, res) => {
+    try {
+      const result = renderInjuryFragment(page, { embed: true });
+      send(req, res, sourcePage(shortcode, `/embed/${route}`, result.html));
+    } catch (err) {
+      logger.error({ err, page }, "Injury fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  });
+}
 
 /** The rankings fragment as source. */
 router.get("/preview/raw/rankings", (req, res) => {

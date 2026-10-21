@@ -160,6 +160,21 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     assert.ok(all.includes(":is(.schr, #schr-armour) table.schr-table"), "the table frame itself must be armed");
   });
 
+  test("every injury-impact.css selector naming a table, list, link, button, select or input carries the id-weight prefix", () => {
+    // The dialog is inside the root, so one prefix covers both pages.
+    const all = selectors(read("injury-impact.css"));
+    const loose = all.filter(
+      (s) =>
+        /\.scin-[a-z-]*table\b|\btable\.scin-|\b(?:ul|ol|a|button|input|select|th|td)\.scin-|\bbutton\b|\binput\b|\bselect\b|\.scin-table\b/.test(s) &&
+        !s.startsWith(":is(.scin, #scin-armour) ") &&
+        !s.startsWith(".scin-field.is-single input.scin-range") &&
+        !s.startsWith(".scin-dual,") &&
+        !s.startsWith(".scin-legend span.scin-legend-item"),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's rules on an embedded page");
+    assert.ok(all.includes(":is(.scin, #scin-armour) table.scin-table:not(.variations)"), "the table frame itself must be armed");
+  });
+
   test("the id in the prefix is never an element's id", () => {
     // Its only job is weight. A real element carrying it would be styled as a
     // tool root by every table rule in team.css.
@@ -169,7 +184,7 @@ describe("whole table families are lifted, so no rule is left behind", () => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(p);
-        else if (/\.ts$/.test(entry.name) && /sct-table-armour|scsos-armour|schr-armour/.test(readFileSync(p, "utf8"))) hits.push(p);
+        else if (/\.ts$/.test(entry.name) && /sct-table-armour|scsos-armour|schr-armour|scin-armour/.test(readFileSync(p, "utf8"))) hits.push(p);
       }
     };
     walk(src);

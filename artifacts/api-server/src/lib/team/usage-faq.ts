@@ -23,7 +23,7 @@ import {
   woprCaption,
   ZONE_LABEL,
 } from "./usage-copy";
-import { getTargetShareCliff, surname, type UsagePlayer, type UsageRow, type UsageView, type Zone } from "./usage";
+import { baseWords, getTargetShareCliff, surname, type UsagePlayer, type UsageRow, type UsageView, type Zone } from "./usage";
 import type { NflTeam } from "./teams";
 import {
   BUY_LOW_SELL_HIGH_URL,
@@ -211,7 +211,7 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
           (p.wopr != null ? `, and a ${p.wopr.toFixed(2)} WOPR (${woprCaption(p)})` : "") +
           `.` +
           (te1.ts.direction !== "flat" && te1.ts.delta != null && te1.ts.baseWeek != null
-            ? ` His share is ${te1.ts.direction} ${Math.abs(te1.ts.delta).toFixed(1)} points since Week ${te1.ts.baseWeek}.`
+            ? ` His share over the last three games is ${te1.ts.direction} ${Math.abs(te1.ts.delta).toFixed(1)} points on ${baseWords(te1.ts)}.`
             : "") +
           ` ${verdict[1]}`,
       );
@@ -223,8 +223,8 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     const p = buy.row.player;
     const r = buy.row;
     const gains = [
-      r.ts.delta != null && r.ts.delta > 0 ? `target share up ${f1(r.ts.delta)} points since Week ${r.ts.baseWeek}` : null,
-      r.snap.delta != null && r.snap.delta > 0 ? `snap share up ${Math.round(r.snap.delta)} points since Week ${r.snap.baseWeek}` : null,
+      r.ts.delta != null && r.ts.delta > 0 ? `target share up ${f1(r.ts.delta)} points over the last three games on ${baseWords(r.ts)}` : null,
+      r.snap.delta != null && r.snap.delta > 0 ? `snap share up ${Math.round(r.snap.delta)} points over the last three games on ${baseWords(r.snap)}` : null,
     ].filter((s): s is string => s != null);
     const blsh = BUY_LOW_SELL_HIGH_URL ? ` See every current riser and faller league-wide on our Buy Low, Sell High board.` : "";
     ask(
@@ -310,8 +310,8 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
       r.snap.direction !== "flat" && r.snap.confirmed && r.snap.delta != null && Math.abs(r.snap.delta) >= 10
         ? r.snap.direction
         : null;
-    const tsText = (r: UsageRow) => `target share ${signed(r.ts.delta!)} points since Week ${r.ts.baseWeek}`;
-    const snapText = (r: UsageRow) => `snap share ${signed(r.snap.delta!, 0)} since Week ${r.snap.baseWeek}`;
+    const tsText = (r: UsageRow) => `target share ${signed(r.ts.delta!)} points, last three games vs ${baseWords(r.ts)}`;
+    const snapText = (r: UsageRow) => `snap share ${signed(r.snap.delta!, 0)}, last three games vs ${baseWords(r.snap)}`;
     const moves = (dir: "up" | "down") =>
       skill.flatMap((r) => {
         const ts = tsMove(r);
@@ -330,7 +330,7 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
       });
     const up = moves("up").slice(0, 3);
     const down = moves("down").slice(0, 3);
-    const base = skill[0]?.ts.baseWeek;
+    const base = skill[0] ? baseWords(skill[0].ts) : "";
     ask(
       `Which ${nick} players are gaining or losing fantasy football opportunity?`,
       up.length || down.length
@@ -338,7 +338,7 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
             (down.length ? ` Losing: ${list(down)}.` : ` No one's role is in a confirmed decline.`) +
             ` A trend only counts here when the latest game confirms it.`
         : skill.length
-          ? `No ${nick} player's role has moved enough to call a trend ${wk}${base ? `: target shares are within 2 points of Week ${base} or the latest game has not confirmed the move` : ""}.`
+          ? `No ${nick} player's role has moved enough to call a trend ${wk}${base ? `: the last three games' target shares are within 2 points of ${base} or the latest game has not confirmed the move` : ""}.`
           : null,
     );
   }
@@ -411,8 +411,8 @@ function trendClause(row: UsageRow): string {
   const t = row.ts;
   if (t.delta == null || t.baseWeek == null) return "";
   return t.direction === "flat"
-    ? `, holding steady since Week ${t.baseWeek}`
-    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)} points since Week ${t.baseWeek}`;
+    ? `, holding steady over the last three games against ${baseWords(t)}`
+    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)} points over the last three games against ${baseWords(t)}`;
 }
 
 function fpoeClause(p: UsagePlayer): string {

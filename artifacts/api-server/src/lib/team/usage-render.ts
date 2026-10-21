@@ -31,12 +31,12 @@ import {
   ROS_RANKINGS_URL,
   START_SIT_URL,
   TRADE_CALCULATOR_URL,
-  TRADE_FINDER_URL,
   WAIVER_WIRE_URL,
 } from "../matchup/recap";
 import type { NflTeam } from "./teams";
 import { usageFaq, type UsageFaq } from "./usage-faq";
 import {
+  baseLabel,
   getTargetShareCliff,
   surname,
   type RunGap,
@@ -50,11 +50,11 @@ import {
   GAP_LABEL,
   TIER_LABEL,
   ZONE_LABEL,
-  backfieldChips,
   backfieldTakeaways,
   bestGap,
   bestZone,
   environmentCards,
+  handcuffProjection,
   passNote,
   profileNote,
   rankLine,
@@ -63,11 +63,13 @@ import {
   signalCopy,
   signed,
   situationShare,
-  woprCaption,
   zoneOwner,
 } from "./usage-copy";
 
 const e = escapeHtml;
+
+/** Escaped prose with **double asterisks** set in bold - the copy module's one bit of markup. */
+const md = (text: string) => e(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
 /* ------------------------------------------------------------------ color */
 
@@ -187,7 +189,13 @@ function tool(href: string | null, text: string, cta: string): string {
 
 /** A one-line handoff under a section: the question in bold, then the link. */
 function bridge(lead: string, html: string, quiet = false): string {
-  return html ? `<p class="sct-us-bridge${quiet ? " is-quiet" : ""}"><strong>${e(lead)}</strong> ${html}</p>` : "";
+  return html ? `<p class="sct-us-bridge${quiet ? " is-quiet" : ""}">${lead ? `<strong>${e(lead)}</strong> ` : ""}${html}</p>` : "";
+}
+
+/** The tool links under a call to action, one per line. */
+function linkStack(items: string[], cls: string): string {
+  const shown = items.filter(Boolean);
+  return shown.length ? `<ul class="${cls}">${shown.map((a) => `<li>${a}</li>`).join("")}</ul>` : "";
 }
 
 /** A row of tool links, "Trade Analyzer · ROS Rankings · League Analyzer"; dropped links leave no separator. */
@@ -195,9 +203,6 @@ function linkRow(items: string[], cls: string): string {
   const shown = items.filter(Boolean);
   return shown.length ? `<p class="${cls}">${shown.join(`<span aria-hidden="true"> · </span>`)}</p>` : "";
 }
-
-/** "Doubs' role", "Henderson's role". */
-const possessive = (name: string) => (name.endsWith("s") ? `${name}'` : `${name}'s`);
 
 interface Segment {
   label: string;
@@ -207,8 +212,12 @@ interface Segment {
   title: string;
 }
 
-/** A 100% stacked bar and its legend. The Target Tree and the backfield share it. */
-function stackedBar(segments: Segment[], ariaLabel: string, legendTail = ""): string {
+/**
+ * A 100% stacked bar and its legend. The Target Tree and the backfield share
+ * it. `legendNarrowOnly` keeps the legend for the widths where the bar drops
+ * its segment names (mak, 2026-10-20: no name list under the tree on desktop).
+ */
+function stackedBar(segments: Segment[], ariaLabel: string, legendTail = "", legendNarrowOnly = false): string {
   const shown = segments.filter((s) => s.share > 0);
   const bar = shown
     .map((s) => {
@@ -230,7 +239,7 @@ function stackedBar(segments: Segment[], ariaLabel: string, legendTail = ""): st
     .join("");
   return (
     `<div class="sct-us-bar" role="img" aria-label="${e(ariaLabel)}">${bar}</div>` +
-    `<ul class="sct-us-keys">${legend}${legendTail ? `<li class="sct-us-key is-def">${e(legendTail)}</li>` : ""}</ul>`
+    `<ul class="sct-us-keys${legendNarrowOnly ? " is-narrow-only" : ""}">${legend}${legendTail ? `<li class="sct-us-key is-def">${e(legendTail)}</li>` : ""}</ul>`
   );
 }
 
@@ -247,32 +256,36 @@ function header(view: UsageView): string {
 }
 
 /**
- * The intro, in mak's wording (2026-10-03). The cliff paragraph keeps its
- * numbers live from our own 2017-2025 measurement
+ * The intro, in mak's wording (2026-10-03, tightened 2026-10-20). The cliff
+ * paragraph keeps its numbers live from our own 2017-2025 measurement
  * (data/team/target_share_cliff.json), and is left out if that file is.
  */
 function intro(): string {
   const cliff = getTargetShareCliff();
-  const paras = [
-    "Fantasy production follows opportunity, not the other way around. That is why this report focuses on who is actually on the field and where the ball is going before the box score catches up.",
-    "The essentials are target share, snap share, and red-zone touches. Expand a player profile for deeper usage metrics including first-read share, air-yards share, expected fantasy points (xFP), and fantasy points over expected (FPOE). xFP measures the fantasy value of a player's opportunities, while FPOE shows how far his actual production finished above or below that expectation.",
-    "When route data is available, we also track route share, targets per route run (TPRR), and yards per route run (YPRR). These help separate players who are simply on the field from players who are actually earning opportunities when they run routes.",
-    ...(cliff
-      ? [
-          `Since ${cliff.seasons.slice(0, 4)}, receivers with a 20%+ target share have averaged ${cliff.above20.ppg} fantasy points per game, compared with ${cliff.from10to20.ppg} for receivers between 10–20%. That gap is why this report exists.`,
-        ]
-      : []),
-    "Follow the opportunity before the fantasy points follow it.",
-  ];
-  return `<div class="sct-us-intro">${paras.map((t) => `<p>${e(t)}</p>`).join("")}</div>`;
+  const p = (t: string) => `<p>${md(t)}</p>`;
+  return (
+    `<div class="sct-us-intro">` +
+    p("Fantasy production follows opportunity. That's why this report focuses on who is on the field and where the ball is going before the box score catches up.") +
+    p("Start with target share, snap share, and red-zone touches. Expand a player for deeper metrics like first-read share, air-yards share, xFP, and FPOE.") +
+    `<ul>` +
+    `<li>${md("xFP measures the fantasy value of a player's opportunities.")}</li>` +
+    `<li>${md("FPOE shows whether actual production is running above or below expectation.")}</li>` +
+    `</ul>` +
+    p("When route data is available, we also track route share, TPRR, and YPRR to separate players who are merely on the field from those actually earning opportunities.") +
+    (cliff
+      ? p(`Since ${cliff.seasons.slice(0, 4)}, receivers with a 20%+ target share have averaged ${cliff.above20.ppg} fantasy PPG, versus ${cliff.from10to20.ppg} PPG at 10–20%.`)
+      : "") +
+    p("**Follow the opportunity before the fantasy points follow it.**") +
+    `</div>`
+  );
 }
 
 function introCta(): string {
   return (
     `<div class="sct-us-cta">` +
     `<p class="sct-us-cta-title">Turn usage into a roster decision</p>` +
-    `<p class="sct-us-cta-body">Usage tells you what is happening on the field. The next step is figuring out what it means for your fantasy team. Use the Fantasy Football Trade Analyzer to see how changing roles affect player value, check Rest-of-Season Rankings for where players currently stand, or connect your league in the League Analyzer to see how those changes affect your actual roster.</p>` +
-    linkRow(
+    `<p class="sct-us-cta-body">${md("Usage shows what is changing on the field. Use the **Trade Analyzer** to see how it affects player value, **Rest-of-Season Rankings** to see where players stand, or the **League Analyzer** to see what it means for your roster.")}</p>` +
+    linkStack(
       [
         tool(TRADE_CALCULATOR_URL, "Fantasy Football Trade Analyzer", "trade-analyzer-usage-intro"),
         tool(ROS_RANKINGS_URL, "Rest-of-Season Rankings", "ros-rankings-usage-intro"),
@@ -285,12 +298,14 @@ function introCta(): string {
 }
 
 /**
- * "RB1, 48% of RB touches", with the slot as the hub's position chip - the
- * one Depth Chart, News and the Outlook cards print, so a position wears the
- * same color on every tab. A role that is not a plain slot stays text.
+ * "RB2 · handcuff", with the slot as the hub's position chip - the one Depth
+ * Chart, News and the Outlook cards print, so a position wears the same color
+ * on every tab. A role that is not a plain slot stays text. The back's touch
+ * share, which the role line carries elsewhere, is the Opportunity cell's
+ * headline here, so it is not repeated under the name.
  */
 function roleCell(row: UsageRow): string {
-  const line = roleLine(row);
+  const line = roleLine(row).replace(/,\s*\d+% of RB touches$/, "");
   const slot = /^[A-Z]{1,3}\d+$/.test(row.role) && line.startsWith(row.role) ? row.role : "";
   if (!slot) return `<span class="sct-us-role">${e(line)}</span>`;
   const rest = line.slice(slot.length).replace(/^\s*[,·]\s*/, "");
@@ -301,8 +316,8 @@ function roleCell(row: UsageRow): string {
   );
 }
 
-function environment(view: UsageView): string {
-  const cards = environmentCards(view);
+function environment(view: UsageView, team: NflTeam): string {
+  const cards = environmentCards(view, team.city);
   if (cards.length === 0) return "";
   return (
     `<ul class="sct-us-env" aria-label="Offensive environment">` +
@@ -313,7 +328,7 @@ function environment(view: UsageView): string {
           `<span class="sct-us-label">${e(c.label)}</span>` +
           num(c.value, "is-big") +
           `<span class="sct-us-rank ${c.good ? "is-good" : "is-context"}">${e(c.rank)}</span>` +
-          `<span class="sct-us-envnote">${e(c.note)}</span>` +
+          (c.note ? `<span class="sct-us-envnote">${e(c.note)}</span>` : "") +
           `</li>`,
       )
       .join("") +
@@ -349,11 +364,7 @@ function targetTree(view: UsageView, team: NflTeam): string {
     `<div class="sct-us-card">` +
     h3("The Target Tree") +
     `<p class="sct-us-sub">${e(`All ${tgt} ${team.nickname} targets through Week ${view.throughWeek}`)}</p>` +
-    stackedBar(segs, `${team.nickname} target shares: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`) +
-    bridge(
-      "What are these targets worth?",
-      `See how changing target shares affect player value in our ${tool(ROS_RANKINGS_URL, "Rest-of-Season Rankings", "ros-rankings-usage-tree")}, or compare two players directly with the ${tool(TRADE_CALCULATOR_URL, "Fantasy Football Trade Analyzer", "trade-analyzer-usage-tree")}.`,
-    ) +
+    stackedBar(segs, `${team.nickname} target shares: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`, "", true) +
     `</div>`
   );
 }
@@ -361,7 +372,7 @@ function targetTree(view: UsageView, team: NflTeam): string {
 const SITUATIONS: Array<[keyof UsagePlayer["situation"], string]> = [
   ["early", "Early downs"],
   ["third", "Third down"],
-  ["rz", "Red zone (in-20)"],
+  ["rz", "Red zone"],
   ["in10", "Inside the 10"],
   ["twoMin", "Two-minute drill"],
   ["trailing", "Trailing by 7+"],
@@ -401,8 +412,7 @@ function backfield(view: UsageView, team: NflTeam): string {
       const values = shown.map((p) => situationShare(view, p, key));
       const max = Math.max(...values.map((v) => v ?? -1));
       return (
-        `<div class="sct-us-grow" role="row"><span class="sct-us-gsit" role="rowheader">${e(label)}` +
-        `<span class="sct-us-gn">${e(`${totals[key]} opps`)}</span></span>` +
+        `<div class="sct-us-grow" role="row"><span class="sct-us-gsit" role="rowheader">${e(label)}</span>` +
         values
           .map((v, i) => {
             if (v == null) return `<span class="sct-us-gcell" role="cell">–</span>`;
@@ -417,29 +427,21 @@ function backfield(view: UsageView, team: NflTeam): string {
         `</div>`
       );
     }).join("") +
-    `</div>` +
-    `<p class="sct-us-fine">Share of the backs' carries + targets in each situation. Snap-by-snap splits need the league's participation data, which is published after the season.</p>`;
-
-  const chips = backfieldChips(view);
-  const chipHtml = chips.length
-    ? `<ul class="sct-us-chips">` +
-      chips.map((c) => `<li class="sct-us-chip">${num(c.value)}<span>${e(c.caption)}</span></li>`).join("") +
-      `</ul>`
-    : "";
+    `</div>`;
 
   const takeaways = backfieldTakeaways(view);
   const takeawayHtml = takeaways.length
     ? `<div class="sct-us-takeaways">` +
-      takeaways.map((t) => `<p class="sct-us-takeaway"><strong>${e(t.lead)}</strong> ${e(t.body)}</p>`).join("") +
+      takeaways
+        .map((t) => `<p class="sct-us-takeaway">${t.lead ? `<strong>${e(t.lead)}</strong> ` : ""}${md(t.body)}</p>`)
+        .join("") +
       `</div>`
     : "";
 
-  // The handcuff takeaway names the two backs: "The Henderson math if
-  // Stevenson misses time:". No takeaway, no handoff.
-  const cuff = takeaways.map((t) => t.lead.match(/^The (.+) math if (.+) misses time:$/)).find(Boolean);
-  const byName = (last: string) => view.rbs.find((p) => surname(p.name) === last);
-  const rb2 = cuff ? byName(cuff[1]!) : undefined;
-  const rb1 = cuff ? byName(cuff[2]!) : undefined;
+  // The handoff follows the handcuff paragraph: no projection, no handoff.
+  const cuff = handcuffProjection(view);
+  const rb1 = cuff?.rb1;
+  const rb2 = cuff?.rb2;
   const handoff =
     rb1 && rb2
       ? bridge(
@@ -463,10 +465,9 @@ function backfield(view: UsageView, team: NflTeam): string {
   return (
     `<div class="sct-us-card">` +
     h3("The Backfield Split") +
-    `<p class="sct-us-sub">Who gets the backfield's work - weighted opportunities count a target as two carries, a better view of RB opportunity than raw touches alone.</p>` +
+    `<p class="sct-us-sub">Weighted opportunities count a target as two carries, giving a better view of RB opportunity than touches alone.</p>` +
     bar +
     grid +
-    chipHtml +
     takeawayHtml +
     handoff +
     runDirection(view) +
@@ -494,11 +495,11 @@ function runDirection(view: UsageView): string {
   const note = runNote(view);
   return (
     `<div class="sct-us-run">` +
-    `<h4 class="sct-us-h4">Run Direction - carries &amp; yards per carry by gap</h4>` +
-    `<ul class="sct-us-line" aria-hidden="true"><li>LT</li><li>LG</li><li>C</li><li>RG</li><li>RT</li></ul>` +
+    `<h4 class="sct-us-h4">Run Direction</h4>` +
+    `<p class="sct-us-sub">Carries and YPC by gap.</p>` +
     `<ul class="sct-us-gaps">${cells}</ul>` +
     `<p class="sct-us-fine">Designed runs only; "Middle" includes runs behind either guard.</p>` +
-    (note ? `<p class="sct-us-note">${e(note)}</p>` : "") +
+    (note ? `<p class="sct-us-note">${md(note)}</p>` : "") +
     `</div>`
   );
 }
@@ -532,90 +533,86 @@ function passMap(view: UsageView, team: NflTeam, links: UsageLinks): string {
       `</li>`
     );
   };
-  const note = passNote(view, qbName, team.nickname);
+  const notes = passNote(view, qbName);
   return (
     `<div class="sct-us-card">` +
     h3(`Where ${qbName} Attacks`) +
-    `<p class="sct-us-sub">${e(`Share of ${qbName}'s ${view.team.passerZoneAttempts ? `${view.team.passerZoneAttempts} mapped ` : ""}pass attempts & yards per attempt by field zone - through Week ${view.throughWeek}`)}</p>` +
+    `<p class="sct-us-sub">${e(`Share of ${qbName}'s ${view.team.passerZoneAttempts ? `${view.team.passerZoneAttempts} mapped ` : ""}attempts and YPA by field zone through Week ${view.throughWeek}.`)}</p>` +
     `<div class="sct-us-field">` +
     `<ul class="sct-us-zones">${ZONES[0]!.map(cell).join("")}</ul>` +
-    `<p class="sct-us-los"><span>Line of scrimmage · deep = 20+ air yards</span></p>` +
+    `<p class="sct-us-los"><span>Deep = 20+ air yards</span></p>` +
     `<ul class="sct-us-zones">${ZONES[1]!.map(cell).join("")}</ul>` +
     `</div>` +
-    (note ? `<p class="sct-us-note">${e(note)}</p>` : "") +
-    bridge(
-      "What comes next?",
-      (links.matchup
-        ? `See how this usage profile lines up with the ${e(links.matchup.opponent)} in the ${tool(links.matchup.href, `${team.nickname} Fantasy Matchup Preview`, "matchup-preview-usage-passmap")}, then check our `
-        : "Check our ") +
-        `${tool(START_SIT_URL, "Start/Sit Tool", "startsit-usage-passmap")} and ${tool(PROJECTIONS_URL, "Weekly Projections", "projections-usage-passmap")} for the upcoming week.`,
-    ) +
+    notes.map((n) => `<p class="sct-us-note">${md(n)}</p>`).join("") +
     `</div>`
   );
 }
 
 /* ------------------------------------------------------------------- table */
 
-function sparkline(t: Trend, unit: string): string {
-  const values = t.trail;
-  const known = values.filter((v): v is number => v != null);
-  if (known.length === 0) return "";
-  const max = Math.max(...known, 1);
-  const raw = values.map((v, i) => `W${t.trailWeeks[i]} ${v == null ? "DNP" : `${v}${unit}`}`).join(" · ");
-  const bars = values
-    .map((v, i) => {
-      const h = v == null ? 4 : Math.max(8, Math.round((100 * v) / max));
-      return `<span class="sct-us-spark-bar${i === values.length - 1 ? " is-last" : ""}${v == null ? " is-dnp" : ""}" style="height:${h}%"></span>`;
-    })
-    .join("");
-  return `<span class="sct-us-spark is-${t.direction}" role="img" aria-label="${e(raw)}" title="${e(raw)}">${bars}</span>`;
-}
-
-function deltaCaption(t: Trend, places: number): string {
+/**
+ * "+8 vs W1-3", "steady": the last three games' average against the three
+ * games before them.
+ */
+function delta(t: Trend, places: number): string {
   if (t.delta == null || t.baseWeek == null) return "";
   if (t.direction === "flat") return `<span class="sct-us-delta is-flat">steady</span>`;
-  return `<span class="sct-us-delta is-${t.direction}">${e(`${signed(t.delta, places)} vs W${t.baseWeek}`)}</span>`;
+  return `<span class="sct-us-delta is-${t.direction}">${e(`${signed(t.delta, places)} vs ${baseLabel(t)}`)}</span>`;
 }
 
+/**
+ * Every collapsed cell is one number and one caption line. The week-by-week
+ * bars that used to sit beside the share went in the 10-20 simplification: a
+ * number, a delta and a trail were three ways of saying the same thing.
+ */
 function shareCell(value: number | null, t: Trend, places: number): string {
   if (value == null) return `<td class="sct-us-td">–</td>`;
-  return (
-    `<td class="sct-us-td"><div class="sct-us-share">` +
-    `<span>${num(`${value.toFixed(places)}%`, "is-mid")}${deltaCaption(t, places)}</span>` +
-    sparkline(t, "%") +
-    `</div></td>`
-  );
+  const d = delta(t, places);
+  return `<td class="sct-us-td">${num(`${value.toFixed(places)}%`, "is-mid")}${d ? `<span class="sct-us-cap">${d}</span>` : ""}</td>`;
 }
 
-function woprCell(p: UsagePlayer): string {
+/**
+ * Opportunity is position-aware. A receiver reads WOPR with the target share
+ * and its move under it; a back reads his share of the backfield's touches
+ * with weighted opportunities per game under it. A passer has no opportunity
+ * score - every dropback is his - so the cell stays quiet and the Snaps column
+ * carries his involvement.
+ */
+function opportunityCell(row: UsageRow): string {
+  const p = row.player;
   if (p.pos === "WR" || p.pos === "TE") {
-    const w = p.wopr ?? 0;
-    const line = p.pos === "TE" ? 0.45 : 0.6;
-    const scale = 0.9;
+    const w = p.wopr;
+    const d = p.targetShare == null ? "" : delta(row.ts, 1);
+    const targets = p.targetShare == null ? "" : `${e(`${p.targetShare.toFixed(1)}% targets`)}${d ? ` · ${d}` : ""}`;
     return (
       `<td class="sct-us-td">` +
-      `${num(w.toFixed(2), "is-wopr")}<span class="sct-us-cap">${e(woprCaption(p))}</span>` +
-      `<span class="sct-us-gauge" role="img" aria-label="${e(`WOPR ${w.toFixed(2)}; elite line ${line.toFixed(2)}`)}">` +
-      `<span class="sct-us-gauge-fill" style="width:${Math.min(100, (100 * w) / scale).toFixed(0)}%"></span>` +
-      `<span class="sct-us-gauge-mark" style="left:${((100 * line) / scale).toFixed(1)}%"></span></span>` +
+      (w == null ? num("–", "is-lead") : `${num(w.toFixed(2), "is-lead")}<span class="sct-us-unit">WOPR</span>`) +
+      (targets ? `<span class="sct-us-cap">${targets}</span>` : "") +
       `</td>`
     );
   }
-  const caption = p.pos === "QB" ? "every dropback" : `touch share ${p.touchShare ?? 0}%`;
-  const width = p.pos === "QB" ? 100 : (p.touchShare ?? 0);
-  return (
-    `<td class="sct-us-td">${num("-", "is-wopr")}<span class="sct-us-cap">${e(caption)}</span>` +
-    `<span class="sct-us-gauge is-plain" role="img" aria-label="${e(caption)}"><span class="sct-us-gauge-fill" style="width:${width}%"></span></span></td>`
-  );
+  if (p.pos === "RB") {
+    const wopp = p.woppPerGame == null ? "" : `${p.woppPerGame.toFixed(1)} weighted opps/game`;
+    return (
+      `<td class="sct-us-td">` +
+      (p.touchShare == null
+        ? num("–", "is-lead")
+        : `${num(`${p.touchShare}%`, "is-lead")}<span class="sct-us-unit">backfield share</span>`) +
+      (wopp ? `<span class="sct-us-cap">${e(wopp)}</span>` : "") +
+      `</td>`
+    );
+  }
+  return `<td class="sct-us-td"><span class="sct-us-cap">every dropback</span></td>`;
 }
 
+/** Red-zone opportunities: the count, its move, and who leads the team. */
 function rzCell(row: UsageRow): string {
-  const p = row.player;
-  const trail = row.rz.trail.map((v) => (v == null ? "–" : String(v))).join(" · ");
-  const rising = row.rz.direction === "up";
+  const lead = row.rzCoLead ? "co-leads team" : row.leadsRz ? "leads team" : "";
+  const parts = [delta(row.rz, 0), lead ? `<span class="sct-us-leads">${lead}</span>` : ""].filter(Boolean);
   return (
-    `<td class="sct-us-td">${num(String(p.rzTouches), "is-mid")}${rising ? `<span class="sct-us-up" aria-label="rising"> ▲</span>` : ""}` +
-    `<span class="sct-us-cap">${e(trail)}${row.leadsRz ? " - leads team" : ""}</span></td>`
+    `<td class="sct-us-td">${num(String(row.player.rzTouches), "is-mid")}` +
+    (parts.length ? `<span class="sct-us-cap">${parts.join(" · ")}</span>` : "") +
+    `</td>`
   );
 }
 
@@ -654,7 +651,7 @@ function metricsFor(row: UsageRow, view: UsageView): Metric[] {
     return [
       { label: "Touch share (RB room)", value: fmt(p.touchShare, "%", 0), pct: q.touchShare ?? null },
       { label: "Red-zone share (RB room)", value: fmt(p.rzOppShare, "%", 0), pct: q.rzOppShare ?? null },
-      { label: "Green-zone carries (in-10)", value: String(p.gzCarries), pct: q.gzCarries ?? null },
+      { label: "Inside 10 carries", value: String(p.gzCarries), pct: q.gzCarries ?? null },
       { label: "Target share", value: fmt(p.targetShare, "%"), pct: q.targetShare ?? null },
       { label: "Weighted opps / active game", value: fmt(p.woppPerGame), pct: q.woppPerGame ?? null },
       { label: "xFP / game", value: fmt(p.xfpPerGame), pct: q.xfpPerGame ?? null },
@@ -664,7 +661,7 @@ function metricsFor(row: UsageRow, view: UsageView): Metric[] {
   }
   const in10 = view.team.env.in10PassRate;
   return [
-    { label: "Green-zone carries (in-10)", value: String(p.gzCarries), pct: q.gzCarries ?? null },
+    { label: "Inside 10 carries", value: String(p.gzCarries), pct: q.gzCarries ?? null },
     { label: "Designed-run rate", value: fmt(p.designedRunRate, "%"), pct: q.designedRunRate ?? null },
     { label: "Scramble rate", value: fmt(p.scrambleRate, "%"), pct: q.scrambleRate ?? null },
     { label: "aDOT", value: fmt(p.passAdot), pct: q.passAdot ?? null, tone: "neutral" },
@@ -683,6 +680,7 @@ function detailRow(row: UsageRow, view: UsageView, id: string): string {
   const metrics = metricsFor(row, view).filter((m) => m.value != null);
   const note = profileNote(row, view);
   const pos = row.player.pos;
+  const rank = rankLine(row.player);
   const blocks = metrics
     .map((m) => {
       const t = m.tone ?? tone(m.pct);
@@ -699,7 +697,8 @@ function detailRow(row: UsageRow, view: UsageView, id: string): string {
     .join("");
   return (
     `<tr class="sct-us-detail" id="${e(id)}" hidden>` +
-    `<td colspan="7" class="sct-us-td">` +
+    `<td colspan="6" class="sct-us-td">` +
+    (rank ? `<span class="sct-us-lrank">${e(rank)}</span>` : "") +
     `<ul class="sct-us-metrics">${blocks}</ul>` +
     `<p class="sct-us-pnote"><strong>${e(note.thesis)}</strong>${e(note.body)}</p>` +
     `</td></tr>`
@@ -712,21 +711,14 @@ function table(view: UsageView, team: NflTeam): string {
     .map((row) => {
       const p = row.player;
       const id = `usage-${team.abbreviation}-${p.id.replace(/[^a-z0-9]/gi, "")}`;
-      const rank = rankLine(p);
-      const tsCell =
-        p.pos === "QB"
-          ? `<td class="sct-us-td">${num("-", "is-mid")}<span class="sct-us-cap">the passer</span></td>`
-          : shareCell(p.targetShare, row.ts, 1);
       return (
         `<tr class="sct-us-row">` +
         `<td class="sct-us-td is-toggle"><button type="button" class="sct-us-toggle" aria-expanded="false" aria-controls="${e(id)}"` +
         ` aria-label="${e(`Show ${p.name}'s advanced profile`)}"><span aria-hidden="true">+</span></button></td>` +
         `<th scope="row" class="sct-us-td is-player">${playerLink(p, "sct-us-name")}` +
         roleCell(row) +
-        (rank ? `<span class="sct-us-lrank">${e(rank)}</span>` : "") +
         `</th>` +
-        woprCell(p) +
-        tsCell +
+        opportunityCell(row) +
         shareCell(p.snapShare, row.snap, 0) +
         rzCell(row) +
         `<td class="sct-us-td"><span class="sct-us-tier is-${row.tier}">${e(TIER_LABEL[row.tier])}</span></td>` +
@@ -741,10 +733,9 @@ function table(view: UsageView, team: NflTeam): string {
     `<thead><tr>` +
     `<th scope="col" class="sct-us-th"><span class="sct-us-sr">Profile</span></th>` +
     `<th scope="col" class="sct-us-th">Player</th>` +
-    `<th scope="col" class="sct-us-th">Opportunity (WOPR)</th>` +
-    `<th scope="col" class="sct-us-th">Target share</th>` +
-    `<th scope="col" class="sct-us-th">Snap share</th>` +
-    `<th scope="col" class="sct-us-th">RZ opportunities</th>` +
+    `<th scope="col" class="sct-us-th">Opportunity</th>` +
+    `<th scope="col" class="sct-us-th">Snaps</th>` +
+    `<th scope="col" class="sct-us-th">Red zone</th>` +
     `<th scope="col" class="sct-us-th">Read</th>` +
     `</tr></thead>` +
     `<tbody>${rows}</tbody>` +
@@ -771,8 +762,10 @@ function legend(): string {
     ["flex", "Flex", "15–16% share or a committee lead - matchup-dependent"],
     ["volatile", "Volatile", "under 15% - deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
-    ["", "WOPR", "1.5 × target share + 0.7 × air-yards share"],
-    ["", "+ button", "opens the full advanced profile - first-read share, air-yards share, xFP/FPOE - with percentile bars vs. the league"],
+    ["", "Opportunity", "WOPR (1.5 × target share + 0.7 × air-yards share) with the target share under it for receivers; share of the backfield's touches with weighted opportunities per game for backs"],
+    ["", "Snaps and Red zone", "season to date; the line under it is the last three games' average against the three games before them"],
+    ["", "Target share move", "the same three-game comparison, under the receiver's WOPR"],
+    ["", "+ button", "opens the full advanced profile - league rank, first-read share, air-yards share, inside-10 carries, xFP/FPOE - with percentile bars vs. the league"],
   ];
   return (
     `<details class="sct-us-key-help">` +
@@ -806,42 +799,6 @@ function signals(view: UsageView): string {
         );
       })
       .join("") +
-    `</div>`
-  );
-}
-
-function tradeBlock(view: UsageView): string {
-  const buy = view.signals.find((s) => s.kind === "buy");
-  const sell = view.signals.find((s) => s.kind === "sell");
-  if (!buy && !sell) return "";
-  // The buy card is a growing role, or volume the box score has not paid
-  // yet; the sell card is a share sliding the other way.
-  const lead = [
-    buy
-      ? buy.reason === "role"
-        ? `${possessive(buy.row.player.name)} role is growing.`
-        : `${possessive(buy.row.player.name)} opportunity is running ahead of his production.`
-      : "",
-    sell
-      ? buy
-        ? `${possessive(sell.row.player.name)} opportunity is moving the other direction.`
-        : `${possessive(sell.row.player.name)} opportunity is shrinking.`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-  const values = buy && sell ? "their current values" : "his current value";
-  return (
-    `<div class="sct-us-cta is-trade">` +
-    `<p class="sct-us-cta-title">Turn the usage signal into a trade</p>` +
-    `<p class="sct-us-cta-lead">${e(lead)}</p>` +
-    `<p class="sct-us-cta-body">Use the Fantasy Football Trade Analyzer to compare ${values}, build a deal, and see how a trade would affect your actual roster.` +
-    (TRADE_FINDER_URL ? ` Not sure what offer to make? Use the ${tool(TRADE_FINDER_URL, "Trade Finder", "trade-finder-usage-signals")} to find realistic partners and packages in your league.` : "") +
-    `</p>` +
-    `<a class="sct-us-btn" href="${e(TRADE_CALCULATOR_URL)}" target="_top" data-cta="trade-analyzer-usage-signals">Open Fantasy Football Trade Analyzer</a>` +
-    (BUY_LOW_SELL_HIGH_URL
-      ? `<p class="sct-us-cta-more">See every current riser and faller on the ${tool(BUY_LOW_SELL_HIGH_URL, "Buy Low, Sell High & Trade Targets", "blsh-usage-signals")} board.</p>`
-      : "") +
     `</div>`
   );
 }
@@ -903,19 +860,6 @@ function conversion(view: UsageView): string {
       ],
     ) +
     `</div>` +
-    linkRow(
-      [
-        tool(TRADE_CALCULATOR_URL, "Trade Analyzer", "trade-analyzer-usage-footer"),
-        tool(START_SIT_URL, "Start/Sit", "startsit-usage-footer"),
-        tool(LEAGUE_ANALYZER_URL, "League Analyzer", "league-analyzer-usage-footer"),
-        tool(WAIVER_WIRE_URL, "Waiver Wire Scanner", "waiver-wire-usage-footer"),
-        tool(ROS_RANKINGS_URL, "Rest-of-Season Rankings", "ros-rankings-usage-footer"),
-        tool(PROJECTIONS_URL, "Fantasy Football Projections", "projections-usage-footer"),
-        tool(DYNASTY_TRADE_CALCULATOR_URL, "Dynasty Trade Calculator", "dynasty-trade-calc-usage-footer"),
-        tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-footer"),
-      ],
-      "sct-us-toolrow",
-    ) +
     closing(view) +
     `</div>`
   );
@@ -975,7 +919,7 @@ export function renderUsageSection(
     header(view) +
     intro() +
     introCta() +
-    environment(view) +
+    environment(view, team) +
     targetTree(view, team) +
     backfield(view, team) +
     passMap(view, team, links) +
@@ -983,7 +927,6 @@ export function renderUsageSection(
     legend() +
     projectionsBridge(view) +
     signals(view) +
-    tradeBlock(view) +
     conversion(view) +
     `</div>`;
 
