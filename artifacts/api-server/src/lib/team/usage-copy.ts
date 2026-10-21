@@ -13,6 +13,7 @@
  */
 
 import {
+  baseLabel,
   ordinal,
   rbRankFor,
   surname,
@@ -63,7 +64,7 @@ export interface EnvCard {
   note: string;
 }
 
-export function environmentCards(view: UsageView): EnvCard[] {
+export function environmentCards(view: UsageView, city = "The offense"): EnvCard[] {
   const { env } = view.team;
   const cards: EnvCard[] = [];
   const good = (rank: number | null) => rank != null && rank <= 12;
@@ -72,14 +73,14 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const v = env.proe.value;
     const note =
       v >= 3
-        ? `Throws more than game situations call for - more pass attempts to share among the pass-catchers`
+        ? "Throws more than situations call for, so there are more pass attempts to share."
         : v <= -3
-          ? `Runs more than game situations call for - fewer pass attempts to share among the pass-catchers`
+          ? "Runs more than situations call for, so there are fewer pass attempts to share."
           : v <= -1
-            ? `Slightly run-leaning relative to situation - target concentration matters more than raw pass volume here`
+            ? "Slightly run-leaning for the situation, so target concentration matters more than pass volume."
             : v >= 1
-              ? `Slightly pass-leaning relative to situation - the target tree, not the play-calling, decides who eats`
-              : `Throws about as much as situations call for - the target tree, not the play-calling, decides who eats`;
+              ? "Slightly pass-leaning for the situation, so target distribution matters more than pass volume."
+              : "Play-calling is near expectation, so target distribution matters more than pass volume.";
     cards.push({ label: "Pass rate over expected", value: `${signed(v)}%`, rank: ordinal(env.proe.rank), good: good(env.proe.rank), note });
   }
 
@@ -89,17 +90,18 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const rzLeader = view.rows.find((r) => r.leadsRz)?.player;
     let note: string;
     if (rank <= 10) {
-      note = ez && ez.ezTargets > 0
-        ? `Throws inside the 20 - ${surname(ez.name)}'s ${ez.ezTargets} end-zone target${ez.ezTargets === 1 ? "" : "s"} lead the team`
-        : `Throws inside the 20 - red-zone targets are live for the whole tree`;
+      note =
+        ez && ez.ezTargets > 0
+          ? `${city} throws often inside the 20; ${surname(ez.name)} leads the team with ${ez.ezTargets} end-zone target${ez.ezTargets === 1 ? "" : "s"}.`
+          : `${city} throws often inside the 20, so red-zone targets are live for the whole tree.`;
     } else if (rank >= 23) {
       // A team rate supports a team conclusion: fewer red-zone targets to go
       // around. Who runs it in, and what that does to whom, is not in it.
-      note = `Run-heavy inside the 20 - passing on ${env.rzPassRate.value.toFixed(0)}% of red-zone plays limits the red-zone targets available to the receivers`;
+      note = `${city} runs inside the 20, passing on ${env.rzPassRate.value.toFixed(0)}% of red-zone plays, which limits the red-zone targets to go around.`;
     } else {
       note = rzLeader
-        ? `Balanced inside the 20 - ${surname(rzLeader.name)} leads the team with ${rzLeader.rzTouches} red-zone opportunities`
-        : `Balanced inside the 20`;
+        ? `${city} is balanced inside the 20; ${surname(rzLeader.name)} leads the team with ${rzLeader.rzTouches} red-zone opportunities.`
+        : `${city} is balanced inside the 20.`;
     }
     cards.push({ label: "Red-zone pass rate", value: `${env.rzPassRate.value.toFixed(0)}%`, rank: ordinal(rank), good: good(rank), note });
   }
@@ -108,10 +110,10 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const rank = env.pace.rank;
     const note =
       rank <= 10
-        ? "Seconds per play in neutral situations - faster neutral pace creates more potential play volume when drives are sustained"
+        ? "Faster pace creates more potential volume when drives are sustained."
         : rank >= 23
-          ? "Seconds per play in neutral situations - slower neutral pace caps the potential play volume"
-          : "Seconds per play in neutral situations";
+          ? "Slower pace caps the potential play volume."
+          : "Seconds per play in neutral situations.";
     cards.push({ label: "Neutral pace", value: `${env.pace.value.toFixed(1)}s`, rank: `${ordinal(rank)} fastest`, good: good(rank), note });
   }
 
@@ -121,23 +123,23 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const rank = env.playsPerGame.rank;
     const note =
       rank <= 10
-        ? "Dropbacks and runs a game, kneels and spikes excluded - more plays to share among the starters"
+        ? "More plays means more opportunity to distribute."
         : rank >= 23
-          ? "Dropbacks and runs a game, kneels and spikes excluded - fewer plays to go around, so shares matter more"
-          : "Dropbacks and runs a game, kneels and spikes excluded - league-average volume, so shares decide it";
-    cards.push({ label: "Qualifying plays / game", value: env.playsPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
+          ? "Fewer plays to go around, so shares matter more."
+          : "League-average volume, so shares decide it.";
+    cards.push({ label: "Qualifying plays/game", value: env.playsPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
   }
 
   if (env.xfpPerGame.value != null && env.xfpPerGame.rank != null) {
     const rank = env.xfpPerGame.rank;
+    // The number and rank speak for themselves in the middle of the league.
     const note =
-      "Combined expected fantasy production generated by the offense" +
-      (rank <= 8
-        ? " - high overall opportunity value gives more than one starter room to pay off"
+      rank <= 8
+        ? "High overall opportunity value gives more than one starter room to pay off."
         : rank >= 25
-          ? " - low overall opportunity value puts more pressure on players to command large individual shares"
-          : "");
-    cards.push({ label: "Team xFP / game", value: env.xfpPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
+          ? "Low overall opportunity value puts more pressure on players to command large shares."
+          : "";
+    cards.push({ label: "Team xFP/game", value: env.xfpPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
   }
 
   return cards;
@@ -145,37 +147,10 @@ export function environmentCards(view: UsageView): EnvCard[] {
 
 /* --------------------------------------------------------------- backfield */
 
-export interface StatChip {
-  value: string;
-  caption: string;
-}
-
-export function backfieldChips(view: UsageView): StatChip[] {
-  const [rb1, rb2] = view.rbs;
-  if (!rb1) return [];
-  const chips: StatChip[] = [];
-  const rank = rb1.qualified ? rb1.leagueRank.rank : null;
-  if (rb1.woppPerGame != null) {
-    chips.push({
-      value: rb1.woppPerGame.toFixed(1),
-      caption: `${surname(rb1.name)} weighted opps / active game${rank ? ` - RB${rank} in the NFL` : ""}`,
-    });
-  }
-  chips.push({ value: String(rb1.hvt), caption: `${surname(rb1.name)} high-value touches (in-10 carries + receptions), season` });
-  if (rb2 && rb2.woppPerGame != null) {
-    chips.push({ value: rb2.woppPerGame.toFixed(1), caption: `${surname(rb2.name)} weighted opps / active game` });
-  }
-  if (rb1.woppPerGame != null && rb1.lastSeasonWoppPerGame != null) {
-    const d = rb1.woppPerGame - rb1.lastSeasonWoppPerGame;
-    const read =
-      d >= 1.5 ? "role grew, not just efficiency" : d <= -1.5 ? "a smaller role than last season" : "the same role as last season";
-    chips.push({ value: signed(d), caption: `${surname(rb1.name)} wOpp per active game vs. last season - ${read}` });
-  }
-  return chips;
-}
-
 export interface Takeaway {
+  /** The bold opener; empty for a paragraph that continues the one above. */
   lead: string;
+  /** Prose; **double asterisks** mark the numbers the renderer sets in bold. */
   body: string;
 }
 
@@ -220,18 +195,40 @@ export function handcuffProjection(view: UsageView): HandcuffProjection | null {
   return { rb1, rb2, projected, projShare, grade, valuable, behind };
 }
 
+/**
+ * The backfield paragraphs, in mak's compact wording (2026-10-20): the lead
+ * back's workload with last season for scale, his receiving path, then the
+ * handcuff math. The stat chips that used to carry the first of these are
+ * gone; the numbers live in the prose.
+ */
 export function backfieldTakeaways(view: UsageView): Takeaway[] {
-  const [rb1, rb2, rb3] = view.rbs;
+  const [rb1, rb2] = view.rbs;
   if (!rb1) return [];
   const out: Takeaway[] = [];
-  const g = Math.max(1, rb1.games);
-  const catchPace = Math.round((rb1.receptions / g) * 17);
   const totals = view.team.rbSituationTotals;
+
+  if (rb1.woppPerGame != null) {
+    const rank = rb1.qualified ? rb1.leagueRank.rank : null;
+    const d = rb1.lastSeasonWoppPerGame == null ? null : rb1.woppPerGame - rb1.lastSeasonWoppPerGame;
+    const scale =
+      d == null
+        ? ""
+        : d >= 1.5
+          ? ` His workload is up **${signed(d)} weighted opportunities/game** from last season.`
+          : d <= -1.5
+            ? ` His workload is down **${Math.abs(d).toFixed(1)} weighted opportunities/game** from last season.`
+            : ` His workload is level with last season (**${signed(d)} weighted opportunities/game**).`;
+    out.push({
+      lead: `${surname(rb1.name)}:`,
+      body:
+        `${rb1.woppPerGame.toFixed(1)} weighted opportunities per active game${rank ? `, RB${rank} in the NFL` : ""}, with ${rb1.hvt} high-value touch${rb1.hvt === 1 ? "" : "es"}.` +
+        scale,
+    });
+  }
 
   // Who owns passing downs: third down when the sample can carry it, the
   // room's targets when it cannot.
   const thirdSample = totals.third >= 8;
-  const others = view.rbs.slice(1);
   const passingOwner = thirdSample
     ? [...view.rbs].sort((a, b) => b.situation.third - a.situation.third)[0]
     : [...view.rbs].sort((a, b) => b.targets - a.targets)[0];
@@ -241,86 +238,55 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
   const twoMin = (p: UsagePlayer) => (totals.twoMin >= 5 ? situationShare(view, p, "twoMin") : null);
 
   if (passingOwner && passingOwner !== rb1 && (ownerShare(passingOwner) ?? 0) >= 40) {
-    const who = surname(passingOwner.name);
     const where = thirdSample
-      ? `${ownerShare(passingOwner)}% of the backs' third-down carries + targets`
-      : `${ownerShare(passingOwner)}% of the backfield's targets`;
+      ? `**${ownerShare(passingOwner)}% of the backs' third-down carries + targets**`
+      : `**${ownerShare(passingOwner)}% of the backfield's targets**`;
     const tm = twoMin(passingOwner);
     out.push({
       lead: `Why ${surname(rb1.name)}'s reception count stays capped:`,
       body:
-        `${passingOwner.name} has ${where}${tm != null && tm >= 40 ? ` and ${tm}% of the two-minute carries + targets` : ""}. ` +
-        `${surname(rb1.name)}'s current receiving role is the smaller one: ${rb1.receptions} catch${rb1.receptions === 1 ? "" : "es"} through ${g} game${g === 1 ? "" : "s"} is ${art(catchPace)} ${catchPace}-catch pace. ` +
-        `While ${who} holds most of the passing-down work, ${surname(rb1.name)}'s receptions have to come on other downs.`,
+        `${passingOwner.name} has ${where}${tm != null && tm >= 40 ? ` and ${tm}% of the two-minute work` : ""}, ` +
+        `so ${surname(rb1.name)}'s receptions have to come on other downs.`,
     });
   } else {
-    const share = ownerShare(rb1);
     const trailing = totals.trailing >= 6 ? situationShare(view, rb1, "trailing") : null;
     // His share of the room's carries + targets in every situation, to judge
-    // whether the trailing split is holding up or shrinking.
+    // whether the trailing split is holding up or shrinking. Opportunity, not
+    // snaps: participation data (who was on the field) arrives after the season.
     const roomWork = view.rbs.reduce((s, p) => s + p.carries + p.targets, 0);
     const overall = roomWork ? Math.round((100 * (rb1.carries + rb1.targets)) / roomWork) : null;
-    const games = rb1.games;
-    out.push({
-      lead: `${surname(rb1.name)}'s receiving role:`,
-      body:
-        (thirdSample
-          ? `His third-down involvement (${share != null ? `${share}% of ` : ""}the backs' third-down carries + targets) gives him a receiving path even when rushing volume falls`
-          : `His ${share != null ? `${share}% ` : ""}share of the backfield's targets gives him a receiving path even when rushing volume falls`) +
-        `; ${rb1.receptions} catch${rb1.receptions === 1 ? "" : "es"} through ${games} game${games === 1 ? "" : "s"} is ${art(catchPace)} ${catchPace}-catch pace. ` +
-        (trailing != null
-          ? // Opportunity, not snaps: the split counts carries + targets, and
-            // participation data (who was on the field) arrives after the season.
-            overall == null || trailing >= overall * 0.75
-            ? `Trailing by 7+, ${surname(rb1.name)} still receives ${trailing}% of the RB room's carries + targets, so his opportunity has not disappeared in negative game scripts.`
-            : `Trailing by 7+, his share of the RB room's carries + targets drops to ${trailing}% (${overall}% overall), so negative game scripts cut into his work.`
-          : ""),
-    });
+    const path = thirdSample
+      ? "His third-down role gives him receiving value even when rushing volume falls"
+      : "His share of the backfield's targets gives him receiving value even when rushing volume falls";
+    const script =
+      trailing == null
+        ? "."
+        : overall == null || trailing >= overall * 0.75
+          ? ", and his share holds up in negative game scripts."
+          : ", though negative game scripts reduce his share of the backfield.";
+    out.push({ lead: "", body: path + script });
   }
 
   // The handcuff: RB1's work redistributed in proportion to who takes the
   // valuable (early-down and red-zone) carries + targets behind him.
   const cuff = handcuffProjection(view);
   if (rb2 && cuff) {
-    const { behind, valuable, projected, projShare, grade } = cuff;
-    const rb2Early = situationShare(view, rb2, "early");
-    const rb2Rz = situationShare(view, rb2, "rz");
-    const backs =
-      rb3 && passingOwner === rb3
-        ? `while ${surname(rb3.name)} keeps passing downs`
-        : "";
-    // A role is only claimed on a sample that can carry it: the room's
-    // red-zone split is often two or three plays in September.
-    const roles = [
-      totals.early >= 10 && rb2Early != null && rb2Early >= 15 ? "early-down" : null,
-      totals.rz >= 8 && rb2Rz != null && rb2Rz >= 15 ? "red-zone" : null,
-    ].filter(Boolean) as string[];
-    // Who inherits what: RB1's work goes to the backs behind him in
-    // proportion to their early-down + red-zone work.
-    const heirs = others
-      .map((p) => ({ p, w: behind ? valuable(p) / behind : 1 / Math.max(1, others.length) }))
-      .filter((h) => Math.round(100 * h.w) > 0);
-    const split =
-      heirs.length > 1
-        ? ` (${heirs.map((h) => `${surname(h.p.name)} ${Math.round(100 * h.w)}%`).join(", ")}, by their shares of the early-down and red-zone carries + targets behind him)`
-        : "";
+    const { projected, projShare, grade } = cuff;
+    const level = grade.startsWith("a top") ? "RB1-level volume" : grade.startsWith("an RB2") ? "RB2-level volume" : "flex-level volume at best";
+    const startable = level !== "flex-level volume at best";
+    const stash = view.rows.some((r) => r.player === rb2 && r.tier === "stash");
     out.push({
-      lead: `The ${surname(rb2.name)} math if ${surname(rb1.name)} misses time:`,
+      lead: `If ${surname(rb1.name)} misses time:`,
       body:
-        (roles.length
-          ? `${surname(rb2.name)} backs up the ${list(roles)} role${roles.length > 1 ? "s (the valuable ones)" : " (the valuable one)"}${backs ? ` ${backs}` : ""}. `
-          : `${surname(rb2.name)} is next in line by weighted opportunities${backs ? `, ${backs}` : ""}. `) +
-        `Our contingency model reallocates ${surname(rb1.name)}'s carries + targets to the backs behind him${split}, projecting ${surname(rb2.name)} for ~${projShare}% of backfield weighted opportunities (~${projected.toFixed(1)} per active game) if ${surname(rb1.name)} is inactive - ${grade}` +
-        (grade.startsWith("a top") || grade.startsWith("an RB2")
-          ? view.rows.some((r) => r.player === rb2 && r.tier === "stash")
-            ? ` - and why he's a STASH, not a cut.`
-            : ` - worth a bench spot in deeper leagues.`
-          : `.`),
+        `${surname(rb2.name)} projects for ` +
+        (projShare != null ? `roughly **${projShare}% of backfield weighted opportunities**, or about ` : "about ") +
+        `**${projected.toFixed(1)} per active game** - ${level}` +
+        (startable ? (stash ? " and why he remains a **stash**, not a cut." : ", worth a bench spot in deeper leagues.") : "."),
     });
   } else {
     out.push({
       lead: `No clear handcuff behind ${surname(rb1.name)}:`,
-      body: `No other back has 5% of the backfield's weighted opportunities, so a ${surname(rb1.name)} absence would be settled on the waiver wire, not by a stash on your bench.`,
+      body: `No other back has 5% of the backfield's weighted opportunities, so an absence would be settled on the waiver wire, not by a stash on your bench.`,
     });
   }
   return out;
@@ -364,25 +330,12 @@ export function runNote(view: UsageView): string {
   const rb1 = view.rbs[0];
   const left = runs.LT.att + runs.LE.att;
   const right = runs.RT.att + runs.RE.att;
-  const inside = pctOf(runs.MID.att);
 
-  const spread = `${inside}% of designed runs have gone up the middle, ${pctOf(left)}% to the left (tackle + end) and ${pctOf(right)}% to the right.`;
-  // A concentration claim needs a team sample worth the word.
-  const lean =
-    total < 20
-      ? ""
-      : inside >= 55
-        ? " The run game has been concentrated inside so far."
-        : pctOf(left) >= 40
-          ? " The run game has leaned left so far."
-          : pctOf(right) >= 40
-            ? " The run game has leaned right so far."
-            : "";
+  const spread = `**${pctOf(runs.MID.att)}%** of runs have gone inside, versus **${pctOf(left)}% left** and **${pctOf(right)}% right**.`;
   const r = runs[best];
   const efficiency =
-    ` ${GAP_LABEL[best].replace(" ", "-")} runs have produced the highest YPC so far: ${r.ypc!.toFixed(1)} on ${r.att} attempts` +
-    (r.att < 20 ? ", a small sample" : "") +
-    ".";
+    ` ${GAP_LABEL[best].replace(" ", "-")} runs have been most efficient at **${r.ypc!.toFixed(1)} YPC**` +
+    (r.att < 20 ? `, though on only ${r.att} attempts.` : ` on ${r.att} attempts.`);
   const side = best === "LE" || best === "LT" ? "left" : best === "MID" ? null : "right";
   const longest = rb1?.longestRuns ?? [];
   const onSide = side ? longest.filter(([, gap]) => (side === "left" ? gap === "LT" || gap === "LE" : gap === "RT" || gap === "RE")).length : 0;
@@ -390,7 +343,7 @@ export function runNote(view: UsageView): string {
     side && rb1 && longest.length >= 3 && onSide >= 2
       ? ` ${onSide === 3 ? "All three" : "Two"} of ${surname(rb1.name)}'s three longest runs came off the ${side} side.`
       : "";
-  return spread + lean + efficiency + longestLine;
+  return spread + efficiency + longestLine;
 }
 
 /* ------------------------------------------------------------ pass map */
@@ -421,10 +374,15 @@ export function zoneOwner(view: UsageView, zone: Zone): string | null {
   return surname(top.name);
 }
 
-export function passNote(view: UsageView, qbName: string, nickname: string): string {
+/**
+ * The pass-map paragraphs (mak's wording, 2026-10-20): where the passer
+ * lives, then the receiver whose targets live somewhere else. Zone YPAs stay
+ * in the grid above; the prose names the zones.
+ */
+export function passNote(view: UsageView, qbName: string): string[] {
   const zones = view.team.zones;
   const best = bestZone(view);
-  if (!best) return "";
+  if (!best) return [];
   const deepAtt = (["DL", "DM", "DR"] as Zone[]).reduce((s, k) => s + (zones[k]?.att ?? 0), 0);
   const allAtt = (Object.values(zones) as Array<{ att: number }>).reduce((s, v) => s + v.att, 0);
   const shortShare = allAtt ? Math.round((100 * (allAtt - deepAtt)) / allAtt) : null;
@@ -450,28 +408,25 @@ export function passNote(view: UsageView, qbName: string, nickname: string): str
     )
     .sort((a, b) => (deepRate(b) ?? 0) - (deepRate(a) ?? 0))[0];
 
-  // The lead is the best sub-20-yard zone on a real sample, stated as exactly
-  // that: a September zone is ten throws, not an "engine".
+  // The best sub-20-yard zone on a real sample: a September zone is ten
+  // throws, not an "engine".
   const shortBest = (["SL", "SM", "SR"] as Zone[])
     .filter((k) => (zones[k]?.att ?? 0) >= 5 && zones[k]?.ypa != null)
     .sort((a, b) => zones[b]!.ypa! - zones[a]!.ypa!)[0];
   const shortOwner = shortBest ? zoneOwner(view, shortBest) : null;
-  return (
-    (shortBest
-      ? `The ${ZONE_LABEL[shortBest].toLowerCase()} has been the ${nickname}' most efficient sub-20-yard area at ${zones[shortBest]!.ypa!.toFixed(1)} YPA on ${zones[shortBest]!.att} attempts` +
-        (shortOwner ? `, ${shortOwner}'s territory` : "") +
-        `. `
-      : "") +
-    `${qbName} keeps ${shortShare}% of his throws under 20 air yards` +
-    (deepBest
-      ? `, with the ${ZONE_LABEL[deepBest].toLowerCase()} his most explosive zone (${zones[deepBest]!.ypa!.toFixed(1)} YPA on ${zones[deepBest]!.att} attempt${zones[deepBest]!.att === 1 ? "" : "s"})`
-      : "") +
-    `. ` +
-    (decoy && best.startsWith("S")
-      ? `${surname(decoy.name)}'s fantasy problem, mapped: ${decoy.deepTargets} of his ${decoy.targets} targets (${deepRate(decoy)}%) have come 20+ yards downfield, the slice that is only ${deepShare}% of ${qbName}'s throws. `
-      : "") +
-    `Gold = highest-YPA high-volume zone.`
-  );
+  const zone = (k: Zone) => ZONE_LABEL[k].toLowerCase();
+  const where = shortBest
+    ? ` The ${zone(shortBest)}${shortOwner ? `, ${shortOwner}'s territory,` : ""} is his most efficient high-volume area` +
+      (deepBest ? `, while the ${zone(deepBest)} is the most explosive.` : ".")
+    : deepBest
+      ? ` The ${zone(deepBest)} is his most explosive zone.`
+      : "";
+  const first = `${qbName} keeps **${shortShare}% of throws under 20 yards**.` + where;
+  const second =
+    decoy && best.startsWith("S")
+      ? `${surname(decoy.name)} has seen **${deepRate(decoy)}% of his targets deep**, even though only **${deepShare}% of ${qbName}'s throws** go 20+ yards downfield.`
+      : "";
+  return [first, second].filter(Boolean);
 }
 
 /* ------------------------------------------------------------- the table */
@@ -683,7 +638,7 @@ export interface SignalCopy {
 export function signalCopy(signal: Signal): SignalCopy {
   const { row } = signal;
   const p = row.player;
-  const base = row.ts.baseWeek != null ? `W${row.ts.baseWeek}` : "the start";
+  const base = row.ts.baseWeek != null ? baseLabel(row.ts) : "the start";
   const last = row.ts.trail[row.ts.trail.length - 1];
   const lastWeek = row.ts.trailWeeks[row.ts.trailWeeks.length - 1];
 
@@ -699,8 +654,8 @@ export function signalCopy(signal: Signal): SignalCopy {
       };
     }
     const proof = [];
-    if (row.snap.delta != null && row.snap.delta > 0) proof.push({ value: signed(row.snap.delta, 0), caption: `snap share pts since W${row.snap.baseWeek}` });
-    if (row.ts.delta != null && row.ts.delta > 0) proof.push({ value: signed(row.ts.delta), caption: `target share pts since ${base}` });
+    if (row.snap.delta != null && row.snap.delta > 0) proof.push({ value: signed(row.snap.delta, 0), caption: `snap share pts, last 3 vs ${baseLabel(row.snap)}` });
+    if (row.ts.delta != null && row.ts.delta > 0) proof.push({ value: signed(row.ts.delta), caption: `target share pts, last 3 vs ${base}` });
     if (proof.length < 2 && p.xfpPerGame != null) proof.push({ value: `${p.xfpPerGame}`, caption: "xFP per game" });
     return {
       label: "Buy low",
@@ -728,7 +683,7 @@ export function signalCopy(signal: Signal): SignalCopy {
             : `the share is moving the wrong way`) +
         `. Name value currently exceeds trajectory.`,
       proof: [
-        { value: signed(row.ts.delta ?? 0), caption: `target share pts since ${base}` },
+        { value: signed(row.ts.delta ?? 0), caption: `target share pts, last 3 vs ${base}` },
         ...(last != null
           ? [{ value: `${last.toFixed(1)}%`, caption: `W${lastWeek} share${seasonLow ? " - season low" : ""}` }]
           : []),

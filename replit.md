@@ -1085,6 +1085,186 @@ bundle with the data in wp-content) under `[statchasers_redraft]`; plugin
   hosts); the app's "no data" developer screens are a sentence;
   " — " in its sentences is a comma.
 
+## Injury Risk Analysis and Injury Database
+
+`[statchasers_injury_impact]` (API `/injury-impact`, fragment `/embed/injury-impact`)
+and `[statchasers_injury_database]` (`/injury-database`, `/embed/injury-database`),
+data `/embed/injury-impact/data/{analysis,search,sim,gridiron}` and `/player/<gsis>`,
+root `.scin`, were ported on 2026-10-20 from
+https://github.com/statchasersff-bit/RESEARCH-Injury-Impact-Analysis (c6a49ce).
+No statchasers.com page mounts them yet; plugin 1.10.40 carries the shortcodes
+(one file, `statchasers-injury-impact.php`, prefix `statchasers_scin_`), both in
+the H1 mount list, so a new page with either shortcode prints its H1 in tool mode.
+
+Both addresses are ONE six-tab tool (`src/lib/injury-impact/render-tool.ts`),
+the arrangement of the repo's single-file "Gridiron Medical +" page
+(`public/gridiron-medical.html`, ported later the same day): **Overview, Injury
+database, Current players, Draft simulator, Methodology** (the durability tabs,
+`render-gm.ts` over `durability.ts`), **Impact study** (the React dashboard,
+`render.ts`). The React app's Injury history tab was retired 2026-10-21 (see
+below); its player page (`render-player.ts`, with the durability profile under
+the reports) opens over any tab from a tool-level host. Every tab is
+server-rendered; inactive panels are `hidden` and the bundle switches them
+(`#overview` ... `#impact` in the hash; a `#q-*` anchor opens the Impact study).
+`/injury-impact` opens on Overview, `/injury-database` on Injury database. The
+Gridiron page's Import button and
+theme toggle were not ported (no session-only data; one dress).
+
+- **Durability model** `src/lib/injury-impact/durability.ts`: the page's
+  `hydrate()` verbatim (recency-weighted availability shrunk toward the
+  position average by full-workload evidence, minus capped severity and
+  re-injury penalties; tiers at 85/70/55), the flat injury-event rows, the
+  overview aggregates, the Current players pool (top-200 ADP on a roster now),
+  the roster presets and the 2,000-season simulator with an injectable random
+  source (`seededRng` for tests). Data: `data/injury-impact/gridiron.json`
+  (`gridiron_dataset.json` as is, 1,652 drafted QB/RB/WR/TE 2009-2026),
+  packed by `buildData.mjs` like the rest; `/data/gridiron` serves it raw and
+  the bundle hydrates it on the first interaction with a durability tab.
+  Players link by GSIS id (`data-gm-key` falls back to a loose name key).
+  The three durability tables use the house player cell (mak, 2026-10-20,
+  "like we do on other tools"): the portrait with the club crest badged on its
+  bottom-right corner, the name over `POS · TEAM` (`playerCell()` in
+  `render-gm.ts`, the player pages' search-row pattern), so the separate Pos
+  and Team columns are gone from those tables (the filters remain).
+  The Injury database's columns are mak's (2026-10-20): Player, Season, Week
+  of injury, Body part, Type, Severity, Weeks out, Return week. The timing is
+  not in the dataset as fields: `injuryTiming()` reads the week from the
+  event's label ("out 3 games from week 12") and the return from the player's
+  week string for that season (the first game played after the run of missed
+  weeks; byes count as weeks out; a playoff-only event has no week; "Out for
+  season" when the record ends during the absence, "Did not return" when he
+  left the roster first). A player still out this season shows weeks out so
+  far with a plus sign and a `Proj. Wk N` return from `projectReturns()`: the
+  median games missed for the body part across the database (the type's when
+  the body part has under eight events), never fewer than the games already
+  missed plus one, at least four games on injured reserve, skipping the team's
+  bye (`data.ts` attaches the season's byes from `schedule.json` to the
+  dataset, so the bundle projects the same). The note under the table says it
+  is a base rate, not a report.
+  `data/injury-impact/corrections.json` (2026-10-21) holds local fixes to the
+  imported data, one entry per player-season event (GSIS id, season, week,
+  body part, type, side, why); `applyCorrections()` in `data.ts` rewrites the
+  durability tuples (label, body part, type, side), the current-season rows
+  and the impact seasons before the index maps and the hydrate read them, so
+  the table, the data slices and the player pages agree. The research repo
+  writes "Undisclosed" for an absence with no injury-report row inside it
+  (usually a player who went straight to IR); the repo's curated injury table
+  is the proper home for these, so move entries upstream when its dataset is
+  rebuilt. First entry: A.J. Brown's 2026 week 2 ankle (mak).
+- **Model** `src/lib/injury-impact/model.ts`: the app's Dashboard memos as pure
+  functions (filters, injury outcomes, draft-capital risk and frontier, the
+  Kaplan-Meier predictability study and recurrence matrix, age/workload strata,
+  timing, type classes, season trends with the log-linear fit, heatmap, tables,
+  the supporting charts, the tag-impact and simulation derivations).
+  `player.ts` is the per-player panel (body regions, risk model, timeline over
+  the schedule, search). `dashboard.ts` is the state + `computeViews`.
+  `render*.ts` are the markup; `charts.ts` draws the line/band, bar, bubble and
+  horizontal-bar charts as SVG with `data-tip` read-outs and legend buttons.
+  `client/injury-impact.ts` serves both pages (tabs, filters, sorts, legends,
+  lazy folds, search dialog, database paging/CSV/inline player panel).
+- **Data** `data/injury-impact/` (16 MB): `analysis.json` (meta + impacts +
+  drafted pool), `current.json`, `exposure.json`, `regression.json`,
+  `panel.json` (packed rows), `post-return.json`, `tag-impact.json`,
+  `draft-sim.json`, `search-index.json` (packed), `schedule.json`,
+  `history/<xx>.json` (weekly reports + in-game events, 100 shards by the GSIS
+  id's last two digits, read through an LRU), `sleeper-ids.json` (GSIS ->
+  Sleeper, from bio_sources.json + the DynastyProcess crosswalk; 4,538 of
+  6,908 players). Built by `scripts/injury-impact/buildData.mjs <app public/data dir>`
+  (`--no-fetch` keeps the stored ids). Headshots go through the house
+  `/news-image/player/` pipeline; the app's 28 MB of bundled webp files were
+  dropped; team crests are the local SVGs.
+- **Tests** `tests/injury-impact.test.mjs` hold the model to
+  `tests/fixtures/injury-impact-source-2026-10-20.json`, generated by
+  `scripts/injury-impact/genFixture.mjs <app Dashboard.tsx> . <out>` (committed:
+  it cuts the memo bodies out of the component with a brace matcher and runs
+  them over the packed data for four filter states), and the durability model
+  to `injury-durability-source-2026-10-20.json`, generated by
+  `genDurabilityFixture.mjs <gridiron-medical.html> <gridiron.json> <out>`
+  (the page's `hydrate` cut out and run in a vm: every player's score, tier,
+  penalties and simulator history, the overview lists, the ranking order). The
+  routes (seven panels on both pages), both fragments and the slices are
+  checked over HTTP. `table-armour.test.mjs`
+  covers `injury-impact.css`; the plugin's `smoke-scin.php` runs in three
+  child groups.
+- **Page size**: the whole tool is 543 KB raw / 64 KB gzipped (the Impact
+  study alone was 356 KB / 41 KB). The ADP
+  scatter (1,200 points with read-outs, 900 KB) and the draft simulation
+  (200 KB) are collapsed folds the app itself demoted, so the server prints a
+  placeholder and the bundle draws them on first open (`/data/sim` is its own
+  slice).
+- **Words**: `injuryPageCopy()` in `render-shared.ts` carries the app's own H1s
+  and lead sentences as title/H1/description; no live page exists to copy
+  from, so any search wording needs mak's OK. Dataset prose goes through
+  `houseText()`: " — " becomes a comma, "–" a hyphen, and "nflverse" reads
+  "official league" (no source names in the page).
+- **Divergences from the app**: house dress (no Tailwind, Inter, navy/gold);
+  SVG charts instead of recharts (straight segments, not monotone curves;
+  read-outs on hover bands); native `<details>` folds; a dual-thumb native
+  range for the ADP filter; the dashboard's player search opens a dialog, the
+  database an inline panel (as the app); the executive summary, question
+  tabs and every section's text are the app's verbatim.
+
+**Injury history tab retired (2026-10-21).** mak: "we don't really need the
+injury history tab anymore" once the Injury database carried its columns and
+filters. `TOOL_TABS` is six; `/injury-database` opens on Injury database;
+`RETIRED_TABS` maps the old `#history` hash to it. The impact study's records
+table (render-database.ts `renderDbTable`/`dbRecords`) is no longer mounted in
+the tool (the standalone `renderDatabasePage` and its client code remain for
+`mountDatabase`, which still drives the player page). The player page kept:
+a tool-level `<div data-scin-player-wrap>` host after the panels; a name
+clicked in any tab opens the player over that tab's panel (`Db.main` resolves
+the visible panel, `hiddenMain` remembers it, Back restores it, switching tabs
+closes it). The Impact study's own search still opens players in its dialog.
+
+**Injury database columns (2026-10-21).** The event table carries the Injury
+history table's columns too: ADP, Games missed, Season ending and Impact
+(Team and Pos stay inside the player cell). `studyIndex()` in data.ts joins
+analysis.json and current.json by `gsis|season` into `gridiron.study`
+(ADP per player-season, impact label per week of injury), which rides in the
+/data/gridiron slice so the bundle agrees; `studyFor()` in durability.ts reads
+them per event: the study's own label for the exact event, `impactLabel()`
+(the study's published rule, which reproduces every one of its 2,432 labels)
+for another event in a priced season, "In progress" for the season in progress
+(ADP from the audited row, else this season's board), and "-" for a season the
+study never priced (2009 to 2015, players outside its pool). Sort keys `adp`
+(ascending first), `gm`, `seasonEnding`, `impact` (by weight, unpriced last);
+the CSV gained ADP, Season ending and Impact.
+Filters gained Team, Impact (labels by weight) and a Season-Ending-only switch
+(`data-ev-team`, `data-ev-impact`, `data-ev-ending`), so the event bar has every
+filter the Injury history bar has.
+The Current players table has its own Download CSV (`data-rk-csv`, `rankCsv()` in
+durability.ts: rank, player, position, team, roster status, score, tier, ADP,
+seasons and span, availability, games missed, major injuries, thin-record flag;
+the filtered rows in the current order).
+
+**In-season refresh (2026-10-21).** `node scripts/injury-impact/refresh.mjs`
+(`scripts/injury-impact/refresh-lib.mjs` holds the pure half, tested in
+`tests/injury-impact-refresh.test.mjs`) brings the season in progress up to the
+week from the same public files the repo's pipeline reads: nflverse
+`injuries_<season>.csv` (weekly reports), `play_by_play_<season>.csv.gz`
+("was injured during the play" with quarter and clock), `roster_<season>.csv`
+and `roster_weekly_<season>.csv` (the repo's jersey + name cascade for resolving
+a play's "PHI-11-A.Brown" to a GSIS id). Ownership: the pack's rows for weeks
+already published are left alone (the repo's curated database replaced
+nflverse's rows there for QB/RB/WR/TE); weeks after the pack's last week are the
+refresh's and are dropped and rewritten each run, with the boundary recorded in
+`data/injury-impact/history-refresh.json` (buildData.mjs deletes it, so a new
+pack is a new baseline; `--own-from <week>` overrides). In-game events are
+recomputed for the whole season each run. Every roster player with no report
+gets a search-index row (0 reports, no seasons) so the search finds him and the
+panel says "No injury reports on file"; roster Sleeper ids fill missing
+headshots. `--from <dir>` reads the four files locally, `--reports-only` /
+`--plays-only` / `--dry-run` as named. NOT refreshed by it: `current.json` (the
+audited episodes: Notable Injuries, games missed so far, the Current players
+tab), `gridiron.json`, `analysis.json`; those need the repo's
+`refresh_current.ts` and a re-pack. The timeline covers the gap:
+`timelineModel()` takes the audited week (`PlayerSlice.audited` =
+current.json's season + through_week) and draws a week listed Out after it as a
+missed game with its own onset ("listed Out (not yet audited)"), unless an
+episode is still ongoing. First run 2026-10-21: week 7 reports (23 rows, the
+Wednesday file), 309 in-game events for 257 players (all 306 plays resolved),
+1,129 roster players added to the index, 402 Sleeper ids filled.
+
 ## Architecture decisions
 
 - **Refreshes are driven by timers only, and the database is opened only when

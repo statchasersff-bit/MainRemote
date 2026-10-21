@@ -1,0 +1,27 @@
+{
+  "season": 2026,
+  "generatedAt": "2026-10-21T11:08:45.017Z",
+  "ownedFrom": 7,
+  "reports": {
+    "weeks": {
+      "7": 23
+    },
+    "latestWeek": 7,
+    "added": 23,
+    "dropped": 0,
+    "players": 23,
+    "newPlayers": 1
+  },
+  "plays": {
+    "plays": 306,
+    "mentions": 309,
+    "mapped": 309,
+    "unmapped": 0,
+    "events": 309,
+    "players": 257
+  },
+  "roster": {
+    "indexed": 1129,
+    "sleeperIds": 402
+  }
+}

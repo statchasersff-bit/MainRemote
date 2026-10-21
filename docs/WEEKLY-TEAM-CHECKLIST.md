@@ -9,6 +9,7 @@ About 10 minutes, every **Tuesday** in season (after Monday night, before nflver
 | Record, standing, head coach in the hero | live, cached up to 3 hours | ESPN (standings table, tiebreakers applied) |
 | Usage tab | daily 11:00 UTC (7am ET) | nflverse play-by-play, FTN charting |
 | Coaching tab numbers and prose, all 32 teams | daily, right after Usage | nflverse + `data/team/coaching_staff_2026.json` |
+| Injury history tab and player panel in the Injury tool (weekly reports, play-by-play log, search index) | weekly after Monday night, or daily for practice designations (`node scripts/injury-impact/refresh.mjs`) | nflverse injuries, play-by-play, rosters |
 | Stats tab Efficiency, Pass Protection and Pass Rush ladders (EPA/play, EPA/DB, EPA/rush, success rate, explosive %, blitz %, EPA vs blitz / 4-man, time to throw) | daily, right after Coaching (`node scripts/team/buildEfficiency.mjs 2026`) | nflverse play-by-play, FTN charting, Next Gen passing |
 | Stored schedule slate (`data/schedule/games.csv`, the fallback every team hub and the schedule tool read when nflverse is unreachable) | Tuesday, by hand: `node artifacts/api-server/scripts/schedule/snapshot-games.mjs` | nflverse games.csv |
 | **Team page check** | daily, right after Coaching | games file, ESPN standings, ESPN coaches, the data files |

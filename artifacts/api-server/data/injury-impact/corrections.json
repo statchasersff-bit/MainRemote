@@ -1,0 +1,6 @@
+{
+  "note": "Local corrections to the imported injury datasets, applied by src/lib/injury-impact/data.ts before anything is hydrated or served. One entry per player-season event the research repo got wrong or left Undisclosed; the repo's curated injury table is the proper home for these, so move them upstream when its dataset is rebuilt. Keys: gsisId + season (+ week when a season has several events). bodyPart is the capitalized part the dataset uses (Ankle, Knee, Hamstring...); type is soft | structural | head | other; side is Left | Right or empty.",
+  "entries": [
+    { "gsisId": "00-0035676", "player": "A.J. Brown", "season": 2026, "week": 2, "bodyPart": "Ankle", "type": "structural", "side": "", "why": "Went to IR after week 2 with no report row inside the absence, so the repo wrote Undisclosed; mak 2026-10-21: it was an ankle injury, and the week 6 practice reports list him with an ankle." }
+  ]
+}

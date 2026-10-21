@@ -48,6 +48,8 @@ const STATCHASERS_PROXY_PATHS = array(
 	'#^embed/redraft-strategy/data/(?:combo|trends)/[a-z0-9_]{1,60}$#',
 	'#^embed/redraft-strategy/data/boards$#',
 	'#^embed/rb-handcuffs/player/[A-Za-z0-9_-]{1,40}$#',
+	'#^embed/injury-impact/data/(?:analysis|search|sim)$#',
+	'#^embed/injury-impact/data/player/00-[0-9]{7}$#',
 	'#^api/news$#',
 );
 

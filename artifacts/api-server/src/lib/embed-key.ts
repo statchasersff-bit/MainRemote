@@ -77,6 +77,7 @@ export function isProtectedPath(path: string): boolean {
   if (path === "/strength-of-schedule") return true;
   if (path === "/rookie-hit-rates") return true;
   if (path === "/redraft-strategy") return true;
+  if (path === "/injury-impact" || path === "/injury-database") return true;
   return false;
 }
 

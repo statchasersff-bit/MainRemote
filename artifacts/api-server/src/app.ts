@@ -17,6 +17,7 @@ import rbHandcuffsRouter from "./routes/rb-handcuffs";
 import sosRouter from "./routes/sos";
 import rookieHitRatesRouter from "./routes/rookie-hit-rates";
 import redraftStrategyRouter from "./routes/redraft-strategy";
+import injuryImpactRouter from "./routes/injury-impact";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import depthChartsRouter from "./routes/depth-charts";
@@ -161,6 +162,11 @@ app.use(rookieHitRatesRouter);
 // views from. Mounted alongside the other tools, for the same reason.
 app.use(redraftStrategyRouter);
 
+// Injury impact analysis and the injury database: /injury-impact,
+// /injury-database, their /embed/* fragments and the data slices the bundle
+// redraws from (routes/injury-impact.ts).
+app.use(injuryImpactRouter);
+
 // Shortcode preview harness (/preview/*). Development only - the router's own
 // first middleware 404s the whole thing outside development.
 app.use(previewRouter);
@@ -265,7 +271,7 @@ app.get(["/", "/index.html"], (req, res) => {
 const HASHED_ASSETS = new Set(
   [
     "news", "team", "player", "fpa", "rankings", "schedule", "player-stats", "rb-handcuffs", "sos",
-    "rookie-hit-rates", "redraft-strategy",
+    "rookie-hit-rates", "redraft-strategy", "injury-impact",
   ].flatMap((name) => [
     `/dist/statchasers-${name}.js`,
     `/${name === "news" ? "styles" : name}.css`,

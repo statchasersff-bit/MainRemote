@@ -10,8 +10,8 @@
  *
  * What this module decides, so the renderer and the copy do not have to:
  * which players get a row, each row's role and tier, the trend windows
- * (last three games; deltas vs Week 1 through Week 4, vs three games earlier
- * from Week 5), and which players the three signal cards name.
+ * (the last three games' average against the three before them), and which
+ * players the three signal cards name.
  */
 
 import { dataPath } from "../data-dir";
@@ -158,10 +158,15 @@ export interface Trend {
   /** The last three games, oldest first. */
   trail: Array<number | null>;
   trailWeeks: number[];
-  /** Latest minus the base game, or null. */
+  /**
+   * The last three games' average minus the average of the (up to) three
+   * games before them, or null until a fourth game is in.
+   */
   delta: number | null;
-  /** The week the delta is measured from. */
+  /** The last week of the base window; null when there is no base. */
   baseWeek: number | null;
+  /** Every week in the base window, oldest first. */
+  baseWeeks: number[];
   direction: "up" | "down" | "flat";
   /**
    * The latest game confirms the direction: a rise ends at the trail's high, a
@@ -182,6 +187,8 @@ export interface UsageRow {
   rz: Trend;
   /** True for the team's leader in red-zone opportunities. */
   leadsRz: boolean;
+  /** Leads, but shares the lead with at least one teammate. */
+  rzCoLead: boolean;
 }
 
 export interface Signal {
@@ -203,33 +210,27 @@ export interface UsageView {
   signals: Signal[];
 }
 
-/** Deltas measure from Week 1 early on, from three games back once Week 5 is in. */
-const DELTA_FROM_WEEK1_THROUGH = 4;
+/**
+ * Deltas compare the last three games' average with the average of the three
+ * games before them (mak, 2026-10-21): one quiet game should not read as a
+ * trend. A game the player sat out (no value) is skipped, not counted as zero.
+ * Early in the season the base window is whatever played games precede the
+ * last three, so the first delta appears with the fourth game.
+ */
+const WINDOW = 3;
 const STEADY: Record<"ts" | "snap" | "rz", number> = { ts: 2, snap: 5, rz: 1 };
 
-export function trend(
-  weekly: UsageWeek[],
-  key: "ts" | "snap" | "rz",
-  throughWeek: number,
-): Trend {
+export function trend(weekly: UsageWeek[], key: "ts" | "snap" | "rz"): Trend {
   const last3 = weekly.slice(-3);
   const trail = last3.map((w) => w[key]);
   const trailWeeks = last3.map((w) => w.week);
 
-  const latestIndex = (() => {
-    for (let i = weekly.length - 1; i >= 0; i -= 1) if (weekly[i]![key] != null) return i;
-    return -1;
-  })();
-  const baseIndex =
-    throughWeek <= DELTA_FROM_WEEK1_THROUGH
-      ? weekly.findIndex((w) => w[key] != null)
-      : weekly.length - 4;
-  const base = baseIndex >= 0 ? weekly[baseIndex] : undefined;
-  const latest = latestIndex >= 0 ? weekly[latestIndex] : undefined;
+  const played = weekly.filter((w) => w[key] != null);
+  const recent = played.slice(-WINDOW);
+  const base = played.slice(Math.max(0, played.length - 2 * WINDOW), played.length - WINDOW);
+  const mean = (ws: UsageWeek[]) => ws.reduce((s, w) => s + (w[key] as number), 0) / ws.length;
   const delta =
-    base && latest && base[key] != null && latest[key] != null && latestIndex > baseIndex
-      ? Math.round((latest[key]! - base[key]!) * 10) / 10
-      : null;
+    recent.length && base.length ? Math.round((mean(recent) - mean(base)) * 10) / 10 : null;
   const direction =
     delta == null || Math.abs(delta) < STEADY[key] ? "flat" : delta > 0 ? "up" : "down";
   const known = trail.filter((v): v is number => v != null);
@@ -243,7 +244,22 @@ export function trend(
       : direction === "down"
         ? last <= Math.min(...earlier) + 1
         : false);
-  return { trail, trailWeeks, delta, baseWeek: base?.week ?? null, direction, confirmed };
+  const baseWeeks = base.map((w) => w.week);
+  return { trail, trailWeeks, delta, baseWeek: baseWeeks[baseWeeks.length - 1] ?? null, baseWeeks, direction, confirmed };
+}
+
+/** "W1-3" / "W3": the base window as the table prints it. */
+export function baseLabel(t: Trend): string {
+  const b = t.baseWeeks;
+  if (b.length === 0) return "";
+  return b.length === 1 ? `W${b[0]}` : `W${b[0]}-${b[b.length - 1]}`;
+}
+
+/** "Weeks 1-3" / "Week 3": the base window in prose. */
+export function baseWords(t: Trend): string {
+  const b = t.baseWeeks;
+  if (b.length === 0) return "";
+  return b.length === 1 ? `Week ${b[0]}` : `Weeks ${b[0]}-${b[b.length - 1]}`;
 }
 
 function tierFor(p: UsagePlayer, depth: number): Tier {
@@ -329,17 +345,20 @@ export function buildUsageView(
   // page would claim a week it has not played (NE 2026-10-03: three games,
   // labeled "through Week 4"). A bye keeps the last week played.
   const through = team.games.length ? Math.max(...team.games) : doc.throughWeek;
-  const rzLeader = [...here].sort((a, b) => b.rzTouches - a.rzTouches)[0];
+  // Red-zone lead: everyone tied at the top is a leader (mak, 2026-10-21).
+  const rzMax = here.reduce((m, p) => Math.max(m, p.rzTouches), 0);
+  const rzLeaders = here.filter((p) => p.rzTouches === rzMax).length;
 
   const toRow = ({ p, depth }: { p: UsagePlayer; depth: number }): UsageRow => ({
     player: p,
     role: `${p.pos}${depth}`,
     depth,
     tier: tierFor(p, depth),
-    ts: trend(p.weekly, "ts", through),
-    snap: trend(p.weekly, "snap", through),
-    rz: trend(p.weekly, "rz", through),
-    leadsRz: rzLeader === p && p.rzTouches > 0,
+    ts: trend(p.weekly, "ts"),
+    snap: trend(p.weekly, "snap"),
+    rz: trend(p.weekly, "rz"),
+    leadsRz: rzMax > 0 && p.rzTouches === rzMax,
+    rzCoLead: rzMax > 0 && p.rzTouches === rzMax && rzLeaders > 1,
   });
 
   const stash = (r: UsageRow) => r.tier === "stash";

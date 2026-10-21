@@ -387,6 +387,7 @@ require_once "$dir/statchasers-rb-handcuffs.php";
 require_once "$dir/statchasers-sos.php";
 require_once "$dir/statchasers-rookie-hit-rates.php";
 require_once "$dir/statchasers-redraft-strategy.php";
+require_once "$dir/statchasers-injury-impact.php";
 // And for its position URLs, near the bottom.
 require_once "$dir/statchasers-rankings.php";
 // The key header and the browser proxy's allowlist, against the stubbed
@@ -440,10 +441,10 @@ if ( 'main' === $group ) {
 	is( isset( $other['headers']['X-StatChasers-Key'] ), false, 'a look-alike host never gets the key' );
 	$third = statchasers_add_embed_key( array(), 'https://api.sleeper.app/v1/players' );
 	is( isset( $third['headers']['X-StatChasers-Key'] ), false, 'another service never gets the key' );
-	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/redraft-strategy/data/combo/one_qb__ppr__no_tep__12__2025', 'embed/redraft-strategy/data/trends/superflex__half_ppr__tep__12', 'embed/redraft-strategy/data/boards', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
+	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/redraft-strategy/data/combo/one_qb__ppr__no_tep__12__2025', 'embed/redraft-strategy/data/trends/superflex__half_ppr__tep__12', 'embed/redraft-strategy/data/boards', 'embed/rb-handcuffs/player/4034', 'embed/injury-impact/data/analysis', 'embed/injury-impact/data/player/00-0030228', 'api/news' ) as $ok_path ) {
 		is( statchasers_proxy_allowed( $ok_path ), true, "proxy forwards $ok_path" );
 	}
-	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'api/x/accounts', '' ) as $no_path ) {
+	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'embed/injury-impact', 'embed/injury-impact/data/player/x', 'embed/injury-impact/data/analysis/x', 'api/x/accounts', '' ) as $no_path ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
 	echo "\n";
@@ -487,6 +488,12 @@ if ( 'rhr' === $group || 'rhrleak' === $group ) {
 
 if ( 'rds' === $group || 'rdsleak' === $group ) {
 	require __DIR__ . '/smoke-rds.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( in_array( $group, array( 'scin', 'scindb', 'scinleak' ), true ) ) {
+	require __DIR__ . '/smoke-scin.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2153,7 +2160,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'bdp', 'hostcss' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

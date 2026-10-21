@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.39
+Stable tag: 1.10.40
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.40 =
+* Two new shortcodes, [statchasers_injury_impact] and [statchasers_injury_database], mount the Fantasy Football Injury Risk Analysis and the NFL Injury Database (ported from the standalone RESEARCH-Injury-Impact-Analysis app, which was never installed here). The API renders each page's default view into the page - the six research questions with their charts and tables, or the first page of the 2,509-record database - and the bundle redraws filters, sorts, tabs, legends, the player search dialog and the inline player panel from data slices through the browser proxy. Both pages print their H1 in "Let the tool supply the heading" mode; title and description come from the fragment's island. One stylesheet and one bundle serve both.
 
 = 1.10.39 =
 * Player page sitemap: profiles the plugin already serves noindex, follow - players who have left the indexed roster, and the duplicate pages below - are now actually left out of Rank Math's page sitemap. The rule was there since 1.10.21 but asked for a WP_Post, and Rank Math's sitemap hands each entry over as a plain database row, so it never matched and every noindex profile stayed listed. Active profiles and their six section URLs are unchanged.
