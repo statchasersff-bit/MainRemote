@@ -97,6 +97,7 @@ import { invalidateRankingsCache } from "../rankings/rankings-data";
 import { dataPath } from "../data-dir";
 import { restorePracticeReports, savePracticeReports } from "./practice-store";
 import { afterWarmup } from "../warmup-core";
+import { availableMemMb } from "../mem";
 
 const TICK_MS = 10 * 60 * 1000;
 /**
@@ -185,21 +186,6 @@ export function playerRefreshStatus(): PlayerRefreshStatus {
       steps: dailySteps,
     },
   };
-}
-
-/**
- * The VM's available memory in MB. /proc/meminfo's MemAvailable, which counts
- * reclaimable cache the OOM killer would free first; os.freemem() does not and
- * reads low on a box that is merely caching files.
- */
-function availableMemMb(): number {
-  try {
-    const match = /MemAvailable:\s+(\d+) kB/.exec(fs.readFileSync("/proc/meminfo", "utf8"));
-    if (match) return Math.round(Number(match[1]) / 1024);
-  } catch {
-    // Not Linux, or /proc unreadable: -1 below.
-  }
-  return -1;
 }
 
 /**

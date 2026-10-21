@@ -23,7 +23,8 @@ import { loadRosterPct } from "./player/data";
 import { indexedPlayers } from "./player/player-data";
 import { currentWeek, getSchedule, scheduleSeason, weekGames } from "./schedule/schedule-data";
 import { TEAMS } from "./team/teams";
-import { planWarmup, runWarmup, type WarmupSummary } from "./warmup-core";
+import { availableMemMb } from "./mem";
+import { parsePlayerCap, planWarmup, runWarmup, type WarmupSummary } from "./warmup-core";
 
 /** The team sections WordPress serves at their own addresses (statchasers-team-pages.php). */
 const SECTIONS = ["usage", "schedule", "depth-chart"] as const;
@@ -34,6 +35,13 @@ const BUDGET_MS = 8 * 60 * 1000;
 const YIELD_MS = 40;
 /** Per page. A cold player page is ~6 s locally; the VM is slower and may be busy. */
 const REQUEST_TIMEOUT_MS = 45 * 1000;
+/**
+ * Stop walking when the VM has less than this left (SC_WARMUP_MIN_FREE_MB).
+ * The builders a refresh spawns get a 768MB heap each (live-refresh.ts), and
+ * the process itself keeps growing with what it renders; the 2GB VM needs the
+ * headroom more than a reader needs a warm page.
+ */
+const DEFAULT_MIN_FREE_MB = 800;
 
 function flag(name: string, fallback: boolean): boolean {
   const raw = (process.env[name] ?? "").trim().toLowerCase();
@@ -47,8 +55,11 @@ export function warmupEnabled(): boolean {
 }
 
 function maxPlayers(): number {
-  const n = Number((process.env["SC_WARMUP_PLAYERS"] ?? "").trim());
-  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : DEFAULT_PLAYERS;
+  return parsePlayerCap(process.env["SC_WARMUP_PLAYERS"], DEFAULT_PLAYERS);
+}
+
+function minFreeMb(): number {
+  return parsePlayerCap(process.env["SC_WARMUP_MIN_FREE_MB"], DEFAULT_MIN_FREE_MB);
 }
 
 function note(line: string): void {
@@ -124,8 +135,9 @@ export function warmRenders(port: number): Promise<WarmupSummary | null> {
           sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
           now: () => Date.now(),
           note,
+          availableMb: availableMemMb,
         },
-        { budgetMs: BUDGET_MS, yieldMs: YIELD_MS },
+        { budgetMs: BUDGET_MS, yieldMs: YIELD_MS, minFreeMb: minFreeMb() },
       );
     } catch (err) {
       note(`not run: ${err instanceof Error ? err.message : String(err)}`);

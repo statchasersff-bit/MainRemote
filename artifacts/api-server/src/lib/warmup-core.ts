@@ -77,6 +77,8 @@ export interface WarmupDeps {
   sleep: (ms: number) => Promise<void>;
   now: () => number;
   note: (line: string) => void;
+  /** The machine's available memory in MB, or -1 when it cannot be read. Read before each page. */
+  availableMb?: () => number;
 }
 
 export interface WarmupLimits {
@@ -86,6 +88,27 @@ export interface WarmupLimits {
   yieldMs: number;
   /** A progress line every this many pages. */
   progressEvery?: number;
+  /**
+   * Stop when the machine has less than this many MB available. Every page
+   * the walk renders stays resident (the data it loaded, the fragment it
+   * cached), and the builders that start when the walk ends need room of
+   * their own: on 2026-10-21 the first boot with the warm-up left the VM
+   * dead within hours. A reader who finds a page cold waits seconds; a VM
+   * the OOM killer takes is down until somebody republishes.
+   */
+  minFreeMb?: number;
+}
+
+/**
+ * The player cap from its environment variable. Unset or blank means the
+ * default: `Number("")` is 0, which would (and until 2026-10-21 did) warm no
+ * players at all.
+ */
+export function parsePlayerCap(raw: string | undefined, fallback: number): number {
+  const text = (raw ?? "").trim();
+  if (text === "") return fallback;
+  const n = Number(text);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
 }
 
 export async function runWarmup(
@@ -102,6 +125,14 @@ export async function runWarmup(
       summary.skipped = paths.length - i;
       deps.note(`budget spent after ${i} pages; ${summary.skipped} skipped`);
       break;
+    }
+    if (limits.minFreeMb !== undefined && deps.availableMb) {
+      const free = deps.availableMb();
+      if (free >= 0 && free < limits.minFreeMb) {
+        summary.skipped = paths.length - i;
+        deps.note(`memory floor: ${free}MB available, under ${limits.minFreeMb}MB, after ${i} pages; ${summary.skipped} skipped`);
+        break;
+      }
     }
     const path = paths[i]!;
     try {
