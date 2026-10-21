@@ -3849,7 +3849,10 @@ function renderLastMeeting(data: MatchupData, options: MatchupRenderOptions): st
   // The kickoff's own calendar year, not the season's: a Week 18 game of the
   // 2025 season was played in January 2026.
   const when = gameDateLine(asGame(meeting)).date.replace(/^[A-Za-z]+, /, "");
-  const year = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric" }).format(meeting.kickoffMs);
+  const year =
+    meeting.kickoffMs === null
+      ? String(meeting.season)
+      : new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric" }).format(meeting.kickoffMs);
   const line = `Last meeting: ${result}${meeting.winner ? "" : " (tie)"} (${meeting.weekLabel}, ${when}, ${year})`;
 
   // The box score's players, through the same builder the recap uses, so the

@@ -96,6 +96,7 @@ import { invalidateHandcuffCache } from "../rb-handcuffs/handcuffs-data";
 import { invalidateRankingsCache } from "../rankings/rankings-data";
 import { dataPath } from "../data-dir";
 import { restorePracticeReports, savePracticeReports } from "./practice-store";
+import { afterWarmup } from "../warmup-core";
 
 const TICK_MS = 10 * 60 * 1000;
 /**
@@ -312,6 +313,8 @@ export function refreshPlayerStats(): Promise<void> {
       lastSuccessMs = Date.now();
       lastError = null;
       logger.info({ season }, "Player stats refreshed");
+      // The reload above emptied the loaded data and the fragment caches.
+      if (rewarm) void rewarm().catch((err) => logger.warn({ err }, "Player refresh: re-warm failed"));
     } catch (err) {
       lastFailureMs = Date.now();
       lastError = err instanceof Error ? err.message : String(err);
@@ -542,13 +545,39 @@ export function dailyRefreshEnabled(): boolean {
   return raw === "1" || raw === "true" || raw === "on";
 }
 
-export function startPlayerRefreshScheduler(): void {
+export interface RefreshSchedulerOptions {
+  /**
+   * The boot warm-up (lib/warmup.ts). The first tick waits for it, so the
+   * builders' CPU does not land on the cold renders; capped, so a warm-up
+   * that hangs cannot hold the game logs back for good.
+   */
+  afterBoot?: Promise<unknown>;
+  /**
+   * Run after the game-window refresh has reloaded the data: that reload
+   * drops the loaded game logs and every rendered fragment, so the renders
+   * are warmed again before readers find them cold.
+   */
+  rewarm?: () => Promise<unknown>;
+}
+
+/** The first tick waits for the warm-up, but at least this long after boot... */
+const FIRST_TICK_FLOOR_MS = 3 * 60 * 1000;
+/** ...and at most this long, warm-up or not. */
+const FIRST_TICK_CAP_MS = 10 * 60 * 1000;
+
+let rewarm: (() => Promise<unknown>) | null = null;
+
+export function startPlayerRefreshScheduler(options: RefreshSchedulerOptions = {}): void {
   enabled = playerRefreshEnabled();
   if (!enabled) return;
+  rewarm = options.rewarm ?? null;
   const run = () => {
     tick().catch((err) => logger.error({ err }, "Player refresh tick failed"));
   };
-  // A minute after boot, clear of the startup work.
-  setTimeout(run, 60_000).unref();
+  // After the boot warm-up (three minutes at the least, ten at the most), so
+  // the builders are not competing with the cold renders for the VM. It used
+  // to be a flat minute "clear of the startup work", which is when the cold
+  // renders were at their worst (2026-10-21).
+  void afterWarmup(options.afterBoot, FIRST_TICK_FLOOR_MS, FIRST_TICK_CAP_MS).then(run);
   setInterval(run, TICK_MS).unref();
 }

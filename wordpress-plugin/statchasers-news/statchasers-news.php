@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule, the NFL depth charts, the injury risk analysis and the injury database. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.40
+ * Version:           1.10.41
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.40';
+const STATCHASERS_NEWS_VERSION       = '1.10.41';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -351,7 +351,7 @@ function statchasers_news_asset_version(): string {
 		)
 	);
 
-	$version = STATCHASERS_NEWS_VERSION;
+	$version = '';
 
 	if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
 		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
@@ -368,9 +368,24 @@ function statchasers_news_asset_version(): string {
 		}
 	}
 
-	// Cache failures too, briefly, so an unreachable API doesn't add a timeout
-	// to every page render.
-	set_transient( 'sc_news_asset_version', $version, 15 * MINUTE_IN_SECONDS );
+	if ( '' !== $version ) {
+		set_transient( 'sc_news_asset_version', $version, 15 * MINUTE_IN_SECONDS );
+		// The last hash the API answered with, kept for a week, for the case
+		// below.
+		set_transient( 'sc_news_asset_version_bak', $version, WEEK_IN_SECONDS );
+		return $version;
+	}
+
+	// The API did not answer (a freshly published deployment is at its slowest
+	// in its first minutes, and this call has a five-second timeout). Print
+	// the last hash it did answer with, which the edge already holds, rather
+	// than the plugin's own constant, which names a URL no cache has seen and
+	// so sends every browser to the cold origin for the stylesheet - the
+	// unstyled pages of 2026-10-21. Cached for one minute, not fifteen, so a
+	// fresh build's hash is picked up as soon as the API is answering again.
+	$backup = get_transient( 'sc_news_asset_version_bak' );
+	$version = is_string( $backup ) && '' !== $backup ? $backup : STATCHASERS_NEWS_VERSION;
+	set_transient( 'sc_news_asset_version', $version, MINUTE_IN_SECONDS );
 
 	return $version;
 }
