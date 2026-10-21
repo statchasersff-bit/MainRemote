@@ -1204,6 +1204,14 @@ theme toggle were not ported (no session-only data; one dress).
   database an inline panel (as the app); the executive summary, question
   tabs and every section's text are the app's verbatim.
 
+**Durability profile text cut (2026-10-21, mak).** `renderDurabilityProfile` no
+longer prints the re-injury sentence ("Re-injury flag: ..." / "No re-injury
+pattern in this window.") or the "Availability: one box per team game"
+heading, nor (same day) the tier line above the dial ("Moderate risk
+missed-time risk, not talent · WR · NE · 15.5 healthy PPR/game · ADP 19.0");
+the dial, the two tiles, the availability grid and its legend remain, Affected
+Regions still lands under the grid.
+
 **Career Timeline removed (2026-10-21, mak).** `renderPlayerReports` no longer
 mounts `renderTimeline`; the function and `timelineModel()` (with its
 post-audit Out-week rule) stay in render-player.ts / player.ts, unmounted. The

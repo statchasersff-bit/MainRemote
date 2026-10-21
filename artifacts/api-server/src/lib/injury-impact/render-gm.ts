@@ -452,11 +452,11 @@ function collegeGrid(p: GmPlayer): string {
 export function renderDurabilityProfile(d: Durability, p: GmPlayer): string {
   const left =
     `<div class="scin-block is-rule">` +
-    `<p class="scin-body"><strong class="scin-score is-${p.tier.key}">${escapeHtml(p.tier.name)}</strong> <span class="scin-muted">missed-time risk, not talent</span> <span class="scin-muted">· <span class="scin-pos" style="color:${posColorOf(p.pos)}">${escapeHtml(p.pos)}</span> · ${escapeHtml(p.tm)} · ${n1(p.ppg)} healthy PPR/game${p.adp != null ? ` · ADP ${n1(p.adp)}` : ""}</span></p>` +
+    // The tier line ("Moderate risk missed-time risk, not talent · WR · NE · 15.5 healthy PPR/game · ADP 19.0") was removed 2026-10-21 (mak); the dial keeps the score and tier color.
     `<div class="scin-dial-wrap">${dial(p.score, p.tier)}<div class="scin-dial-stats"><div><b>${n1(p.availPct)}%</b> availability</div><div><b>${n0(p.gmTot)}</b> games missed (${p.seasonYears.length} season${p.seasonYears.length === 1 ? "" : "s"})</div><div><b>${n1(p.perYearRate)}</b> games/season rate</div></div></div>` +
     `<div class="scin-tiles is-2"><div class="scin-tile"><p class="scin-tile-k">Major injuries</p><p class="scin-tile-big is-ink">${p.major}</p></div><div class="scin-tile"><p class="scin-tile-k">Soft-tissue events</p><p class="scin-tile-big is-ink">${p.soft}</p></div></div>` +
-    `<p class="scin-body${p.reinj ? "" : " is-muted"}">${p.reinj ? "Re-injury flag: a body part here caused more than one event, the strongest repeat-risk signal." : "No re-injury pattern in this window."}</p>` +
-    h3("Availability: one box per team game") +
+    // The re-injury sentence and the "Availability: one box per team game"
+    // heading were removed 2026-10-21 (mak); the grid's legend explains the boxes.
     // The player page moves its Affected Regions section in after this grid.
     `<div data-gm-avail>${renderAvailGrid(d, p)}</div>` +
     `</div>` +
