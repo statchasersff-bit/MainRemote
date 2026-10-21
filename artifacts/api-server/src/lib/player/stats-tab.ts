@@ -832,19 +832,12 @@ function renderChart(data: PlayerPageData, c: Career): string {
     rows.map((r) => `${r.season} ${one(ppg(r))}${r.inProgress ? " (in progress)" : ""}`).join(", ") +
     (showAvg ? `. Career average ${one(careerPpg)}.` : ".");
 
-  const now = rows.find((r) => r.inProgress);
-
-  const legend =
-    (latest && n > 1 ? `<span class="is-last">${latest.season}</span>` : "") +
-    (now ? `<span class="is-now">${now.season}, in progress</span>` : "") +
-    (showAvg ? `<span class="is-avg">Dashed line: career average</span>` : "");
-
   const avgPos = Math.min(1, careerPpg / scale);
   return (
     sectionOpen("scp-st-arc-h", "Fantasy points per game, every season", "") +
     `<figure class="scp-st-arc${showAvg ? " has-avg" : ""}" style="--scp-n:${n};--scp-avg:${avgPos.toFixed(4)}">` +
-    // The scroller is the chart alone, so the legend stays put while a long
-    // career scrolls; client/player.ts opens it on the newest season.
+    // The scroller is the chart alone; client/player.ts opens it on the
+    // newest season. No legend under it (removed 2026-10-21).
     `<div class="scp-st-arc-scroll" data-scp-arc>` +
     `<div class="scp-st-plot${showAvg ? " has-avg" : ""}" role="img" aria-label="${escapeHtml(aria)}">` +
     cols +
@@ -853,7 +846,6 @@ function renderChart(data: PlayerPageData, c: Career): string {
     `<div class="scp-st-x" aria-hidden="true">${years}</div>` +
     `<div class="scp-st-teams" aria-hidden="true">${teams}</div>` +
     `</div>` +
-    (legend ? `<figcaption class="scp-st-legend">${legend}</figcaption>` : "") +
     `</figure></section>`
   );
 }
