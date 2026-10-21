@@ -25,6 +25,33 @@ _Replace the heading above with the project's name, and this line with one sente
   Monday night, once nflverse has published the week. This is the one that
   keeps production moving; see the FPA section for why the script above does
   not.
+- **After a publish (10-21):** the first twelve minutes of a fresh VM used to
+  answer everything in 50-75 s - cold renders (first team hub ~2.5 s, first
+  player page ~5.5 s, nearly all of it loading the shared game logs, rosters
+  and box scores) meeting crawler traffic and WordPress's 8 s fragment timeout
+  at once, while the boot builders took the CPU - and pages came up unstyled
+  because the publish's new asset hash was an edge miss that queued behind
+  the cold start. Three things now happen at boot, production only unless the
+  flag says otherwise: `lib/edge-prefetch.ts` (`SC_EDGE_PREFETCH`) asks
+  Cloudflare for every hashed stylesheet and bundle at `?ver=<build>` on
+  news.statchasers.com the moment the port is open - but only once the
+  origin's own `/embed/assets.json` reports this build's version (asked up to
+  three times, three minutes apart), because a process that is NOT behind the
+  origin (a workspace run, a VM the proxy has not switched to) would otherwise
+  cache the other build's bytes under this build's hash for a year - retrying
+  misses once after three minutes; `lib/warmup.ts` (`SC_WARMUP`, `SC_WARMUP_PLAYERS`
+  default 150, `SC_WARMUP_H1` default on to match the live H1 mode) walks the
+  32 team hubs, this week's and last week's matchups, the most-rostered
+  players and the usage/schedule/depth-chart sections through its own port,
+  one at a time with a 40 ms yield, within an 8-minute budget (164 pages in
+  53 s in the workspace with 8 players), and again after each game-window
+  refresh (which drops the loaded data); and the builders' first run and the
+  first club sweep wait for the warm-up (floors 3 min / 1 min, caps 10 min /
+  5 min). `[warmup]` and `[edge-prefetch]` lines on stderr show the
+  deployment's Logs pane what happened. Plugin 1.10.41 completes it on the
+  WordPress side: when `/embed/assets.json` does not answer, the stylesheets
+  are enqueued with the last hash the API gave (kept a week) for one minute,
+  not the plugin's own version for fifteen.
 - Required env: `DATABASE_URL` - Postgres connection string (the news archive),
   `DYNASTY_NEWS_API_URL` - upstream feed. **Both must be set on the deployment,
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the

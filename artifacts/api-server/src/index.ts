@@ -10,6 +10,8 @@ import {
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 import { startWatchdog } from "./lib/watchdog";
+import { warmRenders, warmupEnabled } from "./lib/warmup";
+import { edgePrefetchEnabled, startEdgePrefetch } from "./lib/edge-prefetch";
 import { loadImageVersions } from "./lib/image-versions";
 import { reloadFreshness } from "./lib/freshness";
 import { loadKnownNews } from "./lib/news-known";
@@ -68,6 +70,20 @@ app.listen(port, (err) => {
   // freshness and the known-news memory; see restoreStartupState().
   const restored = restoreStartupState();
 
+  // Cloudflare's copies of this build's stylesheets and bundles, asked for
+  // now, while the process is idle - a visitor's browser must never be the
+  // first to ask the cold origin for them (lib/edge-prefetch.ts).
+  if (edgePrefetchEnabled()) {
+    startEdgePrefetch().catch((err) => logger.warn({ err }, "Edge prefetch failed"));
+  }
+
+  // The hot renders, one at a time through our own port, once the headshot
+  // versions and the news freshness are in memory (lib/warmup.ts). The club
+  // sweep and the builders wait for it below.
+  const warmed: Promise<unknown> = warmupEnabled()
+    ? restored.then(() => warmRenders(port))
+    : Promise.resolve();
+
   // The wire: on startup, then every WIRE_INTERVAL_MS (twenty minutes). Not
   // in the development workspace unless asked for - see wireIngestEnabled().
   // The startup run waits for the restore so that a feed which has not moved
@@ -119,14 +135,25 @@ app.listen(port, (err) => {
   // Same switch as the wire. The workspace sweeping too doubled what the 32
   // clubs saw from us, for a dev database nobody reads the club lane of.
   // POST /api/ingest/clubs still runs one by hand.
+  //
+  // Since 2026-10-21 the minute is a floor: the sweep also waits for the boot
+  // warm-up, which is the process's busiest stretch now, capped at five
+  // minutes so a slow warm-up cannot hold the clubs' news back.
   if (wireIngestEnabled()) {
-    setTimeout(clubSweep, 60 * 1000);
+    const minute = new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+    const cap = new Promise((resolve) => setTimeout(resolve, 5 * 60 * 1000));
+    void Promise.all([minute, Promise.race([warmed, cap])]).then(clubSweep);
     setInterval(clubSweep, CLUB_INTERVAL_MS);
   }
 
   // Player game logs, refreshed after each game window. Production only unless
-  // SC_PLAYER_LIVE_REFRESH says otherwise; see lib/player/live-refresh.ts.
-  startPlayerRefreshScheduler();
+  // SC_PLAYER_LIVE_REFRESH says otherwise; see lib/player/live-refresh.ts. Its
+  // first run waits for the warm-up, and it warms the renders again after a
+  // refresh has reloaded the data from under them.
+  startPlayerRefreshScheduler({
+    afterBoot: warmed,
+    rewarm: warmupEnabled() ? () => warmRenders(port) : undefined,
+  });
 
   // The inbound-route watchdog: the 10-01/10-02 outages were Replit's proxy
   // losing this VM while the process stayed healthy, so the app probes its own

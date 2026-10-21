@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter, { assetVersion } from "./routes/embed";
+import { HASHED_ASSETS } from "./lib/hashed-assets";
 import teamRouter from "./routes/team";
 import { matchupRouter } from "./routes/matchup";
 import playerRouter from "./routes/player";
@@ -260,23 +261,14 @@ app.get(["/", "/index.html"], (req, res) => {
 });
 
 /**
- * The files build.mjs hashes into the asset version. WordPress enqueues each
- * with `?ver=<that hash>`, so a URL carrying the current hash names exactly
- * this build's bytes and can be cached for good - without it every page view
- * on statchasers.com revalidated 200KB+ stylesheets against this origin.
- * Anything else (a stale or fallback ver, or a file the hash does not cover)
- * keeps express.static's default, because a year-long copy of the wrong bytes
- * is worse than a revalidation.
+ * The files build.mjs hashes into the asset version (lib/hashed-assets.ts).
+ * WordPress enqueues each with `?ver=<that hash>`, so a URL carrying the
+ * current hash names exactly this build's bytes and can be cached for good -
+ * without it every page view on statchasers.com revalidated 200KB+
+ * stylesheets against this origin. Anything else (a stale or fallback ver, or
+ * a file the hash does not cover) keeps express.static's default, because a
+ * year-long copy of the wrong bytes is worse than a revalidation.
  */
-const HASHED_ASSETS = new Set(
-  [
-    "news", "team", "player", "fpa", "rankings", "schedule", "player-stats", "rb-handcuffs", "sos",
-    "rookie-hit-rates", "redraft-strategy", "injury-impact",
-  ].flatMap((name) => [
-    `/dist/statchasers-${name}.js`,
-    `/${name === "news" ? "styles" : name}.css`,
-  ]),
-);
 
 let builtAssetVersion: string | null = null;
 
