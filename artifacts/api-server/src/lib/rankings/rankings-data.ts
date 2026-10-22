@@ -39,7 +39,7 @@ const DATA_DIR = dataPath("rankings");
 export interface RankedPlayer {
   /** Positional rank, 1-based. QB1 is rank 1, as is RB1. */
   rank: number;
-  /** Tier, derived from the rank by TIER_RULES. Never stored in the CSV. */
+  /** Tier, derived from the rank by the board's tier rules. Never stored in the CSV. */
   tier: number;
   name: string;
   position: StatPosition;
@@ -116,7 +116,9 @@ export const POSITION_PLURALS: Record<StatPosition, string> = {
  *
  * These are editorial, not computed - the cliff between QB5 and QB6 is a
  * judgment about the position, and the whole point of a tiered board is that
- * somebody drew the lines. Copied verbatim from the standalone app.
+ * somebody drew the lines. The redraft rules are copied verbatim from the
+ * standalone app; they are also the default for any position the rest-of-season
+ * table does not override.
  */
 export const TIER_RULES: Record<StatPosition, Array<[number, number]>> = {
   QB: [[5, 1], [13, 2], [20, 3], [26, 4], [35, 5], [40, 6]],
@@ -124,6 +126,29 @@ export const TIER_RULES: Record<StatPosition, Array<[number, number]>> = {
   WR: [[4, 1], [12, 2], [20, 3], [29, 4], [38, 5], [47, 6], [63, 7]],
   TE: [[3, 1], [9, 2], [16, 3], [21, 4], [29, 5], [39, 6]],
 };
+
+/**
+ * The rest-of-season board's own cliffs, where they differ from the redraft
+ * board's. In-season the lines move as the season does, and the preseason
+ * board must not move with them. Set by mak on 2026-10-22:
+ *   RB 1-3, 4-7, 8-11, 12-20, 21-28, 29-37, 38 and on.
+ *   WR 1-5, 6-12, 13-20, 21-27, 28-36, 37 and on.
+ *   TE 1-2, 3-8, 9-14, 15-22, 23-28, 29 and on.
+ */
+export const ROS_TIER_RULES: Partial<
+  Record<StatPosition, Array<[number, number]>>
+> = {
+  RB: [[3, 1], [7, 2], [11, 3], [20, 4], [28, 5], [37, 6], [50, 7]],
+  WR: [[5, 1], [12, 2], [20, 3], [27, 4], [36, 5], [100, 6]],
+  TE: [[2, 1], [8, 2], [14, 3], [22, 4], [28, 5], [40, 6]],
+};
+
+export function tierRules(
+  position: StatPosition,
+  board: RankingsBoard = "redraft",
+): Array<[number, number]> {
+  return (board === "ros" ? ROS_TIER_RULES[position] : undefined) ?? TIER_RULES[position];
+}
 
 /**
  * How deep each board goes.
@@ -142,8 +167,12 @@ export const POSITION_LIMITS: Record<StatPosition, number> = {
 /** Rows of the All board shown before "Show all" is used. */
 export const ALL_VIEW_COLLAPSED_ROWS = 50;
 
-export function getTier(position: StatPosition, rank: number): number {
-  const rules = TIER_RULES[position];
+export function getTier(
+  position: StatPosition,
+  rank: number,
+  board: RankingsBoard = "redraft",
+): number {
+  const rules = tierRules(position, board);
   for (const [maxRank, tier] of rules) {
     if (rank <= maxRank) return tier;
   }
@@ -277,6 +306,7 @@ export function invalidateRankingsCache(): void {
 export function buildPositionBoard(
   rows: Array<{ position: StatPosition; rank: number; name: string }>,
   position: StatPosition,
+  board: RankingsBoard = "redraft",
 ): RankedPlayer[] {
   const index = resolver();
 
@@ -288,7 +318,7 @@ export function buildPositionBoard(
       const found = index.get(`${normalizeName(row.name)}|${position}`);
       return {
         rank: row.rank,
-        tier: getTier(position, row.rank),
+        tier: getTier(position, row.rank, board),
         name: row.name,
         position,
         team: found?.team ?? null,
@@ -421,7 +451,7 @@ export function getRankings(
   }
 
   const boards = {} as Record<StatPosition, RankedPlayer[]>;
-  for (const pos of STAT_POSITIONS) boards[pos] = buildPositionBoard(rows, pos);
+  for (const pos of STAT_POSITIONS) boards[pos] = buildPositionBoard(rows, pos, board);
 
   const byPosition = {} as Record<StatPosition, TierGroup[]>;
   for (const pos of STAT_POSITIONS) byPosition[pos] = groupByTier(boards[pos]);
