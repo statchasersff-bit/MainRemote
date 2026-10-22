@@ -2814,6 +2814,28 @@ body.scin-modal-open {
 .scin-av-legend i.is-bye { opacity: 0.35; }
 .scin-av-legend i.is-r.is-bye { margin-left: -3px; }
 
+/* Unscored seasons (mak, 2026-10-22): the year carries a dotted rule and the
+   legend a swatch, so the rows read as part of the record but apart from the
+   dial. The boxes themselves keep the grid's colors. */
+.scin-av-row.is-unscored .scin-av-year {
+  text-decoration: underline dotted var(--sc-muted);
+  text-underline-offset: 3px;
+  font-style: italic;
+}
+.scin-av-legend i.is-x {
+  border: 1px solid var(--sc-muted);
+  background: transparent;
+}
+.scin-tl-item.is-unscored::before {
+  background: transparent;
+  border: 2px solid var(--sc-gold);
+  box-sizing: border-box;
+}
+.scin-gm-chip.is-unscored {
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+}
+
 .scin-tl-item {
   position: relative;
   padding: 0 0 16px 14px;

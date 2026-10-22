@@ -146,6 +146,8 @@ export interface SeasonInjury {
   games_missed: number;
   season_ending: boolean;
   ongoing?: boolean;
+  /** From an unscored season (the durability dataset's `x`), not the impact study. */
+  unscored?: boolean;
 }
 
 export interface CurrentInjuryRow extends SeasonInjury {
@@ -319,6 +321,8 @@ export interface PlayerSlice {
   rows: InjuryRow[];
   inGame: InGameInjuryEvent[];
   impacts: SeasonInjury[];
+  /** Injury stints from seasons the durability dataset does not score (mak, 2026-10-22). */
+  unscored: SeasonInjury[];
   schedule: ScheduleMap;
   /** The season in progress and the week its episodes are audited through, for the timeline. */
   audited: { season: number; week: number } | null;

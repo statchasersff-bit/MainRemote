@@ -242,7 +242,10 @@ export interface RiskModel {
   unlocalized: number;
 }
 
-export function riskModel(rows: InjuryRow[], impacts: SeasonInjury[] | undefined): RiskModel {
+export function riskModel(rows: InjuryRow[], impacts: SeasonInjury[] | undefined, unscored: SeasonInjury[] = []): RiskModel {
+  // Unscored stints count like impact rows here: a game missed is a game
+  // missed, whatever the draft board said that year.
+  impacts = [...(impacts ?? []), ...unscored];
   const perRegion = new Map<string, RegionStat>();
   let unlocalized = 0;
   const seenSeasonRegion = new Set<string>();
