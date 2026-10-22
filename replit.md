@@ -39,8 +39,11 @@ _Replace the heading above with the project's name, and this line with one sente
   three times, three minutes apart), because a process that is NOT behind the
   origin (a workspace run, a VM the proxy has not switched to) would otherwise
   cache the other build's bytes under this build's hash for a year - retrying
-  misses once after three minutes; `lib/warmup.ts` (`SC_WARMUP`, `SC_WARMUP_PLAYERS`
-  default 150, `SC_WARMUP_H1` default on to match the live H1 mode) walks the
+  misses once after three minutes; `lib/warmup.ts` (OFF unless `SC_WARMUP=1`
+  since 2026-10-22: both publishes that ran it by default killed the 2 GB VM
+  within hours; `SC_WARMUP_PLAYERS` default 150, `SC_WARMUP_H1` default on to
+  match the live H1 mode, `SC_WARMUP_MIN_FREE_MB` default 800 read from the
+  cgroup limit as well as /proc/meminfo, `lib/mem.ts`) walks the
   32 team hubs, this week's and last week's matchups, the most-rostered
   players and the usage/schedule/depth-chart sections through its own port,
   one at a time with a 40 ms yield, within an 8-minute budget (164 pages in

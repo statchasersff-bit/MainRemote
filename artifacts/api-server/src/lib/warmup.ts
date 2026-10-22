@@ -1,8 +1,11 @@
 /**
  * The boot warm-up, wired to this app: what is hot, and how to ask for it.
  *
- * Production only unless SC_WARMUP says otherwise (SC_WARMUP=1 in the
- * workspace to watch it, SC_WARMUP=0 to publish without it). The list is the
+ * OFF unless SC_WARMUP=1 says otherwise, in production too. It shipped
+ * production-default on 2026-10-21 and the VM died within hours of both
+ * publishes that carried it (the walk leaves the process at ~1.2 GB resident
+ * on a 2 GB VM, beside the builders); the boot without it had run for weeks.
+ * It stays as an opt-in for a VM with more room. The list is the
  * 32 team hubs, this week's and last week's matchup pages, the most-rostered
  * players (SC_WARMUP_PLAYERS, 150 by default) and the three team sections
  * with URLs of their own. Requests go to the server's own port with the embed
@@ -51,7 +54,7 @@ function flag(name: string, fallback: boolean): boolean {
 }
 
 export function warmupEnabled(): boolean {
-  return flag("SC_WARMUP", process.env["NODE_ENV"] === "production");
+  return flag("SC_WARMUP", false);
 }
 
 function maxPlayers(): number {
