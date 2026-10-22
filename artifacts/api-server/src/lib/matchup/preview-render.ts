@@ -146,16 +146,19 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     .filter(Boolean)
     .join(" · ");
 
-  // Each team in an equal half, laid out the same way on both sides: logo,
-  // name, record and side, then the hub link as its own small action.
+  // Each team in an equal half, mirrored: the crest beside a stack of name,
+  // record and side, and the hub link as its own small action. One row, not
+  // a column, so the two halves read as one line (mak, 2026-10-22).
   const sideBlock = (s: PreviewSide, align: "left" | "right") =>
     `<div class="sct-pv-side is-${align}">` +
     (s.team.logo
-      ? `<img class="sct-pv-logo" src="${e(s.team.logo)}" alt="" width="56" height="56" loading="eager" decoding="async">`
+      ? `<img class="sct-pv-logo" src="${e(s.team.logo)}" alt="" width="48" height="48" loading="eager" decoding="async">`
       : "") +
+    `<div class="sct-pv-side-text">` +
     `<span class="sct-pv-name">${e(s.team.fullName)}</span>` +
     `<span class="sct-pv-meta">${e([s.record, s.key === "home" ? "HOME" : "AWAY"].filter(Boolean).join(" · "))}</span>` +
     `<a class="sct-pv-hub" href="${e(ctx.hub(s.team))}">Team hub<span aria-hidden="true"> →</span></a>` +
+    `</div>` +
     `</div>`;
 
   const weather = weatherText(p);
@@ -190,6 +193,7 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     .join("");
 
   let strip = "";
+  let note = "";
   if (line && line.spread !== null && line.total !== null && away.implied !== null && home.implied !== null) {
     const cell = (label: string, value: string, sub: string) =>
       `<div class="sct-pv-bet"><span class="sct-pv-bet-k">${e(label)}</span>` +
@@ -203,9 +207,10 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
       cell(`${code(home.team)} implied`, exact(home.implied), implyRank(home.impliedRank, p.slateCount, meeting.week)) +
       cell(`${code(away.team)} implied`, exact(away.implied), implyRank(away.impliedRank, p.slateCount, meeting.week)) +
       cell("Moneyline", `${code(home.team)} ${ml(line.moneyline.home)}`, `${code(away.team)} ${ml(line.moneyline.away)}`) +
-      `</div>` +
-      // The book note sits with the lines it is about, not in the byline.
-      `<p class="sct-pv-bets-note">Lines move - check your book.</p>`;
+      `</div>`;
+    // The book note shares the footer line with the byline, under the lines
+    // it is about.
+    note = `<p class="sct-pv-bets-note">Lines move - check your book.</p>`;
   }
 
   const updated = new Intl.DateTimeFormat("en-US", {
@@ -219,23 +224,38 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
   const heroStyle = `--pv-hero-away:${away.team.primaryColor};--pv-hero-home:${home.team.primaryColor}`;
 
   return (
+    // The hero is a data card, not a poster (mak, 2026-10-22): one top row
+    // (breadcrumb left, eyebrow right), the two teams on one line around a
+    // small badge, the game type and market on one row with the kickoff
+    // chips, the betting strip, and a one-line footer. The heading stays in
+    // the markup for the page's H1 and screen readers, but the two team
+    // names already say it, so it is visually hidden.
     `<header class="sct-pv-hero" style="${e(heroStyle)}" aria-labelledby="${e(ctx.headingId)}">` +
+    `<div class="sct-pv-top">` +
     `<nav class="sct-pv-crumbs" aria-label="Breadcrumb"><ol>` +
     `<li><a href="${e(ctx.breadcrumbRoot)}">StatChasers</a></li>` +
     `<li>NFL Matchups</li>` +
     `<li aria-current="page">${e(`${away.team.nickname} at ${home.team.nickname}, ${meeting.weekLabel}`)}</li>` +
     `</ol></nav>` +
     `<p class="sct-pv-kicker">${e(kicker)}</p>` +
+    `</div>` +
     `<${ctx.headingTag} class="sct-pv-title" id="${e(ctx.headingId)}" data-sct-hero-heading>${e(ctx.heading)}</${ctx.headingTag}>` +
     `<div class="sct-pv-match">` +
     sideBlock(away, "left") +
-    `<span class="sct-pv-at" aria-hidden="true">AT</span>` +
+    `<span class="sct-pv-at" aria-hidden="true">@</span>` +
     sideBlock(home, "right") +
     `</div>` +
-    (context ? `<ul class="sct-pv-context">${context}</ul>` : "") +
-    (chips ? `<ul class="sct-pv-chips">${chips}</ul>` : "") +
+    (context || chips
+      ? `<div class="sct-pv-info">` +
+        (context ? `<ul class="sct-pv-context">${context}</ul>` : "") +
+        (chips ? `<ul class="sct-pv-chips">${chips}</ul>` : "") +
+        `</div>`
+      : "") +
     strip +
+    `<div class="sct-pv-foot">` +
+    note +
     `<p class="sct-pv-byline">Updated ${e(updated)} · StatChasers NFL</p>` +
+    `</div>` +
     `</header>`
   );
 }

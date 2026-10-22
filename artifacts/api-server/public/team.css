@@ -15871,15 +15871,18 @@ a.sct-ex-game:hover .sct-ex-line {
   outline-offset: 2px;
 }
 
-/* ---- 1. hero (mak's 2026-10-05 notes): two equal team halves around a
-   center AT badge, each half washed in its club's own primary darkened toward
-   navy-black; orange only in the divider, the eyebrow and the badge. */
+/* ---- 1. hero: a data card, not a poster (mak, 2026-10-22). Two equal team
+   halves on ONE line around a small @ badge, each half washed in its club's
+   own primary darkened toward navy-black; orange only in the divider, the
+   eyebrow and the badge. Was the 2026-10-05 poster: logos stacked over
+   two-line 40px names, a 44px AT medallion, the market and the kickoff on
+   separate rows, two centered footer lines. */
 :is(.sct, #sct-table-armour) .sct-pv-hero {
   --pv-gold: #ffa300;
   position: relative;
   color: #fff;
   border-radius: 16px;
-  padding: 16px 22px 14px;
+  padding: 14px 20px 12px;
   overflow: hidden;
   background:
     linear-gradient(104deg,
@@ -15899,17 +15902,17 @@ a.sct-ex-game:hover .sct-ex-line {
   z-index: -1;
 }
 
-/* The divider: structure, not content - thin and a little muted. */
+/* The divider: a hairline, not a stripe, and only as tall as the card. */
 :is(.sct, #sct-table-armour) .sct-pv-hero::after {
   content: "";
   position: absolute;
-  top: -20%;
-  bottom: -20%;
+  top: 0;
+  bottom: 0;
   left: 50%;
-  width: 2px;
+  width: 1px;
   margin-left: -1px;
-  background: rgba(255, 163, 0, 0.45);
-  transform: skewX(-14deg);
+  background: rgba(255, 163, 0, 0.3);
+  transform: skewX(-8deg);
   z-index: -1;
 }
 
@@ -15917,6 +15920,15 @@ a.sct-ex-game:hover .sct-ex-line {
   color: #fff;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* Row 1: the breadcrumb on the left, the eyebrow on the right, one line. */
+:is(.sct, #sct-table-armour) .sct-pv-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 20px;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-crumbs ol {
@@ -15935,8 +15947,8 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-kicker {
-  margin-top: 12px;
-  text-align: center;
+  flex: 0 0 auto;
+  text-align: right;
   font-size: 11.5px !important;
   font-weight: 800;
   line-height: 1.2;
@@ -15944,81 +15956,84 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-gold) !important;
 }
 
+/* The heading is the page's H1 and the hero's accessible name; the two team
+   names on the next row already say it, so it takes no room. */
 :is(.sct, #sct-table-armour) .sct-pv-title {
-  margin-top: 4px;
-  text-align: center;
-  font-family: inherit;
-  font-size: 13px !important;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0;
-  text-transform: none;
-  color: rgba(255, 255, 255, 0.72) !important;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
+/* Row 2: away at the left edge, home at the right, the badge on the seam. */
 :is(.sct, #sct-table-armour) .sct-pv-match {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-rows: repeat(4, auto);
   align-items: center;
   column-gap: 16px;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
-/* The two sides share the match grid's rows (subgrid), so a name that wraps
-   to two lines does not knock its record out of line with the other side's:
-   logos, names, records and hub links each sit on one row across the badge. */
 :is(.sct, #sct-table-armour) .sct-pv-side {
-  grid-row: 1 / span 4;
-  display: grid;
-  grid-template-rows: subgrid;
-  justify-items: center;
-  row-gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-  text-align: center;
+  text-align: left;
+  justify-self: start;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-side > .sct-pv-name {
-  align-self: end;
+:is(.sct, #sct-table-armour) .sct-pv-side.is-right {
+  flex-direction: row-reverse;
+  text-align: right;
+  justify-self: end;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-side > :is(.sct-pv-meta, .sct-pv-hub) {
-  align-self: start;
+:is(.sct, #sct-table-armour) .sct-pv-side-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-at {
-  grid-row: 1 / span 4;
-  grid-column: 2;
+:is(.sct, #sct-table-armour) .sct-pv-side.is-right .sct-pv-side-text {
+  align-items: flex-end;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-logo {
   display: block;
-  width: 56px;
-  height: 56px;
-  margin: 0 0 6px;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  margin: 0;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-name {
-  font-size: clamp(22px, 3.4vw, 40px);
+  font-size: clamp(20px, 2.8vw, 30px);
   font-weight: 800;
-  line-height: 1.02;
+  line-height: 1.05;
   letter-spacing: 0.005em;
   text-transform: uppercase;
   text-wrap: balance;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-meta {
-  margin-top: 2px;
-  font-size: 12.5px;
+  margin-top: 3px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   opacity: 0.85;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-hero a.sct-pv-hub {
-  margin-top: 4px;
+  margin-top: 3px;
   font-size: 11.5px;
   font-weight: 700;
   text-decoration: none;
@@ -16031,28 +16046,39 @@ a.sct-ex-game:hover .sct-ex-line {
   border-bottom-color: var(--pv-gold);
 }
 
-/* The center badge, on the divider. */
+/* The badge, on the divider: small, so the card reads as data. */
 :is(.sct, #sct-table-armour) .sct-pv-at {
+  grid-column: 2;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #0b1634;
-  border: 2px solid var(--pv-gold);
-  box-shadow: 0 0 0 4px rgba(7, 13, 24, 0.55);
+  border: 1.5px solid var(--pv-gold);
+  box-shadow: 0 0 0 3px rgba(7, 13, 24, 0.55);
   color: var(--pv-gold);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+/* Row 3: the game type and market on the left, the kickoff chips on the
+   right, one line that wraps when the card is narrow. */
+:is(.sct, #sct-table-armour) .sct-pv-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-top: 10px;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-context {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 16px;
+  align-items: center;
   font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -16064,7 +16090,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-block;
   width: 1px;
   height: 11px;
-  margin: 0 14px;
+  margin: 0 12px;
   vertical-align: -1px;
   background: rgba(255, 255, 255, 0.3);
 }
@@ -16073,9 +16099,9 @@ a.sct-ex-game:hover .sct-ex-line {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-chip {
@@ -16089,11 +16115,12 @@ a.sct-ex-game:hover .sct-ex-line {
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* Row 4: the five markets, short. */
 :is(.sct, #sct-table-armour) .sct-pv-bets {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
-  margin-top: 14px;
+  margin-top: 12px;
   border-radius: 12px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
@@ -16102,13 +16129,13 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-bet {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
+  gap: 1px;
+  padding: 7px 12px 6px;
   background: rgba(5, 12, 24, 0.72);
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bet-k {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -16116,25 +16143,30 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bet-v {
-  font: 700 24px/1.05 var(--pv-display);
+  font: 700 21px/1.05 var(--pv-display);
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bet-s {
-  font-size: 11.5px;
+  font-size: 11px;
   opacity: 0.8;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-bets-note {
-  margin-top: 6px;
-  text-align: center;
+/* Row 5: the book note and the byline on one line. */
+:is(.sct, #sct-table-armour) .sct-pv-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 8px;
   font-size: 11px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-bets-note {
   opacity: 0.65;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-byline {
-  margin-top: 12px;
-  text-align: center;
-  font-size: 11px;
+  margin-left: auto;
   opacity: 0.6;
 }
 
@@ -17314,15 +17346,29 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-cols { grid-template-columns: minmax(0, 1fr); }
   :is(.sct, #sct-table-armour) .sct-pv-stats { grid-template-columns: minmax(0, 1fr); }
   :is(.sct, #sct-table-armour) .sct-pv-cta { flex-direction: column; align-items: flex-start; }
-  :is(.sct, #sct-table-armour) .sct-pv-hero { padding: 16px; border-radius: 12px; }
+  :is(.sct, #sct-table-armour) .sct-pv-hero { padding: 14px 16px 12px; border-radius: 12px; }
+  :is(.sct, #sct-table-armour) .sct-pv-top { flex-wrap: wrap; }
   :is(.sct, #sct-table-armour) .sct-pv-meter-labels { font-size: 10.5px; }
 }
 
+/* Narrow: each side goes back to crest over name, centered, so two long
+   names beside two crests do not fight for 160px each. */
+@media (max-width: 600px) {
+  :is(.sct, #sct-table-armour) .sct-pv-match { column-gap: 8px; }
+  :is(.sct, #sct-table-armour) .sct-pv-side,
+  :is(.sct, #sct-table-armour) .sct-pv-side.is-right { flex-direction: column; gap: 6px; text-align: center; justify-self: center; }
+  :is(.sct, #sct-table-armour) .sct-pv-side-text,
+  :is(.sct, #sct-table-armour) .sct-pv-side.is-right .sct-pv-side-text { align-items: center; }
+  :is(.sct, #sct-table-armour) .sct-pv-logo { width: 40px; height: 40px; }
+  :is(.sct, #sct-table-armour) .sct-pv-name { font-size: 17px; }
+  :is(.sct, #sct-table-armour) .sct-pv-info { justify-content: center; }
+  :is(.sct, #sct-table-armour) .sct-pv-chips { margin-left: 0; justify-content: center; }
+  :is(.sct, #sct-table-armour) .sct-pv-foot { justify-content: center; text-align: center; }
+  :is(.sct, #sct-table-armour) .sct-pv-byline { margin-left: 0; }
+}
+
 @media (max-width: 420px) {
-  :is(.sct, #sct-table-armour) .sct-pv-match { gap: 8px; }
-  :is(.sct, #sct-table-armour) .sct-pv-name { font-size: 18px; }
-  :is(.sct, #sct-table-armour) .sct-pv-logo { width: 44px; height: 44px; }
-  :is(.sct, #sct-table-armour) .sct-pv-at { width: 34px; height: 34px; font-size: 11px; }
+  :is(.sct, #sct-table-armour) .sct-pv-at { width: 24px; height: 24px; font-size: 12px; }
   :is(.sct, #sct-table-armour) .sct-pv-context li + li::before { margin: 0 8px; }
   :is(.sct, #sct-table-armour) .sct-pv-row { flex-direction: column; gap: 6px; }
 }
