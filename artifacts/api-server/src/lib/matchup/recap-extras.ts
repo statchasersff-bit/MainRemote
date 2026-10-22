@@ -246,9 +246,9 @@ export function renderHighlights(game: ScoreboardGame, video: GameVideo | null):
   const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
   const frameTitle = `${video.title} (YouTube video player)`;
   return (
-    `<section class="sct-rb-section sct-hl" aria-labelledby="highlights">` +
-    // Short, beside the recap that already names the teams (mak, 2026-09-30).
-    `<h2 class="sct-rb-h2" id="highlights">Game Highlights</h2>` +
+    // No heading: the recap above already names the game (mak, 2026-10-22).
+    // The id stays on the section so the jump nav's "Highlights" link lands.
+    `<section class="sct-rb-section sct-hl" id="highlights" aria-label="Game highlights">` +
     `<div class="sct-hl-box" style="--hl-a:${colors.away.fill};--hl-b:${colors.home.fill}">` +
     `<button type="button" class="sct-hl-play" data-hl-embed="${escapeHtml(embed)}" data-hl-title="${escapeHtml(frameTitle)}" ` +
     `aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +

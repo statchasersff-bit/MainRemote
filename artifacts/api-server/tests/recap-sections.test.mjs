@@ -237,7 +237,8 @@ describe("betting, video and the jump links", () => {
     const html = extras.renderHighlights(GAME, { youtubeId: "VfMqgtKsoag", title: "Highlights", uploadDate: "2022-01-18", publisher: "NFL" });
     assert.match(html, /<button type="button" class="sct-hl-play" data-hl-embed="https:\/\/www\.youtube-nocookie\.com\/embed\/VfMqgtKsoag\?autoplay=1&amp;rel=0"/);
     assert.match(html, /<noscript><a class="sct-hl-noscript" href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag"/);
-    assert.match(html, /<h2 class="sct-rb-h2" id="highlights">Game Highlights<\/h2>/);
+    assert.match(html, /<section class="sct-rb-section sct-hl" id="highlights" aria-label="Game highlights">/);
+    assert.doesNotMatch(html, /Game Highlights<\/h2>/);
     assert.match(html, /Official NFL highlights · Opens from <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">YouTube<\/a>/);
     assert.doesNotMatch(html, /<iframe/);
     assert.equal(extras.renderHighlights(GAME, null), "");
