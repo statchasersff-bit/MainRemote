@@ -197,7 +197,8 @@ describe("stats tab", () => {
     assert.equal(epa.querySelector(".scp-st-stat-rank").getAttribute("title"), "16th of 36 QBs");
     // Better rank, longer bar.
     assert.equal(epa.querySelector(".scp-st-stat-fill").getAttribute("style"), fill(16, 36));
-    assert.doesNotMatch(text(doc.querySelector(".scp-st-ladders")), /percentile/);
+    // The visible rank cells never say "percentile" (the fixture's reads do, as screen-reader text).
+    for (const r of doc.querySelectorAll(".scp-st-stat-rank")) assert.doesNotMatch(text(r), /percentile/);
     // 0-24 poor, 25-74 mid, 75+ good: the percentile still tints the bar and the rank.
     const ypa = rowOf("Yards per attempt");
     assert.equal(ypa.querySelector(".scp-st-stat-bar").dataset.tier, "poor");

@@ -495,8 +495,8 @@ function runDirection(view: UsageView): string {
   const note = runNote(view);
   return (
     `<div class="sct-us-run">` +
-    `<h4 class="sct-us-h4">Run Direction</h4>` +
-    `<p class="sct-us-sub">Carries and YPC by gap.</p>` +
+    // The subline became the heading (mak, 2026-10-22): "Run Direction" is gone.
+    `<h4 class="sct-us-h4">Carries and YPC by gap.</h4>` +
     `<ul class="sct-us-gaps">${cells}</ul>` +
     `<p class="sct-us-fine">Designed runs only; "Middle" includes runs behind either guard.</p>` +
     (note ? `<p class="sct-us-note">${md(note)}</p>` : "") +

@@ -17394,8 +17394,10 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   color: var(--sc-muted-strong);
 }
+/* Centered under the number (mak, 2026-10-22); this used to pin the pill to
+   the card's left edge over the card's own centering. */
 :is(.sct, #sct-table-armour) .sct-us-rank {
-  align-self: flex-start;
+  align-self: center;
 }
 
 /* ------------------------------------------------- one card, every tab
