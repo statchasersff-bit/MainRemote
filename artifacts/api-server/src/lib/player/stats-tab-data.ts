@@ -53,6 +53,9 @@ export interface AdvMetric {
    * neither good nor bad and so is not a `pct`.
    */
   pctl?: number | null;
+  /** His rank among the qualified on the metric's own direction (1 = best), and the pool's size. Null when unranked. */
+  rank?: number | null;
+  of?: number | null;
 }
 
 export interface AdvCard {
@@ -272,17 +275,19 @@ function measure(
     // A style reading: higher is neither good nor bad, so it is described.
     const above = others.filter((x) => x < v).length;
     const share = others.length ? Math.round((above / others.length) * 100) : 50;
+    // Ranked from the high end (1st = deepest, slowest...), which is a place
+    // on the spectrum rather than a grade.
+    const styleRank = others.filter((x) => x > v).length + 1;
     return {
-      metric: { key: def.key, label: def.label, value, read: `${def.more![0]!.toUpperCase()}${def.more!.slice(1)} than ${share}% of ${pos}s`, standing: "muted", pct: null, pctl: share },
+      metric: { key: def.key, label: def.label, value, read: `${def.more![0]!.toUpperCase()}${def.more!.slice(1)} than ${share}% of ${pos}s`, standing: "muted", pct: null, pctl: share, rank: styleRank, of },
       pct: share,
     };
   }
-  const read =
-    def.kind === "rank"
-      ? `${ordinal(rank)} of ${of} ${pos}s`
-      : `${ordinal(pct)} percentile`;
+  // Every graded metric reads as a rank (mak, 2026-10-22: ranks, not
+  // percentiles, on the ladders); the percentile still drives the tint.
+  const read = `${ordinal(rank)} of ${of} ${pos}s`;
   return {
-    metric: { key: def.key, label: def.label, value, read: extra ? `${extra}, ${read}` : read, standing: standingOf(pct), pct, pctl: pct },
+    metric: { key: def.key, label: def.label, value, read: extra ? `${extra}, ${read}` : read, standing: standingOf(pct), pct, pctl: pct, rank, of },
     pct,
   };
 }
@@ -390,7 +395,7 @@ export function collegeCard(profile: CollegeProfile | null | undefined, position
     }
     const value = m.fmt(entry.value);
     if (typeof entry.rank === "number" && typeof entry.of === "number" && typeof entry.pct === "number") {
-      return { key: m.key, label: m.label, value, read: `${ordinal(entry.rank)} of ${entry.of}`, standing: standingOf(entry.pct), pct: entry.pct, pctl: entry.pct };
+      return { key: m.key, label: m.label, value, read: `${ordinal(entry.rank)} of ${entry.of}`, standing: standingOf(entry.pct), pct: entry.pct, pctl: entry.pct, rank: entry.rank, of: entry.of };
     }
     return { key: m.key, label: m.label, value, read: m.key === "long" ? "Not ranked" : "Not enough attempts to rank", standing: "muted", pct: null };
   });

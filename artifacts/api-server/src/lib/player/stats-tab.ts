@@ -324,11 +324,11 @@ function passingCells(t: Line): Cell[] {
   ];
 }
 
-/** A quarterback's or receiver's rushing: one cell, yards and touchdowns together. */
+/** A quarterback's or receiver's rushing: one cell, the yards (no TD figure since 2026-10-22, mak). */
 function rushingCell(t: Line): Cell {
   return {
     label: "Rushing",
-    main: [counting("Yards", t.rushYd, t.gp), counting("TD", t.rushTd, t.gp, "TD")],
+    main: [counting("Yards", t.rushYd, t.gp)],
     sub: [counting("Att", t.rushAtt, t.gp), { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }],
   };
 }
@@ -486,20 +486,26 @@ const TIER_CAPTION: Record<string, string> = {
 
 /**
  * One ladder row, in the team pages' anatomy (mak, 2026-10-22): the label,
- * a rank bar, the value, the percentile as bare tinted text. The bar is
- * aria-hidden because the ordinal says the same thing in words; the old
- * sentence ("16th of 36 QBs") rides along for screen readers.
+ * a rank bar, the value, the rank as bare tinted text ("20th of 36"; ranks,
+ * not percentiles, since later the same day). The bar is aria-hidden because
+ * the rank says the same thing in words; the full sentence rides along for
+ * screen readers. A metric with a percentile but no rank (older data) still
+ * prints its percentile.
  */
 function ladderRow(m: AdvMetric): string {
   const t = tint(m);
   const tier = t === "bad" ? "poor" : t === "muted" ? "none" : t;
+  const ranked = m.rank != null && m.of != null && m.of > 0;
+  // Better rank, longer bar: 1st of 36 fills it, 36th of 36 is the stub.
+  const fill = ranked ? ((m.of! - m.rank! + 1) / m.of!) * 100 : m.pctl ?? null;
   const bar =
-    m.pctl == null
+    fill == null
       ? `<span class="scp-st-stat-bar is-empty" aria-hidden="true"></span>`
       : `<span class="scp-st-stat-bar" data-tier="${tier}" aria-hidden="true">` +
-        `<span class="scp-st-stat-fill" style="width:${Math.max(3, Math.min(100, m.pctl))}%"></span></span>`;
-  const rank =
-    m.pctl == null
+        `<span class="scp-st-stat-fill" style="width:${Math.max(3, Math.min(100, fill)).toFixed(1)}%"></span></span>`;
+  const rank = ranked
+    ? `<span class="scp-st-stat-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(`${ordinal(m.rank!)} of ${m.of}`)}</span>`
+    : m.pctl == null
       ? `<span class="scp-st-stat-rank" data-tier="none">${DASH}</span>`
       : `<span class="scp-st-stat-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(ordinal(m.pctl))}` +
         `<span class="scp-sr"> percentile</span></span>`;
@@ -713,7 +719,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     notes.push(
       cur.qualified
         ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""} among ${cur.qualifiedCount} qualified ${pos}s`
-        : `${cur.season}: below the qualifying line so far, so no percentiles`,
+        : `${cur.season}: below the qualifying line so far, so no ranks`,
     );
   }
   if (college) {
@@ -722,7 +728,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     notes.push(
       college.qualified
         ? `College: ranked among ${college.qualifiedCount} ${college.pool}`
-        : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no percentiles`,
+        : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no ranks`,
     );
   } else if (adv?.last && !adv.current) {
     // Last season stands in only until this season has a line (mak,
@@ -733,7 +739,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     notes.push(
       prev.qualified
         ? `${prev.season} (${plural(prev.games, "game")}, weeks 1–17) among ${prev.qualifiedCount}`
-        : `${prev.season} (${plural(prev.games, "game")}, weeks 1–17): below the qualifying line, so no percentiles`,
+        : `${prev.season} (${plural(prev.games, "game")}, weeks 1–17): below the qualifying line, so no ranks`,
     );
   }
   // One short line (mak, 2026-09-30): the seasons joined. The "gray bars"
@@ -757,7 +763,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(cats)} Stats`)}</h2>` +
     (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
     renderAdvLadders(cols) +
-    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.`)}</p>` +
+    `<p class="scp-st-foot-note">${escapeHtml(`Ranks: ${notes.join(" · ")}.`)}</p>` +
     note +
     `</section>`
   );
@@ -788,15 +794,13 @@ function renderChart(data: PlayerPageData, c: Career): string {
       return `<div class="scp-st-col${cls}"><b>${one(v)}</b><i style="height:${h.toFixed(1)}%"></i></div>`;
     })
     .join("");
-  const years = rows.map((r) => `<div><strong>${r.season}</strong><small>${r.line.gp} GP</small></div>`).join("");
-  // The club only where it changes, so the row reads as a career's moves
-  // rather than eleven equal labels.
-  const teams = rows
-    .map((r, i) => {
+  // Under each bar: the year, the games, and the club (every bar, mak
+  // 2026-10-22; it used to print only where the club changed, on its own row).
+  const years = rows
+    .map((r) => {
       const label = r.clubs.join("/") || DASH;
-      const prev = i > 0 ? rows[i - 1]!.clubs.join("/") || DASH : null;
       const cur = current && r.clubs.includes(current) ? ` class="is-cur"` : "";
-      return label === prev ? `<span class="is-same"></span>` : `<span${cur}>${escapeHtml(label)}</span>`;
+      return `<div><strong>${r.season}</strong><small>${r.line.gp} GP</small><em${cur}>${escapeHtml(label)}</em></div>`;
     })
     .join("");
 
@@ -818,7 +822,6 @@ function renderChart(data: PlayerPageData, c: Career): string {
     (showAvg ? `<span class="scp-st-avg" aria-hidden="true">Career avg<b>${one(careerPpg)}</b></span>` : "") +
     `</div>` +
     `<div class="scp-st-x" aria-hidden="true">${years}</div>` +
-    `<div class="scp-st-teams" aria-hidden="true">${teams}</div>` +
     `</div>` +
     `</figure></section>`
   );
@@ -927,7 +930,33 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
     `<a class="scp-ox-btn" href="${escapeHtml(redraft)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(`Open ${last} in Redraft Command`)}</a>` +
     `</div>`;
 
-  /* ---- career rates ---- */
+  /* ---- career highs ---- */
+  const bests = careerHighs(c);
+
+  // The career-rate tiles that opened this section moved up to where the
+  // season snapshot strip was, and the byline is gone (mak, 2026-10-22).
+  return (
+    sectionOpen("scp-st-read-h", "What his career numbers say", "") +
+    `<div class="scp-ox-read">` +
+    `<div><div class="scp-ox-prose">${paragraphs.map((p) => `<p>${p}</p>`).join("")}</div></div>` +
+    `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${last} in Redraft Command`)}">${rc}</aside>` +
+    `</div>` +
+    bests +
+    `</section>`
+  );
+}
+
+/**
+ * The career-rate tiles: career PPG, availability, top-12 weeks, weekly
+ * swing. They opened "What his career numbers say" until 2026-10-22, when
+ * mak had them take the place of the season snapshot strip (Fantasy PPG /
+ * finish / two per-game rates) under the career chart.
+ */
+function renderCareerRates(data: PlayerPageData, c: Career): string {
+  const { pos, rows, total } = c;
+  if (rows.length === 0 || total.gp === 0) return "";
+  const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
+  const n = rows.length;
   const first = Math.min(...rows.map((r) => r.season));
   const lastSeason = c.leagueWeek > 0 ? c.leagueSeason : Math.max(...rows.map((r) => r.season));
   let games = 0;
@@ -949,21 +978,7 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
   if (ranked.length) tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, n12 === 12 ? `Share of his games as a ${pos}1` : `Share of his games as a top-${n12} ${pos}`));
   if (n > 1 && allWeeks.length > 1) tiles.push(rate(one(sd), "Weekly swing", `Standard deviation, ${swingWord(pos, sd)}`));
 
-  /* ---- career highs ---- */
-  const bests = careerHighs(c);
-
-  return (
-    sectionOpen("scp-st-read-h", "What his career numbers say", "") +
-    // The takeaway first, then the explanation (mak, 2026-09-30).
-    `<div class="scp-st-rates">${tiles.join("")}</div>` +
-    byline(data) +
-    `<div class="scp-ox-read">` +
-    `<div><div class="scp-ox-prose">${paragraphs.map((p) => `<p>${p}</p>`).join("")}</div></div>` +
-    `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${last} in Redraft Command`)}">${rc}</aside>` +
-    `</div>` +
-    bests +
-    `</section>`
-  );
+  return `<section class="scp-ox-sec scp-st-sec-rates" aria-label="Career rates"><div class="scp-st-rates">${tiles.join("")}</div></section>`;
 }
 
 function rate(value: string, title: string, caption: string): string {
@@ -1019,25 +1034,6 @@ function careerHighs(c: Career): string {
       .join("") +
     `</ul>`
   );
-}
-
-/**
- * "By the StatChasers staff. Updated September 29, 2026."
- *
- * The analyst's name and date when stats_copy.json gives them; otherwise the
- * staff, dated by when the game logs were last written.
- */
-function byline(data: PlayerPageData): string {
-  const copy = data.statsCopy;
-  const author = own(copy?.author) ?? "the StatChasers staff";
-  const written = own(copy?.updated_date);
-  let d: Date | null = null;
-  if (written && /^\d{4}-\d{2}-\d{2}$/.test(written)) d = new Date(`${written}T12:00:00Z`);
-  else if (data.statsUpdatedMs) d = new Date(data.statsUpdatedMs);
-  if (!d || Number.isNaN(d.getTime())) return "";
-  const iso = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-  const human = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" }).format(d);
-  return `<p class="scp-st-byline">${escapeHtml(`By ${author}. Updated `)}<time datetime="${iso}">${escapeHtml(human)}</time>.</p>`;
 }
 
 /** The scoring rules, in the words the career table's caption points down to. */
@@ -1137,7 +1133,7 @@ export function renderStatsTabParts(
     return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "", foot: "" };
   }
   return {
-    top: wrap(renderProduction(data, c, options) + renderAdvanced(data, c) + renderChart(data, c)),
+    top: wrap(renderProduction(data, c, options) + renderAdvanced(data, c) + renderChart(data, c) + renderCareerRates(data, c)),
     // No season-by-season table here: the original Stats content above already
     // has one (renamed "<name> career stats by season"), and mak had this
     // second copy removed on 2026-09-30.

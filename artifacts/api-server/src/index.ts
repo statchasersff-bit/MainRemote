@@ -10,6 +10,7 @@ import {
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 import { startWatchdog } from "./lib/watchdog";
+import { startMemLog } from "./lib/mem-log";
 import { warmRenders, warmupEnabled } from "./lib/warmup";
 import { edgePrefetchEnabled, startEdgePrefetch } from "./lib/edge-prefetch";
 import { loadImageVersions } from "./lib/image-versions";
@@ -160,6 +161,11 @@ app.listen(port, (err) => {
   // public URL and restarts itself when inbound goes dark. Production only;
   // see lib/watchdog.ts.
   startWatchdog(port);
+
+  // One stderr line every ten minutes with the process's size against V8's
+  // heap ceiling and the VM's headroom (lib/mem-log.ts): the trend the
+  // 10-21/10-22 deaths never left behind.
+  startMemLog();
 
   // The X poller, if it is switched on (X_NEWS_INGESTION_ENABLED).
   //

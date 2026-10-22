@@ -520,68 +520,8 @@ function ordinal(n: number): string {
   return `${n}${suffix}`;
 }
 
-/** One figure on a stat rail: the number, what it is, and what it is of. */
-interface RailCell {
-  value: string;
-  label: string;
-  /** The qualifier under the label - "4 seasons", "in 2025", "Moderate". */
-  sub?: string;
-  /** "gold" paints this one figure. Reserved for fantasy and the live season. */
-  accent?: string;
-  /**
-   * Set on the figures that lead the rail, which are drawn larger.
-   *
-   * Asymmetry on purpose: six cells at one size is a list, and a reader has to
-   * pick the important one out of it themselves. Two leading and four
-   * following is a sentence.
-   */
-  lead?: boolean;
-}
-
-/**
- * A stat rail: one row of figures, divided by hairlines and nothing else.
- *
- * The Stats tab is built from three component languages and no fourth - RAILS
- * (this), DATA PANELS (the passing and fantasy cards) and TABLES. Before it
- * had one language, the rounded card, repeated down the page until the bottom
- * half read as a dashboard: career rates, finish history and career bests were
- * three consecutive rows of four boxes that differed only in their contents.
- *
- * So the four figure-rows on this page are all this component. Repetition on
- * purpose reads as a system; repetition by default reads as a template, and
- * the difference is whether the repeated thing is doing the same JOB each
- * time. Here it always is: four or seven numbers that belong to one record.
- *
- *   hero   bordered and filled, larger figures. The season strip only - it is
- *          the answer to the query and the one rail that is a container.
- *   open   no box at all. A rule above, hairlines between, and the section
- *          heading doing the work the border used to.
- */
-function renderRail(cells: RailCell[], variant: "hero" | "open" = "open"): string {
-  const kept = cells.filter((cell) => cell.value !== DASH || variant === "open");
-  if (kept.length === 0) return "";
-  const leads = kept.filter((cell) => cell.lead).length;
-
-  return (
-    `<div class="scp-rail" data-variant="${variant}"` +
-    ` data-count="${Math.min(kept.length, 8)}"` +
-    (leads ? ` data-leads="${leads}"` : "") +
-    `>` +
-    kept
-      .map(
-        (cell) =>
-          `<div class="scp-rail-cell"${
-            cell.accent ? ` data-accent="${escapeHtml(cell.accent)}"` : ""
-          }${cell.lead ? ` data-lead="1"` : ""}>` +
-          `<p class="scp-rail-value">${escapeHtml(cell.value)}</p>` +
-          `<p class="scp-rail-label">${escapeHtml(cell.label)}</p>` +
-          (cell.sub ? `<p class="scp-rail-sub">${escapeHtml(cell.sub)}</p>` : "") +
-          `</div>`,
-      )
-      .join("") +
-    `</div>`
-  );
-}
+/* The stat rail (RailCell / renderRail) went with the season snapshot strip
+   on 2026-10-22; nothing else drew one. */
 
 /* ------------------------------------------------------------- chart marks */
 
@@ -2228,72 +2168,9 @@ function count(value: number): string {
   return Math.round(value).toLocaleString("en-US");
 }
 
-/**
- * The season rail: the query's answer, before anything else.
- *
- * FANTASY FIRST, and per game.
- *
- * It used to open on games, passing yards, touchdowns, completion percentage,
- * interceptions and passer rating, with fantasy points added at the end - a
- * row that answers "how did he play" and says nothing about the question this
- * site exists for until its last cell. A reader who wanted passer rating did
- * not come here for it. So the two fantasy figures lead and are set larger,
- * and the box score behind them is rates rather than totals: yards per game
- * survives a bye and a one-game sample, and season totals are what the career
- * table underneath is for.
- *
- * Passer rating has not been dropped - it moved down into Production, where it
- * sits with the rest of the line it belongs to.
- *
- * Position-aware, because the four numbers a reader wants after the fantasy
- * pair are not the same four for a quarterback and a receiver.
- */
-function renderStatsSnapshot(data: PlayerPageData): string {
-  const row = data.statsProfile.current;
-  if (!row || row.gamesPlayed === 0) return "";
-
-  const position = data.player.position;
-  const t = row.totals;
-  const g = row.gamesPlayed;
-  const per = (value: number, digits = 1) => (value / g).toFixed(digits);
-
-  // The two that lead. `lead` sets them larger than the rest of the rail -
-  // hierarchy by size, because a row of six equal figures has no answer in it.
-  const cells: RailCell[] = [
-    {
-      value: row.ppg.toFixed(1),
-      label: "Fantasy PPG",
-      accent: "gold",
-      lead: true,
-    },
-  ];
-
-  if (data.seasonRank !== null) {
-    cells.push({
-      value: `${position ?? ""}${data.seasonRank}`,
-      label: "Fantasy finish",
-      accent: "gold",
-      lead: true,
-    });
-  }
-
-  // Two rates after the fantasy pair (mak, 2026-09-30: simplify the strip
-  // under the chart); the strip at the top of the tab has the rest.
-  if (position === "QB" && t.passAtt > 0) {
-    cells.push({ value: per(t.passYd, 0), label: "Pass yds/g" });
-    cells.push({ value: per(t.passTd), label: "Pass TD/g" });
-  } else if (position === "RB") {
-    cells.push({ value: per(t.rushYd, 0), label: "Rush yds/g" });
-    cells.push({ value: per(t.rec), label: "Rec/g" });
-  } else {
-    cells.push({ value: per(t.tgt), label: "Targets/g" });
-    cells.push({ value: per(t.recYd, 0), label: "Rec yds/g" });
-  }
-
-  return (
-    `<section class="scp-snapshot">` + renderRail(cells, "hero") + `</section>`
-  );
-}
+/* renderStatsSnapshot() - the Fantasy PPG / finish / per-game strip under the
+   career chart - went 2026-10-22 (mak); the Stats tab's career-rate tiles sit
+   there now (stats-tab.ts renderCareerRates). */
 
 /* statTable() - the two-column label/value table - went with the cards it was
    the inside of. Production is figure-over-label columns now, which reads as a
@@ -2454,11 +2331,9 @@ function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): str
 }
 
 function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabParts | null {
-  const snapshot = renderStatsSnapshot(data);
   // The "Efficiency Profile" block was removed at mak's request (2026-09-30),
-  // and the career-by-season table on 2026-10-22; the Game Log's All view
-  // still draws it (renderLogCareer).
-  const career = "";
+  // the career-by-season table and the season snapshot strip on 2026-10-22;
+  // the Game Log's All view still draws the table (renderLogCareer).
   const faq = renderStatsFaq(data, options);
   // The sections of mak's Stats tab spec of 2026-09-29 (lib/player/stats-tab.ts).
   // Since 2026-09-30 its first three (production, advanced, career chart) open
@@ -2467,7 +2342,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
   // is the whole tab.
   const spec = renderStatsTabParts(data, options);
 
-  if (!snapshot && !career && !spec.top && !spec.rest) return null;
+  if (!spec.top && !spec.rest) return null;
 
   /*
    * The heading, and nothing under it.
@@ -2491,7 +2366,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
   const heading = spec.top.includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
 
   return {
-    body: heading + spec.top + snapshot + career + spec.rest,
+    body: heading + spec.top + spec.rest,
     foot: spec.foot,
     faq,
   };

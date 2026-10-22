@@ -1976,12 +1976,15 @@ button.scp-search-opt {
   background: #e6eaf0;
 }
 
+/* Centered (mak, 2026-10-22). */
 .scp .scp-st-cell {
   display: flex;
   flex: 1 1 96px;
   flex-direction: column;
+  align-items: center;
   padding: 14px 16px;
   background: #f5f7fa;
+  text-align: center;
 }
 
 .scp .scp-st-cell dt {
@@ -2149,7 +2152,7 @@ button.scp-search-opt {
    share a left edge down the ladder (the team hub's rule). */
 .scp .scp-st-stat {
   display: grid;
-  grid-template-columns: minmax(96px, 1fr) minmax(40px, 1fr) 52px 44px;
+  grid-template-columns: minmax(96px, 1fr) minmax(40px, 1fr) 52px 72px;
   align-items: center;
   gap: 10px;
   margin: 0;
@@ -2164,13 +2167,13 @@ button.scp-search-opt {
 
 /* The wide Efficiency card has room for a longer track. */
 .scp .scp-st-ladder.is-wide .scp-st-stat {
-  grid-template-columns: minmax(96px, 0.8fr) minmax(44px, 1.4fr) 52px 44px;
+  grid-template-columns: minmax(96px, 0.8fr) minmax(44px, 1.4fr) 52px 72px;
 }
 
 /* The three narrow cards stack each row: label, value and rank on one line,
    the track on its own line under them, so a long label never wraps three deep. */
 .scp .scp-st-ladder:not(.is-wide) .scp-st-stat {
-  grid-template-columns: minmax(0, 1fr) 52px 44px;
+  grid-template-columns: minmax(0, 1fr) 52px 72px;
   column-gap: 8px;
   row-gap: 4px;
   padding: 5px 0;
@@ -2357,8 +2360,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-plot,
-.scp .scp-st-x,
-.scp .scp-st-teams {
+.scp .scp-st-x {
   display: grid;
   grid-template-columns: repeat(var(--scp-n), minmax(52px, 1fr));
   gap: 8px;
@@ -2368,9 +2370,9 @@ button.scp-search-opt {
   min-width: max(620px, calc(var(--scp-n) * 60px - 8px));
 }
 
-/* A gutter right of the last bar for the average's label, on all three rows
-   so the years and team pills stay under their bars. */
-.scp .scp-st-arc.has-avg :is(.scp-st-plot, .scp-st-x, .scp-st-teams) {
+/* A gutter right of the last bar for the average's label, on both rows so
+   the year labels stay under their bars. */
+.scp .scp-st-arc.has-avg :is(.scp-st-plot, .scp-st-x) {
   min-width: max(620px, calc(var(--scp-n) * 60px + 64px));
   padding-right: 72px;
 }
@@ -2476,23 +2478,22 @@ button.scp-search-opt {
   font-size: 10.5px;
 }
 
-/* The club only where it changes, as quiet text (mak, 2026-09-30). */
-.scp .scp-st-teams {
-  margin-top: 4px;
-}
-
-.scp .scp-st-teams span {
+/* The club under every bar (mak, 2026-10-22), as quiet text; the current
+   club in the team color. */
+.scp .scp-st-x em {
+  display: block;
+  margin-top: 2px;
   color: var(--scp-ph-muted);
   font-size: 11px;
+  font-style: normal;
   font-weight: 700;
   letter-spacing: 0.04em;
-  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.scp .scp-st-teams span.is-cur {
+.scp .scp-st-x em.is-cur {
   color: var(--scp-team);
 }
 
@@ -3304,8 +3305,8 @@ button.scp-search-opt {
 }
 
 /* No card around the take (mak, 2026-09-30): it sits on the page. Since
-   2026-10-22 it is the heading alone: the Best fit column moved down beside
-   the season-to-date panels (.scp-ol-exrow). */
+   2026-10-22 it is the heading alone: the Best fit chips moved to the Our
+   Take sidebar. */
 .scp .scp-ol .scp-ol-take {
   display: block;
 }
@@ -3320,19 +3321,9 @@ button.scp-search-opt {
   font-weight: 700;
 }
 
-.scp .scp-ol .scp-ol-fithead {
-  margin: 0 0 6px;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .scp .scp-ol .scp-ol-fits {
   display: grid;
   gap: 6px;
-  min-width: 250px;
 }
 
 .scp .scp-ol .scp-ol-fit {
@@ -3371,89 +3362,6 @@ button.scp-search-opt {
   color: var(--scp-ph-bad);
 }
 
-/* ---- expectation check */
-
-/* The season-to-date panels and the Best fit column on one row (mak,
-   2026-10-22). The panels take the width; the column keeps its own. */
-.scp .scp-ol .scp-ol-exrow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: start;
-}
-
-.scp .scp-ol .scp-ol-expect {
-  display: grid;
-  grid-template-columns: repeat(var(--scp-ol-n, 4), minmax(0, 1fr));
-  overflow: hidden;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
-  background: #fff;
-}
-
-/* ~20% shorter (mak, 2026-10-01): same four panels, tighter padding and a
-   smaller rank figure. */
-.scp .scp-ol .scp-ol-ex {
-  position: relative;
-  padding: 14px 18px;
-}
-
-.scp .scp-ol .scp-ol-ex + .scp-ol-ex {
-  border-left: 1px solid var(--scp-ph-line);
-}
-
-.scp .scp-ol .scp-ol-when {
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-}
-
-.scp .scp-ol .scp-ol-rk {
-  margin: 4px 0 2px;
-  color: var(--scp-ph-ink);
-  font-size: 34px;
-  font-weight: 800;
-  font-stretch: 72%;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.scp .scp-ol .scp-ol-rk.is-text {
-  margin: 7px 0 3px;
-  font-size: 19px;
-  font-stretch: 85%;
-  line-height: 1.2;
-}
-
-.scp .scp-ol .scp-ol-exsub {
-  color: var(--scp-ph-ink-2);
-  font-size: 13px;
-}
-
-.scp .scp-ol .scp-ol-ex.is-now {
-  background: #f6ebcf;
-}
-
-.scp .scp-ol .scp-ol-ex.is-now .scp-ol-rk {
-  color: var(--scp-st-gold);
-}
-
-.scp .scp-ol .scp-ol-arrow {
-  position: absolute;
-  top: 50%;
-  right: -11px;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  transform: translateY(-50%);
-}
-
 /* ---- written outlook */
 
 .scp .scp-ol .scp-ol-prev {
@@ -3480,24 +3388,6 @@ button.scp-search-opt {
   color: var(--scp-ph-muted);
   font-family: var(--scp-ph-sans);
   font-size: 13px;
-}
-
-.scp .scp-ol .scp-ol-profile {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 8px 14px;
-  margin: 0;
-  font-size: 14px;
-}
-
-.scp .scp-ol .scp-ol-profile dt {
-  color: var(--scp-ph-muted);
-}
-
-.scp .scp-ol .scp-ol-profile dd {
-  margin: 0;
-  font-weight: 600;
-  text-align: right;
 }
 
 /* ---- drivers: the rank strips */
@@ -3810,26 +3700,6 @@ button.scp-search-opt {
 }
 
 @media (max-width: 960px) {
-  .scp .scp-ol .scp-ol-exrow {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .scp .scp-ol .scp-ol-expect {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .scp .scp-ol .scp-ol-ex:nth-child(odd) {
-    border-left: 0;
-  }
-
-  .scp .scp-ol .scp-ol-ex:nth-child(n + 3) {
-    border-top: 1px solid var(--scp-ph-line);
-  }
-
-  .scp .scp-ol .scp-ol-arrow {
-    display: none;
-  }
-
   .scp .scp-ol .scp-ol-drv {
     grid-template-columns: 1fr 1fr;
     gap: 12px 20px;
@@ -3862,19 +3732,6 @@ button.scp-search-opt {
 }
 
 @media (max-width: 640px) {
-  .scp .scp-ol .scp-ol-fits {
-    min-width: 0;
-  }
-
-  .scp .scp-ol .scp-ol-expect {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .scp .scp-ol .scp-ol-ex + .scp-ol-ex {
-    border-top: 1px solid var(--scp-ph-line);
-    border-left: 0;
-  }
-
   .scp .scp-ol .scp-ol-drivers {
     padding: 4px 16px;
   }
@@ -7415,201 +7272,8 @@ button.scp-search-opt {
    gone, along with the subtitle above it. Both were captioning a page that
    prints every one of those facts within a screen of where they sat. */
 
-/* ---- the stat rail */
-
-/*
- * One row of figures, divided by hairlines and nothing else.
- *
- * This is one of the Stats tab's three component languages - RAIL, PANEL,
- * TABLE - and it is the answer to the page's old bottom half, which was career
- * rates, finish history and career bests rendered as three consecutive rows of
- * four rounded boxes. Same job three times, three near-identical containers,
- * and a page that started premium and ended as a dashboard.
- *
- * Repetition is the point, but only because the repeated thing is doing the
- * same work each time: four or seven numbers belonging to one record. The
- * container is what varies, and only twice - the season strip is a card
- * because it is the answer to the query, and everything below it is open.
- */
-.scp-rail {
-  display: grid;
-  grid-template-columns: repeat(var(--scp-rail-cols, 4), minmax(0, 1fr));
-  align-items: start;
-}
-
-.scp-rail[data-count="1"] { --scp-rail-cols: 1; }
-.scp-rail[data-count="2"] { --scp-rail-cols: 2; }
-.scp-rail[data-count="3"] { --scp-rail-cols: 3; }
-.scp-rail[data-count="5"] { --scp-rail-cols: 5; }
-.scp-rail[data-count="6"] { --scp-rail-cols: 6; }
-.scp-rail[data-count="7"] { --scp-rail-cols: 7; }
-.scp-rail[data-count="8"] { --scp-rail-cols: 8; }
-
-.scp-rail-cell {
-  position: relative;
-  min-width: 0;
-  padding-left: 20px;
-}
-
-.scp-rail-cell:first-child {
-  padding-left: 0;
-}
-
-/* Drawn in the gutter rather than as a border on the cell, so the row reads as
-   one line of numbers and the first figure is not indented past the heading. */
-.scp-rail-cell:not(:first-child)::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 3px;
-  bottom: 3px;
-  width: 1px;
-  background: var(--sc-border);
-}
-
-.scp-rail-value {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.025em;
-  color: var(--sc-navy);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Quieter than the number, deliberately: the value carries the row. */
-.scp-rail-label {
-  margin: 8px 0 0;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-rail-sub {
-  margin: 5px 0 0;
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--sc-muted);
-}
-
-/*
- * The hero rail: the season strip, and the only rail that is a container.
- *
- * One accent in a row of six. The fantasy figure used to be a separate panel
- * bolted to the right at 42px, which read as two components; as a cell of the
- * same rail, in gold, it says fantasy-first more plainly and stops making the
- * box score look like the smaller half of the strip.
- */
-.scp-rail[data-variant="hero"] {
-  padding: 26px 28px 24px;
-  border: 1px solid var(--sc-hairline);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-/* A little air on the right as well: equal columns of left-aligned figures put
-   a wide value ("73.0%") hard against the next cell's rule. */
-.scp-rail[data-variant="hero"] .scp-rail-cell {
-  padding-left: 22px;
-  padding-right: 10px;
-}
-
-.scp-rail[data-variant="hero"] .scp-rail-cell:first-child {
-  padding-left: 0;
-}
-
-/* The last cell has no rule to its right and the widest label on the strip;
-   the 10px would only wrap "Fantasy points" onto two lines. */
-.scp-rail[data-variant="hero"] .scp-rail-cell:last-child {
-  padding-right: 0;
-}
-
-.scp-rail[data-variant="hero"] .scp-rail-value {
-  font-size: 26px;
-}
-
-/*
- * Asymmetry, on purpose.
- *
- * Six cells at one size is a list, and a reader has to decide for themselves
- * which of them is the answer. The fantasy figures lead - half again the width
- * and a third again the type size - so the rail reads as a sentence with a
- * subject: "16.5 a game, QB15" first, and the box score that explains it
- * after.
- *
- * Flex rather than grid for the widths. A rail with leads needs a track list
- * per (count, leads) pair, `repeat(auto-fit, minmax(0, 1fr))` is invalid CSS
- * after a fixed track - auto-repeat needs a definite size - and `flex-grow` on
- * the cell expresses "half again as wide" once, for any number of cells.
- */
-.scp-rail[data-leads] {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.scp-rail[data-leads] .scp-rail-cell {
-  flex: 1 1 0;
-}
-
-.scp-rail[data-leads] .scp-rail-cell[data-lead="1"] {
-  flex-grow: 1.5;
-}
-
-.scp-rail-cell[data-lead="1"] .scp-rail-value {
-  font-size: 34px;
-  letter-spacing: -0.03em;
-}
-
-/*
- * Gold, and the one rule that governs it.
- *
- * On this page gold means a FANTASY figure or the season in progress, and
- * nothing else. Navy is the type, blue is statistical, and red and green are
- * reserved for a reading that is genuinely out of range. A palette where the
- * accent lands on a passing yard as readily as on a fantasy point is not an
- * accent, it is a fourth neutral.
- */
-.scp-rail-cell[data-accent="gold"] .scp-rail-value {
-  color: var(--sc-gold-deep);
-}
-
-.scp-rail-cell[data-accent="gold"] .scp-rail-sub {
-  color: var(--sc-muted-strong);
-  font-weight: 700;
-}
-
-/* The open rail: no box, one rule above it, and the section heading doing the
-   work the border used to. */
-.scp-rail[data-variant="open"] {
-  padding-top: 16px;
-  border-top: 1px solid var(--sc-border);
-}
-
-/* ---- the season snapshot */
-
-/* A wrapper, not a container: the hero rail inside it draws the card. */
-.scp-snapshot {
-  margin: 0;
-}
-
-/* Under the Stats tab's chart it is a plain row, not a card (mak, 2026-09-30). */
-.scp-snapshot .scp-rail[data-variant="hero"] {
-  margin-top: 20px;
-  padding: 16px 0 0;
-  border: 0;
-  border-top: 1px solid var(--sc-border);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.scp-snapshot .scp-rail[data-variant="hero"] .scp-rail-cell:last-child {
-  padding-top: 0;
-  border-top: 0;
-}
+/* ---- the stat rail: gone 2026-10-22 with the season snapshot strip, the
+   last thing that drew one (.scp-rail). */
 
 /* ---- the secondary line */
 
@@ -7882,9 +7546,7 @@ button.scp-search-opt {
 }
 
 /* The summary module - two rows of four bordered cards at the bottom of the
-   Stats tab - is gone. Career rates, finish history and career bests are all
-   .scp-rail now; see the note there for why three near-identical containers
-   were the problem rather than the solution. */
+   Stats tab - is gone, and so is the stat rail that replaced it (2026-10-22). */
 
 /* ----------------------------------------------------------------- peers */
 
@@ -9765,63 +9427,6 @@ a.scp-peer:focus-visible {
   .scp-status {
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
-  }
-
-  /*
-   * ---- stats: a rail of seven becomes a grid of two.
-   *
-   * Every rail collapses the same way, because they are the same component:
-   * two columns, the vertical hairline kept only between them, and a
-   * horizontal one under each row so the figures stay gridded rather than
-   * running together into a list.
-   */
-  .scp-rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 16px;
-  }
-
-  .scp-rail-cell {
-    padding-left: 16px;
-  }
-
-  .scp-rail-cell:nth-child(odd) {
-    padding-left: 0;
-  }
-
-  .scp-rail-cell:nth-child(odd)::before {
-    display: none;
-  }
-
-  .scp-rail-cell:nth-child(n + 3) {
-    padding-top: 16px;
-    border-top: 1px solid var(--sc-border);
-  }
-
-  .scp-rail[data-variant="hero"] {
-    padding: 20px 16px;
-  }
-
-  .scp-rail[data-variant="hero"] .scp-rail-cell {
-    padding-left: 16px;
-  }
-
-  .scp-rail[data-variant="hero"] .scp-rail-cell:nth-child(odd) {
-    padding-left: 0;
-  }
-
-  /* Two per row, leads included: at this width the extra half-column buys
-     nothing and the type size is carrying the hierarchy on its own. */
-  .scp-rail[data-leads] .scp-rail-cell,
-  .scp-rail[data-leads] .scp-rail-cell[data-lead="1"] {
-    flex: 0 0 50%;
-  }
-
-  .scp-rail[data-variant="hero"] .scp-rail-value {
-    font-size: 23px;
-  }
-
-  .scp-rail-cell[data-lead="1"] .scp-rail-value {
-    font-size: 28px;
   }
 
   /* The secondary strip: the label takes its own line above the figures. */

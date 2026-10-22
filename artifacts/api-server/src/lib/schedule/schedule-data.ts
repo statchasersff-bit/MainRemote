@@ -431,6 +431,26 @@ function openWeeks(rows: RawGame[]): number[] {
   return [...open].sort((a, b) => a - b);
 }
 
+/**
+ * Closed weeks the layer has never seen at all.
+ *
+ * The layer began on 2026-10-20 with weeks 1-5 already closed, so it never
+ * learned their networks and the schedule printed those games without a
+ * station (mak, 2026-10-22: "don't remove the station"). A week with none of
+ * its games in the map is asked for once, on a full refresh, and then saved
+ * with the rest - after which it is closed and known, and never asked again.
+ * That keeps the rule above: never AGAIN for a game that has been played.
+ */
+function unseenWeeks(rows: RawGame[], games: ReadonlyMap<string, EspnGame>): number[] {
+  const seen = new Set<number>();
+  const all = new Set<number>();
+  for (const row of rows) {
+    all.add(row.week);
+    if (row.espnId && games.has(row.espnId)) seen.add(row.week);
+  }
+  return [...all].filter((week) => !seen.has(week)).sort((a, b) => a - b);
+}
+
 /** Weeks holding a game today or yesterday - the only scores that can change. */
 function activeWeeks(rows: RawGame[], nowMs: number): number[] {
   const today = easternDate(nowMs);
@@ -481,7 +501,13 @@ async function refreshEspn(
   // and late TV assignments land across the season ahead - and never a week
   // nflverse has already closed with final scores.
   const weeks = fullRefresh
-    ? [...new Set([...openWeeks(rows), ...activeWeeks(rows, nowMs)])].sort((a, b) => a - b)
+    ? [
+        ...new Set([
+          ...openWeeks(rows),
+          ...activeWeeks(rows, nowMs),
+          ...unseenWeeks(rows, games),
+        ]),
+      ].sort((a, b) => a - b)
     : activeWeeks(rows, nowMs);
 
   let reached = weeks.length === 0;

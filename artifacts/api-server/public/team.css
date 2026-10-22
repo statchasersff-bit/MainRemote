@@ -3109,6 +3109,18 @@ body.sct-page.is-embed {
   font-variant-numeric: tabular-nums;
 }
 
+/* The heat map (mak, 2026-10-22). Each ranked cell carries its own wash in
+   --sct-heat, set inline from the rank: green toward 1st, red toward 32nd,
+   fading to nothing through the middle of the league. Alpha washes, so the
+   zebra stripe and the row border still read through them, and the navy
+   figure keeps its contrast on the deepest tint (about 0.36 alpha). */
+:is(.sct, #sct-table-armour) .sct-hist td.sct-hist-cell {
+  background: var(--sct-heat, transparent);
+  /* A hairline of the row's own color between adjacent washes, so two deep
+     greens side by side still read as two cells. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
 /* Four tints, so five seasons sort themselves by eye; every one clears 4.5:1
    on the white and the striped row. */
 :is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="elite"] {
@@ -3882,17 +3894,26 @@ body.sct-page.is-embed {
   border-bottom: 0;
 }
 
-/* A chip here, bare text on a cornerstone card. The difference is what is
-   around it: on a card the slot sits under a name in open space and needs no
-   container, and in this row it is one of three things on a line and the tint
-   is what stops "RB1" reading as part of the name beside it. */
-.sct-injury .sct-slot {
-  min-width: 30px;
-  justify-content: center;
-  padding: 2px 5px;
-  border-radius: var(--sc-radius-xs);
-  background: color-mix(in srgb, var(--sct-slot-ink) 11%, transparent);
-  font-size: 0.6rem;
+/* The face, in the column the slot chip used to hold (mak, 2026-10-22). A
+   small round well with the team's soft tint behind it, so a player with no
+   photo still holds his column. */
+.sct-injury-well {
+  display: block;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--sc-surface-soft);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+.sct-injury-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
 }
 
 .sct-injury-name {
@@ -3947,8 +3968,11 @@ body.sct-page.is-embed {
 
 /* ------------------------------------------------------------- next game */
 
+/* On the title's row, pushed to the right edge (mak, 2026-10-22). The title
+   is already uppercase and tracked, so the week inherits that and only
+   drops to the muted ink to sit second. */
 .sct-nextgame-week {
-  margin: 0;
+  margin: 0 0 0 auto;
   color: var(--sc-muted);
   font-size: 0.66rem;
   font-weight: 800;
@@ -4029,7 +4053,8 @@ body.sct-page.is-embed {
 }
 
 .sct-nextgame-when {
-  margin: 12px 0 0;
+  /* Above the matchup now, where the week used to be: the gap moves below. */
+  margin: 0 0 12px;
   color: var(--sc-navy);
   font-size: 0.85rem;
   font-weight: 800;
@@ -4038,12 +4063,6 @@ body.sct-page.is-embed {
 .sct-nextgame-time {
   font-weight: 600;
   color: var(--sc-muted-strong);
-}
-
-.sct-nextgame-venue {
-  margin: 2px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.78rem;
 }
 
 /* One line of context, not a second stats panel: the opponent's points allowed
@@ -4496,8 +4515,8 @@ body.sct-page.is-embed {
   z-index: 1;
 }
 
-/* Week and home/away are two halves of the same fact - which fixture this is -
-   so they share a line instead of bookending the card. */
+/* Week on the left, kickoff on the right (mak, 2026-10-22): the two halves of
+   "when" share the card's first line, where the home/away pills used to be. */
 .sct-game-head {
   display: flex;
   align-items: center;
@@ -4516,50 +4535,13 @@ body.sct-page.is-embed {
   text-transform: uppercase;
 }
 
-.sct-game-pills {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.sct-game-pill,
-.sct-game-tag {
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--sc-border);
-  background: var(--sc-surface-soft);
-  color: var(--sc-muted-strong);
-  font-size: 0.56rem;
-  line-height: 1.3;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Home is the state worth marking. Away is where two thirds of a season is
-   played, and a filled chip on every other card is not a signal. */
-.sct-game-pill[data-kind="home"] {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-  color: #fff;
-}
-
-.sct-game-tag[data-kind="division"] {
-  border-color: rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.12);
-  color: var(--sc-gold-deep);
-}
-
-.sct-game-tag[data-kind="intl"] {
-  border-color: rgba(11, 22, 52, 0.25);
-  background: rgba(11, 22, 52, 0.06);
-  color: var(--sc-navy);
-}
-
+/* Centered (mak, 2026-10-22): the crest and the two name lines sit in the
+   middle of the card as one group. */
 .sct-game-matchup {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 9px;
   /* 6px more under the head line than the other gaps (mak, 2026-10-20), so
      the week and pills read as the card's label and the matchup as its body. */
@@ -4606,11 +4588,15 @@ body.sct-page.is-embed {
   font-weight: 600;
 }
 
-/* Date and time in the darker ink; the venue below them smaller and muted,
-   because it is what you check second. */
+/* Date and time in the darker ink, on the head line; the venue at the foot
+   smaller and muted, because it is what you check second. */
 .sct-game-when {
+  flex: none;
   color: var(--sc-muted-strong);
+  font-size: 0.74rem;
   font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .sct-game-time {

@@ -435,7 +435,14 @@ describe("embedded mode", () => {
       // dropping it; anything else is a link.
       if (cell.tagName === "A") {
         assert.match(cell.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
-        assert.equal(cell.textContent.trim().startsWith("View matchup"), true);
+        // "View Recap" once the game is final (mak, 2026-10-22), "View
+        // matchup" ahead of it.
+        const played = !!row.querySelector(".sct-result");
+        assert.equal(
+          cell.textContent.trim().startsWith(played ? "View Recap" : "View matchup"),
+          true,
+          `row ${row.textContent.trim().slice(0, 30)}: ${cell.textContent.trim()}`,
+        );
       }
     }
     const linked = rows.filter((r) => r.querySelector("a.sct-srow-view"));
