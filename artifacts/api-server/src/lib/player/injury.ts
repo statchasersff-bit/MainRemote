@@ -33,6 +33,29 @@ export interface NflInjuryEntry {
   severity?: InjurySeverity;
   gamesMissed?: number;
   description?: string;
+  /** The play he was hurt on, when the play-by-play log has it (2026-10-22). */
+  play?: InjuryPlay | null;
+  /** The weekly report rows for this injury, in week order (2026-10-22). */
+  reports?: InjuryReportRow[] | null;
+}
+
+export interface InjuryPlay {
+  week: number;
+  opponent: string;
+  qtr: number | null;
+  clock: string | null;
+  /** The play as called, without the injury sentence. */
+  desc: string;
+}
+
+export interface InjuryReportRow {
+  week: number;
+  /** "Full", "Limited", "DNP", or null when the report had no practice line. */
+  practice?: string | null;
+  /** "Out", "Doubtful", "Questionable", or null for no game designation. */
+  status?: string | null;
+  /** The reserve list he was on that week, when he was. */
+  reserve?: string | null;
 }
 
 export interface PlayerInjuryHistory {

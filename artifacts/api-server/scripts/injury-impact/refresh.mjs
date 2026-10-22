@@ -14,7 +14,8 @@
  *   injuries_<season>.csv        the weekly reports (practice level, game status)
  *   play_by_play_<season>.csv.gz "X was injured during the play" with quarter and clock
  *   roster_<season>.csv          jersey + name -> GSIS id for those plays, Sleeper ids
- *   roster_weekly_<season>.csv   the player's team in that week (mid-season trades)
+ *   roster_weekly_<season>.csv   the player's team in that week (mid-season trades),
+ *                                and his reserve-list weeks (roster-status.json)
  *
  * What it owns. The pack's rows for weeks already published are left alone:
  * the repo's curated database replaced nflverse's rows there for QB/RB/WR/TE
@@ -58,6 +59,8 @@ import {
   reportRowsFromCsv,
   rosterPlayers,
   updateSearchIndex,
+  reserveWeeksFromCsv,
+  RESERVE_CODES,
 } from "./refresh-lib.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -175,6 +178,15 @@ const rosterCsv = await fetchText(`roster_${season}.csv`, "rosters");
 const roster = rosterPlayers(rosterCsv);
 console.log(`  roster: ${roster.length} players`);
 
+// The weekly roster, every run: the play-by-play needs it for jersey
+// numbers, and the player pages' Injury tab (scripts/player/
+// buildInjuryHistory.mjs) needs the weeks a player spent on a reserve list,
+// since a player on injured reserve drops off the weekly injury report.
+const weekly = await fetchText(`roster_weekly_${season}.csv`, "weekly_rosters");
+const reserveWeeks = reserveWeeksFromCsv(weekly);
+summary.reserve = { players: Object.keys(reserveWeeks).length };
+console.log(`  reserve lists: ${Object.keys(reserveWeeks).length} players with a reserve week`);
+
 if (doReports) {
   const reports = reportRowsFromCsv(await fetchText(`injuries_${season}.csv`, "injuries"));
   const latest = Math.max(0, ...reports.map((r) => r.week ?? 0));
@@ -188,7 +200,6 @@ if (doReports) {
 } else if (sidecar?.reports) summary.reports = sidecar.reports;
 
 if (doPlays) {
-  const weekly = await fetchText(`roster_weekly_${season}.csv`, "weekly_rosters");
   const maps = buildRosterMaps(weekly, rosterCsv);
   const unmapped = [];
   const gz = await fetchBytes(`play_by_play_${season}.csv.gz`, "pbp");
@@ -222,6 +233,7 @@ for (const [key, shard] of shards) {
 }
 fs.writeFileSync(path.join(OUT, "search-index.json"), JSON.stringify(index));
 fs.writeFileSync(path.join(OUT, "sleeper-ids.json"), JSON.stringify(Object.fromEntries(Object.entries(sleeper).sort())));
+fs.writeFileSync(path.join(OUT, "roster-status.json"), JSON.stringify({ season, generatedAt: summary.generatedAt, codes: RESERVE_CODES, players: reserveWeeks }));
 fs.writeFileSync(SIDECAR, JSON.stringify(summary, null, 2) + "\n");
-console.log(`  wrote ${written} of ${shards.size} shards, search-index.json, sleeper-ids.json, history-refresh.json`);
+console.log(`  wrote ${written} of ${shards.size} shards, search-index.json, sleeper-ids.json, roster-status.json, history-refresh.json`);
 console.log("done");

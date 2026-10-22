@@ -93,7 +93,6 @@ import {
   getFPAUrl,
   getPlayerProfileUrl,
   getSOSUrl,
-  getTeamDepthChartUrl,
   getPlayerStatsUrl,
   getTeamScheduleUrl,
   getToolsUrl,
@@ -3015,19 +3014,11 @@ function renderDepthChart(
       })()
     : "";
 
-  const full = getTeamDepthChartUrl(team);
-
+  // No "View full depth chart" footer link since 2026-10-22 (mak).
   return (
     h2(`${team.nickname} Fantasy Depth Chart`) +
     updated +
-    `<div class="sct-dc" data-sct-dc>${switcher}${panels}</div>` +
-    (full
-      ? `<p class="sct-block-footer">` +
-        // .sct-textlink, not .sct-button - the same quiet gold-underlined link
-        // the schedule and news footers use.
-        siteLink(full, `View full depth chart ${ARROW}`, "sct-textlink") +
-        `</p>`
-      : "")
+    `<div class="sct-dc" data-sct-dc>${switcher}${panels}</div>`
   );
 }
 

@@ -469,6 +469,41 @@ export function rosterPlayers(seasonalCsv) {
   return out;
 }
 
+/**
+ * nflverse's reserve-list codes (`status_description_abbr` on a RES row),
+ * with the list each names. Only these count as an injury absence: retired,
+ * suspended and the exempt list are reserve lists too, and are not.
+ */
+export const RESERVE_CODES = {
+  R01: "injured reserve",
+  R48: "injured reserve",
+  R04: "the physically unable to perform list",
+  R05: "the non-football injury list",
+  R06: "the non-football illness list",
+};
+
+/**
+ * Each player's injury-reserve weeks from the weekly roster file:
+ * { gsisId: { week: code } }, regular season only.
+ */
+export function reserveWeeksFromCsv(weeklyCsv) {
+  const { header, rows } = parseCsv(weeklyCsv);
+  const ci = (n) => header[n];
+  const out = {};
+  for (const r of rows) {
+    if (cleanString(r[ci("status")]) !== "RES") continue;
+    const code = cleanString(r[ci("status_description_abbr")]);
+    if (!code || !RESERVE_CODES[code]) continue;
+    const gameType = ci("game_type") != null ? cleanString(r[ci("game_type")]) : "REG";
+    if (gameType && gameType !== "REG") continue;
+    const gsisId = cleanString(r[ci("gsis_id")]);
+    const week = toNumber(r[ci("week")]);
+    if (!gsisId || week == null) continue;
+    (out[gsisId] ??= {})[week] = code;
+  }
+  return out;
+}
+
 /** Index rows for roster players the index has never seen: no seasons, zero reports. */
 export function addRosterToIndex(index, roster) {
   const have = new Set(index.map((r) => r[0]));

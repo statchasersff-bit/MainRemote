@@ -156,6 +156,10 @@ export interface InjuryEvent {
   team: string | null;
   /** How many records were folded into this one (a same-season re-aggravation). */
   merged: number;
+  /** The play he was hurt on, when the record has it. */
+  play: NflInjuryEntry["play"] | null;
+  /** The weekly report rows, when the record has them. */
+  reports: NonNullable<NflInjuryEntry["reports"]>;
 }
 
 /** The last regular-season week: 17 before the 2021 season, 18 since. */
@@ -213,6 +217,9 @@ export function buildEvents(
       if (note && !prior.note.includes(note)) prior.note = `${prior.note} ${note}`.trim();
       prior.surgery ||= /surgery/i.test(text);
       prior.ir ||= /injured reserve|\bIR\b/.test(text);
+      prior.play ??= e.play ?? null;
+      for (const r of e.reports ?? []) if (!prior.reports.some((p) => p.week === r.week)) prior.reports.push(r);
+      prior.reports.sort((a, b) => a.week - b.week);
       continue;
     }
     const ev: InjuryEvent = {
@@ -231,6 +238,8 @@ export function buildEvents(
       note,
       team: teamFor(e.season, week),
       merged: 1,
+      play: e.play ?? null,
+      reports: [...(e.reports ?? [])].sort((a, b) => a.week - b.week),
     };
     byKey.set(category === OTHER ? `${key}|${byKey.size}` : key, ev);
   }

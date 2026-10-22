@@ -1,8 +1,10 @@
 /**
  * The Outlook tab's spec sections (lib/player/outlook-tab.ts), rendered
  * against hand-built states: in season, preseason, injured, and a record with
- * no advanced line. The driver field is the real outlook file, so the
- * reference numbers for Jacoby Brissett's 2025 line hold here too.
+ * no advanced line. The driver field is the real data on disk: the current
+ * season's advanced table when it carries a line for Jacoby Brissett (mak,
+ * 2026-10-22), else his 2025 line on the outlook file - so the expected ranks
+ * are computed from the same table rather than pinned.
  */
 
 import test, { after, describe } from "node:test";
@@ -28,6 +30,23 @@ const qb = (week, pts) => ({
 });
 
 const record = data.loadFantasyOutlook2026()["3257"] ?? Object.values(data.loadFantasyOutlook2026()).find((r) => r.slug === "jacoby-brissett");
+
+/**
+ * What the drivers should say for Brissett's passing volume, from the same
+ * table the tab reads: the current season's when he has a line there.
+ */
+function expectedVolume() {
+  const table = data.loadAdvancedStats("qb", 2026);
+  const row = table?.rows?.find((r) => r.playerId === "3257");
+  if (row && table.week >= 1) {
+    const min = measures.minGames(table.week);
+    const field = table.rows.filter((r) => (r.games ?? 0) >= min && typeof r.attempts === "number").map((r) => r.attempts / r.games).sort((a, b) => b - a);
+    const value = row.attempts / row.games;
+    return { season: 2026, week: table.week, value: value.toFixed(1), rank: field.findIndex((v) => v <= value) + 1, of: field.length };
+  }
+  return { season: 2025, week: null, value: "34.6", rank: 5, of: 41 };
+}
+const volume = expectedVolume();
 
 const game = (week, code, nickname, rank, homeAway = "away") => ({
   week, homeAway, opponent: team(code, nickname), opponentCode: code, opponentName: nickname,
@@ -81,12 +100,11 @@ describe("league fit", () => {
 describe("in season", () => {
   const doc = render(state());
 
-  test("six sections, in order, each with an H2 (contract hidden for now)", () => {
+  test("the sections, in order, each with an H2 (contract hidden; the expectation row has none since 2026-10-22)", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent),
       [
         "Jacoby Brissett Rest-of-Season Outlook",
-        "Preseason Projection vs. Reality",
         "Our Take After Week 3",
         "What Drives His Outlook",
         "What Could Change His Value",
@@ -95,24 +113,29 @@ describe("in season", () => {
     );
   });
 
-  test("the tier line is 4–8 words, no period, and the chips follow the rank", () => {
-    const tier = doc.querySelector(".scp-ol-tier").textContent;
-    assert.equal(tier, "Volume-driven QB2 with streaming weeks");
-    const words = tier.split(" ").length;
-    assert.ok(words >= 4 && words <= 8);
+  test("the hero carries no lede or tier line (mak, 2026-10-22), and the chips sit on the expectation row", () => {
+    assert.equal(doc.querySelector(".scp-ol-tier"), null);
+    assert.equal(doc.querySelector(".scp-ol-lede"), null);
+    assert.equal(doc.querySelector(".scp-ol-take .scp-ol-fits"), null, "the chips left the hero");
+    const row = doc.querySelector(".scp-ol-sec-expect .scp-ol-exrow");
+    assert.ok(row?.querySelector(".scp-ol-expect") && row?.querySelector(".scp-ol-fits"), "panels and chips share the row");
+    assert.equal(doc.querySelector("#scp-ol-exp-h"), null, "no Preseason Projection vs. Reality heading");
+    assert.equal(doc.querySelector(".scp-ol-sec-expect .scp-ox-lede"), null, "no lede on the row");
     assert.deepEqual([...doc.querySelectorAll(".scp-ol-fit .scp-ol-chip")].map((c) => c.textContent), [
       "Weekly starter", "Streamer", "Streamer",
     ]);
   });
 
-  test("the expectation panels: ~QB30, QB16, QB17, and no number in the last one", () => {
+  test("the expectation panels: ~QB30, QB16, QB17, and no rest-of-season cell", () => {
     const rks = [...doc.querySelectorAll(".scp-ol-ex .scp-ol-rk")].map((r) => r.textContent);
-    assert.deepEqual(rks, ["~QB30", "QB16", "QB17", "Live rank"]);
-    // Short labels (mak, 2026-10-01): "Preseason", "Through Week 3".
+    assert.deepEqual(rks, ["~QB30", "QB16", "QB17"]);
+    // Short labels (mak, 2026-10-01): "Preseason", "Through Week 3". The
+    // "Rest of season / Live rank" cell went 2026-10-22 (mak).
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol-ex .scp-ol-when")].map((r) => r.textContent),
-      ["Preseason", "2025 final", "Through Week 3", "Rest of season"],
+      ["Preseason", "2025 final", "Through Week 3"],
     );
+    assert.equal(doc.querySelector(".scp-ol-ex.is-ros"), null);
     assert.equal(doc.querySelectorAll(".scp-ol-arrow[aria-hidden='true']").length, 2);
   });
 
@@ -128,10 +151,17 @@ describe("in season", () => {
     assert.equal(strips.length, 3);
     const first = strips[0];
     assert.equal(first.getAttribute("role"), "img");
-    assert.equal(first.getAttribute("aria-label"), "5th of 41 QBs");
-    assert.equal(first.querySelectorAll("i").length, 41);
-    assert.equal([...first.querySelectorAll("i")].findIndex((i) => i.classList.contains("is-me")), 4);
-    assert.equal(doc.querySelector(".scp-ol-drv .scp-ol-val strong").textContent, "34.6");
+    const ord = (n) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10 < 4 ? n % 10 : 0]}`;
+    assert.equal(first.getAttribute("aria-label"), `${ord(volume.rank)} of ${volume.of} QBs`);
+    assert.equal(first.querySelectorAll("i").length, volume.of);
+    assert.equal([...first.querySelectorAll("i")].findIndex((i) => i.classList.contains("is-me")), volume.rank - 1);
+    assert.equal(doc.querySelector(".scp-ol-drv .scp-ol-val strong").textContent, volume.value);
+    // The lede names the season the ranks are from, and the week in season.
+    const lede = doc.querySelector("#scp-ol-drv-h + .scp-ox-lede").textContent;
+    assert.match(lede, new RegExp(`^His ${volume.season} rank${volume.week ? ` through Week ${volume.week}` : ""} among the ${volume.of} quarterbacks`));
+    // Our Take's second paragraph and the trigger evidence read the same season.
+    assert.match(doc.body.textContent, volume.week ? new RegExp(`Through Week ${volume.week} he ranks`) : /Last season he ranked/);
+    assert.match(doc.querySelector(".scp-ol-ur").textContent, new RegExp(`in ${volume.season}\.`));
   });
 
   test("exactly two Redraft Command links: the sidebar card and the risk-foot line", () => {
@@ -197,7 +227,8 @@ describe("edge states", () => {
   });
 
   test("no advanced line: the drivers section is left out, the rest still renders", () => {
-    const doc = render(state({ fantasyOutlook2026: { ...record, keyStats: null } }));
+    // No line on the record and no row in the current season's table.
+    const doc = render(state({ fantasyOutlook2026: { ...record, keyStats: null }, player: { ...state().player, id: "none" } }));
     assert.equal(doc.querySelector("#scp-ol-drv-h"), null);
     assert.ok(doc.querySelector("#scp-ol-take-h"));
   });

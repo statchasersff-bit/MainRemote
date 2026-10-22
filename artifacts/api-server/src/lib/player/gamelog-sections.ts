@@ -147,8 +147,10 @@ export interface StorySeason {
   pos: string;
   /** Unrounded points per game in the page's scoring format. */
   ppg: number;
-  /** Positional rank for the season; null drops the lede's middle clause. */
+  /** Positional rank for the season; the breakdown cards read it, the lede no longer does. */
   seasonRank: number | null;
+  /** The player's last name, the subject of the lede's second sentence; "He" when absent. */
+  lastName?: string;
   /** QB attempts per game - the volume-outlier baseline. */
   avgAtt: number;
   /** Season efficiency: QB Y/A, RB yards per carry, WR/TE yards per target. */
@@ -244,8 +246,11 @@ interface Pin {
 
 /**
  * Lay the pins out and resolve label collisions left to right: a label goes
- * above unless it is within 12 units of the previous above-label, then below
- * unless within 12 of the previous below-label, then nowhere visible. With 10
+ * in the first row under the band unless it is within 12 units of the previous
+ * first-row label, then the second row unless within 12 of the previous
+ * second-row label, then nowhere visible. ("above" is the first row and
+ * "below" the second: the names predate the 2026-10-22 restyle that moved
+ * every label under the band to make room for the tier labels above it.) With 10
  * or more games only the best and worst weeks keep labels and a compact
  * legend lists the rest.
  */
@@ -292,12 +297,16 @@ export function layoutPins(games: StoryGame[], scale: LadderScale): Pin[] {
 }
 
 /**
- * The lede: the weeks counted by tier, then what the spread between the best
- * and worst week means. Everything in it restates the pins.
+ * The lede: the finishes counted by tier, then one sentence on what the
+ * spread between the best and worst week means, with the player as its
+ * subject. Everything in it restates the pins. Wording is mak's (2026-10-22):
+ * "Two QB1 finishes, two QB2 finishes, and two busts. Brissett has shown a
+ * top-5 ceiling, but his weekly floor remains waiver-level."
  */
 export function ladderLede(games: StoryGame[], season: StorySeason, scale: LadderScale): string {
   const pos = season.pos;
   const past = season.pastTense;
+  const who = season.lastName || "He";
 
   if (games.length === 1) {
     const only = games[0]!;
@@ -311,15 +320,19 @@ export function ladderLede(games: StoryGame[], season: StorySeason, scale: Ladde
   const bust = games.length - t1 - t2;
 
   let countPhrase: string;
-  if (t1 === games.length) countPhrase = `All ${word(games.length)} weeks in the ${pos}1 range`;
-  else if (t2 === games.length) countPhrase = `All ${word(games.length)} weeks in the ${pos}2 range`;
-  else if (bust === games.length) countPhrase = `All ${word(games.length)} weeks outside the top ${scale.t2}`;
+  if (t1 === games.length) countPhrase = `All ${word(games.length)} finishes in the ${pos}1 range`;
+  else if (t2 === games.length) countPhrase = `All ${word(games.length)} finishes in the ${pos}2 range`;
+  else if (bust === games.length) countPhrase = `All ${word(games.length)} finishes outside the top ${scale.t2}`;
   else {
     const parts: string[] = [];
-    if (t1 > 0) parts.push(`${word(t1)} ${pos}1 week${t1 === 1 ? "" : "s"}`);
-    if (t2 > 0) parts.push(`${word(t2)} ${pos}2 week${t2 === 1 ? "" : "s"}`);
+    if (t1 > 0) parts.push(`${word(t1)} ${pos}1 finish${t1 === 1 ? "" : "es"}`);
+    if (t2 > 0) parts.push(`${word(t2)} ${pos}2 finish${t2 === 1 ? "" : "es"}`);
     if (bust > 0) parts.push(`${word(bust)} bust${bust === 1 ? "" : "s"}`);
-    countPhrase = joinAnd(parts);
+    // Oxford comma, as mak wrote it.
+    countPhrase =
+      parts.length === 3
+        ? `${parts[0]}, ${parts[1]}, and ${parts[2]}`
+        : parts.join(" and ");
     countPhrase = countPhrase.charAt(0).toUpperCase() + countPhrase.slice(1);
   }
 
@@ -330,31 +343,24 @@ export function ladderLede(games: StoryGame[], season: StorySeason, scale: Ladde
   const ceiling =
     bestRank <= 5 ? "top-5" : bestRank <= scale.t1 ? `top-${scale.t1}` : `${pos}${bestRank}`;
   const floor =
-    worstRank > scale.t2 ? "waiver-wire" : worstRank > scale.t1 ? `${pos}2` : `${pos}1`;
+    worstRank > scale.t2 ? "waiver-level" : worstRank > scale.t1 ? `${pos}2-level` : `${pos}1-level`;
 
   let interpretation: string;
   if (spread >= 20) {
     interpretation = past
-      ? `the spread mattered more than the average: you got a ${ceiling} ceiling and a ${floor} floor`
-      : `the spread matters more than the average: you get a ${ceiling} ceiling and a ${floor} floor`;
+      ? `${who} showed a ${ceiling} ceiling, but his weekly floor was ${floor}.`
+      : `${who} has shown a ${ceiling} ceiling, but his weekly floor remains ${floor}.`;
   } else if (spread >= 10) {
     interpretation = past
-      ? `his weeks clustered in a range you could plan around, between ${pos}${bestRank} and ${pos}${worstRank}`
-      : `his weeks cluster in a range you can plan around, between ${pos}${bestRank} and ${pos}${worstRank}`;
+      ? `${who}'s weeks clustered in a range you could plan around, between ${pos}${bestRank} and ${pos}${worstRank}.`
+      : `${who}'s weeks cluster in a range you can plan around, between ${pos}${bestRank} and ${pos}${worstRank}.`;
   } else {
     interpretation = past
-      ? `he was one of the steadier options at the position, never worse than ${pos}${worstRank}`
-      : `he's been one of the steadier options at the position, never worse than ${pos}${worstRank}`;
+      ? `${who} was one of the steadier options at the position, never worse than ${pos}${worstRank}.`
+      : `${who} has been one of the steadier options at the position, never worse than ${pos}${worstRank}.`;
   }
 
-  const posWord = POSITION_WORDS[pos] ?? pos;
-  if (season.seasonRank === null) {
-    // No season rank to hang the middle clause on: the interpretation stands
-    // alone as its own sentence rather than wearing an empty "ranked" clause.
-    return `${countPhrase}. ${interpretation.charAt(0).toUpperCase()}${interpretation.slice(1)}.`;
-  }
-  const ranked = past ? "who finished" : "ranked";
-  return `${countPhrase}. For a ${posWord} ${ranked} ${pos}${season.seasonRank} overall, ${interpretation}.`;
+  return `${countPhrase}. ${interpretation}`;
 }
 
 /** "Weekly finishes on a scale from QB1 to QB32: Week 3 QB4, …" best first. */
@@ -391,20 +397,32 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
       return (
         `<div class="${cls}" style="left:${pctTrim(pin.x)}%"><i></i>` +
         `<span><strong>${escapeHtml(`${pos}${pin.game.rank}`)}</strong>` +
-        `${escapeHtml(`Wk ${pin.game.week} ${at} ${pin.game.opp.abbr}`)}</span></div>`
+        `${escapeHtml(`Wk ${pin.game.week}`)} <small>${escapeHtml(`${at} ${pin.game.opp.abbr}`)}</small></span></div>`
       );
     })
     .join("");
 
-  // Weeks whose labels found no room, named under the key instead.
+  // Weeks whose labels found no room, named under the track instead.
   const hidden = pins.filter((p) => p.label === "none").map((p) => p.game);
   const sparse = games.length >= 10;
   const also =
     !sparse && hidden.length
-      ? `<span class="scp-gl-also">${escapeHtml(
+      ? `<p class="scp-gl-also">${escapeHtml(
           `Also: ${hidden.map((g) => `Wk ${g.week} (${pos}${g.rank})`).join(", ")}`,
-        )}</span>`
+        )}</p>`
       : "";
+
+  // The three tiers named above the band, each centered over its segment;
+  // the two cutoffs are drawn as hairline markers through the band itself.
+  const tiers =
+    `<div class="scp-gl-tiers" aria-hidden="true">` +
+    `<span class="is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
+    `<span class="is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%">${escapeHtml(`${pos}2`)}<small> range</small></span>` +
+    `<span class="is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bench<small> range</small></span>` +
+    `</div>`;
+  const marks =
+    `<i class="scp-gl-mark" style="left:${pctTrim(band1)}%"></i>` +
+    `<i class="scp-gl-mark" style="left:${pctTrim(band2end)}%"></i>`;
   const legend = sparse
     ? `<p class="scp-gl-legend">${escapeHtml(
         [...games]
@@ -419,22 +437,16 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Where his weeks finished"))}</h2>` +
     `<p class="scp-ox-lede">${escapeHtml(ladderLede(games, season, scale))}</p>` +
     `<figure class="scp-gl-ladder" style="margin:0">` +
+    tiers +
     `<div class="scp-gl-track${hasBelow ? " has-below" : ""}" role="img" aria-label="${escapeHtml(
       trackAriaLabel(games, season, scale),
     )}">` +
     `<div class="scp-gl-band is-b1" style="width:${pctTrim(band1)}%"></div>` +
     `<div class="scp-gl-band is-b2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%"></div>` +
+    marks +
     pinHtml +
     `</div>` +
-    `<div class="scp-gl-axis" aria-hidden="true">` +
-    [1, scale.t1, scale.t2, scale.max].map((r) => `<span>${escapeHtml(`${pos}${r}`)}</span>`).join("") +
-    `</div>` +
-    `<figcaption class="scp-gl-key">` +
-    `<span class="is-k1">${escapeHtml(`${pos}1 range (top ${scale.t1})`)}</span>` +
-    `<span class="is-k2">${escapeHtml(`${pos}2 range (${scale.t1 + 1}–${scale.t2})`)}</span>` +
-    `<span class="is-k3">${escapeHtml(`Bench range (${scale.t2 + 1}+)`)}</span>` +
     also +
-    `</figcaption>` +
     legend +
     `</figure>` +
     `</section>`
@@ -1015,6 +1027,7 @@ export function renderGamelogStory(
     pos,
     ppg: sum((g) => g.pts) / games.length,
     seasonRank,
+    lastName: lastName(data.player.name),
     avgAtt,
     seasonEff,
     pastTense: Boolean(opts.archive),

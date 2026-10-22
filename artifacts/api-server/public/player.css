@@ -2122,58 +2122,25 @@ button.scp-search-opt {
 }
 
 /*
- * The advanced table (redesigned 2026-10-03, mak): Metric | this season | last
- * season, the percentile under each value. No row rules: whitespace, the
- * tinted tier rows and the tinted current-season column do the separating.
- * This season is the subject, full ink on a light tint; last season is
- * reference, at 70%. It scrolls inside its wrapper on a narrow column.
+ * The advanced metrics as tier ladders (mak, 2026-10-22), in the team pages'
+ * anatomy: a card per tier with a title and caption, rows of label | rank bar
+ * | value | percentile. Efficiency runs the width; Usage, Style and Context
+ * share a row. Style rows have no better end, so their bar is the team's
+ * accent and their rank is untinted - the team hub's "volume" rule.
  */
 .scp .scp-st-advwrap {
-  margin-top: 20px;
-  overflow-x: auto;
+  margin-top: 18px;
 }
 
-.scp table.scp-st-advt {
-  width: 100%;
-  margin: 0;
-  border: 0;
-  border-collapse: collapse;
-  font-size: 14px;
-  line-height: 1.3;
-}
-
-.scp table.scp-st-advt th,
-.scp table.scp-st-advt td {
-  padding: 2px 14px;
-  border: 0;
-  background: none;
-  vertical-align: middle;
-}
-
-.scp table.scp-st-advt thead th {
-  padding-top: 6px;
-  padding-bottom: 6px;
-  color: var(--sc-navy);
+.scp .scp-st-ladgroup {
+  margin: 14px 0 8px;
+  color: var(--scp-ph-ink);
   font-size: 15px;
   font-weight: 800;
-  line-height: 1.2;
-  text-align: right;
-  white-space: nowrap;
 }
 
-.scp table.scp-st-advt thead th:first-child {
-  padding-left: 0;
-  color: var(--scp-ph-muted);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  text-align: left;
-  text-transform: uppercase;
-  vertical-align: bottom;
-}
-
-.scp table.scp-st-advt thead th small {
-  display: block;
-  margin-top: 2px;
+.scp .scp-st-ladgroup small {
+  margin-left: 6px;
   color: var(--scp-ph-muted);
   font-size: 10.5px;
   font-weight: 700;
@@ -2181,121 +2148,199 @@ button.scp-search-opt {
   text-transform: uppercase;
 }
 
-.scp table.scp-st-advt :is(th, td).is-now {
-  width: 26%;
-  background: #f7f9fc;
+.scp .scp-st-ladgroup-wrap + .scp-st-ladgroup-wrap {
+  margin-top: 16px;
 }
 
-.scp table.scp-st-advt :is(th, td).is-prev {
-  width: 20%;
+.scp .scp-st-ladders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
-/* On a phone the metric name needs the room more than the columns do. */
-@media (max-width: 600px) {
-  .scp table.scp-st-advt :is(th, td).is-now { width: 128px; }
-  .scp table.scp-st-advt :is(th, td).is-prev { width: 96px; }
+.scp .scp-st-ladder {
+  min-width: 0;
+  margin: 0;
+  padding: 12px 18px 10px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #fff;
 }
 
-.scp table.scp-st-advt thead th.is-now {
-  border-radius: 8px 8px 0 0;
+.scp .scp-st-ladder.is-wide {
+  grid-column: 1 / -1;
 }
 
-.scp table.scp-st-advt thead th.is-prev {
-  opacity: 0.7;
-}
-
-/* Tier rows (mak, 2026-10-03): a tinted band with a 2px gold left rail. */
-.scp table.scp-st-advt tr.scp-st-tier th {
-  padding: 4px 10px;
-  background: #f1f4f8;
-  box-shadow: inset 2px 0 0 var(--sc-gold);
-  color: var(--sc-navy);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-.scp table.scp-st-advt tbody tr:not(.scp-st-tier) + tr.scp-st-tier th {
-  border-top: 6px solid transparent;
-  background-clip: padding-box;
-}
-
-.scp table.scp-st-advt tbody th {
-  padding-left: 0;
-  color: var(--scp-ph-ink-2);
-  font-weight: 500;
-  text-align: left;
-}
-
-.scp table.scp-st-advt tbody tr.is-key th {
-  color: var(--scp-ph-ink);
-  font-weight: 700;
-}
-
-.scp table.scp-st-advt td.scp-st-v {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.scp .scp-st-num {
-  display: block;
+.scp .scp-st-ladder-title {
+  position: relative;
+  margin: 0;
+  padding-left: 12px;
   color: var(--sc-navy);
   font-size: 15px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
-.scp table.scp-st-advt td.is-prev .scp-st-num {
-  color: var(--scp-ph-ink-2);
+.scp .scp-st-ladder-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.18em;
+  bottom: 0.18em;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.scp .scp-st-ladder[data-tier="style"] .scp-st-ladder-title::before,
+.scp .scp-st-ladder[data-tier="context"] .scp-st-ladder-title::before {
+  background: color-mix(in srgb, var(--sc-navy) 45%, #fff);
+}
+
+.scp .scp-st-ladder-caption {
+  margin: 2px 0 0;
+  padding-left: 12px;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
   font-weight: 600;
 }
 
-.scp table.scp-st-advt td.is-prev {
-  opacity: 0.7;
+.scp .scp-st-ladder-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* The percentile under the value: a fixed 76px bar, then the ordinal, which
-   carries the meaning. */
-.scp .scp-st-pb {
-  display: inline-flex;
+/* label | track | value | rank. Fixed value and rank columns so the numbers
+   share a left edge down the ladder (the team hub's rule). */
+.scp .scp-st-stat {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) minmax(40px, 1fr) 52px 44px;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 1px;
-  font-size: 11px;
+  gap: 10px;
+  margin: 0;
+  padding: 4px 0;
   line-height: 1.2;
+  border-bottom: 1px solid var(--scp-ph-line);
+}
+
+.scp .scp-st-stat:last-child {
+  border-bottom: 0;
+}
+
+/* The wide Efficiency card has room for a longer track. */
+.scp .scp-st-ladder.is-wide .scp-st-stat {
+  grid-template-columns: minmax(96px, 0.8fr) minmax(44px, 1.4fr) 52px 44px;
+}
+
+/* The three narrow cards stack each row: label, value and rank on one line,
+   the track on its own line under them, so a long label never wraps three deep. */
+.scp .scp-st-ladder:not(.is-wide) .scp-st-stat {
+  grid-template-columns: minmax(0, 1fr) 52px 44px;
+  column-gap: 8px;
+  row-gap: 4px;
+  padding: 5px 0;
+}
+
+.scp .scp-st-ladder:not(.is-wide) .scp-st-stat-bar {
+  order: 1;
+  grid-column: 1 / -1;
+  height: 6px;
+}
+
+.scp .scp-st-stat-label {
+  min-width: 0;
+  color: var(--scp-ph-ink-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scp .scp-st-stat-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef1f5;
+}
+
+.scp .scp-st-stat-bar.is-empty {
+  background: transparent;
+}
+
+.scp .scp-st-stat-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
+}
+
+.scp .scp-st-stat-bar[data-tier="good"] .scp-st-stat-fill {
+  background: #0f6b4f;
+}
+
+.scp .scp-st-stat-bar[data-tier="poor"] .scp-st-stat-fill {
+  background: #94363a;
+}
+
+.scp .scp-st-stat-bar[data-tier="none"] .scp-st-stat-fill {
+  background: color-mix(in srgb, var(--scp-team, #0b1634) 60%, #fff);
+}
+
+.scp .scp-st-stat-value {
+  text-align: right;
+  color: var(--sc-navy);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.scp .scp-st-pb b {
-  min-width: 30px;
+.scp .scp-st-stat-rank {
+  justify-self: end;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
   font-weight: 800;
-  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.scp .scp-st-bar {
-  display: block;
-  width: 76px;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 3px;
-  background: #e6eaf0;
+.scp .scp-st-stat-rank[data-tier="good"] {
+  color: #0f6b4f;
 }
 
-.scp .scp-st-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: currentColor;
-  opacity: 0.75;
+.scp .scp-st-stat-rank[data-tier="poor"] {
+  color: #94363a;
 }
 
-.scp .scp-st-pb.is-good { color: var(--scp-ph-good); }
-.scp .scp-st-pb.is-mid { color: #4a5a78; }
-.scp .scp-st-pb.is-bad { color: var(--scp-ph-bad); }
-.scp .scp-st-pb.is-muted { color: #8a95a5; }
+@media (max-width: 900px) {
+  .scp .scp-st-ladders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phones: one column, and the wide card stacks its rows too. */
+@media (max-width: 600px) {
+  .scp .scp-st-ladders {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .scp .scp-st-ladder {
+    padding: 12px 14px 10px;
+  }
+  .scp .scp-st-ladder.is-wide .scp-st-stat {
+    grid-template-columns: minmax(0, 1fr) 52px 44px;
+    column-gap: 8px;
+    row-gap: 4px;
+    padding: 5px 0;
+  }
+  .scp .scp-st-ladder.is-wide .scp-st-stat-bar {
+    order: 1;
+    grid-column: 1 / -1;
+    height: 6px;
+  }
+}
 
 .scp .scp-st-foot-note {
   margin: 12px 0 0;
@@ -2741,28 +2786,24 @@ button.scp-search-opt {
   content: none;
 }
 
-/* ---- the desktop composition (mak, 2026-10-21): two rows of two.
-   Row one: the lead (about two thirds) beside the Current Outlook card.
-   Row two: the season timeline (60%) beside the club's reporting (40%).
-   The sections inside a row give up .scp-ox-sec's 40px; the rows carry the
+/* ---- the desktop composition (mak, 2026-10-21): the lead across the top
+   (the Current Outlook card beside it went 2026-10-22), then one row of
+   two: the season timeline (60%) beside the club's reporting (40%). The
+   sections inside a row give up .scp-ox-sec's 40px; the rows carry the
    spacing. One column under 960px, same breakpoint as .scp-ox-read. */
-.scp .scp-nw .scp-nw-row {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
-  gap: 28px 40px;
-  align-items: start;
-}
-
-.scp .scp-nw .scp-nw-row.scp-nw-top {
+.scp .scp-nw .scp-nw-top {
   padding-top: 24px;
 }
 
-.scp .scp-nw .scp-nw-row.scp-nw-main {
+.scp .scp-nw .scp-nw-row {
+  display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr);
+  gap: 28px 40px;
+  align-items: start;
   margin-top: 32px;
 }
 
-.scp .scp-st .scp-nw-row .scp-ox-sec {
+.scp .scp-st :is(.scp-nw-top, .scp-nw-row) .scp-ox-sec {
   padding: 0;
 }
 
@@ -2772,14 +2813,8 @@ button.scp-search-opt {
   min-width: 0;
 }
 
-/* The rail's own card label and "All ... news" link. */
-.scp .scp-nw .scp-nw-side h3.scp-nw-label {
-  margin-bottom: 10px;
-}
-
 @media (max-width: 960px) {
-  .scp .scp-nw .scp-nw-row,
-  .scp .scp-nw .scp-nw-row.scp-nw-main {
+  .scp .scp-nw .scp-nw-row {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -3203,76 +3238,6 @@ button.scp-search-opt {
   cursor: pointer;
 }
 
-/* ---- the outlook card: a player snapshot, values first (mak, 2026-10-05);
-   denser since it shares row one with the lead (2026-10-21), its label
-   outside the card like "Latest update". */
-
-.scp .scp-nw .scp-ox-panel.scp-nw-card {
-  padding: 14px 18px;
-}
-
-.scp .scp-nw dl.scp-nw-qa {
-  display: grid;
-  gap: 0;
-  margin: 0;
-}
-
-.scp .scp-nw .scp-nw-qa > div {
-  padding: 8px 0;
-  border-top: 1px solid #eef1f5;
-}
-
-.scp .scp-nw .scp-nw-qa > div:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.scp .scp-nw .scp-nw-qa dt {
-  margin: 0 0 2px;
-  color: var(--scp-ph-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.scp .scp-nw .scp-nw-qa dd {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  margin: 0;
-}
-
-.scp .scp-nw .scp-nw-qa dd b {
-  color: var(--scp-ph-ink);
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.25;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-nw .scp-nw-qa dd b.is-good { color: var(--scp-ph-good); }
-.scp .scp-nw .scp-nw-qa dd b.is-mid { color: var(--scp-ph-mid); }
-.scp .scp-nw .scp-nw-qa dd b.is-bad { color: var(--scp-ph-bad); }
-
-.scp .scp-nw .scp-nw-qa dd small {
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-}
-
-.scp .scp-nw .scp-nw-qa a.scp-nw-qa-link {
-  margin-top: 2px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.scp .scp-nw .scp-nw-card .scp-ox-btn {
-  width: 100%;
-  margin-top: 12px;
-  box-sizing: border-box;
-}
-
 /* ---- 4. around the team: a condensed feed in the rail (2026-10-21).
    Date and type on one small line, the headline under it, no row height
    to speak of; six to eight items balance the timeline. */
@@ -3405,35 +3370,15 @@ button.scp-search-opt {
   max-width: none;
 }
 
-/* No card around the take (mak, 2026-09-30): it sits on the page. */
-/* Top-aligned since the tier line went to lede size (2026-10-05): centered,
-   the short left column dropped the heading below the Best fit column. */
+/* No card around the take (mak, 2026-09-30): it sits on the page. Since
+   2026-10-22 it is the heading alone: the Best fit column moved down beside
+   the season-to-date panels (.scp-ol-exrow). */
 .scp .scp-ol .scp-ol-take {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: start;
+  display: block;
 }
 
 .scp .scp-ol .scp-ol-take .scp-ox-h2 {
   margin: 0;
-}
-
-/* The tier line ("Volume-driven QB2 with streaming weeks") wears the section
-   ledes' style, like "He was projected as ..." below (mak, 2026-10-05): 7px
-   under the rule, 15px Inter, muted, regular weight. The meta line that sat
-   under it is gone. */
-.scp .scp-ol .scp-ol-tier {
-  margin: 7px 0 0;
-  color: var(--scp-ph-muted);
-  font-family: var(--sc-font) !important;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.scp .scp-ol .scp-ol-tier + .scp-ol-injured {
-  margin-top: 10px;
 }
 
 .scp .scp-ol .scp-ol-injured {
@@ -3495,6 +3440,15 @@ button.scp-search-opt {
 
 /* ---- expectation check */
 
+/* The season-to-date panels and the Best fit column on one row (mak,
+   2026-10-22). The panels take the width; the column keeps its own. */
+.scp .scp-ol .scp-ol-exrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+}
+
 .scp .scp-ol .scp-ol-expect {
   display: grid;
   grid-template-columns: repeat(var(--scp-ol-n, 4), minmax(0, 1fr));
@@ -3542,29 +3496,12 @@ button.scp-search-opt {
   font-size: 13px;
 }
 
-.scp .scp-ol .scp-ol-ex.is-ros .scp-ol-exsub {
-  color: #9fb0c8;
-}
-
 .scp .scp-ol .scp-ol-ex.is-now {
   background: #f6ebcf;
 }
 
 .scp .scp-ol .scp-ol-ex.is-now .scp-ol-rk {
   color: var(--scp-st-gold);
-}
-
-.scp .scp-ol .scp-ol-ex.is-ros {
-  background: var(--scp-ph-ink);
-  color: #fff;
-}
-
-.scp .scp-ol .scp-ol-ex.is-ros .scp-ol-when {
-  color: #9fb0c8;
-}
-
-.scp .scp-ol .scp-ol-ex.is-ros .scp-ol-rk {
-  color: #fff;
 }
 
 .scp .scp-ol .scp-ol-arrow {
@@ -3940,7 +3877,7 @@ button.scp-search-opt {
 }
 
 @media (max-width: 960px) {
-  .scp .scp-ol .scp-ol-take {
+  .scp .scp-ol .scp-ol-exrow {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -4061,23 +3998,10 @@ button.scp-search-opt {
 }
 
 /* "Is X injured?" and its Yes/No answer, first on the tab (mak, 2026-10-09).
-   The answer is set a size up from the ledes: it is the page's one answer,
-   not a caption. The games-missed line under it is the small print. */
+   The answer sentence and games-missed line under it went 2026-10-22 (mak);
+   the question heading stands over the status strip. */
 .scp .scp-in .scp-in-ask {
   margin: 0 0 16px;
-}
-
-.scp .scp-in .scp-in-answer {
-  margin: 10px 0 6px;
-  color: var(--sc-ink, #0f172a);
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.scp .scp-in .scp-in-missedline {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 13px;
 }
 
 .scp .scp-in .scp-in-statusbar {
@@ -4213,6 +4137,7 @@ button.scp-search-opt {
   font-size: 12px;
 }
 
+/* The one-line note for a player with no report this season. */
 .scp .scp-in .scp-in-pread {
   margin: 0;
   padding: 0 16px 8px;
@@ -4220,12 +4145,9 @@ button.scp-search-opt {
   font-size: 13.5px;
 }
 
-.scp .scp-in .scp-in-pread strong {
-  color: var(--scp-ph-ink);
-}
-
 .scp .scp-in .scp-in-ptable {
   overflow-x: auto;
+  padding-bottom: 10px;
 }
 
 .scp .scp-in .scp-in-ptable table.scp-ox-table {
@@ -4308,22 +4230,6 @@ button.scp-search-opt {
 .scp .scp-in .scp-pp.is-soon {
   background: var(--scp-ph-gold-soft);
   color: #8a6414;
-}
-
-.scp .scp-in .scp-in-plegend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 14px;
-  padding: 8px 16px 12px;
-  color: var(--scp-ph-muted);
-  font-size: 11.5px;
-}
-
-.scp .scp-in .scp-in-plegend .scp-pp {
-  min-width: 0;
-  padding: 1px 7px;
-  font-size: 10.5px;
 }
 
 /* ---- at a glance
@@ -4431,12 +4337,6 @@ button.scp-search-opt {
   font-size: 13.5px;
 }
 
-.scp .scp-in .scp-in-parts caption {
-  padding: 0 0 6px;
-  caption-side: top;
-  font-size: 12px;
-}
-
 .scp .scp-in .scp-in-parts :is(th, td) {
   padding: 8px 10px;
 }
@@ -4538,7 +4438,8 @@ button.scp-search-opt {
   background: var(--scp-ph-line);
 }
 
-.scp .scp-in .scp-in-tl li {
+/* Direct children only: the report chips inside a card are a list too. */
+.scp .scp-in .scp-in-tl > li {
   display: grid;
   grid-template-columns: 64px 32px minmax(0, 1fr);
   margin: 0;
@@ -4631,6 +4532,76 @@ button.scp-search-opt {
   color: var(--scp-ph-muted);
   font-size: 14px;
   font-weight: 600;
+}
+
+/* The play he was hurt on (mak, 2026-10-22): a labeled line under the note. */
+.scp .scp-in .scp-in-ev p.scp-in-play {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.scp .scp-in .scp-in-play-k {
+  color: var(--scp-ph-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.scp .scp-in .scp-in-play-w {
+  color: var(--scp-ph-ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-in .scp-in-play-d {
+  flex: 1 1 100%;
+  color: var(--scp-ph-ink-2);
+}
+
+/* The weekly report rows (mak, 2026-10-22): one chip per week. */
+.scp .scp-in .scp-in-reports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 6px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-in .scp-in-rep {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--scp-ph-line);
+  color: var(--scp-ph-ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.scp .scp-in .scp-in-rep b {
+  color: var(--scp-ph-ink);
+  font-weight: 700;
+}
+
+.scp .scp-in .scp-in-rep.is-q {
+  background: var(--scp-ph-mid-soft);
+  color: var(--scp-ph-mid);
+}
+
+.scp .scp-in .scp-in-rep.is-out {
+  background: var(--scp-ph-bad-soft);
+  color: var(--scp-ph-bad);
+}
+
+.scp .scp-in .scp-in-rep.is-q b,
+.scp .scp-in .scp-in-rep.is-out b {
+  color: inherit;
 }
 
 .scp .scp-in .scp-in-miss {
@@ -9387,6 +9358,27 @@ a.scp-peer:focus-visible {
   min-width: 0;
 }
 
+/*
+ * The card wears its matchup band as a faint wash (mak, 2026-10-22): green for
+ * a favorable fixture, a warm gray-gold for a neutral one, red for a tough one.
+ * Tints a reader senses rather than sees - the words and the rank still carry
+ * the reading, and a card without a rank stays plain.
+ */
+.scp-next[data-band="soft"] {
+  background: #f3faf5;
+  border-color: #d6ebdd;
+}
+
+.scp-next[data-band="mid"] {
+  background: #faf8f2;
+  border-color: #e9e3d3;
+}
+
+.scp-next[data-band="tough"] {
+  background: #fcf4f2;
+  border-color: #efd9d4;
+}
+
 /* The card's label row: which week, and whether it is the next one. */
 .scp-next-top {
   display: flex;
@@ -9424,7 +9416,7 @@ a.scp-peer:focus-visible {
   color: var(--sc-navy);
 }
 
-/* The focal line: crest, home/away marker and the opponent's code. */
+/* The focal line: home/away marker, the opponent's code, then the crest. */
 .scp-next-team {
   display: flex;
   align-items: center;
@@ -10676,32 +10668,77 @@ a.scp-peer:focus-visible {
   background: #fff;
   border: 1px solid var(--scp-ph-line);
   border-radius: 16px;
-  padding: 26px 28px 20px;
+  padding: 18px 24px 14px;
+}
+/*
+ * Restyled 2026-10-22 to mak's notes: one band read as a performance
+ * spectrum. The three tiers are named above it, hairline markers cut the
+ * band at the two cutoffs, the dots wear a single soft ring instead of the
+ * heavy white-on-ink pins, every week label sits under the band (second row
+ * only when neighbors collide), and the swatch key is gone.
+ */
+.scp .scp-gl-tiers {
+  position: relative;
+  height: 14px;
+  margin-bottom: 8px;
+}
+.scp .scp-gl-tiers span {
+  position: absolute;
+  top: 0;
+  display: block;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  line-height: 14px;
+  color: var(--scp-ph-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.scp .scp-gl-tiers span small,
+.scp .scp-gl-pin span small {
+  font: inherit;
+  color: inherit;
+}
+.scp .scp-gl-tiers .is-k1 {
+  color: #8a6512;
 }
 .scp .scp-gl-track {
   position: relative;
-  height: 14px;
-  border-radius: 7px;
-  background: #edf0f4;
-  /* Room above for the labels; has-below adds it underneath too. */
-  margin: 64px 0 10px;
+  height: 12px;
+  border-radius: 6px;
+  background: #eef1f5;
+  box-shadow: inset 0 1px 2px rgba(14, 27, 46, 0.07);
+  /* Room under the band for one row of labels; has-below adds the second. */
+  margin: 0 0 46px;
 }
 .scp .scp-gl-track.has-below {
-  margin-bottom: 58px;
+  margin-bottom: 82px;
 }
 .scp .scp-gl-band {
   position: absolute;
   top: 0;
   bottom: 0;
-  border-radius: 7px;
+  border-radius: 6px;
 }
 .scp .scp-gl-band.is-b1 {
   left: 0;
-  background: linear-gradient(90deg, #e9c15c, #f3db9a);
+  background: linear-gradient(90deg, #e6bd58, #f1d58f);
 }
 .scp .scp-gl-band.is-b2 {
-  background: #d9e1ec;
+  background: #dbe2ec;
   border-radius: 0;
+}
+/* The tier cutoffs: a hairline through the band, a touch past both edges. */
+.scp .scp-gl-mark {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 1px;
+  margin-left: -0.5px;
+  background: rgba(14, 27, 46, 0.22);
+  pointer-events: none;
 }
 .scp .scp-gl-pin {
   position: absolute;
@@ -10710,30 +10747,31 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-pin i {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--scp-ph-ink);
-  border: 3px solid #fff;
-  box-shadow: 0 2px 6px rgba(14, 27, 46, 0.3);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px rgba(14, 27, 46, 0.22);
 }
 .scp .scp-gl-pin.is-best i {
   background: var(--scp-team);
 }
 .scp .scp-gl-pin span {
   position: absolute;
-  bottom: 26px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
   text-align: center;
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--scp-ph-muted);
-  line-height: 1.25;
+  line-height: 1.2;
 }
+/* The second label row, for a week whose neighbor took the first. */
 .scp .scp-gl-pin.is-below span {
-  bottom: auto;
-  top: 26px;
+  top: 50px;
 }
 /* Hidden visually, kept for screen readers. */
 .scp .scp-gl-pin.is-nolabel span {
@@ -10746,55 +10784,25 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-pin span strong {
   display: block;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 800;
   font-stretch: 80%;
   color: var(--scp-ph-ink);
 }
-.scp .scp-gl-axis {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
+/* The weeks whose labels found no room, on their own line. */
+.scp .scp-gl-also {
+  margin: 0;
+  font-size: 12.5px;
   color: var(--scp-ph-muted);
-}
-.scp .scp-gl-key {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--scp-ph-muted);
-}
-.scp .scp-gl-key span::before {
-  content: "";
-  display: inline-block;
-  width: 14px;
-  height: 8px;
-  border-radius: 4px;
-  margin-right: 6px;
-  vertical-align: 1px;
-}
-.scp .scp-gl-key .is-k1::before {
-  background: #e9c15c;
-}
-.scp .scp-gl-key .is-k2::before {
-  background: #d9e1ec;
-}
-.scp .scp-gl-key .is-k3::before {
-  background: #edf0f4;
-}
-/* The weeks whose labels found no room, on their own line - no swatch. */
-.scp .scp-gl-key .scp-gl-also {
-  flex-basis: 100%;
-}
-.scp .scp-gl-key .scp-gl-also::before {
-  content: none;
 }
 /* The 10-plus-game legend: every week in order, compact. */
 .scp .scp-gl-legend {
-  margin: 8px 0 0;
-  font-size: 13px;
+  margin: 0;
+  font-size: 12.5px;
   color: var(--scp-ph-muted);
+}
+.scp .scp-gl-also + .scp-gl-legend {
+  margin-top: 6px;
 }
 
 .scp .scp-gl-games {
@@ -10896,7 +10904,34 @@ a.scp-peer:focus-visible {
 
 @media (max-width: 640px) {
   .scp .scp-gl-ladder {
-    padding: 22px 16px 16px;
+    padding: 16px 14px 12px;
+  }
+  /* Phones: "QB1 / QB2 / BENCH" over the band, and each week label stacks
+     its opponent under the week so neighbors 12% apart still clear. */
+  .scp .scp-gl-tiers span {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+  }
+  .scp .scp-gl-tiers span small {
+    display: none;
+  }
+  .scp .scp-gl-pin span {
+    font-size: 10.5px;
+  }
+  .scp .scp-gl-pin span small {
+    display: block;
+  }
+  .scp .scp-gl-pin span strong {
+    font-size: 14px;
+  }
+  .scp .scp-gl-track {
+    margin-bottom: 60px;
+  }
+  .scp .scp-gl-track.has-below {
+    margin-bottom: 110px;
+  }
+  .scp .scp-gl-pin.is-below span {
+    top: 64px;
   }
   .scp .scp-gl-game {
     grid-template-columns: 1fr auto;

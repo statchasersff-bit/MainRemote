@@ -259,7 +259,8 @@ describe("rendered", () => {
       "If Brissett Misses Time",
       "Jacoby Brissett Injury FAQ",
     ]);
-    assert.ok(doc.querySelector("footer.scp-st-foot"));
+    // The methodology footer left the tab 2026-10-22 (mak).
+    assert.equal(doc.querySelector("footer.scp-st-foot"), null);
     assert.equal(
       doc.querySelector(".scp-in-main p").textContent,
       "No injury designation for Week 4 at the Giants. Brissett has not missed a game this season.",
@@ -321,7 +322,10 @@ describe("rendered", () => {
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
     assert.equal(h2[0], "Is Jacoby Brissett injured?");
     assert.equal(h2[1], "If Brissett Misses Time");
-    assert.match(doc.querySelector(".scp-in-answer").textContent, /^Yes\. Jacoby Brissett is Out \(ankle\) for Week 4 \(/);
+    // The answer sentence left the page 2026-10-22; it still feeds the SEO copy.
+    assert.equal(doc.querySelector(".scp-in-answer"), null);
+    assert.equal(doc.querySelector(".scp-in-pread"), null);
+    assert.equal(doc.querySelector(".scp-in-plegend"), null);
     assert.ok(doc.querySelector(".scp-in-urgent"));
   });
 

@@ -897,7 +897,7 @@ describe("the game log tab", () => {
     assert.ok(table, "All shows the Stats tab's career table");
     assert.match(
       blocks[0].querySelector(".scp-sect-title").textContent,
-      /career stats by season/,
+      /Career Stats by Season/,
     );
     // Every season the selector offers has a line in it, which is what makes
     // the table an index to the logs rather than a second copy of Stats.
@@ -1951,13 +1951,11 @@ describe("the news tab", () => {
     assert.ok(empty.hasAttribute("hidden"));
   });
 
-  test("quick answers hand a reader on to the Injury tab and the game log", async () => {
+  test("the Current Outlook card is gone (mak, 2026-10-22)", async () => {
     const found = await withNews();
-    const qa = found.doc.querySelector(".scp-nw-qa");
-    assert.ok(qa);
-    const hrefs = [...qa.querySelectorAll("a")].map((a) => a.getAttribute("href"));
-    assert.ok(hrefs.includes(`/player/${found.player.slug}/injury/`), "the Injury section's own URL");
-    assert.ok(found.doc.querySelector('[data-cta="redraft-command-news-sidebar"]'));
+    assert.equal(found.doc.querySelector(".scp-nw-qa"), null);
+    assert.equal(found.doc.querySelector(".scp-nw-side"), null);
+    assert.equal(found.doc.querySelector('[data-cta="redraft-command-news-sidebar"]'), null);
   });
 
   test("the team's news offers a way through to the hub", async () => {
@@ -2602,7 +2600,7 @@ describe("the positional peers rail", () => {
         );
       }
       if (id === "injury") {
-        assert.ok(rail.previousElementSibling?.querySelector(".scp-st-foot"), "injury: the footer precedes the rail");
+        assert.equal(doc.querySelector("#injury .scp-st-foot"), null, "injury: no footer since 2026-10-22");
       }
       if (id === "stats") {
         const last = doc.querySelector("#stats").lastElementChild;
@@ -2610,16 +2608,16 @@ describe("the positional peers rail", () => {
       }
       const page = await dom(`/player/${fixture.slug}/${id}/`);
       assert.equal(page.doc.querySelectorAll(".scp-peers").length, 1, `${id}: one rail on the section page`);
-      const order = [...page.doc.querySelectorAll(`.scp-peers, .scp-st-foot, .scp-back, ${faq}`)].map((el) =>
+      // The "All <name> stats & analysis" way back went 2026-10-22 (mak).
+      assert.equal(page.doc.querySelector(".scp-back"), null, `${id}: no way-back link`);
+      const order = [...page.doc.querySelectorAll(`.scp-peers, .scp-st-foot, ${faq}`)].map((el) =>
         el.matches(faq) ? "faq" : el.className.split(" ")[0],
       );
       const expected =
         id === "stats"
-          ? ["scp-back", "scp-peers", "faq", "scp-st-foot"]
-          : id === "injury"
-            ? ["scp-st-foot", "scp-back", "scp-peers", "faq"]
-            : ["scp-back", "scp-peers", "faq"];
-      assert.deepEqual(order, expected, `${id}: the way back, rail, FAQ (and the footer where it goes) in their order`);
+          ? ["scp-peers", "faq", "scp-st-foot"]
+          : ["scp-peers", "faq"]; // the Injury footer went 2026-10-22 (mak)
+      assert.deepEqual(order, expected, `${id}: rail, FAQ (and the footer where it goes) in their order`);
     }
     assert.ok(tabs >= 4, "the fixture carries most of the tabs");
   });

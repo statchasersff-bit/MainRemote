@@ -8,11 +8,12 @@
  *   4. Around the {Nickname} - the club's own reporting
  *   5. footer - sources, scoring, last update
  *
- * Desktop composition (mak, 2026-10-21): two rows of two. Row one is the
- * lead beside the Current Outlook card; row two is the season timeline
- * beside a compact "Around the {Nickname}" feed, so the club's reporting
- * balances the timeline instead of sitting under it. Teammates news keeps
- * the full width below. One column under 960px, in that DOM order.
+ * Desktop composition (mak, 2026-10-21): the lead across the top, then a
+ * row of two: the season timeline beside a compact "Around the {Nickname}"
+ * feed, so the club's reporting balances the timeline instead of sitting
+ * under it. Teammates news keeps the full width below. One column under
+ * 960px, in that DOM order. The Current Outlook card that used to sit
+ * beside the lead was removed at mak's request on 2026-10-22.
  *
  * The model is news-tab-data.ts. Absolute dates only: nothing here prints a
  * relative time or carries the data-ts the client would turn into one.
@@ -29,9 +30,8 @@ import { categoryLabel } from "../news-category";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
-import { lastName, matchupBand, STARTSIT_BASE, teamInk } from "./header";
+import { lastName, teamInk } from "./header";
 import { titleCase } from "./title-case";
-import { outlookSnapshot } from "./outlook-tab";
 import { sectionHref } from "./sections";
 import { canonicalizeMatchupPair, gameSegment } from "../matchup/pair";
 import type { ScheduleGame } from "../team/schedule";
@@ -54,7 +54,6 @@ import {
   type WeekGroup,
 } from "./news-tab-data";
 
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 /** Week groups shown open; older ones fold into a <details> (spec 4.9). */
 const OPEN_GROUPS = 6;
 const TEAM_ITEMS = 8;
@@ -337,58 +336,6 @@ function renderFeed(items: FeedItem[], pendingGroups: WeekGroup[]): string {
   );
 }
 
-/**
- * The Current Outlook card: one utility card (mak, 2026-09-30), values first.
- * Since 2026-10-21 it stands beside the lead, not the timeline; its label
- * sits outside the card so the two columns open on the same line.
- */
-function renderOutlookCard(data: PlayerPageData, ctx: NewsContext, options: PlayerRenderOptions, injuryHref: string | null): string {
-  const rc = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
-  const status = ctx.designation ?? "Active";
-  const statusKind = !ctx.designation ? "good" : /^(questionable)/i.test(status) ? "mid" : "bad";
-  const next = (data.upcoming ?? [])[0];
-  const lastGame = [...ctx.log].reverse().find((e) => (e.game_status ?? "active") === "active" && e.stats);
-  const snap = outlookSnapshot(data);
-  // The Overview snapshot's own trend read, so the two tabs agree.
-  const form = data.outlook;
-  // Values first, no underlined links (mak, 2026-10-05): a snapshot, with
-  // the one small link under the week it is about.
-  const row = (label: string, value: string, sub = "", kind = ""): string =>
-    `<div><dt>${escapeHtml(label)}</dt><dd><b${kind ? ` class="is-${kind}"` : ""}>${escapeHtml(value)}</b>${sub}</dd></div>`;
-  const small = (text: string): string => `<small>${escapeHtml(text)}</small>`;
-  const go = (href: string, text: string, cta: string): string =>
-    `<a class="scp-nw-qa-link" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(text)} <span aria-hidden="true">→</span></a>`;
-  // The report link only when the player has an Injury page to report from.
-  const rows: string[] = [row("Status", status, injuryHref ? go(injuryHref, "Injury report", "news-sidebar-injury") : "", statusKind)];
-  if (next) {
-    const opp = next.opponentCode ? `${next.homeAway === "away" ? "@" : "vs"} ${next.opponentCode}` : "";
-    const band = next.matchup ? { soft: "favorable", mid: "neutral", tough: "tough" }[matchupBand(next.matchup.rank)] : "";
-    rows.push(
-      row(`Week ${next.week}`, snap?.call ?? (opp || "Next game"),
-        (opp && snap ? small(`${opp}${band ? ` · ${band} matchup` : ""}`) : "") +
-          go(`${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`, "View Start/Sit", "startsit-news-sidebar")),
-    );
-  }
-  if (snap) {
-    rows.push(row("Season role", snap.tier, small(`${snap.call === "Weekly starter" ? "Starter" : snap.call === "Streamer" ? "Streaming" : snap.call} tier`)));
-  }
-  if (lastGame) {
-    rows.push(row("Last game", `${ctx.points(lastGame).toFixed(1)} FPTS${lastGame.pos_rank ? ` · ${ctx.pos}${lastGame.pos_rank}` : ""}`, small(`Week ${lastGame.week}`) + go(ctx.gameLogHref, "Game log", "news-sidebar-gamelog")));
-  }
-  if (form?.hasData) {
-    const dir = form.formDirection;
-    rows.push(row("Trend", `${dir === "up" ? "↑" : dir === "down" ? "↓" : "→"} ${form.formLabel}`, "", dir === "up" ? "good" : dir === "down" ? "bad" : ""));
-  }
-  return (
-    `<aside class="scp-ox-aside scp-nw-side" aria-labelledby="scp-nw-side-h">` +
-    `<h3 class="scp-nw-label" id="scp-nw-side-h">Current Outlook</h3>` +
-    `<div class="scp-ox-panel scp-nw-card">` +
-    `<dl class="scp-nw-qa">${rows.join("")}</dl>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(rc)}" data-cta="redraft-command-news-sidebar">Open in Redraft Command <span aria-hidden="true">→</span></a>` +
-    `</div></aside>`
-  );
-}
-
 /* --------------------------------------------------- section 3: teammates */
 
 const HURT = /\b(out|ir|injur|questionable|doubtful|dnp|did not practice|sprain|strain|fracture|concussion|surgery)/i;
@@ -555,13 +502,10 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   const faq = renderFaqSection("news", data, selectFaq(newsPool(data, ctx, items, lead, options)), options);
   const wrap = (html: string): string =>
     html ? `<div class="scp-ox scp-st scp-nw"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";
-  // Row one: the lead beside the outlook card. Row two: the timeline beside
-  // the club's reporting. With no lead the card moves to row two's rail, so
-  // the page never opens on an empty column.
-  const card = renderOutlookCard(data, ctx, options, injuryHref);
-  const top = latest ? `<div class="scp-nw-row scp-nw-top">${latest}${card}</div>` : "";
-  const rail = `<div class="scp-nw-rail">${latest ? "" : card}${team}</div>`;
-  const main = `<div class="scp-nw-row scp-nw-main">${renderFeed(feedItems, pending)}${rail}</div>`;
+  // The lead across the top, then the timeline beside the club's reporting.
+  const top = latest ? `<div class="scp-nw-top">${latest}</div>` : "";
+  const rail = `<div class="scp-nw-rail">${team}</div>`;
+  const main = `<div class="scp-nw-row">${renderFeed(feedItems, pending)}${rail}</div>`;
   return {
     // The panel heading's one-line dek (mak, 2026-10-05).
     body: wrap(`<p class="scp-nw-dek">Fantasy-relevant news, game recaps and role changes</p>` + top + main + mates),

@@ -108,6 +108,7 @@ const SEASON = {
   pos: "QB",
   ppg: (16.48 + 7.5 + 25.6) / 3, // 16.53 as the spec rounds it
   seasonRank: 17,
+  lastName: "Brissett",
   avgAtt: 39.0,
   seasonEff: 652 / 117, // 5.6 to one decimal
   pastTense: false,
@@ -157,12 +158,11 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     assert.ok(best.textContent.includes("Wk 3 @ SF"));
   });
 
-  test("the lede is the spec's, word for word", () => {
+  test("the lede is mak's wording of 2026-10-22, word for word", () => {
     assert.equal(
       doc.querySelector(".scp-ox-lede").textContent,
-      "One QB1 week, one QB2 week and one bust. For a quarterback ranked QB17 " +
-        "overall, the spread matters more than the average: you get a top-5 " +
-        "ceiling and a waiver-wire floor.",
+      "One QB1 finish, one QB2 finish, and one bust. Brissett has shown a " +
+        "top-5 ceiling, but his weekly floor remains waiver-level.",
     );
   });
 
@@ -173,15 +173,22 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     );
   });
 
-  test("axis and key follow the QB scale", () => {
-    assert.equal(
-      [...doc.querySelectorAll(".scp-gl-axis span")].map((s) => s.textContent).join(" "),
-      "QB1 QB12 QB24 QB32",
+  test("tier labels sit over their segments and markers cut the band at the cutoffs", () => {
+    const tiers = [...doc.querySelectorAll(".scp-gl-tiers span")];
+    assert.deepEqual(
+      tiers.map((s) => s.textContent),
+      ["QB1 range", "QB2 range", "Bench range"],
     );
-    const key = doc.querySelector(".scp-gl-key").textContent;
-    assert.ok(key.includes("QB1 range (top 12)"));
-    assert.ok(key.includes("QB2 range (13–24)"));
-    assert.ok(key.includes("Bench range (25+)"));
+    assert.equal(tiers[0].style.width, "37.1%");
+    assert.equal(tiers[1].style.left, "37.1%");
+    assert.equal(tiers[2].style.left, "75.8%");
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-gl-mark")].map((m) => m.style.left),
+      ["37.1%", "75.8%"],
+    );
+    // The swatch key and the rank axis are gone.
+    assert.equal(doc.querySelector(".scp-gl-key"), null);
+    assert.equal(doc.querySelector(".scp-gl-axis"), null);
   });
 });
 
@@ -341,14 +348,15 @@ describe("edges", () => {
         { ...SEASON, pos: "RB", seasonRank: 20 },
       ),
     );
-    assert.equal(
-      [...doc.querySelectorAll(".scp-gl-axis span")].map((s) => s.textContent).join(" "),
-      "RB1 RB24 RB36 RB60",
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-gl-tiers span")].map((s) => s.textContent),
+      ["RB1 range", "RB2 range", "Bench range"],
     );
-    const key = doc.querySelector(".scp-gl-key").textContent;
-    assert.ok(key.includes("RB1 range (top 24)"));
-    assert.ok(key.includes("RB2 range (25–36)"));
-    assert.ok(key.includes("Bench range (37+)"));
+    // Bands end at 24.5/59 and 36.5/59.
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-gl-mark")].map((m) => m.style.left),
+      ["39.8%", "60.2%"],
+    );
     // Rank 24 pins at 23/59, inside the band that ends at 24.5.
     assert.equal(doc.querySelector(".scp-gl-pin").style.left, "39%");
   });
@@ -393,7 +401,11 @@ describe("edges", () => {
   test("past-season copy speaks in the past tense", () => {
     const past = { ...SEASON, pastTense: true };
     const doc = dom(mod.renderLadderSection(BRISSETT, past));
-    assert.ok(doc.querySelector(".scp-ox-lede").textContent.includes("you got a top-5 ceiling"));
+    assert.ok(
+      doc.querySelector(".scp-ox-lede").textContent.includes(
+        "Brissett showed a top-5 ceiling, but his weekly floor was waiver-level.",
+      ),
+    );
     const cards = dom(mod.renderBreakdownSection(BRISSETT, past));
     assert.ok(cards.querySelector(".scp-gl-byline").textContent.startsWith("Season summary, updated"));
   });

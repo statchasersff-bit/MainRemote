@@ -476,24 +476,6 @@ function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
 }
 
 /**
- * A season's cell: the value, and under it the percentile. The focal season's
- * percentile is a fixed-width bar with the ordinal beside it, so the number
- * carries the meaning and the bar supports it; a reference season's is the
- * ordinal alone. The old sentence rides along as the title.
- */
-function advCell(m: AdvMetric | undefined, focal: boolean): string {
-  const value = `<span class="scp-st-num">${escapeHtml(signed(m?.value ?? DASH))}</span>`;
-  const cls = `scp-st-v ${focal ? "is-now" : "is-prev"}`;
-  if (!m || m.pctl == null) return `<td class="${cls}">${value}<span class="scp-st-pb is-muted">${DASH}</span></td>`;
-  const w = Math.max(3, Math.min(100, m.pctl));
-  const bar = focal ? `<span class="scp-st-bar" aria-hidden="true"><i style="width:${w}%"></i></span>` : "";
-  return (
-    `<td class="${cls}">${value}<span class="scp-st-pb is-${tint(m)}" title="${escapeHtml(m.read)}">` +
-    `${bar}<b>${escapeHtml(ordinal(m.pctl))}</b></span></td>`
-  );
-}
-
-/**
  * Which tier a metric reads under (mak, 2026-09-30): what he does with the
  * ball first and set heavier, then how much of it he gets, how he plays, and
  * what surrounds him. A key not listed here reads under Efficiency.
@@ -532,49 +514,78 @@ const tierOf = (key: string): number => {
  * metric neither season has a figure for is dropped. The college column's
  * metrics have no tier and print as one untitled group.
  */
-function renderAdvTable(cols: AdvColumn[]): string {
-  const keys: Array<{ key: string; label: string }> = [];
-  for (const col of cols) {
-    for (const m of col.card.all ?? col.card.metrics) {
-      const key = m.key ?? m.label;
-      if (!keys.some((k) => k.key === key)) keys.push({ key, label: m.label });
-    }
-  }
-  const find = (col: AdvColumn, key: string): AdvMetric | undefined =>
-    (col.card.all ?? col.card.metrics).find((m) => (m.key ?? m.label) === key);
-  const kept = keys.filter(({ key }) => cols.some((col) => { const v = find(col, key)?.value; return v !== undefined && v !== DASH; }));
-  if (kept.length === 0) return "";
-  const known = kept.some(({ key, label }) => TIERS.some((t) => t.keys.includes(keyOf({ key, label }))));
-  const span = 1 + cols.length;
-  // The first column is this season, the page's subject; the second is
-  // reference (mak, 2026-10-03).
-  const row = ({ key, label }: { key: string; label: string }, lead: boolean): string =>
-    `<tr${lead ? ` class="is-key"` : ""}><th scope="row">${escapeHtml(label)}</th>` +
-    cols.map((col, i) => advCell(find(col, key), i === 0)).join("") +
-    `</tr>`;
-  let rows: string;
-  if (!known) {
-    rows = kept.map((k) => row(k, false)).join("");
-  } else {
-    rows = TIERS.map((tier, i) => {
-      const inTier = kept.filter(({ key, label }) => tierOf(keyOf({ key, label })) === i);
-      if (inTier.length === 0) return "";
-      return (
-        `<tr class="scp-st-tier"><th scope="rowgroup" colspan="${span}">${tier.name}</th></tr>` +
-        inTier.map((k) => row(k, i === 0)).join("")
-      );
-    }).join("");
-  }
+/** What each tier's card says under its title; position-neutral. */
+const TIER_CAPTION: Record<string, string> = {
+  Efficiency: "What he does with the ball he gets",
+  Usage: "How much of the offense runs through him",
+  Style: "How he plays, not how well: no better end",
+  Context: "What surrounds him",
+};
+
+/**
+ * One ladder row, in the team pages' anatomy (mak, 2026-10-22): the label,
+ * a rank bar, the value, the percentile as bare tinted text. The bar is
+ * aria-hidden because the ordinal says the same thing in words; the old
+ * sentence ("16th of 36 QBs") rides along for screen readers.
+ */
+function ladderRow(m: AdvMetric): string {
+  const t = tint(m);
+  const tier = t === "bad" ? "poor" : t === "muted" ? "none" : t;
+  const bar =
+    m.pctl == null
+      ? `<span class="scp-st-stat-bar is-empty" aria-hidden="true"></span>`
+      : `<span class="scp-st-stat-bar" data-tier="${tier}" aria-hidden="true">` +
+        `<span class="scp-st-stat-fill" style="width:${Math.max(3, Math.min(100, m.pctl))}%"></span></span>`;
+  const rank =
+    m.pctl == null
+      ? `<span class="scp-st-stat-rank" data-tier="none">${DASH}</span>`
+      : `<span class="scp-st-stat-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(ordinal(m.pctl))}` +
+        `<span class="scp-sr"> percentile</span></span>`;
   return (
-    `<div class="scp-st-advwrap"><table class="scp-st-advt">` +
-    `<thead><tr><th scope="col">Metric</th>` +
-    cols.map((col, i) =>
-      `<th scope="col" class="${i === 0 ? "is-now" : "is-prev"}">${escapeHtml(col.title)}` +
-      (col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : "") +
-      `</th>`,
-    ).join("") +
-    `</tr></thead><tbody>${rows}</tbody></table></div>`
+    `<li class="scp-st-stat">` +
+    `<span class="scp-st-stat-label">${escapeHtml(m.label)}<span class="scp-sr"> - ${escapeHtml(m.read)}</span></span>` +
+    bar +
+    `<span class="scp-st-stat-value">${escapeHtml(signed(m.value))}</span>` +
+    rank +
+    `</li>`
   );
+}
+
+/**
+ * The metrics as tier cards in the team pages' ladder style (mak,
+ * 2026-10-22, replacing the Metric | season table): Efficiency across the
+ * width, then Usage, Style and Context side by side. Each column of the old
+ * table - this season, or College for a rookie - becomes its own set of
+ * cards, headed only when there is more than one.
+ */
+function renderAdvLadders(cols: AdvColumn[]): string {
+  const groups = cols
+    .map((col) => {
+      const ms = (col.card.all ?? col.card.metrics).filter((m) => m.value !== DASH);
+      if (ms.length === 0) return "";
+      const known = ms.some((m) => TIERS.some((t) => t.keys.includes(keyOf(m))));
+      const cards = known
+        ? TIERS.map((tier, i) => {
+            const inTier = ms.filter((m) => tierOf(keyOf(m)) === i);
+            if (inTier.length === 0) return "";
+            return (
+              `<div class="scp-st-ladder${i === 0 ? " is-wide" : ""}" data-tier="${tier.name.toLowerCase()}">` +
+              `<h3 class="scp-st-ladder-title">${tier.name}</h3>` +
+              `<p class="scp-st-ladder-caption">${escapeHtml(TIER_CAPTION[tier.name] ?? "")}</p>` +
+              `<ul class="scp-st-ladder-list">${inTier.map(ladderRow).join("")}</ul>` +
+              `</div>`
+            );
+          }).join("")
+        : `<div class="scp-st-ladder is-wide" data-tier="metrics"><h3 class="scp-st-ladder-title">Metrics</h3>` +
+          `<ul class="scp-st-ladder-list">${ms.map(ladderRow).join("")}</ul></div>`;
+      const head =
+        cols.length > 1
+          ? `<h3 class="scp-st-ladgroup">${escapeHtml(col.title)}${col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : ""}</h3>`
+          : "";
+      return `<div class="scp-st-ladgroup-wrap">${head}<div class="scp-st-ladders">${cards}</div></div>`;
+    })
+    .join("");
+  return groups ? `<div class="scp-st-advwrap">${groups}</div>` : "";
 }
 
 /** The card the profile reads: this season once it qualifies, else last season. */
@@ -751,9 +762,11 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
         ? `College: ranked among ${college.qualifiedCount} ${college.pool}`
         : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no percentiles`,
     );
-  } else if (adv?.last) {
+  } else if (adv?.last && !adv.current) {
+    // Last season stands in only until this season has a line (mak,
+    // 2026-10-22: the side-by-side previous-season column is gone).
     const prev = adv.last;
-    cols.push({ title: String(prev.season), sub: `${adv?.current ? "Previous · " : ""}${plural(prev.games, "game")}`, card: prev });
+    cols.push({ title: String(prev.season), sub: plural(prev.games, "game"), card: prev });
     used.push(prev);
     notes.push(
       prev.qualified
@@ -761,10 +774,9 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
         : `${prev.season} (${plural(prev.games, "game")}, weeks 1–17): below the qualifying line, so no percentiles`,
     );
   }
-  // One short line (mak, 2026-09-30): the seasons joined, then the gray rule.
-  const gray = cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))
-    ? " Gray bars describe style, not quality."
-    : "";
+  // One short line (mak, 2026-09-30): the seasons joined. The "gray bars"
+  // clause went with the table (2026-10-22): the Style card's caption now
+  // says its rows have no better end.
 
   const copy = data.statsCopy;
   const note = own(copy?.adv_fantasy_note)
@@ -782,8 +794,8 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     `<section class="scp-ox-sec scp-st-advsec" aria-labelledby="${id}">` +
     `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(cats)} Stats`)}</h2>` +
     (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
-    renderAdvTable(cols) +
-    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${gray}`)}</p>` +
+    renderAdvLadders(cols) +
+    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.`)}</p>` +
     note +
     `</section>`
   );
