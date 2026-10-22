@@ -41,7 +41,7 @@ import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
-import { getEntryPoints, SCORING_SHORT } from "./scoring";
+import { getEntryPoints } from "./scoring";
 import { passerRating } from "./stats-profile";
 import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSeason } from "./stats-tab-data";
 import type { GameLogEntry } from "./types";
@@ -359,29 +359,6 @@ function receiverCells(t: Line): Cell[] {
   ];
 }
 
-interface WeekPick {
-  entry: GameLogEntry;
-  pts: number;
-  caption: string;
-}
-
-function weekCaption(data: PlayerPageData, row: SeasonRow, e: GameLogEntry): string {
-  // "@" or "vs" from the schedule feed, which is this season's only.
-  const game = row.season === (data.leagueSeason ?? data.season)
-    ? (data.schedule ?? []).find((g) => g.week === e.week)
-    : undefined;
-  const opp = clubCode(e.opp) || e.opp;
-  const mark = game?.homeAway === "away" ? "@ " : game?.homeAway === "home" ? "vs " : "";
-  return `Week ${e.week} ${mark}${opp}`.trim();
-}
-
-function bestWorst(data: PlayerPageData, c: Career, row: SeasonRow): { best: WeekPick; worst: WeekPick } | null {
-  if (row.weeks.length === 0) return null;
-  const picks = row.weeks.map((e) => ({ entry: e, pts: c.pts(e), caption: weekCaption(data, row, e) }));
-  const sorted = [...picks].sort((x, y) => y.pts - x.pts || x.entry.week - y.entry.week);
-  return { best: sorted[0]!, worst: sorted[sorted.length - 1]! };
-}
-
 /**
  * The one thing neither the strip nor the table says: how much of his fantasy
  * line leans on touchdowns. mak (2026-09-30) asked for it more prominent and
@@ -423,22 +400,6 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
   // Rushing is hidden for a receiver without a carry.
   else cells = [...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
 
-  // The fantasy line is the product, so it does not sit in the rail as one
-  // more stat (mak, 2026-10-03): its own block, a gold rule along the top.
-  const bw = bestWorst(data, c, row);
-  const rank = row.finish;
-  const week = (pick: WeekPick, label: string): string =>
-    `<span><b>${escapeHtml(one(pick.pts))}</b> ${label} <small>${escapeHtml(pick.caption)}</small></span>`;
-  const fan =
-    `<div class="scp-st-fan"><h3 class="scp-st-fan-tag">${escapeHtml(`Fantasy (${SCORING_SHORT[data.format]})`)}</h3><dl>` +
-    `<div><dt>Fantasy points</dt><dd>${figure({ label: "Points", total: one(t.pts), pg: t.gp ? one(t.pts / t.gp) : DASH })}</dd></div>` +
-    `<div><dt>Position rank</dt><dd>${escapeHtml(rank ? `${pos}${rank}` : DASH)}</dd></div>` +
-    `</dl>` +
-    (bw
-      ? `<p class="scp-st-fan-wk">${week(bw.best, "Best")}${row.weeks.length > 1 ? week(bw.worst, "Worst") : ""}</p>`
-      : "") +
-    `</div>`;
-
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${options.linkQuery ?? ""}`;
   return (
     // The toggle on the heading's row, right of it (mak, 2026-09-30).
@@ -451,7 +412,8 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
         `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
         `</div>`,
     ) +
-    `<div class="scp-st-prodrow"><dl class="scp-st-rail">${cells.map(renderCell).join("")}</dl>${fan}</div>` +
+    // The Fantasy (PPR) block that sat beside the rail is gone (mak, 2026-10-22).
+    `<div class="scp-st-prodrow"><dl class="scp-st-rail">${cells.map(renderCell).join("")}</dl></div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">See these stats game by game</a>` +
     `</section>`
   );
