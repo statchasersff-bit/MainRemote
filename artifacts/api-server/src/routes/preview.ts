@@ -15,7 +15,7 @@
  *   [statchasers_team]    ->  /preview/team/:slug
  *   [statchasers_player]  ->  /preview/player/:slug
  *   [statchasers_fpa]     ->  /preview/fpa
- *   [statchasers_rankings] -> /preview/rankings
+ *   [statchasers_ros_rankings] -> /preview/rankings
  *   [statchasers_schedule] -> /preview/schedule
  *   [statchasers_player_stats] -> /preview/player-stats[/rb|wr|te]
  *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
@@ -398,13 +398,14 @@ router.get(RANKINGS_PREVIEW_PATHS, (req, res, next) => {
       basePath: "/preview/rankings",
       playerPathPrefix: "/preview/player/",
       position: position ?? "All",
+      board: "ros",
     });
     send(
       req,
       res,
       hostPage({
         title: "Rest of Season Rankings",
-        shortcode: "[statchasers_rankings]",
+        shortcode: "[statchasers_ros_rankings]",
         styles: ["/rankings.css"],
         scripts: ["/dist/statchasers-rankings.js"],
         fragment: result.html,
@@ -850,11 +851,11 @@ for (const { page, route, title, shortcode } of INJURY_PREVIEWS) {
 /** The rankings fragment as source. */
 router.get("/preview/raw/rankings", (req, res) => {
   try {
-    const result = renderRankingsFragment(undefined, { embed: true });
+    const result = renderRankingsFragment(undefined, { embed: true, board: "ros" });
     send(
       req,
       res,
-      sourcePage("[statchasers_rankings]", "/embed/rankings", result.html),
+      sourcePage("[statchasers_ros_rankings]", "/embed/rankings?board=ros", result.html),
     );
   } catch (err) {
     logger.error({ err }, "Rankings fragment source view failed");

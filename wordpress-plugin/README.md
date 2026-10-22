@@ -56,7 +56,8 @@ nothing is hidden behind a click.
    [statchasers_team]     an NFL team hub
    [statchasers_player]   an NFL player page
    [statchasers_fpa]      the Fantasy Points Allowed table
-   [statchasers_rankings] the rest-of-season rankings board
+   [statchasers_ros_rankings] the rest-of-season rankings board
+   [statchasers_rankings] the redraft rankings board
    [statchasers_schedule] the NFL schedule
    ```
 
@@ -955,7 +956,7 @@ If you later add controls that *should* be indexed as their own landing pages,
 make them real links to real server-rendered URLs with their own canonicals -
 don't let tool state leak into the existing page's URL.
 
-## Rest-of-season rankings - `[statchasers_rankings]`
+## Rest-of-season rankings - `[statchasers_ros_rankings]`
 
 One page, at `/fantasy-football/rest-of-season-rankings/`. It mounts the board
 the API serves at `/rest-of-season-rankings`: tiered quarterback, running back,
@@ -985,8 +986,8 @@ WordPress has found nothing there. `statchasers_rankings_legacy_path` moves or
 | `season`  | newest  | Pin a season. Leave it off - see below. |
 
 ```
-[statchasers_rankings]
-[statchasers_rankings pos="rb"]
+[statchasers_ros_rankings]
+[statchasers_ros_rankings pos="rb"]
 ```
 
 **Leave `season` off.** The API serves the newest board it has, so an unpinned
@@ -1013,7 +1014,7 @@ and it had two problems this shortcode does not.
   markup; the rest lived in React state, which is to say a crawler never saw
   them. The server now renders all five panels and every row.
 
-To migrate: put `[statchasers_rankings]` on the page, remove the old app's mount
+To migrate: put `[statchasers_ros_rankings]` on the page, remove the old app's mount
 (its container div, block, or whatever its bundle looked for), and stop
 deploying that app. Nothing collides - the tag is new, because the old mount was
 not a WordPress shortcode.

@@ -714,7 +714,7 @@ board at BUILD time and hydrated it with React, which has two consequences: the
 page was only as fresh as the last deploy, and the four position panels nobody
 had clicked lived in component state rather than in the markup - so to a crawler
 they were not on the page. Here the API renders all five panels per request and
-`[statchasers_rankings]` prints them, like the other four.
+`[statchasers_ros_rankings]` prints them, like the other four (the redraft board keeps `[statchasers_rankings]`).
 
 - `data/rankings/redraft-<season>.csv` and `ros-<season>.csv` - the two
   published boards, redraft and rest of season, each edited on its own,

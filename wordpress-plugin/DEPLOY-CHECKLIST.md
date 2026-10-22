@@ -318,7 +318,7 @@ Order matters: the API first, then the plugin, then the pages.
 
 **Then upload the plugin zip**, and on the two pages:
 
-- [ ] `/fantasy-football/rest-of-season-rankings/` carries `[statchasers_rankings]`
+- [ ] `/fantasy-football/rest-of-season-rankings/` carries `[statchasers_ros_rankings]`
       (slug changed from `redraft-rankings`), and `/nfl/nfl-player-stats/` carries
       `[statchasers_player_stats]` in place of `[statchasers_analytics]`.
 - [ ] **Delete any hand-written hero from both pages.** In the "Let the tool

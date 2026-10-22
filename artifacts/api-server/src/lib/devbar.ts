@@ -141,7 +141,7 @@ const TOOLS: Tool[] = [
     key: "rankings",
     label: "Rest of Season Rankings",
     shortLabel: "Rankings",
-    shortcode: "statchasers_rankings",
+    shortcode: "statchasers_ros_rankings",
     hasEmbedMode: true,
     active: (path) =>
       path.startsWith("/rest-of-season-rankings") ||
