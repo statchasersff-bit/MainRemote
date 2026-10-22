@@ -158,12 +158,13 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     assert.ok(best.textContent.includes("Wk 3 @ SF"));
   });
 
-  test("the lede is mak's wording of 2026-10-22, word for word", () => {
-    assert.equal(
-      doc.querySelector(".scp-ox-lede").textContent,
-      "One QB1 finish, one QB2 finish, and one bust. Brissett has shown a " +
-        "top-5 ceiling, but his weekly floor remains waiver-level.",
+  test("the counts sit beside the heading; the lede paragraph is gone (mak, 2026-10-22)", () => {
+    assert.equal(doc.querySelector(".scp-ox-lede"), null);
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-gl-headrow > .scp-gl-sum span")].map((s) => s.textContent),
+      ["1 QB1", "1 QB2", "1 bust"],
     );
+    assert.ok(doc.querySelector(".scp-gl-headrow > h2#gl-finishes-h"));
   });
 
   test("the track reads its weeks best to worst", () => {
@@ -333,9 +334,9 @@ describe("edges", () => {
     const doc = dom(
       mod.renderLadderSection([game({ week: 1, rank: 4, pts: 25 })], SEASON),
     );
-    assert.equal(
-      doc.querySelector(".scp-ox-lede").textContent,
-      "One game in: a QB4 finish. Check back after a few weeks for a real range.",
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-gl-sum span")].map((s) => s.textContent),
+      ["1 game", "QB4"],
     );
     assert.equal(doc.querySelectorAll(".scp-gl-pin").length, 1);
     assert.equal(doc.querySelector(".is-nolabel"), null);
@@ -400,12 +401,6 @@ describe("edges", () => {
 
   test("past-season copy speaks in the past tense", () => {
     const past = { ...SEASON, pastTense: true };
-    const doc = dom(mod.renderLadderSection(BRISSETT, past));
-    assert.ok(
-      doc.querySelector(".scp-ox-lede").textContent.includes(
-        "Brissett showed a top-5 ceiling, but his weekly floor was waiver-level.",
-      ),
-    );
     const cards = dom(mod.renderBreakdownSection(BRISSETT, past));
     assert.ok(cards.querySelector(".scp-gl-byline").textContent.startsWith("Season summary, updated"));
   });

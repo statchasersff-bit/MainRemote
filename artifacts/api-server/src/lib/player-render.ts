@@ -872,9 +872,12 @@ function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOption
   // The rank is the value and the tier is a smaller line under it (mak,
   // 2026-10-21): "QB20 · Streaming" on one line was doing two jobs at the
   // size of one, and the lead cell no longer matched the four beside it.
+  //
+  // No label on this cell (mak, 2026-10-22): "QB20 / Streaming" says what it
+  // is, and "Producing as" under it was a third line in a 62px cell.
   if (badge) {
     reads.push({
-      label: "Producing as",
+      label: "",
       value: `${player.position ?? ""}${data.seasonRank}`,
       sub: badge.label,
       mod: badge.tier,
@@ -918,7 +921,7 @@ function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOption
         (read, i) =>
           `<div class="scp-read-cell" data-mod="${escapeHtml(read.mod)}"` +
           `${i === 0 ? ` data-lead="1"` : ""}>` +
-          `<p class="scp-read-label">${escapeHtml(read.label)}</p>` +
+          (read.label ? `<p class="scp-read-label">${escapeHtml(read.label)}</p>` : "") +
           `<p class="scp-read-value">${escapeHtml(read.value)}` +
           // Read aloud as "QB20, Streaming"; on screen the tier sits under
           // the rank in the tier's color at the label's size.

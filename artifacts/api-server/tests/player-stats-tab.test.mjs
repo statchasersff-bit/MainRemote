@@ -179,11 +179,15 @@ describe("stats tab", () => {
     assert.equal(doc.querySelector("table.scp-st-advt"), null, "and ladders since 2026-10-22 (mak)");
     // One season, so no group heading; the previous-season column went 2026-10-22.
     assert.equal(doc.querySelector(".scp-st-ladgroup"), null);
-    // Efficiency across the width, then Usage; the fixture has no Style or Context rows this season.
+    // Two columns (mak, 2026-10-22): Efficiency, then one stacked card of the
+    // other tiers; the fixture has only Usage rows there this season. No
+    // captions under the titles.
     const ladders = [...doc.querySelectorAll(".scp-st-ladder")];
     assert.deepEqual(ladders.map((l) => text(l.querySelector(".scp-st-ladder-title"))), ["Efficiency", "Usage"]);
-    assert.ok(ladders[0].classList.contains("is-wide"));
+    assert.ok(!ladders[0].classList.contains("is-wide"));
+    assert.ok(ladders[1].classList.contains("is-stack"));
     assert.equal(ladders[0].dataset.tier, "efficiency");
+    assert.equal(doc.querySelector(".scp-st-ladder-caption"), null);
     const rows = [...doc.querySelectorAll(".scp-st-stat")];
     assert.equal(rows.length, 6);
     const rowOf = (label) => rows.find((r) => r.querySelector(".scp-st-stat-label").firstChild.textContent === label);

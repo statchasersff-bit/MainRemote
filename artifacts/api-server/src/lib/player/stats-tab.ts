@@ -76,6 +76,8 @@ const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? "" 
 const listWords = (items: string[]): string =>
   items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
+const ARROW = `<span class="scp-arrow" aria-hidden="true">&rarr;</span>`;
+
 function sectionOpen(id: string, heading: string, lede: string, aside = ""): string {
   // The tab's lead heading (its H1 on WordPress) wears the panel-heading style.
   const lead = id === STATS_LEAD_ID ? " is-lead" : "";
@@ -407,14 +409,18 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
       STATS_LEAD_ID,
       `${data.player.name} ${row.season} stats`,
       (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
-      `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
+      // The game-log link rides the same row, right of the toggle (mak,
+      // 2026-10-22): it used to be a line of its own under the rail.
+      `<div class="scp-st-headctl">` +
+        `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
         `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
         `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
+        `</div>` +
+        `<a class="scp-ox-more scp-st-gl" href="${escapeHtml(href)}">Game log<span class="scp-sr"> - these stats game by game</span>${ARROW}</a>` +
         `</div>`,
     ) +
     // The Fantasy (PPR) block that sat beside the rail is gone (mak, 2026-10-22).
     `<div class="scp-st-prodrow"><dl class="scp-st-rail">${cells.map(renderCell).join("")}</dl></div>` +
-    `<a class="scp-ox-more" href="${escapeHtml(href)}">See these stats game by game</a>` +
     `</section>`
   );
 }
@@ -476,14 +482,6 @@ const tierOf = (key: string): number => {
  * metric neither season has a figure for is dropped. The college column's
  * metrics have no tier and print as one untitled group.
  */
-/** What each tier's card says under its title; position-neutral. */
-const TIER_CAPTION: Record<string, string> = {
-  Efficiency: "What he does with the ball he gets",
-  Usage: "How much of the offense runs through him",
-  Style: "How he plays, not how well: no better end",
-  Context: "What surrounds him",
-};
-
 /**
  * One ladder row, in the team pages' anatomy (mak, 2026-10-22): the label,
  * a rank bar, the value, the rank as bare tinted text ("20th of 36"; ranks,
@@ -521,10 +519,12 @@ function ladderRow(m: AdvMetric): string {
 
 /**
  * The metrics as tier cards in the team pages' ladder style (mak,
- * 2026-10-22, replacing the Metric | season table): Efficiency across the
- * width, then Usage, Style and Context side by side. Each column of the old
- * table - this season, or College for a rookie - becomes its own set of
- * cards, headed only when there is more than one.
+ * 2026-10-22, replacing the Metric | season table). Two columns since later
+ * that day: Efficiency on the left, and Usage, Style and Context stacked as
+ * one card on the right, each a titled group inside it; the captions under
+ * the titles are gone. Each column of the old table - this season, or
+ * College for a rookie - becomes its own set of cards, headed only when
+ * there is more than one.
  */
 function renderAdvLadders(cols: AdvColumn[]): string {
   const groups = cols
@@ -532,20 +532,23 @@ function renderAdvLadders(cols: AdvColumn[]): string {
       const ms = (col.card.all ?? col.card.metrics).filter((m) => m.value !== DASH);
       if (ms.length === 0) return "";
       const known = ms.some((m) => TIERS.some((t) => t.keys.includes(keyOf(m))));
-      const cards = known
-        ? TIERS.map((tier, i) => {
-            const inTier = ms.filter((m) => tierOf(keyOf(m)) === i);
-            if (inTier.length === 0) return "";
-            return (
-              `<div class="scp-st-ladder${i === 0 ? " is-wide" : ""}" data-tier="${tier.name.toLowerCase()}">` +
-              `<h3 class="scp-st-ladder-title">${tier.name}</h3>` +
-              `<p class="scp-st-ladder-caption">${escapeHtml(TIER_CAPTION[tier.name] ?? "")}</p>` +
-              `<ul class="scp-st-ladder-list">${inTier.map(ladderRow).join("")}</ul>` +
-              `</div>`
-            );
-          }).join("")
-        : `<div class="scp-st-ladder is-wide" data-tier="metrics"><h3 class="scp-st-ladder-title">Metrics</h3>` +
-          `<ul class="scp-st-ladder-list">${ms.map(ladderRow).join("")}</ul></div>`;
+      let cards: string;
+      if (known) {
+        const tiers = TIERS.map((tier, i) => ({ tier, rows: ms.filter((m) => tierOf(keyOf(m)) === i) })).filter((t) => t.rows.length);
+        const [lead, ...rest] = tiers;
+        const group = (t: { tier: { name: string }; rows: AdvMetric[] }): string =>
+          `<div class="scp-st-ladgrp" data-tier="${t.tier.name.toLowerCase()}">` +
+          `<h3 class="scp-st-ladder-title">${t.tier.name}</h3>` +
+          `<ul class="scp-st-ladder-list">${t.rows.map(ladderRow).join("")}</ul>` +
+          `</div>`;
+        cards =
+          (lead ? `<div class="scp-st-ladder" data-tier="${lead.tier.name.toLowerCase()}">${group(lead)}</div>` : "") +
+          (rest.length ? `<div class="scp-st-ladder is-stack" data-tier="${rest.map((t) => t.tier.name.toLowerCase()).join(" ")}">${rest.map(group).join("")}</div>` : "");
+      } else {
+        cards =
+          `<div class="scp-st-ladder is-wide" data-tier="metrics"><div class="scp-st-ladgrp"><h3 class="scp-st-ladder-title">Metrics</h3>` +
+          `<ul class="scp-st-ladder-list">${ms.map(ladderRow).join("")}</ul></div></div>`;
+      }
       const head =
         cols.length > 1
           ? `<h3 class="scp-st-ladgroup">${escapeHtml(col.title)}${col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : ""}</h3>`
@@ -679,12 +682,16 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
 
 /** One titled paragraph of the SC Analysis module. */
 function scaPart(title: string, html: string): string {
-  return `<h3 class="scp-st-sca-h">${escapeHtml(title)}</h3><p>${html}</p>`;
+  return `<div class="scp-st-sca-part"><h3 class="scp-st-sca-h">${escapeHtml(title)}</h3><p>${html}</p></div>`;
 }
 
+/** The tag, then the parts side by side as equal columns (mak, 2026-10-22). */
 function scaModule(parts: string[]): string {
   if (parts.length === 0) return "";
-  return `<div class="scp-st-read scp-st-sca"><span class="scp-st-sca-tag">SC Analysis</span>${parts.join("")}</div>`;
+  return (
+    `<div class="scp-st-read scp-st-sca"><span class="scp-st-sca-tag">SC Analysis</span>` +
+    `<div class="scp-st-sca-cols">${parts.join("")}</div></div>`
+  );
 }
 
 /**
@@ -972,11 +979,15 @@ function renderCareerRates(data: PlayerPageData, c: Career): string {
   const top = ranked.filter((e) => e.pos_rank! <= n12).length;
   const sd = stdev(allWeeks.map(c.pts));
   const tiles: string[] = [
-    rate(one(ppg(total)), "Career PPG", `${plural(total.gp, "game")} over ${plural(n, "season")}`),
+    // Short captions (mak, 2026-10-22): the strip is a footer to the chart.
+    rate(one(ppg(total)), "Career PPG", `${plural(total.gp, "game")}, ${plural(n, "season")}`),
   ];
-  if (games > 0) tiles.push(rate(`${Math.min(100, Math.round((total.gp / games) * 100))}%`, "Availability", "Share of team games he played"));
-  if (ranked.length) tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, n12 === 12 ? `Share of his games as a ${pos}1` : `Share of his games as a top-${n12} ${pos}`));
-  if (n > 1 && allWeeks.length > 1) tiles.push(rate(one(sd), "Weekly swing", `Standard deviation, ${swingWord(pos, sd)}`));
+  if (games > 0) tiles.push(rate(`${Math.min(100, Math.round((total.gp / games) * 100))}%`, "Availability", "Share of team games played"));
+  if (ranked.length) tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, n12 === 12 ? `${pos}1 finishes` : `Top-${n12} ${pos} finishes`));
+  if (n > 1 && allWeeks.length > 1) {
+    const w = swingWord(pos, sd);
+    tiles.push(rate(one(sd), "Weekly swing", `${w[0]!.toUpperCase()}${w.slice(1)} week-to-week`));
+  }
 
   return `<section class="scp-ox-sec scp-st-sec-rates" aria-label="Career rates"><div class="scp-st-rates">${tiles.join("")}</div></section>`;
 }
