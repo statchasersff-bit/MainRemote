@@ -152,10 +152,9 @@ test("the injury page: a dated title, the question and its Yes/No answer first, 
 
     const h2 = doc.querySelector("#injury .scp-in-ask h2");
     assert.equal(h2?.textContent, `Is ${player.name} injured?`);
-    const answer = doc.querySelector("#injury .scp-in-answer");
-    assert.match(answer.textContent, new RegExp(`^(Yes|No)\\. ${player.name} `), answer.textContent);
-    assert.match(answer.textContent, /Last checked [A-Z][a-z]{2} \d{1,2}\.$/, answer.textContent);
-    assert.match(doc.querySelector("#injury .scp-in-missedline").textContent, /Career games missed: \d+\.$/);
+    // The on-page answer sentence and games-missed line were removed 2026-10-22 (mak).
+    assert.equal(doc.querySelector("#injury .scp-in-answer"), null);
+    assert.equal(doc.querySelector("#injury .scp-in-missedline"), null);
 
     // Before the history table and the status strip.
     const history = doc.querySelector("#injury .scp-in-tl, #injury .scp-in-parts");
@@ -197,9 +196,8 @@ test("the outlook page: wording follows the season phase, and the body opens on 
   }
   const h1 = doc.querySelector("#outlook h1, #outlook h2.is-lead");
   assert.match(h1.textContent, /Rest-of-Season Outlook$/);
-  const first = h1.nextElementSibling;
-  assert.ok(first?.classList.contains("scp-ol-lede"), "a lede right under the heading");
-  assert.match(first.textContent.split(/(?<=\.)\s/)[0], /fantasy outlook/, first.textContent);
+  // The lede sentence under the heading went 2026-10-22 (mak).
+  assert.equal(doc.querySelector("#outlook .scp-ol-lede"), null, "no lede under the heading");
 });
 
 test("the game log page: the description leads with the latest game", async () => {

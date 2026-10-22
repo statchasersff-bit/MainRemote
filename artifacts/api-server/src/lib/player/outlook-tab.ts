@@ -207,7 +207,13 @@ function model(data: PlayerPageData): Model | null {
     prior,
     rank,
     projected: projectedRank(data),
-    measures: outlookMeasures(data.fantasyOutlook2026),
+    // The current season's line when he has one (mak, 2026-10-22), else last
+    // season's from the outlook record.
+    measures: outlookMeasures(data.fantasyOutlook2026, {
+      season: week >= 1 ? season : undefined,
+      playerId: data.player.id ?? null,
+      position: pos,
+    }),
     chips,
     injured: out ? `${cap(status.toLowerCase() === "ir" ? "on injured reserve" : status.toLowerCase())}${part ? `, ${part.toLowerCase()}` : ""}` : null,
     upcoming: (data.upcoming ?? []).slice(0, 4),
@@ -353,23 +359,29 @@ function matchupList(games: UpcomingGame[]): string {
 function renderTake(m: Model): string {
   const tier = tierLine(m);
   if (!tier || !m.chips) return "";
-  const leagues = LEAGUES[m.pos]!;
 
   // mak's hero rework, 2026-10-01, then 2026-10-05: the dot-separated meta
   // line under the tier ("QB17 through Week 4 · 15.8 PPG · 34.6 att/game")
   // is gone, and the tier line wears the section ledes' style. The full
   // reasoning lives one section down, in Our Take; the league-by-league call
   // is the chips beside it, under a "Best fit" label.
+  // The lede sentence and the tier line that sat under the heading are gone
+  // (mak, 2026-10-22); the tier still feeds the FAQ. The injured line stays.
+  // The Best fit chips moved down beside the season-to-date panels the same
+  // day, so the hero is the heading.
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
-    `<div>` +
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
-    // The body's first sentence names the page's search, "fantasy outlook",
-    // and the reading it is built on (mak, 2026-10-09).
-    `<p class="scp-ox-lede scp-ol-lede">${escapeHtml(outlookLede(m))}</p>` +
-    `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
-    `</div>` +
+    `</div></section>`
+  );
+}
+
+/** The Best fit column: the league-by-league call, under its label. */
+function renderFits(m: Model): string {
+  if (!m.chips) return "";
+  const leagues = LEAGUES[m.pos]!;
+  return (
     `<div class="scp-ol-fitwrap">` +
     `<div class="scp-ol-fithead" aria-hidden="true">Best fit</div>` +
     `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
@@ -380,29 +392,8 @@ function renderTake(m: Model): string {
           `<span class="scp-ol-chip is-${chip.kind}">${escapeHtml(chip.label)}</span></div>`,
       )
       .join("") +
-    `</div></div>` +
-    `</div></section>`
+    `</div></div>`
   );
-}
-
-/**
- * "Bijan Robinson's fantasy outlook for the rest of 2026: RB3 through Week 5
- * at 21.4 PPR points per game." Before Week 1 it is the projection and last
- * season's finish instead.
- */
-function outlookLede(m: Model): string {
-  if (!m.preseason && m.now?.rank) {
-    return (
-      `${possessive(m.name)} fantasy outlook for the rest of ${m.season}: ${m.pos}${m.now.rank} through ` +
-      `Week ${m.week} at ${one(m.now.ppg)} ${m.scoring} points per game.`
-    );
-  }
-  if (!m.preseason) {
-    return `${possessive(m.name)} fantasy outlook for the rest of ${m.season}, from his role, his usage and the matchups ahead.`;
-  }
-  const projected = m.projected ? `: projected as ${preseasonWords(m.pos, m.projected)}` : "";
-  const prior = m.prior?.rank ? ` He finished ${m.pos}${m.prior.rank} in ${m.prior.season} at ${one(m.prior.ppg)} points per game.` : "";
-  return `${possessive(m.name)} ${m.season} fantasy outlook${projected}.${prior}`;
 }
 
 /* --------------------------------------------- section 2: expectation check */
@@ -449,38 +440,22 @@ function renderExpect(m: Model): string {
         `<div class="scp-ol-exsub">${escapeHtml(`${g.homeAway === "home" ? "vs." : "at"} ${oppName(g)}`)}</div></div>`,
     );
   }
-  if (panels.length === 0) return "";
   // No button here (mak, 2026-10-01): Redraft Command gets one main CTA - the
   // sidebar card in Our Take - and one quiet one at the foot of upside/risk.
-  panels.push(
-    `<div class="scp-ol-ex is-ros"><div class="scp-ol-when">Rest of season</div>` +
-      `<div class="scp-ol-rk is-text">Live rank</div>` +
-      `<div class="scp-ol-exsub">Updated after every game</div></div>`,
-  );
-
-  let lede = "";
-  if (m.projected && !m.preseason && m.now?.rank) {
-    lede = `He was projected as ${preseasonWords(m.pos, m.projected)}.`;
-    if (m.prior) {
-      const diff = m.now.ppg - m.prior.ppg;
-      const pace =
-        Math.abs(diff) <= 1
-          ? `scoring at almost exactly last season's pace`
-          : diff > 0
-            ? `scoring ${one(diff)} points per game more than last season`
-            : `scoring ${one(-diff)} points per game less than last season`;
-      lede += ` ${cap(word(m.week))} week${m.week === 1 ? "" : "s"} in, he's ${m.pos}${m.now.rank}, ${pace}.`;
-    } else {
-      lede += ` ${cap(word(m.week))} week${m.week === 1 ? "" : "s"} in, he's ${m.pos}${m.now.rank}.`;
-    }
-  } else if (m.prior?.rank) {
-    lede = `He finished ${m.pos}${m.prior.rank} last season at ${one(m.prior.ppg)} points per game.`;
-  }
-
+  // The "Rest of season / Live rank" cell that closed the row went too
+  // (mak, 2026-10-22): the row ends on the season to date.
+  //
+  // No heading or lede either (mak, 2026-10-22): "Preseason projection vs.
+  // reality" and its sentence are gone, and the Best fit chips from the hero
+  // share the row with the panels.
+  const fits = renderFits(m);
+  if (panels.length === 0 && !fits) return "";
   return (
-    open("scp-ol-exp-h", "Preseason projection vs. reality", lede) +
-    `<div class="scp-ol-expect" style="--scp-ol-n:${panels.length}">${panels.join("")}</div>` +
-    `</section>`
+    `<section class="scp-ox-sec scp-ol-sec-expect" aria-label="Season to date and best fit">` +
+    `<div class="scp-ol-exrow">` +
+    (panels.length ? `<div class="scp-ol-expect" style="--scp-ol-n:${panels.length}">${panels.join("")}</div>` : "") +
+    fits +
+    `</div></section>`
   );
 }
 
@@ -509,8 +484,9 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
   // 2. How he produces.
   const drivers = (m.measures?.drivers ?? []).filter((d) => d.rank !== null);
   if (drivers.length) {
+    const ms = m.measures!;
     let p =
-      `Last season he ranked ` +
+      `${ms.season === m.season && ms.week !== null ? `Through Week ${ms.week} he ranks ` : `Last season he ranked `}` +
       listWords(drivers.map((d) => `${ordinal(d.rank!)} of ${d.of} in ${d.label.toLowerCase()} (${d.unit === d.label.toLowerCase() ? d.value : `${d.value} ${d.unit}`})`)) +
       `.`;
     if (top && top.tier === "good") p += ` His points come from his ${top.label.toLowerCase()}.`;
@@ -636,7 +612,7 @@ function renderDrivers(m: Model): string {
     .map((d) => {
       const strip =
         d.rank === null
-          ? `<p class="scp-ol-unranked">${escapeHtml(`Fewer than 6 games in ${ms.season}, so not ranked.`)}</p>`
+          ? `<p class="scp-ol-unranked">${escapeHtml(`Fewer than ${ms.minGames} games in ${ms.season}, so not ranked.`)}</p>`
           : `<div class="scp-ol-dots" role="img" aria-label="${escapeHtml(`${ordinal(d.rank)} of ${d.of} ${noun}`)}" style="--scp-ol-cols:${d.of}">` +
             Array.from({ length: d.of }, (_, i) => (i === d.rank! - 1 ? `<i class="is-me"></i>` : `<i></i>`)).join("") +
             `</div>` +
@@ -656,11 +632,14 @@ function renderDrivers(m: Model): string {
       `</dl>`
     : "";
   const noun1 = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[ms.position] ?? ms.position;
+  const games = `${word(ms.minGames)} game${ms.minGames === 1 ? "" : "s"}`;
   return (
     open(
       "scp-ol-drv-h",
       "What drives his outlook",
-      `His ${ms.season} rank among the ${ms.field} ${noun1}s who played at least six games. Each bar is one ${noun1}, best on the left; his is highlighted.`,
+      ms.week !== null
+        ? `His ${ms.season} rank through Week ${ms.week} among the ${ms.field} ${noun1}s who have played at least ${games}. Each bar is one ${noun1}, best on the left; his is highlighted.`
+        : `His ${ms.season} rank among the ${ms.field} ${noun1}s who played at least ${games}. Each bar is one ${noun1}, best on the left; his is highlighted.`,
     ) +
     `<div class="scp-ol-drivers">${rows}</div>` +
     adv +
@@ -783,7 +762,8 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
   if (tough.length) {
     risk.push(b(tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(tough.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`)))} ${tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.`));
   }
-  const ks = data.fantasyOutlook2026?.keyStats;
+  // The same line the drivers were read from, so the season named matches.
+  const ks = m.measures?.line ?? data.fantasyOutlook2026?.keyStats;
   const n = (k: string): number | null => (typeof ks?.[k] === "number" ? (ks[k] as number) : null);
   if (risk.length < 3 && m.pos === "QB" && n("sacks") !== null && n("pressurePct") !== null) {
     risk.push(b("Pressure and sacks.", `${n("sacks")} sacks and a ${n("pressurePct")!.toFixed(1)}% pressure rate in ${m.measures?.season ?? m.season - 1}.`));

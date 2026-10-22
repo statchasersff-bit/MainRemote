@@ -19,15 +19,11 @@ import { escapeHtml } from "../render";
 import { slotChip } from "../team-render";
 import { getPlayerPageUrl } from "./links";
 import {
-  BUY_LOW_SELL_HIGH_URL,
-  DYNASTY_COMMAND_URL,
   DYNASTY_LEAGUE_ANALYZER_URL,
   DYNASTY_RANKINGS_URL,
   DYNASTY_TRADE_CALCULATOR_URL,
   LEAGUE_ANALYZER_URL,
-  PROJECTIONS_URL,
   RB_HANDCUFF_RANKINGS_URL,
-  REDRAFT_COMMAND_URL,
   ROS_RANKINGS_URL,
   START_SIT_URL,
   TRADE_CALCULATOR_URL,
@@ -215,7 +211,8 @@ interface Segment {
 /**
  * A 100% stacked bar and its legend. The Target Tree and the backfield share
  * it. `legendNarrowOnly` keeps the legend for the widths where the bar drops
- * its segment names (mak, 2026-10-20: no name list under the tree on desktop).
+ * its segment names (mak, 2026-10-20: no name list under the tree on desktop;
+ * 2026-10-22: the backfield's bar too).
  */
 function stackedBar(segments: Segment[], ariaLabel: string, legendTail = "", legendNarrowOnly = false): string {
   const shown = segments.filter((s) => s.share > 0);
@@ -396,9 +393,12 @@ function backfield(view: UsageView, team: NflTeam): string {
     const w = others.reduce((s, p) => s + p.wopp, 0);
     segs.push({ label: "Other backs", short: "Others", share: (100 * w) / total, color: palette[5]!, title: `Other backs - ${((100 * w) / total).toFixed(1)}%` });
   }
+  // Like the Target Tree, no name list under the bar on desktop (mak, 2026-10-22).
   const bar = stackedBar(
     segs,
     `${team.nickname} weighted opportunities: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`,
+    "",
+    true,
   );
 
   // The grid: highest share in each row is the owner, in green.
@@ -743,18 +743,6 @@ function table(view: UsageView, team: NflTeam): string {
   );
 }
 
-function projectionsBridge(view: UsageView): string {
-  // A big opportunity/production gap is exactly what the buy/sell board prices.
-  const gap = view.rows.some((r) => Math.abs(r.player.fpoePerGame ?? 0) >= 3);
-  return bridge(
-    "Compare opportunity with what comes next.",
-    `Check current weekly expectations in ${tool(PROJECTIONS_URL, "Fantasy Football Projections", "projections-usage-xfp")}, rest-of-season value in the ${tool(ROS_RANKINGS_URL, "ROS Rankings", "ros-rankings-usage-xfp")}, or compare players head-to-head with the ${tool(START_SIT_URL, "Start/Sit Tool", "startsit-usage-xfp")}.` +
-      (gap && BUY_LOW_SELL_HIGH_URL
-        ? ` Large opportunity/production gaps also feed the ${tool(BUY_LOW_SELL_HIGH_URL, "Buy Low & Sell High board", "blsh-usage-xfp")}.`
-        : ""),
-  );
-}
-
 function legend(): string {
   const items: Array<[string, string, string]> = [
     ["set", "Set & forget", "20%+ target share or locked bell-cow role - start everywhere"],
@@ -836,9 +824,9 @@ function conversion(view: UsageView): string {
       "Compare players using weekly projections, matchup strength, opportunity and expected fantasy production in the Start/Sit Tool.",
       [tool(START_SIT_URL, "Open Start/Sit Tool", "startsit-usage-close")],
     ) +
-    ask("Looking ahead?", "See updated player expectations in our Rest-of-Season Rankings and Fantasy Football Projections.", [
+    // Projections left this card 2026-10-22 (mak).
+    ask("Looking ahead?", "See updated player expectations in our Rest-of-Season Rankings.", [
       tool(ROS_RANKINGS_URL, "View ROS Rankings", "ros-rankings-usage-close"),
-      tool(PROJECTIONS_URL, "View Projections", "projections-usage-close"),
     ]) +
     ask(
       "Working the waiver wire?",
@@ -852,29 +840,14 @@ function conversion(view: UsageView): string {
     ) +
     ask(
       "Playing dynasty?",
-      "Use current role changes alongside age, long-term value and future outlook in the Dynasty Trade Calculator, Dynasty League Analyzer and Dynasty Rankings.",
-      [
-        tool(DYNASTY_TRADE_CALCULATOR_URL, "Dynasty Trade Calculator", "dynasty-trade-calc-usage-close"),
-        tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-close"),
-        tool(DYNASTY_RANKINGS_URL, "Dynasty Rankings", "dynasty-rankings-usage-close"),
-      ],
+      // The Dynasty Trade Calculator and Dynasty Rankings left this card 2026-10-22 (mak).
+      "Use current role changes alongside age, long-term value and future outlook in the Dynasty League Analyzer.",
+      [tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-close")],
     ) +
     `</div>` +
-    closing(view) +
+    // The umbrella line naming the two Commands ("Usage trends are one of
+    // the core inputs behind our player pricing...") went 2026-10-22 (mak).
     `</div>`
-  );
-}
-
-/** The umbrella line: the only place the report names the two Commands. */
-function closing(view: UsageView): string {
-  const riser = view.signals.find((s) => s.kind === "buy")?.row.player;
-  return (
-    `<p class="sct-us-close">Usage trends are one of the core inputs behind our player pricing - these shares feed the Trade Analyzer, Rest-of-Season Rankings and projections in ` +
-    `<a class="sct-textlink" href="${e(REDRAFT_COMMAND_URL)}" target="_top" data-cta="redraft-command-usage-close">Redraft Command</a>` +
-    (DYNASTY_COMMAND_URL
-      ? ` and the long-term values in <a class="sct-textlink" href="${e(DYNASTY_COMMAND_URL)}" target="_top" data-cta="dynasty-command-usage-close">Dynasty Command</a>`
-      : "") +
-    `, so ${riser ? `a riser like ${e(surname(riser.name))}` : "a riser"} gets repriced before your leaguemates notice.</p>`
   );
 }
 
@@ -925,7 +898,8 @@ export function renderUsageSection(
     passMap(view, team, links) +
     table(view, team) +
     legend() +
-    projectionsBridge(view) +
+    // The "Compare opportunity with what comes next" projections line went
+    // 2026-10-22 at mak's request.
     signals(view) +
     conversion(view) +
     `</div>`;

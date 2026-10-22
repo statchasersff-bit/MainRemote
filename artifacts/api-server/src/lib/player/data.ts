@@ -572,6 +572,17 @@ export function dataStamp(): string {
       parts.push("0");
     }
   }
+  // The advanced tables too: the Outlook tab's drivers read the current
+  // season's, which the weekly refresh rewrites (2026-10-22).
+  try {
+    for (const name of fs.readdirSync(ADVANCED_DIR).sort()) {
+      if (!name.endsWith(".json")) continue;
+      const st = fs.statSync(path.join(ADVANCED_DIR, name));
+      parts.push(`${name}:${Math.round(st.mtimeMs)}.${st.size}`);
+    }
+  } catch {
+    parts.push("adv:0");
+  }
   for (const season of getAvailableSeasons()) parts.push(String(season));
   stamp = hash(parts.join("|"));
   return stamp;

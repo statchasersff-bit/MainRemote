@@ -18,11 +18,48 @@
  *   WR/TE advanced  route participation for slot rate
  */
 
-import { loadFantasyOutlook2026 } from "./data";
+import { loadAdvancedStats, loadFantasyOutlook2026 } from "./data";
 import type { FantasyOutlook2026, OutlookKeyStats } from "./types";
 
 /** Below this many games a player is neither in the field nor ranked. */
 export const MIN_GAMES = 6;
+
+/**
+ * In season the threshold scales with the calendar (mak, 2026-10-22: the
+ * drivers read the current season, not last year's): through Week 6 a player
+ * qualifies with five games, so a bye does not drop him out of the field,
+ * and the bar climbs to the spec's six once the season allows it.
+ */
+export function minGames(week: number | null): number {
+  return week === null ? MIN_GAMES : Math.min(MIN_GAMES, Math.max(1, week - 1));
+}
+
+/** One `advanced_stats/<pos>_<season>.json` table, as much of it as is read here. */
+interface AdvancedTable {
+  season?: number;
+  week?: number;
+  inProgress?: boolean;
+  rows?: OutlookKeyStats[];
+}
+
+/**
+ * The current season's advanced line for a player, and the table it is in,
+ * or null before Week 1 / for a player without a row yet.
+ */
+function currentLine(
+  position: string,
+  season: number,
+  playerId: string | null,
+): { table: AdvancedTable; stats: OutlookKeyStats; week: number } | null {
+  if (!playerId || !position) return null;
+  const table = loadAdvancedStats(position, season) as AdvancedTable | null;
+  if (!table || !Array.isArray(table.rows)) return null;
+  const week = num(table.week);
+  if (week === null || week < 1) return null;
+  const stats = table.rows.find((r) => String(r.playerId ?? "") === playerId);
+  if (!stats || (num(stats.games) ?? 0) < 1) return null;
+  return { table, stats, week };
+}
 
 export type Tier = "good" | "mid" | "bad";
 
@@ -49,12 +86,18 @@ export interface AdvancedCell {
 export interface OutlookMeasures {
   /** The season the lines are from. */
   season: number;
+  /** The week the season's table runs through; null for a finished season. */
+  week: number | null;
+  /** Games a player needs to be in the field. */
+  minGames: number;
   position: string;
   /** Qualified players at the position. */
   field: number;
   games: number;
   drivers: DriverRow[];
   advanced: AdvancedCell[];
+  /** The line the rows were read from, for the triggers' sacks and drops. */
+  line: OutlookKeyStats;
 }
 
 interface Spec {
@@ -141,17 +184,25 @@ ADVANCED.TE = ADVANCED.WR!;
 
 const fieldCache = new Map<string, number[]>();
 
-/** Every qualified value at the position, descending. */
-function field(position: string, spec: Spec): number[] {
-  const key = `${position}:${spec.label}`;
+/**
+ * Every qualified value at the position, descending: from the current
+ * season's table when one is given, else from last season's lines on the
+ * outlook records.
+ */
+function field(position: string, spec: Spec, current: AdvancedTable | null, min: number): number[] {
+  const key = `${position}:${spec.label}:${current ? `${current.season}w${current.week}` : "prior"}`;
   const hit = fieldCache.get(key);
   if (hit) return hit;
   const values: number[] = [];
-  for (const record of Object.values(loadFantasyOutlook2026())) {
-    if (record.position !== position || !record.keyStats) continue;
-    const games = num(record.keyStats.games) ?? 0;
-    if (games < MIN_GAMES) continue;
-    const v = spec.read(record.keyStats, games);
+  const lines: OutlookKeyStats[] = current
+    ? (current.rows ?? []).filter((r) => (r.position ?? position) === position)
+    : Object.values(loadFantasyOutlook2026())
+        .filter((record) => record.position === position && record.keyStats)
+        .map((record) => record.keyStats!);
+  for (const line of lines) {
+    const games = num(line.games) ?? 0;
+    if (games < min) continue;
+    const v = spec.read(line, games);
     if (v !== null) values.push(v);
   }
   values.sort((a, b) => b - a);
@@ -170,20 +221,45 @@ export function tierOf(rank: number, of: number): Tier {
   return "bad";
 }
 
-export function outlookMeasures(record: FantasyOutlook2026 | null): OutlookMeasures | null {
-  const stats = record?.keyStats;
-  const position = record?.position ?? "";
+/** The Sleeper id an outlook record carries, on the record or its line. */
+function recordId(record: FantasyOutlook2026 | null): string | null {
+  const own = (record as unknown as { id?: unknown } | null)?.id;
+  if (typeof own === "string" && own) return own;
+  const line = record?.keyStats?.playerId;
+  return typeof line === "string" && line ? line : null;
+}
+
+/**
+ * The measures for one player.
+ *
+ * The current season's line when he has one (mak, 2026-10-22), ranked among
+ * the position's current-season field; otherwise last season's line on his
+ * outlook record, ranked the way the spec wrote it.
+ */
+export function outlookMeasures(
+  record: FantasyOutlook2026 | null,
+  options: { season?: number; playerId?: string | null; position?: string | null } = {},
+): OutlookMeasures | null {
+  const position = record?.position ?? options.position ?? "";
   const specs = DRIVERS[position];
-  if (!stats || !specs) return null;
+  if (!specs) return null;
+  const now =
+    options.season !== undefined
+      ? currentLine(position, options.season, options.playerId ?? recordId(record))
+      : null;
+  const stats = now?.stats ?? record?.keyStats;
+  if (!stats) return null;
   const games = num(stats.games) ?? 0;
-  const season = num(stats.season) ?? (record?.season ?? 0) - 1;
+  const season = now ? options.season! : (num(stats.season) ?? (record?.season ?? 0) - 1);
+  const week = now ? now.week : null;
+  const min = minGames(week);
 
   const drivers: DriverRow[] = [];
   for (const spec of specs) {
     const value = spec.read(stats, games);
     if (value === null) continue;
-    const values = field(position, spec);
-    const ranked = games >= MIN_GAMES && values.length > 0;
+    const values = field(position, spec, now?.table ?? null, min);
+    const ranked = games >= min && values.length > 0;
     const rank = ranked ? values.findIndex((v) => v <= value) + 1 || values.length : null;
     const tier = rank === null ? null : tierOf(rank, values.length);
     drivers.push({
@@ -205,10 +281,13 @@ export function outlookMeasures(record: FantasyOutlook2026 | null): OutlookMeasu
   if (drivers.length === 0 && advanced.length === 0) return null;
   return {
     season,
+    week,
+    minGames: min,
     position,
     field: drivers[0]?.of ?? 0,
     games,
     drivers,
     advanced,
+    line: stats,
   };
 }

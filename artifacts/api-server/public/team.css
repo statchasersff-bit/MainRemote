@@ -13000,11 +13000,14 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-envcard {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
   padding: 14px;
   border: 1px solid var(--sc-border);
   border-radius: var(--us-radius);
   background: var(--sc-surface);
+  /* Centered (mak, 2026-10-22). */
+  text-align: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-rank {
@@ -13062,9 +13065,11 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1;
 }
 
+/* In flow under the share, not pinned to the bottom edge (mak, 2026-10-22):
+   the pair centers as one block, so the gap above the share equals the gap
+   under the name. */
 :is(.sct, #sct-table-armour) .sct-us-seg-name {
-  position: absolute;
-  bottom: 4px;
+  margin-top: 3px;
   max-width: 100%;
   overflow: hidden;
   padding: 0 4px;
@@ -13706,17 +13711,6 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-navy);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-close {
-  margin: 0 0 8px;
-  padding: 0;
-  font-size: 0.95rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-close .sct-textlink {
-  display: inline;
-  font-size: inherit;
-}
-
 @container usage (max-width: 860px) {
   :is(.sct, #sct-table-armour) .sct-us-env {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -13732,8 +13726,9 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* The Target Tree's legend repeats the bar's own labels, so on a desktop it
-   is hidden; it comes back where the segments lose their names (below). */
+/* The Target Tree's and the backfield's legends repeat the bar's own labels,
+   so on a desktop they are hidden; they come back where the segments lose
+   their names (below). */
 :is(.sct, #sct-table-armour) .sct-us-keys.is-narrow-only {
   display: none;
 }
@@ -13895,13 +13890,6 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.55;
 }
 
-/* The umbrella line closes the block, under the tool row. */
-:is(.sct, #sct-table-armour) .sct-us-convert .sct-us-close {
-  margin: 14px 0 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.86rem;
-}
-
 /* Six decision cards: three across in the hub column, two on a tablet, one on a phone. */
 :is(.sct, #sct-table-armour) .sct-us-products {
   display: grid;
@@ -13960,11 +13948,6 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--us-gold);
 }
 
-/* The projections line sits between the table and the Buy / Sell cards. */
-:is(.sct, #sct-table-armour) .sct-us-key-help + .sct-us-bridge {
-  margin: 16px 0 18px;
-}
-
 :is(.sct, #sct-table-armour) .sct-us-product .sct-us-btn {
   align-self: flex-start;
   margin-top: auto;
@@ -14016,7 +13999,13 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.5;
 }
 
-/* A decision card: the question as its title, the answer as its lead. */
+/* A decision card: the question as its title, the answer as its lead.
+   Centered, title to links (mak, 2026-10-22). */
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask {
+  align-items: center;
+  text-align: center;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-title {
   font-size: 0.95rem;
 }
@@ -14025,6 +14014,19 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-bottom: 0;
   color: var(--sc-ink);
   line-height: 1.55;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-btn {
+  align-self: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-links {
+  align-items: center;
+  align-self: stretch;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-links .sct-textlink {
+  align-self: center;
 }
 
 /* ------------------------------------------------- coaching profile ---- */

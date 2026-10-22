@@ -5,7 +5,7 @@
  *
  * Seven parts: current status with the practice grid, the history at a
  * glance, the body map with the body-part table and risk factors, the dated
- * timeline with its sidebar, "if he misses time", a FAQ, and the footer. Every
+ * timeline with its sidebar, "if he misses time" and a FAQ (the footer went 2026-10-22). Every
  * count comes from injury-tab-data.ts's one event list, so the tiles, map,
  * table, timeline and FAQ agree (4.9).
  *
@@ -30,7 +30,6 @@ import { renderFaqSection, selectFaq, type FaqCandidate, type FaqItem } from "./
 import { etDay } from "./news-tab-data";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { SCORING_SHORT } from "./scoring";
 import { lastName, STARTSIT_BASE, teamInk } from "./header";
 import { getTeamByAbbreviation } from "../team/teams";
 import {
@@ -627,13 +626,15 @@ export function injuryAnswer(data: PlayerPageData, options: PlayerRenderOptions 
   return m ? answerOf(m, data) : null;
 }
 
-function renderAnswer(m: Model, data: PlayerPageData): string {
-  const ans = answerOf(m, data);
+/**
+ * The question alone: its Yes/No sentence and the games-missed line were
+ * removed from the page at mak's request (2026-10-22). Both still feed the
+ * title, description and FAQ through injuryAnswer().
+ */
+function renderAnswer(m: Model): string {
   return (
     `<div class="scp-in-ask">` +
     `<h2 class="scp-ox-h2" id="scp-in-ask-h">${escapeHtml(`Is ${m.name} injured?`)}</h2>` +
-    `<p class="scp-ox-lede scp-in-answer">${escapeHtml(ans.sentence)}</p>` +
-    `<p class="scp-in-missedline">${escapeHtml(ans.missed)}</p>` +
     `</div>`
   );
 }
@@ -756,20 +757,14 @@ function renderPractice(m: Model): string {
   const caption = `${m.name} practice participation by day, Week${weeks.length > 1 ? "s" : ""} ${listWords(weeks.map(String))}`;
   return (
     `<div class="scp-in-practice">${head}` +
-    (m.practiceNote ? `<p class="scp-in-pread"><strong>What it means:</strong> ${escapeHtml(m.practiceNote)}</p>` : "") +
     `<div class="scp-in-ptable"><table class="scp-ox-table">` +
     `<caption class="scp-in-sr">${escapeHtml(caption)}</caption>` +
     `<thead><tr><th scope="col">Week</th><th scope="col">Injury</th>` +
     dayNames.map((d) => `<th scope="col">${d}</th>`).join("") +
     `<th scope="col">Game status</th></tr></thead>` +
     `<tbody>${rows}</tbody></table></div>` +
-    `<div class="scp-in-plegend" aria-label="Legend">` +
-    `<span>${pill("full", "Full")} 100% of reps</span>` +
-    `<span>${pill("lim", "Limited")} fewer than normal reps</span>` +
-    `<span>${pill("dnp", "DNP")} did not practice</span>` +
-    `<span>${pill("soon", "Date")} report not out yet</span>` +
-    `<span>${pill("none", "-")} no entry in our data</span>` +
-    `</div></div>`
+    // No legend under the grid (mak, 2026-10-22); the pills read on their own.
+    `</div>`
   );
 }
 
@@ -779,7 +774,7 @@ function renderSection1(m: Model, data: PlayerPageData): string {
     // (mak's refresh, 2026-10-09); the status strip and the practice grid
     // follow. The H2 had been removed on 2026-09-30 and is back by that spec.
     `<section class="scp-ox-sec scp-in-now" aria-labelledby="scp-in-ask-h">` +
-    renderAnswer(m, data) +
+    renderAnswer(m) +
     renderStatus(m, data) +
     renderPractice(m) +
     `</section>`
@@ -931,7 +926,8 @@ function renderMap(m: Model): string {
       .join("");
     const table =
       `<div class="scp-ox-tbl scp-in-parts"><table class="scp-ox-table">` +
-      `<caption>Injuries by body part, regular-season games missed</caption>` +
+      // Screen readers only (mak, 2026-10-22): the heading above names the table.
+      `<caption class="scp-in-sr">Injuries by body part, regular-season games missed</caption>` +
       `<thead><tr><th scope="col">Body part</th><th scope="col">Injuries</th><th scope="col">Games missed</th></tr></thead>` +
       `<tbody>${rows}<tr class="is-tot"><th scope="row">Total</th><td>${m.t.injuries}</td><td>${m.t.games}</td></tr></tbody>` +
       `</table></div>`;
@@ -988,8 +984,42 @@ function renderEvent(ev: InjuryEvent): string {
     ` ${chipFor(ev)}</h3>` +
     `<p class="scp-in-meta">${escapeHtml(metaFor(ev))}</p>` +
     (ev.note ? `<p>${escapeHtml(ev.note)}</p>` : "") +
+    renderPlay(ev) +
+    renderReports(ev) +
     `</div></li>`
   );
+}
+
+/**
+ * The play he was hurt on, from the play-by-play log (mak, 2026-10-22):
+ * "Q2 0:12 vs TEN · (Shotgun) 8-L.Jackson sacked at TEN 46 for -5 yards".
+ */
+function renderPlay(ev: InjuryEvent): string {
+  const p = ev.play;
+  if (!p || !p.desc) return "";
+  const when = [p.qtr ? `Q${p.qtr}` : "", p.clock ?? ""].filter(Boolean).join(" ");
+  const where = `${when ? `${when} ` : ""}vs ${p.opponent}`;
+  return (
+    `<p class="scp-in-play"><span class="scp-in-play-k">The play</span>` +
+    `<span class="scp-in-play-w">${escapeHtml(where)}</span>` +
+    `<span class="scp-in-play-d">${escapeHtml(p.desc)}</span></p>`
+  );
+}
+
+/**
+ * The weekly report rows for the injury (mak, 2026-10-22): practice level
+ * and game status by week, and the reserve list once he was on one.
+ */
+function renderReports(ev: InjuryEvent): string {
+  if (!ev.reports.length) return "";
+  const cells = ev.reports.map((r) => {
+    const text = r.reserve
+      ? r.reserve.replace(/^the /, "")
+      : [r.practice ?? "", r.status ?? "no designation"].filter(Boolean).join(" · ");
+    const kind = r.reserve || r.status === "Out" || r.status === "Doubtful" ? " is-out" : r.status === "Questionable" || r.practice === "Limited" || r.practice === "DNP" ? " is-q" : "";
+    return `<li class="scp-in-rep${kind}"><b>Wk ${r.week}</b> ${escapeHtml(text)}</li>`;
+  });
+  return `<ul class="scp-in-reports" aria-label="Weekly injury reports">${cells.join("")}</ul>`;
 }
 
 function renderHistory(m: Model): string {
@@ -1315,7 +1345,7 @@ function renderFaq(data: PlayerPageData, items: FaqItem[]): string {
 export interface InjuryTabParts {
   /** Everything above the footer. */
   body: string;
-  /** The footer, which stands directly above the FAQ (mak, 2026-09-30). */
+  /** Empty since 2026-10-22: the methodology footer was removed (mak). */
   foot: string;
   /** The FAQ, in its own .scp-in wrapper so it can stand after the peers rail. */
   faq: string;
@@ -1355,27 +1385,14 @@ export function injuryTabParts(
     (out ? "" : plan);
   const faqItems = selectFaq(injuryPool(m, data, options));
 
-  const doc = loadPracticeReports(data.leagueSeason);
-  const checked = m.checkedMs > 0 ? ` Status last checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}.` : "";
-  const practice = doc?.updatedAt
-    ? ` Practice participation is from the league's official injury report, last read ${timeTag(Date.parse(doc.updatedAt), stampText(Date.parse(doc.updatedAt)))}.`
-    : "";
-  const foot =
-    `<footer class="scp-st-foot"><p>` +
-    escapeHtml(
-      "Injury status is the designation each club has filed, as our last check found it. " +
-        "History covers regular-season games missed. The durability score measures time lost to injury only; games not played as a backup don't count against it.",
-    ) +
-    checked +
-    practice +
-    `</p><p>${escapeHtml(`Fantasy points use ${SCORING_SHORT[data.format]} scoring.`)}</p></footer>`;
-
+  // No methodology footer since 2026-10-22 (mak): the status strip carries
+  // its own "Checked" stamp, and the scoring note lives in the header.
   const ink = teamInk(data.team);
   const wrap = (html: string) =>
     `<div class="scp-ox scp-st scp-in"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>`;
   return {
     body: wrap(body),
-    foot: wrap(foot),
+    foot: "",
     faq: wrap(renderFaq(data, faqItems)),
     faqText: faqItems.map((f) => ({ question: f.q, answer: f.text })),
   };

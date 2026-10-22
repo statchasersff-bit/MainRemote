@@ -1897,6 +1897,9 @@ function renderUpcoming(
 
       return (
         `<li class="scp-next" data-homeaway="${game.homeAway}"` +
+        // The band on the card itself, so the whole card can wear its tint
+        // (mak, 2026-10-22). Absent when the position has no rank.
+        (band ? ` data-band="${band}"` : "") +
         (index === 0 ? ` data-next="1"` : "") +
         `>` +
         // The first card is the one being played next, and the gold rule on it
@@ -1915,12 +1918,14 @@ function renderUpcoming(
         (when ? `<p class="scp-next-when">${escapeHtml(when)}</p>` : "") +
         `</div>` +
         `<p class="scp-next-team">` +
-        logo +
         // The home/away marker sits on the focal line rather than in a chip of
         // its own: "@ SEA" is read in one glance and a separate "Away" label is
         // a second thing to find. See the spec note in the commit.
         `<span class="scp-next-ha" aria-hidden="true">${away ? "@" : "vs"}</span>` +
         `<span class="scp-next-code">${escapeHtml(game.opponentCode)}</span>` +
+        // The crest follows the code (mak, 2026-10-22): "@ SEA" reads first,
+        // the logo confirms it.
+        logo +
         `</p>` +
         `<p class="scp-next-name">` +
         `<span class="scp-sr">${away ? "Away at " : "Home vs "}</span>` +
@@ -2432,7 +2437,8 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
     // Career row's own GP cell, and the format is named by the column head
     // ("FPTS/G (PPR)") and by the hero's lead cell above it. Three facts the
     // table states, restated above the table.
-    sectionHead(`${data.player.name} career stats by season`, "", aside) +
+    // Title Case like the other section headings (mak, 2026-10-22).
+    sectionHead(titleCase(`${data.player.name} career stats by season`), "", aside) +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--career" data-scp-sortable>` +
     `<thead>${groupRow}${head}</thead>` +
@@ -2937,13 +2943,8 @@ export function renderPlayerPage(
     // page: here both follow the panel.
     const parts = split.get(scoped.id);
     const panelHtml = parts ? parts.body : scoped.html;
-    const prefix = options.playerPathPrefix ?? "/player/";
-    const back =
-      `<p class="scp-back">` +
-      `<a class="scp-crosslink" href="${escapeHtml(
-        `${prefix}${data.player.slug}/${options.linkQuery ?? ""}`,
-      )}" target="_top">${escapeHtml(`All ${data.player.name} stats & analysis`)}</a>` +
-      `</p>`;
+    // The "All <name> stats & analysis" link back to the profile is gone
+    // (mak, 2026-10-22); the tab strip above is the way back.
 
     return (
       `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
@@ -2986,16 +2987,14 @@ export function renderPlayerPage(
             )
         : panelHtml) +
       `</section>` +
-      // The tab's footer, the way back, the rail, then its FAQ (mak,
-      // 2026-09-30) - except Stats, whose footer closes the page under the
-      // FAQ (mak, 2026-10-02).
+      // The tab's footer, the rail, then its FAQ (mak, 2026-09-30) - except
+      // Stats, whose footer closes the page under the FAQ (mak, 2026-10-02).
       (parts
         ? (scoped.id === "stats" ? "" : parts.foot) +
-          back +
           renderPositionPeers(data, options) +
           parts.faq +
           (scoped.id === "stats" ? parts.foot : "")
-        : back + renderPositionPeers(data, options)) +
+        : renderPositionPeers(data, options)) +
       renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
       `</div>`
     );
