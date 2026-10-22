@@ -132,13 +132,15 @@ export function environmentCards(view: UsageView, city = "The offense"): EnvCard
 
   if (env.xfpPerGame.value != null && env.xfpPerGame.rank != null) {
     const rank = env.xfpPerGame.rank;
-    // The number and rank speak for themselves in the middle of the league.
+    // A middle-of-the-league sentence too (mak, 2026-10-22): this card used to
+    // leave the caption blank outside the top and bottom eight, the only card
+    // in the row that did.
     const note =
       rank <= 8
         ? "High overall opportunity value gives more than one starter room to pay off."
         : rank >= 25
           ? "Low overall opportunity value puts more pressure on players to command large shares."
-          : "";
+          : "Average opportunity value, so the split of it decides who pays off.";
     cards.push({ label: "Team xFP/game", value: env.xfpPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
   }
 

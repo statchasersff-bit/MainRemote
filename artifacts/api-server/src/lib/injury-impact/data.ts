@@ -328,7 +328,19 @@ export function getPlayerSlice(gsisId: string): PlayerSlice | null {
   // The season in progress is kept out of the impact analysis; the panel merges it in.
   const currentSeasons = new Set(current.map((c) => c.season));
   const seasonInjuries = [...impacts.filter((im) => !currentSeasons.has(im.season)), ...current];
-  const seasons = new Set<number>([...rows.map((r) => r.season).filter((s): s is number => s != null), ...seasonInjuries.map((s) => s.season)]);
+  // The stints from his unscored seasons, in the impact rows' shape so the
+  // risk profile and the region chips count them (mak, 2026-10-22).
+  const gm = m.durability?.byKey[gsisId];
+  const unscored: SeasonInjury[] = (gm?.extra.inj ?? []).map((e) => ({
+    season: e.year,
+    team: gm?.extra.t[String(e.year)] ?? gm?.tm ?? "",
+    injury: e.bodyPart,
+    week_of_injury: Number(/week (\d+)/.exec(e.label)?.[1] ?? 0),
+    games_missed: e.gm,
+    season_ending: /season-ending/.test(e.label),
+    unscored: true,
+  }));
+  const seasons = new Set<number>([...rows.map((r) => r.season).filter((s): s is number => s != null), ...seasonInjuries.map((s) => s.season), ...unscored.map((s) => s.season)]);
   const schedule: ScheduleMap = {};
   for (const s of seasons) {
     const sched = m.schedule[String(s)];
@@ -344,6 +356,7 @@ export function getPlayerSlice(gsisId: string): PlayerSlice | null {
     rows,
     inGame,
     impacts: seasonInjuries,
+    unscored,
     schedule,
     audited: m.dataset?.current ? { season: m.dataset.current.season, week: m.dataset.current.through_week } : null,
     photoId: m.sleeper[gsisId] ?? null,

@@ -58,10 +58,10 @@ function regionTip(label: string, stat: RegionStat | undefined): string {
 }
 
 export function renderRiskProfile(slice: PlayerSlice): string {
-  const m = riskModel(slice.rows, slice.impacts);
+  const m = riskModel(slice.rows, slice.impacts, slice.unscored ?? []);
   const chips = regionChips(m);
   const when = (i: { season: number | null; week: number | null } | null) => (i && i.season != null ? `${i.season}${i.week != null ? ` · Wk ${i.week}` : ""}` : "-");
-  const notable: SeasonInjury[] = [...slice.impacts].sort((a, b) => b.season - a.season || Number(b.season_ending) - Number(a.season_ending) || b.games_missed - a.games_missed);
+  const notable: SeasonInjury[] = [...slice.impacts, ...(slice.unscored ?? [])].sort((a, b) => b.season - a.season || Number(b.season_ending) - Number(a.season_ending) || b.games_missed - a.games_missed);
 
   const stats: { label: string; value: string; sub?: string; cls?: string }[] = [];
   if (m.gamesMissed != null) stats.push({ label: "Games Missed", value: String(m.gamesMissed), sub: "known injury seasons", cls: m.gamesMissed > 0 ? "scin-red" : "" });
@@ -95,7 +95,7 @@ export function renderRiskProfile(slice: PlayerSlice): string {
       ? `<div><div class="scin-pp-k">Notable Injuries</div><ul class="scin-pp-notable">${notable
           .map(
             (im) =>
-              `<li><span><span class="scin-muted is-small scin-pp-year">${im.season}</span><span class="scin-strong is-cap">${escapeHtml(im.injury.replace(/_/g, " ").toLowerCase())}</span></span>${im.season_ending ? `<span class="scin-badge is-red">Season-ending</span>` : `<span class="scin-muted is-small">${im.games_missed} game${im.games_missed === 1 ? "" : "s"} missed${im.ongoing ? " so far" : ""}</span>`}</li>`,
+              `<li><span><span class="scin-muted is-small scin-pp-year">${im.season}</span><span class="scin-strong is-cap">${escapeHtml(im.injury.replace(/_/g, " ").toLowerCase())}</span></span>${im.season_ending ? `<span class="scin-badge is-red">Season-ending</span>` : `<span class="scin-muted is-small">${im.games_missed} game${im.games_missed === 1 ? "" : "s"} missed${im.ongoing ? " so far" : ""}</span>`}${im.unscored ? `<span class="scin-badge is-tiny" title="Not a drafted season: not in the durability score">Unscored</span>` : ""}</li>`,
           )
           .join("")}</ul></div>`
       : "") +
@@ -113,7 +113,7 @@ export function renderRiskProfile(slice: PlayerSlice): string {
  * the profile loads), else at the foot of the reports.
  */
 export function renderAffectedRegions(slice: PlayerSlice): string {
-  const m = riskModel(slice.rows, slice.impacts);
+  const m = riskModel(slice.rows, slice.impacts, slice.unscored ?? []);
   const chips = regionChips(m);
   return (
     `<section class="scin-pp" data-pp-regions>${h3("Affected Regions")}${

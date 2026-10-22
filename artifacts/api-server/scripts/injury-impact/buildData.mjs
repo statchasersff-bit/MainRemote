@@ -38,6 +38,9 @@
  * (data/player/bio_sources.json, 2,826 current players) and the DynastyProcess
  * crosswalk the bio builder already reads, fetched unless --no-fetch. The
  * mapping is committed, so a build without network keeps the last one.
+ *
+ * A new pack rewrites gridiron.json, so run buildUnscoredSeasons.mjs after
+ * this to put back the seasons the pipeline does not score (then commit).
  */
 
 import fs from "node:fs";

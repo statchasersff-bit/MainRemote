@@ -44,6 +44,24 @@ export interface GmPlayerRaw {
   /** On an NFL roster now: team and status (ACT, IR, RES). */
   cur?: { tm: string; st: string } | null;
   college?: { school?: string; s: Record<string, [number, number]> } | null;
+  /**
+   * The seasons the dataset does not score: years he was on a roster but not
+   * on a fantasy draft board (scripts/injury-impact/buildUnscoredSeasons.mjs,
+   * from nflverse). Shown in the profile's grid, timeline and games missed;
+   * never read by the score. Same shapes as `s`, `w`, `t` and `inj`.
+   */
+  x?: { s: Record<string, [number, number]>; w?: Record<string, string>; t?: Record<string, string>; inj?: (string | number)[][] } | null;
+}
+
+/** A player's unscored seasons, hydrated for the profile (mak, 2026-10-22). */
+export interface ExtraSeasons {
+  seasons: Record<number, [number, number]>;
+  years: number[];
+  w: Record<string, string>;
+  t: Record<string, string>;
+  inj: GmInjury[];
+  gpTot: number;
+  gmTot: number;
 }
 
 export interface GridironCurrent {
@@ -187,6 +205,8 @@ export interface GmPlayer extends Omit<GmPlayerRaw, "inj" | "college"> {
   /** How often the simulator draws each of those seasons. */
   missWeights: number[];
   college: { school: string; s: Record<number, [number, number]> } | null;
+  /** Seasons outside the score, for the profile only. */
+  extra: ExtraSeasons;
   /** The lookup key: the GSIS id, else the normalized name. */
   key: string;
 }
@@ -519,6 +539,39 @@ export function hydrate(data: GridironDataset): Durability {
           }
         : null;
 
+    // Unscored seasons: the same reading as above, kept apart from every
+    // figure the score uses. An injury here gets the same chips as a scored
+    // one; the timeline marks it as unscored.
+    const extra: ExtraSeasons = { seasons: {}, years: [], w: p.x?.w ?? {}, t: p.x?.t ?? {}, inj: [], gpTot: 0, gmTot: 0 };
+    for (const k of Object.keys(p.x?.s ?? {})) {
+      const y = Number(k);
+      if (yearIndex[y] === undefined || seasons[y]) continue;
+      const arr = p.x!.s[k]!;
+      extra.seasons[y] = [Number(arr[0]) || 0, Number(arr[1]) || 0];
+      extra.gpTot += extra.seasons[y]![0];
+      extra.gmTot += extra.seasons[y]![1];
+    }
+    extra.years = Object.keys(extra.seasons).map(Number).sort((a, b) => a - b);
+    extra.inj = (p.x?.inj ?? [])
+      .map((t) => {
+        const year = Number(t[0]);
+        const label = String(t[1] ?? "");
+        const gm = Number(t[4]) || 0;
+        return {
+          year,
+          label,
+          bodyPart: String(t[2] ?? ""),
+          sev: Number(t[3]),
+          gm,
+          type: ((t[5] as InjuryType) || "other") as InjuryType,
+          rec: (Number(t[6]) ? 1 : 0) as 0 | 1,
+          side: String(t[7] ?? ""),
+          timing: injuryTiming(label, gm, year, extra.w[String(year)] || "", null),
+        };
+      })
+      .filter((e) => extra.seasons[e.year] !== undefined)
+      .sort((a, b) => b.year - a.year);
+
     return {
       ...p,
       seasons,
@@ -545,6 +598,7 @@ export function hydrate(data: GridironDataset): Durability {
       missHistory,
       missWeights,
       college,
+      extra,
       key: p.id || nameKey(p.n),
     };
   });

@@ -65,6 +65,10 @@ export function typeChip(t: GmInjury["type"]): string {
   return `<span class="scin-gm-chip is-type-${t}">${TYPE_LABEL[t]}</span>`;
 }
 
+export function unscoredChip(): string {
+  return `<span class="scin-gm-chip is-unscored" title="Not a drafted season: shown for the record, not in the durability score">unscored</span>`;
+}
+
 export function reinjChip(): string {
   return `<span class="scin-gm-chip is-reinj" title="Same body part caused an earlier event">re-injury</span>`;
 }
@@ -366,10 +370,33 @@ function dial(score: number, tier: Tier): string {
 
 const BOX: Record<string, [string, string]> = { P: ["g", "played"], X: ["r", "missed to injury"], D: ["d", "dressed, didn't play"], "-": ["d", "didn't play (not injury)"] };
 
-/** One box per team game, a row per season of the player's career; playoffs after a gap. */
+/** The regular-season boxes for one week string, in the grid's alphabet. */
+function weekBoxes(y: number, reg: string, box: (k: string, t: string) => string): string {
+  let boxes = "";
+  let g = 0;
+  [...reg].forEach((ch, i) => {
+    if (ch === "B") {
+      const inj = reg[i - 1] === "X" || reg.slice(i + 1).replace(/^B+/, "")[0] === "X";
+      boxes += `<span class="scin-ab is-bye is-${inj ? "r" : "g"}" title="${y}: bye week (${inj ? "injured" : "healthy"} around it)"></span>`;
+      return;
+    }
+    const [k, t] = BOX[ch] ?? BOX["-"]!;
+    g += 1;
+    boxes += box(k, `${y}, game ${g}: ${t}`);
+  });
+  for (let i = reg.length; i < 18; i += 1) boxes += box("d", `${y}: beyond this season's game count`);
+  return boxes;
+}
+
+/**
+ * One box per team game, a row per season of the player's career; playoffs
+ * after a gap. Unscored seasons (mak, 2026-10-22) take their own rows, the
+ * year marked, so a rookie year on injured reserve is in the picture without
+ * being in the score.
+ */
 export function renderAvailGrid(d: Durability, p: GmPlayer): string {
   const all = [...d.years].sort((x, y) => x - y);
-  const active = all.filter((y) => p.seasons[y]);
+  const active = all.filter((y) => p.seasons[y] || p.extra.seasons[y]);
   const years = active.length ? all.filter((y) => y >= active[0]! && y <= active[active.length - 1]!) : all;
   const hasPO = years.some((y) => p.post[y]);
   const box = (k: string, t: string) => `<span class="scin-ab is-${k}" title="${escapeHtml(t)}"></span>`;
@@ -378,20 +405,20 @@ export function renderAvailGrid(d: Durability, p: GmPlayer): string {
       let boxes = "";
       const po = p.post[y];
       const ws = p.w && p.w[String(y)];
+      const xs = p.extra.seasons[y];
+      if (xs && !p.seasons[y]) {
+        const xw = p.extra.w[String(y)];
+        if (xw) boxes = weekBoxes(y, xw.split("|")[0] ?? "", box);
+        else {
+          for (let i = 0; i < xs[0]; i += 1) boxes += box("g", `${y}: played`);
+          for (let i = 0; i < xs[1]; i += 1) boxes += box("r", `${y}: missed to injury`);
+          for (let i = xs[0] + xs[1]; i < 18; i += 1) boxes += box("d", `${y}: beyond this season's game count`);
+        }
+        return `<div class="scin-av-row is-unscored"><span class="scin-av-year" title="${y}: not a drafted season - shown for the record, not in the score">${y}</span><span class="scin-av-boxes${hasPO ? " with-po" : ""}">${boxes}</span></div>`;
+      }
       if (ws && p.seasons[y]) {
         const [reg = "", post = ""] = ws.split("|");
-        let g = 0;
-        [...reg].forEach((ch, i) => {
-          if (ch === "B") {
-            const inj = reg[i - 1] === "X" || reg.slice(i + 1).replace(/^B+/, "")[0] === "X";
-            boxes += `<span class="scin-ab is-bye is-${inj ? "r" : "g"}" title="${y}: bye week (${inj ? "injured" : "healthy"} around it)"></span>`;
-            return;
-          }
-          const [k, t] = BOX[ch] ?? BOX["-"]!;
-          g += 1;
-          boxes += box(k, `${y}, game ${g}: ${t}`);
-        });
-        for (let i = reg.length; i < 18; i += 1) boxes += box("d", `${y}: beyond this season's game count`);
+        boxes = weekBoxes(y, reg, box);
         if (post) {
           boxes += `<span></span>`;
           [...post].forEach((ch, i) => {
@@ -423,7 +450,7 @@ export function renderAvailGrid(d: Durability, p: GmPlayer): string {
   const head = hasPO ? `<div class="scin-av-row"><span></span><span class="scin-av-boxes with-po"><span class="scin-av-po">Playoffs</span></span></div>` : "";
   return (
     `<div class="scin-avail">${head}${rows}` +
-    `<div class="scin-av-legend"><span><i class="is-g"></i>played</span><span><i class="is-r"></i>missed to injury</span><span><i class="is-g is-bye"></i><i class="is-r is-bye"></i>bye (healthy / injured)</span><span><i class="is-d"></i>not rostered / short season / inactive</span></div></div>`
+    `<div class="scin-av-legend"><span><i class="is-g"></i>played</span><span><i class="is-r"></i>missed to injury</span><span><i class="is-g is-bye"></i><i class="is-r is-bye"></i>bye (healthy / injured)</span><span><i class="is-d"></i>not rostered / short season / inactive</span>${p.extra.years.length ? `<span><i class="is-x"></i>unscored season (not a drafted year; not in the score)</span>` : ""}</div></div>`
   );
 }
 
@@ -453,7 +480,7 @@ export function renderDurabilityProfile(d: Durability, p: GmPlayer): string {
   const left =
     `<div class="scin-block is-rule">` +
     // The tier line ("Moderate risk missed-time risk, not talent · WR · NE · 15.5 healthy PPR/game · ADP 19.0") was removed 2026-10-21 (mak); the dial keeps the score and tier color.
-    `<div class="scin-dial-wrap">${dial(p.score, p.tier)}<div class="scin-dial-stats"><div><b>${n1(p.availPct)}%</b> availability</div><div><b>${n0(p.gmTot)}</b> games missed (${p.seasonYears.length} season${p.seasonYears.length === 1 ? "" : "s"})</div><div><b>${n1(p.perYearRate)}</b> games/season rate</div></div></div>` +
+    `<div class="scin-dial-wrap">${dial(p.score, p.tier)}<div class="scin-dial-stats"><div><b>${n1(p.availPct)}%</b> availability</div><div><b>${n0(p.gmTot)}</b> games missed (${p.seasonYears.length} season${p.seasonYears.length === 1 ? "" : "s"})${p.extra.years.length ? `<span class="scin-muted"> + ${n0(p.extra.gmTot)} in ${p.extra.years.length} unscored</span>` : ""}</div><div><b>${n1(p.perYearRate)}</b> games/season rate</div></div></div>` +
     `<div class="scin-tiles is-2"><div class="scin-tile"><p class="scin-tile-k">Major injuries</p><p class="scin-tile-big is-ink">${p.major}</p></div><div class="scin-tile"><p class="scin-tile-k">Soft-tissue events</p><p class="scin-tile-big is-ink">${p.soft}</p></div></div>` +
     // The re-injury sentence and the "Availability: one box per team game"
     // heading were removed 2026-10-21 (mak); the grid's legend explains the boxes.
@@ -461,10 +488,13 @@ export function renderDurabilityProfile(d: Durability, p: GmPlayer): string {
     `<div data-gm-avail>${renderAvailGrid(d, p)}</div>` +
     `</div>` +
     collegeGrid(p);
+  // Scored and unscored stints on one timeline, newest first; the unscored
+  // ones say so, since they are not in the dial beside them.
+  const timeline = [...p.inj.map((e) => ({ e, unscored: false })), ...p.extra.inj.map((e) => ({ e, unscored: true }))].sort((a, b) => b.e.year - a.e.year);
   const right =
     `<div class="scin-block is-rule">${h3("Injury timeline, newest first")}` +
-    (p.inj.length
-      ? p.inj.map((e) => `<div class="scin-tl-item"><div class="scin-tl-year">${e.year}</div><div class="scin-tl-label">${escapeHtml(houseText(e.label))}</div><div class="scin-tl-chips">${sevChip(e.sev)} ${typeChip(e.type)} ${e.rec ? reinjChip() : ""}</div></div>`).join("")
+    (timeline.length
+      ? timeline.map(({ e, unscored }) => `<div class="scin-tl-item${unscored ? " is-unscored" : ""}"><div class="scin-tl-year">${e.year}</div><div class="scin-tl-label">${escapeHtml(houseText(e.label))}</div><div class="scin-tl-chips">${sevChip(e.sev)} ${typeChip(e.type)} ${e.rec ? reinjChip() : ""}${unscored ? unscoredChip() : ""}</div></div>`).join("")
       : `<p class="scin-empty">No time-loss injuries tracked in this window. That's the whole scouting report.</p>`) +
     `</div>`;
   return `<div class="scin-profile-grid">${left}<div>${right}</div></div>`;
