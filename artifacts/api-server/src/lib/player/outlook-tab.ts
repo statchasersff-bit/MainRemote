@@ -367,8 +367,8 @@ function renderTake(m: Model): string {
   // is the chips beside it, under a "Best fit" label.
   // The lede sentence and the tier line that sat under the heading are gone
   // (mak, 2026-10-22); the tier still feeds the FAQ. The injured line stays.
-  // The Best fit chips moved down beside the season-to-date panels the same
-  // day, so the hero is the heading.
+  // The Best fit chips moved to the Our Take sidebar the same day, in place
+  // of the "Outlook at a glance" card, so the hero is the heading.
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
@@ -377,13 +377,15 @@ function renderTake(m: Model): string {
   );
 }
 
-/** The Best fit column: the league-by-league call, under its label. */
+/**
+ * The Best fit panel: the league-by-league call. A sidebar card since
+ * 2026-10-22 (mak), where "Outlook at a glance" used to sit.
+ */
 function renderFits(m: Model): string {
   if (!m.chips) return "";
   const leagues = LEAGUES[m.pos]!;
   return (
-    `<div class="scp-ol-fitwrap">` +
-    `<div class="scp-ol-fithead" aria-hidden="true">Best fit</div>` +
+    `<div class="scp-ox-panel scp-ol-fitwrap"><h3>Best fit</h3>` +
     `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
     m.chips
       .map(
@@ -396,68 +398,8 @@ function renderFits(m: Model): string {
   );
 }
 
-/* --------------------------------------------- section 2: expectation check */
-
-function preseasonWords(pos: string, rank: number): string {
-  const b = bucket(pos, rank);
-  if (b.endsWith("1")) return `a weekly ${pos} starter`;
-  if (pos === "QB" && b === "QB2") return "a QB2 and superflex option";
-  if (pos === "QB") return "a backup-level fantasy quarterback";
-  if (b.endsWith("2")) return `a ${pos}2 and flex option`;
-  return `a depth ${pos}`;
-}
-
-function renderExpect(m: Model): string {
-  const panels: string[] = [];
-  const arrow = `<span class="scp-ol-arrow" aria-hidden="true">›</span>`;
-  if (m.projected) {
-    // Short labels (mak, 2026-10-01): "Preseason", "Through Week n" - the
-    // panel row reads as a progression, and the long forms made it a caption.
-    panels.push(
-      `<div class="scp-ol-ex"><div class="scp-ol-when">Preseason</div>` +
-        `<div class="scp-ol-rk">~${m.pos}${m.projected}</div>` +
-        `<div class="scp-ol-exsub">${escapeHtml(`Viewed as ${preseasonWords(m.pos, m.projected)}`)}</div>${arrow}</div>`,
-    );
-  }
-  if (m.prior?.rank) {
-    panels.push(
-      `<div class="scp-ol-ex"><div class="scp-ol-when">${m.prior.season} final</div>` +
-        `<div class="scp-ol-rk">${m.pos}${m.prior.rank}</div>` +
-        `<div class="scp-ol-exsub">${escapeHtml(`${one(m.prior.ppg)} PPG over ${m.prior.gp} games`)}</div>${arrow}</div>`,
-    );
-  }
-  if (!m.preseason && m.now?.rank) {
-    panels.push(
-      `<div class="scp-ol-ex is-now"><div class="scp-ol-when">Through Week ${m.week}</div>` +
-        `<div class="scp-ol-rk">${m.pos}${m.now.rank}</div>` +
-        `<div class="scp-ol-exsub">${escapeHtml(`${one(m.now.ppg)} PPG over ${m.now.gp} games`)}</div></div>`,
-    );
-  } else if (m.preseason && m.upcoming[0]) {
-    const g = m.upcoming[0];
-    panels.push(
-      `<div class="scp-ol-ex is-now"><div class="scp-ol-when">${m.season}</div>` +
-        `<div class="scp-ol-rk is-text">Season starts Week ${g.week}</div>` +
-        `<div class="scp-ol-exsub">${escapeHtml(`${g.homeAway === "home" ? "vs." : "at"} ${oppName(g)}`)}</div></div>`,
-    );
-  }
-  // No button here (mak, 2026-10-01): Redraft Command gets one main CTA - the
-  // sidebar card in Our Take - and one quiet one at the foot of upside/risk.
-  // The "Rest of season / Live rank" cell that closed the row went too
-  // (mak, 2026-10-22): the row ends on the season to date.
-  //
-  // No heading or lede either (mak, 2026-10-22): "Preseason projection vs.
-  // reality" and its sentence are gone, and the Best fit chips from the hero
-  // share the row with the panels.
-  const fits = renderFits(m);
-  if (panels.length === 0 && !fits) return "";
-  return (
-    `<section class="scp-ox-sec scp-ol-sec-expect" aria-label="Season to date and best fit">` +
-    `<div class="scp-ol-exrow">` +
-    (panels.length ? `<div class="scp-ol-expect" style="--scp-ol-n:${panels.length}">${panels.join("")}</div>` : "") +
-    fits +
-    `</div></section>`
-  );
-}
+/* Section 2, the "Preseason / last season final / Through Week n" panel
+   row, is gone (mak, 2026-10-22). */
 
 /* ---------------------------------------------- section 3: written outlook */
 
@@ -562,7 +504,8 @@ function renderRead(m: Model, data: PlayerPageData): string {
     }
   }
 
-  // Sidebar: Redraft Command, then the outlook at a glance.
+  // Sidebar: Redraft Command, then Best fit. The "Outlook at a glance" card
+  // (role, backup, top targets, next matchups) is gone (mak, 2026-10-22).
   const rc =
     `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
     `<p>${escapeHtml(
@@ -570,34 +513,21 @@ function renderRead(m: Model, data: PlayerPageData): string {
     )}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}</a>` +
     `</div>`;
-  const rows: Array<[string, string]> = [];
-  const depth = data.depth;
-  if (depth) {
-    rows.push(["Role", depth.order === 1 ? "Starter" : `${depth.position}${depth.order}`]);
-    if (depth.order === 1 && depth.next) rows.push(["Backup", depth.next.name]);
-  }
-  if (m.pos === "QB" && (data.teammates ?? []).length >= 2) {
-    rows.push(["Top targets", `${lastName(data.teammates[0]!.name)}, ${lastName(data.teammates[1]!.name)}`]);
-  }
-  const next2 = m.upcoming.filter((g) => g.matchup).slice(0, 2);
-  if (next2.length) {
-    const words = next2.map((g) => ({ soft: "Favorable", mid: "Neutral", tough: "Tough" })[matchupBand(g.matchup!.rank)]);
-    rows.push([`Next ${next2.length === 1 ? "matchup" : `${word(next2.length)} matchups`}`, words[0] === words[1] || words.length === 1 ? words[0]! : `${words[0]}, then ${words[1]!.toLowerCase()}`]);
-  }
-  const glance = rows.length
-    ? `<div class="scp-ox-panel"><h3>Outlook at a glance</h3><dl class="scp-ol-profile">` +
-      rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join("") +
-      `</dl></div>`
-    : "";
+  const fits = renderFits(m);
 
+  // In season the section has no heading (mak, 2026-10-22): "Our take after
+  // Week n" is gone and the prose opens under the hero. The preseason piece
+  // keeps its title.
   return (
-    open("scp-ol-read-h", m.preseason ? `Our ${m.season} preseason outlook` : `Our take after Week ${m.week}`, "") +
+    (m.preseason
+      ? open("scp-ol-read-h", `Our ${m.season} preseason outlook`, "")
+      : `<section class="scp-ox-sec scp-ol-sec-read" aria-label="${escapeHtml(`Our take after Week ${m.week}`)}">`) +
     `<div class="scp-ox-read">` +
     `<div>${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
     `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>` +
     archive +
     `</div>` +
-    `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">${rc}${glance}</aside>` +
+    `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
     `</div></section>`
   );
 }
@@ -958,7 +888,6 @@ export function outlookTabParts(
   if (!m) return null;
   const main =
     renderTake(m) +
-    renderExpect(m) +
     renderRead(m, data) +
     renderDrivers(m) +
     (SHOW_CONTRACT ? renderContract(m, data) : "") +

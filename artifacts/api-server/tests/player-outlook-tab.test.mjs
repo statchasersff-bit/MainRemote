@@ -100,50 +100,49 @@ describe("league fit", () => {
 describe("in season", () => {
   const doc = render(state());
 
-  test("the sections, in order, each with an H2 (contract hidden; the expectation row has none since 2026-10-22)", () => {
+  test("the sections, in order, each with an H2 (contract hidden; the take and the expectation row have none since 2026-10-22)", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent),
       [
         "Jacoby Brissett Rest-of-Season Outlook",
-        "Our Take After Week 3",
         "What Drives His Outlook",
         "What Could Change His Value",
         "Jacoby Brissett Fantasy Outlook FAQ",
       ],
     );
+    // "Our Take After Week n" is gone (mak, 2026-10-22); the section still
+    // names itself for assistive tech.
+    assert.equal(doc.querySelector("#scp-ol-read-h"), null);
+    assert.equal(doc.querySelector(".scp-ol-sec-read").getAttribute("aria-label"), "Our take after Week 3");
   });
 
-  test("the hero carries no lede or tier line (mak, 2026-10-22), and the chips sit on the expectation row", () => {
+  test("the hero carries no lede or tier line (mak, 2026-10-22), and the expectation panels are gone", () => {
     assert.equal(doc.querySelector(".scp-ol-tier"), null);
     assert.equal(doc.querySelector(".scp-ol-lede"), null);
     assert.equal(doc.querySelector(".scp-ol-take .scp-ol-fits"), null, "the chips left the hero");
-    const row = doc.querySelector(".scp-ol-sec-expect .scp-ol-exrow");
-    assert.ok(row?.querySelector(".scp-ol-expect") && row?.querySelector(".scp-ol-fits"), "panels and chips share the row");
+    // The Preseason / 2025 final / Through Week n row went 2026-10-22 (mak).
+    assert.equal(doc.querySelector(".scp-ol-sec-expect"), null);
+    assert.equal(doc.querySelector(".scp-ol-ex"), null);
     assert.equal(doc.querySelector("#scp-ol-exp-h"), null, "no Preseason Projection vs. Reality heading");
-    assert.equal(doc.querySelector(".scp-ol-sec-expect .scp-ox-lede"), null, "no lede on the row");
-    assert.deepEqual([...doc.querySelectorAll(".scp-ol-fit .scp-ol-chip")].map((c) => c.textContent), [
+  });
+
+  test("the sidebar: Redraft Command, then Best fit in place of the at-a-glance card", () => {
+    const aside = doc.querySelector(".scp-ox-read > .scp-ox-aside");
+    assert.deepEqual([...aside.querySelectorAll(".scp-ox-panel > h3")].map((h) => h.textContent), ["Redraft Command", "Best fit"]);
+    assert.equal(aside.querySelector(".scp-ol-profile"), null, "no Outlook at a glance");
+    assert.ok(!aside.textContent.includes("Outlook at a glance"));
+    assert.deepEqual([...aside.querySelectorAll(".scp-ol-fit .scp-ol-chip")].map((c) => c.textContent), [
       "Weekly starter", "Streamer", "Streamer",
+    ]);
+    assert.deepEqual([...aside.querySelectorAll(".scp-ol-fit > span:first-child")].map((c) => c.textContent), [
+      "Superflex / 2QB", "1QB, 12+ teams", "1QB, 10 teams",
     ]);
   });
 
-  test("the expectation panels: ~QB30, QB16, QB17, and no rest-of-season cell", () => {
-    const rks = [...doc.querySelectorAll(".scp-ol-ex .scp-ol-rk")].map((r) => r.textContent);
-    assert.deepEqual(rks, ["~QB30", "QB16", "QB17"]);
-    // Short labels (mak, 2026-10-01): "Preseason", "Through Week 3". The
-    // "Rest of season / Live rank" cell went 2026-10-22 (mak).
-    assert.deepEqual(
-      [...doc.querySelectorAll(".scp-ol-ex .scp-ol-when")].map((r) => r.textContent),
-      ["Preseason", "2025 final", "Through Week 3"],
-    );
-    assert.equal(doc.querySelector(".scp-ol-ex.is-ros"), null);
-    assert.equal(doc.querySelectorAll(".scp-ol-arrow[aria-hidden='true']").length, 2);
-  });
-
-  test("the hero: no meta line under the tier, and the chips under a Best fit label", () => {
+  test("the hero: no meta line under the tier", () => {
     // The rank · PPG · headline stat line went 2026-10-05 (mak).
     assert.equal(doc.querySelector(".scp-ol-meta"), null);
     assert.equal(doc.querySelector(".scp-ol-sum"), null);
-    assert.equal(doc.querySelector(".scp-ol-fithead").textContent, "Best fit");
   });
 
   test("rank strips: N bars from the server, his highlighted, labeled", () => {
@@ -210,11 +209,11 @@ describe("in season", () => {
 });
 
 describe("edge states", () => {
-  test("preseason: the take after last season, a Week 1 panel, the preseason piece as the read", () => {
+  test("preseason: the preseason piece as the read, under its own title, no panel row", () => {
     const doc = render(state({ leagueWeek: 0, logCareer: [state().logCareer[1]] }));
     assert.equal(doc.querySelector("#scp-ol-read-h").textContent, "Our 2026 Preseason Outlook");
     assert.equal(doc.querySelector("details.scp-ol-prev"), null);
-    assert.match(doc.querySelector(".scp-ol-ex.is-now").textContent, /Season starts Week 4/);
+    assert.equal(doc.querySelector(".scp-ol-ex"), null);
   });
 
   test("injured: a red status line, bench or waiver chips, the injury first in the risks", () => {

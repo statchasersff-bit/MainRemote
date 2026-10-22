@@ -119,9 +119,23 @@ const BUILDER_TIMEOUT_MS = 5 * 60 * 1000;
  * from what the server leaves free, so a builder with a big live set grows
  * until the kernel OOM-kills the VM (2026-10-03: buildBioSources at 1.5GB
  * RSS). Capped, it dies alone as a "failed" step. The heaviest builder needs
- * about 256MB of heap since its CSVs became streamed.
+ * about 256MB of heap since its CSVs became streamed; 512 leaves the server
+ * (which reaches 1 GB+ under a day's traffic) its share of the VM.
  */
-const BUILDER_HEAP_MB = 768;
+const BUILDER_HEAP_MB = 512;
+
+/**
+ * One builder child at a time. The game-log chain and the practice scrape
+ * used to run beside each other; each child may take BUILDER_HEAP_MB, and two
+ * of them beside a server that has grown with traffic is more than the 2 GB
+ * VM holds (the 10-21/10-22 deaths). A job waits for the one in flight.
+ */
+let builderQueue: Promise<unknown> = Promise.resolve();
+function oneAtATime<T>(job: () => Promise<T>): Promise<T> {
+  const next = builderQueue.then(job, job);
+  builderQueue = next.catch(() => undefined);
+  return next;
+}
 /** The video scan: a Sunday's games are a few YouTube pages each, 1.2s apart. */
 const VIDEO_SCAN_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -262,7 +276,7 @@ export function refreshPlayerStats(): Promise<void> {
   if (running) return running;
   lastStartedMs = Date.now();
   const season = seasonYear();
-  running = (async () => {
+  running = oneAtATime(async () => {
     try {
       await runBuilder("player/buildGameLogs.js", [String(season)]);
       // The W/L column. Best effort: ESPN refuses this host at times, and a
@@ -308,7 +322,7 @@ export function refreshPlayerStats(): Promise<void> {
     } finally {
       running = null;
     }
-  })();
+  });
   return running;
 }
 
@@ -329,7 +343,7 @@ export function refreshDailyData(): Promise<void> {
   if (running) return running;
   dailyStartedMs = Date.now();
   const season = String(seasonYear());
-  running = (async () => {
+  running = oneAtATime(async () => {
     refreshNote("start", "daily rebuild");
     const steps: DailyStep[] = [];
     const step = async (name: string, script: string, args: string[] = []) => {
@@ -406,7 +420,7 @@ export function refreshDailyData(): Promise<void> {
       dailyFinishedMs = Date.now();
       running = null;
     }
-  })();
+  });
   return running;
 }
 
@@ -439,7 +453,7 @@ export function refreshPracticeReports(): Promise<void> {
   if (practiceRunning) return practiceRunning;
   practiceStartedMs = Date.now();
   const season = seasonYear();
-  practiceRunning = (async () => {
+  practiceRunning = oneAtATime(async () => {
     // A publish ships the committed file over the reads filed since: put them
     // back first (practice-store.ts). A store failure costs only the history.
     try {
@@ -453,7 +467,7 @@ export function refreshPracticeReports(): Promise<void> {
     } catch (err) {
       logger.warn({ err }, "Practice reports: store not written");
     }
-  })()
+  })
     .then(() => {
       // The page version reads the file's mtime; this drops what is cached.
       invalidatePlayerRenderCache();

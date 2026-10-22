@@ -35,6 +35,7 @@ import { playerRefreshStatus } from "../lib/player/live-refresh";
 import { loadGameLogs } from "../lib/player/data";
 import { seasonYear } from "../lib/seo";
 import { requireIngestSecret } from "../lib/ingest-auth";
+import { availableMemMb } from "../lib/mem";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -1053,6 +1054,20 @@ router.post("/ingest/clubs", async (req, res) => {
  * Deliberately unauthenticated and free of secrets: booleans, timestamps, counts
  * and an error message, never the feed URL or the connection string.
  */
+/** The process's memory in MB, and the VM's remaining headroom, for /api/status. */
+function processMemoryStatus() {
+  const m = process.memoryUsage();
+  const mb = (n: number) => Math.round(n / 1048576);
+  return {
+    rssMb: mb(m.rss),
+    heapUsedMb: mb(m.heapUsed),
+    heapTotalMb: mb(m.heapTotal),
+    externalMb: mb(m.external),
+    availableMb: availableMemMb(),
+    uptimeMin: Math.round(process.uptime() / 60),
+  };
+}
+
 router.get("/status", (_req, res) => {
   void (async () => {
     const ingest = ingestStatus();
@@ -1179,6 +1194,10 @@ router.get("/status", (_req, res) => {
           knownNews: knownNewsStatus(),
           newsRead: newsReadCacheStatus(),
         },
+        // What the process weighs, in MB, next to what the VM has left
+        // (cgroup-aware, lib/mem.ts). The 10-21/10-22 deaths were the VM's
+        // memory going, and this is the only read of it without the Logs pane.
+        memory: processMemoryStatus(),
       });
     } catch (err) {
       // The archive half failed, but the ingest half is the interesting part and

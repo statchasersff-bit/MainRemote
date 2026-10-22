@@ -69,7 +69,6 @@ import type {
   StatRow,
   TeamStats,
 } from "./team/stats";
-import type { SnapshotMetric } from "./team/snapshot";
 import { TEAM_NEWS_VISIBLE } from "./team/team-data";
 import { headshotImg } from "./headshot-html";
 import { CLUB_BAND_VARIANTS } from "./image-urls";
@@ -759,77 +758,15 @@ function rankAccent(tier: string, rank: number | null): string {
 }
 
 /**
- * One snapshot card: label, number, and a footer that says where the team
- * stands and which way it is going.
- *
- * Built from the same parts as the .sct-tile below it - gold mark, ruled
- * footer, the ordinal captioned rather than housed in a pill, a percentile
- * groove along the bottom edge - at the larger scale four across earns. That
- * rhyme used to span two tabs and now runs down one: the snapshot opens the
- * Stats tab and the tiles follow it, so a reader learns the shape once at the
- * top of the page and reads every block under it for free.
- *
- * "in NFL" is gone from the ordinal. The section heading names the team and the
- * season outright - "Bills Team Stats 2026" - so the league was never in doubt,
- * and four cards each repeating it cost a line apiece to say nothing. The
- * caption beside the ordinal is the one that carries it, once, quietly.
+ * The Stats tab's opening heading, and nothing else. The four per-game cards
+ * (Points/G, Pass Yds/G, Rush Yds/G, Total Yds/G) that used to sit under it
+ * were removed at mak's request (2026-10-22); the ladders below carry the same
+ * figures. The snapshot is still fetched because the heading keys its season
+ * on what ESPN actually returned.
  */
-function snapshotCard(
-  data: TeamPageData,
-  metric: SnapshotMetric,
-  season: number,
-): string {
-  const tier = rankTier(metric.rankValue);
-  const accent = rankAccent(tier, metric.rankValue);
-
-  // The percentile groove, flush with the bottom edge: 1st fills the card and
-  // 32nd leaves a stub, so a row of four can be read as a shape before any of
-  // the ordinals are read as numbers. No rank, no groove - an empty track reads
-  // as missing data rather than as last place.
-  const track =
-    metric.rankValue !== null
-      ? `<span class="sct-metric-track" data-tier="${accent}" aria-hidden="true">` +
-        `<span class="sct-metric-fill" style="${escapeHtml(`width:${rankFill(metric.rankValue)}`)}"></span>` +
-        `</span>`
-      : "";
-
-  // The rank alone under a hairline. The year-on-year movement arrow that used
-  // to sit beside it was removed at mak's request (2026-10-20).
-  const foot = metric.rank
-    ? `<p class="sct-metric-foot">` +
-      // The tier is carried as a word as well as a color and a dot, so a
-      // reader who cannot separate the tints still gets the judgment.
-      `<span class="sct-metric-rank" data-tier="${tier}" data-accent="${accent}">` +
-      `<span class="sct-metric-dot" aria-hidden="true"></span>` +
-      `<span class="sct-metric-rank-value">${escapeHtml(metric.rank)}</span>` +
-      // No "NFL rank" caption beside the ordinal (mak, 2026-10-20): the section
-      // heading already names the league. A screen reader is still told the
-      // denominator and the tier outright.
-      `<span class="sct-visually-hidden"> of 32` +
-      (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
-      `</span>` +
-      `</span>` +
-      `</p>`
-    : "";
-
-  return (
-    `<li class="sct-metric">` +
-    `<p class="sct-metric-label">${escapeHtml(metric.label)}` +
-    `<span class="sct-visually-hidden"> (${escapeHtml(metric.description)})</span></p>` +
-    `<p class="sct-metric-value">${escapeHtml(metric.value)}</p>` +
-    foot +
-    track +
-    `</li>`
-  );
-}
-
 function renderSnapshot(data: TeamPageData): string {
   const snapshot = data.snapshot;
-  if (!snapshot || snapshot.metrics.length === 0) return "";
-
-  const cards = snapshot.metrics
-    .map((metric) => snapshotCard(data, metric, snapshot.season))
-    .join("");
+  if (!snapshot) return "";
 
   // Keyed on the season that came back, not the one the page asked for.
   // getTeamSnapshot() falls back a year when ESPN has nothing for the current
@@ -858,7 +795,6 @@ function renderSnapshot(data: TeamPageData): string {
     // the one thing worse than a heading that says nothing.
     h2(`${data.team.nickname} Team Stats ${snapshot.season}`) +
     seasonNote +
-    `<ul class="sct-metrics">${cards}</ul>` +
     `</div>`
   );
 }
@@ -1107,6 +1043,26 @@ function historyTier(row: StatRow): "elite" | "good" | "mid" | "poor" | "none" {
  * ball - turnover margin is the only one today - falls into its own group at
  * the end, which is where the table wants it anyway.
  */
+/**
+ * The heat-map tint behind a history cell, from its rank.
+ *
+ * A diverging scale: 1st is the deepest green, 32nd the deepest red, and the
+ * middle of the league fades to nothing so the eye lands on the extremes. The
+ * tints are alpha washes over the row rather than solid fills, so the navy
+ * figure and the tier-colored ordinal keep their contrast on every cell.
+ * Volume rows and unranked cells get no wash (mak, 2026-10-22: the table is a
+ * heat map).
+ */
+function historyHeat(row: StatRow): string {
+  if (row.direction === "volume" || row.rank === null) return "";
+  const t = Math.min(1, Math.max(0, (row.rank - 1) / 31));
+  const strength = Math.abs(t - 0.5) * 2; // 0 at 16th/17th, 1 at the ends
+  const alpha = (0.06 + strength * 0.3).toFixed(3);
+  return t <= 0.5
+    ? `rgba(20,107,82,${alpha})`
+    : `rgba(148,54,58,${alpha})`;
+}
+
 function historyGroup(key: string): string {
   if (key.startsWith("off-")) return "offense";
   if (key.startsWith("def-")) return "defense";
@@ -1223,8 +1179,12 @@ function renderHistory(stats: TeamStats): string {
             : "";
           const cls =
             "sct-hist-cell" + (startsGroup[col] ? " is-group-start" : "");
+          const heat = historyHeat(cell);
           return (
-            `<td class="${cls}" data-group="${escapeHtml(groups[col] ?? "")}">` +
+            `<td class="${cls}" data-group="${escapeHtml(groups[col] ?? "")}"` +
+            ` data-tier="${tier}"` +
+            (heat ? ` style="${escapeHtml(`--sct-heat:${heat}`)}"` : "") +
+            `>` +
             `<span class="sct-hist-value${best ? " is-best" : ""}">` +
             `${escapeHtml(cell.value)}${bestNote}</span>` +
             (cell.rankLabel
@@ -1269,8 +1229,8 @@ function renderHistory(stats: TeamStats): string {
     h2("Season History", "is-sub") +
     `<p class="sct-note">${escapeHtml(
       span
-        ? `Every season back to ${span}, each number ranked against the 32 teams of that year.`
-        : "Each number ranked against the 32 teams of its own season.",
+        ? `Every season back to ${span}, each number ranked against the 32 teams of that year. Greener cells rank nearer the top of the league, redder cells nearer the bottom.`
+        : "Each number ranked against the 32 teams of its own season. Greener cells rank nearer the top of the league, redder cells nearer the bottom.",
     )}</p>` +
     `<div class="sct-hist-scroll">` +
     `<table class="sct-hist">` +
@@ -1471,19 +1431,22 @@ function renderTeamStats(
   // football in it yet, and the sentence has to describe what is on the screen
   // - `state.statsSeasonIsPrior` describes the request and would say "2026" over
   // a block of 2025 numbers through the whole of Week 1.
+  // Only the fallback warning survives. In season the "regular season to date
+  // · N games" line under Common Questions is gone (mak, 2026-10-22).
   const seasonNote =
     stats.season < data.state.season
       ? `${stats.season} regular season${games} - the ${data.state.season} season has no completed team stats yet.`
-      : `${stats.season} regular season to date${games}.`;
+      : "";
   const blocks: string[] = [];
 
-  // No note under the heading (mak, 2026-10-20): the season and games line
-  // and the "1st = fewest allowed" rule are gone; each row's hidden text still
-  // says "of 32" and its tier for a screen reader.
+  // No heading or note over the first ladder group: the "Offense & Defense"
+  // sub-heading went 2026-10-22 and the season/games line went 2026-10-20,
+  // both at mak's request. The tab's opening heading directly above is the
+  // only title these ladders need; each row's hidden text still says "of 32"
+  // and its tier for a screen reader.
   if (ladders) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Offense & Defense", "is-sub") +
         `<div class="sct-ladders">${ladders}</div>` +
         `</div>`,
     );
@@ -2383,7 +2346,21 @@ function renderInjuryPanel(data: TeamPageData): string {
         .map(
           (player) =>
             `<li class="sct-injury">` +
-            slotChip(player.slot, true) +
+            // A face instead of the slot chip (mak, 2026-10-22). Decorative:
+            // the name is on the same row. The 160px square derivative covers
+            // the 36px well at 2x and then some; no photo keeps the bare well
+            // so the columns stay aligned.
+            `<span class="sct-injury-well" aria-hidden="true">` +
+            (headshotImg({
+              src: player.headshot,
+              className: "sct-injury-photo",
+              alt: "",
+              variants: ["160"],
+              width: 36,
+              height: 36,
+              loading: "lazy",
+            }) ?? "") +
+            `</span>` +
             playerName(player.name, "sct-injury-name") +
             `<span class="sct-injury-status"` +
             ` data-severity="${injurySeverity(player.injuryStatus)}">` +
@@ -2537,13 +2514,16 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
 
   return (
     `<section class="sct-panel">` +
-    `<h2 class="sct-panel-title">Next Game</h2>` +
-    `<p class="sct-nextgame-week">${escapeHtml(`Week ${next.week}`)}</p>` +
-    matchup +
+    // Rearranged at mak's request (2026-10-22): the week sits on the title's
+    // row, hard right; the date and time take the line the week used to hold,
+    // above the matchup; the venue line is gone.
+    `<h2 class="sct-panel-title">Next Game` +
+    `<span class="sct-nextgame-week">${escapeHtml(`Week ${next.week}`)}</span>` +
+    `</h2>` +
     `<p class="sct-nextgame-when">${escapeHtml(when.date)}` +
     (when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : "") +
     `</p>` +
-    (next.venue ? `<p class="sct-nextgame-venue">${escapeHtml(next.venue)}</p>` : "") +
+    matchup +
     context +
     `</section>`
   );
@@ -2731,7 +2711,7 @@ function renderMatchups(
         `<span class="sct-srow-when">${escapeHtml(line.date)}</span>` +
         status +
         (href
-          ? `<a class="sct-textlink sct-mu-view" href="${escapeHtml(href)}">View matchup ${ARROW}</a>`
+          ? `<a class="sct-textlink sct-mu-view" href="${escapeHtml(href)}">${game.status === "final" ? "View Recap" : "View matchup"} ${ARROW}</a>`
           : `<span class="sct-mu-view"></span>`) +
         `</li>`
       );
@@ -3025,19 +3005,6 @@ function renderDepthChart(
 /* --------------------------------------------------------------- schedule */
 
 /**
- * What is worth saying about a fixture beyond who and when.
- *
- * One list, built once, used by both the cards and the season table - the two
- * surfaces sit one above the other and a game that is a division game in the
- * card and an ordinary one in the row would read as two different games.
- *
- * Ordered by how much it changes a decision: the division game is the one a
- * reader is looking for, and where the game is played comes last. The kickoff
- * time already says whether it is a night game. `neutral` is suppressed for an
- * international game because every international game is played at a neutral
- * site - printing both is one fact twice.
- */
-/**
  * "Texans" for a full name too long for the schedule table's opponent column,
  * or null for one that fits.
  *
@@ -3061,18 +3028,6 @@ function briefTeamName(opponent: NflTeam | null, shown: string): string | null {
   if (nickname && nickname.length < shown.length) return nickname;
   const code = opponent.code.trim();
   return code && code.length < shown.length ? code : null;
-}
-
-export function fixtureTags(
-  game: ScheduleGame,
-): Array<{ kind: string; label: string }> {
-  const tags: Array<{ kind: string; label: string }> = [];
-  if (game.divisional) tags.push({ kind: "division", label: "Div" });
-  if (game.international) tags.push({ kind: "intl", label: "Intl" });
-  if (game.neutralSite && !game.international) {
-    tags.push({ kind: "neutral", label: "Neutral" });
-  }
-  return tags;
 }
 
 /**
@@ -3246,13 +3201,6 @@ export function renderUpcomingCard(
   const opponent = game.opponent;
   const nickname = opponent?.nickname ?? game.opponentName;
 
-  // Qualifiers other than home/away. They sit with the home/away chip because
-  // they describe the fixture rather than its logistics.
-  const tags = fixtureTags(game).map(
-    (tag) =>
-      `<span class="sct-game-tag" data-kind="${tag.kind}">${escapeHtml(tag.label)}</span>`,
-  );
-
   // Venue and network on one line. Either can be missing - ESPN has no network
   // for a game it has not scheduled a window for - and a lone separator is
   // worse than a shorter line. The network is markup rather than text because
@@ -3281,9 +3229,14 @@ export function renderUpcomingCard(
     (index === 0 ? `<span class="sct-game-next">Next game</span>` : "") +
     `<span class="sct-game-week">${escapeHtml(`Week ${game.week}`)}</span>` +
     `</span>` +
-    `<span class="sct-game-pills">${tags.join("")}` +
-    `<span class="sct-game-pill" data-kind="${game.homeAway}">` +
-    `${game.homeAway === "home" ? "Home" : "Away"}</span>` +
+    // The date and time, where the Div / Home / Away pills used to sit (mak,
+    // 2026-10-22). "vs" and "at" on the opponent line already say which side
+    // of the ball the game is on, and the division tag said nothing a reader
+    // was asking the card.
+    `<span class="sct-game-when">${escapeHtml(when.date)}` +
+    (when.time
+      ? ` · <span class="sct-game-time">${escapeHtml(when.time)}</span>`
+      : "") +
     `</span>` +
     `</div>` +
     `<div class="sct-game-matchup">` +
@@ -3295,20 +3248,11 @@ export function renderUpcomingCard(
     `<span class="sct-game-opp">` +
     `<span class="sct-homeaway">${game.homeAway === "home" ? "vs" : "at"}</span> ` +
     `${escapeHtml(nickname)}</span>` +
-    // "Chicago Bears · Thu, Oct 22 · 8:15 PM ET": the full name and the
-    // kickoff on one line under the nickname.
-    `<span class="sct-game-line">` +
-    [
-      opponent ? `<span class="sct-game-full">${escapeHtml(opponent.fullName)}</span>` : "",
-      `<span class="sct-game-when">${escapeHtml(when.date)}` +
-        (when.time
-          ? ` · <span class="sct-game-time">${escapeHtml(when.time)}</span>`
-          : "") +
-        `</span>`,
-    ]
-      .filter(Boolean)
-      .join(" · ") +
-    `</span>` +
+    // The full name under the nickname. The kickoff used to share this line
+    // and now heads the card.
+    (opponent
+      ? `<span class="sct-game-line"><span class="sct-game-full">${escapeHtml(opponent.fullName)}</span></span>`
+      : "") +
     `</span>` +
     `</div>` +
     (where.length
@@ -3420,7 +3364,9 @@ function renderFullSchedule(
         (gameMatchupHref(data.team, game, schedule, options, now)
           ? `<a class="sct-textlink sct-srow-view"` +
             ` href="${escapeHtml(gameMatchupHref(data.team, game, schedule, options, now) ?? "")}">` +
-            `<span class="sct-srow-view-label">View matchup</span> ${ARROW}</a>`
+            // A played game offers its recap, not a matchup preview (mak,
+            // 2026-10-22). Same page either way; the word is what changes.
+            `<span class="sct-srow-view-label">${game.status === "final" ? "View Recap" : "View matchup"}</span> ${ARROW}</a>`
           : `<span class="sct-srow-view"></span>`) +
         `</li>`,
     };
@@ -3911,12 +3857,10 @@ export function renderTeamPage(
     (sidebar ? `<aside class="sct-sidebar">${sidebar}</aside>` : "") +
     `</div>`;
 
-  // The snapshot leads the Stats tab: it is the four-card version of the
-  // ladders directly below it, and a reader who opens Stats is asking the
-  // question it answers first. Concatenated rather than folded into
-  // renderTeamStats() so the tab still appears carrying the snapshot alone when
-  // ESPN's season statistics fail but its team summary does not - the two come
-  // from different endpoints and fail independently.
+  // The snapshot heading leads the Stats tab. Concatenated rather than folded
+  // into renderTeamStats() so the tab still appears carrying the heading alone
+  // when ESPN's season statistics fail but its team summary does not - the two
+  // come from different endpoints and fail independently.
   const stats =
     renderSnapshot(data) + renderTeamStats(data, statsFaq, statsTail);
   const depth = renderDepthChart(data, depthChartFaq, depthTail);

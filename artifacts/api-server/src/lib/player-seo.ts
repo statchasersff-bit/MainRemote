@@ -85,10 +85,12 @@ function sectionMeta(
         `${player.name} Stats ${season}: Fantasy Points & Career Stats`,
         `${player.name} Stats ${season}: Fantasy Points & Rank`,
       ]),
+      // Reworded 2026-10-22 (mak's OK): the career-by-season table left the
+      // tab, so the description names what is there instead.
       description:
         `${player.name} ${season} stats: ${position}season totals, fantasy ` +
-        `points and positional rank, career stats by season from his rookie ` +
-        `year, and career bests.`,
+        `points and positional rank, advanced metrics, points per game every ` +
+        `season, and career bests.`,
     };
   }
 

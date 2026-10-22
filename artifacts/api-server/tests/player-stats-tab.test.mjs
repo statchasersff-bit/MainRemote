@@ -29,7 +29,14 @@ const qb = (week, pts, rank, team = "ARI", extra = {}) => ({
   stats: { pts_ppr: pts, pass_att: 30, pass_cmp: 20, pass_yd: 200, pass_td: 1, pass_int: 1, rush_att: 3, rush_yd: 10, rush_td: 0, ...extra },
 });
 
-const metric = (label, value, read, standing, pct, pctl = pct) => ({ label, value, read, standing, pct, pctl });
+// Every ranked metric carries a rank and the pool's size (2026-10-22): from
+// the "16th of 36 QBs" read when it says so, else placed by its percentile.
+const metric = (label, value, read, standing, pct, pctl = pct, of = 36) => {
+  const m = /(\d+)(?:st|nd|rd|th) of (\d+)/.exec(read);
+  const rank = m ? Number(m[1]) : pctl == null ? null : of - Math.round((pctl / 100) * (of - 1));
+  return { label, value, read, standing, pct, pctl, rank, of: rank == null ? null : m ? Number(m[2]) : of };
+};
+const fill = (rank, of) => `width:${(((of - rank + 1) / of) * 100).toFixed(1)}%`;
 
 const CURRENT = {
   season: 2026, throughWeek: 3, inProgress: true, games: 3, qualified: true, qualifiedCount: 36,
@@ -50,9 +57,9 @@ const LAST = {
     metric("Time to throw", "2.94s", "Slower to throw than 76% of QBs", "muted", null, 76),
     metric("Air yards per attempt", "7.6", "Deeper than 41% of QBs", "muted", null),
     metric("Deep-attempt rate", "8.7%", "More aggressive than 17% of QBs", "muted", null),
-    metric("Completion % over expected", "+0.9", "54th percentile", "mid", 54),
+    metric("Completion % over expected", "+0.9", "54th percentile", "mid", 54, 54, 41),
     metric("EPA per play", "+0.01", "24th of 41 QBs", "mid", 41),
-    metric("Pressure rate", "26.1%", "37 sacks, 17th percentile", "bad", 17),
+    metric("Pressure rate", "26.1%", "37 sacks, 17th percentile", "bad", 17, 17, 41),
   ],
   row: {}, pct: { deep: 17, ttt: 76 },
 };
@@ -97,7 +104,10 @@ const pairs = (card) =>
 describe("stats tab", () => {
   test("the sections in the spec's order, each with an H2 and aria-labelledby", () => {
     const doc = render(state());
-    const heads = [...doc.querySelectorAll("section")].map((sec) => {
+    // The career-rate tiles' section has no heading (mak, 2026-10-22): it is
+    // the strip under the chart, named for assistive tech only.
+    assert.equal(doc.querySelector("section.scp-st-sec-rates").getAttribute("aria-label"), "Career rates");
+    const heads = [...doc.querySelectorAll("section:not(.scp-st-sec-rates)")].map((sec) => {
       const h2 = sec.querySelector("h2");
       assert.equal(sec.getAttribute("aria-labelledby"), h2.id);
       assert.ok(sec.querySelector(".scp-ox-lede") || h2.id === "scp-st-read-h" || h2.id === "scp-st-arc-h", `${h2.id} has a lede`);
@@ -135,7 +145,9 @@ describe("stats tab", () => {
     const cmpAtt = cells[1].querySelector(".scp-st-cs [data-total]");
     assert.equal(cmpAtt.dataset.pg, "20.0/30.0");
     assert.equal(cells[1].querySelector(".scp-st-cv [data-total]"), null, "completion % is a rate");
-    assert.match(text(cells[4].querySelector(".scp-st-cv")), /^\S+ · \S+ TD$/);
+    // Rushing is the yards alone (mak, 2026-10-22): no TD figure.
+    assert.match(text(cells[4].querySelector(".scp-st-cv")), /^\S+$/);
+    assert.doesNotMatch(text(cells[4]), /TD/);
     assert.equal(doc.querySelector(".scp-st-fan"), null, "the Fantasy (PPR) block is gone");
     assert.equal(doc.querySelectorAll(".scp-st-rail").length, 1);
   });
@@ -176,23 +188,29 @@ describe("stats tab", () => {
     assert.equal(rows.length, 6);
     const rowOf = (label) => rows.find((r) => r.querySelector(".scp-st-stat-label").firstChild.textContent === label);
     assert.equal(rowOf("Time to throw"), undefined, "last season's style rows no longer appear");
-    // label | bar | value | rank, the rank as bare tinted text with the old sentence as its title.
+    // label | bar | value | rank: the rank, not the percentile (mak,
+    // 2026-10-22), as bare tinted text with the full sentence as its title.
     const epa = rowOf("EPA per play");
     assert.equal(text(epa.querySelector(".scp-st-stat-value")), "+0.10");
-    assert.equal(epa.querySelector(".scp-st-stat-rank").firstChild.textContent, "56th");
+    assert.equal(text(epa.querySelector(".scp-st-stat-rank")), "16th of 36");
     assert.equal(epa.querySelector(".scp-st-stat-rank").dataset.tier, "mid");
     assert.equal(epa.querySelector(".scp-st-stat-rank").getAttribute("title"), "16th of 36 QBs");
-    assert.equal(epa.querySelector(".scp-st-stat-fill").getAttribute("style"), "width:56%");
-    // 0-24 poor, 25-74 mid, 75+ good: tier on both the bar and the rank.
+    // Better rank, longer bar.
+    assert.equal(epa.querySelector(".scp-st-stat-fill").getAttribute("style"), fill(16, 36));
+    assert.doesNotMatch(text(doc.querySelector(".scp-st-ladders")), /percentile/);
+    // 0-24 poor, 25-74 mid, 75+ good: the percentile still tints the bar and the rank.
     const ypa = rowOf("Yards per attempt");
     assert.equal(ypa.querySelector(".scp-st-stat-bar").dataset.tier, "poor");
     assert.equal(ypa.querySelector(".scp-st-stat-rank").dataset.tier, "poor");
-    assert.equal(ypa.querySelector(".scp-st-stat-fill").getAttribute("style"), "width:8%");
+    const ypaM = CURRENT.metrics.find((m) => m.label === "Yards per attempt");
+    const ord = (n) => `${n}${n % 100 > 10 && n % 100 < 14 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+    assert.equal(text(ypa.querySelector(".scp-st-stat-rank")), `${ord(ypaM.rank)} of 36`);
+    assert.equal(ypa.querySelector(".scp-st-stat-fill").getAttribute("style"), fill(ypaM.rank, 36));
     assert.equal(rowOf("Completion rate").querySelector(".scp-st-stat-rank").dataset.tier, "good");
     // The footnote names this season's pool only; no gray rows, so no gray note.
     assert.equal(
       text(doc.querySelector(".scp-st-foot-note")),
-      "Percentiles: 2026 through Week 3 among 36 qualified QBs.",
+      "Ranks: 2026 through Week 3 among 36 qualified QBs.",
     );
     assert.equal(doc.querySelector(".scp-st-src"), null, "mak removed the sources line, 2026-09-30");
     // The SC Analysis module: the profile, then the fantasy impact.
@@ -234,15 +252,18 @@ describe("stats tab", () => {
     assert.equal(plot.getAttribute("role"), "img");
     assert.match(plot.getAttribute("aria-label"), /2024 6\.0, 2025 16\.0, 2026 16\.5 \(in progress\)\. Career average/);
     assert.equal(fig.querySelector(".scp-st-x").getAttribute("aria-hidden"), "true");
-    const pills = [...fig.querySelectorAll(".scp-st-teams span")];
-    // The club only where it changes.
-    assert.deepEqual(pills.map((p) => [text(p), p.className]), [["NE", ""], ["ARI", "is-cur"], ["", "is-same"]]);
+    // The club under every bar (mak, 2026-10-22), the current club marked;
+    // no separate team row.
+    assert.equal(fig.querySelector(".scp-st-teams"), null);
+    const clubs = [...fig.querySelectorAll(".scp-st-x > div > em")];
+    assert.deepEqual(clubs.map((p) => [text(p), p.className]), [["NE", ""], ["ARI", "is-cur"], ["ARI", "is-cur"]]);
+    assert.deepEqual([...fig.querySelectorAll(".scp-st-x > div")].map((d) => [...d.children].map((e) => e.tagName)), Array(3).fill(["STRONG", "SMALL", "EM"]));
   });
 
   test("a traded season: the chart names both clubs", () => {
     const weeks = [qb(1, 10, 20, "NYJ"), qb(2, 10, 20, "NYJ"), qb(3, 10, 20, "ARI")];
     const doc = render(state({ logCareer: [{ season: 2026, weeks, finish: 20 }] }));
-    assert.equal(text(doc.querySelector(".scp-st-teams span")), "NYJ/ARI");
+    assert.equal(text(doc.querySelector(".scp-st-x em")), "NYJ/ARI");
   });
 
   test("one NFL season: a single bar, no average line, no weekly swing", () => {
@@ -282,9 +303,13 @@ describe("stats tab", () => {
       ["redraft-command-stats-prose", "https://statchasers.com/redraft-command/?player=jacoby-brissett"],
       ["redraft-command-stats-sidebar", "https://statchasers.com/redraft-command/?player=jacoby-brissett"],
     ]);
-    // The rates open the section, ahead of the prose (mak, 2026-09-30).
-    const rates = doc.querySelector(".scp-st-rates");
-    assert.ok(rates.compareDocumentPosition(doc.querySelector(".scp-ox-prose")) & 4, "rates before the prose");
+    // The rates sit in their own section under the career chart, where the
+    // season snapshot strip was (mak, 2026-10-22), ahead of the read.
+    const rates = doc.querySelector(".scp-st-sec-rates > .scp-st-rates");
+    assert.ok(rates, "the rates have their own section");
+    assert.ok(doc.querySelector("#scp-st-chart-h, .scp-st-plot")?.compareDocumentPosition(rates) & 4, "rates after the chart");
+    assert.ok(rates.compareDocumentPosition(doc.querySelector("#scp-st-read-h")) & 4, "rates before the read's heading");
+    assert.equal(doc.querySelector("#scp-st-read-h").closest("section").querySelector(".scp-st-rates"), null, "and not inside the read");
     const tiles = [...doc.querySelectorAll(".scp-st-rate h3")].map(text);
     assert.deepEqual(tiles, ["Career PPG", "Availability", "Top-12 weeks", "Weekly swing"]);
     assert.equal(doc.querySelectorAll(".scp-st-bests li").length, 4);
@@ -298,7 +323,7 @@ describe("stats tab", () => {
     assert.equal(st.statsTabFaqs, undefined);
   });
 
-  test("career highs, the byline and the scoring footer", () => {
+  test("career highs, no byline, and the scoring footer", () => {
     const doc = render(state({ statsUpdatedMs: Date.UTC(2026, 8, 29, 12) }));
     const highs = [...doc.querySelectorAll(".scp-st-bests li")].map((li) => [...li.children].map(text));
     // One strip: figure, short label, the season under it (mak, 2026-09-30).
@@ -308,11 +333,9 @@ describe("stats tab", () => {
       ["224.0", "Fantasy pts", "2025 · QB16"],
       ["5,000", "Career pass yds", "2024–2026"],
     ]);
-    const time = doc.querySelector(".scp-st-byline time");
-    assert.equal(time.getAttribute("datetime"), "2026-09-29");
-    assert.equal(text(time), "September 29, 2026");
+    // "By the StatChasers staff. Updated <date>." is gone (mak, 2026-10-22).
+    assert.equal(doc.querySelector(".scp-st-byline"), null, "no byline, even with a date");
     assert.match(text(doc.querySelector(".scp-st-foot")), /full PPR scoring: 1 point per reception/);
-    assert.equal(render(state()).querySelector(".scp-st-byline"), null, "no date, no byline");
   });
 
   test("analyst copy replaces each template field it gives, and only those", () => {
@@ -336,7 +359,7 @@ describe("stats tab", () => {
     assert.deepEqual(paras.slice(0, 2), ["First.", "Second."]);
     assert.equal(paras.length, 3, "blank paragraphs dropped, Redraft Command paragraph kept");
     assert.ok(doc.querySelector('.scp-ox-prose [data-cta="redraft-command-stats-prose"]'));
-    assert.equal(text(doc.querySelector(".scp-st-byline")), "By Jane Analyst. Updated September 20, 2026.");
+    assert.equal(doc.querySelector(".scp-st-byline"), null, "an analyst's date prints no byline either");
     // A link to anything but http(s) or a root path stays text.
     const bad = render(state({ statsCopy: { prod_lede: "[x](javascript:alert(1))" } }));
     assert.equal(bad.querySelector(".scp-st-headrow:has(> #scp-st-prod-h) + .scp-ox-lede a"), null);
