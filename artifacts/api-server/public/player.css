@@ -3315,6 +3315,17 @@ button.scp-search-opt {
   margin: 0;
 }
 
+/* The heading is a section of its own, so the read section's 40px top and
+   the heading section's 8px bottom stacked into 48px under the H1 - the
+   other tabs sit 18px under theirs (mak, 2026-10-22). */
+.scp .scp-ol .scp-ol-sec-take {
+  padding-bottom: 0;
+}
+
+.scp .scp-ol .scp-ol-sec-take + .scp-ox-sec {
+  padding-top: 18px;
+}
+
 .scp .scp-ol .scp-ol-injured {
   margin: 0 0 10px;
   color: var(--scp-ph-bad);
