@@ -1903,6 +1903,28 @@ button.scp-search-opt {
   margin: 0;
 }
 
+/* The toggle and the game-log link share the heading's right side (mak,
+   2026-10-22): "Season totals | Per game | Game log ->". */
+.scp .scp-st-headctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.scp .scp-st .scp-st-headctl .scp-st-gl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.scp .scp-st-gl .scp-arrow {
+  color: var(--sc-gold);
+}
+
 /* In the row the heading's 18px bottom margin no longer collapses into the
    lede's 7px, so the row takes none and the lede keeps the 18px every other
    section has under its rule. */
@@ -1931,12 +1953,12 @@ button.scp-search-opt {
 
 .scp .scp-st-seg button {
   margin: 0;
-  padding: 8px 14px;
+  padding: 5px 11px;
   border: 0;
   border-radius: 7px;
   background: none;
   color: var(--scp-ph-muted);
-  font: 600 14px/1.2 var(--scp-ph-sans);
+  font: 600 13px/1.2 var(--scp-ph-sans);
   cursor: pointer;
 }
 
@@ -1976,22 +1998,27 @@ button.scp-search-opt {
   background: #e6eaf0;
 }
 
-/* Centered (mak, 2026-10-22). */
+/* Centered (mak, 2026-10-22), and compressed the same day: the label on its
+   own line, the figure and its second line together under it, so the band is
+   two lines tall rather than three. */
 .scp .scp-st-cell {
   display: flex;
   flex: 1 1 96px;
-  flex-direction: column;
-  align-items: center;
-  padding: 14px 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: 7px;
+  padding: 6px 12px 7px;
   background: #f5f7fa;
   text-align: center;
 }
 
 .scp .scp-st-cell dt {
+  flex-basis: 100%;
   margin: 0;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1.3;
@@ -2005,9 +2032,9 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-cell dd.scp-st-cv {
-  margin-top: 4px;
+  margin-top: 1px;
   color: var(--scp-ph-ink);
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
@@ -2027,7 +2054,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-cell dd.scp-st-cs {
-  margin-top: 3px;
+  margin-top: 0;
   color: var(--scp-ph-muted);
   font-size: 11px;
   line-height: 1.35;
@@ -2065,7 +2092,7 @@ button.scp-search-opt {
  * accent and their rank is untinted - the team hub's "volume" rule.
  */
 .scp .scp-st-advwrap {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .scp .scp-st-ladgroup {
@@ -2088,19 +2115,28 @@ button.scp-search-opt {
   margin-top: 16px;
 }
 
+/* Two columns (mak, 2026-10-22): Efficiency, then one card that stacks
+   Usage, Style and Context as titled groups. */
 .scp .scp-st-ladders {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
 }
 
 .scp .scp-st-ladder {
   min-width: 0;
   margin: 0;
-  padding: 12px 18px 10px;
+  padding: 10px 14px 8px;
   border: 1px solid var(--scp-ph-line);
   border-radius: 12px;
   background: #fff;
+}
+
+.scp .scp-st-ladgrp + .scp-st-ladgrp {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--scp-ph-line);
 }
 
 .scp .scp-st-ladder.is-wide {
@@ -2110,9 +2146,9 @@ button.scp-search-opt {
 .scp .scp-st-ladder-title {
   position: relative;
   margin: 0;
-  padding-left: 12px;
+  padding-left: 10px;
   color: var(--sc-navy);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -2129,21 +2165,13 @@ button.scp-search-opt {
   background: var(--sc-gold);
 }
 
-.scp .scp-st-ladder[data-tier="style"] .scp-st-ladder-title::before,
-.scp .scp-st-ladder[data-tier="context"] .scp-st-ladder-title::before {
+.scp .scp-st-ladgrp[data-tier="style"] .scp-st-ladder-title::before,
+.scp .scp-st-ladgrp[data-tier="context"] .scp-st-ladder-title::before {
   background: color-mix(in srgb, var(--sc-navy) 45%, #fff);
 }
 
-.scp .scp-st-ladder-caption {
-  margin: 2px 0 0;
-  padding-left: 12px;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .scp .scp-st-ladder-list {
-  margin: 6px 0 0;
+  margin: 2px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -2152,11 +2180,11 @@ button.scp-search-opt {
    share a left edge down the ladder (the team hub's rule). */
 .scp .scp-st-stat {
   display: grid;
-  grid-template-columns: minmax(96px, 1fr) minmax(40px, 1fr) 52px 72px;
+  grid-template-columns: minmax(96px, 1fr) minmax(40px, 1fr) 48px 64px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
-  padding: 4px 0;
+  padding: 3px 0;
   line-height: 1.2;
   border-bottom: 1px solid var(--scp-ph-line);
 }
@@ -2165,24 +2193,17 @@ button.scp-search-opt {
   border-bottom: 0;
 }
 
-/* The wide Efficiency card has room for a longer track. */
+/* A card across the width has room for a longer track. */
 .scp .scp-st-ladder.is-wide .scp-st-stat {
-  grid-template-columns: minmax(96px, 0.8fr) minmax(44px, 1.4fr) 52px 72px;
+  grid-template-columns: minmax(96px, 0.8fr) minmax(44px, 1.4fr) 48px 64px;
 }
 
-/* The three narrow cards stack each row: label, value and rank on one line,
-   the track on its own line under them, so a long label never wraps three deep. */
-.scp .scp-st-ladder:not(.is-wide) .scp-st-stat {
-  grid-template-columns: minmax(0, 1fr) 52px 72px;
-  column-gap: 8px;
-  row-gap: 4px;
-  padding: 5px 0;
-}
-
-.scp .scp-st-ladder:not(.is-wide) .scp-st-stat-bar {
-  order: 1;
-  grid-column: 1 / -1;
-  height: 6px;
+/* The stacked card's labels run longer ("Completion % over expected"), so
+   its label column takes more of the row than its track. */
+@media (min-width: 601px) {
+  .scp .scp-st-ladder.is-stack .scp-st-stat {
+    grid-template-columns: minmax(0, 1.3fr) minmax(40px, 1fr) 48px 64px;
+  }
 }
 
 .scp .scp-st-stat-label {
@@ -2195,7 +2216,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-stat-bar {
-  height: 8px;
+  height: 7px;
   overflow: hidden;
   border-radius: 999px;
   background: #eef1f5;
@@ -2252,26 +2273,21 @@ button.scp-search-opt {
 
 @media (max-width: 900px) {
   .scp .scp-st-ladders {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Phones: one column, and the wide card stacks its rows too. */
-@media (max-width: 600px) {
-  .scp .scp-st-ladders {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
-  .scp .scp-st-ladder {
-    padding: 12px 14px 10px;
-  }
-  .scp .scp-st-ladder.is-wide .scp-st-stat {
-    grid-template-columns: minmax(0, 1fr) 52px 44px;
+}
+
+/* Phones: each row stacks, label, value and rank on one line and the track
+   under them, so a long label never wraps three deep. */
+@media (max-width: 600px) {
+  .scp .scp-st-ladder .scp-st-stat {
+    grid-template-columns: minmax(0, 1fr) 48px 56px;
     column-gap: 8px;
-    row-gap: 4px;
-    padding: 5px 0;
+    row-gap: 3px;
+    padding: 4px 0;
   }
-  .scp .scp-st-ladder.is-wide .scp-st-stat-bar {
+  .scp .scp-st-ladder .scp-st-stat-bar {
     order: 1;
     grid-column: 1 / -1;
     height: 6px;
@@ -2279,7 +2295,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-foot-note {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: var(--scp-ph-muted);
   font-size: 12px;
   line-height: 1.6;
@@ -2288,20 +2304,37 @@ button.scp-search-opt {
 /* The SC Analysis module (mak, 2026-10-03): one warm block under the table, a
    3px gold left rule, a small tag, the profile and the fantasy impact. */
 .scp .scp-st-read {
-  margin-top: 20px;
-  padding: 16px 20px 18px;
+  margin-top: 14px;
+  padding: 10px 16px 12px;
   border: 1px solid #f0e2c0;
   border-left: 3px solid var(--sc-gold);
   border-radius: 8px;
   background: #fff9ed;
   color: var(--scp-ph-ink-2);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* The parts side by side (mak, 2026-10-22): a strip, not a stack. */
+.scp .scp-st-sca-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+
+.scp .scp-st-sca-part {
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .scp .scp-st-sca-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .scp .scp-st-sca-tag {
   display: inline-block;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   padding: 3px 8px;
   border-radius: 4px;
   background: var(--sc-navy);
@@ -2328,10 +2361,6 @@ button.scp-search-opt {
 .scp .scp-st-read p {
   margin: 2px 0 0;
   padding: 0;
-}
-
-.scp .scp-st-read p + h3.scp-st-sca-h {
-  margin-top: 12px;
 }
 
 .scp .scp-st-read strong {
@@ -2373,15 +2402,25 @@ button.scp-search-opt {
 /* A gutter right of the last bar for the average's label, on both rows so
    the year labels stay under their bars. */
 .scp .scp-st-arc.has-avg :is(.scp-st-plot, .scp-st-x) {
-  min-width: max(620px, calc(var(--scp-n) * 60px + 64px));
-  padding-right: 72px;
+  min-width: max(620px, calc(var(--scp-n) * 60px + 62px));
+  padding-right: 66px;
+}
+
+/* The heading sits close over the plot, and the plot is 200px tall (mak,
+   2026-10-22; it was 320 for values that top out under 20). */
+.scp .scp-st #scp-st-arc-h {
+  margin-bottom: 8px;
+}
+
+.scp .scp-st .scp-ox-sec:has(> #scp-st-arc-h) {
+  padding-bottom: 0;
 }
 
 .scp .scp-st-plot {
   position: relative;
   box-sizing: border-box;
-  height: 320px;
-  padding-top: 24px;
+  height: 200px;
+  padding-top: 20px;
   align-items: end;
   border-bottom: 1px solid var(--scp-ph-line);
 }
@@ -2391,25 +2430,25 @@ button.scp-search-opt {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc((100% - 24px) * var(--scp-avg));
+  bottom: calc((100% - 20px) * var(--scp-avg));
   border-top: 1px dashed #a9b2c0;
 }
 
 .scp .scp-st-avg {
   position: absolute;
   right: 0;
-  bottom: calc((100% - 24px) * var(--scp-avg) + 4px);
-  width: 64px;
+  bottom: calc((100% - 20px) * var(--scp-avg) + 3px);
+  width: 60px;
   color: var(--scp-ph-muted);
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: 11px;
+  line-height: 1.15;
   text-align: right;
 }
 
 .scp .scp-st-avg b {
   display: block;
   color: var(--scp-ph-ink-2);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   font-stretch: 80%;
 }
@@ -2424,8 +2463,8 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-col b {
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 3px;
+  font-size: 13px;
   font-weight: 700;
   font-stretch: 80%;
 }
@@ -2444,7 +2483,7 @@ button.scp-search-opt {
 
 .scp .scp-st-col:is(.is-last, .is-now) b {
   color: var(--scp-ph-ink);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .scp .scp-st-col.is-last i {
@@ -2460,31 +2499,32 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-x {
-  margin-top: 8px;
+  margin-top: 4px;
   color: var(--scp-ph-muted);
   font-size: 12px;
+  line-height: 1.25;
   text-align: center;
 }
 
 .scp .scp-st-x strong {
   display: block;
   color: var(--scp-ph-ink);
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 .scp .scp-st-x small {
   display: block;
   color: #9aa5b4;
-  font-size: 10.5px;
+  font-size: 10px;
 }
 
 /* The club under every bar (mak, 2026-10-22), as quiet text; the current
    club in the team color. */
 .scp .scp-st-x em {
   display: block;
-  margin-top: 2px;
+  margin-top: 0;
   color: var(--scp-ph-muted);
-  font-size: 11px;
+  font-size: 10.5px;
   font-style: normal;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -2534,34 +2574,44 @@ button.scp-search-opt {
    Open strips, not cards (mak, 2026-09-30): the rates open the section above
    the prose, the highs close it; spacing and type do the work. */
 
+/* A footer strip to the chart (mak, 2026-10-22): the figure and its label on
+   one line, a short caption under them, the strip tight under the year row. */
+.scp .scp-st .scp-st-sec-rates {
+  padding-top: 10px;
+}
+
 .scp .scp-st-rates {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 24px;
-  margin: 4px 0 20px;
-  padding: 16px 0;
+  gap: 0 16px;
+  margin: 0 0 8px;
+  padding: 9px 0 10px;
   border-top: 1px solid var(--scp-ph-line);
   border-bottom: 1px solid var(--scp-ph-line);
 }
 
 .scp .scp-st-rate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 7px;
   padding: 0;
 }
 
 .scp .scp-st-rate .scp-st-v {
   margin: 0;
   padding: 0;
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 800;
   font-stretch: 78%;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .scp .scp-st-rate h3 {
-  margin: 8px 0 2px;
+  margin: 0;
   padding: 0;
   color: var(--scp-ph-ink);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
   line-height: 1.3;
@@ -2569,11 +2619,12 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-rate p:last-child {
+  flex-basis: 100%;
   margin: 0;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 11.5px;
+  line-height: 1.3;
 }
 
 .scp .scp-st-bests-h {
@@ -8947,17 +8998,19 @@ a.scp-peer:focus-visible {
 .scp-nexts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
 }
 
+/* Compact (mak, 2026-10-22): tighter padding and gaps, smaller crest, code
+   and rank, so the card is about a quarter shorter with every line kept. */
 .scp-next {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px 15px;
+  gap: 2px;
+  padding: 8px 12px 9px;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius);
   background: var(--sc-surface);
@@ -8995,7 +9048,7 @@ a.scp-peer:focus-visible {
 /* Small, uppercase, muted - the label, not the content. */
 .scp-next-week {
   margin: 0;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -9027,15 +9080,15 @@ a.scp-peer:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  margin: 0;
+  gap: 6px;
+  margin: 2px 0 0;
   min-width: 0;
 }
 
 .scp-next-logo {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 
@@ -9047,13 +9100,13 @@ a.scp-peer:focus-visible {
  * loud: the marker qualifies the opponent, it is not the headline.
  */
 .scp-next-ha {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--sc-muted);
 }
 
 .scp-next-code {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -9063,7 +9116,7 @@ a.scp-peer:focus-visible {
 .scp-next-name {
   margin: 0;
   text-align: center;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--sc-muted-strong);
   overflow: hidden;
@@ -9092,21 +9145,22 @@ a.scp-peer:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: auto -16px -15px;
-  padding: 11px 16px 12px;
+  /* Inside the card's padding, not bled to its edges: the link used to sit on
+     the card's bottom border as a full-width foot (mak, 2026-10-22). The
+     hairline above it stays, inset to the card's content width. */
+  margin: auto 0 0;
+  padding: 6px 0 0;
   border-top: 1px solid var(--sc-hairline);
-  border-radius: 0 0 var(--sc-radius) var(--sc-radius);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--sc-navy);
   text-decoration: none;
-  transition: background 120ms ease, color 120ms ease;
+  transition: color 120ms ease;
 }
 
 .scp-next-cta:hover,
 .scp-next-cta:focus-visible {
-  background: var(--sc-surface-soft);
   color: var(--sc-gold-deep);
 }
 
@@ -9122,11 +9176,8 @@ a.scp-peer:focus-visible {
   transform: translateX(2px);
 }
 
-/* The card gains a foot, so the gap between its lines must not also apply
-   above the button - `auto` handles the spacing. */
-.scp-next {
-  padding-bottom: 0;
-}
+/* The link is pinned to the foot by its own `auto` top margin; the card keeps
+   its bottom padding under it (mak, 2026-10-22). */
 
 /* ---- the matchup rank ---- */
 
@@ -9139,8 +9190,8 @@ a.scp-peer:focus-visible {
  * under it.
  */
 .scp-next-matchup {
-  margin: 4px 0 0;
-  padding-top: 10px;
+  margin: 2px 0 0;
+  padding-top: 6px;
   border-top: 1px solid var(--sc-hairline);
 }
 
@@ -9154,7 +9205,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp-next-rank {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
@@ -9171,9 +9222,9 @@ a.scp-peer:focus-visible {
  * traffic light, which is the thing the band system exists to avoid.
  */
 .scp-next-read {
-  margin: 2px 0 0;
+  margin: 0;
   text-align: center;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--sc-muted-strong);
 }
@@ -9217,7 +9268,7 @@ a.scp-peer:focus-visible {
    the Next flag keep the left; this takes whatever is right of them. */
 .scp-next-when {
   margin: 0 0 0 auto;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   text-align: right;
   white-space: nowrap;
@@ -10216,8 +10267,31 @@ a.scp-peer:focus-visible {
 .scp .scp-gl-ladder {
   background: #fff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
-  padding: 18px 24px 14px;
+  border-radius: 14px;
+  padding: 10px 18px 8px;
+}
+/* The heading and the tier counts share a row (mak, 2026-10-22); the lede
+   paragraph under the heading is gone. */
+.scp .scp-gl-headrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin: 0 0 10px;
+}
+.scp .scp-gl-headrow .scp-ox-h2 {
+  margin: 0;
+}
+.scp .scp-gl-sum {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--scp-ph-muted);
+  white-space: nowrap;
+}
+.scp .scp-gl-sum i {
+  font-style: normal;
+  color: #b4bcc8;
 }
 /*
  * Restyled 2026-10-22 to mak's notes: one band read as a performance
@@ -10228,19 +10302,19 @@ a.scp-peer:focus-visible {
  */
 .scp .scp-gl-tiers {
   position: relative;
-  height: 14px;
-  margin-bottom: 8px;
+  height: 12px;
+  margin-bottom: 5px;
 }
 .scp .scp-gl-tiers span {
   position: absolute;
   top: 0;
   display: block;
   text-align: center;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  line-height: 14px;
+  line-height: 12px;
   color: var(--scp-ph-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -10255,15 +10329,15 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-track {
   position: relative;
-  height: 12px;
-  border-radius: 6px;
+  height: 10px;
+  border-radius: 5px;
   background: #eef1f5;
   box-shadow: inset 0 1px 2px rgba(14, 27, 46, 0.07);
   /* Room under the band for one row of labels; has-below adds the second. */
-  margin: 0 0 46px;
+  margin: 0 0 36px;
 }
 .scp .scp-gl-track.has-below {
-  margin-bottom: 82px;
+  margin-bottom: 66px;
 }
 .scp .scp-gl-band {
   position: absolute;
@@ -10282,8 +10356,8 @@ a.scp-peer:focus-visible {
 /* The tier cutoffs: a hairline through the band, a touch past both edges. */
 .scp .scp-gl-mark {
   position: absolute;
-  top: -5px;
-  bottom: -5px;
+  top: -4px;
+  bottom: -4px;
   width: 1px;
   margin-left: -0.5px;
   background: rgba(14, 27, 46, 0.22);
@@ -10296,8 +10370,8 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-pin i {
   display: block;
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--scp-ph-ink);
   box-shadow:
@@ -10309,18 +10383,18 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-pin span {
   position: absolute;
-  top: 14px;
+  top: 11px;
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
   text-align: center;
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: var(--scp-ph-muted);
   line-height: 1.2;
 }
 /* The second label row, for a week whose neighbor took the first. */
 .scp .scp-gl-pin.is-below span {
-  top: 50px;
+  top: 41px;
 }
 /* Hidden visually, kept for screen readers. */
 .scp .scp-gl-pin.is-nolabel span {
@@ -10333,7 +10407,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-pin span strong {
   display: block;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   font-stretch: 80%;
   color: var(--scp-ph-ink);
@@ -10354,21 +10428,24 @@ a.scp-peer:focus-visible {
   margin-top: 6px;
 }
 
+/* Compact cards (mak, 2026-10-22): a short left rail (week, opponent,
+   score), the headline over the stat line over one line of context, and the
+   points at the right; the article-sized padding and type are gone. */
 .scp .scp-gl-games {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 .scp .scp-gl-game {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 120px;
-  gap: 20px;
+  grid-template-columns: 112px minmax(0, 1fr) 84px;
+  gap: 14px;
   align-items: center;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 14px;
-  padding: 18px 20px;
+  border-radius: 12px;
+  padding: 9px 14px 10px;
   /* The left border carries the tier: gold for tier 1, red for a bust. */
-  border-left: 5px solid var(--scp-ph-line);
+  border-left: 4px solid var(--scp-ph-line);
 }
 .scp .scp-gl-game.is-t12 {
   border-left-color: #b8871f;
@@ -10377,17 +10454,20 @@ a.scp-peer:focus-visible {
   border-left-color: var(--scp-ph-bad);
 }
 .scp .scp-gl-when {
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.3;
   color: var(--scp-ph-muted);
 }
 .scp .scp-gl-opp {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 800;
   font-stretch: 80%;
-  margin: 2px 0;
+  line-height: 1.2;
+  margin: 1px 0;
 }
 .scp .scp-gl-score {
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.3;
   font-weight: 700;
 }
 .scp .scp-gl-score.is-w {
@@ -10397,38 +10477,42 @@ a.scp-peer:focus-visible {
   color: var(--scp-ph-bad);
 }
 .scp .scp-gl-head {
-  margin: 0 0 4px;
-  font-size: 16px;
+  margin: 0 0 2px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.3;
 }
 .scp .scp-gl-line {
-  font-size: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--scp-ph-ink-2);
-  margin: 0 0 6px;
+  margin: 0 0 2px;
+  line-height: 1.35;
 }
 .scp .scp-gl-note {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--scp-ph-ink);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--scp-ph-ink-2);
 }
 .scp .scp-gl-fp {
   text-align: right;
 }
 .scp .scp-gl-fp b {
   display: block;
-  font-size: 34px;
+  margin-bottom: 2px;
+  font-size: 24px;
   font-weight: 800;
   font-stretch: 76%;
   line-height: 1;
 }
 .scp .scp-gl-fbadge {
   display: inline-block;
-  min-width: 48px;
+  min-width: 44px;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 6px;
   background: #edf0f4;
   color: var(--scp-ph-ink-2);
@@ -10453,7 +10537,7 @@ a.scp-peer:focus-visible {
 
 @media (max-width: 640px) {
   .scp .scp-gl-ladder {
-    padding: 16px 14px 12px;
+    padding: 10px 12px 8px;
   }
   /* Phones: "QB1 / QB2 / BENCH" over the band, and each week label stacks
      its opponent under the week so neighbors 12% apart still clear. */
@@ -10474,13 +10558,13 @@ a.scp-peer:focus-visible {
     font-size: 14px;
   }
   .scp .scp-gl-track {
-    margin-bottom: 60px;
+    margin-bottom: 50px;
   }
   .scp .scp-gl-track.has-below {
-    margin-bottom: 110px;
+    margin-bottom: 92px;
   }
   .scp .scp-gl-pin.is-below span {
-    top: 64px;
+    top: 53px;
   }
   .scp .scp-gl-game {
     grid-template-columns: 1fr auto;

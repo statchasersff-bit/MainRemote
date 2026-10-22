@@ -162,8 +162,9 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     `</div>`;
 
   const weather = weatherText(p);
-  // The year is in the eyebrow, so the kickoff chip drops it; the city is in
-  // the context strip, so the venue chip is the stadium alone.
+  // The year is in the eyebrow, so the kickoff chip drops it; the venue chip
+  // is the stadium alone. The chips close the card, on the footer line with
+  // the book note (mak, 2026-10-22).
   const chips = [
     [ctx.date.replace(/, \d{4}$/, ""), ctx.time].filter(Boolean).join(" · "),
     ctx.network,
@@ -174,23 +175,9 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     .map((x) => `<li class="sct-pv-chip">${e(x)}</li>`)
     .join("");
 
-  // One quick-glance line under the teams: the game type, then the market
-  // when there is one, else the week and the city.
-  const gameType = isDivision
-    ? "Division game"
-    : away.team.conference === home.team.conference
-      ? "Conference game"
-      : `${away.team.conference} vs ${home.team.conference}`;
-  const hasLine = !!line && line.spread !== null && line.total !== null;
-  const context = [
-    gameType,
-    ...(hasLine
-      ? [favLine(line!.spread!, away.team, home.team), `O/U ${exact(line!.total!)}`]
-      : [meeting.weekLabel, meeting.venueCity ?? null]),
-  ]
-    .filter((x): x is string => !!x)
-    .map((x) => `<li>${e(x)}</li>`)
-    .join("");
+  // The context strip (game type, then the spread and total) that sat under
+  // the teams from 2026-10-05 is gone (mak, 2026-10-22): the division is in
+  // the eyebrow and the market is in the strip.
 
   let strip = "";
   let note = "";
@@ -213,12 +200,6 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     note = `<p class="sct-pv-bets-note">Lines move - check your book.</p>`;
   }
 
-  const updated = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "America/New_York",
-  }).format(p.updatedMs || Date.now());
-
   // Each side's wash is the club's own primary color, darkened in the CSS -
   // not the pair-contrast color, which gave the Jets their white (gray here).
   const heroStyle = `--pv-hero-away:${away.team.primaryColor};--pv-hero-home:${home.team.primaryColor}`;
@@ -226,8 +207,8 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
   return (
     // The hero is a data card, not a poster (mak, 2026-10-22): one top row
     // (breadcrumb left, eyebrow right), the two teams on one line around a
-    // small badge, the game type and market on one row with the kickoff
-    // chips, the betting strip, and a one-line footer. The heading stays in
+    // small badge, the betting strip, and a one-line footer: the book note
+    // and the kickoff chips (no byline since 2026-10-22). The heading stays in
     // the markup for the page's H1 and screen readers, but the two team
     // names already say it, so it is visually hidden.
     `<header class="sct-pv-hero" style="${e(heroStyle)}" aria-labelledby="${e(ctx.headingId)}">` +
@@ -245,17 +226,13 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
     `<span class="sct-pv-at" aria-hidden="true">@</span>` +
     sideBlock(home, "right") +
     `</div>` +
-    (context || chips
-      ? `<div class="sct-pv-info">` +
-        (context ? `<ul class="sct-pv-context">${context}</ul>` : "") +
+    strip +
+    (note || chips
+      ? `<div class="sct-pv-foot">` +
+        note +
         (chips ? `<ul class="sct-pv-chips">${chips}</ul>` : "") +
         `</div>`
       : "") +
-    strip +
-    `<div class="sct-pv-foot">` +
-    note +
-    `<p class="sct-pv-byline">Updated ${e(updated)} · StatChasers NFL</p>` +
-    `</div>` +
     `</header>`
   );
 }
@@ -293,26 +270,9 @@ function environment(p: Preview): { value: string; note: string | null } {
   return { value: weather ?? "Conditions TBD", note: "No betting line posted yet" };
 }
 
-function renderOutlook(p: Preview): string {
-  const picks = outlookPicks(p);
-  const env = environment(p);
-  const cell = (k: string, v: string, note?: string | null) =>
-    `<div class="sct-pv-read-cell"><dt>${e(k)}</dt><dd>${v}${note ? `<small class="sct-pv-read-why">${e(note)}</small>` : ""}</dd></div>`;
-  const cells =
-    (picks.start ? cell("Best start", whoTag(picks.start.name, picks.start.team, picks.start.pos)) : "") +
-    (picks.flex ? cell("Best flex", whoTag(picks.flex.name, picks.flex.team, picks.flex.pos)) : "") +
-    (picks.fade ? cell("Biggest fade", whoTag(picks.fade.name, picks.fade.team, picks.fade.pos)) : "") +
-    cell("Game environment", e(env.value), env.note);
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-outlook">` +
-    h2("pv-outlook", `Fantasy Outlook: ${pairOf(p)}`) +
-    `<div class="sct-pv-read sct-pv-read-4"><dl>${cells}</dl></div>` +
-    (p.snapshotNote
-      ? `<div class="sct-pv-take"><p class="sct-pv-take-h">StatChasers matchup read</p><p>${e(p.snapshotNote)}</p></div>`
-      : "") +
-    `</section>`
-  );
-}
+// The "Fantasy Outlook" section (best start / flex / fade, game environment,
+// the matchup read) that opened the body from 2026-10-05 was removed at mak's
+// request on 2026-10-22; its picks still feed the FAQ through outlookPicks().
 
 /* ----------------------------------------------------- 6b. players to watch */
 
@@ -385,7 +345,6 @@ function renderWatchList(p: Preview): string {
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-watch">` +
     h2("pv-watch", "Players to Watch") +
-    subline("Where usage or injury context makes the matchup interesting") +
     `<ul class="sct-pv-watch">` +
     items
       .map(
@@ -436,7 +395,7 @@ function renderDynasty(p: Preview): string {
 
 /* ------------------------------------------------------------- 2. the call */
 
-function renderCall(p: Preview, ctx: PreviewRenderContext): string {
+function renderCall(p: Preview): string {
   if (!p.call) return "";
   const { away, home } = p;
   const pos = 50 + p.call.lean * 45;
@@ -449,12 +408,12 @@ function renderCall(p: Preview, ctx: PreviewRenderContext): string {
     `<div class="sct-pv-meter">` +
     `<div class="sct-pv-track" aria-hidden="true"><span class="sct-pv-dot" style="left:${pos.toFixed(1)}%"></span></div>` +
     `<div class="sct-pv-meter-labels" aria-hidden="true"><span>${e(code(away.team))} controls</span><span>Competitive</span><span>${e(code(home.team))} controls</span></div>` +
-    `<p class="sct-pv-lean">${e(p.call.leanText)}</p>` +
+    // The written lean ("Projected script: CHI controls ...") and the coaching-
+    // profile footnote came off the page 2026-10-22 (mak); the lean stays for
+    // screen readers because the meter above is aria-hidden.
+    `<p class="sct-visually-hidden">${e(p.call.leanText)}</p>` +
     `</div>` +
     `</div>` +
-    `<p class="sct-pv-lede">The script logic leans on each staff's pass rate by score state, from the ` +
-    `<a href="${e(ctx.coaching(away.team))}">${e(away.team.nickname)}</a> and ` +
-    `<a href="${e(ctx.coaching(home.team))}">${e(home.team.nickname)}</a> coaching profiles.</p>` +
     `</section>`
   );
 }
@@ -559,7 +518,8 @@ function whoTag(name: string, team: string, pos: string): string {
   return `${playerLink(name)} <span class="sct-pv-pos">${e(team)} · ${e(pos)}</span>`;
 }
 
-function renderBoard(p: Preview): string {
+// Unmounted 2026-10-22 (mak): kept so the board can come back as it was.
+export function renderBoard(p: Preview): string {
   if (!p.board.away.length && !p.board.home.length) return "";
   const column = (s: PreviewSide, rows: BoardRow[]) =>
     `<div class="sct-pv-col">` +
@@ -571,22 +531,11 @@ function renderBoard(p: Preview): string {
       ? `<ul class="sct-pv-rows">${rows.map(boardCard).join("")}</ul>`
       : `<p class="sct-pv-empty">No player on this side is rostered in 5% of leagues.</p>`) +
     `</div>`;
-  const key =
-    `<div class="sct-pv-key"><span class="sct-pv-key-h">Recommendation key</span>` +
-    verdictChip("MUST START") +
-    verdictChip("START") +
-    verdictChip("FLEX") +
-    verdictChip("SIT") +
-    `<span class="sct-pv-verdict is-out">Out</span>` +
-    `<span class="sct-pv-verdict is-q">Questionable</span>` +
-    `</div>`;
+  // The "Who should you start" subline, the "12-team PPR · 5%+ rostered"
+  // lede and the recommendation key came off 2026-10-22 (mak).
   return (
     `<section class="sct-pv-sec" id="start-sit" aria-labelledby="pv-board">` +
     h2("pv-board", "Start/Sit Board") +
-    subline(`Who should you start in ${pairOf(p)}?`) +
-    `<p class="sct-pv-lede"><b>12-team PPR · 5%+ rostered players.</b> ` +
-    `Rankings adjust for player production, matchup and team implied scoring.</p>` +
-    key +
     `<div class="sct-pv-cols">` +
     column(p.away, p.board.away) +
     column(p.home, p.board.home) +
@@ -610,29 +559,15 @@ function levPill(chip: Leverage): string {
   return `<span class="sct-pv-lev is-${chip}"><b>${e(label)}</b><small>${e(sub)}</small></span>`;
 }
 
-function renderLeverage(p: Preview, ctx: PreviewRenderContext): string {
+function renderLeverage(p: Preview): string {
   if (!p.leverage.length) return "";
   const team = (k: SideKey) => (k === "away" ? p.away : p.home).team;
   const who = (r: LeverageRow) =>
     `${playerLink(r.name)} <span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span>`;
 
-  const read = p.leverageRead;
-  const readCells = read
-    ? [
-        read.edge ? ["Best edge", who(read.edge)] : null,
-        read.fade ? ["Toughest matchup", who(read.fade)] : null,
-        read.conflict ? [read.conflict.text, who(read.conflict.row)] : null,
-      ]
-        .filter((x): x is string[] => !!x)
-        .map(([k, v]) => `<div class="sct-pv-read-cell"><dt>${e(k)}</dt><dd>${v}</dd></div>`)
-        .join("")
-    : "";
-  const counts = read
-    ? `<p class="sct-pv-counts">` +
-      `<span class="is-up"><b>${read.up}</b> ${read.up === 1 ? "upgrade" : "upgrades"}</span>` +
-      `<span class="is-down"><b>${read.down}</b> ${read.down === 1 ? "downgrade" : "downgrades"}</span>` +
-      `<span><b>${read.neutral}</b> neutral</span></p>`
-    : "";
+  // The "Leverage read" box (counts, best edge, toughest matchup, conflict)
+  // and the usage-through meta line came off 2026-10-22 (mak); leverageRead
+  // still feeds the watch list and the FAQ.
 
   const roleCell = (r: LeverageRow) =>
     r.roleStats.length
@@ -649,15 +584,7 @@ function renderLeverage(p: Preview, ctx: PreviewRenderContext): string {
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-lev">` +
     h2("pv-lev", `${pairOf(p)} Matchup Leverage`) +
-    subline("Where role and opponent create an edge") +
     `<p class="sct-pv-lede">Points allowed tells you where a defense is vulnerable. Matchup Leverage adds the missing piece: whether each player has the role to exploit it.</p>` +
-    `<p class="sct-pv-meta-line">` +
-    `${p.usageThrough ? `Usage through Week ${p.usageThrough}` : "Usage to date"} · PPR scoring · Usage Reports: ` +
-    `<a href="${e(ctx.usage(p.away.team))}">${e(p.away.team.nickname)}</a>, ` +
-    `<a href="${e(ctx.usage(p.home.team))}">${e(p.home.team.nickname)}</a></p>` +
-    (readCells || counts
-      ? `<div class="sct-pv-read"><p class="sct-pv-read-h">Leverage read</p>${counts}${readCells ? `<dl>${readCells}</dl>` : ""}</div>`
-      : "") +
     `<div class="sct-pv-scroll"><table class="sct-pv-table sct-pv-levtable">` +
     `<thead><tr><th scope="col">Player</th><th scope="col">Role signal</th><th scope="col">Matchup signal</th><th scope="col">Leverage</th></tr></thead>` +
     `<tbody>` +
@@ -784,14 +711,12 @@ function renderSnapshot(p: Preview, ctx: PreviewRenderContext): string {
     (teamRows
       ? `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
         h2("pv-snap", `${pair} Team Matchup`) +
-        subline("How the offenses and defenses compare") +
         `<div class="sct-pv-card"><table class="sct-pv-compare">${head}<tbody>${teamRows}</tbody></table></div>` +
         `</section>`
       : "") +
     (fpaRows
       ? `<section class="sct-pv-sec" aria-labelledby="pv-fpa">` +
         h2("pv-fpa", "Fantasy Points Allowed by Position") +
-        subline("QB, RB, WR and TE matchup strength") +
         `<div class="sct-pv-card">` +
         (p.fpaHeadlines ? fpaHeadlineCells(p.fpaHeadlines) : "") +
         `<table class="sct-pv-compare is-fpa">${head}<tbody>${fpaRows}</tbody></table>` +
@@ -835,35 +760,15 @@ function renderInjuries(p: Preview): string {
     `</ul></div>`;
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-inj">` +
+    // The lede and the "Injury impact" strip (biggest beneficiary, watch, no
+    // impact) came off 2026-10-22 (mak); injuryImpact still feeds the watch
+    // list and the FAQ.
     h2("pv-inj", `${pairOf(p)} Injury Report & Fantasy Impact`) +
-    `<p class="sct-pv-lede">Designations and practice notes from the official report; each line says what the injury changes for lineups.</p>` +
-    injuryImpactStrip(p) +
     `<div class="sct-pv-cards">${card(p.away)}${card(p.home)}</div>` +
     `</section>`
   );
 }
 
-/** The Injury Impact strip over the cards. */
-function injuryImpactStrip(p: Preview): string {
-  const i = p.injuryImpact;
-  if (!i) return "";
-  const names = (list: Array<{ name: string; team: string }>) => {
-    const shown = list
-      .slice(0, 3)
-      .map((x) => `<span class="sct-pv-nowrap">${playerLink(x.name)} <span class="sct-pv-pos">${e(x.team)}</span></span>`);
-    return shown.join(", ") + (list.length > 3 ? ` <span class="sct-pv-pos">+${list.length - 3} more</span>` : "");
-  };
-  const cells = [
-    i.beneficiary
-      ? `<div class="sct-pv-read-cell"><dt>Biggest beneficiary</dt><dd>${playerLink(i.beneficiary.name)} ` +
-        `<span class="sct-pv-pos">${e(i.beneficiary.team)} · ${e(i.beneficiary.pos)}</span>` +
-        `<small class="sct-pv-read-why">with ${e(i.beneficiary.because)}</small></dd></div>`
-      : "",
-    i.watch.length ? `<div class="sct-pv-read-cell"><dt>Watch closely</dt><dd>${names(i.watch)}</dd></div>` : "",
-    i.none.length ? `<div class="sct-pv-read-cell"><dt>No fantasy impact</dt><dd>${names(i.none)}</dd></div>` : "",
-  ].join("");
-  return cells ? `<div class="sct-pv-read"><p class="sct-pv-read-h">Injury impact</p><dl>${cells}</dl></div>` : "";
-}
 
 /* --------------------------------------------------------------- 7. h2h */
 
@@ -898,10 +803,8 @@ function renderH2h(p: Preview, ctx: PreviewRenderContext): string {
     (h.avgPoints !== null ? stat(one(h.avgPoints), "Avg total points", h.avgVsTotal) : "") +
     (h.third ? stat(h.third.value, h.third.label) : "") +
     `</div>` +
-    (h.trend
-      ? `<div class="sct-pv-take"><p class="sct-pv-take-h">Series trend</p><p>${e(h.trend.text)} ${e(h.trend.margin)}</p></div>`
-      : "") +
-    `<p class="sct-pv-lede">${e(h.lede)}</p>` +
+    // The "Series trend" box and the "These two have met N times" lede came
+    // off 2026-10-22 (mak); the tiles and the game cards carry the facts.
     `<ol class="sct-pv-games" aria-label="Recent meetings">${cards}</ol>` +
     `</section>`
   );
@@ -1209,9 +1112,9 @@ export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: Pr
     `<div class="sct-pv">` +
     lead +
     renderIntro(p) +
-    renderOutlook(p) +
-    renderCall(p, ctx) +
-    renderBoard(p) +
+    renderCall(p) +
+    // The Start/Sit Board section came off the page 2026-10-22 (mak); its
+    // rows still feed the FAQ, the watch list and the outlook picks.
     nextStep(
       "preview-startsit",
       "Have two players you're deciding between?",
@@ -1219,7 +1122,7 @@ export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: Pr
       START_SIT_URL,
       "Open the Start/Sit Tool",
     ) +
-    renderLeverage(p, ctx) +
+    renderLeverage(p) +
     nextStep(
       "preview-optimizer",
       "Apply these matchup edges to your lineup.",

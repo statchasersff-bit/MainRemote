@@ -16063,38 +16063,7 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1;
 }
 
-/* Row 3: the game type and market on the left, the kickoff chips on the
-   right, one line that wraps when the card is narrow. */
-:is(.sct, #sct-table-armour) .sct-pv-info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 16px;
-  margin-top: 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-context {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-context li + li::before {
-  content: "";
-  display: inline-block;
-  width: 1px;
-  height: 11px;
-  margin: 0 12px;
-  vertical-align: -1px;
-  background: rgba(255, 255, 255, 0.3);
-}
-
+/* The kickoff chips sit on the footer line, right of the book note. */
 :is(.sct, #sct-table-armour) .sct-pv-chips {
   list-style: none;
   display: flex;
@@ -16115,7 +16084,7 @@ a.sct-ex-game:hover .sct-ex-line {
   color: rgba(255, 255, 255, 0.92);
 }
 
-/* Row 4: the five markets, short. */
+/* Row 3: the five markets, short. */
 :is(.sct, #sct-table-armour) .sct-pv-bets {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -16151,23 +16120,19 @@ a.sct-ex-game:hover .sct-ex-line {
   opacity: 0.8;
 }
 
-/* Row 5: the book note and the byline on one line. */
+/* Row 4: the book note and the kickoff chips on one line. */
 :is(.sct, #sct-table-armour) .sct-pv-foot {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 4px 16px;
-  margin-top: 8px;
+  gap: 6px 16px;
+  margin-top: 10px;
   font-size: 11px;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bets-note {
   opacity: 0.65;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-byline {
-  margin-left: auto;
-  opacity: 0.6;
 }
 
 /* ---- shared */
@@ -17361,15 +17326,12 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-side.is-right .sct-pv-side-text { align-items: center; }
   :is(.sct, #sct-table-armour) .sct-pv-logo { width: 40px; height: 40px; }
   :is(.sct, #sct-table-armour) .sct-pv-name { font-size: 17px; }
-  :is(.sct, #sct-table-armour) .sct-pv-info { justify-content: center; }
   :is(.sct, #sct-table-armour) .sct-pv-chips { margin-left: 0; justify-content: center; }
   :is(.sct, #sct-table-armour) .sct-pv-foot { justify-content: center; text-align: center; }
-  :is(.sct, #sct-table-armour) .sct-pv-byline { margin-left: 0; }
 }
 
 @media (max-width: 420px) {
   :is(.sct, #sct-table-armour) .sct-pv-at { width: 24px; height: 24px; font-size: 12px; }
-  :is(.sct, #sct-table-armour) .sct-pv-context li + li::before { margin: 0 8px; }
   :is(.sct, #sct-table-armour) .sct-pv-row { flex-direction: column; gap: 6px; }
 }
 
@@ -17866,4 +17828,177 @@ a.sct-ex-game:hover .sct-ex-line {
 
 @media (max-width: 640px) {
   :is(.sct, #sct-table-armour) .sct-mu-last-list { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- "Starters vs the Defense" under the Last meeting cards (mak,
+   2026-10-22, from a screenshot of another tool, in house style): two
+   defense cards (rank pill, bar, FP/G allowed per position), then two
+   starter cards (slot, name with Q/D badge and the opposing defense's rank
+   chip, five season figures). Hub card tokens, Barlow numerals. */
+:is(.sct, #sct-table-armour) .sct-mu-starters .sct-mu-st-note + .sct-pv-cards {
+  margin-top: 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-card {
+  padding: 14px 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-card .sct-pv-colhead {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pv-muted);
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) {
+  width: 100%;
+  border-collapse: collapse;
+  border: 0;
+  margin: 0;
+  font-size: 13.5px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) :where(th, td) {
+  padding: 7px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--pv-line);
+  color: var(--pv-ink);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) tbody tr:last-child :where(th, td) {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) th[scope="row"] {
+  width: 40px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--pv-muted-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-def td:nth-child(2) {
+  width: 52px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-def .sct-pv-rank {
+  vertical-align: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-bar {
+  width: 100%;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar {
+  height: 8px;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar i[data-tier="good"] { background: var(--pv-green); }
+:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar i[data-tier="poor"] { background: var(--pv-red); }
+
+:is(.sct, #sct-table-armour) .sct-mu-st-num {
+  width: 48px;
+  text-align: right !important;
+  font: 700 17px/1 var(--pv-display);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-who {
+  width: 100%;
+  font-weight: 700;
+  white-space: normal !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-who a {
+  color: var(--pv-link);
+  text-decoration-color: var(--pv-gold);
+  text-underline-offset: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 16px;
+  vertical-align: 1px;
+  background: var(--pv-amber-bg);
+  color: var(--pv-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-badge.is-d {
+  background: var(--pv-red-bg);
+  color: var(--pv-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-vs {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--pv-muted-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="good"] { color: var(--pv-green); }
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="poor"] { color: var(--pv-red); }
+
+:is(.sct, #sct-table-armour) .sct-mu-st-stat {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-stat b {
+  font: 700 15px/1 var(--pv-display);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-k {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--pv-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--pv-muted);
+}
+
+/* Narrow: each starter becomes a two-line row, the five figures wrapping
+   under the name, so the card never scrolls sideways. */
+@media (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-mu-st-off,
+  :is(.sct, #sct-table-armour) .sct-mu-st-off tbody {
+    display: block;
+  }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--pv-line);
+  }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off tr:last-child { border-bottom: 0; }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off :where(th, td) { border: 0; padding: 2px 4px; }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off th[scope="row"] { flex: 0 0 40px; }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-who { flex: 1 1 calc(100% - 48px); width: auto; }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-stat { text-align: left !important; }
+  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-who + .sct-mu-st-stat { padding-left: 44px; }
 }

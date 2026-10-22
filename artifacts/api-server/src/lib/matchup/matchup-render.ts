@@ -152,6 +152,7 @@ import {
   type RecapBodyInput,
 } from "./recap-body";
 import { headshotImg } from "../headshot-html";
+import { renderPreviewStarters } from "./preview-starters";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
 import type { ScheduleGame } from "../team/schedule";
 import type { TeamPageData } from "../team/team-data";
@@ -3881,10 +3882,9 @@ function renderLastMeeting(data: MatchupData, options: MatchupRenderOptions): st
     `<h2 class="sct-h2 sct-pv-h2" id="sct-mu-last-h">${escapeHtml(line)}</h2>` +
     `<p class="sct-mu-last-link"><a class="sct-textlink" href="${escapeHtml(href)}">` +
     `${escapeHtml(`${meeting.away.nickname} vs ${meeting.home.nickname} full box score and player stats`)} ${ARROW}</a></p>` +
-    (rows
-      ? `<p class="sct-pv-sub">Top fantasy scorers from that game (PPR)</p>` +
-        `<ol class="sct-mu-last-list">${rows}</ol>`
-      : "") +
+    // The "Top fantasy scorers from that game (PPR)" label over the list
+    // came off 2026-10-22 (mak); the list is still labelled for assistive tech.
+    (rows ? `<ol class="sct-mu-last-list" aria-label="Top fantasy scorers from that game (PPR)">${rows}</ol>` : "") +
     `</section>`
   );
 }
@@ -3979,7 +3979,12 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
           // Watch, Snapshot, Fantasy Matchups, Injury Watch and Head-to-Head
           // blocks that sat below it for comparison are gone, and so are the
           // hub links under them - the layer's own footer carries those.
-          renderPreviewBody(data.preview, pv, pvFaq, renderLastMeeting(data, options))
+          renderPreviewBody(
+            data.preview,
+            pv,
+            pvFaq,
+            renderLastMeeting(data, options) + renderPreviewStarters(data.preview),
+          )
         : renderWatch(data) +
           renderSnapshot(data) +
           renderFantasy(data) +
