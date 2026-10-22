@@ -125,8 +125,8 @@ describe("stats tab", () => {
     const pressed = [...group.querySelectorAll("button")].map((b) => b.getAttribute("aria-pressed"));
     assert.deepEqual(pressed, ["true", "false"]);
 
-    // One light-gray rail of cells, label / figure / muted second line, and
-    // the fantasy line in its own block beside it (mak, 2026-10-03).
+    // One light-gray rail of cells, label / figure / muted second line. The
+    // Fantasy (PPR) block beside it is gone (mak, 2026-10-22).
     const cells = [...doc.querySelectorAll(".scp-st-rail > .scp-st-cell")];
     assert.deepEqual(cells.map((c) => text(c.querySelector("dt"))), ["Pass yards", "Comp %", "Pass TD", "INT", "Rushing"]);
     const yards = cells[0].querySelector(".scp-st-cv [data-total]");
@@ -136,10 +136,7 @@ describe("stats tab", () => {
     assert.equal(cmpAtt.dataset.pg, "20.0/30.0");
     assert.equal(cells[1].querySelector(".scp-st-cv [data-total]"), null, "completion % is a rate");
     assert.match(text(cells[4].querySelector(".scp-st-cv")), /^\S+ · \S+ TD$/);
-    const fantasy = doc.querySelector(".scp-st-prodrow > .scp-st-fan");
-    assert.equal(text(fantasy.querySelector("h3")), "Fantasy (PPR)");
-    assert.deepEqual(pairs(fantasy), ["Fantasy points: 49.6", "Position rank: QB17"]);
-    assert.equal(text(fantasy.querySelector(".scp-st-fan-wk")), "25.6 Best Week 3 @ SEA7.5 Worst Week 2 @ SEA");
+    assert.equal(doc.querySelector(".scp-st-fan"), null, "the Fantasy (PPR) block is gone");
     assert.equal(doc.querySelectorAll(".scp-st-rail").length, 1);
   });
 

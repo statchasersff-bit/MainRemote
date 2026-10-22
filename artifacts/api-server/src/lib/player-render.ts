@@ -2455,8 +2455,10 @@ function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): str
 
 function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabParts | null {
   const snapshot = renderStatsSnapshot(data);
-  // The "Efficiency Profile" block was removed at mak's request (2026-09-30).
-  const career = renderCareerStats(data);
+  // The "Efficiency Profile" block was removed at mak's request (2026-09-30),
+  // and the career-by-season table on 2026-10-22; the Game Log's All view
+  // still draws it (renderLogCareer).
+  const career = "";
   const faq = renderStatsFaq(data, options);
   // The sections of mak's Stats tab spec of 2026-09-29 (lib/player/stats-tab.ts).
   // Since 2026-09-30 its first three (production, advanced, career chart) open
