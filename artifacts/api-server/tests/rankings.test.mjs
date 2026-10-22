@@ -98,6 +98,45 @@ describe("tier rules", () => {
     }
   });
 
+  test("the rest-of-season board draws its own RB cliffs", () => {
+    // mak's lines, 2026-10-22: 1-3, 4-7, 8-11, 12-20, 21-28, 29-37, 38 on.
+    const cases = [
+      [1, 1], [3, 1], [4, 2], [7, 2], [8, 3], [11, 3], [12, 4], [20, 4],
+      [21, 5], [28, 5], [29, 6], [37, 6], [38, 7], [50, 7],
+    ];
+    for (const [rank, tier] of cases) {
+      assert.equal(mod.getTier("RB", rank, "ros"), tier, `ROS RB${rank} should be tier ${tier}`);
+    }
+    // The other positions, and the redraft board, keep the published rules.
+    assert.equal(mod.getTier("RB", 4, "redraft"), 1);
+    assert.equal(mod.getTier("RB", 4), 1);
+    assert.equal(mod.getTier("QB", 6, "ros"), mod.getTier("QB", 6));
+  });
+
+  test("the rest-of-season board draws its own TE cliffs", () => {
+    // mak's lines, 2026-10-22: 1-2, 3-8, 9-14, 15-22, 23-28, 29 on.
+    const cases = [
+      [1, 1], [2, 1], [3, 2], [8, 2], [9, 3], [14, 3], [15, 4], [22, 4],
+      [23, 5], [28, 5], [29, 6], [40, 6], [999, 6],
+    ];
+    for (const [rank, tier] of cases) {
+      assert.equal(mod.getTier("TE", rank, "ros"), tier, `ROS TE${rank} should be tier ${tier}`);
+    }
+    assert.equal(mod.getTier("TE", 3, "redraft"), 1);
+  });
+
+  test("the rest-of-season board draws its own WR cliffs", () => {
+    // mak's lines, 2026-10-22: 1-5, 6-12, 13-20, 21-27, 28-36, 37 on.
+    const cases = [
+      [1, 1], [5, 1], [6, 2], [12, 2], [13, 3], [20, 3], [21, 4], [27, 4],
+      [28, 5], [36, 5], [37, 6], [100, 6], [999, 6],
+    ];
+    for (const [rank, tier] of cases) {
+      assert.equal(mod.getTier("WR", rank, "ros"), tier, `ROS WR${rank} should be tier ${tier}`);
+    }
+    assert.equal(mod.getTier("WR", 5, "redraft"), 2);
+  });
+
   test("a rank past the last rule keeps the last tier", () => {
     // The boards are sliced to POSITION_LIMITS, so this is defensive - but the
     // alternative to a defined answer here is `undefined` reaching the markup.
