@@ -1149,15 +1149,22 @@ button.scp-search-opt {
 
 /* ---- season strip ---- */
 
+/*
+ * Compressed (mak, 2026-10-23): three lines a card and about 100px tall where
+ * it was 228. Line one is the week and the opponent, line two the number -
+ * the points and the finish for a played week, "22nd vs QB" for one ahead -
+ * and line three the verdict: the result word, or the matchup chip. The bar,
+ * the kickoff date, the 40px rank and the opponent link under it are gone.
+ */
 .scp .scp-ox-strip {
   display: grid;
-  grid-template-columns: repeat(7, minmax(118px, 1fr));
+  grid-template-columns: repeat(7, minmax(98px, 1fr));
   margin: 0;
   padding: 0;
   overflow-x: auto;
   background: #ffffff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
+  border-radius: 12px;
   list-style: none;
 }
 
@@ -1165,10 +1172,13 @@ button.scp-search-opt {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 228px;
+  align-items: center;
+  gap: 5px;
+  min-height: 96px;
   margin: 0;
-  padding: 16px 14px 14px;
+  padding: 13px 12px 11px;
   border-left: 1px solid var(--scp-ph-line);
+  text-align: center;
 }
 
 .scp .scp-ox-wk:first-child {
@@ -1177,50 +1187,65 @@ button.scp-search-opt {
 
 .scp .scp-ox-wk-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: baseline;
   gap: 6px;
   color: var(--scp-ph-muted);
   font-size: 12px;
-}
-
-.scp .scp-ox-wk-opp {
-  margin-top: 4px;
-  font-size: 20px;
-  font-weight: 800;
-  font-stretch: 80%;
   white-space: nowrap;
 }
 
-.scp .scp-ox-wk-bar {
-  flex: 1;
+.scp .scp-ox-wk-w {
+  font-weight: 700;
+}
+
+.scp .scp-ox-wk-opp {
+  color: var(--scp-ph-ink);
+  font-size: 14px;
+  font-weight: 800;
+  font-stretch: 80%;
+}
+
+.scp .scp-ox-wk-line {
   display: flex;
-  align-items: flex-end;
-  min-height: 60px;
-  margin: 12px 0 10px;
-}
-
-.scp .scp-ox-wk-bar i {
-  display: block;
-  width: 100%;
-  border-radius: 6px 6px 2px 2px;
-  background: var(--scp-ph-ink);
-}
-
-.scp .scp-ox-wk-bar i.is-best {
-  background: var(--scp-ph-gold);
-}
-
-.scp .scp-ox-wk-pts {
-  font-size: 26px;
+  justify-content: center;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 19px;
   font-weight: 700;
   font-stretch: 80%;
-  line-height: 1;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.scp .scp-ox-wk-line.is-muted {
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-stretch: 100%;
+}
+
+.scp .scp-ox-wk-line small {
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 100%;
+}
+
+/* The best week keeps its gold, on the number now that there is no bar. */
+.scp .scp-ox-wk-pts.is-best {
+  color: #b8871f;
+}
+
+.scp .scp-ox-wk-dot {
+  color: var(--scp-ph-line);
+  font-weight: 400;
 }
 
 .scp .scp-ox-wk-fin {
-  margin-top: 4px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  font-stretch: 100%;
 }
 
 .scp .scp-ox-wk-fin.is-good { color: var(--scp-ph-good); }
@@ -1228,14 +1253,26 @@ button.scp-search-opt {
 .scp .scp-ox-wk-fin.is-bad { color: var(--scp-ph-bad); }
 .scp .scp-ox-wk-fin.is-muted { color: var(--scp-ph-muted); font-weight: 500; }
 
+/* The third line: the result word, set small and spaced, at the card's foot. */
+.scp .scp-ox-wk-res {
+  margin-top: auto;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-ox-wk-res.is-w { color: var(--scp-ph-ink); }
+.scp .scp-ox-wk-res.is-l { color: var(--scp-ph-ink); }
+
 /*
  * Results and forecasts (mak, 2026-10-21).
  *
  * Played weeks are the record: a solid white card with a settled ink rule
- * along its top edge, the week line in ink and the result word in weight.
- * Upcoming weeks are the forecast: the hatched fill stays, and over it a
- * dashed top rule and an italic, lighter week line, so the eye reads the
- * seam between "happened" and "might" before it reads a single number.
+ * along its top edge. Upcoming weeks are the forecast: a hatched fill under a
+ * dashed top rule and an italic week line, so the eye reads the seam between
+ * "happened" and "might" before it reads a single number.
  */
 .scp .scp-ox-wk:not(.is-future):not(.is-bye)::after {
   content: "";
@@ -1252,14 +1289,10 @@ button.scp-search-opt {
   color: var(--scp-ph-ink);
 }
 
-.scp .scp-ox-wk:not(.is-future):not(.is-bye) .scp-ox-wk-top span + span {
-  font-weight: 700;
-}
-
 .scp .scp-ox-wk.is-future {
   background: repeating-linear-gradient(135deg, #fafbfc 0 8px, #f1f4f8 8px 16px);
   border-top: 3px dashed var(--scp-ph-line);
-  padding-top: 13px;
+  padding-top: 10px;
 }
 
 .scp .scp-ox-wk.is-future .scp-ox-wk-top {
@@ -1268,17 +1301,11 @@ button.scp-search-opt {
 }
 
 .scp .scp-ox-wk.is-future .scp-ox-wk-opp {
-  color: var(--scp-ph-ink);
+  font-style: normal;
   opacity: 0.8;
 }
 
-.scp .scp-ox-wk.is-future .scp-ox-wk-bar {
-  align-items: center;
-  justify-content: center;
-}
-
-/* The one card people came for: the gold frame thickens, the fill warms, and
-   the card lifts a touch off the row with a shadow so it reads first. */
+/* The one card people came for: the gold frame, the warm fill, the tag. */
 .scp .scp-ox-wk.is-next {
   z-index: 1;
   outline: 3px solid var(--scp-ph-gold);
@@ -1289,11 +1316,8 @@ button.scp-search-opt {
   /* An inner glow, not a drop shadow: the strip scrolls sideways on narrow
      screens, and a shadow outside the card would be clipped by that box. */
   box-shadow: inset 0 0 0 1px rgba(184, 135, 31, 0.22), inset 0 -28px 36px -28px rgba(184, 135, 31, 0.28);
-}
-
-/* Room under the tag: the week line starts below it instead of against it. */
-.scp .scp-ox-wk.is-next {
-  padding-top: 24px;
+  /* Room under the tag: the week line starts below it instead of against it. */
+  padding-top: 20px;
 }
 
 .scp .scp-ox-wk.is-next .scp-ox-wk-top {
@@ -1305,56 +1329,35 @@ button.scp-search-opt {
   opacity: 1;
 }
 
-.scp .scp-ox-wk.is-next .scp-ox-rank {
-  font-size: 44px;
-}
-
 .scp .scp-ox-wk.is-next::before {
   content: "Up next";
   position: absolute;
   top: -3px;
-  right: 12px;
-  padding: 3px 9px;
+  right: 10px;
+  padding: 2px 8px;
   border-radius: 0 0 6px 6px;
   background: var(--scp-ph-gold);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.scp .scp-ox-rank {
-  font-size: 40px;
-  font-weight: 800;
-  font-stretch: 70%;
-  line-height: 1;
-  text-align: center;
-}
-
-.scp .scp-ox-rank small {
-  display: block;
-  margin-top: 6px;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 500;
-  font-stretch: 100%;
-}
-
 .scp .scp-ox-wk-chips {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
   gap: 4px;
+  margin-top: auto;
 }
 
-/* The verdict word (Favorable / Neutral / Tough) is the forecast's answer, so
-   it is set a size up and heavier than it was; the matchup link beneath it
-   steps back (mak, 2026-10-21). */
 .scp .scp-ox-chip {
   display: inline-block;
-  padding: 4px 11px;
+  padding: 2px 9px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.01em;
 }
@@ -1363,20 +1366,8 @@ button.scp-search-opt {
 .scp .scp-ox-chip.is-mid { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
 .scp .scp-ox-chip.is-bad { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
 
-.scp .scp-ox .scp-ox-wk-link {
-  margin-top: 8px;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration-color: var(--scp-ph-line);
-}
-
-.scp .scp-ox .scp-ox-wk-link:hover {
-  color: var(--scp-ph-ink);
-}
-
 .scp .scp-ox-note {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: var(--scp-ph-muted);
   font-size: 13px;
 }
@@ -1385,23 +1376,35 @@ button.scp-search-opt {
 
 .scp .scp-ox-read {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
   align-items: start;
 }
 
+/* One paragraph (mak, 2026-10-23), set a size down from the 18px the four
+   paragraphs wore, with the rates and the weekly range on a small line under
+   it. */
 .scp .scp-ox-prose {
-  font-size: 18px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .scp .scp-ox-prose p {
-  margin: 0 0 1em;
+  margin: 0 0 0.8em;
   padding: 0;
 }
 
+.scp .scp-ox-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* The meter cards under the paragraph (mak, 2026-10-23). */
+.scp .scp-ox-read .scp-ox-meters {
+  margin-top: 18px;
+}
+
 .scp .scp-ox-panel {
-  padding: 20px;
+  padding: 16px 18px;
   background: #ffffff;
   border: 1px solid var(--scp-ph-line);
   border-radius: 14px;
@@ -1462,9 +1465,15 @@ button.scp-search-opt {
 .scp .scp-ox-profile {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 14px;
+  gap: 6px 14px;
   margin: 0;
   font-size: 14px;
+}
+
+/* The Redraft Command button closes the profile card (mak, 2026-10-23: the
+   two cards are one). */
+.scp .scp-ox-panel.is-profile .scp-ox-btn {
+  margin-top: 14px;
 }
 
 .scp .scp-ox-profile dt {
@@ -1903,26 +1912,13 @@ button.scp-search-opt {
   margin: 0;
 }
 
-/* The toggle and the game-log link share the heading's right side (mak,
-   2026-10-22): "Season totals | Per game | Game log ->". */
+/* The toggle on the heading's right side. The "Game log" link that shared
+   the row is gone (mak, 2026-10-23). */
 .scp .scp-st-headctl {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 14px;
-}
-
-.scp .scp-st .scp-st-headctl .scp-st-gl {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.scp .scp-st-gl .scp-arrow {
-  color: var(--sc-gold);
 }
 
 /* In the row the heading's 18px bottom margin no longer collapses into the
@@ -2691,9 +2687,11 @@ button.scp-search-opt {
 /* --------------------------------------------------------------- news tab */
 
 /*
- * mak's News spec (2026-09-30, lib/player/news-tab.ts), redesigned 2026-10-05:
- * the compact lead card, the week-grouped timeline with tags and filters, the
- * snapshot sidebar, and the teammate and team lists. Scoped .scp-nw inside .scp-ox.scp-st, like the other spec tabs.
+ * mak's News spec (2026-09-30, lib/player/news-tab.ts), rebuilt as a sports
+ * news feed on 2026-10-23: a feature card with his photo, feed rows with a
+ * marker, a category badge, one line and the fantasy result as badges on the
+ * right, compact club cards with the crest. Scoped .scp-nw inside
+ * .scp-ox.scp-st, like the other spec tabs.
  */
 
 .scp .scp-nw .scp-nw-sr {
@@ -2712,7 +2710,7 @@ button.scp-search-opt {
   border-radius: 4px;
 }
 
-/* ---- impact pills (the teammates list and the lead's badge) */
+/* ---- impact pills (the teammates list) */
 
 .scp .scp-nw .scp-nw-impact {
   display: inline-flex;
@@ -2739,19 +2737,138 @@ button.scp-search-opt {
 .scp .scp-nw .scp-nw-impact.is-up { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
 .scp .scp-nw .scp-nw-impact.is-down { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
 
-/* ---- 1. the lead (mak's News redesign, 2026-10-05)
-   A compact card: eyebrow, headline, the fantasy result as the hero metric
-   with the impact read beside it, compact stat rows, one SC Takeaway line,
-   then Box score / Game log. About a third shorter than the 09-30 card. The
-   impact still colors the left edge. */
+/* ---- badges and markers (2026-10-23) */
 
-/* The panel heading's dek: "Fantasy-relevant news, game recaps and role changes". */
-.scp .scp-nw p.scp-nw-dek {
-  margin: 7px 0 0;
-  padding: 0;
-  color: var(--scp-ph-muted);
-  font-size: 15px;
+/* GAME RECAP · INJURY · STATUS · PRACTICE · ROLE CHANGE · TRANSACTION · CONTRACT · NEWS */
+.scp .scp-nw .scp-nw-cat {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #e8ecf2;
+  color: var(--scp-ph-ink-2);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
+
+.scp .scp-nw .scp-nw-cat.is-game { background: var(--scp-ph-ink); color: #fff; }
+.scp .scp-nw .scp-nw-cat.is-injury { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+.scp .scp-nw .scp-nw-cat.is-status { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
+.scp .scp-nw .scp-nw-cat.is-prac { background: #e6f0fa; color: #1f4e8c; }
+.scp .scp-nw .scp-nw-cat.is-role { background: #efe6fa; color: #5b2d8f; }
+.scp .scp-nw .scp-nw-cat:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: #8a6414; }
+
+/* The round 40px marker: his photo, the type's icon, or the club's crest. */
+.scp .scp-nw .scp-nw-marker {
+  display: inline-flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: var(--scp-ph-ink-2);
+}
+
+.scp .scp-nw .scp-nw-marker.is-face {
+  background: #e3e8ef;
+}
+
+.scp .scp-nw .scp-nw-marker.is-face.is-empty {
+  background: transparent;
+}
+
+.scp .scp-nw .scp-nw-marker.is-crest {
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+}
+
+.scp .scp-nw .scp-nw-marker.is-injury { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+.scp .scp-nw .scp-nw-marker.is-status { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
+.scp .scp-nw .scp-nw-marker.is-prac { background: #e6f0fa; color: #1f4e8c; }
+.scp .scp-nw .scp-nw-marker.is-role { background: #efe6fa; color: #5b2d8f; }
+.scp .scp-nw .scp-nw-marker:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: #8a6414; }
+
+.scp .scp-nw img.scp-nw-face {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.scp .scp-nw img.scp-nw-crest {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+/* The finish pill, colored by its band: "QB6". */
+.scp .scp-nw .scp-nw-fin {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scp .scp-nw .scp-nw-fin.is-good { background: var(--scp-ph-good); color: #fff; }
+.scp .scp-nw .scp-nw-fin.is-mid { background: var(--scp-ph-ink); color: #fff; }
+.scp .scp-nw .scp-nw-fin.is-bad { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+
+/* CEILING · SOLID · NEUTRAL · FLOOR · INJURY · ROLE CHANGE · BYE · PENDING */
+.scp .scp-nw .scp-nw-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scp .scp-nw .scp-nw-tag:is(.is-ceiling, .is-solid) { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
+.scp .scp-nw .scp-nw-tag:is(.is-floor, .is-injury) { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+.scp .scp-nw .scp-nw-tag.is-role-change { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
+.scp .scp-nw .scp-nw-tag:is(.is-pending, .is-bye) { background: transparent; border: 1px dashed #b8c2cf; color: var(--scp-ph-muted); }
+
+/* The controlled-vocabulary impact read: "↑ Ceiling game". */
+.scp .scp-nw .scp-nw-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scp .scp-nw .scp-nw-read.is-up { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
+.scp .scp-nw .scp-nw-read.is-down { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+
+/* ---- 1. the lead */
 
 /* "LATEST UPDATE" and "SEASON TIMELINE": one small label, no gold rule. Gold
    stays on the tab's own heading. */
@@ -2771,11 +2888,10 @@ button.scp-search-opt {
   content: none;
 }
 
-/* ---- the desktop composition (mak, 2026-10-21): the lead across the top
-   (the Current Outlook card beside it went 2026-10-22), then one row of
-   two: the season timeline (60%) beside the club's reporting (40%). The
-   sections inside a row give up .scp-ox-sec's 40px; the rows carry the
-   spacing. One column under 960px, same breakpoint as .scp-ox-read. */
+/* ---- the desktop composition (mak, 2026-10-21): the lead across the top,
+   then one row of two: the season timeline (60%) beside the club's cards
+   (40%). The sections inside a row give up .scp-ox-sec's 40px; the rows
+   carry the spacing. One column under 960px, same breakpoint as .scp-ox-read. */
 .scp .scp-nw .scp-nw-top {
   padding-top: 24px;
 }
@@ -2804,8 +2920,12 @@ button.scp-search-opt {
   }
 }
 
+/* The feature card: photo on the left, the story on the right. */
 .scp .scp-nw .scp-nw-lead {
   --scp-nw-edge: #c3cbd7;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
   padding: 16px 20px 14px;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
@@ -2816,19 +2936,64 @@ button.scp-search-opt {
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item).is-up { --scp-nw-edge: var(--scp-ph-good); }
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item).is-down { --scp-nw-edge: var(--scp-ph-bad); }
 
-/* "SEP 27 · GAME RECAP" */
+.scp .scp-nw .scp-nw-lead-media {
+  position: relative;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+}
+
+.scp .scp-nw img.scp-nw-lead-img {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 14px;
+  background: #e3e8ef;
+}
+
+/* No photo: the type's icon fills the well at the same size. */
+.scp .scp-nw .scp-nw-lead-media > .scp-nw-marker {
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+}
+
+.scp .scp-nw .scp-nw-lead-media > .scp-nw-marker svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* The opponent's crest, pinned to the photo's corner on a recap. */
+.scp .scp-nw img.scp-nw-lead-opp {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 32px;
+  height: 32px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  object-fit: contain;
+}
+
+.scp .scp-nw .scp-nw-lead-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* "GAME RECAP · SEP 27" */
 .scp .scp-nw .scp-nw-lead p.scp-nw-meta {
   margin: 0 0 4px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .scp .scp-nw .scp-nw-lead h3 {
   margin: 0;
   padding: 0;
-  font-size: clamp(22px, 2.4vw, 26px);
+  font-size: clamp(21px, 2.3vw, 25px);
   font-weight: 800;
   font-stretch: 78%;
   line-height: 1.15;
@@ -2843,16 +3008,19 @@ button.scp-search-opt {
   text-decoration: underline;
 }
 
-/* date · type · source */
+/* category · date · source */
 .scp .scp-nw p.scp-nw-meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 0;
+  align-items: center;
+  gap: 3px 0;
   margin: 0;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .scp .scp-nw p.scp-nw-meta > * + *::before {
@@ -2873,21 +3041,32 @@ button.scp-search-opt {
   font-weight: 700;
 }
 
-/* "25.6 FPTS · QB4" on the left, "↑ Ceiling game" on the right. */
+/* The result row: the finish pill, the points, the score, the read. */
 .scp .scp-nw .scp-nw-hero {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 6px 16px;
+  gap: 8px 12px;
   margin: 10px 0 0;
+}
+
+.scp .scp-nw .scp-nw-hero .scp-nw-fin {
+  padding: 5px 13px;
+  font-size: 17px;
+  border-radius: 10px;
+}
+
+.scp .scp-nw .scp-nw-hero .scp-nw-tag {
+  padding: 5px 11px;
+  font-size: 13px;
+  border-radius: 10px;
 }
 
 .scp .scp-nw p.scp-nw-fpts {
   margin: 0;
   padding: 0;
   color: var(--scp-ph-ink);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   font-stretch: 78%;
   letter-spacing: -0.01em;
@@ -2895,37 +3074,21 @@ button.scp-search-opt {
   font-variant-numeric: tabular-nums;
 }
 
-/* The controlled-vocabulary impact read. */
-.scp .scp-nw .scp-nw-read {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.scp .scp-nw .scp-nw-score {
   padding: 4px 10px;
-  border-radius: 999px;
-  background: #edf0f4;
+  border-radius: 8px;
+  border: 1px solid var(--scp-ph-line);
   color: var(--scp-ph-ink-2);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.3;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.scp .scp-nw .scp-nw-read.is-up { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
-.scp .scp-nw .scp-nw-read.is-down { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
-
-.scp .scp-nw .scp-nw-lead-stats {
-  margin: 8px 0 0;
-}
-
-.scp .scp-nw .scp-nw-lead-stats p {
-  margin: 0;
-  padding: 0;
-}
-
-/* "38/52 · 280 YDS · 2 TD · 0 INT": supporting context. */
+/* "38/52 · 280 YDS · 2 TD · 0 INT": one line of supporting numbers. */
 .scp .scp-nw p.scp-nw-statline {
+  margin: 8px 0 0;
+  padding: 0;
   color: var(--scp-ph-ink-2);
   font-size: 13px;
   font-weight: 700;
@@ -2934,38 +3097,14 @@ button.scp-search-opt {
   font-variant-numeric: tabular-nums;
 }
 
+/* The one sentence. */
 .scp .scp-nw .scp-nw-lead-sum {
   max-width: 64ch;
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   padding: 0;
   color: var(--scp-ph-ink-2);
   font-size: 15px;
-  line-height: 1.55;
-}
-
-/* SC TAKEAWAY: one line, on a soft gold ground. */
-.scp .scp-nw .scp-nw-takeaway {
-  margin: 10px 0 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: var(--scp-ph-gold-soft);
-}
-
-.scp .scp-nw .scp-nw-takeaway p {
-  margin: 0;
-  padding: 0;
-  color: var(--scp-ph-ink);
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.scp .scp-nw .scp-nw-takeaway p.scp-nw-takeaway-h {
-  margin-bottom: 2px;
-  color: var(--scp-st-gold);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: 1.5;
 }
 
 /* Box score → on the left, Game log → on the right. */
@@ -3073,63 +3212,55 @@ button.scp-search-opt {
 
 .scp .scp-nw .scp-nw-items {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
+/* A feed row: marker, body, badges. A white card with the impact on its
+   left edge. */
 .scp .scp-nw .scp-nw-item {
   --scp-nw-edge: #c3cbd7;
-  padding: 1px 0 1px 12px;
-  border-left: 3px solid var(--scp-nw-edge);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px 10px 12px;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-left: 4px solid var(--scp-nw-edge);
+  border-radius: 12px;
 }
 
-/* The tag and the headline on one row (2026-10-21); the tag wraps under a
-   long headline on a narrow column rather than pushing it. */
-.scp .scp-nw .scp-nw-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
-  margin: 0 0 2px;
+.scp .scp-nw .scp-nw-body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-/* CEILING · SOLID · NEUTRAL · FLOOR · INJURY · ROLE CHANGE · BYE · PENDING */
-.scp .scp-nw p.scp-nw-tagrow {
+/* The right column: badges at the top, the link at the bottom. */
+.scp .scp-nw .scp-nw-side {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  align-self: stretch;
   gap: 8px;
-  margin: 0;
+  padding-top: 2px;
 }
 
-.scp .scp-nw .scp-nw-tag {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: #edf0f4;
-  color: var(--scp-ph-ink-2);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  text-transform: uppercase;
+.scp .scp-nw .scp-nw-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.scp .scp-nw .scp-nw-side .scp-nw-readlink {
+  margin-top: auto;
   white-space: nowrap;
 }
 
-.scp .scp-nw .scp-nw-tag:is(.is-ceiling, .is-solid) { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
-.scp .scp-nw .scp-nw-tag:is(.is-floor, .is-injury) { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
-.scp .scp-nw .scp-nw-tag.is-role-change { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
-.scp .scp-nw .scp-nw-tag:is(.is-pending, .is-bye) { background: transparent; border: 1px dashed #b8c2cf; color: var(--scp-ph-muted); }
-
-.scp .scp-nw .scp-nw-tagword {
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .scp .scp-nw .scp-nw-item h3 {
-  margin: 0;
+  margin: 3px 0 0;
   padding: 0;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -3140,59 +3271,42 @@ button.scp-search-opt {
   padding: 0;
 }
 
-/* "7.5 FPTS · QB28   ↓ 9.0 below season average   17/28 · 95 YDS · 1 TD"
-   on one row; the stats trail in muted type and wrap first when the column
-   is narrow (2026-10-21: the stat line no longer costs its own line). */
-.scp .scp-nw .scp-nw-item p.scp-nw-result {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 12px;
-  max-width: none;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-nw .scp-nw-item span.scp-nw-statline {
+.scp .scp-nw .scp-nw-item p.scp-nw-statline {
+  margin-top: 3px;
   color: var(--scp-ph-muted);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-nw .scp-nw-result b {
-  color: var(--scp-ph-ink);
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.scp .scp-nw .scp-nw-avg {
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .scp .scp-nw .scp-nw-item .scp-nw-sum {
-  margin-top: 2px;
+  margin-top: 3px;
   color: var(--scp-ph-ink-2);
   font-size: 14px;
   line-height: 1.45;
 }
 
-.scp .scp-nw p.scp-nw-take {
-  margin-top: 4px;
-  color: var(--scp-ph-muted);
-  font-size: 14px;
-  line-height: 1.5;
+/* Anything past the one line folds here. */
+.scp .scp-nw details.scp-nw-more {
+  margin-top: 3px;
 }
 
-.scp .scp-nw .scp-nw-take strong {
+.scp .scp-nw .scp-nw-more summary {
+  display: inline-block;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scp .scp-nw .scp-nw-more p {
+  margin-top: 4px;
   color: var(--scp-ph-ink-2);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .scp .scp-nw .scp-nw-item .scp-nw-readlink {
   display: inline-block;
-  margin-top: 2px;
   font-size: 13px;
 }
 
@@ -3223,41 +3337,38 @@ button.scp-search-opt {
   cursor: pointer;
 }
 
-/* ---- 4. around the team: a condensed feed in the rail (2026-10-21).
-   Date and type on one small line, the headline under it, no row height
-   to speak of; six to eight items balance the timeline. */
+/* ---- 4. around the team: four compact headline cards, each with the
+   crest, then "View all team news" (mak, 2026-10-23). */
 
-.scp .scp-nw ul.scp-nw-rail-list {
+.scp .scp-nw ul.scp-nw-cards {
+  display: grid;
+  gap: 8px;
   margin: 0;
-  padding: 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-nw .scp-nw-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 14px;
   list-style: none;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
-.scp .scp-nw .scp-nw-rail-list li {
-  margin: 0;
-  padding: 10px 0;
-  list-style: none;
+.scp .scp-nw .scp-nw-card > div {
+  min-width: 0;
 }
 
-.scp .scp-nw .scp-nw-rail-list li + li {
-  border-top: 1px solid #eef1f5;
+.scp .scp-nw .scp-nw-card p.scp-nw-meta {
+  margin: 0 0 3px;
 }
 
-.scp .scp-nw .scp-nw-rail-list p.scp-nw-meta {
-  margin: 0 0 2px;
-  font-size: 12px;
-}
-
-.scp .scp-nw .scp-nw-rail-list .scp-nw-who {
-  display: inline;
-  margin: 0;
-  font-size: 12px;
-}
-
-.scp .scp-nw .scp-nw-rail-list a.scp-nw-h {
+.scp .scp-nw .scp-nw-card a.scp-nw-h {
   display: block;
   font-size: 14px;
   line-height: 1.35;
@@ -3280,16 +3391,20 @@ button.scp-search-opt {
 
 .scp .scp-nw .scp-nw-list li {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   margin: 0;
-  padding: 14px 18px;
+  padding: 12px 18px;
   list-style: none;
 }
 
 .scp .scp-nw .scp-nw-list li + li {
   border-top: 1px solid #eef1f5;
+}
+
+.scp .scp-nw .scp-nw-list p.scp-nw-meta {
+  margin: 0 0 3px;
 }
 
 .scp .scp-nw .scp-nw-d {
@@ -3323,12 +3438,45 @@ button.scp-search-opt {
 
 @media (max-width: 640px) {
   .scp .scp-nw .scp-nw-lead {
-    padding: 16px 16px 14px;
+    gap: 12px;
+    padding: 14px 14px 12px;
+  }
+
+  .scp .scp-nw .scp-nw-lead-media,
+  .scp .scp-nw img.scp-nw-lead-img,
+  .scp .scp-nw .scp-nw-lead-media > .scp-nw-marker {
+    flex-basis: 64px;
+    width: 64px;
+    height: 64px;
+  }
+
+  /* The marker stays beside the text; the badges drop under it. */
+  .scp .scp-nw .scp-nw-item {
+    flex-wrap: wrap;
+  }
+
+  .scp .scp-nw .scp-nw-body {
+    flex: 1 1 0;
+  }
+
+  .scp .scp-nw .scp-nw-side {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    padding: 0 0 0 52px;
+  }
+
+  .scp .scp-nw .scp-nw-badges {
+    flex-direction: row;
+  }
+
+  .scp .scp-nw .scp-nw-side .scp-nw-readlink {
+    margin-left: auto;
   }
 
   .scp .scp-nw .scp-nw-list li {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 6px 12px;
   }
 
   .scp .scp-nw .scp-nw-list li > span:last-child:empty {
@@ -5170,9 +5318,6 @@ button.scp-search-opt {
  * navy makes it read as the table's edge rather than as another row, and it is
  * what the sticky header needs anyway: a white sticky row over white cells only
  * looks stuck once the borders happen to line up.
- *
- * NOT on .scp-table--role, which is four rows under a heading and has nothing
- * to scroll under.
  */
 .scp .scp-table--filled thead th,
 /*
@@ -5253,8 +5398,7 @@ button.scp-search-opt {
  * Carried by the filled tables and not by the table modifiers, so the three
  * that scroll under a navy header - the game log, the career table and the
  * injury regions - are framed by the same rule that fills them, and a fourth
- * cannot be added filled but unframed. NOT on .scp-table--role, which is four
- * rows under a heading: a frame around it would read as a card.
+ * cannot be added filled but unframed.
  *
  * border-collapse is `collapse`, so the frame's bottom edge collapses with the
  * last row's own hairline - one line, not two - and its top edge takes the
@@ -5355,10 +5499,6 @@ button.scp-search-opt {
 
 .scp .scp-table th[aria-sort="descending"] .scp-sort::after { content: " \2193"; }
 .scp .scp-table th[aria-sort="ascending"] .scp-sort::after { content: " \2191"; }
-
-.scp .scp-table--role th[scope="row"] {
-  white-space: normal;
-}
 
 .scp-ctx {
   display: inline-block;
@@ -6859,7 +6999,7 @@ button.scp-search-opt {
  */
 
 .scp-ov > * + * {
-  margin-top: 36px;
+  margin-top: 22px;
 }
 
 /* Inside a band the sections sit close: 24px against the 48px the Stats tab
@@ -6895,118 +7035,6 @@ button.scp-search-opt {
 .scp-read-hero {
   margin: 0;
 }
-
-/* The hub's answer-first sentence under the promoted heading (mak,
-   2026-10-09): one readable line, its two links in the team's ink like the
-   Overview's other links. */
-.scp .scp-answer {
-  margin: 0 0 16px;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--sc-ink, #0f172a);
-}
-
-.scp .scp-answer a {
-  color: var(--scp-team, var(--sc-navy));
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-.scp-read-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
-  gap: 1px;
-  background: var(--sc-border);
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  overflow: hidden;
-}
-
-/*
- * A strip, not a row of tiles: ~62px tall, with the figure over its label.
- *
- * The cell places the two rows itself rather than relying on source order,
- * because the order they must be SAID in and the order they read best in are
- * opposites. A screen reader gets "Scoring rate, 16.5 PPG" - the label is the
- * question, and an answer with no question is noise. On screen the figure goes
- * first, because a column of labels is not something anyone scans.
- */
-.scp-read-cell {
-  display: grid;
-  grid-template-rows: auto auto;
-  align-content: center;
-  min-height: 62px;
-  padding: 9px 14px;
-  background: var(--sc-surface-soft);
-}
-
-.scp-read-label {
-  grid-row: 2;
-  margin: 3px 0 0;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-read-value {
-  grid-row: 1;
-  margin: 0;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: var(--sc-navy);
-}
-
-/*
- * The winner.
- *
- * Four cells at one weight have no headline, and a reader's eye has to pick
- * one for itself - which is the difference between a designed page and an
- * arrangement. The first reading is the tab's answer, so it is set larger and
- * lifted off the soft fill the other three share.
- */
-.scp-read-cell[data-lead="1"] {
-  background: var(--sc-surface);
-}
-
-.scp-read-cell[data-lead="1"] .scp-read-value {
-  font-size: 23px;
-  letter-spacing: -0.025em;
-}
-
-/* The tier under the rank (mak, 2026-10-21): the rank is the value, the tier
-   a smaller line beneath it, so the lead cell shares the four others'
-   value-over-label shape instead of carrying two readings on one line. It
-   keeps the tier's color; the rank itself stays navy like every other value. */
-.scp-read-cell[data-lead="1"] .scp-read-value {
-  color: var(--sc-navy);
-}
-
-.scp .scp-read-sub {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.2;
-}
-
-.scp-read-cell[data-mod="elite"] .scp-read-sub,
-.scp-read-cell[data-mod="starter"] .scp-read-sub { color: var(--scp-tier-1); }
-.scp-read-cell[data-mod="streaming"] .scp-read-sub { color: var(--scp-tier-2); }
-
-/* The tier the player is producing at carries the accent; the direction of
-   travel takes the same three-step ramp the rest of the page reads with. */
-.scp-read-cell[data-mod="elite"]:not([data-lead]) .scp-read-value,
-.scp-read-cell[data-mod="starter"]:not([data-lead]) .scp-read-value { color: var(--scp-tier-1); }
-.scp-read-cell[data-mod="streaming"]:not([data-lead]) .scp-read-value { color: var(--scp-tier-2); }
-.scp-read-cell[data-mod="up"] .scp-read-value { color: var(--scp-risk-low); }
-.scp-read-cell[data-mod="down"] .scp-read-value { color: var(--scp-risk-high); }
 
 /* The assembled sentence. Set as prose - larger and looser than the readings
    above it - and to the page's full width, not a narrower measure of its own.
@@ -9713,14 +9741,6 @@ a.scp-peer:focus-visible {
   color: var(--scp-team) !important;
 }
 
-.scp .scp-ox .scp-ox-wk-link {
-  color: var(--scp-ph-muted) !important;
-}
-
-.scp .scp-ox .scp-ox-wk-link:hover {
-  color: var(--scp-ph-ink) !important;
-}
-
 /* The News tab's headlines and quick answers read in ink, its panel link in
    white; the armour above would paint every one of them in the club color. */
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a,
@@ -9732,14 +9752,8 @@ a.scp-peer:focus-visible {
 /* Divi's id-scoped `#left-area ol` pads and spaces the timeline list, and its
    bare h3 rule grays an unlinked headline (Divi sim, 2026-10-05). The team
    and teammate lists had the same exposure. */
-.scp .scp-nw :is(ol.scp-nw-feed, ul.scp-nw-list) {
+.scp .scp-nw :is(ol.scp-nw-feed, ul.scp-nw-list, ul.scp-nw-cards) {
   padding: 0 !important;
-  line-height: inherit !important;
-  list-style: none !important;
-}
-
-.scp .scp-nw ul.scp-nw-rail-list {
-  padding: 0 16px !important;
   line-height: inherit !important;
   list-style: none !important;
 }
@@ -10079,10 +10093,29 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bo .scp-bo-ev {
+  position: relative;
+  overflow: hidden;
   padding: 16px 18px;
   background: #ffffff;
   border: 1px solid var(--scp-ph-line);
   border-radius: 12px;
+}
+
+/* The club's crest, faded into the card's right edge (mak, 2026-10-23). Under
+   the text, never over it: the heading and the sentence keep their inks. */
+.scp .scp-bo .scp-bo-ev-logo {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 96px;
+  height: 96px;
+  transform: translateY(-50%);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.scp .scp-bo .scp-bo-ev > :not(.scp-bo-ev-logo) {
+  position: relative;
 }
 
 .scp .scp-bo .scp-bo-ev h3 {
@@ -10123,6 +10156,12 @@ a.scp-peer:focus-visible {
   line-height: 1.55;
 }
 
+/* Room for the crest: the text stops short of the card's right edge. */
+.scp .scp-bo .scp-bo-ev h3,
+.scp .scp-bo .scp-bo-ev p {
+  padding-right: 100px;
+}
+
 /* The sub-heading of the merged section (mak, 2026-10-01): the stop list
    lives under the timeline's own H2 now, and the chips row is gone. */
 /* The sidebar drops level with the heading (mak, 2026-10-01: Quick Facts sat
@@ -10142,12 +10181,6 @@ a.scp-peer:focus-visible {
   font-size: 17px !important;
   font-weight: 700;
   line-height: 1.3;
-}
-
-.scp .scp-bo .scp-bo-stopnote {
-  margin: -4px 0 14px;
-  color: var(--scp-ph-muted);
-  font-size: 13px;
 }
 
 .scp .scp-bo .scp-bo-cta {
@@ -10574,21 +10607,6 @@ a.scp-peer:focus-visible {
     grid-column: 1 / -1;
     grid-row: 2;
   }
-}
-
-/* ---- the hub's trade value line (the SEO brief of 2026-10-10). */
-.scp .scp-ox-trade {
-  margin: 14px 0 0;
-  padding: 10px 12px;
-  border: 1px solid var(--sc-border, #e3e8ef);
-  border-radius: 8px;
-  background: var(--sc-surface, #fff);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.scp .scp-ox-trade a {
-  font-weight: 700;
 }
 
 .scp .scp-row-dnp,

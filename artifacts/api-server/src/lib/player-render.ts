@@ -52,11 +52,9 @@ import {
   finishBadge,
   fpts,
   keyStatSummary,
-  metricAverage,
   gameLogColumns,
   RECEIVER_RUSH_COLUMNS,
   type LogColumn,
-  positionMomentumMetrics,
   TIER_FILL,
   weeklyTier,
   weeklyTierLabel,
@@ -91,13 +89,11 @@ import {
   matchupBand,
   OUTLOOK_SEASON,
   renderHero,
-  STARTSIT_BASE,
   type MatchupBand,
 } from "./player/header";
 import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
-import { currentRank, nextGame, oneDecimal, seasonPpg } from "./player/season-phase";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
@@ -829,166 +825,18 @@ function pageUrl(
  * last season's finish and this season's opener; a player with no rank gets
  * nothing rather than a sentence with a hole in it.
  */
-function renderHubAnswer(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const pos = data.player.position ?? "";
-  const rank = currentRank(data);
-  const ppg = seasonPpg(data);
-  // ppg > 0 for the same reason profileMeta() asks it: "WR162 (0.0 points
-  // per game)" is a true sentence nobody wants under a heading.
-  if (!pos || rank === null || ppg === null || ppg <= 0) return "";
-  const scoring = SCORING_SHORT[data.format];
-  const next = nextGame(data);
-  const outlook = sectionHref(data, options, "outlook");
-  const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
-  const link = (href: string | null, text: string) =>
-    href ? `<a href="${escapeHtml(href)}">${escapeHtml(text)}</a>` : escapeHtml(text);
-
-  const rate = `(${oneDecimal(ppg)} points per game)`;
-  const standing =
-    data.season === data.leagueSeason
-      ? `is the ${link(outlook, `${pos}${rank} in ${scoring} this season`)} ${rate}`
-      : `finished ${data.season} as the ${link(outlook, `${pos}${rank} in ${scoring}`)} ${rate}`;
-  const fixture = next
-    ? ` and ${data.season === data.leagueSeason ? "faces" : `opens ${data.leagueSeason} against`} ` +
-      link(startSit, `the ${next.opponent?.nickname ?? next.opponentName} in Week ${next.week}`)
-    : "";
-  // No fixture to hang the start/sit link on: it stands after the sentence.
-  const trail = next ? "" : ` ${link(startSit, "Start/sit call")}.`;
-  return `<p class="scp-answer">${escapeHtml(data.player.name)} ${standing}${fixture}.${trail}</p>`;
-}
-
-function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const { stats, player, outlook } = data;
-  if (!stats || stats.gamesPlayed === 0) return "";
-
-  const badge = finishBadge(data.seasonRank, player.position);
-
-  const reads: Array<{ label: string; value: string; mod: string; sub?: string }> = [];
-
-  // Only when there IS a ranked finish. Without one this cell fell back to the
-  // scoring rate, which is the next cell along - the same number twice under
-  // two labels, which is worse than three cells.
-  //
-  // The rank is the value and the tier is a smaller line under it (mak,
-  // 2026-10-21): "QB20 · Streaming" on one line was doing two jobs at the
-  // size of one, and the lead cell no longer matched the four beside it.
-  //
-  // No label on this cell (mak, 2026-10-22): "QB20 / Streaming" says what it
-  // is, and "Producing as" under it was a third line in a 62px cell.
-  if (badge) {
-    reads.push({
-      label: "",
-      value: `${player.position ?? ""}${data.seasonRank}`,
-      sub: badge.label,
-      mod: badge.tier,
-    });
-  }
-
-  reads.push(
-    {
-      label: "Scoring rate",
-      value: `${stats.ppg.toFixed(1)} PPG`,
-      mod: "",
-    },
-    {
-      label: "Played",
-      value: `${stats.gamesPlayed} game${stats.gamesPlayed === 1 ? "" : "s"}`,
-      mod: "",
-    },
-    { label: "Role", value: outlook.roleLabel, mod: "" },
-    { label: "Trend", value: outlook.formLabel, mod: outlook.formDirection },
-  );
-
-  return (
-    `<section class="scp-read-hero">` +
-    // The page's section heading, the same one the Outlook tab and the Stats
-    // tab open on. This was an 11px gold eyebrow, which is a label worn over a
-    // display line - there is no display line here, only the strip, so the
-    // eyebrow was the tab's <h2> set six sizes below every other heading.
-    h2(`${data.season} Fantasy Snapshot`) +
-    // The answer-first sentence (mak, 2026-10-09): rank, rate and the next
-    // game, linked to the start/sit page and the Outlook tab.
-    renderHubAnswer(data, options) +
-    `<div class="scp-read-grid">` +
-    reads
-      .map(
-        // The first reading is the page's answer, and it is set larger than the
-        // three beside it. A strip of four identically weighted cells has no
-        // winner, and a scouting sheet is read from its headline outwards.
-        // Label first in the MARKUP and second on screen (the cell places the
-        // two rows) - "Scoring rate, 16.5 PPG" is the order it has to be said
-        // in, and the reverse of the order it reads best in.
-        (read, i) =>
-          `<div class="scp-read-cell" data-mod="${escapeHtml(read.mod)}"` +
-          `${i === 0 ? ` data-lead="1"` : ""}>` +
-          (read.label ? `<p class="scp-read-label">${escapeHtml(read.label)}</p>` : "") +
-          `<p class="scp-read-value">${escapeHtml(read.value)}` +
-          // Read aloud as "QB20, Streaming"; on screen the tier sits under
-          // the rank in the tier's color at the label's size.
-          (read.sub ? `<span class="scp-read-sub"><span class="scp-sr">, </span>${escapeHtml(read.sub)}</span>` : "") +
-          `</p>` +
-          `</div>`,
-      )
-      .join("") +
-    `</div>` +
-    `</section>`
-  );
-}
-
 /**
- * Role Direction: the usage metrics that define this position, recent vs season.
- *
- * Usage rather than production, deliberately. Points are the outcome and
- * touches are the input, and a role that is growing shows up in the input
- * first - which is the only reason a "trending" section is worth printing at
- * all. Metrics marked `context` are the team's behavior rather than the
- * player's, and are labeled as such instead of being scored as their doing.
+ * The Overview's opening heading, and nothing under it (mak, 2026-10-23: the
+ * snapshot rail, the answer sentence and the Role Direction rail are gone).
+ * The heading stays because it is the slot promoteHeading() turns into the
+ * page's H1 on the host - "Jacoby Brissett Fantasy Football" with the small
+ * position-and-team line - so it wears those words here too instead of a
+ * "Fantasy Snapshot" caption over no snapshot.
  */
-function renderRoleDirection(data: PlayerPageData): string {
-  const played = data.gameLog.filter((e) => e.game_status === "active");
-  if (played.length < 4) return "";
-
-  const metrics = positionMomentumMetrics(data.player.position);
-  if (metrics.length === 0) return "";
-
-  const rows = metrics
-    .map((metric) => {
-      const season = metricAverage(played, metric.key);
-      const recent = metricAverage(played, metric.key, 4);
-      if (season === 0 && recent === 0) return "";
-
-      const delta = season > 0 ? ((recent - season) / season) * 100 : 0;
-      const direction = delta > 8 ? "up" : delta < -8 ? "down" : "flat";
-      const format = (value: number) =>
-        metric.pct ? pct(value, 1) : num(value);
-
-      return (
-        `<tr>` +
-        `<th scope="row">${escapeHtml(metric.label)}` +
-        (metric.context
-          ? `<span class="scp-ctx" title="Team context, not this player's own usage">team</span>`
-          : "") +
-        `</th>` +
-        `<td>${escapeHtml(format(season))}</td>` +
-        `<td>${escapeHtml(format(recent))}</td>` +
-        `<td class="scp-delta" data-dir="${direction}">${escapeHtml(
-          `${delta > 0 ? "+" : ""}${delta.toFixed(0)}%`,
-        )}</td>` +
-        `</tr>`
-      );
-    })
-    .join("");
-
-  if (!rows) return "";
-
-  return (
-    h3("Role Direction") +
-    `<table class="scp-table scp-table--role">` +
-    `<caption class="scp-caption scp-caption--quiet">Season average against the last four games played.</caption>` +
-    `<thead><tr><th scope="col">Usage</th><th scope="col">Season</th>` +
-    `<th scope="col">Last 4</th><th scope="col">Change</th></tr></thead>` +
-    `<tbody>${rows}</tbody></table>`
-  );
+function renderFantasySnapshot(data: PlayerPageData): string {
+  const { stats } = data;
+  if (!stats || stats.gamesPlayed === 0) return "";
+  return `<section class="scp-read-hero">${h2(profileHeading(data.player.name))}</section>`;
 }
 
 /* --------------------------------------------------------------------- bio */
@@ -2705,18 +2553,11 @@ export function renderPlayerPage(
    * band whose every section returned "" is not emitted - an empty wrapper
    * still draws its own top margin.
    */
-  const band = (parts: string[]): string => {
-    const html = parts.join("");
-    return html ? `<div class="scp-ov-band">${html}</div>` : "";
-  };
-
-  const overviewBody =
-    renderFantasySnapshot(data, options) +
-    // The profile band ("Fantasy Profile", "What Is Driving The Production"),
-    // the weekly one's "Weekly Profile" and "Week By Week" chart, and "Career
-    // Context" are gone: the read's sidebar profile, the meters, the season
-    // strip and the career table further down the tab answer all five.
-    band([renderRoleDirection(data)]);
+  // The profile band ("Fantasy Profile", "What Is Driving The Production"),
+  // the weekly one's "Weekly Profile" and "Week By Week" chart, "Career
+  // Context", and since 2026-10-23 the snapshot rail, the answer sentence and
+  // Role Direction are gone: the sections of the Overview spec below carry it.
+  const overviewBody = renderFantasySnapshot(data);
 
   // The wrapper is what every rule on this tab is scoped to - the sections
   // below reuse markup the Stats and Injury tabs own, and Overview's tighter

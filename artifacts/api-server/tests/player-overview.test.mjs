@@ -127,7 +127,6 @@ describe("overview sections", () => {
     assert.deepEqual(heads, [
       "Jacoby Brissett's 2026 Season, Week by Week",
       "Should You Start or Roster Jacoby Brissett?",
-      "What's Driving His Production",
       "Jacoby Brissett 2026 Game Log",
       "Career Fantasy Stats by Season",
       "Rest-of-Season Outlook and Availability",
@@ -140,12 +139,19 @@ describe("overview sections", () => {
     const all = cells(doc);
     assert.equal(all.length, 7);
     assert.equal(all.filter((c) => c.classList.contains("is-future")).length, 4);
-    assert.equal(spoken(all[0]), "Week 1 , Win , at LAC , 16.5 , QB15".replaceAll(" ,", ","));
+    // Three lines a card (mak, 2026-10-23): week and opponent, points and
+    // finish, the result.
+    assert.equal(spoken(all[0]), "Week 1, at LAC, 16.5, QB15, Win");
     assert.equal(text(all[1].querySelector(".scp-ox-wk-opp")), "vs SEA");
-    assert.ok(all[2].querySelector("i.is-best"), "the best week's bar is gold");
+    assert.ok(all[2].querySelector(".scp-ox-wk-pts.is-best"), "the best week's points are gold");
+    assert.equal(all[0].querySelector(".scp-ox-wk-res").className, "scp-ox-wk-res is-w");
     assert.equal(all[1].querySelector(".scp-ox-wk-fin").className, "scp-ox-wk-fin is-bad");
+    assert.equal(all[0].querySelector(".scp-ox-wk-bar"), null, "no bar");
     assert.ok(all[3].classList.contains("is-next"));
     assert.equal(text(all[3].querySelector(".scp-ox-chip")), "Favorable");
+    // The matchup rank reads "8th vs QB" on the number line; no date, no link.
+    assert.equal(spoken(all[3]), "Up next. Week 4, vs NYG, 8th vs QB, Favorable");
+    assert.equal(all[3].querySelector(".scp-ox-wk-link"), null, "no opponent link under the card");
     assert.equal(
       text(doc.querySelector(".scp-ox-lede")),
       "3 games played: one top-5 week, one mid-range start and one bust. The next four matchups include two of the league's softest pass defenses.",
@@ -169,7 +175,7 @@ describe("overview sections", () => {
     const doc = render(state({ leagueWeek: 0, season: 2025, gameLog: [], schedule: [] }));
     assert.equal(cells(doc).length, 7);
     assert.equal(cells(doc).filter((c) => c.querySelector(".scp-ox-wk-pts")).length, 0, "nothing played");
-    assert.equal(doc.querySelector("#scp-ox-meters-h"), null);
+    assert.equal(doc.querySelector(".scp-ox-meters"), null);
     assert.equal(doc.querySelector("#scp-ox-log-h"), null);
     assert.ok(text(doc.querySelector(".scp-ox-prose")).includes("Arizona hands him the keys"), "the outlook is the read");
   });
@@ -180,7 +186,7 @@ describe("overview sections", () => {
       leagueWeek: 18, gameLog: log, schedule: log.map((e) => final(e.week)),
       upcoming: [], upcomingStrip: [], byeWeek: null,
     }));
-    const weeks = cells(doc).map((c) => c.querySelector(".scp-ox-wk-top span").textContent);
+    const weeks = cells(doc).map((c) => spoken(c.querySelector(".scp-ox-wk-w")));
     assert.deepEqual(weeks, ["Week 11", "Week 12", "Week 13", "Week 14", "Week 15", "Week 16", "Week 17"]);
   });
 
@@ -197,10 +203,31 @@ describe("overview sections", () => {
     assert.ok(![...doc.querySelectorAll(".scp-ox-faq summary")].some((q) => /injured/i.test(text(q))));
   });
 
-  test("below the percentile threshold: no meters, and the read uses rates instead", () => {
+  test("below the percentile threshold: no meters and no efficiency clause", () => {
     const doc = render(state({ meters: { ...state().meters, meters: null } }));
+    assert.equal(doc.querySelector(".scp-ox-meters"), null);
+    assert.doesNotMatch(text(doc.querySelector(".scp-ox-prose")), /percentile/);
+  });
+
+  test("the read is one paragraph with the meters under it (mak, 2026-10-23)", () => {
+    const doc = render(state());
+    const paras = [...doc.querySelectorAll(".scp-ox-prose p")].map(text);
+    assert.equal(paras.length, 1);
+    assert.match(paras[0], /^Brissett is a QB2\/streaming option\. He is QB17 at 16\.5 PPR PPG, supported by an 81st-percentile completion rate but limited by 6th-percentile yards per attempt\. His best upcoming spot is the \w+ in Week 5, while the \w+ in Week 7 is a tougher matchup\.$/);
+    // The four meter cards sit under the paragraph, with no section of their own.
+    const meters = doc.querySelectorAll(".scp-ox-read .scp-ox-meters .scp-ox-meter");
+    assert.equal(meters.length, 4);
     assert.equal(doc.querySelector("#scp-ox-meters-h"), null);
-    assert.match(text(doc.querySelector(".scp-ox-prose")), /He is completing 66\.7% of his passes at 7\.3 yards per attempt\./);
+    assert.equal(doc.querySelector(".scp-ox-kicker"), null, "the rates line is gone");
+    // One sidebar card: the profile rows, then the button. No dynasty line.
+    const panels = [...doc.querySelectorAll(".scp-ox-aside .scp-ox-panel")];
+    assert.equal(panels.length, 1);
+    assert.equal(text(panels[0].querySelector("h3")), "Fantasy profile");
+    const rows = [...panels[0].querySelectorAll("dt")].map(text);
+    assert.deepEqual(rows, ["Role", "Typical week", "Floor", "Ceiling", "Top-12 weeks", "TD scoring"]);
+    assert.equal(text(panels[0].querySelector(".scp-ox-btn")), "Open in Redraft Command");
+    assert.equal(doc.querySelector(".scp-ox-trade"), null, "the dynasty value line is gone");
+    assert.equal(doc.querySelector("[data-cta^='dynasty']"), null);
   });
 
   test("weekly points agree across the strip, the game log total and the career row", () => {
@@ -244,7 +271,8 @@ describe("overview sections", () => {
       el.getAttribute("data-cta"),
       el.getAttribute("href"),
     ]);
-    assert.deepEqual(tags.map(([t]) => t), ["redraft-command-prose", "redraft-command-sidebar"]);
+    // The prose link went with the four paragraphs (mak, 2026-10-23).
+    assert.deepEqual(tags.map(([t]) => t), ["redraft-command-sidebar"]);
     for (const [, href] of tags) assert.match(href, /\?player=jacoby-brissett/);
     assert.equal(doc.querySelector(".scp-ox-peers"), null, "the spec's peers section is gone");
   });

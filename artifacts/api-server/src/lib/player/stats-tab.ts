@@ -76,7 +76,6 @@ const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? "" 
 const listWords = (items: string[]): string =>
   items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
-const ARROW = `<span class="scp-arrow" aria-hidden="true">&rarr;</span>`;
 
 function sectionOpen(id: string, heading: string, lede: string, aside = ""): string {
   // The tab's lead heading (its H1 on WordPress) wears the panel-heading style.
@@ -402,21 +401,19 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
   // Rushing is hidden for a receiver without a carry.
   else cells = [...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
 
-  const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${options.linkQuery ?? ""}`;
   return (
     // The toggle on the heading's row, right of it (mak, 2026-09-30).
     sectionOpen(
       STATS_LEAD_ID,
       `${data.player.name} ${row.season} stats`,
       (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
-      // The game-log link rides the same row, right of the toggle (mak,
-      // 2026-10-22): it used to be a line of its own under the rail.
+      // The "Game log" link that rode this row beside the toggle is gone
+      // (mak, 2026-10-23); the tab strip above already reaches the Game Log.
       `<div class="scp-st-headctl">` +
         `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
         `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
         `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
         `</div>` +
-        `<a class="scp-ox-more scp-st-gl" href="${escapeHtml(href)}">Game log<span class="scp-sr"> - these stats game by game</span>${ARROW}</a>` +
         `</div>`,
     ) +
     // The Fantasy (PPR) block that sat beside the rail is gone (mak, 2026-10-22).

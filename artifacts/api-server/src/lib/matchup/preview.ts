@@ -49,6 +49,8 @@ export interface PreviewSide {
   stats: TeamStats | null;
   record: string | null;
   roster: RosterPlayer[];
+  /** Season PPR per game and league-wide positional rank by Sleeper id (mak, 2026-10-23: the starters table). */
+  ppr: Record<string, { ppg: number; posRank: number | null }>;
 }
 
 export interface BoardRow {
@@ -99,6 +101,11 @@ export interface LeverageRow {
   /** What the defense allows at his position, and where that ranks. */
   defFpa: number | null;
   defRank: number | null;
+  /** His PPR rank at the position league-wide and the pool's size: the board's role bar. */
+  posRank: number | null;
+  posPool: number;
+  /** Sleeper id, the headshot key; null when usage has not matched him. */
+  sleeperId: string | null;
 }
 
 /** The two or three conclusions above the leverage table. */
@@ -154,7 +161,9 @@ export interface Preview {
   /** Implied totals across the week, for the rank labels. */
   slateCount: number;
   forecast: Forecast | null;
-  call: { thesis: string; paragraph: string; lean: number; leanText: string } | null;
+  /** `paragraph` is the short read (mak, 2026-10-23: market, script, leak);
+   *  `detail` carries the supporting numbers behind an expandable "Why?". */
+  call: { thesis: string; paragraph: string; detail: string; lean: number; leanText: string } | null;
   board: Record<SideKey, BoardRow[]>;
   leverage: LeverageRow[];
   leverageRead: LeverageRead | null;
@@ -356,6 +365,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       stats: page.stats,
       record: page.profile?.record ?? null,
       roster: page.roster?.players ?? [],
+      ppr: {},
     };
   };
   const away = makeSide("away", meeting.away, meeting.home);
@@ -364,6 +374,13 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   const otherOf = (k: SideKey) => (k === "away" ? home : away);
 
   const league = usage ? buildLeague(usage) : null;
+  for (const side of [away, home]) {
+    for (const p of side.usage?.players ?? []) {
+      const ppg = pprPpg(p);
+      if (!p.sleeperId || ppg === null) continue;
+      side.ppr[p.sleeperId] = { ppg, posRank: league?.rankOf(p) ?? null };
+    }
+  }
   const slateMean = slate.length ? slate.reduce((s, x) => s + x, 0) / slate.length : null;
 
   /* ---- per-player facts, shared by the board, the leverage table and the call */
@@ -534,6 +551,9 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       roleStats: roleStats(f.p),
       defFpa: f.oppFpa,
       defRank: f.oppRank,
+      posRank: f.posRank,
+      posPool: league?.ladder[f.p.pos].length ?? 0,
+      sleeperId: f.p.sleeperId,
     }));
 
   const injuries = {
@@ -769,6 +789,9 @@ function buildCall(
   const fav = spread < 0 ? home : spread > 0 ? away : null;
   const dog = fav ? (fav === home ? away : home) : null;
   const sentences: string[] = [];
+  // The short read: one sentence each for the market, the script and the
+  // leak; the percentages, pace and weather stay in `sentences` for "Why?".
+  const short: string[] = [];
 
   const topBy = (side: PreviewSide, pos: Pos[]) =>
     facts
@@ -781,10 +804,14 @@ function buildCall(
       `The ${fav.team.nickname} are ${trimZero(size)}-point ${fav === home ? "home" : "road"} favorites with a ${exact(fav.implied!)} implied total` +
         `${fav.impliedRank ? ` (the ${rankWord(fav.impliedRank, "highest")} of ${slateCount} this week)` : ""}, against ${exact(dog.implied!)} for the ${dog.team.nickname}.`,
     );
+    short.push(
+      `${fav.team.code.toUpperCase()} is a ${trimZero(size)}-point ${fav === home ? "home" : "road"} favorite with a ${exact(fav.implied!)} implied total.`,
+    );
   } else {
     sentences.push(
       `A pick'em with a ${trimZero(line.total)} total: ${exact(away.implied)} implied points for the ${away.team.nickname}, ${exact(home.implied)} for the ${home.team.nickname}.`,
     );
+    short.push(`A pick'em with a ${trimZero(line.total)} total.`);
   }
 
   // 2-3. Score-state tendencies from the Coaching Profile.
@@ -813,6 +840,17 @@ function buildCall(
             : "."),
       );
     }
+    // The script in one sentence, without the percentages.
+    const leadClause =
+      lead && close
+        ? lead.share <= close.share - 3 && rb
+          ? `a ${fav.team.nickname} lead shifts volume toward ${rb.name}`
+          : `a ${fav.team.nickname} lead does not slow their passing game much`
+        : null;
+    const names = [qb?.name, target?.name].filter(Boolean).join(" and ");
+    const trailClause = trail && size >= 3 && names ? `a ${dog.team.nickname} deficit increases passing volume for ${names}` : null;
+    const script = leadClause && trailClause ? `${leadClause}, while ${trailClause}` : (leadClause ?? trailClause);
+    if (script) short.push(`${script.charAt(0).toUpperCase()}${script.slice(1)}.`);
   }
 
   // 4. The biggest points-allowed leak in the game.
@@ -824,6 +862,9 @@ function buildCall(
     const def = leak.side === "away" ? home : away;
     sentences.push(
       `The ${def.team.nickname} allow the ${allowPhrase(leak.oppRank!)} ${leak.p.pos} fantasy points (${one(leak.oppFpa!)} a game), the best leverage spot here for ${leak.p.name}.`,
+    );
+    short.push(
+      `The ${def.team.nickname} allow the ${allowPhrase(leak.oppRank!)} ${leak.p.pos} fantasy points, making ${leak.p.name} the best leverage spot in the game.`,
     );
   }
 
@@ -875,7 +916,7 @@ function buildCall(
       : `Projected script: ${fav.team.code.toUpperCase()} controls (${trimZero(size)}-point favorite${size >= 7 ? "" : ", one-score game"})`;
 
   void meeting;
-  return { thesis, paragraph: sentences.join(" "), lean, leanText };
+  return { thesis, paragraph: short.join(" "), detail: sentences.join(" "), lean, leanText };
 }
 
 /* ---------------------------------------------------------------- notes */

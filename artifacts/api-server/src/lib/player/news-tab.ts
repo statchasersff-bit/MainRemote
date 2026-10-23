@@ -23,6 +23,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { headshotImg } from "../headshot-html";
 import { possessive } from "./title-case";
 import { itemTimestamp, type NewsItem } from "../render";
 import { easternParts } from "../news-card";
@@ -56,7 +57,8 @@ import {
 
 /** Week groups shown open; older ones fold into a <details> (spec 4.9). */
 const OPEN_GROUPS = 6;
-const TEAM_ITEMS = 8;
+/** Around-the-team: four compact cards, then "View all team news" (mak, 2026-10-23). */
+const TEAM_ITEMS = 4;
 
 const IMPACT_WORD: Record<Impact, string> = { up: "Positive", flat: "Neutral", down: "Negative" };
 const OPENS_NEW = `<span class="scp-nw-sr"> (opens in new tab)</span>`;
@@ -94,15 +96,19 @@ const tagFor = (o: Outcome): string => tag(o.tag.toLowerCase().replace(/\s+/g, "
 const impactRead = (i: FeedItem): string =>
   `<span class="scp-nw-read is-${i.impact}"><span class="scp-nw-sr">Fantasy impact: </span><span aria-hidden="true">${ARROW[i.impact]}</span>${escapeHtml(i.outcome.label)}</span>`;
 
-/** "25.6 FPTS · QB4", from the recap's points line. */
-const fpts = (i: FeedItem): string => (i.pointsLine ?? "").replace(" fantasy points", " FPTS");
+/** A recap's points and finish, split: ["25.6 FPTS", "QB4"]. */
+function pointsParts(i: FeedItem): { fpts: string; fin: string | null } {
+  const [pts, fin] = (i.pointsLine ?? "").split(" · ");
+  return { fpts: (pts ?? "").replace(" fantasy points", " FPTS"), fin: fin ?? null };
+}
 
-/** "↓ 9.0 below season average", "≈ season average". */
-function avgLine(i: FeedItem): string {
-  if (i.avgDelta === null) return "";
-  const d = i.avgDelta;
-  const text = Math.abs(d) < 0.5 ? "≈ season average" : `${d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(1)} ${d > 0 ? "above" : "below"} season average`;
-  return `<span class="scp-nw-avg">${escapeHtml(text)}</span>`;
+/** The finish pill: "QB6", colored by its band (QB/TE 12/24, RB/WR 24/36). */
+function finishPill(pos: string, fin: string | null): string {
+  if (!fin) return "";
+  const rank = Number(fin.replace(/^[A-Z]+/, ""));
+  const [good, mid] = pos === "RB" || pos === "WR" ? [24, 36] : [12, 24];
+  const band = !rank ? "mid" : rank <= good ? "good" : rank <= mid ? "mid" : "bad";
+  return `<span class="scp-nw-fin is-${band}"><span class="scp-nw-sr">Finish: </span>${escapeHtml(fin)}</span>`;
 }
 
 const arrowLink = (href: string, text: string, cta: string): string =>
@@ -110,6 +116,94 @@ const arrowLink = (href: string, text: string, cta: string): string =>
 
 const impactPill = (impact: Impact, prefix = ""): string =>
   `<span class="scp-nw-impact is-${impact}">${escapeHtml(prefix + (prefix ? IMPACT_WORD[impact].toLowerCase() : IMPACT_WORD[impact]))}</span>`;
+
+/* ------------------------------------------------- categories and markers */
+
+/**
+ * The category badge (mak, 2026-10-23): GAME RECAP, INJURY, STATUS,
+ * PRACTICE, ROLE CHANGE, TRANSACTION, CONTRACT, NEWS. A status item whose
+ * outcome is injury-driven is INJURY; the rest follow the type.
+ */
+function category(i: FeedItem): { key: string; label: string } {
+  if (i.type === "game") return { key: "game", label: "Game recap" };
+  if (i.type === "status") return i.outcome.tag === "Injury" ? { key: "injury", label: "Injury" } : { key: "status", label: "Status" };
+  if (i.type === "prac") return { key: "prac", label: "Practice" };
+  if (i.type === "depth") return { key: "role", label: "Role change" };
+  if (i.type === "transaction") return { key: "move", label: "Transaction" };
+  if (i.type === "contract") return { key: "deal", label: "Contract" };
+  return { key: "news", label: "News" };
+}
+
+const catBadge = (i: FeedItem): string => {
+  const c = category(i);
+  return `<span class="scp-nw-cat is-${c.key}">${escapeHtml(c.label)}</span>`;
+};
+
+/** A category badge for a club item, from the archive's category word. */
+function teamCatBadge(cat: string | null | undefined, label: string): string {
+  const key =
+    cat === "recap" ? "game"
+    : cat === "injury" ? "injury"
+    : cat === "status" ? "status"
+    : cat === "practice" ? "prac"
+    : cat === "depth-chart" ? "role"
+    : cat === "transaction" ? "move"
+    : "news";
+  return `<span class="scp-nw-cat is-${key}">${escapeHtml(label)}</span>`;
+}
+
+/** Line icons for the non-game markers: one path each, 16px, stroke only. */
+const ICON: Record<string, string> = {
+  injury: `<path d="M12 5v14M5 12h14"/>`,
+  status: `<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>`,
+  prac: `<path d="M4 17l6-6 4 4 6-6"/><path d="M14 9h6v6"/>`,
+  role: `<path d="M4 7h16M4 12h10M4 17h6"/>`,
+  move: `<path d="M4 9h12l-3-3M20 15H8l3 3"/>`,
+  deal: `<path d="M6 4h9l4 4v12H6z"/><path d="M9 13h6M9 17h6"/>`,
+  news: `<path d="M5 5h14v14H5z"/><path d="M8 9h8M8 12h8M8 15h5"/>`,
+};
+
+const iconTile = (key: string): string =>
+  `<span class="scp-nw-marker is-${key}" aria-hidden="true">` +
+  `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[key] ?? ICON.news}</svg>` +
+  `</span>`;
+
+/** The 40px headshot, or null when the player has none. */
+function smallHeadshot(src: string | null | undefined, id: string | null | undefined, className: string): string | null {
+  return headshotImg({
+    src,
+    id,
+    className,
+    alt: "",
+    variants: ["160"],
+    width: 40,
+    height: 40,
+    loading: "lazy",
+    extra: ` aria-hidden="true"`,
+  });
+}
+
+/** A club crest, 32px, decorative. */
+const crest = (logo: string | null | undefined, className: string): string =>
+  logo ? `<img class="${className}" src="${escapeHtml(logo)}" alt="" aria-hidden="true" width="32" height="32" loading="lazy" decoding="async" />` : "";
+
+/** The marker in the row's left column: his headshot for a recap, the type's icon otherwise. */
+function marker(data: PlayerPageData, i: FeedItem): string {
+  if (i.type === "game") {
+    const img = smallHeadshot(data.player.headshotUrl, data.player.id, "scp-nw-face");
+    if (img) return `<span class="scp-nw-marker is-face">${img}</span>`;
+    return iconTile("game");
+  }
+  return iconTile(category(i).key);
+}
+
+/** The first sentence of a summary, for the one-line row. */
+function firstSentence(text: string): { first: string; rest: string } {
+  const t = text.trim();
+  const m = /^(.*?[.!?])(?:\s+|$)([\s\S]*)$/.exec(t);
+  if (!m) return { first: t, rest: "" };
+  return { first: m[1]!, rest: (m[2] ?? "").trim() };
+}
 
 /* --------------------------------------------------------------- context */
 
@@ -156,9 +250,8 @@ function context(data: PlayerPageData, options: PlayerRenderOptions): NewsContex
 /** Hidden text for the color cue on a feed item's left edge (spec 4.7). */
 const impactSr = (impact: Impact): string => `<span class="scp-nw-sr">Fantasy impact: ${IMPACT_WORD[impact]}. </span>`;
 
-function readLink(i: FeedItem, cta: boolean): string {
+function readLink(i: FeedItem, cta: boolean, text = i.type === "game" && !i.external ? "Game log" : "Read full report"): string {
   if (!i.url) return "";
-  const text = i.type === "game" && !i.external ? "Game log" : "Read full report";
   return (
     `<a class="scp-nw-readlink" href="${escapeHtml(i.url)}"${cta ? ` data-cta="news-readmore-${i.type}"` : ""}` +
     `${i.external ? ` rel="noopener" target="_blank"` : ""}>${text} <span aria-hidden="true">→</span>${i.external ? OPENS_NEW : ""}</a>`
@@ -178,30 +271,56 @@ function renderLatest(
   injuryHref: string | null,
 ): string {
   let body: string;
+  // The feature card (mak, 2026-10-23): his photo on the left, the category
+  // and date over the headline, the result as the big badge row, one stat
+  // line, one sentence, the links.
+  const photo = headshotImg({
+    src: data.player.headshotUrl,
+    id: data.player.id,
+    className: "scp-nw-lead-img",
+    alt: "",
+    variants: ["160", "256"],
+    sizes: "96px",
+    width: 96,
+    height: 96,
+    loading: "lazy",
+    extra: ` aria-hidden="true"`,
+  });
+  const opp = (i: FeedItem) => (i.group.week !== null ? ctx.games.find((g) => g.week === i.group.week) : undefined);
   if (lead) {
-    // mak's News redesign (2026-10-05): eyebrow, headline, the fantasy result
-    // as the hero with the impact read beside it, compact stat rows, one SC
-    // Takeaway line, then the links. A recap drops its prose summary.
     const game = lead.type === "game";
+    const { fpts, fin } = pointsParts(lead);
+    const g = game ? opp(lead) : undefined;
+    const media =
+      `<div class="scp-nw-lead-media">` +
+      (photo ?? iconTile(category(lead).key)) +
+      (g?.opponent?.logo ? `<img class="scp-nw-lead-opp" src="${escapeHtml(g.opponent.logo)}" alt="" aria-hidden="true" width="32" height="32" loading="lazy" decoding="async" />` : "") +
+      `</div>`;
     const hero = game && lead.pointsLine
-      ? `<div class="scp-nw-hero"><p class="scp-nw-fpts">${escapeHtml(fpts(lead))}</p>${impactRead(lead)}</div>`
+      ? `<div class="scp-nw-hero">${finishPill(ctx.pos, fin)}<p class="scp-nw-fpts">${escapeHtml(fpts)}</p>` +
+        (lead.group.result ? `<span class="scp-nw-score">${escapeHtml(lead.group.result)}</span>` : "") +
+        impactRead(lead) + `</div>`
       : `<div class="scp-nw-hero">${tagFor(lead.outcome)}${impactRead(lead)}</div>`;
-    const stats = lead.panel ? `<div class="scp-nw-lead-stats">${lead.panel.lines.map((l) => `<p class="scp-nw-statline">${escapeHtml(l)}</p>`).join("")}</div>` : "";
+    const stats = game && lead.panel ? `<p class="scp-nw-statline">${escapeHtml(timelineStats(lead.panel.lines))}</p>` : "";
+    // One sentence: a recap's takeaway, a report's first sentence.
+    const line = game ? lead.takeaway ?? "" : firstSentence(lead.summary).first || lead.take;
     const links = game
       ? (lead.boxHref ? arrowLink(lead.boxHref, "Box score", "news-boxscore") : "") + readLink(lead, true)
       : lead.type === "status"
-        ? (injuryHref ? arrowLink(injuryHref, "Injury status and history", "news-injury") : "")
+        ? (injuryHref ? arrowLink(injuryHref, "Injury status and history", "news-injury") : "") + readLink(lead, true)
         : readLink(lead, true);
     body =
       `<p class="scp-nw-label">Latest update</p>` +
       `<article class="scp-nw-lead is-${lead.impact}" data-type="${lead.type}">` +
-      `<p class="scp-nw-meta">${stamp(lead.ms, lead.hasTime)}<span>${escapeHtml(TYPE_LABEL[lead.type])}</span>${game ? "" : `<span>${sourceBits(lead)}</span>`}</p>` +
+      media +
+      `<div class="scp-nw-lead-body">` +
+      `<p class="scp-nw-meta">${catBadge(lead)}${stamp(lead.ms, lead.hasTime)}${game ? "" : `<span>${sourceBits(lead)}</span>`}</p>` +
       `<h3>${link(lead.url, lead.headline, "", lead.external)}</h3>` +
       hero +
       stats +
-      (!game && lead.summary ? `<p class="scp-nw-lead-sum">${escapeHtml(lead.summary)}</p>` : "") +
-      (lead.takeaway ? `<div class="scp-nw-takeaway"><p class="scp-nw-takeaway-h">SC Takeaway</p><p>${escapeHtml(lead.takeaway)}</p></div>` : "") +
+      (line ? `<p class="scp-nw-lead-sum">${escapeHtml(line)}</p>` : "") +
       (links ? `<div class="scp-nw-foot">${links}</div>` : "") +
+      `</div>` +
       `</article>`;
   } else if (fallback) {
     // No news this season (spec 4.9): the most recent item from any season.
@@ -209,12 +328,14 @@ function renderLatest(
     body =
       `<p class="scp-nw-label">Latest update</p>` +
       `<article class="scp-nw-lead is-old">` +
-      `<h3>${link(fallback.link ?? null, fallback.title, "", true)}</h3>` +
+      `<div class="scp-nw-lead-media">${photo ?? iconTile("news")}</div>` +
+      `<div class="scp-nw-lead-body">` +
       `<p class="scp-nw-meta"><span class="scp-nw-new">${escapeHtml(`From ${ts ? etDay(ts).slice(0, 4) : "an earlier season"}`)}</span>` +
       (ts ? stamp(ts, true) : "") +
       `<span>${link(fallback.link ?? null, (fallback.source ?? "").trim() || "Source", "", true)}</span></p>` +
-      (fallback.summary ? `<p class="scp-nw-lead-sum">${escapeHtml(fallback.summary)}</p>` : "") +
-      `</article>`;
+      `<h3>${link(fallback.link ?? null, fallback.title, "", true)}</h3>` +
+      (fallback.summary ? `<p class="scp-nw-lead-sum">${escapeHtml(firstSentence(fallback.summary).first)}</p>` : "") +
+      `</div></article>`;
   } else {
     return "";
   }
@@ -226,35 +347,49 @@ function renderLatest(
 /* -------------------------------------------------------- section 2: feed */
 
 /**
- * A timeline entry (mak, 2026-09-30): the headline, one result or type line,
- * one summary, one link. The impact is the color of the left edge, with the
- * word in hidden text; a recap's take is its result line.
+ * A feed row (mak, 2026-10-23): the marker on the left (his headshot for a
+ * recap, the type's icon otherwise), then the category badge and date over
+ * the headline, one stat or metadata line, one sentence; the fantasy result
+ * as badges on the right. Anything past the first sentence folds into "More".
  */
-function renderItem(i: FeedItem): string {
+function renderItem(data: PlayerPageData, ctx: NewsContext, i: FeedItem): string {
   const group = MOVES.includes(i.type) ? ` data-group="moves"` : "";
   const game = i.type === "game" && i.pointsLine;
-  // One anatomy per entry (mak, 2026-10-05), compressed 2026-10-21: the tag
-  // and headline share a row, the result row carries the distance from his
-  // average and the compact stats, then one line and one link.
-  const body = game
-    ? `<p class="scp-nw-result"><b>${escapeHtml(fpts(i))}</b>${avgLine(i)}` +
-      (i.panel ? `<span class="scp-nw-statline">${escapeHtml(timelineStats(i.panel.lines))}</span>` : "") +
-      `</p>` +
-      (i.takeaway ? `<p class="scp-nw-sum">${escapeHtml(i.takeaway)}</p>` : "")
-    : `<p class="scp-nw-meta">${stamp(i.ms, i.hasTime)}<span>${sourceBits(i)}</span></p>` +
-      (i.summary ? `<p class="scp-nw-sum">${escapeHtml(i.summary)}</p>` : "") +
-      `<p class="scp-nw-take"><strong>SC Takeaway:</strong> ${escapeHtml(i.take)}</p>`;
+  const { fpts, fin } = pointsParts(i);
+  let line: string;
+  let one: string;
+  let more = "";
+  if (game) {
+    line = `<p class="scp-nw-statline">${escapeHtml([fpts, i.panel ? timelineStats(i.panel.lines) : ""].filter(Boolean).join(" · "))}</p>`;
+    // No "More" on a recap: the stat line and the takeaway are the story,
+    // and the Game log link goes deeper.
+    one = i.takeaway ?? "";
+  } else {
+    line = "";
+    const { first, rest } = firstSentence(i.summary);
+    one = first || i.take;
+    const extra = [rest, first ? i.take : ""].filter(Boolean).join(" ");
+    if (extra) more = `<details class="scp-nw-more"><summary>More</summary><p>${escapeHtml(extra)}</p></details>`;
+  }
+  // The badges top right, the link bottom right (mak, 2026-10-23): a recap's
+  // reads "View Game Recap".
+  const more_link = readLink(i, true, game ? "View Game Recap" : undefined);
+  const badges = game ? finishPill(ctx.pos, fin) + tagFor(i.outcome) : i.impact !== "flat" ? impactRead(i) : "";
+  const side = badges || more_link
+    ? `<div class="scp-nw-side">${badges ? `<div class="scp-nw-badges">${badges}</div>` : ""}${more_link}</div>`
+    : "";
   return (
     `<article class="scp-nw-item is-${i.impact}" data-type="${i.type}" data-impact="${i.impact}"${group}>` +
     impactSr(i.impact) +
-    `<div class="scp-nw-head">` +
-    // The read beside the tag only when it says more ("SOLID Volume boost",
-    // not "FLOOR Floor game").
-    `<p class="scp-nw-tagrow">${tagFor(i.outcome)}${game && !i.outcome.label.toLowerCase().startsWith(i.outcome.tag.toLowerCase()) ? `<span class="scp-nw-tagword">${escapeHtml(i.outcome.label)}</span>` : ""}</p>` +
+    marker(data, i) +
+    `<div class="scp-nw-body">` +
+    `<p class="scp-nw-meta">${catBadge(i)}${stamp(i.ms, i.hasTime)}${game ? "" : `<span>${sourceBits(i)}</span>`}</p>` +
     `<h3>${link(i.url, i.headline, "", i.external)}</h3>` +
+    line +
+    (one ? `<p class="scp-nw-sum">${escapeHtml(one)}</p>` : "") +
+    more +
     `</div>` +
-    body +
-    readLink(i, true) +
+    side +
     `</article>`
   );
 }
@@ -266,7 +401,7 @@ function timelineStats(lines: string[]): string {
   return counts ? `${main} · ${extra}` : main ?? "";
 }
 
-function renderGroup(g: WeekGroup, items: FeedItem[], pending: boolean): string {
+function renderGroup(data: PlayerPageData, ctx: NewsContext, g: WeekGroup, items: FeedItem[], pending: boolean): string {
   return (
     `<li class="scp-nw-wk">` +
     `<p class="scp-nw-wklabel"><b>${escapeHtml(g.label)}</b>` +
@@ -277,12 +412,12 @@ function renderGroup(g: WeekGroup, items: FeedItem[], pending: boolean): string 
     `<div class="scp-nw-items">` +
     // A deliberate state, not a gap (mak, 2026-10-05).
     (pending ? `<p class="scp-nw-pending">${tag("pending", "Pending")}<span>Recap pending · analysis updating</span></p>` : "") +
-    items.map(renderItem).join("") +
+    items.map((i) => renderItem(data, ctx, i)).join("") +
     `</div></li>`
   );
 }
 
-function renderFeed(items: FeedItem[], pendingGroups: WeekGroup[]): string {
+function renderFeed(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], pendingGroups: WeekGroup[]): string {
   const groups = new Map<string, { g: WeekGroup; items: FeedItem[]; pending: boolean }>();
   for (const i of items) {
     const hit = groups.get(i.group.key) ?? { g: i.group, items: [], pending: false };
@@ -318,10 +453,10 @@ function renderFeed(items: FeedItem[], pendingGroups: WeekGroup[]): string {
         ? `Show Weeks ${Math.min(...weeks)}–${Math.max(...weeks)}`
         : "Show earlier updates";
     feed =
-      `<ol class="scp-nw-feed">${shown.map((o) => renderGroup(o.g, o.items, o.pending)).join("")}</ol>` +
+      `<ol class="scp-nw-feed">${shown.map((o) => renderGroup(data, ctx, o.g, o.items, o.pending)).join("")}</ol>` +
       (older.length
         ? `<details class="scp-nw-older"><summary>${escapeHtml(label)}</summary>` +
-          `<ol class="scp-nw-feed">${older.map((o) => renderGroup(o.g, o.items, o.pending)).join("")}</ol></details>`
+          `<ol class="scp-nw-feed">${older.map((o) => renderGroup(data, ctx, o.g, o.items, o.pending)).join("")}</ol></details>`
         : "") +
       `<p class="scp-nw-empty" id="scp-nw-empty" role="status" hidden>No updates of this type yet this season.</p>`;
   }
@@ -337,6 +472,18 @@ function renderFeed(items: FeedItem[], pendingGroups: WeekGroup[]): string {
 }
 
 /* --------------------------------------------------- section 3: teammates */
+
+const TEAM_LABEL: Record<string, string> = {
+  practice: "Practice",
+  "depth-chart": "Depth chart",
+  recap: "Game recap",
+  preview: "Preview",
+  analysis: "Analysis",
+  injury: "Injury",
+  status: "Status",
+  transaction: "Transaction",
+};
+
 
 const HURT = /\b(out|ir|injur|questionable|doubtful|dnp|did not practice|sprain|strain|fracture|concussion|surgery)/i;
 
@@ -376,9 +523,11 @@ function renderMates(data: PlayerPageData, ctx: NewsContext, options: PlayerRend
       const ts = itemTimestamp(item);
       const who = mate.slug ? `<a href="${escapeHtml(`${prefix}${mate.slug}/${q}`)}">${escapeHtml(mate.name)}</a>` : escapeHtml(mate.name);
       const via = (item.source ?? "").trim();
+      const face = smallHeadshot(mate.headshot, mate.id, "scp-nw-face");
       return (
-        `<li><span class="scp-nw-d">${ts ? stamp(ts, false) : ""}</span>` +
-        `<div>${link(item.link ?? null, item.title, ` class="scp-nw-h"`, true)}` +
+        `<li><span class="scp-nw-marker is-face${face ? "" : " is-empty"}">${face ?? ""}</span>` +
+        `<div><p class="scp-nw-meta">${teamCatBadge(item.category, TEAM_LABEL[item.category ?? ""] ?? "News")}${ts ? stamp(ts, false) : ""}</p>` +
+        `${link(item.link ?? null, item.title, ` class="scp-nw-h"`, true)}` +
         `<span class="scp-nw-who">${who}${escapeHtml(`, ${mate.position}. ${mateContext(ctx.pos, mate)}${via ? `. Via ${via}` : ""}`)}</span></div>` +
         impactPill(mateImpact(ctx.pos, mate, item)) +
         `</li>`
@@ -390,16 +539,6 @@ function renderMates(data: PlayerPageData, ctx: NewsContext, options: PlayerRend
 
 /* -------------------------------------------------------- section 4: team */
 
-const TEAM_LABEL: Record<string, string> = {
-  practice: "Practice",
-  "depth-chart": "Depth chart",
-  recap: "Game recap",
-  preview: "Preview",
-  analysis: "Analysis",
-  injury: "Injury",
-  status: "Status",
-  transaction: "Transaction",
-};
 
 function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string {
   const items = (data.teamNews ?? []).filter((i) => i.link).slice(0, TEAM_ITEMS);
@@ -411,10 +550,14 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
       const label = TEAM_LABEL[item.category ?? ""] ?? (item.category && item.category !== "other" ? categoryLabel(item.category) : "Team news");
       // A condensed feed row (mak, 2026-10-21): date and type on one small
       // line, the headline under it. It lives in the rail beside the timeline.
+      // A compact headline card (mak, 2026-10-23): the crest, the category
+      // badge and date, the headline. Four of them, then "View all team news".
       return (
-        `<li><p class="scp-nw-meta"><span class="scp-nw-d">${ts ? stamp(ts, false) : ""}</span><span class="scp-nw-who">${escapeHtml(label)}</span></p>` +
+        `<li class="scp-nw-card">` +
+        `<span class="scp-nw-marker is-crest">${crest(data.team?.logo, "scp-nw-crest")}</span>` +
+        `<div><p class="scp-nw-meta">${teamCatBadge(item.category, label)}${ts ? stamp(ts, false) : ""}</p>` +
         link(item.link ?? null, sentenceCase(item.title, proper), ` class="scp-nw-h" data-cta="news-team-outbound"`, true) +
-        `</li>`
+        `</div></li>`
       );
     })
     .join("");
@@ -425,8 +568,8 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
     // as "Season timeline" since the two share a row.
     `<section class="scp-ox-sec scp-nw-team" aria-labelledby="scp-nw-team-h">` +
     `<h2 class="scp-ox-h2 scp-nw-label" id="scp-nw-team-h">${escapeHtml(titleCase(`Around the ${data.team.nickname}`))}</h2>` +
-    `<ul class="scp-nw-rail-list">${rows}</ul>` +
-    `<a class="scp-ox-more" href="${escapeHtml(more)}" target="_top">${escapeHtml(`All ${data.team.fullName} news`)}</a>` +
+    `<ul class="scp-nw-cards">${rows}</ul>` +
+    `<a class="scp-ox-more" href="${escapeHtml(more)}" target="_top">View all team news</a>` +
     `</section>`
   );
 }
@@ -505,10 +648,11 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   // The lead across the top, then the timeline beside the club's reporting.
   const top = latest ? `<div class="scp-nw-top">${latest}</div>` : "";
   const rail = `<div class="scp-nw-rail">${team}</div>`;
-  const main = `<div class="scp-nw-row">${renderFeed(feedItems, pending)}${rail}</div>`;
+  const main = `<div class="scp-nw-row">${renderFeed(data, ctx, feedItems, pending)}${rail}</div>`;
   return {
     // The panel heading's one-line dek (mak, 2026-10-05).
-    body: wrap(`<p class="scp-nw-dek">Fantasy-relevant news, game recaps and role changes</p>` + top + main + mates),
+    // The panel heading's dek was removed 2026-10-23 (mak).
+    body: wrap(top + main + mates),
     faq: wrap(faq),
   };
 }

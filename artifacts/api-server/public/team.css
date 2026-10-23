@@ -15854,7 +15854,7 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-ink);
   display: flex;
   flex-direction: column;
-  gap: 43px; /* 28px + 15px between sections (mak, 2026-10-05) */
+  gap: 30px; /* was 43px; tightened ~30% 2026-10-23 (mak): one continuous dashboard */
   padding: 24px 0 8px;
   min-width: 0;
 }
@@ -16210,25 +16210,38 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-thesis {
-  font-size: 17px !important;
+  font-size: 16px !important;
   font-weight: 800;
   line-height: 1.3;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--pv-ink) !important;
 }
 
+/* Compressed 2026-10-23 (mak): a three-sentence read, the meter right under
+   it, the supporting numbers behind "Why?". */
 :is(.sct, #sct-table-armour) .sct-pv-call > p {
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-meter {
-  margin-top: 16px;
+  margin-top: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-why {
+  margin-top: 8px;
+}
+
+/* The summary itself wears the existing .sct-pv-why rules (arrow included). */
+:is(.sct, #sct-table-armour) .sct-pv-why p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--pv-muted);
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-track {
   position: relative;
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--pv-away, #444), var(--pv-gray-bg) 50%, var(--pv-home, #444));
 }
@@ -16236,8 +16249,8 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-dot {
   position: absolute;
   top: 50%;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--pv-gold);
   border: 3px solid var(--pv-card);
@@ -16248,8 +16261,8 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-meter-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 10.5px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -16722,7 +16735,7 @@ a.sct-ex-game:hover .sct-ex-line {
 /* Rails on the rows that matter; neutral rows stay plain. */
 :is(.sct, #sct-table-armour) .sct-pv-levtable tr[data-lev="up"] > th { box-shadow: inset 3px 0 0 #0f6b4f; }
 :is(.sct, #sct-table-armour) .sct-pv-levtable tr[data-lev="down"] > th { box-shadow: inset 3px 0 0 #b4646a; }
-:is(.sct, #sct-table-armour) .sct-pv-levtable tbody :where(th, td) { vertical-align: middle; }
+:is(.sct, #sct-table-armour) .sct-pv-levtable tbody :where(th, td) { vertical-align: middle; padding-top: 7px; padding-bottom: 7px; }
 
 :is(.sct, #sct-table-armour) .sct-pv-sig {
   display: flex;
@@ -16751,7 +16764,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-def b {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--pv-ink);
   font-variant-numeric: tabular-nums;
@@ -16767,18 +16780,18 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-def-r {
   flex-basis: 100%;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.3;
   color: var(--pv-muted);
+  opacity: 0.85;
 }
 
-/* The leverage pill: two lines, a set width, a firmer tint. */
+/* The leverage pill: one line since 2026-10-23 (mak), a set width, a firmer tint. */
 :is(.sct, #sct-table-armour) .sct-pv-lev {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  min-width: 108px;
-  padding: 5px 10px;
+  align-items: center;
+  min-width: 104px;
+  padding: 4px 10px;
   border-radius: 8px;
   text-align: left;
   text-transform: none;
@@ -16900,27 +16913,8 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-hls { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ---- intro, outlook, players to watch (mak, 2026-10-05: the page is a
+/* ---- outlook, players to watch (mak, 2026-10-05: the page is a
    game-level fantasy preview; start/sit is one section of it). */
-:is(.sct, #sct-table-armour) .sct-pv-intro {
-  gap: 4px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sc-gold-deep, #a87905);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-intro-lede {
-  margin-top: 4px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--pv-ink);
-}
-
 :is(.sct, #sct-table-armour) .sct-pv-read-4 dl {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -16942,6 +16936,54 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-pair > .sct-pv-sec {
   min-width: 0;
+}
+
+/* The Team Matchup table runs full width (mak, 2026-10-23): each side is
+   figure, rank pill and a rank bar anchored at the outside edge, growing
+   toward the metric; the stronger side's bar is darker. */
+:is(.sct, #sct-table-armour) .sct-pv-cside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cv {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar {
+  flex: 1 1 auto;
+  height: 4px;
+  margin: 0 6px;
+  background: color-mix(in srgb, var(--pv-ink) 6%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar i {
+  background: color-mix(in srgb, var(--pv-ink) 22%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar.is-best i {
+  background: color-mix(in srgb, var(--pv-ink) 62%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cr .sct-pv-cside .sct-pv-cbar i {
+  margin-left: auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cl .sct-pv-cside .sct-pv-cbar i {
+  margin-left: 0;
+}
+
+/* Narrow: no room for bars beside the figures, so the row is figure and
+   rank pill only, and the metric column gives back its side padding. */
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar { display: none; }
+  :is(.sct, #sct-table-armour) .sct-pv-cside { gap: 6px; }
+  :is(.sct, #sct-table-armour) .sct-pv-cr .sct-pv-cside { justify-content: flex-end; }
+  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-rank { white-space: nowrap; }
+  :is(.sct, #sct-table-armour) .sct-pv-compare .sct-pv-cm { padding-left: 8px; padding-right: 8px; }
+  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cv { font-size: 16px; }
 }
 
 @media (max-width: 900px) {
@@ -17005,17 +17047,18 @@ a.sct-ex-game:hover .sct-ex-line {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
-  margin-top: -25px;
-  padding: 12px 14px;
+  gap: 4px 16px;
+  margin-top: -14px;
+  padding: 5px 12px;
   border: 1px dashed var(--pv-border);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
+/* One line, about 30px tall (mak, 2026-10-23). */
 :is(.sct, #sct-table-armour) .sct-pv-next p {
-  flex: 1 1 320px;
-  font-size: 13.5px;
-  line-height: 1.5;
+  flex: 1 1 240px;
+  font-size: 12.5px;
+  line-height: 1.4;
   color: var(--pv-muted);
 }
 
@@ -17027,7 +17070,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-next > a,
 :is(.sct, #sct-table-armour) .sct-pv-next li a,
 :is(.sct, #sct-table-armour) .sct-pv-watch-act {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--pv-ink);
   text-decoration: none;
@@ -17113,11 +17156,15 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-cl { text-align: left; }
 :is(.sct, #sct-table-armour) .sct-pv-cr { text-align: right; }
 :is(.sct, #sct-table-armour) .sct-pv-compare .sct-pv-cm {
+  width: 1%;
+  padding-left: 18px;
+  padding-right: 18px;
   text-align: center;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--pv-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-muted-strong);
   white-space: nowrap;
 }
 
@@ -17149,7 +17196,47 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-rank[data-tier="good"] { background: var(--pv-green-bg); color: var(--pv-green); }
 :is(.sct, #sct-table-armour) .sct-pv-rank[data-tier="poor"] { background: var(--pv-red-bg); color: var(--pv-red); }
 
-/* ---- 6. injuries */
+/* ---- 6. injuries: one card, a group per team (mak, 2026-10-23). */
+:is(.sct, #sct-table-armour) .sct-pv-inj-group + .sct-pv-inj-group {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--pv-line);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-colhead {
+  margin-bottom: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-rows {
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-card .sct-pv-row + .sct-pv-row {
+  border-top: 0;
+  padding-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-row-name {
+  font-size: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-row-why {
+  margin-top: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-foot {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--pv-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-rows + .sct-pv-inj-foot {
+  margin-top: 8px;
+}
+
 :is(.sct, #sct-table-armour) .sct-pv-inj { min-width: 44px; background: var(--pv-amber-bg); color: var(--pv-amber); }
 :is(.sct, #sct-table-armour) .sct-pv-inj:is([data-status="IR"], [data-status="PUP"], [data-status="NFI"]) { background: var(--pv-red-bg); color: var(--pv-red); }
 :is(.sct, #sct-table-armour) .sct-pv-inj:is([data-status="O"], [data-status="SUS"]) { background: var(--pv-red-bg); color: var(--pv-red); }
@@ -17840,7 +17927,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-st-card {
-  padding: 14px 16px;
+  padding: 12px 16px;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-st-card .sct-pv-colhead {
@@ -17857,7 +17944,7 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-muted);
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) {
+:is(.sct, #sct-table-armour) .sct-mu-st-def {
   width: 100%;
   border-collapse: collapse;
   border: 0;
@@ -17865,8 +17952,9 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 13.5px;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) :where(th, td) {
-  padding: 7px 4px;
+/* Tightened 2026-10-23 (mak): rank pill, bar and FP/G read as one row. */
+:is(.sct, #sct-table-armour) .sct-mu-st-def :where(th, td) {
+  padding: 4px 4px;
   border: 0;
   border-bottom: 1px solid var(--pv-line);
   color: var(--pv-ink);
@@ -17876,11 +17964,11 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) tbody tr:last-child :where(th, td) {
+:is(.sct, #sct-table-armour) .sct-mu-st-def tbody tr:last-child :where(th, td) {
   border-bottom: 0;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-mu-st-def, .sct-mu-st-off) th[scope="row"] {
+:is(.sct, #sct-table-armour) .sct-mu-st-def th[scope="row"] {
   width: 40px;
   font-size: 11.5px;
   font-weight: 800;
@@ -17901,7 +17989,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar {
-  height: 8px;
+  height: 6px;
   margin: 0;
 }
 
@@ -17911,20 +17999,127 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-mu-st-num {
   width: 48px;
   text-align: right !important;
-  font: 700 17px/1 var(--pv-display);
+  font: 700 15px/1 var(--pv-display);
   font-variant-numeric: tabular-nums;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-st-who {
-  width: 100%;
-  font-weight: 700;
-  white-space: normal !important;
+/* Starters as a lineup table in the Sleeper matchup style (mak,
+   2026-10-23): headshot, name and slot with the matchup pill, and PPR PPG
+   with the positional rank at the right. */
+:is(.sct, #sct-table-armour) .sct-mu-pr-team {
+  padding: 12px 16px 6px;
+  min-width: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-st-who a {
+:is(.sct, #sct-table-armour) .sct-mu-pr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 7px 0;
+  border-top: 1px solid color-mix(in srgb, var(--pv-line) 60%, transparent);
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr:first-child { border-top: 0; }
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-face {
+  flex: none;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--pv-gray-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-face.is-away { background: color-mix(in srgb, var(--pv-away) 14%, var(--pv-card)); }
+:is(.sct, #sct-table-armour) .sct-mu-pr-face.is-home { background: color-mix(in srgb, var(--pv-home) 14%, var(--pv-card)); }
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-id {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--pv-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-name a {
   color: var(--pv-link);
   text-decoration-color: var(--pv-gold);
   text-underline-offset: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-pos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pv-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-pos .sct-mu-st-vs {
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-pts {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: baseline;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-pts b {
+  grid-row: 1 / 3;
+  font: 700 20px/1 var(--pv-display);
+  color: var(--pv-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-k {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-muted);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-pr-rank {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pv-muted-strong);
+  font-variant-numeric: tabular-nums;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-st-badge {
@@ -17932,9 +18127,9 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-left: 6px;
   padding: 0 5px;
   border-radius: 4px;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
-  line-height: 16px;
+  line-height: 15px;
   vertical-align: 1px;
   background: var(--pv-amber-bg);
   color: var(--pv-amber);
@@ -17945,34 +18140,29 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-red);
 }
 
+/* The matchup pill: "10th vs QB", small and quiet, graded by quartile of
+   the 32 defenses (1st = the most points allowed). The two lean steps are
+   outlined, the two extremes tinted, so only the extremes carry weight. */
 :is(.sct, #sct-table-armour) .sct-mu-st-vs {
-  display: block;
-  margin-top: 1px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 15px;
   white-space: nowrap;
+  opacity: 0.9;
   color: var(--pv-muted-strong);
+  border-color: var(--pv-line);
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="good"] { color: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="poor"] { color: var(--pv-red); }
-
-:is(.sct, #sct-table-armour) .sct-mu-st-stat {
-  text-align: right !important;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-stat b {
-  font: 700 15px/1 var(--pv-display);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-k {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--pv-muted);
-}
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="soft"] { color: var(--pv-green); background: var(--pv-green-bg); border-color: transparent; }
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="lean-soft"] { color: var(--pv-green); border-color: color-mix(in srgb, var(--pv-green) 35%, transparent); }
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="lean-tough"] { color: var(--pv-amber); border-color: color-mix(in srgb, var(--pv-amber) 40%, transparent); }
+:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="tough"] { color: var(--pv-red); background: var(--pv-red-bg); border-color: transparent; }
 
 :is(.sct, #sct-table-armour) .sct-mu-st-note {
   margin: 10px 0 0;
@@ -17981,24 +18171,291 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-muted);
 }
 
-/* Narrow: each starter becomes a two-line row, the five figures wrapping
-   under the name, so the card never scrolls sideways. */
-@media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-mu-st-off,
-  :is(.sct, #sct-table-armour) .sct-mu-st-off tbody {
-    display: block;
+/* ---- Matchup Leverage as a visual board (mak, 2026-10-23): a role bar, a
+   matchup bar and a colored leverage dot per player; numbers in small print. */
+:is(.sct, #sct-table-armour) .sct-pv-lb {
+  padding: 6px 16px 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-head,
+:is(.sct, #sct-table-armour) .sct-pv-lb-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(0, 1.4fr) minmax(0, 1.4fr) 120px;
+  gap: 0 18px;
+  align-items: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-head {
+  padding: 8px 0 6px;
+  border-bottom: 1px solid var(--pv-border);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-muted-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-row {
+  padding: 8px 0 8px 10px;
+  margin: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--pv-line) 60%, transparent);
+  box-shadow: inset 3px 0 0 var(--pv-rail, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-row:last-child { border-bottom: 0; }
+:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="up"],
+:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="proof"] { --pv-rail: #0f6b4f; }
+:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="down"] { --pv-rail: #b4646a; }
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--pv-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-face {
+  flex: none;
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--pv-gray-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-face.is-away { background: color-mix(in srgb, var(--pv-away) 14%, var(--pv-card)); }
+:is(.sct, #sct-table-armour) .sct-pv-lb-face.is-home { background: color-mix(in srgb, var(--pv-home) 14%, var(--pv-card)); }
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-name {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-who a { color: var(--pv-ink); }
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-cell {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pv-ink) 7%, transparent);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="strong"] i,
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="favorable"] i { background: var(--pv-green); }
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="solid"] i,
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="neutral"] i { background: #d4a106; }
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="light"] i,
+:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="tough"] i { background: var(--pv-red); }
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-lab {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-lab b {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pv-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-lab small {
+  font-size: 11px;
+  color: var(--pv-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-lev {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pv-ink);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d4a106;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #d4a106 22%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-lb-dot.is-up,
+:is(.sct, #sct-table-armour) .sct-pv-lb-dot.is-proof { background: var(--pv-green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pv-green) 22%, transparent); }
+:is(.sct, #sct-table-armour) .sct-pv-lb-dot.is-down { background: var(--pv-red); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pv-red) 22%, transparent); }
+
+/* Narrow: player and leverage dot on one line, then the role bar and the
+   matchup bar each on a full-width line of their own. */
+@media (max-width: 720px) {
+  :is(.sct, #sct-table-armour) .sct-pv-lb-head { display: none; }
+  :is(.sct, #sct-table-armour) .sct-pv-lb-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 14px;
   }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off tr {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--pv-line);
-  }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off tr:last-child { border-bottom: 0; }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off :where(th, td) { border: 0; padding: 2px 4px; }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off th[scope="row"] { flex: 0 0 40px; }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-who { flex: 1 1 calc(100% - 48px); width: auto; }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-stat { text-align: left !important; }
-  :is(.sct, #sct-table-armour) .sct-mu-st-off .sct-mu-st-who + .sct-mu-st-stat { padding-left: 44px; }
+  :is(.sct, #sct-table-armour) .sct-pv-lb-who { grid-column: 1; grid-row: 1; }
+  :is(.sct, #sct-table-armour) .sct-pv-lb-lev { grid-column: 2; grid-row: 1; justify-content: flex-end; }
+  :is(.sct, #sct-table-armour) .sct-pv-lb-cell { grid-column: 1 / -1; }
+}
+
+/* ---- Team Matchup as a comparison graphic (mak, 2026-10-23): mirrored rank
+   bars out from the center, the advantage side in its team color, a marker
+   under the metric that names the edge. */
+:is(.sct, #sct-table-armour) .sct-pv-cmp {
+  padding: 8px 16px 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0 8px;
+  border-bottom: 1px solid var(--pv-border);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pv-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-group {
+  padding: 4px 0 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-group + .sct-pv-cmp-group {
+  border-top: 1px solid var(--pv-line);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-gh {
+  margin: 8px 0 2px !important;
+  text-align: center;
+  font-size: 10.5px !important;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pv-muted) !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-row {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr) 150px minmax(0, 1fr) 118px;
+  gap: 0 10px;
+  align-items: center;
+  padding: 7px 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-v {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-v.is-r { justify-content: flex-end; flex-direction: row-reverse; }
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-v b {
+  font: 800 17px/1 var(--pv-display);
+  color: var(--pv-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pv-ink) 6%, transparent);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pv-ink) 20%, transparent);
+}
+
+/* Mirrored: the fill sits against the center and grows outward. */
+:is(.sct, #sct-table-armour) .sct-pv-cmp-bar.is-l i { margin-left: auto; }
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="away"] .sct-pv-cmp-bar.is-l i { background: var(--pv-away); }
+:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="home"] .sct-pv-cmp-bar.is-r i { background: var(--pv-home); }
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-k {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-muted-strong);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-adv {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--pv-muted);
+  background: var(--pv-gray-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="away"] .sct-pv-cmp-adv { color: #fff; background: var(--pv-away); }
+:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="home"] .sct-pv-cmp-adv { color: #fff; background: var(--pv-home); }
+
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0 6px; }
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-bar { display: none; }
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-row > span:empty { display: none; }
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-v b { font-size: 15px; }
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-mid { min-width: 110px; }
 }

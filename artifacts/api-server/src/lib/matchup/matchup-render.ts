@@ -3983,7 +3983,8 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
             data.preview,
             pv,
             pvFaq,
-            renderLastMeeting(data, options) + renderPreviewStarters(data.preview),
+            renderPreviewStarters(data.preview),
+            renderLastMeeting(data, options),
           )
         : renderWatch(data) +
           renderSnapshot(data) +
