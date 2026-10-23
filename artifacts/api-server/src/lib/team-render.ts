@@ -49,12 +49,14 @@ import {
 import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
 import { getTeamCoaching } from "./team/coaching";
 import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
-import { buildUsageView } from "./team/usage";
-import { efficiencyRows, getEfficiencyDoc, passRushRows } from "./team/efficiency";
+import { getDraftView } from "./team/draft";
+import { renderDraftSection } from "./team/draft-render";
+import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
+import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq, type FaqEntry } from "./team/depth-faq";
-import type { DepthColumn, DepthRow, TeamDepthCharts } from "./team/depth-charts";
+import { nameKey, type DepthColumn, type DepthRow, type DepthView, type TeamDepthCharts } from "./team/depth-charts";
 import { scheduleFaq } from "./team/schedule-faq";
 import { seasonShape } from "./team/season-shape";
 // The tab strip's headings and standfirsts come from the same two functions the
@@ -69,11 +71,14 @@ import type {
   StatRow,
   TeamStats,
 } from "./team/stats";
+import { ordinal } from "./team/stats";
 import { TEAM_NEWS_VISIBLE } from "./team/team-data";
 import { headshotImg } from "./headshot-html";
 import { CLUB_BAND_VARIANTS } from "./image-urls";
 import {
   isOutDesignation,
+  nameKeysForTeam,
+  playerForSearchKey,
   SKILL_POSITIONS,
   type DepthChartEntry,
   type SkillPosition,
@@ -2830,68 +2835,217 @@ function depthName(player: { name: string }): string {
   );
 }
 
-/** "01", "02": the tool's depth rank, zero-padded so the column aligns. */
-function depthRank(rank: number): string {
-  return String(rank).padStart(2, "0");
-}
+/**
+ * The line under the tab heading for each view. The Fantasy one is the tool's
+ * own wording; the other three were written here (2026-10-23) in its register.
+ */
+const DEPTH_VIEW_NOTES: Record<DepthView["key"], string> = {
+  fantasy: "Fantasy view prioritizes fantasy value and may differ from official team depth charts.",
+  offense:
+    "Official offensive depth chart: quarterbacks, backs, receivers, tight ends and the five line spots, first string to fourth.",
+  defense:
+    "Official defensive depth chart: edge rushers, interior linemen, linebackers, corners and safeties, first string to fourth.",
+  special: "Kickers, punters, long snappers and returners as the club lists them.",
+};
+
+/** How many strings the chart prints across before the rest go to the strip. */
+const DEPTH_COLUMNS = ["First", "Second", "Third", "Fourth"] as const;
 
 /**
- * The tool's movement mark against the last refresh: an arrow beside the rank
+ * The tool's movement mark against the last refresh: an arrow beside the name
  * for a player who moved, a NEW chip for one who was not listed before.
  */
 function depthMovement(row: DepthRow): string {
   if (row.movement === "up") {
-    return `<span class="sct-dc-move is-up" title="Moved up"><span aria-hidden="true">\u25B2</span><span class="sct-visually-hidden">Moved up</span></span>`;
+    return `<span class="sct-dc-move is-up" title="Moved up"><span aria-hidden="true">▲</span><span class="sct-visually-hidden">Moved up</span></span>`;
   }
   if (row.movement === "down") {
-    return `<span class="sct-dc-move is-down" title="Moved down"><span aria-hidden="true">\u25BC</span><span class="sct-visually-hidden">Moved down</span></span>`;
+    return `<span class="sct-dc-move is-down" title="Moved down"><span aria-hidden="true">▼</span><span class="sct-visually-hidden">Moved down</span></span>`;
   }
   return "";
 }
 
-function depthToolRow(row: DepthRow): string {
+/**
+ * Sleeper's `search_full_name` for a name the depth tool spells its own way:
+ * lowercase, letters and digits only. "Lloyd Cushenberry III" is indexed as
+ * "lloydcushenberry", so the suffix-stripped key is tried after the full one.
+ */
+function sleeperSearchKeys(name: string): string[] {
+  const full = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const brief = nameKey(name).replace(/[^a-z0-9]/g, "");
+  return brief && brief !== full ? [full, brief] : [full];
+}
+
+/**
+ * Seasons of experience for a charted player, from the Sleeper dictionary.
+ *
+ * Null when he is not indexed, when the name is on two teams (the index drops
+ * those rather than guess), or when the cache predates the field. The team is
+ * checked so a Josh Allen on the Bills' chart never reads another Josh Allen's
+ * service time.
+ */
+function depthExperience(team: NflTeam, name: string): number | null {
+  const keys = sleeperSearchKeys(name);
+  for (const key of keys) {
+    const hit = playerForSearchKey(key);
+    if (!hit) continue;
+    if (hit.team !== team.abbreviation) return null;
+    return typeof hit.yearsExp === "number" ? hit.yearsExp : null;
+  }
+  // The other way round: the tool prints "James Cook" for the man Sleeper
+  // indexes as "James Cook III". One teammate whose key starts with this
+  // name is him; two is a guess this does not make.
+  const prefix = keys[0] ?? "";
+  const onTeam = prefix ? nameKeysForTeam(team.abbreviation).filter((k) => k.startsWith(prefix)) : [];
+  if (onTeam.length !== 1) return null;
+  const hit = playerForSearchKey(onTeam[0]!);
+  return typeof hit?.yearsExp === "number" ? hit.yearsExp : null;
+}
+
+/**
+ * One boxed player: the headshot in the team-tinted well with any designation
+ * tagged on its corner, the name to its right, and the years of service
+ * beneath. `slot`
+ * is printed ahead of the service only in the overflow strip, where no row
+ * label says which position he is listed at.
+ */
+function depthCard(
+  team: NflTeam,
+  row: DepthRow,
+  slot: string | null,
+  ppr: { pos: string; ranks: PprRanks } | null,
+): string {
   const sidelined = isOutDesignation(row.injuryStatus);
-  const meta = (row.movement === "new" ? `<span class="sct-dc-new">New</span>` : "") + injuryBadge(row);
+  const exp = depthExperience(team, row.name);
+  // The Fantasy view's "WR7": his league-wide PPR rank this season, by the
+  // Sleeper id the Fantasy columns carry, else by club and name.
+  const posRank = ppr
+    ? ppr.ranks.rankOf(/^\d+$/.test(row.id ?? "") ? row.id : null, team.abbreviation, row.name)
+    : null;
+  const rankChip =
+    posRank === null ? "" : `<span class="sct-dcx-rank">${escapeHtml(`${ppr!.pos}${posRank}`)}</span>`;
+  const service =
+    exp === null
+      ? ""
+      : exp === 0
+        ? `<span class="sct-dcx-rookie">Rookie</span>`
+        : `<span class="sct-dcx-exp">Exp ${exp}</span>`;
+  const sub =
+    (slot ? `<span class="sct-dcx-subpos">${escapeHtml(slot)}</span>` : "") + rankChip + service;
   return (
-    `<li class="sct-depth-row sct-dc-row${sidelined ? " is-sidelined" : ""}">` +
-    `<span class="sct-dc-rank">${depthRank(row.rank)}${depthMovement(row)}</span>` +
-    // Decorative, so the alt is empty: the name is on the same row. A player
+    `<li class="sct-dcx-card${sidelined ? " is-sidelined" : ""}" data-rank="${row.rank}">` +
+    // Decorative, so the alt is empty: the name is on the same card. A player
     // the tool has no headshot for sits in the bare team-tinted well.
-    `<span class="sct-depth-well">` +
+    // The designation rides the photo's corner (IR, Out, Q...), outside the
+    // well because the well clips to its circle.
+    `<span class="sct-dcx-avatar">` +
+    `<span class="sct-dcx-well">` +
     (headshotImg({
       src: row.headshot,
-      className: "sct-depth-photo",
+      className: "sct-dcx-photo",
       alt: "",
       variants: ["160"],
-      width: 38,
-      height: 38,
+      width: 40,
+      height: 40,
       loading: "lazy",
     }) ?? "") +
     `</span>` +
-    `<span class="sct-depth-body">` +
+    injuryBadge(row, "sct-dcx-tag") +
+    `</span>` +
+    `<span class="sct-dcx-body">` +
+    `<span class="sct-dcx-top">` +
     depthName(row) +
-    (meta ? `<span class="sct-depth-meta">${meta}</span>` : "") +
+    (row.movement === "new" ? `<span class="sct-dc-new">New</span>` : "") +
+    depthMovement(row) +
+    `</span>` +
+    (sub ? `<span class="sct-dcx-sub">${sub}</span>` : "") +
     `</span>` +
     `</li>`
   );
 }
 
-function depthToolColumn(column: DepthColumn): string {
-  const listed = column.rows.length;
+/** The ranker for a column that has one: the four skill positions, not K. */
+function pprFor(pos: string, ranks: PprRanks | null): { pos: string; ranks: PprRanks } | null {
+  return ranks && (SKILL_POSITIONS as readonly string[]).includes(pos) ? { pos, ranks } : null;
+}
+
+/**
+ * One position's row: the slot label in the first column, then the first four
+ * strings as boxed cards, the empty strings left as empty cells so the grid
+ * keeps its columns.
+ */
+function depthPositionRow(team: NflTeam, column: DepthColumn, ranks: PprRanks | null): string {
+  const shown = column.rows.slice(0, DEPTH_COLUMNS.length);
+  const ppr = pprFor(column.pos, ranks);
+  const cells = shown.map((row) => depthCard(team, row, null, ppr)).join("");
+  const blanks = DEPTH_COLUMNS.length - shown.length;
   return (
-    `<div class="sct-depth-col">` +
-    `<h4 class="sct-depth-pos" data-pos="${escapeHtml(column.pos)}" title="${escapeHtml(column.label)}">` +
-    `<span class="sct-depth-pos-name">${escapeHtml(column.pos)}` +
-    `<span class="sct-visually-hidden"> - ${escapeHtml(column.label)}</span></span>` +
-    `<span class="sct-depth-count">${listed}` +
-    `<span class="sct-visually-hidden"> player${listed === 1 ? "" : "s"} listed</span>` +
-    `</span>` +
-    `</h4>` +
-    (listed
-      ? `<ol class="sct-depth-list">${column.rows.map(depthToolRow).join("")}</ol>`
-      : `<p class="sct-dc-empty">None listed</p>`) +
+    `<div class="sct-dcx-row" data-pos="${escapeHtml(column.pos)}">` +
+    `<h4 class="sct-dcx-pos"><span class="sct-dcx-pos-name">${escapeHtml(column.pos)}</span>` +
+    `<span class="sct-visually-hidden"> - ${escapeHtml(column.label)}</span></h4>` +
+    `<ol class="sct-dcx-cells">${cells}` +
+    (blanks > 0 ? `<li class="sct-dcx-blank" aria-hidden="true"></li>`.repeat(blanks) : "") +
+    `</ol>` +
     `</div>`
   );
+}
+
+/**
+ * A letter for a league percentile, on the ladder the efficiency tab's
+ * percentile track draws: the top sixth of the league is an A of some kind,
+ * the bottom sixth a D or an F.
+ */
+function letterGrade(pct: number): string {
+  const ladder: Array<[number, string]> = [
+    [94, "A+"],
+    [84, "A"],
+    [77, "A-"],
+    [68, "B+"],
+    [58, "B"],
+    [48, "B-"],
+    [39, "C+"],
+    [29, "C"],
+    [19, "C-"],
+    [13, "D+"],
+    [6, "D"],
+  ];
+  for (const [floor, grade] of ladder) if (pct >= floor) return grade;
+  return "F";
+}
+
+/**
+ * The unit grades in a view's header: passing and rushing for the offense,
+ * pass and run defense for the defense, each a letter for this team's league
+ * rank on the efficiency doc the Stats tab draws its ladders from. Nothing is
+ * graded by hand: the tooltip names the rank the letter stands for. Empty for
+ * the Fantasy and Special Teams views, which the doc has no rates for.
+ */
+function depthGrades(data: TeamPageData, view: DepthView["key"]): string {
+  const doc = getEfficiencyDoc(data.state.statsSeason);
+  const eff = doc?.teams[data.team.abbreviation];
+  if (!doc || !eff) return "";
+  const side = view === "offense" ? eff.offense : view === "defense" ? eff.defense : null;
+  if (!side) return "";
+  const units: Array<[string, string, EfficiencyMetric | null | undefined]> = [
+    [view === "offense" ? "Passing game" : "Pass defense", "EPA per dropback", side.epaDropback],
+    [view === "offense" ? "Rushing attack" : "Run defense", "EPA per rush", side.epaRush],
+  ];
+  const through = doc.throughWeek ? ` through Week ${doc.throughWeek}` : "";
+  const pills = units
+    .filter((unit): unit is [string, string, EfficiencyMetric] => !!unit[2])
+    .map(([label, metric, m]) => {
+      const grade = letterGrade(m.pct);
+      const tone = m.pct >= 68 ? "good" : m.pct < 29 ? "poor" : "mid";
+      const detail = `${metric}: ${m.tied ? "T-" : ""}${ordinal(m.rank)} in the NFL${through}`;
+      return (
+        `<span class="sct-dcx-grade" data-tone="${tone}" title="${escapeHtml(detail)}">` +
+        `<span class="sct-dcx-grade-label">${escapeHtml(label)}</span>` +
+        `<span class="sct-dcx-grade-mark">${escapeHtml(grade)}</span>` +
+        `<span class="sct-visually-hidden">, ${escapeHtml(detail)}</span>` +
+        `</span>`
+      );
+    });
+  return pills.length ? `<div class="sct-dcx-grades">${pills.join("")}</div>` : "";
 }
 
 /**
@@ -2922,14 +3076,51 @@ function depthFaqInput(charts: TeamDepthCharts): {
 }
 
 /**
- * The depth-charts tool's team view, in the hub's dress.
+ * One view as a card: the side's name as an italic title with its unit
+ * grades on the right, a POS / FIRST / SECOND / THIRD / FOURTH grid of boxed
+ * players beneath, and a strip for anyone listed deeper than fourth string.
+ */
+function depthViewCard(data: TeamPageData, view: DepthView): string {
+  const { team } = data;
+  const listed = view.columns.filter((c) => c.rows.length);
+  // PPR ranks on the Fantasy view only: that is the view that is about them.
+  const usage = view.key === "fantasy" ? getUsageDoc(data.state.statsSeason) : null;
+  const ranks = usage ? pprPositionRanks(usage) : null;
+  const overflow = listed.flatMap((c) =>
+    c.rows
+      .slice(DEPTH_COLUMNS.length)
+      .map((row) => depthCard(team, row, `${c.pos}${row.rank}`, pprFor(c.pos, ranks))),
+  );
+  return (
+    `<section class="sct-dcx" data-sct-dc-panel="${view.key}">` +
+    `<div class="sct-dcx-head">` +
+    `<h3 class="sct-dcx-title" data-view="${view.key}">${escapeHtml(view.label)}</h3>` +
+    depthGrades(data, view.key) +
+    `</div>` +
+    `<div class="sct-dcx-grid">` +
+    `<div class="sct-dcx-labels" aria-hidden="true"><span>Pos</span>` +
+    DEPTH_COLUMNS.map((label) => `<span>${label}</span>`).join("") +
+    `</div>` +
+    listed.map((column) => depthPositionRow(team, column, ranks)).join("") +
+    `</div>` +
+    (overflow.length
+      ? `<div class="sct-dcx-more">` +
+        `<h4 class="sct-dcx-more-title">Also listed<span class="sct-dcx-more-count"> · ${overflow.length}</span></h4>` +
+        `<ol class="sct-dcx-cells is-loose">${overflow.join("")}</ol>` +
+        `</div>`
+      : "") +
+    `</section>`
+  );
+}
+
+/**
+ * The depth-charts tool's team view, in the dress of a printed depth chart.
  *
- * Four views - Fantasy, Offense, Defense, Special Teams - as the tool has them,
- * each a row of position columns in the tool's depth order with its rank
- * numbers, movement marks and status badges. All four are in the HTML: the
- * switch above them only hides three (client/team.ts, wireDepthViews), so with
- * scripting off the tab reads as four stacked sections under their own
- * headings, and a crawler sees the whole roster.
+ * Four views - Fantasy, Offense, Defense, Special Teams - as the tool has
+ * them, one card each behind a row of filter buttons. Each is a grid of
+ * positions by string with every player in a box: crest, name, availability
+ * dot and designation, then position and years of service. A view the
+ * efficiency doc can grade carries its unit letters in the header.
  *
  * The data is the tool's own document, pushed by the WordPress plugin after
  * each refresh (lib/team/depth-charts.ts). It replaced the Sleeper skill-
@@ -2951,6 +3142,23 @@ function renderDepthChart(
   // questions about one.
   tail.html = faqBlock(faqList(depthFaq({ team, ...depthFaqInput(depthCharts) }), faq, "h3"));
 
+  // One line under the heading that changes with the view, in the place the
+  // "Updated" stamp had until 2026-10-23 (mak). With scripting off the lines
+  // are hidden and each card's own title labels it instead.
+  const notes =
+    `<div class="sct-dc-notes">` +
+    views
+      .map(
+        (view, i) =>
+          `<p class="sct-note sct-dc-note" data-sct-dc-note="${view.key}"${i === 0 ? "" : " hidden"}>` +
+          `${escapeHtml(DEPTH_VIEW_NOTES[view.key])}</p>`,
+      )
+      .join("") +
+    `</div>`;
+
+  // The view filter. All four cards are in the HTML: the buttons only hide
+  // three (client/team.ts, wireDepthViews), so with scripting off the tab
+  // reads as four stacked cards and a crawler sees the whole roster.
   const switcher =
     `<div class="sct-dc-views" role="group" aria-label="Depth chart view">` +
     views
@@ -2962,43 +3170,10 @@ function renderDepthChart(
       .join("") +
     `</div>`;
 
-  const panels = views
-    .map((view, i) => {
-      // The tool's summary strip: "2 QB · 4 RB · 6 WR · 3 TE · 1 K".
-      const summary = view.columns
-        .filter((c) => c.rows.length)
-        .map((c) => `${c.rows.length} ${c.pos}`)
-        .join(" \u00B7 ");
-      return (
-        `<section class="sct-dc-panel" data-sct-dc-panel="${view.key}">` +
-        `<h3 class="sct-dc-title">${escapeHtml(view.label)}</h3>` +
-        `<p class="sct-dc-summary">${escapeHtml(summary)}</p>` +
-        (view.key === "fantasy"
-          ? `<p class="sct-note sct-dc-note">Fantasy view prioritizes fantasy value and may differ from official team depth charts.</p>`
-          : "") +
-        `<div class="sct-depth sct-dc-grid">${view.columns.map(depthToolColumn).join("")}</div>` +
-        `</section>`
-      );
-    })
-    .join("");
-
-  const fetchedMs = Date.parse(depthCharts.fetchedAt);
-  const updated = Number.isFinite(fetchedMs)
-    ? (() => {
-        const parts = easternParts(fetchedMs);
-        return (
-          `<p class="sct-note sct-dc-updated">Updated ` +
-          `<time datetime="${escapeHtml(new Date(fetchedMs).toISOString())}" data-ts="${fetchedMs}">` +
-          `${escapeHtml(`${parts.month} ${parts.day}, ${parts.time}`)}</time></p>`
-        );
-      })()
-    : "";
-
   // No "View full depth chart" footer link since 2026-10-22 (mak).
   return (
     h2(`${team.nickname} Fantasy Depth Chart`) +
-    updated +
-    `<div class="sct-dc" data-sct-dc>${switcher}${panels}</div>`
+    `<div class="sct-dc" data-sct-dc>${notes}${switcher}${views.map((view) => depthViewCard(data, view)).join("")}</div>`
   );
 }
 
@@ -3864,6 +4039,9 @@ export function renderTeamPage(
   const stats =
     renderSnapshot(data) + renderTeamStats(data, statsFaq, statsTail);
   const depth = renderDepthChart(data, depthChartFaq, depthTail);
+  // Next draft's picks by round and the last five draft classes, from two
+  // committed files (team/draft.ts). "" when neither has this club.
+  const draft = renderDraftSection(team, getDraftView(team.abbreviation, data.state.season));
   const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);
   const matchups = renderMatchups(data, options, now);
 
@@ -3906,6 +4084,9 @@ export function renderTeamPage(
       faq: statsFaq,
       tail: statsTail.html,
     },
+    // Right of Stats (mak, 2026-10-23). A hub-only panel like Coaching: its
+    // tab is the hub's address plus #draft until a public URL is approved.
+    { id: "draft", label: "Draft", html: draft, hash: true },
     { id: "news", label: "News", html: newsSection },
     {
       id: "depth-chart",

@@ -129,6 +129,11 @@ export interface DepthRow {
   rank: number;
   name: string;
   /**
+   * The tool's id for the row: a Sleeper id on the Fantasy columns, another
+   * source's elsewhere. Null when the document has none.
+   */
+  id: string | null;
+  /**
    * The designation as the hub's badge reads it: "Questionable", "Out", "IR".
    * The tool stores one-letter codes for the first three.
    */
@@ -229,6 +234,7 @@ export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null
           return {
             rank: player.rank,
             name: player.name,
+            id: typeof player.id === "string" && player.id ? player.id : null,
             injuryStatus: statusWord(status),
             injuryBodyPart: null,
             headshot: player.headshot ?? headshots.get(key) ?? null,

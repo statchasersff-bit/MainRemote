@@ -794,16 +794,23 @@ function wireUsageProfiles(root: HTMLElement): void {
  * other than the pressed one are hidden and the headings drop to the screen
  * reader, since the pressed button already names the view.
  */
+/**
+ * The view switch on any `[data-sct-dc]` block: the Depth Chart tab's four
+ * views, and since 2026-10-23 the Draft tab's two (team/draft-render.ts),
+ * which wear the same attributes so they get the same behavior for free.
+ */
 function wireDepthViews(root: HTMLElement): void {
   for (const block of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-dc]"))) {
     const buttons = Array.from(block.querySelectorAll<HTMLButtonElement>("[data-sct-dc-view]"));
     const panels = Array.from(block.querySelectorAll<HTMLElement>("[data-sct-dc-panel]"));
+    const notes = Array.from(block.querySelectorAll<HTMLElement>("[data-sct-dc-note]"));
     if (buttons.length === 0 || panels.length === 0) continue;
     const show = (key: string): void => {
       for (const button of buttons) {
         button.setAttribute("aria-pressed", String(button.dataset["sctDcView"] === key));
       }
       for (const panel of panels) panel.hidden = panel.dataset["sctDcPanel"] !== key;
+      for (const note of notes) note.hidden = note.dataset["sctDcNote"] !== key;
     };
     for (const button of buttons) {
       button.addEventListener("click", () => show(button.dataset["sctDcView"] ?? ""));

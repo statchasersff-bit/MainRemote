@@ -243,8 +243,8 @@ describe("crawlable HTML (no JavaScript executed)", () => {
         // hub's address plus the panel hash (see team-render.ts).
         id === "outlook"
           ? "/team/new-england-patriots/"
-          : id === "coaching"
-            ? "/team/new-england-patriots/#coaching"
+          : id === "coaching" || id === "draft"
+            ? `/team/new-england-patriots/#${id}`
             : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
       );
@@ -696,7 +696,8 @@ describe("embedded mode", () => {
     const ne = snapshot.teams.find((t) => t.team.abbr === "NE");
     assert.ok(ne, "the snapshot has the Patriots");
 
-    // The tool's four views, Fantasy first and pressed.
+    // The tool's four views behind a filter, Fantasy first and pressed; every
+    // card is in the HTML, not fetched.
     const buttons = [...doc.querySelectorAll("#depth-chart [data-sct-dc-view]")];
     assert.deepEqual(
       buttons.map((b) => b.textContent.trim()),
@@ -704,9 +705,41 @@ describe("embedded mode", () => {
     );
     assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
     const panels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")];
-    assert.equal(panels.length, 4, "every view is in the HTML, not fetched");
+    assert.deepEqual(
+      panels.map((p) => p.querySelector(".sct-dcx-title").textContent.trim()),
+      buttons.map((b) => b.textContent.trim()),
+    );
+    assert.deepEqual(
+      panels.map((p) => p.dataset.sctDcPanel),
+      buttons.map((b) => b.dataset.sctDcView),
+    );
+    // One line under the heading per view, the pressed view's shown.
+    const notes = [...doc.querySelectorAll("#depth-chart [data-sct-dc-note]")];
+    assert.deepEqual(
+      notes.map((n) => n.dataset.sctDcNote),
+      buttons.map((b) => b.dataset.sctDcView),
+    );
+    assert.deepEqual(notes.map((n) => n.hasAttribute("hidden")), [false, true, true, true]);
+    assert.match(notes[0].textContent, /^Fantasy view prioritizes/);
+    assert.equal(doc.querySelector("#depth-chart .sct-dc-updated"), null, "no Updated stamp");
+    // The Fantasy view carries each skill player's season PPR rank ("WR7")
+    // ahead of his service line; no other view does.
+    const chips = [...panels[0].querySelectorAll(".sct-dcx-rank")];
+    assert.ok(chips.length > 0, "PPR ranks on the Fantasy view");
+    for (const chip of chips) {
+      assert.match(chip.textContent, /^(QB|RB|WR|TE)\d+$/);
+      const card = chip.closest(".sct-dcx-card");
+      const pos = card.closest(".sct-dcx-row")?.dataset.pos ?? card.querySelector(".sct-dcx-subpos").textContent.slice(0, 2);
+      assert.ok(chip.textContent.startsWith(pos), `${chip.textContent} on a ${pos} card`);
+      assert.ok(
+        chip.nextElementSibling === null || /^(Exp \d+|Rookie)$/.test(chip.nextElementSibling.textContent),
+        "the rank sits left of the service",
+      );
+    }
+    assert.equal(panels.slice(1).flatMap((p) => [...p.querySelectorAll(".sct-dcx-rank")]).length, 0);
 
-    // Column for column, rank for rank, the tool's order.
+    // Column for column, rank for rank, the tool's order: the first four
+    // strings across the row, anyone deeper in the "Also listed" strip.
     const columns = {
       fantasy: ["FAN_QB", "FAN_RB", "FAN_WR", "FAN_TE", "FAN_K"],
       offense: ["QB", "RB", "WR", "TE", "LT", "LG", "C", "RG", "RT"],
@@ -715,26 +748,42 @@ describe("embedded mode", () => {
     };
     for (const panel of panels) {
       const keys = columns[panel.dataset.sctDcPanel];
-      const cols = [...panel.querySelectorAll(".sct-depth-col")];
-      assert.equal(cols.length, keys.length, `${panel.dataset.sctDcPanel}: column count`);
-      cols.forEach((col, i) => {
-        const expected = [...(ne.positions[keys[i]] ?? [])].sort((a, b) => a.rank - b.rank);
-        const rows = [...col.querySelectorAll(".sct-dc-row")];
+      const labels = [...panel.querySelectorAll(".sct-dcx-labels > span")].map((s) => s.textContent);
+      assert.deepEqual(labels, ["Pos", "First", "Second", "Third", "Fourth"]);
+      const rows = [...panel.querySelectorAll(".sct-dcx-row")];
+      const more = [...panel.querySelectorAll(".sct-dcx-more .sct-dcx-card")];
+      const listed = keys.filter((k) => (ne.positions[k] ?? []).length);
+      assert.deepEqual(
+        rows.map((r) => r.dataset.pos),
+        listed.map((k) => k.replace(/^FAN_/, "")),
+        `${panel.dataset.sctDcPanel}: a row per listed position`,
+      );
+      for (const key of listed) {
+        const pos = key.replace(/^FAN_/, "");
+        const expected = [...ne.positions[key]].sort((a, b) => a.rank - b.rank);
+        const row = rows.find((r) => r.dataset.pos === pos);
+        const cards = [...row.querySelectorAll(".sct-dcx-card")];
+        assert.ok(cards.length <= 4, `${key}: at most four strings across`);
+        const deeper = more.filter((c) => c.querySelector(".sct-dcx-subpos").textContent === `${pos}${c.dataset.rank}`);
         assert.deepEqual(
-          rows.map(rowName),
+          [...cards, ...deeper].map(rowName),
           expected.map((p) => p.name),
-          `${keys[i]}: names in the tool's order`,
+          `${key}: names in the tool's order`,
         );
         assert.deepEqual(
-          rows.map((r) => r.querySelector(".sct-dc-rank").firstChild.textContent),
-          expected.map((p) => String(p.rank).padStart(2, "0")),
-          `${keys[i]}: the tool's ranks`,
+          [...cards, ...deeper].map((c) => Number(c.dataset.rank)),
+          expected.map((p) => p.rank),
+          `${key}: the tool's ranks`,
         );
-        assert.equal(
-          Number.parseInt(col.querySelector(".sct-depth-count").textContent, 10),
-          expected.length,
-        );
-      });
+        // Every box: the headshot well, no position label (the row says it).
+        for (const card of cards) {
+          assert.ok(card.querySelector(".sct-dcx-well"), "headshot well");
+          assert.equal(card.querySelector(".sct-dcx-subpos"), null);
+        }
+      }
+      // The strip is only there when someone is deeper than fourth string.
+      const overflow = listed.reduce((n, k) => n + Math.max(0, ne.positions[k].length - 4), 0);
+      assert.equal(more.length, overflow, `${panel.dataset.sctDcPanel}: the Also listed strip`);
     }
 
     // The Fantasy columns carry no status in the document; each row borrows the
@@ -745,8 +794,8 @@ describe("embedded mode", () => {
       for (const player of ne.positions[`FAN_${pos}`] ?? []) {
         const twin = offense.find((o) => o.name === player.name);
         if (player.status || !twin?.status) continue;
-        const row = [...fantasy.querySelectorAll(".sct-dc-row")].find((r) => rowName(r) === player.name);
-        assert.ok(row?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
+        const card = [...fantasy.querySelectorAll(".sct-dcx-card")].find((c) => rowName(c) === player.name);
+        assert.ok(card?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
       }
     }
   });
@@ -779,10 +828,13 @@ describe("embedded mode", () => {
     // A sidelined player in the Fantasy view is named as such, so an order
     // that skips him reads as an injury and not as a wrong chart.
     const sidelined = [
-      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-depth-col'),
+      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-dcx-card.is-sidelined'),
     ]
-      .filter((col) => ["QB", "RB", "WR", "TE"].includes(col.querySelector(".sct-depth-pos").dataset.pos))
-      .flatMap((col) => [...col.querySelectorAll(".sct-dc-row.is-sidelined")])
+      .filter((card) =>
+        /^(QB|RB|WR|TE)/.test(
+          card.closest(".sct-dcx-row")?.dataset.pos ?? card.querySelector(".sct-dcx-subpos")?.textContent ?? "",
+        ),
+      )
       .map(rowName);
     for (const who of sidelined) {
       assert.ok(
@@ -2856,5 +2908,54 @@ describe("team section URLs", () => {
 
     const hub = await get("/embed/team/ne");
     assert.ok(!/sct-schedule-data/.test(hub.body), "the hub carries no game list");
+  });
+});
+
+describe("draft tab", () => {
+  test("the hub carries the next draft's picks by round and the last five classes", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("draft");
+    assert.ok(panel, "the Draft panel is in the hub");
+    assert.equal(doc.querySelector('.sct-nav-link[data-sct-panel-id="draft"]')?.textContent, "Draft");
+
+    // Right of Stats on the strip (mak, 2026-10-23).
+    const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
+    assert.equal(ids[ids.indexOf("stats") + 1], "draft", "Draft sits next to Stats");
+
+    // Two views behind the Depth Chart tab's switch, all in the HTML.
+    const views = [...panel.querySelectorAll("[data-sct-dc-view]")].map((b) => b.getAttribute("data-sct-dc-view"));
+    assert.deepEqual(views, ["picks", "history"]);
+    assert.ok(panel.querySelector('[data-sct-dc-panel="picks"]'));
+    assert.ok(panel.querySelector('[data-sct-dc-panel="history"]'));
+
+    // Picks: seven round cards, each counting what the club holds.
+    const rounds = [...panel.querySelectorAll(".sct-dr-round")];
+    assert.equal(rounds.length, 7, "one card per round");
+    const picks = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8"),
+    );
+    const held = picks.teams.ne.holds.length;
+    assert.equal(
+      rounds.reduce((n, r) => n + Number(r.getAttribute("data-count")), 0),
+      held,
+      "the cards add up to the picks the file holds",
+    );
+    assert.match(panel.querySelector(".sct-dr-tile .sct-dr-num")?.textContent ?? "", new RegExp(`^${held}$`));
+    assert.ok(panel.querySelector(".sct-dr-chip.is-own"), "an own pick is marked");
+
+    // History: one table per draft, newest first, from the register.
+    const seasons = [...panel.querySelectorAll(".sct-dr-season .sct-dr-h4")].map((h) => h.textContent);
+    assert.equal(seasons.length, 5, "five draft classes");
+    assert.deepEqual(seasons, [...seasons].sort().reverse(), "newest first");
+    const history = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8"),
+    );
+    const latest = history.teams.ne.filter((p) => p.season === history.latestSeason);
+    const firstTable = panel.querySelector(".sct-dr-table tbody");
+    assert.equal(firstTable.querySelectorAll("tr").length, latest.length, "every pick of the latest draft");
+    assert.equal(firstTable.querySelector("tr .sct-dr-name")?.textContent, latest[0].name);
+
+    // No outside source is named in the page.
+    assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference/i);
   });
 });

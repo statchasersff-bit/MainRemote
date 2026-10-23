@@ -112,6 +112,13 @@ export interface NamedPlayer {
   id: string;
   name: string;
   team: string;
+  /**
+   * Seasons in the league before this one, 0 for a rookie. Optional because
+   * the index is also restored from a disk cache written before it was
+   * carried; the next refresh fills it. The Depth Chart tab prints it as
+   * "Exp 9" / "Rookie" for every position, not only the four fantasy ones.
+   */
+  yearsExp?: number | null;
 }
 
 /** Every indexed player keyed by team, plus a name index for news matching. */
@@ -238,6 +245,7 @@ export function indexRoster(
           id: String(player.player_id ?? key),
           name: displayName,
           team,
+          yearsExp: typeof player.years_exp === "number" ? player.years_exp : null,
         });
       }
     }
