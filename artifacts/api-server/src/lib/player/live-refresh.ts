@@ -219,7 +219,7 @@ function runBuilder(
   script: string,
   args: string[],
   timeoutMs: number = BUILDER_TIMEOUT_MS,
-): Promise<void> {
+): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!SCRIPTS_DIR) {
       reject(new Error("scripts/ not found beside the server"));
@@ -230,10 +230,10 @@ function runBuilder(
       process.execPath,
       [`--max-old-space-size=${BUILDER_HEAP_MB}`, path.join(SCRIPTS_DIR, script), ...args],
       { timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024 },
-      (err, _stdout, stderr) => {
+      (err, stdout, stderr) => {
         refreshNote(err ? "failed" : "done", script);
         if (err) reject(new Error(`${script}: ${err.message}${stderr ? ` - ${stderr.slice(-500)}` : ""}`));
-        else resolve();
+        else resolve(stdout);
       },
     );
   });
@@ -251,12 +251,51 @@ export function reloadPlayerStats(): void {
 }
 
 /**
- * Run the FPA ingest here, joining one in flight. Imported lazily so the
- * nflverse code stays off the startup path, as fpa-ssr.ts does. True on success.
+ * The FPA ingest as a builder child (scripts/ingest-fpa.mjs), not in-process.
+ *
+ * It ran inside the server from 2026-09-28 to 2026-10-23, and that is where a
+ * third of the production process went: the ingest holds two seasons of
+ * nflverse CSV as text and as a string matrix while it scores them, and when
+ * the heap gives that back, the allocator does not - measured on the same
+ * dist, one in-process run moved the server from 160 MB to 460 MB resident
+ * with the heap back at 50 MB, and it never came down. On the 2 GB VM that
+ * is the difference between a server that lives beside its builders and the
+ * 10-22/10-23 deaths (RSS 1 GB+, available memory under 400 MB, no heap
+ * fatal). As a child it peaks at ~360 MB and the kernel gets it all back on
+ * exit, like every other builder here, under the same BUILDER_HEAP_MB cap.
+ *
+ * The child writes the table; this process still has to drop what it cached
+ * from the old one (dropFpaCaches, the same list the in-process run used) and
+ * tell /api/status (recordFpaRefresh). Its summary line is parsed for the
+ * figures when it printed one. SC_FPA_IN_PROCESS=1 restores the old path.
+ * True on success.
  */
+const FPA_CHILD_SCRIPT = "ingest-fpa.mjs";
+const FPA_SUMMARY =
+  /FPA ingest complete: (\d+) snapshot rows, (\d+) game rows, mode (\S+?)(?: \(week (\d+)\))?(?: \(preseason\))?\s*$/m;
+
+export function fpaInProcess(): boolean {
+  const raw = (process.env["SC_FPA_IN_PROCESS"] ?? "").trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "on";
+}
+
+export function parseFpaSummary(stdout: string): {
+  snapshotRows: number;
+  gameRows: number;
+  weekNumber: number | null;
+  dataMode: string;
+} | null {
+  const m = FPA_SUMMARY.exec(stdout);
+  if (!m) return null;
+  return {
+    snapshotRows: Number(m[1]),
+    gameRows: Number(m[2]),
+    dataMode: m[3]!,
+    weekNumber: m[4] === undefined ? null : Number(m[4]),
+  };
+}
+
 async function refreshFpaInProcess(caller: string): Promise<boolean> {
-  // Noted like the builders, and more pointedly: this one runs inside the
-  // server process, so its memory lands on top of everything already cached.
   refreshNote("start", "fpa (in-process)");
   try {
     const { refreshFpa } = await import("../fpa/refresh");
@@ -267,6 +306,23 @@ async function refreshFpaInProcess(caller: string): Promise<boolean> {
   } catch (err) {
     logger.warn({ err }, `${caller}: FPA not refreshed`);
     refreshNote("failed", "fpa (in-process)");
+    return false;
+  }
+}
+
+export async function refreshFpaStep(caller: string): Promise<boolean> {
+  if (fpaInProcess()) return refreshFpaInProcess(caller);
+  const { recordFpaRefresh, dropFpaCaches } = await import("../fpa/refresh");
+  try {
+    const stdout = await runBuilder(FPA_CHILD_SCRIPT, []);
+    const result = parseFpaSummary(stdout);
+    recordFpaRefresh({ ok: true, ...(result ? { result } : {}) });
+    await dropFpaCaches();
+    logger.info({ weekNumber: result?.weekNumber ?? null }, `${caller}: FPA refreshed`);
+    return true;
+  } catch (err) {
+    recordFpaRefresh({ ok: false, error: err instanceof Error ? err.message : String(err) });
+    logger.warn({ err }, `${caller}: FPA not refreshed`);
     return false;
   }
 }
@@ -296,7 +352,7 @@ export function refreshPlayerStats(): Promise<void> {
       // does the ingest rewrites what it already had. It used to run only when
       // somebody called the endpoint, which is how the Sep 28 table sat
       // without Week 3's Monday game.
-      await refreshFpaInProcess("Player refresh");
+      await refreshFpaStep("Player refresh");
       // The recaps' highlights videos: the NFL's YouTube upload for each game
       // finished since the last publish, a miss retried until the game is four
       // days old. Best effort: YouTube or ESPN refusing costs only the videos.
@@ -381,7 +437,7 @@ export function refreshDailyData(): Promise<void> {
       // FPA again, daily: the backstop for a week nflverse posted after the
       // last game window's runs had stopped looking for it.
       steps.push(
-        (await refreshFpaInProcess("Daily data"))
+        (await refreshFpaStep("Daily data"))
           ? { name: "fpa", ok: true }
           : { name: "fpa", ok: false, error: "FPA ingest failed; see the log and /api/status fpa" },
       );

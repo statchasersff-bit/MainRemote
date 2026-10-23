@@ -480,3 +480,62 @@ export function ordinal(n: number): string {
 export function rbRankFor(pool: number[], woppPerGame: number): number {
   return 1 + pool.filter((v) => v > woppPerGame).length;
 }
+
+/* ------------------------------------------------------------- PPR ranks */
+
+/**
+ * Every skill player's league-wide positional rank by season PPR points per
+ * game ("WR7"), from the usage document. The same ladder the matchup preview
+ * builds (buildLeague in matchup/preview.ts): best per game first, with a
+ * floor of two games once the season is three weeks old so one big Sunday
+ * does not top the ladder. Looked up by Sleeper id first, then by club and
+ * folded name for a row that carries another source's id.
+ */
+export interface PprRanks {
+  rankOf(sleeperId: string | null, club: string, name: string): number | null;
+}
+
+export function pprPositionRanks(doc: UsageDoc): PprRanks {
+  const pools: Record<UsagePos, Array<{ sleeperId: string | null; club: string; key: string; ppg: number }>> = {
+    QB: [],
+    RB: [],
+    WR: [],
+    TE: [],
+  };
+  const minGames = Math.min(2, Math.max(1, doc.throughWeek - 1));
+  for (const [club, team] of Object.entries(doc.teams)) {
+    for (const p of team.players) {
+      if (p.fpPerGame === null || !p.games || p.games < minGames) continue;
+      pools[p.pos].push({ sleeperId: p.sleeperId, club, key: foldName(p.name), ppg: p.fpPerGame });
+    }
+  }
+  const bySleeper = new Map<string, number>();
+  const byClubName = new Map<string, number>();
+  for (const pos of Object.keys(pools) as UsagePos[]) {
+    pools[pos].sort((x, y) => y.ppg - x.ppg);
+    pools[pos].forEach((entry, i) => {
+      if (entry.sleeperId && !bySleeper.has(entry.sleeperId)) bySleeper.set(entry.sleeperId, i + 1);
+      const k = `${entry.club}:${entry.key}`;
+      if (!byClubName.has(k)) byClubName.set(k, i + 1);
+    });
+  }
+  return {
+    rankOf(sleeperId, club, name) {
+      if (sleeperId && bySleeper.has(sleeperId)) return bySleeper.get(sleeperId)!;
+      return byClubName.get(`${club.toLowerCase()}:${foldName(name)}`) ?? null;
+    },
+  };
+}
+
+/** Case, punctuation and Jr./III dropped, so two sources' spellings meet. */
+function foldName(name: string): string {
+  const words = name
+    .toLowerCase()
+    .replace(/[.']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/);
+  const suffixes = new Set(["jr", "sr", "ii", "iii", "iv", "v"]);
+  while (words.length > 1 && suffixes.has(words[words.length - 1] ?? "")) words.pop();
+  return words.join("");
+}

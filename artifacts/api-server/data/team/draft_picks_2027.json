@@ -1,0 +1,1280 @@
+{
+  "draftYear": 2027,
+  "builtAt": "2026-10-23T14:03:06.345Z",
+  "slots": 224,
+  "teams": {
+    "ari": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": "hou"
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "sf"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "hou"
+        }
+      ]
+    },
+    "atl": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 5,
+          "to": "chi"
+        }
+      ]
+    },
+    "bal": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 5,
+          "to": "phi"
+        },
+        {
+          "round": 6,
+          "to": "sf"
+        }
+      ]
+    },
+    "buf": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "lv"
+        }
+      ],
+      "sent": []
+    },
+    "car": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": "min"
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 5,
+          "to": "min"
+        }
+      ]
+    },
+    "chi": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "atl"
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 5,
+          "to": "ne"
+        }
+      ]
+    },
+    "cin": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": []
+    },
+    "cle": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 1,
+          "from": "lar"
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": "sea"
+        },
+        {
+          "round": 4,
+          "from": "nyg"
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "hou"
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "hou"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "hou"
+        }
+      ]
+    },
+    "dal": {
+      "holds": [
+        {
+          "round": 1,
+          "from": "gb"
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": "pit"
+        }
+      ],
+      "sent": [
+        {
+          "round": 1,
+          "to": "nyj"
+        },
+        {
+          "round": 3,
+          "to": "pit"
+        },
+        {
+          "round": 4,
+          "to": "gb"
+        },
+        {
+          "round": 5,
+          "to": "pit"
+        },
+        {
+          "round": 6,
+          "to": "pit"
+        },
+        {
+          "round": 7,
+          "to": "phi"
+        }
+      ]
+    },
+    "den": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "no"
+        }
+      ],
+      "sent": []
+    },
+    "det": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": []
+    },
+    "gb": {
+      "holds": [
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": "dal"
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 1,
+          "to": "dal"
+        }
+      ]
+    },
+    "hou": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "ari"
+        },
+        {
+          "round": 6,
+          "from": "cle"
+        },
+        {
+          "round": 7,
+          "from": "ne"
+        }
+      ],
+      "sent": [
+        {
+          "round": 2,
+          "to": "ari"
+        },
+        {
+          "round": 5,
+          "to": "cle"
+        },
+        {
+          "round": 7,
+          "to": "cle"
+        }
+      ]
+    },
+    "ind": {
+      "holds": [
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 1,
+          "to": "nyj"
+        }
+      ]
+    },
+    "jax": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "nyg"
+        }
+      ]
+    },
+    "kc": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": "lar"
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "sf"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "nyj"
+        },
+        {
+          "round": 7,
+          "to": "sf"
+        }
+      ]
+    },
+    "lac": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "lar"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "no"
+        }
+      ]
+    },
+    "lar": {
+      "holds": [
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 1,
+          "to": "cle"
+        },
+        {
+          "round": 3,
+          "to": "kc"
+        },
+        {
+          "round": 7,
+          "to": "lac"
+        }
+      ]
+    },
+    "lv": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 7,
+          "to": "buf"
+        }
+      ]
+    },
+    "mia": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "pit"
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "nyg"
+        }
+      ],
+      "sent": [
+        {
+          "round": 7,
+          "to": "pit"
+        }
+      ]
+    },
+    "min": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": "phi"
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "nyg"
+        },
+        {
+          "round": 5,
+          "from": "car"
+        },
+        {
+          "round": 6,
+          "from": "nyj"
+        },
+        {
+          "round": 6,
+          "from": "ne"
+        },
+        {
+          "round": 7,
+          "from": "phi"
+        }
+      ],
+      "sent": [
+        {
+          "round": 4,
+          "to": "car"
+        },
+        {
+          "round": 6,
+          "to": "ne"
+        },
+        {
+          "round": 7,
+          "to": "ne"
+        }
+      ]
+    },
+    "ne": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "chi"
+        },
+        {
+          "round": 6,
+          "from": "no"
+        },
+        {
+          "round": 6,
+          "from": "min"
+        },
+        {
+          "round": 7,
+          "from": "min"
+        }
+      ],
+      "sent": [
+        {
+          "round": 5,
+          "to": "phi"
+        },
+        {
+          "round": 6,
+          "to": "min"
+        },
+        {
+          "round": 7,
+          "to": "hou"
+        }
+      ]
+    },
+    "no": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "lac"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "ne"
+        },
+        {
+          "round": 7,
+          "to": "den"
+        }
+      ]
+    },
+    "nyg": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "jax"
+        }
+      ],
+      "sent": [
+        {
+          "round": 4,
+          "to": "cle"
+        },
+        {
+          "round": 5,
+          "to": "min"
+        },
+        {
+          "round": 7,
+          "to": "mia"
+        }
+      ]
+    },
+    "nyj": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 1,
+          "from": "dal"
+        },
+        {
+          "round": 1,
+          "from": "ind"
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "phi"
+        },
+        {
+          "round": 6,
+          "from": "kc"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "min"
+        },
+        {
+          "round": 7,
+          "to": "phi"
+        }
+      ]
+    },
+    "phi": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": "ne"
+        },
+        {
+          "round": 5,
+          "from": "bal"
+        },
+        {
+          "round": 7,
+          "from": "nyj"
+        },
+        {
+          "round": 7,
+          "from": "dal"
+        }
+      ],
+      "sent": [
+        {
+          "round": 3,
+          "to": "min"
+        },
+        {
+          "round": 6,
+          "to": "nyj"
+        },
+        {
+          "round": 7,
+          "to": "min"
+        }
+      ]
+    },
+    "pit": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": "dal"
+        },
+        {
+          "round": 5,
+          "from": "dal"
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "dal"
+        },
+        {
+          "round": 7,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": "mia"
+        }
+      ],
+      "sent": [
+        {
+          "round": 4,
+          "to": "dal"
+        },
+        {
+          "round": 5,
+          "to": "mia"
+        }
+      ]
+    },
+    "sea": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": [
+        {
+          "round": 4,
+          "to": "cle"
+        }
+      ]
+    },
+    "sf": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": "bal"
+        },
+        {
+          "round": 7,
+          "from": "kc"
+        }
+      ],
+      "sent": [
+        {
+          "round": 6,
+          "to": "kc"
+        },
+        {
+          "round": 7,
+          "to": "ari"
+        }
+      ]
+    },
+    "tb": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": []
+    },
+    "ten": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": []
+    },
+    "was": {
+      "holds": [
+        {
+          "round": 1,
+          "from": null
+        },
+        {
+          "round": 2,
+          "from": null
+        },
+        {
+          "round": 3,
+          "from": null
+        },
+        {
+          "round": 4,
+          "from": null
+        },
+        {
+          "round": 5,
+          "from": null
+        },
+        {
+          "round": 6,
+          "from": null
+        },
+        {
+          "round": 7,
+          "from": null
+        }
+      ],
+      "sent": []
+    }
+  }
+}

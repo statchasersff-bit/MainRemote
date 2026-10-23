@@ -73,6 +73,29 @@ export function fpaRefreshStatus(): FpaRefreshState & { running: boolean } {
 }
 
 /**
+ * An ingest that ran OUTSIDE this process - scripts/ingest-fpa.mjs as a
+ * builder child of live-refresh.ts - reported here so /api/status keeps one
+ * account of the last run. The child's summary line is optional: a run that
+ * printed nothing parseable still counts as a success or a failure.
+ */
+export function recordFpaRefresh(
+  outcome:
+    | { ok: true; result?: FpaRefreshState["lastResult"] }
+    | { ok: false; error: string },
+): void {
+  state.lastAttemptMs = Date.now();
+  if (outcome.ok) {
+    state.lastSuccessMs = state.lastAttemptMs;
+    if (outcome.result) state.lastResult = outcome.result;
+    state.lastError = null;
+    state.consecutiveFailures = 0;
+  } else {
+    state.lastError = outcome.error;
+    state.consecutiveFailures += 1;
+  }
+}
+
+/**
  * Everything an ingest can have changed.
  *
  * Dynamic imports, as the code this replaces used for two of them: fpa-ssr.ts
@@ -87,7 +110,7 @@ export function fpaRefreshStatus(): FpaRefreshState & { running: boolean } {
  * cache that could not be dropped means a page is briefly stale, and throwing
  * would report a successful write as a failed one.
  */
-async function dropCaches(): Promise<void> {
+export async function dropFpaCaches(): Promise<void> {
   try {
     // The table itself first: every cache below re-reads it.
     const { invalidateFpaTableCache } = await import("./fpa-data");
@@ -141,7 +164,7 @@ export async function refreshFpa(
       };
       state.lastError = null;
       state.consecutiveFailures = 0;
-      return dropCaches().then(() => result);
+      return dropFpaCaches().then(() => result);
     })
     .catch((err: unknown) => {
       state.lastError = err instanceof Error ? err.message : String(err);

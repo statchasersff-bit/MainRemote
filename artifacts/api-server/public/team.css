@@ -255,7 +255,7 @@ body.sct-page.is-embed {
  * are the same weight and come later, still win over the base rule.
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
- * .sct-band-label, .sct-depth-pos, .sct-dc-title, .sct-ladder-title, .sct-mu-h3,
+ * .sct-band-label, .sct-depth-pos, .sct-dcx-title, .sct-dcx-pos, .sct-dcx-more-title, .sct-ladder-title, .sct-mu-h3,
  * .sct-news-title, .sct-outlook-name, .sct-faq-q, .sct-sbh-title, .sct-mu-story-title, .sct-rb-h2, .sct-rb-h3,
  * .sct-rb-redraft-title - every <h1>-<h4> the hub
  * prints. The list is the checklist: a heading class added below and left off
@@ -17593,28 +17593,52 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ------------------------------------------------ depth chart: tool views
  *
- * The depth-charts tool's team view (2026-10-05): Fantasy / Offense /
- * Defense / Special Teams, each a row of position columns in the tool's order.
- * The columns and rows are the hub's .sct-depth cards; what is added is the
- * tool's own furniture - the view switch, the 01/02 rank, the movement arrows
- * and the NEW chip - in the hub's tokens.
- *
- * With scripting off every view shows, stacked under its own heading, and the
- * switch (which could do nothing) is hidden. client/team.ts wireDepthViews
- * sets data-sct-dc="js" and hides all but the pressed view. */
+ * The depth-charts tool's team view (2026-10-05), redrawn on 2026-10-23 as a
+ * printed depth chart: one card per side - Fantasy / Offense / Defense /
+ * Special Teams, behind a filter - with the side's name as an italic condensed title,
+ * its unit grades on the right, and a POS / FIRST / SECOND / THIRD / FOURTH
+ * grid beneath in which every player is a box: headshot, name with any
+ * designation, "Exp 6" beneath. Anyone listed deeper than fourth string
+ * sits in the "Also listed" strip under the grid. Hub tokens throughout. */
 :is(.sct, #sct-table-armour) .sct-dc {
-  margin: 14px 0 0;
+  display: grid;
+  gap: 14px;
+  margin: 10px 0 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-updated {
-  margin: -4px 0 0;
+:is(.sct, #sct-table-armour) .sct-dc {
+  --sct-dcx-fantasy: var(--sc-gold-deep);
+  --sct-dcx-offense: #1b6fc2;
+  --sct-dcx-defense: #d3313a;
+  --sct-dcx-special: #0f6b4f;
+  --sct-dcx-ok: #16a34a;
+  --sct-dcx-out: #dc2626;
 }
 
+/* The line under the tab heading, one per view; the filter shows the pressed
+   view's. With scripting off they are hidden and the cards' own titles label
+   them instead. */
+:is(.sct, #sct-table-armour) .sct-dc-notes {
+  margin: -8px 0 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-note {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-note[hidden],
+:is(.sct, #sct-table-armour) .sct-dc:not([data-sct-dc="js"]) .sct-dc-notes {
+  display: none;
+}
+
+/* The view filter. With scripting off every card shows and the buttons, which
+   could do nothing, are hidden; wireDepthViews sets data-sct-dc="js" and hides
+   all but the pressed view. */
 :is(.sct, #sct-table-armour) .sct-dc-views {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0 0 14px;
+  margin: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-dc:not([data-sct-dc="js"]) .sct-dc-views {
@@ -17653,26 +17677,47 @@ a.sct-ex-game:hover .sct-ex-line {
   outline-offset: 2px;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-panel[hidden] {
+:is(.sct, #sct-table-armour) .sct-dcx[hidden] {
   display: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-panel + .sct-dc-panel {
-  margin-top: 28px;
+:is(.sct, #sct-table-armour) .sct-dcx {
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
 }
 
-/* The section-heading look every hub tab shares (.sct-us-h3). Read aloud
-   only once the switch is live: the pressed button already names the view. */
-.sct-dc-title {
-  margin: 0 0 2px;
+:is(.sct, #sct-table-armour) .sct-dcx-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+}
+
+/* The side's name, in the condensed italic a printed chart sets its sides in.
+   Armed with !important like every hub heading: Divi's panel takes font-size
+   and color from a bare <h3>. */
+.sct-dcx-title {
+  margin: 0;
   padding: 0;
   color: var(--sc-navy) !important;
-  font-size: 1.15rem !important;
+  font-family: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  font-size: 1.55rem !important;
+  font-style: italic;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dc-title {
+/* Once the filter is live the pressed button names the view, so the title is
+   read aloud only; a head left with nothing visible (no grades) folds away. */
+:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-title {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -17682,123 +17727,196 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-summary {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-head {
+  justify-content: flex-start;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-note {
-  margin: 4px 0 0;
+:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-head:not(:has(.sct-dcx-grades)) {
+  display: none;
 }
 
-/* As many columns as fit, rather than the four the skill-position chart had:
-   Offense has nine and Defense five. auto-fit, so a five-column view fills the
-   row instead of leaving a sixth track empty. Two to a row on a phone. */
-:is(.sct, #sct-table-armour) .sct-depth.sct-dc-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
+.sct-dcx-title[data-view="fantasy"] { color: var(--sct-dcx-fantasy) !important; }
+.sct-dcx-title[data-view="offense"] { color: var(--sct-dcx-offense) !important; }
+.sct-dcx-title[data-view="defense"] { color: var(--sct-dcx-defense) !important; }
+.sct-dcx-title[data-view="special"] { color: var(--sct-dcx-special) !important; }
 
-@media (max-width: 480px) {
-  :is(.sct, #sct-table-armour) .sct-depth.sct-dc-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  /* Two columns of ~160px cannot hold a photo and "Rhamondre Stevenson"
-     both. The name is the thing being looked up; the tool shows none. */
-  :is(.sct, #sct-table-armour) .sct-dc-row {
-    grid-template-columns: 20px minmax(0, 1fr);
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-well {
-    display: none;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-col {
-    padding: 10px 10px 8px;
-  }
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-col {
-  padding: 12px 12px 10px;
-}
-
-/* Divi's `#left-area ol` (an id: padding 0 0 23px, line-height 26px) and its
-   `ol li` margin outrank the one-class list rules above; the header takes its
-   bare-heading line-height. Measured in the Divi sim, 2026-10-05. */
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-list {
-  padding: 0;
-  margin: 0;
-  line-height: 1.4;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-list > li {
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos {
-  line-height: 1.35;
-}
-
-/* The accent under each header takes the position palette where there is one. */
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="QB"]::after { background: var(--sct-pos-qb); }
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="RB"]::after { background: var(--sct-pos-rb); }
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="WR"]::after { background: var(--sct-pos-wr); }
-:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="TE"]::after { background: var(--sct-pos-te); }
-
-/* Rank, photo, then name over its chips. */
-:is(.sct, #sct-table-armour) .sct-dc-row {
-  grid-template-columns: 22px auto minmax(0, 1fr);
-  gap: 8px;
-  margin-inline: -6px;
-  padding: 7px 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-well {
-  width: 32px;
-  height: 32px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-rank {
-  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+/* Unit grades: "PASSING GAME  A" in a thin outlined pill, the letter in the
+   tone of the rank it stands for. */
+:is(.sct, #sct-table-armour) .sct-dcx-grades {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-grade {
+  display: inline-flex;
   align-items: center;
-  color: var(--sc-muted);
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-row:first-child .sct-dc-rank {
+  gap: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: 4px;
+  background: var(--sc-surface);
   color: var(--sc-navy);
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-move {
-  margin-top: 2px;
-  font-size: 0.55rem;
-  line-height: 1;
+:is(.sct, #sct-table-armour) .sct-dcx-grade-mark {
+  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  font-family: var(--sc-font);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--sc-gold-deep);
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-move.is-up { color: var(--sct-pos-rb); }
-:is(.sct, #sct-table-armour) .sct-dc-move.is-down { color: var(--sct-pos-qb); }
+:is(.sct, #sct-table-armour) .sct-dcx-grade[data-tone="good"] .sct-dcx-grade-mark { color: var(--sct-dcx-ok); }
+:is(.sct, #sct-table-armour) .sct-dcx-grade[data-tone="poor"] .sct-dcx-grade-mark { color: var(--sct-dcx-out); }
 
-:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name {
-  font-size: 0.88rem;
+/* The grid: a label column and four strings. The label row and each position
+   row share one template, so the FIRST / SECOND heads sit over their cells. */
+:is(.sct, #sct-table-armour) .sct-dcx-grid {
+  --sct-dcx-pos-col: 52px;
+  --sct-dcx-gap: 10px;
+  display: block;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-row {
+  display: grid;
+  grid-template-columns: var(--sct-dcx-pos-col) minmax(0, 1fr);
+  gap: 0 var(--sct-dcx-gap);
+  align-items: center;
+}
+
+/* The string heads, laid over the cell columns with the cells' own gap: the
+   label column, then four equal tracks, which is what the cells divide the
+   remaining width into. */
+:is(.sct, #sct-table-armour) .sct-dcx-labels {
+  display: grid;
+  grid-template-columns: var(--sct-dcx-pos-col) repeat(4, minmax(0, 1fr));
+  gap: 0 var(--sct-dcx-gap);
+  padding: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-labels > span {
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-row {
+  padding: 7px 0;
+  border-top: 1px solid var(--sc-border);
+}
+
+/* The position label. Divi's bare <h4> rules are the reason for the full
+   reset; the !important pair is the heading armour (see the checklist at the
+   top of this file). */
+.sct-dcx-pos {
+  margin: 0;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The cells: Divi's `#left-area ol` (padding 0 0 23px, line-height 26px) and
+   `ol li` margin outrank one class, hence the armour prefix and the reset. */
+:is(.sct, #sct-table-armour) ol.sct-dcx-cells {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sct-dcx-gap);
+  margin: 0;
+  padding: 0;
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-cells > li {
+  margin: 0;
+  padding: 0;
+}
+
+/* One player in a box: the headshot well, then name over service. */
+:is(.sct, #sct-table-armour) .sct-dcx-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 56px;
+  padding: 7px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: 6px;
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-avatar {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-well {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--team-primary, #0b1634) 10%, #fff);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+/* Top-anchored like every other headshot on the page: shoulders-up crops lose
+   the forehead when centered. */
+:is(.sct, #sct-table-armour) .sct-dcx-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.25;
   white-space: normal;
-  text-wrap: balance;
+  color: var(--sc-ink);
 }
 
-/* Whole names, wrapping to a second line where they must. With nine columns
-   to a view there is no width at which one line holds "Rhamondre Stevenson",
-   and the tool itself prints the name rather than an ellipsis. */
-:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name-long {
+/* Whole names: the box is the width of a quarter of the chart, and the tool
+   itself prints the name rather than an ellipsis. */
+:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name-long {
   position: static;
   width: auto;
   height: auto;
@@ -17808,8 +17926,55 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: normal;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name-brief {
+:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name-brief {
   display: none;
+}
+
+/* The designation as a tag on the photo's bottom-right corner, ringed in the
+   box color so it reads as sitting on top of the circle. */
+:is(.sct, #sct-table-armour) .sct-dcx-card .sct-dcx-tag {
+  position: absolute;
+  right: -7px;
+  bottom: -3px;
+  min-width: 0;
+  padding: 1px 5px;
+  font-size: 0.56rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 2px var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-subpos {
+  color: var(--sc-muted-strong);
+  letter-spacing: 0.04em;
+}
+
+/* The Fantasy view's season PPR rank, "WR7", ahead of the service line. */
+:is(.sct, #sct-table-armour) .sct-dcx-rank {
+  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  font-family: var(--sc-font);
+  color: var(--sc-navy);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-rookie {
+  color: var(--sct-dcx-defense);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 :is(.sct, #sct-table-armour) .sct-dc-new {
@@ -17819,23 +17984,93 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: 999px;
   background: color-mix(in srgb, var(--sct-pos-rb) 12%, #fff);
   color: var(--sct-pos-rb);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* In the order, not set apart: the tool lists him where he stands. Only the
-   photo drops back; the name stays at full contrast. */
-:is(.sct, #sct-table-armour) .sct-dc-row.is-sidelined .sct-depth-photo {
-  filter: grayscale(0.7);
-  opacity: 0.75;
+:is(.sct, #sct-table-armour) .sct-dc-move {
+  font-size: 0.55rem;
+  line-height: 1;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-empty {
-  margin: 0;
+:is(.sct, #sct-table-armour) .sct-dc-move.is-up { color: var(--sct-pos-rb); }
+:is(.sct, #sct-table-armour) .sct-dc-move.is-down { color: var(--sct-pos-qb); }
+
+/* In the order, not set apart: the tool lists him where he stands. Only the
+   photo drops back; the name stays at full contrast. */
+:is(.sct, #sct-table-armour) .sct-dcx-card.is-sidelined .sct-dcx-photo {
+  filter: grayscale(0.7);
+  opacity: 0.6;
+}
+
+/* Deeper than fourth string. */
+:is(.sct, #sct-table-armour) .sct-dcx-more {
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--sc-border);
+}
+
+.sct-dcx-more-title {
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.68rem !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-more-count {
   color: var(--sc-muted);
-  font-size: 0.85rem;
+}
+
+/* Narrow: no room for five columns. The string heads go, each position
+   stacks its label over a two-across run of boxes, and every box prints its
+   own string number in the corner so the order still reads. */
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-dcx {
+    padding: 14px 12px 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dcx-labels {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dcx-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 10px 0;
+  }
+
+  :is(.sct, #sct-table-armour) ol.sct-dcx-cells,
+  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dcx-blank {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dcx-card {
+    padding: 6px 8px;
+    padding-right: 18px;
+  }
+
+  /* Bottom corner, clear of a designation badge wrapping after the name. */
+  :is(.sct, #sct-table-armour) .sct-dcx-cells:not(.is-loose) .sct-dcx-card::after {
+    content: attr(data-rank);
+    position: absolute;
+    right: 7px;
+    bottom: 6px;
+    color: var(--sc-muted);
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
 }
 
 /* ---- the pair page's "Last meeting" block above the preview (the SEO brief
@@ -18458,4 +18693,420 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-cmp-row > span:empty { display: none; }
   :is(.sct, #sct-table-armour) .sct-pv-cmp-v b { font-size: 15px; }
   :is(.sct, #sct-table-armour) .sct-pv-cmp-mid { min-width: 110px; }
+}
+
+/* ======================================================================
+   Draft tab (2026-10-23): the next draft's picks by round, and the last five
+   draft classes. The view switch is the Depth Chart tab's (.sct-dc-views on a
+   [data-sct-dc] block, wired by wireDepthViews), so with scripting off both
+   views stack and the pills are hidden. Everything below is the content.
+   ====================================================================== */
+
+:is(.sct, #sct-table-armour) .sct-dr {
+  --dr-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --dr-radius: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-panel[hidden] {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-panel {
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-h3 {
+  margin: 0 0 4px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-h4 {
+  margin: 0;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-lede {
+  margin: 0 0 16px;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* The numerals wear the hub's figure face, through --sc-font so the theme
+   armour's font-family pin does not win over them. */
+:is(.sct, #sct-table-armour) .sct-dr-num {
+  --sc-font: var(--dr-display);
+  font-family: var(--dr-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-foot {
+  margin: 16px 0 0;
+}
+
+/* ---- picks view: four tiles, then seven round cards ---------------- */
+
+:is(.sct, #sct-table-armour) .sct-dr-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--sc-border);
+  border-top: 3px solid var(--team-primary, var(--sc-navy));
+  border-radius: var(--dr-radius);
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-tile .sct-dr-num {
+  color: var(--sc-navy);
+  font-size: 1.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-tile-label {
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-rounds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round {
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--dr-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round.is-empty {
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round-name {
+  color: var(--sc-navy);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round-count .sct-dr-num {
+  color: var(--sc-navy);
+  font-size: 1.25rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-round.is-empty .sct-dr-round-count .sct-dr-num {
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.3;
+  width: fit-content;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sc-navy);
+  flex: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-from {
+  border-color: var(--sc-gold);
+  background: #fffbea;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-from::before {
+  background: var(--sc-gold-deep, var(--sc-gold));
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-sent,
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-none {
+  color: var(--sc-muted);
+  font-weight: 600;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-sent::before {
+  background: #d3313a;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-chip.is-none::before {
+  background: var(--sc-border);
+}
+
+/* ---- history view: two share lists, then one table per draft -------- */
+
+:is(.sct, #sct-table-armour) .sct-dr-share-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-shares {
+  padding: 14px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--dr-radius);
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-shares .sct-dr-h4 {
+  margin-bottom: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-label {
+  color: var(--sc-navy);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--sc-hairline);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--team-primary, var(--sc-navy));
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-pct {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-pct .sct-dr-num {
+  color: var(--sc-navy);
+  font-size: 1.05rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-count {
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-season + .sct-dr-season {
+  margin-top: 18px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-season-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-season-sum {
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-scroll {
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--dr-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-scroll:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-dr-table:not(.variations) {
+  width: 100%;
+  min-width: 620px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td) {
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  color: var(--sc-ink);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table thead th {
+  padding: 9px 12px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted) !important;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table thead th abbr {
+  text-decoration: none;
+  border: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table tbody tr:last-child :where(th, td) {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td).is-num {
+  text-align: right;
+  width: 1%;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table tbody td.is-num {
+  --sc-font: var(--dr-display);
+  font-family: var(--dr-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table th.is-player {
+  min-width: 180px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-name {
+  color: var(--sc-navy);
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) a.sct-dr-name:hover {
+  text-decoration: underline;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-pos {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+  border: 1px solid var(--sc-border);
+  color: var(--sc-navy);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table .is-college {
+  color: var(--sc-muted);
+}
+
+@media (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-dr-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.sct, #sct-table-armour) .sct-dr-share-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.sct, #sct-table-armour) .sct-dr-panel {
+    padding: 14px 14px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-dr-rounds {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.sct, #sct-table-armour) .sct-dr-round {
+    padding: 10px 12px 12px;
+  }
 }

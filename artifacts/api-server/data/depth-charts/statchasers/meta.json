@@ -1,8 +1,8 @@
 {
     "status": "success",
     "error": "",
-    "last_refreshed": "2026-10-05T15:24:31+00:00",
-    "last_refreshed_ts": 1791213871,
+    "last_refreshed": "2026-10-22T20:19:31+00:00",
+    "last_refreshed_ts": 1792700371,
     "teams_ok": 32,
     "teams_failed": [],
     "teams_kept": []
