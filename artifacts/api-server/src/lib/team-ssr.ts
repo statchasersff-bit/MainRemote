@@ -22,6 +22,7 @@ import { dataVersion, getTeamPageData } from "./team/team-data";
 import { renderTeamHeadTags, teamPageMeta } from "./team-seo";
 import type { NflTeam } from "./team/teams";
 import { LruCache } from "./lru";
+import { currentAssetOrigin } from "./asset-origin";
 import { onImageVersionsChanged } from "./image-versions";
 
 export interface TeamSsrResult {
@@ -80,7 +81,12 @@ export async function renderTeamFragment(
 
   const data = await getTeamPageData(team);
   const version = `${dataVersion(data, contentVersion())}-${hash(optionKey(options))}`;
-  const key = `${team.abbreviation}:${optionKey(options)}`;
+  // The origin is printed into every image and logo URL (lib/asset-origin.ts),
+  // so a fragment rendered for one host cannot serve another: on the preview
+  // a curl at localhost right after a restart was pinning
+  // "http://localhost:8080/news-image/..." for the browser at the Repl's
+  // domain, and every headshot came up blank there (2026-10-23).
+  const key = `${team.abbreviation}:${currentAssetOrigin()}:${optionKey(options)}`;
 
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;

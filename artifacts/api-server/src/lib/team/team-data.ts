@@ -41,6 +41,7 @@ import { coachingVersion } from "./coaching";
 import { usageVersion } from "./usage";
 import { efficiencyVersion } from "./efficiency";
 import { draftVersion, nextDraftYear } from "./draft";
+import { contractsVersion } from "./contracts";
 import {
   depthChartsVersion,
   getTeamDepthCharts,
@@ -274,6 +275,9 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     // The Draft tab reads two committed files, rebuilt by hand after trades
     // and after each draft.
     draftVersion(nextDraftYear(data.state.season)),
+    // The Contracts tab reads one committed file, rebuilt by hand after
+    // signings and releases.
+    contractsVersion(data.state.season),
     // The depth-charts plugin's push rewrites its file in place.
     depthChartsVersion(),
   ].join("-");

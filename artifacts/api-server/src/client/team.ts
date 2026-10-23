@@ -794,6 +794,123 @@ function wireUsageProfiles(root: HTMLElement): void {
  * other than the pressed one are hidden and the headings drop to the screen
  * reader, since the pressed button already names the view.
  */
+/* ------------------------------------------------------- cut scenario ---- */
+
+/**
+ * The Contracts tab's cut scenario (team/contracts-render.ts). Every row
+ * carries the cap freed and the dead money left by a release before and
+ * after June 1; ticking rows sums them against the club's cap space and dead
+ * money, which the block carries as data attributes. Nothing is fetched.
+ * Without scripting the pick column and the bar stay hidden (team.css keys
+ * off data-sct-ct="js").
+ */
+function wireCutScenario(root: HTMLElement): void {
+  for (const block of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-ct]"))) {
+    // Marked first, whatever else the block has: team.css hides the tail of
+    // the table and the inert controls off this flag.
+    block.dataset["sctCt"] = "js";
+
+    // The first ten rows by default; the rest behind "Show all". A ticked
+    // row stays visible when the sheet folds back up (team.css).
+    const more = block.querySelector<HTMLButtonElement>("[data-sct-ct-more]");
+    const count = block.querySelector<HTMLElement>("[data-sct-ct-count]");
+    if (more) {
+      // The footer's caption counts what the fold shows; without the bundle
+      // the whole sheet is open, so the server prints the plain total.
+      if (count?.dataset["closed"]) count.textContent = count.dataset["closed"];
+      more.addEventListener("click", () => {
+        const open = more.getAttribute("aria-expanded") !== "true";
+        more.setAttribute("aria-expanded", String(open));
+        block.classList.toggle("is-expanded", open);
+        more.textContent = (open ? more.dataset["less"] : more.dataset["more"]) ?? more.textContent;
+        if (count) count.textContent = (open ? count.dataset["open"] : count.dataset["closed"]) ?? count.textContent;
+        if (!open) block.querySelector<HTMLElement>(".sct-ct-scroll")?.scrollIntoView({ block: "nearest" });
+      });
+    }
+
+    // On a phone the sheet shows Player, Cap hit, Worth and Cut saves per
+    // row and keeps the rest behind a tap on the row (team.css lays the row
+    // out as a card below 700px). A tap on the name, the pick box or a
+    // button is left to them.
+    const narrow = window.matchMedia("(max-width: 700px)");
+    for (const tr of Array.from(block.querySelectorAll<HTMLElement>("[data-sct-ct-row]"))) {
+      tr.addEventListener("click", (event) => {
+        if (!narrow.matches) return;
+        if ((event.target as HTMLElement | null)?.closest("a, input, button")) return;
+        tr.classList.toggle("is-open");
+      });
+    }
+
+    const bar = block.querySelector<HTMLElement>("[data-sct-ct-scen]");
+    const picks = Array.from(block.querySelectorAll<HTMLInputElement>("[data-sct-ct-pick]"));
+    if (!bar || picks.length === 0) continue;
+    const baseSpace = Number(block.dataset["capSpace"] ?? "0");
+    const baseDead = Number(block.dataset["deadTotal"] ?? "0");
+    const timings = Array.from(bar.querySelectorAll<HTMLButtonElement>("[data-sct-ct-timing]"));
+    const reset = bar.querySelector<HTMLButtonElement>("[data-sct-ct-reset]");
+    const out = (key: string): HTMLElement | null =>
+      block.querySelector<HTMLElement>(`[data-sct-ct-out="${key}"]`);
+    const money = (m: number): string => {
+      if (!Number.isFinite(m) || Math.abs(m) < 0.0005) return "$0";
+      const sign = m < 0 ? "-" : "";
+      const abs = Math.abs(m);
+      return abs >= 1 ? `${sign}$${abs.toFixed(1)}M` : `${sign}$${Math.round(abs * 1000)}K`;
+    };
+    let timing: "pre" | "post" = "pre";
+
+    const update = (): void => {
+      let count = 0;
+      let freed = 0;
+      let added = 0;
+      for (const pick of picks) {
+        const row = pick.closest<HTMLElement>("[data-sct-ct-row]");
+        row?.classList.toggle("is-picked", pick.checked);
+        if (!pick.checked || !row) continue;
+        count += 1;
+        freed += Number(row.dataset[`${timing}Save`] ?? "0");
+        added += Number(row.dataset[`${timing}Dead`] ?? "0");
+      }
+      const countOut = out("count");
+      if (countOut) countOut.textContent = String(count);
+      const freedOut = out("freed");
+      if (freedOut) {
+        freedOut.textContent = money(freed);
+        freedOut.classList.toggle("is-cost", freed < 0);
+      }
+      const addedOut = out("added");
+      if (addedOut) addedOut.textContent = money(added);
+      const after = baseSpace + freed;
+      const afterOut = out("after");
+      if (afterOut) {
+        afterOut.textContent = money(after);
+        afterOut.classList.toggle("is-cost", after < 0);
+      }
+      // The strip's cap-space and dead-money tiles follow the scenario too,
+      // so the top of the tab reads as the club after the cuts.
+      const spaceTile = out("space");
+      if (spaceTile) spaceTile.textContent = money(after);
+      const deadTile = out("dead");
+      if (deadTile) deadTile.textContent = money(baseDead + added);
+      bar.classList.toggle("is-active", count > 0);
+      if (reset) reset.hidden = count === 0;
+    };
+
+    for (const pick of picks) pick.addEventListener("change", update);
+    for (const button of timings) {
+      button.addEventListener("click", () => {
+        timing = button.dataset["sctCtTiming"] === "post" ? "post" : "pre";
+        for (const b of timings) b.setAttribute("aria-pressed", String(b === button));
+        update();
+      });
+    }
+    reset?.addEventListener("click", () => {
+      for (const pick of picks) pick.checked = false;
+      update();
+    });
+    update();
+  }
+}
+
 /**
  * The view switch on any `[data-sct-dc]` block: the Depth Chart tab's four
  * views, and since 2026-10-23 the Draft tab's two (team/draft-render.ts),
@@ -1309,6 +1426,7 @@ function boot(): void {
     wireUsageDetail(root);
     wireUsageProfiles(root);
     wireDepthViews(root);
+    wireCutScenario(root);
     wireBarHeight(root);
     wireFrameHeight(root);
   }

@@ -51,6 +51,8 @@ import { getTeamCoaching } from "./team/coaching";
 import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
 import { getDraftView } from "./team/draft";
 import { renderDraftSection } from "./team/draft-render";
+import { getContractsView } from "./team/contracts";
+import { renderContractsSection } from "./team/contracts-render";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
@@ -4042,6 +4044,8 @@ export function renderTeamPage(
   // Next draft's picks by round and the last five draft classes, from two
   // committed files (team/draft.ts). "" when neither has this club.
   const draft = renderDraftSection(team, getDraftView(team.abbreviation, data.state.season));
+  // This season's contracts from the committed register file (team/contracts.ts).
+  const contracts = renderContractsSection(team, getContractsView(team.abbreviation, data.state.season));
   const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);
   const matchups = renderMatchups(data, options, now);
 
@@ -4087,6 +4091,8 @@ export function renderTeamPage(
     // Right of Stats (mak, 2026-10-23). A hub-only panel like Coaching: its
     // tab is the hub's address plus #draft until a public URL is approved.
     { id: "draft", label: "Draft", html: draft, hash: true },
+    // Right of Draft (mak, 2026-10-23), hub-only for the same reason.
+    { id: "contracts", label: "Contracts", html: contracts, hash: true },
     { id: "news", label: "News", html: newsSection },
     {
       id: "depth-chart",

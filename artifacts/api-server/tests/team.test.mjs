@@ -243,7 +243,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
         // hub's address plus the panel hash (see team-render.ts).
         id === "outlook"
           ? "/team/new-england-patriots/"
-          : id === "coaching" || id === "draft"
+          : id === "coaching" || id === "draft" || id === "contracts"
             ? `/team/new-england-patriots/#${id}`
             : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
@@ -2957,5 +2957,97 @@ describe("draft tab", () => {
 
     // No outside source is named in the page.
     assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference/i);
+  });
+});
+
+describe("contracts tab", () => {
+  test("the hub carries this season's contracts, largest cap number first", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("contracts");
+    assert.ok(panel, "the Contracts panel is in the hub");
+    const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
+    assert.equal(ids[ids.indexOf("draft") + 1], "contracts", "Contracts sits next to Draft");
+
+    const file = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "contracts_2026.json"), "utf8"),
+    );
+    const ne = file.teams.ne;
+    // Every register row with a cap number, plus everyone the cap page has
+    // on the club that the register lacks a cap row for (the draft class,
+    // the practice squad), paired with the page's cap number (2026-10-23).
+    const snapshotFile = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
+    );
+    const onSheet = new Set(ne.players.map((p) => p.otcId));
+    const paired = Object.entries(snapshotFile.teams.ne.players).filter(
+      ([id, p]) => !onSheet.has(Number(id)) && p.capNumber > 0,
+    );
+    const expectedRows = ne.players.length + paired.length;
+    const rows = [...panel.querySelectorAll(".sct-ct-table tbody tr")];
+    assert.equal(rows.length, expectedRows, "every contract with a cap number is a row");
+    assert.ok(paired.length > 0, "the cap page adds rows the register has no cap row for");
+    assert.equal(rows[0].querySelector(".sct-ct-name")?.textContent, ne.players[0].name, "largest cap number first");
+    const caps = rows.map((r) => r.querySelector(".is-cap").textContent);
+    assert.match(caps[0], /^\$\d+(\.\d)?M$/, "cap numbers print as money");
+
+    // Every row is in the HTML; the first ten are open and the rest are
+    // marked for the bundle to fold behind "Show all" (mak, 2026-10-23).
+    assert.ok(rows.length > 10, "the club has more than ten contracts");
+    rows.forEach((r, i) => assert.equal(r.classList.contains("is-more"), i >= 10, `row ${i + 1} fold mark`));
+    const more = panel.querySelector("[data-sct-ct-more]");
+    assert.ok(more, "the Show all button is rendered");
+    assert.equal(more.textContent, `Show all ${expectedRows} contracts`);
+    assert.equal(more.getAttribute("aria-expanded"), "false");
+
+    // One row per player: the register's duplicate active deals are folded.
+    const names = rows.map((r) => r.querySelector(".sct-ct-name").textContent);
+    assert.equal(new Set(names).size, names.length, "no player is listed twice");
+
+    // Four tiles, the first the club's cap space with its league rank, read
+    // from the cap snapshot.
+    const snapshot = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
+    );
+    const tiles = [...panel.querySelectorAll(".sct-ct-tile")];
+    assert.equal(tiles.length, 4);
+    assert.match(tiles[0].textContent, /cap space/i);
+    assert.match(tiles[0].textContent, /\$\d+(\.\d)?M/);
+    assert.match(tiles[0].querySelector(".sct-ct-rank")?.textContent ?? "", /^\d+(st|nd|rd|th)/);
+    assert.equal(panel.querySelector("[data-sct-ct]").getAttribute("data-cap-space"), String(snapshot.teams.ne.capSpace));
+
+    // Every row carries the release figures the scenario sums, before and
+    // after June 1, and a pick box; the bar is in the HTML for the bundle.
+    for (const r of rows) {
+      for (const k of ["data-pre-save", "data-pre-dead", "data-post-save", "data-post-dead"]) {
+        assert.match(r.getAttribute(k) ?? "", /^-?\d+(\.\d+)?$/, `${k} on every row`);
+      }
+      assert.ok(r.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
+    }
+    assert.ok(panel.querySelector("[data-sct-ct-scen]"), "the scenario bar is rendered");
+    assert.equal(panel.querySelectorAll("[data-sct-ct-timing]").length, 2);
+
+    // Worth: priced rows carry a figure, tagged rows a pill, and the note
+    // explaining the model is on the page.
+    const worth = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data", "team", "worth_2026.json"), "utf8"),
+    );
+    const priced = ne.players.filter((p) => worth.players[String(p.otcId)]);
+    assert.equal(panel.querySelectorAll(".sct-ct-td.is-worth").length, priced.length, "every priced row shows Worth");
+    const tagged = priced.filter((p) => worth.players[String(p.otcId)].tag);
+    assert.equal(panel.querySelectorAll(".sct-ct-tag").length, tagged.length, "every tagged row wears its pill");
+    assert.match(panel.querySelector(".sct-ct-how")?.textContent ?? "", /Overpaid/);
+
+    // The dead-money block lists what the snapshot has, largest first.
+    const deadRows = [...panel.querySelectorAll(".sct-ct-dead-row")];
+    assert.equal(deadRows.length, snapshot.teams.ne.dead.length);
+    if (deadRows.length) assert.match(deadRows[0].textContent, new RegExp(snapshot.teams.ne.dead[0].name.split(" ")[0]));
+
+    // The release rail says it is a reading, not a call; at most six names.
+    const cuts = panel.querySelectorAll(".sct-ct-cut");
+    assert.ok(cuts.length >= 1 && cuts.length <= 6, "cut rail has one to six names");
+    assert.match(panel.querySelector(".sct-ct-cuts .sct-ct-dek")?.textContent ?? "", /not a prediction/i);
+
+    // No outside source is named in the page.
+    assert.doesNotMatch(panel.innerHTML, /nflverse|over ?the ?cap|spotrac|pro-football-reference/i);
   });
 });
