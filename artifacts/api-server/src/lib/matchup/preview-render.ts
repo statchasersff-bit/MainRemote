@@ -12,6 +12,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
+import { headshotImg } from "../headshot-html";
 import type { NflTeam } from "../team/teams";
 import type { StatRow, TeamStats } from "../team/stats";
 import { getPlayerProfileUrl } from "../team/links";
@@ -77,7 +78,7 @@ function nextStep(id: string, title: string, body: string, href: string | null, 
   if (!href) return "";
   return (
     `<aside class="sct-pv-next" aria-label="${e(title)}">` +
-    `<p><b>${e(title)}</b> ${e(body)}</p>` +
+    `<p><b>${e(title)}</b>${body ? ` ${e(body)}` : ""}</p>` +
     `<a href="${e(href)}" data-cta="${e(id)}">${e(label)} →</a>` +
     `</aside>`
   );
@@ -237,17 +238,7 @@ function renderHero(p: Preview, ctx: PreviewRenderContext): string {
   );
 }
 
-/* -------------------------------------------- 1b. intro and fantasy outlook */
-
-function renderIntro(p: Preview): string {
-  return (
-    `<section class="sct-pv-sec sct-pv-intro">` +
-    `<p class="sct-pv-eyebrow">Fantasy matchup preview</p>` +
-    `<p class="sct-pv-intro-lede">Preview ${e(pairOf(p))} for ${e(p.meeting.weekLabel)} with fantasy projections, start/sit recommendations, ` +
-    `matchup leverage, injuries, usage, points allowed by position and team trends.</p>` +
-    `</section>`
-  );
-}
+/* -------------------------------------------- 1b. fantasy outlook */
 
 /** "NE -3.5 · O/U 42.5" with the implied totals, or the conditions without a line. */
 function environment(p: Preview): { value: string; note: string | null } {
@@ -413,6 +404,11 @@ function renderCall(p: Preview): string {
     // screen readers because the meter above is aria-hidden.
     `<p class="sct-visually-hidden">${e(p.call.leanText)}</p>` +
     `</div>` +
+    // The supporting numbers (pass rates by score state, pace, weather) sit
+    // behind "Why?" since 2026-10-23 (mak) so the read above stays scannable.
+    (p.call.detail && p.call.detail !== p.call.paragraph
+      ? `<details class="sct-pv-why"><summary>Why?</summary><p>${e(p.call.detail)}</p></details>`
+      : "") +
     `</div>` +
     `</section>`
   );
@@ -555,50 +551,84 @@ const LEVERAGE_LABEL: Record<Leverage, [string, string]> = {
 };
 
 function levPill(chip: Leverage): string {
+  // One line since 2026-10-23 (mak): the sub-label repeated the label.
   const [label, sub] = LEVERAGE_LABEL[chip];
-  return `<span class="sct-pv-lev is-${chip}"><b>${e(label)}</b><small>${e(sub)}</small></span>`;
+  return `<span class="sct-pv-lev is-${chip}" title="${e(sub)}"><b>${e(label)}</b></span>`;
 }
 
 function renderLeverage(p: Preview): string {
   if (!p.leverage.length) return "";
   const team = (k: SideKey) => (k === "away" ? p.away : p.home).team;
+  // The headshot (mak, 2026-10-23) in a round well washed with the team color.
+  const face = (r: LeverageRow) => {
+    const img = r.sleeperId
+      ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
+      : "";
+    return `<span class="sct-pv-lb-face is-${r.side}" aria-hidden="true">${img}</span>`;
+  };
   const who = (r: LeverageRow) =>
-    `${playerLink(r.name)} <span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span>`;
+    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)} <span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span></span>`;
 
   // The "Leverage read" box (counts, best edge, toughest matchup, conflict)
   // and the usage-through meta line came off 2026-10-22 (mak); leverageRead
   // still feeds the watch list and the FAQ.
 
-  const roleCell = (r: LeverageRow) =>
-    r.roleStats.length
-      ? `<span class="sct-pv-sig">` +
-        r.roleStats.map((x) => `<span class="sct-pv-sig-i"><b>${e(x.v)}</b> ${e(x.k)}</span>`).join("") +
-        `</span>`
-      : e(r.role);
-  const defCell = (r: LeverageRow) =>
-    r.defFpa !== null && r.defRank !== null
-      ? `<span class="sct-pv-def"><b>${one(r.defFpa)}</b><span class="sct-pv-def-k">${e(r.pos)} PPG allowed</span>` +
-        `<span class="sct-pv-def-r">${e(allowPhrase(r.defRank))} vs ${e(r.pos)}</span></span>`
-      : e(r.defense);
+  // A visual board since 2026-10-23 (mak): a role bar, a matchup bar and a
+  // colored leverage dot per player, the numbers demoted to small print.
+  const role = (r: LeverageRow) => {
+    const tier = roleTier(r);
+    const width = r.posRank === null ? 0 : Math.max(8, Math.round(100 * (1 - (r.posRank - 1) / (2 * STARTERS[r.pos]))));
+    const note = r.roleStats[0] ? `${r.roleStats[0].v} ${r.roleStats[0].k}` : r.role;
+    return (
+      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}" aria-hidden="true"><i style="width:${width}%"></i></span>` +
+      `<span class="sct-pv-lb-lab"><b>${ROLE_WORD[tier]}</b><small>${e(note)}</small></span></div>`
+    );
+  };
+  const matchup = (r: LeverageRow) => {
+    const tier = r.defRank === null ? "neutral" : r.defRank <= 10 ? "favorable" : r.defRank >= 23 ? "tough" : "neutral";
+    const width = r.defRank === null ? 0 : Math.round(((33 - r.defRank) / 32) * 100);
+    const note = r.defRank !== null && r.defFpa !== null ? `${one(r.defFpa)} allowed · ${allowPhrase(r.defRank)}` : r.defense;
+    return (
+      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}" aria-hidden="true"><i style="width:${width}%"></i></span>` +
+      `<span class="sct-pv-lb-lab"><b>${MATCHUP_WORD[tier]}</b><small>${e(note)}</small></span></div>`
+    );
+  };
+  const dot = (r: LeverageRow) =>
+    `<div class="sct-pv-lb-lev"><span class="sct-pv-lb-dot is-${r.chip}" aria-hidden="true"></span><span>${e(LEVERAGE_LABEL[r.chip][0].replace(/^[↑↓-] /, ""))}</span></div>`;
 
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-lev">` +
     h2("pv-lev", `${pairOf(p)} Matchup Leverage`) +
     `<p class="sct-pv-lede">Points allowed tells you where a defense is vulnerable. Matchup Leverage adds the missing piece: whether each player has the role to exploit it.</p>` +
-    `<div class="sct-pv-scroll"><table class="sct-pv-table sct-pv-levtable">` +
-    `<thead><tr><th scope="col">Player</th><th scope="col">Role signal</th><th scope="col">Matchup signal</th><th scope="col">Leverage</th></tr></thead>` +
-    `<tbody>` +
+    `<div class="sct-pv-card sct-pv-lb">` +
+    `<div class="sct-pv-lb-head" aria-hidden="true"><span>Player</span><span>Role</span><span>Matchup</span><span>Leverage</span></div>` +
+    `<ul class="sct-pv-lb-rows">` +
     p.leverage
       .map(
         (r) =>
-          `<tr data-lev="${r.chip}"><th scope="row">${who(r)}</th>` +
-          `<td>${roleCell(r)}</td><td>${defCell(r)}</td>` +
-          `<td>${levPill(r.chip)}</td></tr>`,
+          `<li class="sct-pv-lb-row" data-lev="${r.chip}"><div class="sct-pv-lb-who">${who(r)}</div>` +
+          role(r) +
+          matchup(r) +
+          dot(r) +
+          `</li>`,
       )
       .join("") +
-    `</tbody></table></div>` +
+    `</ul></div>` +
     `</section>`
   );
+}
+
+/** Starters per position in a 12-team league: the role bar's yardstick. */
+const STARTERS: Record<Pos, number> = { QB: 12, RB: 24, WR: 36, TE: 12 };
+const ROLE_WORD = { strong: "Strong", solid: "Solid", light: "Light" } as const;
+const MATCHUP_WORD = { favorable: "Favorable", neutral: "Neutral", tough: "Tough" } as const;
+
+/** Strong = the top half of fantasy starters at the position, solid = a starter, light = the rest. */
+function roleTier(r: LeverageRow): keyof typeof ROLE_WORD {
+  if (r.posRank === null) return "light";
+  if (r.posRank <= STARTERS[r.pos] / 2) return "strong";
+  if (r.posRank <= STARTERS[r.pos]) return "solid";
+  return "light";
 }
 
 /* ----------------------------------------------------------- 5. snapshot */
@@ -633,12 +663,14 @@ function compareRow(
   const side = (s: typeof left, chipFirst: boolean) => {
     const value = `<span class="sct-pv-cv${s.best ? " is-best" : ""}">${e(s.value)}</span>`;
     const chip = rankChip(s.rank, s.rankLabel ?? null, s.tier);
-    // A restrained bar under the figure: longer is softer (more allowed).
+    // A restrained bar beside the figure, anchored at the outside edge and
+    // growing toward the metric: the stronger side's bar is darker (mak,
+    // 2026-10-23), so the comparison reads before the numbers do.
     const bar =
       s.bar !== undefined
-        ? `<span class="sct-pv-cbar" aria-hidden="true"><i style="width:${Math.round(s.bar * 100)}%"></i></span>`
+        ? `<span class="sct-pv-cbar${s.best ? " is-best" : ""}" aria-hidden="true"><i style="width:${Math.round(s.bar * 100)}%"></i></span>`
         : "";
-    return (chipFirst ? chip + value : value + chip) + bar;
+    return `<span class="sct-pv-cside">${chipFirst ? bar + chip + value : value + chip + bar}</span>`;
   };
   return (
     `<tr><td class="sct-pv-cl">${side(left, false)}</td>` +
@@ -648,14 +680,106 @@ function compareRow(
 }
 
 const SNAP_ROWS: Array<{ key: string; label: string }> = [
-  { key: "off-points", label: "Pts/G" },
-  { key: "off-total-yards", label: "Yds/G" },
-  { key: "off-yards-per-play", label: "Yds/Play" },
-  { key: "def-points", label: "Pts/G allowed" },
-  { key: "def-total-yards", label: "Yds/G allowed" },
+  { key: "off-points", label: "Points/G" },
+  { key: "off-total-yards", label: "Yards/G" },
+  { key: "off-yards-per-play", label: "Yards/play" },
+  { key: "def-points", label: "Points/G allowed" },
+  { key: "def-total-yards", label: "Yards/G allowed" },
 ];
 
-function renderSnapshot(p: Preview, ctx: PreviewRenderContext): string {
+/** Bar length from an NFL rank: 1st fills it, 32nd nearly empties it. */
+const rankBar = (rank: number | null | undefined): number | undefined => (rank == null ? undefined : (33 - rank) / 32);
+
+/**
+ * The Team Matchup as a comparison graphic (mak, 2026-10-23): mirrored rank
+ * bars out from the center, the advantage side in its team color, and a
+ * marker that names the edge ("CHI advantage", "NE softer", "Close").
+ * Three groups: Offense, Defense, and the per-position Matchups.
+ */
+function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
+  const { away, home } = p;
+  const A = code(away.team);
+  const H = code(home.team);
+  type Side = { value: string; rank: number | null; rankLabel?: string | null };
+  const row = (label: string, a: Side, h: Side, word: "advantage" | "softer"): string => {
+    const close = a.rank === null || h.rank === null || Math.abs(a.rank - h.rank) <= 2;
+    const adv = close ? "even" : a.rank! < h.rank! ? "away" : "home";
+    const marker = adv === "even" ? (a.rank === null || h.rank === null ? "" : "Close") : `${adv === "away" ? A : H} ${word}`;
+    const bar = (s: Side, cls: string) =>
+      s.rank === null
+        ? `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"></span>`
+        : `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"><i style="width:${Math.round(((33 - s.rank) / 32) * 100)}%"></i></span>`;
+    const val = (s: Side, cls: string) =>
+      `<span class="sct-pv-cmp-v ${cls}"><b>${e(s.value)}</b>${rankChip(s.rank, s.rankLabel ?? null)}</span>`;
+    return (
+      `<div class="sct-pv-cmp-row" data-adv="${adv}">` +
+      val(a, "is-l") +
+      bar(a, "is-l") +
+      `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">${e(label)}</span>` +
+      (marker ? `<span class="sct-pv-cmp-adv">${e(marker)}</span>` : "") +
+      `</span>` +
+      bar(h, "is-r") +
+      val(h, "is-r") +
+      `</div>`
+    );
+  };
+  const stat = (key: string, label: string) => {
+    const a = findRow(away.stats, key);
+    const h = findRow(home.stats, key);
+    if (!a && !h) return "";
+    return row(
+      label,
+      { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel },
+      { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel },
+      "advantage",
+    );
+  };
+  const group = (title: string, rows: string) =>
+    rows ? `<div class="sct-pv-cmp-group"><h3 class="sct-pv-cmp-gh">${e(title)}</h3>${rows}</div>` : "";
+
+  const record =
+    away.record || home.record
+      ? `<div class="sct-pv-cmp-row is-plain" data-adv="even"><span class="sct-pv-cmp-v is-l"><b>${e(away.record ?? "-")}</b></span><span></span>` +
+        `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">Record</span></span><span></span>` +
+        `<span class="sct-pv-cmp-v is-r"><b>${e(home.record ?? "-")}</b></span></div>`
+      : "";
+  const offense = group("Offense", stat("off-points", "Points/G") + stat("off-total-yards", "Yards/G") + stat("off-yards-per-play", "Yards/play"));
+  const defense = group("Defense", stat("def-points", "Points/G allowed") + stat("def-total-yards", "Yards/G allowed"));
+  // Matchups: what each defense allows at the position, 1st = the most = the
+  // softest, so the lower rank number is the softer defense.
+  const matchups =
+    away.fpa && home.fpa
+      ? group(
+          "Matchups",
+          (["QB", "RB", "WR", "TE"] as Pos[])
+            .map((pos) =>
+              row(
+                `${pos} pts allowed`,
+                { value: one(away.fpa!.byPos[pos].fpa), rank: away.fpa!.byPos[pos].rank },
+                { value: one(home.fpa!.byPos[pos].fpa), rank: home.fpa!.byPos[pos].rank },
+                "softer",
+              ),
+            )
+            .join(""),
+        )
+      : "";
+
+  if (!offense && !defense && !matchups) return "";
+  return (
+    `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
+    h2("pv-snap", `${pairOf(p)} Team Matchup`) +
+    `<div class="sct-pv-card sct-pv-cmp">` +
+    `<div class="sct-pv-cmp-head" aria-hidden="true"><span>${e(A)}</span><span>${e(H)}</span></div>` +
+    record +
+    offense +
+    defense +
+    matchups +
+    `</div>` +
+    `</section>`
+  );
+}
+
+function renderSnapshotTable(p: Preview, ctx: PreviewRenderContext): string {
   const { away, home } = p;
   const head =
     `<thead><tr><th scope="col" class="sct-pv-cl">${e(code(away.team))}</th><th scope="col" class="sct-pv-cm"><span class="sct-visually-hidden">Metric</span></th>` +
@@ -676,95 +800,63 @@ function renderSnapshot(p: Preview, ctx: PreviewRenderContext): string {
       const better = a?.rank != null && h?.rank != null && a.rank !== h.rank ? (a.rank < h.rank ? "a" : "h") : null;
       return compareRow(
         label,
-        { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel, best: better === "a" },
-        { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel, best: better === "h" },
+        { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel, best: better === "a", bar: rankBar(a?.rank) },
+        { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel, best: better === "h", bar: rankBar(h?.rank) },
       );
     }),
   ].join("");
 
-  // Fantasy points allowed: green = soft (good for the opposing offense),
-  // colored only at the extremes.
-  const fpaTier = (rank: number) => (rank <= 5 ? "good" : rank >= 28 ? "poor" : "mid");
-  const barOf = (rank: number) => (33 - rank) / 32;
-  const fpaRows =
-    away.fpa && home.fpa
-      ? (["QB", "RB", "WR", "TE"] as Pos[])
-          .map((pos) => {
-            const a = away.fpa!.byPos[pos];
-            const h = home.fpa!.byPos[pos];
-            const softer = a.fpa === h.fpa ? null : a.fpa > h.fpa ? "a" : "h";
-            return compareRow(
-              `${pos} pts allowed`,
-              { value: one(a.fpa), rank: a.rank, tier: fpaTier(a.rank), best: softer === "a", bar: barOf(a.rank) },
-              { value: one(h.fpa), rank: h.rank, tier: fpaTier(h.rank), best: softer === "h", bar: barOf(h.rank) },
-            );
-          })
-          .join("")
-      : "";
-
-  if (!teamRows && !fpaRows) return "";
-  const pair = pairOf(p);
-  // Two sections, side by side on a wide screen: a comparison table at full
-  // width puts the two teams' numbers a page apart.
+  // The Fantasy Points Allowed by Position block that sat beside this table
+  // came off the page 2026-10-23 (mak); the starters block carries the
+  // per-position ranks now. The table runs full width with a rank bar on
+  // each side (mak, same day), so the space reads as the comparison.
+  if (!teamRows) return "";
   return (
-    `<div class="sct-pv-pair">` +
-    (teamRows
-      ? `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
-        h2("pv-snap", `${pair} Team Matchup`) +
-        `<div class="sct-pv-card"><table class="sct-pv-compare">${head}<tbody>${teamRows}</tbody></table></div>` +
-        `</section>`
-      : "") +
-    (fpaRows
-      ? `<section class="sct-pv-sec" aria-labelledby="pv-fpa">` +
-        h2("pv-fpa", "Fantasy Points Allowed by Position") +
-        `<div class="sct-pv-card">` +
-        (p.fpaHeadlines ? fpaHeadlineCells(p.fpaHeadlines) : "") +
-        `<table class="sct-pv-compare is-fpa">${head}<tbody>${fpaRows}</tbody></table>` +
-        (p.fpaNote
-          ? `<p class="sct-pv-note">${e(p.fpaNote)}` +
-            (ctx.fpaUrl ? ` <a href="${e(ctx.fpaUrl)}">Full Fantasy Points Allowed table</a>.` : "") +
-            `</p>`
-          : "") +
-        `</div></section>`
-      : "") +
-    `</div>`
+    `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
+    h2("pv-snap", `${pairOf(p)} Team Matchup`) +
+    `<div class="sct-pv-card"><table class="sct-pv-compare">${head}<tbody>${teamRows}</tbody></table></div>` +
+    `</section>`
   );
-}
-
-/** Softest and toughest matchup, ahead of the table. */
-function fpaHeadlineCells(h: { soft: FpaHeadline; tough: FpaHeadline }): string {
-  const cell = (k: string, x: FpaHeadline, cls: string) =>
-    `<div class="sct-pv-hl ${cls}"><span class="sct-pv-hl-k">${e(k)}</span>` +
-    `<span class="sct-pv-hl-v">${e(x.def)} vs ${e(x.pos)}</span>` +
-    `<span class="sct-pv-hl-s">${one(x.fpa)} PPG allowed · ${e(allowPhrase(x.rank))}` +
-    (x.who ? ` · sets up ${playerLink(x.who)}` : "") +
-    `</span></div>`;
-  return `<div class="sct-pv-hls">${cell("Softest matchup", h.soft, "is-soft")}${cell("Toughest matchup", h.tough, "is-tough")}</div>`;
 }
 
 /* ------------------------------------------------------------- 6. injuries */
 
 function renderInjuries(p: Preview): string {
-  const card = (s: PreviewSide) =>
-    `<div class="sct-pv-card"><h3 class="sct-pv-colhead"><span class="sct-pv-swatch is-${s.key}" aria-hidden="true"></span>${e(s.team.fullName)}</h3>` +
-    `<ul class="sct-pv-rows">` +
-    p.injuries[s.key]
-      .map(
-        (r) =>
-          `<li class="sct-pv-row"><span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip === "OK" ? "CLEAN" : r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span>` +
-          `<div class="sct-pv-row-body"><p class="sct-pv-row-name">${r.chip === "OK" ? e(r.name) : playerLink(r.name)}` +
-          (r.pos ? ` <span class="sct-pv-pos">${e(r.pos)}</span>` : "") +
-          `</p><p class="sct-pv-row-why">${e(r.fallout)}</p></div></li>`,
-      )
-      .join("") +
-    `</ul></div>`;
+  // One unified list since 2026-10-23 (mak): the two side-by-side cards left
+  // a column of dead space under the healthier team. Each team is a group
+  // with its rows; the "Clean sheet" row becomes a muted footer line.
+  const group = (s: PreviewSide) => {
+    const rows = p.injuries[s.key];
+    const listed = rows.filter((r) => r.chip !== "OK");
+    const clean = rows.some((r) => r.chip === "OK");
+    return (
+      `<div class="sct-pv-inj-group"><h3 class="sct-pv-colhead"><span class="sct-pv-swatch is-${s.key}" aria-hidden="true"></span>${e(code(s.team))}</h3>` +
+      (listed.length
+        ? `<ul class="sct-pv-rows">` +
+          listed
+            .map(
+              (r) =>
+                `<li class="sct-pv-row"><span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span>` +
+                `<div class="sct-pv-row-body"><p class="sct-pv-row-name">${playerLink(r.name)}` +
+                (r.pos ? ` <span class="sct-pv-pos">${e(r.pos)}</span>` : "") +
+                `</p><p class="sct-pv-row-why">${e(r.fallout)}</p></div></li>`,
+            )
+            .join("") +
+          `</ul>`
+        : "") +
+      (clean
+        ? `<p class="sct-pv-inj-foot">No ${listed.length ? "other " : ""}5%+ rostered ${e(s.team.nickname)} carry a designation.</p>`
+        : "") +
+      `</div>`
+    );
+  };
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-inj">` +
     // The lede and the "Injury impact" strip (biggest beneficiary, watch, no
     // impact) came off 2026-10-22 (mak); injuryImpact still feeds the watch
     // list and the FAQ.
     h2("pv-inj", `${pairOf(p)} Injury Report & Fantasy Impact`) +
-    `<div class="sct-pv-cards">${card(p.away)}${card(p.home)}</div>` +
+    `<div class="sct-pv-card sct-pv-inj-card">${group(p.away)}${group(p.home)}</div>` +
     `</section>`
   );
 }
@@ -1106,21 +1198,25 @@ export function renderPreviewTop(p: Preview, ctx: PreviewRenderContext): string 
   return renderHero(p, ctx);
 }
 
-/** `lead` is markup placed above the intro: the pair page's "Last meeting" block. */
-export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[], lead = ""): string {
+/**
+ * `lead` is markup placed at the top of the body (the pair page's starters
+ * block); `afterInjuries` sits under the Injury Report and its waiver CTA,
+ * above Head-to-Head (the "Last meeting" block since 2026-10-23, mak).
+ */
+export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[], lead = "", afterInjuries = ""): string {
   return (
     `<div class="sct-pv">` +
     lead +
-    renderIntro(p) +
+    // The "Fantasy matchup preview" intro came off the page 2026-10-23 (mak).
     renderCall(p) +
     // The Start/Sit Board section came off the page 2026-10-22 (mak); its
     // rows still feed the FAQ, the watch list and the outlook picks.
     nextStep(
       "preview-startsit",
-      "Have two players you're deciding between?",
-      "Compare them head-to-head in the Fantasy Football Start/Sit Tool.",
+      "Deciding between two players?",
+      "",
       START_SIT_URL,
-      "Open the Start/Sit Tool",
+      "Compare in Start/Sit",
     ) +
     renderLeverage(p) +
     nextStep(
@@ -1139,7 +1235,9 @@ export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: Pr
       WAIVER_WIRE_URL,
       "Open the Waiver Wire Scanner",
     ) +
-    renderWatchList(p) +
+    afterInjuries +
+    // Players to Watch came off the page 2026-10-23 (mak); renderWatchList
+    // stays for the FAQ pool and a possible return.
     renderH2h(p, ctx) +
     renderCta(ctx) +
     renderFaq(faq, p) +

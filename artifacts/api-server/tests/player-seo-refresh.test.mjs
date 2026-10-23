@@ -47,7 +47,7 @@ before(async () => {
   // A player with a game log on the page, so the hub has a rank to answer with.
   for (const player of roster.slice(0, 40)) {
     const { body: html } = await text(`/player/${player.slug}`);
-    if (/scp-read-grid/.test(html)) {
+    if (/scp-ox-strip/.test(html)) {
       fixture = player;
       break;
     }
@@ -90,22 +90,11 @@ test("the hub: title names the search and the year, the H1 is the name and the g
   assert.match(sub.textContent, /^[A-Z]{1,3}, .+/, `position, team name: ${sub.textContent}`);
   assert.doesNotMatch(h1.textContent, /age|injury|stats/i, "the hub stays off the other tabs' words");
 
-  // The answer sentence, server-rendered, with its two links.
-  const answer = doc.querySelector("#overview .scp-answer");
-  assert.ok(answer, "an answer sentence near the top of the Overview");
-  assert.match(
-    answer.textContent,
-    new RegExp(`^${fixture.name} (?:is the|finished \\d{4} as the) [A-Z]+\\d+ in [A-Z]+(?: this season)? \\(\\d+\\.\\d points per game\\)`),
-    answer.textContent,
-  );
-  const hrefs = [...answer.querySelectorAll("a")].map((a) => a.getAttribute("href"));
-  assert.ok(hrefs.some((h) => /who-should-i-start/.test(h)), `start/sit link: ${hrefs}`);
-  assert.ok(hrefs.some((h) => /\/outlook\//.test(h)), `outlook link: ${hrefs}`);
-  // The sentence precedes the snapshot grid.
-  assert.ok(
-    answer.compareDocumentPosition(doc.querySelector("#overview .scp-read-grid")) & 4,
-    "the answer comes before the snapshot tiles",
-  );
+  // The answer sentence and the snapshot rail are gone (mak, 2026-10-23):
+  // the H1 and its small line open straight onto the week-by-week strip.
+  assert.equal(doc.querySelector("#overview .scp-answer"), null);
+  assert.equal(doc.querySelector("#overview .scp-read-rail"), null);
+  assert.ok(doc.querySelector("#overview .scp-ox-strip"), "the season strip follows the heading");
 });
 
 test("the longest name on the roster still gets a title within sixty characters", async () => {

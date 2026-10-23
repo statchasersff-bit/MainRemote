@@ -50,6 +50,9 @@ export interface NewsMate {
   name: string;
   slug: string | null;
   position: string;
+  /** For the row's small headshot (headshot-html.ts); null when unknown. */
+  id?: string | null;
+  headshot?: string | null;
   /** Season totals on his current club, for the context line. */
   targets: number;
   carries: number;
@@ -86,6 +89,8 @@ export function newsTeammates(player: Player, season: number, allPlayers: Player
         name: p.name,
         slug: indexed.has(p.slug) ? p.slug : null,
         position: p.position,
+        id: p.id,
+        headshot: p.headshotUrl ?? null,
         targets: 0,
         carries: 0,
         attempts: 0,

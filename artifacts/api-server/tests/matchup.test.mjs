@@ -1894,15 +1894,16 @@ describe("one owner per game", () => {
     }
   });
 
-  test("in preview mode the pair page keeps the last meeting's stats above the preview", async () => {
+  test("in preview mode the pair page keeps the last meeting's stats under the injury report", async () => {
     for (const path of PAIRS) {
       const { doc } = await dom(path);
       const root = doc.querySelector("[data-sct-root]");
       if (root.getAttribute("data-matchup-state") !== "upcoming") continue;
       const block = doc.querySelector(".sct-mu-last");
       if (!block) continue; // The two have never met.
-      assert.ok(block.closest(".sct-pv"), "inside the preview, above the intro");
-      assert.equal(block.nextElementSibling?.className, "sct-pv-sec sct-pv-intro");
+      assert.ok(block.closest(".sct-pv"), "inside the preview");
+      assert.equal(block.previousElementSibling?.getAttribute("aria-label"), "Need a replacement?", "under the injury report's waiver CTA");
+      assert.equal(block.nextElementSibling?.getAttribute("aria-labelledby"), "pv-h2h", "above Head-to-Head");
       assert.match(block.querySelector("h2").textContent, /^Last meeting: [A-Za-z0-9 .]+ \d+, [A-Za-z0-9 .]+ \d+ \(Week \d+, [A-Z][a-z]{2} \d{1,2}, \d{4}\)$/);
       const link = block.querySelector("a.sct-textlink");
       assert.match(link.getAttribute("href"), /\/\d{4}-week-\d{1,2}\/$/, "to the dated page");

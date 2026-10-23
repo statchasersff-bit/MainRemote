@@ -103,11 +103,9 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
   if (stops.length === 0 && !page.college) return "";
   const last = lastName(data.player.name);
 
-  /* The timeline. */
+  /* The timeline. No lede and no caption under it (mak, 2026-10-23). */
   let figure = "";
-  let lede = "";
   if (stops.length > 0) {
-    const teams = new Set(stops.map((s) => s.code)).size;
     const seasons = page.axis.length;
 
     // Columns: each stop's width in seasons, with a spacer for a season no stop covers.
@@ -133,26 +131,23 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
       );
     });
     const minWidth = Math.max(760, stops.length * 72);
-    lede = page.coversCareer
-      ? `${stops.length} ${stops.length === 1 ? "stop" : "stops"} with ${teams} ${teams === 1 ? "team" : "teams"} in ${seasons} ${seasons === 1 ? "season" : "seasons"}. ` +
-        `Each block's width is the time he spent there.`
-      : `His career from ${page.axis[0]} on, where StatChasers' game logs begin. Each block's width is the time he spent there.`;
-    const pos = data.player.position ?? "";
-    const what = pos === "QB" ? "passing" : pos === "RB" ? "rushing and receiving" : pos === "K" ? "kicking" : "receiving";
-    const thru = data.gameLog?.length && data.season === (data.leagueSeason ?? data.season) ? ` ${data.season} through Week ${Math.max(...data.gameLog.map((e) => e.week))}.` : "";
     figure =
-      `<figure class="scp-bo-journey">` +
+      `<div class="scp-bo-journey">` +
       `<div class="scp-bo-rail" role="list" style="grid-template-columns:${cols.join(" ")};min-width:${minWidth}px">${cells.join("")}</div>` +
       `<div class="scp-bo-axis" aria-hidden="true" style="grid-template-columns:repeat(${seasons},1fr);min-width:${minWidth}px">${page.axis.map((y) => `<span>${y}</span>`).join("")}</div>` +
-      `<figcaption class="scp-bo-note">${escapeHtml(`Regular-season ${what} stats with each team.${thru}`)}</figcaption>` +
-      `</figure>`;
+      `</div>`;
   }
 
-  /* The stop list: team, years and the sentences - the numbers are right above. */
+  /* The stop list: team, years and the sentences - the numbers are right
+     above. Each card carries the club's crest, faded, in its corner (mak,
+     2026-10-23); the local SVG, decorative, so no alt text. */
   const cards = [...stops].reverse().map((s) => {
     const tag = s.spell > 1 ? `, ${["", "", "second", "third", "fourth"][s.spell] ?? `${s.spell}th`} stint` : "";
+    const crest = s.team?.logo
+      ? `<img class="scp-bo-ev-logo" src="${escapeHtml(s.team.logo)}" alt="" aria-hidden="true" width="96" height="96" loading="lazy" decoding="async" />`
+      : "";
     return (
-      `<li style="--c:${escapeHtml(s.primary)}"><div class="scp-bo-ev">` +
+      `<li style="--c:${escapeHtml(s.primary)}"><div class="scp-bo-ev">${crest}` +
       `<h3>${escapeHtml(s.name)}${s.current ? ` <span class="scp-bo-chip">Current team</span>` : ""}` +
       `<span class="scp-bo-yr">${escapeHtml(years(s, "present") + tag)}</span></h3>` +
       (s.sentences.length ? `<p>${escapeHtml(s.sentences.join(" "))}</p>` : "") +
@@ -199,11 +194,11 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
       : "";
 
   return (
-    open("scp-bo-journey-h", "Career timeline", lede) +
+    open("scp-bo-journey-h", "Career timeline") +
     figure +
     `<div class="scp-ox-read"><div>` +
+    // "Most recent first." under the sub-heading is gone (mak, 2026-10-23).
     `<h3 class="scp-bo-stophead" id="scp-bo-stops-h">What happened at each stop</h3>` +
-    (stops.length > 1 ? `<p class="scp-bo-stopnote">Most recent first.</p>` : "") +
     `<ol class="scp-bo-stops">${cards.join("")}</ol>` +
     `</div>${aside}</div>${inline}</section>`
   );

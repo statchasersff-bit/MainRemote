@@ -28,6 +28,7 @@ import { passerRating } from "../player/stats-profile";
 import type { ProductionTotals } from "../player/player-data";
 import type { GameLogEntry } from "../player/types";
 import type { Pos, Preview, PreviewSide } from "./preview";
+import { headshotImg } from "../headshot-html";
 
 const e = escapeHtml;
 const POSITIONS: Pos[] = ["QB", "RB", "WR", "TE"];
@@ -41,6 +42,13 @@ const SLOTS: Array<{ pos: Pos; n: number }> = [
 
 function tier(rank: number): string {
   return rank <= 5 ? "good" : rank >= 28 ? "poor" : "mid";
+}
+
+/** The starter chip's four-step scale by quartile of the 32 defenses (mak,
+ *  2026-10-23): 1st-8th soft, 9th-16th lean soft, 17th-24th lean tough,
+ *  25th-32nd tough. 1st = the most fantasy points allowed. */
+function chipTier(rank: number): string {
+  return rank <= 8 ? "soft" : rank <= 16 ? "lean-soft" : rank <= 24 ? "lean-tough" : "tough";
 }
 
 /** The season summed from the game-log store; zeros when there is none. */
@@ -73,16 +81,21 @@ const perGame = (total: number, games: number): string => (games > 0 ? (total / 
 const ratio = (a: number, b: number): string => (b > 0 ? (a / b).toFixed(2) : "-");
 
 /** The five figures a slot shows, by position: label and value pairs. */
-function statCells(pos: Pos, t: ReturnType<typeof seasonTotals>): Array<[string, string]> {
-  const g: [string, string] = ["G", String(t.games)];
-  if (pos === "QB") {
-    const rating = passerRating(t);
-    return [g, ["ATT", String(t.passAtt)], ["YPG", perGame(t.passYd, t.games)], ["TD", String(t.passTd)], ["RATING", rating === null ? "-" : rating.toFixed(1)]];
-  }
-  if (pos === "RB") {
-    return [g, ["ATT", String(t.rushAtt)], ["YPG", perGame(t.rushYd, t.games)], ["TD", String(t.rushTd + t.recTd)], ["YPC", ratio(t.rushYd, t.rushAtt)]];
-  }
-  return [g, ["TGT", String(t.tgt)], ["YPG", perGame(t.recYd, t.games)], ["TD", String(t.recTd + t.rushTd)], ["Y/TGT", ratio(t.recYd, t.tgt)]];
+/** The headshot in a round well washed in the team's color; the well alone when Sleeper has no photo. */
+function face(r: RosterPlayer, side: PreviewSide): string {
+  const img =
+    headshotImg({
+      src: r.headshot,
+      id: r.id,
+      className: "sct-mu-pr-img",
+      alt: "",
+      variants: ["160", "256"],
+      sizes: "48px",
+      width: 48,
+      height: 48,
+      loading: "lazy",
+    }) ?? "";
+  return `<span class="sct-mu-pr-face is-${side.key}" aria-hidden="true">${img}</span>`;
 }
 
 /**
@@ -118,11 +131,10 @@ function defenseCard(side: PreviewSide, maxByPos: Record<Pos, number>, season: n
     );
   }).join("");
   const abbr = side.team.code.toUpperCase();
-  const opp = side.opponent.code.toUpperCase();
   return (
     `<div class="sct-pv-card sct-mu-st-card">` +
     `<h3 class="sct-pv-colhead"><span>${e(abbr)} Defense</span>` +
-    `<span class="sct-mu-st-sub">FP/G allowed · ${season} · facing ${e(opp)}</span></h3>` +
+    `<span class="sct-mu-st-sub">FP/G allowed</span></h3>` +
     `<table class="sct-mu-st-def"><caption class="sct-visually-hidden">Fantasy points per game the ${e(side.team.fullName)} defense allows, by position</caption>` +
     `<thead class="sct-visually-hidden"><tr><th scope="col">Position</th><th scope="col">Rank</th><th scope="col"></th><th scope="col">Points per game</th></tr></thead>` +
     `<tbody>${rows}</tbody></table>` +
@@ -130,29 +142,36 @@ function defenseCard(side: PreviewSide, maxByPos: Record<Pos, number>, season: n
   );
 }
 
+/**
+ * The starters as a lineup table in the Sleeper matchup style (mak,
+ * 2026-10-23): headshot, name, slot, the matchup pill, and at the right the
+ * season PPR per game with his league-wide positional rank ("QB8"). No
+ * start/sit call, no projection, no usage line.
+ */
 function offenseCard(side: PreviewSide, season: number): string {
-  const logs = loadGameLogs(season);
   const defense = side.opponent.code.toUpperCase();
   const rows = SLOTS.flatMap(({ pos, n }) =>
     starters(side.roster, pos, n).map((r, i) => {
       const slot = n === 1 ? pos : `${pos}${i + 1}`;
       const url = getPlayerProfileUrl(r.name);
       const who = url ? `<a href="${e(url)}">${e(r.name)}</a>` : e(r.name);
-      const cells = statCells(pos, seasonTotals(logs[r.id]));
+      const ppr = side.ppr[r.id];
       return (
-        `<tr><th scope="row" class="sct-mu-st-slot">${e(slot)}</th>` +
-        `<td class="sct-mu-st-who">${who}${badge(r.injuryStatus)}<span class="sct-mu-st-vs" data-pos="${pos}"></span></td>` +
-        cells.map(([k, v]) => `<td class="sct-mu-st-stat"><span class="sct-mu-st-k">${e(k)}</span> <b>${e(v)}</b></td>`).join("") +
-        `</tr>`
+        `<li class="sct-mu-pr">` +
+        face(r, side) +
+        `<div class="sct-mu-pr-id"><p class="sct-mu-pr-name">${who}${badge(r.injuryStatus)}</p>` +
+        `<p class="sct-mu-pr-pos">${e(slot)}<span class="sct-mu-st-vs" data-pos="${pos}"></span></p></div>` +
+        `<div class="sct-mu-pr-pts"><b>${ppr ? ppr.ppg.toFixed(1) : "-"}</b><span class="sct-mu-pr-k">PPR PPG</span>` +
+        `<span class="sct-mu-pr-rank">${ppr && ppr.posRank !== null ? `${pos}${ppr.posRank}` : "-"}</span></div>` +
+        `</li>`
       );
     }),
   );
   return (
-    `<div class="sct-pv-card sct-mu-st-card">` +
+    `<div class="sct-pv-card sct-mu-pr-team">` +
     `<h3 class="sct-pv-colhead"><span>${e(side.team.code.toUpperCase())} starters</span>` +
     `<span class="sct-mu-st-sub">${season} season · vs ${e(defense)}</span></h3>` +
-    `<table class="sct-mu-st-off"><caption class="sct-visually-hidden">${e(side.team.fullName)} starters and their ${season} season lines</caption>` +
-    `<tbody>${rows.join("")}</tbody></table>` +
+    `<ul class="sct-mu-pr-list" aria-label="${e(`${side.team.fullName} starters`)}">${rows.join("")}</ul>` +
     `</div>`
   );
 }
@@ -174,21 +193,15 @@ export function renderPreviewStarters(p: Preview): string {
   const withChips = (html: string, opp: PreviewSide): string =>
     html.replace(/<span class="sct-mu-st-vs" data-pos="(QB|RB|WR|TE)"><\/span>/g, (_m, pos: Pos) => {
       const { rank } = opp.fpa!.byPos[pos];
-      return `<span class="sct-mu-st-vs" data-tier="${tier(rank)}">vs ${e(ordinal(rank))} ${pos} D</span>`;
+      return `<span class="sct-mu-st-vs" data-tier="${chipTier(rank)}">${e(ordinal(rank))} vs ${pos}</span>`;
     });
 
-  const awayCode = away.team.code.toUpperCase();
-  const homeCode = home.team.code.toUpperCase();
   return (
     `<section class="sct-pv-sec sct-mu-starters" aria-labelledby="sct-mu-st-h">` +
     `<h2 class="sct-h2 sct-pv-h2" id="sct-mu-st-h">${e(`${away.team.nickname} vs ${home.team.nickname} Starters vs the Defense`)}</h2>` +
     `<div class="sct-pv-cards">${defenseCard(away, maxByPos, season)}${defenseCard(home, maxByPos, season)}</div>` +
     `<p class="sct-mu-st-note">1st = the most fantasy points allowed = the softest matchup for the offense facing it. Full ${season} season per-game averages.</p>` +
     `<div class="sct-pv-cards">${withChips(offenseCard(away, season), home)}${withChips(offenseCard(home, season), away)}</div>` +
-    `<p class="sct-mu-st-note">Starters by depth chart order with their ${season} season stats; a new starter or rookie can show a zero line. ` +
-    `The chip is the opposing defense's rank against that position, green for a soft matchup and red for a tough one. ` +
-    `Q and D badges come from this week's injury report; players designated Out are replaced by the next man up. ` +
-    `${e(awayCode)} faces the ${e(homeCode)} defense and ${e(homeCode)} faces the ${e(awayCode)} defense.</p>` +
     `</section>`
   );
 }

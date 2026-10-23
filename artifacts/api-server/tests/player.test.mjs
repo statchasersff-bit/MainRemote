@@ -1902,13 +1902,17 @@ describe("the news tab", () => {
     for (const item of items) {
       assert.ok(item.querySelector("h3")?.textContent.trim(), "a headline");
       if (item.matches(".scp-nw-item")) {
-        // Every entry carries a week-state tag (2026-10-05); a recap's result
-        // is its points line, anything else says "SC Takeaway".
-        assert.ok(item.querySelector(".scp-nw-tag")?.textContent.trim(), "a tag");
-        if (item.dataset.type === "game") assert.match(item.querySelector(".scp-nw-result").textContent, /^\S+ FPTS/);
-        else {
-          assert.match(item.querySelector(".scp-nw-take").textContent, /^SC Takeaway: \S/);
-          assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
+        // Every row carries a category badge and a date (2026-10-23); a
+        // recap's stat line opens with its points and its finish and week tag
+        // sit on the right, anything else has its one sentence.
+        assert.ok(item.querySelector(".scp-nw-cat")?.textContent.trim(), "a category badge");
+        assert.ok(item.querySelector(".scp-nw-marker"), "a marker");
+        assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
+        if (item.dataset.type === "game") {
+          assert.match(item.querySelector(".scp-nw-statline").textContent, /^\S+ FPTS/);
+          assert.ok(item.querySelector(".scp-nw-side .scp-nw-tag")?.textContent.trim(), "a week tag");
+        } else {
+          assert.ok(item.querySelector(".scp-nw-sum")?.textContent.trim(), "one sentence");
         }
         assert.match(item.dataset.impact, /^(up|flat|down)$/);
         assert.match(item.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: (Positive|Neutral|Negative)/);
@@ -1954,7 +1958,6 @@ describe("the news tab", () => {
   test("the Current Outlook card is gone (mak, 2026-10-22)", async () => {
     const found = await withNews();
     assert.equal(found.doc.querySelector(".scp-nw-qa"), null);
-    assert.equal(found.doc.querySelector(".scp-nw-side"), null);
     assert.equal(found.doc.querySelector('[data-cta="redraft-command-news-sidebar"]'), null);
   });
 
