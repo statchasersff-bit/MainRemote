@@ -19110,3 +19110,1288 @@ a.sct-ex-game:hover .sct-ex-line {
     padding: 10px 12px 12px;
   }
 }
+
+/* ======================================================================
+   Contracts tab (2026-10-23, redesigned the same day): the hub's cap
+   sheet as one analysis workspace. A strip of four cap tiles, then a
+   single surface holding a band of derived figures, the cut-scenario
+   toolbar, the contract sheet and the release panel beside it. Weight and
+   tint carry the hierarchy: the name is the strongest item in a row, Cap
+   hit the primary figure, Worth and Cut saves the analytical outputs, the
+   signed term the quietest. Numerals are Inter at tabular widths in the
+   sheet; the tiles keep the hub's condensed figure face.
+   ====================================================================== */
+
+:is(.sct, #sct-table-armour) .sct-ct {
+  --ct-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --ct-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ct-radius: 12px;
+  --ct-good-bg: #e9f6ee;
+  --ct-good-ink: #166534;
+  --ct-good-bar: #3f9f6a;
+  --ct-bad-bg: #fdeceb;
+  --ct-bad-ink: #991b1b;
+  --ct-info-bg: #e9eef7;
+  --ct-info-ink: #1e3a8a;
+  --ct-worth-bg: rgba(11, 22, 52, 0.035);
+  --ct-hover: #f4f6fa;
+  --ct-picked: #fff6f3;
+  --ct-sticky: calc(var(--sct-nav-h, 56px) + var(--sct-nav-offset, 0px));
+  margin: 10px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lede {
+  margin: 0 0 14px;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-num {
+  --sc-font: var(--ct-display);
+  font-family: var(--ct-display);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-h3 {
+  margin: 0 0 4px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1rem !important;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dek {
+  margin: 0 0 10px;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-foot {
+  margin: 14px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct abbr {
+  text-decoration: none;
+  border: 0;
+}
+
+/* ---- cap tiles --------------------------------------------------------- */
+
+:is(.sct, #sct-table-armour) .sct-ct-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 10px 14px 11px;
+  border: 1px solid var(--sc-border);
+  border-top: 2px solid var(--team-primary, var(--sc-navy));
+  border-radius: var(--ct-radius);
+  background: var(--sc-surface);
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tile-label {
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tile-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tile .sct-ct-tile-value > .sct-ct-num {
+  color: var(--sc-navy);
+  font-size: 1.55rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-rank {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-rank .sct-ct-num {
+  font-family: var(--ct-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-rank .sct-ct-num::after {
+  content: " of 32";
+  font-weight: 500;
+}
+
+/* ---- the workspace ------------------------------------------------------ */
+
+:is(.sct, #sct-table-armour) .sct-ct-work {
+  margin: 0 0 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--ct-radius);
+  background: var(--sc-surface);
+  overflow: clip;
+}
+
+/* The band of derived figures. */
+:is(.sct, #sct-table-armour) .sct-ct-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 16px 11px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi + .sct-ct-kpi {
+  border-left: 1px solid var(--sc-hairline);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-label {
+  color: var(--sc-muted);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-label abbr {
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-value {
+  color: var(--sc-ink);
+  font-family: var(--ct-body);
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-sub {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-gap.is-up {
+  color: var(--ct-good-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-gap.is-down {
+  color: var(--ct-bad-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-kpi-slash {
+  margin: 0 6px;
+  color: var(--sc-border);
+  font-weight: 400;
+}
+
+/* ---- scenario toolbar --------------------------------------------------- */
+
+/* The pick column and the toolbar need scripting; until wireCutScenario
+   marks the block they stay out of the way. */
+:is(.sct, #sct-table-armour) .sct-ct:not([data-sct-ct="js"]) :is(.sct-ct-scen, .sct-ct-td.is-pick, .sct-ct-th.is-pick) {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  transition: background 0.15s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen.is-active {
+  background: #fffcf4;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-title {
+  color: var(--sc-navy);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-help {
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-left: auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-timing {
+  display: inline-flex;
+  border: 1px solid var(--sc-border);
+  border-radius: 6px;
+  background: var(--sc-surface);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-btn {
+  margin: 0;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--sc-navy);
+  font-family: var(--ct-body);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-btn + .sct-ct-scen-btn {
+  border-left: 1px solid var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-btn[aria-pressed="true"] {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-reset {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: 6px;
+  background: var(--sc-surface);
+  box-shadow: none;
+  color: var(--sc-navy);
+  font-family: var(--ct-body);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-reset[hidden] {
+  display: inline-block;
+  visibility: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out dt {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out dd {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out .sct-ct-num {
+  color: var(--sc-ink);
+  font-family: var(--ct-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out .is-result dd {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen.is-active .sct-ct-scen-out .is-result dd {
+  background: var(--ct-good-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen.is-active .sct-ct-scen-out .is-result dd:has(.is-cost) {
+  background: var(--ct-bad-bg);
+}
+
+/* ---- sheet and panel on one row ----------------------------------------- */
+
+:is(.sct, #sct-table-armour) .sct-ct-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  align-items: start;
+  background: linear-gradient(to right, transparent calc(100% - 264px), var(--sc-surface-soft) calc(100% - 264px));
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-sheet {
+  min-width: 0;
+}
+
+/* ---- the sheet ----------------------------------------------------------- */
+
+:is(.sct, #sct-table-armour) .sct-ct-scroll {
+  margin: 0;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scroll:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-ct-table:not(.variations) {
+  width: 100%;
+  min-width: 700px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  font-family: var(--ct-body);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table :where(th, td) {
+  padding: 6px 7px;
+  border: 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  color: var(--sc-ink);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 8px 7px;
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  color: var(--sc-muted) !important;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th abbr {
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th.is-sorted {
+  color: var(--sc-ink) !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th.is-sorted abbr::after {
+  content: "▾";
+  margin-left: 3px;
+  font-size: 0.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr:last-child :where(th, td) {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table :where(th, td).is-num {
+  text-align: right;
+}
+
+/* Rows: a hover, and the pinned name column for a sheet that scrolls. */
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr:hover {
+  background: var(--ct-hover);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table th.is-player {
+  min-width: 136px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--sc-surface);
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr:hover th.is-player,
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr:hover td.is-pick {
+  background: var(--ct-hover);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-name {
+  color: var(--sc-navy);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+:is(.sct, #sct-table-armour) a.sct-ct-name:hover {
+  text-decoration: underline;
+}
+
+/* Badges: small, tinted, quieter than the name. */
+:is(.sct, #sct-table-armour) .sct-ct-tag,
+:is(.sct, #sct-table-armour) .sct-ct-status {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  text-decoration: none;
+  vertical-align: 1px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tag.is-over {
+  background: var(--ct-bad-bg);
+  color: var(--ct-bad-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-tag.is-under {
+  background: var(--ct-good-bg);
+  color: var(--ct-good-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-status {
+  background: var(--ct-info-bg);
+  color: var(--ct-info-ink);
+  cursor: help;
+}
+
+/* Position chips: a compact identifier in the group's family (mak,
+   2026-10-23: WR blue, RB green, TE yellow, QB red, defenders brown). */
+:is(.sct, #sct-table-armour) .sct-ct-pos {
+  display: inline-block;
+  min-width: 26px;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+  font-family: var(--ct-body);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pos[data-group="wr"] { background: #e4edfb; color: #1d4ed8; }
+:is(.sct, #sct-table-armour) .sct-ct-pos[data-group="rb"] { background: #e3f3e8; color: #15803d; }
+:is(.sct, #sct-table-armour) .sct-ct-pos[data-group="te"] { background: #fbefd9; color: #b45309; }
+:is(.sct, #sct-table-armour) .sct-ct-pos[data-group="qb"] { background: #fbe4e4; color: #b91c1c; }
+:is(.sct, #sct-table-armour) .sct-ct-pos[data-group="def"] { background: #f1e8df; color: #7c4a1e; }
+
+/* Figures: Cap hit leads, APY and Gtd follow, Dead and the term sit back. */
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-num {
+  font-family: var(--ct-body);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--sc-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-cap {
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-muted {
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-signed {
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-fig {
+  display: block;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-est {
+  margin-left: 1px;
+  color: var(--sc-muted);
+}
+
+/* Worth: the model's column. A tint the width of the column, a stronger
+   figure, and the distance from APY beneath it. A tagged cell's tint is the
+   verdict. */
+:is(.sct, #sct-table-armour) .sct-ct-table :where(th, td).is-worth-col {
+  background: var(--ct-worth-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th.is-worth-col {
+  background: #eef0f5;
+  color: var(--sc-navy) !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth {
+  color: var(--sc-navy);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth.is-under {
+  background: var(--ct-good-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth.is-over {
+  background: var(--ct-bad-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-delta {
+  display: block;
+  color: var(--sc-muted);
+  font-size: 0.64rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-under .sct-ct-delta {
+  color: var(--ct-good-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-over .sct-ct-delta {
+  color: var(--ct-bad-ink);
+}
+
+/* Cut saves: green where a release frees cap, with a bar ranking it; a
+   soft red where the move costs cap; neutral at zero. */
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-save-col {
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-save {
+  background: var(--ct-good-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-cost {
+  background: var(--ct-bad-bg);
+  color: var(--ct-bad-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: 3px;
+  border-radius: 2px;
+  background: rgba(22, 101, 52, 0.12);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-bar > i {
+  display: block;
+  height: 100%;
+  margin-left: auto;
+  border-radius: 2px;
+  background: var(--ct-good-bar);
+}
+
+/* The pick box and the picked row. */
+:is(.sct, #sct-table-armour) .sct-ct-table :where(th, td).is-pick {
+  width: 30px;
+  padding-left: 12px;
+  padding-right: 2px;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table :where(th, td).is-pick {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table thead th.is-pick {
+  z-index: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table thead th.is-player {
+  z-index: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table th.is-player {
+  left: 30px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pick {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1.5px solid #b9c2d0;
+  border-radius: 3px;
+  background: var(--sc-surface);
+  vertical-align: middle;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pick:hover {
+  border-color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pick:checked {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pick:checked::after {
+  content: "";
+  position: absolute;
+  left: 3.5px;
+  top: 0.5px;
+  width: 4px;
+  height: 7px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-pick:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-picked,
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-picked th.is-player,
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table tbody tr.is-picked td.is-pick {
+  background: var(--ct-picked);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table tbody tr.is-picked td.is-pick {
+  box-shadow: inset 2px 0 0 var(--ct-bad-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-picked .sct-ct-name {
+  color: var(--sc-muted-strong);
+  text-decoration: line-through;
+  text-decoration-color: var(--ct-bad-ink);
+}
+
+/* The fold (mak, 2026-10-23): ten rows, the rest behind the footer's
+   button. The tail hides only once the bundle is up, a ticked row stays in
+   view when the sheet folds, and the button is inert without scripting. */
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"]:not(.is-expanded) .sct-ct-table tbody tr.is-more:not(.is-picked) {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct:not([data-sct-ct="js"]) .sct-ct-more {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-footbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px 7px 14px;
+  border-top: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-count {
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  margin: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--sc-navy);
+  font-family: var(--ct-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: right;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-more::after {
+  content: "↓";
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-more[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-more:hover {
+  background: var(--sc-surface);
+  text-decoration: underline;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-more:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+}
+
+/* ---- the release panel --------------------------------------------------- */
+
+/* The cards from before the redesign, kept at mak's request (2026-10-23):
+   headshot at the left, a small plain name with the bare position letters
+   under it in the group's color, and the two figures as shaded chips at the
+   right. The panel itself holds its column beside the sheet. */
+:is(.sct, #sct-table-armour) .sct-ct-cuts {
+  position: sticky;
+  top: calc(var(--ct-sticky) + 8px);
+  margin: 0;
+  padding: 12px 12px 12px;
+  border: 0;
+  border-left: 1px solid var(--sc-border);
+  border-radius: 0;
+  background: var(--sc-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cuts .sct-ct-h3 {
+  font-size: 1rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cuts .sct-ct-dek {
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  background: var(--sc-surface);
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-well {
+  display: block;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
+    );
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut .sct-ct-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sc-ink);
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+
+/* No pill on the card's position (mak, 2026-10-23): just the letters, in
+   the group's color. */
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos {
+  display: block;
+  width: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos[data-group="wr"] { color: #1d4ed8; }
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos[data-group="rb"] { color: #15803d; }
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos[data-group="te"] { color: #b45309; }
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos[data-group="qb"] { color: #b91c1c; }
+:is(.sct, #sct-table-armour) .sct-ct-cut-pos[data-group="def"] { color: #7c4a1e; }
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-nums {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-nums > span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-nums .sct-ct-num {
+  display: inline-block;
+  min-width: 42px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--sc-ink);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-save .sct-ct-num {
+  background: var(--ct-good-bg);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-dead .sct-ct-num {
+  background: var(--sc-surface-soft);
+}
+
+/* ---- dead money and the note --------------------------------------------- */
+
+:is(.sct, #sct-table-armour) .sct-ct-dead {
+  margin: 0;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--ct-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-h3-sum {
+  margin-left: 8px;
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-h3-sum .sct-ct-num {
+  color: var(--sc-ink);
+  font-family: var(--ct-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  font-size: 0.8125rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-who {
+  color: var(--sc-navy);
+  font-weight: 600;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-now {
+  margin-left: 8px;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-row .sct-ct-num {
+  color: var(--sc-ink);
+  font-family: var(--ct-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-how {
+  margin: 12px 0 0;
+  padding: 9px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  background: var(--sc-surface-soft);
+  font-size: 0.8125rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-how summary {
+  cursor: pointer;
+  color: var(--sc-navy);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-how-body p {
+  margin: 8px 0 0;
+  color: var(--sc-ink);
+  line-height: 1.5;
+}
+
+/* ---- widths -------------------------------------------------------------- */
+
+/* Wide enough for the sheet to sit flat: no inner scroll, so the header
+   row and the panel hold against the page as the sheet scrolls by. Clip
+   rather than visible, so a sheet a few pixels too wide loses its edge
+   instead of riding over the panel. */
+@media (min-width: 1180px) {
+  :is(.sct, #sct-table-armour) .sct-ct-scroll {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table thead th {
+    top: var(--ct-sticky);
+  }
+  :is(.sct, #sct-table-armour) table.sct-ct-table:not(.variations) {
+    min-width: 0;
+  }
+}
+
+/* The cards drop under the sheet, two across. */
+@media (max-width: 1000px) {
+  :is(.sct, #sct-table-armour) .sct-ct-main {
+    display: flex;
+    flex-direction: column;
+    background: none;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-cuts {
+    position: static;
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--sc-border);
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-cut-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-sheet {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-ct-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-tile .sct-ct-tile-value > .sct-ct-num {
+    font-size: 1.35rem;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-kpi {
+    padding: 9px 14px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-kpi:nth-child(odd) {
+    border-left: 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--sc-hairline);
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-scen-body {
+    margin-left: 0;
+    width: 100%;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-dead-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A phone: each row is a card showing Player, Cap hit, Worth and Cut saves;
+   a tap on the row (team.ts) opens the position, APY, guarantees, term and
+   dead money beneath. No sideways scroll, no pinned column. */
+@media (max-width: 700px) {
+  :is(.sct, #sct-table-armour) .sct-ct-scroll {
+    overflow: visible;
+  }
+  :is(.sct, #sct-table-armour) table.sct-ct-table:not(.variations) {
+    display: block;
+    min-width: 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table thead {
+    display: none;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody {
+    display: block;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    position: relative;
+    gap: 6px 6px;
+    padding: 8px 24px 8px 10px;
+    border-bottom: 1px solid var(--sc-hairline);
+    cursor: pointer;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :where(th, td),
+  :is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table tbody :where(th, td).is-pick,
+  :is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table tbody th.is-player {
+    position: static;
+    display: block;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-picked {
+    box-shadow: inset 2px 0 0 var(--ct-bad-ink);
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-pick {
+    order: 0;
+    flex: 0 0 14px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody th.is-player {
+    order: 1;
+    flex: 1 1 30%;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
+    overflow: hidden;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody th.is-player .sct-ct-name {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody th.is-player :is(.sct-ct-tag, .sct-ct-status) {
+    margin-left: 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-pos {
+    order: 10;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-cap { order: 3; }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth-col { order: 4; }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-save-col { order: 5; }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-cap, td.is-worth-col, td.is-save-col) {
+    flex: 0 0 auto;
+    min-width: 50px;
+    padding: 2px 4px;
+    border-radius: 5px;
+    text-align: right;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth-col:not(.is-over, .is-under) {
+    background: var(--ct-worth-bg);
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-cap, td.is-worth-col, td.is-save-col)::before,
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-pos, td.is-apy, td.is-gtd, td.is-signed, td.is-dead)::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--sc-muted);
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-pos .sct-ct-pos {
+    vertical-align: top;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-delta-vs {
+    display: none;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -5px 0 0;
+    border-right: 1.5px solid var(--sc-muted);
+    border-bottom: 1.5px solid var(--sc-muted);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-open::after {
+    transform: rotate(-135deg);
+    margin-top: -1px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-pos, td.is-apy, td.is-gtd, td.is-signed, td.is-dead) {
+    display: none;
+    order: 10;
+    flex: 1 1 18%;
+    text-align: left;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-open :is(td.is-pos, td.is-apy, td.is-gtd, td.is-signed, td.is-dead) {
+    display: block;
+  }
+  /* A basis too wide for the first line, so the chip always opens on the
+     second with APY, Gtd and Dead beside it, and the term on a third. */
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-open td.is-pos {
+    flex: 1 1 34%;
+    margin-left: 20px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody tr.is-open td.is-signed {
+    order: 11;
+    flex-basis: 100%;
+    margin-left: 20px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-table tbody tr.is-picked td.is-pick {
+    background: transparent;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-cut-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-scen {
+    padding: 8px 12px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-scen-out {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-footbar {
+    padding: 7px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-cap, td.is-worth-col, td.is-save-col) {
+    min-width: 50px;
+    padding: 2px 4px;
+  }
+  :is(.sct, #sct-table-armour) .sct-ct-kpi-value {
+    font-size: 1rem;
+  }
+}
