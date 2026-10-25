@@ -30,6 +30,7 @@ import {
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
 import { dataModified, hubPersonNode, playerPageMeta, renderPlayerHeadTags } from "./player-seo";
+import { playerShareImage } from "./player/share-image";
 import { bioPersonNode } from "./player/bio-seo";
 import { injuryAnswer } from "./player/injury-tab";
 import { LruCache } from "./lru";
@@ -178,6 +179,11 @@ function pageDataIsland(
       JSON.stringify({
         title: meta.title,
         description: meta.description,
+        // His headshot, for og:image / twitter:image and the page node's
+        // primaryImageOfPage (2026-10-24): without one Google chose a crest
+        // off the page for the result thumbnail. Absent when Sleeper has no
+        // photo of him.
+        ...(meta.image ? { image: meta.image } : {}),
         // Bio (spec 2.11): the Person node the plugin makes the ProfilePage's
         // mainEntity, and the index rule it applies to robots and the sitemap.
         ...(options.section === "bio" && data.bioPage

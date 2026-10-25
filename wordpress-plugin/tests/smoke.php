@@ -72,6 +72,7 @@ function sanitize_text_field( $s ) { return trim( strip_tags( (string) $s ) ); }
 function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES, 'UTF-8' ); }
 function esc_attr( $s ) { return esc_html( $s ); }
 function esc_url( $s ) { return (string) $s; }
+function esc_url_raw( $s, $protocols = null ) { return (string) $s; }
 function wp_strip_all_tags( $s ) { return strip_tags( (string) $s ); }
 function wp_kses_post( $s ) { return (string) $s; }
 function is_singular( $t = '' ) { return (bool) ( $GLOBALS['page']['singular'] ?? false ); }

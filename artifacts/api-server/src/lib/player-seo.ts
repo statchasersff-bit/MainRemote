@@ -21,6 +21,7 @@ import { escapeHtml } from "./render";
 import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
 import { bioDescription, bioPersonNode } from "./player/bio-seo";
+import { playerShareImage, type PlayerShareImage } from "./player/share-image";
 import { getTeamHubUrl } from "./team/links";
 import { injuryAnswer } from "./player/injury-tab";
 import { SCORING_SHORT } from "./player/scoring";
@@ -41,8 +42,8 @@ export interface PlayerPageMeta {
   description: string;
   canonical: string;
   siteName: string;
-  /** Absolute headshot URL for og:image, when there is one. */
-  image: string | null;
+  /** His headshot for og:image and twitter:image, when Sleeper has one. */
+  image: PlayerShareImage | null;
 }
 
 const SITE_NAME = "StatChasers";
@@ -306,7 +307,7 @@ export function playerPageMeta(
     description: own.description,
     canonical,
     siteName: SITE_NAME,
-    image: player.headshotUrl ?? null,
+    image: playerShareImage(data),
   };
 }
 
@@ -329,7 +330,16 @@ export function renderPlayerHeadTags(meta: PlayerPageMeta): string {
     `<meta name="twitter:description" content="${d}" />`,
   ];
   if (meta.image) {
-    tags.push(`<meta property="og:image" content="${escapeHtml(meta.image)}" />`);
+    const img = escapeHtml(meta.image.url);
+    const alt = escapeHtml(meta.image.alt);
+    tags.push(
+      `<meta property="og:image" content="${img}" />`,
+      `<meta property="og:image:width" content="${meta.image.width}" />`,
+      `<meta property="og:image:height" content="${meta.image.height}" />`,
+      `<meta property="og:image:alt" content="${alt}" />`,
+      `<meta name="twitter:image" content="${img}" />`,
+      `<meta name="twitter:image:alt" content="${alt}" />`,
+    );
   }
   return tags.join("\n  ");
 }

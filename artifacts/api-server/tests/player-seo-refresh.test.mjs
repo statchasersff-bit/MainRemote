@@ -97,6 +97,48 @@ test("the hub: title names the search and the year, the H1 is the name and the g
   assert.ok(doc.querySelector("#overview .scp-ox-strip"), "the season strip follows the heading");
 });
 
+/*
+ * The page's picture (2026-10-24). Until then no player page declared one:
+ * no og:image, a Person without an image, no featured image on WordPress -
+ * so Google chose a club crest off the page for the result thumbnail. The
+ * standalone page prints the tags itself; the fragment hands the plugin the
+ * same image in its island, for Rank Math and the ProfilePage node.
+ */
+test("the hub names his headshot as the page's picture: og:image, twitter:image, Person.image, the island", async () => {
+  const { body } = await text(`/player/${fixture.slug}`);
+  const { doc } = head(body);
+  const meta = (selector) => doc.querySelector(selector)?.getAttribute("content") ?? "";
+  const image = meta('meta[property="og:image"]');
+  const expected = new RegExp(`^${server.origin}/news-image/player/${fixture.id}/(?:[0-9a-f]+|latest)/f350\\.webp$`);
+  assert.match(image, expected, "og:image is his headshot at its versioned public address");
+  assert.equal(meta('meta[property="og:image:width"]'), "350");
+  assert.equal(meta('meta[property="og:image:height"]'), "254");
+  assert.equal(meta('meta[property="og:image:alt"]'), `${fixture.name} headshot`);
+  assert.equal(meta('meta[name="twitter:image"]'), image, "twitter:image is the same picture");
+
+  const person = [...doc.querySelectorAll('script[type="application/ld+json"]')]
+    .map((s) => JSON.parse(s.textContent))
+    .flatMap((node) => node["@graph"] ?? [node])
+    .find((node) => node["@type"] === "Person");
+  if (person) assert.equal(person.image, image, "the Person carries the same picture");
+
+  const fragment = await text(`/embed/player/${fixture.slug}`);
+  const copy = island(fragment.body);
+  assert.ok(copy?.image, "the island carries the image for the plugin");
+  assert.match(copy.image.url, /\/news-image\/player\/\d+\/(?:[0-9a-f]+|latest)\/f350\.webp$/);
+  assert.deepEqual(
+    { width: copy.image.width, height: copy.image.height, alt: copy.image.alt },
+    { width: 350, height: 254, alt: `${fixture.name} headshot` },
+  );
+  if (copy.person) assert.equal(copy.person.image, copy.image.url, "the island's Person carries it too");
+  for (const section of ["stats", "injury", "bio"]) {
+    const res = await text(`/embed/player/${fixture.slug}?section=${section}`);
+    const own = island(res.body);
+    if (own?.missing) continue;
+    assert.ok(own?.image?.url, `${section}: the section's island carries the image too`);
+  }
+});
+
 test("the longest name on the roster still gets a title within sixty characters", async () => {
   const { status, body } = await text(`/player/${longName.slug}`);
   assert.equal(status, 200, longName.slug);

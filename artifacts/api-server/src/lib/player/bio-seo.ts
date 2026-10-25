@@ -9,6 +9,7 @@
 
 import type { PlayerPageData } from "./player-data";
 import type { BioPageFacts } from "./bio-tab-data";
+import { playerShareImage } from "./share-image";
 
 const POSITION_WORDS: Record<string, string> = {
   QB: "quarterback",
@@ -83,7 +84,11 @@ export function bioPersonNode(data: PlayerPageData, page: BioPageFacts): Record<
   const raw = page.raw;
   const pos = POSITION_WORDS[data.player.position ?? ""] ?? null;
   const node: Record<string, unknown> = { "@type": "Person", name: data.player.name };
-  if (data.player.headshotUrl) node["image"] = data.player.headshotUrl;
+  // His headshot at its public, versioned address (the hero's own), not the
+  // raw Sleeper URL the store seldom carries: absent on most profiles before
+  // 2026-10-24, which left Google to pick a crest off the page.
+  const image = playerShareImage(data);
+  if (image) node["image"] = image.url;
   if (raw.birthDate) node["birthDate"] = raw.birthDate;
   if (raw.birthPlace) node["birthPlace"] = { "@type": "Place", name: raw.birthPlace };
   if (raw.heightIn) node["height"] = { "@type": "QuantitativeValue", value: raw.heightIn, unitCode: "INH" };

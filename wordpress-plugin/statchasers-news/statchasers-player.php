@@ -1512,9 +1512,14 @@ function statchasers_player_indexed_section(): string {
  * decision (mak, 2026-09-30), kept here as `person` and `index`; the profile
  * carries the Person too since 2026-10-10, with his club. `modified` is the
  * page's data date: the latest report on /injury/, the day of his latest
- * game on the profile, /stats/, /game-log/ and /outlook/.
+ * game on the profile, /stats/, /game-log/ and /outlook/. `image` (since
+ * 2026-10-24) is his headshot at its public address, with its pixels and
+ * alt: the og:image, twitter:image and primaryImageOfPage of every player
+ * page. Before it no player page declared a picture, and Google chose a
+ * club crest off the page for the result thumbnail - Kendrick Bourne, a
+ * Cardinal, came up wearing a Browns helmet.
  *
- * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool,modified?:string}|null
+ * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool,modified?:string,image?:array{url:string,width:int,height:int,alt:string}}|null
  */
 function statchasers_player_request_meta(): ?array {
 	static $meta = false;
@@ -1556,9 +1561,74 @@ function statchasers_player_request_meta(): ?array {
 		if ( is_string( $copy['modified'] ?? null ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $copy['modified'] ) ) {
 			$meta['modified'] = $copy['modified'];
 		}
+		$image = statchasers_player_image_from_island( $copy['image'] ?? null );
+		if ( null !== $image ) {
+			$meta['image'] = $image;
+		}
 	}
 
 	return $meta;
+}
+
+/**
+ * The island's `image`, checked for shape: an https URL on the API's own
+ * image route, positive pixels, a string alt. Anything else is no image -
+ * a share card with a broken picture is worse than none.
+ *
+ * @param mixed $copy The island's `image` member.
+ * @return array{url:string,width:int,height:int,alt:string}|null
+ */
+function statchasers_player_image_from_island( $copy ): ?array {
+	if ( ! is_array( $copy ) || ! is_string( $copy['url'] ?? null ) ) {
+		return null;
+	}
+	$url = esc_url_raw( trim( $copy['url'] ), array( 'https', 'http' ) );
+	if ( '' === $url || false === strpos( $url, '/news-image/' ) ) {
+		return null;
+	}
+	$width  = (int) ( $copy['width'] ?? 0 );
+	$height = (int) ( $copy['height'] ?? 0 );
+	if ( $width <= 0 || $height <= 0 ) {
+		return null;
+	}
+	return array(
+		'url'    => $url,
+		'width'  => $width,
+		'height' => $height,
+		'alt'    => is_string( $copy['alt'] ?? null ) ? trim( wp_strip_all_tags( $copy['alt'] ) ) : '',
+	);
+}
+
+/**
+ * The page's share image - his headshot - or null when the API named none.
+ *
+ * @return array{url:string,width:int,height:int,alt:string}|null
+ */
+function statchasers_player_share_image(): ?array {
+	$meta = statchasers_player_request_meta();
+	return $meta['image'] ?? null;
+}
+
+/**
+ * The same headshot as the page node's primaryImageOfPage, or null.
+ *
+ * @return array<string,mixed>|null
+ */
+function statchasers_player_image_node(): ?array {
+	$image = statchasers_player_share_image();
+	if ( null === $image ) {
+		return null;
+	}
+	$node = array(
+		'@type'  => 'ImageObject',
+		'url'    => $image['url'],
+		'width'  => $image['width'],
+		'height' => $image['height'],
+	);
+	if ( '' !== $image['alt'] ) {
+		$node['caption'] = $image['alt'];
+	}
+	return $node;
 }
 
 /**
@@ -1627,17 +1697,20 @@ function statchasers_player_modified_schema( $data ) {
 		foreach ( (array) $node['@type'] as $type ) {
 			if ( is_string( $type ) && false !== strpos( $type, 'Page' ) && 'FAQPage' !== $type ) {
 				$data[ $key ]['dateModified'] = $modified;
+				$data[ $key ]                 = statchasers_player_page_with_image( $data[ $key ] );
 				return $data;
 			}
 		}
 	}
 
 	$page_id = '' === $url ? '' : $url . '#webpage';
-	$page    = array(
-		'@type'        => 'WebPage',
-		'name'         => $meta['title'],
-		'description'  => $meta['description'],
-		'dateModified' => $modified,
+	$page    = statchasers_player_page_with_image(
+		array(
+			'@type'        => 'WebPage',
+			'name'         => $meta['title'],
+			'description'  => $meta['description'],
+			'dateModified' => $modified,
+		)
 	);
 	if ( '' !== $page_id ) {
 		$page['@id'] = $page_id;
@@ -1652,6 +1725,25 @@ function statchasers_player_modified_schema( $data ) {
 	return $data;
 }
 add_filter( 'rank_math/json_ld', 'statchasers_player_modified_schema', 30 );
+
+/**
+ * A page node with his headshot as its primaryImageOfPage (2026-10-24), when
+ * the API named one and the node has none yet. The picture Google is asked
+ * to show for the page, said in the graph as well as in og:image.
+ *
+ * @param array<string,mixed> $page The WebPage or ProfilePage node.
+ * @return array<string,mixed>
+ */
+function statchasers_player_page_with_image( array $page ): array {
+	if ( ! empty( $page['primaryImageOfPage'] ) ) {
+		return $page;
+	}
+	$image = statchasers_player_image_node();
+	if ( null !== $image ) {
+		$page['primaryImageOfPage'] = $image;
+	}
+	return $page;
+}
 
 /* ------------------------------------------------------------- bio schema */
 
@@ -1702,6 +1794,7 @@ function statchasers_player_bio_schema( $data ) {
 			if ( is_string( $type ) && 'WebPage' === $type ) {
 				$data[ $key ]['@type']      = 'ProfilePage';
 				$data[ $key ]['mainEntity'] = array( '@id' => $person['@id'] );
+				$data[ $key ]               = statchasers_player_page_with_image( $data[ $key ] );
 				return $data;
 			}
 		}
@@ -1712,11 +1805,13 @@ function statchasers_player_bio_schema( $data ) {
 	// statchasers_player_modified_schema finds a page to date.
 	$url     = '' === $section ? $profile : statchasers_player_section_canonical();
 	$page_id = '' === $url ? '' : $url . '#webpage';
-	$page    = array(
-		'@type'       => 'ProfilePage',
-		'name'        => $meta['title'],
-		'description' => $meta['description'],
-		'mainEntity'  => array( '@id' => $person['@id'] ),
+	$page    = statchasers_player_page_with_image(
+		array(
+			'@type'       => 'ProfilePage',
+			'name'        => $meta['title'],
+			'description' => $meta['description'],
+			'mainEntity'  => array( '@id' => $person['@id'] ),
+		)
 	);
 	if ( '' !== $page_id ) {
 		$page['@id'] = $page_id;
@@ -1790,6 +1885,33 @@ add_filter(
 		return '' === $section ? $url : $section;
 	}
 );
+
+/*
+ * The share image (2026-10-24): his headshot as og:image and twitter:image,
+ * the way statchasers-matchup.php hands Rank Math a game's card. A player
+ * page has no featured image and Rank Math printed no og:image at all, so
+ * Google picked a club crest off the page for the result thumbnail.
+ */
+foreach ( array( 'facebook', 'twitter' ) as $statchasers_player_network ) {
+	add_action(
+		"rank_math/opengraph/{$statchasers_player_network}/add_images",
+		function ( $images ) {
+			$image = statchasers_player_share_image();
+			if ( null === $image || ! is_object( $images ) || ! method_exists( $images, 'add_image' ) ) {
+				return;
+			}
+			$images->add_image(
+				array(
+					'url'    => $image['url'],
+					'width'  => $image['width'],
+					'height' => $image['height'],
+					'alt'    => $image['alt'],
+				)
+			);
+		},
+		5
+	);
+}
 
 add_filter(
 	'rank_math/frontend/robots',

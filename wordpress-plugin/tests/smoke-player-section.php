@@ -32,7 +32,9 @@ $GLOBALS['query']['sc_section'] = 'stats';
 $GLOBALS['http_body'] =
 	'<div class="scp" data-scp-root="1"></div>' .
 	'<script type="application/json" class="scp-page-data">' .
-	'{"title":"Josh Allen Stats 2026: Fantasy Points, Passing & Rushing Stats","description":"Josh Allen 2026 stats: QB season totals."}' .
+	'{"title":"Josh Allen Stats 2026: Fantasy Points, Passing & Rushing Stats","description":"Josh Allen 2026 stats: QB season totals.",' .
+	'"modified":"2026-10-19",' .
+	'"image":{"url":"https://news.example.com/news-image/player/4984/0123abcd/f350.webp","width":350,"height":254,"alt":"Josh Allen headshot"}}' .
 	'</script>';
 
 $profile = 'https://example.com/p/502/';
@@ -67,6 +69,37 @@ is(
 	true,
 	'the island is stripped from what is printed'
 );
+
+echo "\nthe page names his headshot as its picture\n";
+
+$image = statchasers_player_share_image();
+is( $image['url'] ?? '', 'https://news.example.com/news-image/player/4984/0123abcd/f350.webp', 'the island\'s image is read' );
+is( array( $image['width'], $image['height'], $image['alt'] ), array( 350, 254, 'Josh Allen headshot' ), 'with its pixels and alt' );
+is( statchasers_player_image_from_island( array( 'url' => 'https://evil.example/x.png', 'width' => 1, 'height' => 1 ) ), null, 'an image off the image route is refused' );
+is( statchasers_player_image_from_island( array( 'url' => 'https://news.example.com/news-image/player/1/a/f350.webp', 'width' => 0, 'height' => 254 ) ), null, 'and one without pixels' );
+
+$added = array();
+foreach ( array( 'facebook', 'twitter' ) as $network ) {
+	$sink = new class( $added ) {
+		public $seen = array();
+		public function __construct( &$seen ) { $this->seen = &$seen; }
+		public function add_image( $image ) { $this->seen[] = $image; }
+	};
+	foreach ( (array) ( $GLOBALS['hooks'][ "rank_math/opengraph/{$network}/add_images" ] ?? array() ) as $fn ) {
+		$fn( $sink );
+	}
+}
+is( count( $added ), 2, 'og:image and twitter:image are handed to Rank Math' );
+is( $added[0]['url'] ?? '', 'https://news.example.com/news-image/player/4984/0123abcd/f350.webp', 'as the headshot' );
+is( array( $added[0]['width'] ?? 0, $added[0]['height'] ?? 0, $added[0]['alt'] ?? '' ), array( 350, 254, 'Josh Allen headshot' ), 'with its pixels and alt' );
+
+$graph = apply_filters( 'rank_math/json_ld', array( 'breadcrumb' => array( '@type' => 'BreadcrumbList' ) ) );
+$page  = $graph['statchasersPlayerPage'] ?? array();
+is( $page['@type'] ?? '', 'WebPage', 'the section gets a page node' );
+is( $page['dateModified'] ?? '', '2026-10-19', 'dated from the island' );
+is( $page['primaryImageOfPage']['@type'] ?? '', 'ImageObject', 'and the headshot as its primaryImageOfPage' );
+is( $page['primaryImageOfPage']['url'] ?? '', 'https://news.example.com/news-image/player/4984/0123abcd/f350.webp', 'at its public address' );
+is( array( $page['primaryImageOfPage']['width'] ?? 0, $page['primaryImageOfPage']['height'] ?? 0, $page['primaryImageOfPage']['caption'] ?? '' ), array( 350, 254, 'Josh Allen headshot' ), 'with its pixels and caption' );
 
 echo "\nthe sitemap lists each section once, and never a redirect\n";
 
