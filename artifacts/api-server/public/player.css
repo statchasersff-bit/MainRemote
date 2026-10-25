@@ -659,7 +659,8 @@ button.scp-search-opt {
 /* ---- identity ---- */
 
 .scp .scp-pid {
-  /* The name is sized against this column's width; see .scp-phead-name. */
+  /* The spec row's container (the query below). The name's own container is
+     the heading, so this is a separate box with no bearing on the name. */
   container-type: inline-size;
   display: flex;
   flex-direction: column;
@@ -716,6 +717,12 @@ button.scp-search-opt {
 
 /* Two classes, so a theme's `h1 { … }` and `.entry-content h1` both lose. */
 .scp .scp-phead-h1 {
+  /* The name is sized against this heading's width; see .scp-phead-name. It
+     is the container rather than .scp-pid because on a phone the identity
+     column has no box of its own (display: contents, below) and a box with
+     no size cannot answer a container query; here the two are the same
+     width at every tier. */
+  container-type: inline-size;
   margin: 10px 0 0;
   padding: 0;
   color: var(--scp-ph-ink);
@@ -775,6 +782,23 @@ button.scp-search-opt {
 .scp .scp-pspec > div:first-child {
   padding-left: 0;
   border-left: 0;
+}
+
+/* Two by two once the column is too narrow for four cells in a row: the
+   tablet tier hands the identity column the board's width back, but at
+   ~700px a "2025 R7, #245" draft cell still runs out of it. Asked of the
+   column, not the window, because that is what the row has to fit. */
+@container (max-width: 500px) {
+  .scp .scp-pspec {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, max-content);
+    row-gap: 12px;
+  }
+
+  .scp .scp-pspec > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
 .scp .scp-pspec dt {
@@ -869,9 +893,17 @@ button.scp-search-opt {
 }
 
 /* The chip is its own flex item, so when it wraps it lines up flush left
-   instead of carrying a margin onto the new line. */
+   instead of carrying a margin onto the new line.
+
+   The basis is deliberately short of the line's full width: a flex line
+   breaks on the items' hypothetical sizes, so at its natural width this
+   paragraph would push the buttons onto their own row as soon as the two no
+   longer fit side by side. At 180px it keeps its row and wraps its own words
+   (the chip first) while the buttons stay on the right; the buttons only drop
+   once 180px plus their own width is more than the strip. */
 .scp .scp-pstrip-mu {
   display: flex;
+  flex: 1 1 180px;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
@@ -882,6 +914,10 @@ button.scp-search-opt {
 .scp .scp-pstrip-mu strong {
   color: var(--scp-ph-ink);
   font-weight: 700;
+}
+
+.scp .scp-pstrip-when {
+  white-space: nowrap;
 }
 
 .scp .scp-mchip {
@@ -913,7 +949,9 @@ button.scp-search-opt {
 
 .scp .scp-pstrip-acts {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -999,38 +1037,96 @@ button.scp-search-opt {
     font-size: 150px;
   }
 
+  /* Under the identity, but not across the whole card: three 34px numbers
+     in 300px cells read as a layout gap, not a scoreboard. Centered at the
+     width the desktop board would have had with room to spare. */
   .scp .scp-pboard-wrap {
     grid-column: 1 / -1;
+    width: calc(100% - 40px);
     min-width: 0;
-    margin: 0 20px 20px;
+    max-width: 560px;
+    margin: 0 auto 20px;
   }
 }
 
+/*
+ * Phone: the well becomes a column beside the tags and the name, the spec
+ * row runs under both. The identity column's box goes away (display:
+ * contents) so its three children can sit in the grid themselves: tags and
+ * heading in the second column, the two rows summing to the well's height so
+ * the pair is centered beside the photo; the spec row across the full width
+ * below. Same card, same zones, ~170px shorter than stacking the well on top.
+ */
 @media (max-width: 640px) {
   .scp .scp-phead-main {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 124px minmax(0, 1fr);
+    column-gap: 14px;
   }
 
   .scp .scp-pwell {
-    min-height: 180px;
-    clip-path: none;
+    grid-column: 1;
+    grid-row: 1 / 3;
+    min-height: 150px;
   }
 
   .scp .scp-pwell-img,
   .scp .scp-pwell-sil {
-    left: 50%;
-    width: 150px;
-    transform: translateX(-50%);
+    left: 0;
+    width: 108px;
+  }
+
+  /* Clear of the diagonal: the well's right edge runs from 124px at the top
+     to 104px at the floor, and the figure stands at 76px tall from 4px down. */
+  .scp .scp-pwell-num {
+    right: 16px;
+    top: 4px;
+    font-size: 76px;
+    -webkit-text-stroke-width: 1.5px;
   }
 
   .scp .scp-pid {
-    padding: 20px 20px 16px;
+    display: contents;
+  }
+
+  .scp .scp-ptags {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    padding: 14px 16px 0 0;
+  }
+
+  .scp .scp-phead-h1 {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    margin: 8px 0 0;
+    padding: 0 16px 14px 0;
+  }
+
+  .scp .scp-phead-name {
+    font-size: max(24px, min(clamp(26px, 8vw, 34px), calc(100cqi / var(--scp-word-em, 1))));
+  }
+
+  /* A hyphenated surname may break at its hyphen here, where the column is
+     ~165px on the narrowest phones and "Croskey-Merritt" at the 24px floor
+     is wider than that. Nothing else in a word can break. */
+  .scp .scp-phead-word {
+    white-space: normal;
+  }
+
+  .scp .scp-phead-kind {
+    margin-top: 6px;
+    font-size: 14px;
   }
 
   .scp .scp-pspec {
+    grid-column: 1 / -1;
+    grid-row: 3;
     grid-auto-flow: row;
     grid-template-columns: 1fr 1fr;
     gap: 12px 0;
+    margin: 0;
+    padding: 14px 16px 0;
   }
 
   .scp .scp-pspec > div,
@@ -1040,7 +1136,11 @@ button.scp-search-opt {
   }
 
   .scp .scp-pboard-wrap {
-    margin: 0 16px 16px;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    width: auto;
+    max-width: none;
+    margin: 16px;
   }
 
   .scp .scp-pboard-stats dd {

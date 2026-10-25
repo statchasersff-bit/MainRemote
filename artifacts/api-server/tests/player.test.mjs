@@ -279,7 +279,7 @@ describe("player page content", () => {
   test("the strip's buttons say where they go and tag the tab", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const redraft = doc.querySelector(".scp-pbtn--line");
-    assert.equal(redraft.textContent.trim(), "Rest-of-season value in Redraft Command");
+    assert.equal(redraft.textContent.trim(), "ROS Value in Fantasy");
     assert.ok(redraft.getAttribute("href").endsWith(`?player=${fixture.slug}`));
     assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-gamelog");
     const start = doc.querySelector(".scp-pbtn--dark");
