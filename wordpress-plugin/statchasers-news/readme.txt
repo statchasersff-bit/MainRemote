@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.41
+Stable tag: 1.10.42
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.42 =
+* Player pages name their picture. Every player page - the profile and its six sections - now hands Rank Math the player's headshot as og:image and twitter:image (with width, height and alt), and the page's ProfilePage/WebPage node carries it as primaryImageOfPage; the hub's Person node carries it as image. Before this no player page declared an image at all (no featured image, no og:image, a Person without a picture), so Google chose one from the page for its result thumbnail - and the page is full of club crests that change weekly. On 2026-10-24 Kendrick Bourne, a Cardinal, was showing in results with a Browns helmet. The headshot arrives in the fragment's page-data island as `image`, checked for shape before use; a player Sleeper has no photo of declares none.
 
 = 1.10.41 =
 * Asset version: when the API does not answer /embed/assets.json (a freshly published deployment is at its slowest in its first minutes), the stylesheets and bundles are enqueued with the last hash it did answer with - which the edge already holds - instead of the plugin's own version number, and the miss is cached for one minute rather than fifteen. The plugin constant is now only the fallback before the API has ever answered. On 2026-10-21 the old fallback sent every browser to the cold origin for a stylesheet URL no cache had seen, and pages came up unstyled for twelve minutes after the publish.
