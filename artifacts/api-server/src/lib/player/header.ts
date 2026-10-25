@@ -410,8 +410,8 @@ function renderPhotoWell(data: PlayerPageData): string {
     ? `<span class="scp-pwell-num" aria-hidden="true">${escapeHtml(String(player.number))}</span>`
     : "";
   // The full figure at its own 350x254 ratio, drawn 200px wide (160 on a
-  // phone): the f200 derivative for 1x screens and the f350 original size for
-  // 2x, versioned and WebP (headshot-html.ts). Still the LCP candidate, so
+  // tablet, 108 on a phone): the f200 derivative for 1x screens and the f350
+  // original size for 2x, versioned and WebP (headshot-html.ts). Still the LCP candidate, so
   // eager and at high priority. Both of those are spelled out because WP
   // Rocket's LazyLoad rewrote this tag on the live site (2026-10-08): it
   // swapped the src for a blank SVG and parked the real URLs in data-lazy-*,
@@ -427,7 +427,7 @@ function renderPhotoWell(data: PlayerPageData): string {
       className: "scp-pwell-img",
       alt: `${player.name} headshot`,
       variants: ["f200", "f350"],
-      sizes: "(max-width: 640px) 160px, 200px",
+      sizes: "(max-width: 640px) 108px, (max-width: 1020px) 160px, 200px",
       width: 350,
       height: 254,
       loading: "eager",
@@ -568,11 +568,15 @@ export function renderHero(
       const { game, bye } = next;
       const opp = game.opponent?.nickname ?? game.opponentName;
       const fixture = `Week ${game.week} ${game.homeAway === "away" ? "at" : "vs."} ${opp}`;
+      // The kickoff is one unbreakable run: beside the buttons in a narrow
+      // strip the line wraps, and "1:00 PM" on one line with "ET" alone on
+      // the next is the break it must not take.
       const when = headerKickoff(game);
+      const whenHtml = when ? `, <span class="scp-pstrip-when">${escapeHtml(when)}</span>` : "";
       const text = bye !== null
         ? `<strong>${escapeHtml(`Week ${bye}: bye.`)}</strong>` +
-          escapeHtml(` Next game ${fixture}${when ? `, ${when}` : ""}`)
-        : `<strong>${escapeHtml(fixture)}</strong>${when ? escapeHtml(`, ${when}`) : ""}`;
+          escapeHtml(` Next game ${fixture}`) + whenHtml
+        : `<strong>${escapeHtml(fixture)}</strong>${whenHtml}`;
       const band = game.matchup ? CHIP_WORD[matchupBand(game.matchup.rank)] : null;
       const chip =
         band && game.matchup
@@ -607,7 +611,7 @@ export function renderHero(
       `<a class="scp-pbtn scp-pbtn--line"` +
       ` href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
       ` data-cta="redraft-command-header-${cta}" data-scp-cta="redraft-command-header">` +
-      `Rest-of-season value in Redraft Command</a>`;
+      `ROS Value in Fantasy</a>`;
 
     strip =
       `<div class="scp-pstrip">` +

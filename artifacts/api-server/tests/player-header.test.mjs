@@ -124,7 +124,7 @@ describe("player header", () => {
     const [start, redraft] = h.querySelectorAll(".scp-pbtn");
     assert.equal(text(start), "Should I start Brissett in Week 4?");
     assert.equal(start.getAttribute("data-cta"), "startsit-header-overview");
-    assert.equal(text(redraft), "Rest-of-season value in Redraft Command");
+    assert.equal(text(redraft), "ROS Value in Fantasy");
     assert.equal(redraft.getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
     assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-overview");
 
