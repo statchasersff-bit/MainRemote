@@ -1,11 +1,20 @@
 /**
- * The Stats tab's Efficiency ladders: five per-play rates for each unit, with
- * league ranks, read from `data/team/efficiency_<season>.json`.
+ * The Stats tab's Efficiency ladders: the per-play rates for each unit, with
+ * league ranks, read from `data/team/efficiency_<season>.json`, and the Pass
+ * Protection / Pass Rush ladders beside them.
  *
  * scripts/team/buildEfficiency.mjs builds that file from play-by-play; its
  * header defines every rate and the ranking rule. Nothing is computed here
  * beyond formatting: a rate the builder could not measure is null and its row
  * is left out, and a season with no file renders no ladder at all.
+ *
+ * Every row on these four ladders comes from that one file, so a ladder is
+ * never two weeks at once. Until 2026-10-26 the yardage rows (Yds/Play,
+ * Yds/Pass Att, Yds/Carry, Passer Rtg) and the sack counts were read live
+ * from the stats provider, which is a week ahead of the file from Sunday
+ * until the next build: one ladder, one "through Week N" caption, two weeks
+ * of numbers. The builder now derives them from the same plays with the
+ * box-score definitions, so they still match the official totals.
  *
  * The rows come out as StatRow so the Offense and Defense ladders' renderer
  * draws them unchanged - same label column, same percentile track, same rank
@@ -15,7 +24,7 @@
 import fs from "node:fs";
 import { dataPath } from "../data-dir";
 import { readDataJson } from "./read-json";
-import { ordinal, type StatRow } from "./stats";
+import { ordinal, type Side, type StatRow } from "./stats";
 
 export interface EfficiencyMetric {
   value: number;
@@ -43,10 +52,29 @@ export interface EfficiencySide {
   epaVsFourMan?: EfficiencyMetric | null;
   /** Seconds. Offense: its passers. Defense: the passers it faced. */
   timeToThrow?: EfficiencyMetric | null;
+  /**
+   * The yardage rows, box-score definitions (kneels, spikes and scrambles
+   * counted as a box score counts them). Absent on a file built before
+   * 2026-10-26.
+   */
+  yardsPerPlay?: EfficiencyMetric | null;
+  yardsPerPassAttempt?: EfficiencyMetric | null;
+  yardsPerCarry?: EfficiencyMetric | null;
+  passerRating?: EfficiencyMetric | null;
+  /** A count: the offense's sacks taken, the defense's sacks made. */
+  sacks?: EfficiencyMetric | null;
 }
 
 export interface EfficiencyTeam {
   games: number;
+  /** The weeks counted, ascending. Absent on a file built before 2026-10-26. */
+  weeks?: number[];
+  /**
+   * The box-score sheet the rest of the Stats tab reads (lib/team/stats.ts):
+   * what the club did and what opponents did against it. Absent on a file
+   * built before 2026-10-26, when the tab falls back to the stats provider.
+   */
+  box?: { own: Side; opponent: Side };
   offense: EfficiencySide;
   defense: EfficiencySide;
 }
@@ -82,6 +110,11 @@ type MetricKey = keyof Pick<
   | "epaVsBlitz"
   | "epaVsFourMan"
   | "timeToThrow"
+  | "yardsPerPlay"
+  | "yardsPerPassAttempt"
+  | "yardsPerCarry"
+  | "passerRating"
+  | "sacks"
 >;
 
 interface MetricDef {
@@ -95,11 +128,23 @@ interface MetricDef {
    * most to least and left untinted, the Volume tiles' rule.
    */
   volume?: boolean;
+  /**
+   * True where less is better for the offense and more for the defense
+   * (sacks): the tint direction runs the other way from every rate.
+   */
+  inverted?: boolean;
+  /** True on a count that grows with games played rather than a rate. */
+  cumulative?: boolean;
+  /** The offense's label where it differs ("Sacks Allowed"). */
+  offenseLabel?: string;
 }
 
 const signed = (v: number): string => `${v > 0 ? "+" : v < 0 ? "-" : ""}${Math.abs(v).toFixed(2)}`;
 const percent = (v: number): string => `${v.toFixed(1)}%`;
 const seconds = (v: number): string => `${v.toFixed(2)}s`;
+const two = (v: number): string => v.toFixed(2);
+const one = (v: number): string => v.toFixed(1);
+const whole = (v: number): string => String(Math.round(v));
 
 const METRICS: MetricDef[] = [
   {
@@ -137,6 +182,38 @@ const METRICS: MetricDef[] = [
         ? "Share of plays allowed gaining 15+ yards on a dropback or 10+ on a run"
         : "Share of plays gaining 15+ yards on a dropback or 10+ on a run",
     format: percent,
+  },
+  // The same idea in yards, the labels and descriptions the stats provider's
+  // rows carried before 2026-10-26.
+  {
+    key: "yardsPerPlay",
+    label: "Yds/Play",
+    describe: (u) =>
+      u === "defense" ? "Net yards allowed per play" : "Net yards gained per offensive play",
+    format: two,
+  },
+  {
+    key: "yardsPerPassAttempt",
+    label: "Yds/Pass Att",
+    describe: (u) =>
+      u === "defense" ? "Yards allowed per pass attempt" : "Yards gained per pass attempt",
+    format: two,
+  },
+  {
+    key: "yardsPerCarry",
+    label: "Yds/Carry",
+    describe: (u) =>
+      u === "defense" ? "Yards allowed per rushing attempt" : "Yards gained per rushing attempt",
+    format: two,
+  },
+  {
+    key: "passerRating",
+    label: "Passer Rtg",
+    describe: (u) =>
+      u === "defense"
+        ? "Passer rating allowed to opposing quarterbacks"
+        : "Passer rating produced by this offense",
+    format: one,
   },
 ];
 
@@ -180,6 +257,16 @@ const PASS_RUSH: MetricDef[] = [
     format: seconds,
     volume: true,
   },
+  {
+    key: "sacks",
+    label: "Sacks",
+    offenseLabel: "Sacks Allowed",
+    describe: (u) =>
+      u === "defense" ? "Sacks recorded by this defense" : "Sacks given up by this offense",
+    format: whole,
+    inverted: true,
+    cumulative: true,
+  },
 ];
 
 function rowsFor(
@@ -192,16 +279,17 @@ function rowsFor(
   for (const def of defs) {
     const m = side[def.key];
     if (!m) continue;
+    const high = unit === "offense" ? !def.inverted : !!def.inverted;
     rows.push({
       key: `eff-${unit === "offense" ? "off" : "def"}-${def.key}`,
-      label: def.label,
+      label: unit === "offense" && def.offenseLabel ? def.offenseLabel : def.label,
       description: def.describe(unit),
       value: def.format(m.value),
       rank: m.rank,
-      cumulative: false,
+      cumulative: !!def.cumulative,
       rankLabel: `${m.tied ? "T-" : ""}${ordinal(m.rank)}`,
       previousRank: null,
-      direction: def.volume ? "volume" : unit === "offense" ? "high" : "low",
+      direction: def.volume ? "volume" : high ? "high" : "low",
     });
   }
   return rows;

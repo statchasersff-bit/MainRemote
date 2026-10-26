@@ -905,6 +905,24 @@ function statLadder(
   );
 }
 
+/**
+ * The week the stats provider's numbers have reached: the week of the team's
+ * Nth regular-season game, N being the games the provider says it has played.
+ * Read off the schedule rather than the calendar because the document is
+ * cumulative and moves the moment a game ends, bye weeks included. Null when
+ * there is no schedule or no games yet, and the caption says nothing.
+ */
+function statsThroughWeek(data: TeamPageData): number | null {
+  const played = data.stats?.gamesPlayed ?? 0;
+  // A prior season's numbers (the Week 1 fallback) under this season's
+  // schedule would name the wrong week: say nothing instead.
+  if (played < 1 || !data.schedule || data.schedule.season !== data.stats?.season) return null;
+  const games = (data.schedule?.games ?? [])
+    .filter((game) => game.seasonType === "regular")
+    .sort((a, b) => a.week - b.week);
+  return games[played - 1]?.week ?? null;
+}
+
 /** The rows whose keys are listed, in the listed order; absent keys skipped. */
 function pickRows(rows: StatRow[], keys: readonly string[]): StatRow[] {
   const byKey = new Map(rows.map((row) => [row.key, row]));
@@ -1313,50 +1331,66 @@ function renderTeamStats(
   const stats = data.stats;
   if (!stats) return "";
 
-  // The Efficiency ladders (mak, 2026-10-20): the same five per-play rates for
-  // each unit, under its volume ladder. Built from play-by-play by
-  // scripts/team/buildEfficiency.mjs rather than from the stats provider, so
-  // they carry their own "through Week N" and can trail the ladders above by a
-  // few days until the feed posts the week.
+  // Two sources feed this tab, on two clocks, and no ladder may mix them
+  // (mak, 2026-10-26: the Bears' Defense Efficiency printed Week 6 EPA rows
+  // over Week 7 yardage rows under one "through Week 6" caption).
+  //
+  //   - The stats provider's document is live and cumulative: the moment a
+  //     game ends its numbers include it. Production, Turnovers and Snaps
+  //     read it.
+  //   - data/team/efficiency_<season>.json is built from play-by-play by
+  //     scripts/team/buildEfficiency.mjs and moves when the builder runs.
+  //     Efficiency, Pass Protection and Pass Rush read it, and ONLY it: the
+  //     yardage rows and sack counts that used to come from the provider now
+  //     come from the same file, so those four ladders are one week each.
+  //
+  // Each ladder's caption names the week its own source has reached, so the
+  // two clocks are visible when they differ, and checkTeamPages.mjs fails the
+  // daily check when the file trails the games a club has played. The
+  // provider's rows stand in on the play-by-play ladders only when there is
+  // no file for the season at all (an all-provider ladder is one source too).
   const effDoc = getEfficiencyDoc(stats.season);
   const eff = effDoc?.teams[data.team.abbreviation] ?? null;
-  const effThrough = effDoc?.throughWeek ? ` · through Week ${effDoc.throughWeek}` : "";
+  // This club's own last counted week, not the file's: on a bye, or with its
+  // Monday game still to come, the club is a week behind the league.
+  const effWeek = eff?.weeks?.length ? Math.max(...eff.weeks) : (effDoc?.throughWeek ?? 0);
+  const effThrough = effWeek ? ` · through Week ${effWeek}` : "";
+  // Since the same day the whole tab reads that one file when the season has
+  // it (stats.source === "file"), so every ladder carries the same week by
+  // construction; the schedule-derived week is for a season the provider is
+  // still serving.
+  const liveWeek = stats.source === "file" && effWeek ? effWeek : statsThroughWeek(data);
+  const liveThrough = liveWeek ? ` · through Week ${liveWeek}` : "";
   // Production: the volume ladder pair, same six rows each side.
   const ladders =
     statLadder(
       "offense",
       "Offense",
-      "What they did",
+      `What they did${liveThrough}`,
       pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
     ) +
     statLadder(
       "defense",
       "Defense",
-      "What they allowed",
+      `What they allowed${liveThrough}`,
       pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
     );
 
-  // Efficiency: the EPA rows (when the play-by-play doc is there), then the
-  // per-play rates from the stats feed, which are the same idea in yards.
+  // Efficiency: the EPA rows, then the same idea in yards, all from the one
+  // play-by-play file.
   const efficiency =
     statLadder(
       "offense",
       "Offense Efficiency",
-      `Per play, what they did${effThrough}`,
-      [
-        ...(eff ? efficiencyRows(eff, "offense") : []),
-        ...pickRows(stats.offense, prefixed("off", RATE_KEYS)),
-      ],
+      `Per play, what they did${eff ? effThrough : liveThrough}`,
+      eff ? efficiencyRows(eff, "offense") : pickRows(stats.offense, prefixed("off", RATE_KEYS)),
       "efficiency",
     ) +
     statLadder(
       "defense",
       "Defense Efficiency",
-      `Per play, what they allowed${effThrough}`,
-      [
-        ...(eff ? efficiencyRows(eff, "defense") : []),
-        ...pickRows(stats.defense, prefixed("def", RATE_KEYS)),
-      ],
+      `Per play, what they allowed${eff ? effThrough : liveThrough}`,
+      eff ? efficiencyRows(eff, "defense") : pickRows(stats.defense, prefixed("def", RATE_KEYS)),
       "efficiency",
     );
 
@@ -1368,21 +1402,15 @@ function renderTeamStats(
     statLadder(
       "offense",
       "Pass Protection",
-      `Under the rush, what they faced${effThrough}`,
-      [
-        ...(eff ? passRushRows(eff, "offense") : []),
-        ...pickRows(stats.situational, ["sacks-allowed"]),
-      ],
+      `Under the rush, what they faced${eff ? effThrough : liveThrough}`,
+      eff ? passRushRows(eff, "offense") : pickRows(stats.situational, ["sacks-allowed"]),
       "passrush",
     ) +
     statLadder(
       "defense",
       "Pass Rush",
-      `The rush they sent, and what it allowed${effThrough}`,
-      [
-        ...(eff ? passRushRows(eff, "defense") : []),
-        ...pickRows(stats.situational, ["sacks-made"]),
-      ],
+      `The rush they sent, and what it allowed${eff ? effThrough : liveThrough}`,
+      eff ? passRushRows(eff, "defense") : pickRows(stats.situational, ["sacks-made"]),
       "passrush",
     );
 
@@ -1391,7 +1419,7 @@ function renderTeamStats(
   const possession = statLadder(
     "team",
     "Turnovers, Downs & Penalties",
-    "Turnover margin first; takeaways and giveaways are its two halves",
+    `Turnover margin first; takeaways and giveaways are its two halves${liveThrough}`,
     pickRows(stats.situational, POSSESSION_KEYS),
     "possession",
     { wide: true, summaryKey: "turnover-margin" },
@@ -1401,7 +1429,7 @@ function renderTeamStats(
   const pace = statLadder(
     "team",
     "Snaps, Attempts & Scores",
-    "Ranked most to least, with no better end",
+    `Ranked most to least, with no better end${liveThrough}`,
     pickRows(stats.volume, PACE_KEYS),
     "pace",
     { wide: true },
@@ -1517,7 +1545,7 @@ function renderTeamStats(
   // an appendix to it rather than as its last block. One of them is the history
   // comparison, so they could never have preceded the history above either way.
   const questions = faqList(
-    statsFaq({ team: data.team, stats, currentSeason: data.state.season }),
+    statsFaq({ team: data.team, stats, currentSeason: data.state.season, efficiency: eff }),
     faq,
     "h3",
   );

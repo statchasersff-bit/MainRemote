@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-10-20T15:22:02.572Z",
+  "generated_at": "2026-10-26T18:02:04.386Z",
   "moves": [],
   "players": {
     "1": {
@@ -316,7 +316,10 @@
       "slug": "robert-meachem"
     },
     "232": {
-      "slug": "frank-gore-232"
+      "slug": "frank-gore",
+      "previous": [
+        "frank-gore-232"
+      ]
     },
     "233": {
       "slug": "matt-moore"
@@ -2326,7 +2329,10 @@
       "slug": "ldamian-washington"
     },
     "2078": {
-      "slug": "odell-beckham"
+      "slug": "odell-beckham-jr",
+      "previous": [
+        "odell-beckham"
+      ]
     },
     "2082": {
       "slug": "xavier-grimble"
@@ -2605,7 +2611,10 @@
       "slug": "breshad-perriman"
     },
     "2334": {
-      "slug": "phillip-dorsett"
+      "slug": "phillip-dorsett-ii",
+      "previous": [
+        "phillip-dorsett"
+      ]
     },
     "2341": {
       "slug": "tj-yeldon"
@@ -4423,7 +4432,10 @@
       "slug": "corey-davis"
     },
     "4037": {
-      "slug": "chris-godwin"
+      "slug": "chris-godwin-jr",
+      "previous": [
+        "chris-godwin"
+      ]
     },
     "4038": {
       "slug": "john-ross"
@@ -4588,7 +4600,10 @@
       "slug": "jamal-agnew"
     },
     "4199": {
-      "slug": "aaron-jones"
+      "slug": "aaron-jones-sr",
+      "previous": [
+        "aaron-jones"
+      ]
     },
     "4200": {
       "slug": "deangelo-yancey"
@@ -5020,7 +5035,10 @@
       "slug": "itavius-mathers"
     },
     "4634": {
-      "slug": "kenneth-walker-4634"
+      "slug": "kenneth-walker",
+      "previous": [
+        "kenneth-walker-4634"
+      ]
     },
     "4635": {
       "slug": "justin-davis"
@@ -6349,7 +6367,10 @@
       "slug": "daniel-jones"
     },
     "5872": {
-      "slug": "deebo-samuel"
+      "slug": "deebo-samuel-sr",
+      "previous": [
+        "deebo-samuel"
+      ]
     },
     "5873": {
       "slug": "riley-ridley"
@@ -6397,7 +6418,10 @@
       "slug": "darrell-henderson"
     },
     "5917": {
-      "slug": "mecole-hardman"
+      "slug": "mecole-hardman-jr",
+      "previous": [
+        "mecole-hardman"
+      ]
     },
     "5918": {
       "slug": "rodney-anderson"
@@ -6493,7 +6517,10 @@
       "slug": "ryquell-armstead"
     },
     "6011": {
-      "slug": "gardner-minshew"
+      "slug": "gardner-minshew-ii",
+      "previous": [
+        "gardner-minshew"
+      ]
     },
     "6012": {
       "slug": "travis-homer"
@@ -6637,7 +6664,10 @@
       "slug": "dexter-williams"
     },
     "6154": {
-      "slug": "david-sills"
+      "slug": "david-sills-v",
+      "previous": [
+        "david-sills"
+      ]
     },
     "6155": {
       "slug": "jaylen-smith"
@@ -7285,7 +7315,10 @@
       "slug": "laviska-shenault"
     },
     "6819": {
-      "slug": "michael-pittman"
+      "slug": "michael-pittman-jr",
+      "previous": [
+        "michael-pittman"
+      ]
     },
     "6820": {
       "slug": "clyde-edwards-helaire"
@@ -8104,7 +8137,10 @@
       "slug": "cornell-powell"
     },
     "7543": {
-      "slug": "travis-etienne"
+      "slug": "travis-etienne-jr",
+      "previous": [
+        "travis-etienne"
+      ]
     },
     "7544": {
       "slug": "player-invalid-7544"
@@ -8134,7 +8170,10 @@
       "slug": "blake-proehl"
     },
     "7553": {
-      "slug": "kyle-pitts"
+      "slug": "kyle-pitts-sr",
+      "previous": [
+        "kyle-pitts"
+      ]
     },
     "7554": {
       "slug": "tre-mckitty"
@@ -8710,7 +8749,10 @@
       "slug": "jalen-wydermyer"
     },
     "8116": {
-      "slug": "pierre-strong"
+      "slug": "pierre-strong-jr",
+      "previous": [
+        "pierre-strong"
+      ]
     },
     "8117": {
       "slug": "jalen-tolbert"
@@ -8737,7 +8779,10 @@
       "slug": "player-invalid-8124"
     },
     "8125": {
-      "slug": "calvin-austin"
+      "slug": "calvin-austin-iii",
+      "previous": [
+        "calvin-austin"
+      ]
     },
     "8126": {
       "slug": "wandale-robinson"
@@ -8776,7 +8821,10 @@
       "slug": "george-pickens"
     },
     "8138": {
-      "slug": "james-cook"
+      "slug": "james-cook-iii",
+      "previous": [
+        "james-cook"
+      ]
     },
     "8139": {
       "slug": "zamir-white"
@@ -8803,7 +8851,10 @@
       "slug": "garrett-wilson"
     },
     "8147": {
-      "slug": "john-metchie"
+      "slug": "john-metchie-iii",
+      "previous": [
+        "john-metchie"
+      ]
     },
     "8148": {
       "slug": "jameson-williams"
@@ -8815,7 +8866,7 @@
       "slug": "kyren-williams"
     },
     "8151": {
-      "slug": "kenneth-walker",
+      "slug": "kenneth-walker-iii",
       "previous": [
         "kenneth-walker-8151"
       ]
@@ -8827,7 +8878,10 @@
       "slug": "isaiah-spiller"
     },
     "8154": {
-      "slug": "brian-robinson"
+      "slug": "brian-robinson-jr",
+      "previous": [
+        "brian-robinson"
+      ]
     },
     "8155": {
       "slug": "breece-hall"
@@ -9031,7 +9085,10 @@
       "slug": "josh-johnson-8222"
     },
     "8223": {
-      "slug": "velus-jones"
+      "slug": "velus-jones-jr",
+      "previous": [
+        "velus-jones"
+      ]
     },
     "8224": {
       "slug": "cole-kelley"
@@ -9607,7 +9664,10 @@
       "slug": "bryce-young"
     },
     "9229": {
-      "slug": "anthony-richardson"
+      "slug": "anthony-richardson-sr",
+      "previous": [
+        "anthony-richardson"
+      ]
     },
     "9230": {
       "slug": "tanner-mckee"
@@ -9664,7 +9724,10 @@
       "slug": "puka-nacua"
     },
     "9494": {
-      "slug": "marvin-mims"
+      "slug": "marvin-mims-jr",
+      "previous": [
+        "marvin-mims"
+      ]
     },
     "9495": {
       "slug": "rakim-jarrett"
@@ -9778,7 +9841,10 @@
       "slug": "xavier-hutchinson"
     },
     "10219": {
-      "slug": "chris-rodriguez"
+      "slug": "chris-rodriguez-jr",
+      "previous": [
+        "chris-rodriguez"
+      ]
     },
     "10220": {
       "slug": "will-mallory"
@@ -9838,7 +9904,10 @@
       "slug": "mohamed-ibrahim"
     },
     "10857": {
-      "slug": "stetson-bennett"
+      "slug": "stetson-bennett-iv",
+      "previous": [
+        "stetson-bennett"
+      ]
     },
     "10858": {
       "slug": "alex-quevedo"
@@ -10039,7 +10108,10 @@
       "slug": "daniel-arias"
     },
     "11186": {
-      "slug": "carlos-washington"
+      "slug": "carlos-washington-jr",
+      "previous": [
+        "carlos-washington"
+      ]
     },
     "11189": {
       "slug": "zay-malone"
@@ -10426,7 +10498,10 @@
       "slug": "sam-hartman"
     },
     "11559": {
-      "slug": "michael-penix"
+      "slug": "michael-penix-jr",
+      "previous": [
+        "michael-penix"
+      ]
     },
     "11560": {
       "slug": "caleb-williams"
@@ -10468,7 +10543,7 @@
       "slug": "player-invalid-11572"
     },
     "11573": {
-      "slug": "frank-gore",
+      "slug": "frank-gore-jr",
       "previous": [
         "frank-gore-11573"
       ]
@@ -10528,7 +10603,10 @@
       "slug": "player-invalid-11591"
     },
     "11592": {
-      "slug": "erick-all"
+      "slug": "erick-all-jr",
+      "previous": [
+        "erick-all"
+      ]
     },
     "11593": {
       "slug": "brevyn-spann-ford"
@@ -10636,7 +10714,10 @@
       "slug": "troy-franklin"
     },
     "11628": {
-      "slug": "marvin-harrison"
+      "slug": "marvin-harrison-jr",
+      "previous": [
+        "marvin-harrison"
+      ]
     },
     "11629": {
       "slug": "devontez-walker"
@@ -10645,7 +10726,10 @@
       "slug": "roman-wilson"
     },
     "11631": {
-      "slug": "brian-thomas"
+      "slug": "brian-thomas-jr",
+      "previous": [
+        "brian-thomas"
+      ]
     },
     "11632": {
       "slug": "malik-nabers"
@@ -10711,7 +10795,10 @@
       "slug": "dante-miller"
     },
     "11655": {
-      "slug": "tyrone-tracy"
+      "slug": "tyrone-tracy-jr",
+      "previous": [
+        "tyrone-tracy"
+      ]
     },
     "11716": {
       "slug": "tip-reiman"
@@ -11362,7 +11449,10 @@
       "slug": "player-invalid-12459"
     },
     "12460": {
-      "slug": "antwane-wells"
+      "slug": "antwane-wells-jr",
+      "previous": [
+        "antwane-wells"
+      ]
     },
     "12461": {
       "slug": "player-invalid-12461"
@@ -11407,7 +11497,10 @@
       "slug": "woody-marks"
     },
     "12475": {
-      "slug": "ricky-white"
+      "slug": "ricky-white-iii",
+      "previous": [
+        "ricky-white"
+      ]
     },
     "12476": {
       "slug": "devin-neal"
@@ -11467,7 +11560,10 @@
       "slug": "kyle-mccord"
     },
     "12495": {
-      "slug": "ollie-gordon"
+      "slug": "ollie-gordon-ii",
+      "previous": [
+        "ollie-gordon"
+      ]
     },
     "12496": {
       "slug": "tai-felton"
@@ -11500,7 +11596,10 @@
       "slug": "jalen-royals"
     },
     "12506": {
-      "slug": "harold-fannin"
+      "slug": "harold-fannin-jr",
+      "previous": [
+        "harold-fannin"
+      ]
     },
     "12507": {
       "slug": "omarion-hampton"
@@ -11536,7 +11635,10 @@
       "slug": "tyler-warren"
     },
     "12519": {
-      "slug": "luther-burden"
+      "slug": "luther-burden-iii",
+      "previous": [
+        "luther-burden"
+      ]
     },
     "12520": {
       "slug": "xavier-restrepo"
@@ -11548,7 +11650,10 @@
       "slug": "cam-ward"
     },
     "12523": {
-      "slug": "jimmy-horn"
+      "slug": "jimmy-horn-jr",
+      "previous": [
+        "jimmy-horn"
+      ]
     },
     "12524": {
       "slug": "shedeur-sanders"
@@ -11599,16 +11704,25 @@
       "slug": "chimere-dike"
     },
     "12541": {
-      "slug": "donte-thornton"
+      "slug": "donte-thornton-jr",
+      "previous": [
+        "donte-thornton"
+      ]
     },
     "12542": {
-      "slug": "efton-chism"
+      "slug": "efton-chism-iii",
+      "previous": [
+        "efton-chism"
+      ]
     },
     "12543": {
       "slug": "tahj-brooks"
     },
     "12544": {
-      "slug": "lequint-allen"
+      "slug": "lequint-allen-jr",
+      "previous": [
+        "lequint-allen"
+      ]
     },
     "12545": {
       "slug": "tyler-shough"
@@ -11668,7 +11782,10 @@
       "slug": "andy-borregales"
     },
     "12715": {
-      "slug": "thomas-fidone"
+      "slug": "thomas-fidone-ii",
+      "previous": [
+        "thomas-fidone"
+      ]
     },
     "12718": {
       "slug": "konata-mumpfield"
@@ -11821,7 +11938,10 @@
       "slug": "nate-noel"
     },
     "12860": {
-      "slug": "theo-wease"
+      "slug": "theo-wease-jr",
+      "previous": [
+        "theo-wease"
+      ]
     },
     "12863": {
       "slug": "andrew-armstrong"
@@ -11842,7 +11962,10 @@
       "slug": "joshua-simon"
     },
     "12884": {
-      "slug": "quincy-skinner"
+      "slug": "quincy-skinner-jr",
+      "previous": [
+        "quincy-skinner"
+      ]
     },
     "12888": {
       "slug": "dalen-cambre"
@@ -11905,7 +12028,10 @@
       "slug": "jackson-meeks"
     },
     "12939": {
-      "slug": "anthony-tyus"
+      "slug": "anthony-tyus-iii",
+      "previous": [
+        "anthony-tyus"
+      ]
     },
     "12940": {
       "slug": "tre-stewart"
@@ -12166,7 +12292,10 @@
       "slug": "keyshawn-smith"
     },
     "13199": {
-      "slug": "montorie-foster"
+      "slug": "montorie-foster-jr",
+      "previous": [
+        "montorie-foster"
+      ]
     },
     "13202": {
       "slug": "dalevon-campbell"
@@ -12271,7 +12400,10 @@
       "slug": "ty-simpson"
     },
     "13276": {
-      "slug": "omar-cooper"
+      "slug": "omar-cooper-jr",
+      "previous": [
+        "omar-cooper"
+      ]
     },
     "13277": {
       "slug": "cj-donaldson"
@@ -12337,7 +12469,10 @@
       "slug": "reggie-virgil"
     },
     "13298": {
-      "slug": "kc-concepcion"
+      "slug": "kc-concepcion-jr",
+      "previous": [
+        "kc-concepcion"
+      ]
     },
     "13299": {
       "slug": "nate-boerkircher"
@@ -12361,7 +12496,10 @@
       "slug": "omega-blake"
     },
     "13305": {
-      "slug": "mike-washington"
+      "slug": "mike-washington-jr",
+      "previous": [
+        "mike-washington"
+      ]
     },
     "13306": {
       "slug": "taylen-green"
@@ -12385,7 +12523,10 @@
       "slug": "josh-kattus"
     },
     "13313": {
-      "slug": "emmanuel-henderson"
+      "slug": "emmanuel-henderson-jr",
+      "previous": [
+        "emmanuel-henderson"
+      ]
     },
     "13314": {
       "slug": "luke-altmyer"
@@ -12394,10 +12535,16 @@
       "slug": "dean-connors"
     },
     "13316": {
-      "slug": "eric-rivers"
+      "slug": "eric-rivers-jr",
+      "previous": [
+        "eric-rivers"
+      ]
     },
     "13317": {
-      "slug": "ted-hurst"
+      "slug": "ted-hurst-iii",
+      "previous": [
+        "ted-hurst"
+      ]
     },
     "13318": {
       "slug": "noah-thomas"
@@ -12460,7 +12607,10 @@
       "slug": "emmett-johnson"
     },
     "13338": {
-      "slug": "kevin-coleman"
+      "slug": "kevin-coleman-jr",
+      "previous": [
+        "kevin-coleman"
+      ]
     },
     "13339": {
       "slug": "davon-booth"
@@ -12469,7 +12619,10 @@
       "slug": "john-michael-gyllenborg"
     },
     "13343": {
-      "slug": "vinny-anthony"
+      "slug": "vinny-anthony-ii",
+      "previous": [
+        "vinny-anthony"
+      ]
     },
     "13344": {
       "slug": "preston-fox"
@@ -12499,7 +12652,10 @@
       "slug": "lincoln-pare"
     },
     "13353": {
-      "slug": "chris-brazzell"
+      "slug": "chris-brazzell-ii",
+      "previous": [
+        "chris-brazzell"
+      ]
     },
     "13354": {
       "slug": "eric-mcalister"
@@ -12574,7 +12730,10 @@
       "slug": "dezhaun-stribling"
     },
     "13418": {
-      "slug": "robert-henry"
+      "slug": "robert-henry-jr",
+      "previous": [
+        "robert-henry"
+      ]
     },
     "13419": {
       "slug": "jaydn-ott"
@@ -12745,7 +12904,10 @@
       "slug": "marcus-burke"
     },
     "13670": {
-      "slug": "harrison-wallace"
+      "slug": "harrison-wallace-iii",
+      "previous": [
+        "harrison-wallace"
+      ]
     },
     "13673": {
       "slug": "trent-battle"
@@ -13057,7 +13219,10 @@
       "slug": "jordan-nubin"
     },
     "14020": {
-      "slug": "dean-patterson"
+      "slug": "dean-patterson-iv",
+      "previous": [
+        "dean-patterson"
+      ]
     },
     "14021": {
       "slug": "kadarius-calloway"
@@ -13242,5 +13407,6 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  }
+  },
+  "migrated_at": "2026-10-26T18:02:05.017Z"
 }

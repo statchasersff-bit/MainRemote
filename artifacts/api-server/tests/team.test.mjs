@@ -2544,6 +2544,131 @@ describe("the Stats heading", () => {
   });
 });
 
+describe("the Stats ladders never mix weeks", () => {
+  /*
+   * Two sources feed the Stats tab on two clocks: the stats provider's
+   * document is live and cumulative, data/team/efficiency_<season>.json moves
+   * when its builder runs. On 2026-10-26 the Bears' Defense Efficiency ladder
+   * printed Week 6 EPA rows over Week 7 yardage rows under one "through Week
+   * 6" caption (mak: "we can't be mixing weeks like this"). Since then every
+   * row on the Efficiency, Pass Protection and Pass Rush ladders comes from
+   * the file, and every ladder's caption names the week its own source has
+   * reached.
+   *
+   * The replayed provider document is from 2026-09-30 and the file is
+   * whatever the last build wrote, so the two sources sit weeks apart here:
+   * exactly the state that used to leak into one ladder.
+   */
+  const ladders = (doc, kind) => [...doc.querySelectorAll(`.sct-ladder[data-kind="${kind}"]`)];
+  const captionWeek = (ladder) => {
+    const caption = ladder.querySelector(".sct-ladder-caption")?.textContent ?? "";
+    const m = caption.match(/through Week (\d+)/);
+    return m ? Number(m[1]) : null;
+  };
+  const cell = (ladder, label) => {
+    for (const li of ladder.querySelectorAll(".sct-stat")) {
+      if (li.querySelector(".sct-stat-label")?.firstChild?.textContent?.trim() === label) {
+        return li.querySelector(".sct-stat-value")?.textContent?.trim() ?? null;
+      }
+    }
+    return null;
+  };
+
+  test("the play-by-play ladders carry the file's week and the file's numbers", async () => {
+    const { doc } = await dom("/team/new-england-patriots/stats/");
+    const heading = doc.querySelector("[data-sct-panel] .sct-h2");
+    const season = heading?.textContent.match(/\b(2\d{3})\b/)?.[1];
+    assert.ok(season, "the Stats panel names its season");
+
+    let file;
+    try {
+      file = JSON.parse(
+        fs.readFileSync(path.join(APP_DIR, "data", "team", `efficiency_${season}.json`), "utf8"),
+      );
+    } catch {
+      // No file for the season: the provider's rows stand in, one source still.
+      return;
+    }
+    const team = file.teams?.ne;
+    assert.ok(team, "the file carries the Patriots");
+
+    const efficiency = ladders(doc, "efficiency");
+    const passRush = ladders(doc, "passrush");
+    assert.equal(efficiency.length, 2, "an Efficiency ladder per unit");
+    assert.equal(passRush.length, 2, "Pass Protection and Pass Rush");
+
+    for (const ladder of [...efficiency, ...passRush]) {
+      assert.equal(
+        captionWeek(ladder),
+        file.throughWeek,
+        `${ladder.querySelector(".sct-ladder-title")?.textContent}: the caption is the file's week`,
+      );
+    }
+
+    // The yardage rows and the sack counts read the FILE, not the provider:
+    // the values on the page are the file's values for this club.
+    const [offEff, defEff] = efficiency;
+    const [protection, rush] = passRush;
+    const fixed = (metric, places) =>
+      metric && typeof metric.value === "number" ? metric.value.toFixed(places) : null;
+    if (team.offense.yardsPerPlay) {
+      assert.equal(cell(offEff, "Yds/Play"), fixed(team.offense.yardsPerPlay, 2));
+      assert.equal(cell(offEff, "Passer Rtg"), fixed(team.offense.passerRating, 1));
+    }
+    if (team.defense.yardsPerPassAttempt) {
+      assert.equal(cell(defEff, "Yds/Pass Att"), fixed(team.defense.yardsPerPassAttempt, 2));
+      assert.equal(cell(defEff, "Yds/Carry"), fixed(team.defense.yardsPerCarry, 2));
+    }
+    if (team.offense.sacks) {
+      assert.equal(cell(protection, "Sacks Allowed"), String(team.offense.sacks.value));
+    }
+    if (team.defense.sacks) {
+      assert.equal(cell(rush, "Sacks"), String(team.defense.sacks.value));
+    }
+  });
+
+  test("every ladder says which week its source has reached", async () => {
+    const { doc } = await dom("/team/new-england-patriots/stats/");
+    const all = [...doc.querySelectorAll(".sct-ladder")];
+    assert.ok(all.length >= 6, `the Stats tab renders its ladders (${all.length})`);
+    for (const ladder of all) {
+      const title = ladder.querySelector(".sct-ladder-title")?.textContent;
+      assert.ok(captionWeek(ladder), `${title}: the caption names a week`);
+    }
+    // Within a bucket the two units agree with each other, whatever the
+    // sources say to one another.
+    for (const kind of ["efficiency", "passrush", ""]) {
+      const weeks = new Set(
+        all
+          .filter((l) => (l.getAttribute("data-kind") ?? "") === kind)
+          .map(captionWeek),
+      );
+      assert.equal(weeks.size, 1, `one week per bucket (${kind || "production"}): ${[...weeks]}`);
+    }
+  });
+
+  /*
+   * Read from the source: the provider's per-play rows must not be dealt onto
+   * the play-by-play ladders beside the file's rows, which is the mix itself.
+   */
+  test("the Efficiency ladders are built from the file alone when it exists", () => {
+    const src = fs.readFileSync(
+      new URL("../src/lib/team-render.ts", import.meta.url),
+      "utf8",
+    );
+    const block = src.slice(src.indexOf('"Offense Efficiency"'), src.indexOf('"Pass Rush"'));
+    assert.ok(block.length > 0, "the Efficiency ladders are rendered");
+    assert.ok(
+      !/\.\.\.pickRows\(stats\.(offense|defense|situational)/.test(block),
+      "no provider rows are spread in beside the file's rows",
+    );
+    assert.ok(
+      /eff \? efficiencyRows\(eff, "offense"\) : pickRows\(/.test(block),
+      "the provider's rows stand in only when there is no file",
+    );
+  });
+});
+
 describe("team section URLs", () => {
   /**
    * The heading each section prints for itself - NOT the H1.

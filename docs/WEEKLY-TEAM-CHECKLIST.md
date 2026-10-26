@@ -11,7 +11,7 @@ About 10 minutes, every **Tuesday** in season (after Monday night, before nflver
 | Coaching tab numbers and prose, all 32 teams | daily, right after Usage | nflverse + `data/team/coaching_staff_2026.json` |
 | Injury history tab and player panel in the Injury tool (weekly reports, play-by-play log, search index) | weekly after Monday night, or daily for practice designations (`node scripts/injury-impact/refresh.mjs`) | nflverse injuries, play-by-play, rosters |
 | Player pages' Injury tab history for this season (timeline, body map, games missed) | right after the line above (`node scripts/player/buildInjuryHistory.mjs`), then commit `data/player/player_injuries.json` | the Injury tool's store (weekly reports, in-game events, reserve-list weeks from the weekly roster) + the game log |
-| Stats tab Efficiency, Pass Protection and Pass Rush ladders (EPA/play, EPA/DB, EPA/rush, success rate, explosive %, blitz %, EPA vs blitz / 4-man, time to throw) | daily, right after Coaching (`node scripts/team/buildEfficiency.mjs 2026`) | nflverse play-by-play, FTN charting, Next Gen passing |
+| **The whole Stats tab** (every ladder: Production, Efficiency, Pass Protection / Pass Rush, Turnovers, Snaps, the history table and the Stats FAQ) | daily, right after Coaching (`node scripts/team/buildEfficiency.mjs 2026`). While the daily chain is off, run it by hand after Monday night and commit `data/team/efficiency_2026.json`. Since 2026-10-26 the tab reads this one file and never the stats provider, so it is one week throughout; until the file is rebuilt the tab simply says the previous week, and the check fails to remind you | nflverse play-by-play, FTN charting, Next Gen passing |
 | Stored schedule slate (`data/schedule/games.csv`, the fallback every team hub and the schedule tool read when nflverse is unreachable) | Tuesday, by hand: `node artifacts/api-server/scripts/schedule/snapshot-games.mjs` | nflverse games.csv |
 | **Team page check** | daily, right after Coaching | games file, ESPN standings, ESPN coaches, the data files |
 
@@ -32,7 +32,10 @@ Open the app's `/api/status` and find `playerStats.daily.steps` → **`team page
 | `current dossier row ...` | The current scoring line mixes seasons | Tell Claude |
 | `"straight season" on a play-caller with N stints here` | A returning coach reads as an unbroken run | Tell Claude |
 | `standings: ... no playoffSeed` / `seeds repeat` | ESPN's standings table changed shape; the Standing chip may be wrong | Tell Claude |
-| `no coaching entry` / `no usage entry` | A tab will not render for that team | Check the `team coaching` / `team usage` steps above it for their error |
+| `efficiency is missing Week N, which the club has finished` | The Stats tab (which reads `efficiency_2026.json` and nothing else) is a week behind the games played | `node scripts/team/buildEfficiency.mjs 2026`, commit, publish |
+| `no box-score sheet in the efficiency file` | The file predates 2026-10-26; the Stats tab falls back to the stats provider and can mix weeks | Rebuild the file with the current builder |
+| `efficiency counts Week N, which the club has not finished` | The file claims a week the team has not played | Tell Claude; nflverse posted a partial week or the builder regressed |
+| `no coaching entry` / `no usage entry` / `no efficiency entry` | A tab will not render for that team | Check the `team coaching` / `team usage` / `team efficiency` steps above it for their error |
 
 Also glance at the `team usage` and `team coaching` steps. If either failed, the pages are serving the previous day's data, which is stale but not wrong.
 
