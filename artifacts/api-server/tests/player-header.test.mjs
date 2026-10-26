@@ -89,7 +89,13 @@ describe("player header", () => {
     assert.equal(h.getAttribute("aria-label"), "Player summary");
     assert.match(h.getAttribute("style"), /--scp-team:#97233F/);
 
-    assert.equal(text(h.querySelector(".scp-ptags")), "QB Arizona Cardinals #7");
+    assert.equal(text(h.querySelector(".scp-ptag-team-full")), "Arizona Cardinals");
+    assert.equal(text(h.querySelector(".scp-ptag-team-abbr")), "ARI", "the narrow-phone spelling");
+    assert.equal(h.querySelector(".scp-ptag-team").getAttribute("aria-label"), "Arizona Cardinals");
+    assert.equal(
+      text(h.querySelector(".scp-ptags")).replace("ARI", "").replace(/\s+/g, " "),
+      "QB Arizona Cardinals #7",
+    );
     assert.equal(text(h.querySelector(".scp-phead-name")), "Jacoby Brissett");
     assert.equal(
       text(h.querySelector(".scp-phead-kind")),

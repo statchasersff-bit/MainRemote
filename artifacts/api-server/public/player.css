@@ -697,6 +697,12 @@ button.scp-search-opt {
   text-decoration: underline;
 }
 
+/* The team's abbreviation stands in for its name on the narrowest phones
+   (the tier at the end of the header block). */
+.scp .scp-ptag-team-abbr {
+  display: none;
+}
+
 .scp .scp-ptag-num {
   color: var(--scp-ph-muted);
   font-weight: 600;
@@ -1023,9 +1029,14 @@ button.scp-search-opt {
   }
 }
 
+/* Tablet: a narrower well, the board still on the identity's row. The spec
+   row goes 2x2 on its own (the identity column drops under the 500px
+   container query), which is what makes room for the board (mak, 2026-10-25:
+   keep the 2x2 grid and the season board on the same row rather than
+   dropping the board under). */
 @media (max-width: 1020px) {
   .scp .scp-phead-main {
-    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-columns: 200px minmax(0, 1fr) auto;
   }
 
   .scp .scp-pwell-img,
@@ -1035,6 +1046,14 @@ button.scp-search-opt {
 
   .scp .scp-pwell-num {
     font-size: 150px;
+  }
+}
+
+/* Only when the identity column would be too narrow for the 2x2 spec grid
+   (~280px of content) does the board drop under it. */
+@media (max-width: 860px) {
+  .scp .scp-phead-main {
+    grid-template-columns: 200px minmax(0, 1fr);
   }
 
   /* Under the identity, but not across the whole card: three 34px numbers
@@ -1157,10 +1176,33 @@ button.scp-search-opt {
   }
 }
 
+/* Phones: the matchup line and its chip are centered in the strip, above the
+   full-width buttons (mak, 2026-10-25: "between 320 and 600px"). */
+@media (max-width: 600px) {
+  .scp .scp-pstrip-mu {
+    flex-basis: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
 /* Under ~400px the three board columns run out of room for their labels. */
 @media (max-width: 400px) {
   .scp .scp-pboard-stats > div {
     padding: 4px 10px;
+  }
+}
+
+/* 320-370: the tag row is one line, "QB ARI", so the header loses a row
+   (mak, 2026-10-25): the team's abbreviation instead of its name, no number. */
+@media (max-width: 370px) {
+  .scp .scp-ptag-team-full,
+  .scp .scp-ptag-num {
+    display: none;
+  }
+
+  .scp .scp-ptag-team-abbr {
+    display: inline;
   }
 }
 
@@ -1877,6 +1919,53 @@ button.scp-search-opt {
 
   .scp .scp-ox-prose {
     font-size: 17px;
+  }
+}
+
+/* Phones: the Overview reads centered, headings, ledes, prose, the outlook
+   and injury cards, the table links and the FAQ (mak, 2026-10-25: "between
+   320 and 600px"). Scoped to the Overview panel; the other tabs keep their
+   left edge. The gold rules under the headings move to the middle with them. */
+@media (max-width: 600px) {
+  .scp #overview .scp-read-hero .scp-h2,
+  .scp #overview .scp-ox-h2,
+  .scp #overview .scp-ox-lede,
+  .scp #overview .scp-ox-prose,
+  .scp #overview .scp-ox-panel.is-profile h3,
+  .scp #overview .scp-ox-card,
+  .scp #overview .scp-ox-faq summary,
+  .scp #overview .scp-ox-faq details p {
+    text-align: center;
+  }
+
+  .scp #overview .scp-read-hero .scp-h2::after,
+  .scp #overview .scp-ox-h2::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .scp #overview .scp-ox-sec > .scp-ox-more {
+    display: block;
+    text-align: center;
+  }
+
+  /* The status line is an inline-flex pill; as a flex row it centers like the
+     text around it. */
+  .scp #overview .scp-ox-card .scp-ox-status {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* The "+" keeps its right-hand slot; the same room on the left keeps the
+     question itself in the middle. */
+  .scp #overview .scp-ox-faq summary {
+    padding-left: 32px;
+  }
+
+  /* The injury history rows are a three-column list, not prose; their
+     columns keep their edges. */
+  .scp #overview .scp-ox-card .scp-ox-inj {
+    text-align: left;
   }
 }
 
