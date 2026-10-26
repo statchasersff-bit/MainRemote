@@ -2,6 +2,16 @@
  * Advanced team statistics - offense and defense, every number carrying its
  * league rank.
  *
+ * ── Where the numbers come from (2026-10-26) ────────────────────────────────
+ * The play-by-play file the Efficiency ladders read,
+ * data/team/efficiency_<season>.json, carries the whole box-score sheet under
+ * `box.own` / `box.opponent` per club (scripts/team/buildEfficiency.mjs), and
+ * when a season has that file this module reads it and nothing else: one
+ * file, one week, for every ladder on the tab (mak: "we can't be mixing
+ * weeks"). The provider's document below is the fallback for a season with
+ * no file, and the parse of it is unchanged. Everything from `Side` down -
+ * the definitions, the ranking, the rows - is shared by the two.
+ *
  * ── Why this is not four more per-team fetches ──────────────────────────────
  * lib/team/snapshot.ts reads ESPN's per-team statistics document, which is the
  * right shape for four headline numbers and the wrong shape for this tab. It
@@ -36,8 +46,9 @@
 
 import { createKeyedCache, fetchJson, PAST_SEASON_TTL_MS, TEAM_USER_AGENT } from "./cache";
 import { seasonYear } from "../seo";
-import type { NflTeam } from "./teams";
+import { TEAMS, type NflTeam } from "./teams";
 import { ESPN_WEB } from "./upstream";
+import { efficiencyVersion, getEfficiencyDoc, type EfficiencyDoc } from "./efficiency";
 
 /**
  * Which end of the scale is good.
@@ -122,6 +133,12 @@ export interface TeamStats {
    */
   history: HistorySeason[];
   fetchedAt: number;
+  /**
+   * Where the numbers came from: the play-by-play file the Efficiency
+   * ladders read (one week for the whole tab), or the stats provider's live
+   * document when the season has no file.
+   */
+  source: "file" | "provider";
 }
 
 /** Seasons in the history table, counting the most recent one. */
@@ -241,7 +258,7 @@ function reader(
  * and the one that makes net yards per play come out right against ESPN's own
  * net totals. Kneels and spikes are inside it, as they are everywhere else.
  */
-interface Side {
+export interface Side {
   gamesPlayed: number | null;
   plays: number | null;
   playsPerGame: number | null;
@@ -783,15 +800,25 @@ function build(season: number, payload: ByTeamResponse): LeagueStats {
     teams.push({ espnId, own, opponent: deriveSide(read, "opponent") });
   }
 
+  return assemble(season, teams, Date.now(), "provider");
+}
+
+/** Rank every metric across the sides handed in and lay out each team's rows. */
+function assemble(
+  season: number,
+  teams: TeamSides[],
+  fetchedAt: number,
+  source: TeamStats["source"],
+): LeagueStats {
   const allDefs = [...OFFENSE, ...DEFENSE, ...SITUATIONAL, ...VOLUME];
   const ranks = new Map<string, Map<string, Ranked>>();
   for (const def of allDefs) ranks.set(def.key, rankMetric(teams, def));
 
-  const fetchedAt = Date.now();
   const byEspnId = new Map<string, TeamStats>();
   for (const team of teams) {
     byEspnId.set(team.espnId, {
       season,
+      source,
       gamesPlayed: team.own.gamesPlayed,
       offense: buildRows(team, OFFENSE, ranks),
       defense: buildRows(team, DEFENSE, ranks),
@@ -805,6 +832,47 @@ function build(season: number, payload: ByTeamResponse): LeagueStats {
   }
 
   return { season, fetchedAt, byEspnId };
+}
+
+/* ------------------------------------------------------- the file, first */
+
+/**
+ * The season's sheet from data/team/efficiency_<season>.json, the file the
+ * Efficiency ladders read, so the whole tab is one file and one week (mak,
+ * 2026-10-26). Null when there is no file for the season or it predates the
+ * box-score sheet, and the provider's document stands in.
+ *
+ * Keyed on the file's mtime: a rebuild is a new league the moment it lands,
+ * with no TTL to wait out. The ranks are computed here from all 32 clubs
+ * exactly as they are for the provider's document.
+ */
+const fileLeagues = new Map<number, { version: string; league: LeagueStats | null }>();
+
+function buildFromFile(season: number, doc: EfficiencyDoc, version: string): LeagueStats | null {
+  const teams: TeamSides[] = [];
+  for (const team of TEAMS) {
+    const box = doc.teams[team.abbreviation]?.box;
+    if (!box || !box.own.gamesPlayed) continue;
+    teams.push({ espnId: team.espnId, own: box.own, opponent: box.opponent });
+  }
+  if (teams.length < 22) return null;
+  return assemble(season, teams, Number(version) || Date.now(), "file");
+}
+
+function leagueFromFile(season: number): LeagueStats | null {
+  const version = efficiencyVersion(season);
+  if (!version) return null;
+  const cached = fileLeagues.get(season);
+  if (cached && cached.version === version) return cached.league;
+  const doc = getEfficiencyDoc(season);
+  const league = doc ? buildFromFile(season, doc, version) : null;
+  fileLeagues.set(season, { version, league });
+  return league;
+}
+
+/** The season's league: the file when it has the sheet, the provider otherwise. */
+async function getLeague(season: number): Promise<LeagueStats | null> {
+  return leagueFromFile(season) ?? (await cache.ensure(String(season)));
 }
 
 /**
@@ -910,13 +978,13 @@ export async function getTeamStats(
   team: NflTeam,
   season: number,
 ): Promise<TeamStats | null> {
-  const current = await cache.ensure(String(season));
+  const current = await getLeague(season);
   let base = current?.byEspnId.get(team.espnId) ?? null;
   let baseSeason = season;
 
   if (!base) {
     baseSeason = season - 1;
-    const fallback = await cache.ensure(String(baseSeason));
+    const fallback = await getLeague(baseSeason);
     base = fallback?.byEspnId.get(team.espnId) ?? null;
   }
   if (!base) return null;
@@ -925,7 +993,7 @@ export async function getTeamStats(
   // must cost its own row and nothing else.
   const older = await Promise.allSettled(
     Array.from({ length: HISTORY_SEASONS - 1 }, (_, i) =>
-      cache.ensure(String(baseSeason - 1 - i)),
+      getLeague(baseSeason - 1 - i),
     ),
   );
   const earlier = older.map((result) =>

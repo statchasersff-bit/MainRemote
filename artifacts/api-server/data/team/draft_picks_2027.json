@@ -1,6 +1,6 @@
 {
   "draftYear": 2027,
-  "builtAt": "2026-10-23T14:03:06.345Z",
+  "builtAt": "2026-10-26T18:05:20.761Z",
   "slots": 224,
   "teams": {
     "ari": {
@@ -791,11 +791,11 @@
         },
         {
           "round": 5,
-          "from": "nyg"
+          "from": "car"
         },
         {
           "round": 5,
-          "from": "car"
+          "from": "nyg"
         },
         {
           "round": 6,
@@ -959,11 +959,11 @@
         },
         {
           "round": 1,
-          "from": "dal"
+          "from": "ind"
         },
         {
           "round": 1,
-          "from": "ind"
+          "from": "dal"
         },
         {
           "round": 2,

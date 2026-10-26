@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-20T15:22:56.364Z",
+  "generated_at": "2026-10-26T18:03:06.627Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -13,7 +13,7 @@
     "ATL": {
       "rb1": "Bijan Robinson",
       "rb2": "Brian Robinson Jr.",
-      "rb3": null
+      "rb3": "Khalil Herbert"
     },
     "BAL": {
       "rb1": "Derrick Henry",
@@ -42,8 +42,8 @@
     },
     "CLE": {
       "rb1": "Quinshon Judkins",
-      "rb2": "Jaleel McLaughlin",
-      "rb3": "Audric Estimé"
+      "rb2": "Dylan Sampson",
+      "rb3": "Jaleel McLaughlin"
     },
     "DAL": {
       "rb1": "Javonte Williams",
@@ -53,7 +53,7 @@
     "DEN": {
       "rb1": "J.K. Dobbins",
       "rb2": "RJ Harvey",
-      "rb3": "Tyler Badie"
+      "rb3": "Jonah Coleman"
     },
     "DET": {
       "rb1": "Jahmyr Gibbs",
@@ -83,7 +83,7 @@
     "KC": {
       "rb1": "Kenneth Walker",
       "rb2": "Emmett Johnson",
-      "rb3": "Brashard Smith"
+      "rb3": "Jaydn Ott"
     },
     "LAC": {
       "rb1": "Omarion Hampton",
@@ -107,8 +107,8 @@
     },
     "MIN": {
       "rb1": "Aaron Jones SR.",
-      "rb2": "DeeJay Dallas",
-      "rb3": "Demond Claiborne"
+      "rb2": "Jordan Mason",
+      "rb3": "DeeJay Dallas"
     },
     "NE": {
       "rb1": "Rhamondre Stevenson",
@@ -122,8 +122,8 @@
     },
     "NYG": {
       "rb1": "Cam Skattebo",
-      "rb2": "Najee Harris",
-      "rb3": "Tyrone Tracy Jr."
+      "rb2": "Tyrone Tracy Jr.",
+      "rb3": "Devin Singletary"
     },
     "NYJ": {
       "rb1": "Breece Hall",
@@ -133,7 +133,7 @@
     "PHI": {
       "rb1": "Saquon Barkley",
       "rb2": "Dameon Pierce",
-      "rb3": "Carson Steele"
+      "rb3": null
     },
     "PIT": {
       "rb1": "Jaylen Warren",
@@ -141,9 +141,9 @@
       "rb3": "Lew Nichols"
     },
     "SEA": {
-      "rb1": "Emanuel Wilson",
-      "rb2": "George Holani",
-      "rb3": "Velus Jones Jr."
+      "rb1": "Zach Charbonnet",
+      "rb2": "Emanuel Wilson",
+      "rb3": "George Holani"
     },
     "SF": {
       "rb1": "Christian McCaffrey",
@@ -188,7 +188,7 @@
       "team": "NO",
       "sleeperId": "4035",
       "age": 31,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "ashton jeanty": {
@@ -196,14 +196,6 @@
       "team": "LV",
       "sleeperId": "12527",
       "age": 22,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "audric estime": {
-      "name": "Audric Estimé",
-      "team": "CLE",
-      "sleeperId": "11579",
-      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -247,14 +239,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "brashard smith": {
-      "name": "Brashard Smith",
-      "team": "KC",
-      "sleeperId": "12455",
-      "age": 23,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "breece hall": {
       "name": "Breece Hall",
       "team": "NYJ",
@@ -268,7 +252,7 @@
       "team": "ATL",
       "sleeperId": "8154",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "bucky irving": {
@@ -284,14 +268,6 @@
       "team": "NYG",
       "sleeperId": "12481",
       "age": 24,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "carson steele": {
-      "name": "Carson Steele",
-      "team": "PHI",
-      "sleeperId": "11582",
-      "age": 23,
       "injuryStatus": "Questionable",
       "status": "Active"
     },
@@ -316,7 +292,7 @@
       "team": "SF",
       "sleeperId": "4034",
       "age": 30,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "chuba hubbard": {
@@ -332,7 +308,7 @@
       "team": "NO",
       "sleeperId": "13277",
       "age": 22,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "corey kiner": {
@@ -391,19 +367,19 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "demond claiborne": {
-      "name": "Demond Claiborne",
-      "team": "MIN",
-      "sleeperId": "13347",
-      "age": 23,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "derrick henry": {
       "name": "Derrick Henry",
       "team": "BAL",
       "sleeperId": "3198",
       "age": 32,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "devin singletary": {
+      "name": "Devin Singletary",
+      "team": "NYG",
+      "sleeperId": "6130",
+      "age": 29,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -423,6 +399,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "dylan sampson": {
+      "name": "Dylan Sampson",
+      "team": "CLE",
+      "sleeperId": "12469",
+      "age": 22,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "emanuel wilson": {
       "name": "Emanuel Wilson",
       "team": "SEA",
@@ -436,7 +420,7 @@
       "team": "DAL",
       "sleeperId": "11199",
       "age": 27,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "emmett johnson": {
@@ -511,6 +495,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "jaydn ott": {
+      "name": "Jaydn Ott",
+      "team": "KC",
+      "sleeperId": "13419",
+      "age": 23,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "jaylen warren": {
       "name": "Jaylen Warren",
       "team": "PIT",
@@ -524,7 +516,7 @@
       "team": "MIA",
       "sleeperId": "11643",
       "age": 23,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "jeremiyah love": {
@@ -540,6 +532,14 @@
       "team": "WAS",
       "sleeperId": "4219",
       "age": 30,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "jonah coleman": {
+      "name": "Jonah Coleman",
+      "team": "DEN",
+      "sleeperId": "13345",
+      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -564,15 +564,15 @@
       "team": "MIN",
       "sleeperId": "8408",
       "age": 27,
-      "injuryStatus": "IR",
-      "status": "Inactive"
+      "injuryStatus": null,
+      "status": "Active"
     },
     "josh jacobs": {
       "name": "Josh Jacobs",
       "team": "GB",
       "sleeperId": "5850",
       "age": 28,
-      "injuryStatus": "NA",
+      "injuryStatus": null,
       "status": "Active"
     },
     "justice hill": {
@@ -596,7 +596,7 @@
       "team": "MIA",
       "sleeperId": "13405",
       "age": 23,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "keaton mitchell": {
@@ -628,6 +628,14 @@
       "team": "TB",
       "sleeperId": "7567",
       "age": 27,
+      "injuryStatus": "Questionable",
+      "status": "Active"
+    },
+    "khalil herbert": {
+      "name": "Khalil Herbert",
+      "team": "ATL",
+      "sleeperId": "7608",
+      "age": 28,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -687,14 +695,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "najee harris": {
-      "name": "Najee Harris",
-      "team": "NYG",
-      "sleeperId": "7528",
-      "age": 28,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "nicholas singleton": {
       "name": "Nicholas Singleton",
       "team": "TEN",
@@ -708,7 +708,7 @@
       "team": "MIA",
       "sleeperId": "12495",
       "age": 22,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "omarion hampton": {
@@ -732,7 +732,7 @@
       "team": "CLE",
       "sleeperId": "12512",
       "age": 22,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "rachaad white": {
@@ -804,22 +804,22 @@
       "team": "PHI",
       "sleeperId": "4866",
       "age": 29,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "sean tucker": {
       "name": "Sean Tucker",
       "team": "TB",
       "sleeperId": "9506",
-      "age": 24,
-      "injuryStatus": "Out",
+      "age": 25,
+      "injuryStatus": null,
       "status": "Active"
     },
     "seth mcgowan": {
       "name": "Seth McGowan",
       "team": "IND",
       "sleeperId": "13424",
-      "age": 24,
+      "age": 25,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -851,7 +851,7 @@
       "name": "TreVeyon Henderson",
       "team": "NE",
       "sleeperId": "12529",
-      "age": 23,
+      "age": 24,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -876,7 +876,7 @@
       "team": "TEN",
       "sleeperId": "9508",
       "age": 25,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "tyler allgeier": {
@@ -885,14 +885,6 @@
       "sleeperId": "8132",
       "age": 26,
       "injuryStatus": null,
-      "status": "Active"
-    },
-    "tyler badie": {
-      "name": "Tyler Badie",
-      "team": "DEN",
-      "sleeperId": "8208",
-      "age": 26,
-      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "tyler goodson": {
@@ -908,7 +900,7 @@
       "team": "NYG",
       "sleeperId": "11655",
       "age": 26,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "woody marks": {
@@ -916,7 +908,15 @@
       "team": "HOU",
       "sleeperId": "12474",
       "age": 25,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
+      "status": "Active"
+    },
+    "zach charbonnet": {
+      "name": "Zach Charbonnet",
+      "team": "SEA",
+      "sleeperId": "9753",
+      "age": 25,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "zonovan knight": {

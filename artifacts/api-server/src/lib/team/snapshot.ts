@@ -18,6 +18,7 @@
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
 import type { NflTeam } from "./teams";
 import { ESPN_CORE } from "./upstream";
+import { getTeamStats } from "./stats";
 
 
 export interface SnapshotMetric {
@@ -190,6 +191,30 @@ export async function getTeamSnapshot(
   team: NflTeam,
   season: number,
 ): Promise<TeamSnapshot | null> {
+  // The Stats tab's own sheet first (lib/team/stats.ts reads the play-by-play
+  // file when the season has one): the heading this feeds names the season
+  // the ladders under it describe, and it must be the same season and the
+  // same week. The provider's per-team document stands in only when the tab
+  // itself is reading the provider.
+  const stats = await getTeamStats(team, season).catch(() => null);
+  if (stats && stats.source === "file") {
+    const metrics: SnapshotMetric[] = [];
+    for (const want of WANTED) {
+      const row = stats.offense.find((cell) => cell.key === `off-${want.key}`);
+      if (!row) continue;
+      metrics.push({
+        key: want.key,
+        label: want.label,
+        value: row.value,
+        rank: row.rankLabel,
+        rankValue: row.rank,
+        description: want.description,
+      });
+    }
+    if (metrics.length > 0) {
+      return { season: stats.season, metrics, fetchedAt: stats.fetchedAt };
+    }
+  }
   const current = await cache.ensure(`${team.espnId}:${season}`);
   if (current) return current;
   return cache.ensure(`${team.espnId}:${season - 1}`);

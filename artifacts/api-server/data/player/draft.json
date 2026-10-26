@@ -69,7 +69,7 @@
     "pick": null,
     "draft_team": null
   },
-  "marvin-harrison": {
+  "marvin-harrison-jr": {
     "player_id": "11628",
     "name": "Marvin Harrison",
     "college": "Ohio State",
@@ -179,7 +179,7 @@
     "pick": null,
     "draft_team": null
   },
-  "michael-penix": {
+  "michael-penix-jr": {
     "player_id": "11559",
     "name": "Michael Penix",
     "college": "Washington",
@@ -229,7 +229,7 @@
     "pick": null,
     "draft_team": null
   },
-  "carlos-washington": {
+  "carlos-washington-jr": {
     "player_id": "11186",
     "name": "Carlos Washington",
     "college": "Southeastern Louisiana",
@@ -259,7 +259,7 @@
     "pick": null,
     "draft_team": null
   },
-  "david-sills": {
+  "david-sills-v": {
     "player_id": "6154",
     "name": "David Sills",
     "college": "West Virginia",
@@ -299,7 +299,7 @@
     "pick": null,
     "draft_team": null
   },
-  "kyle-pitts": {
+  "kyle-pitts-sr": {
     "player_id": "7553",
     "name": "Kyle Pitts",
     "college": "Florida",
@@ -499,7 +499,7 @@
     "pick": 2,
     "draft_team": "CHI"
   },
-  "james-cook": {
+  "james-cook-iii": {
     "player_id": "8138",
     "name": "James Cook",
     "college": "Georgia",
@@ -739,7 +739,7 @@
     "pick": null,
     "draft_team": null
   },
-  "jimmy-horn": {
+  "jimmy-horn-jr": {
     "player_id": "12523",
     "name": "Jimmy Horn",
     "college": "Colorado",
@@ -879,7 +879,7 @@
     "pick": null,
     "draft_team": null
   },
-  "luther-burden": {
+  "luther-burden-iii": {
     "player_id": "12519",
     "name": "Luther Burden",
     "college": "Missouri",
@@ -1209,7 +1209,7 @@
     "pick": 65,
     "draft_team": "NYJ"
   },
-  "harold-fannin": {
+  "harold-fannin-jr": {
     "player_id": "12506",
     "name": "Harold Fannin",
     "college": "Bowling Green",
@@ -1469,7 +1469,7 @@
     "pick": 102,
     "draft_team": "DEN"
   },
-  "marvin-mims": {
+  "marvin-mims-jr": {
     "player_id": "9494",
     "name": "Marvin Mims",
     "college": "Oklahoma",
@@ -1999,7 +1999,7 @@
     "pick": 6,
     "draft_team": "NYG"
   },
-  "anthony-richardson": {
+  "anthony-richardson-sr": {
     "player_id": "9229",
     "name": "Anthony Richardson",
     "college": "Florida",
@@ -2049,7 +2049,7 @@
     "pick": 151,
     "draft_team": "IND"
   },
-  "michael-pittman": {
+  "michael-pittman-jr": {
     "player_id": "6819",
     "name": "Michael Pittman",
     "college": "USC",
@@ -2159,7 +2159,7 @@
     "pick": null,
     "draft_team": null
   },
-  "travis-etienne": {
+  "travis-etienne-jr": {
     "player_id": "7543",
     "name": "Travis Etienne",
     "college": "Clemson",
@@ -2179,7 +2179,7 @@
     "pick": 104,
     "draft_team": "JAX"
   },
-  "lequint-allen": {
+  "lequint-allen-jr": {
     "player_id": "12544",
     "name": "LeQuint Allen",
     "college": "Syracuse",
@@ -2199,7 +2199,7 @@
     "pick": 144,
     "draft_team": "SEA"
   },
-  "brian-thomas": {
+  "brian-thomas-jr": {
     "player_id": "11631",
     "name": "Brian Thomas",
     "college": "LSU",
@@ -2299,7 +2299,7 @@
     "pick": 10,
     "draft_team": "KC"
   },
-  "gardner-minshew": {
+  "gardner-minshew-ii": {
     "player_id": "6011",
     "name": "Gardner Minshew",
     "college": "Washington State",
@@ -2809,7 +2809,7 @@
     "pick": 58,
     "draft_team": "LV"
   },
-  "donte-thornton": {
+  "donte-thornton-jr": {
     "player_id": "12541",
     "name": "Dont'e Thornton",
     "college": "Tennessee",
@@ -2929,7 +2929,7 @@
     "pick": 120,
     "draft_team": "MIA"
   },
-  "ollie-gordon": {
+  "ollie-gordon-ii": {
     "player_id": "12495",
     "name": "Ollie Gordon",
     "college": "Oklahoma State",
@@ -2979,7 +2979,7 @@
     "pick": 208,
     "draft_team": "DAL"
   },
-  "theo-wease": {
+  "theo-wease-jr": {
     "player_id": "12860",
     "name": "Theo Wease",
     "college": "Missouri",
@@ -3059,7 +3059,7 @@
     "pick": 2,
     "draft_team": "PHI"
   },
-  "aaron-jones": {
+  "aaron-jones-sr": {
     "player_id": "4199",
     "name": "Aaron Jones",
     "college": "UTEP",
@@ -3279,7 +3279,7 @@
     "pick": 118,
     "draft_team": "PHI"
   },
-  "efton-chism": {
+  "efton-chism-iii": {
     "player_id": "12542",
     "name": "Efton Chism",
     "college": "Eastern Washington",
@@ -3549,7 +3549,7 @@
     "pick": 105,
     "draft_team": "NYG"
   },
-  "tyrone-tracy": {
+  "tyrone-tracy-jr": {
     "player_id": "11655",
     "name": "Tyrone Tracy",
     "college": "Purdue",
@@ -3769,7 +3769,7 @@
     "pick": 117,
     "draft_team": "LAR"
   },
-  "john-metchie": {
+  "john-metchie-iii": {
     "player_id": "8147",
     "name": "John Metchie",
     "college": "Alabama",
@@ -4069,7 +4069,7 @@
     "pick": 208,
     "draft_team": "TB"
   },
-  "calvin-austin": {
+  "calvin-austin-iii": {
     "player_id": "8125",
     "name": "Calvin Austin",
     "college": "Memphis",
@@ -4139,7 +4139,7 @@
     "pick": 42,
     "draft_team": "DEN"
   },
-  "kenneth-walker": {
+  "kenneth-walker-iii": {
     "player_id": "8151",
     "name": "Kenneth Walker",
     "college": "Michigan State",
@@ -4299,7 +4299,7 @@
     "pick": 8,
     "draft_team": "CAR"
   },
-  "brian-robinson": {
+  "brian-robinson-jr": {
     "player_id": "8154",
     "name": "Brian Robinson",
     "college": "Alabama",
@@ -4519,7 +4519,7 @@
     "pick": 235,
     "draft_team": "TB"
   },
-  "chris-godwin": {
+  "chris-godwin-jr": {
     "player_id": "4037",
     "name": "Chris Godwin",
     "college": "Penn State",
@@ -4749,7 +4749,7 @@
     "pick": null,
     "draft_team": null
   },
-  "chris-rodriguez": {
+  "chris-rodriguez-jr": {
     "player_id": "10219",
     "name": "Chris Rodriguez",
     "college": "Kentucky",
@@ -4819,7 +4819,7 @@
     "pick": 18,
     "draft_team": "TEN"
   },
-  "deebo-samuel": {
+  "deebo-samuel-sr": {
     "player_id": "5872",
     "name": "Deebo Samuel",
     "college": "South Carolina",

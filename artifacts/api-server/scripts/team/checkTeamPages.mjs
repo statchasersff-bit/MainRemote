@@ -50,6 +50,12 @@ try {
 } catch {
   fail("all", `data/team/usage_${season}.json is missing or unreadable`);
 }
+let efficiency = null;
+try {
+  efficiency = readJson(`team/efficiency_${season}.json`);
+} catch {
+  fail("all", `data/team/efficiency_${season}.json is missing or unreadable`);
+}
 
 // The hub's 32 clubs and their ESPN ids, from the one list the app uses.
 const teamsTs = fs.readFileSync(path.join(ROOT, "src", "lib", "team", "teams.ts"), "utf8");
@@ -196,6 +202,50 @@ if (usage) {
       const last = Math.max(...played.map((g) => g.week));
       const extra = u.games.filter((w) => w > last);
       if (extra.length) fail(abbr, `usage counts Week ${extra.join(", ")}, which the club has not finished`);
+    }
+  }
+}
+
+/* ----------------------------------------------------- 3b. efficiency file */
+
+// The Stats tab's Efficiency, Pass Protection and Pass Rush ladders read this
+// file; the Production, Turnovers and Snaps ladders beside them read the stats
+// provider live. A week the club has finished that the file does not count
+// puts two weeks on one tab (mak, 2026-10-26: never), so a trailing file is a
+// FAIL, not a warning - run the builder. A week the club has not finished is
+// the same FAIL the usage file gets.
+if (efficiency) {
+  for (const { abbr } of CLUBS) {
+    const e = efficiency.teams?.[abbr];
+    if (!e) {
+      fail(abbr, "no efficiency entry - the Efficiency and Pass Rush ladders will not render");
+      continue;
+    }
+    if (!e.box?.own?.gamesPlayed) {
+      fail(abbr, "no box-score sheet in the efficiency file - the Stats tab falls back to the provider and can mix weeks");
+    }
+    const played = completed.get(abbr);
+    if (!played?.length) continue;
+    const finished = played.map((g) => g.week);
+    if (!Array.isArray(e.weeks)) {
+      // A file from before the week list existed: the games count has to do.
+      if (typeof e.games === "number" && e.games < finished.length) {
+        fail(
+          abbr,
+          `efficiency counts ${e.games} games, the club has finished ${finished.length} - the Stats tab mixes weeks until buildEfficiency.mjs runs`,
+        );
+      }
+      continue;
+    }
+    const last = Math.max(...finished);
+    const extra = e.weeks.filter((w) => w > last);
+    if (extra.length) fail(abbr, `efficiency counts Week ${extra.join(", ")}, which the club has not finished`);
+    const missing = finished.filter((w) => !e.weeks.includes(w));
+    if (missing.length) {
+      fail(
+        abbr,
+        `efficiency is missing Week ${missing.join(", ")}, which the club has finished - the Stats tab mixes weeks until buildEfficiency.mjs runs`,
+      );
     }
   }
 }

@@ -38,6 +38,7 @@
 
 import type { NflTeam } from "./teams";
 import type { HistorySeason, StatRow, TeamStats } from "./stats";
+import { efficiencyRows, type EfficiencyTeam } from "./efficiency";
 
 export interface StatsFaq {
   question: string;
@@ -95,11 +96,32 @@ export function statsFaq(input: {
   stats: TeamStats;
   /** The league's current season, which is not always the one on the tab. */
   currentSeason: number;
+  /**
+   * This club's entry in the play-by-play file the Efficiency ladders read,
+   * null when the tab has none and those ladders show the provider's rows.
+   */
+  efficiency?: EfficiencyTeam | null;
 }): StatsFaq[] {
   const { team, stats, currentSeason } = input;
 
   const games = stats.gamesPlayed ?? 0;
   if (games <= 0) return [];
+
+  /**
+   * The per-play rows (yards per play, per attempt, per carry), from wherever
+   * the Efficiency ladder got them, so an answer never quotes a figure the
+   * tab does not print. Every answer here is framed "through N games" by the
+   * provider's count, so when the file has not reached those N games its
+   * rows are left out of the answers rather than quoted a week behind the
+   * points beside them (mak, 2026-10-26: no mixing weeks).
+   */
+  const eff = input.efficiency ?? null;
+  const perPlayRows = (unit: "offense" | "defense"): readonly StatRow[] => {
+    if (!eff) return unit === "offense" ? stats.offense : stats.defense;
+    return eff.games === games ? efficiencyRows(eff, unit) : [];
+  };
+  const perPlayKey = (unit: "offense" | "defense", provider: string, file: string): string =>
+    eff ? `eff-${unit === "offense" ? "off" : "def"}-${file}` : provider;
 
   const season = stats.season;
   // Numbers from a season the league has moved past are finished; the ones from
@@ -152,9 +174,13 @@ export function statsFaq(input: {
   const totalYards = findRow(off, "off-total-yards");
   const passYards = findRow(off, "off-pass-yards");
   const rushYards = findRow(off, "off-rush-yards");
-  const yardsPerPlay = findRow(off, "off-yards-per-play");
-  const perAttempt = findRow(off, "off-yards-per-attempt");
-  const perCarry = findRow(off, "off-yards-per-carry");
+  const offPerPlay = perPlayRows("offense");
+  const yardsPerPlay = findRow(offPerPlay, perPlayKey("offense", "off-yards-per-play", "yardsPerPlay"));
+  const perAttempt = findRow(
+    offPerPlay,
+    perPlayKey("offense", "off-yards-per-attempt", "yardsPerPassAttempt"),
+  );
+  const perCarry = findRow(offPerPlay, perPlayKey("offense", "off-yards-per-carry", "yardsPerCarry"));
 
   const prior = stats.history[1];
 
@@ -223,7 +249,10 @@ export function statsFaq(input: {
 
   const defPoints = findRow(def, "def-points");
   const defYards = findRow(def, "def-total-yards");
-  const defPerPlay = findRow(def, "def-yards-per-play");
+  const defPerPlay = findRow(
+    perPlayRows("defense"),
+    perPlayKey("defense", "def-yards-per-play", "yardsPerPlay"),
+  );
   if (defPoints || defYards) {
     const allowed = [
       defPoints ? `${defPoints.value} points` : null,
