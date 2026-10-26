@@ -501,8 +501,12 @@ export function renderHero(
   }
   tags.push(
     team
-      ? `<a class="scp-ptag-team" href="${escapeHtml(`${teamPrefix}${team.slug}/${query}`)}"` +
-          ` target="_top">${escapeHtml(team.fullName)}</a>`
+      ? // The abbreviation is the narrow-phone spelling (<= 370px, player.css
+        // swaps the two); the full name stays the accessible name.
+        `<a class="scp-ptag-team" href="${escapeHtml(`${teamPrefix}${team.slug}/${query}`)}"` +
+          ` target="_top" aria-label="${escapeHtml(team.fullName)}">` +
+          `<span class="scp-ptag-team-full">${escapeHtml(team.fullName)}</span>` +
+          `<span class="scp-ptag-team-abbr" aria-hidden="true">${escapeHtml(team.code)}</span></a>`
       : `<span class="scp-ptag-team">Free agent</span>`,
   );
   if (player.number) {
