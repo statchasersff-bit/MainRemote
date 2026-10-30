@@ -1128,6 +1128,14 @@ export function renderStatsTab(data: PlayerPageData, options: PlayerRenderOption
 export function renderStatsTabParts(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
+  /**
+   * Blocks the caller owns that take a slot in the spec's order. `careerTable`
+   * is player-render's season-by-season table (renderCareerStats, printed
+   * bare), which mak moved here from the Game Log's All view on 2026-10-29: it
+   * sits between the advanced table and the chart, so the eleven rows of
+   * totals are directly above the eleven bars that draw them.
+   */
+  inserts: { careerTable?: string } = {},
 ): { top: string; rest: string; foot: string } {
   const none = { top: "", rest: "", foot: "" };
   const c = career(data);
@@ -1140,11 +1148,22 @@ export function renderStatsTabParts(
     if (!collegeCard(data.college, c.pos)) return none;
     return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "", foot: "" };
   }
+  const careerTable = inserts.careerTable
+    ? sectionOpen("scp-st-career-h", `${data.player.name} career stats by season`, "") +
+      inserts.careerTable +
+      `</section>`
+    : "";
   return {
-    top: wrap(renderProduction(data, c, options) + renderAdvanced(data, c) + renderChart(data, c) + renderCareerRates(data, c)),
-    // No season-by-season table here: the original Stats content above already
-    // has one (renamed "<name> career stats by season"), and mak had this
-    // second copy removed on 2026-09-30.
+    top: wrap(
+      renderProduction(data, c, options) +
+        renderAdvanced(data, c) +
+        careerTable +
+        renderChart(data, c) +
+        renderCareerRates(data, c),
+    ),
+    // The spec's own season-by-season table was removed on 2026-09-30 as a
+    // second copy of the original content's; that original table is what
+    // `inserts.careerTable` carries back in, above the chart (2026-10-29).
     rest: wrap(renderRead(data, c, options)),
     // Apart so the page can stand it under the peers rail, directly above the
     // tab's FAQ (mak, 2026-09-30).

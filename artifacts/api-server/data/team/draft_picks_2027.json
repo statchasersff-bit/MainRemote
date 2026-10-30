@@ -1,6 +1,6 @@
 {
   "draftYear": 2027,
-  "builtAt": "2026-10-26T18:05:20.761Z",
+  "builtAt": "2026-10-28T17:08:00.827Z",
   "slots": 224,
   "teams": {
     "ari": {
@@ -520,8 +520,16 @@
           "from": null
         },
         {
+          "round": 3,
+          "from": "sea"
+        },
+        {
           "round": 4,
           "from": null
+        },
+        {
+          "round": 4,
+          "from": "sf"
         },
         {
           "round": 5,
@@ -1112,10 +1120,6 @@
           "from": null
         },
         {
-          "round": 3,
-          "from": null
-        },
-        {
           "round": 5,
           "from": null
         },
@@ -1129,6 +1133,10 @@
         }
       ],
       "sent": [
+        {
+          "round": 3,
+          "to": "ind"
+        },
         {
           "round": 4,
           "to": "cle"
@@ -1150,10 +1158,6 @@
           "from": null
         },
         {
-          "round": 4,
-          "from": null
-        },
-        {
           "round": 5,
           "from": null
         },
@@ -1167,6 +1171,10 @@
         }
       ],
       "sent": [
+        {
+          "round": 4,
+          "to": "ind"
+        },
         {
           "round": 6,
           "to": "kc"

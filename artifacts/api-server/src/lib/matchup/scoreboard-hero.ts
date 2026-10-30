@@ -23,6 +23,12 @@
 
 import { escapeHtml } from "../render";
 import { TEAMS } from "../team/teams";
+import {
+  completedGameDescription,
+  completedGameHeading,
+  completedGameTitleCandidates,
+  type GameSeoFacts,
+} from "./game-seo";
 
 export type ScoreboardStatus = "final" | "upcoming" | "in_progress";
 
@@ -84,6 +90,12 @@ export interface ScoreboardHeroOptions {
   headingId?: string;
   /** A heading other than the game's own, for a page about the pair. */
   heading?: string;
+  /**
+   * One short line printed directly under the heading - "Week 6 · October
+   * 18, 2026 · Titans 26, Colts 20" - so a reader confirms the game at a
+   * glance (see completedGameContext). Nothing is printed when empty.
+   */
+  context?: string;
 }
 
 /* ----------------------------------------------------------------- colors */
@@ -415,16 +427,37 @@ export function scoreboardHeading(game: ScoreboardGame): string {
 }
 
 /**
- * A dated game page's H1: "Steelers vs Browns Box Score & Player Stats:
- * Week 4, 2026" (the SEO brief of 2026-10-10), away then home like the
- * scoreboard, nicknames because the full names leave no room for the words
- * the searches carry. scoreboardHeading() stays the SportsEvent's name.
+ * The game as the fact sheet game-seo.ts writes its strings from: away and
+ * home as the scoreboard has them, the round without its conference, the
+ * kickoff's date in the Eastern calendar, and the final when there is one.
+ */
+export function gameSeoFacts(game: ScoreboardGame): GameSeoFacts {
+  const result = scoreboardResult(game);
+  const season = Number(game.seasonLabel);
+  const round = roundWithoutConference(game.roundLabel).trim();
+  return {
+    away: { name: game.away.name, short: game.away.short },
+    home: { name: game.home.name, short: game.home.short },
+    round: round || null,
+    postseason: game.gameType === "playoff",
+    season: Number.isFinite(season) && season > 0 ? season : null,
+    date: scoreboardKickoffLongDate(game),
+    score: result ? { away: result.away, home: result.home } : null,
+    overtime: wentToOvertime(game),
+  };
+}
+
+/**
+ * A dated game page's H1: "Tennessee Titans vs Indianapolis Colts Match
+ * Player Stats: Week 6, 2026" - away then home like the scoreboard, the
+ * round after the colon so two meetings of one pair in one season do not
+ * share a heading (the pair's own page prints the same words without the
+ * round; see seasonGameHeading). scoreboardHeading() stays the SportsEvent's
+ * name. Was "{Away} vs {Home} Box Score & Player Stats: Week N, YYYY" from
+ * 2026-10-10 to 2026-10-30.
  */
 export function scoreboardPageHeading(game: ScoreboardGame): string {
-  return (
-    `${game.away.short} vs ${game.home.short} Box Score & Player Stats: ` +
-    `${roundWithoutConference(game.roundLabel)}, ${game.seasonLabel}`
-  );
+  return completedGameHeading(gameSeoFacts(game), { round: true });
 }
 
 /** "Sep 14, 2026" - the kickoff's date in the Eastern calendar, or null. */
@@ -434,6 +467,19 @@ export function scoreboardKickoffDate(game: ScoreboardGame): string | null {
   if (Number.isNaN(date.getTime())) return null;
   const parts = easternParts(date);
   return `${parts["month"]} ${parts["day"]}, ${parts["year"]}`;
+}
+
+/** "September 14, 2026" - the same date with the month written out, or null. */
+export function scoreboardKickoffLongDate(game: ScoreboardGame): string | null {
+  if (!game.kickoff) return null;
+  const date = new Date(game.kickoff);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: EASTERN,
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }
 
 /** The badge: "Final", "Final/OT", "Final, tie", "Live" or "Upcoming". */
@@ -501,40 +547,25 @@ export function scoreboardKickoff(game: ScoreboardGame): KickoffText | null {
  * candidate that the length budget allows - see fitMatchupTitle().
  */
 export function scoreboardTitleCandidates(game: ScoreboardGame): string[] {
-  // "Steelers vs Browns Player Stats & Box Score, Week 4 2026" (the SEO brief
-  // of 2026-10-10): the words people type, in the order they type them. The
-  // rungs drop "Player Stats" first, then the year; the last fits every pair
-  // and every round. The score moved from the title to the description. Was
-  // "Browns vs Buccaneers Week 2 2026: Final Score 23–19, Stats & Recap"
-  // until 2026-10-10.
-  const pair = `${game.away.short} vs ${game.home.short}`;
-  const when = `${roundWithoutConference(game.roundLabel)} ${game.seasonLabel}`;
-  return [
-    `${pair} Player Stats & Box Score, ${when}`,
-    `${pair} Box Score, ${when}`,
-    `${pair} Box Score, ${roundWithoutConference(game.roundLabel)}`,
-  ];
+  // "Titans vs Colts Match Player Stats & Box Score (Week 6, 2026)" (the
+  // Search Console brief of 2026-10-30): the words people type, in the order
+  // they type them, with the fantasy analytics no longer leading. The ladder
+  // is game-seo.ts's; the last rung fits every pair and every round. Was
+  // "{Away} vs {Home} Player Stats & Box Score, Week N YYYY" from 2026-10-10.
+  return completedGameTitleCandidates(gameSeoFacts(game));
 }
 
 /**
- * A dated game page's meta description: "Browns 27, Steelers 24 on Sep 14,
- * 2026: full box score, fantasy points for every player, scoring summary
- * and team stats." Winner first; a tie reads away then home. The kickoff
- * date is left out when the schedule has none.
+ * A completed game's meta description: "Titans vs Colts match player stats
+ * from Week 6, 2026: passing, rushing and receiving, box score, fantasy
+ * points, snaps, targets and usage from the Titans' 26–20 win." Both teams,
+ * away then home; the week and year; what the page holds; the final. Full
+ * names when they fit in 165 characters, nicknames otherwise; see
+ * completedGameDescription() for the ladder and the fallbacks for a tie, a
+ * missing score, a missing round or an undated game.
  */
 export function scoreboardPageDescription(game: ScoreboardGame): string {
-  const result = scoreboardResult(game);
-  const date = scoreboardKickoffDate(game);
-  const on = date ? ` on ${date}` : "";
-  const tail = "full box score, fantasy points for every player, scoring summary and team stats.";
-  if (!result) return `${game.away.short} vs ${game.home.short}${on}: ${tail}`;
-  const sides = [
-    { team: game.away, points: result.away },
-    { team: game.home, points: result.home },
-  ];
-  if (result.winner === "home") sides.reverse();
-  const score = sides.map((s) => `${s.team.short} ${s.points}`).join(", ");
-  return `${score}${result.winner === null ? " (tie)" : ""}${on}: ${tail}`;
+  return completedGameDescription(gameSeoFacts(game));
 }
 
 /** "Final: Los Angeles Rams 34, Arizona Cardinals 11." - winner first. */
@@ -762,6 +793,9 @@ export function renderScoreboardHero(
     meta +
     `<${tag} class="sct-sbh-title" id="${escapeHtml(headingId)}" data-sct-hero-heading>` +
     `${escapeHtml(heading)}</${tag}>` +
+    // Directly under the H1: week, date and final in one short line, so the
+    // reader knows which game this is before the board has loaded its scores.
+    (options.context ? `<p class="sct-sbh-context">${escapeHtml(options.context)}</p>` : "") +
     board +
     linescore(game, result) +
     `</header>`

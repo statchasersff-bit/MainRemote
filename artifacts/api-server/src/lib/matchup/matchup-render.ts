@@ -105,6 +105,7 @@ import {
   type RivalryInput,
 } from "./rivalry";
 import {
+  gameSeoFacts,
   heroPairFills,
   pairPlan,
   pairColors as heroPairColors,
@@ -116,6 +117,7 @@ import {
   type ScoreboardGame,
   type ScoreboardTeam,
 } from "./scoreboard-hero";
+import { completedGameContext, completedGameHeading, completedGameIntro } from "./game-seo";
 import {
   buildRecap,
   LEAGUE_ANALYZER_URL,
@@ -225,12 +227,42 @@ export function seasonGameLead(data: MatchupData): Meeting | null {
   return meeting.season === data.state.season ? meeting : null;
 }
 
-/** "Browns vs Buccaneers Player Stats & Fantasy Points (Week 2, 2026)" - mak's wording, as written. */
+/**
+ * "Tennessee Titans vs Indianapolis Colts Match Player Stats": the pair page's
+ * H1 while it leads with one of this season's games (the Search Console brief
+ * of 2026-10-30), away then home as the searches say it. The week and the
+ * final follow in the context line under it, not in the heading. Was
+ * "{a} vs {b} Player Stats & Fantasy Points (Week N, YYYY)", in the pair's
+ * alphabetical order, from 2026-10-09.
+ */
 export function seasonGameHeading(data: MatchupData, meeting: Meeting): string {
-  return (
-    `${data.pair.a.nickname} vs ${data.pair.b.nickname} Player Stats & Fantasy Points ` +
-    `(${meeting.weekLabel}, ${meeting.season})`
-  );
+  const game = matchupScoreboardGame(data);
+  if (game) return completedGameHeading(gameSeoFacts(game));
+  return `${meeting.away.fullName} vs ${meeting.home.fullName} Match Player Stats`;
+}
+
+/**
+ * The line under the H1 on a completed game - "Week 6 · October 18, 2026 ·
+ * Titans 26, Colts 20" - and "" on any other page.
+ */
+function heroContext(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  if (!game || game.status !== "final" || !scoreboardResult(game)) return "";
+  return completedGameContext(gameSeoFacts(game));
+}
+
+/**
+ * The sentence under the scoreboard that says what the page is: "Tennessee
+ * Titans vs Indianapolis Colts match player stats from Week 6 of the 2026 NFL
+ * season. The Titans defeated the Colts 26–20 on October 18, 2026." Only on
+ * the pages whose title and H1 make that claim - the pair's page leading with
+ * a season game and a dated game page - and only once the game is final.
+ */
+function renderIntro(data: MatchupData): string {
+  if (!data.pinned && !seasonGameLead(data)) return "";
+  const game = matchupScoreboardGame(data);
+  if (!game || game.status !== "final" || !scoreboardResult(game)) return "";
+  return `<p class="sct-mu-intro">${escapeHtml(completedGameIntro(gameSeoFacts(game)))}</p>`;
 }
 
 /**
@@ -460,6 +492,7 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
         headingTag,
         headingId: HERO_HEADING_ID,
         heading: matchupPageHeading(data),
+        context: heroContext(data),
       }) + renderSeasonGameLink(data, options)
     );
   }
@@ -497,9 +530,13 @@ function renderSeasonGameLink(data: MatchupData, options: MatchupRenderOptions):
     week: lead.week,
     seasonType: lead.seasonType,
   })}${options.linkQuery ?? ""}`;
+  // The anchor names the page it opens - the game's player stats and box
+  // score - rather than a generic "view game" (the Search Console brief of
+  // 2026-10-30); the Last meeting block and the schedule cells word theirs
+  // differently on purpose, so the site's matchup anchors are not one string.
   return (
     `<p class="sct-mu-gamelink"><a class="sct-textlink" href="${escapeHtml(href)}">` +
-    `${escapeHtml(`${lead.away.nickname} vs ${lead.home.nickname}, ${lead.weekLabel} ${lead.season}: box score & recap`)} ${ARROW}</a></p>`
+    `${escapeHtml(`${lead.away.nickname} vs ${lead.home.nickname} ${lead.weekLabel} ${lead.season} player stats & box score`)} ${ARROW}</a></p>`
   );
 }
 
@@ -2157,12 +2194,27 @@ function statCell(
   );
 }
 
-/** "Fantasy Points: Patriots vs Seahawks, Week 1 2026", over the fantasy leaders. */
+/**
+ * "Titans vs Colts Fantasy Points", over the fantasy leaders. Away then home;
+ * the week is in the hero's context line and the title, not repeated here.
+ * Was "Fantasy Points: {Away} vs {Home}, Week N YYYY" until 2026-10-30.
+ */
 function fantasyTitle(data: MatchupData): string {
   const game = matchupScoreboardGame(data);
   if (!game) return "";
-  const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
-  return h2(`Fantasy Points: ${game.away.short} vs ${game.home.short}, ${round} ${game.seasonLabel}`);
+  return h2(`${game.away.short} vs ${game.home.short} Fantasy Points`);
+}
+
+/**
+ * "Titans vs Colts Player Stats: Passing, Rushing & Receiving", over the stat
+ * tables. The pair in the heading because that is the search the page earns
+ * ("titans vs colts player stats"); the three verbs because that is what the
+ * tables under it hold. "Player Stats" alone until 2026-10-30.
+ */
+function playerStatsTitle(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  const pair = game ? `${game.away.short} vs ${game.home.short} ` : "";
+  return h2(`${pair}Player Stats: Passing, Rushing & Receiving`);
 }
 
 /** The Start/Sit action, at the far right of a row rather than under the name. */
@@ -2399,16 +2451,19 @@ function renderPlayerStats(data: MatchupData): string {
     // The heading and the scoring switch share a row. The client builds the
     // PPR / Half / Standard switch in the slot; without it the tables stay in
     // PPR, which is what the server printed.
-    // Three layers (mak, 2026-09-30): the fantasy leaders under the game's
-    // fantasy title, the tables under "Player Stats", then the Redraft
-    // Command banner.
-    fantasyTitle(data) +
-    fantasyLeaders(stats.fantasy) +
+    // Three layers: the stat tables under the pair's "Player Stats" title,
+    // the fantasy leaders under the pair's "Fantasy Points" title, then the
+    // Redraft Command banner. The tables lead since 2026-10-30 (the Search
+    // Console brief: the page is a player-stat page first, with the fantasy
+    // read as what sets it apart); from 2026-09-30 until then the fantasy
+    // leaders sat above the tables.
     `<div class="sct-mu-ps-head">` +
-    h2("Player Stats") +
+    playerStatsTitle(data) +
     `<div class="sct-mu-scoring-slot" data-sct-scoring-slot></div>` +
     `</div>` +
     blocks +
+    fantasyTitle(data) +
+    fantasyLeaders(stats.fantasy) +
     (byPlayer.size ? renderDecisionModule() : "") +
     `</section>`
   );
@@ -2788,12 +2843,12 @@ function renderUsage(data: MatchupData): string {
   // Nothing to draw - a log with snaps but no team attribution - leaves the
   // table as the section, open, exactly as it was before the panels existed.
   if (panels.length === 0) {
-    return `<section class="sct-block sct-mu-usage">` + h2("Fantasy Usage") + table + `</section>`;
+    return `<section class="sct-block sct-mu-usage">` + h2("Snap Share, Targets & Usage") + table + `</section>`;
   }
 
   return (
     `<section class="sct-block sct-mu-usage">` +
-    h2("Fantasy Usage") +
+    h2("Snap Share, Targets & Usage") +
     `<div class="sct-mu-usage-teams">${panels.join("")}</div>` +
     // <details> rather than a script: the table is in the HTML either way, so
     // it is one copy, it is indexed, and it opens with JavaScript switched off.
@@ -3681,7 +3736,10 @@ function sectionTitleCase(html: string): string {
 /** The completed game's tabs, in bar order: the hash, the label, the panel's id. */
 const RECAP_TABS = [
   ["recap", "Recap", "recap-tab"],
-  ["fantasy", "Fantasy", "fantasy-tab"],
+  // "Stats & Fantasy" (mak, 2026-10-30): the player-stat tables live in this
+  // tab, and a reader arriving from a "player stats" search has to see where.
+  // The hash, the panel id and the client wiring keep the old "fantasy" name.
+  ["fantasy", "Stats & Fantasy", "fantasy-tab"],
   ["game-flow", "Game flow", "game-flow-tab"],
   ["head-to-head", "Head-to-head", "h2h-tab"],
   ["betting", "Betting", "betting-tab"],
@@ -3768,7 +3826,12 @@ function recapTabs(
   // The scoreboard sits above the tab bar and both columns, on every tab, as
   // the player pages put their header above their tabs.
   const footer = foot ? `<div class="sct-rb sct-mu-foot">${foot}</div>` : "";
-  const themed = themeInks(sectionTitleCase(renderHero(data, options) + top + lead + body + footer), game);
+  // The intro sentence sits between the scoreboard and the tab bar, on every
+  // tab, above the content it describes (renderIntro).
+  const themed = themeInks(
+    sectionTitleCase(renderHero(data, options) + renderIntro(data) + top + lead + body + footer),
+    game,
+  );
   return { top: "", body: themed.html, style: themed.style };
 }
 

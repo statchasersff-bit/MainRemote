@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-10-26",
+  "builtAt": "2026-10-28",
   "sources": [
     "nflverse play-by-play (tendencies, score states, 4th downs, defensive EPA)",
     "FTN Data charting via nflverse, CC-BY-SA 4.0 (play action, motion)",
@@ -133,9 +133,9 @@
             "current": "28%",
             "change": {
               "dir": "up",
-              "text": "+2.5 - 3rd in NFL"
+              "text": "+2.5 - 6th in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -148,7 +148,7 @@
               "dir": "up",
               "text": "+4.4 - 7th in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -189,7 +189,7 @@
               "dir": "flat",
               "text": "-"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -373,7 +373,7 @@
                 "tone": "good"
               },
               {
-                "text": "RB11 · Cook",
+                "text": "RB12 · Cook",
                 "tone": "plain"
               },
               {
@@ -466,7 +466,7 @@
       "bottomLine": "The fantasy bottom line: Brady called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Bills have been more pass-heavy in the red zone, faster-paced and more motion-heavy than in 2025. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Joe Brady's play-calling affect Bills fantasy players?",
-        "answer": "Joe Brady is calling the Bills offense for the third straight season, so last year's tendencies remain predictive. Through Week 6 2026, the offense shows shotgun rate below league average (45.9% vs 61%) and play-action rate above league average (28% vs 21%). The lead back handles 79% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Joe Brady is calling the Bills offense for the third straight season, so last year's tendencies remain predictive. Through Week 6 2026, the offense shows shotgun rate below league average (45.9% vs 61%) and pre-snap motion above league average (64.4% vs 58%). The lead back handles 79% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ari": {
@@ -594,12 +594,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "24.7%",
-            "current": "13.5%",
+            "current": "17.2%",
             "change": {
               "dir": "down",
-              "text": "−11.2"
+              "text": "−7.5"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -607,12 +607,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "43.9%",
-            "current": "62.2%",
+            "current": "62%",
             "change": {
               "dir": "up",
-              "text": "+18.3"
+              "text": "+18.1"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -653,14 +653,14 @@
               "dir": "up",
               "text": "+18"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
         {
           "key": "motionRate",
-          "stat": "62.2",
+          "stat": "62",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -693,7 +693,7 @@
         "dc": {
           "name": "Nick Rallis",
           "sub": "Multiple-front, disguise-heavy defense featuring split-safety structures and frequent post-snap rotations; Nick Rallis retains continuity from the Jonathan Gannon era",
-          "body": "Through Week 7 the defense allows 0.1 EPA per play (28th of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Cardinals offense still determines whether those scripts materialize."
+          "body": "Through Week 7 the defense allows 0.1 EPA per play (27th of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Cardinals offense still determines whether those scripts materialize."
         },
         "continuity": {
           "stat": "New install",
@@ -773,7 +773,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB14 · Brissett",
+                "text": "QB15 · Brissett",
                 "tone": "plain"
               },
               {
@@ -781,7 +781,7 @@
                 "tone": "bad"
               },
               {
-                "text": "WR22 · Wilson",
+                "text": "WR23 · Wilson",
                 "tone": "plain"
               },
               {
@@ -858,7 +858,7 @@
       "bottomLine": "The fantasy bottom line: Mike LaFleur is new to the Cardinals call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Cardinals have been more motion-heavy, more aggressive on short 4th downs and more under-center than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Mike LaFleur's play-calling affect Cardinals fantasy players?",
-        "answer": "Mike LaFleur is a first-year play-caller for the Cardinals, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows red-zone pass rate above league average (62% vs 54%) and play-action rate below league average (13.5% vs 21%). The lead back handles 41% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Mike LaFleur is a first-year play-caller for the Cardinals, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows red-zone pass rate above league average (62% vs 54%) and play-action rate below league average (17.2% vs 23%). The lead back handles 41% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "atl": {
@@ -986,12 +986,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "20.1%",
-            "current": "18.3%",
+            "current": "21.4%",
             "change": {
-              "dir": "down",
-              "text": "−1.8"
+              "dir": "up",
+              "text": "+1.3"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -999,12 +999,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "66.7%",
-            "current": "58.4%",
+            "current": "58.8%",
             "change": {
               "dir": "down",
-              "text": "−8.3"
+              "text": "−7.9"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -1045,7 +1045,7 @@
               "dir": "down",
               "text": "−37"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -1068,7 +1068,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "58.4",
+          "stat": "58.8",
           "unit": "motion",
           "heading": "Less pre-snap motion.",
           "body": "A less motion-heavy look than in 2025.",
@@ -1230,7 +1230,7 @@
       "bottomLine": "The fantasy bottom line: Tommy Rees is new to the Falcons call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Falcons have been less aggressive on short 4th downs, more under-center and less motion-heavy than under the 2025 staff. Historically, Rees's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Tommy Rees's play-calling affect Falcons fantasy players?",
-        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (40% vs 75%) and red-zone pass rate below league average (46% vs 54%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (40% vs 76%) and red-zone pass rate below league average (46% vs 54%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "bal": {
@@ -1354,12 +1354,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.4%",
-            "current": "23.2%",
+            "current": "27%",
             "change": {
               "dir": "up",
-              "text": "+0.8"
+              "text": "+4.6 - 7th in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -1367,12 +1367,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "54%",
-            "current": "64.9%",
+            "current": "65.1%",
             "change": {
               "dir": "up",
-              "text": "+10.9 - 6th in NFL"
+              "text": "+11.1 - 6th in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -1413,11 +1413,19 @@
               "dir": "up",
               "text": "+11 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
+        {
+          "key": "motionRate",
+          "stat": "65.1",
+          "unit": "motion",
+          "heading": "More pre-snap motion.",
+          "body": "A more motion-heavy look than in 2025.",
+          "note": null
+        },
         {
           "key": "fourthGoRate",
           "stat": "100",
@@ -1425,14 +1433,6 @@
           "heading": "Going for it more.",
           "body": "More drives continue past field-goal range.",
           "note": "5 such snaps"
-        },
-        {
-          "key": "motionRate",
-          "stat": "64.9",
-          "unit": "motion",
-          "heading": "More pre-snap motion.",
-          "body": "A more motion-heavy look than in 2025.",
-          "note": null
         },
         {
           "key": "shotgunRate",
@@ -1486,7 +1486,7 @@
                 "tone": "bad"
               },
               {
-                "text": "RB8 · Henry",
+                "text": "RB9 · Henry",
                 "tone": "good"
               },
               {
@@ -1494,7 +1494,7 @@
                 "tone": "good"
               },
               {
-                "text": "TE23 · Andrews",
+                "text": "TE24 · Andrews",
                 "tone": "plain"
               }
             ]
@@ -1569,10 +1569,10 @@
         ],
         "note": "A modest pass-rate increase when trailing. The Ravens have passed on 68% of plays while trailing by 7+, compared with 60% while leading by 7+. The 8-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Declan Doyle is new to the Ravens call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Ravens have been more aggressive on short 4th downs, more motion-heavy and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Declan Doyle is new to the Ravens call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Ravens have been more motion-heavy, more aggressive on short 4th downs and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Declan Doyle's play-calling affect Ravens fantasy players?",
-        "answer": "Declan Doyle is a first-year play-caller for the Ravens, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate below league average (41% vs 54%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward tight ends (28% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Declan Doyle is a first-year play-caller for the Ravens, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and red-zone pass rate below league average (41% vs 54%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward tight ends (28% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "car": {
@@ -1673,7 +1673,7 @@
             "current": "62.8%",
             "change": {
               "dir": "up",
-              "text": "+10.1 - 2nd in NFL"
+              "text": "+10.1 - 1st in NFL"
             },
             "nflAvg": "55%"
           },
@@ -1696,12 +1696,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22%",
-            "current": "21.8%",
+            "current": "26.8%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+4.8 - 8th in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -1709,12 +1709,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "42.9%",
-            "current": "57.1%",
+            "current": "55.6%",
             "change": {
               "dir": "up",
-              "text": "+14.2"
+              "text": "+12.7"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -1755,19 +1755,11 @@
               "dir": "down",
               "text": "−13"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
-        {
-          "key": "motionRate",
-          "stat": "57.1",
-          "unit": "motion",
-          "heading": "More pre-snap motion.",
-          "body": "A more motion-heavy look than in 2025.",
-          "note": "6-game sample"
-        },
         {
           "key": "fourthGoRate",
           "stat": "75",
@@ -1775,6 +1767,14 @@
           "heading": "Kicking more.",
           "body": "More of those drives end in a punt or field-goal try.",
           "note": "6-game sample · 4 such snaps"
+        },
+        {
+          "key": "motionRate",
+          "stat": "55.6",
+          "unit": "motion",
+          "heading": "More pre-snap motion.",
+          "body": "A more motion-heavy look than in 2025.",
+          "note": "6-game sample"
         },
         {
           "key": "pace",
@@ -1809,7 +1809,7 @@
           "stop": "Panthers · OC",
           "years": "2026",
           "scoring": "26.5 ppg",
-          "scoringContext": "through Week 7, 5th in NFL",
+          "scoringContext": "through Week 7, 6th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "RBs took 12% of targets (league 18%) in 2026; the lead back handled 73% of backfield weighted opportunities."
@@ -1824,7 +1824,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB11 · Young",
+                "text": "QB12 · Young",
                 "tone": "plain"
               },
               {
@@ -1832,11 +1832,11 @@
                 "tone": "plain"
               },
               {
-                "text": "WR16 · McMillan",
+                "text": "WR17 · McMillan",
                 "tone": "plain"
               },
               {
-                "text": "TE22 · Waller",
+                "text": "TE23 · Waller",
                 "tone": "plain"
               }
             ]
@@ -1911,7 +1911,7 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Panthers have passed on 71% of plays while trailing by 7+, compared with 59% while leading by 7+. The 12-point difference is worth monitoring, but each bucket remains a small early-season sample."
       },
-      "bottomLine": "The fantasy bottom line: Brad Idzik is new to the Panthers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Panthers have been more motion-heavy, less aggressive on short 4th downs and faster-paced than under the 2025 staff. This season the offense has directed a below-average share of targets to running backs. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
+      "bottomLine": "The fantasy bottom line: Brad Idzik is new to the Panthers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Panthers have been less aggressive on short 4th downs, more motion-heavy and faster-paced than under the 2025 staff. This season the offense has directed a below-average share of targets to running backs. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Brad Idzik's play-calling affect Panthers fantasy players?",
         "answer": "Brad Idzik is a first-year play-caller for the Panthers, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows red-zone pass rate above league average (69% vs 54%) and early-down pass rate above league average (62.8% vs 55%). The lead back handles 73% of backfield weighted opportunities, and the target split leans toward running backs (12% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
@@ -2043,7 +2043,7 @@
               "dir": "up",
               "text": "+1.8 - 1st in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -2056,7 +2056,7 @@
               "dir": "down",
               "text": "−4.1"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -2097,7 +2097,7 @@
               "dir": "up",
               "text": "+11"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -2158,7 +2158,7 @@
           "stop": "Bears · HC",
           "years": "2025-26",
           "scoring": "25.7 ppg",
-          "scoringContext": "2026 through Week 7, 7th in NFL",
+          "scoringContext": "2026 through Week 7, 8th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "WRs took 55% of targets (league 58%) in 2026; the lead back handled 59% of backfield weighted opportunities."
@@ -2265,11 +2265,11 @@
                 "tone": "plain"
               },
               {
-                "text": "RB7 · Swift",
+                "text": "RB8 · Swift",
                 "tone": "good"
               },
               {
-                "text": "WR17 · Burden",
+                "text": "WR18 · Burden",
                 "tone": "plain"
               },
               {
@@ -2354,7 +2354,7 @@
       "bottomLine": "The fantasy bottom line: Johnson called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Bears have been more aggressive on short 4th downs, less motion-heavy and more run-heavy in the red zone than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Ben Johnson's play-calling affect Bears fantasy players?",
-        "answer": "Ben Johnson is calling the Bears offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (91% vs 75%) and play-action rate above league average (33.2% vs 21%). The lead back handles 59% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Ben Johnson is calling the Bears offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (91% vs 76%) and play-action rate above league average (33.2% vs 23%). The lead back handles 59% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "cin": {
@@ -2474,12 +2474,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "16%",
-            "current": "14.4%",
+            "current": "16.5%",
             "change": {
-              "dir": "down",
-              "text": "−1.6"
+              "dir": "up",
+              "text": "+0.5"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -2487,12 +2487,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "53%",
-            "current": "52.6%",
+            "current": "51.5%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "down",
+              "text": "−1.5"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -2533,7 +2533,7 @@
               "dir": "down",
               "text": "−32"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -2787,7 +2787,7 @@
       "bottomLine": "The fantasy bottom line: Taylor called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Bengals have been less aggressive on short 4th downs, more under-center and more pass-leaning by PROE than in 2025. Historically, Taylor's offenses have also directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Zac Taylor's play-calling affect Bengals fantasy players?",
-        "answer": "Zac Taylor is calling the Bengals offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (50% vs 75%) and shotgun rate above league average (74.4% vs 61%). The lead back handles 73% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Zac Taylor is calling the Bengals offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (50% vs 76%) and shotgun rate above league average (74.4% vs 61%). The lead back handles 73% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "cle": {
@@ -2915,12 +2915,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "21.9%",
-            "current": "15.8%",
+            "current": "18.5%",
             "change": {
               "dir": "down",
-              "text": "−6.1"
+              "text": "−3.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -2928,12 +2928,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "49.4%",
-            "current": "52%",
+            "current": "55.6%",
             "change": {
               "dir": "up",
-              "text": "+2.6"
+              "text": "+6.2"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -2974,7 +2974,7 @@
               "dir": "down",
               "text": "−13"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -2996,11 +2996,11 @@
           "note": null
         },
         {
-          "key": "paRate",
-          "stat": "15.8",
-          "unit": "play-action",
-          "heading": "Less play-action.",
-          "body": "Fewer of the scheme's easiest explosive throws.",
+          "key": "motionRate",
+          "stat": "55.6",
+          "unit": "motion",
+          "heading": "More pre-snap motion.",
+          "body": "A more motion-heavy look than in 2025.",
           "note": null
         }
       ],
@@ -3146,7 +3146,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB15 · Watson",
+                "text": "QB16 · Watson",
                 "tone": "plain"
               },
               {
@@ -3236,10 +3236,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Browns have passed on 59% of plays while trailing by 7+, compared with 48% while leading by 7+. The 11-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Todd Monken is new to the Browns call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Browns have been less aggressive on short 4th downs, more shotgun-based and lighter on play-action than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Todd Monken is new to the Browns call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Browns have been less aggressive on short 4th downs, more shotgun-based and more motion-heavy than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Todd Monken's play-calling affect Browns fantasy players?",
-        "answer": "Todd Monken is a first-year play-caller for the Browns, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows shotgun rate above league average (76.6% vs 61%) and 4th-down go rate below league average (67% vs 75%). The lead back handles 62% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Todd Monken is a first-year play-caller for the Browns, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows shotgun rate above league average (76.6% vs 61%) and 4th-down go rate below league average (67% vs 76%). The lead back handles 62% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "dal": {
@@ -3276,10 +3276,10 @@
         "priorSeasonsAsCaller": 1,
         "sameSchemeFamily": true,
         "explanation": "Same play-caller as last season - his second season calling this offense. Last year's tendencies are a valid baseline for projecting it.",
-        "ledger": "Schottenheimer - 6 of 6 games in 2026 · 1 prior season as caller here",
+        "ledger": "Schottenheimer - 7 of 7 games in 2026 · 1 prior season as caller here",
         "ledgerStats": {
-          "called": 6,
-          "games": 6,
+          "called": 7,
+          "games": 7,
           "priorSeasons": 1,
           "firstSeason": 2025,
           "note": null
@@ -3295,10 +3295,10 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "61.9%",
-            "current": "70.7%",
+            "current": "66.6%",
             "change": {
               "dir": "up",
-              "text": "+8.8 - 1st in NFL"
+              "text": "+4.7 - 2nd in NFL"
             },
             "nflAvg": "61%",
             "priorNum": 61.9,
@@ -3310,10 +3310,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−1%",
-            "current": "+4.1%",
+            "current": "+1.6%",
             "change": {
               "dir": "up",
-              "text": "+5.1 - 3rd in NFL"
+              "text": "+2.6 - 7th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -1,
@@ -3325,7 +3325,7 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "31.1s",
-            "current": "31.7s",
+            "current": "31.9s",
             "change": {
               "dir": "down",
               "text": "slower"
@@ -3341,10 +3341,10 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "55.5%",
-            "current": "66.4%",
+            "current": "62.7%",
             "change": {
               "dir": "up",
-              "text": "+10.9 - 1st in NFL"
+              "text": "+7.2 - 2nd in NFL"
             },
             "nflAvg": "55%"
           },
@@ -3354,10 +3354,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "9.2%",
-            "current": "10.7%",
+            "current": "9.5%",
             "change": {
-              "dir": "up",
-              "text": "+1.5 - 5th in NFL"
+              "dir": "flat",
+              "text": "steady"
             },
             "nflAvg": "6%"
           },
@@ -3372,7 +3372,7 @@
               "dir": "down",
               "text": "−6.1"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -3380,12 +3380,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "59.1%",
-            "current": "47.2%",
+            "current": "45.7%",
             "change": {
               "dir": "down",
-              "text": "−11.9"
+              "text": "−13.4"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -3393,10 +3393,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "62.7%",
-            "current": "69.1%",
+            "current": "65.9%",
             "change": {
               "dir": "up",
-              "text": "+6.4 - 7th in NFL"
+              "text": "+3.2"
             },
             "nflAvg": "61%"
           },
@@ -3406,10 +3406,10 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "58%",
-            "current": "58%",
+            "current": "53%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "down",
+              "text": "−5"
             },
             "nflAvg": "54%",
             "priorNum": 58,
@@ -3421,39 +3421,39 @@
             "sub": "opponent territory, 2 yds or less",
             "def": "Share of 4th-and-2-or-less snaps in opponent territory (midfield included) where the offense ran a play instead of punting or attempting a field goal. Snaps wiped out by penalty are removed. Shown as - until a team has had three such snaps.",
             "prior": "93%",
-            "current": "-",
+            "current": "100%",
             "change": {
-              "dir": "flat",
-              "text": "-"
+              "dir": "up",
+              "text": "+7 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
         {
           "key": "motionRate",
-          "stat": "47.2",
+          "stat": "45.7",
           "unit": "motion",
           "heading": "Less pre-snap motion.",
           "body": "A less motion-heavy look than in 2025.",
-          "note": "6-game sample"
+          "note": null
         },
         {
           "key": "earlyDownPassRate",
-          "stat": "66.4",
+          "stat": "62.7",
           "unit": "early-down pass %",
           "heading": "Passing on the downs that are a choice.",
           "body": "A real lean toward the pass when the staff has the choice.",
-          "note": "6-game sample"
+          "note": null
         },
         {
-          "key": "passRate",
-          "stat": "70.7",
-          "unit": "pass %",
-          "heading": "More dropbacks.",
-          "body": "More target volume for the pass-catchers.",
-          "note": "6-game sample"
+          "key": "fourthGoRate",
+          "stat": "100",
+          "unit": "4th-down go",
+          "heading": "Going for it more.",
+          "body": "More drives continue past field-goal range.",
+          "note": "3 such snaps"
         }
       ],
       "staff": {
@@ -3466,7 +3466,7 @@
         "dc": {
           "name": "Christian Parker",
           "sub": "Multiple Fangio-tree defense: 3-4 by nature, with 4-3 spacing, 4-2-5 nickel packages and varied front/coverage structures; Parker is a first-time defensive coordinator",
-          "body": "Through Week 6 the defense allows 0.16 EPA per play (32nd of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Cowboys offense still determines whether those scripts materialize."
+          "body": "Through Week 7 the defense allows 0.14 EPA per play (32nd of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Cowboys offense still determines whether those scripts materialize."
         },
         "continuity": {
           "stat": "Year 2",
@@ -3510,11 +3510,11 @@
         {
           "stop": "Cowboys · HC",
           "years": "2025-26",
-          "scoring": "25.2 ppg",
-          "scoringContext": "2026 through Week 6, 9th in NFL",
+          "scoring": "27.0 ppg",
+          "scoringContext": "2026 through Week 7, 5th in NFL",
           "current": true,
           "thesis": "The current stop:",
-          "fingerprint": "WRs took 71% of targets (league 58%) in 2026; the lead back handled 78% of backfield weighted opportunities."
+          "fingerprint": "WRs took 73% of targets (league 58%) in 2026; the lead back handled 76% of backfield weighted opportunities."
         }
       ],
       "finishes": {
@@ -3610,16 +3610,16 @@
           },
           {
             "stop": "Cowboys · 2026",
-            "context": "pace through Week 6",
+            "context": "pace through Week 7",
             "current": true,
             "cells": [
               {
-                "text": "QB17 · Prescott",
-                "tone": "plain"
+                "text": "QB8 · Prescott",
+                "tone": "good"
               },
               {
-                "text": "RB13 · Williams",
-                "tone": "plain"
+                "text": "RB7 · Williams",
+                "tone": "good"
               },
               {
                 "text": "WR2 · Lamb",
@@ -3645,7 +3645,7 @@
           },
           {
             "label": "Tight ends",
-            "pct": 19,
+            "pct": 18,
             "nfl": 22
           },
           {
@@ -3681,7 +3681,7 @@
           },
           {
             "label": "'26 DAL",
-            "value": 78,
+            "value": 76,
             "current": true,
             "feed": true
           }
@@ -3689,17 +3689,17 @@
         "note": "No clean trend: the lead back's share of backfield weighted opportunities (carries + 2×targets) has moved around season to season. Treat the current split as the read and revisit it weekly."
       },
       "scoreState": {
-        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 6.",
+        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 7.",
         "rows": [
           {
             "label": "Leading by 7+",
-            "share": 67,
-            "result": "67% pass · 36 plays"
+            "share": 49,
+            "result": "49% pass · 53 plays"
           },
           {
             "label": "Within 7",
-            "share": 68,
-            "result": "68% pass · 161 plays"
+            "share": 65,
+            "result": "65% pass · 209 plays"
           },
           {
             "label": "Trailing by 7+",
@@ -3707,12 +3707,12 @@
             "result": "74% pass · 178 plays"
           }
         ],
-        "note": "A modest pass-rate increase when trailing. The Cowboys have passed on 74% of plays while trailing by 7+, compared with 67% while leading by 7+. The 7-point difference is worth monitoring, but each bucket remains a small early-season sample."
+        "note": "A clear pass-rate increase when trailing. The Cowboys have passed on 74% of plays while trailing by 7+, compared with 49% while leading by 7+. The 25-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Schottenheimer called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Cowboys have been less motion-heavy, pass-heavier on early downs and pass-heavier than in 2025. Historically, Schottenheimer's offenses have also directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
+      "bottomLine": "The fantasy bottom line: Schottenheimer called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Cowboys have been less motion-heavy, pass-heavier on early downs and more aggressive on short 4th downs than in 2025. Historically, Schottenheimer's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Brian Schottenheimer's play-calling affect Cowboys fantasy players?",
-        "answer": "Brian Schottenheimer is calling the Cowboys offense for the second straight season, so last year's tendencies remain predictive. Through Week 6 2026, the offense shows pre-snap motion below league average (47.2% vs 59%) and early-down pass rate above league average (66.4% vs 55%). The lead back handles 78% of backfield weighted opportunities, and the target split leans toward wide receivers (65% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Brian Schottenheimer is calling the Cowboys offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and pre-snap motion below league average (45.7% vs 58%). The lead back handles 76% of backfield weighted opportunities, and the target split leans toward wide receivers (65% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "den": {
@@ -3836,12 +3836,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "24%",
-            "current": "18.8%",
+            "current": "22.6%",
             "change": {
               "dir": "down",
-              "text": "−5.2"
+              "text": "−1.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -3854,7 +3854,7 @@
               "dir": "up",
               "text": "+14.8"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -3895,7 +3895,7 @@
               "dir": "down",
               "text": "−100"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -4054,7 +4054,7 @@
       "bottomLine": "The fantasy bottom line: Davis Webb is new to the Broncos call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Broncos have been less aggressive on short 4th downs, more motion-heavy and less up-tempo than under the 2025 staff. This season the offense has directed a below-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Davis Webb's play-calling affect Broncos fantasy players?",
-        "answer": "Davis Webb is a first-year play-caller for the Broncos, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (0% vs 75%) and shotgun rate above league average (66.2% vs 61%). The lead back handles 44% of backfield weighted opportunities, and the target split leans toward tight ends (16% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Davis Webb is a first-year play-caller for the Broncos, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (0% vs 76%) and shotgun rate above league average (66.2% vs 61%). The lead back handles 44% of backfield weighted opportunities, and the target split leans toward tight ends (16% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "det": {
@@ -4178,12 +4178,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "25.5%",
-            "current": "27.5%",
+            "current": "30.8%",
             "change": {
               "dir": "up",
-              "text": "+2 - 4th in NFL"
+              "text": "+5.3 - 4th in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -4191,12 +4191,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "59.8%",
-            "current": "50.9%",
+            "current": "54.7%",
             "change": {
               "dir": "down",
-              "text": "−8.9"
+              "text": "−5.1"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -4237,14 +4237,22 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
         {
+          "key": "paRate",
+          "stat": "30.8",
+          "unit": "play-action",
+          "heading": "More play-action.",
+          "body": "A boost to downfield receiver efficiency.",
+          "note": "6-game sample"
+        },
+        {
           "key": "motionRate",
-          "stat": "50.9",
+          "stat": "54.7",
           "unit": "motion",
           "heading": "Less pre-snap motion.",
           "body": "A less motion-heavy look than in 2025.",
@@ -4256,14 +4264,6 @@
           "unit": "PROE",
           "heading": "A pass lean has emerged.",
           "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
-          "note": "6-game sample"
-        },
-        {
-          "key": "pace",
-          "stat": "31.3s",
-          "unit": "sec/play",
-          "heading": "The offense sped up.",
-          "body": "Extra plays per game for every skill player.",
           "note": "6-game sample"
         }
       ],
@@ -4467,10 +4467,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Lions have passed on 74% of plays while trailing by 7+, compared with 49% while leading by 7+. The 25-point difference is worth monitoring, but each bucket remains a small early-season sample."
       },
-      "bottomLine": "The fantasy bottom line: Drew Petzing is new to the Lions call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Lions have been less motion-heavy, more pass-leaning by PROE and faster-paced than under the 2025 staff. Historically, Petzing's offenses have also directed a below-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
+      "bottomLine": "The fantasy bottom line: Drew Petzing is new to the Lions call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Lions have been heavier on play-action, less motion-heavy and more pass-leaning by PROE than under the 2025 staff. Historically, Petzing's offenses have also directed a below-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Drew Petzing's play-calling affect Lions fantasy players?",
-        "answer": "Drew Petzing is a first-year play-caller for the Lions, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and shotgun rate below league average (49.1% vs 61%). The lead back handles 89% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Drew Petzing is a first-year play-caller for the Lions, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and shotgun rate below league average (49.1% vs 61%). The lead back handles 89% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "gb": {
@@ -4525,7 +4525,7 @@
             "current": "67.8%",
             "change": {
               "dir": "up",
-              "text": "+12.1 - 2nd in NFL"
+              "text": "+12.1 - 1st in NFL"
             },
             "nflAvg": "61%",
             "priorNum": 55.7,
@@ -4540,7 +4540,7 @@
             "current": "+3.6%",
             "change": {
               "dir": "up",
-              "text": "+8 - 4th in NFL"
+              "text": "+8 - 3rd in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -4.4,
@@ -4594,12 +4594,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "25.5%",
-            "current": "16.4%",
+            "current": "19.2%",
             "change": {
               "dir": "down",
-              "text": "−9.1"
+              "text": "−6.3"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -4607,12 +4607,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "55.2%",
-            "current": "63%",
+            "current": "61.8%",
             "change": {
               "dir": "up",
-              "text": "+7.8"
+              "text": "+6.6"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -4653,7 +4653,7 @@
               "dir": "up",
               "text": "+7"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -4675,11 +4675,11 @@
           "note": null
         },
         {
-          "key": "paRate",
-          "stat": "16.4",
-          "unit": "play-action",
-          "heading": "Less play-action.",
-          "body": "Fewer of the scheme's easiest explosive throws.",
+          "key": "proe",
+          "stat": "+3.6",
+          "unit": "PROE",
+          "heading": "A pass lean has emerged.",
+          "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
           "note": null
         }
       ],
@@ -4817,7 +4817,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB8 · Love",
+                "text": "QB9 · Love",
                 "tone": "good"
               },
               {
@@ -4911,10 +4911,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Packers have passed on 86% of plays while trailing by 7+, compared with 62% while leading by 7+. The 24-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: LaFleur called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Packers have been pass-heavier, pass-heavier on early downs and lighter on play-action than in 2025. Historically, LaFleur's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: LaFleur called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Packers have been pass-heavier, pass-heavier on early downs and more pass-leaning by PROE than in 2025. Historically, LaFleur's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Matt LaFleur's play-calling affect Packers fantasy players?",
-        "answer": "Matt LaFleur is calling the Packers offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (89% vs 75%) and shotgun rate above league average (69.4% vs 61%). The lead back handles 42% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Matt LaFleur is calling the Packers offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (89% vs 76%) and shotgun rate above league average (69.4% vs 61%). The lead back handles 42% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "hou": {
@@ -5034,12 +5034,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.9%",
-            "current": "18.7%",
+            "current": "21.3%",
             "change": {
               "dir": "down",
-              "text": "−4.2"
+              "text": "−1.6"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -5047,12 +5047,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "54%",
-            "current": "55.4%",
+            "current": "55.7%",
             "change": {
               "dir": "up",
-              "text": "+1.4"
+              "text": "+1.7"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -5093,7 +5093,7 @@
               "dir": "down",
               "text": "−21"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -5270,7 +5270,7 @@
       "bottomLine": "The fantasy bottom line: Caley called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Texans have been less aggressive on short 4th downs, more pass-heavy in the red zone and pass-heavier on early downs than in 2025. Historically, Caley's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Nick Caley's play-calling affect Texans fantasy players?",
-        "answer": "Nick Caley is calling the Texans offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (38% vs 75%) and red-zone pass rate above league average (61% vs 54%). The lead back handles 60% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Nick Caley is calling the Texans offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (38% vs 76%) and red-zone pass rate above league average (61% vs 54%). The lead back handles 60% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ind": {
@@ -5390,12 +5390,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "28%",
-            "current": "26.3%",
+            "current": "28.6%",
             "change": {
-              "dir": "down",
-              "text": "−1.7 - 6th in NFL"
+              "dir": "up",
+              "text": "+0.6 - 5th in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -5403,12 +5403,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "53.1%",
-            "current": "61.2%",
+            "current": "62.5%",
             "change": {
               "dir": "up",
-              "text": "+8.1"
+              "text": "+9.4"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -5449,7 +5449,7 @@
               "dir": "down",
               "text": "−38"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -5472,7 +5472,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "61.2",
+          "stat": "62.5",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -5645,7 +5645,7 @@
                 "tone": "good"
               },
               {
-                "text": "WR39 · Allen",
+                "text": "WR40 · Allen",
                 "tone": "bad"
               },
               {
@@ -5734,7 +5734,7 @@
       "bottomLine": "The fantasy bottom line: Steichen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Colts have been less aggressive on short 4th downs, more under-center and more motion-heavy than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Shane Steichen's play-calling affect Colts fantasy players?",
-        "answer": "Shane Steichen is calling the Colts offense for the fourth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (57% vs 75%) and red-zone pass rate below league average (44% vs 54%). The lead back handles 82% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Shane Steichen is calling the Colts offense for the fourth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate below league average (57% vs 76%) and red-zone pass rate below league average (44% vs 54%). The lead back handles 82% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "jax": {
@@ -5863,7 +5863,7 @@
               "dir": "up",
               "text": "+1.1"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -5876,7 +5876,7 @@
               "dir": "up",
               "text": "+3.8 - 8th in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -5917,7 +5917,7 @@
               "dir": "down",
               "text": "−19"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -5978,7 +5978,7 @@
           "stop": "Jaguars · HC",
           "years": "2025-26",
           "scoring": "25.7 ppg",
-          "scoringContext": "2026 through Week 6, 8th in NFL",
+          "scoringContext": "2026 through Week 6, 9th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "RBs took 14% of targets (league 18%) in 2026; the lead back handled 64% of backfield weighted opportunities."
@@ -6037,7 +6037,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB12 · Lawrence",
+                "text": "QB13 · Lawrence",
                 "tone": "plain"
               },
               {
@@ -6045,7 +6045,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR18 · Washington",
+                "text": "WR19 · Washington",
                 "tone": "plain"
               },
               {
@@ -6122,7 +6122,7 @@
       "bottomLine": "The fantasy bottom line: Coen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Jaguars have been less aggressive on short 4th downs, more pass-heavy in the red zone and more under-center than in 2025. Historically, Coen's offenses have also directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Liam Coen's play-calling affect Jaguars fantasy players?",
-        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 6 2026, the offense shows 4th-down go rate below league average (67% vs 75%) and shotgun rate below league average (55.4% vs 61%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 6 2026, the offense shows 4th-down go rate below league average (67% vs 76%) and pre-snap motion above league average (63.8% vs 58%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "kc": {
@@ -6188,7 +6188,7 @@
             "current": "+3%",
             "change": {
               "dir": "down",
-              "text": "−1 - 5th in NFL"
+              "text": "−1 - 4th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": 4,
@@ -6242,12 +6242,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "15.3%",
-            "current": "29%",
+            "current": "31.4%",
             "change": {
               "dir": "up",
-              "text": "+13.7 - 2nd in NFL"
+              "text": "+16.1 - 3rd in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -6255,12 +6255,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "49.7%",
-            "current": "59.1%",
+            "current": "58.1%",
             "change": {
               "dir": "up",
-              "text": "+9.4"
+              "text": "+8.4"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -6301,7 +6301,7 @@
               "dir": "down",
               "text": "−3"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -6316,7 +6316,7 @@
         },
         {
           "key": "paRate",
-          "stat": "29",
+          "stat": "31.4",
           "unit": "play-action",
           "heading": "More play-action.",
           "body": "A boost to downfield receiver efficiency.",
@@ -6324,7 +6324,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "59.1",
+          "stat": "58.1",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -6587,7 +6587,7 @@
       "bottomLine": "The fantasy bottom line: Reid called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Chiefs have been more under-center, heavier on play-action and more motion-heavy than in 2025. Historically, Reid's offenses have also directed a below-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Andy Reid's play-calling affect Chiefs fantasy players?",
-        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows play-action rate above league average (29% vs 21%) and no-huddle rate below league average (0.3% vs 6%). The lead back handles 80% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows play-action rate above league average (31.4% vs 23%) and no-huddle rate below league average (0.3% vs 6%). The lead back handles 80% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lac": {
@@ -6710,9 +6710,9 @@
             "current": "26.4%",
             "change": {
               "dir": "up",
-              "text": "+3.3 - 5th in NFL"
+              "text": "+3.3"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -6725,7 +6725,7 @@
               "dir": "up",
               "text": "+21.2 - 3rd in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -6766,7 +6766,7 @@
               "dir": "flat",
               "text": "-"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -6939,7 +6939,7 @@
                 "tone": "bad"
               },
               {
-                "text": "WR68 · McConkey",
+                "text": "WR69 · McConkey",
                 "tone": "bad"
               },
               {
@@ -7025,7 +7025,7 @@
       "bottomLine": "The fantasy bottom line: Mike McDaniel is new to the Chargers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Chargers have been more motion-heavy, more run-leaning by PROE and run-heavier on early downs than under the 2025 staff. Historically, McDaniel's offenses have also directed an above-average share of targets to running backs. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Mike McDaniel's play-calling affect Chargers fantasy players?",
-        "answer": "Mike McDaniel is a first-year play-caller for the Chargers, so last season's tendencies carry little predictive weight. Through Week 6 2026, the offense shows pre-snap motion above league average (73.5% vs 59%) and pass rate over expected below league average (−10% vs +0%). The lead back handles 46% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Mike McDaniel is a first-year play-caller for the Chargers, so last season's tendencies carry little predictive weight. Through Week 6 2026, the offense shows pre-snap motion above league average (73.5% vs 58%) and pass rate over expected below league average (−10% vs +0%). The lead back handles 46% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lar": {
@@ -7135,7 +7135,7 @@
             "current": "10.1%",
             "change": {
               "dir": "up",
-              "text": "+3.5 - 6th in NFL"
+              "text": "+3.5 - 5th in NFL"
             },
             "nflAvg": "6%"
           },
@@ -7145,12 +7145,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "34.6%",
-            "current": "22.1%",
+            "current": "26.2%",
             "change": {
               "dir": "down",
-              "text": "−12.5"
+              "text": "−8.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -7158,12 +7158,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "64.9%",
-            "current": "66.4%",
+            "current": "67.7%",
             "change": {
               "dir": "up",
-              "text": "+1.5 - 5th in NFL"
+              "text": "+2.8 - 5th in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -7204,7 +7204,7 @@
               "dir": "up",
               "text": "+18 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -7218,19 +7218,19 @@
           "note": "4 such snaps"
         },
         {
-          "key": "paRate",
-          "stat": "22.1",
-          "unit": "play-action",
-          "heading": "Less play-action.",
-          "body": "Fewer of the scheme's easiest explosive throws.",
-          "note": null
-        },
-        {
           "key": "shotgunRate",
           "stat": "51.8",
           "unit": "shotgun",
           "heading": "More shotgun.",
           "body": "A more spread, dropback-first identity.",
+          "note": null
+        },
+        {
+          "key": "paRate",
+          "stat": "26.2",
+          "unit": "play-action",
+          "heading": "Less play-action.",
+          "body": "Fewer of the scheme's easiest explosive throws.",
           "note": null
         }
       ],
@@ -7360,8 +7360,8 @@
             "current": true,
             "cells": [
               {
-                "text": "QB10 · Stafford",
-                "tone": "good"
+                "text": "QB11 · Stafford",
+                "tone": "plain"
               },
               {
                 "text": "RB6 · Williams",
@@ -7372,7 +7372,7 @@
                 "tone": "good"
               },
               {
-                "text": "TE21 · Higbee",
+                "text": "TE22 · Higbee",
                 "tone": "plain"
               }
             ]
@@ -7455,10 +7455,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Rams have passed on 69% of plays while trailing by 7+, compared with 52% while leading by 7+. The 17-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: McVay called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Rams have been more aggressive on short 4th downs, lighter on play-action and more shotgun-based than in 2025. Historically, McVay's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: McVay called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Rams have been more aggressive on short 4th downs, more shotgun-based and lighter on play-action than in 2025. Historically, McVay's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Sean McVay's play-calling affect Rams fantasy players?",
-        "answer": "Sean McVay is calling the Rams offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and shotgun rate below league average (51.8% vs 61%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Sean McVay is calling the Rams offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and pre-snap motion above league average (67.7% vs 58%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lv": {
@@ -7582,12 +7582,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "24.9%",
-            "current": "19%",
+            "current": "22.9%",
             "change": {
               "dir": "down",
-              "text": "−5.9"
+              "text": "−2"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -7595,12 +7595,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "52.4%",
-            "current": "61.9%",
+            "current": "61.3%",
             "change": {
               "dir": "up",
-              "text": "+9.5"
+              "text": "+8.9"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -7641,7 +7641,7 @@
               "dir": "down",
               "text": "−33"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -7656,7 +7656,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "61.9",
+          "stat": "61.3",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -7726,7 +7726,7 @@
           "stop": "Raiders · HC",
           "years": "2026",
           "scoring": "26.1 ppg",
-          "scoringContext": "through Week 7, 6th in NFL",
+          "scoringContext": "through Week 7, 7th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "WRs took 41% of targets (league 58%) in 2026; the lead back handled 73% of backfield weighted opportunities."
@@ -7833,7 +7833,7 @@
                 "tone": "good"
               },
               {
-                "text": "RB9 · Jeanty",
+                "text": "RB10 · Jeanty",
                 "tone": "good"
               },
               {
@@ -7923,7 +7923,7 @@
       "bottomLine": "The fantasy bottom line: Klint Kubiak is new to the Raiders call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Raiders have been less aggressive on short 4th downs, more motion-heavy and more under-center than under the 2025 staff. Historically, Kubiak's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Klint Kubiak's play-calling affect Raiders fantasy players?",
-        "answer": "Klint Kubiak is a first-year play-caller for the Raiders, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (50% vs 75%) and red-zone pass rate above league average (61% vs 54%). The lead back handles 73% of backfield weighted opportunities, and the target split leans toward wide receivers (53% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Klint Kubiak is a first-year play-caller for the Raiders, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (50% vs 76%) and red-zone pass rate above league average (61% vs 54%). The lead back handles 73% of backfield weighted opportunities, and the target split leans toward wide receivers (53% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "mia": {
@@ -8047,12 +8047,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "27.4%",
-            "current": "21.3%",
+            "current": "25%",
             "change": {
               "dir": "down",
-              "text": "−6.1"
+              "text": "−2.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -8060,12 +8060,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "70.7%",
-            "current": "74.4%",
+            "current": "74.6%",
             "change": {
               "dir": "up",
-              "text": "+3.7 - 2nd in NFL"
+              "text": "+3.9 - 2nd in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -8106,7 +8106,7 @@
               "dir": "down",
               "text": "−7"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -8235,7 +8235,7 @@
                 "tone": "bad"
               },
               {
-                "text": "WR46 · Washington",
+                "text": "WR47 · Washington",
                 "tone": "bad"
               },
               {
@@ -8313,7 +8313,7 @@
       "bottomLine": "The fantasy bottom line: Bobby Slowik is new to the Dolphins call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Dolphins have been more run-heavy in the red zone, more under-center and less aggressive on short 4th downs than under the 2025 staff. Historically, Slowik's offenses have also directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Bobby Slowik's play-calling affect Dolphins fantasy players?",
-        "answer": "Bobby Slowik is a first-year play-caller for the Dolphins, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows red-zone pass rate below league average (33% vs 54%) and pre-snap motion above league average (74.4% vs 59%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward wide receivers (64% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Bobby Slowik is a first-year play-caller for the Dolphins, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows red-zone pass rate below league average (33% vs 54%) and pre-snap motion above league average (74.6% vs 58%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward wide receivers (64% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "min": {
@@ -8433,12 +8433,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "25.7%",
-            "current": "25.8%",
+            "current": "32.3%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+6.6 - 2nd in NFL"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -8446,12 +8446,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "51.8%",
-            "current": "53.5%",
+            "current": "53.8%",
             "change": {
               "dir": "up",
-              "text": "+1.7"
+              "text": "+2"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -8492,7 +8492,7 @@
               "dir": "up",
               "text": "+17 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -8514,12 +8514,12 @@
           "note": "6-game sample"
         },
         {
-          "key": "rzPassRate",
-          "stat": "59",
-          "unit": "red-zone pass %",
-          "heading": "Run-heavy in the red zone.",
-          "body": "More rushing TD opportunity, less for the pass-catchers.",
-          "note": "6-game sample · 39 red-zone plays"
+          "key": "paRate",
+          "stat": "32.3",
+          "unit": "play-action",
+          "heading": "More play-action.",
+          "body": "A boost to downfield receiver efficiency.",
+          "note": "6-game sample"
         }
       ],
       "staff": {
@@ -8750,10 +8750,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Vikings have passed on 57% of plays while trailing by 7+, compared with 43% while leading by 7+. The 14-point difference is worth monitoring, but each bucket remains a small early-season sample."
       },
-      "bottomLine": "The fantasy bottom line: O'Connell called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Vikings have been more aggressive on short 4th downs, run-heavier on early downs and more run-heavy in the red zone than in 2025. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
+      "bottomLine": "The fantasy bottom line: O'Connell called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 6 games, the Vikings have been more aggressive on short 4th downs, run-heavier on early downs and heavier on play-action than in 2025. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does Kevin O'Connell's play-calling affect Vikings fantasy players?",
-        "answer": "Kevin O'Connell is calling the Vikings offense for the fifth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and early-down pass rate below league average (46.3% vs 55%). The lead back handles 72% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Kevin O'Connell is calling the Vikings offense for the fifth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and play-action rate above league average (32.3% vs 23%). The lead back handles 72% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ne": {
@@ -8886,7 +8886,7 @@
               "dir": "down",
               "text": "−3.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -8899,7 +8899,7 @@
               "dir": "up",
               "text": "+2.5"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -8940,7 +8940,7 @@
               "dir": "flat",
               "text": "-"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -9314,7 +9314,7 @@
             "current": "64.9%",
             "change": {
               "dir": "up",
-              "text": "+1.8 - 7th in NFL"
+              "text": "+1.8 - 6th in NFL"
             },
             "nflAvg": "61%",
             "priorNum": 63.1,
@@ -9383,12 +9383,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "18.5%",
-            "current": "14.2%",
+            "current": "14.9%",
             "change": {
               "dir": "down",
-              "text": "−4.3"
+              "text": "−3.6"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -9396,12 +9396,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "61.6%",
-            "current": "60.2%",
+            "current": "61.8%",
             "change": {
-              "dir": "down",
-              "text": "−1.4"
+              "dir": "flat",
+              "text": "steady"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -9442,7 +9442,7 @@
               "dir": "up",
               "text": "+12 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -9622,7 +9622,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB9 · Shough",
+                "text": "QB10 · Shough",
                 "tone": "good"
               },
               {
@@ -9719,7 +9719,7 @@
       "bottomLine": "The fantasy bottom line: Moore called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Saints have been more aggressive on short 4th downs, more under-center and less up-tempo than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Kellen Moore's play-calling affect Saints fantasy players?",
-        "answer": "Kellen Moore is calling the Saints offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and no-huddle rate above league average (14.5% vs 6%). The lead back handles 36% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Kellen Moore is calling the Saints offense for the second straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and no-huddle rate above league average (14.5% vs 6%). The lead back handles 36% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "nyg": {
@@ -9847,12 +9847,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.8%",
-            "current": "17.7%",
+            "current": "20%",
             "change": {
               "dir": "down",
-              "text": "−5.1"
+              "text": "−2.8"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -9860,12 +9860,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "38.4%",
-            "current": "45.6%",
+            "current": "45.8%",
             "change": {
               "dir": "up",
-              "text": "+7.2"
+              "text": "+7.4"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -9906,7 +9906,7 @@
               "dir": "up",
               "text": "+5"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -9929,7 +9929,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "45.6",
+          "stat": "45.8",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -10192,7 +10192,7 @@
       "bottomLine": "The fantasy bottom line: Matt Nagy is new to the Giants call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Giants have been more under-center, less up-tempo and more motion-heavy than under the 2025 staff. Historically, Nagy's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Matt Nagy's play-calling affect Giants fantasy players?",
-        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows pre-snap motion below league average (45.6% vs 59%) and 4th-down go rate above league average (83% vs 75%). The lead back handles 53% of backfield weighted opportunities, and the target split leans toward wide receivers (56% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows pre-snap motion below league average (45.8% vs 58%) and 4th-down go rate above league average (83% vs 76%). The lead back handles 53% of backfield weighted opportunities, and the target split leans toward wide receivers (56% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "nyj": {
@@ -10316,12 +10316,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "17.9%",
-            "current": "16.9%",
+            "current": "20.3%",
             "change": {
-              "dir": "down",
-              "text": "−1"
+              "dir": "up",
+              "text": "+2.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -10329,12 +10329,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "62.7%",
-            "current": "47.8%",
+            "current": "48.9%",
             "change": {
               "dir": "down",
-              "text": "−14.9"
+              "text": "−13.8"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -10375,7 +10375,7 @@
               "dir": "up",
               "text": "+20 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -10398,7 +10398,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "47.8",
+          "stat": "48.9",
           "unit": "motion",
           "heading": "Less pre-snap motion.",
           "body": "A less motion-heavy look than in 2025.",
@@ -10572,7 +10572,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB16 · Smith",
+                "text": "QB17 · Smith",
                 "tone": "plain"
               },
               {
@@ -10669,7 +10669,7 @@
       "bottomLine": "The fantasy bottom line: Frank Reich is new to the Jets call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Jets have been more aggressive on short 4th downs, more under-center and less motion-heavy than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Frank Reich's play-calling affect Jets fantasy players?",
-        "answer": "Frank Reich is a first-year play-caller for the Jets, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and pre-snap motion below league average (47.8% vs 59%). The lead back handles 58% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Frank Reich is a first-year play-caller for the Jets, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and pre-snap motion below league average (48.9% vs 58%). The lead back handles 58% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "phi": {
@@ -10702,10 +10702,10 @@
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
         "explanation": "New play-caller (Kevin Patullo called plays here in 2025). Last season's tendencies describe a different coach's offense - project from this season's sample, small as it is.",
-        "ledger": "Mannion - 6 of 6 games in 2026 · first season",
+        "ledger": "Mannion - 7 of 7 games in 2026 · first season",
         "ledgerStats": {
-          "called": 6,
-          "games": 6,
+          "called": 7,
+          "games": 7,
           "priorSeasons": 0,
           "firstSeason": 2026,
           "note": null
@@ -10721,10 +10721,10 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "57.8%",
-            "current": "65.5%",
+            "current": "64.9%",
             "change": {
               "dir": "up",
-              "text": "+7.7 - 6th in NFL"
+              "text": "+7.1 - 6th in NFL"
             },
             "nflAvg": "61%",
             "priorNum": 57.8,
@@ -10736,10 +10736,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−2.5%",
-            "current": "−1.6%",
+            "current": "−2.3%",
             "change": {
-              "dir": "up",
-              "text": "+0.9"
+              "dir": "flat",
+              "text": "steady"
             },
             "nflAvg": "0%",
             "priorNum": -2.5,
@@ -10751,7 +10751,7 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "33.3s",
-            "current": "32.2s",
+            "current": "32.3s",
             "change": {
               "dir": "up",
               "text": "faster"
@@ -10767,10 +10767,10 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "52.7%",
-            "current": "58%",
+            "current": "57%",
             "change": {
               "dir": "up",
-              "text": "+5.3"
+              "text": "+4.3"
             },
             "nflAvg": "55%"
           },
@@ -10780,10 +10780,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "19.4%",
-            "current": "15.2%",
+            "current": "16.1%",
             "change": {
               "dir": "down",
-              "text": "−4.2 - 2nd in NFL"
+              "text": "−3.3 - 1st in NFL"
             },
             "nflAvg": "6%"
           },
@@ -10793,12 +10793,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.3%",
-            "current": "18%",
+            "current": "18.4%",
             "change": {
               "dir": "down",
-              "text": "−4.3"
+              "text": "−3.9"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -10806,12 +10806,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "47.6%",
-            "current": "56.9%",
+            "current": "55.6%",
             "change": {
               "dir": "up",
-              "text": "+9.3"
+              "text": "+8"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -10819,10 +10819,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "77.7%",
-            "current": "71%",
+            "current": "70.2%",
             "change": {
               "dir": "down",
-              "text": "−6.7 - 4th in NFL"
+              "text": "−7.5 - 5th in NFL"
             },
             "nflAvg": "61%"
           },
@@ -10832,10 +10832,10 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "45%",
-            "current": "39%",
+            "current": "36%",
             "change": {
               "dir": "down",
-              "text": "−6"
+              "text": "−9"
             },
             "nflAvg": "54%",
             "priorNum": 45,
@@ -10852,34 +10852,34 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
         {
+          "key": "rzPassRate",
+          "stat": "36",
+          "unit": "red-zone pass %",
+          "heading": "Run-heavy in the red zone.",
+          "body": "More rushing TD opportunity, less for the pass-catchers.",
+          "note": null
+        },
+        {
           "key": "motionRate",
-          "stat": "56.9",
+          "stat": "55.6",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
-          "note": "6-game sample"
-        },
-        {
-          "key": "passRate",
-          "stat": "65.5",
-          "unit": "pass %",
-          "heading": "More dropbacks.",
-          "body": "More target volume for the pass-catchers.",
-          "note": "6-game sample"
+          "note": null
         },
         {
           "key": "shotgunRate",
-          "stat": "71",
+          "stat": "70.2",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action.",
-          "note": "6-game sample"
+          "note": null
         }
       ],
       "staff": {
@@ -10893,7 +10893,7 @@
         "dc": {
           "name": "Vic Fangio",
           "sub": "Fangio system, Year 3: roughly 90% two-high pre-snap shells in 2025, extensive coverage disguise and late open-to-closed safety rotations into Cover 3, Quarters and other match structures.",
-          "body": "Through Week 6 the defense allows 0.08 EPA per play (27th of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Eagles offense still determines whether those scripts materialize."
+          "body": "Through Week 7 the defense allows 0.11 EPA per play (28th of 32, ranked on pass and run snaps in the play-by-play). Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The Eagles offense still determines whether those scripts materialize."
         },
         "continuity": {
           "stat": "New install",
@@ -10905,11 +10905,11 @@
         {
           "stop": "Eagles · OC",
           "years": "2026",
-          "scoring": "17.7 ppg",
-          "scoringContext": "through Week 6, 29th in NFL",
+          "scoring": "18.1 ppg",
+          "scoringContext": "through Week 7, 29th in NFL",
           "current": true,
           "thesis": "The current stop:",
-          "fingerprint": "WRs took 63% of targets (league 58%) in 2026; the lead back handled 30% of backfield weighted opportunities."
+          "fingerprint": "WRs took 62% of targets (league 58%) in 2026; the lead back handled 29% of backfield weighted opportunities."
         }
       ],
       "finishes": {
@@ -10917,7 +10917,7 @@
         "rows": [
           {
             "stop": "Eagles · 2026",
-            "context": "pace through Week 6",
+            "context": "pace through Week 7",
             "current": true,
             "cells": [
               {
@@ -10925,7 +10925,7 @@
                 "tone": "plain"
               },
               {
-                "text": "RB62 · Barkley",
+                "text": "RB42 · Barkley",
                 "tone": "bad"
               },
               {
@@ -10933,8 +10933,8 @@
                 "tone": "bad"
               },
               {
-                "text": "TE25 · Goedert",
-                "tone": "bad"
+                "text": "TE21 · Goedert",
+                "tone": "plain"
               }
             ]
           }
@@ -10946,13 +10946,13 @@
         "rows": [
           {
             "label": "Wide receivers",
-            "pct": 63,
+            "pct": 62,
             "nfl": 58,
             "gold": true
           },
           {
             "label": "Tight ends",
-            "pct": 20,
+            "pct": 21,
             "nfl": 24
           },
           {
@@ -10961,7 +10961,7 @@
             "nfl": 18
           }
         ],
-        "note": "This season Mannion's offense has directed a larger share of targets to wide receivers than the league baseline (63% vs 58%). That tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "This season Mannion's offense has directed a larger share of targets to wide receivers than the league baseline (62% vs 58%). That tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season (* = previous staff).",
@@ -10980,7 +10980,7 @@
           },
           {
             "label": "'26 PHI",
-            "value": 30,
+            "value": 29,
             "current": true,
             "feed": true
           }
@@ -10988,7 +10988,7 @@
         "note": "Starred seasons were a previous staff's - context, not this caller's record. No clean trend: the lead back's share of backfield weighted opportunities (carries + 2×targets) has moved around season to season. Treat the current split as the read and revisit it weekly."
       },
       "scoreState": {
-        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 6.",
+        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 7.",
         "rows": [
           {
             "label": "Leading by 7+",
@@ -10997,21 +10997,21 @@
           },
           {
             "label": "Within 7",
-            "share": 69,
-            "result": "69% pass · 229 plays"
+            "share": 66,
+            "result": "66% pass · 272 plays"
           },
           {
             "label": "Trailing by 7+",
-            "share": 66,
-            "result": "66% pass · 95 plays"
+            "share": 69,
+            "result": "69% pass · 114 plays"
           }
         ],
-        "note": "A clear pass-rate increase when trailing. The Eagles have passed on 66% of plays while trailing by 7+, compared with 33% while leading by 7+. The 33-point difference is worth monitoring, but each bucket remains a small early-season sample."
+        "note": "A clear pass-rate increase when trailing. The Eagles have passed on 69% of plays while trailing by 7+, compared with 33% while leading by 7+. The 36-point difference is worth monitoring, but each bucket remains a small early-season sample."
       },
-      "bottomLine": "The fantasy bottom line: Sean Mannion is new to the Eagles call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Eagles have been more motion-heavy, pass-heavier and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
+      "bottomLine": "The fantasy bottom line: Sean Mannion is new to the Eagles call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Eagles have been more run-heavy in the red zone, more motion-heavy and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Sean Mannion's play-calling affect Eagles fantasy players?",
-        "answer": "Sean Mannion is a first-year play-caller for the Eagles, so last season's tendencies carry little predictive weight. Through Week 6 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate below league average (39% vs 54%). The lead back handles 30% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Sean Mannion is a first-year play-caller for the Eagles, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and red-zone pass rate below league average (36% vs 54%). The lead back handles 29% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "pit": {
@@ -11066,7 +11066,7 @@
             "current": "66.6%",
             "change": {
               "dir": "up",
-              "text": "+5.9 - 3rd in NFL"
+              "text": "+5.9 - 2nd in NFL"
             },
             "nflAvg": "61%",
             "priorNum": 60.7,
@@ -11081,7 +11081,7 @@
             "current": "+2.9%",
             "change": {
               "dir": "up",
-              "text": "+3.6 - 6th in NFL"
+              "text": "+3.6 - 5th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -0.7,
@@ -11135,12 +11135,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "19.5%",
-            "current": "15.2%",
+            "current": "15.9%",
             "change": {
               "dir": "down",
-              "text": "−4.3"
+              "text": "−3.6"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -11148,12 +11148,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "55.1%",
-            "current": "49.9%",
+            "current": "47.5%",
             "change": {
               "dir": "down",
-              "text": "−5.2"
+              "text": "−7.6"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -11164,7 +11164,7 @@
             "current": "67.3%",
             "change": {
               "dir": "up",
-              "text": "+0.5"
+              "text": "+0.5 - 8th in NFL"
             },
             "nflAvg": "61%"
           },
@@ -11194,7 +11194,7 @@
               "dir": "down",
               "text": "−49"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -11216,11 +11216,11 @@
           "note": null
         },
         {
-          "key": "earlyDownPassRate",
-          "stat": "62",
-          "unit": "early-down pass %",
-          "heading": "Passing on the downs that are a choice.",
-          "body": "A real lean toward the pass when the staff has the choice.",
+          "key": "motionRate",
+          "stat": "47.5",
+          "unit": "motion",
+          "heading": "Less pre-snap motion.",
+          "body": "A less motion-heavy look than in 2025.",
           "note": null
         }
       ],
@@ -11398,12 +11398,12 @@
             "current": true,
             "cells": [
               {
-                "text": "QB13 · Rodgers",
+                "text": "QB14 · Rodgers",
                 "tone": "plain"
               },
               {
-                "text": "RB10 · Warren",
-                "tone": "good"
+                "text": "RB11 · Warren",
+                "tone": "plain"
               },
               {
                 "text": "WR26 · Metcalf",
@@ -11493,10 +11493,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Steelers have passed on 74% of plays while trailing by 7+, compared with 50% while leading by 7+. The 24-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Mike McCarthy is new to the Steelers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Steelers have been less aggressive on short 4th downs, more pass-heavy in the red zone and pass-heavier on early downs than under the 2025 staff. Historically, McCarthy's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Mike McCarthy is new to the Steelers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Steelers have been less aggressive on short 4th downs, more pass-heavy in the red zone and less motion-heavy than under the 2025 staff. Historically, McCarthy's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Mike McCarthy's play-calling affect Steelers fantasy players?",
-        "answer": "Mike McCarthy is a first-year play-caller for the Steelers, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (33% vs 75%) and red-zone pass rate above league average (70% vs 54%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Mike McCarthy is a first-year play-caller for the Steelers, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (33% vs 76%) and red-zone pass rate above league average (70% vs 54%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "sea": {
@@ -11620,12 +11620,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "25.3%",
-            "current": "24.2%",
+            "current": "26.2%",
             "change": {
-              "dir": "down",
-              "text": "−1.1 - 8th in NFL"
+              "dir": "up",
+              "text": "+0.9"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -11633,12 +11633,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "57%",
-            "current": "56.4%",
+            "current": "53%",
             "change": {
               "dir": "down",
-              "text": "−0.6"
+              "text": "−4"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -11679,7 +11679,7 @@
               "dir": "up",
               "text": "+36 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -11838,7 +11838,7 @@
       "bottomLine": "The fantasy bottom line: Brian Fleury is new to the Seahawks call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Seahawks have been more aggressive on short 4th downs, less up-tempo and more shotgun-based than under the 2025 staff. This season the offense has directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Brian Fleury's play-calling affect Seahawks fantasy players?",
-        "answer": "Brian Fleury is a first-year play-caller for the Seahawks, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and shotgun rate below league average (50.6% vs 61%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward wide receivers (67% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Brian Fleury is a first-year play-caller for the Seahawks, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and shotgun rate below league average (50.6% vs 61%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward wide receivers (67% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "sf": {
@@ -11904,7 +11904,7 @@
             "current": "+1.7%",
             "change": {
               "dir": "up",
-              "text": "+2.6 - 7th in NFL"
+              "text": "+2.6 - 6th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -0.9,
@@ -11958,12 +11958,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.3%",
-            "current": "18.6%",
+            "current": "21.6%",
             "change": {
               "dir": "down",
-              "text": "−3.7"
+              "text": "−0.7"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -11971,12 +11971,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "68.4%",
-            "current": "77.7%",
+            "current": "76%",
             "change": {
               "dir": "up",
-              "text": "+9.3 - 1st in NFL"
+              "text": "+7.6 - 1st in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -12017,14 +12017,14 @@
               "dir": "down",
               "text": "−7"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
       "shifts": [
         {
           "key": "motionRate",
-          "stat": "77.7",
+          "stat": "76",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -12221,7 +12221,7 @@
                 "tone": "good"
               },
               {
-                "text": "WR19 · Evans",
+                "text": "WR20 · Evans",
                 "tone": "plain"
               },
               {
@@ -12311,7 +12311,7 @@
       "bottomLine": "The fantasy bottom line: Shanahan called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the 49ers have been more motion-heavy, less aggressive on short 4th downs and more under-center than in 2025. Historically, Shanahan's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Kyle Shanahan's play-calling affect 49ers fantasy players?",
-        "answer": "Kyle Shanahan is calling the 49ers offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows pre-snap motion above league average (77.7% vs 59%) and shotgun rate below league average (49% vs 61%). The lead back handles 63% of backfield weighted opportunities, and the target split leans toward wide receivers (54% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Kyle Shanahan is calling the 49ers offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 7 2026, the offense shows pre-snap motion above league average (76% vs 58%) and shotgun rate below league average (49% vs 61%). The lead back handles 63% of backfield weighted opportunities, and the target split leans toward wide receivers (54% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "tb": {
@@ -12435,12 +12435,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "16.9%",
-            "current": "19.8%",
+            "current": "21%",
             "change": {
               "dir": "up",
-              "text": "+2.9"
+              "text": "+4.1"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -12448,12 +12448,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "62.2%",
-            "current": "70.9%",
+            "current": "68.3%",
             "change": {
               "dir": "up",
-              "text": "+8.7 - 4th in NFL"
+              "text": "+6.1 - 4th in NFL"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -12494,7 +12494,7 @@
               "dir": "down",
               "text": "−32"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -12509,7 +12509,7 @@
         },
         {
           "key": "motionRate",
-          "stat": "70.9",
+          "stat": "68.3",
           "unit": "motion",
           "heading": "More pre-snap motion.",
           "body": "A more motion-heavy look than in 2025.",
@@ -12619,7 +12619,7 @@
                 "tone": "bad"
               },
               {
-                "text": "RB12 · Irving",
+                "text": "RB13 · Irving",
                 "tone": "plain"
               },
               {
@@ -12700,7 +12700,7 @@
       "bottomLine": "The fantasy bottom line: Zac Robinson is new to the Buccaneers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Buccaneers have been less aggressive on short 4th downs, more motion-heavy and more run-heavy in the red zone than under the 2025 staff. Historically, Robinson's offenses have also directed a below-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Zac Robinson's play-calling affect Buccaneers fantasy players?",
-        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (60% vs 75%) and pre-snap motion above league average (70.9% vs 59%). The lead back handles 67% of backfield weighted opportunities, and the target split leans toward tight ends (19% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate below league average (60% vs 76%) and pre-snap motion above league average (68.3% vs 58%). The lead back handles 67% of backfield weighted opportunities, and the target split leans toward tight ends (19% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ten": {
@@ -12824,12 +12824,12 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "18.7%",
-            "current": "19%",
+            "current": "21.1%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+2.4"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -12837,12 +12837,12 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "44.7%",
-            "current": "47%",
+            "current": "48.8%",
             "change": {
               "dir": "up",
-              "text": "+2.3"
+              "text": "+4.1"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -12853,7 +12853,7 @@
             "current": "70.4%",
             "change": {
               "dir": "down",
-              "text": "−2.5 - 5th in NFL"
+              "text": "−2.5 - 4th in NFL"
             },
             "nflAvg": "61%"
           },
@@ -12883,7 +12883,7 @@
               "dir": "up",
               "text": "+20 - 1st in NFL"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -13178,7 +13178,7 @@
       "bottomLine": "The fantasy bottom line: Brian Daboll is new to the Titans call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 7 games, the Titans have been more aggressive on short 4th downs, more run-heavy in the red zone and faster-paced than under the 2025 staff. Historically, Daboll's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Brian Daboll's play-calling affect Titans fantasy players?",
-        "answer": "Brian Daboll is a first-year play-caller for the Titans, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and pre-snap motion below league average (47% vs 59%). The lead back handles 69% of backfield weighted opportunities, and the target split leans toward wide receivers (69% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Brian Daboll is a first-year play-caller for the Titans, so last season's tendencies carry little predictive weight. Through Week 7 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and no-huddle rate above league average (16.1% vs 6%). The lead back handles 69% of backfield weighted opportunities, and the target split leans toward wide receivers (69% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "was": {
@@ -13307,7 +13307,7 @@
               "dir": "down",
               "text": "−3.2"
             },
-            "nflAvg": "21%"
+            "nflAvg": "23%"
           },
           {
             "key": "motionRate",
@@ -13320,7 +13320,7 @@
               "dir": "down",
               "text": "−2"
             },
-            "nflAvg": "59%"
+            "nflAvg": "58%"
           },
           {
             "key": "shotgunRate",
@@ -13361,7 +13361,7 @@
               "dir": "down",
               "text": "−20"
             },
-            "nflAvg": "75%"
+            "nflAvg": "76%"
           }
         ]
       },
@@ -13520,7 +13520,7 @@
       "bottomLine": "The fantasy bottom line: David Blough is new to the Commanders call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 6 games, the Commanders have been less up-tempo, less aggressive on short 4th downs and more pass-heavy in the red zone than under the 2025 staff. This season the offense has directed an above-average share of targets to wide receivers. Those are useful early signals, but the 2026 sample remains only 6 games; current personnel usage should carry more weight than assuming every early tendency is permanent.",
       "faq": {
         "question": "How does David Blough's play-calling affect Commanders fantasy players?",
-        "answer": "David Blough is a first-year play-caller for the Commanders, so last season's tendencies carry little predictive weight. Through Week 6 2026, the offense shows shotgun rate above league average (73.9% vs 61%) and pre-snap motion below league average (52.5% vs 59%). The lead back handles 44% of backfield weighted opportunities, and the target split leans toward wide receivers (68% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "David Blough is a first-year play-caller for the Commanders, so last season's tendencies carry little predictive weight. Through Week 6 2026, the offense shows shotgun rate above league average (73.9% vs 61%) and pre-snap motion below league average (52.5% vs 58%). The lead back handles 44% of backfield weighted opportunities, and the target split leans toward wide receivers (68% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     }
   }

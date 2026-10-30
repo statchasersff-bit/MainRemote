@@ -801,7 +801,14 @@ function renderMatchupCell(
 
   const away = game.away?.fullName ?? game.awayCode;
   const home = game.home?.fullName ?? game.homeCode;
-  const spoken = `Matchup: ${away} ${game.neutralSite ? "vs" : "at"} ${home}`;
+  // A finished game's link names what its page holds - the player stats and
+  // box score - so the anchor is not the one word "Matchup" for every row
+  // (the Search Console brief of 2026-10-30); a game still to be played is
+  // the matchup it was.
+  const spoken =
+    game.status === "final"
+      ? `${away} vs ${home} player stats and box score`
+      : `Matchup: ${away} ${game.neutralSite ? "vs" : "at"} ${home}`;
 
   return (
     `<div class="scs-game-go">` +

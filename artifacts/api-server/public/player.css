@@ -3703,15 +3703,23 @@ button.scp-search-opt {
   margin: 0;
 }
 
-/* The heading is a section of its own, so the read section's 40px top and
-   the heading section's 8px bottom stacked into 48px under the H1 - the
-   other tabs sit 18px under theirs (mak, 2026-10-22). */
-.scp .scp-ol .scp-ol-sec-take {
+/* The heading standing as a section of its own (preseason, or a take with no
+   prose): the read section's 40px top and the heading section's 8px bottom
+   stacked into 48px under the H1 - the other tabs sit 18px under theirs
+   (mak, 2026-10-22). */
+.scp .scp-ol .scp-ol-sec-take:not(.scp-ol-sec-read) {
   padding-bottom: 0;
 }
 
-.scp .scp-ol .scp-ol-sec-take + .scp-ox-sec {
+.scp .scp-ol .scp-ol-sec-take:not(.scp-ol-sec-read) + .scp-ox-sec {
   padding-top: 18px;
+}
+
+/* In season the heading opens the read grid's prose column (mak, 2026-10-29),
+   so the sidebar's first card starts on the heading's row; the prose sits the
+   same 18px under it that the other tabs' content sits under theirs. */
+.scp .scp-ol .scp-ol-sec-read .scp-ol-take {
+  margin-bottom: 18px;
 }
 
 .scp .scp-ol .scp-ol-injured {
@@ -5631,6 +5639,16 @@ button.scp-search-opt {
 .scp-pts {
   font-weight: 800;
   color: var(--sc-navy);
+}
+
+/* The opponent's crest ahead of its code in the game log (mak, 2026-10-29). */
+.scp .scp-table--week td.scp-opp .scp-opp-logo {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 7px;
+  vertical-align: -4px;
+  object-fit: contain;
 }
 
 .scp-opp-rank {
@@ -8715,19 +8733,18 @@ a.scp-peer:focus-visible {
 }
 
 /*
- * Except the career table, which carries no rule and no indent.
+ * Except the selector at rest (All), which carries no rule and no indent.
  *
  * The rule earns its place on a pinned season - that block is a second game
  * log on a page that already has one, and the rule is what says at any scroll
- * position which of the two is this year. The career table is not a second
- * anything: it is one line per season, a shape nothing else on the tab has,
- * and it cannot be mistaken for the current-season log it sits under. What the
- * rule was doing there was drawing a 650px vertical down the side of the one
- * table on this page wide enough to need its full width.
+ * position which of the two is this year. The All state is one heading row
+ * with the chips on it (the career table that used to sit under it moved to
+ * the Stats tab, 2026-10-29), and a rule beside a single line is noise.
  */
-.scp-archive--career {
+.scp-archive--all {
   padding-left: 0;
   border-left: 0;
+  padding-bottom: 0;
 }
 
 /* It is a record, not the page's subject, so it is quieter than the season
@@ -8835,6 +8852,26 @@ a.scp-peer:focus-visible {
 .scp .scp-table--log th.scp-col-pts,
 .scp .scp-table--log th.scp-col-fin {
   font-weight: 800;
+}
+
+/*
+ * The week-by-week table centers its middle (mak, 2026-10-29).
+ *
+ * Result, FPTS and the box-score columns sit between a left-set Wk/Opp pair
+ * and a right-set Finish pill. Right-aligned, a score like "W 26-14" and a
+ * "27/37" drifted toward the next column's head and read as part of it;
+ * centered under their labels they read as their own. Finish keeps the right
+ * edge so the pill still closes the row. Scoped to the tab's own table
+ * (`--week`): the Overview's compact log and career tables share `--log` and
+ * keep their alignment.
+ */
+.scp .scp-table--week th.scp-col-res,
+.scp .scp-table--week th.scp-col-pts,
+.scp .scp-table--week th.scp-col-box,
+.scp .scp-table--week td.scp-score,
+.scp .scp-table--week td.scp-pts,
+.scp .scp-table--week td.scp-col-box {
+  text-align: center;
 }
 
 /* The finish pill carries its own color, so it only needs the room. */
@@ -9182,6 +9219,744 @@ a.scp-peer:focus-visible {
  * because they are what the list is ordered by, and the count drops under the
  * club rather than squeezing the name into nothing.
  */
+
+/* ======================================================================
+ * Injury tab: the Durability Profile card (mak, 2026-10-30). Redraft
+ * Command's player-page injury card, under everything the tab already had,
+ * sized and laid out as it is there: the same type sizes, the same card,
+ * and the same three layouts, chosen by the CARD's width (container
+ * queries at 689px, 880px and 940px, as in the source) with the phone rules
+ * (560px and under) on the window. lib/player/injury-durability.ts renders
+ * it; client/player.ts (wireDurability) dresses the figure and shares one
+ * selected region between the markers, the pills, the grid and the record.
+ * ====================================================================== */
+.scp .scp-in .scp-in-dur-sec {
+  container-type: inline-size;
+}
+.scp .scp-in .scp-in-dur {
+  --s: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 13px;
+  box-shadow: 0 1px 2px rgba(14, 27, 46, 0.04);
+}
+/* Narrow: the signature first, then the evidence under a rule, then the regions. */
+.scp .scp-in .scp-in-dur-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.scp .scp-in .scp-in-dur-ev {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  min-width: 0;
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, var(--scp-ph-line) 50%, transparent);
+}
+.scp .scp-in .scp-in-dur-reg {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* The figure block: the 4:5 frame takes the middle 54% of the width, the
+   dressed render centered in it with the region markers over it, and the
+   body map's callouts in the gutters either side (2026-10-30), each tied to
+   its marker by a leader line. 430px wide, the frame is the 230px it was.
+   The base image stays hidden unless the script gives up. */
+.scp .scp-in .scp-in-figwrap {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  aspect-ratio: 40 / 27;
+  margin: 0 auto;
+}
+.scp .scp-in .scp-in-fig {
+  position: absolute;
+  top: 0;
+  left: 23%;
+  width: 54%;
+  height: 100%;
+  overflow: hidden;
+}
+.scp .scp-in .scp-in-fl-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.scp .scp-in .scp-in-fl-lines line {
+  stroke: #a9b2c0;
+  stroke-width: 1;
+}
+.scp .scp-in .scp-in-fl {
+  position: absolute;
+  z-index: 2;
+  width: 29%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 700 12px/1.2 var(--scp-ph-sans);
+  color: var(--scp-ph-ink);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: opacity 0.15s ease;
+}
+.scp .scp-in .scp-in-fl.is-left {
+  left: 0;
+  padding-right: 1.5%;
+  text-align: right;
+}
+.scp .scp-in .scp-in-fl.is-right {
+  right: 0;
+  padding-left: 1.5%;
+  text-align: left;
+}
+.scp .scp-in .scp-in-fl b {
+  display: block;
+  font-weight: 700;
+}
+.scp .scp-in .scp-in-fl span {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-fl:hover b {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.scp .scp-in .scp-in-fl.is-on b {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.scp .scp-in .scp-in-fig.has-sel ~ .scp-in-fl:not(.is-on) {
+  opacity: 0.45;
+}
+.scp .scp-in .scp-in-fig.has-sel ~ .scp-in-fl:not(.is-on):hover {
+  opacity: 1;
+}
+.scp .scp-in .scp-in-fl:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.scp .scp-in .scp-in-fig-img,
+.scp .scp-in .scp-in-fig-canvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  transform: translateX(-50%);
+  user-select: none;
+  pointer-events: none;
+}
+.scp .scp-in .scp-in-fig-img {
+  opacity: 0;
+}
+.scp .scp-in .scp-in-fig.is-fallback .scp-in-fig-img {
+  opacity: 1;
+}
+.scp .scp-in .scp-in-fig-canvas {
+  animation: scp-in-fig-in 0.3s ease;
+}
+@keyframes scp-in-fig-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.scp .scp-in .scp-in-mk {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  border: 2px solid;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 2px #141414,
+    0 0 10px 2px rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+.scp .scp-in .scp-in-mk:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.scp .scp-in .scp-in-mk.is-on {
+  transform: translate(-50%, -50%) scale(1.25);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--sc-gold);
+}
+.scp .scp-in .scp-in-fig.has-sel .scp-in-mk:not(.is-on) {
+  opacity: 0.45;
+}
+.scp .scp-in .scp-in-fig.has-sel .scp-in-mk:not(.is-on):hover {
+  opacity: 1;
+}
+.scp .scp-in .scp-in-mk:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+}
+
+/* The signature under the figure: the health bar and the status line. */
+.scp .scp-in .scp-in-dur-sig {
+  width: 100%;
+  max-width: 255px;
+  margin: 0 auto;
+}
+.scp .scp-in .scp-in-hp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.scp .scp-in .scp-in-hp-k {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hp);
+}
+.scp .scp-in .scp-in-hp-v {
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-hp-v b {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--hp);
+}
+.scp .scp-in .scp-in-hp-v small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-hp-bar {
+  position: relative;
+  height: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.scp .scp-in .scp-in-hp-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--hp), color-mix(in srgb, var(--hp) 80%, transparent) 55%, color-mix(in srgb, var(--hp) 60%, transparent));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--hp) 53%, transparent);
+  transition: width 0.7s ease-out;
+}
+.scp .scp-in .scp-in-hp-gloss {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  left: 2px;
+  height: 50%;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.scp .scp-in .scp-in-hp-notches {
+  position: absolute;
+  inset: 2px;
+  background: repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 2px), rgba(0, 0, 0, 0.45) calc(10% - 2px), rgba(0, 0, 0, 0.45) 10%);
+  pointer-events: none;
+}
+.scp .scp-in .scp-in-hp-tier {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hp);
+}
+.scp .scp-in .scp-in-dur-status {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-dur-status b {
+  font-weight: 700;
+  color: var(--scp-ph-ink);
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-dur-status b.is-good {
+  color: #059669;
+}
+.scp .scp-in .scp-in-dur-status b.is-mid {
+  color: #d97706;
+}
+.scp .scp-in .scp-in-dur-status b.is-bad {
+  color: #e11d48;
+}
+.scp .scp-in .scp-in-dur-status i {
+  font-style: normal;
+  color: color-mix(in srgb, var(--scp-ph-muted) 40%, transparent);
+  margin: 0 6px;
+}
+
+/* The availability grid: one box per team game, a row per season. Boxes,
+   gaps and type scale together (--s is 1.15 once the card is wide enough). */
+.scp .scp-in .scp-in-av {
+  --ab: calc(9px * var(--s));
+  --abg: calc(2px * var(--s));
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: calc(10.5px * var(--s));
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-av-head,
+.scp .scp-in .scp-in-av-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(1.5px * var(--s)) 0;
+  white-space: nowrap;
+}
+.scp .scp-in .scp-in-av-year {
+  flex: 0 0 calc(36px * var(--s));
+  width: calc(36px * var(--s));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-av-reg {
+  flex: 0 0 auto;
+  width: calc(18 * (var(--ab) + var(--abg)));
+  font-size: calc(9.5px * var(--s));
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.scp .scp-in .scp-in-av-po {
+  padding-left: calc(4 * var(--abg));
+  font-size: calc(9.5px * var(--s));
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.scp .scp-in .scp-in-av-boxes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--abg);
+}
+.scp .scp-in .scp-in-ab {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--ab);
+  height: var(--ab);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--scp-ph-muted) 20%, transparent);
+}
+.scp .scp-in .scp-in-ab.is-g {
+  background: rgba(6, 95, 70, 0.45);
+}
+.scp .scp-in .scp-in-ab.is-r {
+  background: #ef4444;
+}
+.scp .scp-in .scp-in-ab.is-f {
+  background: color-mix(in srgb, var(--scp-ph-muted) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scp-ph-muted) 15%, transparent);
+}
+.scp .scp-in .scp-in-ab.is-mark {
+  box-shadow:
+    0 0 0 1px #fff,
+    0 0 0 2.5px var(--sc-gold);
+}
+.scp .scp-in .scp-in-ab-gap {
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-self: stretch;
+  width: calc(3 * var(--abg));
+}
+.scp .scp-in .scp-in-ab-gap::before {
+  content: "";
+  width: 1px;
+  background: color-mix(in srgb, var(--scp-ph-line) 70%, transparent);
+}
+.scp .scp-in .scp-in-av-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+.scp .scp-in .scp-in-av-legend .scp-in-ab {
+  width: 9px;
+  height: 9px;
+}
+.scp .scp-in .scp-in-av-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* The 2x2 tiles beside the grid: number over label. */
+.scp .scp-in .scp-in-dur-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 300px;
+}
+.scp .scp-in .scp-in-dt {
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--scp-ph-line) 50%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, #eef2f7 20%, #fff);
+}
+.scp .scp-in .scp-in-dt-v {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--scp-ph-ink);
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-dt-k {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--scp-ph-muted);
+}
+
+/* The region pills, worst first; only the selected one wears its color. */
+.scp .scp-in .scp-in-rp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.scp .scp-in .scp-in-rp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--scp-ph-line) 70%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #eef2f7 30%, #fff);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--scp-ph-muted);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.scp .scp-in .scp-in-rp:hover {
+  color: var(--scp-ph-ink);
+  filter: brightness(1.1);
+}
+.scp .scp-in .scp-in-rp b {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--scp-ph-muted);
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-rp.is-on {
+  color: var(--scp-ph-ink);
+  border-color: var(--rp-stroke, var(--sc-gold));
+  background: color-mix(in srgb, var(--rp-fill, var(--sc-gold)) 33%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.8),
+    0 0 8px rgba(212, 175, 55, 0.35);
+}
+.scp .scp-in .scp-in-rp:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+}
+.scp .scp-in .scp-in-dur-none {
+  margin: 0;
+  font-size: 12px;
+  color: var(--scp-ph-muted);
+}
+
+/* The open region's record. */
+.scp .scp-in .scp-in-rd {
+  padding: 12px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, #eef2f7 30%, #fff);
+}
+.scp .scp-in .scp-in-rd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-rd-head b {
+  font-weight: 700;
+  color: var(--scp-ph-ink);
+}
+.scp .scp-in .scp-in-rd-x {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--scp-ph-muted);
+  cursor: pointer;
+}
+.scp .scp-in .scp-in-rd-x:hover {
+  background: color-mix(in srgb, #eef2f7 60%, #fff);
+  color: var(--scp-ph-ink);
+}
+.scp .scp-in .scp-in-rd-list {
+  display: grid;
+  gap: 10px;
+  max-height: 340px;
+  margin: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.scp .scp-in .scp-in-rd-list li {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.375;
+}
+.scp .scp-in .scp-in-rd-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+}
+.scp .scp-in .scp-in-rd-when {
+  font-weight: 700;
+  color: var(--scp-ph-ink);
+  font-variant-numeric: tabular-nums;
+}
+.scp .scp-in .scp-in-rd-inj {
+  font-weight: 600;
+  color: var(--scp-ph-ink);
+}
+.scp .scp-in .scp-in-rd-tag {
+  padding: 0 6px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-in .scp-in-rd-tag.is-reaggravated {
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #e11d48;
+}
+.scp .scp-in .scp-in-rd-tag.is-recurring {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #b45309;
+}
+.scp .scp-in .scp-in-rd-list p {
+  margin: 2px 0 0;
+  color: var(--scp-ph-muted);
+}
+
+/* 689px to 879px of card: the grid and tiles beside the body map, the pair
+   centered in the card, the pills and the record centered under both. */
+@container (min-width: 689px) {
+  .scp .scp-in .scp-in-dur {
+    /* Room for the figure block's callouts (was 260px for the bare frame). */
+    grid-template-columns: minmax(0, auto) minmax(0, 430px);
+    justify-content: center;
+    gap: 24px 32px;
+  }
+  .scp .scp-in .scp-in-dur-side {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .scp .scp-in .scp-in-dur-ev {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .scp .scp-in .scp-in-dur-tiles {
+    max-width: none;
+  }
+  .scp .scp-in .scp-in-dur-reg {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .scp .scp-in .scp-in-dur-reg .scp-in-rp-row {
+    justify-content: center;
+  }
+  .scp .scp-in .scp-in-rd {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .scp .scp-in .scp-in-rd-head,
+  .scp .scp-in .scp-in-rd-line {
+    justify-content: center;
+  }
+}
+/* From 880px of card: the evidence column as wide as the grid-and-tiles row,
+   the pills and record exactly that width under it; the signature spans both
+   rows and ends with the record, its health block on the bottom edge. */
+@container (min-width: 880px) {
+  .scp .scp-in .scp-in-dur {
+    grid-template-columns: minmax(0, auto) minmax(340px, 1fr);
+    justify-content: stretch;
+    gap: 16px 32px;
+  }
+  .scp .scp-in .scp-in-dur-side {
+    grid-row: 1 / span 2;
+    align-self: stretch;
+  }
+  .scp .scp-in .scp-in-dur-sig {
+    margin-top: auto;
+  }
+  .scp .scp-in .scp-in-dur-ev {
+    align-self: start;
+    width: fit-content;
+    max-width: 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .scp .scp-in .scp-in-av {
+    flex-shrink: 0;
+  }
+  .scp .scp-in .scp-in-dur-tiles {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 300px;
+  }
+  .scp .scp-in .scp-in-dur-reg {
+    grid-column: 1;
+    width: 0;
+    min-width: 100%;
+  }
+  .scp .scp-in .scp-in-dur-reg .scp-in-rp-row {
+    justify-content: flex-start;
+  }
+  .scp .scp-in .scp-in-rd {
+    max-width: none;
+    margin: 0;
+    text-align: left;
+  }
+  .scp .scp-in .scp-in-rd-head,
+  .scp .scp-in .scp-in-rd-line {
+    justify-content: flex-start;
+  }
+  .scp .scp-in .scp-in-rd-head {
+    justify-content: space-between;
+  }
+}
+/* A card with the row to itself: the grid 15% larger, the tiles up to 360px. */
+@container (min-width: 940px) {
+  .scp .scp-in .scp-in-dur {
+    --s: 1.15;
+  }
+  .scp .scp-in .scp-in-dur-tiles {
+    max-width: 360px;
+  }
+}
+@media (min-width: 768px) {
+  .scp .scp-in .scp-in-dur {
+    padding: 20px;
+  }
+}
+/* Phones (560px and under): the tiles lead the card, over the figure; then
+   the pills and the record; the grid last, its boxes spread across the
+   width (same size, wider gaps; a row with playoffs sets the gap for all). */
+@media (max-width: 560px) {
+  .scp .scp-in .scp-in-dur-ev {
+    display: contents;
+  }
+  .scp .scp-in .scp-in-fl {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+  .scp .scp-in .scp-in-fl span {
+    font-size: 10px;
+  }
+  .scp .scp-in .scp-in-dur-tiles {
+    order: -1;
+    max-width: none;
+  }
+  .scp .scp-in .scp-in-dur-side {
+    order: 0;
+  }
+  .scp .scp-in .scp-in-dur-reg {
+    order: 1;
+  }
+  .scp .scp-in .scp-in-av {
+    order: 2;
+    --abg: clamp(2px, calc((100cqw - 2px - 2 * 18px - 36px - 8px - 18 * 9px) / 17), 27px);
+    width: 100%;
+    overflow-x: visible;
+    text-align: center;
+  }
+  .scp .scp-in .scp-in-av.has-po {
+    --abg: clamp(2px, calc((100cqw - 2px - 2 * 18px - 36px - 8px - 22 * 9px) / 24), 27px);
+  }
+  .scp .scp-in .scp-in-av-head,
+  .scp .scp-in .scp-in-av-row {
+    justify-content: flex-start;
+  }
+  .scp .scp-in .scp-in-av-legend,
+  .scp .scp-in .scp-in-rp-row {
+    justify-content: center;
+  }
+  .scp .scp-in .scp-in-rd {
+    text-align: center;
+  }
+  .scp .scp-in .scp-in-rd-head,
+  .scp .scp-in .scp-in-rd-line {
+    justify-content: center;
+  }
+}
+
+
 @media (max-width: 560px) {
   .scp-stint {
     grid-template-columns: 68px 26px minmax(0, 1fr);
@@ -10515,6 +11290,10 @@ a.scp-peer:focus-visible {
   font-style: normal;
   color: #b4bcc8;
 }
+/* "Avg QB17" closes the counts: where he usually lands, in ink. */
+.scp .scp-gl-sum .scp-gl-avgsum {
+  color: var(--scp-ph-ink);
+}
 /*
  * Restyled 2026-10-22 to mak's notes: one band read as a performance
  * spectrum. The three tiers are named above it, hairline markers cut the
@@ -10549,17 +11328,41 @@ a.scp-peer:focus-visible {
 .scp .scp-gl-tiers .is-k1 {
   color: #8a6512;
 }
+/* The cutoff ranks at the seams and the axis ends (critique, 2026-10-29):
+   small, in ink, on a white chip so they win any overlap with a tier name. */
+.scp .scp-gl-tiers .scp-gl-cut {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 0 3px;
+  background: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 12px;
+  color: var(--scp-ph-ink);
+  white-space: nowrap;
+}
+.scp .scp-gl-tiers .scp-gl-cut.is-lo {
+  transform: none;
+  padding-left: 0;
+}
+.scp .scp-gl-tiers .scp-gl-cut.is-hi {
+  transform: translateX(-100%);
+  padding-right: 0;
+}
 .scp .scp-gl-track {
   position: relative;
   height: 10px;
   border-radius: 5px;
   background: #eef1f5;
   box-shadow: inset 0 1px 2px rgba(14, 27, 46, 0.07);
-  /* Room under the band for one row of labels; has-below adds the second. */
-  margin: 0 0 36px;
+  /* Room under the band for one row of labels (three lines: rank, week,
+     "Best week"); has-below adds the second row. */
+  margin: 0 0 50px;
 }
 .scp .scp-gl-track.has-below {
-  margin-bottom: 66px;
+  margin-bottom: 94px;
 }
 .scp .scp-gl-band {
   position: absolute;
@@ -10567,9 +11370,10 @@ a.scp-peer:focus-visible {
   bottom: 0;
   border-radius: 6px;
 }
+/* A flat tint: the gradient read as a meaning the band does not have. */
 .scp .scp-gl-band.is-b1 {
   left: 0;
-  background: linear-gradient(90deg, #e6bd58, #f1d58f);
+  background: #ecc86e;
 }
 .scp .scp-gl-band.is-b2 {
   background: #dbe2ec;
@@ -10603,7 +11407,24 @@ a.scp-peer:focus-visible {
 .scp .scp-gl-pin.is-best i {
   background: var(--scp-team);
 }
-.scp .scp-gl-pin span {
+/* The season-average marker: a dashed line through the band, a touch past
+   both edges, with a pin-style label under it. Drawn before the dots so a dot
+   at the same rank sits on top. */
+.scp .scp-gl-avg {
+  position: absolute;
+  top: 50%;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+.scp .scp-gl-avg i {
+  display: block;
+  width: 0;
+  height: 20px;
+  border-left: 2px dashed var(--scp-ph-ink);
+}
+.scp .scp-gl-pin > span,
+.scp .scp-gl-avg > span {
   position: absolute;
   top: 11px;
   left: 50%;
@@ -10614,12 +11435,40 @@ a.scp-peer:focus-visible {
   color: var(--scp-ph-muted);
   line-height: 1.2;
 }
+.scp .scp-gl-avg > span {
+  top: 15.5px;
+}
 /* The second label row, for a week whose neighbor took the first. */
-.scp .scp-gl-pin.is-below span {
-  top: 41px;
+.scp .scp-gl-pin.is-below > span {
+  top: 55px;
+}
+.scp .scp-gl-avg.is-below > span {
+  top: 59.5px;
+}
+/* Weeks that share a rank list under one dot: "Wk 1 @ LAC · Wk 7 vs DEN". */
+.scp .scp-gl-wk + .scp-gl-wk::before {
+  content: " · ";
+  color: #b4bcc8;
+}
+.scp .scp-gl-pin span strong b {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--scp-ph-muted);
+}
+/* The best week says so, in the dot's color. */
+.scp .scp-gl-pin span em {
+  display: block;
+  margin-top: 1px;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--scp-team);
 }
 /* Hidden visually, kept for screen readers. */
-.scp .scp-gl-pin.is-nolabel span {
+.scp .scp-gl-pin.is-nolabel > span,
+.scp .scp-gl-avg.is-nolabel > span {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -10627,7 +11476,8 @@ a.scp-peer:focus-visible {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-.scp .scp-gl-pin span strong {
+.scp .scp-gl-pin span strong,
+.scp .scp-gl-avg span strong {
   display: block;
   font-size: 13px;
   font-weight: 800;
@@ -10659,7 +11509,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-game {
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) 84px;
+  grid-template-columns: 128px minmax(0, 1fr) 84px;
   gap: 14px;
   align-items: center;
   background: #fff;
@@ -10675,17 +11525,36 @@ a.scp-peer:focus-visible {
 .scp .scp-gl-game.is-low {
   border-left-color: var(--scp-ph-bad);
 }
+/* The date, opponent and score stack is centered in its column (mak,
+   2026-10-29). Only on the three-column card: at narrow widths the stack
+   shares its row with the points and reads left-set against them. */
+.scp .scp-gl-meta {
+  text-align: center;
+}
+.scp .scp-gl-meta .scp-gl-opp {
+  justify-content: center;
+}
 .scp .scp-gl-when {
   font-size: 11px;
   line-height: 1.3;
   color: var(--scp-ph-muted);
 }
 .scp .scp-gl-opp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 800;
   font-stretch: 80%;
   line-height: 1.2;
   margin: 1px 0;
+}
+/* The opponent's crest after "vs Broncos" (mak, 2026-10-29). */
+.scp .scp-gl-opp-logo {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 .scp .scp-gl-score {
   font-size: 12px;
@@ -10776,21 +11645,39 @@ a.scp-peer:focus-visible {
   .scp .scp-gl-pin span small {
     display: block;
   }
-  .scp .scp-gl-pin span strong {
+  /* A shared-rank dot lists its weeks only: "Wk 1 · Wk 7". */
+  .scp .scp-gl-pin.is-multi span small {
+    display: none;
+  }
+  .scp .scp-gl-pin span strong,
+  .scp .scp-gl-avg span strong {
     font-size: 14px;
   }
+  /* The axis ends go; the two cutoffs stay. */
+  .scp .scp-gl-tiers .scp-gl-cut.is-end {
+    display: none;
+  }
   .scp .scp-gl-track {
-    margin-bottom: 50px;
+    margin-bottom: 64px;
   }
   .scp .scp-gl-track.has-below {
-    margin-bottom: 92px;
+    margin-bottom: 120px;
   }
-  .scp .scp-gl-pin.is-below span {
-    top: 53px;
+  .scp .scp-gl-pin.is-below > span {
+    top: 67px;
+  }
+  .scp .scp-gl-avg.is-below > span {
+    top: 71.5px;
   }
   .scp .scp-gl-game {
     grid-template-columns: 1fr auto;
     gap: 10px 16px;
+  }
+  .scp .scp-gl-meta {
+    text-align: left;
+  }
+  .scp .scp-gl-meta .scp-gl-opp {
+    justify-content: flex-start;
   }
   .scp .scp-gl-body {
     grid-column: 1 / -1;

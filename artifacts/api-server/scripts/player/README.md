@@ -31,7 +31,7 @@ this order:
 | 8 | `buildDynastyRankings.js` | `dynasty_rankings.json` | KeepTradeCut |
 | 9 | `buildProductionSnapshot.mjs` | `player_production.json` | Sleeper season production |
 | 10 | `buildInjurySnapshots.mjs` | `player_injuries.json` | injury history through 2025 (an outside scrape; not run since 2026-09-18) |
-| 10a | `buildInjuryHistory.mjs` | `player_injuries.json`, this season's entries | the Injury tool's store (`data/injury-impact/`: nflverse weekly reports, in-game events, reserve-list weeks in `roster-status.json`) and the game log; run after `scripts/injury-impact/refresh.mjs` |
+| 10a | `buildInjuryHistory.mjs` | `player_injuries.json`, this season's entries (`--all`: every season from 2009, the full rewrite) | the Injury tool's store (`data/injury-impact/`: nflverse weekly reports, in-game events, reserve-list weeks in `roster-status.json`, the durability grid in `gridiron.json` for past seasons) and the game log; run after `scripts/injury-impact/refresh.mjs`. Since 2026-10-30 the whole record from 2009 on is the store's; the scrape's entries survive only before 2009 and in the college list |
 | 11 | `buildFantasyOutlook2026.js` | `fantasy_outlook_2026.json` | see below |
 | 12 | `buildRosterPct.mjs` | `roster_pct.json` | Sleeper league research (ownership) |
 | 13 | `buildCollegeStats.mjs` | `college_stats.json` | CollegeFootballData.com (needs `CFBD_API_KEY`, free) |

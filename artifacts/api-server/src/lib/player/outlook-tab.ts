@@ -356,9 +356,29 @@ function matchupList(games: UpcomingGame[]): string {
 
 /* ------------------------------------------------------ section 1: the take */
 
-function renderTake(m: Model): string {
+/**
+ * The hero's content: the lead heading and, when he is out, the injured line.
+ *
+ * Since 2026-10-29 (mak) it is printed INSIDE the Our Take read grid in
+ * season, at the top of the prose column, so the Redraft Command card and the
+ * Best fit chips start on the heading's row instead of a heading-height below
+ * it. renderTake() wraps it in a section of its own for the cases that have no
+ * read grid to join: the preseason piece, and a take with no prose.
+ */
+function takeInner(m: Model): string {
   const tier = tierLine(m);
   if (!tier || !m.chips) return "";
+  return (
+    `<div class="scp-ol-take">` +
+    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
+    (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
+    `</div>`
+  );
+}
+
+function renderTake(m: Model): string {
+  const inner = takeInner(m);
+  if (!inner) return "";
 
   // mak's hero rework, 2026-10-01, then 2026-10-05: the dot-separated meta
   // line under the tier ("QB17 through Week 4 · 15.8 PPG · 34.6 att/game")
@@ -369,12 +389,7 @@ function renderTake(m: Model): string {
   // (mak, 2026-10-22); the tier still feeds the FAQ. The injured line stays.
   // The Best fit chips moved to the Our Take sidebar the same day, in place
   // of the "Outlook at a glance" card, so the hero is the heading.
-  return (
-    `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
-    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
-    (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
-    `</div></section>`
-  );
+  return `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h">${inner}</section>`;
 }
 
 /**
@@ -473,7 +488,12 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
   return out;
 }
 
-function renderRead(m: Model, data: PlayerPageData): string {
+/**
+ * The read and its sidebar. `lead` is the hero (takeInner) to print at the
+ * top of the prose column in season, which puts the sidebar on the heading's
+ * row; the section is then the take's own and is labelled by its heading.
+ */
+function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
   const record = data.fantasyOutlook2026;
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
@@ -521,9 +541,11 @@ function renderRead(m: Model, data: PlayerPageData): string {
   return (
     (m.preseason
       ? open("scp-ol-read-h", `Our ${m.season} preseason outlook`, "")
-      : `<section class="scp-ox-sec scp-ol-sec-read" aria-label="${escapeHtml(`Our take after Week ${m.week}`)}">`) +
+      : lead
+        ? `<section class="scp-ox-sec scp-ol-sec-take scp-ol-sec-read" aria-labelledby="scp-ol-take-h">`
+        : `<section class="scp-ox-sec scp-ol-sec-read" aria-label="${escapeHtml(`Our take after Week ${m.week}`)}">`) +
     `<div class="scp-ox-read">` +
-    `<div>${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
+    `<div>${m.preseason ? "" : lead}${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
     `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>` +
     archive +
     `</div>` +
@@ -886,9 +908,13 @@ export function outlookTabParts(
 ): { body: string; foot: string; faq: string } | null {
   const m = model(data);
   if (!m) return null;
+  // In season the hero rides inside the read grid (takeInner); it stands
+  // alone only when there is no read to carry it, or in the preseason.
+  const lead = m.preseason ? "" : takeInner(m);
+  const read = renderRead(m, data, lead);
   const main =
-    renderTake(m) +
-    renderRead(m, data) +
+    (read && lead ? "" : renderTake(m)) +
+    read +
     renderDrivers(m) +
     (SHOW_CONTRACT ? renderContract(m, data) : "") +
     renderTriggers(m, data);

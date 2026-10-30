@@ -9,7 +9,9 @@
  * release panel beside the sheet. Under the workspace: the dead-money
  * block and a note on how Worth is built. The cut figures are the cap
  * page's where it has the player and the builder's estimate otherwise, and
- * a row says which.
+ * a row says which. The cut column is a SIGNED net figure ("Net if cut"):
+ * a plus frees cap, a minus costs it, so the top of the sheet reads as what
+ * it is (releases that cost cap) rather than as savings gone wrong.
  *
  * Everything here is presentation. The figures come from contracts.ts as
  * they are; the only arithmetic in this file is sums of those figures for
@@ -21,7 +23,7 @@
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
-import { getPlayerProfileUrl } from "./links";
+import { getPlayerProfileUrl, getTeamHubUrl } from "./links";
 import { nameKeysForTeam, playerForSearchKey } from "./roster";
 import type { NamedPlayer } from "./roster";
 import type { NflTeam } from "./teams";
@@ -59,10 +61,23 @@ const STATUS_WORD: Record<string, string> = {
   EXEMPT: "Commissioner exempt",
 };
 
-function rankPill(rank: number | null): string {
+/**
+ * The rank chip, colored by goodness (mak's critique, 2026-10-29): ranks
+ * count "most in the league", so for cap space a low number is good and
+ * for dead money it is bad; `sense` says which. "neutral" (spending) is
+ * plain. The band rule is thirds of the league (mak, 2026-10-30): the top
+ * eleven and the bottom eleven get the color, the middle ten stay grey.
+ */
+export const RANK_TOP_THIRD = 11;
+export const RANK_BOTTOM_THIRD = 22;
+
+function rankPill(rank: number | null, sense: "more-is-good" | "more-is-bad" | "neutral" = "neutral"): string {
   if (rank === null) return "";
+  let tone = "";
+  if (sense !== "neutral" && rank <= RANK_TOP_THIRD) tone = sense === "more-is-good" ? " is-good" : " is-bad";
+  if (sense !== "neutral" && rank >= RANK_BOTTOM_THIRD) tone = sense === "more-is-good" ? " is-bad" : " is-good";
   return (
-    `<span class="sct-ct-rank"><span class="sct-ct-num">${e(ordinal(rank))}</span>` +
+    `<span class="sct-ct-rank${tone}"><span class="sct-ct-num">${e(ordinal(rank))}</span>` +
     `<span class="sct-visually-hidden"> of 32 clubs</span></span>`
   );
 }
@@ -72,6 +87,36 @@ function playerCell(p: ContractLine): string {
   return href
     ? `<a class="sct-ct-name sct-player-link" href="${e(href)}" target="_top">${e(p.name)}</a>`
     : `<span class="sct-ct-name">${e(p.name)}</span>`;
+}
+
+/**
+ * The headshot in a small round well ahead of the name, as the Draft tab's
+ * class tables have it (mak, 2026-10-30: the two tabs share one design).
+ * A player without a photo keeps the empty well, so the names stay in one
+ * column.
+ */
+function faceWell(team: NflTeam, p: ContractLine): string {
+  const id = rosterPlayer(team, p.name)?.id ?? null;
+  const img = id
+    ? headshotImg({
+        src: null,
+        id,
+        className: "sct-ct-face-img",
+        alt: "",
+        variants: ["160"],
+        width: 32,
+        height: 32,
+        loading: "lazy",
+        extra: ` aria-hidden="true"`,
+      })
+    : null;
+  return `<span class="sct-ct-face" aria-hidden="true">${img ?? ""}</span>`;
+}
+
+function playerWithFace(team: NflTeam, p: ContractLine): string {
+  // The Overpaid / Underpaid tag sits under the Worth figure (mak,
+  // 2026-10-30), not beside the name.
+  return `<span class="sct-ct-player">${faceWell(team, p)}<span class="sct-ct-who">${playerCell(p)}${statusPill(p)}</span></span>`;
 }
 
 function tagPill(p: ContractLine): string {
@@ -105,43 +150,84 @@ function posChip(p: ContractLine): string {
   return `<span class="sct-ct-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span>`;
 }
 
+/**
+ * One key per player shared by the sheet row, the release card and the
+ * scenario's cold-start hint, so a click on a card ticks the row.
+ */
+function lineKey(p: ContractLine): string {
+  return p.otcId !== null ? `otc-${p.otcId}` : `n-${nameKey(p.name)}`;
+}
+
+/** A small "i" the reader can hover; the text also reads to a screen reader. */
+function info(text: string): string {
+  return `<span class="sct-ct-info" title="${e(text)}"><span aria-hidden="true">i</span><span class="sct-visually-hidden"> ${e(text)}</span></span>`;
+}
+
 /* ------------------------------------------------------------------ strip */
 
-function tiles(team: NflTeam, v: ContractsView): string {
-  const tile = (value: string, label: string, extra = "", key = ""): string =>
-    `<li class="sct-ct-tile"${key ? ` data-sct-ct-tile="${key}"` : ""}>` +
-    `<span class="sct-ct-tile-label">${e(label)}</span>` +
-    `<span class="sct-ct-tile-value"><span class="sct-ct-num"${key ? ` data-sct-ct-out="${key}"` : ""}>${e(value)}</span>${extra}</span>` +
-    `</li>`;
-  const space = v.capSpace === null
-    ? tile(money(v.committed), `${v.season} cap committed`, rankPill(v.committedRank))
-    : tile(money(v.capSpace), `${v.season} cap space`, rankPill(v.capSpaceRank), "space");
-  const dead = v.deadTotal === null
-    ? tile(String(v.players.length), "Contracts on the books")
-    : tile(money(v.deadTotal), "Dead money", rankPill(v.deadRank), "dead");
+/**
+ * The rail's ledger (mak's critique, 2026-10-29): the eight cap figures as
+ * three labeled groups, each row label left, value right in tabular
+ * numerals with its rank chip, the caption dimmed beneath. One lead figure
+ * per group is set larger with the club's accent: cap space, cut savings,
+ * dead money. The groups are the three questions the figures answer:
+ * where the club stands, what it could do, and what is sunk. The cap-space
+ * and dead-money values keep their data-sct-ct-out hooks, so the cut
+ * scenario still writes the after-cuts figures into them.
+ */
+interface LedgerRow {
+  label: string;
+  value: string;
+  /** The caption, plain text. */
+  sub?: string;
+  /** The caption as markup (a linked name); wins over `sub`. */
+  subHtml?: string;
+  rank?: string;
+  title?: string;
+  lead?: boolean;
+  /** Context rather than state (the theoretical dead money): the value dims. */
+  dim?: boolean;
+  key?: string;
+  cls?: string;
+}
+
+function ledgerRow(r: LedgerRow): string {
+  const label = r.title ? `<abbr title="${e(r.title)}">${e(r.label)}</abbr>` : e(r.label);
+  const sub = r.subHtml ?? (r.sub ? e(r.sub) : "");
   return (
-    `<ul class="sct-ct-tiles" aria-label="${e(`${team.nickname} ${v.season} salary cap`)}">` +
-    space +
-    tile(money(v.top51), "Top-51 total", rankPill(v.top51Rank)) +
-    dead +
-    tile(
-      v.largest ? money(v.largest.capNumber) : "-",
-      v.largest ? `Largest cap hit · ${v.largest.name}` : "Largest cap hit",
-    ) +
-    `</ul>`
+    `<li class="sct-ct-lg-row${r.lead ? " is-lead" : ""}${r.dim ? " is-dim" : ""}${r.cls ? ` ${r.cls}` : ""}"${r.key ? ` data-sct-ct-tile="${r.key}"` : ""}>` +
+    `<span class="sct-ct-lg-label">${label}</span>` +
+    `<span class="sct-ct-lg-value"><span class="sct-ct-num"${r.key ? ` data-sct-ct-out="${r.key}"` : ""}>${r.value}</span></span>` +
+    (r.rank ? `<span class="sct-ct-lg-rank">${r.rank}</span>` : "") +
+    (sub ? `<span class="sct-ct-lg-sub">${sub}</span>` : "") +
+    `</li>`
   );
 }
 
-/* ------------------------------------------------------------------- band */
+/** "83 contracts · 7 overpaid": the Draft cards' stat strip, figures in the display face. */
+function strip(items: Array<[number | string, string]>): string {
+  return (
+    `<p class="sct-ct-strip">` +
+    items.map(([n, label]) => `<span class="sct-ct-strip-item"><span class="sct-ct-num">${e(String(n))}</span> ${e(label)}</span>`).join("") +
+    `</p>`
+  );
+}
 
-/**
- * Four figures summed from the sheet's own rows, so the workspace opens as
- * analysis rather than a list: cap committed, the cap a release could free,
- * the cap a release could not, and how far the deals sit from their Worth.
- */
-function band(v: ContractsView): string {
+function ledgerGroup(title: string, stripLine: string, rows: LedgerRow[], tail = ""): string {
+  return (
+    `<section class="sct-ct-lg">` +
+    `<h3 class="sct-ct-lg-h">${e(title)}</h3>` +
+    stripLine +
+    `<ul class="sct-ct-lg-rows">${rows.map(ledgerRow).join("")}</ul>` +
+    tail +
+    `</section>`
+  );
+}
+
+function ledger(team: NflTeam, v: ContractsView): string {
   const rows = v.players;
   const savers = rows.filter((p) => p.cutSave > 0);
+  const costers = rows.filter((p) => p.cutSave < 0);
   const releasable = savers.reduce((n, p) => n + p.cutSave, 0);
   const locked = rows.reduce((n, p) => n + p.cutDead, 0);
   const priced = rows.filter((p) => p.worth && p.apy > 0);
@@ -152,51 +238,96 @@ function band(v: ContractsView): string {
     if (diff > 0) surplus += diff;
     else deficit += diff;
   }
-  const item = (label: string, value: string, sub: string, title: string, cls = ""): string =>
-    `<div class="sct-ct-kpi${cls ? ` ${cls}` : ""}">` +
-    `<span class="sct-ct-kpi-label"><abbr title="${e(title)}">${e(label)}</abbr></span>` +
-    `<span class="sct-ct-kpi-value">${value}</span>` +
-    `<span class="sct-ct-kpi-sub">${e(sub)}</span>` +
-    `</div>`;
   const deals = (n: number): string => `${n} ${n === 1 ? "deal" : "deals"}`;
-  return (
-    `<div class="sct-ct-kpis" aria-label="${e(`${v.season} contract analysis`)}">` +
-    (v.liabilities !== null
-      ? item(
-          `${v.season} cap liabilities`,
-          e(money(v.liabilities)),
-          `${rows.length} contracts plus dead money`,
-          "The club's total cap liabilities on the cap page: every contract, dead money and reserve lists",
-        )
-      : item(
-          `${v.season} cap commitments`,
-          e(money(v.committed)),
-          `${rows.length} contracts on the sheet`,
-          "Every cap number on the sheet, summed",
-        )) +
-    item(
-      "Cut savings on the sheet",
-      e(money(releasable)),
-      `${deals(savers.length)} that free cap, summed`,
-      "The cap saved by every release that saves money, summed, each before June 1",
-    ) +
-    item(
-      "Dead money if all released",
-      e(money(locked)),
-      `every deal on the sheet, summed`,
-      "Bonus proration and guarantees already committed: the dead money the whole sheet would leave",
-    ) +
-    item(
-      "Contract value gap",
-      priced.length
-        ? `<span class="sct-ct-kpi-gap is-up">${e(signed(surplus))}</span>` +
-          `<span class="sct-ct-kpi-slash">/</span>` +
-          `<span class="sct-ct-kpi-gap is-down">${e(money(deficit))}</span>`
+
+  // Cap position: where the club stands.
+  const position: LedgerRow[] = [
+    v.capSpace === null
+      ? { label: `${v.season} cap committed`, value: e(money(v.committed)), rank: rankPill(v.committedRank), lead: true }
+      : { label: `${v.season} cap space`, value: e(money(v.capSpace)), rank: rankPill(v.capSpaceRank, "more-is-good"), lead: true, key: "space" },
+    v.liabilities !== null
+      ? {
+          label: "Cap liabilities",
+          value: e(money(v.liabilities)),
+          sub: "every contract plus dead money",
+          title: "The club's total cap liabilities on the cap page: every contract, dead money and reserve lists",
+        }
+      : {
+          label: "Cap commitments",
+          value: e(money(v.committed)),
+          sub: "every contract on the sheet, summed",
+          title: "Every cap number on the sheet, summed",
+        },
+    { label: "Top-51 total", value: e(money(v.top51)), rank: rankPill(v.top51Rank) },
+  ];
+  // The kicker: tight now, flexible if willing to cut, pointing at the scenario.
+  const kicker =
+    v.capSpace !== null && releasable > 0
+      ? `<p class="sct-ct-lg-kicker">${e(`${money(v.capSpace)} free today; ${money(releasable)} reachable via cuts.`)} ` +
+        `<a class="sct-ct-lg-link" href="#sct-ct-scen">Cut scenario</a></p>`
+      : "";
+
+  // Flexibility: what the club could do.
+  const flexibility: LedgerRow[] = [
+    {
+      label: "Cut savings",
+      value: e(money(releasable)),
+      sub: costers.length
+        ? `${deals(savers.length)} free cap, ${costers.length} would cost it`
+        : `${deals(savers.length)} that free cap, summed`,
+      title: "The cap freed by every release that frees money, summed, each before June 1. The largest deals cost cap to cut, so the top of the sheet shows none of this",
+      lead: true,
+    },
+    {
+      label: "Value gap",
+      value: priced.length
+        ? `<span class="sct-ct-kpi-gap ${surplus + deficit >= 0 ? "is-up" : "is-down"}">${e(signed(surplus + deficit))}</span>`
         : "-",
-      priced.length ? `across ${deals(priced.length)} priced` : "no deals priced yet",
-      "Worth above the deal's average, summed, against Worth below it, across every contract the model prices",
-      "is-gap",
-    ) +
+      // Dollars only: the header line above carries the counts.
+      sub: priced.length ? `${signed(surplus)} under, ${money(deficit)} over` : "no deals priced yet",
+      title: "Worth minus the deal's average, summed across every contract the model prices: a plus means the club pays less than production, a minus more. The split is the underpaid side against the overpaid side",
+    },
+  ];
+
+  // Dead money: what is sunk.
+  const dead: LedgerRow[] = [
+    v.deadTotal === null
+      ? { label: "Contracts on the books", value: String(rows.length), lead: true }
+      : { label: "On the books", value: e(money(v.deadTotal)), rank: rankPill(v.deadRank, "more-is-bad"), lead: true, key: "dead" },
+    {
+      label: "If all released",
+      value: e(money(locked)),
+      sub: `all ${deals(rows.length)}, summed`,
+      title: "Bonus proration and guarantees already committed: the dead money the whole sheet would leave",
+      dim: true,
+    },
+    {
+      label: "Largest hit",
+      value: v.largest ? e(money(v.largest.capNumber)) : "-",
+      subHtml: v.largest ? playerCell(v.largest) : undefined,
+    },
+  ];
+
+  // One scope line per card, in one shape, each reconciling with its rows
+  // (mak's critique, 2026-10-30): the league year is page context and lives
+  // in the intro and the sheet's head, not here.
+  const positionStrip = strip([[rows.length, rows.length === 1 ? "contract" : "contracts"]]);
+  const fair = Math.max(0, priced.length - v.tagged.over - v.tagged.under);
+  const flexStrip = priced.length
+    ? strip([
+        [v.tagged.over, "over"],
+        [v.tagged.under, "under"],
+        [fair, "fair"],
+      ])
+    : "";
+  const deadStrip = v.dead.length
+    ? strip([[v.dead.length, v.dead.length === 1 ? "player carried" : "players carried"]])
+    : "";
+  return (
+    `<div class="sct-ct-ledger" aria-label="${e(`${team.nickname} ${v.season} salary cap`)}">` +
+    ledgerGroup("Cap Position", positionStrip, position, kicker) +
+    ledgerGroup("Flexibility", flexStrip, flexibility) +
+    ledgerGroup("Dead Money", deadStrip, dead) +
     `</div>`
   );
 }
@@ -205,11 +336,16 @@ function band(v: ContractsView): string {
 
 function scenarioBar(v: ContractsView): string {
   if (v.capSpace === null) return "";
+  // The empty bar names a first tick: the release that frees the most cap.
+  const first = v.cutCandidates[0];
+  const hint = first
+    ? ` <button type="button" class="sct-ct-scen-try" data-sct-ct-try="${e(lineKey(first))}">${e(`Try ${first.name}`)}</button>`
+    : "";
   return (
-    `<div class="sct-ct-scen" data-sct-ct-scen>` +
+    `<div class="sct-ct-scen" id="sct-ct-scen" data-sct-ct-scen>` +
     `<div class="sct-ct-scen-head">` +
     `<span class="sct-ct-scen-title">Cut scenario</span>` +
-    `<span class="sct-ct-scen-help">Tick players to see the cap after releasing them.</span>` +
+    `<span class="sct-ct-scen-help">Tick players to see the cap after releasing them.${hint}</span>` +
     `</div>` +
     `<div class="sct-ct-scen-body">` +
     `<div class="sct-ct-scen-timing" role="group" aria-label="Release timing">` +
@@ -224,44 +360,57 @@ function scenarioBar(v: ContractsView): string {
     `</dl>` +
     `<button type="button" class="sct-ct-scen-reset" data-sct-ct-reset hidden>Clear</button>` +
     `</div>` +
+    // The other timing's result for the same picks, under the bar.
+    `<span class="sct-ct-scen-alt" data-sct-ct-out="alt" hidden></span>` +
     `</div>`
   );
 }
 
 /* ------------------------------------------------------------------ table */
 
-/** "2025 · 4 yrs · thru 2028": signed, length and last season in one cell. */
+/**
+ * "2025-2028": the deal's span, the year signed to its last season (mak,
+ * 2026-10-30: "just say length for the column header and show it as a
+ * range"). A one-season deal is its year alone. The title keeps the count
+ * of years for the hover.
+ */
 function signedCell(p: ContractLine): string {
   if (p.yearSigned === null) return "-";
-  const length = p.years ? ` · ${p.years} ${p.years === 1 ? "yr" : "yrs"}` : "";
-  const thru = p.finalYear !== null && p.finalYear !== p.yearSigned ? ` · thru ${p.finalYear}` : "";
-  return `${p.yearSigned}${length}${thru}`;
+  const last = p.finalYear ?? (p.years ? p.yearSigned + p.years - 1 : null);
+  const span = last !== null && last !== p.yearSigned ? `${p.yearSigned}-${last}` : String(p.yearSigned);
+  const years = p.years ? `${p.years} ${p.years === 1 ? "year" : "years"}` : "";
+  return years ? `<abbr title="${e(years)}">${e(span)}</abbr>` : e(span);
 }
 
 /**
  * Worth, and under it how far the deal's average sits from it. The tint on
  * a tagged cell is the verdict; the line beneath is the size of it.
  */
-function worthCell(p: ContractLine): string {
-  if (!p.worth) return `<td class="sct-ct-td is-num is-worth-col is-muted" data-label="Worth">-</td>`;
+function worthCell(p: ContractLine, doc: WorthDoc | null): string {
+  if (!p.worth) {
+    const why = p.fromCapPage
+      ? "Not priced: the register has no deal for this player yet"
+      : positionGroup(p.position) === "other"
+        ? "Not priced: offensive linemen, kickers, punters and long snappers are outside the model"
+        : doc
+          ? `Not priced: the model needs ${doc.minGames} games this season`
+          : "Not priced";
+    return `<td class="sct-ct-td is-num is-worth-col is-muted" data-label="Worth"><abbr class="sct-ct-fig" title="${e(why)}">-</abbr></td>`;
+  }
   const w = p.worth;
-  const diff = w.worth - p.apy;
-  const delta =
-    p.apy > 0 && Math.abs(diff) >= 0.05
-      ? `<span class="sct-ct-delta ${diff > 0 ? "is-up" : "is-down"}">${e(signed(diff))}<span class="sct-ct-delta-vs"> vs APY</span></span>`
-      : "";
+  // The "-$7.9M vs APY" line came out on 2026-10-30 (mak): the figure, the
+  // cell's tint and the tag beneath it carry the verdict.
   return (
     `<td class="sct-ct-td is-num is-worth-col is-worth${w.tag ? ` is-${w.tag}` : ""}" data-label="Worth">` +
     `<abbr class="sct-ct-fig" title="${e(`${w.productionLabel}, ${ordinal(w.rank)} of ${w.of} ${w.group}s with a contract`)}">${e(money(w.worth))}</abbr>` +
-    delta +
+    tagPill(p) +
     `</td>`
   );
 }
 
 /** Rows shown before "Show all": the top of the cap sheet (mak, 2026-10-23). */
-export const ROWS_SHOWN = 10;
 
-function row(p: ContractLine, scenario: boolean, more: boolean, maxSave: number): string {
+function row(team: NflTeam, p: ContractLine, scenario: boolean, maxSave: number, doc: WorthDoc | null): string {
   const dash = (m: number): string => (m > 0 ? money(m) : "-");
   const saveClass = p.cutSave > 0 ? " is-save" : p.cutSave < 0 ? " is-cost" : "";
   // The bar ranks the sheet's releasable cap at a glance: drawn only where a
@@ -275,21 +424,23 @@ function row(p: ContractLine, scenario: boolean, more: boolean, maxSave: number)
       ` aria-label="${e(`Cut ${p.name} in the scenario`)}"></td>`
     : "";
   return (
-    `<tr${more ? ` class="is-more"` : ""} data-sct-ct-row data-pre-save="${p.cutSave}" data-pre-dead="${p.cutDead}"` +
+    `<tr data-sct-ct-row data-sct-ct-id="${e(lineKey(p))}" data-pre-save="${p.cutSave}" data-pre-dead="${p.cutDead}"` +
     ` data-post-save="${p.june1Save}" data-post-dead="${p.june1Dead}"${p.cutEstimated ? ` data-est="1"` : ""}>` +
     pick +
-    `<th scope="row" class="sct-ct-td is-player">${playerCell(p)}${tagPill(p)}${statusPill(p)}</th>` +
+    `<th scope="row" class="sct-ct-td is-player">${playerWithFace(team, p)}</th>` +
     `<td class="sct-ct-td is-pos" data-label="Pos">${posChip(p)}</td>` +
     // Cap share and total value ride as titles rather than columns, so the
     // sheet is narrow enough for the release panel to sit beside it (mak,
     // 2026-10-23).
     `<td class="sct-ct-td is-num is-cap" data-label="Cap hit"><abbr class="sct-ct-fig" title="${e(p.capPct > 0 ? `${p.capPct.toFixed(1)}% of the cap` : p.fromCapPage ? "Cap number from the cap page; the register has no cap row for this deal yet" : "Cap number")}">${e(money(p.capNumber))}</abbr></td>` +
     `<td class="sct-ct-td is-num is-apy" data-label="APY"><abbr class="sct-ct-fig" title="${e(p.value > 0 ? `${money(p.value)} total value` : "Average per year")}">${e(dash(p.apy))}</abbr></td>` +
-    worthCell(p) +
+    worthCell(p, doc) +
     `<td class="sct-ct-td is-num is-gtd" data-label="Gtd">${e(dash(p.guaranteed))}</td>` +
-    `<td class="sct-ct-td is-muted is-signed" data-label="Signed">${e(signedCell(p))}</td>` +
-    `<td class="sct-ct-td is-num is-save-col${saveClass}" data-label="Cut saves">` +
-    `<span class="sct-ct-fig">${e(money(p.cutSave))}${p.cutEstimated ? `<span class="sct-ct-est" title="Estimated from the deal's structure">*</span>` : ""}</span>` +
+    `<td class="sct-ct-td is-muted is-signed" data-label="Length">${signedCell(p)}</td>` +
+    // Signed: "+$3.7M" frees cap, "-$20.8M" costs it (the column is the net
+    // of a release, and the sheet's top is all minus).
+    `<td class="sct-ct-td is-num is-save-col${saveClass}" data-label="If cut">` +
+    `<span class="sct-ct-fig">${e(signed(p.cutSave))}${p.cutEstimated ? `<span class="sct-ct-est" title="Estimated from the deal's structure">*</span>` : ""}</span>` +
     bar +
     `</td>` +
     `<td class="sct-ct-td is-num is-muted is-dead" data-label="Dead">${e(money(p.cutDead))}</td>` +
@@ -300,16 +451,17 @@ function row(p: ContractLine, scenario: boolean, more: boolean, maxSave: number)
 function table(team: NflTeam, v: ContractsView): string {
   const scenario = v.capSpace !== null;
   const maxSave = v.players.reduce((n, p) => Math.max(n, p.cutSave), 0);
+  // No sort arrow and no "i" icon in the head (mak, 2026-10-30); every
+  // explanation stays on the header's hover.
   const th = (label: string, cls = "", title = "", sorted = false): string =>
     `<th scope="col" class="sct-ct-th${cls ? ` ${cls}` : ""}${sorted ? " is-sorted" : ""}"${sorted ? ` aria-sort="descending"` : ""}>` +
     (title ? `<abbr title="${e(title)}">${e(label)}</abbr>` : e(label)) +
     `</th>`;
-  const total = v.players.length;
   return (
     `<div class="sct-ct-scroll" tabindex="0">` +
     `<table class="sct-ct-table">` +
     `<caption class="sct-visually-hidden">${e(
-      `${team.fullName} ${v.season} contracts: cap number, the deal's average, what a player producing like this is paid, guarantees, when it was signed and runs through, and the cap saved and left behind by a release before June 1.`,
+      `${team.fullName} ${v.season} contracts: cap number, the deal's average, what a player producing like this is paid, guarantees, the seasons it runs, and the net cap change and dead money of a release before June 1.`,
     )}</caption>` +
     `<thead><tr>` +
     (scenario ? `<th scope="col" class="sct-ct-th is-pick"><span class="sct-visually-hidden">Cut in scenario</span></th>` : "") +
@@ -318,30 +470,17 @@ function table(team: NflTeam, v: ContractsView): string {
     // The sheet is ordered by cap number; the header says so.
     th("Cap hit", "is-num is-cap", `${v.season} cap number, largest first; the share of the cap on hover`, true) +
     th("APY", "is-num is-apy", "Average per year of the current deal; the total on hover") +
-    th("Worth", "is-num is-worth-col", "Our model: what the league pays a player ranked where this one's production ranks") +
+    th("Worth", "is-num is-worth-col", "Our market valuation against the deal's average: what the league pays a player ranked where this one's production ranks this season. Green, Worth above APY; red, below") +
     th("Gtd", "is-num is-gtd", "Guaranteed money at signing") +
-    th("Signed", "is-signed", "Year signed, length, and the deal's last season") +
-    th("Cut saves", "is-num is-save-col", "Cap freed by a release before June 1; a starred figure is estimated") +
+    th("Length", "is-signed", "The deal's span: the year signed to its last season") +
+    th("Net if cut", "is-num is-save-col", "Net cap change from a release before June 1: a plus frees cap, a minus costs it. A starred figure is estimated") +
     th("Dead", "is-num is-dead", "Dead money left by a release before June 1") +
     `</tr></thead>` +
-    `<tbody>${v.players.map((p, i) => row(p, scenario, i >= ROWS_SHOWN, maxSave)).join("")}</tbody>` +
+    `<tbody>${v.players.map((p) => row(team, p, scenario, maxSave, v.worth)).join("")}</tbody>` +
     `</table>` +
-    `</div>` +
-    // The first ten rows by default, the rest behind the footer's button
-    // (mak, 2026-10-23). Every row is in the HTML; the bundle hides the tail
-    // and the button reveals it, so with scripting off the whole sheet reads
-    // as before and the footer only counts it.
-    `<div class="sct-ct-footbar">` +
-    `<span class="sct-ct-count" data-sct-ct-count` +
-    (total > ROWS_SHOWN
-      ? ` data-closed="${e(`Showing top ${ROWS_SHOWN} of ${total}`)}" data-open="${e(`All ${total} contracts`)}">${e(`${total} contracts`)}`
-      : `>${e(`${total} contracts`)}`) +
-    `</span>` +
-    (total > ROWS_SHOWN
-      ? `<button type="button" class="sct-ct-more" data-sct-ct-more aria-expanded="false"` +
-        ` data-more="${e(`Show all ${total} contracts`)}" data-less="Show the top ${ROWS_SHOWN}">` +
-        `${e(`Show all ${total} contracts`)}</button>`
-      : "") +
+    // The whole sheet, every contract open (mak, 2026-10-30: "show full
+    // table"); the ten-row fold and its footer are gone. The season head
+    // above the sheet carries the count.
     `</div>`
   );
 }
@@ -365,9 +504,10 @@ const NAME_SUFFIXES = ["jr", "sr", "ii", "iii", "iv", "v"];
  * "Kevin Byard III", "Robert Beal Jr." against "Robert Beal"), so a miss is
  * retried without the suffix and then against the club's own keys with one
  * added. A name the index holds for another club, or for two players, is
- * left unmatched rather than guessed.
+ * left unmatched rather than guessed. The Draft tab borrows it for the picks
+ * the id crosswalk has not met yet (this spring's class).
  */
-function rosterPlayer(team: NflTeam, name: string): NamedPlayer | null {
+export function rosterPlayer(team: NflTeam, name: string): NamedPlayer | null {
   const club = team.abbreviation.toLowerCase();
   const onClub = (key: string): NamedPlayer | null => {
     const hit = playerForSearchKey(key);
@@ -417,9 +557,10 @@ function cutRail(team: NflTeam, v: ContractsView): string {
   return (
     `<aside class="sct-ct-cuts" aria-labelledby="sct-ct-cuts-h">` +
     `<h3 class="sct-ct-h3" id="sct-ct-cuts-h">Where a Release Frees Cap</h3>` +
-    `<p class="sct-ct-dek">${e(
-      `The ${team.nickname} contracts a release before June 1 would clear the most ${v.season} cap on, with the dead money each would leave. A reading of the deal's structure, not a prediction that anyone is cut.`,
-    )}</p>` +
+    // One line, with the disclaimer behind an "i" (still read aloud).
+    `<p class="sct-ct-dek">${e(`Releases before June 1 that clear the most ${v.season} cap, with the dead money each leaves.`)}` +
+    info("A reading of the deal's structure, not a prediction that anyone is cut. Tap a card to add that release to the cut scenario.") +
+    `</p>` +
     `<ol class="sct-ct-cut-list">` +
     v.cutCandidates
       .map(
@@ -427,13 +568,16 @@ function cutRail(team: NflTeam, v: ContractsView): string {
           // Photo, then the name with the position beneath it, then the two
           // figures as chips (mak, 2026-10-23, kept through the redesign at
           // mak's request): the face is what the eye finds first.
-          `<li class="sct-ct-cut">` +
+          // The card is a second handle on the row's pick box: a tap on it
+          // (anywhere but the name) ticks the player in the scenario, and
+          // the chips are the keyboard's button for the same.
+          `<li class="sct-ct-cut" data-sct-ct-cut="${e(lineKey(p))}">` +
           cutPhoto(team, p) +
           `<span class="sct-ct-cut-who">${playerCell(p)}<span class="sct-ct-cut-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span></span>` +
-          `<span class="sct-ct-cut-nums">` +
+          `<button type="button" class="sct-ct-cut-nums" data-sct-ct-cut-tick aria-pressed="false" aria-label="${e(`Cut ${p.name} in the scenario`)}">` +
           `<span class="sct-ct-cut-save">saves <span class="sct-ct-num">${e(money(p.cutSave))}</span></span>` +
           `<span class="sct-ct-cut-dead">dead <span class="sct-ct-num">${e(money(p.cutDead))}</span></span>` +
-          `</span>` +
+          `</button>` +
           `</li>`,
       )
       .join("") +
@@ -444,21 +588,35 @@ function cutRail(team: NflTeam, v: ContractsView): string {
 
 function deadBlock(team: NflTeam, v: ContractsView): string {
   if (v.deadTotal === null || v.dead.length === 0) return "";
-  const nick = (abbr: string): string => getTeamByAbbreviation(abbr)?.nickname ?? abbr.toUpperCase();
+  // The club a player is under contract with now, as its crest beside the
+  // name, linked to that club's hub (mak, 2026-10-30: the crest, not "now
+  // with the Jaguars"); the words stay in the alt text for a screen reader.
+  // A player no register carries reads "FA".
+  const fa = `<span class="sct-ct-dead-fa" title="Free agent">FA</span>`;
+  const crest = (abbr: string | null): string => {
+    const club = abbr ? getTeamByAbbreviation(abbr) : null;
+    if (!club?.logo) return fa;
+    const label = `Now with the ${club.nickname}`;
+    const img = `<img class="sct-ct-dead-now" src="${e(club.logo)}" alt="${e(label)}" width="22" height="22" loading="lazy" decoding="async">`;
+    const href = getTeamHubUrl(club);
+    return href
+      ? `<a class="sct-ct-dead-club" href="${e(href)}" title="${e(label)}">${img}</a>`
+      : `<span class="sct-ct-dead-club" title="${e(label)}">${img}</span>`;
+  };
   return (
     `<div class="sct-ct-dead">` +
     `<h3 class="sct-ct-h3">${e(`${v.season} Dead Money`)} <span class="sct-ct-h3-sum"><span class="sct-ct-num">${e(money(v.deadTotal))}</span></span></h3>` +
     `<p class="sct-ct-dek">${e(
-      `Cap dollars the ${team.nickname} are carrying for players no longer on the roster. Where a player is under contract elsewhere now, the club is named.`,
+      `Cap dollars the ${team.nickname} are carrying for players no longer on the roster. The crest beside a name is the club he is under contract with now; FA means no club carries him.`,
     )}</p>` +
     `<ol class="sct-ct-dead-list">` +
     v.dead
       .map(
         (d) =>
           `<li class="sct-ct-dead-row">` +
-          `<span class="sct-ct-dead-who">${e(d.name)}` +
-          (d.nowWith ? `<span class="sct-ct-dead-now">now with the ${e(nick(d.nowWith))}</span>` : "") +
-          `</span>` +
+          // Mark first, then the name (mak, 2026-10-30), so the names
+          // line up down the column whatever each row carries.
+          `<span class="sct-ct-dead-who">${crest(d.nowWith)}${e(d.name)}</span>` +
           `<span class="sct-ct-num">${e(money(d.amount))}</span>` +
           `</li>`,
       )
@@ -492,34 +650,43 @@ function worthNote(v: ContractsView): string {
 /** The whole tab, or "" when the register has no roster for this club. */
 export function renderContractsSection(team: NflTeam, v: ContractsView | null): string {
   if (!v) return "";
-  const space =
-    v.capSpace === null
-      ? `${money(v.committed)} of ${v.season} cap committed across ${v.players.length} contracts`
-      : `${money(v.capSpace)} of ${v.season} cap space${v.capSpaceRank ? `, ${ordinal(v.capSpaceRank)} most in the league,` : ""} with ${v.players.length} contracts on the books`;
-  const tags =
-    v.tagged.over + v.tagged.under > 0
-      ? ` By this season's production, ${v.tagged.over} ${v.tagged.over === 1 ? "deal looks" : "deals look"} overpaid and ${v.tagged.under} underpaid.`
-      : "";
+  // The Draft tab's intro line (mak, 2026-10-30: the two tabs share one
+  // design): what the tab holds, in order. The figures the old lede
+  // carried live in the ledger cards beside the sheet.
+  const intro =
+    `Every contract the ${team.nickname} carry against the ${v.season} cap, largest cap number first, ` +
+    `then the cap ledger and where a release frees cap.`;
+  const scenario = scenarioBar(v);
+  const sum = `${v.players.length} ${v.players.length === 1 ? "contract" : "contracts"} · largest cap number first`;
   return (
     `<h2 class="sct-h2">${e(`${team.nickname} Contracts & Salary Cap`)}</h2>` +
     `<div class="sct-ct" data-sct-ct` +
     (v.capSpace !== null ? ` data-cap-space="${v.capSpace}" data-dead-total="${v.deadTotal ?? 0}"` : "") +
     `>` +
-    `<p class="sct-ct-lede">${e(`The ${team.nickname} have ${space}.${tags} Every figure is in millions of dollars, largest cap number first.`)}</p>` +
-    tiles(team, v) +
-    // One surface for the analysis: the band, the scenario toolbar, and the
-    // sheet with the release panel beside it (under it below 1000px).
-    `<div class="sct-ct-work">` +
-    band(v) +
-    scenarioBar(v) +
-    `<div class="sct-ct-main">` +
+    `<p class="sct-note sct-ct-note">${e(intro)}</p>` +
+    // Two columns (mak, 2026-10-29): the scenario toolbar and the sheet on
+    // the left; on the right a rail of the cap ledger (the eight figures in
+    // three groups), the release panel and the dead-money list. Below
+    // 1000px the rail stacks above the sheet.
+    `<div class="sct-ct-grid">` +
+    `<div class="sct-ct-col">` +
+    (scenario ? `<div class="sct-ct-work">${scenario}</div>` : "") +
+    `<div class="sct-ct-season-head">` +
+    `<h4 class="sct-ct-h4">${e(`${v.season} Contracts`)}</h4>` +
+    `<span class="sct-ct-season-sum">${e(sum)}</span>` +
+    `</div>` +
     `<div class="sct-ct-sheet">${table(team, v)}</div>` +
+    `</div>` +
+    // The dead-money ledger closes the rail (mak, 2026-10-30): the cap
+    // ledger, the release panel, then every player the cap still carries.
+    `<aside class="sct-ct-rail">` +
+    ledger(team, v) +
     cutRail(team, v) +
-    `</div>` +
-    `</div>` +
     deadBlock(team, v) +
+    `</aside>` +
+    `</div>` +
     worthNote(v) +
-    `<p class="sct-note sct-ct-foot">Cap numbers are for the ${e(String(v.season))} league year. Cut saves and dead money describe a standard release before June 1` +
+    `<p class="sct-note sct-ct-foot">Cap numbers are for the ${e(String(v.season))} league year. Net if cut (a plus frees cap, a minus costs it) and dead money describe a standard release before June 1` +
     (v.hasSnapshot
       ? `; a starred figure is estimated from the deal's structure where the published release math is not available.`
       : `, estimated from the deal's structure: the remaining prorated bonus and guaranteed salary stay on the books, and the rest is freed.`) +

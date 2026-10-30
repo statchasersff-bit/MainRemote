@@ -209,7 +209,13 @@ export function buildEvents(
     const note = (e.description ?? "").trim();
     const text = `${e.type ?? ""} ${note}`;
     const key = `${e.season}|${category}|${side ?? "-"}`;
-    const prior = category === OTHER ? undefined : byKey.get(key);
+    // Two scraped entries for one season, part and side are one injury
+    // written twice; an entry from the Injury tool's store (report: true) is
+    // already one per run of report weeks, so two of them are two injuries
+    // (a Week 3 knee he played through and a Week 10 knee that cost a game),
+    // as the Durability Profile counts them (2026-10-30).
+    const fromStore = e.report === true;
+    const prior = category === OTHER || fromStore ? undefined : byKey.get(key);
     if (prior) {
       prior.games += games;
       prior.recordedGames += recorded;
@@ -241,7 +247,7 @@ export function buildEvents(
       play: e.play ?? null,
       reports: [...(e.reports ?? [])].sort((a, b) => a.week - b.week),
     };
-    byKey.set(category === OTHER ? `${key}|${byKey.size}` : key, ev);
+    byKey.set(category === OTHER || fromStore ? `${key}|${byKey.size}` : key, ev);
   }
   return [...byKey.values()].sort(
     (a, b) => b.season - a.season || (b.week ?? -1) - (a.week ?? -1),
@@ -329,7 +335,11 @@ export function riskFactors(
     const close = evs.some((a) =>
       evs.some((b) => a !== b && Math.abs(a.season - b.season) <= 2 && a.games > 0 && b.games > 0),
     );
-    const level: Level = evs.length >= 3 || close ? "bad" : "mid";
+    // Three times is "high" when the injuries cost games: the record now
+    // holds every week on the report (2026-10-30), and three knee listings
+    // he played through are a note, not a pattern.
+    const costly = evs.filter((e) => e.games > 0).length;
+    const level: Level = costly >= 3 || close ? "bad" : "mid";
     const better =
       !worst ||
       rank(level) > rank(recurring) ||
@@ -343,7 +353,8 @@ export function riskFactors(
     title: "Recurring injuries",
     level: recurring,
     evidence: worst
-      ? `${worst.cat} injuries in ${listWords(worst.evs.map((e) => String(e.season)))}`
+      ? `${worst.cat} injuries in ${listWords([...new Set(worst.evs.map((e) => String(e.season)))])}` +
+        (new Set(worst.evs.map((e) => e.season)).size < worst.evs.length ? ` (${worst.evs.length} in all)` : "")
       : "No body part injured twice",
   });
 

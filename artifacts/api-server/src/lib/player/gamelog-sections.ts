@@ -96,6 +96,8 @@ export interface StoryGame {
     abbr: string;
     /** The two LA and two NY clubs go by nickname: "the Rams", not "Los Angeles". */
     useNickname: boolean;
+    /** The club's crest (lib/team/teams.ts `logo`), absolute for the request; null when the club is unknown. */
+    logo: string | null;
   };
   homeAway: "home" | "away";
   result: { wlt: "W" | "L" | "T"; teamScore: number; oppScore: number };
@@ -237,24 +239,76 @@ export function bandEdges(scale: LadderScale): { band1: number; band2end: number
 }
 
 interface Pin {
-  game: StoryGame;
+  /** Every game that finished at this rank, oldest first (mak's 2026-10-29 critique: one dot per rank, "×2" when weeks share it). */
+  games: StoryGame[];
+  rank: number;
   x: number;
   best: boolean;
   /** "above" is the default; "below" dodges a neighbor; "none" is sr-only. */
   label: "above" | "below" | "none";
 }
 
+/** The season-average marker: a dashed line through the band, labeled like a pin. */
+interface AvgMark {
+  rank: number;
+  x: number;
+  label: "above" | "below" | "none";
+}
+
+export interface LadderLayout {
+  pins: Pin[];
+  /** Null with fewer than two games: one game IS its own average. */
+  avg: AvgMark | null;
+}
+
 /**
- * Lay the pins out and resolve label collisions left to right: a label goes
- * in the first row under the band unless it is within 12 units of the previous
- * first-row label, then the second row unless within 12 of the previous
- * second-row label, then nowhere visible. ("above" is the first row and
- * "below" the second: the names predate the 2026-10-22 restyle that moved
- * every label under the band to make room for the tier labels above it.) With 10
- * or more games only the best and worst weeks keep labels and a compact
- * legend lists the rest.
+ * The mean weekly finish, rounded - the same figure the game log's Avg row
+ * prints in its Finish cell, so the two agree.
  */
-export function layoutPins(games: StoryGame[], scale: LadderScale): Pin[] {
+export function averageRank(games: StoryGame[]): number | null {
+  if (games.length < 2) return null;
+  return Math.round(games.reduce((sum, g) => sum + g.rank, 0) / games.length);
+}
+
+/**
+ * Resolve label collisions left to right: a label goes in the first row under
+ * the band unless it is within 12 units of the previous first-row label, then
+ * the second row unless within 12 of the previous second-row label, then
+ * nowhere visible. ("above" is the first row and "below" the second: the names
+ * predate the 2026-10-22 restyle that moved every label under the band.)
+ */
+function placeLabels<T extends { x: number; label: "above" | "below" | "none" }>(
+  items: T[],
+  keep: (item: T) => boolean,
+): void {
+  let lastAbove: number | null = null;
+  let lastBelow: number | null = null;
+  for (const item of items) {
+    if (!keep(item)) {
+      item.label = "none";
+      continue;
+    }
+    if (lastAbove === null || item.x - lastAbove >= 12) {
+      item.label = "above";
+      lastAbove = item.x;
+    } else if (lastBelow === null || item.x - lastBelow >= 12) {
+      item.label = "below";
+      lastBelow = item.x;
+    } else {
+      item.label = "none";
+    }
+  }
+}
+
+/**
+ * Lay the ladder out. Weeks that finished at the same rank share one dot
+ * (two QB15s used to sit on top of each other with their labels split across
+ * the two rows, which read as if the rows meant something). The average
+ * marker's label takes part in the same collision pass as the dots'. With 10
+ * or more games only the best and worst weeks keep labels and a compact
+ * legend lists the rest; the average keeps its label regardless.
+ */
+export function layoutLadder(games: StoryGame[], scale: LadderScale): LadderLayout {
   // Best week: highest points; on a tie, the most recent game.
   let best: StoryGame | null = null;
   for (const g of games) {
@@ -266,34 +320,47 @@ export function layoutPins(games: StoryGame[], scale: LadderScale): Pin[] {
     if (!worst || g.rank > worst.rank || (g.rank === worst.rank && g.week > worst.week)) worst = g;
   }
 
-  const pins: Pin[] = games
-    .map((game) => ({
-      game,
-      x: pinX(game.rank, scale),
-      best: game === best,
+  const byRank = new Map<number, StoryGame[]>();
+  for (const g of games) {
+    const list = byRank.get(g.rank) ?? [];
+    list.push(g);
+    byRank.set(g.rank, list);
+  }
+  const pins: Pin[] = [...byRank.entries()]
+    .map(([rank, list]) => ({
+      games: list.sort((a, b) => a.week - b.week),
+      rank,
+      x: pinX(rank, scale),
+      best: best !== null && list.includes(best),
       label: "above" as const,
     }))
-    .sort((a, b) => a.x - b.x || a.game.week - b.game.week);
+    .sort((a, b) => a.x - b.x);
+
+  const avgRank = averageRank(games);
+  const avg: AvgMark | null =
+    avgRank === null ? null : { rank: avgRank, x: pinX(avgRank, scale), label: "above" };
 
   const sparse = games.length >= 10;
-  let lastAbove: number | null = null;
-  let lastBelow: number | null = null;
-  for (const pin of pins) {
-    if (sparse && !(pin.game === best || pin.game === worst)) {
-      pin.label = "none";
-      continue;
-    }
-    if (lastAbove === null || pin.x - lastAbove >= 12) {
-      pin.label = "above";
-      lastAbove = pin.x;
-    } else if (lastBelow === null || pin.x - lastBelow >= 12) {
-      pin.label = "below";
-      lastBelow = pin.x;
-    } else {
-      pin.label = "none";
-    }
+  type Item = { x: number; label: "above" | "below" | "none"; pin?: Pin; avg?: AvgMark };
+  const items: Item[] = pins.map((pin) => ({ x: pin.x, label: pin.label, pin }));
+  if (avg) items.push({ x: avg.x, label: avg.label, avg });
+  // A dot and the average at the same spot: the dot's label comes first.
+  items.sort((a, b) => a.x - b.x || (a.avg ? 1 : 0) - (b.avg ? 1 : 0));
+  placeLabels(items, (item) =>
+    item.avg
+      ? true
+      : !sparse || item.pin!.games.includes(best!) || item.pin!.games.includes(worst!),
+  );
+  for (const item of items) {
+    if (item.pin) item.pin.label = item.label;
+    if (item.avg) item.avg.label = item.label;
   }
-  return pins;
+  return { pins, avg };
+}
+
+/** The dots alone, for callers that do not draw the average. */
+export function layoutPins(games: StoryGame[], scale: LadderScale): Pin[] {
+  return layoutLadder(games, scale).pins;
 }
 
 /**
@@ -316,10 +383,16 @@ export function ladderSummary(games: StoryGame[], season: StorySeason, scale: La
 }
 
 /** "Weekly finishes on a scale from QB1 to QB32: Week 3 QB4, …" best first. */
-function trackAriaLabel(games: StoryGame[], season: StorySeason, scale: LadderScale): string {
+function trackAriaLabel(
+  games: StoryGame[],
+  season: StorySeason,
+  scale: LadderScale,
+  avgRank: number | null,
+): string {
   const ordered = [...games].sort((a, b) => a.rank - b.rank || a.week - b.week);
   const list = ordered.map((g) => `Week ${g.week} ${season.pos}${g.rank}`).join(", ");
-  return `Weekly finishes on a scale from ${season.pos}1 to ${season.pos}${scale.max}: ${list}.`;
+  const avg = avgRank === null ? "" : ` Season average ${season.pos}${avgRank}.`;
+  return `Weekly finishes on a scale from ${season.pos}1 to ${season.pos}${scale.max}: ${list}.${avg}`;
 }
 
 /**
@@ -335,27 +408,48 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
   const pos = season.pos;
   const id = `gl-finishes-h${season.idSuffix}`;
   const { band1, band2end } = bandEdges(scale);
-  const pins = layoutPins(games, scale);
-  const hasBelow = pins.some((p) => p.label === "below");
+  const { pins, avg } = layoutLadder(games, scale);
+  const hasBelow = pins.some((p) => p.label === "below") || avg?.label === "below";
+
+  const labelCls = (label: Pin["label"]): string =>
+    (label === "below" ? " is-below" : "") + (label === "none" ? " is-nolabel" : "");
 
   const pinHtml = pins
     .map((pin) => {
       const cls =
         "scp-gl-pin" +
         (pin.best ? " is-best" : "") +
-        (pin.label === "below" ? " is-below" : "") +
-        (pin.label === "none" ? " is-nolabel" : "");
-      const at = pin.game.homeAway === "away" ? "@" : "vs";
+        (pin.games.length > 1 ? " is-multi" : "") +
+        labelCls(pin.label);
+      const weeks = pin.games
+        .map((g) => {
+          const at = g.homeAway === "away" ? "@" : "vs";
+          return `<span class="scp-gl-wk">${escapeHtml(`Wk ${g.week}`)} <small>${escapeHtml(`${at} ${g.opp.abbr}`)}</small></span>`;
+        })
+        .join("");
       return (
         `<div class="${cls}" style="left:${pctTrim(pin.x)}%"><i></i>` +
-        `<span><strong>${escapeHtml(`${pos}${pin.game.rank}`)}</strong>` +
-        `${escapeHtml(`Wk ${pin.game.week}`)} <small>${escapeHtml(`${at} ${pin.game.opp.abbr}`)}</small></span></div>`
+        `<span><strong>${escapeHtml(`${pos}${pin.rank}`)}` +
+        (pin.games.length > 1 ? `<b>${escapeHtml(` ×${pin.games.length}`)}</b>` : "") +
+        `</strong>${weeks}` +
+        // The one colored dot says why it is colored (critique, 2026-10-29).
+        (pin.best ? `<em>Best week</em>` : "") +
+        `</span></div>`
       );
     })
     .join("");
 
+  // Where he usually lands: a dashed line through the band at his mean finish,
+  // labeled like a dot and placed by the same collision pass. The headrow
+  // repeats the figure, so a label that found no room loses nothing.
+  const avgHtml = avg
+    ? `<div class="scp-gl-avg${labelCls(avg.label)}" style="left:${pctTrim(avg.x)}%" title="${escapeHtml(
+        `Season average finish: ${pos}${avg.rank}`,
+      )}"><i></i><span><strong>${escapeHtml(`${pos}${avg.rank}`)}</strong><span class="scp-gl-wk">Season avg</span></span></div>`
+    : "";
+
   // Weeks whose labels found no room, named under the track instead.
-  const hidden = pins.filter((p) => p.label === "none").map((p) => p.game);
+  const hidden = pins.filter((p) => p.label === "none").flatMap((p) => p.games);
   const sparse = games.length >= 10;
   const also =
     !sparse && hidden.length
@@ -364,13 +458,20 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
         )}</p>`
       : "";
 
-  // The three tiers named above the band, each centered over its segment;
-  // the two cutoffs are drawn as hairline markers through the band itself.
+  // The three tiers named above the band, each centered over its segment,
+  // with the cutoff ranks printed at the two seams and the axis ends stated
+  // (critique, 2026-10-29: a region needs its boundary values). The band
+  // itself carries hairline markers at the seams. One word for the bottom
+  // tier, "bust", here and in the counts.
   const tiers =
     `<div class="scp-gl-tiers" aria-hidden="true">` +
     `<span class="is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
     `<span class="is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%">${escapeHtml(`${pos}2`)}<small> range</small></span>` +
-    `<span class="is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bench<small> range</small></span>` +
+    `<span class="is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bust<small> range</small></span>` +
+    `<b class="scp-gl-cut is-end is-lo" style="left:0">${escapeHtml(`${pos}1`)}</b>` +
+    `<b class="scp-gl-cut" style="left:${pctTrim(band1)}%">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
+    `<b class="scp-gl-cut" style="left:${pctTrim(band2end)}%">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
+    `<b class="scp-gl-cut is-end is-hi" style="left:100%">${escapeHtml(`${pos}${scale.max}`)}</b>` +
     `</div>`;
   const marks =
     `<i class="scp-gl-mark" style="left:${pctTrim(band1)}%"></i>` +
@@ -384,22 +485,28 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
       )}</p>`
     : "";
 
+  const summary = ladderSummary(games, season, scale)
+    .map((t) => `<span>${escapeHtml(t)}</span>`)
+    .join(`<i aria-hidden="true"> · </i>`);
+  const avgSummary = avg
+    ? `<i aria-hidden="true"> · </i><b class="scp-gl-avgsum">${escapeHtml(`Avg ${pos}${avg.rank}`)}</b>`
+    : "";
+
   return (
     `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
     `<div class="scp-gl-headrow">` +
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Where his weeks finished"))}</h2>` +
-    `<p class="scp-gl-sum">${ladderSummary(games, season, scale)
-      .map((t) => `<span>${escapeHtml(t)}</span>`)
-      .join(`<i aria-hidden="true"> · </i>`)}</p>` +
+    `<p class="scp-gl-sum">${summary}${avgSummary}</p>` +
     `</div>` +
     `<figure class="scp-gl-ladder" style="margin:0">` +
     tiers +
     `<div class="scp-gl-track${hasBelow ? " has-below" : ""}" role="img" aria-label="${escapeHtml(
-      trackAriaLabel(games, season, scale),
+      trackAriaLabel(games, season, scale, avg?.rank ?? null),
     )}">` +
     `<div class="scp-gl-band is-b1" style="width:${pctTrim(band1)}%"></div>` +
     `<div class="scp-gl-band is-b2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%"></div>` +
     marks +
+    avgHtml +
     pinHtml +
     `</div>` +
     also +
@@ -685,9 +792,15 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
 
       return (
         `<article class="scp-gl-game${cardCls}">` +
-        `<div>` +
+        `<div class="scp-gl-meta">` +
         `<div class="scp-gl-when">${escapeHtml(`Week ${game.week}, ${MONTHS_SHORT[m]} ${d}`)}</div>` +
-        `<div class="scp-gl-opp">${escapeHtml(`${at} ${game.opp.nickname}`)}</div>` +
+        // Crest AFTER the name (mak, 2026-10-29): "vs Broncos" then the logo.
+        `<div class="scp-gl-opp">` +
+        `<span>${escapeHtml(`${at} ${game.opp.nickname}`)}</span>` +
+        (game.opp.logo
+          ? `<img class="scp-gl-opp-logo" src="${escapeHtml(game.opp.logo)}" alt="" aria-hidden="true" width="22" height="22" loading="lazy" decoding="async" />`
+          : "") +
+        `</div>` +
         `<div class="scp-gl-score${scoreCls}">${escapeHtml(
           `${game.result.wlt} ${game.result.teamScore}${DASH}${game.result.oppScore}`,
         )}</div>` +
@@ -913,6 +1026,7 @@ export function renderGamelogStory(
         nickname: oppTeam?.nickname ?? oppCode,
         abbr: oppCode,
         useNickname: NICKNAME_CLUBS.has(oppCode),
+        logo: oppTeam?.logo ?? null,
       },
       homeAway: ctx.homeAway,
       result: {

@@ -573,10 +573,16 @@ export function renderWhyWon(input: RecapBodyInput): string {
   const rows = statRows(away, home).filter((r) => r.away !== null || r.home !== null);
   if (rows.length === 0) return "";
 
-  const heading =
+  // The table under this is the game's team stats, and "team stats" is one of
+  // the searches the page earns (the Search Console brief of 2026-10-30), so
+  // the heading says so before it says why the winner won.
+  // The H2 is the search phrase alone; the analysis is the H3 under it (mak,
+  // 2026-10-30: "stats first, analysis second"). A tie has no winner to explain.
+  const heading = `${game.away.short} vs ${game.home.short} team stats`;
+  const analysis =
     result.winner === null
-      ? `${game.away.short} vs ${game.home.short} by the numbers`
-      : `Why the ${game[result.winner].short} won`;
+      ? ""
+      : `<h3 class="sct-rb-h3 sct-rb-why">${escapeHtml(`Why the ${game[result.winner].short} won`)}</h3>`;
 
   // The key advantages first, then the rows that back them in the same
   // order, then everything else as secondary stats (mak, 2026-09-30). A tie
@@ -608,7 +614,7 @@ export function renderWhyWon(input: RecapBodyInput): string {
 
   // The key advantages themselves sit in the recap story, above this
   // (mak, 2026-09-30); the table still leads with their rows.
-  return section("why", heading, subtitle(battlesLine(input, rows)) + table);
+  return section("why", heading, analysis + subtitle(battlesLine(input, rows)) + table);
 }
 
 /**

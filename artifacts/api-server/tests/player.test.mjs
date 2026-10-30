@@ -712,22 +712,20 @@ describe("the game log tab", () => {
     };
   }
 
-  test("fantasy points lead the stat columns", async () => {
-    // The one ordering decision this table makes that the mainstream box scores
-    // do not, and the reason a fantasy reader is on this page rather than one of
-    // theirs. If FPTS drifts back behind the passing columns, the tab has quietly
-    // become a generic box score.
+  test("fantasy points close the row beside Finish", async () => {
+    // The two fantasy columns sit together at the right edge (mak,
+    // 2026-10-29): the box score runs first and FPTS reads as what it added
+    // up to, with the Finish pill beside it. Until then FPTS led the stat
+    // columns; the test pins the new order so a port of the old one is caught.
     //
     // Result is optional, and its absence is not a regression: final scores come
     // from a different source than the logs do, and a season that source has not
     // filed renders no Result column rather than eighteen empty cells under one.
-    // What is NOT optional is that FPTS comes straight after the identity
-    // columns, whichever of them are present.
     const { headers } = await logHeaders(fixture.slug);
     assert.ok(headers.length > 4, "the log has a header row");
     assert.deepEqual(headers.slice(0, 2), ["Wk", "Opp"], "the log opens on the game");
-    const rest = headers[2] === "Result" ? headers.slice(3) : headers.slice(2);
-    assert.equal(rest[0], "FPTS", "fantasy points lead the stat columns");
+    assert.deepEqual(headers.slice(-2), ["FPTS", "Finish"], "fantasy points sit beside Finish");
+    assert.ok(headers.indexOf("Result") < headers.indexOf("FPTS"), "the box score precedes FPTS");
   });
 
   test("the columns are the position's, not one universal set", async () => {
@@ -868,11 +866,11 @@ describe("the game log tab", () => {
     }
   });
 
-  test("All opens the career table, and a year replaces it", async () => {
-    // What the All chip is FOR. The reader is standing in front of eleven
-    // years being asked to pick one; this is the screen that says which is
-    // worth opening. Exactly one block sits under the selector either way -
-    // All's career table, or the pinned season's log, never both.
+  test("All is the selector at rest, and a year opens its log under it", async () => {
+    // Exactly one block sits under the selector either way - the heading row
+    // the chips ride on when nothing is pinned, or the pinned season's log,
+    // never both. The career table that used to open under All moved to the
+    // Stats tab on 2026-10-29 (see "the Stats tab carries the career table").
     const { doc } = await dom(`/player/${fixture.slug}`);
     const nav = doc.querySelector("#game-log .scp-seasonnav");
     if (!nav) return; // a single-season player gets no selector and no All
@@ -880,34 +878,22 @@ describe("the game log tab", () => {
     const blocks = [...doc.querySelectorAll("#game-log .scp-archive")];
     assert.equal(blocks.length, 1, "one block under the selector");
     assert.equal(blocks[0].getAttribute("data-season"), "all");
-    // The selector rides the heading of the block it opened, so the block
-    // CONTAINS it: the row of years and the name of what they produced are one
-    // line, and the table follows both.
+    // The selector rides the heading of the block it belongs to, so the block
+    // CONTAINS it: the row of years and the name of what they open are one line.
     assert.equal(
       nav.closest(".scp-archive"),
       blocks[0],
       "the selector sits on the heading of the block resting on All",
     );
-    assert.ok(
-      nav.compareDocumentPosition(blocks[0].querySelector("table")) & 4,
-      "and the table it opened comes after it",
-    );
-
-    const table = blocks[0].querySelector("table.scp-table--career");
-    assert.ok(table, "All shows the Stats tab's career table");
     assert.match(
       blocks[0].querySelector(".scp-sect-title").textContent,
-      /Career Stats by Season/,
+      /Game Logs by Season/,
     );
-    // Every season the selector offers has a line in it, which is what makes
-    // the table an index to the logs rather than a second copy of Stats.
-    const listed = [...table.querySelectorAll("tbody tr th")].map((th) =>
-      Number(th.textContent.trim().slice(0, 4)),
+    assert.equal(
+      doc.querySelector("#game-log table.scp-table--career"),
+      null,
+      "the career table no longer lives on the Game Log tab",
     );
-    for (const year of [...nav.querySelectorAll('.scp-season-opt:not([data-season="all"])')]) {
-      const n = Number(year.textContent.trim());
-      assert.ok(listed.includes(n), `${n} is offered but has no career row`);
-    }
 
     // Pinning a year swaps the block rather than adding to it.
     const pinnedUrl = nav
@@ -916,10 +902,9 @@ describe("the game log tab", () => {
     const pinned = await dom(pinnedUrl);
     const after = [...pinned.doc.querySelectorAll("#game-log .scp-archive")];
     assert.equal(after.length, 1, "still one block under the selector");
-    assert.equal(
-      after[0].querySelector("table.scp-table--career"),
-      null,
-      "a pinned year shows its log, not the career table",
+    assert.ok(
+      after[0].querySelector("table.scp-table--log"),
+      "a pinned year shows its log",
     );
   });
 
@@ -1446,33 +1431,28 @@ describe("the game log tab", () => {
     }
   });
 
-  test("the tab leads with games; totals only under the All chip", async () => {
-    // Stats is totals, Game Log is games, and the tab still OPENS on games.
-    // The career table is allowed back only as the All selection, under the
-    // season selector at the foot - an index to the eleven logs, not a second
-    // copy of the Stats tab standing in front of this week's numbers.
+  test("the tab leads with games; the Stats tab carries the career table", async () => {
+    // Stats is totals, Game Log is games. Since 2026-10-29 the career table
+    // sits on the Stats tab directly above the per-season chart (mak), so the
+    // Game Log never shows it and the chart has its numbers right above it.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const career = doc.querySelector("#game-log .scp-table--career");
-    if (!career) return; // a single-season player gets no selector and no All
+    assert.equal(doc.querySelector("#game-log .scp-table--career"), null);
 
+    const career = doc.querySelector("#stats table.scp-table--career");
+    if (!career) return; // a kicker or a rookie before his first game has no career table
+    const sec = career.closest("section.scp-ox-sec");
+    assert.ok(sec, "the table sits in a spec section of the Stats tab");
+    assert.match(sec.querySelector("h2").textContent, /Career Stats by Season/);
+    const chart = doc.querySelector("#stats #scp-st-arc-h");
+    assert.ok(chart, "the per-season chart is on the tab");
     assert.ok(
-      career.closest(".scp-archive[data-season='all']"),
-      "the career table appears only as what All opens",
-    );
-    const nav = doc.querySelector("#game-log .scp-seasonnav");
-    assert.ok(
-      nav.compareDocumentPosition(career) & 4,
-      "totals come after the selector, never before the games",
+      sec.compareDocumentPosition(chart) & 4,
+      "the career table comes directly above the chart",
     );
     assert.equal(
-      nav.closest(".scp-archive"),
-      career.closest(".scp-archive"),
-      "the selector is that block's own heading control",
-    );
-    const log = doc.querySelector("#game-log table.scp-table--log");
-    assert.ok(
-      log.compareDocumentPosition(career) & 4,
-      "this season's log is still the first table on the tab",
+      sec.nextElementSibling?.querySelector("#scp-st-arc-h"),
+      chart,
+      "nothing stands between the table and the chart",
     );
   });
 });

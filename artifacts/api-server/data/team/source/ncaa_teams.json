@@ -1,0 +1,4578 @@
+{
+ "fetchedAt": "2026-10-29T18:00:56.451Z",
+ "source": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?limit=1000",
+ "teams": [
+  {
+   "id": "2",
+   "location": "Auburn",
+   "name": "Auburn Tigers",
+   "abbreviation": "AUB"
+  },
+  {
+   "id": "5",
+   "location": "UAB",
+   "name": "UAB Blazers",
+   "abbreviation": "UAB"
+  },
+  {
+   "id": "6",
+   "location": "South Alabama",
+   "name": "South Alabama Jaguars",
+   "abbreviation": "USA"
+  },
+  {
+   "id": "7",
+   "location": "Amherst",
+   "name": "Amherst Mammoths",
+   "abbreviation": "AMH"
+  },
+  {
+   "id": "8",
+   "location": "Arkansas",
+   "name": "Arkansas Razorbacks",
+   "abbreviation": "ARK"
+  },
+  {
+   "id": "9",
+   "location": "Arizona State",
+   "name": "Arizona State Sun Devils",
+   "abbreviation": "ASU"
+  },
+  {
+   "id": "11",
+   "location": "Colorado Mesa",
+   "name": "Colorado Mesa Mavericks",
+   "abbreviation": "COMU"
+  },
+  {
+   "id": "12",
+   "location": "Arizona",
+   "name": "Arizona Wildcats",
+   "abbreviation": "ARIZ"
+  },
+  {
+   "id": "13",
+   "location": "Cal Poly",
+   "name": "Cal Poly Mustangs",
+   "abbreviation": "CP"
+  },
+  {
+   "id": "16",
+   "location": "Sacramento State",
+   "name": "Sacramento State Hornets",
+   "abbreviation": "SAC"
+  },
+  {
+   "id": "17",
+   "location": "Claremont Mudd Scripps",
+   "name": "Claremont Mudd Scripps Stags",
+   "abbreviation": "CMS"
+  },
+  {
+   "id": "18",
+   "location": "Bridgewater State",
+   "name": "Bridgewater State Bears",
+   "abbreviation": "BRIS"
+  },
+  {
+   "id": "21",
+   "location": "San Diego State",
+   "name": "San Diego State Aztecs",
+   "abbreviation": "SDSU"
+  },
+  {
+   "id": "23",
+   "location": "San José State",
+   "name": "San José State Spartans",
+   "abbreviation": "SJSU"
+  },
+  {
+   "id": "24",
+   "location": "Stanford",
+   "name": "Stanford Cardinal",
+   "abbreviation": "STAN"
+  },
+  {
+   "id": "25",
+   "location": "California",
+   "name": "California Golden Bears",
+   "abbreviation": "CAL"
+  },
+  {
+   "id": "26",
+   "location": "UCLA",
+   "name": "UCLA Bruins",
+   "abbreviation": "UCLA"
+  },
+  {
+   "id": "29",
+   "location": "Redlands",
+   "name": "Redlands Bulldogs",
+   "abbreviation": "REDL"
+  },
+  {
+   "id": "30",
+   "location": "USC",
+   "name": "USC Trojans",
+   "abbreviation": "USC"
+  },
+  {
+   "id": "32",
+   "location": "Carroll (WI)",
+   "name": "Carroll (WI) Pioneers",
+   "abbreviation": "CRU"
+  },
+  {
+   "id": "33",
+   "location": "Colby",
+   "name": "Colby White Mules",
+   "abbreviation": "CLBY"
+  },
+  {
+   "id": "36",
+   "location": "Colorado State",
+   "name": "Colorado State Rams",
+   "abbreviation": "CSU"
+  },
+  {
+   "id": "38",
+   "location": "Colorado",
+   "name": "Colorado Buffaloes",
+   "abbreviation": "COLO"
+  },
+  {
+   "id": "40",
+   "location": "Curry",
+   "name": "Curry Colonels",
+   "abbreviation": "CC"
+  },
+  {
+   "id": "41",
+   "location": "UConn",
+   "name": "UConn Huskies",
+   "abbreviation": "CONN"
+  },
+  {
+   "id": "43",
+   "location": "Yale",
+   "name": "Yale Bulldogs",
+   "abbreviation": "YALE"
+  },
+  {
+   "id": "46",
+   "location": "Georgetown",
+   "name": "Georgetown Hoyas",
+   "abbreviation": "GTWN"
+  },
+  {
+   "id": "47",
+   "location": "Howard",
+   "name": "Howard Bison",
+   "abbreviation": "HOW"
+  },
+  {
+   "id": "48",
+   "location": "Delaware",
+   "name": "Delaware Blue Hens",
+   "abbreviation": "DEL"
+  },
+  {
+   "id": "49",
+   "location": "Dubuque",
+   "name": "Dubuque Spartans",
+   "abbreviation": "DBQ"
+  },
+  {
+   "id": "50",
+   "location": "Florida A&M",
+   "name": "Florida A&M Rattlers",
+   "abbreviation": "FAMU"
+  },
+  {
+   "id": "52",
+   "location": "Florida State",
+   "name": "Florida State Seminoles",
+   "abbreviation": "FSU"
+  },
+  {
+   "id": "55",
+   "location": "Jacksonville State",
+   "name": "Jacksonville State Gamecocks",
+   "abbreviation": "JXST"
+  },
+  {
+   "id": "56",
+   "location": "Stetson",
+   "name": "Stetson Hatters",
+   "abbreviation": "STET"
+  },
+  {
+   "id": "57",
+   "location": "Florida",
+   "name": "Florida Gators",
+   "abbreviation": "FLA"
+  },
+  {
+   "id": "58",
+   "location": "South Florida",
+   "name": "South Florida Bulls",
+   "abbreviation": "USF"
+  },
+  {
+   "id": "59",
+   "location": "Georgia Tech",
+   "name": "Georgia Tech Yellow Jackets",
+   "abbreviation": "GT"
+  },
+  {
+   "id": "60",
+   "location": "Morehouse",
+   "name": "Morehouse Maroon Tigers",
+   "abbreviation": "MRHO"
+  },
+  {
+   "id": "61",
+   "location": "Georgia",
+   "name": "Georgia Bulldogs",
+   "abbreviation": "UGA"
+  },
+  {
+   "id": "62",
+   "location": "Hawai'i",
+   "name": "Hawai'i Rainbow Warriors",
+   "abbreviation": "HAW"
+  },
+  {
+   "id": "63",
+   "location": "Buena Vista",
+   "name": "Buena Vista Beavers",
+   "abbreviation": "BVU"
+  },
+  {
+   "id": "65",
+   "location": "Grinnell",
+   "name": "Grinnell Pioneers",
+   "abbreviation": "GRNL"
+  },
+  {
+   "id": "66",
+   "location": "Iowa State",
+   "name": "Iowa State Cyclones",
+   "abbreviation": "ISU"
+  },
+  {
+   "id": "67",
+   "location": "Luther",
+   "name": "Luther Norse",
+   "abbreviation": "LUTH"
+  },
+  {
+   "id": "68",
+   "location": "Boise State",
+   "name": "Boise State Broncos",
+   "abbreviation": "BOIS"
+  },
+  {
+   "id": "70",
+   "location": "Idaho",
+   "name": "Idaho Vandals",
+   "abbreviation": "IDHO"
+  },
+  {
+   "id": "72",
+   "location": "Elmhurst",
+   "name": "Elmhurst Bluejays",
+   "abbreviation": "ELMH"
+  },
+  {
+   "id": "74",
+   "location": "Millikin",
+   "name": "Millikin Big Blue",
+   "abbreviation": "MILK"
+  },
+  {
+   "id": "75",
+   "location": "North Park",
+   "name": "North Park Vikings",
+   "abbreviation": "NPU"
+  },
+  {
+   "id": "77",
+   "location": "Northwestern",
+   "name": "Northwestern Wildcats",
+   "abbreviation": "NU"
+  },
+  {
+   "id": "79",
+   "location": "Southern Illinois",
+   "name": "Southern Illinois Salukis",
+   "abbreviation": "SIU"
+  },
+  {
+   "id": "80",
+   "location": "Chicago",
+   "name": "Chicago Maroons",
+   "abbreviation": "CHI"
+  },
+  {
+   "id": "81",
+   "location": "Springfield",
+   "name": "Springfield Pride",
+   "abbreviation": "SPR"
+  },
+  {
+   "id": "83",
+   "location": "DePauw",
+   "name": "DePauw Tigers",
+   "abbreviation": "DPU"
+  },
+  {
+   "id": "84",
+   "location": "Indiana",
+   "name": "Indiana Hoosiers",
+   "abbreviation": "IU"
+  },
+  {
+   "id": "86",
+   "location": "Rose Hulman",
+   "name": "Rose Hulman Fightin' Engineers",
+   "abbreviation": "RHIT"
+  },
+  {
+   "id": "87",
+   "location": "Notre Dame",
+   "name": "Notre Dame Fighting Irish",
+   "abbreviation": "ND"
+  },
+  {
+   "id": "89",
+   "location": "Wabash",
+   "name": "Wabash Little Giants",
+   "abbreviation": "WAB"
+  },
+  {
+   "id": "90",
+   "location": "Pittsburg State",
+   "name": "Pittsburg State Gorillas",
+   "abbreviation": "PTSU"
+  },
+  {
+   "id": "93",
+   "location": "Murray State",
+   "name": "Murray State Racers",
+   "abbreviation": "MUR"
+  },
+  {
+   "id": "95",
+   "location": "Pikeville",
+   "name": "Pikeville Bears",
+   "abbreviation": "PIKEV"
+  },
+  {
+   "id": "96",
+   "location": "Kentucky",
+   "name": "Kentucky Wildcats",
+   "abbreviation": "UK"
+  },
+  {
+   "id": "97",
+   "location": "Louisville",
+   "name": "Louisville Cardinals",
+   "abbreviation": "LOU"
+  },
+  {
+   "id": "98",
+   "location": "Western Kentucky",
+   "name": "Western Kentucky Hilltoppers",
+   "abbreviation": "WKU"
+  },
+  {
+   "id": "99",
+   "location": "LSU",
+   "name": "LSU Tigers",
+   "abbreviation": "LSU"
+  },
+  {
+   "id": "101",
+   "location": "Eureka",
+   "name": "Eureka Red Devils",
+   "abbreviation": "ERKA"
+  },
+  {
+   "id": "103",
+   "location": "Boston College",
+   "name": "Boston College Eagles",
+   "abbreviation": "BC"
+  },
+  {
+   "id": "107",
+   "location": "Holy Cross",
+   "name": "Holy Cross Crusaders",
+   "abbreviation": "HC"
+  },
+  {
+   "id": "108",
+   "location": "Harvard",
+   "name": "Harvard Crimson",
+   "abbreviation": "HARV"
+  },
+  {
+   "id": "109",
+   "location": "MIT",
+   "name": "MIT Engineers",
+   "abbreviation": "MIT"
+  },
+  {
+   "id": "110",
+   "location": "Mass Maritime",
+   "name": "Mass Maritime Buccaneers",
+   "abbreviation": "MMT"
+  },
+  {
+   "id": "112",
+   "location": "Tufts",
+   "name": "Tufts Jumbos",
+   "abbreviation": "TUFT"
+  },
+  {
+   "id": "113",
+   "location": "Massachusetts",
+   "name": "Massachusetts Minutemen",
+   "abbreviation": "MASS"
+  },
+  {
+   "id": "114",
+   "location": "Fitchburg State",
+   "name": "Fitchburg State Falcons",
+   "abbreviation": "FBSU"
+  },
+  {
+   "id": "118",
+   "location": "Johns Hopkins",
+   "name": "Johns Hopkins Blue Jays",
+   "abbreviation": "JHU"
+  },
+  {
+   "id": "119",
+   "location": "Towson",
+   "name": "Towson Tigers",
+   "abbreviation": "TOW"
+  },
+  {
+   "id": "120",
+   "location": "Maryland",
+   "name": "Maryland Terrapins",
+   "abbreviation": "MD"
+  },
+  {
+   "id": "121",
+   "location": "Bates",
+   "name": "Bates Bobcats",
+   "abbreviation": "BATE"
+  },
+  {
+   "id": "124",
+   "location": "Augsburg",
+   "name": "Augsburg Auggies",
+   "abbreviation": "AUGS"
+  },
+  {
+   "id": "125",
+   "location": "Grand Valley State",
+   "name": "Grand Valley State Lakers",
+   "abbreviation": "GVSU"
+  },
+  {
+   "id": "126",
+   "location": "Kalamazoo",
+   "name": "Kalamazoo Hornets",
+   "abbreviation": "KALC"
+  },
+  {
+   "id": "127",
+   "location": "Michigan State",
+   "name": "Michigan State Spartans",
+   "abbreviation": "MSU"
+  },
+  {
+   "id": "128",
+   "location": "Northern Michigan",
+   "name": "Northern Michigan Wildcats",
+   "abbreviation": "NMI"
+  },
+  {
+   "id": "129",
+   "location": "Saginaw Valley State",
+   "name": "Saginaw Valley State Cardinals",
+   "abbreviation": "SVSU"
+  },
+  {
+   "id": "130",
+   "location": "Michigan",
+   "name": "Michigan Wolverines",
+   "abbreviation": "MICH"
+  },
+  {
+   "id": "131",
+   "location": "Wayne State (MI)",
+   "name": "Wayne State (MI) Warriors",
+   "abbreviation": "WSMI"
+  },
+  {
+   "id": "132",
+   "location": "Bemidji State",
+   "name": "Bemidji State Beavers",
+   "abbreviation": "BST"
+  },
+  {
+   "id": "133",
+   "location": "St. Olaf",
+   "name": "St. Olaf Oles",
+   "abbreviation": "OLAF"
+  },
+  {
+   "id": "134",
+   "location": "Minnesota Duluth",
+   "name": "Minnesota Duluth Bulldogs",
+   "abbreviation": "UMD"
+  },
+  {
+   "id": "135",
+   "location": "Minnesota",
+   "name": "Minnesota Golden Gophers",
+   "abbreviation": "MINN"
+  },
+  {
+   "id": "137",
+   "location": "Missouri Western",
+   "name": "Missouri Western Griffons",
+   "abbreviation": "MOWE"
+  },
+  {
+   "id": "138",
+   "location": "Northwest Missouri State",
+   "name": "Northwest Missouri State Bearcats",
+   "abbreviation": "MWMO"
+  },
+  {
+   "id": "142",
+   "location": "Missouri",
+   "name": "Missouri Tigers",
+   "abbreviation": "MIZ"
+  },
+  {
+   "id": "143",
+   "location": "Washington St. Louis",
+   "name": "Washington St. Louis Bears",
+   "abbreviation": "WUMO"
+  },
+  {
+   "id": "145",
+   "location": "Ole Miss",
+   "name": "Ole Miss Rebels",
+   "abbreviation": "MISS"
+  },
+  {
+   "id": "146",
+   "location": "Grove City",
+   "name": "Grove City Wolverines",
+   "abbreviation": "GRO"
+  },
+  {
+   "id": "147",
+   "location": "Montana State",
+   "name": "Montana State Bobcats",
+   "abbreviation": "MTST"
+  },
+  {
+   "id": "149",
+   "location": "Montana",
+   "name": "Montana Grizzlies",
+   "abbreviation": "MONT"
+  },
+  {
+   "id": "150",
+   "location": "Duke",
+   "name": "Duke Blue Devils",
+   "abbreviation": "DUKE"
+  },
+  {
+   "id": "151",
+   "location": "East Carolina",
+   "name": "East Carolina Pirates",
+   "abbreviation": "ECU"
+  },
+  {
+   "id": "152",
+   "location": "NC State",
+   "name": "NC State Wolfpack",
+   "abbreviation": "NCSU"
+  },
+  {
+   "id": "153",
+   "location": "North Carolina",
+   "name": "North Carolina Tar Heels",
+   "abbreviation": "UNC"
+  },
+  {
+   "id": "154",
+   "location": "Wake Forest",
+   "name": "Wake Forest Demon Deacons",
+   "abbreviation": "WAKE"
+  },
+  {
+   "id": "155",
+   "location": "North Dakota",
+   "name": "North Dakota Fighting Hawks",
+   "abbreviation": "UND"
+  },
+  {
+   "id": "158",
+   "location": "Nebraska",
+   "name": "Nebraska Cornhuskers",
+   "abbreviation": "NEB"
+  },
+  {
+   "id": "159",
+   "location": "Dartmouth",
+   "name": "Dartmouth Big Green",
+   "abbreviation": "DART"
+  },
+  {
+   "id": "160",
+   "location": "New Hampshire",
+   "name": "New Hampshire Wildcats",
+   "abbreviation": "UNH"
+  },
+  {
+   "id": "162",
+   "location": "Hamline",
+   "name": "Hamline Pipers",
+   "abbreviation": "HMLN"
+  },
+  {
+   "id": "163",
+   "location": "Princeton",
+   "name": "Princeton Tigers",
+   "abbreviation": "PRIN"
+  },
+  {
+   "id": "164",
+   "location": "Rutgers",
+   "name": "Rutgers Scarlet Knights",
+   "abbreviation": "RUTG"
+  },
+  {
+   "id": "166",
+   "location": "New Mexico State",
+   "name": "New Mexico State Aggies",
+   "abbreviation": "NMSU"
+  },
+  {
+   "id": "167",
+   "location": "New Mexico",
+   "name": "New Mexico Lobos",
+   "abbreviation": "UNM"
+  },
+  {
+   "id": "171",
+   "location": "Columbia",
+   "name": "Columbia Lions",
+   "abbreviation": "COLU"
+  },
+  {
+   "id": "172",
+   "location": "Cornell",
+   "name": "Cornell Big Red",
+   "abbreviation": "COR"
+  },
+  {
+   "id": "173",
+   "location": "Hartwick",
+   "name": "Hartwick Hawks",
+   "abbreviation": "HRTW"
+  },
+  {
+   "id": "174",
+   "location": "Hobart",
+   "name": "Hobart Statesmen",
+   "abbreviation": "HBRT"
+  },
+  {
+   "id": "175",
+   "location": "Ithaca",
+   "name": "Ithaca Bombers",
+   "abbreviation": "ITH"
+  },
+  {
+   "id": "183",
+   "location": "Syracuse",
+   "name": "Syracuse Orange",
+   "abbreviation": "SYR"
+  },
+  {
+   "id": "184",
+   "location": "Rochester (NY)",
+   "name": "Rochester (NY) Yellow Jackets",
+   "abbreviation": "URNY"
+  },
+  {
+   "id": "188",
+   "location": "Baldwin Wallace",
+   "name": "Baldwin Wallace Yellow Jackets",
+   "abbreviation": "BW"
+  },
+  {
+   "id": "189",
+   "location": "Bowling Green",
+   "name": "Bowling Green Falcons",
+   "abbreviation": "BGSU"
+  },
+  {
+   "id": "190",
+   "location": "Defiance College",
+   "name": "Defiance College Yellow Jackets",
+   "abbreviation": "DEF"
+  },
+  {
+   "id": "191",
+   "location": "Heidelberg",
+   "name": "Heidelberg Student Princes",
+   "abbreviation": "HDBG"
+  },
+  {
+   "id": "193",
+   "location": "Miami (OH)",
+   "name": "Miami (OH) RedHawks",
+   "abbreviation": "M-OH"
+  },
+  {
+   "id": "194",
+   "location": "Ohio State",
+   "name": "Ohio State Buckeyes",
+   "abbreviation": "OSU"
+  },
+  {
+   "id": "195",
+   "location": "Ohio",
+   "name": "Ohio Bobcats",
+   "abbreviation": "OHIO"
+  },
+  {
+   "id": "196",
+   "location": "Northeastern State",
+   "name": "Northeastern State RiverHawks",
+   "abbreviation": "NESU"
+  },
+  {
+   "id": "197",
+   "location": "Oklahoma State",
+   "name": "Oklahoma State Cowboys",
+   "abbreviation": "OKST"
+  },
+  {
+   "id": "199",
+   "location": "Southeastern Oklahoma State",
+   "name": "Southeastern Oklahoma State Savage Storm",
+   "abbreviation": "SEOK"
+  },
+  {
+   "id": "200",
+   "location": "Southern Nazarene",
+   "name": "Southern Nazarene Crimson Storm",
+   "abbreviation": "SNU"
+  },
+  {
+   "id": "201",
+   "location": "Oklahoma",
+   "name": "Oklahoma Sooners",
+   "abbreviation": "OU"
+  },
+  {
+   "id": "202",
+   "location": "Tulsa",
+   "name": "Tulsa Golden Hurricane",
+   "abbreviation": "TLSA"
+  },
+  {
+   "id": "203",
+   "location": "Linfield",
+   "name": "Linfield Wildcats",
+   "abbreviation": "LINF"
+  },
+  {
+   "id": "204",
+   "location": "Oregon State",
+   "name": "Oregon State Beavers",
+   "abbreviation": "ORST"
+  },
+  {
+   "id": "205",
+   "location": "Pacific (OR)",
+   "name": "Pacific (OR) Boxers",
+   "abbreviation": "PCOR"
+  },
+  {
+   "id": "209",
+   "location": "Lock Haven",
+   "name": "Lock Haven Bald Eagles",
+   "abbreviation": "LHU"
+  },
+  {
+   "id": "210",
+   "location": "Millersville",
+   "name": "Millersville Marauders",
+   "abbreviation": "MILL"
+  },
+  {
+   "id": "213",
+   "location": "Penn State",
+   "name": "Penn State Nittany Lions",
+   "abbreviation": "PSU"
+  },
+  {
+   "id": "215",
+   "location": "Slippery Rock",
+   "name": "Slippery Rock The Rock",
+   "abbreviation": "SRU"
+  },
+  {
+   "id": "216",
+   "location": "Susquehanna",
+   "name": "Susquehanna River Hawks",
+   "abbreviation": "SUSQ"
+  },
+  {
+   "id": "218",
+   "location": "Temple",
+   "name": "Temple Owls",
+   "abbreviation": "TEM"
+  },
+  {
+   "id": "219",
+   "location": "Pennsylvania",
+   "name": "Pennsylvania Quakers",
+   "abbreviation": "PENN"
+  },
+  {
+   "id": "221",
+   "location": "Pittsburgh",
+   "name": "Pittsburgh Panthers",
+   "abbreviation": "PITT"
+  },
+  {
+   "id": "222",
+   "location": "Villanova",
+   "name": "Villanova Wildcats",
+   "abbreviation": "VILL"
+  },
+  {
+   "id": "223",
+   "location": "West Chester",
+   "name": "West Chester Golden Rams",
+   "abbreviation": "WCHT"
+  },
+  {
+   "id": "225",
+   "location": "Brown",
+   "name": "Brown Bears",
+   "abbreviation": "BRWN"
+  },
+  {
+   "id": "227",
+   "location": "Rhode Island",
+   "name": "Rhode Island Rams",
+   "abbreviation": "URI"
+  },
+  {
+   "id": "228",
+   "location": "Clemson",
+   "name": "Clemson Tigers",
+   "abbreviation": "CLEM"
+  },
+  {
+   "id": "231",
+   "location": "Furman",
+   "name": "Furman Paladins",
+   "abbreviation": "FUR"
+  },
+  {
+   "id": "233",
+   "location": "South Dakota",
+   "name": "South Dakota Coyotes",
+   "abbreviation": "SDAK"
+  },
+  {
+   "id": "235",
+   "location": "Memphis",
+   "name": "Memphis Tigers",
+   "abbreviation": "MEM"
+  },
+  {
+   "id": "236",
+   "location": "Chattanooga",
+   "name": "Chattanooga Mocs",
+   "abbreviation": "UTC"
+  },
+  {
+   "id": "237",
+   "location": "Union",
+   "name": "Union Garnet Chargers",
+   "abbreviation": "UNNY"
+  },
+  {
+   "id": "238",
+   "location": "Vanderbilt",
+   "name": "Vanderbilt Commodores",
+   "abbreviation": "VAN"
+  },
+  {
+   "id": "239",
+   "location": "Baylor",
+   "name": "Baylor Bears",
+   "abbreviation": "BAY"
+  },
+  {
+   "id": "241",
+   "location": "McMurry",
+   "name": "McMurry War Hawks",
+   "abbreviation": "MCM"
+  },
+  {
+   "id": "242",
+   "location": "Rice",
+   "name": "Rice Owls",
+   "abbreviation": "RICE"
+  },
+  {
+   "id": "245",
+   "location": "Texas A&M",
+   "name": "Texas A&M Aggies",
+   "abbreviation": "TA&M"
+  },
+  {
+   "id": "246",
+   "location": "Juniata",
+   "name": "Juniata Eagles",
+   "abbreviation": "JUN"
+  },
+  {
+   "id": "247",
+   "location": "King's",
+   "name": "King's Monarchs",
+   "abbreviation": "KNGS"
+  },
+  {
+   "id": "248",
+   "location": "Houston",
+   "name": "Houston Cougars",
+   "abbreviation": "HOU"
+  },
+  {
+   "id": "249",
+   "location": "North Texas",
+   "name": "North Texas Mean Green",
+   "abbreviation": "UNT"
+  },
+  {
+   "id": "251",
+   "location": "Texas",
+   "name": "Texas Longhorns",
+   "abbreviation": "TEX"
+  },
+  {
+   "id": "252",
+   "location": "BYU",
+   "name": "BYU Cougars",
+   "abbreviation": "BYU"
+  },
+  {
+   "id": "253",
+   "location": "Southern Utah",
+   "name": "Southern Utah Thunderbirds",
+   "abbreviation": "SUU"
+  },
+  {
+   "id": "254",
+   "location": "Utah",
+   "name": "Utah Utes",
+   "abbreviation": "UTAH"
+  },
+  {
+   "id": "255",
+   "location": "Knox",
+   "name": "Knox Prairie Fire",
+   "abbreviation": "KNOX"
+  },
+  {
+   "id": "256",
+   "location": "James Madison",
+   "name": "James Madison Dukes",
+   "abbreviation": "JMU"
+  },
+  {
+   "id": "257",
+   "location": "Richmond",
+   "name": "Richmond Spiders",
+   "abbreviation": "RICH"
+  },
+  {
+   "id": "258",
+   "location": "Virginia",
+   "name": "Virginia Cavaliers",
+   "abbreviation": "UVA"
+  },
+  {
+   "id": "259",
+   "location": "Virginia Tech",
+   "name": "Virginia Tech Hokies",
+   "abbreviation": "VT"
+  },
+  {
+   "id": "262",
+   "location": "Lake Forest",
+   "name": "Lake Forest Foresters",
+   "abbreviation": "LFC"
+  },
+  {
+   "id": "263",
+   "location": "Loras",
+   "name": "Loras Duhawks",
+   "abbreviation": "LOR"
+  },
+  {
+   "id": "264",
+   "location": "Washington",
+   "name": "Washington Huskies",
+   "abbreviation": "WASH"
+  },
+  {
+   "id": "265",
+   "location": "Washington State",
+   "name": "Washington State Cougars",
+   "abbreviation": "WSU"
+  },
+  {
+   "id": "266",
+   "location": "Beloit",
+   "name": "Beloit Buccaneers",
+   "abbreviation": "BELO"
+  },
+  {
+   "id": "267",
+   "location": "Southeastern",
+   "name": "Southeastern Fires",
+   "abbreviation": "SEU"
+  },
+  {
+   "id": "268",
+   "location": "Lawrence",
+   "name": "Lawrence Vikings",
+   "abbreviation": "LAW"
+  },
+  {
+   "id": "271",
+   "location": "Wisconsin Oshkosh",
+   "name": "Wisconsin Oshkosh Titans",
+   "abbreviation": "UWO"
+  },
+  {
+   "id": "272",
+   "location": "Wisconsin Platteville",
+   "name": "Wisconsin Platteville Pioneers",
+   "abbreviation": "UWP"
+  },
+  {
+   "id": "274",
+   "location": "Maine Maritime",
+   "name": "Maine Maritime Mariners",
+   "abbreviation": "UMMA"
+  },
+  {
+   "id": "275",
+   "location": "Wisconsin",
+   "name": "Wisconsin Badgers",
+   "abbreviation": "WIS"
+  },
+  {
+   "id": "276",
+   "location": "Marshall",
+   "name": "Marshall Thundering Herd",
+   "abbreviation": "MRSH"
+  },
+  {
+   "id": "277",
+   "location": "West Virginia",
+   "name": "West Virginia Mountaineers",
+   "abbreviation": "WVU"
+  },
+  {
+   "id": "278",
+   "location": "Fresno State",
+   "name": "Fresno State Bulldogs",
+   "abbreviation": "FRES"
+  },
+  {
+   "id": "282",
+   "location": "Indiana State",
+   "name": "Indiana State Sycamores",
+   "abbreviation": "INST"
+  },
+  {
+   "id": "284",
+   "location": "Stonehill",
+   "name": "Stonehill Skyhawks",
+   "abbreviation": "STO"
+  },
+  {
+   "id": "286",
+   "location": "North Carolina Wesleyan",
+   "name": "North Carolina Wesleyan Battling Bishops",
+   "abbreviation": "NCW"
+  },
+  {
+   "id": "290",
+   "location": "Georgia Southern",
+   "name": "Georgia Southern Eagles",
+   "abbreviation": "GASO"
+  },
+  {
+   "id": "291",
+   "location": "Methodist",
+   "name": "Methodist Monarchs",
+   "abbreviation": "MU"
+  },
+  {
+   "id": "293",
+   "location": "Vermont State Castleton",
+   "name": "Vermont State Castleton Spartans",
+   "abbreviation": "VTSC"
+  },
+  {
+   "id": "295",
+   "location": "Old Dominion",
+   "name": "Old Dominion Monarchs",
+   "abbreviation": "ODU"
+  },
+  {
+   "id": "297",
+   "location": "Hampden Sydney",
+   "name": "Hampden Sydney Tigers",
+   "abbreviation": "HSC"
+  },
+  {
+   "id": "301",
+   "location": "San Diego",
+   "name": "San Diego Toreros",
+   "abbreviation": "USD"
+  },
+  {
+   "id": "302",
+   "location": "UC Davis",
+   "name": "UC Davis Aggies",
+   "abbreviation": "UCD"
+  },
+  {
+   "id": "304",
+   "location": "Idaho State",
+   "name": "Idaho State Bengals",
+   "abbreviation": "IDST"
+  },
+  {
+   "id": "306",
+   "location": "Illinois Wesleyan",
+   "name": "Illinois Wesleyan Titans",
+   "abbreviation": "ILWU"
+  },
+  {
+   "id": "308",
+   "location": "Ashland",
+   "name": "Ashland Eagles",
+   "abbreviation": "ASH"
+  },
+  {
+   "id": "309",
+   "location": "Louisiana",
+   "name": "Louisiana Ragin' Cajuns",
+   "abbreviation": "UL"
+  },
+  {
+   "id": "311",
+   "location": "Maine",
+   "name": "Maine Black Bears",
+   "abbreviation": "ME"
+  },
+  {
+   "id": "316",
+   "location": "Dickinson State University",
+   "name": "Dickinson State University Blue Hawks",
+   "abbreviation": "DIC"
+  },
+  {
+   "id": "317",
+   "location": "Marietta",
+   "name": "Marietta Pioneers",
+   "abbreviation": "MRTT"
+  },
+  {
+   "id": "319",
+   "location": "Oklahoma Baptist",
+   "name": "Oklahoma Baptist Bison",
+   "abbreviation": "OKBU"
+  },
+  {
+   "id": "322",
+   "location": "Lafayette",
+   "name": "Lafayette Leopards",
+   "abbreviation": "LAF"
+  },
+  {
+   "id": "323",
+   "location": "Moravian",
+   "name": "Moravian Greyhounds",
+   "abbreviation": "MOR"
+  },
+  {
+   "id": "324",
+   "location": "Coastal Carolina",
+   "name": "Coastal Carolina Chanticleers",
+   "abbreviation": "CCU"
+  },
+  {
+   "id": "326",
+   "location": "Texas State",
+   "name": "Texas State Bobcats",
+   "abbreviation": "TXST"
+  },
+  {
+   "id": "328",
+   "location": "Utah State",
+   "name": "Utah State Aggies",
+   "abbreviation": "USU"
+  },
+  {
+   "id": "330",
+   "location": "Virginia State",
+   "name": "Virginia State Trojans",
+   "abbreviation": "VSU"
+  },
+  {
+   "id": "331",
+   "location": "Eastern Washington",
+   "name": "Eastern Washington Eagles",
+   "abbreviation": "EWU"
+  },
+  {
+   "id": "332",
+   "location": "Muskingum",
+   "name": "Muskingum Fighting Muskies",
+   "abbreviation": "MSK"
+  },
+  {
+   "id": "333",
+   "location": "Alabama",
+   "name": "Alabama Crimson Tide",
+   "abbreviation": "ALA"
+  },
+  {
+   "id": "336",
+   "location": "Wesleyan (CT)",
+   "name": "Wesleyan (CT) Cardinals",
+   "abbreviation": "WSCT"
+  },
+  {
+   "id": "338",
+   "location": "Kennesaw State",
+   "name": "Kennesaw State Owls",
+   "abbreviation": "KENN"
+  },
+  {
+   "id": "340",
+   "location": "Bowdoin",
+   "name": "Bowdoin Polar Bears",
+   "abbreviation": "BOW"
+  },
+  {
+   "id": "341",
+   "location": "Frostburg State",
+   "name": "Frostburg State Bobcats",
+   "abbreviation": "FSTU"
+  },
+  {
+   "id": "344",
+   "location": "Mississippi State",
+   "name": "Mississippi State Bulldogs",
+   "abbreviation": "MSST"
+  },
+  {
+   "id": "348",
+   "location": "Hamilton",
+   "name": "Hamilton Continentals",
+   "abbreviation": "HAM"
+  },
+  {
+   "id": "349",
+   "location": "Army",
+   "name": "Army Black Knights",
+   "abbreviation": "ARMY"
+  },
+  {
+   "id": "351",
+   "location": "Wingate",
+   "name": "Wingate Bulldogs",
+   "abbreviation": "WINU"
+  },
+  {
+   "id": "352",
+   "location": "Kenyon",
+   "name": "Kenyon Owls",
+   "abbreviation": "KNY"
+  },
+  {
+   "id": "354",
+   "location": "Olivet",
+   "name": "Olivet Comets",
+   "abbreviation": "UOO"
+  },
+  {
+   "id": "356",
+   "location": "Illinois",
+   "name": "Illinois Fighting Illini",
+   "abbreviation": "ILL"
+  },
+  {
+   "id": "359",
+   "location": "Otterbein",
+   "name": "Otterbein Cardinals",
+   "abbreviation": "OTTB"
+  },
+  {
+   "id": "365",
+   "location": "Alfred",
+   "name": "Alfred Saxons",
+   "abbreviation": "ALFR"
+  },
+  {
+   "id": "366",
+   "location": "Ferrum",
+   "name": "Ferrum Panthers",
+   "abbreviation": "FC"
+  },
+  {
+   "id": "367",
+   "location": "Gannon",
+   "name": "Gannon Golden Knights",
+   "abbreviation": "GANN"
+  },
+  {
+   "id": "374",
+   "location": "St. John Fisher",
+   "name": "St. John Fisher Cardinals",
+   "abbreviation": "STJF"
+  },
+  {
+   "id": "375",
+   "location": "St. Scholastica",
+   "name": "St. Scholastica Saints",
+   "abbreviation": "CSS"
+  },
+  {
+   "id": "379",
+   "location": "UMass Dartmouth",
+   "name": "UMass Dartmouth Corsairs",
+   "abbreviation": "MDAR"
+  },
+  {
+   "id": "386",
+   "location": "Trinity (TX)",
+   "name": "Trinity (TX) Tigers",
+   "abbreviation": "TUTX"
+  },
+  {
+   "id": "388",
+   "location": "Lebanon Valley",
+   "name": "Lebanon Valley Flying Dutchmen",
+   "abbreviation": "LVC"
+  },
+  {
+   "id": "389",
+   "location": "Upper Iowa",
+   "name": "Upper Iowa Peacocks",
+   "abbreviation": "UIU"
+  },
+  {
+   "id": "390",
+   "location": "Utica",
+   "name": "Utica Pioneers",
+   "abbreviation": "UTIC"
+  },
+  {
+   "id": "391",
+   "location": "Oberlin",
+   "name": "Oberlin Yeomen",
+   "abbreviation": "OBE"
+  },
+  {
+   "id": "396",
+   "location": "Wheaton (IL)",
+   "name": "Wheaton (IL) Thunder",
+   "abbreviation": "WCIL"
+  },
+  {
+   "id": "398",
+   "location": "Wilkes",
+   "name": "Wilkes Colonels",
+   "abbreviation": "WILK"
+  },
+  {
+   "id": "399",
+   "location": "UAlbany",
+   "name": "UAlbany Great Danes",
+   "abbreviation": "UALB"
+  },
+  {
+   "id": "402",
+   "location": "Worcester State",
+   "name": "Worcester State Lancers",
+   "abbreviation": "WORC"
+  },
+  {
+   "id": "409",
+   "location": "Concordia (WI)",
+   "name": "Concordia (WI) Falcons",
+   "abbreviation": "CUW"
+  },
+  {
+   "id": "411",
+   "location": "Chapman",
+   "name": "Chapman Panthers",
+   "abbreviation": "CHAP"
+  },
+  {
+   "id": "415",
+   "location": "George Fox",
+   "name": "George Fox Bruins",
+   "abbreviation": "GFU"
+  },
+  {
+   "id": "417",
+   "location": "Gallaudet",
+   "name": "Gallaudet Bison",
+   "abbreviation": "GLDT"
+  },
+  {
+   "id": "418",
+   "location": "Hendrix",
+   "name": "Hendrix Warriors",
+   "abbreviation": "HDX"
+  },
+  {
+   "id": "424",
+   "location": "Capital",
+   "name": "Capital Comets",
+   "abbreviation": "CAPU"
+  },
+  {
+   "id": "425",
+   "location": "Northern State",
+   "name": "Northern State Wolves",
+   "abbreviation": "NSU"
+  },
+  {
+   "id": "426",
+   "location": "Mount Union",
+   "name": "Mount Union Purple Raiders",
+   "abbreviation": "UMU"
+  },
+  {
+   "id": "427",
+   "location": "Ohio Northern",
+   "name": "Ohio Northern Polar Bears",
+   "abbreviation": "OHNU"
+  },
+  {
+   "id": "433",
+   "location": "Westminster (MO)",
+   "name": "Westminster (MO) Blue Jays",
+   "abbreviation": "WCMO"
+  },
+  {
+   "id": "437",
+   "location": "Lake Erie",
+   "name": "Lake Erie Storm",
+   "abbreviation": "LKER"
+  },
+  {
+   "id": "446",
+   "location": "Martin Luther",
+   "name": "Martin Luther Knights",
+   "abbreviation": "MLC"
+  },
+  {
+   "id": "452",
+   "location": "Endicott",
+   "name": "Endicott Gulls",
+   "abbreviation": "ENDC"
+  },
+  {
+   "id": "455",
+   "location": "West Virginia Wesleyan",
+   "name": "West Virginia Wesleyan Bobcats",
+   "abbreviation": "WVWC"
+  },
+  {
+   "id": "471",
+   "location": "Stevenson",
+   "name": "Stevenson Mustangs",
+   "abbreviation": "STVS"
+  },
+  {
+   "id": "488",
+   "location": "Baker University",
+   "name": "Baker University Baker",
+   "abbreviation": "BAK"
+  },
+  {
+   "id": "490",
+   "location": "Benedict",
+   "name": "Benedict Tigers",
+   "abbreviation": "BEN"
+  },
+  {
+   "id": "492",
+   "location": "Bethany (KS)",
+   "name": "Bethany (KS) Swedes",
+   "abbreviation": "BYKS"
+  },
+  {
+   "id": "495",
+   "location": "BLUEFIELD",
+   "name": "BLUEFIELD Ramblin' Rams",
+   "abbreviation": "BLU"
+  },
+  {
+   "id": "507",
+   "location": "Concordia University Nebraska",
+   "name": "Concordia University Nebraska Clippers",
+   "abbreviation": "CONCONE"
+  },
+  {
+   "id": "509",
+   "location": "Crown",
+   "name": "Crown Polars",
+   "abbreviation": "CRWN"
+  },
+  {
+   "id": "510",
+   "location": "Culver-Stockton College",
+   "name": "Culver-Stockton College Wildcats",
+   "abbreviation": "CULVE"
+  },
+  {
+   "id": "511",
+   "location": "Cumberlands",
+   "name": "Cumberlands Indians",
+   "abbreviation": "CMBS"
+  },
+  {
+   "id": "512",
+   "location": "Dakota State University",
+   "name": "Dakota State University Trojans",
+   "abbreviation": "DAKOT"
+  },
+  {
+   "id": "513",
+   "location": "Dakota Wesleyan",
+   "name": "Dakota Wesleyan Tigers",
+   "abbreviation": "DWU"
+  },
+  {
+   "id": "527",
+   "location": "Friends University",
+   "name": "Friends University Friends",
+   "abbreviation": "FRIE"
+  },
+  {
+   "id": "530",
+   "location": "Graceland University",
+   "name": "Graceland University Graceland",
+   "abbreviation": "GRC"
+  },
+  {
+   "id": "535",
+   "location": "Haskell Indian Nations Univ",
+   "name": "Haskell Indian Nations Univ Jayhawks",
+   "abbreviation": "HASKELL"
+  },
+  {
+   "id": "547",
+   "location": "Kansas Wesleyan",
+   "name": "Kansas Wesleyan Ks Wesleyan",
+   "abbreviation": "KANSA"
+  },
+  {
+   "id": "548",
+   "location": "LaGrange",
+   "name": "LaGrange Panthers",
+   "abbreviation": "LGC"
+  },
+  {
+   "id": "559",
+   "location": "University of Mary",
+   "name": "University of Mary Marauders",
+   "abbreviation": "MARY"
+  },
+  {
+   "id": "561",
+   "location": "Mayville State",
+   "name": "Mayville State Comets",
+   "abbreviation": "MYSU"
+  },
+  {
+   "id": "565",
+   "location": "Midland",
+   "name": "Midland MIDLAND LUTHERAN",
+   "abbreviation": "MIDL"
+  },
+  {
+   "id": "568",
+   "location": "Minot State",
+   "name": "Minot State Beavers",
+   "abbreviation": "MINS"
+  },
+  {
+   "id": "583",
+   "location": "Northwestern (MN)",
+   "name": "Northwestern (MN) Eagles",
+   "abbreviation": "UNW"
+  },
+  {
+   "id": "599",
+   "location": "Roosevelt",
+   "name": "Roosevelt Lakers",
+   "abbreviation": "RSVT"
+  },
+  {
+   "id": "611",
+   "location": "Seton Hill",
+   "name": "Seton Hill Griffins",
+   "abbreviation": "SEHI"
+  },
+  {
+   "id": "613",
+   "location": "South Dakota Mines",
+   "name": "South Dakota Mines Hardrockers",
+   "abbreviation": "SDMT"
+  },
+  {
+   "id": "616",
+   "location": "Southwestern (KS)",
+   "name": "Southwestern (KS) Moundbuilders",
+   "abbreviation": "SWKS"
+  },
+  {
+   "id": "618",
+   "location": "Sterling",
+   "name": "Sterling STERLING KS",
+   "abbreviation": "STLG"
+  },
+  {
+   "id": "620",
+   "location": "Taylor",
+   "name": "Taylor Trojans",
+   "abbreviation": "TLRU"
+  },
+  {
+   "id": "628",
+   "location": "Valley City State",
+   "name": "Valley City State Vikings",
+   "abbreviation": "VCSU"
+  },
+  {
+   "id": "630",
+   "location": "Wayland Baptist",
+   "name": "Wayland Baptist Pioneers",
+   "abbreviation": "WYBU"
+  },
+  {
+   "id": "2000",
+   "location": "Abilene Christian",
+   "name": "Abilene Christian Wildcats",
+   "abbreviation": "ACU"
+  },
+  {
+   "id": "2001",
+   "location": "Adams State",
+   "name": "Adams State Grizzlies",
+   "abbreviation": "ADSU"
+  },
+  {
+   "id": "2003",
+   "location": "Adrian",
+   "name": "Adrian Bulldogs",
+   "abbreviation": "ADR"
+  },
+  {
+   "id": "2005",
+   "location": "Air Force",
+   "name": "Air Force Falcons",
+   "abbreviation": "AF"
+  },
+  {
+   "id": "2006",
+   "location": "Akron",
+   "name": "Akron Zips",
+   "abbreviation": "AKR"
+  },
+  {
+   "id": "2010",
+   "location": "Alabama A&M",
+   "name": "Alabama A&M Bulldogs",
+   "abbreviation": "AAMU"
+  },
+  {
+   "id": "2011",
+   "location": "Alabama State",
+   "name": "Alabama State Hornets",
+   "abbreviation": "ALST"
+  },
+  {
+   "id": "2013",
+   "location": "Albany State",
+   "name": "Albany State Golden Rams",
+   "abbreviation": "ABSU"
+  },
+  {
+   "id": "2015",
+   "location": "Albright",
+   "name": "Albright Lions",
+   "abbreviation": "ALBR"
+  },
+  {
+   "id": "2016",
+   "location": "Alcorn State",
+   "name": "Alcorn State Braves",
+   "abbreviation": "ALCN"
+  },
+  {
+   "id": "2018",
+   "location": "Allegheny",
+   "name": "Allegheny Gators",
+   "abbreviation": "ALLG"
+  },
+  {
+   "id": "2019",
+   "location": "Allen",
+   "name": "Allen Yellow Jackets",
+   "abbreviation": "ALNU"
+  },
+  {
+   "id": "2022",
+   "location": "American International",
+   "name": "American International Yellow Jackets",
+   "abbreviation": "AIC"
+  },
+  {
+   "id": "2023",
+   "location": "Anderson (IN)",
+   "name": "Anderson (IN) Ravens",
+   "abbreviation": "ANIN"
+  },
+  {
+   "id": "2025",
+   "location": "Angelo State",
+   "name": "Angelo State Rams",
+   "abbreviation": "AGSU"
+  },
+  {
+   "id": "2026",
+   "location": "App State",
+   "name": "App State Mountaineers",
+   "abbreviation": "APP"
+  },
+  {
+   "id": "2028",
+   "location": "Arkansas Monticello",
+   "name": "Arkansas Monticello Boll Weevils",
+   "abbreviation": "UAM"
+  },
+  {
+   "id": "2029",
+   "location": "Arkansas-Pine Bluff",
+   "name": "Arkansas-Pine Bluff Golden Lions",
+   "abbreviation": "UAPB"
+  },
+  {
+   "id": "2032",
+   "location": "Arkansas State",
+   "name": "Arkansas State Red Wolves",
+   "abbreviation": "ARST"
+  },
+  {
+   "id": "2033",
+   "location": "Arkansas Tech",
+   "name": "Arkansas Tech Wonder Boys",
+   "abbreviation": "ARTE"
+  },
+  {
+   "id": "2038",
+   "location": "Assumption",
+   "name": "Assumption Greyhounds",
+   "abbreviation": "ASP"
+  },
+  {
+   "id": "2042",
+   "location": "Augustana (IL)",
+   "name": "Augustana (IL) Vikings",
+   "abbreviation": "AUGC"
+  },
+  {
+   "id": "2043",
+   "location": "Augustana (SD)",
+   "name": "Augustana (SD) Vikings",
+   "abbreviation": "AUSD"
+  },
+  {
+   "id": "2044",
+   "location": "Aurora",
+   "name": "Aurora Spartans",
+   "abbreviation": "AUR"
+  },
+  {
+   "id": "2045",
+   "location": "Austin",
+   "name": "Austin 'Roos",
+   "abbreviation": "AUS"
+  },
+  {
+   "id": "2046",
+   "location": "Austin Peay",
+   "name": "Austin Peay Governors",
+   "abbreviation": "APSU"
+  },
+  {
+   "id": "2047",
+   "location": "Averett",
+   "name": "Averett Cougars",
+   "abbreviation": "AVER"
+  },
+  {
+   "id": "2048",
+   "location": "Avila University",
+   "name": "Avila University Eagles",
+   "abbreviation": "AVILA"
+  },
+  {
+   "id": "2049",
+   "location": "Azusa Pacific",
+   "name": "Azusa Pacific Cougars",
+   "abbreviation": "APU"
+  },
+  {
+   "id": "2050",
+   "location": "Ball State",
+   "name": "Ball State Cardinals",
+   "abbreviation": "BALL"
+  },
+  {
+   "id": "2056",
+   "location": "Belhaven",
+   "name": "Belhaven Blazers",
+   "abbreviation": "BELH"
+  },
+  {
+   "id": "2060",
+   "location": "Bentley",
+   "name": "Bentley Falcons",
+   "abbreviation": "BENT"
+  },
+  {
+   "id": "2062",
+   "location": "Bethany (WV)",
+   "name": "Bethany (WV) Bison",
+   "abbreviation": "BCWV"
+  },
+  {
+   "id": "2064",
+   "location": "Bethel (TN)",
+   "name": "Bethel (TN) Wildcats",
+   "abbreviation": "BTTN"
+  },
+  {
+   "id": "2065",
+   "location": "Bethune-Cookman",
+   "name": "Bethune-Cookman Wildcats",
+   "abbreviation": "BCU"
+  },
+  {
+   "id": "2069",
+   "location": "Black Hills State",
+   "name": "Black Hills State Yellow Jackets",
+   "abbreviation": "BHSU"
+  },
+  {
+   "id": "2071",
+   "location": "Bloomsburg",
+   "name": "Bloomsburg Huskies",
+   "abbreviation": "BBU"
+  },
+  {
+   "id": "2074",
+   "location": "Bluffton",
+   "name": "Bluffton Beavers",
+   "abbreviation": "BLF"
+  },
+  {
+   "id": "2075",
+   "location": "Bowie State",
+   "name": "Bowie State Bulldogs",
+   "abbreviation": "BOWE"
+  },
+  {
+   "id": "2079",
+   "location": "Bridgewater",
+   "name": "Bridgewater Eagles",
+   "abbreviation": "BRI"
+  },
+  {
+   "id": "2080",
+   "location": "British Columbia",
+   "name": "British Columbia British Col",
+   "abbreviation": "BBM"
+  },
+  {
+   "id": "2083",
+   "location": "Bucknell",
+   "name": "Bucknell Bison",
+   "abbreviation": "BUCK"
+  },
+  {
+   "id": "2084",
+   "location": "Buffalo",
+   "name": "Buffalo Bulls",
+   "abbreviation": "BUF"
+  },
+  {
+   "id": "2085",
+   "location": "Buffalo State",
+   "name": "Buffalo State Bengals",
+   "abbreviation": "BSU"
+  },
+  {
+   "id": "2086",
+   "location": "Butler",
+   "name": "Butler Bulldogs",
+   "abbreviation": "BTLR"
+  },
+  {
+   "id": "2094",
+   "location": "Cal Lutheran",
+   "name": "Cal Lutheran Kingsmen",
+   "abbreviation": "CLU"
+  },
+  {
+   "id": "2097",
+   "location": "Campbell",
+   "name": "Campbell Fighting Camels",
+   "abbreviation": "CAM"
+  },
+  {
+   "id": "2098",
+   "location": "Campbellsville",
+   "name": "Campbellsville Tigers",
+   "abbreviation": "CBVU"
+  },
+  {
+   "id": "2101",
+   "location": "Carleton",
+   "name": "Carleton Knights",
+   "abbreviation": "CAR"
+  },
+  {
+   "id": "2102",
+   "location": "Carnegie Mellon",
+   "name": "Carnegie Mellon Tartans",
+   "abbreviation": "CGMU"
+  },
+  {
+   "id": "2105",
+   "location": "Carson Newman",
+   "name": "Carson Newman Eagles",
+   "abbreviation": "CN"
+  },
+  {
+   "id": "2106",
+   "location": "Carthage",
+   "name": "Carthage Firebirds",
+   "abbreviation": "CCW"
+  },
+  {
+   "id": "2107",
+   "location": "Catawba",
+   "name": "Catawba Indians",
+   "abbreviation": "CAT"
+  },
+  {
+   "id": "2108",
+   "location": "Catholic",
+   "name": "Catholic Cardinals",
+   "abbreviation": "CATH"
+  },
+  {
+   "id": "2110",
+   "location": "Central Arkansas",
+   "name": "Central Arkansas Bears",
+   "abbreviation": "CARK"
+  },
+  {
+   "id": "2115",
+   "location": "Central Connecticut",
+   "name": "Central Connecticut Blue Devils",
+   "abbreviation": "CCSU"
+  },
+  {
+   "id": "2116",
+   "location": "UCF",
+   "name": "UCF Knights",
+   "abbreviation": "UCF"
+  },
+  {
+   "id": "2117",
+   "location": "Central Michigan",
+   "name": "Central Michigan Chippewas",
+   "abbreviation": "CMU"
+  },
+  {
+   "id": "2118",
+   "location": "Central Missouri",
+   "name": "Central Missouri Mules",
+   "abbreviation": "UCM"
+  },
+  {
+   "id": "2119",
+   "location": "Central State",
+   "name": "Central State Marauders",
+   "abbreviation": "CNSU"
+  },
+  {
+   "id": "2120",
+   "location": "Central Washington",
+   "name": "Central Washington Wildcats",
+   "abbreviation": "CWAU"
+  },
+  {
+   "id": "2121",
+   "location": "Centre",
+   "name": "Centre Colonels",
+   "abbreviation": "CCO"
+  },
+  {
+   "id": "2122",
+   "location": "Central Oklahoma",
+   "name": "Central Oklahoma Bronchos",
+   "abbreviation": "UCO"
+  },
+  {
+   "id": "2123",
+   "location": "Chadron State",
+   "name": "Chadron State Eagles",
+   "abbreviation": "CHAD"
+  },
+  {
+   "id": "2127",
+   "location": "Charleston Southern",
+   "name": "Charleston Southern Buccaneers",
+   "abbreviation": "CHSO"
+  },
+  {
+   "id": "2128",
+   "location": "Charleston (WV)",
+   "name": "Charleston (WV) Golden Eagles",
+   "abbreviation": "UCWV"
+  },
+  {
+   "id": "2130",
+   "location": "Chicago State",
+   "name": "Chicago State Cougars",
+   "abbreviation": "CHST"
+  },
+  {
+   "id": "2132",
+   "location": "Cincinnati",
+   "name": "Cincinnati Bearcats",
+   "abbreviation": "CIN"
+  },
+  {
+   "id": "2134",
+   "location": "Clarion",
+   "name": "Clarion Golden Eagles",
+   "abbreviation": "CLRN"
+  },
+  {
+   "id": "2141",
+   "location": "Coe",
+   "name": "Coe Kohawks",
+   "abbreviation": "COE"
+  },
+  {
+   "id": "2142",
+   "location": "Colgate",
+   "name": "Colgate Raiders",
+   "abbreviation": "COLG"
+  },
+  {
+   "id": "2146",
+   "location": "Colorado School of Mines",
+   "name": "Colorado School of Mines Orediggers",
+   "abbreviation": "CMIN"
+  },
+  {
+   "id": "2148",
+   "location": "Concord",
+   "name": "Concord Mountain Lions",
+   "abbreviation": "CONC"
+  },
+  {
+   "id": "2151",
+   "location": "Concordia Chicago",
+   "name": "Concordia Chicago Cougars",
+   "abbreviation": "CUC"
+  },
+  {
+   "id": "2152",
+   "location": "Concordia (MN)",
+   "name": "Concordia (MN) Cobbers",
+   "abbreviation": "CCMN"
+  },
+  {
+   "id": "2155",
+   "location": "Cornell (IA)",
+   "name": "Cornell (IA) Rams",
+   "abbreviation": "CNIA"
+  },
+  {
+   "id": "2161",
+   "location": "Cumberland (TN)",
+   "name": "Cumberland (TN) Bulldogs",
+   "abbreviation": "CUMBTN"
+  },
+  {
+   "id": "2166",
+   "location": "Davidson",
+   "name": "Davidson Wildcats",
+   "abbreviation": "DAV"
+  },
+  {
+   "id": "2168",
+   "location": "Dayton",
+   "name": "Dayton Flyers",
+   "abbreviation": "DAY"
+  },
+  {
+   "id": "2169",
+   "location": "Delaware State",
+   "name": "Delaware State Hornets",
+   "abbreviation": "DSU"
+  },
+  {
+   "id": "2170",
+   "location": "Delta State",
+   "name": "Delta State Statesmen",
+   "abbreviation": "DLST"
+  },
+  {
+   "id": "2171",
+   "location": "Denison",
+   "name": "Denison Big Red",
+   "abbreviation": "DSN"
+  },
+  {
+   "id": "2175",
+   "location": "Dickinson",
+   "name": "Dickinson Red Devils",
+   "abbreviation": "DKSN"
+  },
+  {
+   "id": "2181",
+   "location": "Drake",
+   "name": "Drake Bulldogs",
+   "abbreviation": "DRKE"
+  },
+  {
+   "id": "2184",
+   "location": "Duquesne",
+   "name": "Duquesne Dukes",
+   "abbreviation": "DUQ"
+  },
+  {
+   "id": "2188",
+   "location": "East Stroudsburg",
+   "name": "East Stroudsburg Warriors",
+   "abbreviation": "ESU"
+  },
+  {
+   "id": "2191",
+   "location": "East Central",
+   "name": "East Central Tigers",
+   "abbreviation": "ECNU"
+  },
+  {
+   "id": "2193",
+   "location": "East Tennessee State",
+   "name": "East Tennessee State Buccaneers",
+   "abbreviation": "ETSU"
+  },
+  {
+   "id": "2194",
+   "location": "East Texas Baptist",
+   "name": "East Texas Baptist Tigers",
+   "abbreviation": "ETBU"
+  },
+  {
+   "id": "2197",
+   "location": "Eastern Illinois",
+   "name": "Eastern Illinois Panthers",
+   "abbreviation": "EIU"
+  },
+  {
+   "id": "2198",
+   "location": "Eastern Kentucky",
+   "name": "Eastern Kentucky Colonels",
+   "abbreviation": "EKU"
+  },
+  {
+   "id": "2199",
+   "location": "Eastern Michigan",
+   "name": "Eastern Michigan Eagles",
+   "abbreviation": "EMU"
+  },
+  {
+   "id": "2201",
+   "location": "Eastern New Mexico",
+   "name": "Eastern New Mexico Greyhounds",
+   "abbreviation": "ENMU"
+  },
+  {
+   "id": "2202",
+   "location": "Eastern Oregon",
+   "name": "Eastern Oregon",
+   "abbreviation": "EORE"
+  },
+  {
+   "id": "2205",
+   "location": "Edinboro",
+   "name": "Edinboro Fighting Scots",
+   "abbreviation": "EDBR"
+  },
+  {
+   "id": "2206",
+   "location": "Edward Waters",
+   "name": "Edward Waters Tigers",
+   "abbreviation": "EDW"
+  },
+  {
+   "id": "2207",
+   "location": "Elizabeth City State",
+   "name": "Elizabeth City State Vikings",
+   "abbreviation": "ECSU"
+  },
+  {
+   "id": "2210",
+   "location": "Elon",
+   "name": "Elon Phoenix",
+   "abbreviation": "ELON"
+  },
+  {
+   "id": "2213",
+   "location": "Emory & Henry",
+   "name": "Emory & Henry Wasps",
+   "abbreviation": "EHC"
+  },
+  {
+   "id": "2214",
+   "location": "Emporia State",
+   "name": "Emporia State Hornets",
+   "abbreviation": "EMSU"
+  },
+  {
+   "id": "2219",
+   "location": "Faulkner University",
+   "name": "Faulkner University Eagles",
+   "abbreviation": "FAULKNER"
+  },
+  {
+   "id": "2220",
+   "location": "Fayetteville State",
+   "name": "Fayetteville State Broncos",
+   "abbreviation": "FAYU"
+  },
+  {
+   "id": "2221",
+   "location": "FDU Florham",
+   "name": "FDU Florham Devils",
+   "abbreviation": "FDUF"
+  },
+  {
+   "id": "2222",
+   "location": "Ferris State",
+   "name": "Ferris State Bulldogs",
+   "abbreviation": "FRST"
+  },
+  {
+   "id": "2224",
+   "location": "Findlay",
+   "name": "Findlay Oilers",
+   "abbreviation": "UF"
+  },
+  {
+   "id": "2226",
+   "location": "Florida Atlantic",
+   "name": "Florida Atlantic Owls",
+   "abbreviation": "FAU"
+  },
+  {
+   "id": "2229",
+   "location": "Florida International",
+   "name": "Florida International Panthers",
+   "abbreviation": "FIU"
+  },
+  {
+   "id": "2230",
+   "location": "Fordham",
+   "name": "Fordham Rams",
+   "abbreviation": "FOR"
+  },
+  {
+   "id": "2231",
+   "location": "Fort Hays",
+   "name": "Fort Hays Tigers",
+   "abbreviation": "FHSU"
+  },
+  {
+   "id": "2232",
+   "location": "Fort Valley State",
+   "name": "Fort Valley State Wildcats",
+   "abbreviation": "FVSU"
+  },
+  {
+   "id": "2233",
+   "location": "Franklin",
+   "name": "Franklin Grizzlies",
+   "abbreviation": "FRKL"
+  },
+  {
+   "id": "2234",
+   "location": "Franklin & Marshall",
+   "name": "Franklin & Marshall Diplomats",
+   "abbreviation": "FMC"
+  },
+  {
+   "id": "2237",
+   "location": "Fort Lewis",
+   "name": "Fort Lewis Skyhawks",
+   "abbreviation": "FLWC"
+  },
+  {
+   "id": "2241",
+   "location": "Gardner-Webb",
+   "name": "Gardner-Webb Runnin' Bulldogs",
+   "abbreviation": "GWEB"
+  },
+  {
+   "id": "2242",
+   "location": "Geneva",
+   "name": "Geneva Golden Tornadoes",
+   "abbreviation": "GEN"
+  },
+  {
+   "id": "2244",
+   "location": "George Mason University",
+   "name": "George Mason University Patriots",
+   "abbreviation": "GMU"
+  },
+  {
+   "id": "2245",
+   "location": "Georgetown (KY)",
+   "name": "Georgetown (KY) Tigers",
+   "abbreviation": "GTKY"
+  },
+  {
+   "id": "2247",
+   "location": "Georgia State",
+   "name": "Georgia State Panthers",
+   "abbreviation": "GAST"
+  },
+  {
+   "id": "2248",
+   "location": "Gettysburg",
+   "name": "Gettysburg Bullets",
+   "abbreviation": "GTYB"
+  },
+  {
+   "id": "2249",
+   "location": "Glenville State",
+   "name": "Glenville State Pioneers",
+   "abbreviation": "GVLS"
+  },
+  {
+   "id": "2254",
+   "location": "Des Moines",
+   "name": "Des Moines Vikings",
+   "abbreviation": "GRANDVIEW"
+  },
+  {
+   "id": "2256",
+   "location": "Greensboro",
+   "name": "Greensboro Pride",
+   "abbreviation": "GRNB"
+  },
+  {
+   "id": "2257",
+   "location": "Greenville",
+   "name": "Greenville Panthers",
+   "abbreviation": "GRNV"
+  },
+  {
+   "id": "2258",
+   "location": "Guilford",
+   "name": "Guilford Quakers",
+   "abbreviation": "GLFD"
+  },
+  {
+   "id": "2261",
+   "location": "Hampton",
+   "name": "Hampton Pirates",
+   "abbreviation": "HAMP"
+  },
+  {
+   "id": "2262",
+   "location": "Hanover",
+   "name": "Hanover Panthers",
+   "abbreviation": "HNVR"
+  },
+  {
+   "id": "2264",
+   "location": "Harding",
+   "name": "Harding Bisons",
+   "abbreviation": "HARD"
+  },
+  {
+   "id": "2271",
+   "location": "Henderson State",
+   "name": "Henderson State Reddies",
+   "abbreviation": "HSTU"
+  },
+  {
+   "id": "2273",
+   "location": "Hillsdale",
+   "name": "Hillsdale Chargers",
+   "abbreviation": "HLDL"
+  },
+  {
+   "id": "2274",
+   "location": "Hiram",
+   "name": "Hiram Terriers",
+   "abbreviation": "HIRM"
+  },
+  {
+   "id": "2277",
+   "location": "Houston Christian",
+   "name": "Houston Christian Huskies",
+   "abbreviation": "HCU"
+  },
+  {
+   "id": "2280",
+   "location": "Husson",
+   "name": "Husson Eagles",
+   "abbreviation": "HUSS"
+  },
+  {
+   "id": "2283",
+   "location": "Benedictine (IL)",
+   "name": "Benedictine (IL) Eagles",
+   "abbreviation": "BNIL"
+  },
+  {
+   "id": "2286",
+   "location": "Illinois College",
+   "name": "Illinois College Blueboys",
+   "abbreviation": "ILLC"
+  },
+  {
+   "id": "2287",
+   "location": "Illinois State",
+   "name": "Illinois State Redbirds",
+   "abbreviation": "ILST"
+  },
+  {
+   "id": "2291",
+   "location": "IU Pennsylvania",
+   "name": "IU Pennsylvania Crimson Hawks",
+   "abbreviation": "IUP"
+  },
+  {
+   "id": "2292",
+   "location": "Indianapolis",
+   "name": "Indianapolis Greyhounds",
+   "abbreviation": "INDY"
+  },
+  {
+   "id": "2294",
+   "location": "Iowa",
+   "name": "Iowa Hawkeyes",
+   "abbreviation": "IOWA"
+  },
+  {
+   "id": "2296",
+   "location": "Jackson State",
+   "name": "Jackson State Tigers",
+   "abbreviation": "JKST"
+  },
+  {
+   "id": "2302",
+   "location": "John Carroll",
+   "name": "John Carroll Blue Streaks",
+   "abbreviation": "JCU"
+  },
+  {
+   "id": "2304",
+   "location": "Johnson C. Smith",
+   "name": "Johnson C. Smith Golden Bulls",
+   "abbreviation": "JCSU"
+  },
+  {
+   "id": "2305",
+   "location": "Kansas",
+   "name": "Kansas Jayhawks",
+   "abbreviation": "KU"
+  },
+  {
+   "id": "2306",
+   "location": "Kansas State",
+   "name": "Kansas State Wildcats",
+   "abbreviation": "KSU"
+  },
+  {
+   "id": "2309",
+   "location": "Kent State",
+   "name": "Kent State Golden Flashes",
+   "abbreviation": "KENT"
+  },
+  {
+   "id": "2310",
+   "location": "Kentucky State",
+   "name": "Kentucky State Thorobreds",
+   "abbreviation": "KYSU"
+  },
+  {
+   "id": "2315",
+   "location": "Kutztown",
+   "name": "Kutztown Golden Bears",
+   "abbreviation": "KUTZ"
+  },
+  {
+   "id": "2316",
+   "location": "Kentucky Wesleyan",
+   "name": "Kentucky Wesleyan Panthers",
+   "abbreviation": "KWC"
+  },
+  {
+   "id": "2318",
+   "location": "La Verne",
+   "name": "La Verne Leopards",
+   "abbreviation": "ULV"
+  },
+  {
+   "id": "2320",
+   "location": "Lamar",
+   "name": "Lamar Cardinals",
+   "abbreviation": "LAM"
+  },
+  {
+   "id": "2323",
+   "location": "Lane College",
+   "name": "Lane College Dragons",
+   "abbreviation": "LANE"
+  },
+  {
+   "id": "2324",
+   "location": "Langston",
+   "name": "Langston Lions",
+   "abbreviation": "LNGT"
+  },
+  {
+   "id": "2329",
+   "location": "Lehigh",
+   "name": "Lehigh Mountain Hawks",
+   "abbreviation": "LEH"
+  },
+  {
+   "id": "2331",
+   "location": "Lenoir Rhyne",
+   "name": "Lenoir Rhyne Bears",
+   "abbreviation": "LENR"
+  },
+  {
+   "id": "2333",
+   "location": "Lewis & Clark",
+   "name": "Lewis & Clark River Otters",
+   "abbreviation": "LC"
+  },
+  {
+   "id": "2335",
+   "location": "Liberty",
+   "name": "Liberty Flames",
+   "abbreviation": "LIB"
+  },
+  {
+   "id": "2339",
+   "location": "Lincoln (PA)",
+   "name": "Lincoln (PA) Lions",
+   "abbreviation": "LNPA"
+  },
+  {
+   "id": "2341",
+   "location": "Long Island University",
+   "name": "Long Island University Sharks",
+   "abbreviation": "LIU"
+  },
+  {
+   "id": "2347",
+   "location": "Louisiana Christian",
+   "name": "Louisiana Christian Wildcats",
+   "abbreviation": "LCHR"
+  },
+  {
+   "id": "2348",
+   "location": "Louisiana Tech",
+   "name": "Louisiana Tech Bulldogs",
+   "abbreviation": "LT"
+  },
+  {
+   "id": "2354",
+   "location": "Lycoming",
+   "name": "Lycoming Warriors",
+   "abbreviation": "LYCO"
+  },
+  {
+   "id": "2355",
+   "location": "Virginia Lynchburg",
+   "name": "Virginia Lynchburg Dragons",
+   "abbreviation": "VUL"
+  },
+  {
+   "id": "2359",
+   "location": "Macalester",
+   "name": "Macalester Scots",
+   "abbreviation": "MAC"
+  },
+  {
+   "id": "2362",
+   "location": "Manchester",
+   "name": "Manchester Spartans",
+   "abbreviation": "MNCH"
+  },
+  {
+   "id": "2364",
+   "location": "Minnesota State",
+   "name": "Minnesota State Mavericks",
+   "abbreviation": "MNST"
+  },
+  {
+   "id": "2365",
+   "location": "Mansfield",
+   "name": "Mansfield Mountaineers",
+   "abbreviation": "MNFD"
+  },
+  {
+   "id": "2366",
+   "location": "Marian (IN)",
+   "name": "Marian (IN) Knights",
+   "abbreviation": "MUIN"
+  },
+  {
+   "id": "2368",
+   "location": "Marist",
+   "name": "Marist Red Foxes",
+   "abbreviation": "MRST"
+  },
+  {
+   "id": "2369",
+   "location": "Mars Hill",
+   "name": "Mars Hill Lions",
+   "abbreviation": "MHU"
+  },
+  {
+   "id": "2371",
+   "location": "Mary Hardin Baylor",
+   "name": "Mary Hardin Baylor Crusaders",
+   "abbreviation": "MHB"
+  },
+  {
+   "id": "2373",
+   "location": "Maryville (TN)",
+   "name": "Maryville (TN) Scots",
+   "abbreviation": "MCTN"
+  },
+  {
+   "id": "2377",
+   "location": "McNeese",
+   "name": "McNeese Cowboys",
+   "abbreviation": "MCN"
+  },
+  {
+   "id": "2382",
+   "location": "Mercer",
+   "name": "Mercer Bears",
+   "abbreviation": "MER"
+  },
+  {
+   "id": "2383",
+   "location": "Merchant Marine",
+   "name": "Merchant Marine Mariners",
+   "abbreviation": "MMA"
+  },
+  {
+   "id": "2385",
+   "location": "Mercyhurst",
+   "name": "Mercyhurst Lakers",
+   "abbreviation": "MERC"
+  },
+  {
+   "id": "2390",
+   "location": "Miami",
+   "name": "Miami Hurricanes",
+   "abbreviation": "MIA"
+  },
+  {
+   "id": "2392",
+   "location": "Michigan Tech",
+   "name": "Michigan Tech Huskies",
+   "abbreviation": "MTU"
+  },
+  {
+   "id": "2393",
+   "location": "Middle Tennessee",
+   "name": "Middle Tennessee Blue Raiders",
+   "abbreviation": "MTSU"
+  },
+  {
+   "id": "2394",
+   "location": "Middlebury",
+   "name": "Middlebury Panthers",
+   "abbreviation": "MIDB"
+  },
+  {
+   "id": "2395",
+   "location": "Midwestern State",
+   "name": "Midwestern State Mustangs",
+   "abbreviation": "MWSU"
+  },
+  {
+   "id": "2396",
+   "location": "Miles",
+   "name": "Miles Golden Bears",
+   "abbreviation": "MILE"
+  },
+  {
+   "id": "2398",
+   "location": "Millsaps",
+   "name": "Millsaps Majors",
+   "abbreviation": "MLSP"
+  },
+  {
+   "id": "2399",
+   "location": "Minnesota Morris",
+   "name": "Minnesota Morris Cougars",
+   "abbreviation": "MNMO"
+  },
+  {
+   "id": "2400",
+   "location": "Mississippi Valley State",
+   "name": "Mississippi Valley State Delta Devils",
+   "abbreviation": "MVSU"
+  },
+  {
+   "id": "2402",
+   "location": "Missouri S&T",
+   "name": "Missouri S&T Miners",
+   "abbreviation": "MS&T"
+  },
+  {
+   "id": "2403",
+   "location": "Missouri Southern State",
+   "name": "Missouri Southern State Lions",
+   "abbreviation": "MSSU"
+  },
+  {
+   "id": "2405",
+   "location": "Monmouth",
+   "name": "Monmouth Hawks",
+   "abbreviation": "MONM"
+  },
+  {
+   "id": "2413",
+   "location": "Morehead State",
+   "name": "Morehead State Eagles",
+   "abbreviation": "MORE"
+  },
+  {
+   "id": "2415",
+   "location": "Morgan State",
+   "name": "Morgan State Bears",
+   "abbreviation": "MORG"
+  },
+  {
+   "id": "2416",
+   "location": "Morningside",
+   "name": "Morningside Chiefs",
+   "abbreviation": "MNGS"
+  },
+  {
+   "id": "2419",
+   "location": "Mount St Joseph",
+   "name": "Mount St Joseph Lions",
+   "abbreviation": "MSJ"
+  },
+  {
+   "id": "2422",
+   "location": "Muhlenberg",
+   "name": "Muhlenberg Mules",
+   "abbreviation": "MUHL"
+  },
+  {
+   "id": "2424",
+   "location": "New Mexico Highlands",
+   "name": "New Mexico Highlands Cowboys",
+   "abbreviation": "NMHU"
+  },
+  {
+   "id": "2426",
+   "location": "Navy",
+   "name": "Navy Midshipmen",
+   "abbreviation": "NAVY"
+  },
+  {
+   "id": "2428",
+   "location": "North Carolina Central",
+   "name": "North Carolina Central Eagles",
+   "abbreviation": "NCCU"
+  },
+  {
+   "id": "2429",
+   "location": "Charlotte",
+   "name": "Charlotte 49ers",
+   "abbreviation": "CLT"
+  },
+  {
+   "id": "2433",
+   "location": "UL Monroe",
+   "name": "UL Monroe Warhawks",
+   "abbreviation": "ULM"
+  },
+  {
+   "id": "2438",
+   "location": "Nebraska Kearney",
+   "name": "Nebraska Kearney Lopers",
+   "abbreviation": "NEBK"
+  },
+  {
+   "id": "2439",
+   "location": "UNLV",
+   "name": "UNLV Rebels",
+   "abbreviation": "UNLV"
+  },
+  {
+   "id": "2440",
+   "location": "Nevada",
+   "name": "Nevada Wolf Pack",
+   "abbreviation": "NEV"
+  },
+  {
+   "id": "2441",
+   "location": "New Haven",
+   "name": "New Haven Chargers",
+   "abbreviation": "NHVN"
+  },
+  {
+   "id": "2442",
+   "location": "The College of New Jersey",
+   "name": "The College of New Jersey Lions",
+   "abbreviation": "TCNJ"
+  },
+  {
+   "id": "2444",
+   "location": "Newberry",
+   "name": "Newberry Wolves",
+   "abbreviation": "NBRY"
+  },
+  {
+   "id": "2447",
+   "location": "Nicholls",
+   "name": "Nicholls Colonels",
+   "abbreviation": "NICH"
+  },
+  {
+   "id": "2448",
+   "location": "North Carolina A&T",
+   "name": "North Carolina A&T Aggies",
+   "abbreviation": "NCAT"
+  },
+  {
+   "id": "2449",
+   "location": "North Dakota State",
+   "name": "North Dakota State Bison",
+   "abbreviation": "NDSU"
+  },
+  {
+   "id": "2450",
+   "location": "Norfolk State",
+   "name": "Norfolk State Spartans",
+   "abbreviation": "NORF"
+  },
+  {
+   "id": "2453",
+   "location": "North Alabama",
+   "name": "North Alabama Lions",
+   "abbreviation": "UNA"
+  },
+  {
+   "id": "2458",
+   "location": "Northern Colorado",
+   "name": "Northern Colorado Bears",
+   "abbreviation": "UNCO"
+  },
+  {
+   "id": "2459",
+   "location": "Northern Illinois",
+   "name": "Northern Illinois Huskies",
+   "abbreviation": "NIU"
+  },
+  {
+   "id": "2460",
+   "location": "Northern Iowa",
+   "name": "Northern Iowa Panthers",
+   "abbreviation": "UNI"
+  },
+  {
+   "id": "2464",
+   "location": "Northern Arizona",
+   "name": "Northern Arizona Lumberjacks",
+   "abbreviation": "NAU"
+  },
+  {
+   "id": "2466",
+   "location": "Northwestern State",
+   "name": "Northwestern State Demons",
+   "abbreviation": "NWST"
+  },
+  {
+   "id": "2467",
+   "location": "Norwich",
+   "name": "Norwich Cadets",
+   "abbreviation": "NWCH"
+  },
+  {
+   "id": "2477",
+   "location": "Ohio Dominican",
+   "name": "Ohio Dominican Panthers",
+   "abbreviation": "OHDU"
+  },
+  {
+   "id": "2483",
+   "location": "Oregon",
+   "name": "Oregon Ducks",
+   "abbreviation": "ORE"
+  },
+  {
+   "id": "2486",
+   "location": "Pacific Lutheran",
+   "name": "Pacific Lutheran Lutes",
+   "abbreviation": "PCLT"
+  },
+  {
+   "id": "2487",
+   "location": "Pace",
+   "name": "Pace Setters",
+   "abbreviation": "PACE"
+  },
+  {
+   "id": "2502",
+   "location": "Portland State",
+   "name": "Portland State Vikings",
+   "abbreviation": "PRST"
+  },
+  {
+   "id": "2504",
+   "location": "Prairie View A&M",
+   "name": "Prairie View A&M Panthers",
+   "abbreviation": "PV"
+  },
+  {
+   "id": "2506",
+   "location": "Presbyterian",
+   "name": "Presbyterian Blue Hose",
+   "abbreviation": "PRES"
+  },
+  {
+   "id": "2508",
+   "location": "Puget Sound",
+   "name": "Puget Sound Loggers",
+   "abbreviation": "PUG"
+  },
+  {
+   "id": "2509",
+   "location": "Purdue",
+   "name": "Purdue Boilermakers",
+   "abbreviation": "PUR"
+  },
+  {
+   "id": "2516",
+   "location": "Randolph Macon",
+   "name": "Randolph Macon Yellow Jackets",
+   "abbreviation": "RMC"
+  },
+  {
+   "id": "2519",
+   "location": "Rhodes",
+   "name": "Rhodes Lynx",
+   "abbreviation": "RHDS"
+  },
+  {
+   "id": "2523",
+   "location": "Robert Morris",
+   "name": "Robert Morris Colonials",
+   "abbreviation": "RMU"
+  },
+  {
+   "id": "2524",
+   "location": "Rockford",
+   "name": "Rockford Regents",
+   "abbreviation": "RFU"
+  },
+  {
+   "id": "2528",
+   "location": "Rensselaer",
+   "name": "Rensselaer Engineers",
+   "abbreviation": "RPI"
+  },
+  {
+   "id": "2529",
+   "location": "Sacred Heart",
+   "name": "Sacred Heart Pioneers",
+   "abbreviation": "SHU"
+  },
+  {
+   "id": "2532",
+   "location": "Salisbury",
+   "name": "Salisbury Sea Gulls",
+   "abbreviation": "SAL"
+  },
+  {
+   "id": "2534",
+   "location": "Sam Houston",
+   "name": "Sam Houston Bearkats",
+   "abbreviation": "SHSU"
+  },
+  {
+   "id": "2535",
+   "location": "Samford",
+   "name": "Samford Bulldogs",
+   "abbreviation": "SAM"
+  },
+  {
+   "id": "2542",
+   "location": "Savannah State",
+   "name": "Savannah State Tigers",
+   "abbreviation": "SAV"
+  },
+  {
+   "id": "2545",
+   "location": "SE Louisiana",
+   "name": "SE Louisiana Lions",
+   "abbreviation": "SELA"
+  },
+  {
+   "id": "2546",
+   "location": "Southeast Missouri State",
+   "name": "Southeast Missouri State Redhawks",
+   "abbreviation": "SEMO"
+  },
+  {
+   "id": "2551",
+   "location": "Shaw",
+   "name": "Shaw Bears",
+   "abbreviation": "SHAW"
+  },
+  {
+   "id": "2553",
+   "location": "Sewanee",
+   "name": "Sewanee Tigers",
+   "abbreviation": "SEWA"
+  },
+  {
+   "id": "2557",
+   "location": "Coast Guard",
+   "name": "Coast Guard Bears",
+   "abbreviation": "USCG"
+  },
+  {
+   "id": "2559",
+   "location": "Shippensburg",
+   "name": "Shippensburg Raiders",
+   "abbreviation": "SHIP"
+  },
+  {
+   "id": "2560",
+   "location": "Shorter",
+   "name": "Shorter Hawks",
+   "abbreviation": "SHOU"
+  },
+  {
+   "id": "2562",
+   "location": "Siena Heights",
+   "name": "Siena Heights Saints",
+   "abbreviation": "SHTU"
+  },
+  {
+   "id": "2564",
+   "location": "Simpson (IA)",
+   "name": "Simpson (IA) Storm",
+   "abbreviation": "SCIA"
+  },
+  {
+   "id": "2567",
+   "location": "SMU",
+   "name": "SMU Mustangs",
+   "abbreviation": "SMU"
+  },
+  {
+   "id": "2568",
+   "location": "Southern Arkansas",
+   "name": "Southern Arkansas Muleriders",
+   "abbreviation": "SAR"
+  },
+  {
+   "id": "2569",
+   "location": "South Carolina State",
+   "name": "South Carolina State Bulldogs",
+   "abbreviation": "SCST"
+  },
+  {
+   "id": "2570",
+   "location": "CSU Pueblo",
+   "name": "CSU Pueblo ThunderWolves",
+   "abbreviation": "CSUP"
+  },
+  {
+   "id": "2571",
+   "location": "South Dakota State",
+   "name": "South Dakota State Jackrabbits",
+   "abbreviation": "SDST"
+  },
+  {
+   "id": "2572",
+   "location": "Southern Miss",
+   "name": "Southern Miss Golden Eagles",
+   "abbreviation": "USM"
+  },
+  {
+   "id": "2579",
+   "location": "South Carolina",
+   "name": "South Carolina Gamecocks",
+   "abbreviation": "SC"
+  },
+  {
+   "id": "2582",
+   "location": "Southern",
+   "name": "Southern Jaguars",
+   "abbreviation": "SOU"
+  },
+  {
+   "id": "2583",
+   "location": "Southern Connecticut State",
+   "name": "Southern Connecticut State Owls",
+   "abbreviation": "SCTS"
+  },
+  {
+   "id": "2584",
+   "location": "Southern Oregon",
+   "name": "Southern Oregon Raiders",
+   "abbreviation": "SOR"
+  },
+  {
+   "id": "2586",
+   "location": "Southwest Baptist",
+   "name": "Southwest Baptist Bearcats",
+   "abbreviation": "SWBU"
+  },
+  {
+   "id": "2587",
+   "location": "Southwest Minnesota State",
+   "name": "Southwest Minnesota State Mustangs",
+   "abbreviation": "SWMS"
+  },
+  {
+   "id": "2588",
+   "location": "Southwestern U",
+   "name": "Southwestern U Pirates",
+   "abbreviation": "SWU"
+  },
+  {
+   "id": "2591",
+   "location": "St. Ambrose",
+   "name": "St. Ambrose Fighting Bees",
+   "abbreviation": "STAM"
+  },
+  {
+   "id": "2595",
+   "location": "St. Francis (IL)",
+   "name": "St. Francis (IL) Fighting Saints",
+   "abbreviation": "SFIL"
+  },
+  {
+   "id": "2598",
+   "location": "Saint Francis",
+   "name": "Saint Francis Red Flash",
+   "abbreviation": "SFPA"
+  },
+  {
+   "id": "2600",
+   "location": "Saint John's (MN)",
+   "name": "Saint John's (MN) Johnnies",
+   "abbreviation": "STJM"
+  },
+  {
+   "id": "2614",
+   "location": "Saint Vincent",
+   "name": "Saint Vincent Bearcats",
+   "abbreviation": "SVC"
+  },
+  {
+   "id": "2615",
+   "location": "Saint Xavier",
+   "name": "Saint Xavier Cougars",
+   "abbreviation": "STX"
+  },
+  {
+   "id": "2617",
+   "location": "Stephen F. Austin",
+   "name": "Stephen F. Austin Lumberjacks",
+   "abbreviation": "SFA"
+  },
+  {
+   "id": "2619",
+   "location": "Stony Brook",
+   "name": "Stony Brook Seawolves",
+   "abbreviation": "STBK"
+  },
+  {
+   "id": "2623",
+   "location": "Missouri State",
+   "name": "Missouri State Bears",
+   "abbreviation": "MOST"
+  },
+  {
+   "id": "2627",
+   "location": "Tarleton State",
+   "name": "Tarleton State Texans",
+   "abbreviation": "TAR"
+  },
+  {
+   "id": "2628",
+   "location": "TCU",
+   "name": "TCU Horned Frogs",
+   "abbreviation": "TCU"
+  },
+  {
+   "id": "2630",
+   "location": "UT Martin",
+   "name": "UT Martin Skyhawks",
+   "abbreviation": "UTM"
+  },
+  {
+   "id": "2633",
+   "location": "Tennessee",
+   "name": "Tennessee Volunteers",
+   "abbreviation": "TENN"
+  },
+  {
+   "id": "2634",
+   "location": "Tennessee State",
+   "name": "Tennessee State Tigers",
+   "abbreviation": "TNST"
+  },
+  {
+   "id": "2635",
+   "location": "Tennessee Tech",
+   "name": "Tennessee Tech Golden Eagles",
+   "abbreviation": "TNTC"
+  },
+  {
+   "id": "2636",
+   "location": "UTSA",
+   "name": "UTSA Roadrunners",
+   "abbreviation": "UTSA"
+  },
+  {
+   "id": "2637",
+   "location": "Texas College",
+   "name": "Texas College Steers",
+   "abbreviation": "TXCL"
+  },
+  {
+   "id": "2638",
+   "location": "UTEP",
+   "name": "UTEP Miners",
+   "abbreviation": "UTEP"
+  },
+  {
+   "id": "2639",
+   "location": "Texas Lutheran",
+   "name": "Texas Lutheran Bulldogs",
+   "abbreviation": "TXLU"
+  },
+  {
+   "id": "2640",
+   "location": "Texas Southern",
+   "name": "Texas Southern Tigers",
+   "abbreviation": "TXSO"
+  },
+  {
+   "id": "2641",
+   "location": "Texas Tech",
+   "name": "Texas Tech Red Raiders",
+   "abbreviation": "TTU"
+  },
+  {
+   "id": "2643",
+   "location": "The Citadel",
+   "name": "The Citadel Bulldogs",
+   "abbreviation": "CIT"
+  },
+  {
+   "id": "2644",
+   "location": "Thiel",
+   "name": "Thiel Tomcats",
+   "abbreviation": "THI"
+  },
+  {
+   "id": "2646",
+   "location": "Thomas More",
+   "name": "Thomas More Saints",
+   "abbreviation": "TMOR"
+  },
+  {
+   "id": "2649",
+   "location": "Toledo",
+   "name": "Toledo Rockets",
+   "abbreviation": "TOL"
+  },
+  {
+   "id": "2651",
+   "location": "Trine",
+   "name": "Trine Thunder",
+   "abbreviation": "TRNE"
+  },
+  {
+   "id": "2653",
+   "location": "Troy",
+   "name": "Troy Trojans",
+   "abbreviation": "TROY"
+  },
+  {
+   "id": "2654",
+   "location": "Truman State",
+   "name": "Truman State Bulldogs",
+   "abbreviation": "TRST"
+  },
+  {
+   "id": "2655",
+   "location": "Tulane",
+   "name": "Tulane Green Wave",
+   "abbreviation": "TULN"
+  },
+  {
+   "id": "2657",
+   "location": "Tuskegee",
+   "name": "Tuskegee Golden Tigers",
+   "abbreviation": "TUSK"
+  },
+  {
+   "id": "2658",
+   "location": "Texas A&M-Kingsville",
+   "name": "Texas A&M-Kingsville Javelinas",
+   "abbreviation": "TAMK"
+  },
+  {
+   "id": "2667",
+   "location": "Ursinus",
+   "name": "Ursinus Bears",
+   "abbreviation": "URSN"
+  },
+  {
+   "id": "2673",
+   "location": "Valdosta State",
+   "name": "Valdosta State Blazers",
+   "abbreviation": "VALD"
+  },
+  {
+   "id": "2674",
+   "location": "Valparaiso",
+   "name": "Valparaiso Beacons",
+   "abbreviation": "VAL"
+  },
+  {
+   "id": "2676",
+   "location": "Virginia Union",
+   "name": "Virginia Union Panthers",
+   "abbreviation": "VUU"
+  },
+  {
+   "id": "2678",
+   "location": "VMI",
+   "name": "VMI Keydets",
+   "abbreviation": "VMI"
+  },
+  {
+   "id": "2681",
+   "location": "Wagner",
+   "name": "Wagner Seahawks",
+   "abbreviation": "WAG"
+  },
+  {
+   "id": "2682",
+   "location": "Walsh",
+   "name": "Walsh Cavaliers",
+   "abbreviation": "WLSH"
+  },
+  {
+   "id": "2683",
+   "location": "Warner",
+   "name": "Warner Royals",
+   "abbreviation": "WRNR"
+  },
+  {
+   "id": "2685",
+   "location": "Wartburg",
+   "name": "Wartburg Knights",
+   "abbreviation": "WTBG"
+  },
+  {
+   "id": "2686",
+   "location": "Washington & Jefferson",
+   "name": "Washington & Jefferson Presidents",
+   "abbreviation": "W&J"
+  },
+  {
+   "id": "2687",
+   "location": "Washburn",
+   "name": "Washburn Ichabods",
+   "abbreviation": "WSBN"
+  },
+  {
+   "id": "2688",
+   "location": "Washington and Lee",
+   "name": "Washington and Lee Generals",
+   "abbreviation": "W&L"
+  },
+  {
+   "id": "2691",
+   "location": "Webber International",
+   "name": "Webber International Warriors",
+   "abbreviation": "WINT"
+  },
+  {
+   "id": "2692",
+   "location": "Weber State",
+   "name": "Weber State Wildcats",
+   "abbreviation": "WEB"
+  },
+  {
+   "id": "2695",
+   "location": "West Alabama",
+   "name": "West Alabama Tigers",
+   "abbreviation": "UWA"
+  },
+  {
+   "id": "2698",
+   "location": "West Georgia",
+   "name": "West Georgia Wolves",
+   "abbreviation": "WGA"
+  },
+  {
+   "id": "2699",
+   "location": "West Liberty",
+   "name": "West Liberty Hilltoppers",
+   "abbreviation": "WLU"
+  },
+  {
+   "id": "2700",
+   "location": "McDaniel",
+   "name": "McDaniel Green Terror",
+   "abbreviation": "MCD"
+  },
+  {
+   "id": "2701",
+   "location": "Montana Western",
+   "name": "Montana Western Bulldogs",
+   "abbreviation": "UMW"
+  },
+  {
+   "id": "2702",
+   "location": "Western New England",
+   "name": "Western New England Golden Bears",
+   "abbreviation": "WNE"
+  },
+  {
+   "id": "2703",
+   "location": "Western New Mexico",
+   "name": "Western New Mexico Mustangs",
+   "abbreviation": "WNMU"
+  },
+  {
+   "id": "2704",
+   "location": "West Texas",
+   "name": "West Texas Buffaloes",
+   "abbreviation": "WTAM"
+  },
+  {
+   "id": "2706",
+   "location": "WVU Tech",
+   "name": "WVU Tech Golden Bears",
+   "abbreviation": "WVUT"
+  },
+  {
+   "id": "2707",
+   "location": "West Virginia State",
+   "name": "West Virginia State Yellow Jackets",
+   "abbreviation": "WVSU"
+  },
+  {
+   "id": "2710",
+   "location": "Western Illinois",
+   "name": "Western Illinois Leathernecks",
+   "abbreviation": "WIU"
+  },
+  {
+   "id": "2711",
+   "location": "Western Michigan",
+   "name": "Western Michigan Broncos",
+   "abbreviation": "WMU"
+  },
+  {
+   "id": "2714",
+   "location": "Western Colorado",
+   "name": "Western Colorado Mountaineers",
+   "abbreviation": "WCOL"
+  },
+  {
+   "id": "2717",
+   "location": "Western Carolina",
+   "name": "Western Carolina Catamounts",
+   "abbreviation": "WCU"
+  },
+  {
+   "id": "2721",
+   "location": "Whitworth",
+   "name": "Whitworth Pirates",
+   "abbreviation": "WHIW"
+  },
+  {
+   "id": "2723",
+   "location": "Wisconsin River Falls",
+   "name": "Wisconsin River Falls Falcons",
+   "abbreviation": "UWRF"
+  },
+  {
+   "id": "2725",
+   "location": "Widener",
+   "name": "Widener Pride",
+   "abbreviation": "WIDE"
+  },
+  {
+   "id": "2729",
+   "location": "William & Mary",
+   "name": "William & Mary Tribe",
+   "abbreviation": "W&M"
+  },
+  {
+   "id": "2731",
+   "location": "Williams",
+   "name": "Williams Ephs",
+   "abbreviation": "WLM"
+  },
+  {
+   "id": "2733",
+   "location": "Wilmington (OH)",
+   "name": "Wilmington (OH) Fightin' Quakers",
+   "abbreviation": "WCOH"
+  },
+  {
+   "id": "2736",
+   "location": "Winston-Salem State",
+   "name": "Winston-Salem State Rams",
+   "abbreviation": "WSSU"
+  },
+  {
+   "id": "2738",
+   "location": "Wisconsin Eau Claire",
+   "name": "Wisconsin Eau Claire Blugolds",
+   "abbreviation": "UWEC"
+  },
+  {
+   "id": "2740",
+   "location": "Wisconsin La Crosse",
+   "name": "Wisconsin La Crosse Eagles",
+   "abbreviation": "UWL"
+  },
+  {
+   "id": "2741",
+   "location": "Wisconsin Lutheran",
+   "name": "Wisconsin Lutheran Warriors",
+   "abbreviation": "WLC"
+  },
+  {
+   "id": "2743",
+   "location": "Wisconsin Stevens Point",
+   "name": "Wisconsin Stevens Point Pointers",
+   "abbreviation": "UWSP"
+  },
+  {
+   "id": "2744",
+   "location": "Wisconsin Stout",
+   "name": "Wisconsin Stout Blue Devils",
+   "abbreviation": "UWST"
+  },
+  {
+   "id": "2745",
+   "location": "Wisconsin Whitewater",
+   "name": "Wisconsin Whitewater Warhawks",
+   "abbreviation": "UWW"
+  },
+  {
+   "id": "2746",
+   "location": "Wittenberg",
+   "name": "Wittenberg Tigers",
+   "abbreviation": "WITT"
+  },
+  {
+   "id": "2747",
+   "location": "Wofford",
+   "name": "Wofford Terriers",
+   "abbreviation": "WOF"
+  },
+  {
+   "id": "2748",
+   "location": "Wooster",
+   "name": "Wooster Fighting Scots",
+   "abbreviation": "WOO"
+  },
+  {
+   "id": "2749",
+   "location": "WPI",
+   "name": "WPI Engineers",
+   "abbreviation": "WPI"
+  },
+  {
+   "id": "2751",
+   "location": "Wyoming",
+   "name": "Wyoming Cowboys",
+   "abbreviation": "WYO"
+  },
+  {
+   "id": "2754",
+   "location": "Youngstown State",
+   "name": "Youngstown State Penguins",
+   "abbreviation": "YSU"
+  },
+  {
+   "id": "2755",
+   "location": "Grambling",
+   "name": "Grambling Tigers",
+   "abbreviation": "GRAM"
+  },
+  {
+   "id": "2757",
+   "location": "Berry",
+   "name": "Berry Vikings",
+   "abbreviation": "BERR"
+  },
+  {
+   "id": "2758",
+   "location": "Howard Payne",
+   "name": "Howard Payne Yellow Jackets",
+   "abbreviation": "HWPU"
+  },
+  {
+   "id": "2770",
+   "location": "Manitoba",
+   "name": "MANITOBA",
+   "abbreviation": "MB"
+  },
+  {
+   "id": "2771",
+   "location": "Merrimack",
+   "name": "Merrimack Warriors",
+   "abbreviation": "MRMK"
+  },
+  {
+   "id": "2776",
+   "location": "Salve Regina",
+   "name": "Salve Regina Seahawks",
+   "abbreviation": "SALV"
+  },
+  {
+   "id": "2779",
+   "location": "St. Lawrence",
+   "name": "St. Lawrence Saints",
+   "abbreviation": "USL"
+  },
+  {
+   "id": "2781",
+   "location": "Brockport",
+   "name": "Brockport Golden Eagles",
+   "abbreviation": "BRO"
+  },
+  {
+   "id": "2782",
+   "location": "SUNY Cortland",
+   "name": "SUNY Cortland Red Dragons",
+   "abbreviation": "NYCL"
+  },
+  {
+   "id": "2790",
+   "location": "Albion",
+   "name": "Albion Britons",
+   "abbreviation": "ALBI"
+  },
+  {
+   "id": "2800",
+   "location": "Alma",
+   "name": "Alma Scots",
+   "abbreviation": "ALMA"
+  },
+  {
+   "id": "2802",
+   "location": "Bethel (MN)",
+   "name": "Bethel (MN) Royals",
+   "abbreviation": "BUMN"
+  },
+  {
+   "id": "2803",
+   "location": "Bryant",
+   "name": "Bryant Bulldogs",
+   "abbreviation": "BRY"
+  },
+  {
+   "id": "2804",
+   "location": "Chowan",
+   "name": "Chowan Hawks",
+   "abbreviation": "CWAN"
+  },
+  {
+   "id": "2805",
+   "location": "Clark Atlanta",
+   "name": "Clark Atlanta Panthers",
+   "abbreviation": "CKGA"
+  },
+  {
+   "id": "2808",
+   "location": "Delaware Valley",
+   "name": "Delaware Valley Aggies",
+   "abbreviation": "DVU"
+  },
+  {
+   "id": "2810",
+   "location": "Hardin Simmons",
+   "name": "Hardin Simmons Cowboys",
+   "abbreviation": "HSU"
+  },
+  {
+   "id": "2812",
+   "location": "Hope",
+   "name": "Hope Flying Dutchmen",
+   "abbreviation": "HOPE"
+  },
+  {
+   "id": "2815",
+   "location": "Lindenwood",
+   "name": "Lindenwood Lions",
+   "abbreviation": "LIN"
+  },
+  {
+   "id": "2816",
+   "location": "McKendree",
+   "name": "McKendree Bearcats",
+   "abbreviation": "MCK"
+  },
+  {
+   "id": "2817",
+   "location": "Minnesota St Moorhead",
+   "name": "Minnesota St Moorhead Dragons",
+   "abbreviation": "MSUM"
+  },
+  {
+   "id": "2818",
+   "location": "Montclair State",
+   "name": "Montclair State Red Hawks",
+   "abbreviation": "MCST"
+  },
+  {
+   "id": "2822",
+   "location": "North Greenville",
+   "name": "North Greenville Trailblazers",
+   "abbreviation": "NGU"
+  },
+  {
+   "id": "2823",
+   "location": "Northwestern (OK)",
+   "name": "Northwestern (OK) Rangers",
+   "abbreviation": "NWOK"
+  },
+  {
+   "id": "2824",
+   "location": "Oklahoma Panhandle",
+   "name": "Oklahoma Panhandle Aggies",
+   "abbreviation": "OPSU"
+  },
+  {
+   "id": "2825",
+   "location": "Quincy",
+   "name": "Quincy Hawks",
+   "abbreviation": "QUI"
+  },
+  {
+   "id": "2827",
+   "location": "Rowan",
+   "name": "Rowan Profs",
+   "abbreviation": "ROW"
+  },
+  {
+   "id": "2828",
+   "location": "Shenandoah",
+   "name": "Shenandoah Hornets",
+   "abbreviation": "SHEN"
+  },
+  {
+   "id": "2830",
+   "location": "Saint Anselm",
+   "name": "Saint Anselm Hawks",
+   "abbreviation": "SANS"
+  },
+  {
+   "id": "2831",
+   "location": "Saint Francis (IN)",
+   "name": "Saint Francis (IN) Cougars",
+   "abbreviation": "SFIN"
+  },
+  {
+   "id": "2832",
+   "location": "St. Norbert",
+   "name": "St. Norbert Green Knights",
+   "abbreviation": "STNC"
+  },
+  {
+   "id": "2834",
+   "location": "Sul Ross State",
+   "name": "Sul Ross State Lobos",
+   "abbreviation": "SRST"
+  },
+  {
+   "id": "2837",
+   "location": "East Texas A&M",
+   "name": "East Texas A&M Lions",
+   "abbreviation": "ETAM"
+  },
+  {
+   "id": "2838",
+   "location": "Tiffin",
+   "name": "Tiffin Dragons",
+   "abbreviation": "TIFF"
+  },
+  {
+   "id": "2839",
+   "location": "Tusculum",
+   "name": "Tusculum Pioneers",
+   "abbreviation": "TUSC"
+  },
+  {
+   "id": "2842",
+   "location": "UVA Wise",
+   "name": "UVA Wise Cavaliers",
+   "abbreviation": "UVAW"
+  },
+  {
+   "id": "2843",
+   "location": "Western Connecticut State",
+   "name": "Western Connecticut State Wolves",
+   "abbreviation": "WCSU"
+  },
+  {
+   "id": "2844",
+   "location": "Wayne State (NE)",
+   "name": "Wayne State (NE) Wildcats",
+   "abbreviation": "WSNE"
+  },
+  {
+   "id": "2845",
+   "location": "Waynesburg",
+   "name": "Waynesburg Yellow Jackets",
+   "abbreviation": "WAYN"
+  },
+  {
+   "id": "2848",
+   "location": "Western Oregon",
+   "name": "Western Oregon Wolves",
+   "abbreviation": "WORU"
+  },
+  {
+   "id": "2849",
+   "location": "Westminster (PA)",
+   "name": "Westminster (PA) Titans",
+   "abbreviation": "WCPA"
+  },
+  {
+   "id": "2850",
+   "location": "Whittier",
+   "name": "Whittier Poets",
+   "abbreviation": "WHTR"
+  },
+  {
+   "id": "2851",
+   "location": "Winona State",
+   "name": "Winona State Warriors",
+   "abbreviation": "WNST"
+  },
+  {
+   "id": "2858",
+   "location": "California (PA)",
+   "name": "California (PA) Vulcans",
+   "abbreviation": "CAPA"
+  },
+  {
+   "id": "2860",
+   "location": "Central Methodist",
+   "name": "Central Methodist Eagles",
+   "abbreviation": "CDF"
+  },
+  {
+   "id": "2865",
+   "location": "Evangel University",
+   "name": "Evangel University Crusaders",
+   "abbreviation": "EVA"
+  },
+  {
+   "id": "2871",
+   "location": "Kean",
+   "name": "Kean Cougars",
+   "abbreviation": "KEAN"
+  },
+  {
+   "id": "2876",
+   "location": "Lincoln (MO)",
+   "name": "Lincoln (MO) Blue Tigers",
+   "abbreviation": "LNMO"
+  },
+  {
+   "id": "2877",
+   "location": "Lindsey Wilson",
+   "name": "Lindsey Wilson LINDSEY",
+   "abbreviation": "LWU"
+  },
+  {
+   "id": "2880",
+   "location": "Missouri Baptist",
+   "name": "Missouri Baptist Spartans",
+   "abbreviation": "MOBU"
+  },
+  {
+   "id": "2882",
+   "location": "UNC Pembroke",
+   "name": "UNC Pembroke Braves",
+   "abbreviation": "UNCP"
+  },
+  {
+   "id": "2884",
+   "location": "Nichols",
+   "name": "Nichols Bison",
+   "abbreviation": "NICC"
+  },
+  {
+   "id": "2886",
+   "location": "Northwood",
+   "name": "Northwood Timberwolves",
+   "abbreviation": "NWD"
+  },
+  {
+   "id": "2888",
+   "location": "Ouachita Baptist",
+   "name": "Ouachita Baptist Tigers",
+   "abbreviation": "OBU"
+  },
+  {
+   "id": "2890",
+   "location": "Reinhardt",
+   "name": "Reinhardt Eagles",
+   "abbreviation": "RHDT"
+  },
+  {
+   "id": "2891",
+   "location": "Ripon",
+   "name": "Ripon Red Hawks",
+   "abbreviation": "RIP"
+  },
+  {
+   "id": "2894",
+   "location": "Sioux Falls",
+   "name": "Sioux Falls Cougars",
+   "abbreviation": "SFU"
+  },
+  {
+   "id": "2896",
+   "location": "Southern Virginia",
+   "name": "Southern Virginia Knights",
+   "abbreviation": "SOVA"
+  },
+  {
+   "id": "2900",
+   "location": "St. Thomas",
+   "name": "St. Thomas Tommies",
+   "abbreviation": "STMN"
+  },
+  {
+   "id": "2904",
+   "location": "Nelson (TX)",
+   "name": "Nelson (TX) Lions",
+   "abbreviation": "NEL"
+  },
+  {
+   "id": "2909",
+   "location": "Westfield State",
+   "name": "Westfield State Owls",
+   "abbreviation": "WFST"
+  },
+  {
+   "id": "2911",
+   "location": "William Jewell",
+   "name": "William Jewell Cardinals",
+   "abbreviation": "WJC"
+  },
+  {
+   "id": "2912",
+   "location": "William Penn",
+   "name": "William Penn Statesmen",
+   "abbreviation": "WPEN"
+  },
+  {
+   "id": "2913",
+   "location": "Brevard",
+   "name": "Brevard Tornados",
+   "abbreviation": "BRE"
+  },
+  {
+   "id": "2916",
+   "location": "Incarnate Word",
+   "name": "Incarnate Word Cardinals",
+   "abbreviation": "UIW"
+  },
+  {
+   "id": "2919",
+   "location": "Monmouth (IL)",
+   "name": "Monmouth (IL) Fighting Scots",
+   "abbreviation": "MNIL"
+  },
+  {
+   "id": "2923",
+   "location": "Pomona Pitzer",
+   "name": "Pomona Pitzer Sagehens",
+   "abbreviation": "POPI"
+  },
+  {
+   "id": "2927",
+   "location": "Southwestern Oklahoma State",
+   "name": "Southwestern Oklahoma State Bulldogs",
+   "abbreviation": "SOSU"
+  },
+  {
+   "id": "2930",
+   "location": "Willamette",
+   "name": "Willamette Bearcats",
+   "abbreviation": "WLMT"
+  },
+  {
+   "id": "2938",
+   "location": "Huntingdon",
+   "name": "Huntingdon Hawks",
+   "abbreviation": "HNTC"
+  },
+  {
+   "id": "2939",
+   "location": "Jamestown",
+   "name": "Jamestown Jimmies",
+   "abbreviation": "UJ"
+  },
+  {
+   "id": "2940",
+   "location": "Livingstone",
+   "name": "Livingstone Blue Bears",
+   "abbreviation": "LIV"
+  },
+  {
+   "id": "2951",
+   "location": "SUNY Maritime",
+   "name": "SUNY Maritime Privateers",
+   "abbreviation": "NYMT"
+  },
+  {
+   "id": "2963",
+   "location": "Case Western Reserve",
+   "name": "Case Western Reserve Spartans",
+   "abbreviation": "CWRU"
+  },
+  {
+   "id": "2964",
+   "location": "Central College",
+   "name": "Central College Dutch",
+   "abbreviation": "CNTC"
+  },
+  {
+   "id": "2967",
+   "location": "Framingham State",
+   "name": "Framingham State Rams",
+   "abbreviation": "FRSU"
+  },
+  {
+   "id": "2968",
+   "location": "Gustavus Adolphus",
+   "name": "Gustavus Adolphus Golden Gusties",
+   "abbreviation": "GAC"
+  },
+  {
+   "id": "2969",
+   "location": "Misericordia",
+   "name": "Misericordia Cougars",
+   "abbreviation": "MISE"
+  },
+  {
+   "id": "2970",
+   "location": "William Paterson",
+   "name": "William Paterson Pioneers",
+   "abbreviation": "WPU"
+  },
+  {
+   "id": "2972",
+   "location": "Plymouth State",
+   "name": "Plymouth State Panthers",
+   "abbreviation": "PLYM"
+  },
+  {
+   "id": "2974",
+   "location": "Shepherd",
+   "name": "Shepherd Rams",
+   "abbreviation": "SHEP"
+  },
+  {
+   "id": "2977",
+   "location": "Trinity (CT)",
+   "name": "Trinity (CT) Bantams",
+   "abbreviation": "TCCT"
+  },
+  {
+   "id": "2980",
+   "location": "Ohio Wesleyan",
+   "name": "Ohio Wesleyan Battling Bishops",
+   "abbreviation": "OWU"
+  },
+  {
+   "id": "2985",
+   "location": "Concordia-Michigan",
+   "name": "Concordia-Michigan Cardinals",
+   "abbreviation": "CONCMI"
+  },
+  {
+   "id": "2986",
+   "location": "Fairmont State",
+   "name": "Fairmont State Falcons",
+   "abbreviation": "FMSU"
+  },
+  {
+   "id": "3066",
+   "location": "Concordia St. Paul",
+   "name": "Concordia St. Paul Golden Bears",
+   "abbreviation": "CSP"
+  },
+  {
+   "id": "3071",
+   "location": "North Central College",
+   "name": "North Central College Cardinals",
+   "abbreviation": "NCC"
+  },
+  {
+   "id": "3077",
+   "location": "Kentucky Christian",
+   "name": "Kentucky Christian Knights",
+   "abbreviation": "KYCHR"
+  },
+  {
+   "id": "3080",
+   "location": "Waldorf",
+   "name": "Waldorf Warriors",
+   "abbreviation": "WLDF"
+  },
+  {
+   "id": "3100",
+   "location": "Monterrey Tech",
+   "name": "Monterrey Tech Borregos",
+   "abbreviation": "MITE"
+  },
+  {
+   "id": "3101",
+   "location": "Utah Tech",
+   "name": "Utah Tech Trailblazers",
+   "abbreviation": "UTU"
+  },
+  {
+   "id": "3110",
+   "location": "SUNY Morrisville",
+   "name": "SUNY Morrisville Mustangs",
+   "abbreviation": "NYMS"
+  },
+  {
+   "id": "3111",
+   "location": "Apprentice School",
+   "name": "Apprentice School Builders",
+   "abbreviation": "APPRE"
+  },
+  {
+   "id": "3112",
+   "location": "Christopher Newport",
+   "name": "Christopher Newport Captains",
+   "abbreviation": "CNU"
+  },
+  {
+   "id": "3130",
+   "location": "Williamson",
+   "name": "Williamson Mechanics",
+   "abbreviation": "WMSN"
+  },
+  {
+   "id": "3161",
+   "location": "Ohio State Newark",
+   "name": "Ohio State Newark Titans",
+   "abbreviation": "OSU"
+  },
+  {
+   "id": "3162",
+   "location": "Alfred State",
+   "name": "Alfred State Pioneers",
+   "abbreviation": "AFST"
+  },
+  {
+   "id": "3178",
+   "location": "Ave Maria University",
+   "name": "Ave Maria University Gyrenes",
+   "abbreviation": "AVE M"
+  },
+  {
+   "id": "3179",
+   "location": "Point University",
+   "name": "Point University Skyhawks",
+   "abbreviation": "POINT"
+  },
+  {
+   "id": "3209",
+   "location": "Lindenwood Belleville",
+   "name": "Lindenwood Belleville Lynx",
+   "abbreviation": "LINB"
+  },
+  {
+   "id": "3210",
+   "location": "Cole College",
+   "name": "Cole College Jaguars",
+   "abbreviation": "COLE"
+  },
+  {
+   "id": "3211",
+   "location": "West Memphis",
+   "name": "West Memphis Crusaders",
+   "abbreviation": "FAI"
+  },
+  {
+   "id": "3212",
+   "location": "University of Mexico",
+   "name": "University of Mexico MEXICO U",
+   "abbreviation": "UNAM"
+  },
+  {
+   "id": "3214",
+   "location": "Trinity Bible",
+   "name": "Trinity Bible Lions",
+   "abbreviation": "TBIB"
+  },
+  {
+   "id": "3236",
+   "location": "SUNY Erie",
+   "name": "SUNY Erie Kats",
+   "abbreviation": "NYER"
+  },
+  {
+   "id": "3237",
+   "location": "Troy",
+   "name": "Troy Vikings",
+   "abbreviation": "HVCC"
+  },
+  {
+   "id": "3253",
+   "location": "Charlotte",
+   "name": "Charlotte Saints",
+   "abbreviation": "COLLE"
+  },
+  {
+   "id": "3254",
+   "location": "St. Petersburg",
+   "name": "St. Petersburg Glory Eagles",
+   "abbreviation": "UFFL"
+  },
+  {
+   "id": "6353",
+   "location": "Lakeland",
+   "name": "Lakeland Muskies",
+   "abbreviation": "LKLD"
+  },
+  {
+   "id": "6845",
+   "location": "Nebraska Wesleyan",
+   "name": "Nebraska Wesleyan Prairie Wolves",
+   "abbreviation": "NWU"
+  },
+  {
+   "id": "16111",
+   "location": "Benedictine College",
+   "name": "Benedictine College Ravens",
+   "abbreviation": "BENC"
+  },
+  {
+   "id": "101161",
+   "location": "Lyon",
+   "name": "Lyon Scots",
+   "abbreviation": "LYON"
+  },
+  {
+   "id": "101442",
+   "location": "Centenary (LA)",
+   "name": "Centenary (LA) Gentlemen",
+   "abbreviation": "CTLA"
+  },
+  {
+   "id": "101784",
+   "location": "Erskine",
+   "name": "Erskine Flying Fleet",
+   "abbreviation": "ERSK"
+  },
+  {
+   "id": "108354",
+   "location": "Holland College",
+   "name": "Holland College Hurricanes",
+   "abbreviation": "HOL"
+  },
+  {
+   "id": "108358",
+   "location": "Arizona Christian",
+   "name": "Arizona Christian Firestorm",
+   "abbreviation": "AZCH"
+  },
+  {
+   "id": "108382",
+   "location": "College of Idaho",
+   "name": "College of Idaho Yotes",
+   "abbreviation": "COI"
+  },
+  {
+   "id": "110242",
+   "location": "West Florida",
+   "name": "West Florida Argonauts",
+   "abbreviation": "UWF"
+  },
+  {
+   "id": "110243",
+   "location": "UT Permian Basin",
+   "name": "UT Permian Basin Falcons",
+   "abbreviation": "UTPB"
+  },
+  {
+   "id": "110438",
+   "location": "Dean",
+   "name": "Dean Bulldogs",
+   "abbreviation": "DEAN"
+  },
+  {
+   "id": "111610",
+   "location": "St. Andrews",
+   "name": "St. Andrews Knights",
+   "abbreviation": "STAU"
+  },
+  {
+   "id": "111674",
+   "location": "Alvernia",
+   "name": "Alvernia Golden Wolves",
+   "abbreviation": "ALVR"
+  },
+  {
+   "id": "111675",
+   "location": "New England",
+   "name": "New England Nor'easters",
+   "abbreviation": "UNE"
+  },
+  {
+   "id": "111756",
+   "location": "Indiana Wesleyan",
+   "name": "Indiana Wesleyan Wildcats",
+   "abbreviation": "INWESL"
+  },
+  {
+   "id": "112334",
+   "location": "Franklin Pierce",
+   "name": "Franklin Pierce Ravens",
+   "abbreviation": "FP"
+  },
+  {
+   "id": "112335",
+   "location": "Wheeling",
+   "name": "Wheeling Cardinals",
+   "abbreviation": "WHLG"
+  },
+  {
+   "id": "122666",
+   "location": "Barton",
+   "name": "Barton Bulldogs",
+   "abbreviation": "BART"
+  },
+  {
+   "id": "122774",
+   "location": "Keystone",
+   "name": "Keystone Giants",
+   "abbreviation": "KYSN"
+  },
+  {
+   "id": "122775",
+   "location": "Elgin",
+   "name": "Elgin Eagles",
+   "abbreviation": "JUDSO"
+  },
+  {
+   "id": "123086",
+   "location": "North American",
+   "name": "North American Stallions",
+   "abbreviation": "NAMU"
+  },
+  {
+   "id": "124179",
+   "location": "Lincoln (CA)",
+   "name": "Lincoln (CA) Oaklanders",
+   "abbreviation": "LNCA"
+  },
+  {
+   "id": "124180",
+   "location": "Bluefield State",
+   "name": "Bluefield State Big Blue",
+   "abbreviation": "BLUS"
+  },
+  {
+   "id": "124386",
+   "location": "Arkansas Baptist",
+   "name": "Arkansas Baptist Buffaloes",
+   "abbreviation": "ARBA"
+  },
+  {
+   "id": "125762",
+   "location": "Florida Memorial",
+   "name": "Florida Memorial Lions",
+   "abbreviation": "FMU"
+  },
+  {
+   "id": "125974",
+   "location": "Hilbert",
+   "name": "Hilbert Hawks",
+   "abbreviation": "HLBT"
+  },
+  {
+   "id": "126086",
+   "location": "Post",
+   "name": "Post Eagles",
+   "abbreviation": "POST"
+  },
+  {
+   "id": "126110",
+   "location": "Keiser University",
+   "name": "Keiser University Keiser",
+   "abbreviation": "KEISER"
+  },
+  {
+   "id": "126146",
+   "location": "Madonna",
+   "name": "Madonna Crusaders",
+   "abbreviation": "MDNN"
+  },
+  {
+   "id": "127954",
+   "location": "Eastern",
+   "name": "Eastern Eagles",
+   "abbreviation": "EU"
+  },
+  {
+   "id": "127991",
+   "location": "Roosevelt",
+   "name": "Roosevelt Lakers",
+   "abbreviation": "RSVT"
+  },
+  {
+   "id": "129469",
+   "location": "Anderson (SC)",
+   "name": "Anderson (SC) Trojans",
+   "abbreviation": "ANSC"
+  },
+  {
+   "id": "129738",
+   "location": "Calvin",
+   "name": "Calvin Knights",
+   "abbreviation": "CALU"
+  },
+  {
+   "id": "129741",
+   "location": "William Woods",
+   "name": "William Woods Owls",
+   "abbreviation": "WLWD"
+  },
+  {
+   "id": "129758",
+   "location": "Simpson (CA)",
+   "name": "Simpson (CA) Red Hawks",
+   "abbreviation": "SUCA"
+  },
+  {
+   "id": "134000",
+   "location": "Thomas",
+   "name": "Thomas Night Hawks",
+   "abbreviation": "THO"
+  },
+  {
+   "id": "134001",
+   "location": "Monroe",
+   "name": "Monroe Mustangs",
+   "abbreviation": "MON"
+  },
+  {
+   "id": "134002",
+   "location": "Andrew",
+   "name": "Andrew Fighting Tigers",
+   "abbreviation": "AND"
+  },
+  {
+   "id": "134087",
+   "location": "Westgate Christian University",
+   "name": "Westgate Christian University Ravens",
+   "abbreviation": "WES"
+  }
+ ]
+}

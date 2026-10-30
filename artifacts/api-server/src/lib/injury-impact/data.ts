@@ -282,6 +282,25 @@ export function photoIdsFor(gsisIds: Iterable<string | null | undefined>): Recor
   return out;
 }
 
+/**
+ * The GSIS id behind a Sleeper id, from the same crosswalk the headshots use
+ * (sleeper-ids.json runs GSIS -> Sleeper; this is its inverse, built once per
+ * load). The player pages key everything by Sleeper id and the injury archive
+ * by GSIS id, so this is how a player page finds its durability profile.
+ */
+let reverseSleeper: { memo: Memo; map: Map<string, string> } | null = null;
+
+export function gsisForSleeper(sleeperId: string | null | undefined): string | null {
+  if (!sleeperId) return null;
+  const m = read();
+  if (!reverseSleeper || reverseSleeper.memo !== m) {
+    const map = new Map<string, string>();
+    for (const [gsis, sleeper] of Object.entries(m.sleeper)) map.set(sleeper, gsis);
+    reverseSleeper = { memo: m, map };
+  }
+  return reverseSleeper.map.get(sleeperId) ?? null;
+}
+
 /* ------------------------------------------------------------------ shards */
 
 interface Shard {

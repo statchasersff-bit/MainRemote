@@ -4071,7 +4071,7 @@ export function renderTeamPage(
   const depth = renderDepthChart(data, depthChartFaq, depthTail);
   // Next draft's picks by round and the last five draft classes, from two
   // committed files (team/draft.ts). "" when neither has this club.
-  const draft = renderDraftSection(team, getDraftView(team.abbreviation, data.state.season));
+  const draft = renderDraftSection(team, getDraftView(team.abbreviation, data.state.season), data.state.season);
   // This season's contracts from the committed register file (team/contracts.ts).
   const contracts = renderContractsSection(team, getContractsView(team.abbreviation, data.state.season));
   const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);

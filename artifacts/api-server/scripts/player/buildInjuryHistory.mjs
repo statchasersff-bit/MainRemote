@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 /**
- * The season in progress's injury history for the player pages, from the
- * Injury tool's store.
+ * The injury history for the player pages, from the Injury tool's store.
  *
- *   node scripts/player/buildInjuryHistory.mjs [--season 2026] [--dry-run]
+ *   node scripts/player/buildInjuryHistory.mjs [--season 2026 | --all | --from 2019] [--dry-run]
  *
  * `data/player/player_injuries.json` is the per-player record the Injury tab
- * reads (timeline, body map, counts, games missed). It was last built from an
- * outside scrape in September 2026 and stops at the 2025 season. This fills
- * the current season from what the app already stores for the Injury tool
- * (`data/injury-impact/`, nflverse weekly reports and in-game injury events,
- * kept current by scripts/injury-impact/refresh.mjs), so the two tools read
- * one source and nothing is fetched here.
+ * reads (timeline, body map, counts, games missed). It was first built from an
+ * outside scrape in September 2026; since 2026-10-30 (mak) every season the
+ * store covers, 2009 on, is rewritten from what the app already stores for the
+ * Injury tool (`data/injury-impact/`, nflverse weekly reports, in-game injury
+ * events and the durability set's week grid, kept current by
+ * scripts/injury-impact/refresh.mjs), so the tab's history and its Durability
+ * Profile card tell one story and nothing is fetched here. Entries from before
+ * 2009 and the college list are the scrape's and are left alone.
+ *
+ * The weekly run is `--season 2026` (the default: the year in progress); `--all`
+ * is the full rewrite, for after a new durability pack or a rule change.
  *
  * One entry per injury, not per report row: a player listed with an ankle in
  * Weeks 5 and 6 has one ankle injury that started in Week 5. Consecutive
@@ -38,11 +42,18 @@
  * and the weekly report rows for the injury (practice level, game status,
  * the reserve list), which the timeline prints under the description.
  *
- * What it owns: this season's entries from Week 1 on, rewritten every run.
- * Entries from other seasons, and this season's offseason entries (week 0)
- * from the earlier record, are left alone. The durability grade and score are
- * the earlier record's; a player new to the file gets none (the tab omits the
- * tile), which is honest rather than a number nobody computed.
+ * A past season defers to the durability set's week grid (gridiron.json, the
+ * same weekly rosters the Durability Profile reads): a week counts as missed
+ * to injury only when the grid marks it so, which is what tells a player
+ * activated from injured reserve late in the year apart from one still on it,
+ * since the weekly report says nothing about either. A stint the grid marks
+ * that no report row explains (hurt in a game and placed on reserve before
+ * the next report) is an entry of its own, with the grid's body part.
+ *
+ * What it owns: every entry in the seasons it runs for, rewritten every run.
+ * Entries from other seasons are left alone. The durability grade and score
+ * are the earlier record's; a player new to the file gets none (the tab omits
+ * the tile), which is honest rather than a number nobody computed.
  */
 
 import fs from "node:fs";
@@ -57,8 +68,11 @@ const INJURIES_FILE = path.join(PLAYER_DIR, "player_injuries.json");
 
 const SKILL = new Set(["QB", "RB", "WR", "TE"]);
 
+/** The first season the Injury tool's store (and the durability grid) covers. */
+const FIRST_SEASON = 2009;
+
 /** Report terms that are not injuries. */
-const NOT_INJURY = /not injury related|resting|personal|illness|cramps|teeth|load management/i;
+const NOT_INJURY = /not injury related|resting|personal|illness|cramps|teeth|load management|coach|covid/i;
 
 /**
  * The body-part noun the record files an entry under, from nflverse's term.
@@ -96,6 +110,21 @@ const BODY_PART = {
   oblique: "abdomen",
   abdomen: "abdomen",
   core: "abdomen",
+  kidney: "abdomen",
+  hernia: "groin",
+  collarbone: "shoulder",
+  tooth: "head",
+  face: "head",
+  "facial laceration": "head",
+  headache: "head",
+  throat: "neck",
+  feet: "foot",
+  ankles: "ankle",
+  hips: "hip",
+  "lower leg": "shin",
+  "upper arm": "arm",
+  arm: "arm",
+  "arm (laceration)": "arm",
 };
 
 /** "Quadricep" -> "Quad", "Rib" -> "Ribs": the type as the timeline prints it. */
@@ -142,31 +171,62 @@ function code(team) {
 const norm = (s) => String(s ?? "").trim().toLowerCase();
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+/** A concussion listed with any qualifier ("concussion protocol", a sentence) is a concussion. */
+const concussion = (term) => /concussion/i.test(String(term));
+
 function typeOf(term) {
   const t = String(term).trim();
+  if (concussion(t)) return "Concussion";
   return TYPE[t] ?? cap(t);
 }
 
 function bodyPartOf(term) {
+  if (concussion(term)) return "head";
   const t = norm(term);
   return BODY_PART[t] ?? t;
 }
 
-function listWeeks(weeks) {
+/**
+ * "Week 5", "Weeks 5 and 6", "Weeks 5, 6 and 8"; four or more games with no
+ * game played between them read "Weeks 5 through 15 (10 games)".
+ *
+ * @param isGame (week) => whether his team played that week, for the range test
+ */
+function listWeeks(weeks, isGame = null) {
   if (weeks.length === 1) return `Week ${weeks[0]}`;
   if (weeks.length === 2) return `Weeks ${weeks[0]} and ${weeks[1]}`;
+  if (weeks.length >= 4 && isGame) {
+    const set = new Set(weeks);
+    let unbroken = true;
+    for (let w = weeks[0]; w <= weeks[weeks.length - 1] && unbroken; w += 1) if (isGame(w) && !set.has(w)) unbroken = false;
+    if (unbroken) return `Weeks ${weeks[0]} through ${weeks[weeks.length - 1]} (${weeks.length} games)`;
+  }
   return `Weeks ${weeks.slice(0, -1).join(", ")} and ${weeks[weeks.length - 1]}`;
+}
+
+/** "right Thumb" -> { term: "Thumb", side: "right" }; "Knee" -> { term: "Knee", side: "unknown" }. */
+export function splitSide(term) {
+  const m = /^\s*(left|right)\s+(.+)$/i.exec(String(term ?? ""));
+  return m ? { term: m[2].trim(), side: m[1].toLowerCase() } : { term: String(term ?? "").trim(), side: "unknown" };
 }
 
 /**
  * The injuries in one player's season, from his weekly report rows.
  *
- * @param rows   { week, team, term, status, primary } for the season, any order
+ * @param rows   { week, team, term, side?, status, primary } for the season, any order
  * @param events in-game injury weeks: [{ week, opponent }]
  * @param ctx    { played: Set<week>, playing: (week, team) => boolean,
- *                 completedWeek, team, onReserve, reserve: { week: code } }
+ *                 completedWeek, team, onReserve, reserve: { week: code },
+ *                 current?: boolean (the season in progress; default true),
+ *                 injuredWeeks?: Set<week> | null (a past season's grid: the
+ *                 weeks missed to injury; when given, no other week counts),
+ *                 stints?: [{ first, weeks: number[], part }] (the grid's
+ *                 stints, for the ones no report row explains) }
  */
 export function buildEntries(season, rows, events, ctx) {
+  const current = ctx.current ?? true;
+  const grid = ctx.injuredWeeks instanceof Set ? ctx.injuredWeeks : null;
+  const isGame = (w) => (ctx.team ? ctx.playing(w, ctx.team) : true);
   const injuries = rows.filter((r) => r.term && !NOT_INJURY.test(r.term));
   const byTerm = new Map();
   for (const row of injuries) {
@@ -205,7 +265,9 @@ export function buildEntries(season, rows, events, ctx) {
   // A player with no line in the log all season is one the log does not
   // track (a depth player with no stats), so for him only a report that
   // ruled him out is a game missed; absence from the log says nothing.
-  const tracked = ctx.played.size > 0;
+  // A past season's grid says which weeks he missed to injury, so it tracks
+  // him whether or not he has a line.
+  const tracked = ctx.played.size > 0 || grid != null;
   // A run is open past its last report week when that week's report ruled
   // him out (or he is on reserve) and he has not played since.
   for (const run of runs) {
@@ -215,18 +277,34 @@ export function buildEntries(season, rows, events, ctx) {
     // Never past the last completed week: this week's Wednesday listing is
     // not a game missed yet.
     run.end = Math.min(run.open ? Math.max(run.last, ctx.completedWeek) : run.last, ctx.completedWeek);
+    // A past season's grid stint with the same body part within two weeks of
+    // the run extends it either way: forward when he went on reserve and off
+    // the report, backward when he was placed on reserve as soon as he was
+    // hurt and only reappeared on the report when he came back. A stint the
+    // grid could not name extends a run it overlaps.
+    run.start = run.first;
+    for (const st of ctx.stints ?? []) {
+      if (st.first > run.end + 2 || st.last < run.start - 2) continue;
+      const samePart = st.part && bodyPartOf(st.part) === bodyPartOf(run.term);
+      const overlaps = st.weeks.some((w) => w >= run.start && w <= run.end);
+      if (!samePart && !(overlaps && (!st.part || /^undisclosed$/i.test(st.part)))) continue;
+      st.merged = true;
+      run.start = Math.min(run.start, st.first);
+      run.end = Math.min(Math.max(run.end, st.last), ctx.completedWeek);
+    }
   }
   // Each missed week is one injury's: the one that ruled him out that week
   // (the primary listing first), else the latest one that ruled him out
   // before it, else whichever run spans it.
   const missedBy = new Map();
   const weeks = new Set();
-  for (const run of runs) for (let w = run.first; w <= run.end; w += 1) weeks.add(w);
+  for (const run of runs) for (let w = run.start; w <= run.end; w += 1) weeks.add(w);
   for (const w of [...weeks].sort((a, b) => a - b)) {
     if (ctx.played.has(w)) continue;
+    if (grid && !grid.has(w)) continue;
     const team = injuries.find((r) => r.week === w)?.team ?? ctx.team;
     if (!team || !ctx.playing(w, team)) continue;
-    const spanning = runs.filter((run) => run.first <= w && w <= run.end);
+    const spanning = runs.filter((run) => run.start <= w && w <= run.end);
     if (spanning.length === 0) continue;
     if (!tracked && !spanning.some((run) => run.rows.some((r) => r.week === w && ruledOut(r)))) continue;
     const pick =
@@ -255,7 +333,7 @@ export function buildEntries(season, rows, events, ctx) {
   // also shown under another listed the same week.
   const origins = new Map();
   for (const run of runs) {
-    const origin = events.find((e) => e.week === run.first - 1) ?? null;
+    const origin = events.find((e) => e.week === run.start - 1) ?? null;
     if (origin) origins.set(run, origin);
   }
   const taken = new Set(origins.values());
@@ -264,15 +342,15 @@ export function buildEntries(season, rows, events, ctx) {
     const end = Math.min(Math.max(stint.last, [...ctx.played].some((w) => w > stint.last) ? stint.last : ctx.completedWeek), ctx.completedWeek);
     const missed = [];
     for (let w = stint.first; w <= end; w += 1) {
-      if (!ctx.played.has(w) && ctx.team && ctx.playing(w, ctx.team)) missed.push(w);
+      if (!ctx.played.has(w) && ctx.team && ctx.playing(w, ctx.team) && !(grid && !grid.has(w))) missed.push(w);
     }
     const origin = events.find((e) => e.week === stint.first - 1) ?? null;
     const list = RESERVE_LISTS[stint.code] ?? "a reserve list";
-    const ongoing = ![...ctx.played].some((w) => w > stint.last) && stint.last >= ctx.completedWeek;
+    const ongoing = current && ![...ctx.played].some((w) => w > stint.last) && stint.last >= ctx.completedWeek;
     const lead = origin
       ? `Hurt during the Week ${origin.week} game against the ${TEAM_NAMES[origin.opponent] ?? origin.opponent} and placed on ${list} in Week ${stint.first}`
       : `Placed on ${list} in Week ${stint.first}`;
-    const tail = missed.length === 0 ? "." : ongoing ? `; out since Week ${missed[0]}${missed.length > 1 ? ` (${missed.length} games missed so far)` : ""}.` : `; missed ${listWeeks(missed)}.`;
+    const tail = missed.length === 0 ? "." : ongoing ? `; out since Week ${missed[0]}${missed.length > 1 ? ` (${missed.length} games missed so far)` : ""}.` : `; missed ${listWeeks(missed, isGame)}.`;
     entries.push({
       season,
       week: origin ? origin.week : stint.first,
@@ -302,30 +380,67 @@ export function buildEntries(season, rows, events, ctx) {
     for (const w of reserveWeeks) {
       if (claimed.has(w) && w > run.rows[run.rows.length - 1].week && w <= run.last) reports.push({ week: w, reserve: RESERVE_LISTS[reserve[w]] ?? "reserve list" });
     }
-    const ongoing = run.open && missed.length > 0 && run.end >= ctx.completedWeek;
+    const ongoing = current && run.open && missed.length > 0 && run.end >= ctx.completedWeek;
     const severity = missed.length >= 4 || (ongoing && (ctx.onReserve || run.reserved)) ? "major" : missed.length >= 1 ? "moderate" : "minor";
+    const side = run.rows.map((r) => r.side).find((x) => x && x !== "unknown") ?? "unknown";
     const typeWord = typeOf(run.term);
     const noun = /^concussion/i.test(typeWord) ? "concussion" : `${bodyPartOf(run.term)} injury`;
-    const lead = origin
-      ? `Hurt during the Week ${origin.week} game against the ${TEAM_NAMES[origin.opponent] ?? origin.opponent} and listed with ${article(noun)} ${noun} from Week ${run.first}`
-      : `Listed on the injury report with ${article(noun)} ${noun} from Week ${run.first}`;
+    const hurt = origin ? `Hurt during the Week ${origin.week} game against the ${TEAM_NAMES[origin.opponent] ?? origin.opponent} and ` : "";
+    const lead =
+      run.start < run.first
+        ? `${hurt ? hurt : ""}${hurt ? "out" : "Out"} of the lineup with ${article(noun)} ${noun} from Week ${run.start}, on the injury report from Week ${run.first}`
+        : origin
+          ? `${hurt}listed with ${article(noun)} ${noun} from Week ${run.first}`
+          : `Listed on the injury report with ${article(noun)} ${noun} from Week ${run.first}`;
     const listed = run.reserved ? `, then placed on ${RESERVE_LISTS[run.reserved] ?? "a reserve list"}` : "";
     let tail;
     if (missed.length === 0) tail = `${listed} and played through it without missing time.`;
     else if (ongoing) tail = `${listed}; out since Week ${missed[0]}${missed.length > 1 ? ` (${missed.length} games missed so far)` : ""}.`;
-    else tail = `${listed}; missed ${listWeeks(missed)}.`;
+    else tail = `${listed}; missed ${listWeeks(missed, isGame)}.`;
     entries.push({
       season,
-      week: origin ? origin.week : run.first,
+      week: origin ? origin.week : run.start,
       type: typeWord,
       bodyPart: bodyPartOf(run.term),
-      side: "unknown",
+      side,
       severity,
       gamesMissed: missed.length,
       description: `${lead}${tail}`,
       report: true,
       play: playOf(during),
       reports,
+    });
+  }
+  // The grid's stints no report row or reserve week explains: hurt in a game
+  // and placed on reserve before the next report, in a season with no reserve
+  // data. The grid's body part is the last one it saw reported, if any.
+  const covered = new Set();
+  for (const run of runs) for (let w = run.start; w <= run.end; w += 1) covered.add(w);
+  for (const stint of stints) for (let w = stint.first; w <= stint.last; w += 1) covered.add(w);
+  for (const m of missedBy.values()) for (const w of m) covered.add(w);
+  for (const st of ctx.stints ?? []) {
+    if (st.merged) continue;
+    const missed = st.weeks.filter((w) => !ctx.played.has(w) && (!grid || grid.has(w)) && !covered.has(w));
+    if (missed.length === 0) continue;
+    const origin = events.find((e) => e.week === missed[0] - 1) ?? null;
+    const known = st.part && !/^undisclosed$/i.test(st.part);
+    const typeWord = known ? typeOf(st.part) : "Undisclosed";
+    const noun = !known ? "an undisclosed injury" : /^concussion/i.test(typeWord) ? "a concussion" : `${article(bodyPartOf(st.part))} ${bodyPartOf(st.part)} injury`;
+    const lead = origin
+      ? `Hurt during the Week ${origin.week} game against the ${TEAM_NAMES[origin.opponent] ?? origin.opponent} and out of the lineup with ${noun} from Week ${missed[0]}`
+      : `Out of the lineup with ${noun} from Week ${missed[0]}`;
+    entries.push({
+      season,
+      week: origin ? origin.week : missed[0],
+      type: typeWord,
+      bodyPart: known ? bodyPartOf(st.part) : "unknown",
+      side: "unknown",
+      severity: missed.length >= 4 ? "major" : "moderate",
+      gamesMissed: missed.length,
+      description: `${lead}; missed ${listWeeks(missed, isGame)}. No weekly injury report listed it.`,
+      report: true,
+      play: playOf(origin),
+      reports: [],
     });
   }
   entries.sort((a, b) => b.week - a.week || a.type.localeCompare(b.type));
@@ -367,116 +482,208 @@ const RESERVE_LISTS = {
   R06: "the non-football illness list",
 };
 
+/** Parse the durability set's stint label for its first week. */
+function stintFirstWeek(label) {
+  const m = /from week (\d+)|out week (\d+)/i.exec(String(label ?? ""));
+  return m ? Number(m[1] ?? m[2]) : null;
+}
+
+/**
+ * The durability grid for one player's past season: the weeks it marks as
+ * missed to injury and its stints. null when the grid has no such season.
+ *
+ * @param gp     the gridiron.json player
+ * @param playing (week, team) => boolean
+ */
+export function gridSeason(gp, season, playing, fallbackTeam) {
+  const key = String(season);
+  const scored = gp.w?.[key] != null;
+  const extra = gp.x?.w?.[key] != null;
+  if (!scored && !extra) return null;
+  const team = code((scored ? gp.t?.[key] : gp.x?.t?.[key]) ?? fallbackTeam ?? null);
+  const injuredWeeks = new Set();
+  const stints = [];
+  for (const st of (scored ? gp.inj : gp.x?.inj) ?? []) {
+    if (st[0] !== season) continue;
+    const first = stintFirstWeek(st[1]);
+    const n = Number(st[4]);
+    if (!first || !n) continue;
+    const weeks = [];
+    for (let w = first; w <= 22 && weeks.length < n; w += 1) {
+      if (team && !playing(w, team)) continue;
+      weeks.push(w);
+      injuredWeeks.add(w);
+    }
+    stints.push({ first, last: weeks[weeks.length - 1] ?? first, weeks, part: st[2] ? String(st[2]) : null });
+  }
+  return { injuredWeeks, stints, team };
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const arg = (name, fallback) => {
     const i = argv.indexOf(name);
     return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback;
   };
-  const season = Number(arg("--season", String(new Date().getUTCFullYear())));
+  const thisYear = new Date().getUTCFullYear();
   const dryRun = argv.includes("--dry-run");
+  const seasons = [];
+  if (argv.includes("--all") || argv.includes("--from")) {
+    for (let y = Number(arg("--from", String(FIRST_SEASON))); y <= thisYear; y += 1) seasons.push(y);
+  } else seasons.push(Number(arg("--season", String(thisYear))));
+  const owned = new Set(seasons);
 
   const sleeperByGsis = readJson(path.join(IMPACT_DIR, "sleeper-ids.json"), {});
   const players = readJson(path.join(PLAYER_DIR, "players.json"), []);
   const indexed = new Set(readJson(path.join(PLAYER_DIR, "indexed_players.json"), {}).slugs ?? []);
-  const logs = readJson(path.join(PLAYER_DIR, "game_logs", `${season}.json`), {});
   const record = readJson(INJURIES_FILE, {});
-  const games = readGames(season);
   const rosterStatus = readJson(path.join(IMPACT_DIR, "roster-status.json"), null);
-  const reserveByGsis = rosterStatus?.season === season ? rosterStatus.players ?? {} : {};
   if (!rosterStatus) console.log("no roster-status.json: reserve-list weeks unknown (run scripts/injury-impact/refresh.mjs first)");
+  const gridiron = readJson(path.join(IMPACT_DIR, "gridiron.json"), { players: [] });
+  const gridByGsis = new Map();
+  for (const gp of gridiron.players ?? []) if (gp?.id) gridByGsis.set(gp.id, gp);
+  const currentSeason = Number(gridiron.current?.season ?? thisYear);
 
   const bySleeper = new Map();
   for (const p of players) if (p?.id) bySleeper.set(String(p.id), p);
 
-  // Which teams play each week, and which weeks are complete: a week is done
-  // when every team that plays in it has at least one player with a line.
-  const teamsByWeek = new Map();
-  for (const g of games) {
-    if (!teamsByWeek.has(g.week)) teamsByWeek.set(g.week, new Set());
-    teamsByWeek.get(g.week).add(g.away).add(g.home);
-  }
-  const loggedTeams = new Map();
-  for (const entries of Object.values(logs)) {
-    for (const e of entries) {
-      if (!loggedTeams.has(e.week)) loggedTeams.set(e.week, new Set());
-      if (e.team) loggedTeams.get(e.week).add(e.team);
-    }
-  }
-  let completedWeek = 0;
-  for (const [week, teams] of [...teamsByWeek].sort((a, b) => a[0] - b[0])) {
-    const logged = loggedTeams.get(week) ?? new Set();
-    if ([...teams].every((t) => logged.has(t))) completedWeek = week;
-    else break;
-  }
-  const playing = (week, team) => teamsByWeek.get(week)?.has(team) ?? false;
-
-  // The Injury tool's store, shard by shard.
+  // The Injury tool's store, shard by shard: every player's report rows and
+  // in-game injuries, all seasons.
   const historyDir = path.join(IMPACT_DIR, "history");
-  const files = fs.readdirSync(historyDir).filter((f) => f.endsWith(".json")).sort();
-  let playersSeen = 0;
-  let playersWritten = 0;
-  let entriesWritten = 0;
-  let newRecords = 0;
-  const unknownTerms = new Map();
-  const owned = (e) => e.season === season && (e.report === true || (e.week ?? 0) >= 1);
-
-  const written = new Set();
-  for (const file of files) {
+  const store = new Map(); // gsis -> { h, g }
+  for (const file of fs.readdirSync(historyDir).filter((f) => f.endsWith(".json")).sort()) {
     const shard = readJson(path.join(historyDir, file), { players: {} });
-    for (const [gsis, v] of Object.entries(shard.players ?? {})) {
-      const sleeperId = sleeperByGsis[gsis];
-      if (!sleeperId) continue;
-      const player = bySleeper.get(String(sleeperId));
-      if (!player || !SKILL.has(player.position)) continue;
-      if (!indexed.has(player.slug) && !record[sleeperId]) continue;
+    for (const [gsis, v] of Object.entries(shard.players ?? {})) store.set(gsis, v);
+  }
+
+  // Who the record covers: skill players the store or the grid knows, on the
+  // index or already in the file.
+  const subjects = new Map(); // sleeperId -> { gsis, player }
+  for (const gsis of new Set([...store.keys(), ...gridByGsis.keys()])) {
+    const sleeperId = sleeperByGsis[gsis];
+    if (!sleeperId) continue;
+    const player = bySleeper.get(String(sleeperId));
+    if (!player || !SKILL.has(player.position)) continue;
+    if (!indexed.has(player.slug) && !record[sleeperId]) continue;
+    subjects.set(String(sleeperId), { gsis, player });
+  }
+
+  const unknownTerms = new Map();
+  const built = new Map(); // sleeperId -> entries across the seasons run
+  let entriesWritten = 0;
+  let gridOnly = 0;
+
+  for (const season of seasons) {
+    const logs = readJson(path.join(PLAYER_DIR, "game_logs", `${season}.json`), {});
+    const games = readGames(season);
+    if (games.length === 0) {
+      console.log(`${season}: no games in data/schedule/games.csv, skipped`);
+      continue;
+    }
+    const reserveByGsis = rosterStatus?.season === season ? rosterStatus.players ?? {} : {};
+    const current = season >= currentSeason;
+
+    // Which teams play each week, and which weeks are complete: a week is done
+    // when every team that plays in it has at least one player with a line.
+    // A past season is complete through its last week.
+    const teamsByWeek = new Map();
+    for (const g of games) {
+      if (!teamsByWeek.has(g.week)) teamsByWeek.set(g.week, new Set());
+      teamsByWeek.get(g.week).add(g.away).add(g.home);
+    }
+    const loggedTeams = new Map();
+    for (const entries of Object.values(logs)) {
+      for (const e of entries) {
+        if (!loggedTeams.has(e.week)) loggedTeams.set(e.week, new Set());
+        if (e.team) loggedTeams.get(e.week).add(e.team);
+      }
+    }
+    let completedWeek = 0;
+    if (current) {
+      for (const [week, teams] of [...teamsByWeek].sort((a, b) => a[0] - b[0])) {
+        const logged = loggedTeams.get(week) ?? new Set();
+        if ([...teams].every((t) => logged.has(t))) completedWeek = week;
+        else break;
+      }
+    } else completedWeek = Math.max(...teamsByWeek.keys());
+    const playing = (week, team) => teamsByWeek.get(week)?.has(team) ?? false;
+
+    let playersSeen = 0;
+    let seasonEntries = 0;
+    for (const [sleeperId, { gsis, player }] of subjects) {
+      const v = store.get(gsis) ?? {};
       const rows = [];
       for (const r of v.h ?? []) {
         if (r[0] !== season) continue;
         const primary = r[3] ?? r[5];
         const secondary = r[4] ?? r[6];
-        for (const term of [primary, secondary]) {
-          if (!term) continue;
-          rows.push({ week: r[1], team: code(r[2]), term, status: r[7], practice: r[8], primary: term === primary });
+        for (const raw of [primary, secondary]) {
+          if (!raw) continue;
+          const { term, side } = splitSide(raw);
+          rows.push({ week: r[1], team: code(r[2]), term, side, status: r[7], practice: r[8], primary: raw === primary });
           const k = norm(term);
-          if (!NOT_INJURY.test(term) && !BODY_PART[k] && !["knee", "ankle", "hamstring", "shoulder", "back", "foot", "calf", "hip", "toe", "achilles", "elbow", "wrist", "heel"].includes(k)) {
+          if (!NOT_INJURY.test(term) && !concussion(term) && !BODY_PART[k] && !["knee", "ankle", "hamstring", "shoulder", "back", "foot", "calf", "hip", "toe", "achilles", "elbow", "wrist", "heel"].includes(k)) {
             unknownTerms.set(k, (unknownTerms.get(k) ?? 0) + 1);
           }
         }
       }
+      const log = logs[sleeperId] ?? [];
+      // His team that season: the one he played for most, else the report's, else now.
+      const teamCount = new Map();
+      for (const e of log) if (e.team) teamCount.set(e.team, (teamCount.get(e.team) ?? 0) + 1);
+      const team = [...teamCount].sort((a, b) => b[1] - a[1])[0]?.[0] ?? rows[0]?.team ?? (current ? player.team : null);
       const reserve = reserveByGsis[gsis] ?? {};
-      if (rows.length === 0 && Object.keys(reserve).length === 0) continue;
+      const grid = current ? null : gridByGsis.has(gsis) ? gridSeason(gridByGsis.get(gsis), season, playing, team) : null;
+      if (rows.length === 0 && Object.keys(reserve).length === 0 && !(grid && grid.stints.length)) continue;
       playersSeen += 1;
       const events = (v.g ?? [])
         .filter((g) => g[0] === season && g[2] === "REG")
         .map((g) => ({ week: g[1], opponent: code(g[6]), qtr: g[7], clock: g[8], desc: g[10] }));
-      const played = new Set((logs[sleeperId] ?? []).map((e) => e.week));
-      const onReserve = /^(ir|pup|nfi|injured reserve)/i.test(String(player.injury_status ?? ""));
-      const entries = buildEntries(season, rows, events, { played, playing, completedWeek, team: player.team, onReserve, reserve });
-      const rec = record[sleeperId] ?? { grade: null, score: null, gradeColor: null, nfl: [], college: [] };
-      if (!record[sleeperId]) newRecords += 1;
-      const kept = (rec.nfl ?? []).filter((e) => !owned(e));
-      rec.nfl = [...entries, ...kept];
-      record[sleeperId] = rec;
-      written.add(sleeperId);
-      playersWritten += 1;
-      entriesWritten += entries.length;
+      const played = new Set(log.map((e) => e.week));
+      const onReserve = current && /^(ir|pup|nfi|injured reserve)/i.test(String(player.injury_status ?? ""));
+      const entries = buildEntries(season, rows, events, {
+        played,
+        playing,
+        completedWeek,
+        team: grid?.team ?? team,
+        onReserve,
+        reserve,
+        current,
+        injuredWeeks: grid ? grid.injuredWeeks : null,
+        stints: grid ? grid.stints : [],
+      });
+      gridOnly += entries.filter((e) => e.reports.length === 0 && /No weekly injury report/.test(e.description)).length;
+      if (!built.has(sleeperId)) built.set(sleeperId, []);
+      built.get(sleeperId).push(...entries);
+      seasonEntries += entries.length;
     }
-  }
-  // A player whose only entries this season were owned by an earlier run and
-  // who has no rows now (a corrected report) loses them.
-  for (const [id, rec] of Object.entries(record)) {
-    if (written.has(id)) continue;
-    const before = rec.nfl?.length ?? 0;
-    rec.nfl = (rec.nfl ?? []).filter((e) => !(e.season === season && e.report === true));
-    if ((rec.nfl?.length ?? 0) !== before) playersWritten += 1;
+    entriesWritten += seasonEntries;
+    console.log(`${season}: through Week ${completedWeek}; ${playersSeen} players with injuries, ${seasonEntries} entries${current ? "" : " (grid-capped)"}`);
   }
 
+  // Write: every subject's record loses the seasons run and gains what was
+  // built; a player new to the file starts without a grade.
+  let playersWritten = 0;
+  let newRecords = 0;
+  for (const [sleeperId] of subjects) {
+    const entries = built.get(sleeperId) ?? [];
+    const rec = record[sleeperId];
+    const kept = (rec?.nfl ?? []).filter((e) => !owned.has(e.season));
+    if (!rec && entries.length === 0) continue;
+    if (!rec) newRecords += 1;
+    const next = rec ?? { grade: null, score: null, gradeColor: null, nfl: [], college: [] };
+    const before = JSON.stringify(next.nfl ?? []);
+    next.nfl = [...entries, ...kept].sort((a, b) => b.season - a.season || (b.week ?? 0) - (a.week ?? 0));
+    if (JSON.stringify(next.nfl) !== before) playersWritten += 1;
+    record[sleeperId] = next;
+  }
+  // A record player the store no longer knows (no mapping) keeps what he had.
+
   console.log(
-    `${season}: through Week ${completedWeek}; ${playersSeen} players with reports, ${entriesWritten} injuries written for ${playersWritten} players (${newRecords} new to the file)`,
+    `${seasons.length === 1 ? seasons[0] : `${seasons[0]}-${seasons[seasons.length - 1]}`}: ${entriesWritten} injuries built, ${gridOnly} from the grid alone; ${playersWritten} players changed (${newRecords} new to the file)`,
   );
   if (unknownTerms.size) {
-    console.log(`terms filed under their own name: ${[...unknownTerms].map(([t, n]) => `${t} (${n})`).join(", ")}`);
+    console.log(`terms filed under their own name: ${[...unknownTerms].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} (${n})`).join(", ")}`);
   }
   if (dryRun) return;
   // Compact, as the file has always been written.

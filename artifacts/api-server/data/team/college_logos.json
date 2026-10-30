@@ -1,0 +1,859 @@
+{
+  "builtAt": "2026-10-29T18:00:56.455Z",
+  "colleges": 0,
+  "matched": 213,
+  "logos": {
+    "Air Force": {
+      "id": "2005",
+      "name": "Air Force"
+    },
+    "Akron": {
+      "id": "2006",
+      "name": "Akron"
+    },
+    "Ala-Birmingham": {
+      "id": "5",
+      "name": "UAB"
+    },
+    "Alabama": {
+      "id": "333",
+      "name": "Alabama"
+    },
+    "Alabama A&M": {
+      "id": "2010",
+      "name": "Alabama A&M"
+    },
+    "Alabama St.": {
+      "id": "2011",
+      "name": "Alabama State"
+    },
+    "Albany State (GA)": {
+      "id": "2013",
+      "name": "Albany State"
+    },
+    "Appalachian St.": {
+      "id": "2026",
+      "name": "App State"
+    },
+    "Arizona": {
+      "id": "12",
+      "name": "Arizona"
+    },
+    "Arizona St.": {
+      "id": "9",
+      "name": "Arizona State"
+    },
+    "Arkansas": {
+      "id": "8",
+      "name": "Arkansas"
+    },
+    "Ashland": {
+      "id": "308",
+      "name": "Ashland"
+    },
+    "Auburn": {
+      "id": "2",
+      "name": "Auburn"
+    },
+    "BYU": {
+      "id": "252",
+      "name": "BYU"
+    },
+    "Ball St.": {
+      "id": "2050",
+      "name": "Ball State"
+    },
+    "Baylor": {
+      "id": "239",
+      "name": "Baylor"
+    },
+    "Boise St.": {
+      "id": "68",
+      "name": "Boise State"
+    },
+    "Boston Col.": {
+      "id": "103",
+      "name": "Boston College"
+    },
+    "Bowling Green": {
+      "id": "189",
+      "name": "Bowling Green"
+    },
+    "British Columbia": {
+      "id": "2080",
+      "name": "British Columbia"
+    },
+    "Bucknell": {
+      "id": "2083",
+      "name": "Bucknell"
+    },
+    "Buffalo": {
+      "id": "2084",
+      "name": "Buffalo"
+    },
+    "California": {
+      "id": "25",
+      "name": "California"
+    },
+    "Central Arkansas": {
+      "id": "2110",
+      "name": "Central Arkansas"
+    },
+    "Central Florida": {
+      "id": "2116",
+      "name": "UCF"
+    },
+    "Central Michigan": {
+      "id": "2117",
+      "name": "Central Michigan"
+    },
+    "Central Missouri St.": {
+      "id": "2118",
+      "name": "Central Missouri"
+    },
+    "Charleston (WV)": {
+      "id": "2128",
+      "name": "Charleston (WV)"
+    },
+    "Charlotte": {
+      "id": "2429",
+      "name": "Charlotte"
+    },
+    "Chattanooga": {
+      "id": "236",
+      "name": "Chattanooga"
+    },
+    "Cincinnati": {
+      "id": "2132",
+      "name": "Cincinnati"
+    },
+    "Clemson": {
+      "id": "228",
+      "name": "Clemson"
+    },
+    "Coastal Carolina": {
+      "id": "324",
+      "name": "Coastal Carolina"
+    },
+    "Colorado": {
+      "id": "38",
+      "name": "Colorado"
+    },
+    "Colorado St.": {
+      "id": "36",
+      "name": "Colorado State"
+    },
+    "Concordia-St.Paul (MN)": {
+      "id": "3066",
+      "name": "Concordia St. Paul"
+    },
+    "Connecticut": {
+      "id": "41",
+      "name": "UConn"
+    },
+    "Dayton": {
+      "id": "2168",
+      "name": "Dayton"
+    },
+    "Delaware": {
+      "id": "48",
+      "name": "Delaware"
+    },
+    "Drake": {
+      "id": "2181",
+      "name": "Drake"
+    },
+    "Duke": {
+      "id": "150",
+      "name": "Duke"
+    },
+    "East Carolina": {
+      "id": "151",
+      "name": "East Carolina"
+    },
+    "East Central (OK)": {
+      "id": "2191",
+      "name": "East Central"
+    },
+    "East Texas A&M": {
+      "id": "2837",
+      "name": "East Texas A&M"
+    },
+    "Eastern Kentucky": {
+      "id": "2198",
+      "name": "Eastern Kentucky"
+    },
+    "Eastern Michigan": {
+      "id": "2199",
+      "name": "Eastern Michigan"
+    },
+    "Eastern Washington": {
+      "id": "331",
+      "name": "Eastern Washington"
+    },
+    "Elon": {
+      "id": "2210",
+      "name": "Elon"
+    },
+    "Fayetteville St.": {
+      "id": "2220",
+      "name": "Fayetteville State"
+    },
+    "Ferris St.": {
+      "id": "2222",
+      "name": "Ferris State"
+    },
+    "Findlay": {
+      "id": "2224",
+      "name": "Findlay"
+    },
+    "Florida": {
+      "id": "57",
+      "name": "Florida"
+    },
+    "Florida Atlantic": {
+      "id": "2226",
+      "name": "Florida Atlantic"
+    },
+    "Florida International": {
+      "id": "2229",
+      "name": "Florida International"
+    },
+    "Florida St.": {
+      "id": "52",
+      "name": "Florida State"
+    },
+    "Fordham": {
+      "id": "2230",
+      "name": "Fordham"
+    },
+    "Fort Hays St.": {
+      "id": "2231",
+      "name": "Fort Hays"
+    },
+    "Fresno St.": {
+      "id": "278",
+      "name": "Fresno State"
+    },
+    "Georgia": {
+      "id": "61",
+      "name": "Georgia"
+    },
+    "Georgia Southern": {
+      "id": "290",
+      "name": "Georgia Southern"
+    },
+    "Georgia St.": {
+      "id": "2247",
+      "name": "Georgia State"
+    },
+    "Georgia Tech": {
+      "id": "59",
+      "name": "Georgia Tech"
+    },
+    "Grambling St.": {
+      "id": "2755",
+      "name": "Grambling"
+    },
+    "Hawaii": {
+      "id": "62",
+      "name": "Hawai'i"
+    },
+    "Holy Cross": {
+      "id": "107",
+      "name": "Holy Cross"
+    },
+    "Houston": {
+      "id": "248",
+      "name": "Houston"
+    },
+    "Houston Christian": {
+      "id": "2277",
+      "name": "Houston Christian"
+    },
+    "Idaho": {
+      "id": "70",
+      "name": "Idaho"
+    },
+    "Illinois": {
+      "id": "356",
+      "name": "Illinois"
+    },
+    "Illinois St.": {
+      "id": "2287",
+      "name": "Illinois State"
+    },
+    "Indiana": {
+      "id": "84",
+      "name": "Indiana"
+    },
+    "Iowa": {
+      "id": "2294",
+      "name": "Iowa"
+    },
+    "Iowa St.": {
+      "id": "66",
+      "name": "Iowa State"
+    },
+    "Jackson St.": {
+      "id": "2296",
+      "name": "Jackson State"
+    },
+    "Jacksonville St.": {
+      "id": "55",
+      "name": "Jacksonville State"
+    },
+    "James Madison": {
+      "id": "256",
+      "name": "James Madison"
+    },
+    "Kansas": {
+      "id": "2305",
+      "name": "Kansas"
+    },
+    "Kansas St.": {
+      "id": "2306",
+      "name": "Kansas State"
+    },
+    "Kennesaw St.": {
+      "id": "338",
+      "name": "Kennesaw State"
+    },
+    "Kentucky": {
+      "id": "96",
+      "name": "Kentucky"
+    },
+    "Kutztown (PA)": {
+      "id": "2315",
+      "name": "Kutztown"
+    },
+    "LSU": {
+      "id": "99",
+      "name": "LSU"
+    },
+    "La-Monroe": {
+      "id": "2433",
+      "name": "UL Monroe"
+    },
+    "Lamar": {
+      "id": "2320",
+      "name": "Lamar"
+    },
+    "Lenoir-Rhyne": {
+      "id": "2331",
+      "name": "Lenoir Rhyne"
+    },
+    "Liberty": {
+      "id": "2335",
+      "name": "Liberty"
+    },
+    "Louisiana": {
+      "id": "309",
+      "name": "Louisiana"
+    },
+    "Louisiana Tech": {
+      "id": "2348",
+      "name": "Louisiana Tech"
+    },
+    "Louisville": {
+      "id": "97",
+      "name": "Louisville"
+    },
+    "Maine": {
+      "id": "311",
+      "name": "Maine"
+    },
+    "Marshall": {
+      "id": "276",
+      "name": "Marshall"
+    },
+    "Maryland": {
+      "id": "120",
+      "name": "Maryland"
+    },
+    "Massachusetts": {
+      "id": "113",
+      "name": "Massachusetts"
+    },
+    "Memphis": {
+      "id": "235",
+      "name": "Memphis"
+    },
+    "Miami (FL)": {
+      "id": "2390",
+      "name": "Miami"
+    },
+    "Miami (OH)": {
+      "id": "193",
+      "name": "Miami (OH)"
+    },
+    "Michigan": {
+      "id": "130",
+      "name": "Michigan"
+    },
+    "Michigan St.": {
+      "id": "127",
+      "name": "Michigan State"
+    },
+    "Middle Tenn. St.": {
+      "id": "2393",
+      "name": "Middle Tennessee"
+    },
+    "Minnesota": {
+      "id": "135",
+      "name": "Minnesota"
+    },
+    "Mississippi": {
+      "id": "145",
+      "name": "Ole Miss"
+    },
+    "Mississippi St.": {
+      "id": "344",
+      "name": "Mississippi State"
+    },
+    "Missouri": {
+      "id": "142",
+      "name": "Missouri"
+    },
+    "Missouri State": {
+      "id": "2623",
+      "name": "Missouri State"
+    },
+    "Montana": {
+      "id": "149",
+      "name": "Montana"
+    },
+    "Montana St.": {
+      "id": "147",
+      "name": "Montana State"
+    },
+    "Morgan St.": {
+      "id": "2415",
+      "name": "Morgan State"
+    },
+    "Murray St.": {
+      "id": "93",
+      "name": "Murray State"
+    },
+    "NW Missouri St.": {
+      "id": "138",
+      "name": "Northwest Missouri State"
+    },
+    "Navy": {
+      "id": "2426",
+      "name": "Navy"
+    },
+    "Nebraska": {
+      "id": "158",
+      "name": "Nebraska"
+    },
+    "Nevada": {
+      "id": "2440",
+      "name": "Nevada"
+    },
+    "New Hampshire": {
+      "id": "160",
+      "name": "New Hampshire"
+    },
+    "New Mexico": {
+      "id": "167",
+      "name": "New Mexico"
+    },
+    "New Mexico St.": {
+      "id": "166",
+      "name": "New Mexico State"
+    },
+    "North Carolina": {
+      "id": "153",
+      "name": "North Carolina"
+    },
+    "North Carolina A&T": {
+      "id": "2448",
+      "name": "North Carolina A&T"
+    },
+    "North Carolina St.": {
+      "id": "152",
+      "name": "NC State"
+    },
+    "North Dakota": {
+      "id": "155",
+      "name": "North Dakota"
+    },
+    "North Dakota St.": {
+      "id": "2449",
+      "name": "North Dakota State"
+    },
+    "North Texas": {
+      "id": "249",
+      "name": "North Texas"
+    },
+    "Northern Illinois": {
+      "id": "2459",
+      "name": "Northern Illinois"
+    },
+    "Northern Iowa": {
+      "id": "2460",
+      "name": "Northern Iowa"
+    },
+    "Northern Michigan": {
+      "id": "128",
+      "name": "Northern Michigan"
+    },
+    "Northwestern": {
+      "id": "77",
+      "name": "Northwestern"
+    },
+    "Notre Dame": {
+      "id": "87",
+      "name": "Notre Dame"
+    },
+    "Ohio": {
+      "id": "195",
+      "name": "Ohio"
+    },
+    "Ohio St.": {
+      "id": "194",
+      "name": "Ohio State"
+    },
+    "Oklahoma": {
+      "id": "201",
+      "name": "Oklahoma"
+    },
+    "Oklahoma St.": {
+      "id": "197",
+      "name": "Oklahoma State"
+    },
+    "Old Dominion": {
+      "id": "295",
+      "name": "Old Dominion"
+    },
+    "Oregon": {
+      "id": "2483",
+      "name": "Oregon"
+    },
+    "Oregon St.": {
+      "id": "204",
+      "name": "Oregon State"
+    },
+    "Ouachita Baptist": {
+      "id": "2888",
+      "name": "Ouachita Baptist"
+    },
+    "Penn St.": {
+      "id": "213",
+      "name": "Penn State"
+    },
+    "Pennsylvania": {
+      "id": "219",
+      "name": "Pennsylvania"
+    },
+    "Pittsburgh": {
+      "id": "221",
+      "name": "Pittsburgh"
+    },
+    "Prairie View A&M": {
+      "id": "2504",
+      "name": "Prairie View A&M"
+    },
+    "Princeton": {
+      "id": "163",
+      "name": "Princeton"
+    },
+    "Purdue": {
+      "id": "2509",
+      "name": "Purdue"
+    },
+    "Rhode Island": {
+      "id": "227",
+      "name": "Rhode Island"
+    },
+    "Rice": {
+      "id": "242",
+      "name": "Rice"
+    },
+    "Richmond": {
+      "id": "257",
+      "name": "Richmond"
+    },
+    "Rutgers": {
+      "id": "164",
+      "name": "Rutgers"
+    },
+    "S.F. Austin": {
+      "id": "2617",
+      "name": "Stephen F. Austin"
+    },
+    "SE Missouri St.": {
+      "id": "2546",
+      "name": "Southeast Missouri State"
+    },
+    "SMU": {
+      "id": "2567",
+      "name": "SMU"
+    },
+    "Sacramento St.": {
+      "id": "16",
+      "name": "Sacramento State"
+    },
+    "Saint John's (MN)": {
+      "id": "2600",
+      "name": "Saint John's (MN)"
+    },
+    "Sam Houston St.": {
+      "id": "2534",
+      "name": "Sam Houston"
+    },
+    "Samford": {
+      "id": "2535",
+      "name": "Samford"
+    },
+    "San Diego": {
+      "id": "301",
+      "name": "San Diego"
+    },
+    "San Diego St.": {
+      "id": "21",
+      "name": "San Diego State"
+    },
+    "San Jose St.": {
+      "id": "23",
+      "name": "San José State"
+    },
+    "Sioux Falls": {
+      "id": "2894",
+      "name": "Sioux Falls"
+    },
+    "South Alabama": {
+      "id": "6",
+      "name": "South Alabama"
+    },
+    "South Carolina": {
+      "id": "2579",
+      "name": "South Carolina"
+    },
+    "South Carolina St.": {
+      "id": "2569",
+      "name": "South Carolina State"
+    },
+    "South Dakota": {
+      "id": "233",
+      "name": "South Dakota"
+    },
+    "South Dakota St.": {
+      "id": "2571",
+      "name": "South Dakota State"
+    },
+    "South Florida": {
+      "id": "58",
+      "name": "South Florida"
+    },
+    "Southeastern Louisiana": {
+      "id": "2545",
+      "name": "SE Louisiana"
+    },
+    "Southern": {
+      "id": "2582",
+      "name": "Southern"
+    },
+    "Southern Illinois": {
+      "id": "79",
+      "name": "Southern Illinois"
+    },
+    "Southern Miss": {
+      "id": "2572",
+      "name": "Southern Miss"
+    },
+    "Southern Utah": {
+      "id": "253",
+      "name": "Southern Utah"
+    },
+    "Stanford": {
+      "id": "24",
+      "name": "Stanford"
+    },
+    "Syracuse": {
+      "id": "183",
+      "name": "Syracuse"
+    },
+    "TCU": {
+      "id": "2628",
+      "name": "TCU"
+    },
+    "Tarleton St.": {
+      "id": "2627",
+      "name": "Tarleton State"
+    },
+    "Temple": {
+      "id": "218",
+      "name": "Temple"
+    },
+    "Tennessee": {
+      "id": "2633",
+      "name": "Tennessee"
+    },
+    "Tennessee St.": {
+      "id": "2634",
+      "name": "Tennessee State"
+    },
+    "Texas": {
+      "id": "251",
+      "name": "Texas"
+    },
+    "Texas A&M": {
+      "id": "245",
+      "name": "Texas A&M"
+    },
+    "Texas Tech": {
+      "id": "2641",
+      "name": "Texas Tech"
+    },
+    "Texas-El Paso": {
+      "id": "2638",
+      "name": "UTEP"
+    },
+    "Texas-San Antonio": {
+      "id": "2636",
+      "name": "UTSA"
+    },
+    "Toledo": {
+      "id": "2649",
+      "name": "Toledo"
+    },
+    "Troy": {
+      "id": "2653",
+      "name": "Troy"
+    },
+    "Tulane": {
+      "id": "2655",
+      "name": "Tulane"
+    },
+    "Tulsa": {
+      "id": "202",
+      "name": "Tulsa"
+    },
+    "UCLA": {
+      "id": "26",
+      "name": "UCLA"
+    },
+    "UNLV": {
+      "id": "2439",
+      "name": "UNLV"
+    },
+    "USC": {
+      "id": "30",
+      "name": "USC"
+    },
+    "UT Martin": {
+      "id": "2630",
+      "name": "UT Martin"
+    },
+    "Utah": {
+      "id": "254",
+      "name": "Utah"
+    },
+    "Utah St.": {
+      "id": "328",
+      "name": "Utah State"
+    },
+    "Valdosta St.": {
+      "id": "2673",
+      "name": "Valdosta State"
+    },
+    "Vanderbilt": {
+      "id": "238",
+      "name": "Vanderbilt"
+    },
+    "Villanova": {
+      "id": "222",
+      "name": "Villanova"
+    },
+    "Virginia": {
+      "id": "258",
+      "name": "Virginia"
+    },
+    "Virginia St.": {
+      "id": "330",
+      "name": "Virginia State"
+    },
+    "Virginia Tech": {
+      "id": "259",
+      "name": "Virginia Tech"
+    },
+    "Wagner": {
+      "id": "2681",
+      "name": "Wagner"
+    },
+    "Wake Forest": {
+      "id": "154",
+      "name": "Wake Forest"
+    },
+    "Washburn": {
+      "id": "2687",
+      "name": "Washburn"
+    },
+    "Washington": {
+      "id": "264",
+      "name": "Washington"
+    },
+    "Washington St.": {
+      "id": "265",
+      "name": "Washington State"
+    },
+    "Weber St.": {
+      "id": "2692",
+      "name": "Weber State"
+    },
+    "West Georgia": {
+      "id": "2698",
+      "name": "West Georgia"
+    },
+    "West Virginia": {
+      "id": "277",
+      "name": "West Virginia"
+    },
+    "Western Carolina": {
+      "id": "2717",
+      "name": "Western Carolina"
+    },
+    "Western Illinois": {
+      "id": "2710",
+      "name": "Western Illinois"
+    },
+    "Western Kentucky": {
+      "id": "98",
+      "name": "Western Kentucky"
+    },
+    "Western Michigan": {
+      "id": "2711",
+      "name": "Western Michigan"
+    },
+    "William & Mary": {
+      "id": "2729",
+      "name": "William & Mary"
+    },
+    "Wingate": {
+      "id": "351",
+      "name": "Wingate"
+    },
+    "Wisconsin": {
+      "id": "275",
+      "name": "Wisconsin"
+    },
+    "Wisconsin–Whitewater": {
+      "id": "2745",
+      "name": "Wisconsin Whitewater"
+    },
+    "Wyoming": {
+      "id": "2751",
+      "name": "Wyoming"
+    },
+    "Yale": {
+      "id": "43",
+      "name": "Yale"
+    },
+    "Youngstown St.": {
+      "id": "2754",
+      "name": "Youngstown State"
+    }
+  }
+}

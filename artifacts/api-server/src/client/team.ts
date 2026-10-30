@@ -810,24 +810,6 @@ function wireCutScenario(root: HTMLElement): void {
     // the table and the inert controls off this flag.
     block.dataset["sctCt"] = "js";
 
-    // The first ten rows by default; the rest behind "Show all". A ticked
-    // row stays visible when the sheet folds back up (team.css).
-    const more = block.querySelector<HTMLButtonElement>("[data-sct-ct-more]");
-    const count = block.querySelector<HTMLElement>("[data-sct-ct-count]");
-    if (more) {
-      // The footer's caption counts what the fold shows; without the bundle
-      // the whole sheet is open, so the server prints the plain total.
-      if (count?.dataset["closed"]) count.textContent = count.dataset["closed"];
-      more.addEventListener("click", () => {
-        const open = more.getAttribute("aria-expanded") !== "true";
-        more.setAttribute("aria-expanded", String(open));
-        block.classList.toggle("is-expanded", open);
-        more.textContent = (open ? more.dataset["less"] : more.dataset["more"]) ?? more.textContent;
-        if (count) count.textContent = (open ? count.dataset["open"] : count.dataset["closed"]) ?? count.textContent;
-        if (!open) block.querySelector<HTMLElement>(".sct-ct-scroll")?.scrollIntoView({ block: "nearest" });
-      });
-    }
-
     // On a phone the sheet shows Player, Cap hit, Worth and Cut saves per
     // row and keeps the rest behind a tap on the row (team.css lays the row
     // out as a card below 700px). A tap on the name, the pick box or a
@@ -857,11 +839,18 @@ function wireCutScenario(root: HTMLElement): void {
       return abs >= 1 ? `${sign}$${abs.toFixed(1)}M` : `${sign}$${Math.round(abs * 1000)}K`;
     };
     let timing: "pre" | "post" = "pre";
+    const pickFor = (id: string | undefined): HTMLInputElement | null =>
+      id ? block.querySelector<HTMLInputElement>(`[data-sct-ct-row][data-sct-ct-id="${id}"] [data-sct-ct-pick]`) : null;
+    // The release panel's cards are a second handle on the row's pick box.
+    const cards = Array.from(block.querySelectorAll<HTMLElement>("[data-sct-ct-cut]"));
 
     const update = (): void => {
       let count = 0;
       let freed = 0;
       let added = 0;
+      let altFreed = 0;
+      let altAdded = 0;
+      const other = timing === "pre" ? "post" : "pre";
       for (const pick of picks) {
         const row = pick.closest<HTMLElement>("[data-sct-ct-row]");
         row?.classList.toggle("is-picked", pick.checked);
@@ -869,6 +858,23 @@ function wireCutScenario(root: HTMLElement): void {
         count += 1;
         freed += Number(row.dataset[`${timing}Save`] ?? "0");
         added += Number(row.dataset[`${timing}Dead`] ?? "0");
+        altFreed += Number(row.dataset[`${other}Save`] ?? "0");
+        altAdded += Number(row.dataset[`${other}Dead`] ?? "0");
+      }
+      for (const card of cards) {
+        const on = pickFor(card.dataset["sctCtCut"])?.checked === true;
+        card.classList.toggle("is-picked", on);
+        card.querySelector("[data-sct-ct-cut-tick]")?.setAttribute("aria-pressed", String(on));
+      }
+      // What the other timing would do with the same picks: the reason the
+      // toggle exists, shown beside it once there is something to compare.
+      const altOut = out("alt");
+      if (altOut) {
+        altOut.hidden = count === 0;
+        altOut.textContent =
+          count === 0
+            ? ""
+            : `${other === "post" ? "After" : "Before"} June 1 the same cuts would free ${money(altFreed)} and leave ${money(altAdded)} dead.`;
       }
       const countOut = out("count");
       if (countOut) countOut.textContent = String(count);
@@ -907,14 +913,31 @@ function wireCutScenario(root: HTMLElement): void {
       for (const pick of picks) pick.checked = false;
       update();
     });
+    const toggle = (id: string | undefined, force?: boolean): void => {
+      const pick = pickFor(id);
+      if (!pick) return;
+      pick.checked = force ?? !pick.checked;
+      update();
+    };
+    // A tap on a card ticks its row; the name link keeps its own job.
+    for (const card of cards) {
+      card.addEventListener("click", (event) => {
+        if ((event.target as HTMLElement | null)?.closest("a")) return;
+        toggle(card.dataset["sctCtCut"]);
+      });
+    }
+    // The empty bar's "Try <name>" ticks the release that frees the most.
+    block.querySelector<HTMLButtonElement>("[data-sct-ct-try]")?.addEventListener("click", (event) => {
+      toggle((event.currentTarget as HTMLElement).dataset["sctCtTry"], true);
+    });
     update();
   }
 }
 
 /**
  * The view switch on any `[data-sct-dc]` block: the Depth Chart tab's four
- * views, and since 2026-10-23 the Draft tab's two (team/draft-render.ts),
- * which wear the same attributes so they get the same behavior for free.
+ * views. (The Draft tab borrowed it from 2026-10-23 to 2026-10-29; its two
+ * panels now stack in one view.)
  */
 function wireDepthViews(root: HTMLElement): void {
   for (const block of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-dc]"))) {

@@ -47,7 +47,7 @@ import { easternParts } from "./news-card";
 // the page are generated from one place. player-seo.ts imports nothing from
 // here - only a comment mentions it - so this does not close a cycle.
 import { playerPageMeta } from "./player-seo";
-import type { NflTeam } from "./team/teams";
+import { getTeamByAbbreviation, type NflTeam } from "./team/teams";
 import {
   finishBadge,
   fpts,
@@ -1366,15 +1366,14 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
    */
   const scored = seasonLog.some((entry) => entry.score);
 
-  // Wk, Opp, [Result], FPTS, the position's columns, Finish.
+  // Wk, Opp, [Result], the position's columns, FPTS, Finish.
   const span = columns.length + (scored ? 5 : 4);
 
   const head =
     `<tr>` +
     `<th scope="col">Wk</th>` +
     `<th scope="col">Opp</th>` +
-    (scored ? `<th scope="col">Result</th>` : "") +
-    `<th scope="col" class="scp-col-pts">FPTS</th>` +
+    (scored ? `<th scope="col" class="scp-col-res">Result</th>` : "") +
     columns
       .map(
         (column) =>
@@ -1383,6 +1382,9 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
           }">${escapeHtml(column.label)}</th>`,
       )
       .join("") +
+    // FPTS sits beside Finish (mak, 2026-10-29): the two fantasy columns
+    // close the row together, after the box score that produced them.
+    `<th scope="col" class="scp-col-pts">FPTS</th>` +
     `<th scope="col" class="scp-col-fin">Finish</th>` +
     `</tr>`;
 
@@ -1410,6 +1412,7 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
       const points = fpts(entry, format);
       const tier = weeklyTier(entry.pos_rank);
       const oppRank = entry.opp_rank_vs_pos;
+      const oppLogo = getTeamByAbbreviation(entry.opp)?.logo ?? null;
       const detailId = `gl-${data.logSeason}-w${entry.week}`;
       const detail = renderWeekDetail(data, entry, detailId, span);
 
@@ -1418,7 +1421,14 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
         (detail ? ` data-detail="${escapeHtml(detailId)}"` : "") +
         `>` +
         `<th scope="row">${entry.week}</th>` +
-        `<td class="scp-opp">${escapeHtml(entry.opp)}` +
+        // The club's crest ahead of its code (mak, 2026-10-29): the same
+        // locally hosted SVG the per-game cards below carry, absolute for the
+        // request. Decorative - the code is the cell's text and what sorts.
+        `<td class="scp-opp">` +
+        (oppLogo
+          ? `<img class="scp-opp-logo" src="${escapeHtml(oppLogo)}" alt="" aria-hidden="true" width="18" height="18" loading="lazy" decoding="async" />`
+          : "") +
+        escapeHtml(entry.opp) +
         (oppRank
           ? `<span class="scp-opp-rank" title="${escapeHtml(
               `${entry.opp} ranked ${ordinal(oppRank)} in points allowed to ${
@@ -1430,7 +1440,6 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
         (scored
           ? `<td class="scp-score">${escapeHtml(scoreLabel(entry))}</td>`
           : "") +
-        `<td class="scp-pts">${escapeHtml(num(points))}</td>` +
         columns
           .map(
             (column) =>
@@ -1438,6 +1447,7 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
               `${escapeHtml(logCell(entry, column))}</td>`,
           )
           .join("") +
+        `<td class="scp-pts">${escapeHtml(num(points))}</td>` +
         `<td class="scp-col-fin">` +
         (tier && entry.pos_rank
           ? `<span class="scp-tier" data-tier="${tier}"${styleAttr([
@@ -1483,7 +1493,7 @@ function renderWeeklyLog(data: PlayerPageData, options: PlayerRenderOptions): st
 
   return (
     `<div class="scp-scroll">` +
-    `<table class="scp-table scp-table--filled scp-table--log" data-scp-sortable data-scp-expandable>` +
+    `<table class="scp-table scp-table--filled scp-table--log scp-table--week" data-scp-sortable data-scp-expandable>` +
     `<thead>${head}</thead><tbody>${rows}</tbody>` +
     (foot ? `<tfoot>${foot}</tfoot>` : "") +
     `</table></div>` +
@@ -1564,7 +1574,6 @@ function renderLogAverages(
     `<th scope="row">Avg</th>` +
     `<td class="scp-opp"><span class="scp-avg-games">${escapeHtml(`${n} games`)}</span></td>` +
     (scored ? `<td class="scp-score">${escapeHtml(record)}</td>` : "") +
-    `<td class="scp-pts">${escapeHtml(num(ppg))}</td>` +
     columns
       .map(
         (column) =>
@@ -1572,6 +1581,7 @@ function renderLogAverages(
           `${escapeHtml(cell(column))}</td>`,
       )
       .join("") +
+    `<td class="scp-pts">${escapeHtml(num(ppg))}</td>` +
     `<td class="scp-col-fin">` +
     (tier && meanRank
       ? `<span class="scp-tier" data-tier="${tier}"${styleAttr([
@@ -1937,35 +1947,32 @@ function renderArchiveSeason(
 }
 
 /**
- * What the All chip opens: every season on one line each.
+ * The selector at rest: All lit, no season pinned.
  *
- * The same career table the Stats tab carries, rendered from the same
- * statsProfile, so the two cannot drift. It belongs in both places for
- * different reasons: on Stats it is the totals, and here it is the index to
- * eleven game logs - the reader is standing in front of a row of years being
- * asked to pick one, and this is the screen that tells them which year is
- * worth opening.
+ * Until 2026-10-29 the career table sat under it - the index to eleven game
+ * logs. mak moved that table to the Stats tab, above the per-season chart
+ * (renderStats), so this block is now the heading row that carries the chips
+ * and nothing else: a reader changing years is still looking at the thing
+ * that changes, which is the slot a pinned season renders into.
  *
  * It occupies the archive's slot rather than sitting beside it, so exactly one
- * block is ever under the selector: All when nothing is pinned, that season
- * when one is. Sharing the .scp-archive class is what gives it the same rule
- * and spacing, and what keeps it out of the current-season blocks the tests
+ * block is ever under the selector: this when nothing is pinned, that season
+ * when one is. Sharing the .scp-archive class is what gives it the same
+ * spacing, and what keeps it out of the current-season blocks the tests
  * compare across a pin.
  */
 function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
   if (data.logSeason !== data.season) return "";
-  // Nothing to index for a player with one season - and the selector that
+  // A player with one season has nothing to pick - and the selector that
   // would offer All is not drawn for one either.
   if (data.logSeasons.filter((year) => year !== data.season).length === 0) return "";
-
-  const table = renderCareerStats(data, seasonNav);
-  if (!table) return "";
+  if (!seasonNav) return "";
 
   return (
-    `<section class="scp-archive scp-archive--career" data-scp-archive` +
+    `<section class="scp-archive scp-archive--all" data-scp-archive` +
     ` data-season="all"` +
-    ` aria-label="${escapeHtml(`${data.player.name} career by season`)}">` +
-    table +
+    ` aria-label="${escapeHtml(`${data.player.name} game logs by season`)}">` +
+    sectionHead(titleCase(`${data.player.name} game logs by season`), "", seasonNav) +
     `</section>`
   );
 }
@@ -2035,7 +2042,11 @@ function count(value: number): string {
  * column: that file does not record one, and a column that is blank for most of
  * a career is worse than no column.
  */
-function renderCareerStats(data: PlayerPageData, aside = ""): string {
+function renderCareerStats(
+  data: PlayerPageData,
+  aside = "",
+  opts: { bare?: boolean } = {},
+): string {
   const { career, totals } = data.statsProfile;
   if (career.length === 0) return "";
 
@@ -2165,8 +2176,9 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
     // Career row's own GP cell, and the format is named by the column head
     // ("FPTS/G (PPR)") and by the hero's lead cell above it. Three facts the
     // table states, restated above the table.
-    // Title Case like the other section headings (mak, 2026-10-22).
-    sectionHead(titleCase(`${data.player.name} career stats by season`), "", aside) +
+    // Title Case like the other section headings (mak, 2026-10-22). Bare, the
+    // caller prints its own heading: the Stats tab wraps it in a spec section.
+    (opts.bare ? "" : sectionHead(titleCase(`${data.player.name} career stats by season`), "", aside)) +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--career" data-scp-sortable>` +
     `<thead>${groupRow}${head}</thead>` +
@@ -2183,15 +2195,18 @@ function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): str
 
 function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabParts | null {
   // The "Efficiency Profile" block was removed at mak's request (2026-09-30),
-  // the career-by-season table and the season snapshot strip on 2026-10-22;
-  // the Game Log's All view still draws the table (renderLogCareer).
+  // the career-by-season table and the season snapshot strip on 2026-10-22.
+  // The table came back on 2026-10-29, moved here from the Game Log's All
+  // view: it takes the slot above the spec's per-season chart.
   const faq = renderStatsFaq(data, options);
   // The sections of mak's Stats tab spec of 2026-09-29 (lib/player/stats-tab.ts).
   // Since 2026-09-30 its first three (production, advanced, career chart) open
   // the tab, above everything it already had; the rest stay under it. For a
   // rookie before his first NFL game it is his college card and table, and it
   // is the whole tab.
-  const spec = renderStatsTabParts(data, options);
+  const spec = renderStatsTabParts(data, options, {
+    careerTable: renderCareerStats(data, "", { bare: true }),
+  });
 
   if (!spec.top && !spec.rest) return null;
 

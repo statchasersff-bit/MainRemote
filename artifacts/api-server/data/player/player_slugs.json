@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-10-26T18:02:04.386Z",
+  "generated_at": "2026-10-28T17:03:48.060Z",
   "moves": [],
   "players": {
     "1": {
@@ -13407,6 +13407,5 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  },
-  "migrated_at": "2026-10-26T18:02:05.017Z"
+  }
 }

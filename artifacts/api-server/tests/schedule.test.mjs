@@ -603,7 +603,9 @@ describe("the schedule page", () => {
     const link = row.querySelector("a.scs-go");
 
     const spoken = link.querySelector(".scs-visually-hidden").textContent;
-    assert.match(spoken, /^Matchup: .+ (at|vs) .+$/, spoken);
+    // A game still to be played is the matchup; a finished one is named for
+    // what its page holds (the Search Console brief of 2026-10-30).
+    assert.match(spoken, /^(Matchup: .+ (at|vs) .+|.+ vs .+ player stats and box score)$/, spoken);
 
     // And the visible label is not the accessible name - it is decoration that
     // the stylesheet is free to drop.

@@ -19,6 +19,11 @@
  * DB, LB and the skill spots), so an offensive lineman listed as G in one year
  * and OL in another counts the same way in both.
  *
+ * Each pick also carries the player's Sleeper id (`sleeperId`), so the hub
+ * can draw the headshot through the image route: from the player id
+ * crosswalk, with the site's own bio id store first and the ids already in
+ * the file on disk kept when the crosswalk cannot be fetched.
+ *
  * Refuses to write fewer seasons than the file on disk already has: a partial
  * release of the register must not roll a hub back.
  */
@@ -34,6 +39,8 @@ const DATA = path.resolve(here, "..", "..", "data");
 const SOURCE = "https://github.com/nflverse/nflverse-data/releases/download/draft_picks/draft_picks.csv";
 /** Drafts kept per club. The page shows the last five; the rest is headroom. */
 const KEEP = 10;
+/** GSIS id -> Sleeper id, for the headshots. */
+const CROSSWALK = "https://github.com/dynastyprocess/data/raw/master/files/db_playerids.csv";
 
 let cacheDir = null;
 
@@ -179,6 +186,7 @@ async function build(season) {
       side: row.side === "O" || row.side === "D" || row.side === "S" ? row.side : null,
       college: row.college ?? "",
       gsisId: row.gsis_id || null,
+      sleeperId: null,
       age: num(row.age),
       lastSeason: num(row.to),
       games: num(row.games) ?? 0,
@@ -206,6 +214,43 @@ async function build(season) {
   };
 }
 
+/**
+ * Sleeper ids for the picks: the bio store's pairs first (checked by hand),
+ * then the crosswalk, then whatever the file on disk already had, so a
+ * player keeps a photo across a run that could not reach the crosswalk.
+ */
+async function attachSleeperIds(doc, previous) {
+  const ids = {};
+  for (const list of Object.values(previous?.teams ?? {})) {
+    for (const p of list) if (p.gsisId && p.sleeperId) ids[p.gsisId] = p.sleeperId;
+  }
+  try {
+    for await (const row of rows(CROSSWALK)) {
+      if (row.gsis_id && /^\d+$/.test(row.sleeper_id ?? "")) ids[row.gsis_id] = row.sleeper_id;
+    }
+  } catch (err) {
+    console.warn(`  crosswalk not read (${err.message}); keeping the ids on disk`);
+  }
+  try {
+    const bio = JSON.parse(fs.readFileSync(path.join(DATA, "player", "bio_sources.json"), "utf8"));
+    for (const p of Object.values(bio.players ?? {})) {
+      if (p.ids?.gsis && p.ids?.sleeper) ids[p.ids.gsis] = String(p.ids.sleeper);
+    }
+  } catch {
+    /* no bio store here */
+  }
+  let found = 0;
+  let total = 0;
+  for (const list of Object.values(doc.teams)) {
+    for (const p of list) {
+      total += 1;
+      p.sleeperId = (p.gsisId && ids[p.gsisId]) || null;
+      if (p.sleeperId) found += 1;
+    }
+  }
+  console.log(`  sleeper ids: ${found} of ${total} picks`);
+}
+
 async function main() {
   const season = Number(process.argv[2]);
   if (!Number.isInteger(season) || season < 2000) {
@@ -218,11 +263,14 @@ async function main() {
   const doc = await build(season);
   const file = path.join(DATA, "team", "draft_history.json");
   let onDisk = 0;
+  let previous = null;
   try {
-    onDisk = JSON.parse(fs.readFileSync(file, "utf8")).latestSeason ?? 0;
+    previous = JSON.parse(fs.readFileSync(file, "utf8"));
+    onDisk = previous.latestSeason ?? 0;
   } catch {
     /* no file yet */
   }
+  await attachSleeperIds(doc, previous);
   if (doc.latestSeason < onDisk) {
     console.error(`  refusing to write: register ends at ${doc.latestSeason}, disk has ${onDisk}`);
     process.exit(1);

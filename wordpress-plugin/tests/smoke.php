@@ -1636,11 +1636,11 @@ foreach ( array( '2026-week-01', '2026-WEEK-1', '2026-wk-1', '2025-pro-bowl', '2
 }
 
 $GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
-is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Super Bowl, 2025', 'a Super Bowl is headed by its round' );
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Match Player Stats: Super Bowl, 2025', 'a Super Bowl is headed by its round' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
-	'Patriots vs Eagles Player Stats & Box Score, Super Bowl 2025',
-	'and titled by it: the brief\'s "{Away} vs {Home} Player Stats & Box Score, {round} {year}" (2026-10-10)'
+	'Patriots vs Eagles Match Player Stats (Super Bowl, 2025)',
+	'and titled by it: "{Away} vs {Home} Match Player Stats & Box Score ({round}, {year})" (2026-10-30), the box score dropped when the round is long'
 );
 
 // Every matchup title fits in 60 characters: all 496 pairs, every state, and
@@ -1670,8 +1670,8 @@ foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 is( strlen( $longest ) <= 60, true, "no matchup title is over 60 characters (longest: $longest)" );
 is(
 	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
-	'Dolphins vs Jets Player Stats & Box Score, Week 1 2026',
-	'no brand and nicknames, even when the full names would fit'
+	'Dolphins vs Jets Match Player Stats & Box Score (Week 1)',
+	'no brand and nicknames, even when the full names would fit; the year goes first when the spec string runs to 62'
 );
 is(
 	statchasers_matchup_meta( 'arizona-cardinals', 'buffalo-bills', 'historical', '2026' )['title'],
@@ -1687,23 +1687,30 @@ is(
 // game's player stats, in either postgame state, mak's wording first.
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['title'],
-	'Browns vs Buccaneers Player Stats & Fantasy Points (Week 2)',
-	'season game: the spec wording is 66 characters for this pair, so the year goes first (59)'
+	'Browns vs Buccaneers Match Player Stats & Box Score (Week 2)',
+	'season game: the spec wording is 66 characters for this pair, so the year goes first (60)'
 );
 is(
 	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['title'],
-	'Jets vs Rams Player Stats & Fantasy Points (Week 2, 2026)',
+	'Jets vs Rams Match Player Stats & Box Score (Week 2, 2026)',
 	'season game: the spec wording as written when it fits'
 );
 is(
 	statchasers_matchup_meta( 'tampa-bay-buccaneers', 'washington-commanders', 'historical', '2026', '', 'Week 18' )['title'],
-	'Buccaneers vs Commanders Player Stats (Week 18, 2026)',
-	'season game: the longest nicknames and round pass the year-less rung too (64) and land on the last'
+	'Buccaneers vs Commanders Match Player Stats (Week 18, 2026)',
+	'season game: the longest nicknames and round pass the year-less box-score rung too (65) and drop the box score'
 );
+$season_desc = statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['description'];
 is(
-	strpos( statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['description'], 'Buccaneers won 24-17. Browns vs Buccaneers Week 2 2026 player stats' ),
-	0,
-	'season game: the score leads the description'
+	$season_desc,
+	"Browns vs Buccaneers match player stats from Week 2, 2026: passing, rushing and receiving, box score, fantasy points and usage from the Buccaneers' 24\xE2\x80\x9317 win.",
+	'season game: both teams, "match player stats", the week and year, what the page holds and the result read from X-Matchup-Score'
+);
+is( mb_strlen( $season_desc ) <= 165, true, 'and it fits a results page' );
+is(
+	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['description'],
+	'New York Jets vs Los Angeles Rams match player stats from Week 2, 2026: passing, rushing and receiving stats, box score, fantasy points, snaps, targets and usage.',
+	'season game: no score header, no result clause, and the full names when they fit (162)'
 );
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'upcoming', '2026', '', 'Week 2' )['title'],
@@ -1711,11 +1718,11 @@ is(
 	'season game: a week header does not retitle an upcoming pair'
 );
 $GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
-is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Week 1, 2026', 'a regular-season game is still "Week N"' );
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Match Player Stats: Week 1, 2026', 'a regular-season game is still "Week N"' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2026-week-1' )['description'],
-	'Patriots vs Eagles, Week 1 2026: full box score, fantasy points for every player, scoring summary and team stats.',
-	'with the API\'s own regular-season description'
+	'Patriots vs Eagles match player stats from Week 1, 2026: passing, rushing and receiving stats, box score, fantasy points, snaps, targets and usage.',
+	'with the API\'s own regular-season description (nicknames: the full names run to 172)'
 );
 
 /*
@@ -1778,7 +1785,7 @@ is( statchasers_matchup_event_node(), null, 'an Event with no startDate is dropp
 // An API from before the headers: the plugin's own builders stand in.
 $GLOBALS['http_headers'] = array();
 $GLOBALS['http_body']    = $hero_html;
-is( statchasers_matchup_heading(), 'Patriots vs Eagles Box Score & Player Stats: Week 1, 2026', 'with no heading header, the pair order stands' );
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Match Player Stats: Week 1, 2026', 'with no heading header, the pair order stands' );
 
 // "The tool supplies the heading": the theme's title is emptied, so the hero
 // heading has to become the H1 here or the page has none (mak, 2026-10-09).

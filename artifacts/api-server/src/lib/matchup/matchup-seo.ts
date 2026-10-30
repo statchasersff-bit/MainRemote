@@ -12,7 +12,8 @@ import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
 import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
-import { scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
+import { completedGameDescription, completedGameTitleCandidates } from "./game-seo";
+import { gameSeoFacts, scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
 import { fitTitle, TITLE_MAX } from "../title-fit";
 
 const SITE_NAME = "StatChasers";
@@ -64,10 +65,11 @@ export function matchupScoreLine(data: MatchupData): string {
  */
 function withRecap(meta: TeamPageMeta, data: MatchupData, canonical: string): TeamPageMeta {
   const share = matchupShare(data);
-  // A game address wrote its own description (the brief's "Winner pts, Loser
-  // pts on Mon D, Year: full box score..."); only the pair's page takes the
-  // recap's.
-  const description = data.pinned ? meta.description : recapDescription(data);
+  // A game address and the pair's page leading with a season game both wrote
+  // their own description (completedGameDescription: "{Away} vs {Home} match
+  // player stats from Week N, YYYY: ..."); only the evergreen pair page whose
+  // last meeting was an earlier season takes the recap's.
+  const description = data.pinned || seasonGameLead(data) ? meta.description : recapDescription(data);
   if (!share || !description) return meta;
   let url: string | null = null;
   try {
@@ -164,28 +166,32 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
   }
 
   // The pair's page while it leads with one of this season's played games,
-  // whether just played or back in Week 2: "Browns vs Buccaneers Player Stats
-  // & Fantasy Points (Week 2, 2026)", mak's wording (2026-10-09), with the
-  // same words in the H1 (seasonGameHeading). The spec's string runs past
-  // sixty for most pairs, so the ladder drops the year first - the searches
-  // are "browns vs buccaneers player stats", so "Player Stats" outranks
-  // "2026" (mak, 2026-10-09) - and only then the shorter wordings. The
-  // head-to-head wording below is now only for a pair that has not met this
+  // whether just played or back in Week 2: "Titans vs Colts Match Player
+  // Stats & Box Score (Week 6, 2026)" (the Search Console brief of
+  // 2026-10-30), away then home from the same game object the hero draws, the
+  // description from the same fact sheet. The game page under it wears the
+  // same template, so the two cannot disagree about the order or the round.
+  // MIRRORED by statchasers_matchup_meta() in the plugin for an API that
+  // sends no title header. Was "{a} vs {b} Player Stats & Fantasy Points
+  // (Week N, YYYY)" in the pair's alphabetical order from 2026-10-09. The
+  // head-to-head wording below is only for a pair that has not met this
   // season.
   const lead = seasonGameLead(data);
   if (lead) {
+    const game = matchupScoreboardGame(data);
+    const facts = game ? gameSeoFacts(game) : null;
     const when = `(${lead.weekLabel}, ${lead.season})`;
     const scored = matchupScoreLine(data);
     return {
-      title: fitMatchupTitle([
-        `${short} Player Stats & Fantasy Points ${when}`,
-        `${short} Player Stats & Fantasy Points (${lead.weekLabel})`,
-        `${short} Stats & Fantasy Points ${when}`,
-        `${short} Player Stats ${when}`,
-      ]),
-      description:
-        `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname} ${lead.weekLabel} ${lead.season} ` +
-        `player stats and fantasy points by player, plus the final score and the head-to-head record.`,
+      title: fitMatchupTitle(
+        facts
+          ? completedGameTitleCandidates(facts)
+          : [`${short} Match Player Stats & Box Score ${when}`, `${short} Match Player Stats ${when}`],
+      ),
+      description: facts
+        ? completedGameDescription(facts)
+        : `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname} match player stats from ${lead.weekLabel}, ` +
+          `${lead.season}: passing, rushing and receiving, box score, fantasy points and usage.`,
       canonical,
       siteName: SITE_NAME,
     };

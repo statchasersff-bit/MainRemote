@@ -13,6 +13,7 @@ import { parseReport, practiceValue, reportDate, mergeWeek } from "../scripts/pl
 
 const d = await importModule("lib/player/injury-tab-data");
 const tab = await importModule("lib/player/injury-tab");
+const dur = await importModule("lib/player/injury-durability");
 
 after(cleanupBundles);
 
@@ -257,6 +258,8 @@ describe("rendered", () => {
       "Where He's Been Hurt",
       "Jacoby Brissett Injury History",
       "If Brissett Misses Time",
+      // Redraft Command's injury card, under everything above (mak, 2026-10-30).
+      "Durability Profile",
       "Jacoby Brissett Injury FAQ",
     ]);
     // The methodology footer left the tab 2026-10-22 (mak).
@@ -354,5 +357,94 @@ describe("rendered", () => {
 
   test("no injury record: nothing rendered", () => {
     assert.equal(tab.renderInjuryTab(state({ injury: null }), { now: NOW }), "");
+  });
+});
+
+/* ------------------------------------------------- durability profile card */
+
+describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", () => {
+  const ep = (o) => ({
+    season: 2023, week: 5, injury: "Hamstring", gamesMissed: 0, seasonEnding: false, ongoing: false,
+    returnWeek: null, returnedInPlayoffs: false, reportWeeks: 1, worstStatus: null, worstPractice: null, inGame: null, ...o,
+  });
+
+  test("an episode is told as a sentence or three: how, what it cost, first or recurring", () => {
+    const first = ep({ gamesMissed: 3, returnWeek: 9, inGame: { week: 4, opponent: "SF", qtr: 2, clock: "8:12" } });
+    assert.deepEqual(dur.tellEpisode(first, null, 0, "thigh"), {
+      tag: "First",
+      text: "Hurt during the Week 4 game vs SF (Q2, 8:12). Missed 3 games and returned in Week 9. First thigh issue on record.",
+    });
+    const again = ep({ week: 14, worstStatus: "Questionable", reportWeeks: 2 });
+    assert.deepEqual(dur.tellEpisode(again, first, 1, "thigh"), {
+      tag: "Re-aggravated",
+      text: "Listed Questionable across 2 weeks on the report but didn't miss a game. Re-aggravated in the same season as the Week 5 injury.",
+    });
+    const later = ep({ season: 2025, week: 2, seasonEnding: true, gamesMissed: 15 });
+    assert.deepEqual(dur.tellEpisode(later, again, 2, "thigh"), {
+      tag: "Recurring",
+      text: "Missed the rest of the season (15 games). 3rd thigh issue; the last was in 2023.",
+    });
+    assert.equal(dur.tellEpisode(ep({ worstPractice: "Did Not Participate" }), null, 0, "knee").text, "Sat out practice but didn't miss a game. First knee issue on record.");
+    assert.equal(dur.tellEpisode(ep({ ongoing: true, gamesMissed: 2 }), null, 0, "knee").text, "Still out, 2 games missed so far. First knee issue on record.");
+  });
+
+  test("lost weeks run from the first game missed to the return, missed games only", () => {
+    assert.deepEqual(dur.regionLostWeeks([ep({ gamesMissed: 3, week: 6, returnWeek: 10 }), ep({ season: 2024, gamesMissed: 0 })]), { 2023: [6, 7, 8, 9] });
+    assert.deepEqual(dur.regionLostWeeks([ep({ season: 2024, week: null, gamesMissed: 2, inGame: { week: 11, opponent: "DAL", qtr: null, clock: null } })]), { 2024: [12, 13, 14, 15, 16, 17, 18] });
+  });
+
+  test("the card: worst region open, pills worst first, markers on the figure, the bar in the tier's color", () => {
+    const { doc } = render();
+    const card = doc.querySelector("[data-scp-durability]");
+    assert.ok(card, "Brissett has a durability profile");
+    const pills = [...card.querySelectorAll(".scp-in-rp")];
+    assert.ok(pills.length >= 2);
+    const missed = pills.map((p) => Number(/· (\d+) games missed/.exec(p.getAttribute("title"))[1]));
+    assert.deepEqual(missed, [...missed].sort((a, b) => b - a), "pills run worst first");
+    const on = card.querySelectorAll(".scp-in-rp.is-on");
+    assert.equal(on.length, 1);
+    const worst = on[0].getAttribute("data-region");
+    assert.equal(pills[0].getAttribute("data-region"), worst);
+    // One record open, the worst region's, carrying the weeks the grid outlines.
+    const open = [...card.querySelectorAll("[data-region-detail]")].filter((d) => !d.hidden);
+    assert.equal(open.length, 1);
+    assert.equal(open[0].getAttribute("data-region-detail"), worst);
+    assert.doesNotThrow(() => JSON.parse(open[0].getAttribute("data-lost")));
+    assert.ok(open[0].querySelector(".scp-in-rd-tag").textContent.length > 0);
+    // The figure: one marker per pill, the worst one selected, the kit's colors on the frame.
+    const fig = card.querySelector("[data-scp-figure]");
+    assert.equal(fig.querySelectorAll(".scp-in-mk").length, pills.length);
+    assert.equal(fig.querySelector(".scp-in-mk.is-on").getAttribute("data-region"), worst);
+    assert.match(fig.getAttribute("data-primary"), /^#[0-9a-f]{6}$/i);
+    assert.ok(fig.querySelector("img").getAttribute("src").endsWith("/injury-figure/player-base.webp"));
+    // The body map's callouts beside the frame: one per marker, tied by a leader line,
+    // worded like the map above ("R. thumb ×2" / "2016, 2017: 10 games"), the worst one on.
+    const wrap = fig.parentElement;
+    assert.ok(wrap.classList.contains("scp-in-figwrap"));
+    const labels = [...wrap.querySelectorAll(".scp-in-fl")];
+    assert.equal(labels.length, pills.length);
+    assert.equal(wrap.querySelectorAll(".scp-in-fl-lines line").length, pills.length);
+    assert.deepEqual(new Set(labels.map((l) => l.getAttribute("data-region"))), new Set(pills.map((p) => p.getAttribute("data-region"))));
+    assert.equal(wrap.querySelector(".scp-in-fl.is-on").getAttribute("data-region"), worst);
+    const hand = labels.find((l) => l.getAttribute("data-region") === "hand");
+    assert.ok(hand, "Brissett's thumb is on the figure");
+    assert.match(hand.querySelector("b").textContent, /thumb/i);
+    assert.match(hand.querySelector("span").textContent, /^20\d\d(, 20\d\d)*[,:] (\d+ games?|played thru)$/);
+    for (const l of labels) assert.match(l.getAttribute("style"), /^top:\d+(\.\d+)?%$/);
+    // The health bar and the status line.
+    const hp = card.querySelector(".scp-in-hp");
+    assert.match(hp.getAttribute("aria-label"), /^Durability \d+\.\d of 100, /);
+    assert.match(hp.getAttribute("style"), /--hp:#/);
+    assert.equal(card.querySelector(".scp-in-dur-status b").textContent, "Healthy");
+    // The grid: a row per season, outlined missed weeks only where the record says.
+    assert.ok(card.querySelectorAll(".scp-in-av-row").length >= 2);
+    for (const b of card.querySelectorAll(".scp-in-ab.is-mark")) assert.ok(b.classList.contains("is-r"));
+    // Four tiles.
+    assert.deepEqual([...card.querySelectorAll(".scp-in-dt-k")].map((k) => k.textContent), ["Major Injuries", "Soft-Tissue Events", "Games Missed", "Missed / Season"]);
+  });
+
+  test("a player outside the durability set gets no card", () => {
+    const { doc } = render({ player: { id: "999999999", slug: "nobody", name: "No Body", position: "QB", years_exp: 1 } });
+    assert.equal(doc.querySelector("[data-scp-durability]"), null);
   });
 });
