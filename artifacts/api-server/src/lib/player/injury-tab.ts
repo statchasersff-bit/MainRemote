@@ -27,6 +27,7 @@ import { escapeHtml } from "../render";
 import { possessive } from "./title-case";
 import { titleCase } from "./title-case";
 import { renderFaqSection, selectFaq, type FaqCandidate, type FaqItem } from "./faq-engine";
+import { renderDurabilitySection } from "./injury-durability";
 import { etDay } from "./news-tab-data";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
@@ -1382,7 +1383,11 @@ export function injuryTabParts(
     renderGlance(m, data) +
     renderMap(m) +
     renderHistory(m) +
-    (out ? "" : plan);
+    (out ? "" : plan) +
+    // Redraft Command's injury card, under everything the tab already had
+    // (mak, 2026-10-30: "don't remove anything from ours, just put it under
+    // what we have"). Empty for a player outside the durability set.
+    renderDurabilitySection(data, options);
   const faqItems = selectFaq(injuryPool(m, data, options));
 
   // No methodology footer since 2026-10-22 (mak): the status strip carries

@@ -206,12 +206,12 @@ describe("one address per meeting", () => {
     const h1 = page.doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
     // Away then home, whichever way round that was - see
-    // scoreboardPageHeading(): the brief's "{Away} vs {Home} Box Score &
-    // Player Stats: Week {N}, {Year}" (2026-10-10).
+    // scoreboardPageHeading(): "{Away} vs {Home} Match Player Stats: Week
+    // {N}, {Year}" (the Search Console brief of 2026-10-30), full names.
     assert.match(
       h1[0].textContent.trim(),
       new RegExp(
-        `^(Patriots vs Eagles|Eagles vs Patriots) Box Score & Player Stats: Week ${week}, ${season}$`,
+        `^(New England Patriots vs Philadelphia Eagles|Philadelphia Eagles vs New England Patriots) Match Player Stats: Week ${week}, ${season}$`,
       ),
       "the H1 names the game, so it cannot compete with the pair's own page",
     );
@@ -223,7 +223,7 @@ describe("one address per meeting", () => {
     assert.ok(canonical.endsWith(href), "a dated page the pair page linked is its own canonical");
     assert.match(
       page.doc.querySelector("title").textContent,
-      new RegExp(`^(Patriots vs Eagles|Eagles vs Patriots) (Player Stats & )?Box Score, Week ${week}( ${season})?$`),
+      new RegExp(`^(Patriots vs Eagles|Eagles vs Patriots) Match Player Stats( & Box Score)? \\(Week ${week}(, ${season})?\\)$`),
       "the title carries the words the searches do",
     );
   });
@@ -285,7 +285,10 @@ describe("one address per meeting", () => {
       assert.ok(!headings.includes(banned), `${banned} is absent from an old recap`);
     }
     // What it does keep is the game itself.
-    assert.ok(headings.includes("Player Stats"), "the box score is still there");
+    assert.ok(
+      headings.some((h) => /Player Stats: Passing, Rushing & Receiving$/.test(h)),
+      "the box score is still there",
+    );
   });
 });
 
@@ -1291,10 +1294,16 @@ describe("sortable stat tables", () => {
       .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen");
     assert.equal(allen.length, 1, "one row for Josh Allen");
     assert.notEqual(allen[0].cells[7].textContent, "-", "his carries are on the Passing row");
-    // The fantasy leaders open the section, the "Player Stats" title sits
-    // straight over the tables, and the banner closes it.
-    assert.ok(doc.querySelector(".sct-mu-playerstats > h2:first-child + .sct-mu-fl + .sct-mu-ps-head + .sct-mu-ps-row"));
-    assert.match(doc.querySelector(".sct-mu-playerstats > h2:first-child").textContent, /^Fantasy Points: Bills vs Patriots, /);
+    // The pair's "Player Stats" title sits straight over the tables and opens
+    // the section, the fantasy leaders follow under the pair's "Fantasy
+    // Points" title (the Search Console brief of 2026-10-30: stats first,
+    // fantasy as the differentiator), and the banner closes it.
+    assert.ok(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-head:first-child + .sct-mu-ps-row + h2 + .sct-mu-fl"));
+    assert.equal(
+      doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-head:first-child > h2").textContent,
+      "Bills vs Patriots Player Stats: Passing, Rushing & Receiving",
+    );
+    assert.equal(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-row + h2").textContent, "Bills vs Patriots Fantasy Points");
     assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-ps-cta sct-mu-decide");
     assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
   });
@@ -1548,7 +1557,7 @@ describe("completed game tabs", () => {
       tabs.map((t) => [t.textContent, t.getAttribute("aria-controls")]),
       [
         ["Recap", "recap-tab"],
-        ["Fantasy", "fantasy-tab"],
+        ["Stats & Fantasy", "fantasy-tab"],
         ["Game flow", "game-flow-tab"],
         ["Head-to-head", "h2h-tab"],
         ["Betting", "betting-tab"],
@@ -1570,8 +1579,11 @@ describe("completed game tabs", () => {
     assert.equal(h1.length, 1);
     assert.equal(h1[0].closest("[data-mu-tab]"), null);
     const hero = h1[0].closest("header.sct-sbh");
-    assert.ok(hero.nextElementSibling.matches("[data-mu-tabbar]"));
-    assert.ok(hero.nextElementSibling.nextElementSibling.matches(".sct-rb"));
+    // The intro sentence sits between the scoreboard and the tab bar.
+    assert.ok(hero.nextElementSibling.matches("p.sct-mu-intro"));
+    const bar = hero.nextElementSibling.nextElementSibling;
+    assert.ok(bar.matches("[data-mu-tabbar]"));
+    assert.ok(bar.nextElementSibling.matches(".sct-rb"));
 
     // Not yet tabbed: every panel is in the markup and none hidden.
     assert.equal(root.hasAttribute("data-mu-tabs"), false);
@@ -1641,13 +1653,15 @@ describe("the recap's share card", () => {
     const page = await pinnedGame("2021-wild-card");
     if (!page) return;
     const meta = (sel) => page.doc.head.querySelector(sel)?.getAttribute("content");
-    // The brief's game-page description (2026-10-10): winner first, the
-    // date, then what the page holds.
+    // The completed-game description (the Search Console brief of
+    // 2026-10-30): both teams away then home, "match player stats", the round
+    // and year, what the page holds, the final.
     assert.equal(
       meta('meta[name="description"]'),
-      "Rams 34, Cardinals 11 on Jan 17, 2022: full box score, fantasy points for every player, scoring summary and team stats.",
+      "Cardinals vs Rams match player stats from Wild Card, 2021: passing, rushing and receiving, box score, " +
+        "fantasy points and usage from the Rams' 34–11 win.",
     );
-    assert.ok(meta('meta[name="description"]').length <= 160);
+    assert.ok(meta('meta[name="description"]').length <= 165);
     assert.equal(meta('meta[property="og:type"]'), "article");
     assert.match(meta('meta[property="og:image"]'), new RegExp(`${IMAGE.replace(/\./g, "\\.")}$`));
     assert.equal(meta('meta[property="og:image:width"]'), "1200");
@@ -1676,7 +1690,10 @@ describe("the recap's share card", () => {
     const res = await fetch(`${server.origin}/embed/matchup/arizona-cardinals-vs-los-angeles-rams?game=2021-wild-card`);
     if (!res.ok) return;
     assert.equal(res.headers.get("x-matchup-image"), IMAGE);
-    assert.match(decodeURIComponent(res.headers.get("x-matchup-description")), /^Rams 34, Cardinals 11 on Jan 17, 2022: full box score/);
+    assert.match(
+      decodeURIComponent(res.headers.get("x-matchup-description")),
+      /^Cardinals vs Rams match player stats from Wild Card, 2021: .* from the Rams' 34–11 win\.$/,
+    );
     assert.match(await res.text(), /class="sct-matchup-video-data"/);
   });
 });
@@ -1689,7 +1706,14 @@ describe("the Cardinals–Rams games", () => {
 
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(h1[0].textContent, "Cardinals vs Rams Box Score & Player Stats: Wild Card, 2021");
+    assert.equal(h1[0].textContent, "Arizona Cardinals vs Los Angeles Rams Match Player Stats: Wild Card, 2021");
+    // The context line directly under the H1: round with its season (the
+    // kickoff's calendar year is the next one), the date, the final.
+    assert.equal(
+      h1[0].nextElementSibling.textContent,
+      "2021 Wild Card · January 17, 2022 · Rams 34, Cardinals 11",
+    );
+    assert.equal(h1[0].nextElementSibling.className, "sct-sbh-context");
     const hero = h1[0].closest("header.sct-sbh");
     assert.equal(hero.getAttribute("aria-labelledby"), h1[0].id);
 
@@ -1703,8 +1727,23 @@ describe("the Cardinals–Rams games", () => {
 
     assert.equal(
       doc.querySelector("title").textContent,
-      "Cardinals vs Rams Player Stats & Box Score, Wild Card 2021",
+      // The spec string with the year is 66 characters; the year goes first.
+      "Cardinals vs Rams Match Player Stats & Box Score (Wild Card)",
     );
+    assert.equal(
+      doc.querySelector('meta[name="description"]').getAttribute("content"),
+      // The ladder's fourth rung: the fuller lists run past 165 with the final.
+      "Cardinals vs Rams match player stats from Wild Card, 2021: passing, rushing and receiving, " +
+        "box score, fantasy points and usage from the Rams' 34–11 win.",
+    );
+    // The intro sentence between the scoreboard and the tab bar.
+    const intro = doc.querySelector(".sct-mu-intro");
+    assert.equal(
+      intro?.textContent,
+      "Arizona Cardinals vs Los Angeles Rams match player stats from the Wild Card round of the 2021 NFL playoffs. " +
+        "The Rams defeated the Cardinals 34–11 on January 17, 2022.",
+    );
+    assert.ok(intro.previousElementSibling.classList.contains("sct-sbh"), "straight under the scoreboard");
 
     // In the served HTML, no script run: the head carries the SportsEvent.
     const ld = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
@@ -1734,8 +1773,8 @@ describe("the Cardinals–Rams games", () => {
       [...doc.querySelectorAll(selector)].map((h) => h.textContent);
     assert.deepEqual(
       // Section titles in Title Case, as on the player pages (mak, 2026-09-30).
-      headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /Won$|^Scoring/.test(h)),
-      ["Why the Rams Won", "Scoring Summary"].filter(
+      headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /Team Stats$|^Scoring/.test(h)),
+      ["Cardinals vs Rams Team Stats", "Scoring Summary"].filter(
         (h) => h !== "Scoring Summary" || doc.querySelector("#sct-rb-scoring"),
       ),
     );
@@ -1842,7 +1881,7 @@ describe("the Cardinals–Rams games", () => {
       assert.ok(away.classList.contains("is-winner"), "Arizona won");
       assert.equal(away.querySelector(".sct-sbh-score").textContent, String(arizona));
       assert.equal(home.querySelector(".sct-sbh-score").textContent, String(rams));
-      assert.match(page.doc.querySelector("h1").textContent, /^Cardinals vs Rams Box Score & Player Stats: Week \d+, 202\d$/);
+      assert.match(page.doc.querySelector("h1").textContent, /^Arizona Cardinals vs Los Angeles Rams Match Player Stats: Week \d+, 202\d$/);
     });
   }
 });

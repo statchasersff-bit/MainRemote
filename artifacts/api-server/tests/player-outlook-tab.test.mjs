@@ -110,10 +110,17 @@ describe("in season", () => {
         "Jacoby Brissett Fantasy Outlook FAQ",
       ],
     );
-    // "Our Take After Week n" is gone (mak, 2026-10-22); the section still
-    // names itself for assistive tech.
+    // "Our Take After Week n" is gone (mak, 2026-10-22). Since 2026-10-29 the
+    // lead heading opens the read grid's prose column (so the sidebar starts
+    // on its row), and the section is labelled by that heading.
     assert.equal(doc.querySelector("#scp-ol-read-h"), null);
-    assert.equal(doc.querySelector(".scp-ol-sec-read").getAttribute("aria-label"), "Our take after Week 3");
+    const read = doc.querySelector(".scp-ol-sec-read");
+    assert.ok(read.classList.contains("scp-ol-sec-take"), "the take and the read are one section");
+    assert.equal(read.getAttribute("aria-labelledby"), "scp-ol-take-h");
+    assert.equal(doc.querySelectorAll(".scp-ol-sec-take").length, 1, "the hero is not printed twice");
+    const col = read.querySelector(".scp-ox-read > div");
+    assert.equal(col.firstElementChild.className, "scp-ol-take", "the heading opens the prose column");
+    assert.ok(read.querySelector(".scp-ox-read > .scp-ox-aside"), "beside the sidebar");
   });
 
   test("the hero carries no lede or tier line (mak, 2026-10-22), and the expectation panels are gone", () => {

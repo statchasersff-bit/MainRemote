@@ -580,17 +580,25 @@ function statchasers_matchup_heading(): string {
 	$parsed = statchasers_matchup_parse_game( statchasers_matchup_game() );
 
 	if ( null === $parsed ) {
+		// The pair's page leading with one of this season's played games
+		// (X-Matchup-Week set) is headed "{Away} vs {Home} Match Player
+		// Stats", MIRRORING seasonGameHeading() in the API's
+		// matchup-render.ts - the pair's order here, since only the API
+		// knows which side was away. The pair's two names otherwise.
+		$data = '' !== statchasers_news_origin() ? statchasers_matchup_fetch( $pair['slug'], '' ) : null;
+		$week = is_array( $data ) ? (string) ( $data['week'] ?? '' ) : '';
+		$state = is_array( $data ) ? (string) ( $data['state'] ?? '' ) : '';
+		if ( '' !== $week && in_array( $state, array( 'recently_completed', 'historical' ), true ) ) {
+			return "$names Match Player Stats";
+		}
 		return $names;
 	}
 
-	// A game page's H1 (the SEO brief of 2026-10-10): "{Away} vs {Home} Box
-	// Score & Player Stats: Week {N}, {Year}", MIRRORING scoreboardPageHeading()
-	// in the API's scoreboard-hero.ts - nicknames, in the pair's order here
-	// since only the API knows which side was away.
-	$table  = statchasers_team_table();
-	$nick_a = substr( strrchr( ' ' . ( $table[ $pair['a'] ][0] ?? $pair['a'] ), ' ' ), 1 );
-	$nick_b = substr( strrchr( ' ' . ( $table[ $pair['b'] ][0] ?? $pair['b'] ), ' ' ), 1 );
-	return sprintf( '%s vs %s Box Score & Player Stats: %s, %d', $nick_a, $nick_b, $parsed['label'], $parsed['season'] );
+	// A game page's H1 (the Search Console brief of 2026-10-30): "{Away} vs
+	// {Home} Match Player Stats: Week {N}, {Year}", MIRRORING
+	// scoreboardPageHeading() in the API's scoreboard-hero.ts - full names, in
+	// the pair's order here since only the API knows which side was away.
+	return sprintf( '%s Match Player Stats: %s, %d', $names, $parsed['label'], $parsed['season'] );
 }
 
 /**
@@ -707,27 +715,13 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	$season = '' === $season ? STATCHASERS_TEAM_SEASON : $season;
 
 	// A pair that has played this season leads with that game, just played or
-	// back in Week 2: "Browns vs Buccaneers Player Stats & Fantasy Points
-	// (Week 2, 2026)", mak's wording (2026-10-09), same words in the H1 the
-	// API sends. MIRRORS the seasonGameLead() branch of matchupPageMeta(): the
-	// spec's string runs past sixty for most pairs, so the year goes first
-	// ("Player Stats" outranks "2026" in the searches these pages get), then
-	// the shorter wordings. Head-to-head wording is now only for a pair that
-	// has not met this season.
+	// back in Week 2: "Titans vs Colts Match Player Stats & Box Score (Week 6,
+	// 2026)" (the Search Console brief of 2026-10-30). MIRRORS the
+	// seasonGameLead() branch of matchupPageMeta(), through the completed-game
+	// ladder both the pair page and the dated game page share. Head-to-head
+	// wording is only for a pair that has not met this season.
 	if ( '' !== $week && ( 'recently_completed' === $state || 'historical' === $state ) ) {
-		$when = "($week, $season)";
-		$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
-		return array(
-			'title'       => statchasers_matchup_fit_title(
-				array(
-					"$short Player Stats & Fantasy Points $when",
-					"$short Player Stats & Fantasy Points ($week)",
-					"$short Stats & Fantasy Points $when",
-					"$short Player Stats $when",
-				)
-			),
-			'description' => sprintf( '%1$s%2$s vs %3$s %4$s %5$s player stats and fantasy points by player, plus the final score and the head-to-head record.', $lead, $nick_a, $nick_b, $week, $season ),
-		);
+		return statchasers_matchup_completed_meta( $name_a, $name_b, $nick_a, $nick_b, $week, $season, $score );
 	}
 
 	switch ( $state ) {
@@ -804,28 +798,86 @@ function statchasers_matchup_game_meta( string $a, string $b, string $game, stri
 	$parsed = statchasers_matchup_parse_game( $game );
 	$season = null === $parsed ? STATCHASERS_TEAM_SEASON : (string) $parsed['season'];
 	$label  = null === $parsed ? 'Week' : $parsed['label'];
-	$in     = null !== $parsed && $parsed['post'] ? 'the ' . $label : $label;
 
-	$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
+	return statchasers_matchup_completed_meta( $name_a, $name_b, $nick_a, $nick_b, $label, $season, $score );
+}
+
+/**
+ * Title and description for a completed game, pair page or dated page alike.
+ *
+ * MIRRORS completedGameTitleCandidates() and completedGameDescription() in
+ * the API's src/lib/matchup/game-seo.ts (the Search Console brief of
+ * 2026-10-30: the pages earn "{team} vs {team} match player stats" and were
+ * titled for fantasy points). The API's own strings win whenever it sent them
+ * - it knows which side was away, and it has the kickoff date and a tie's
+ * score; these are the strings for an API that sent none, in the pair's
+ * canonical order, with the result read back out of X-Matchup-Score.
+ *
+ * @param string $name_a Pair's first full name ("Indianapolis Colts").
+ * @param string $name_b Pair's second full name.
+ * @param string $nick_a Pair's first nickname ("Colts").
+ * @param string $nick_b Pair's second nickname.
+ * @param string $round  "Week 6", "Wild Card", "Super Bowl".
+ * @param string $season "2026", or '' when unknown.
+ * @param string $score  "Titans won 26-20." (matchupScoreLine), or ''.
+ * @return array{title:string,description:string}
+ */
+function statchasers_matchup_completed_meta( string $name_a, string $name_b, string $nick_a, string $nick_b, string $round, string $season, string $score = '' ): array {
+	$pair  = "$nick_a vs $nick_b";
+	$names = "$name_a vs $name_b";
+	$when  = '' !== $season ? "($round, $season)" : "($round)";
+
+	// The ladder, most descriptive first; the first within sixty is used, and
+	// the last rung fits every pair and every round.
+	$title = statchasers_matchup_fit_title(
+		array_values(
+			array_unique(
+				array(
+					"$pair Match Player Stats & Box Score $when",
+					"$pair Match Player Stats & Box Score ($round)",
+					"$pair Match Player Stats $when",
+					"$pair Match Player Stats ($round)",
+					"$pair Stats, $round",
+					"$pair Match Player Stats",
+				)
+			)
+		)
+	);
+
+	// "Titans won 26-20." becomes "from the Titans' 26–20 win"; a tie or an
+	// absent header leaves the result clause out, as the API does for a game
+	// without a score.
+	$result = '';
+	if ( 1 === preg_match( '/^(.+?) won (\d+)-(\d+)\.$/', trim( $score ), $m ) ) {
+		$owner  = 's' === substr( $m[1], -1 ) ? $m[1] . "'" : $m[1] . "'s";
+		$result = " from the $owner {$m[2]}–{$m[3]} win";
+	}
+	$from  = '' !== $season ? " from $round, $season" : " from $round";
+	$long  = 'passing, rushing and receiving stats, box score, fantasy points, snaps, targets and usage';
+	$mid   = 'passing, rushing and receiving, box score, fantasy points, snaps, targets and usage';
+	$short = 'passing, rushing and receiving, box score, fantasy points and usage';
+	$tiny  = 'passing, rushing, receiving and fantasy points';
+
+	$candidates = array(
+		"$names match player stats$from: $long$result.",
+		"$pair match player stats$from: $long$result.",
+		"$pair match player stats$from: $mid$result.",
+		"$pair match player stats$from: $short$result.",
+		"$pair match player stats$from: $tiny$result.",
+		"$pair match player stats$from: $short.",
+	);
+	$description = (string) end( $candidates );
+	foreach ( $candidates as $candidate ) {
+		// Characters, not bytes: the score's en dash is three bytes.
+		if ( mb_strlen( $candidate ) <= 165 ) {
+			$description = $candidate;
+			break;
+		}
+	}
 
 	return array(
-		'title'       => statchasers_matchup_fit_title(
-			array(
-				"$short Player Stats & Box Score, $label $season",
-				"$short Box Score, $label $season",
-				// "Buccaneers vs Commanders Box Score, Conference Championship":
-				// the longest nicknames with the longest round still fit sixty.
-				"$short Box Score, $label",
-			)
-		),
-		'description' => sprintf(
-			'%1$s%2$s vs %3$s, %4$s %5$s: full box score, fantasy points for every player, scoring summary and team stats.',
-			$lead,
-			$nick_a,
-			$nick_b,
-			$label,
-			$season
-		),
+		'title'       => $title,
+		'description' => $description,
 	);
 }
 

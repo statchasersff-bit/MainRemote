@@ -139,10 +139,18 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     assert.ok(!byWeek["2"].classList.contains("is-best"));
   });
 
-  test("no collisions: every label above, no below margin", () => {
-    assert.equal(doc.querySelector(".is-below"), null);
+  test("no dot collisions; the average's label dodges the QB15 dot", () => {
+    // Ranks 4, 15 and 28 average 15.67 -> QB16, which pins 3.2 units from the
+    // QB15 dot, so the average's label takes the second row and the dots keep
+    // the first (critique, 2026-10-29).
+    assert.equal(doc.querySelector(".scp-gl-pin.is-below"), null);
     assert.equal(doc.querySelector(".is-nolabel"), null);
-    assert.ok(!doc.querySelector(".scp-gl-track").classList.contains("has-below"));
+    const avg = doc.querySelector(".scp-gl-avg");
+    assert.equal(avg.style.left, "48.4%");
+    assert.ok(avg.classList.contains("is-below"));
+    assert.equal(avg.querySelector("strong").textContent, "QB16");
+    assert.ok(avg.textContent.includes("Season avg"));
+    assert.ok(doc.querySelector(".scp-gl-track").classList.contains("has-below"));
   });
 
   test("bands end at the half-ranks (12.5 and 24.5 on a 32 axis)", () => {
@@ -156,6 +164,9 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     const best = doc.querySelector(".scp-gl-pin.is-best span");
     assert.equal(best.querySelector("strong").textContent, "QB4");
     assert.ok(best.textContent.includes("Wk 3 @ SF"));
+    // The one colored dot is labeled for what it is.
+    assert.equal(best.querySelector("em").textContent, "Best week");
+    assert.equal(doc.querySelectorAll(".scp-gl-pin em").length, 1);
   });
 
   test("the counts sit beside the heading; the lede paragraph is gone (mak, 2026-10-22)", () => {
@@ -164,13 +175,14 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
       [...doc.querySelectorAll(".scp-gl-headrow > .scp-gl-sum span")].map((s) => s.textContent),
       ["1 QB1", "1 QB2", "1 bust"],
     );
+    assert.equal(doc.querySelector(".scp-gl-sum .scp-gl-avgsum").textContent, "Avg QB16");
     assert.ok(doc.querySelector(".scp-gl-headrow > h2#gl-finishes-h"));
   });
 
   test("the track reads its weeks best to worst", () => {
     assert.equal(
       doc.querySelector(".scp-gl-track").getAttribute("aria-label"),
-      "Weekly finishes on a scale from QB1 to QB32: Week 3 QB4, Week 1 QB15, Week 2 QB28.",
+      "Weekly finishes on a scale from QB1 to QB32: Week 3 QB4, Week 1 QB15, Week 2 QB28. Season average QB16.",
     );
   });
 
@@ -178,7 +190,13 @@ describe("where his weeks finished (Brissett, Part 6)", () => {
     const tiers = [...doc.querySelectorAll(".scp-gl-tiers span")];
     assert.deepEqual(
       tiers.map((s) => s.textContent),
-      ["QB1 range", "QB2 range", "Bench range"],
+      ["QB1 range", "QB2 range", "Bust range"],
+    );
+    // The cutoff ranks sit at the seams and the axis ends are stated.
+    const cuts = [...doc.querySelectorAll(".scp-gl-tiers .scp-gl-cut")];
+    assert.deepEqual(
+      cuts.map((c) => [c.textContent, c.style.left]),
+      [["QB1", "0px"], ["QB12", "37.1%"], ["QB24", "75.8%"], ["QB32", "100%"]],
     );
     assert.equal(tiers[0].style.width, "37.1%");
     assert.equal(tiers[1].style.left, "37.1%");
@@ -287,7 +305,12 @@ describe("label collisions", () => {
     const below = doc.querySelectorAll(".scp-gl-pin.is-below");
     assert.equal(below.length, 1);
     assert.ok(doc.querySelector(".scp-gl-track").classList.contains("has-below"));
-    assert.equal(doc.querySelector(".is-nolabel"), null);
+    // Both dots keep a label. The average (14.5 -> QB15) lands on the second
+    // dot with both rows taken, so ITS label is the one that yields; the
+    // headrow still prints "Avg QB15".
+    assert.equal(doc.querySelector(".scp-gl-pin.is-nolabel"), null);
+    assert.ok(doc.querySelector(".scp-gl-avg").classList.contains("is-nolabel"));
+    assert.equal(doc.querySelector(".scp-gl-avgsum").textContent, "Avg QB15");
   });
 
   test("three pins within 12 units: the third is hidden and named in the caption", () => {
@@ -340,6 +363,32 @@ describe("edges", () => {
     );
     assert.equal(doc.querySelectorAll(".scp-gl-pin").length, 1);
     assert.equal(doc.querySelector(".is-nolabel"), null);
+    // One game is its own average: no marker, no "Avg" in the counts.
+    assert.equal(doc.querySelector(".scp-gl-avg"), null);
+    assert.equal(doc.querySelector(".scp-gl-avgsum"), null);
+  });
+
+  test("weeks that finished at the same rank share one dot (critique, 2026-10-29)", () => {
+    const doc = dom(
+      mod.renderLadderSection(
+        [
+          game({ week: 1, rank: 15, pts: 16.5, homeAway: "away" }),
+          game({ week: 7, rank: 15, pts: 16.5 }),
+          game({ week: 3, rank: 4, pts: 25.6 }),
+        ],
+        SEASON,
+      ),
+    );
+    const pins = [...doc.querySelectorAll(".scp-gl-pin")];
+    assert.equal(pins.length, 2);
+    const shared = pins.find((p) => p.classList.contains("is-multi"));
+    assert.equal(shared.querySelector("strong").textContent, "QB15 ×2");
+    assert.deepEqual(
+      [...shared.querySelectorAll(".scp-gl-wk")].map((w) => w.textContent.replace(/\s+/g, " ").trim()),
+      ["Wk 1 @ DEN", "Wk 7 vs DEN"],
+    );
+    // The track still names every week.
+    assert.ok(doc.querySelector(".scp-gl-track").getAttribute("aria-label").includes("Week 1 QB15, Week 7 QB15"));
   });
 
   test("an RB ladders to 60 with bands at 24 and 36", () => {
@@ -351,7 +400,7 @@ describe("edges", () => {
     );
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-gl-tiers span")].map((s) => s.textContent),
-      ["RB1 range", "RB2 range", "Bench range"],
+      ["RB1 range", "RB2 range", "Bust range"],
     );
     // Bands end at 24.5/59 and 36.5/59.
     assert.deepEqual(

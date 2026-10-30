@@ -53,6 +53,12 @@ before(async () => {
   const original = await fakeHeadshot("#143c78");
   const replacement = await fakeHeadshot("#a40000");
   const clubArt = await fakeClubArt();
+  // A wide wordmark on a transparent ground, so a crop would lose its ends.
+  const crest = await sharp(
+    Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect x="10" y="200" width="480" height="100" fill="#c00"/></svg>`),
+  )
+    .png()
+    .toBuffer();
   const ytThumb = await sharp(
     Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="480" height="360"/><rect y="45" width="480" height="270" fill="#2a6"/></svg>`),
   )
@@ -64,6 +70,12 @@ before(async () => {
     if (req.url === "/i/headshots/nfl/players/full/77.png") {
       res.writeHead(200, { "content-type": "image/png" });
       res.end(original);
+      return;
+    }
+    // ESPN's crest for NCAA team 254: a 500px square PNG with alpha.
+    if (req.url === "/i/teamlogos/ncaa/500/254.png") {
+      res.writeHead(200, { "content-type": "image/png" });
+      res.end(crest);
       return;
     }
     // A YouTube hqdefault thumbnail: 480x360, letterboxed 16:9 content.
@@ -292,6 +304,29 @@ describe("the other sources", () => {
     const meta = await sharp(body).metadata();
     assert.deepEqual([meta.format, meta.width, meta.height, meta.hasAlpha], ["webp", 160, 160, true]);
     assert.equal(upstreamHits.filter((h) => h.url === "/i/headshots/nfl/players/full/77.png").length, 1);
+  });
+
+  test("a college crest: fitted whole into the square, transparent ground, under the college segment", async () => {
+    const first = await get("/news-image/college/254/latest/80.webp");
+    assert.equal(first.res.status, 302);
+    const location = first.res.headers.get("location");
+    const m = /^\/news-image\/college\/254\/([0-9a-f]{10})\/80\.webp$/.exec(location);
+    assert.ok(m, `versioned redirect target, got ${location}`);
+    const { res, body } = await get(location);
+    assert.equal(res.status, 200);
+    const meta = await sharp(body).metadata();
+    assert.deepEqual([meta.format, meta.width, meta.height, meta.hasAlpha], ["webp", 80, 80, true]);
+    // Contain, not cover: the wordmark's ends survive (the pixel at the far
+    // left of the middle row is red, the top-left corner is transparent).
+    const { data, info } = await sharp(body).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const px = (x, y) => [...data.subarray((y * info.width + x) * 4, (y * info.width + x) * 4 + 4)];
+    assert.equal(px(0, 0)[3], 0, "corner is transparent");
+    assert.ok(px(2, 40)[0] > 150 && px(2, 40)[3] > 200, "the wordmark reaches the edge");
+    const bigger = await get(`/news-image/college/254/${m[1]}/160.webp`);
+    assert.equal(bigger.res.status, 200);
+    assert.equal((await get(`/news-image/college/254/${m[1]}/320.webp`)).res.status, 404, "only the two small squares exist");
+    assert.equal((await get("/news-image/college/abc/latest/80.webp")).res.status, 404);
+    assert.equal(upstreamHits.filter((h) => h.url === "/i/teamlogos/ncaa/500/254.png").length, 1);
   });
 
   test("club art: a 16:9 band at the well's width, a centered square for the news card", async () => {

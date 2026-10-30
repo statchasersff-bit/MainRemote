@@ -213,7 +213,11 @@ export interface DeadMoneyLine {
   otcId: number;
   name: string;
   amount: number;
-  /** Where the player is under contract now, lowercase abbreviation, if anywhere. */
+  /**
+   * Where the player is under contract now, lowercase abbreviation; null when
+   * no club's register carries him (a free agent, or retired). The club can
+   * be this one: a player released and re-signed carries dead money here.
+   */
   nowWith: string | null;
 }
 
@@ -339,8 +343,7 @@ export function contractsView(
 
   const clubs = clubsByPlayer(doc);
   const dead: DeadMoneyLine[] = (snap?.dead ?? []).map((d) => {
-    const now = clubs.get(d.otcId) ?? null;
-    return { ...d, nowWith: now && now !== abbr ? now : null };
+    return { ...d, nowWith: clubs.get(d.otcId) ?? null };
   });
 
   const cutCandidates = players

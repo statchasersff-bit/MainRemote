@@ -128,6 +128,7 @@ export function sourceUrl(key: string): string {
   if (!parts || parts.source === "player") return `${cdnBase()}/content/nfl/players/thumb/${parts?.id ?? key}.jpg`;
   if (parts.source === "espn") return `${espnBase()}/i/headshots/nfl/players/full/${parts.id}.png`;
   if (parts.source === "yt") return `${ytBase()}/vi/${parts.id}/hqdefault.jpg`;
+  if (parts.source === "ncaa") return `${espnBase()}/i/teamlogos/ncaa/500/${parts.id}.png`;
   return `${clubBase()}${decodeClubPath(parts.id) ?? ""}`;
 }
 
@@ -236,6 +237,16 @@ async function buildVariants(id: string, version: string, source: Buffer): Promi
     const resized = token.startsWith("f")
       ? // The full figure at its own ratio. Never enlarged past the source.
         image.resize({ width: shape.width, withoutEnlargement: true })
+      : source_ === "ncaa"
+        ? // A college crest is shown whole: fitted inside the square on a
+          // transparent ground, never cropped, so a wide wordmark keeps its
+          // ends and a tall shield its top.
+          image.resize({
+            width: shape.width,
+            height: shape.height,
+            fit: "contain",
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+          })
       : // Square (or 16:9 band) cover crop. For a headshot it is anchored at
         // the top: the same pixels `object-fit: cover; object-position:
         // center top` showed. The 320 square is a little larger than the

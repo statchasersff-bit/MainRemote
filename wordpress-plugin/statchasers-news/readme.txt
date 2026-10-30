@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.42
+Stable tag: 1.10.43
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.43 =
+* Matchup pages read as NFL game and player-stat pages first. Search Console (2026-10-16 to 10-30) showed the pair pages earning their impressions for "{team} vs {team} match player stats", "player stats", "stats", "box score" and "score" - 170k impressions and two clicks for one game - under titles that led with "Fantasy Points" and named the teams in the URL's alphabetical order. The API now sends "{Away} vs {Home} Match Player Stats & Box Score (Week N, YYYY)" as the title, "{Away full} vs {Home full} Match Player Stats" as the H1 (the dated game pages add ": Week N, YYYY"), a context line under the H1 (week, date, final), an intro sentence under the scoreboard and a description that names both teams, the week, what the page holds and the final. This plugin's fallback strings (statchasers_matchup_meta, statchasers_matchup_game_meta, statchasers_matchup_heading, for an API that sends no header) mirror the new ladder through statchasers_matchup_completed_meta(). URLs, canonicals, sitemaps, schema and the upcoming-game preview titles are unchanged; nothing fantasy was removed. In the fragment the tab holding the stat tables is now labelled "Stats & Fantasy" and the team-stats section is headed "{Away} vs {Home} Team Stats" with "Why the X Won" as the analysis label under it.
 
 = 1.10.42 =
 * Player pages name their picture. Every player page - the profile and its six sections - now hands Rank Math the player's headshot as og:image and twitter:image (with width, height and alt), and the page's ProfilePage/WebPage node carries it as primaryImageOfPage; the hub's Person node carries it as image. Before this no player page declared an image at all (no featured image, no og:image, a Person without a picture), so Google chose one from the page for its result thumbnail - and the page is full of club crests that change weekly. On 2026-10-24 Kendrick Bourne, a Cardinal, was showing in results with a Browns helmet. The headshot arrives in the fragment's page-data island as `image`, checked for shape before use; a player Sleeper has no photo of declares none.

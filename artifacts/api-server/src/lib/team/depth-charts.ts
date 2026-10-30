@@ -248,6 +248,98 @@ export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null
   return { fetchedAt: doc.fetchedAt, season: doc.season, views };
 }
 
+/* ----------------------------------------------------------- slot index */
+
+export interface DepthSlot {
+  /** The club whose chart lists the player. */
+  abbr: string;
+  /** The chart's own slot: LT, EDGE, CB, RB ... */
+  slot: string;
+  rank: number;
+}
+
+/** Return slots, the fantasy mirrors and the DEF unit are not depth positions. */
+const NOT_A_SLOT = new Set(["PR", "KR", "DEF"]);
+
+interface SlotIndex {
+  /** Club + exact name key: every real slot that name holds there. */
+  exact: Map<string, DepthSlot[]>;
+  /** Club + first initial + last name: the exact keys it could mean. */
+  loose: Map<string, Set<string>>;
+}
+
+let slotIndexFor = "";
+let slotIndex: SlotIndex | null = null;
+
+/** "a borregales" for Andy or Andres Borregales; null for a one-word name. */
+function looseKey(name: string): string | null {
+  const words = nameKey(name).split(" ");
+  const first = words[0];
+  const last = words[words.length - 1];
+  return words.length > 1 && first && last ? `${first.charAt(0)} ${last}` : null;
+}
+
+/**
+ * Every real depth slot in the document, keyed by club and name: where a
+ * name sits on a club's chart. Rebuilt when a push lands.
+ */
+function readSlotIndex(): SlotIndex {
+  const doc = readDoc();
+  const version = doc?.fetchedAt ?? "";
+  if (doc && slotIndex && version === slotIndexFor) return slotIndex;
+  const next: SlotIndex = { exact: new Map(), loose: new Map() };
+  for (const team of doc?.teams ?? []) {
+    const abbr = team.team?.abbr;
+    if (!abbr) continue;
+    for (const [slot, players] of Object.entries(team.positions ?? {})) {
+      if (slot.startsWith("FAN_") || NOT_A_SLOT.has(slot)) continue;
+      for (const player of players ?? []) {
+        if (!player?.name || typeof player.rank !== "number") continue;
+        const key = `${abbr} ${nameKey(player.name)}`;
+        const list = next.exact.get(key) ?? [];
+        list.push({ abbr, slot, rank: player.rank });
+        next.exact.set(key, list);
+        const loose = looseKey(player.name);
+        if (loose) {
+          const set = next.loose.get(`${abbr} ${loose}`) ?? new Set<string>();
+          set.add(key);
+          next.loose.set(`${abbr} ${loose}`, set);
+        }
+      }
+    }
+  }
+  slotIndexFor = version;
+  slotIndex = next;
+  return next;
+}
+
+/**
+ * The slot a player holds on one club's chart ("LT2", as slot + rank), or
+ * null when that club does not list them. A name at two slots takes the
+ * higher one. The Draft tab's Pos column reads this (mak, 2026-10-29).
+ *
+ * The chart writes the name a player goes by and the draft register the
+ * one on the card (Andy / Andres Borregales, Dax / Daxton Hill), so when
+ * the exact name misses, first initial + last name on the same club is
+ * accepted when it points at exactly one player there. Checked across all
+ * 32 clubs on 2026-10-29: ten pairings, every one the same person.
+ */
+export function depthSlotFor(name: string, abbreviation: string): DepthSlot | null {
+  const abbr = abbreviation.toUpperCase();
+  const index = readSlotIndex();
+  let slots = index.exact.get(`${abbr} ${nameKey(name)}`);
+  if (!slots) {
+    const loose = looseKey(name);
+    const keys = loose ? index.loose.get(`${abbr} ${loose}`) : undefined;
+    if (keys && keys.size === 1) slots = index.exact.get([...keys][0] ?? "");
+  }
+  let best: DepthSlot | null = null;
+  for (const slot of slots ?? []) {
+    if (!best || slot.rank < best.rank) best = slot;
+  }
+  return best;
+}
+
 /* --------------------------------------------------------------- ingest */
 
 const MOVEMENTS = new Set(["up", "down", "new"]);

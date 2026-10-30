@@ -6714,6 +6714,30 @@ body.sct-page.is-embed {
   font-weight: 700;
 }
 
+/* The line under the scoreboard's H1 (renderScoreboardHero `context`): week,
+   date and final in one short line, in the meta bar's muted white. */
+.sct-sbh .sct-sbh-context {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* The one-line intro between the scoreboard and the tab bar (renderIntro):
+   what the page is, in a sentence, centred under the hero and no wider than a
+   comfortable line. The hero's own 28px of air sits above it. */
+.sct-mu .sct-mu-intro {
+  max-width: 78ch;
+  margin: -10px auto 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--sc-muted, #4a5568);
+}
+
 /* The pair-page link on a schedule row. Right-aligned so the column ends flush
    with the table rather than raggedly against the status beside it, and
    nowrap because "View matchup" on two lines makes that row taller than the
@@ -18697,9 +18721,9 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ======================================================================
    Draft tab (2026-10-23): the next draft's picks by round, and the last five
-   draft classes. The view switch is the Depth Chart tab's (.sct-dc-views on a
-   [data-sct-dc] block, wired by wireDepthViews), so with scripting off both
-   views stack and the pills are hidden. Everything below is the content.
+   draft classes. One continuous view since 2026-10-29 (the two used to sit
+   behind the Depth Chart tab's view switch): an intro line, then the two
+   panels stacked. Everything below is the content.
    ====================================================================== */
 
 :is(.sct, #sct-table-armour) .sct-dr {
@@ -18707,11 +18731,17 @@ a.sct-ex-game:hover .sct-ex-line {
   --dr-radius: 14px;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-panel[hidden] {
-  display: none;
+:is(.sct, #sct-table-armour) .sct-dr-note {
+  margin: 0 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-panel + .sct-dr-panel {
+  margin-top: 18px;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-panel {
+  /* A grid item: without this the table's minimum width is the panel's. */
+  min-width: 0;
   margin: 0;
   padding: 18px 20px 20px;
   border: 1px solid var(--sc-border);
@@ -18760,153 +18790,263 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 16px 0 0;
 }
 
-/* ---- picks view: four tiles, then seven round cards ---------------- */
+/* ---- picks view: a capital sheet (2026-10-29) ------------------------
+   Title, a stat strip, a kicker line, then one row per round: the round
+   number in the display face, the picks as dots, the count held at the
+   right edge. Luxury is margin at the edges, density in the data. The
+   copy above and below the ledger is centered (mak, same day); the ledger
+   itself keeps its left edge. */
 
-:is(.sct, #sct-table-armour) .sct-dr-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
+:is(.sct, #sct-table-armour) .sct-dr-cap :is(.sct-dr-h3, .sct-dr-kicker, .sct-dr-foot) {
+  text-align: center;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-tile {
+:is(.sct, #sct-table-armour) .sct-dr-cap :is(.sct-dr-strip, .sct-dr-legend) {
+  justify-content: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-strip {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 12px 14px;
-  border: 1px solid var(--sc-border);
-  border-top: 3px solid var(--team-primary, var(--sc-navy));
-  border-radius: var(--dr-radius);
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-tile .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 1.7rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-tile-label {
-  color: var(--sc-muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-rounds {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-round {
-  margin: 0;
-  padding: 12px 14px 14px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--dr-radius);
-  background: var(--sc-surface);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-round.is-empty {
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-round-head {
-  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 0 0 8px;
-  padding: 0 0 8px;
+  gap: 4px 0;
+  margin: 2px 0 6px;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-strip-item + .sct-dr-strip-item::before {
+  content: "\00b7";
+  margin: 0 7px;
+  color: var(--sc-border);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-strip .sct-dr-num {
+  color: var(--sc-navy);
+  font-size: 1rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-kicker {
+  margin: 0 0 14px;
+  color: var(--sc-ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  margin: 0;
+  padding: 4px 0;
   border-bottom: 1px solid var(--sc-hairline);
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-round-name {
+:is(.sct, #sct-table-armour) .sct-dr-rd {
+  display: flex;
+  align-items: baseline;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-rd .sct-dr-num {
   color: var(--sc-navy);
-  font-size: 0.92rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-rd .sct-dr-num:first-of-type {
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 1px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--sc-navy);
+  box-sizing: border-box;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dot.is-from {
+  background: var(--sc-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dot.is-sent {
+  background: transparent;
+  border: 2px solid #d3313a;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dot-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sc-navy);
+  font-size: 0.72rem;
   font-weight: 800;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-round-count .sct-dr-num {
+:is(.sct, #sct-table-armour) .sct-dr-mark.is-sent .sct-dr-dot-club {
+  color: var(--sc-muted);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-mark.is-sent .sct-dr-dot-crest {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-dot-crest {
+  display: block;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-none {
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-row-count {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-row-count .sct-dr-num {
   color: var(--sc-navy);
-  font-size: 1.25rem;
+  font-size: 1.05rem;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-round.is-empty .sct-dr-round-count .sct-dr-num {
+:is(.sct, #sct-table-armour) .sct-dr-row.is-empty .sct-dr-row-count .sct-dr-num,
+:is(.sct, #sct-table-armour) .sct-dr-row.is-empty .sct-dr-rd .sct-dr-num {
   color: var(--sc-muted);
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-chips {
+:is(.sct, #sct-table-armour) .sct-dr-legend {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 10px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-chip {
+:is(.sct, #sct-table-armour) .sct-dr-legend-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: 0;
-  padding: 4px 10px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface-soft);
-  color: var(--sc-ink);
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.3;
-  width: fit-content;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-chip::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--sc-navy);
-  flex: none;
+:is(.sct, #sct-table-armour) .sct-dr-legend .sct-dr-dot {
+  width: 9px;
+  height: 9px;
 }
 
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-from {
-  border-color: var(--sc-gold);
-  background: #fffbea;
-}
+/* ---- the tab's grid: a rail of two cards beside the class tables ------ */
 
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-from::before {
-  background: var(--sc-gold-deep, var(--sc-gold));
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-sent,
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-none {
-  color: var(--sc-muted);
-  font-weight: 600;
-  background: transparent;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-sent::before {
-  background: #d3313a;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-chip.is-none::before {
-  background: var(--sc-border);
-}
-
-/* ---- history view: two share lists, then one table per draft -------- */
-
-:is(.sct, #sct-table-armour) .sct-dr-share-grid {
+:is(.sct, #sct-table-armour) .sct-dr-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-areas: "classes rail";
+  gap: 20px;
+  align-items: start;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-grid.is-rail-only {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "rail";
+}
+
+/* The rail: the next draft's picks card, then the Last 5 Drafts card. */
+:is(.sct, #sct-table-armour) .sct-dr-rail {
+  grid-area: rail;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-rail > .sct-dr-panel {
+  margin: 0;
+  padding: 18px 18px 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-classes {
+  grid-area: classes;
+  min-width: 0;
+}
+
+/* The Last 5 Drafts card: centered copy (mak, 2026-10-29): the title, lede,
+   box headings and Round 1 chips. The share rows keep their label / bar /
+   count grid, since the bars only read against a shared left edge. */
+:is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
+  display: grid;
   gap: 14px;
-  margin: 0 0 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-hist-card :is(.sct-dr-h3, .sct-dr-kicker, .sct-dr-h4, .sct-dr-r1-none, .sct-dr-foot) {
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-hist-card .sct-dr-strip {
+  justify-content: center;
+}
+
+/* The gold Round 1 marker on a bar row, and the key under the list. */
+:is(.sct, #sct-table-armour) .sct-dr-share-r1 {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+  vertical-align: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-key {
+  margin: 8px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-share-key .sct-dr-share-r1 {
+  margin: 0 5px 0 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-shares {
@@ -18975,6 +19115,71 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
   font-size: 0.74rem;
   font-weight: 600;
+  min-width: 2.6em;
+  text-align: right;
+}
+
+/* The Round 1 picks as a timeline (2026-10-29): one container with the
+   club's rule down its left edge, one hairline row per pick, the year
+   first in the display face, the name, the broad group, the slot at the
+   right edge. */
+:is(.sct, #sct-table-armour) .sct-dr-r1-list {
+  margin: 0;
+  padding: 0 0 0 10px;
+  list-style: none;
+  border-left: 3px solid var(--team-primary, var(--sc-navy));
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1 {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  font-size: 0.86rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1-year .sct-dr-num {
+  color: var(--sc-navy);
+  font-size: 0.98rem;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1 .sct-dr-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1 .sct-dr-pos {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  color: var(--sc-navy);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1-meta {
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-r1-none {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.86rem;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-season + .sct-dr-season {
@@ -19010,7 +19215,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) table.sct-dr-table:not(.variations) {
   width: 100%;
-  min-width: 620px;
+  min-width: 700px;
   margin: 0;
   border: 0;
   border-collapse: collapse;
@@ -19053,6 +19258,11 @@ a.sct-ex-game:hover .sct-ex-line {
   width: 1%;
 }
 
+/* Rd and Pick read from the left (mak, 2026-10-29); Pro Bowls stays right. */
+:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td).is-num:not(.is-pb) {
+  text-align: left;
+}
+
 :is(.sct, #sct-table-armour) .sct-dr-table tbody td.is-num {
   --sc-font: var(--dr-display);
   font-family: var(--dr-display);
@@ -19062,7 +19272,78 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-table th.is-player {
-  min-width: 180px;
+  width: 1%;
+  min-width: 190px;
+}
+
+/* Player column (2026-10-29): the headshot in a small round well ahead of
+   the name, the same pipeline and ground as the Contracts release cards.
+   A pick without a photo keeps the empty well, so the names stay in one
+   column whether or not the crosswalk knows the player. */
+:is(.sct, #sct-table-armour) .sct-dr-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-face {
+  display: block;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
+    );
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-face-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* College column (same date): the school's crest, shown whole in a small
+   square beside the name. The square stays when no crest is paired. */
+:is(.sct, #sct-table-armour) .sct-dr-college {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-crest {
+  display: block;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+}
+
+/* The name sits under the crest (mak, 2026-10-29), small and quiet. */
+:is(.sct, #sct-table-armour) .sct-dr-college-name {
+  font-size: 0.74rem;
+  line-height: 1.2;
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-crest-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The college column takes the slack, so the name does not sit a field
+   away from its position pill. */
+:is(.sct, #sct-table-armour) .sct-dr-table .is-college {
+  width: auto;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-name {
@@ -19070,8 +19351,119 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
 }
 
+/* One affordance for every name: no resting underline on the linked ones,
+   a gold underline on hover; a name without a page is ink, not link navy. */
+:is(.sct, #sct-table-armour) a.sct-dr-name {
+  border-bottom: 0;
+}
+
 :is(.sct, #sct-table-armour) a.sct-dr-name:hover {
   text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) span.sct-dr-name {
+  color: var(--sc-ink);
+}
+
+/* Round boundaries: a heavier rule where the round changes, and the round
+   number bold only on its first row, so the draft's shape - early capital,
+   late darts - reads down the first column. */
+:is(.sct, #sct-table-armour) .sct-dr-table tbody tr.is-round-start :where(th, td) {
+  border-top: 2px solid var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table tbody td.is-round-again {
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+/* Status badges: the one grade the table gives. Right-aligned, header and
+   cells, with the where-now line under the badge's right edge (mak,
+   2026-10-29). */
+:is(.sct, #sct-table-armour) .sct-dr-table .is-status {
+  width: 1%;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-status[data-status="active"] {
+  color: #1d6b43;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-status[data-status="traded"] {
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-status:is(
+    [data-status="ir"],
+    [data-status="pup"],
+    [data-status="nfi"],
+    [data-status="reserve"],
+    [data-status="suspended"],
+    [data-status="exempt"]
+  ) {
+  color: #8a5f05;
+}
+
+/* Where a departed player is now, under the way they left (2026-10-29). */
+:is(.sct, #sct-table-armour) .sct-dr-status-sub {
+  display: block;
+  margin-top: 1px;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+/* In the tables the Pos and Status columns are plain text, not pills
+   (mak, 2026-10-29: "remove the pills used in the status and POS
+   columns"); the Round 1 chip list keeps its position pill. Status keeps
+   its ink cue (green Starter, amber Rotational) without the box. */
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-pos,
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-status {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-pos {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-status {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table td.is-pb {
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table td.is-pb.has-pb {
+  color: var(--sc-navy);
+  font-weight: 700;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-pos {
@@ -19090,24 +19482,45 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
-@media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-dr-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  :is(.sct, #sct-table-armour) .sct-dr-share-grid {
+/* The depth chart slot under the position: "LT2", small and quiet. */
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-slot {
+  display: block;
+  margin-top: 2px;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pos and College centered, header and cells (mak, 2026-10-29). */
+:is(.sct, #sct-table-armour) .sct-dr-table :is(.is-pos, .is-college) {
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-college {
+  align-items: center;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  :is(.sct, #sct-table-armour) .sct-dr-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "rail" "classes";
   }
-  :is(.sct, #sct-table-armour) .sct-dr-panel {
-    padding: 14px 14px 16px;
+  :is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 
-@media (max-width: 640px) {
-  :is(.sct, #sct-table-armour) .sct-dr-rounds {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
+    grid-template-columns: minmax(0, 1fr);
   }
-  :is(.sct, #sct-table-armour) .sct-dr-round {
-    padding: 10px 12px 12px;
+  :is(.sct, #sct-table-armour) .sct-dr-panel,
+  :is(.sct, #sct-table-armour) .sct-dr-rail > .sct-dr-panel {
+    padding: 14px 14px 16px;
   }
 }
 
@@ -19125,7 +19538,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-ct {
   --ct-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --ct-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --ct-radius: 12px;
+  --ct-radius: 14px;
   --ct-good-bg: #e9f6ee;
   --ct-good-ink: #166534;
   --ct-good-bar: #3f9f6a;
@@ -19140,17 +19553,38 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 10px 0 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-lede {
+:is(.sct, #sct-table-armour) .sct-ct-note {
   margin: 0 0 14px;
-  color: var(--sc-ink);
-  font-size: 0.92rem;
-  line-height: 1.5;
+}
+
+/* The sheet's head, as the Draft tab heads each class table. */
+:is(.sct, #sct-table-armour) .sct-ct-season-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-h4 {
+  margin: 0;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-season-sum {
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-num {
   --sc-font: var(--ct-display);
   font-family: var(--ct-display);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -19160,8 +19594,8 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 4px;
   padding: 0;
   color: var(--sc-navy) !important;
-  font-size: 1rem !important;
-  font-weight: 700;
+  font-size: 1.15rem !important;
+  font-weight: 800;
   line-height: 1.25;
 }
 
@@ -19181,51 +19615,201 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
 }
 
+/* A small "i" where a figure has a definition behind it: the Worth and
+   Net-if-cut headers, the release panel's disclaimer. */
+:is(.sct, #sct-table-armour) .sct-ct-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin-left: 3px;
+  border: 1px solid var(--sc-muted);
+  border-radius: 50%;
+  color: var(--sc-muted);
+  font-family: var(--ct-body);
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: 1px;
+  cursor: help;
+}
+
 /* ---- cap tiles --------------------------------------------------------- */
 
-:is(.sct, #sct-table-armour) .sct-ct-tiles {
+/* ---- the cap ledger (2026-10-29): three labeled groups of rows ----------
+   Label left, value right in tabular numerals with its rank chip, caption
+   dimmed beneath; one lead figure per group set larger with the club's
+   accent. Replaces the four tiles and the four-figure band. */
+
+:is(.sct, #sct-table-armour) .sct-ct-ledger {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 12px;
+  gap: 7px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg {
+  min-width: 0;
+  margin: 0;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-h {
+  margin: 0 0 4px !important;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* The stat strip under a card's title: "83 contracts · 2026 league year". */
+:is(.sct, #sct-table-armour) .sct-ct-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 0;
+  margin: 2px 0 10px;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-strip-item + .sct-ct-strip-item::before {
+  content: "\00b7";
+  margin: 0 7px;
+  color: var(--sc-border);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-strip .sct-ct-num {
+  color: var(--sc-navy);
+  font-size: 1rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-rows {
+  margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--sc-hairline);
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+:is(.sct, #sct-table-armour) .sct-ct-lg-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "label value rank" "sub sub sub";
+  align-items: baseline;
+  column-gap: 8px;
   margin: 0;
-  padding: 10px 14px 11px;
-  border: 1px solid var(--sc-border);
-  border-top: 2px solid var(--team-primary, var(--sc-navy));
-  border-radius: var(--ct-radius);
-  background: var(--sc-surface);
-  min-width: 0;
+  padding: 6px 0;
+  border-top: 1px solid var(--sc-hairline);
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-tile-label {
-  color: var(--sc-muted);
-  font-size: 0.66rem;
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-label {
+  grid-area: label;
+  min-width: 0;
+  color: var(--sc-ink);
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-label abbr {
+  cursor: help;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-value {
+  grid-area: value;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-value .sct-ct-num {
+  color: var(--sc-navy);
+  font-size: 1rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-rank {
+  grid-area: rank;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-row:not(:has(.sct-ct-lg-rank)) {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label value" "sub sub";
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-sub {
+  grid-area: sub;
+  margin-top: 1px;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+/* The group's lead figure: larger, navy, the accent rule at the left. */
+:is(.sct, #sct-table-armour) .sct-ct-lg-row.is-lead {
+  padding-left: 9px;
+  border-left: 3px solid var(--team-primary, var(--sc-navy));
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-row.is-lead .sct-ct-lg-label {
+  color: var(--sc-navy);
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-row.is-lead .sct-ct-lg-value .sct-ct-num {
+  font-size: 1.45rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-kicker {
+  margin: 10px 0 0;
+  color: var(--sc-ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* The page's main action, with the hub's arrow. */
+:is(.sct, #sct-table-armour) .sct-ct-lg-link {
+  color: var(--sc-navy);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-tile-value {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
+:is(.sct, #sct-table-armour) .sct-ct-lg-link::after {
+  content: " \2192";
+  text-decoration: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-tile .sct-ct-tile-value > .sct-ct-num {
-  color: var(--sc-navy);
-  font-size: 1.55rem;
+/* Context, not state: the theoretical figure dims. */
+:is(.sct, #sct-table-armour) .sct-ct-lg-row.is-dim .sct-ct-lg-value .sct-ct-num {
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-lg-sub .sct-ct-name {
+  font-size: inherit;
+  font-weight: 700;
+}
+
+/* The rank chip, colored by goodness: green for a top-ten standing, red
+   for a bottom-ten one, in the sense the figure deserves. */
+:is(.sct, #sct-table-armour) .sct-ct-rank.is-good .sct-ct-num {
+  color: var(--ct-good-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-rank.is-bad .sct-ct-num {
+  color: var(--ct-bad-ink);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-rank {
@@ -19255,58 +19839,9 @@ a.sct-ex-game:hover .sct-ex-line {
   overflow: clip;
 }
 
-/* The band of derived figures. */
-:is(.sct, #sct-table-armour) .sct-ct-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--sc-border);
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  padding: 10px 16px 11px;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi + .sct-ct-kpi {
-  border-left: 1px solid var(--sc-hairline);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi-label {
-  color: var(--sc-muted);
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi-label abbr {
-  cursor: help;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi-value {
-  color: var(--sc-ink);
-  font-family: var(--ct-body);
-  font-size: 1.12rem;
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi-sub {
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* The toolbar is the surface's last row since the sheet moved out (2026-10-29). */
+:is(.sct, #sct-table-armour) .sct-ct-work > :last-child {
+  border-bottom: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-kpi-gap.is-up {
@@ -19315,12 +19850,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-kpi-gap.is-down {
   color: var(--ct-bad-ink);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-kpi-slash {
-  margin: 0 6px;
-  color: var(--sc-border);
-  font-weight: 400;
 }
 
 /* ---- scenario toolbar --------------------------------------------------- */
@@ -19366,6 +19895,44 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-ct-scen-help {
   color: var(--sc-muted);
   font-size: 0.76rem;
+}
+
+/* The empty bar's invitation: a link-styled button that ticks the release
+   freeing the most cap; gone once anything is ticked. */
+:is(.sct, #sct-table-armour) .sct-ct-scen-try {
+  display: inline;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--sc-navy);
+  font-family: var(--ct-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen.is-active .sct-ct-scen-try {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-alt {
+  flex-basis: 100%;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-alt[hidden] {
+  display: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-scen-body {
@@ -19468,11 +20035,18 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 600;
 }
 
+:is(.sct, #sct-table-armour) /* The result: flat at rest (it is a figure, not a field), a tinted chip
+   once there are picks. */
 :is(.sct, #sct-table-armour) .sct-ct-scen-out .is-result dd {
   display: inline-block;
   padding: 2px 8px;
+  margin-left: -8px;
   border-radius: 5px;
-  background: var(--sc-surface-soft);
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-scen-out .is-result .sct-ct-num {
+  color: var(--sc-navy);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-scen.is-active .sct-ct-scen-out .is-result dd {
@@ -19483,17 +20057,36 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--ct-bad-bg);
 }
 
-/* ---- sheet and panel on one row ----------------------------------------- */
+/* ---- the two columns (2026-10-29): toolbar + sheet, and a rail of the
+   tiles, the band and the release panel, each in its own container ------ */
 
-:is(.sct, #sct-table-armour) .sct-ct-main {
+:is(.sct, #sct-table-armour) .sct-ct-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 264px;
+  grid-template-areas: "col rail";
   align-items: start;
-  background: linear-gradient(to right, transparent calc(100% - 264px), var(--sc-surface-soft) calc(100% - 264px));
+  gap: 18px;
+  margin: 0 0 18px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-col {
+  grid-area: col;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-rail {
+  grid-area: rail;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-sheet {
   min-width: 0;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--ct-radius);
+  background: var(--sc-surface);
+  overflow: clip;
 }
 
 /* ---- the sheet ----------------------------------------------------------- */
@@ -19523,7 +20116,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-table :where(th, td) {
-  padding: 6px 7px;
+  padding: 6px 5px;
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
   color: var(--sc-ink);
@@ -19538,13 +20131,13 @@ a.sct-ex-game:hover .sct-ex-line {
   position: sticky;
   top: 0;
   z-index: 3;
-  padding: 8px 7px;
+  padding: 9px 5px;
   border-bottom: 1px solid var(--sc-border);
-  background: var(--sc-surface);
+  background: var(--sc-surface-soft);
   color: var(--sc-muted) !important;
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -19556,10 +20149,9 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-ink) !important;
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-table thead th.is-sorted abbr::after {
-  content: "▾";
-  margin-left: 3px;
-  font-size: 0.7rem;
+/* The sticky Player head cell wears the head row's ground, not the sheet's. */
+:is(.sct, #sct-table-armour) .sct-ct-table thead th.is-player {
+  background: var(--sc-surface-soft);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-table tbody tr:last-child :where(th, td) {
@@ -19568,6 +20160,14 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-table :where(th, td).is-num {
   text-align: right;
+}
+
+/* Pos through Net if cut centered, header and cells (mak, 2026-10-30);
+   Player stays left and Dead right. The phone card keeps its own layout. */
+@media (min-width: 701px) {
+  :is(.sct, #sct-table-armour) .sct-ct-table :where(th, td):is(.is-pos, .is-cap, .is-apy, .is-worth-col, .is-gtd, .is-signed, .is-save-col) {
+    text-align: center;
+  }
 }
 
 /* Rows: a hover, and the pinned name column for a sheet that scrolls. */
@@ -19596,13 +20196,63 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-name {
   color: var(--sc-navy);
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: 0.86rem;
+  font-weight: 700;
   letter-spacing: -0.005em;
+}
+
+/* The headshot well ahead of the name, the Draft tab's. */
+:is(.sct, #sct-table-armour) .sct-ct-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-who {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px 6px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-face {
+  display: block;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
+    );
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-face-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+:is(.sct, #sct-table-armour) a.sct-ct-name {
+  border-bottom: 0;
 }
 
 :is(.sct, #sct-table-armour) a.sct-ct-name:hover {
   text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+/* A name without a profile page: ink, not link navy. */
+:is(.sct, #sct-table-armour) span.sct-ct-name {
+  color: var(--sc-ink);
 }
 
 /* Badges: small, tinted, quieter than the name. */
@@ -19622,19 +20272,42 @@ a.sct-ex-game:hover .sct-ex-line {
   vertical-align: 1px;
 }
 
+:is(.sct, #sct-table-armour) /* Outlined, not filled: the Worth cell and the cut cell already carry a
+   tint, so the tag stays cooler than both. */
+:is(.sct, #sct-table-armour) .sct-ct-tag {
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+
+/* In the Worth cell (2026-10-30): its own line under the figure and the
+   delta, at the cell's right edge. */
+:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-worth .sct-ct-tag {
+  display: inline-block;
+  margin: 3px 0 0;
+  vertical-align: baseline;
+}
+
 :is(.sct, #sct-table-armour) .sct-ct-tag.is-over {
-  background: var(--ct-bad-bg);
   color: var(--ct-bad-ink);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-tag.is-under {
-  background: var(--ct-good-bg);
   color: var(--ct-good-ink);
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-status {
-  background: var(--ct-info-bg);
-  color: var(--ct-info-ink);
+/* The roster list (IR, PUP) as plain red text on its own line under the
+   name (mak, 2026-10-30): no pill. */
+:is(.sct, #sct-table-armour) .sct-ct-table tbody th.is-player .sct-ct-status {
+  display: block;
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ct-bad-ink);
+  font-size: 0.62rem;
+  line-height: 1.3;
   cursor: help;
 }
 
@@ -19656,6 +20329,25 @@ a.sct-ex-game:hover .sct-ex-line {
   text-align: center;
 }
 
+/* In the sheet the position reads as the Draft tab's: plain bold navy
+   text, no chip, no group color (mak, 2026-10-30). The release cards keep
+   the colored chip. */
+:is(.sct, #sct-table-armour) .sct-ct-table .sct-ct-pos,
+:is(.sct, #sct-table-armour) .sct-ct-table .sct-ct-pos[data-group] {
+  display: inline;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--sc-navy);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: inherit;
+}
+
 :is(.sct, #sct-table-armour) .sct-ct-pos[data-group="wr"] { background: #e4edfb; color: #1d4ed8; }
 :is(.sct, #sct-table-armour) .sct-ct-pos[data-group="rb"] { background: #e3f3e8; color: #15803d; }
 :is(.sct, #sct-table-armour) .sct-ct-pos[data-group="te"] { background: #fbefd9; color: #b45309; }
@@ -19671,8 +20363,11 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-cap {
-  font-size: 0.84rem;
-  font-weight: 600;
+  --sc-font: var(--ct-display);
+  font-family: var(--ct-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sc-navy);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-muted {
@@ -19721,25 +20416,9 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--ct-bad-bg);
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-delta {
-  display: block;
-  color: var(--sc-muted);
-  font-size: 0.64rem;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-under .sct-ct-delta {
-  color: var(--ct-good-ink);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-over .sct-ct-delta {
-  color: var(--ct-bad-ink);
-}
-
-/* Cut saves: green where a release frees cap, with a bar ranking it; a
-   soft red where the move costs cap; neutral at zero. */
+/* Net if cut: a signed figure in ink. Green tint where a release frees
+   cap, with a bar ranking it; a soft red tint where the move costs cap;
+   neutral at zero. The sign carries the meaning, the tint repeats it. */
 :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-save-col {
   font-weight: 500;
 }
@@ -19750,7 +20429,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-cost {
   background: var(--ct-bad-bg);
-  color: var(--ct-bad-ink);
+  color: var(--sc-ink);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-bar {
@@ -19856,75 +20535,6 @@ a.sct-ex-game:hover .sct-ex-line {
   text-decoration-color: var(--ct-bad-ink);
 }
 
-/* The fold (mak, 2026-10-23): ten rows, the rest behind the footer's
-   button. The tail hides only once the bundle is up, a ticked row stays in
-   view when the sheet folds, and the button is inert without scripting. */
-:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"]:not(.is-expanded) .sct-ct-table tbody tr.is-more:not(.is-picked) {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct:not([data-sct-ct="js"]) .sct-ct-more {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-footbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 7px 12px 7px 14px;
-  border-top: 1px solid var(--sc-border);
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-count {
-  color: var(--sc-muted);
-  font-size: 0.72rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: auto;
-  margin: 0;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  box-shadow: none;
-  color: var(--sc-navy);
-  font-family: var(--ct-body);
-  font-size: 0.76rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: right;
-  text-transform: none;
-  letter-spacing: 0;
-  cursor: pointer;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-more::after {
-  content: "↓";
-  font-size: 0.8rem;
-  transition: transform 0.15s ease;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-more[aria-expanded="true"]::after {
-  transform: rotate(180deg);
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-more:hover {
-  background: var(--sc-surface);
-  text-decoration: underline;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-more:focus-visible {
-  outline: 2px solid var(--sc-gold);
-  outline-offset: 1px;
-}
 
 /* ---- the release panel --------------------------------------------------- */
 
@@ -19933,23 +20543,22 @@ a.sct-ex-game:hover .sct-ex-line {
    under it in the group's color, and the two figures as shaded chips at the
    right. The panel itself holds its column beside the sheet. */
 :is(.sct, #sct-table-armour) .sct-ct-cuts {
-  position: sticky;
-  top: calc(var(--ct-sticky) + 8px);
   margin: 0;
-  padding: 12px 12px 12px;
-  border: 0;
-  border-left: 1px solid var(--sc-border);
-  border-radius: 0;
-  background: var(--sc-surface-soft);
+  padding: 18px 18px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-cuts .sct-ct-h3 {
-  font-size: 1rem !important;
+  text-align: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-cuts .sct-ct-dek {
-  margin-bottom: 10px;
-  font-size: 0.78rem;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-cut-list {
@@ -19972,6 +20581,29 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: 10px;
   background: var(--sc-surface);
   min-width: 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+/* A tap on the card ticks the row (team.ts); the ticked card wears the
+   picked row's tint and the pick box's red edge. */
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-cut {
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct[data-sct-ct="js"] .sct-ct-cut:hover {
+  border-color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut.is-picked {
+  background: var(--ct-picked);
+  border-color: var(--ct-bad-ink);
+  box-shadow: inset 3px 0 0 var(--ct-bad-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut.is-picked .sct-ct-name {
+  color: var(--sc-muted-strong);
+  text-decoration: line-through;
+  text-decoration-color: var(--ct-bad-ink);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-cut-well {
@@ -20009,12 +20641,12 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-ct-cut .sct-ct-name {
   display: block;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--sc-ink);
   font-size: 0.76rem;
   font-weight: 500;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* No pill on the card's position (mak, 2026-10-23): just the letters, in
@@ -20042,10 +20674,26 @@ a.sct-ex-game:hover .sct-ex-line {
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--sc-muted);
+  font-family: var(--ct-body);
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-transform: none;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-cut-nums:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-cut-nums > span {
@@ -20099,7 +20747,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-dead-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0 28px;
   margin: 0;
   padding: 0;
@@ -20108,26 +20756,54 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-dead-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin: 0;
-  padding: 6px 0;
+  min-height: 34px;
+  padding: 4px 0;
   border-bottom: 1px solid var(--sc-hairline);
   font-size: 0.8125rem;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-dead-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
   color: var(--sc-navy);
   font-weight: 600;
-  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-club {
+  display: inline-flex;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  text-decoration: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-dead-now {
-  margin-left: 8px;
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-fa {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
   color: var(--sc-muted);
-  font-size: 0.72rem;
-  font-weight: 400;
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-dead-row .sct-ct-num {
@@ -20178,45 +20854,33 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* The cards drop under the sheet, two across. */
+/* The rail stacks above the sheet: the three groups side by side, the
+   cards two across. */
 @media (max-width: 1000px) {
-  :is(.sct, #sct-table-armour) .sct-ct-main {
-    display: flex;
-    flex-direction: column;
-    background: none;
+  :is(.sct, #sct-table-armour) .sct-ct-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "rail" "col";
   }
-  :is(.sct, #sct-table-armour) .sct-ct-cuts {
-    position: static;
-    width: 100%;
-    border-left: 0;
-    border-top: 1px solid var(--sc-border);
+  :is(.sct, #sct-table-armour) .sct-ct-ledger {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
   }
-  :is(.sct, #sct-table-armour) .sct-ct-cut-list {
+  :is(.sct, #sct-table-armour) .sct-ct-cut-list,
+  :is(.sct, #sct-table-armour) .sct-ct-dead-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-sheet {
-    width: 100%;
   }
 }
 
 @media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-ct-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  :is(.sct, #sct-table-armour) .sct-ct-ledger {
+    grid-template-columns: minmax(0, 1fr);
   }
-  :is(.sct, #sct-table-armour) .sct-ct-tile .sct-ct-tile-value > .sct-ct-num {
-    font-size: 1.35rem;
+  /* The compact sheet has no room for the well: the name keeps its line. */
+  :is(.sct, #sct-table-armour) .sct-ct-face {
+    display: none;
   }
-  :is(.sct, #sct-table-armour) .sct-ct-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-kpi {
-    padding: 9px 14px;
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-kpi:nth-child(odd) {
-    border-left: 0;
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-kpi:nth-child(n + 3) {
-    border-top: 1px solid var(--sc-hairline);
+  :is(.sct, #sct-table-armour) .sct-ct-season-head {
+    flex-wrap: wrap;
   }
   :is(.sct, #sct-table-armour) .sct-ct-scen-body {
     margin-left: 0;
@@ -20276,9 +20940,12 @@ a.sct-ex-game:hover .sct-ex-line {
     order: 0;
     flex: 0 0 14px;
   }
+  /* A low basis: with flex-wrap the line is laid out by basis, not by the
+     shrunk size, so a wide "-$147.2M" cell would otherwise push the figures
+     under the name. The cell still grows to fill the line. */
   :is(.sct, #sct-table-armour) .sct-ct-table tbody th.is-player {
     order: 1;
-    flex: 1 1 30%;
+    flex: 1 1 18%;
     min-width: 0;
     display: flex;
     flex-wrap: wrap;
@@ -20325,9 +20992,6 @@ a.sct-ex-game:hover .sct-ex-line {
   }
   :is(.sct, #sct-table-armour) .sct-ct-table tbody td.is-pos .sct-ct-pos {
     vertical-align: top;
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-delta-vs {
-    display: none;
   }
   :is(.sct, #sct-table-armour) .sct-ct-table tbody tr::after {
     content: "";
@@ -20381,17 +21045,11 @@ a.sct-ex-game:hover .sct-ex-line {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px 12px;
   }
-  :is(.sct, #sct-table-armour) .sct-ct-footbar {
-    padding: 7px 12px;
-  }
 }
 
 @media (max-width: 420px) {
   :is(.sct, #sct-table-armour) .sct-ct-table tbody :is(td.is-cap, td.is-worth-col, td.is-save-col) {
     min-width: 50px;
     padding: 2px 4px;
-  }
-  :is(.sct, #sct-table-armour) .sct-ct-kpi-value {
-    font-size: 1rem;
   }
 }

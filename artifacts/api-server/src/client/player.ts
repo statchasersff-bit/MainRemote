@@ -703,6 +703,277 @@ function wireCareerChart(root: HTMLElement): void {
  * Called again on the root a swap puts on screen, so a page the reader has
  * re-rendered behaves exactly like the one they arrived on.
  */
+/* ------------------------------------------------------------ durability */
+
+/**
+ * The Durability Profile card (lib/player/injury-durability.ts): the figure
+ * dressed in the club's kit, and one selected region shared by the figure's
+ * markers, the pills, the grid's outlined weeks and the open record.
+ *
+ * The page arrives complete: the worst region is open and its weeks outlined
+ * server-side. This makes the other regions reachable.
+ */
+function wireDurability(root: HTMLElement): void {
+  for (const card of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-durability]"))) {
+    const figure = card.querySelector<HTMLElement>("[data-scp-figure]");
+    if (figure) void paintFigure(figure);
+
+    const boxes = Array.from(card.querySelectorAll<HTMLElement>(".scp-in-ab.is-r[data-s]"));
+    const select = (key: string | null): void => {
+      for (const el of Array.from(card.querySelectorAll<HTMLElement>("[data-region]"))) {
+        const on = key !== null && el.getAttribute("data-region") === key;
+        el.classList.toggle("is-on", on);
+        el.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+      figure?.classList.toggle("has-sel", key !== null);
+      let lost: Record<string, number[]> = {};
+      for (const panel of Array.from(card.querySelectorAll<HTMLElement>("[data-region-detail]"))) {
+        const mine = key !== null && panel.getAttribute("data-region-detail") === key;
+        panel.hidden = !mine;
+        if (mine) {
+          try {
+            lost = JSON.parse(panel.getAttribute("data-lost") ?? "{}") as Record<string, number[]>;
+          } catch {
+            lost = {};
+          }
+        }
+      }
+      for (const box of boxes) {
+        const weeks = lost[box.getAttribute("data-s") ?? ""];
+        box.classList.toggle("is-mark", !!weeks && weeks.includes(Number(box.getAttribute("data-w"))));
+      }
+    };
+
+    card.addEventListener("click", (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest("[data-region-close]")) {
+        select(null);
+        return;
+      }
+      const control = target.closest<HTMLElement>("[data-region]");
+      if (!control || !card.contains(control)) return;
+      const key = control.getAttribute("data-region");
+      select(control.classList.contains("is-on") ? null : key);
+    });
+  }
+}
+
+/* The figure (Redraft Command's UniformFigure, 2026-10-23): one base render
+   wears a solid orange uniform. Orange is easy to find by hue, and its
+   brightness is the render's lighting, so recoloring a pixel is: keep how
+   bright it is, swap what color it is. Helmet, jersey, socks and cleat trim
+   take the club's primary color; pants and gloves its secondary. The flat
+   backdrop is keyed out so the figure stands on the page. Rendered once per
+   kit and number, then cached for the session. */
+const FIG_W = 383;
+const FIG_H = 753;
+const CHEST = { cx: 197.5, cy: 234, w: 96, h: 80 };
+const PANTS_TOP = 0.435;
+const PANTS_BOTTOM = 0.72;
+const BACKDROP_TOLERANCE = 3;
+const EDGE_BLEND = 40;
+const NUMBER_FONT = '800 100px Archivo, "Arial Black", Impact, sans-serif';
+const figureCache = new Map<string, Promise<HTMLCanvasElement>>();
+
+type Rgb = [number, number, number];
+const hexRgb = (hex: string): Rgb => {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as Rgb;
+};
+const luma = ([r, g, b]: Rgb): number => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+function isUniform(r: number, g: number, b: number): boolean {
+  const mx = Math.max(r, g, b);
+  const mn = Math.min(r, g, b);
+  if (mx < 0.18 || (mx - mn) / mx <= 0.42) return false;
+  let h = mx === r ? 60 * (((g - b) / (mx - mn)) % 6) : mx === g ? 60 * ((b - r) / (mx - mn) + 2) : 60 * ((r - g) / (mx - mn) + 4);
+  if (h < 0) h += 360;
+  return h >= 8 && h <= 42;
+}
+
+function keyBackdrop(a: Uint8ClampedArray, W: number, H: number): void {
+  const corners = [0, W - 1, (H - 1) * W, H * W - 1].map((p) => p * 4);
+  const bg = [0, 1, 2].map((k) => corners.reduce((sum, i) => sum + a[i + k]!, 0) / corners.length);
+  const dist = (p: number): number => {
+    const i = p * 4;
+    return Math.max(Math.abs(a[i]! - bg[0]!), Math.abs(a[i + 1]! - bg[1]!), Math.abs(a[i + 2]! - bg[2]!));
+  };
+  const cleared = new Uint8Array(W * H);
+  const stack: number[] = [];
+  for (let x = 0; x < W; x += 1) stack.push(x, (H - 1) * W + x);
+  for (let y = 0; y < H; y += 1) stack.push(y * W, y * W + W - 1);
+  while (stack.length) {
+    const p = stack.pop()!;
+    if (cleared[p] || dist(p) > BACKDROP_TOLERANCE) continue;
+    cleared[p] = 1;
+    a[p * 4 + 3] = 0;
+    const x = p % W;
+    if (x > 0) stack.push(p - 1);
+    if (x < W - 1) stack.push(p + 1);
+    if (p >= W) stack.push(p - W);
+    if (p < W * (H - 1)) stack.push(p + W);
+  }
+  for (let p = 0; p < W * H; p += 1) {
+    if (cleared[p]) continue;
+    const x = p % W;
+    const touches = (x > 0 && cleared[p - 1]) || (x < W - 1 && cleared[p + 1]) || (p >= W && cleared[p - W]) || (p < W * (H - 1) && cleared[p + W]);
+    if (!touches) continue;
+    const d = dist(p);
+    if (d >= EDGE_BLEND) continue;
+    const alpha = Math.max(0.05, (d - BACKDROP_TOLERANCE) / (EDGE_BLEND - BACKDROP_TOLERANCE));
+    const i = p * 4;
+    for (let k = 0; k < 3; k += 1) a[i + k] = (a[i + k]! - bg[k]! * (1 - alpha)) / alpha;
+    a[i + 3] = Math.round(255 * alpha);
+  }
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("figure base failed to load"));
+    img.src = src;
+  });
+}
+
+async function drawNumber(number: string, fill: string, outline: string): Promise<ImageData> {
+  try {
+    await Promise.race([document.fonts.load(NUMBER_FONT), new Promise((r) => setTimeout(r, 1500))]);
+  } catch {
+    /* the fallback fonts draw a fine number */
+  }
+  const c = document.createElement("canvas");
+  c.width = FIG_W;
+  c.height = FIG_H;
+  const x = c.getContext("2d")!;
+  x.font = NUMBER_FONT;
+  x.textAlign = "center";
+  x.textBaseline = "alphabetic";
+  const m = x.measureText(number);
+  const glyphH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+  const sy = CHEST.h / glyphH;
+  const sx = Math.min(sy * 0.86, CHEST.w / m.width);
+  x.translate(CHEST.cx, CHEST.cy + CHEST.h / 2 - m.actualBoundingBoxDescent * sy);
+  x.scale(sx, sy);
+  x.lineJoin = "miter";
+  x.strokeStyle = "rgba(0,0,0,0.85)";
+  x.lineWidth = 13 / sy;
+  x.strokeText(number, 0, 0);
+  x.strokeStyle = outline;
+  x.lineWidth = 8 / sy;
+  x.strokeText(number, 0, 0);
+  x.fillStyle = fill;
+  x.fillText(number, 0, 0);
+  return x.getImageData(0, 0, FIG_W, FIG_H);
+}
+
+function renderFigure(src: string, primaryHex: string, secondaryHex: string, number: string): Promise<HTMLCanvasElement> {
+  const key = `${primaryHex}|${secondaryHex}|${number}`;
+  const hit = figureCache.get(key);
+  if (hit) return hit;
+  const job = (async () => {
+    const img = await loadImage(src);
+    const primary = hexRgb(primaryHex);
+    const secondary = hexRgb(secondaryHex);
+    // Light jersey -> dark numbers; otherwise white. Outline in the secondary
+    // when it stands apart from both the number and the jersey.
+    const darkNumbers = luma(primary) > 0.55;
+    const numberFill = darkNumbers ? (luma(secondary) < 0.3 ? secondaryHex : "#111111") : "#ffffff";
+    const fillL = luma(hexRgb(numberFill));
+    const secondaryWorks = Math.abs(luma(secondary) - fillL) > 0.22 && Math.abs(luma(secondary) - luma(primary)) > 0.15;
+    const numberOutline = secondaryWorks ? secondaryHex : darkNumbers ? "#ffffff" : "#111111";
+
+    const c = document.createElement("canvas");
+    c.width = FIG_W;
+    c.height = FIG_H;
+    const x = c.getContext("2d", { willReadFrequently: true })!;
+    x.drawImage(img, 0, 0);
+    const data = x.getImageData(0, 0, FIG_W, FIG_H);
+    const a = data.data;
+    keyBackdrop(a, FIG_W, FIG_H);
+    const pantsTop = FIG_H * PANTS_TOP;
+    const pantsBottom = FIG_H * PANTS_BOTTOM;
+    const shadeAt = new Float32Array(FIG_W * FIG_H);
+    for (let p = 0; p < FIG_W * FIG_H; p += 1) {
+      const i = p * 4;
+      const r = a[i]! / 255;
+      const g = a[i + 1]! / 255;
+      const b = a[i + 2]! / 255;
+      if (!isUniform(r, g, b)) continue;
+      const y = (p / FIG_W) | 0;
+      const color = y > pantsTop && y < pantsBottom ? secondary : primary;
+      const shade = Math.min(1.25, Math.max(r, g, b) / 0.93);
+      shadeAt[p] = shade;
+      const spec = Math.max(0, shade - 0.78) ** 2 * 1.6;
+      for (let k = 0; k < 3; k += 1) a[i + k] = Math.min(255, 255 * (color[k]! * shade * 0.95 + 0.06 * shade + spec));
+    }
+    if (number) {
+      const n = (await drawNumber(number, numberFill, numberOutline)).data;
+      let sum = 0;
+      let cnt = 0;
+      for (let y = CHEST.cy - CHEST.h / 2; y < CHEST.cy + CHEST.h / 2; y += 1) {
+        for (let xx = CHEST.cx - CHEST.w / 2; xx < CHEST.cx + CHEST.w / 2; xx += 1) {
+          const s = shadeAt[(y | 0) * FIG_W + (xx | 0)]!;
+          if (s) {
+            sum += s;
+            cnt += 1;
+          }
+        }
+      }
+      const mean = cnt ? sum / cnt : 1;
+      for (let p = 0; p < FIG_W * FIG_H; p += 1) {
+        const i = p * 4;
+        const alpha = n[i + 3]! / 255;
+        if (!alpha || !shadeAt[p]) continue;
+        const light = Math.min(1.2, Math.max(0.55, shadeAt[p]! / mean));
+        for (let k = 0; k < 3; k += 1) a[i + k] = a[i + k]! + (Math.min(255, n[i + k]! * light) - a[i + k]!) * alpha;
+      }
+    }
+    x.putImageData(data, 0, 0);
+    return c;
+  })();
+  job.catch(() => figureCache.delete(key));
+  figureCache.set(key, job);
+  return job;
+}
+
+/**
+ * Dress the figure. The painted canvas goes into the frame itself (a copy,
+ * so two figures on one page share one render), no encode and decode in
+ * between: the pixels the script finished are the pixels on screen.
+ */
+async function paintFigure(figure: HTMLElement): Promise<void> {
+  const img = figure.querySelector<HTMLImageElement>("img");
+  if (!img || figure.dataset["painted"]) return;
+  figure.dataset["painted"] = "1";
+  const base = img.getAttribute("src") ?? "";
+  const primary = figure.getAttribute("data-primary") ?? "#4b5563";
+  const secondary = figure.getAttribute("data-secondary") ?? "#9ca3af";
+  const number = figure.getAttribute("data-number") ?? "";
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const painted = await renderFigure(base, primary, secondary, number);
+      const copy = document.createElement("canvas");
+      copy.width = painted.width;
+      copy.height = painted.height;
+      copy.className = "scp-in-fig-canvas";
+      copy.setAttribute("aria-hidden", "true");
+      copy.getContext("2d")!.drawImage(painted, 0, 0);
+      figure.insertBefore(copy, img);
+      figure.classList.add("is-ready");
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+    }
+  }
+  // Tainted canvas or a dropped download: show the base render rather than
+  // nothing behind the markers.
+  figure.classList.add("is-fallback");
+}
+
 function wireProfile(root: HTMLElement): void {
   wireTabs(root, {
     navSelector: "[data-scp-nav]",
@@ -725,6 +996,7 @@ function wireProfile(root: HTMLElement): void {
   wireNewsFilter(root);
   wireCareerChart(root);
   wireStateSwap(root);
+  wireDurability(root);
   wireFrameHeight(root);
 }
 

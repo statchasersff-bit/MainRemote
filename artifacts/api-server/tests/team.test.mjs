@@ -3047,15 +3047,15 @@ describe("draft tab", () => {
     const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
     assert.equal(ids[ids.indexOf("stats") + 1], "draft", "Draft sits next to Stats");
 
-    // Two views behind the Depth Chart tab's switch, all in the HTML.
-    const views = [...panel.querySelectorAll("[data-sct-dc-view]")].map((b) => b.getAttribute("data-sct-dc-view"));
-    assert.deepEqual(views, ["picks", "history"]);
-    assert.ok(panel.querySelector('[data-sct-dc-panel="picks"]'));
-    assert.ok(panel.querySelector('[data-sct-dc-panel="history"]'));
+    // One continuous view (mak, 2026-10-29): picks above history, no switch.
+    assert.equal(panel.querySelectorAll("[data-sct-dc-view], [data-sct-dc]").length, 0, "no view switch");
+    const stacked = [...panel.querySelectorAll("[data-sct-dr-panel]")].map((s) => s.getAttribute("data-sct-dr-panel"));
+    assert.deepEqual(stacked, ["picks", "history"]);
+    assert.ok(!panel.querySelector("[data-sct-dr-panel][hidden]"), "both panels show");
 
-    // Picks: seven round cards, each counting what the club holds.
-    const rounds = [...panel.querySelectorAll(".sct-dr-round")];
-    assert.equal(rounds.length, 7, "one card per round");
+    // Picks: a seven-row dot ledger (2026-10-29), each row counting what the club holds.
+    const rounds = [...panel.querySelectorAll(".sct-dr-ledger .sct-dr-row")];
+    assert.equal(rounds.length, 7, "one row per round");
     const picks = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8"),
     );
@@ -3063,10 +3063,18 @@ describe("draft tab", () => {
     assert.equal(
       rounds.reduce((n, r) => n + Number(r.getAttribute("data-count")), 0),
       held,
-      "the cards add up to the picks the file holds",
+      "the rows add up to the picks the file holds",
     );
-    assert.match(panel.querySelector(".sct-dr-tile .sct-dr-num")?.textContent ?? "", new RegExp(`^${held}$`));
-    assert.ok(panel.querySelector(".sct-dr-chip.is-own"), "an own pick is marked");
+    assert.match(panel.querySelector(".sct-dr-strip .sct-dr-num")?.textContent ?? "", new RegExp(`^${held}$`));
+    assert.ok(panel.querySelector(".sct-dr-ledger .sct-dr-dot.is-own"), "an own pick is a filled dot");
+    assert.equal(
+      panel.querySelectorAll(".sct-dr-ledger .sct-dr-dot.is-own, .sct-dr-ledger .sct-dr-dot.is-from").length,
+      held,
+      "one dot per pick held",
+    );
+    assert.equal(panel.querySelectorAll(".sct-dr-legend .sct-dr-legend-item").length, 3, "a three-item legend");
+    assert.ok(panel.querySelector(".sct-dr-kicker")?.textContent?.length, "a kicker line");
+    assert.equal(panel.querySelector(".sct-dr-tile"), null, "the tiles are gone");
 
     // History: one table per draft, newest first, from the register.
     const seasons = [...panel.querySelectorAll(".sct-dr-season .sct-dr-h4")].map((h) => h.textContent);
@@ -3080,8 +3088,75 @@ describe("draft tab", () => {
     assert.equal(firstTable.querySelectorAll("tr").length, latest.length, "every pick of the latest draft");
     assert.equal(firstTable.querySelector("tr .sct-dr-name")?.textContent, latest[0].name);
 
+    // Player column: a headshot well ahead of every name, the photo through
+    // the image route for every pick the register paired with a Sleeper id
+    // (mak, 2026-10-29: "add player images"); a pick without one keeps the
+    // empty well so the names line up.
+    const playerCells = [...panel.querySelectorAll(".sct-dr-table tbody th.is-player")];
+    assert.ok(playerCells.every((c) => c.querySelector(".sct-dr-player > .sct-dr-face")), "every name has a face well");
+    const withPhoto = playerCells.filter((c) => c.querySelector(".sct-dr-face img"));
+    assert.ok(withPhoto.length > 0, "at least one pick has a photo");
+    for (const c of withPhoto) {
+      const img = c.querySelector(".sct-dr-face img");
+      assert.match(img.getAttribute("src"), /\/news-image\/player\/\d+\/(latest|[0-9a-f]{10})\/160\.webp$/);
+      assert.equal(img.getAttribute("alt"), "", "decorative: the name is beside it");
+      assert.equal(img.getAttribute("loading"), "lazy");
+    }
+    const paired = latest.filter((p) => p.sleeperId);
+    assert.ok(paired.length > 0, "the register pairs Sleeper ids");
+    const firstRows = [...firstTable.querySelectorAll("tr")];
+    for (const p of paired) {
+      const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
+      assert.match(row.querySelector(".sct-dr-face img")?.getAttribute("src") ?? "", new RegExp(`/news-image/player/${p.sleeperId}/`), `${p.name} wears their own photo`);
+    }
+
+    // College column: the school's crest in a small square beside its
+    // written-out name, through the image route's college source (same
+    // date, "add college images"); a school with no pairing keeps the square.
+    const logos = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "college_logos.json"), "utf8"));
+    const collegeCells = [...panel.querySelectorAll(".sct-dr-table td.is-college")];
+    assert.ok(collegeCells.every((c) => c.querySelector(".sct-dr-college > .sct-dr-crest + .sct-dr-college-name")), "crest square then the name");
+    for (const p of latest) {
+      const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
+      const logo = logos.logos[p.college];
+      const img = row.querySelector(".sct-dr-crest img");
+      if (logo) {
+        assert.match(img?.getAttribute("src") ?? "", new RegExp(`/news-image/college/${logo.id}/(latest|[0-9a-f]{10})/80\\.webp$`), `${p.college} crest`);
+        assert.match(img.getAttribute("srcset"), /80\.webp 80w, .*160\.webp 160w$/);
+        assert.equal(img.getAttribute("alt"), "");
+      } else {
+        assert.equal(img, null, `${p.college} has no crest`);
+      }
+    }
+    assert.ok(panel.querySelector(".sct-dr-crest img"), "at least one crest");
+
+    // Status column: roster standing from the weekly rosters (mak,
+    // 2026-10-29: "active, waived, traded, etc."), with where a departed
+    // player is now on a second line; the old participation tiers are gone.
+    const statusDoc = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_status.json"), "utf8"));
+    const statusCells = [...panel.querySelectorAll(".sct-dr-table td.is-status")];
+    const labels = new Set(statusCells.map((c) => c.querySelector(".sct-dr-status").textContent));
+    for (const old of ["Starter", "Regular", "Rotational", "Limited", "No games", "Not active"]) assert.ok(!labels.has(old), `${old} is gone`);
+    assert.ok(labels.has("Active"), "the current class is active");
+    for (const p of latest) {
+      const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
+      const entry = statusDoc.players[p.gsisId];
+      const cell = row.querySelector("td.is-status");
+      if (!entry) continue;
+      if (entry.left) {
+        assert.equal(cell.querySelector(".sct-dr-status").getAttribute("data-status"), entry.left.kind, `${p.name} shows how they left`);
+        if (entry.now.kind !== "none" && entry.left.kind !== "retired") assert.match(cell.querySelector(".sct-dr-status-sub")?.textContent ?? "", /^now /, `${p.name} says where they are now`);
+      } else {
+        assert.equal(cell.querySelector(".sct-dr-status").getAttribute("data-status"), entry.now.kind, `${p.name} shows their standing`);
+      }
+      // No row is muted (mak, 2026-10-29: "do not fade out players who are not on the team").
+      assert.ok(!row.classList.contains("is-gone"), `${p.name} reads like every other row`);
+    }
+    // The Status footnote came out the same day.
+    assert.equal(panel.querySelector(".sct-dr-classes .sct-dr-foot"), null, "no footnote under the tables");
+
     // No outside source is named in the page.
-    assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference/i);
+    assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
   });
 });
 
@@ -3115,29 +3190,33 @@ describe("contracts tab", () => {
     const caps = rows.map((r) => r.querySelector(".is-cap").textContent);
     assert.match(caps[0], /^\$\d+(\.\d)?M$/, "cap numbers print as money");
 
-    // Every row is in the HTML; the first ten are open and the rest are
-    // marked for the bundle to fold behind "Show all" (mak, 2026-10-23).
+    // Every row is open (mak, 2026-10-30: "show full table"): no fold mark,
+    // no Show-all button, the count in the head above the sheet.
     assert.ok(rows.length > 10, "the club has more than ten contracts");
-    rows.forEach((r, i) => assert.equal(r.classList.contains("is-more"), i >= 10, `row ${i + 1} fold mark`));
-    const more = panel.querySelector("[data-sct-ct-more]");
-    assert.ok(more, "the Show all button is rendered");
-    assert.equal(more.textContent, `Show all ${expectedRows} contracts`);
-    assert.equal(more.getAttribute("aria-expanded"), "false");
+    assert.equal(panel.querySelector("tr.is-more"), null, "no row is folded");
+    assert.equal(panel.querySelector("[data-sct-ct-more]"), null, "no Show all button");
+    assert.match(panel.querySelector(".sct-ct-season-sum")?.textContent ?? "", new RegExp(`^${expectedRows} contracts`));
 
     // One row per player: the register's duplicate active deals are folded.
     const names = rows.map((r) => r.querySelector(".sct-ct-name").textContent);
     assert.equal(new Set(names).size, names.length, "no player is listed twice");
 
-    // Four tiles, the first the club's cap space with its league rank, read
-    // from the cap snapshot.
+    // The cap ledger (2026-10-29): three groups, eight rows, the first the
+    // club's cap space with its league rank, read from the cap snapshot.
     const snapshot = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
     );
-    const tiles = [...panel.querySelectorAll(".sct-ct-tile")];
-    assert.equal(tiles.length, 4);
+    assert.equal(panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg").length, 3, "three groups");
+    const tiles = [...panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg-row")];
+    assert.equal(tiles.length, 8, "eight rows");
     assert.match(tiles[0].textContent, /cap space/i);
     assert.match(tiles[0].textContent, /\$\d+(\.\d)?M/);
     assert.match(tiles[0].querySelector(".sct-ct-rank")?.textContent ?? "", /^\d+(st|nd|rd|th)/);
+    assert.ok(tiles[0].classList.contains("is-lead"), "cap space leads its group");
+    assert.equal(panel.querySelectorAll(".sct-ct-ledger .is-lead").length, 3, "one lead per group");
+    assert.ok(panel.querySelector('[data-sct-ct-out="space"]'), "the scenario still writes cap space");
+    assert.ok(panel.querySelector('[data-sct-ct-out="dead"]'), "the scenario still writes dead money");
+    assert.match(panel.querySelector(".sct-ct-lg-kicker")?.textContent ?? "", /reachable via cuts/);
     assert.equal(panel.querySelector("[data-sct-ct]").getAttribute("data-cap-space"), String(snapshot.teams.ne.capSpace));
 
     // Every row carries the release figures the scenario sums, before and
@@ -3166,6 +3245,14 @@ describe("contracts tab", () => {
     const deadRows = [...panel.querySelectorAll(".sct-ct-dead-row")];
     assert.equal(deadRows.length, snapshot.teams.ne.dead.length);
     if (deadRows.length) assert.match(deadRows[0].textContent, new RegExp(snapshot.teams.ne.dead[0].name.split(" ")[0]));
+    // ...and closes the rail, under the cap ledger and the release panel
+    // (mak, 2026-10-30).
+    // Every row names the current club: a crest linked to its hub, or "FA".
+    for (const r of deadRows) {
+      assert.ok(r.querySelector(".sct-ct-dead-club img, .sct-ct-dead-fa"), `crest or FA on ${r.textContent}`);
+    }
+    const railKids = [...(panel.querySelector(".sct-ct-rail")?.children ?? [])].map((el) => el.className);
+    assert.deepEqual(railKids, ["sct-ct-ledger", "sct-ct-cuts", "sct-ct-dead"], "rail order: ledger, releases, dead money");
 
     // The release rail says it is a reading, not a call; at most six names.
     const cuts = panel.querySelectorAll(".sct-ct-cut");

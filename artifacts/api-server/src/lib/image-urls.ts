@@ -23,10 +23,11 @@
  *   espn    ESPN's 350x254 full headshot, by athlete id    (depth charts)
  *   club    a club site's editorial art, by its path       (club news feeds)
  *   yt      a YouTube video's hqdefault thumbnail, by id    (matchup highlights)
+ *   ncaa    a college's crest from ESPN, by its NCAA team id  (team hub draft tab)
  *
  * An image is identified everywhere by one KEY string: the bare Sleeper id,
- * `espn:<id>`, `yt:<video id>`, or `club:<base64url of the path on
- * static.clubs.nfl.com>`.
+ * `espn:<id>`, `yt:<video id>`, `ncaa:<team id>`, or `club:<base64url of the
+ * path on static.clubs.nfl.com>`.
  * The club key encodes the path rather than hashing it so the route can
  * recover the original without a lookup table, and the host is fixed by the
  * source, so a key can never name anything off that CDN.
@@ -45,6 +46,8 @@
  * `b` size is the 16:9 band the team hub's news tab cuts.
  */
 export const HEADSHOT_VARIANTS = {
+  /** The college crest's size: drawn at 22-24px, so 80 covers a 3x phone. */
+  "80": { width: 80, height: 80 },
   "160": { width: 160, height: 160 },
   "256": { width: 256, height: 256 },
   "320": { width: 320, height: 320 },
@@ -85,7 +88,7 @@ const SLEEPER_THUMB =
 const VERSION = /^[0-9a-f]{6,16}$/;
 
 /** Where an original comes from; the first segment of the derivative's path. */
-export type ImageSource = "player" | "espn" | "club" | "yt";
+export type ImageSource = "player" | "espn" | "club" | "yt" | "ncaa";
 
 /**
  * The derivatives each source produces. The headshot sources share the
@@ -93,13 +96,19 @@ export type ImageSource = "player" | "espn" | "club" | "yt";
  * landscape editorial photography, often 1920px wide, drawn in the news
  * card's square and in the hub's news wells at up to 640px: squares (center
  * crop) and bands at the widths those wells are drawn, never the figures.
+ * A college crest is a square PNG with alpha, fitted whole (never cropped)
+ * into the two small squares the draft tables draw it at.
  */
 export const VARIANTS_FOR: Record<ImageSource, readonly HeadshotVariant[]> = {
   player: ["160", "256", "320", "f160", "f200", "f350", "b350"],
   espn: ["160", "256", "320", "f160", "f200", "f350", "b350"],
   club: ["160", "256", "320", "b350", "b480", "b640", "b960"],
   yt: ["r320", "r480"],
+  ncaa: ["80", "160"],
 };
+
+/** The squares the draft tab's college crest offers, smallest first. */
+export const COLLEGE_LOGO_VARIANTS: readonly HeadshotVariant[] = ["80", "160"];
 
 /** The 4:3 thumbnails the matchup highlights box offers, smallest first. */
 export const YT_THUMB_VARIANTS: readonly HeadshotVariant[] = ["r320", "r480"];
@@ -116,6 +125,9 @@ const CLUB_ART = /^https:\/\/static\.clubs\.nfl\.com(\/image\/[A-Za-z0-9_,./-]{1
 const CLUB_PATH = /^\/image\/[A-Za-z0-9_,./-]{1,300}\.(?:jpe?g|png|webp)$/i;
 const CLUB_ID = /^[A-Za-z0-9_-]{8,420}$/;
 const NUMERIC_ID = /^\d{1,12}$/;
+
+/** ESPN's college crest, at any of the sizes it publishes; the key keeps the team id. */
+const NCAA_LOGO = /^https?:\/\/a\.espncdn\.com\/i\/teamlogos\/ncaa\/(?:500|500-dark|200)\/(\d{1,12})\.png(?:[?#].*)?$/i;
 
 /** Any size of a video's thumbnail names the video; the route fetches hqdefault. */
 const YT_THUMB = /^https?:\/\/i\.ytimg\.com\/vi\/([A-Za-z0-9_-]{6,20})\/(?:hq|mq|sd|maxres)default\.jpg(?:[?#].*)?$/i;
@@ -159,6 +171,8 @@ export function imageKeyFor(url: string | null | undefined): string | null {
   if (club && !club[1]!.includes("..")) return `club:${toBase64Url(club[1]!)}`;
   const yt = YT_THUMB.exec(u);
   if (yt) return `yt:${yt[1]}`;
+  const ncaa = NCAA_LOGO.exec(u);
+  if (ncaa) return `ncaa:${ncaa[1]}`;
   return null;
 }
 
@@ -171,9 +185,10 @@ export interface ImageKeyParts {
 export function parseImageKey(key: string | null | undefined): ImageKeyParts | null {
   if (!key) return null;
   if (NUMERIC_ID.test(key)) return { source: "player", id: key };
-  const m = /^(espn|club|yt):(.+)$/.exec(key);
+  const m = /^(espn|club|yt|ncaa):(.+)$/.exec(key);
   if (!m) return null;
   if (m[1] === "espn") return NUMERIC_ID.test(m[2]!) ? { source: "espn", id: m[2]! } : null;
+  if (m[1] === "ncaa") return NUMERIC_ID.test(m[2]!) ? { source: "ncaa", id: m[2]! } : null;
   if (m[1] === "yt") return YT_ID.test(m[2]!) ? { source: "yt", id: m[2]! } : null;
   return decodeClubPath(m[2]!) ? { source: "club", id: m[2]! } : null;
 }
@@ -190,6 +205,7 @@ export const PUBLIC_SEGMENT: Record<ImageSource, string> = {
   espn: "athlete",
   club: "club",
   yt: "video",
+  ncaa: "college",
 };
 
 const SOURCE_FOR_SEGMENT: Record<string, ImageSource> = {
@@ -199,6 +215,8 @@ const SOURCE_FOR_SEGMENT: Record<string, ImageSource> = {
   club: "club",
   video: "yt",
   yt: "yt",
+  college: "ncaa",
+  ncaa: "ncaa",
 };
 
 export function imageKeyFrom(segment: string, id: string): string | null {
@@ -207,7 +225,7 @@ export function imageKeyFrom(segment: string, id: string): string | null {
   const key =
     source === "player"
       ? id
-      : source === "espn" || source === "club" || source === "yt"
+      : source === "espn" || source === "club" || source === "yt" || source === "ncaa"
         ? `${source}:${id}`
         : null;
   return key && parseImageKey(key) ? key : null;
