@@ -99,7 +99,9 @@ function parseTeam(html, season) {
   if (!section) throw new Error(`no ${season} section on the page`);
 
   const total = (label) => {
-    const m = section.match(new RegExp(`${label}:\\s*\\$([0-9,]+)`));
+    // A club over the cap prints the figure in parentheses inside
+    // <span class="over-the-cap">; dollars() reads the parentheses as a minus.
+    const m = section.match(new RegExp(`${label}:\\s*(?:<span[^>]*>)?(\\(?-?\\$[0-9,]+\\)?)`));
     return m ? dollars(m[1]) : null;
   };
   const summary = {
