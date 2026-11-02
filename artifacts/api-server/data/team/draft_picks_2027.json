@@ -1,6 +1,6 @@
 {
   "draftYear": 2027,
-  "builtAt": "2026-10-28T17:08:00.827Z",
+  "builtAt": "2026-11-02T14:22:15.564Z",
   "slots": 224,
   "teams": {
     "ari": {
@@ -64,10 +64,6 @@
           "from": null
         },
         {
-          "round": 6,
-          "from": null
-        },
-        {
           "round": 7,
           "from": null
         }
@@ -76,6 +72,10 @@
         {
           "round": 5,
           "to": "chi"
+        },
+        {
+          "round": 6,
+          "to": "kc"
         }
       ]
     },
@@ -140,15 +140,20 @@
           "from": null
         },
         {
-          "round": 7,
-          "from": null
+          "round": 6,
+          "from": "ind"
         },
         {
           "round": 7,
           "from": "lv"
         }
       ],
-      "sent": []
+      "sent": [
+        {
+          "round": 7,
+          "to": "ind"
+        }
+      ]
     },
     "car": {
       "holds": [
@@ -179,6 +184,10 @@
         {
           "round": 7,
           "from": null
+        },
+        {
+          "round": 7,
+          "from": "nyj"
         }
       ],
       "sent": [
@@ -191,19 +200,11 @@
     "chi": {
       "holds": [
         {
-          "round": 1,
-          "from": null
-        },
-        {
           "round": 2,
           "from": null
         },
         {
           "round": 3,
-          "from": null
-        },
-        {
-          "round": 4,
           "from": null
         },
         {
@@ -220,6 +221,14 @@
         }
       ],
       "sent": [
+        {
+          "round": 1,
+          "to": "ten"
+        },
+        {
+          "round": 4,
+          "to": "ten"
+        },
         {
           "round": 5,
           "to": "ne"
@@ -421,6 +430,10 @@
         {
           "round": 7,
           "from": null
+        },
+        {
+          "round": 7,
+          "from": "lac"
         }
       ],
       "sent": []
@@ -479,10 +492,6 @@
         },
         {
           "round": 6,
-          "from": null
-        },
-        {
-          "round": 6,
           "from": "ari"
         },
         {
@@ -502,6 +511,10 @@
         {
           "round": 5,
           "to": "cle"
+        },
+        {
+          "round": 6,
+          "to": "ne"
         },
         {
           "round": 7,
@@ -536,18 +549,22 @@
           "from": null
         },
         {
-          "round": 6,
+          "round": 7,
           "from": null
         },
         {
           "round": 7,
-          "from": null
+          "from": "buf"
         }
       ],
       "sent": [
         {
           "round": 1,
           "to": "nyj"
+        },
+        {
+          "round": 6,
+          "to": "buf"
         }
       ]
     },
@@ -613,6 +630,10 @@
         },
         {
           "round": 6,
+          "from": "atl"
+        },
+        {
+          "round": 6,
           "from": "sf"
         }
       ],
@@ -650,8 +671,8 @@
           "from": null
         },
         {
-          "round": 7,
-          "from": null
+          "round": 6,
+          "from": "sea"
         },
         {
           "round": 7,
@@ -662,6 +683,10 @@
         {
           "round": 6,
           "to": "no"
+        },
+        {
+          "round": 7,
+          "to": "det"
         }
       ]
     },
@@ -810,12 +835,8 @@
           "from": "nyj"
         },
         {
-          "round": 6,
-          "from": "ne"
-        },
-        {
           "round": 7,
-          "from": "phi"
+          "from": null
         }
       ],
       "sent": [
@@ -825,10 +846,6 @@
         },
         {
           "round": 6,
-          "to": "ne"
-        },
-        {
-          "round": 7,
           "to": "ne"
         }
       ]
@@ -857,7 +874,15 @@
         },
         {
           "round": 6,
+          "from": null
+        },
+        {
+          "round": 6,
           "from": "no"
+        },
+        {
+          "round": 6,
+          "from": "hou"
         },
         {
           "round": 6,
@@ -865,17 +890,13 @@
         },
         {
           "round": 7,
-          "from": "min"
+          "from": "phi"
         }
       ],
       "sent": [
         {
           "round": 5,
           "to": "phi"
-        },
-        {
-          "round": 6,
-          "to": "min"
         },
         {
           "round": 7,
@@ -1005,7 +1026,7 @@
         },
         {
           "round": 7,
-          "to": "phi"
+          "to": "car"
         }
       ]
     },
@@ -1029,15 +1050,11 @@
         },
         {
           "round": 5,
-          "from": "ne"
-        },
-        {
-          "round": 5,
           "from": "bal"
         },
         {
-          "round": 7,
-          "from": "nyj"
+          "round": 5,
+          "from": "ne"
         },
         {
           "round": 7,
@@ -1055,7 +1072,7 @@
         },
         {
           "round": 7,
-          "to": "min"
+          "to": "ne"
         }
       ]
     },
@@ -1124,10 +1141,6 @@
           "from": null
         },
         {
-          "round": 6,
-          "from": null
-        },
-        {
           "round": 7,
           "from": null
         }
@@ -1140,6 +1153,10 @@
         {
           "round": 4,
           "to": "cle"
+        },
+        {
+          "round": 6,
+          "to": "lac"
         }
       ]
     },
@@ -1225,6 +1242,10 @@
           "from": null
         },
         {
+          "round": 1,
+          "from": "chi"
+        },
+        {
           "round": 2,
           "from": null
         },
@@ -1235,6 +1256,10 @@
         {
           "round": 4,
           "from": null
+        },
+        {
+          "round": 4,
+          "from": "chi"
         },
         {
           "round": 5,
