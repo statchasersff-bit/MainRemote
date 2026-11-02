@@ -210,32 +210,139 @@ const W = 640;
 const H = 190;
 const PAD = { left: 40, right: 10, top: 12, bottom: 26 };
 
+/** Half the game time a score's jump is eased over: two minutes, less where scores crowd. */
+const JUMP_HALF = 120;
+
+/** The seconds a jump at `at` may spread to each side without crossing its neighbors. */
+function jumpHalfWidth(model: WpModel, at: number): number {
+  let half = Math.min(JUMP_HALF, at / 2, (model.end - at) / 2);
+  for (const s of model.swings) {
+    if (s.elapsed !== at) half = Math.min(half, Math.abs(s.elapsed - at) / 2);
+  }
+  return Math.max(half, 0);
+}
+
+/**
+ * The curve as the chart draws it (mak, 2026-11-02: "so rugged ... make it more
+ * smooth"). The model keeps each score as a vertical step; here the step is
+ * spread over a short window on either side of the play and the sampled drift
+ * around it is dropped, so the line turns into and out of each score instead
+ * of cornering. Points sharing a time collapse to their first and last values.
+ */
+export function drawingPoints(model: WpModel): Array<[number, number]> {
+  const groups: Array<{ at: number; first: number; last: number }> = [];
+  for (const [s, p] of model.curve) {
+    const g = groups[groups.length - 1];
+    if (g && g.at === s) g.last = p;
+    else groups.push({ at: s, first: p, last: p });
+  }
+  const out: Array<[number, number]> = [];
+  const push = (s: number, p: number): void => {
+    const prev = out[out.length - 1];
+    if (prev && s - prev[0] < 1e-6) return;
+    out.push([s, p]);
+  };
+  for (let i = 0; i < groups.length; i++) {
+    const g = groups[i]!;
+    if (Math.abs(g.last - g.first) < 1e-9) {
+      push(g.at, g.first);
+      continue;
+    }
+    const half = jumpHalfWidth(model, g.at);
+    if (half <= 0) {
+      push(g.at, g.first);
+      out.push([g.at, g.last]);
+      continue;
+    }
+    // Drop the sampled points inside the window on both sides of the jump.
+    while (out.length && out[out.length - 1]![0] > g.at - half) out.pop();
+    push(g.at - half, g.first);
+    out.push([g.at + half, g.last]);
+    while (i + 1 < groups.length && groups[i + 1]!.at < g.at + half && Math.abs(groups[i + 1]!.last - groups[i + 1]!.first) < 1e-9) i++;
+  }
+  return out;
+}
+
+/**
+ * A monotone cubic (Fritsch-Carlson) path through `pts`, already in pixel
+ * space: smooth, and it never overshoots a point, so an eased jump does not
+ * dip below the floor or bulge past the ceiling.
+ */
+export function smoothPath(pts: Array<[number, number]>, r: (n: number) => string): string {
+  const n = pts.length;
+  if (n === 0) return "";
+  if (n === 1) return `M${r(pts[0]![0])} ${r(pts[0]![1])}`;
+  const dx: number[] = [];
+  const slope: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    const h = pts[i + 1]![0] - pts[i]![0];
+    dx.push(h);
+    slope.push(h > 0 ? (pts[i + 1]![1] - pts[i]![1]) / h : 0);
+  }
+  const m: number[] = new Array(n).fill(0);
+  m[0] = slope[0]!;
+  m[n - 1] = slope[n - 2]!;
+  for (let i = 1; i < n - 1; i++) {
+    const a = slope[i - 1]!;
+    const b = slope[i]!;
+    if (a * b <= 0) m[i] = 0;
+    else {
+      const w1 = 2 * dx[i]! + dx[i - 1]!;
+      const w2 = dx[i]! + 2 * dx[i - 1]!;
+      m[i] = (w1 + w2) / (w1 / a + w2 / b);
+    }
+  }
+  let d = `M${r(pts[0]![0])} ${r(pts[0]![1])}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = pts[i]!;
+    const [x1, y1] = pts[i + 1]!;
+    const h = dx[i]! / 3;
+    d += ` C${r(x0 + h)} ${r(y0 + m[i]! * h)} ${r(x1 - h)} ${r(y1 - m[i + 1]! * h)} ${r(x1)} ${r(y1)}`;
+  }
+  return d;
+}
+
 function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof pairColors>): string {
   const x = (s: number): number => PAD.left + (s / model.end) * (W - PAD.left - PAD.right);
   const y = (p: number): number => PAD.top + (1 - p) * (H - PAD.top - PAD.bottom);
   const r = (n: number): string => n.toFixed(1);
 
-  const line = model.curve.map(([s, p], i) => `${i ? "L" : "M"}${r(x(s))} ${r(y(p))}`).join(" ");
+  const line = smoothPath(drawingPoints(model).map(([s, p]) => [x(s), y(p)]), r);
   const area = `${line} L${r(x(model.end))} ${r(y(0))} L${r(x(0))} ${r(y(0))} Z`;
 
   const periods: Array<{ at: number; label: string }> = [0, 1, 2, 3].map((q) => ({ at: q * QUARTER, label: `Q${q + 1}` }));
   const ot = overtimeLength(game);
   for (let at = REGULATION; at < model.end; at += ot) periods.push({ at, label: "OT" });
 
+  // The axis labels and the dots are HTML over the drawing, placed by the
+  // same mapping, so the SVG can stretch to the Key swings column's height
+  // (mak, 2026-11-02: equal heights) without stretching type or rounding
+  // dots into ovals. Strokes keep their width through vector-effect.
+  const px = (n: number): string => `${((n / W) * 100).toFixed(2)}%`;
+  const py = (n: number): string => `${((n / H) * 100).toFixed(2)}%`;
   const grid = periods
     .map(
-      ({ at, label }, i) =>
-        (i ? `<line class="sct-wp-grid" x1="${r(x(at))}" x2="${r(x(at))}" y1="${PAD.top}" y2="${H - PAD.bottom}"/>` : "") +
-        `<text class="sct-wp-axis" x="${r(x(at + Math.min(QUARTER, model.end - at) / 2))}" y="${H - 8}" text-anchor="middle">${label}</text>`,
+      ({ at }, i) =>
+        i
+          ? `<line class="sct-wp-grid" x1="${r(x(at))}" x2="${r(x(at))}" y1="${PAD.top}" y2="${H - PAD.bottom}" vector-effect="non-scaling-stroke"/>`
+          : "",
+    )
+    .join("");
+  const xLabels = periods
+    .map(
+      ({ at, label }) =>
+        `<span class="sct-wp-ax sct-wp-ax-x" style="left:${px(x(at + Math.min(QUARTER, model.end - at) / 2))};top:${py(H - 8)}" aria-hidden="true">${label}</span>`,
     )
     .join("");
   const yLabels = [1, 0.5, 0]
-    .map((p) => `<text class="sct-wp-axis" x="${PAD.left - 6}" y="${r(y(p) + 4)}" text-anchor="end">${p * 100}%</text>`)
+    .map((p) => `<span class="sct-wp-ax sct-wp-ax-y" style="left:${px(PAD.left - 6)};top:${py(y(p))}" aria-hidden="true">${p * 100}%</span>`)
     .join("");
   const dots = model.swings
     .map((s) => {
       const fill = s.play.team === game.home.abbr ? colors.home.fill : colors.away.fill;
-      return `<circle cx="${r(x(s.elapsed))}" cy="${r(y(s.after))}" r="4" fill="${fill}" stroke="#fff" stroke-width="1.5"/>`;
+      // The dot sits where the eased jump lands, so it rests on the line.
+      const at = Math.min(s.elapsed + jumpHalfWidth(model, s.elapsed), model.end);
+      return `<span class="sct-wp-dot" style="left:${px(x(at))};top:${py(y(s.after))};background:${fill}" aria-hidden="true"></span>`;
     })
     .join("");
 
@@ -245,13 +352,14 @@ function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof p
     `<title id="sct-wp-t">${escapeHtml(`${game.home.short} win probability by game minute`)}</title>` +
     `<desc id="sct-wp-d">${escapeHtml(desc)}</desc>` +
     grid +
-    `<line class="sct-wp-half" x1="${PAD.left}" x2="${W - PAD.right}" y1="${r(y(0.5))}" y2="${r(y(0.5))}"/>` +
-    yLabels +
+    `<line class="sct-wp-half" x1="${PAD.left}" x2="${W - PAD.right}" y1="${r(y(0.5))}" y2="${r(y(0.5))}" vector-effect="non-scaling-stroke"/>` +
     // Painted through style, not attributes, so the page's dark theme can swap the ink.
     `<path d="${area}" style="fill:${colors.home.ink}" fill-opacity="0.14" stroke="none"/>` +
-    `<path d="${line}" fill="none" style="stroke:${colors.home.ink}" stroke-width="3.25" stroke-linejoin="round"/>` +
-    dots +
-    `</svg>`
+    `<path d="${line}" fill="none" style="stroke:${colors.home.ink}" stroke-width="3.25" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>` +
+    `</svg>` +
+    yLabels +
+    xLabels +
+    dots
   );
 }
 
@@ -316,7 +424,9 @@ export function renderWinProbability(input: WinProbabilityInput): string {
     .sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before))
     .slice(0, 3)
     .map((s) => {
-      const left = ((PAD.left + (s.elapsed / model.end) * (W - PAD.left - PAD.right)) / W) * 100;
+      // Where the eased jump lands, the same point the dot sits on.
+      const landed = Math.min(s.elapsed + jumpHalfWidth(model, s.elapsed), model.end);
+      const left = ((PAD.left + (landed / model.end) * (W - PAD.left - PAD.right)) / W) * 100;
       const top = ((PAD.top + (1 - s.after) * (H - PAD.top - PAD.bottom)) / H) * 100;
       const cls = [
         "sct-wp-label",

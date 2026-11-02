@@ -228,44 +228,6 @@ describe("one address per meeting", () => {
     );
   });
 
-  test("a game-week page links its top fantasy players to the start/sit tool (mak, 2026-10-10)", async () => {
-    const { doc } = await dom(CANON);
-    const season = Number(doc.querySelector("[data-sct-root]").getAttribute("data-season"));
-    // A game from the season in progress, with a box score: the block is for
-    // decisions still to be made, so a playoff game or an old season prints none.
-    const href = [...doc.querySelectorAll("a.sct-mu-recap")]
-      .map((a) => a.getAttribute("href"))
-      .find((h) => Number(/(\d{4})-week-/.exec(h)[1]) === season);
-    if (!href) return;
-    const page = await dom(href);
-    const block = page.doc.querySelector('[data-fp-block="start-sit"]');
-    if (!block) return; // No box score stored for this game, so no Fantasy tab.
-
-    assert.equal(block.querySelector("h3").textContent, "Start/sit checks");
-    const cards = [...block.querySelectorAll(".sct-fp-ss-card")];
-    assert.ok(cards.length >= 1 && cards.length <= 2, "one card per team");
-    for (const card of cards) {
-      const links = [...card.querySelectorAll("a.sct-fp-ss-link")];
-      assert.ok(links.length >= 1);
-      const byPos = {};
-      for (const a of links) {
-        assert.match(a.getAttribute("href"), /^https:\/\/statchasers\.com\/redraft-command\/who-should-i-start\/[a-z0-9-]+$/);
-        const pos = a.previousElementSibling.textContent;
-        byPos[pos] = (byPos[pos] ?? 0) + 1;
-      }
-      // The QB, two RBs, three WRs and the TE at most.
-      for (const [pos, max] of Object.entries({ QB: 1, RB: 2, WR: 3, TE: 1 })) {
-        assert.ok((byPos[pos] ?? 0) <= max, `${pos} within its quota`);
-      }
-      assert.deepEqual(Object.keys(byPos).filter((p) => !["QB", "RB", "WR", "TE"].includes(p)), []);
-      const fpa = card.querySelector(".sct-fp-ss-fpa a");
-      if (fpa) {
-        assert.equal(fpa.getAttribute("href"), "https://statchasers.com/nfl/fantasy-points-allowed-by-position/");
-        assert.match(fpa.textContent, /^[A-Z][A-Za-z0-9 .]+ allows? the (most|\d{1,2}(st|nd|rd|th)-most) fantasy points to (QB|RB|WR|TE)s$/);
-      }
-    }
-  });
-
   test("a recap from an earlier season carries nothing that describes now", async () => {
     const { doc } = await dom(CANON);
     const pageSeason = Number(
@@ -1002,49 +964,40 @@ describe("the postgame page", () => {
     assert.equal(page.doc.querySelector(".sct-mu-fantasy"), null);
   });
 
-  test("every ring slice is named and measured in text, not only in color", async () => {
+  test("target and carry shares are ranked bars that name, count and sum", async () => {
     const page = await postgamePage();
     if (!page) return;
     const block = page.doc.querySelector(".sct-mu-usage");
     if (!block) return;
 
-    const rows = [...block.querySelectorAll(".sct-mu-usage-ring-row")];
-    if (rows.length === 0) return;
+    const lists = [...block.querySelectorAll(".sct-mu-usage-bars.is-dist")];
+    if (lists.length === 0) return;
 
-    for (const row of rows) {
-      const arcs = [...row.querySelectorAll(".sct-mu-usage-arc")];
-      const keys = [...row.querySelectorAll(".sct-mu-usage-key")];
-      // A slice with no legend entry is a slice whose meaning is its color.
-      assert.equal(keys.length, arcs.length, "one legend row per slice");
-
-      // The ring itself is decoration: everything in it is written beside it.
-      const svg = row.querySelector("svg");
-      assert.equal(svg.getAttribute("aria-hidden"), "true", "the ring is aria-hidden");
-
+    for (const list of lists) {
+      const bars = [...list.querySelectorAll(".sct-mu-usage-bar")];
+      assert.ok(bars.length > 0, "a distribution has rows");
       let sum = 0;
       let previous = Infinity;
-      for (const key of keys) {
-        const name = key.querySelector(".sct-mu-usage-key-name")?.textContent.trim();
+      for (const bar of bars) {
+        const name = bar.querySelector(".sct-mu-usage-bar-name")?.textContent.trim();
         assert.ok(name, "the slice is named");
-        const printed = key.querySelector(".sct-mu-usage-key-pct")?.textContent.trim();
+        const printed = bar.querySelector(".sct-mu-usage-bar-pct")?.textContent.trim();
         assert.match(printed ?? "", /^\d+%$/, `${name} has a percentage`);
         const share = Number(printed.slice(0, -1));
         sum += share;
-
+        // The raw count beside the percentage, in the same design as the snap rows.
+        assert.match(bar.querySelector(".sct-mu-usage-bar-raw").textContent, /^(1 (target|carry)|\d+ (targets|carries))$/);
+        // The bar is drawn to the number it prints.
+        assert.equal(bar.querySelector(".sct-mu-usage-fill").getAttribute("style"), `width:${share}%`.replace(/%$/, "%") + (bar.classList.contains("is-other") ? `;background:#c2c8d2` : ""));
         // Highest first, with the pooled tail last however big it is.
-        if (!key.querySelector(".is-other")) {
+        if (!bar.classList.contains("is-other")) {
           assert.ok(share <= previous, `${name} at ${share}% is out of order`);
           previous = share;
+          assert.ok(bar.querySelector(".sct-mu-usage-face img"), `${name} has a face`);
         } else {
-          assert.equal(key, keys.at(-1), "Other is last");
+          assert.equal(bar, bars.at(-1), "Other is last");
+          assert.equal(bar.querySelector(".sct-mu-usage-face img"), null, "Other has no face");
         }
-
-        // The raw count a screen reader gets, since the ring cannot give it one.
-        assert.match(
-          key.textContent,
-          /\d+\s+(targets|carries)/,
-          `${name} carries its raw count`,
-        );
       }
       // These are shares of one denominator, so they are a whole - give or take
       // the rounding of six numbers.
@@ -1058,7 +1011,7 @@ describe("the postgame page", () => {
     const block = page.doc.querySelector(".sct-mu-usage");
     if (!block) return;
 
-    for (const list of block.querySelectorAll(".sct-mu-usage-bars")) {
+    for (const list of block.querySelectorAll(".sct-mu-usage-bars:not(.is-dist)")) {
       const bars = [...list.querySelectorAll(".sct-mu-usage-bar")];
       assert.ok(bars.length > 0 && bars.length <= 5, `${bars.length} bars`);
       let previous = Infinity;
@@ -1254,8 +1207,11 @@ describe("sortable stat tables", () => {
     ]);
     for (const row of passing.querySelectorAll("tbody tr")) assert.equal(row.cells.length, heads.length);
     const skill = block("WRs, RBs, & TEs");
-    const positions = [...(skill?.querySelectorAll("tbody .sct-mu-ps-pos") ?? [])].map((c) => c.textContent);
+    // The position is in the name cell's "NE · WR" line; the POS column went 2026-11-02.
+    const positions = [...(skill?.querySelectorAll("tbody .sct-mu-ps-meta .sct-pos") ?? [])].map((c) => c.textContent);
     assert.ok(!positions.includes("QB"), `positions ${positions.join(", ")}`);
+    const skillHeads = [...(skill?.querySelectorAll("thead th") ?? [])].map((h) => h.textContent);
+    assert.ok(!skillHeads.includes("POS"), "no POS column");
   });
 
   test("the highlights video is part of the game story on the Recap tab", async () => {
@@ -1265,9 +1221,11 @@ describe("sortable stat tables", () => {
     // One game-summary module: the story's last child, after its text.
     assert.ok(video.parentElement.matches(".sct-mu-story"));
     assert.ok(video.previousElementSibling.matches(".sct-mu-story-body, .sct-mu-keys"));
-    // Click to load: a button, no iframe in the served HTML.
-    assert.ok(video.querySelector("button.sct-hl-play[data-hl-embed^='https://www.youtube-nocookie.com/embed/']"));
-    assert.equal(video.querySelector("iframe"), null);
+    // Nothing plays here: the box is a link to YouTube in a new tab, no
+    // iframe and no click-to-load button (2026-11-02).
+    const link = video.querySelector("a.sct-hl-play[href^='https://www.youtube.com/watch?v='][target='_blank']");
+    assert.ok(link);
+    assert.equal(video.querySelector("iframe, button, [data-hl-embed]"), null);
   });
 
   test("each stat table leads with fantasy points and finish, all three formats on the cell", async () => {
@@ -1295,15 +1253,15 @@ describe("sortable stat tables", () => {
     assert.equal(allen.length, 1, "one row for Josh Allen");
     assert.notEqual(allen[0].cells[7].textContent, "-", "his carries are on the Passing row");
     // The pair's "Player Stats" title sits straight over the tables and opens
-    // the section, the fantasy leaders follow under the pair's "Fantasy
-    // Points" title (the Search Console brief of 2026-10-30: stats first,
-    // fantasy as the differentiator), and the banner closes it.
-    assert.ok(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-head:first-child + .sct-mu-ps-row + h2 + .sct-mu-fl"));
+    // the section, and the banner closes it. The "Fantasy Points" title and
+    // the fantasy leaders that followed the tables were removed 2026-11-02.
+    assert.ok(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-head:first-child + .sct-mu-ps-row + .sct-mu-ps-cta"));
+    assert.equal(doc.querySelector(".sct-mu-fl"), null, "no fantasy leaders");
+    assert.equal(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-row + h2"), null, "no Fantasy Points title");
     assert.equal(
       doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-head:first-child > h2").textContent,
       "Bills vs Patriots Player Stats: Passing, Rushing & Receiving",
     );
-    assert.equal(doc.querySelector(".sct-mu-playerstats > .sct-mu-ps-row + h2").textContent, "Bills vs Patriots Fantasy Points");
     assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-ps-cta sct-mu-decide");
     assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
   });
@@ -1339,8 +1297,6 @@ describe("sortable stat tables", () => {
       assert.equal(n.textContent, n.getAttribute("data-std"));
       assert.equal(n.parentElement.querySelector(".sct-ls-unit").textContent, "Std pts");
     }
-    // The fantasy leaders' points and finishes follow the switch too.
-    for (const n of doc.querySelectorAll("[data-ps-swap]")) assert.equal(n.textContent, n.getAttribute("data-std"));
   });
 
   test("clicking a header actually reorders the rows", async () => {
@@ -1793,11 +1749,12 @@ describe("the Cardinals–Rams games", () => {
     // From ESPN's own feed, when it answered: the strip's four and the summary's end.
     const leaders = [...doc.querySelectorAll(".sct-ls-card .sct-ls-name")].map((n) => n.textContent);
     if (leaders.length) {
-      assert.deepEqual(leaders, ["Matthew Stafford", "Cooper Kupp", "Christian Kirk", "David Long Jr."]);
-      assert.deepEqual(
-        [...doc.querySelectorAll(".sct-ls-num")].map((n) => n.textContent),
-        ["24.3", "17.1", "11.1"],
-      );
+      // Passing, receiving, rushing, defense (2026-11-02): Michel led the
+      // Rams' rushing that day with Akers taking more carries for fewer yards.
+      assert.deepEqual(leaders, ["Matthew Stafford", "Cooper Kupp", "Sony Michel", "David Long Jr."]);
+      const nums = [...doc.querySelectorAll(".sct-ls-num")].map((n) => n.textContent);
+      assert.deepEqual(nums.slice(0, 2), ["24.3", "17.1"]);
+      assert.ok(Number(nums[2]) > 0, "the rushing leader's points");
     }
     const scored = [...doc.querySelectorAll("tr.sct-ss-play")];
     if (scored.length) {
@@ -1812,13 +1769,13 @@ describe("the Cardinals–Rams games", () => {
       assert.equal(doc.querySelectorAll(".sct-ss-pill.is-takes").length, 1);
       assert.doesNotMatch(doc.querySelector(".sct-ss").textContent, /Jr\.\./);
     }
-    const tiles = [...doc.querySelectorAll("ol.sct-rb-tiles li")];
-    const rams = tiles.filter((t) => t.textContent === "R").length;
-    const cards = tiles.filter((t) => t.textContent === "C").length;
+    const chips = [...doc.querySelectorAll(".sct-rb-meetings li:not(.is-upcoming) .sct-rb-chip")];
+    const rams = chips.filter((t) => t.textContent.startsWith("LAR ")).length;
+    const cards = chips.filter((t) => t.textContent.startsWith("ARI ")).length;
     assert.equal(
       doc.querySelector(".sct-rb-h2h-figure").textContent,
       `${Math.max(rams, cards)}\u2013${Math.min(rams, cards)}`,
-      "the record is the tiles counted",
+      "the record is the row chips counted",
     );
     const faq = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
       .map((s) => JSON.parse(s.textContent))

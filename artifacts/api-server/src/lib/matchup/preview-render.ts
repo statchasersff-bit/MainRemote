@@ -18,7 +18,9 @@ import type { StatRow, TeamStats } from "../team/stats";
 import { getPlayerProfileUrl } from "../team/links";
 import {
   allowPhrase,
+  fmtData,
   ordinal,
+  perFormat,
   rankWord,
   signedLine,
   type BoardRow,
@@ -28,6 +30,7 @@ import {
   type Pos,
   type Preview,
   type PreviewSide,
+  type ScoringFormat,
   type SideKey,
   type Verdict,
 } from "./preview";
@@ -575,29 +578,45 @@ function renderLeverage(p: Preview): string {
 
   // A visual board since 2026-10-23 (mak): a role bar, a matchup bar and a
   // colored leverage dot per player, the numbers demoted to small print.
+  // Every cell in all three scorings (mak, 2026-11-02): the role bar follows
+  // his rank in that scoring, the matchup bar the defense's rank in it, and
+  // the leverage call follows both. The switch swaps text, tiers and widths.
   const role = (r: LeverageRow) => {
-    const tier = roleTier(r);
-    const width = r.posRank === null ? 0 : Math.max(8, Math.round(100 * (1 - (r.posRank - 1) / (2 * STARTERS[r.pos]))));
+    const tierOf = perFormat((f) => roleTierOf(r.formats[f].posRank, r.pos));
+    const widthOf = perFormat((f) => {
+      const posRank = r.formats[f].posRank;
+      return posRank === null ? 0 : Math.max(8, Math.round(100 * (1 - (posRank - 1) / (2 * STARTERS[r.pos]))));
+    });
+    const tier = tierOf.ppr;
     const note = r.roleStats[0] ? `${r.roleStats[0].v} ${r.roleStats[0].k}` : r.role;
     return (
-      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}" aria-hidden="true"><i style="width:${width}%"></i></span>` +
-      `<span class="sct-pv-lb-lab"><b>${ROLE_WORD[tier]}</b><small>${e(note)}</small></span></div>`
+      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}"${fmtData(tierOf, "tier")} aria-hidden="true"><i style="width:${widthOf.ppr}%"${fmtData(widthOf, "w")}></i></span>` +
+      `<span class="sct-pv-lb-lab"><b${fmtData(perFormat((f) => ROLE_WORD[tierOf[f]]))}>${ROLE_WORD[tier]}</b><small>${e(note)}</small></span></div>`
     );
   };
   const matchup = (r: LeverageRow) => {
-    const tier = r.defRank === null ? "neutral" : r.defRank <= 10 ? "favorable" : r.defRank >= 23 ? "tough" : "neutral";
-    const width = r.defRank === null ? 0 : Math.round(((33 - r.defRank) / 32) * 100);
-    const note = r.defRank !== null && r.defFpa !== null ? `${one(r.defFpa)} allowed · ${allowPhrase(r.defRank)}` : r.defense;
+    const tierOf = perFormat((f) => {
+      const rank = r.formats[f].defRank;
+      return rank === null ? "neutral" : rank <= 10 ? "favorable" : rank >= 23 ? "tough" : "neutral";
+    });
+    const widthOf = perFormat((f) => (r.formats[f].defRank === null ? 0 : Math.round(((33 - r.formats[f].defRank!) / 32) * 100)));
+    const noteOf = perFormat((f) => {
+      const { defRank, defFpa } = r.formats[f];
+      return defRank !== null && defFpa !== null ? `${one(defFpa)} allowed · ${allowPhrase(defRank)}` : r.defense;
+    });
+    const tier = tierOf.ppr;
     return (
-      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}" aria-hidden="true"><i style="width:${width}%"></i></span>` +
-      `<span class="sct-pv-lb-lab"><b>${MATCHUP_WORD[tier]}</b><small>${e(note)}</small></span></div>`
+      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}"${fmtData(tierOf, "tier")} aria-hidden="true"><i style="width:${widthOf.ppr}%"${fmtData(widthOf, "w")}></i></span>` +
+      `<span class="sct-pv-lb-lab"><b${fmtData(perFormat((f) => MATCHUP_WORD[tierOf[f]]))}>${MATCHUP_WORD[tier]}</b><small${fmtData(noteOf)}>${e(noteOf.ppr)}</small></span></div>`
     );
   };
+  const levWord = (chip: Leverage) => LEVERAGE_LABEL[chip][0].replace(/^[↑↓-] /, "");
   const dot = (r: LeverageRow) =>
-    `<div class="sct-pv-lb-lev"><span class="sct-pv-lb-dot is-${r.chip}" aria-hidden="true"></span><span>${e(LEVERAGE_LABEL[r.chip][0].replace(/^[↑↓-] /, ""))}</span></div>`;
+    `<div class="sct-pv-lb-lev"><span class="sct-pv-lb-dot is-${r.chip}"${fmtData(perFormat((f) => r.formats[f].chip), "lev")} aria-hidden="true"></span>` +
+    `<span${fmtData(perFormat((f) => levWord(r.formats[f].chip)))}>${e(levWord(r.chip))}</span></div>`;
 
   return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-lev">` +
+    `<section class="sct-pv-sec" aria-labelledby="pv-lev" data-pv-fmt>` +
     h2("pv-lev", `${pairOf(p)} Matchup Leverage`) +
     `<p class="sct-pv-lede">Points allowed tells you where a defense is vulnerable. Matchup Leverage adds the missing piece: whether each player has the role to exploit it.</p>` +
     `<div class="sct-pv-card sct-pv-lb">` +
@@ -606,7 +625,7 @@ function renderLeverage(p: Preview): string {
     p.leverage
       .map(
         (r) =>
-          `<li class="sct-pv-lb-row" data-lev="${r.chip}"><div class="sct-pv-lb-who">${who(r)}</div>` +
+          `<li class="sct-pv-lb-row" data-lev="${r.chip}"${fmtData(perFormat((f) => r.formats[f].chip), "lev")}><div class="sct-pv-lb-who">${who(r)}</div>` +
           role(r) +
           matchup(r) +
           dot(r) +
@@ -625,9 +644,13 @@ const MATCHUP_WORD = { favorable: "Favorable", neutral: "Neutral", tough: "Tough
 
 /** Strong = the top half of fantasy starters at the position, solid = a starter, light = the rest. */
 function roleTier(r: LeverageRow): keyof typeof ROLE_WORD {
-  if (r.posRank === null) return "light";
-  if (r.posRank <= STARTERS[r.pos] / 2) return "strong";
-  if (r.posRank <= STARTERS[r.pos]) return "solid";
+  return roleTierOf(r.posRank, r.pos);
+}
+
+function roleTierOf(posRank: number | null, pos: Pos): keyof typeof ROLE_WORD {
+  if (posRank === null) return "light";
+  if (posRank <= STARTERS[pos] / 2) return "strong";
+  if (posRank <= STARTERS[pos]) return "solid";
   return "light";
 }
 
@@ -701,25 +724,44 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
   const A = code(away.team);
   const H = code(home.team);
   type Side = { value: string; rank: number | null; rankLabel?: string | null };
-  const row = (label: string, a: Side, h: Side, word: "advantage" | "softer"): string => {
+  const advOf = (a: Side, h: Side): "even" | "away" | "home" => {
     const close = a.rank === null || h.rank === null || Math.abs(a.rank - h.rank) <= 2;
-    const adv = close ? "even" : a.rank! < h.rank! ? "away" : "home";
-    const marker = adv === "even" ? (a.rank === null || h.rank === null ? "" : "Close") : `${adv === "away" ? A : H} ${word}`;
-    const bar = (s: Side, cls: string) =>
+    return close ? "even" : a.rank! < h.rank! ? "away" : "home";
+  };
+  const markerOf = (a: Side, h: Side, word: string): string => {
+    const adv = advOf(a, h);
+    return adv === "even" ? (a.rank === null || h.rank === null ? "" : "Close") : `${adv === "away" ? A : H} ${word}`;
+  };
+  const widthOf = (s: Side): number => (s.rank === null ? 0 : Math.round(((33 - s.rank) / 32) * 100));
+  // `formats`: the same row in each scoring, for the points-allowed rows the
+  // page's switch rewrites (mak, 2026-11-02); the other rows have none.
+  const row = (label: string, a: Side, h: Side, word: "advantage" | "softer", formats?: Record<ScoringFormat, { a: Side; h: Side }>): string => {
+    const adv = advOf(a, h);
+    const marker = markerOf(a, h, word);
+    const sideIn = (f: ScoringFormat, k: "a" | "h"): Side => (formats ? formats[f][k] : k === "a" ? a : h);
+    const bar = (s: Side, cls: string, k: "a" | "h") =>
       s.rank === null
         ? `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"></span>`
-        : `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"><i style="width:${Math.round(((33 - s.rank) / 32) * 100)}%"></i></span>`;
-    const val = (s: Side, cls: string) =>
-      `<span class="sct-pv-cmp-v ${cls}"><b>${e(s.value)}</b>${rankChip(s.rank, s.rankLabel ?? null)}</span>`;
+        : `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"><i style="width:${widthOf(s)}%"${formats ? fmtData(perFormat((f) => widthOf(sideIn(f, k))), "w") : ""}></i></span>`;
+    const chip = (s: Side, k: "a" | "h") =>
+      s.rank === null
+        ? ""
+        : `<span class="sct-pv-rank" data-tier="${tier(s.rank)}"` +
+          (formats ? fmtData(perFormat((f) => sideIn(f, k).rankLabel ?? ordinal(sideIn(f, k).rank ?? 0))) + fmtData(perFormat((f) => tier(sideIn(f, k).rank)), "tier") : "") +
+          `>${e(s.rankLabel ?? ordinal(s.rank))}</span>`;
+    const val = (s: Side, cls: string, k: "a" | "h") =>
+      `<span class="sct-pv-cmp-v ${cls}"><b${formats ? fmtData(perFormat((f) => sideIn(f, k).value)) : ""}>${e(s.value)}</b>${chip(s, k)}</span>`;
     return (
-      `<div class="sct-pv-cmp-row" data-adv="${adv}">` +
-      val(a, "is-l") +
-      bar(a, "is-l") +
+      `<div class="sct-pv-cmp-row" data-adv="${adv}"${formats ? fmtData(perFormat((f) => advOf(formats[f].a, formats[f].h)), "adv") : ""}>` +
+      val(a, "is-l", "a") +
+      bar(a, "is-l", "a") +
       `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">${e(label)}</span>` +
-      (marker ? `<span class="sct-pv-cmp-adv">${e(marker)}</span>` : "") +
+      (marker || formats
+        ? `<span class="sct-pv-cmp-adv"${formats ? fmtData(perFormat((f) => markerOf(formats[f].a, formats[f].h, word))) : ""}>${e(marker)}</span>`
+        : "") +
       `</span>` +
-      bar(h, "is-r") +
-      val(h, "is-r") +
+      bar(h, "is-r", "h") +
+      val(h, "is-r", "h") +
       `</div>`
     );
   };
@@ -752,21 +794,26 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
       ? group(
           "Matchups",
           (["QB", "RB", "WR", "TE"] as Pos[])
-            .map((pos) =>
-              row(
+            .map((pos) => {
+              const sideIn = (s: PreviewSide, f: ScoringFormat): Side => {
+                const cell = (s.fpaFormats[f] ?? s.fpa!).byPos[pos];
+                return { value: one(cell.fpa), rank: cell.rank };
+              };
+              return row(
                 `${pos} pts allowed`,
-                { value: one(away.fpa!.byPos[pos].fpa), rank: away.fpa!.byPos[pos].rank },
-                { value: one(home.fpa!.byPos[pos].fpa), rank: home.fpa!.byPos[pos].rank },
+                sideIn(away, "ppr"),
+                sideIn(home, "ppr"),
                 "softer",
-              ),
-            )
+                perFormat((f) => ({ a: sideIn(away, f), h: sideIn(home, f) })),
+              );
+            })
             .join(""),
         )
       : "";
 
   if (!offense && !defense && !matchups) return "";
   return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
+    `<section class="sct-pv-sec" aria-labelledby="pv-snap" data-pv-fmt>` +
     h2("pv-snap", `${pairOf(p)} Team Matchup`) +
     `<div class="sct-pv-card sct-pv-cmp">` +
     `<div class="sct-pv-cmp-head" aria-hidden="true"><span>${e(A)}</span><span>${e(H)}</span></div>` +
@@ -836,7 +883,13 @@ function renderInjuries(p: Preview): string {
           listed
             .map(
               (r) =>
-                `<li class="sct-pv-row"><span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span>` +
+                // The face first (mak, 2026-11-02), in a round well washed with the team color.
+                `<li class="sct-pv-row sct-pv-inj-row"><span class="sct-pv-lb-face sct-pv-inj-face is-${s.key}" aria-hidden="true">` +
+                (r.sleeperId
+                  ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
+                  : "") +
+                `</span>` +
+                `<span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span>` +
                 `<div class="sct-pv-row-body"><p class="sct-pv-row-name">${playerLink(r.name)}` +
                 (r.pos ? ` <span class="sct-pv-pos">${e(r.pos)}</span>` : "") +
                 `</p><p class="sct-pv-row-why">${e(r.fallout)}</p></div></li>`,

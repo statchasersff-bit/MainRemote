@@ -7,11 +7,16 @@
  * printed on the card - never read from a stored total.
  *
  *   1. Passing leader - most passing yards.
- *   2. Top fantasy scorer - most PPR points among non-quarterbacks.
- *   3. {Loser} leader - most PPR points on the losing side (the away side on a
- *      tie), the next one down when that player is already on the strip.
+ *   2. Receiving leader - most receiving yards, then receptions.
+ *   3. Rushing leader - most rushing yards, then rushing touchdowns.
  *   4. Defensive playmaker - a defensive touchdown, then interceptions, then
  *      sacks, then tackles.
+ *
+ * Each rule skips anyone already on the strip, so a back who led both the
+ * receiving and the rushing yards takes the receiving card and the next back
+ * takes the rushing one. (Until 2026-11-02 cards 2 and 3 were the top
+ * non-quarterback fantasy scorer and the losing side's leader; mak asked for
+ * the three box-score leaders instead.)
  *
  * Pure: the game, its players and a link resolver in, HTML out.
  */
@@ -19,16 +24,19 @@
 import { escapeHtml } from "../render";
 import { fantasyPoints } from "./fantasy-points";
 import { isKicker, type GamePlayer, type GamePlayers } from "./game-players";
-import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
+import { playerPhoto } from "./player-cell";
+import { pairColors, type ScoreboardGame } from "./scoreboard-hero";
 
 export interface LeadersStripInput {
   game: ScoreboardGame;
   players: GamePlayers;
   /** A player's page, or null when the site has none. The same resolver every section uses. */
   playerUrl: (name: string) => string | null;
+  /** The image key (his Sleeper id) for a box-score id, or null; no key, no face. */
+  playerId?: (id: string) => string | null;
 }
 
-export type LeaderRole = "passing" | "fantasy" | "loser" | "defense";
+export type LeaderRole = "passing" | "receiving" | "rushing" | "defense";
 
 export interface LeaderPick {
   role: LeaderRole;
@@ -77,7 +85,6 @@ function best(
 }
 
 export function pickLeaders(input: Pick<LeadersStripInput, "game" | "players">): LeaderPick[] {
-  const { game } = input;
   const picked = new Set<string>();
   const picks: LeaderPick[] = [];
   const pool = (): Array<[string, GamePlayer]> =>
@@ -98,23 +105,20 @@ export function pickLeaders(input: Pick<LeadersStripInput, "game" | "players">):
   );
 
   take(
-    "fantasy",
-    "Top fantasy scorer",
+    "receiving",
+    "Receiving leader",
     best(
-      pool().filter(([, p]) => kindOf(p) !== "QB" && ppr(p) > 0),
-      (a, b) => ppr(b) - ppr(a),
+      pool().filter(([, p]) => (p.stats.recYds ?? 0) > 0),
+      (a, b) => (b.stats.recYds ?? 0) - (a.stats.recYds ?? 0) || (b.stats.rec ?? 0) - (a.stats.rec ?? 0) || ppr(b) - ppr(a),
     ),
   );
 
-  const result = scoreboardResult(game);
-  const side = result?.winner === "home" ? "away" : result?.winner === "away" ? "home" : "away";
-  const loser = game[side];
   take(
-    "loser",
-    `${loser.short} leader`,
+    "rushing",
+    "Rushing leader",
     best(
-      pool().filter(([, p]) => p.team === loser.abbr && ppr(p) > 0),
-      (a, b) => ppr(b) - ppr(a),
+      pool().filter(([, p]) => (p.stats.rushYds ?? 0) > 0),
+      (a, b) => (b.stats.rushYds ?? 0) - (a.stats.rushYds ?? 0) || (b.stats.rushTd ?? 0) - (a.stats.rushTd ?? 0) || ppr(b) - ppr(a),
     ),
   );
 
@@ -144,7 +148,10 @@ export function statLine(p: GamePlayer, role?: LeaderRole): string {
   const add = (n: number | undefined, unit: string): void => {
     if ((n ?? 0) > 0) parts.push(`${n} ${unit}`);
   };
-  const kind = role === "defense" ? "DEF" : kindOf(p);
+  // The card's role sets the line: a back on the receiving card reads as a
+  // receiver, a receiver on the rushing card as a runner.
+  const kind: Kind =
+    role === "defense" ? "DEF" : role === "receiving" ? "REC" : role === "rushing" ? "RB" : role === "passing" ? "QB" : kindOf(p);
   if (kind === "QB") {
     parts.push(`${s.passCmp ?? 0}/${s.passAtt ?? 0}`, `${s.passYds ?? 0} YDS`);
     add(s.passTd, "TD");
@@ -190,8 +197,13 @@ function card(input: LeadersStripInput, pick: LeaderPick): string {
         ` data-std="${fantasyPoints(p.stats, "standard").toFixed(1)}">${ppr(p).toFixed(1)}</span>` +
         `<span class="sct-ls-unit">PPR pts</span>` +
         `</p>`;
+  // The face beside the text (mak, 2026-11-02); a player the logs don't
+  // know (most defenders) has no key and the card reads as before.
+  const key = input.playerId?.(pick.id) ?? null;
+  const face = key ? playerPhoto(key, "sct-ls-face", 44) : "";
   return (
-    `<li class="sct-ls-card" data-role="${pick.role}" style="${escapeHtml(`--ls-team:${ink}`)}">` +
+    `<li class="sct-ls-card${face ? " has-face" : ""}" data-role="${pick.role}" style="${escapeHtml(`--ls-team:${ink}`)}">` +
+    face +
     `<p class="sct-ls-label">${escapeHtml(pick.label)}</p>` +
     `<p class="sct-ls-name">${name}</p>` +
     `<p class="sct-ls-meta">${escapeHtml(meta)}</p>` +

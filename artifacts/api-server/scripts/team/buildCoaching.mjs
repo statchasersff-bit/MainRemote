@@ -914,34 +914,55 @@ function composeEntry({
     // line as this season's rank: a 2025-26 pool beside a 2026-only rank is two
     // periods on one line, and every other current number reads "through Week N".
     const now = isCurrent ? scoring.get(`${c}|${season}`) : null;
+    // Every season's own figure for the career chart (2026-11-02): a
+    // windowed stop is one point over its window; the current season is
+    // its pace to date.
+    const seasonPoints = win
+      ? [{ year: stop.seasons[0], ...scoring.window(c, stop.seasons[0], win.from, win.to) }]
+      : seasonsHere.map((yr) => ({ year: yr, ...(scoring.get(`${c}|${yr}`) ?? {}) }));
+    const seasons = seasonPoints
+      .filter((p) => p.ppg != null)
+      .map((p) => ({ year: p.year, ppg: round(p.ppg, 1), rank: p.rank ?? null, games: p.games ?? null }));
     const multiSeason = seasonsHere.length > 1;
     const bestRank = ppgs.length ? Math.min(...ppgs.map((p) => p.rank ?? 32)) : null;
-    // Fingerprint prose from whatever layers exist for those seasons.
-    const splitYears = seasonsHere.filter((yr) => layerFor(stop, yr));
-    let fingerprint;
-    if (splitYears.length) {
-      const latest = Math.max(...splitYears);
-      const layer = layerFor(stop, latest);
+    // Fingerprint prose from whatever layers exist for those seasons: one
+    // sentence per tracked season (the page's fingerprint table lists every
+    // season since 2026-11-02), and `fingerprint` keeps the latest for the
+    // readers that want one line per stop.
+    const splitYears = seasonsHere.filter((yr) => layerFor(stop, yr)).sort((a, b) => a - b);
+    const fingerprints = [];
+    // The same seasons as numbers (2026-11-02): all three target shares and
+    // the league's, plus the lead back, for the fingerprint table's columns.
+    const prints = [];
+    for (const yr of splitYears) {
+      const layer = layerFor(stop, yr);
       const p = layer?.teams[c];
       const lg = layer?.leagueShare;
-      const yearLabel = win && latest === stop.seasons[0] ? `${latest} (${windowLabel(win)})` : `${latest}`;
-      if (p) {
-        const parts = [];
-        const leanPos = ["WR", "TE", "RB"]
-          .map((pos) => ({ pos, d: (p.targetShare[pos] ?? 0) - (lg?.[pos] ?? 0) }))
-          .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))[0];
-        if (leanPos && Math.abs(leanPos.d) >= 3) {
-          parts.push(
-            `${leanPos.pos}s took ${p.targetShare[leanPos.pos]}% of targets (league ${lg[leanPos.pos]}%) in ${yearLabel}`,
-          );
-        } else if (p.targetShare.WR != null) {
-          parts.push(`a league-typical WR/TE/RB target split in ${yearLabel}`);
-        }
-        if (p.leadBackShare != null) parts.push(`the lead back handled ${p.leadBackShare}% of backfield weighted opportunities`);
-        fingerprint = `${parts.join("; ")}.`;
+      const yearLabel = win && yr === stop.seasons[0] ? `${yr} (${windowLabel(win)})` : `${yr}`;
+      if (!p) continue;
+      prints.push({
+        year: yr,
+        label: yearLabel,
+        shares: { WR: p.targetShare.WR ?? null, RB: p.targetShare.RB ?? null, TE: p.targetShare.TE ?? null },
+        league: { WR: lg?.WR ?? null, RB: lg?.RB ?? null, TE: lg?.TE ?? null },
+        leadBack: p.leadBackShare ?? null,
+      });
+      const parts = [];
+      const leanPos = ["WR", "TE", "RB"]
+        .map((pos) => ({ pos, d: (p.targetShare[pos] ?? 0) - (lg?.[pos] ?? 0) }))
+        .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))[0];
+      if (leanPos && Math.abs(leanPos.d) >= 3) {
+        parts.push(
+          `${leanPos.pos}s took ${p.targetShare[leanPos.pos]}% of targets (league ${lg[leanPos.pos]}%) in ${yearLabel}`,
+        );
+      } else if (p.targetShare.WR != null) {
+        parts.push(`a league-typical WR/TE/RB target split in ${yearLabel}`);
       }
+      if (p.leadBackShare != null) parts.push(`the lead back handled ${p.leadBackShare}% of backfield weighted opportunities`);
+      fingerprints.push(`${parts.join("; ")}.`);
     }
-    fingerprint ??= `scoring data only for this stop - it predates our target-tracking window (2016).`;
+    const fingerprint =
+      fingerprints[fingerprints.length - 1] ?? `scoring data only for this stop - it predates our target-tracking window (2016).`;
     dossier.push({
       stop: `${stopName(stop)} · ${stop.role}`,
       years: stop.years,
@@ -959,6 +980,9 @@ function composeEntry({
       // A part-season window (e.g. three late-season games) is a stint, not "years".
       thesis: isCurrent ? "The current stop:" : `The ${stopName(stop)} ${win ? "stint" : "years"}:`,
       fingerprint,
+      ...(fingerprints.length > 1 ? { fingerprints } : {}),
+      ...(prints.length ? { prints } : {}),
+      ...(seasons.length ? { seasons } : {}),
     });
   }
 
@@ -972,7 +996,10 @@ function composeEntry({
     }
   }
   finishSeasons.sort((a, b) => a.yr - b.yr);
-  const finishRows = finishSeasons.slice(-4).map(({ stop, yr }) => {
+  // Every tracked season's row is kept as `history` for the fingerprint
+  // table (one row per season since 2026-11-02); the finishes table itself
+  // shows the last four plus the current pace, as before.
+  const finishRowFor = ({ stop, yr }) => {
     const c = club(stop.team) ?? stop.team.toLowerCase();
     const p = layerFor(stop, yr)?.teams[c];
     const w = stopWindow(stop);
@@ -985,7 +1012,9 @@ function composeEntry({
       };
     });
     return { stop: `${stopName(stop)} ${yr}`, context: w ? `${stop.role} · ${windowLabel(w)}` : stop.role, cells };
-  });
+  };
+  const finishHistory = finishSeasons.map(finishRowFor);
+  const finishRows = finishHistory.slice(-4);
   {
     const p = players.teams[abbr];
     finishRows.push({
@@ -1228,6 +1257,7 @@ function composeEntry({
         ],
     finishes: {
       heading: `Positional fantasy finishes under ${callerLast}`,
+      ...(finishHistory.length > finishRows.length - 1 ? { history: finishHistory } : {}),
       rows: finishRows,
       note: finishesNote,
     },

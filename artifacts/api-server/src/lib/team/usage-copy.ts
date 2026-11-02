@@ -257,16 +257,19 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
     // snaps: participation data (who was on the field) arrives after the season.
     const roomWork = view.rbs.reduce((s, p) => s + p.carries + p.targets, 0);
     const overall = roomWork ? Math.round((100 * (rb1.carries + rb1.targets)) / roomWork) : null;
+    // Named and numbered like the other two boxes (mak, 2026-11-02: "who's
+    // third down role exactly?"): the lead carries the back, the body his share.
+    const share = ownerShare(rb1);
     const path = thirdSample
-      ? "His third-down role gives him receiving value even when rushing volume falls"
-      : "His share of the backfield's targets gives him receiving value even when rushing volume falls";
+      ? `${share != null ? `**${share}% of the backs' third-down carries + targets**` : "His third-down role"} gives him receiving value even when rushing volume falls`
+      : `${share != null ? `**${share}% of the backfield's targets**` : "His share of the backfield's targets"} gives him receiving value even when rushing volume falls`;
     const script =
       trailing == null
         ? "."
         : overall == null || trailing >= overall * 0.75
           ? ", and his share holds up in negative game scripts."
           : ", though negative game scripts reduce his share of the backfield.";
-    out.push({ lead: "", body: path + script });
+    out.push({ lead: `${surname(rb1.name)} on passing downs:`, body: path + script });
   }
 
   // The handcuff: RB1's work redistributed in proportion to who takes the

@@ -122,20 +122,21 @@ describe("leaders strip", () => {
   const doc = dom(html);
   const cards = [...doc.querySelectorAll(".sct-ls-card")];
 
-  test("picks Stafford, Kupp, Kirk and Long Jr., in that order", () => {
+  test("picks Stafford, Kupp, Akers and Long Jr., in that order", () => {
     assert.deepEqual(
       cards.map((c) => c.querySelector(".sct-ls-name").textContent),
-      ["Matthew Stafford", "Cooper Kupp", "Christian Kirk", "David Long Jr."],
+      ["Matthew Stafford", "Cooper Kupp", "Cam Akers", "David Long Jr."],
     );
+    // Passing, receiving, rushing, defense (mak, 2026-11-02).
     assert.deepEqual(
       cards.map((c) => c.querySelector(".sct-ls-label").textContent),
-      ["Passing leader", "Top fantasy scorer", "Cardinals leader", "Defensive playmaker"],
+      ["Passing leader", "Receiving leader", "Rushing leader", "Defensive playmaker"],
     );
   });
 
-  test("shows 24.3, 17.1 and 11.1 PPR, and no points on the defensive card", () => {
+  test("shows 24.3, 17.1 and 9.2 PPR, and no points on the defensive card", () => {
     const points = cards.map((c) => c.querySelector(".sct-ls-num")?.textContent ?? null);
-    assert.deepEqual(points, ["24.3", "17.1", "11.1", null]);
+    assert.deepEqual(points, ["24.3", "17.1", "9.2", null]);
     const kupp = cards[1].querySelector(".sct-ls-num");
     assert.equal(kupp.getAttribute("data-ppr"), "17.1");
     assert.equal(kupp.getAttribute("data-half"), "14.6");
@@ -146,7 +147,7 @@ describe("leaders strip", () => {
   test("writes the stat line by position", () => {
     assert.deepEqual(
       cards.map((c) => c.querySelector(".sct-ls-line").textContent),
-      ["13/17, 202 YDS, 2 TD, 1 RUSH TD", "5 REC, 61 YDS, 1 TD", "6 REC, 51 YDS", "1 INT, 1 TD, 1 TKL"],
+      ["13/17, 202 YDS, 2 TD, 1 RUSH TD", "5 REC, 61 YDS, 1 TD", "17 ATT, 61 YDS, 2 REC, 11 REC YDS", "1 INT, 1 TD, 1 TKL"],
     );
     assert.equal(strip.statLine(byName("James Conner")), "12 ATT, 15 YDS, 1 TD, 1 REC, 9 REC YDS");
     assert.equal(strip.statLine(byName("Kyler Murray")), "19/34, 137 YDS, 2 INT");
@@ -157,7 +158,7 @@ describe("leaders strip", () => {
     assert.equal(section.getAttribute("aria-label"), "Game leaders");
     assert.equal(doc.querySelectorAll("h1, h2, h3").length, 0);
     assert.equal(cards[0].querySelector("a").getAttribute("href"), URLS["Matthew Stafford"]);
-    assert.equal(cards[2].querySelector("a"), null, "Kirk has no page here, so no link");
+    assert.equal(cards[2].querySelector("a"), null, "Akers has no page here, so no link");
     assert.equal(cards[0].querySelector(".sct-ls-meta").textContent, "LAR · QB");
   });
 
@@ -174,10 +175,29 @@ describe("leaders strip", () => {
     assert.deepEqual(picks.map((p) => p.player.name), ["Only Passer"]);
   });
 
-  test("on a tie, the third card is the away side's", () => {
+  test("the result does not change the cards: a tie still shows the rushing leader third", () => {
     const tie = { ...WILD_CARD, away: { ...WILD_CARD.away, quarters: [0, 0, 8, 26] } };
     const picks = strip.pickLeaders({ game: tie, players: PLAYERS });
-    assert.equal(picks[2].label, "Cardinals leader");
+    assert.equal(picks[2].label, "Rushing leader");
+    assert.equal(picks[2].player.name, "Cam Akers");
+  });
+
+  test("a back who leads both yardages takes the receiving card and the next back rushes", () => {
+    const two = players_.buildGamePlayers(
+      [
+        { espnId: "a", name: "Do It All", team: "ARI", pos: "RB", stats: { rushAtt: 20, rushYds: 90, rec: 6, recYds: 80 } },
+        { espnId: "b", name: "Second Back", team: "LAR", pos: "RB", stats: { rushAtt: 10, rushYds: 40 } },
+        { espnId: "w", name: "Deep Threat", team: "LAR", pos: "WR", stats: { rec: 3, recYds: 70 } },
+      ],
+      null,
+      [],
+    );
+    const picks = strip.pickLeaders({ game: WILD_CARD, players: two });
+    assert.deepEqual(picks.map((p) => [p.label, p.player.name]), [
+      ["Receiving leader", "Do It All"],
+      ["Rushing leader", "Second Back"],
+    ]);
+    assert.equal(strip.statLine(picks[0].player, "receiving"), "6 REC, 80 YDS");
   });
 });
 

@@ -8,6 +8,7 @@
  * playing order - regular season, then postseason - and never stored.
  */
 
+import { playerPhoto, teamPosition } from "./player-cell";
 import { escapeHtml, escapeJsonLd } from "../render";
 import { headshotImg } from "../headshot-html";
 import { YT_THUMB_VARIANTS } from "../image-urls";
@@ -232,26 +233,23 @@ export function renderBeforeAfter(game: ScoreboardGame, sides: BeforeAfterSide[]
 /* --------------------------------------------------------------- highlights */
 
 /**
- * The highlights: a click-to-load box. The server sends the thumbnail and a
- * button, never an iframe; client/team.ts swaps the button for the
- * youtube-nocookie player when it is pressed, so nothing from YouTube loads
- * until then. Without scripting the <noscript> link goes to YouTube, and the
- * note under the box links there too, for a player an embed is refused in.
+ * The highlights: a thumbnail box that is one link to the video on YouTube,
+ * opened in a new tab. Nothing plays on this page and nothing from YouTube
+ * loads here (mak, 2026-11-02; a click-to-load youtube-nocookie player from
+ * 2026-09-30 until then). The note under the box links there too.
  */
 export function renderHighlights(game: ScoreboardGame, video: GameVideo | null): string {
   if (!video || !/^[\w-]{6,20}$/.test(video.youtubeId)) return "";
   const colors = pairColors(game.away.abbr, game.home.abbr);
   const id = encodeURIComponent(video.youtubeId);
   const watch = `https://www.youtube.com/watch?v=${id}`;
-  const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-  const frameTitle = `${video.title} (YouTube video player)`;
   return (
     // No heading: the recap above already names the game (mak, 2026-10-22).
     // The id stays on the section so the jump nav's "Highlights" link lands.
     `<section class="sct-rb-section sct-hl" id="highlights" aria-label="Game highlights">` +
     `<div class="sct-hl-box" style="--hl-a:${colors.away.fill};--hl-b:${colors.home.fill}">` +
-    `<button type="button" class="sct-hl-play" data-hl-embed="${escapeHtml(embed)}" data-hl-title="${escapeHtml(frameTitle)}" ` +
-    `aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +
+    `<a class="sct-hl-play" href="${escapeHtml(watch)}" target="_blank" rel="noopener" ` +
+    `aria-label="${escapeHtml(`Watch on YouTube: ${video.title}`)}">` +
     // The thumbnail as this server's 4:3 WebP derivatives of YouTube's
     // hqdefault (lib/image-urls.ts, `yt` source), 320 and 480 wide for the
     // box's widths. A video YouTube has no thumbnail for prints nothing, as
@@ -269,10 +267,9 @@ export function renderHighlights(game: ScoreboardGame, video: GameVideo | null):
     }) ?? "") +
     `<span class="sct-hl-icon" aria-hidden="true"></span>` +
     `<span class="sct-hl-caption">${escapeHtml(video.title)}</span>` +
-    `</button>` +
-    `<noscript><a class="sct-hl-noscript" href="${escapeHtml(watch)}">${escapeHtml(`Watch on YouTube: ${video.title}`)}</a></noscript>` +
+    `</a>` +
     `</div>` +
-    `<p class="sct-rb-note sct-hl-note">${escapeHtml(`Official ${video.publisher} highlights · Opens from `)}` +
+    `<p class="sct-rb-note sct-hl-note">${escapeHtml(`Official ${video.publisher} highlights · Opens on `)}` +
     `<a href="${escapeHtml(watch)}" target="_blank" rel="noopener">YouTube</a></p>` +
     `</section>`
   );
@@ -339,78 +336,105 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
   const fav = pickem ? null : odds.favorite === game.home.abbr ? "home" : odds.favorite === game.away.abbr ? "away" : null;
   if (!pickem && !fav) return "";
 
-  // A. Results against the lines.
-  const tiles: Array<{ label: string; value: string; caption: string }> = [];
-  if (fav) {
-    const dog = fav === "home" ? "away" : "home";
-    const cover = result[fav] - result[dog] - odds.line;
-    tiles.push({
-      label: "Spread",
-      value: spreadLabel(odds),
-      caption:
-        cover === 0
-          ? "Push"
-          : cover > 0
-            ? `${game[fav].short} covered by ${trim(cover)}`
-            : `${game[fav].short} failed to cover by ${trim(-cover)}`,
-    });
+  const dog = fav ? (fav === "home" ? "away" : "home") : null;
+  const r1 = (n: number): number => Math.round(n * 10) / 10;
+  const signed = (n: number): string => (n > 0 ? `+${n.toFixed(1)}` : n < 0 ? `${MINUS}${Math.abs(n).toFixed(1)}` : "0.0");
+
+  // A. The result panel (mak, 2026-11-02, second pass): both clubs side by
+  // side, away left and home right as the hero and the team stats read, one
+  // label column between them. No final score: the header has it. Each club
+  // gets its own side of the spread with its own verdict, its implied total,
+  // what it scored and the difference, then the two bars on one scale. The
+  // total, which both share, closes the grid.
+  const sides: Array<"away" | "home"> = ["away", "home"];
+  type Verdict = { mark: "yes" | "no" | "push"; text: string };
+  const MARK = { yes: "✓", no: "✗", push: "–" } as const;
+  const verdictHtml = (v: Verdict): string =>
+    `<span class="sct-bet-verdict is-${v.mark}"><span aria-hidden="true">${MARK[v.mark]}</span> ${escapeHtml(v.text)}</span>`;
+
+  const sideSpread: Record<"away" | "home", { line: string; verdict: Verdict }> = { away: { line: "", verdict: { mark: "push", text: "" } }, home: { line: "", verdict: { mark: "push", text: "" } } };
+  if (fav && dog) {
+    const cover = r1(result[fav] - result[dog] - odds.line);
+    sideSpread[fav] = {
+      line: `${MINUS}${trim(odds.line)}`,
+      verdict: cover === 0 ? { mark: "push", text: "Push" } : cover > 0 ? { mark: "yes", text: `Covered by ${trim(cover)}` } : { mark: "no", text: `Failed by ${trim(-cover)}` },
+    };
+    sideSpread[dog] = {
+      line: `+${trim(odds.line)}`,
+      verdict: cover === 0 ? { mark: "push", text: "Push" } : cover < 0 ? { mark: "yes", text: `Covered by ${trim(-cover)}` } : { mark: "no", text: `Failed by ${trim(cover)}` },
+    };
   } else {
     const margin = result.home - result.away;
-    tiles.push({
-      label: "Spread",
-      value: "Pick'em",
-      caption: margin === 0 ? "Push" : `${game[margin > 0 ? "home" : "away"].short} won outright`,
-    });
+    for (const k of sides) {
+      const mine = k === "home" ? margin : -margin;
+      sideSpread[k] = {
+        line: "PK",
+        verdict: mine === 0 ? { mark: "push", text: "Push" } : mine > 0 ? { mark: "yes", text: "Won outright" } : { mark: "no", text: "Lost outright" },
+      };
+    }
   }
   const points = result.away + result.home;
-  const off = Math.abs(points - odds.total);
-  tiles.push({
-    label: "Total",
-    value: trim(odds.total),
-    caption:
-      points === odds.total
-        ? `Push: ${points} points scored`
-        : `${points > odds.total ? "Over" : "Under"}: ${points} points scored (by ${trim(off)})`,
-  });
+  const off = r1(Math.abs(points - odds.total));
+  const totalVerdict: Verdict =
+    points === odds.total
+      ? { mark: "push", text: `Push (${points} pts)` }
+      : { mark: "yes", text: `${points > odds.total ? "Over" : "Under"} by ${trim(off)} (${points} pts)` };
 
-  const tileHtml =
-    `<dl class="sct-rb-alltime sct-bet-tiles">` +
-    tiles
-      .map(
-        (t) =>
-          `<div class="sct-rb-at"><dt>${escapeHtml(t.label)}</dt>` +
-          `<dd><b class="sct-rb-at-num">${escapeHtml(t.value)}</b>` +
-          `<span class="sct-rb-at-cap">${escapeHtml(t.caption)}</span></dd></div>`,
-      )
-      .join("") +
-    `</dl>`;
-
-  // Implied team totals: the favorite (total + spread) / 2, the underdog the rest.
+  // Implied team totals: the favorite (total + spread) / 2, the underdog the
+  // rest. The difference is taken from the ROUNDED implied figure the reader
+  // sees, so 35 against 24.8 prints +10.2, not the +10.3 the unrounded
+  // 24.75 would give.
   const implied: Record<"away" | "home", number> = fav
     ? {
-        [fav]: (odds.total + odds.line) / 2,
-        [fav === "home" ? "away" : "home"]: (odds.total - odds.line) / 2,
+        [fav]: r1((odds.total + odds.line) / 2),
+        [fav === "home" ? "away" : "home"]: r1((odds.total - odds.line) / 2),
       } as Record<"away" | "home", number>
-    : { away: odds.total / 2, home: odds.total / 2 };
+    : { away: r1(odds.total / 2), home: r1(odds.total / 2) };
   const order: Array<"away" | "home"> = fav ? [fav, fav === "home" ? "away" : "home"] : ["away", "home"];
-  const diffs = order.map((k) => result[k] - implied[k]);
-  const signed = (n: number): string => (n > 0 ? `+${n.toFixed(1)}` : n < 0 ? `${MINUS}${Math.abs(n).toFixed(1)}` : "0.0");
-  const impliedTable =
-    `<h3 class="sct-rb-h3">Expected vs actual scoring</h3>` +
-    `<div class="sct-fp-wrap"><table class="sct-fp-table sct-bet-implied">` +
-    `<caption class="sct-rb-sr">Implied team totals against the actual score</caption>` +
-    `<thead><tr><th scope="col">Team</th><th scope="col">Implied</th><th scope="col">Actual</th><th scope="col">Difference</th></tr></thead><tbody>` +
-    order
-      .map((k, i) => {
-        const d = diffs[i]!;
-        return (
-          `<tr><th scope="row" class="sct-fp-player" style="color:${colors[k].ink}">${escapeHtml(game[k].short)}</th>` +
-          `<td>${implied[k].toFixed(1)}</td><td>${result[k]}</td>` +
-          `<td class="sct-fp-diff${d > 0 ? " is-pos" : d < 0 ? " is-neg" : ""}">${signed(d)}</td></tr>`
-        );
-      })
+  const diffs = order.map((k) => r1(result[k] - implied[k]));
+  const diffOf = (k: "away" | "home"): number => r1(result[k] - implied[k]);
+  // One scale for both bars, so they compare across teams: the tick is the
+  // implied total, the bar end the actual score.
+  const scale = Math.max(...sides.flatMap((k) => [implied[k], result[k]])) * 1.08 || 1;
+  const pct = (n: number): string => `${Math.max(0, Math.min(100, (n / scale) * 100)).toFixed(1)}%`;
+  const diffHtml = (d: number): string =>
+    `<b class="sct-fp-diff${d > 0 ? " is-pos" : d < 0 ? " is-neg" : ""}">${signed(d)}</b>`;
+
+  const cell = (k: "away" | "home", inner: string): string =>
+    `<span class="sct-bet-cell is-${k}" style="--rb-team:${colors[k].ink}">${inner}</span>`;
+  const gridRow = (label: string, inner: (k: "away" | "home") => string, cls = ""): string =>
+    `<div class="sct-bet-row${cls ? ` ${cls}` : ""}">` +
+    cell("away", inner("away")) +
+    `<span class="sct-bet-k">${escapeHtml(label)}</span>` +
+    cell("home", inner("home")) +
+    `</div>`;
+  const strip =
+    `<div class="sct-bet-sides">` +
+    `<div class="sct-bet-row sct-bet-head">` +
+    sides
+      .map((k, i) =>
+        (i ? `<span class="sct-bet-k" aria-hidden="true"></span>` : "") +
+        `<span class="sct-bet-cell is-${k} sct-bet-team" style="--rb-team:${colors[k].ink}">${escapeHtml(game[k].abbr)}</span>`,
+      )
       .join("") +
-    `</tbody></table></div>`;
+    `</div>` +
+    gridRow("Spread", (k) => `<b class="sct-bet-line-v">${escapeHtml(sideSpread[k].line)}</b> ${verdictHtml(sideSpread[k].verdict)}`, "sct-bet-spread") +
+    gridRow("Implied", (k) => `<span class="sct-bet-imp-implied">${implied[k].toFixed(1)}</span>`) +
+    gridRow("Scored", (k) => `<span class="sct-bet-imp-actual">${result[k]}</span> ${diffHtml(diffOf(k))}`) +
+    `<div class="sct-bet-row sct-bet-bars" aria-hidden="true">` +
+    sides
+      .map(
+        (k, i) =>
+          (i ? `<span class="sct-bet-k"></span>` : "") +
+          `<span class="sct-bet-imp-track is-${k}" style="--rb-team:${colors[k].ink}">` +
+          `<span class="sct-bet-imp-fill" style="width:${pct(result[k])}"></span>` +
+          `<span class="sct-bet-imp-tick" style="${k === "away" ? "right" : "left"}:${pct(implied[k])}"></span>` +
+          `</span>`,
+      )
+      .join("") +
+    `</div>` +
+    `<p class="sct-bet-total"><span class="sct-bet-k">Total</span> <b class="sct-bet-line-v">${escapeHtml(trim(odds.total))}</b> ${verdictHtml(totalVerdict)}</p>` +
+    `</div>`;
   const under = diffs.filter((d) => d < 0).length;
   const over = diffs.filter((d) => d > 0).length;
   const fantasyLink = `<a href="#fantasy">Fantasy tab</a>`;
@@ -428,7 +452,9 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
             );
           })();
 
-  // C. Trends.
+  // C. Trends: one bold line with the story the records tell, then one table
+  // with both clubs as columns (mak, 2026-11-02; two cards until then), and
+  // the two context sentences as captions under it.
   let trends = "";
   if (extras) {
     const priced = extras.meetings.filter((g) => g.odds && g.odds.total !== null).slice(0, 6);
@@ -451,47 +477,109 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
       const lead = ats[game.home.abbr]!.a > ats[game.away.abbr]!.a ? "home" : "away";
       const ouWord = ou.a > ou.b ? `overs ${ou.a}${DASH}${ou.b}` : ou.b > ou.a ? `unders ${ou.b}${DASH}${ou.a}` : `overs and unders ${ou.a}${DASH}${ou.b}`;
       seriesLine =
-        `<p>${escapeHtml(
-          `Last ${priced.length} meetings: ${game[lead].short} ${record3(ats[game[lead].abbr]!)} ATS, ${ouWord}${ou.push ? ` (${ou.push} push${ou.push === 1 ? "" : "es"})` : ""}.`,
-        )}</p>`;
+        `Last ${priced.length} meetings: ${game[lead].short} ${record3(ats[game[lead].abbr]!)} ATS, ${ouWord}${ou.push ? ` (${ou.push} push${ou.push === 1 ? "" : "es"})` : ""}.`;
     }
-    const card = (k: "away" | "home"): string => {
-      const b = extras.seasons[game[k].abbr];
-      if (!b) return "";
-      const rows: Array<[string, string]> = [
-        ["Against the spread", record3(b.ats)],
-        ["Over/under", `${record3(b.ou)}`],
-      ];
-      if (b.atsFavorite.a + b.atsFavorite.b + b.atsFavorite.push) rows.push(["ATS as favorite", record3(b.atsFavorite)]);
-      if (b.atsUnderdog.a + b.atsUnderdog.b + b.atsUnderdog.push) rows.push(["ATS as underdog", record3(b.atsUnderdog)]);
-      rows.push([`ATS ${b.venue === "home" ? "at home" : "on the road"}`, record3(b.atsVenue)]);
-      return (
-        `<div class="sct-bet-card" style="--rb-team:${colors[k].ink}">` +
-        `<h4 class="sct-bet-card-name">${escapeHtml(game[k].name)}</h4>` +
-        `<dl class="sct-rb-dl">${rows.map(([dt, dd]) => `<dt>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd>`).join("")}</dl>` +
-        `</div>`
-      );
-    };
-    const cards = card("away") + card("home");
-    if (seriesLine || cards) {
+
+    const sides: Array<"away" | "home"> = ["away", "home"];
+    const seasons = sides.map((k) => extras.seasons[game[k].abbr] ?? null);
+    const any = seasons.some((b) => b !== null);
+    let table = "";
+    let story = "";
+    if (any) {
+      const n = (t: Tally3): number => t.a + t.b + t.push;
+      const cell = (b: BettingSeason | null, pick: (b: BettingSeason) => Tally3 | null): string => {
+        const t = b ? pick(b) : null;
+        return `<td>${t && n(t) ? escapeHtml(record3(t)) : "–"}</td>`;
+      };
+      const row = (label: string, pick: (b: BettingSeason) => Tally3 | null): string => {
+        // A row nobody has a figure for is left out, as the cards left it out.
+        if (!seasons.some((b) => b && pick(b) && n(pick(b)!))) return "";
+        return `<tr><th scope="row">${escapeHtml(label)}</th>${seasons.map((b) => cell(b, pick)).join("")}</tr>`;
+      };
+      const venueCell = (b: BettingSeason | null): string =>
+        b && n(b.atsVenue) ? `<td>${escapeHtml(record3(b.atsVenue))} <small>${b.venue === "home" ? "home" : "road"}</small></td>` : `<td>–</td>`;
+      table =
+        `<div class="sct-fp-wrap"><table class="sct-fp-table sct-bet-trends">` +
+        `<caption class="sct-rb-sr">${escapeHtml(`Each team's ${game.seasonLabel} season against the lines through this game`)}</caption>` +
+        `<thead><tr><th scope="col"><span class="sct-rb-sr">Record</span></th>` +
+        sides.map((k) => `<th scope="col" style="color:${colors[k].ink}">${escapeHtml(game[k].abbr)}</th>`).join("") +
+        `</tr></thead><tbody>` +
+        row("ATS", (b) => b.ats) +
+        row("O/U (overs first)", (b) => b.ou) +
+        row("ATS as favorite", (b) => b.atsFavorite) +
+        row("ATS as underdog", (b) => b.atsUnderdog) +
+        `<tr><th scope="row">ATS at this game's venue</th>${seasons.map(venueCell).join("")}</tr>` +
+        `</tbody></table></div>`;
+
+      // The story: the most lopsided record either club carries into the
+      // numbers, three games or more. A clean sweep of the total or the
+      // spread first; failing that, the widest margin. Both clubs' seasons
+      // include this game, so the sentence reads "through this game".
+      type Story = { score: number; text: string };
+      const candidates: Story[] = [];
+      sides.forEach((k, i) => {
+        const b = seasons[i];
+        if (!b) return;
+        const name = game[k].short;
+        const consider = (t: Tally3, sweepA: string, sweepB: string, lean: (t: Tally3) => string): void => {
+          const games = n(t);
+          if (games < 3) return;
+          if (t.b === 0 && t.push === 0) candidates.push({ score: 100 + games, text: sweepA.replaceAll("%n", String(games)) });
+          else if (t.a === 0 && t.push === 0) candidates.push({ score: 100 + games, text: sweepB.replaceAll("%n", String(games)) });
+          else {
+            const margin = Math.abs(t.a - t.b) / games;
+            if (margin >= 0.5) candidates.push({ score: margin * 10 + games / 10, text: lean(t) });
+          }
+        };
+        consider(
+          b.ou,
+          `Every ${name} game this season has gone over the total (%n games).`,
+          `Every ${name} game this season has gone under the total (%n games).`,
+          (t) => `${name} games are ${t.a}${DASH}${t.b} to the over this season.`,
+        );
+        consider(
+          b.ats,
+          `The ${name} have covered in all %n games this season.`,
+          `The ${name} haven't covered in %n games this season.`,
+          (t) => `The ${name} are ${record3(t)} against the spread this season.`,
+        );
+      });
+      candidates.sort((x, y) => y.score - x.score);
+      if (candidates[0]) story = `<p class="sct-bet-story"><b>${escapeHtml(candidates[0].text)}</b></p>`;
+    }
+
+    // The trends panel (mak, 2026-11-02): the story line is its header, the
+    // table under it, the series line its footer. "Overs first" lives in the
+    // row label, so the caption only says whose season it is.
+    const captions =
+      (seriesLine ? `<p class="sct-bet-cap sct-bet-series">${escapeHtml(seriesLine)}</p>` : "") +
+      (table ? `<p class="sct-bet-cap">${escapeHtml(`Each team's ${game.seasonLabel} season through this game, including it.`)}</p>` : "");
+    if (seriesLine || table) {
       trends =
-        `<h3 class="sct-rb-h3">Betting trends</h3>` +
-        seriesLine +
-        (cards
-          ? `<p class="sct-rb-sub">${escapeHtml(`Each team's ${game.seasonLabel} season through this game. Over/under is overs first.`)}</p>` +
-            `<div class="sct-bet-cards">${cards}</div>`
-          : "");
+        `<div class="sct-bet-panel sct-bet-trends-panel">` +
+        `<p class="sct-bet-panel-k">Season trends</p>` +
+        story +
+        table +
+        captions +
+        `</div>`;
     }
   }
+
+  // Two panels side by side from tablet width up (mak, 2026-11-02): the
+  // result card and the trends table are about the same height and the table
+  // is three columns wide, so stacking them left half the page empty.
+  const resultPanel =
+    `<div class="sct-bet-panel sct-bet-result">` +
+    `<p class="sct-bet-panel-k">Result</p>` +
+    strip +
+    `<p class="sct-rb-note sct-bet-take">${takeaway}</p>` +
+    `</div>`;
 
   return (
     `<section class="sct-rb-section sct-bet" aria-labelledby="betting">` +
     `<h2 class="sct-rb-h2" id="betting">${escapeHtml(`${game.away.short} vs ${game.home.short} odds and results`)}</h2>` +
     `<p class="sct-rb-sub">How this game finished against the betting lines.</p>` +
-    tileHtml +
-    impliedTable +
-    `<p class="sct-rb-note sct-bet-take">${takeaway}</p>` +
-    trends +
+    `<div class="sct-bet-grid${trends ? " has-trends" : ""}">${resultPanel}${trends}</div>` +
     `<div class="sct-bet-fine">` +
     `<p>Lines: the consensus captured at kickoff. Individual sportsbooks varied.</p>` +
     `<p>21+. Gambling problem? Call 1-800-GAMBLER. Betting availability depends on your state.</p>` +
@@ -504,8 +592,8 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
 
 export interface ExploreGame {
   /** "Rams 30 at Buccaneers 27": built by the caller from the game's own fields. */
-  away: { short: string; score: number | null };
-  home: { short: string; score: number | null };
+  away: { short: string; score: number | null; logo?: string | null };
+  home: { short: string; score: number | null; logo?: string | null };
   neutral: boolean;
   meta: string;
   url: string | null;
@@ -525,6 +613,8 @@ export interface GameLogLink {
   pos: string | null;
   url: string;
   ink: string;
+  /** The image key for his face, or null for the name alone. */
+  sleeperId?: string | null;
 }
 
 function exploreGame(g: ExploreGame): string {
@@ -533,7 +623,11 @@ function exploreGame(g: ExploreGame): string {
   const side = (key: "away" | "home"): string => {
     const t = g[key];
     const cls = !final ? "" : win === key ? "is-win" : "is-other";
-    return `<span class="sct-ex-side ${cls}">${escapeHtml(t.short)}${t.score === null ? "" : ` ${t.score}`}</span>`;
+    // The crest before the name (mak, 2026-11-02), when the caller has one.
+    const crest = t.logo
+      ? `<img class="sct-ex-crest" src="${escapeHtml(t.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />`
+      : "";
+    return `<span class="sct-ex-side ${cls}">${crest}${escapeHtml(t.short)}${t.score === null ? "" : ` ${t.score}`}</span>`;
   };
   const line = `${side("away")} <span class="sct-ex-at">${g.neutral ? "vs" : "at"}</span> ${side("home")}`;
   const body =
@@ -557,9 +651,29 @@ export function renderExploreCard(c: ExploreColumn | null): string {
   );
 }
 
+/** One club's column in "More on this game". */
+export interface ExploreTeam {
+  abbr: string;
+  name: string;
+  short: string;
+  ink: string;
+  logo?: string | null;
+  hub: string | null;
+  matchups: string | null;
+  /** Where "All {short} players" goes: the Fantasy tab's table, or null. */
+  allPlayers?: string | null;
+}
+
+/**
+ * "More on this game" (mak, 2026-11-02): one section with the club as the
+ * axis. Two mirrored columns, each the crest and name, the two hub links as
+ * one line of text, then that club's players as chips to their game logs.
+ * Eight loose cards and four loose buttons until then.
+ */
 export function renderExplore(
   columns: ExploreColumn[],
   logs: { season: string; players: GameLogLink[] },
+  teams: ExploreTeam[],
   related: string,
 ): string {
   const cols = columns
@@ -574,25 +688,43 @@ export function renderExplore(
         `</div>`,
     )
     .join("");
-  const logGrid = logs.players.length
-    ? `<h3 class="sct-rb-h3">${escapeHtml(`${logs.season} game logs for players in this game`)}</h3>` +
-      `<ul class="sct-ex-logs">` +
-      logs.players
-        .map(
-          (p) =>
-            `<li><a class="sct-ex-log" href="${escapeHtml(p.url)}" style="--rb-team:${p.ink}">` +
-            `<span class="sct-ex-log-name">${escapeHtml(p.name)}</span>` +
-            `<span class="sct-ex-log-meta">${escapeHtml(`${p.team} · ${p.pos ?? "-"}`)}</span></a></li>`,
-        )
-        .join("") +
-      `</ul>`
+
+  const chip = (p: GameLogLink): string =>
+    `<li><a class="sct-ex-chip" href="${escapeHtml(p.url)}" title="${escapeHtml(`${p.name}, ${logs.season} game log`)}">` +
+    (p.sleeperId ? playerPhoto(p.sleeperId, "sct-ex-chip-face", 24) : "") +
+    `<span class="sct-ex-chip-name">${escapeHtml(p.name)}</span>` +
+    (p.pos ? `<span class="sct-pos" data-pos="${escapeHtml(p.pos.toUpperCase())}">${escapeHtml(p.pos)}</span>` : "") +
+    `</a></li>`;
+  const teamCols = teams
+    .map((t) => {
+      const players = logs.players.filter((p) => p.team.toUpperCase() === t.abbr.toUpperCase());
+      const links = [
+        t.hub ? `<a href="${escapeHtml(t.hub)}">Team hub</a>` : "",
+        t.matchups ? `<a href="${escapeHtml(t.matchups)}">All matchups</a>` : "",
+      ].filter(Boolean);
+      const crest = t.logo
+        ? `<img class="sct-ex-team-crest" src="${escapeHtml(t.logo)}" alt="" width="28" height="28" loading="lazy" decoding="async" />`
+        : "";
+      return (
+        `<div class="sct-ex-team" style="--rb-team:${t.ink}">` +
+        `<h4 class="sct-ex-team-name">${crest}${escapeHtml(t.name)}</h4>` +
+        (links.length ? `<nav class="sct-ex-hubs" aria-label="${escapeHtml(`${t.short} pages`)}">${links.join(`<span class="sct-ex-dot" aria-hidden="true"> · </span>`)}</nav>` : "") +
+        (players.length
+          ? `<ul class="sct-ex-chips" aria-label="${escapeHtml(`${t.short} ${logs.season} game logs`)}">${players.map(chip).join("")}</ul>` +
+            (t.allPlayers ? `<p class="sct-ex-all"><a href="${escapeHtml(t.allPlayers)}">${escapeHtml(`All ${t.short} players in this game`)}</a></p>` : "")
+          : "")
+      ) + `</div>`;
+    })
+    .join("");
+  const teamGrid = teamCols
+    ? `<h3 class="sct-rb-h3">More on this game</h3><div class="sct-ex-teams">${teamCols}</div>`
     : "";
-  if (!cols && !logGrid && !related) return "";
+
+  if (!cols && !teamGrid && !related) return "";
   return (
-    // No visible heading (mak, 2026-10-20): the columns name themselves.
-    `<section class="sct-rb-section sct-ex" id="explore" aria-label="Keep exploring">` +
+    `<section class="sct-rb-section sct-ex" id="explore" aria-label="More on this game">` +
     (cols ? `<div class="sct-ex-cols">${cols}</div>` : "") +
-    logGrid +
+    teamGrid +
     related +
     `</section>`
   );

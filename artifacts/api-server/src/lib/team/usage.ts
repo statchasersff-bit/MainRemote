@@ -27,6 +27,13 @@ export interface UsageWeek {
   week: number;
   /** Target share that game, % of team targets. Null = did not play. */
   ts: number | null;
+  /** Carry share that game, % of team carries (scrambles included). Absent in files built before 2026-11-02. */
+  cs?: number | null;
+  /** The raw counts behind ts and cs (player and team), absent in older files. */
+  tgt?: number | null;
+  car?: number | null;
+  teamTgt?: number | null;
+  teamCar?: number | null;
   /** Offensive snap share that game, %. */
   snap: number | null;
   /** Red-zone carries + targets that game. */
@@ -96,6 +103,8 @@ export interface UsageTeam {
   games: number[];
   passAttempts: number;
   targets: number;
+  /** Team carries, scrambles included (absent in files built before 2026-11-02). */
+  carries?: number;
   passerId: string | null;
   /** The passer's charted attempts - the pass map's denominator. */
   passerZoneAttempts?: number;
@@ -218,11 +227,11 @@ export interface UsageView {
  * last three, so the first delta appears with the fourth game.
  */
 const WINDOW = 3;
-const STEADY: Record<"ts" | "snap" | "rz", number> = { ts: 2, snap: 5, rz: 1 };
+const STEADY: Record<"ts" | "cs" | "snap" | "rz", number> = { ts: 2, cs: 3, snap: 5, rz: 1 };
 
-export function trend(weekly: UsageWeek[], key: "ts" | "snap" | "rz"): Trend {
+export function trend(weekly: UsageWeek[], key: "ts" | "cs" | "snap" | "rz"): Trend {
   const last3 = weekly.slice(-3);
-  const trail = last3.map((w) => w[key]);
+  const trail = last3.map((w) => w[key] ?? null);
   const trailWeeks = last3.map((w) => w.week);
 
   const played = weekly.filter((w) => w[key] != null);

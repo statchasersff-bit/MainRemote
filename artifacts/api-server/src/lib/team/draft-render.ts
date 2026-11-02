@@ -514,5 +514,7 @@ export function renderDraftSection(team: NflTeam, view: DraftView, season: numbe
     classes +
     `</div>` +
     `</div>`
+    // The club-specific FAQ (draft-faq.ts, mak 2026-11-02) is the section's
+    // tail, placed by team-render.ts like every other tab's questions.
   );
 }

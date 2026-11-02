@@ -53,6 +53,9 @@ import { getDraftView } from "./team/draft";
 import { renderDraftSection } from "./team/draft-render";
 import { getContractsView } from "./team/contracts";
 import { renderContractsSection } from "./team/contracts-render";
+import { contractsFaq } from "./team/contracts-faq";
+import { draftFaq } from "./team/draft-faq";
+import { faqEntries, renderFaqBlock } from "./team/faq-block";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
@@ -4071,9 +4074,17 @@ export function renderTeamPage(
   const depth = renderDepthChart(data, depthChartFaq, depthTail);
   // Next draft's picks by round and the last five draft classes, from two
   // committed files (team/draft.ts). "" when neither has this club.
-  const draft = renderDraftSection(team, getDraftView(team.abbreviation, data.state.season), data.state.season);
+  const draftView = getDraftView(team.abbreviation, data.state.season);
+  const draft = renderDraftSection(team, draftView, data.state.season);
   // This season's contracts from the committed register file (team/contracts.ts).
-  const contracts = renderContractsSection(team, getContractsView(team.abbreviation, data.state.season));
+  const contractsView = getContractsView(team.abbreviation, data.state.season);
+  const contracts = renderContractsSection(team, contractsView);
+  // Both tabs' club-specific FAQs (mak, 2026-11-02) are tails like the
+  // other tabs' questions, and in the hub's FAQPage (approved the same day).
+  const draftFaqItems = draft ? draftFaq(team, draftView) : [];
+  const contractsFaqItems = contracts && contractsView ? contractsFaq(team, contractsView) : [];
+  const draftTail = renderFaqBlock(`${team.fullName} Draft Picks & History FAQ`, draftFaqItems, "sct-dr-faq");
+  const contractsTail = renderFaqBlock(`${team.fullName} Contracts & Salary Cap FAQ`, contractsFaqItems, "sct-ct-faq");
   const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);
   const matchups = renderMatchups(data, options, now);
 
@@ -4118,9 +4129,9 @@ export function renderTeamPage(
     },
     // Right of Stats (mak, 2026-10-23). A hub-only panel like Coaching: its
     // tab is the hub's address plus #draft until a public URL is approved.
-    { id: "draft", label: "Draft", html: draft, hash: true },
+    { id: "draft", label: "Draft", html: draft, hash: true, faq: faqEntries(draftFaqItems), tail: draftTail },
     // Right of Draft (mak, 2026-10-23), hub-only for the same reason.
-    { id: "contracts", label: "Contracts", html: contracts, hash: true },
+    { id: "contracts", label: "Contracts", html: contracts, hash: true, faq: faqEntries(contractsFaqItems), tail: contractsTail },
     { id: "news", label: "News", html: newsSection },
     {
       id: "depth-chart",

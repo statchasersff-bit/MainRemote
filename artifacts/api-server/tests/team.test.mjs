@@ -147,11 +147,21 @@ async function dom(pathname) {
 const tailOf = (id) => `[data-sct-faq-for="${id}"]`;
 
 /** Every question/answer pair on the page, or inside one scope. */
+/**
+ * The page's questions and answers as the FAQPage must carry them. An answer
+ * is every `.sct-faq-a` part of the item (the Draft and Contracts FAQs have
+ * several since 2026-11-02): paragraphs joined by a blank line, a list as
+ * "- " lines - the same join faq-block.ts makes.
+ */
 function faqEntries(doc, scope = "") {
   const prefix = scope ? `${scope} ` : "";
+  const part = (el) =>
+    el.tagName === "UL"
+      ? [...el.querySelectorAll("li")].map((li) => `- ${li.textContent.trim()}`).join("\n")
+      : el.textContent.trim();
   return [...doc.querySelectorAll(`${prefix}.sct-faq-item`)].map((item) => ({
     question: item.querySelector(".sct-faq-q")?.textContent?.trim() ?? "",
-    answer: item.querySelector(".sct-faq-a")?.textContent?.trim() ?? "",
+    answer: [...item.querySelectorAll(".sct-faq-a")].map(part).join("\n\n"),
   }));
 }
 
@@ -867,6 +877,47 @@ describe("embedded mode", () => {
     // The /usage/ page keeps its own conversion block.
     const usage = await dom("/team/new-england-patriots/usage/");
     assert.ok(usage.doc.querySelector(".sct-us-convert"));
+  });
+
+  test("the Targets and Carries boards sit above the environment cards (mak, 2026-11-02)", async () => {
+    const { doc } = await dom("/team/new-england-patriots/usage/");
+    const boards = [...doc.querySelectorAll(".sct-us-board")];
+    assert.deepEqual(
+      boards.map((b) => b.querySelector(".sct-us-h3")?.textContent),
+      ["Targets", "Carries"],
+    );
+    // The environment cards went 2026-11-02; the boards now lead into the
+    // first card (the backfield split). DOCUMENT_POSITION_FOLLOWING = 4.
+    assert.equal(doc.querySelector(".sct-us-env"), null, "no environment cards");
+    const firstCard = doc.querySelector(".sct-us-card");
+    assert.ok(firstCard && boards[0].compareDocumentPosition(firstCard) & 4, "boards come before the first card");
+    for (const [i, board] of boards.entries()) {
+      const counts = [...board.querySelectorAll("td.is-count")].map((td) => Number(td.textContent));
+      assert.ok(counts.length > 0 && counts.length <= 8, `${i}: ${counts.length} rows`);
+      assert.ok(counts.every((c, j) => j === 0 || c <= counts[j - 1]), `${i}: not sorted: ${counts}`);
+      assert.equal(board.querySelectorAll(".sct-us-face").length, counts.length, `${i}: a face well per row`);
+      assert.equal(board.querySelectorAll(".sct-slot").length, counts.length, `${i}: a position chip per row`);
+      assert.equal(board.querySelectorAll("tbody .sct-us-share").length, counts.length, `${i}: one track per row`);
+      // The badge is the difference of the two printed numbers (mak's audit, 2026-11-02).
+      for (const tr of board.querySelectorAll("tbody tr:not(.sct-us-board-more)")) {
+        const season = Number(tr.querySelector(".sct-us-share-val").textContent.replace("%", ""));
+        const recentEl = tr.querySelector(".sct-us-recent-val");
+        if (!recentEl) continue;
+        const recent = Number(recentEl.textContent.replace("%", ""));
+        const badge = tr.querySelector(".sct-us-arrow");
+        const delta = recent - season;
+        if (Math.abs(delta) >= 3) {
+          assert.ok(badge, `${tr.textContent.trim().slice(0, 30)}: badge expected for ${delta}`);
+          assert.equal(badge.textContent.replace(/up|down/, ""), `${delta > 0 ? "▲" : "▼"}${Math.abs(delta)}`);
+        } else {
+          assert.equal(badge, null, `${tr.textContent.trim().slice(0, 30)}: no badge for ${delta}`);
+        }
+        assert.ok(season > 0, "no 0% rows are named");
+      }
+    }
+    assert.match(boards[0].querySelector("thead").textContent, /Tgt.*Season share.*Last 3 wk.*Air yds/);
+    assert.match(boards[1].querySelector("thead").textContent, /Car.*Season share.*Last 3 wk/);
+    assert.ok(!/Air yds/.test(boards[1].querySelector("thead").textContent), "no air yards on the carries board");
   });
 });
 
@@ -3036,6 +3087,41 @@ describe("team section URLs", () => {
   });
 });
 
+describe("draft tab FAQ (mak, 2026-11-02)", () => {
+  test("a club-specific FAQ closes the tab, every figure the view's own, and the questions are in the FAQPage", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    assert.ok(doc.getElementById("draft"), "the Draft panel is in the hub");
+    const faq = doc.querySelector(`${tailOf("draft")} .sct-dr-faq`);
+    assert.ok(faq, "the FAQ block is the Draft tail");
+    assert.equal(faq.querySelector("h2").textContent, "New England Patriots Draft Picks & History FAQ");
+    const items = [...faq.querySelectorAll(".sct-faq-item")];
+    const qs = items.map((d) => d.querySelector("h3.sct-faq-q").textContent);
+    assert.ok(qs.length >= 12 && qs.length <= 16, `${qs.length} questions`);
+    const capital = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8")).teams.ne;
+    const history = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8")).teams.ne;
+    // The pick count and the pick-by-round list come from the capital file.
+    assert.equal(qs[0], "How many picks do the Patriots have in the 2027 NFL Draft?");
+    assert.ok(items[0].textContent.includes(`currently hold ${capital.holds.length} picks in the 2027 NFL Draft`));
+    const byRound = [...items[1].querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
+    assert.equal(byRound.length, new Set(capital.holds.map((h) => h.round)).size);
+    assert.equal(byRound[0], "Round 1: Patriots' own pick");
+    // The first-round list is the last five classes' Round 1 picks, newest first.
+    const firsts = history.filter((p) => p.season >= 2022 && p.round === 1).sort((a, b) => b.season - a.season);
+    const r1 = items.find((d) => /last .* first-round draft picks/.test(d.textContent));
+    const lines = [...r1.querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
+    assert.deepEqual(lines, firsts.map((p) => `${p.season}: ${p.name}, ${{ OT: "offensive tackle", QB: "quarterback", DB: "defensive back", OL: "offensive lineman" }[p.position]}, Pick No. ${p.pick}`));
+    // The class count is the history file's.
+    const total = history.filter((p) => p.season >= 2022).length;
+    assert.ok(faq.textContent.includes(`The Patriots selected ${total} players from the 2022 through 2026 NFL Drafts.`));
+    assert.ok(qs.includes("When did the Patriots draft Drake Maye?"));
+    assert.ok(qs.includes("Do the Patriots have a first-round pick in the 2027 NFL Draft?"));
+    // In the FAQPage (mak approved 2026-11-02), list answers as lines.
+    const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
+    assert.ok(ld.includes("What draft picks do the Patriots have in 2027?"));
+    assert.ok(ld.includes("- Round 1: Patriots' own pick"));
+  });
+});
+
 describe("draft tab", () => {
   test("the hub carries the next draft's picks by round and the last five classes", async () => {
     const { doc } = await dom("/team/new-england-patriots");
@@ -3161,6 +3247,60 @@ describe("draft tab", () => {
 });
 
 describe("contracts tab", () => {
+  test("with the bundle, a head press sorts the sheet and a second press flips it (mak, 2026-11-02)", async () => {
+    const { doc, window, errors } = await hydrated("/team/new-england-patriots/");
+    const table = doc.querySelector(".sct-ct-table");
+    const apy = table.querySelector("thead th.is-apy");
+    const nums = () =>
+      [...table.querySelectorAll("tbody tr")].map((tr) => tr.querySelector(".is-apy").dataset.sort).filter((v) => v !== "");
+    const sortedDesc = (a) => a.every((v, i) => i === 0 || Number(a[i - 1]) >= Number(v));
+    apy.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.equal(apy.getAttribute("aria-sort"), "descending");
+    assert.equal(table.querySelector("thead th.is-cap").getAttribute("aria-sort"), null);
+    assert.ok(sortedDesc(nums()), "APY largest first");
+    // Unpriced rows sit at the bottom.
+    const tail = [...table.querySelectorAll("tbody tr")].slice(-1)[0].querySelector(".is-apy").dataset.sort;
+    const blanks = [...table.querySelectorAll("tbody tr .is-apy")].filter((td) => td.dataset.sort === "").length;
+    if (blanks) assert.equal(tail, "");
+    apy.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.equal(apy.getAttribute("aria-sort"), "ascending");
+    assert.ok(sortedDesc([...nums()].reverse()), "APY smallest first");
+    const player = table.querySelector("thead th.is-player");
+    player.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.equal(player.getAttribute("aria-sort"), "ascending");
+    const keys = [...table.querySelectorAll("tbody tr .is-player")].map((th) => th.dataset.sort);
+    assert.deepEqual(keys, [...keys].sort((a, b) => a.localeCompare(b)));
+    assert.deepEqual(errors, []);
+  });
+
+  test("a club-specific FAQ closes the tab, under the sheet and the rail (mak, 2026-11-02)", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("contracts");
+    // A tail like the other tabs' questions: after the page's furniture, shown with the panel.
+    const faq = doc.querySelector(`${tailOf("contracts")} .sct-ct-faq`);
+    assert.ok(faq, "the FAQ block is the Contracts tail");
+    assert.equal(faq.querySelector("h2").textContent, "New England Patriots Contracts & Salary Cap FAQ");
+    const qs = [...faq.querySelectorAll("h3.sct-faq-q")].map((h) => h.textContent);
+    assert.ok(qs.length >= 10 && qs.length <= 14, `${qs.length} questions`);
+    assert.equal(qs[0], "How much salary cap space do the Patriots have in 2026?");
+    assert.ok(qs.includes("How much dead money do the Patriots have in 2026?"));
+    assert.ok(qs.includes("Who are the highest-paid Patriots in 2026?"));
+    assert.ok(qs.includes('What does "Net if cut" mean for a Patriots contract?'));
+    // Every figure in the answers is the view's own: the cap-space answer
+    // carries the data attribute's number, and the largest cap hit opens
+    // the biggest-hit answer.
+    const capSpace = Number(panel.querySelector("[data-cap-space]").dataset.capSpace);
+    const a1 = faq.querySelectorAll(".sct-faq-item")[0].querySelector(".sct-faq-a").textContent;
+    assert.ok(a1.includes(`$${capSpace.toFixed(1)} million`), a1);
+    const topName = panel.querySelector(".sct-ct-table tbody tr .is-player").textContent.trim();
+    const a2 = [...faq.querySelectorAll(".sct-faq-item")].find((d) => /biggest salary cap hit/.test(d.textContent)).querySelector(".sct-faq-a").textContent;
+    assert.ok(a2.startsWith(topName.split(/\s{2,}|\n/)[0].trim().split(" ").slice(0, 2).join(" ")), `${a2} starts with ${topName}`);
+    // In the page's FAQPage too (mak approved 2026-11-02), with the answer the page shows.
+    const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
+    assert.ok(ld.includes("How much salary cap space do the Patriots have in 2026?"));
+    assert.ok(ld.includes(JSON.stringify(a1).slice(1, 40)));
+  });
+
   test("the hub carries this season's contracts, largest cap number first", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const panel = doc.getElementById("contracts");
@@ -3206,17 +3346,47 @@ describe("contracts tab", () => {
     const snapshot = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
     );
-    assert.equal(panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg").length, 3, "three groups");
+    // Two groups since 2026-11-02: Dead Money has its own card at the foot of the rail.
+    assert.equal(panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg").length, 2, "two groups");
     const tiles = [...panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg-row")];
-    assert.equal(tiles.length, 8, "eight rows");
+    assert.equal(tiles.length, 6, "six rows");
+    assert.deepEqual(
+      tiles.slice(3).map((l) => l.querySelector(".sct-ct-lg-label").textContent),
+      ["Cut savings", "Locked in", "Value gap"],
+      "Flexibility: cut savings, then the sunk counterpart, then the value gap",
+    );
     assert.match(tiles[0].textContent, /cap space/i);
     assert.match(tiles[0].textContent, /\$\d+(\.\d)?M/);
     assert.match(tiles[0].querySelector(".sct-ct-rank")?.textContent ?? "", /^\d+(st|nd|rd|th)/);
     assert.ok(tiles[0].classList.contains("is-lead"), "cap space leads its group");
-    assert.equal(panel.querySelectorAll(".sct-ct-ledger .is-lead").length, 3, "one lead per group");
+    assert.equal(panel.querySelectorAll(".sct-ct-ledger .is-lead").length, 2, "one lead per group");
+    // The Dead Money card: its three figures over the list, the lead one live.
+    const dead = panel.querySelector(".sct-ct-dead");
+    assert.equal(dead.querySelector(".sct-ct-lg-h").textContent, "2026 Dead Money");
+    assert.match(dead.querySelector(".sct-ct-strip").textContent, /players? carried$/);
+    assert.deepEqual(
+      [...dead.querySelectorAll(".sct-ct-lg-label")].map((l) => l.textContent),
+      ["On the books"],
+    );
+    assert.ok(dead.querySelector('.sct-ct-lg-row.is-lead [data-sct-ct-out="dead"]'));
+    // The lead row reconciles the page's total with the names below it.
+    const itemized = snapshot.teams.ne.dead.reduce((n, d) => n + d.amount, 0);
+    const lead = dead.querySelector(".sct-ct-lg-row.is-lead .sct-ct-lg-sub")?.textContent ?? "";
+    if (Math.abs(snapshot.teams.ne.deadTotal - itemized) >= 0.05) {
+      assert.match(lead, new RegExp(`across the ${snapshot.teams.ne.dead.length} names below; \\$[\\d.]+[MK] more`));
+    }
+    assert.ok(dead.querySelector(".sct-ct-dead-list"), "the list sits in the same card");
+    // Sortable heads (2026-11-02): a button per column, cap hit sorted first.
+    const sorts = [...panel.querySelectorAll(".sct-ct-table thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort);
+    assert.deepEqual(sorts, ["player", "pos", "cap", "apy", "worth", "gtd", "signed", "save", "dead"]);
+    assert.equal(panel.querySelector(".sct-ct-table thead th.is-cap").getAttribute("aria-sort"), "descending");
+    for (const r of rows) {
+      assert.match(r.querySelector(".is-cap").dataset.sort, /^\d+(\.\d+)?$/);
+      assert.match(r.querySelector(".is-player").dataset.sort, /^[^,]+, /);
+    }
     assert.ok(panel.querySelector('[data-sct-ct-out="space"]'), "the scenario still writes cap space");
     assert.ok(panel.querySelector('[data-sct-ct-out="dead"]'), "the scenario still writes dead money");
-    assert.match(panel.querySelector(".sct-ct-lg-kicker")?.textContent ?? "", /reachable via cuts/);
+    assert.equal(panel.querySelector(".sct-ct-lg-kicker"), null, "the kicker line went 2026-11-02");
     assert.equal(panel.querySelector("[data-sct-ct]").getAttribute("data-cap-space"), String(snapshot.teams.ne.capSpace));
 
     // Every row carries the release figures the scenario sums, before and

@@ -263,6 +263,7 @@ export async function buildUsage(season) {
   const teams = new Map(); // club -> team accumulator
   const players = new Map(); // `${club}|${gsis}` -> player accumulator
   const teamWeekTargets = new Map(); // `${club}|${week}` -> targets
+  const teamWeekCarries = new Map(); // `${club}|${week}` -> carries (scrambles included)
   const teamGamesByWeek = new Map(); // club -> Set(week)
   const weeksSeen = new Set();
 
@@ -281,6 +282,7 @@ export async function buildUsage(season) {
       paceN: 0,
       passAtt: 0,
       targets: 0,
+      carries: 0,
       airYards: 0,
       firstReadTargets: 0,
       runs: { LE: [0, 0], LT: [0, 0], MID: [0, 0], RT: [0, 0], RE: [0, 0] },
@@ -311,11 +313,11 @@ export async function buildUsage(season) {
       passAirYards: 0,
       longestRuns: [], // [yards, gap]
       situation: { early: 0, third: 0, rz: 0, in10: 0, twoMin: 0, trailing: 0 },
-      weeks: new Map(), // week -> {targets, rz}
+      weeks: new Map(), // week -> {targets, carries, rz}
       rzOpps: 0,
     }));
 
-  const weekAcc = (p, week) => ensure(p.weeks, week, () => ({ targets: 0, rz: 0 }));
+  const weekAcc = (p, week) => ensure(p.weeks, week, () => ({ targets: 0, carries: 0, rz: 0 }));
 
   let last = null; // previous play, for pace
   for await (const r of rows(`${NFLVERSE}/pbp/play_by_play_${season}.csv.gz`)) {
@@ -462,9 +464,12 @@ export async function buildUsage(season) {
       if (runner && runner !== "NA") {
         const p = playerAcc(c, runner);
         p.carries += 1;
+        t.carries += 1;
+        teamWeekCarries.set(`${c}|${week}`, (teamWeekCarries.get(`${c}|${week}`) ?? 0) + 1);
         p.rushYards += num(r.rushing_yards) ?? 0;
         if (yl != null && yl <= 10) p.gzCarries += 1;
         const w = weekAcc(p, week);
+        w.carries += 1;
         if (yl != null && yl <= 20) {
           p.rzTouches += 1;
           w.rz += 1;
@@ -585,11 +590,21 @@ export async function buildUsage(season) {
     const weekly = games.map((w) => {
       const wk = p.weeks.get(w);
       const tgts = teamWeekTargets.get(`${p.club}|${w}`) ?? 0;
+      const cars = teamWeekCarries.get(`${p.club}|${w}`) ?? 0;
       const snap = snapWeeks.get(w);
       const playedThis = snap != null || wk != null;
       return {
         week: w,
         ts: playedThis ? round(pct(wk?.targets ?? 0, tgts), 1) : null,
+        // Carry share that game, % of the team's carries (the Carries board).
+        cs: playedThis ? round(pct(wk?.carries ?? 0, cars), 1) : null,
+        // The raw counts behind both shares, so a multi-week share can be
+        // summed (targets over team targets) instead of averaging per-game
+        // percentages (the Targets / Carries boards, 2026-11-02).
+        tgt: playedThis ? (wk?.targets ?? 0) : null,
+        car: playedThis ? (wk?.carries ?? 0) : null,
+        teamTgt: playedThis ? tgts : null,
+        teamCar: playedThis ? cars : null,
         snap: snap != null ? Math.round(snap * 100) : null,
         rz: playedThis ? (wk?.rz ?? 0) : null,
       };
@@ -749,6 +764,7 @@ export async function buildUsage(season) {
       games: gamesOf(c),
       passAttempts: t.passAtt,
       targets: t.targets,
+      carries: t.carries,
       passerId,
       passerZoneAttempts: zoneTotal,
       env: {

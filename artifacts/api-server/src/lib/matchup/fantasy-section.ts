@@ -27,6 +27,7 @@ import {
 } from "./fantasy-points";
 import type { LoggedGame, PlayerContext } from "./fantasy-data";
 import { isKicker, nameKey, type GamePlayer, type GamePlayers } from "./game-players";
+import { playerPhoto, teamPosition } from "./player-cell";
 import { pairColors, type ScoreboardGame } from "./scoreboard-hero";
 import { ALLOWED_POSITIONS, type AllowedPosition, type PointsAllowed } from "./season-data";
 
@@ -334,42 +335,31 @@ function usageLabel(u: Usage): string {
  */
 function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], toggle = ""): string {
   if (usage.length === 0 || !input.rates) return "";
-  const hasSnaps = usage.some((u) => u.snapShare !== null);
-  const nameOf = (u: Usage): string => {
+  const nameOf = (u: Usage, className = "sct-player-link"): string => {
     const href = input.playerUrl(u.row.p.name);
     return href
-      ? `<a class="sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(u.row.p.name)}</a>`
+      ? `<a class="${className}" href="${escapeHtml(href)}" target="_top">${escapeHtml(u.row.p.name)}</a>`
       : escapeHtml(u.row.p.name);
   };
-
-  // What mattered: named by PPR, figures in every scoring.
-  // Ties at one decimal go to the bigger workload: the more expected, the more
-  // it matters that it was beaten or missed.
-  const r1 = (n: number): number => Math.round(n * 10) / 10;
-  const top = [...usage].sort((a, b) => r1(b.over.ppr) - r1(a.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
-  const bottom = [...usage].sort((a, b) => r1(a.over.ppr) - r1(b.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
-  const volume = [...usage].sort((a, b) => b.x.ppr - a.x.ppr)[0]!;
-  const num = (t: Triple): string => `<span${dataAttrs(t)}>${t.ppr.toFixed(1)}</span>`;
-  const gap = (t: Triple): string => {
-    const cls = t.ppr > 0.05 ? " is-pos" : t.ppr < -0.05 ? " is-neg" : "";
-    return `<span class="sct-fp-diff${cls}"${dataAttrs(t, signed)}>${signed(t.ppr)}</span>`;
+  // The name cell as the Player Stats tables set theirs (mak, 2026-11-02):
+  // the face, the name, "NE · RB" with the position in its ink. A player
+  // the logs don't know has no Sleeper id, so his well stays empty.
+  const who = (u: Usage): string => {
+    const p = u.row.p;
+    const face = u.row.ctx
+      ? playerPhoto(u.row.ctx.sleeperId, "sct-mu-ps-photo", 32)
+      : `<span class="sct-mu-ps-photo" aria-hidden="true"></span>`;
+    return (
+      `<span class="sct-mu-ps-cell">${face}<span class="sct-mu-ps-who">` +
+      nameOf(u, "sct-player-link sct-mu-ps-link") +
+      teamPosition(p.team, p.pos, "sct-mu-ps-meta") +
+      `</span></span>`
+    );
   };
-  const card = (label: string, value: string, u: Usage, detail: string): string =>
-    `<li class="sct-fp-take">` +
-    `<span class="sct-fp-take-label">${escapeHtml(label)}</span>` +
-    `<span class="sct-fp-take-value">${value}</span>` +
-    `<span class="sct-fp-take-name">${nameOf(u)}</span>` +
-    `<span class="sct-fp-take-detail">${detail}</span>` +
-    `</li>`;
-  const cards = [
-    top.over.ppr > 0.05
-      ? card("Biggest overperformer", gap(top.over), top, `${num(top.row.pts)} PTS vs ${num(top.x)} xFP`)
-      : "",
-    bottom.over.ppr < -0.05 && bottom !== top
-      ? card("Biggest underperformer", gap(bottom.over), bottom, `${num(bottom.row.pts)} PTS vs ${num(bottom.x)} xFP`)
-      : "",
-    card("Highest expected volume", `${num(volume.x)} <small>xFP</small>`, volume, `${num(volume.row.pts)} PTS scored`),
-  ].join("");
+
+  // The three summary cards that opened this section (biggest over- and
+  // underperformer, highest expected volume) were removed 2026-11-02 at
+  // mak's request; the table carries the same figures.
 
   // The detail columns: in the HTML, hidden once the bundle has wired the button.
   const d = (html: string): string => html.replace(/^<(td|th)/, '<$1 data-fp-detail-col');
@@ -378,7 +368,7 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], to
       const p = u.row.p;
       return (
         `<tr>` +
-        `<th scope="row" class="sct-fp-player">${nameOf(u)}<span class="sct-fp-sub">${escapeHtml(`${p.team} · ${p.pos ?? "-"}`)}</span></th>` +
+        `<th scope="row" class="sct-fp-player">${who(u)}</th>` +
         `<td class="sct-fp-pts"${dataAttrs(u.row.pts)}>${u.row.pts.ppr.toFixed(1)}</td>` +
         `<td class="sct-fp-x"${dataAttrs(u.x)}>${u.x.ppr.toFixed(1)}</td>` +
         diffCell(u.over) +
@@ -395,19 +385,14 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], to
       );
     })
     .join("");
-  const { game } = input;
-  const ta = teamTotals(rows, game.away.abbr);
-  const th = teamTotals(rows, game.home.abbr);
-  const rates = input.rates;
   const col = (label: string, title: string, detail = false): string =>
     `<th scope="col"${detail ? " data-fp-detail-col" : ""}><abbr title="${escapeHtml(title)}">${escapeHtml(label)}</abbr></th>`;
   return (
     `<div class="sct-fp-usage">` +
     // The section's title, with the scoring switch on its row (mak, 2026-09-30).
     `<div class="sct-fp-head"><h2 class="sct-rb-h2" id="usage">Fantasy Points vs Expected</h2>${toggle}</div>` +
-    `<p class="sct-rb-sub">Expected points (xFP) are what a player's pass attempts, carries and targets are worth ` +
-    `at the league's average rates; the difference is what the player made of them.</p>` +
-    `<ul class="sct-fp-takes">${cards}</ul>` +
+    // The xFP explainer under the title and the team-totals / rates note under
+    // the table were removed 2026-11-02 at mak's request.
     `<div class="sct-fp-wrap"><table class="sct-fp-table is-usage">` +
     `<caption class="sct-rb-sr">Usage and expected fantasy points</caption>` +
     `<thead><tr><th scope="col">Player</th>${head("PTS")}` +
@@ -424,18 +409,6 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], to
     `</tr></thead><tbody>${body}</tbody></table></div>` +
     `<button type="button" class="sct-fp-more" data-fp-detail hidden aria-expanded="false" ` +
     `data-more="Show detailed usage ▾" data-less="Hide detailed usage ▴">Show detailed usage ▾</button>` +
-    `<p class="sct-rb-note">${escapeHtml(
-      `Team totals: ${game.away.short} ${ta.targets} targets and ${ta.carries} carries; ` +
-        `${game.home.short} ${th.targets} targets and ${th.carries} carries. ` +
-        `Shares are from the box score. ` +
-        (hasSnaps
-          ? "Snap counts are from the weekly player logs, and include plays wiped out by penalties. "
-          : "Snap counts aren't available for this game. ") +
-        `Route counts, air yards and red-zone touches appear when the tracking feed is connected. ` +
-        `League-average rates from the ${rates.season} season: ${perTarget(rates, "ppr").toFixed(2)} PPR points per target ` +
-        `(${Math.round(rates.catchRate * 100)}% catch rate), ${rates.perCarry.toFixed(2)} per carry and ` +
-        `${rates.perPassAttempt.toFixed(2)} per pass attempt. They don't adjust for field position or target depth.`,
-    )}</p>` +
     `</div>`
   );
 }
@@ -682,9 +655,9 @@ function verdictPicks(
 }
 
 /** The players the verdict cards are about, for the game-log links. */
-export function verdictPlayers(input: FantasySectionInput): GamePlayer[] {
+export function verdictPlayers(input: FantasySectionInput): Array<{ player: GamePlayer; sleeperId: string | null }> {
   const rows = rowsOf(input).filter((r) => !isZero(r));
-  return verdictPicks(input, usageRows(input, rows)).picked.map((u) => u.row.p);
+  return verdictPicks(input, usageRows(input, rows)).picked.map((u) => ({ player: u.row.p, sleeperId: u.row.ctx?.sleeperId ?? null }));
 }
 
 /**
@@ -726,14 +699,20 @@ function fantasyNotes(
           const ss = u.row.ctx?.active ? input.startSitUrl(p.name) : null;
           const meta = (f: Format): string =>
             `${p.team} · ${p.pos ?? "-"} · ${u.row.pts[f].toFixed(1)} pts on ${u.x[f].toFixed(1)} expected`;
+          // The face beside the name and meta line (mak, 2026-11-02).
+          const face = u.row.ctx ? playerPhoto(u.row.ctx.sleeperId, "sct-fp-card-face", 44) : "";
           return (
-            `<article class="sct-fp-card" style="--rb-team:${colors[side].ink}">` +
+            `<article class="sct-fp-card${face ? " has-face" : ""}" style="--rb-team:${colors[side].ink}">` +
+            `<div class="sct-fp-card-head">` +
+            face +
+            `<div class="sct-fp-card-text">` +
             `<h4 class="sct-fp-card-name">${nameLink(p.name)}` +
             (tag ? ` <span class="sct-fp-tag is-${tag.kind}">${escapeHtml(tag.text)}</span>` : "") +
             `</h4>` +
             `<p class="sct-fp-meta" data-ppr="${escapeHtml(meta("ppr"))}" data-half="${escapeHtml(meta("half"))}" data-std="${escapeHtml(
               meta("std"),
             )}">${escapeHtml(meta("ppr"))}</p>` +
+            `</div></div>` +
             `<p>${escapeHtml(happened(u))}</p>` +
             verdict(input, u) +
             trendBlock(u, gameLabel) +
@@ -882,7 +861,7 @@ export function renderFantasySection(input: FantasySectionInput, matchups = ""):
       : "") +
     wrap("stock", stockBlock) +
     wrap("injuries", injuries) +
-    wrap("start-sit", renderStartSit(input, rows)) +
+    // The Start/sit checks block sat here from 2026-10-10 to 2026-11-02 (mak removed it).
     wrap("matchups", matchups) +
     `</section>`
   );
@@ -1026,103 +1005,10 @@ export function topScorers(input: Pick<FantasySectionInput, "players">): Array<{
     .sort((a, b) => b.ppr - a.ppr || a.name.localeCompare(b.name));
 }
 
-/* ----------------------------------------------------------- start / sit */
-
-/** How many of each position the start/sit block names per team (mak, 2026-10-10). */
-const START_SIT_QUOTA: Record<string, number> = { QB: 1, RB: 2, WR: 3, TE: 1 };
-const START_SIT_ORDER = ["QB", "RB", "WR", "TE"] as const;
-
 function ordinal(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
-}
-
-/**
- * "Saints allow the 3rd-most fantasy points to RBs", linked to the FPA page:
- * the position where this defense ranks softest, so the line names the
- * matchup worth attacking. Rank 1 reads "the most". "" without the table.
- */
-function allowedLine(input: FantasySectionInput, defense: ScoreboardGame["away"]): string {
-  const ranks = input.allowed?.byTeam[defense.abbr];
-  if (!ranks) return "";
-  let best: AllowedPosition | null = null;
-  for (const pos of ALLOWED_POSITIONS) {
-    if (!best || ranks[pos].rank < ranks[best].rank) best = pos;
-  }
-  if (!best) return "";
-  const rank = ranks[best].rank;
-  const text = `${defense.short} ${defense.short.endsWith("s") ? "allow" : "allows"} the ${
-    rank === 1 ? "most" : `${ordinal(rank)}-most`
-  } fantasy points to ${best}s`;
-  const url = input.allowed?.url;
-  return (
-    `<p class="sct-fp-ss-fpa">` +
-    (url ? `<a href="${escapeHtml(url)}" target="_top" data-cta="startsit-fpa">${escapeHtml(text)}</a>` : escapeHtml(text)) +
-    `</p>`
-  );
-}
-
-/**
- * Start/sit checks (mak, 2026-10-10): each team's top fantasy players from
- * this game - the QB, two RBs, three WRs and the TE by PPR points - each
- * linked to Redraft Command's Start/Sit tool for that player, and under them
- * one line on what the opposing defense allows, linked to the Fantasy Points
- * Allowed page. A player with no page of his own, or not on an active roster,
- * is left out rather than linked nowhere; a team with nobody left prints no
- * card. Nothing for a playoff game: there is no next week to decide.
- */
-function renderStartSit(input: FantasySectionInput, rows: Row[]): string {
-  if (!input.countsInSeasonLong) return "";
-  const { game } = input;
-  const colors = pairColors(game.away.abbr, game.home.abbr);
-
-  const cards = (["away", "home"] as const)
-    .map((side) => {
-      const team = game[side];
-      const other = game[side === "away" ? "home" : "away"];
-      const taken: Record<string, number> = {};
-      const picks = rows
-        .filter((r) => r.p.team === team.abbr && (r.group === "qb" || r.group === "flex"))
-        .filter((r) => r.p.pos && START_SIT_QUOTA[r.p.pos] !== undefined)
-        .filter((r) => !r.ctx || r.ctx.active)
-        .sort((a, b) => b.pts.ppr - a.pts.ppr || a.p.name.localeCompare(b.p.name))
-        .map((r) => ({ r, href: input.startSitUrl(r.p.name) }))
-        .filter((x): x is { r: Row; href: string } => x.href !== null)
-        .filter(({ r }) => {
-          const pos = r.p.pos!;
-          taken[pos] = (taken[pos] ?? 0) + 1;
-          return taken[pos] <= START_SIT_QUOTA[pos]!;
-        })
-        .sort(
-          (a, b) =>
-            START_SIT_ORDER.indexOf(a.r.p.pos as (typeof START_SIT_ORDER)[number]) -
-              START_SIT_ORDER.indexOf(b.r.p.pos as (typeof START_SIT_ORDER)[number]) || b.r.pts.ppr - a.r.pts.ppr,
-        );
-      if (picks.length === 0) return "";
-      return (
-        `<div class="sct-fp-ss-card" style="--rb-team:${colors[side].ink}">` +
-        `<h4 class="sct-fp-team" style="color:${colors[side].ink}">${escapeHtml(team.name)}</h4>` +
-        `<ul class="sct-fp-ss-list">` +
-        picks
-          .map(
-            ({ r, href }) =>
-              `<li><span class="sct-fp-ss-pos">${escapeHtml(r.p.pos ?? "")}</span> ` +
-              `<a class="sct-fp-ss-link" href="${escapeHtml(href)}" target="_top" data-cta="startsit-player">${escapeHtml(r.p.name)}</a></li>`,
-          )
-          .join("") +
-        `</ul>` +
-        allowedLine(input, other) +
-        `</div>`
-      );
-    })
-    .join("");
-  if (!cards) return "";
-  return (
-    `<h3 class="sct-rb-h3" id="start-sit">Start/sit checks</h3>` +
-    `<p class="sct-rb-sub">Each name opens the Start/Sit tool for that player. The line under each team is what the defense it faced here allows by position this season.</p>` +
-    `<div class="sct-fp-ss-grid">${cards}</div>`
-  );
 }
 
 /* -------------------------------------------------------- fantasy matchups */

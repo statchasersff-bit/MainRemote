@@ -126,10 +126,26 @@ export interface TeamCoaching {
     scoringContext: string;
     current?: boolean;
     thesis: string;
+    /** The stop's latest tracked season, as one templated sentence. */
     fingerprint: string;
+    /** Every tracked season of the stop, oldest first, when there is more than one (builder, 2026-11-02). */
+    fingerprints?: string[];
+    /** Every tracked season as numbers (builder, 2026-11-02): the three target shares, the league's, the lead back. */
+    prints?: Array<{
+      year: number;
+      /** "2023 (Wks 1-8)" for a windowed stop, else the year. */
+      label: string;
+      shares: Record<"WR" | "RB" | "TE", number | null>;
+      league: Record<"WR" | "RB" | "TE", number | null>;
+      leadBack: number | null;
+    }>;
+    /** Each season's own scoring for the career chart (builder, 2026-11-02); a windowed stop is one point over its window. */
+    seasons?: Array<{ year: number; ppg: number; rank: number | null; games: number | null }>;
   }>;
   finishes: {
     heading: string;
+    /** Every tracked past season's row (builder, 2026-11-02); `rows` is the last four of these plus the current pace. */
+    history?: Array<{ stop: string; context: string; cells: FinishCell[] }>;
     rows: Array<{
       stop: string;
       context: string;
@@ -179,6 +195,15 @@ export function getTeamCoaching(
 }
 
 /**
+ * League-average points per team-game by season (data/team/league_ppg.json,
+ * from buildLeaguePpg.mjs): the reference line under the career chart.
+ * Empty when the file is missing, and the chart then draws no line.
+ */
+export function getLeaguePpg(): Record<string, number> {
+  return readDataJson<{ seasons: Record<string, number> }>(dataPath("team", "league_ppg.json"))?.seasons ?? {};
+}
+
+/**
  * A fingerprint for the render cache: changes whenever the file does.
  *
  * The file's mtime rather than its builtAt, because this file is hand-edited
@@ -188,9 +213,16 @@ export function getTeamCoaching(
  */
 export function coachingVersion(season: number): string {
   try {
-    return String(
-      fs.statSync(dataPath("team", `coaching_${season}.json`)).mtimeMs,
-    );
+    // The league scoring file feeds the career chart, so its mtime joins the
+    // key; a missing file is simply absent from it.
+    const league = (() => {
+      try {
+        return fs.statSync(dataPath("team", "league_ppg.json")).mtimeMs;
+      } catch {
+        return 0;
+      }
+    })();
+    return `${fs.statSync(dataPath("team", `coaching_${season}.json`)).mtimeMs}:${league}`;
   } catch {
     return "";
   }

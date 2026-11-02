@@ -46,11 +46,13 @@ export interface PreviewSide {
   coaching: TeamCoaching | null;
   /** What THIS team's defense allows by position. */
   fpa: FpaRow | null;
+  /** The same row in each scoring; a missing format falls back to the PPR row. */
+  fpaFormats: Record<ScoringFormat, FpaRow | null>;
   stats: TeamStats | null;
   record: string | null;
   roster: RosterPlayer[];
   /** Season PPR per game and league-wide positional rank by Sleeper id (mak, 2026-10-23: the starters table). */
-  ppr: Record<string, { ppg: number; posRank: number | null }>;
+  ppr: Record<string, { ppg: number; posRank: number | null; formats: Record<ScoringFormat, { ppg: number; posRank: number | null }> }>;
 }
 
 export interface BoardRow {
@@ -106,6 +108,8 @@ export interface LeverageRow {
   posPool: number;
   /** Sleeper id, the headshot key; null when usage has not matched him. */
   sleeperId: string | null;
+  /** The same row in each scoring, for the page's switch (mak, 2026-11-02). */
+  formats: Record<ScoringFormat, { ppg: number; posRank: number | null; defFpa: number | null; defRank: number | null; chip: Leverage }>;
 }
 
 /** The two or three conclusions above the leverage table. */
@@ -144,6 +148,8 @@ export interface InjuryRow {
   impact: "out" | "watch" | "none";
   beneficiary: { name: string; pos: string } | null;
   ppg: number | null;
+  /** The roster's Sleeper id, the headshot key (faces since 2026-11-02). */
+  sleeperId: string | null;
 }
 
 /** The strip above the injury cards (mak, 2026-10-05). */
@@ -241,6 +247,32 @@ function pprPpg(p: UsagePlayer): number | null {
   return p.fpPerGame;
 }
 
+export type ScoringFormat = "ppr" | "half" | "std";
+export const SCORING_FORMATS: ScoringFormat[] = ["ppr", "half", "std"];
+
+/**
+ * One figure in each scoring as attributes the page's switch reads (team.ts
+ * wireScoring): ` data-ppr=".." data-half=".." data-std=".."`, or with a
+ * name, ` data-tier-ppr=".."` and so on. The printed value stays PPR.
+ */
+export function fmtData(values: Record<ScoringFormat, string | number>, name = ""): string {
+  const prefix = name ? `data-${name}-` : "data-";
+  return SCORING_FORMATS.map((f) => ` ${prefix}${f}="${String(values[f]).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")}"`).join("");
+}
+
+/** The same value computed per scoring, as a record. */
+export function perFormat<T>(fn: (f: ScoringFormat) => T): Record<ScoringFormat, T> {
+  return { ppr: fn("ppr"), half: fn("half"), std: fn("std") };
+}
+
+/** The usage feed's PPR per game taken down to half PPR or standard: a reception is 1, 0.5 or 0. */
+function formatPpg(p: UsagePlayer, format: ScoringFormat): number | null {
+  const ppr = pprPpg(p);
+  if (ppr === null) return null;
+  const recPerGame = p.games ? p.receptions / p.games : 0;
+  return format === "ppr" ? ppr : format === "half" ? ppr - recPerGame * 0.5 : ppr - recPerGame;
+}
+
 const OUT = new Set(["Out", "IR", "PUP", "Doubtful", "Sus", "Suspended", "NFI", "COV"]);
 
 function isOut(status: string | null | undefined): boolean {
@@ -281,12 +313,12 @@ interface League {
   rankOf(p: UsagePlayer): number | null;
 }
 
-function buildLeague(doc: UsageDoc): League {
+function buildLeague(doc: UsageDoc, format: ScoringFormat = "ppr"): League {
   const pools: Record<Pos, Array<{ id: string; ppg: number }>> = { QB: [], RB: [], WR: [], TE: [] };
   const minGames = Math.min(2, Math.max(1, doc.throughWeek - 1));
   for (const team of Object.values(doc.teams)) {
     for (const p of team.players) {
-      const ppg = pprPpg(p);
+      const ppg = formatPpg(p, format);
       if (ppg === null || p.games < minGames) continue;
       pools[p.pos].push({ id: p.id, ppg });
     }
@@ -334,6 +366,15 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   const pageFor = (team: NflTeam) => (team.abbreviation === data.pair.a.abbreviation ? data.a : data.b);
   const fpaFor = (team: NflTeam) =>
     data.fpa ? (team.abbreviation === data.pair.a.abbreviation ? data.fpa.a : data.fpa.b) : null;
+  const fpaFormatsFor = (team: NflTeam): Record<ScoringFormat, FpaRow | null> => {
+    const ppr = fpaFor(team);
+    const pick = (f: ScoringFormat): FpaRow | null => {
+      const rows = data.fpa?.byFormat?.[f] ?? null;
+      if (!rows) return ppr;
+      return (team.abbreviation === data.pair.a.abbreviation ? rows.a : rows.b) ?? ppr;
+    };
+    return { ppr, half: pick("half"), std: pick("std") };
+  };
 
   const line =
     inputs.lines?.games.find(
@@ -362,6 +403,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       usage: usage?.teams[team.abbreviation] ?? null,
       coaching: getTeamCoaching(team.abbreviation, season),
       fpa: fpaFor(team),
+      fpaFormats: fpaFormatsFor(team),
       stats: page.stats,
       record: page.profile?.record ?? null,
       roster: page.roster?.players ?? [],
@@ -374,11 +416,19 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   const otherOf = (k: SideKey) => (k === "away" ? home : away);
 
   const league = usage ? buildLeague(usage) : null;
+  // The starters block switches between PPR, half PPR and standard (mak,
+  // 2026-11-02), so each figure carries all three with its rank in each.
+  const leagues = usage
+    ? { ppr: league!, half: buildLeague(usage, "half"), std: buildLeague(usage, "std") }
+    : null;
   for (const side of [away, home]) {
     for (const p of side.usage?.players ?? []) {
       const ppg = pprPpg(p);
       if (!p.sleeperId || ppg === null) continue;
-      side.ppr[p.sleeperId] = { ppg, posRank: league?.rankOf(p) ?? null };
+      const formats = Object.fromEntries(
+        SCORING_FORMATS.map((f) => [f, { ppg: formatPpg(p, f) ?? ppg, posRank: leagues?.[f].rankOf(p) ?? null }]),
+      ) as Record<ScoringFormat, { ppg: number; posRank: number | null }>;
+      side.ppr[p.sleeperId] = { ppg, posRank: league?.rankOf(p) ?? null, formats };
     }
   }
   const slateMean = slate.length ? slate.reduce((s, x) => s + x, 0) / slate.length : null;
@@ -554,6 +604,17 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       posRank: f.posRank,
       posPool: league?.ladder[f.p.pos].length ?? 0,
       sleeperId: f.p.sleeperId,
+      formats: Object.fromEntries(
+        SCORING_FORMATS.map((fmt) => {
+          const opp = otherOf(f.side);
+          const def = opp.fpaFormats[fmt]?.byPos[f.p.pos] ?? null;
+          const own = f.p.sleeperId ? sideOf(f.side).ppr[f.p.sleeperId]?.formats[fmt] : undefined;
+          const posRank = own?.posRank ?? f.posRank;
+          let chip = chipFor(def?.rank ?? null);
+          if (posRank !== null && posRank <= 3 && chip !== "up") chip = "proof";
+          return [fmt, { ppg: own?.ppg ?? f.ppg, posRank, defFpa: def?.fpa ?? null, defRank: def?.rank ?? null, chip }];
+        }),
+      ) as LeverageRow["formats"],
     }));
 
   const injuries = {
@@ -1070,6 +1131,7 @@ function injuryRows(
       impact,
       beneficiary,
       ppg: u ? pprPpg(u) : null,
+      sleeperId: r.id || null,
     };
   });
 
@@ -1090,6 +1152,7 @@ function injuryRows(
       impact: "none",
       beneficiary: null,
       ppg: null,
+      sleeperId: null,
     });
   }
   void now;
