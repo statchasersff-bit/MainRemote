@@ -263,7 +263,7 @@ function ledger(team: NflTeam, v: ContractsView): string {
   // The kicker: tight now, flexible if willing to cut, pointing at the scenario.
   const kicker =
     v.capSpace !== null && releasable > 0
-      ? `<p class="sct-ct-lg-kicker">${e(`${money(v.capSpace)} free today; ${money(releasable)} reachable via cuts.`)} ` +
+      ? `<p class="sct-ct-lg-kicker">${e(`${v.capSpace < 0 ? `${money(-v.capSpace)} over the cap today` : `${money(v.capSpace)} free today`}; ${money(releasable)} reachable via cuts.`)} ` +
         `<a class="sct-ct-lg-link" href="#sct-ct-scen">Cut scenario</a></p>`
       : "";
 
