@@ -46,6 +46,8 @@ export interface BodyTeam {
   singular: string;
   /** "Los Angeles". */
   city: string;
+  /** The club's crest, an absolute URL on this server; absent means no crest. */
+  logo?: string | null;
   /** The team hub, or null when this site has no address for it. */
   hub: string | null;
   /** The team's matchups page, or null. */
@@ -294,15 +296,6 @@ export function seriesRecord(input: RecapBodyInput): Record_ {
 
 function winnerOf(g: SeriesGame): string | null {
   return g.awayScore > g.homeScore ? g.away : g.homeScore > g.awayScore ? g.home : null;
-}
-
-/** "Cardinals 37–20", winner first; "Tie 20–20". */
-function resultPhrase(input: RecapBodyInput, g: SeriesGame): string {
-  const w = winnerOf(g);
-  if (!w) return `Tie ${g.awayScore}${DASH}${g.homeScore}`;
-  const high = Math.max(g.awayScore, g.homeScore);
-  const low = Math.min(g.awayScore, g.homeScore);
-  return `${input.teams[w]?.short ?? w} ${high}${DASH}${low}`;
 }
 
 /* ------------------------------------------------------ section 1: why won */
@@ -575,14 +568,10 @@ export function renderWhyWon(input: RecapBodyInput): string {
 
   // The table under this is the game's team stats, and "team stats" is one of
   // the searches the page earns (the Search Console brief of 2026-10-30), so
-  // the heading says so before it says why the winner won.
-  // The H2 is the search phrase alone; the analysis is the H3 under it (mak,
-  // 2026-10-30: "stats first, analysis second"). A tie has no winner to explain.
+  // the heading is that phrase alone, with the battles line as its caption.
+  // The "Why the X won" H3 that sat between them (10-30 to 11-02) is gone at
+  // mak's request: the caption already says who won what.
   const heading = `${game.away.short} vs ${game.home.short} team stats`;
-  const analysis =
-    result.winner === null
-      ? ""
-      : `<h3 class="sct-rb-h3 sct-rb-why">${escapeHtml(`Why the ${game[result.winner].short} won`)}</h3>`;
 
   // The key advantages first, then the rows that back them in the same
   // order, then everything else as secondary stats (mak, 2026-09-30). A tie
@@ -614,7 +603,7 @@ export function renderWhyWon(input: RecapBodyInput): string {
 
   // The key advantages themselves sit in the recap story, above this
   // (mak, 2026-09-30); the table still leads with their rows.
-  return section("why", heading, analysis + subtitle(battlesLine(input, rows)) + table);
+  return section("why", heading, subtitle(battlesLine(input, rows)) + table);
 }
 
 /**
@@ -657,19 +646,6 @@ export function recapAllTime(input: RecapBodyInput) {
   return input.rivalry ? allTimeSummary(input.rivalry, input.game.away.abbr, input.game.home.abbr) : null;
 }
 
-function tileLetters(input: RecapBodyInput): { letters: Record<string, string>; wide: boolean } {
-  const [x, y] = [input.game.away.abbr, input.game.home.abbr];
-  const tx = input.teams[x]!;
-  const ty = input.teams[y]!;
-  const same = tx.short.charAt(0).toUpperCase() === ty.short.charAt(0).toUpperCase();
-  return same
-    ? { letters: { [x]: tx.abbr, [y]: ty.abbr }, wide: true }
-    : {
-        letters: { [x]: tx.short.charAt(0).toUpperCase(), [y]: ty.short.charAt(0).toUpperCase() },
-        wide: false,
-      };
-}
-
 function gameLabel(g: { season: number; weekLabel: string; playoff: boolean }): string {
   return `${g.season} ${shortLabel(g.weekLabel, g.playoff)}`;
 }
@@ -678,53 +654,39 @@ function meetingTeams(input: RecapBodyInput, away: string, home: string, neutral
   return `${input.teams[away]?.short ?? away} ${neutral ? "vs" : "at"} ${input.teams[home]?.short ?? home}`;
 }
 
+/**
+ * One played meeting as a row (mak, 2026-11-02): the week label, who hosted,
+ * and one winner-colored chip with the winner's score first. The whole row is
+ * the recap link. No date, no "W" column: the chip's color and order say it.
+ */
 function recentRow(input: RecapBodyInput, g: SeriesGame): string {
   const w = winnerOf(g);
   const label =
     `<span class="sct-rb-mt-label"><b>${g.season}</b> ` +
     `${escapeHtml(shortLabel(g.weekLabel, g.playoff))}</span>`;
   const teams = meetingTeams(input, g.away, g.home, g.neutral);
-  const matchup = g.url
-    ? `<a class="sct-rb-mt-link" href="${escapeHtml(g.url)}">${escapeHtml(teams)}` +
-      `<span class="sct-rb-sr">${escapeHtml(`, ${gameLabel(g)} recap`)}</span></a>`
-    : `<span>${escapeHtml(teams)}</span>`;
-
-  // Winner first; a tie keeps away then home.
-  const sides = [
-    { abbr: g.away, points: g.awayScore },
-    { abbr: g.home, points: g.homeScore },
-  ];
-  if (w === g.home) sides.reverse();
-  const score =
-    `<span class="sct-rb-mt-score">` +
-    sides
-      .map(
-        (s, i) =>
-          `<span class="${w && i === 0 ? "is-win" : "is-other"}">` +
-          `${escapeHtml(input.teams[s.abbr]?.abbr ?? s.abbr)} ${s.points}</span>`,
-      )
-      .join(" ") +
-    `</span>`;
+  const high = Math.max(g.awayScore, g.homeScore);
+  const low = Math.min(g.awayScore, g.homeScore);
   const chip = w
-    ? `<span class="sct-rb-chip is-win" style="${escapeHtml(`--rb-fill:${colorsOf(input, w).fill}`)}">` +
-      `${escapeHtml(`${input.teams[w]?.abbr ?? w} W`)}</span>`
-    : `<span class="sct-rb-chip is-tie">T</span>`;
-
+    ? `<span class="sct-rb-mt-score sct-rb-chip is-win" style="${escapeHtml(`--rb-fill:${colorsOf(input, w).fill}`)}">` +
+      `${escapeHtml(`${input.teams[w]?.abbr ?? w} ${high}${DASH}${low}`)}</span>`
+    : `<span class="sct-rb-mt-score sct-rb-chip is-tie">${escapeHtml(`Tie ${high}${DASH}${low}`)}</span>`;
+  const match =
+    `<span class="sct-rb-mt-match">${escapeHtml(teams)}` +
+    (g.current ? ` <span class="sct-rb-mt-this">This game</span>` : "") +
+    `</span>`;
+  // Spaces between the parts: the grid ignores them, and without them the
+  // row's text reads "2025 Wk 18Cardinals at Rams" to anything that reads
+  // the text rather than the layout.
+  const parts = [label, match, chip].join(" ");
+  const body = g.url
+    ? `<a class="sct-rb-mt-link" href="${escapeHtml(g.url)}">${parts}` +
+      `<span class="sct-rb-sr">${escapeHtml(`, ${gameLabel(g)} recap`)}</span></a>`
+    : parts;
   return (
     `<li class="sct-rb-mt${g.current ? " is-current" : ""}"` +
     (g.current ? ` aria-current="page"` : "") +
-    `>` +
-    // Spaces between the parts: the grid ignores them, and without them the
-    // row's text reads "2025 Wk 18Cardinals at RamsSun, Jan 4" to anything
-    // that reads the text rather than the layout.
-    [
-      label,
-      `<span class="sct-rb-mt-match">${matchup} ` +
-        `<span class="sct-rb-mt-date">${time(g.kickoff, shortDate)}</span></span>`,
-      score,
-      chip,
-    ].join(" ") +
-    `</li>`
+    `>${body}</li>`
   );
 }
 
@@ -733,13 +695,37 @@ function upcomingRow(input: RecapBodyInput, g: UpcomingGame): string {
     `<li class="sct-rb-mt is-upcoming">` +
     [
       `<span class="sct-rb-mt-label"><b>${escapeHtml(g.weekLabel)}</b></span>`,
-      `<span class="sct-rb-mt-match"><span>${escapeHtml(meetingTeams(input, g.away, g.home, g.neutral))}</span> ` +
+      `<span class="sct-rb-mt-match">${escapeHtml(meetingTeams(input, g.away, g.home, g.neutral))} ` +
         `<span class="sct-rb-mt-date">${time(g.kickoff, shortDate)}</span></span>`,
-      `<span class="sct-rb-mt-score"></span>`,
-      `<span class="sct-rb-chip is-upcoming">Upcoming</span>`,
+      `<span class="sct-rb-mt-score sct-rb-chip is-upcoming">Upcoming</span>`,
     ].join(" ") +
     `</li>`
   );
+}
+
+/**
+ * The recency story the old letter strip was telling, in a clause: "the
+ * Patriots have won the last 3" or "the Patriots have taken 3 of the last 4".
+ * Null when the last four split evenly or the series is too short.
+ */
+export function recentRun(input: RecapBodyInput, newestFirst: SeriesGame[]): string | null {
+  const winners = newestFirst.map(winnerOf);
+  const first = winners[0];
+  if (!first) return null;
+  let streak = 0;
+  for (const w of winners) {
+    if (w !== first) break;
+    streak += 1;
+  }
+  const name = (abbr: string): string => input.teams[abbr]?.short ?? abbr;
+  if (streak >= 3) return `${name(first)} have won the last ${streak}`;
+  if (winners.length >= 4) {
+    const last4 = winners.slice(0, 4);
+    for (const abbr of [input.game.away.abbr, input.game.home.abbr]) {
+      if (last4.filter((w) => w === abbr).length === 3) return `${name(abbr)} have taken 3 of the last 4`;
+    }
+  }
+  return null;
 }
 
 export function renderHeadToHead(input: RecapBodyInput): string {
@@ -749,75 +735,48 @@ export function renderHeadToHead(input: RecapBodyInput): string {
   const record = seriesRecord(input);
   const n = series.games.length;
 
-  // All-time first - the intro and four tiles - then the recent series under
-  // its own "Since" heading.
+  // All-time first - the intro and four tiles - then the recent series.
   const [awaySide, homeSide] = rivalryTeams(input);
   const top =
     allTime && input.rivalry
       ? subtitle(rivalryIntro(input.rivalry, allTime, awaySide, homeSide)) +
-        renderAllTimeTiles(allTime, awaySide, homeSide) +
-        (n ? `<h3 class="sct-rb-h3 sct-rb-since">${escapeHtml(`Since ${series.sinceSeason}`)}</h3>` : "")
+        renderAllTimeTiles(allTime, awaySide, homeSide)
       : "";
-
-  const summary = n
-    ? `<div class="sct-rb-h2h-summary">` +
-      `<p class="sct-rb-h2h-record"><span class="sct-rb-h2h-figure">${escapeHtml(record.text)}</span> ` +
-      `<span class="sct-rb-h2h-lead">${escapeHtml(record.leader ? `${record.leader.short} lead` : "Series tied")}</span></p>` +
-      `<p class="sct-rb-h2h-note">${escapeHtml(
-        `${n} meeting${n === 1 ? "" : "s"} since the ${series.sinceSeason} season, regular season and playoffs.`,
-      )}</p>` +
-      `</div>`
-    : "";
 
   const oldest = [...series.games].sort(
     (x, y) => (x.kickoff ?? "").localeCompare(y.kickoff ?? "") || x.season - y.season,
   );
-  const { letters, wide } = tileLetters(input);
-  const tiles = n
-    ? `<ol class="sct-rb-tiles${wide ? " is-wide" : ""}">` +
-      oldest
-        .map((g) => {
-          const w = winnerOf(g);
-          const label = `${gameLabel(g)}: ${resultPhrase(input, g)}`;
-          return (
-            `<li class="sct-rb-tile${w ? "" : " is-tie"}${g.current ? " is-current" : ""}"` +
-            (w ? ` style="${escapeHtml(`--rb-fill:${colorsOf(input, w).fill}`)}"` : "") +
-            ` title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">` +
-            `<span aria-hidden="true">${escapeHtml(w ? letters[w] ?? w : "T")}</span></li>`
-          );
-        })
-        .join("") +
-      `</ol>`
-    : "";
-
-  const leaderFirst = [game.away.abbr, game.home.abbr].sort((x, y) =>
-    record.leader ? (x === record.leader.abbr ? -1 : y === record.leader.abbr ? 1 : 0) : 0,
-  );
-  const legendParts = leaderFirst.map(
-    (abbr) => `${letters[abbr]} = ${input.teams[abbr]?.short} win`,
-  );
-  if (series.games.some((g) => winnerOf(g) === null)) legendParts.push("T = tie");
-  if (series.games.some((g) => g.current)) legendParts.push("outlined = this game");
-  const legend = n
-    ? `<p class="sct-rb-legend">Oldest to newest. ${escapeHtml(legendParts.join(", "))}.</p>`
-    : "";
-
-  const upcoming = series.upcoming.length
-    ? `<h3 class="sct-rb-h3">${escapeHtml(`${series.upcoming[0]!.season} meetings`)}</h3>` +
-      `<ul class="sct-rb-meetings">${series.upcoming.map((g) => upcomingRow(input, g)).join("")}</ul>`
-    : "";
-
   const newest = [...oldest].reverse();
-  const recent = n
-    ? `<h3 class="sct-rb-h3">Recent meetings</h3>` +
-      `<ul class="sct-rb-meetings">${newest.map((g) => recentRow(input, g)).join("")}</ul>`
+
+  // One header line (mak, 2026-11-02; a 64px record, a note, a letter strip
+  // and its legend until then): the record, the count, and the recent run
+  // the strip used to show. The rows below carry the rest in color.
+  const run = n ? recentRun(input, newest) : null;
+  const summary = n
+    ? `<p class="sct-rb-h2h-summary">` +
+      `<span class="sct-rb-h2h-record"><b class="sct-rb-h2h-figure">${escapeHtml(record.text)}</b> ` +
+      `<span class="sct-rb-h2h-lead">${escapeHtml(record.leader ? `${record.leader.short} lead` : "Series tied")}</span></span>` +
+      `<span class="sct-rb-h2h-note">${escapeHtml(
+        `${n} meeting${n === 1 ? "" : "s"} since ${series.sinceSeason}, incl. playoffs`,
+      )}</span>` +
+      (run ? `<span class="sct-rb-h2h-run">${escapeHtml(run)}</span>` : "") +
+      `</p>`
     : "";
+
+  // One list: what is still to come, soonest first, then what was played,
+  // newest first. The upcoming game is the next meeting, not a category of
+  // its own, so it has no heading; the header line above does that job.
+  const rows =
+    series.upcoming.map((g) => upcomingRow(input, g)).join("") +
+    newest.map((g) => recentRow(input, g)).join("");
+  const since = n || rows ? `<h3 class="sct-rb-h3 sct-rb-since">${escapeHtml(`Since ${series.sinceSeason}`)}</h3>` : "";
+  const meetings = rows ? `<ul class="sct-rb-meetings">${rows}</ul>` : "";
 
   // id "h2h" is the "On this page" jump target.
   return section(
     "h2h",
     `${game.away.short} vs ${game.home.short} head-to-head`,
-    top + summary + tiles + legend + upcoming + recent,
+    top + since + summary + meetings,
   );
 }
 

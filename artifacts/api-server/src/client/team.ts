@@ -814,14 +814,17 @@ function wireCutScenario(root: HTMLElement): void {
     // row and keeps the rest behind a tap on the row (team.css lays the row
     // out as a card below 700px). A tap on the name, the pick box or a
     // button is left to them.
-    const narrow = window.matchMedia("(max-width: 700px)");
+    // (Guarded: jsdom has no matchMedia, and a test must still run the rest.)
+    const narrow = typeof window.matchMedia === "function" ? window.matchMedia("(max-width: 700px)") : null;
     for (const tr of Array.from(block.querySelectorAll<HTMLElement>("[data-sct-ct-row]"))) {
       tr.addEventListener("click", (event) => {
-        if (!narrow.matches) return;
+        if (!narrow?.matches) return;
         if ((event.target as HTMLElement | null)?.closest("a, input, button")) return;
         tr.classList.toggle("is-open");
       });
     }
+
+    wireContractSort(block);
 
     const bar = block.querySelector<HTMLElement>("[data-sct-ct-scen]");
     const picks = Array.from(block.querySelectorAll<HTMLInputElement>("[data-sct-ct-pick]"));
@@ -935,6 +938,51 @@ function wireCutScenario(root: HTMLElement): void {
 }
 
 /**
+ * The contracts sheet's sortable heads (mak, 2026-11-02). Every body cell
+ * carries its column's value in data-sort; a head button sorts the rows by
+ * it, a numeric column largest first and a text column A to Z, and a second
+ * press flips the direction. Empty values (unpriced Worth, no APY) stay at
+ * the bottom either way, and ties keep the sheet's order. The rows move in
+ * the DOM, so the cut scenario, which reads each row's own attributes, is
+ * unaffected.
+ */
+function wireContractSort(block: HTMLElement): void {
+  const table = block.querySelector<HTMLTableElement>(".sct-ct-table");
+  const tbody = table?.tBodies[0];
+  if (!table || !tbody) return;
+  const heads = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th"));
+  for (const th of heads) {
+    const button = th.querySelector<HTMLButtonElement>("[data-sct-ct-sort]");
+    if (!button) continue;
+    button.addEventListener("click", () => {
+      const index = heads.indexOf(th);
+      const numeric = button.dataset["sortType"] === "num";
+      const was = th.getAttribute("aria-sort");
+      const dir =
+        was === "descending" ? "ascending" : was === "ascending" ? "descending" : numeric ? "descending" : "ascending";
+      for (const h of heads) {
+        h.removeAttribute("aria-sort");
+        h.classList.remove("is-sorted");
+      }
+      th.setAttribute("aria-sort", dir);
+      th.classList.add("is-sorted");
+      const sign = dir === "descending" ? -1 : 1;
+      const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr[data-sct-ct-row]")).map((tr, i) => ({
+        tr,
+        i,
+        v: tr.cells[index]?.dataset["sort"] ?? "",
+      }));
+      rows.sort((a, b) => {
+        if (a.v === "" || b.v === "") return a.v === b.v ? a.i - b.i : a.v === "" ? 1 : -1;
+        const cmp = numeric ? Number(a.v) - Number(b.v) : a.v.localeCompare(b.v);
+        return cmp === 0 ? a.i - b.i : cmp * sign;
+      });
+      for (const { tr } of rows) tbody.appendChild(tr);
+    });
+  }
+}
+
+/**
  * The view switch on any `[data-sct-dc]` block: the Depth Chart tab's four
  * views. (The Draft tab borrowed it from 2026-10-23 to 2026-10-29; its two
  * panels now stack in one view.)
@@ -986,32 +1034,71 @@ let scoringGroups = 0;
  * so the order still matches the numbers. The choice is remembered per viewer.
  */
 function wireScoring(root: HTMLElement): void {
-  const slot = root.querySelector<HTMLElement>("[data-sct-scoring-slot]");
-  if (!slot) return;
+  const slots = Array.from(root.querySelectorAll<HTMLElement>("[data-sct-scoring-slot]"));
+  if (slots.length === 0) return;
 
-  const name = `sct-scoring-${(scoringGroups += 1)}`;
-  const group = document.createElement("fieldset");
-  group.className = "sct-mu-scoring";
-  const legend = document.createElement("legend");
-  legend.className = "sct-mu-scoring-legend";
-  legend.textContent = "Scoring";
-  group.appendChild(legend);
-  for (const [value, label] of SCORING_OPTIONS) {
-    const option = document.createElement("label");
-    option.className = "sct-mu-scoring-option";
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = name;
-    input.value = value;
-    input.checked = value === "ppr";
-    const text = document.createElement("span");
-    text.textContent = label;
-    option.append(input, text);
-    group.appendChild(option);
-  }
-  slot.appendChild(group);
+  // One switch per slot (the stat tables, the preview's starters block), all
+  // showing the same choice.
+  const groups = slots.map((slot) => {
+    const name = `sct-scoring-${(scoringGroups += 1)}`;
+    const group = document.createElement("fieldset");
+    group.className = "sct-mu-scoring";
+    const legend = document.createElement("legend");
+    legend.className = "sct-mu-scoring-legend";
+    legend.textContent = "Scoring";
+    group.appendChild(legend);
+    for (const [value, label] of SCORING_OPTIONS) {
+      const option = document.createElement("label");
+      option.className = "sct-mu-scoring-option";
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = name;
+      input.value = value;
+      input.checked = value === "ppr";
+      const text = document.createElement("span");
+      text.textContent = label;
+      option.append(input, text);
+      group.appendChild(option);
+    }
+    slot.appendChild(group);
+    return group;
+  });
+  const check = (format: ScoringFormat): void => {
+    for (const group of groups) {
+      const input = group.querySelector<HTMLInputElement>(`input[value="${format}"]`);
+      if (input) input.checked = true;
+    }
+  };
 
   const apply = (format: ScoringFormat): void => {
+    // The preview page (mak, 2026-11-02): every region marked data-pv-fmt -
+    // the defense cards and starters, Matchup Leverage, the Team Matchup's
+    // points-allowed rows, the last meeting's scorers - carries each figure in
+    // all three scorings. Text swaps from data-<fmt>, a rank tier from
+    // data-tier-<fmt>, a bar width from data-w-<fmt>, a row's advantage from
+    // data-adv-<fmt> and a leverage call from data-lev-<fmt>.
+    for (const region of Array.from(root.querySelectorAll<HTMLElement>("[data-pv-fmt]"))) {
+      for (const el of Array.from(region.querySelectorAll<HTMLElement>(`[data-${format}]`))) {
+        el.textContent = el.getAttribute(`data-${format}`) ?? el.textContent;
+      }
+      for (const el of Array.from(region.querySelectorAll<HTMLElement>(`[data-tier-${format}]`))) {
+        el.setAttribute("data-tier", el.getAttribute(`data-tier-${format}`) ?? "");
+      }
+      for (const el of Array.from(region.querySelectorAll<HTMLElement>(`[data-w-${format}]`))) {
+        el.style.width = `${el.getAttribute(`data-w-${format}`) ?? "0"}%`;
+      }
+      for (const el of Array.from(region.querySelectorAll<HTMLElement>(`[data-adv-${format}]`))) {
+        el.setAttribute("data-adv", el.getAttribute(`data-adv-${format}`) ?? "even");
+      }
+      for (const el of Array.from(region.querySelectorAll<HTMLElement>(`[data-lev-${format}]`))) {
+        const lev = el.getAttribute(`data-lev-${format}`) ?? "neutral";
+        if (el.classList.contains("sct-pv-lb-dot")) {
+          el.className = `sct-pv-lb-dot is-${lev}`;
+        } else {
+          el.setAttribute("data-lev", lev);
+        }
+      }
+    }
     for (const cell of Array.from(root.querySelectorAll<HTMLElement>(`td[data-fmt-${format}]`))) {
       cell.textContent = cell.getAttribute(`data-fmt-${format}`) ?? "";
       cell.setAttribute("data-sort", cell.getAttribute(`data-fmt-sort-${format}`) ?? "");
@@ -1024,10 +1111,6 @@ function wireScoring(root: HTMLElement): void {
       number.textContent = number.getAttribute(`data-${format}`) ?? number.textContent;
       const unit = number.parentElement?.querySelector(".sct-ls-unit");
       if (unit) unit.textContent = POINTS_UNIT[format];
-    }
-    // Player Stats' fantasy leaders: points and finish.
-    for (const el of Array.from(root.querySelectorAll<HTMLElement>(`[data-ps-swap][data-${format}]`))) {
-      el.textContent = el.getAttribute(`data-${format}`) ?? el.textContent;
     }
     // The Fantasy tab's verdict cards carry their points the same way.
     for (const el of Array.from(root.querySelectorAll<HTMLElement>("[data-fp-notes] [data-ppr][data-half][data-std]"))) {
@@ -1054,15 +1137,18 @@ function wireScoring(root: HTMLElement): void {
     }
   };
 
-  group.addEventListener("change", (event) => {
-    const value = (event.target as HTMLInputElement).value as ScoringFormat;
-    apply(value);
-    try {
-      window.localStorage.setItem(SCORING_KEY, value);
-    } catch {
-      // Private mode or blocked storage: the switch still works, it is just not remembered.
-    }
-  });
+  for (const group of groups) {
+    group.addEventListener("change", (event) => {
+      const value = (event.target as HTMLInputElement).value as ScoringFormat;
+      check(value);
+      apply(value);
+      try {
+        window.localStorage.setItem(SCORING_KEY, value);
+      } catch {
+        // Private mode or blocked storage: the switch still works, it is just not remembered.
+      }
+    });
+  }
 
   let saved: string | null = null;
   try {
@@ -1071,8 +1157,7 @@ function wireScoring(root: HTMLElement): void {
     saved = null;
   }
   if (saved === "half" || saved === "std") {
-    const input = group.querySelector<HTMLInputElement>(`input[value="${saved}"]`);
-    if (input) input.checked = true;
+    check(saved);
     apply(saved);
   }
 }
@@ -1150,31 +1235,14 @@ function wireFantasyFormat(root: HTMLElement): void {
 }
 
 /**
- * The highlights box: a thumbnail and a play button until pressed, then the
- * youtube-nocookie player in its place. A thumbnail that fails leaves the
- * team-color ground.
+ * The highlights box: a thumbnail over the link to YouTube. A thumbnail that
+ * fails leaves the team-color ground. (Until 2026-11-02 a press swapped the
+ * box for a youtube-nocookie player; the video now opens on YouTube.)
  */
 function wireHighlights(root: HTMLElement): void {
   for (const img of Array.from(root.querySelectorAll<HTMLImageElement>("img[data-hl-thumb]"))) {
     if (img.complete && img.naturalWidth === 0) img.remove();
     else img.addEventListener("error", () => img.remove(), { once: true });
-  }
-  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-hl-embed]"))) {
-    button.addEventListener(
-      "click",
-      () => {
-        const frame = document.createElement("iframe");
-        frame.src = button.dataset["hlEmbed"]!;
-        frame.title = button.dataset["hlTitle"] ?? "YouTube video player";
-        frame.className = "sct-hl-frame";
-        frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-        frame.allowFullscreen = true;
-        frame.referrerPolicy = "strict-origin-when-cross-origin";
-        button.replaceWith(frame);
-        frame.focus();
-      },
-      { once: true },
-    );
   }
 }
 

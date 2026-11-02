@@ -1487,7 +1487,9 @@ body.sct-page.is-embed {
 .sct[data-sct-tabs="js"] #coaching.is-active ~ [data-sct-faq-for="coaching"],
 .sct[data-sct-tabs="js"] #stats.is-active ~ [data-sct-faq-for="stats"],
 .sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"],
-.sct[data-sct-tabs="js"] #schedule.is-active ~ [data-sct-faq-for="schedule"] {
+.sct[data-sct-tabs="js"] #schedule.is-active ~ [data-sct-faq-for="schedule"],
+.sct[data-sct-tabs="js"] #draft.is-active ~ [data-sct-faq-for="draft"],
+.sct[data-sct-tabs="js"] #contracts.is-active ~ [data-sct-faq-for="contracts"] {
   display: block;
 }
 
@@ -2390,6 +2392,22 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;
+}
+
+/* A second part in one answer (the Draft and Contracts FAQs) keeps a paragraph gap. */
+.sct-faq-a + .sct-faq-a {
+  margin-top: 10px;
+}
+
+/* A bulleted part of an answer (the Draft FAQ's pick-by-round list). */
+ul.sct-faq-list {
+  padding-left: 18px;
+  list-style: disc;
+}
+
+ul.sct-faq-list li {
+  margin: 2px 0;
+  padding: 0;
 }
 
 /* A link under the questions (the Coaching tab's "See the full coaching
@@ -3866,10 +3884,12 @@ body.sct-page.is-embed {
 
 /* ---------------------------------------------------------- injury watch */
 
+/* Dense since 2026-11-02 (mak: 40% shorter, through the padding): 3px
+   between rows, a 28px well, tight line heights on the name and footnote. */
 .sct-injuries {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 3px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -3882,8 +3902,8 @@ body.sct-page.is-embed {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 2px 7px;
-  padding-bottom: 9px;
+  gap: 0 7px;
+  padding-bottom: 3px;
   /* Hairline, not --sc-border: at two or three players the heavier rule made
      the card look like a table of its own. */
   border-bottom: 1px solid var(--sc-hairline);
@@ -3900,8 +3920,12 @@ body.sct-page.is-embed {
 .sct-injury-well {
   display: block;
   flex: none;
-  width: 36px;
-  height: 36px;
+  /* Spans the name row and the footnote row, so the footnote rides beside
+     the face instead of adding a row under it. */
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--sc-surface-soft);
@@ -3918,8 +3942,9 @@ body.sct-page.is-embed {
 
 .sct-injury-name {
   color: var(--sc-navy);
-  font-size: 0.87rem;
+  font-size: 0.84rem;
   font-weight: 700;
+  line-height: 1.15;
   min-width: 0;
 }
 
@@ -3958,8 +3983,9 @@ body.sct-page.is-embed {
 .sct-injury-detail {
   grid-column: 2 / -1;
   color: var(--sc-muted);
-  font-size: 0.73rem;
+  font-size: 0.7rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .sct-injury-dot {
@@ -3988,26 +4014,27 @@ body.sct-page.is-embed {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: start;
-  gap: 10px;
-  margin: 12px 0 0;
-  padding: 12px 4px;
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface-soft);
+  gap: 8px;
+  /* Tightened (mak, 2026-11-02: "so much padding"): the matchup sits right
+     under the date line and the crests shrink a step. */
+  margin: 2px 0 0;
+  /* No grey panel behind the two crests (mak, 2026-11-02). */
+  padding: 0;
 }
 
 .sct-matchup-side {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
   text-align: center;
 }
 
 .sct-matchup-logo {
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   /* The opponent recedes a step. This is a hub for one team, and both crests at
      full strength made the card a neutral fixture listing. */
@@ -4046,18 +4073,20 @@ body.sct-page.is-embed {
 }
 
 .sct-matchup-at {
-  margin-top: 12px;
+  margin-top: 9px;
   color: var(--sc-muted);
   font-size: 0.8rem;
   font-weight: 800;
 }
 
 .sct-nextgame-when {
-  /* Above the matchup now, where the week used to be: the gap moves below. */
-  margin: 0 0 12px;
+  /* Above the matchup now, where the week used to be: the gap moves below.
+     Centered over the two crests (mak, 2026-11-02). */
+  margin: 0 0 4px;
   color: var(--sc-navy);
   font-size: 0.85rem;
   font-weight: 800;
+  text-align: center;
 }
 
 .sct-nextgame-time {
@@ -4075,7 +4104,7 @@ body.sct-page.is-embed {
   justify-content: space-between;
   gap: 10px;
   margin: auto 0 0;
-  padding-top: 12px;
+  padding-top: 8px;
   font-size: 0.73rem;
 }
 
@@ -5315,19 +5344,26 @@ body.sct-page.is-embed {
 
 /* Six rows, no rules between them. The hairlines that used to separate them
    made a table of a list of six, and the card is the thing with an edge. */
+/* The six rows are one block as wide as its longest line, centered in the
+   card so the gap is equal either side (mak, 2026-11-02); inside it the week,
+   crest and name stay in aligned columns. */
 .sct-slate {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 28px 20px minmax(0, max-content);
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
   margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .sct-slate-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: center;
-  gap: 8px;
   min-width: 0;
   padding: 2px 0;
 }
@@ -8154,6 +8190,40 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   color: var(--rb-ink);
 }
 
+/* The face (2026-11-02): a 44px round well in its own first column, the text
+   and the points shifting one column right. A card without one keeps the
+   two-column grid above. */
+.sct-ls .sct-ls-card.has-face {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.sct-ls .sct-ls-face {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: center;
+  width: 44px;
+  height: 44px;
+  margin-right: 2px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--rb-paper);
+}
+
+.sct-ls .sct-ls-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-ls .sct-ls-card.has-face :is(.sct-ls-label, .sct-ls-name, .sct-ls-meta) {
+  grid-column: 2;
+}
+
+.sct-ls .sct-ls-card.has-face .sct-ls-pts {
+  grid-column: 3;
+}
+
 .sct .sct-ls-name a {
   color: inherit !important;
   text-decoration: none;
@@ -8542,87 +8612,51 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 
-.sct-rb-h2h-summary {
+/* Head-to-head since {season} (mak, 2026-11-02): one header line with the
+   record, the count and the recent run, then one list. The letter strip,
+   its legend and the 64px record are gone; the rows carry the color. */
+.sct-rb .sct-rb-h2h-summary {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px 18px;
-  margin: 6px 0 16px;
+  gap: 4px 10px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--rb-slate);
 }
 
-.sct-rb .sct-rb-h2h-record {
-  display: flex;
+.sct-rb-h2h-record {
+  display: inline-flex;
   align-items: baseline;
-  gap: 10px;
-  margin: 0;
+  gap: 6px;
 }
 
 .sct-rb-h2h-figure {
   --sc-font: var(--rb-display);
-  font-size: 64px;
+  font-size: 22px;
   font-weight: 800;
-  line-height: 0.9;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--rb-ink);
 }
 
 .sct-rb-h2h-lead {
   --sc-font: var(--rb-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--rb-slate);
-}
-
-.sct-rb .sct-rb-h2h-note {
-  margin: 0;
-  font-size: 15px;
-  color: var(--rb-slate);
-}
-
-.sct-rb .sct-rb-tiles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct-rb-tile {
-  --sc-font: var(--rb-display);
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  margin: 0;
-  border-radius: 4px;
-  background: var(--rb-fill);
-  color: #fff;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1;
+  color: var(--rb-ink);
 }
 
-.sct-rb-tiles.is-wide .sct-rb-tile {
-  width: auto;
-  min-width: 44px;
-  padding: 0 6px;
-  font-size: 14px;
+.sct-rb-h2h-note::before,
+.sct-rb-h2h-run::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--rb-line-strong, var(--rb-slate));
 }
 
-.sct-rb-tile.is-tie {
-  background: var(--rb-slate);
-}
-
-.sct-rb-tile.is-current {
-  outline: 3px solid var(--rb-gold);
-  outline-offset: 2px;
-}
-
-.sct-rb .sct-rb-legend {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: var(--rb-slate);
+.sct-rb-h2h-run {
+  font-weight: 600;
+  color: var(--rb-ink);
 }
 
 .sct-rb .sct-rb-meetings {
@@ -8632,13 +8666,15 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   list-style: none;
 }
 
+/* Rows at 45% of their 11-02 height (mak): 5px of padding instead of 13px,
+   one line of text instead of two. */
 .sct-rb-mt {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) auto auto;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 14px;
   margin: 0;
-  padding: 13px 6px;
+  padding: 5px 6px;
   border-bottom: 1px solid var(--rb-line);
 }
 
@@ -8646,8 +8682,28 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   background: linear-gradient(90deg, rgba(255, 163, 0, 0.14), transparent);
 }
 
+.sct-rb-mt.is-upcoming {
+  border-bottom-style: dashed;
+  color: var(--rb-slate);
+}
+
+/* The whole row is the link; the anchor gives up its box so the grid lays
+   out its three parts. */
+.sct-rb .sct-rb-mt-link {
+  display: contents;
+  color: var(--rb-ink) !important;
+  text-decoration: none;
+}
+
+.sct-rb-mt:has(.sct-rb-mt-link):hover .sct-rb-mt-match {
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-decoration-thickness: 2px;
+}
+
 .sct-rb-mt-label {
-  font-size: 15px;
+  font-size: 14px;
+  white-space: nowrap;
   color: var(--rb-slate);
 }
 
@@ -8658,54 +8714,46 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb-mt-match {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
   min-width: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
+  line-height: 1.3;
 }
 
-.sct-rb .sct-rb-mt-link {
-  color: var(--rb-ink) !important;
-  text-decoration: none;
-}
-
-.sct-rb .sct-rb-mt-link:hover {
-  text-decoration: underline;
-  text-decoration-color: var(--rb-gold);
-  text-decoration-thickness: 2px;
+.sct-rb-mt.is-upcoming .sct-rb-mt-match {
+  color: var(--rb-ink);
 }
 
 .sct-rb-mt-date {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--rb-slate);
 }
 
-.sct-rb-mt-score {
+.sct-rb-mt-this {
   --sc-font: var(--rb-display);
-  font-size: 20px;
+  padding: 1px 6px;
+  border: 1px solid var(--rb-gold);
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sct-rb-mt-score .is-win {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--rb-ink);
-}
-
-.sct-rb-mt-score .is-other {
-  font-weight: 500;
-  color: var(--rb-slate);
 }
 
 .sct-rb-chip {
   --sc-font: var(--rb-display);
   justify-self: end;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -8851,6 +8899,19 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb .sct-rb-pill:hover {
   border-color: var(--rb-ink);
+}
+
+/* A club's pill wears its crest (2026-11-02). */
+.sct-rb .sct-rb-pill-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sct-rb .sct-rb-pill-crest {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 /* ---- sidebar */
@@ -9099,92 +9160,9 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   margin-top: 0;
 }
 
-/* ---- Player Stats, redesigned (mak, 2026-09-30): leaders, then compact
-   tables with the points as the anchor, then the Redraft Command banner. */
-
-.sct-mu-fl {
-  margin: 0 0 36px;
-}
-
-.sct .sct-mu-fl-list {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 12px 0 0;
-  border-top: 3px solid var(--rb-ink);
-  list-style: none;
-}
-
-.sct .sct-mu-fl-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "name name"
-    "meta meta"
-    "pts fin";
-  align-items: baseline;
-  row-gap: 1px;
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--sc-surface-soft, #f5f7fa);
-}
-
-.sct .sct-mu-fl-name {
-  grid-area: name;
-  justify-self: start;
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--rb-ink) !important;
-}
-
-.sct .sct-mu-fl-meta {
-  grid-area: meta;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--rb-slate);
-}
-
-.sct .sct-mu-fl-pts {
-  grid-area: pts;
-  margin-top: 6px;
-}
-
-.sct .sct-mu-fl-num {
-  --sc-font: var(--rb-display);
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
-}
-
-.sct .sct-mu-fl-unit {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--rb-slate);
-}
-
-.sct .sct-mu-fl-fin {
-  grid-area: fin;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--rb-slate);
-}
-
-@container (max-width: 620px) {
-  .sct .sct-mu-fl-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+/* ---- Player Stats, redesigned (mak, 2026-09-30): compact tables with the
+   points as the anchor, then the Redraft Command banner. The fantasy
+   leaders row was removed 2026-11-02. */
 
 /* The tables: an outer border, thin row lines, no vertical rules, faint
    alternate rows under the navy header. */
@@ -9353,51 +9331,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   margin-top: 3px;
 }
 
-/* Carry Share as compact bars in the team's color. */
-.sct .sct-mu-usage-shares {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct .sct-mu-usage-share {
-  margin: 0;
-}
-
-.sct .sct-mu-usage-share-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.sct .sct-mu-usage-share-name {
-  overflow: hidden;
-  font-size: 13px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--sc-navy);
-}
-
-.sct .sct-mu-usage-share-name.is-other {
-  font-weight: 600;
-  color: var(--sc-muted);
-}
-
-.sct .sct-mu-usage-share-pct {
-  font-size: 13px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
-}
-
-.sct .sct-mu-usage-share .sct-mu-usage-track {
-  margin-top: 3px;
-}
-
 /* ---- Fantasy Points vs Expected (mak, 2026-09-30) */
 
 /* The section's title and the scoring switch on one row; the switch drops
@@ -9420,65 +9353,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct .sct-fp-head + .sct-rb-sub {
   margin-top: 8px;
-}
-
-.sct .sct-fp-takes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  margin: 4px 0 18px;
-  padding: 0;
-  list-style: none;
-}
-
-.sct .sct-fp-take {
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--sc-surface-soft, #f5f7fa);
-}
-
-.sct .sct-fp-take-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--rb-slate);
-}
-
-.sct .sct-fp-take-value {
-  --sc-font: var(--rb-display);
-  margin-top: 2px;
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
-}
-
-.sct .sct-fp-take-value small {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--rb-slate);
-}
-
-.sct .sct-fp-take-name {
-  margin-top: 4px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.sct .sct-fp-take-name a {
-  color: var(--rb-ink) !important;
-}
-
-.sct .sct-fp-take-detail {
-  font-size: 12px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--rb-slate);
 }
 
 /* PTS, xFP and the gap carry the table; the rest is context. */
@@ -9508,8 +9382,10 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 4px 8px 5px;
 }
 
-:is(.sct, #sct-table-armour) .sct-fp-table.is-usage .sct-fp-sub {
-  line-height: 1.15;
+/* PTS, xFP, vs xFP and Snap% sit centered under their headers (mak,
+   2026-11-02); the Player column stays left and the rest right. */
+:is(.sct, #sct-table-armour) .sct-fp-table.is-usage :is(thead th, tbody td):nth-child(n + 2):nth-child(-n + 5) {
+  text-align: center;
 }
 
 /* The detail columns wait behind "Show detailed usage", once wired. */
@@ -9541,8 +9417,11 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 /* "Need a decision?": three tools side by side on the navy banner, the hub
    link under them. */
+/* Centered (mak, 2026-11-02): title, the three cards' text and buttons, and
+   the "Explore all" link all sit on the middle line. */
 .sct .sct-mu-decide {
   display: block;
+  text-align: center;
 }
 
 .sct .sct-mu-decide-list {
@@ -9557,7 +9436,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct .sct-mu-decide-opt {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: 4px;
   margin: 0;
   padding: 14px 16px;
@@ -9872,7 +9752,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 :is(.sct, #sct-table-armour) .sct-pc-results :is(th, td) {
-  padding: 6px 8px 6px 0;
+  padding: 2px 8px 2px 0;
   border: 0;
   border-top: 1px solid var(--rb-line);
   background: transparent;
@@ -9914,12 +9794,61 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   display: grid;
   grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
   margin-top: 8px;
 }
 
+/* Equal heights (mak, 2026-11-02): the chart column is a flex column and the
+   frame takes whatever height the Key swings column has, never less than
+   its own 640:190 shape. The SVG fills the frame; its axis text and dots are
+   HTML, placed by percentage, so nothing in it stretches but the drawing. */
+.sct .sct-wp-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .sct .sct-wp-row .sct-wp-frame {
+  flex: 1 1 auto;
   margin: 6px 0 0;
+  aspect-ratio: 640 / 190;
+}
+
+.sct .sct-wp-row .sct-wp-chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.sct .sct-wp-ax {
+  position: absolute;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--rb-slate);
+  pointer-events: none;
+}
+
+.sct .sct-wp-ax-y {
+  transform: translate(-100%, -50%);
+}
+
+.sct .sct-wp-ax-x {
+  transform: translate(-50%, -50%);
+}
+
+.sct .sct-wp-dot {
+  position: absolute;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .sct-wp-grid {
@@ -9992,7 +9921,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct .sct-pc-row .sct-pc-card {
   display: flex;
   flex-direction: column;
-  padding: 14px 18px 16px;
+  /* Tightened 2026-11-02 (mak: 20% shorter through the padding alone). */
+  padding: 8px 18px 8px;
   border: 1px solid var(--rb-line);
   border-top: 1px solid var(--rb-line);
   border-radius: 12px;
@@ -10000,7 +9930,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct .sct-pc-row .sct-pc-card > .sct-rb-h3 {
-  margin: 0 0 6px;
+  margin: 0 0 3px;
   font-size: 11px !important;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -10014,7 +9944,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 :is(.sct, #sct-table-armour) .sct-pc-row .sct-pc-compare :is(th, td) {
-  padding: 5px 0;
+  padding: 1px 0;
   border-top-color: rgb(220 225 232 / 55%);
 }
 
@@ -10023,8 +9953,9 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct .sct-pc-row .sct-pc-take {
-  margin: 12px 0 0;
-  padding: 10px 12px;
+  margin: 5px 0 0;
+  padding: 4px 12px;
+  line-height: 1.35;
   border-radius: 8px;
   background: var(--sc-surface-soft, #f5f7fa);
   font-size: 15px;
@@ -10042,8 +9973,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct .sct-pc-row .sct-pc-shares {
   display: grid;
-  gap: 2px;
-  margin: 12px 0 0;
+  gap: 1px;
+  margin: 6px 0 0;
 }
 
 .sct .sct-pc-row .sct-pc-shares .sct-pc-shares-h {
@@ -10093,7 +10024,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct .sct-pc-edge {
   margin: auto 0 0;
-  padding-top: 12px;
+  padding-top: 6px;
   font-size: 14px;
   font-weight: 800;
 }
@@ -10181,6 +10112,22 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   color: var(--rb-ink);
 }
 
+/* Game info and Before and after centered (mak, 2026-11-02), the way the
+   next-games card centers its rows: label right, value left, the pair in
+   the middle of the card. */
+.sct-rb .sct-rb-info .sct-rb-dl {
+  grid-template-columns: max-content minmax(0, max-content);
+  justify-content: center;
+}
+
+.sct-rb .sct-rb-info .sct-rb-dl dt {
+  text-align: right;
+}
+
+.sct-rb-info .sct-rb-h3 {
+  text-align: center;
+}
+
 @media (max-width: 880px) {
   .sct-rb {
     grid-template-columns: minmax(0, 1fr);
@@ -10195,11 +10142,16 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 @media (max-width: 600px) {
   .sct-rb-mt {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px 10px;
   }
 
   .sct-rb-mt-label {
-    grid-column: 1 / -1;
+    font-size: 13px;
+  }
+
+  .sct-rb-mt-match {
+    font-size: 14px;
   }
 
   .sct-rb .sct-rb-tools {
@@ -10251,10 +10203,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb .sct-rb-main > .sct-jump + .sct-rb-note {
   margin-top: 12px;
-}
-
-.sct-rb .sct-ex-hubs {
-  margin-top: 8px;
 }
 
 /* ---- on this page */
@@ -10457,12 +10405,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   stroke-width: 1;
   stroke-dasharray: 4 4;
   opacity: 0.6;
-}
-
-.sct-wp-axis {
-  fill: var(--rb-slate);
-  font-family: var(--rb-body);
-  font-size: 11px;
 }
 
 .sct-rb .sct-wp-plays {
@@ -10721,7 +10663,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: 150px;
+  /* Wide enough for the face beside a two-word name (faces since 2026-11-02). */
+  min-width: 190px;
   background: var(--rb-paper);
   font-weight: 600;
   white-space: normal;
@@ -10792,6 +10735,38 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb .sct-fp-card p {
   margin: 0 0 8px;
+}
+
+/* The face beside the name and meta line (2026-11-02). */
+.sct-rb .sct-fp-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sct-rb .sct-fp-card-face {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--rb-paper);
+}
+
+.sct-rb .sct-fp-card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-rb .sct-fp-card-text {
+  min-width: 0;
+}
+
+.sct-rb .sct-fp-card-head .sct-fp-meta {
+  margin-bottom: 0;
 }
 
 .sct-rb .sct-fp-card-name {
@@ -10904,73 +10879,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   line-height: 1.5;
 }
 
-/* Start/sit checks: one card per team, the stock card's dress, a position
-   tag before each linked name and the FPA line under the list. */
-.sct-rb .sct-fp-ss-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.sct-fp-ss-card {
-  padding: 4px 16px 12px;
-  border: 1px solid var(--rb-line);
-  border-top: 4px solid var(--rb-team, var(--rb-ink));
-  border-radius: 10px;
-  background: var(--rb-card);
-}
-
-.sct-rb .sct-fp-ss-card ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct-rb .sct-fp-ss-card li {
-  margin: 0;
-  padding: 5px 0;
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.sct-fp-ss-pos {
-  display: inline-block;
-  min-width: 2.4em;
-  margin-right: 4px;
-  font-family: var(--rb-display);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--rb-muted, #64748b);
-}
-
-.sct-rb .sct-fp-ss-link {
-  color: var(--rb-ink);
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-color: var(--rb-team, var(--rb-ink));
-  text-underline-offset: 2px;
-}
-
-.sct-rb .sct-fp-ss-fpa {
-  margin: 10px 0 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--rb-line);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.sct-rb .sct-fp-ss-fpa a {
-  color: var(--rb-ink);
-  font-weight: 600;
-}
-
-@media (max-width: 640px) {
-  .sct-rb .sct-fp-ss-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 .sct-fp-stock-card li > span[aria-hidden] {
   margin-right: 6px;
 }
@@ -10990,13 +10898,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border-radius: 8px;
   background: var(--rb-card);
   font-size: 16px;
-}
-
-/* ---- betting */
-
-.sct-rb .sct-bet-tiles {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 520px;
 }
 
 /* ---- keep exploring */
@@ -11043,7 +10944,32 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct-ex-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
+}
+
+/* The crest before a club's name on a game line (2026-11-02). */
+.sct-ex-crest {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* The next-games card is centered: each line and its date, and the
+   schedule link under them (mak, 2026-11-02). */
+.sct-rb .sct-ex-card .sct-ex-game,
+.sct-rb .sct-ex-card .sct-ex-footer {
+  text-align: center;
+}
+
+.sct-rb .sct-ex-card .sct-ex-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 6px;
 }
 
 .sct-ex-side.is-win {
@@ -11067,41 +10993,128 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 14px;
 }
 
-.sct-rb .sct-ex-logs {
+/* "More on this game" (mak, 2026-11-02): two club columns, each the crest
+   and name, one line of hub links, then that club's players as chips. */
+.sct-rb .sct-ex-teams {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 8px;
+}
+
+.sct-ex-team {
+  min-width: 0;
+  padding: 12px 16px 14px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 10px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-ex-team-name {
+  --sc-font: var(--rb-display);
+  display: flex;
+  align-items: center;
   gap: 10px;
-  margin: 0 0 24px;
+  margin: 0 0 4px;
+  font-family: var(--rb-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.sct-ex-team-crest {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.sct-rb .sct-ex-hubs {
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sct-rb .sct-ex-hubs a {
+  color: var(--rb-ink) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.sct-ex-dot {
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-ex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.sct-rb .sct-ex-logs li {
+.sct-rb .sct-ex-chips li {
   margin: 0;
 }
 
-.sct-ex-log {
-  display: block;
-  height: 100%;
-  padding: 8px 10px;
+.sct-rb .sct-ex-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
   border: 1px solid var(--rb-line);
-  border-left: 4px solid var(--rb-team, var(--rb-ink));
-  border-radius: 8px;
-  background: var(--rb-card);
-  color: var(--rb-ink);
+  border-radius: 999px;
+  background: var(--rb-paper);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rb-ink) !important;
   text-decoration: none;
 }
 
-.sct-ex-log-name {
-  display: block;
-  font-weight: 600;
-  font-size: 15px;
+.sct-rb .sct-ex-chip:hover {
+  border-color: var(--rb-ink);
 }
 
-.sct-ex-log-meta {
-  display: block;
+.sct-ex-chip-face {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--rb-card);
+}
+
+.sct-ex-chip-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-ex-chip .sct-pos {
+  font-size: 12px;
+}
+
+.sct-rb .sct-ex-all {
+  margin: 10px 0 0;
   font-size: 13px;
-  color: var(--rb-slate);
+}
+
+.sct-rb .sct-ex-all a,
+.sct-rb .sct-ex-series a {
+  color: var(--rb-slate) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sct-rb .sct-ex-series {
+  margin: 0;
+  font-size: 14px;
 }
 
 .sct-ex .sct-rb-related {
@@ -11111,9 +11124,20 @@ a.sct-ex-game:hover .sct-ex-line {
 /* ---- before and after */
 
 .sct-ba-team {
-  margin-top: 12px;
+  width: max-content;
+  max-width: 100%;
+  margin: 12px auto 0;
   padding-left: 12px;
   border-left: 4px solid var(--rb-team, var(--rb-ink));
+}
+
+.sct-rb .sct-ba .sct-rb-dl {
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-content: start;
+}
+
+.sct-rb .sct-ba .sct-rb-dl dt {
+  text-align: left;
 }
 
 .sct-rb .sct-ba-name {
@@ -11139,8 +11163,8 @@ a.sct-ex-game:hover .sct-ex-line {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .sct-rb .sct-ex-logs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .sct-rb .sct-ex-teams {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -11833,100 +11857,28 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
-/* Targets and carries ARE distributions, so they get rings - side by side
-   under the bars, which keeps a team's three metrics about as tall as the
-   table row they replaced. */
+/* Targets and carries ARE distributions; since 2026-11-02 they are drawn in
+   the snap rows' design, one list each under the snap bars. Side by side when
+   the panel is wide enough for faces and full names in both, stacked
+   otherwise. */
 .sct-mu-usage-rings {
   display: grid;
-  /* The floor is a legend that can still finish "Rhamondre Stevenson". Below
-     it the two rings stack rather than clipping a name each - a chart whose
-     labels are elided is the pie chart this section replaced. */
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0 20px;
+  /* One column: a team panel is half the page, and two columns of faces,
+     names and counts in it ended every other name in an ellipsis. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
   margin-top: 12px;
 }
 
-/* Ring above, legend under it at the metric's full width. Beside it fits on a
-   wide screen and nowhere else - two rings share one team panel, so the legend
-   was inheriting about 130px and ending every third name in an ellipsis. A
-   name a reader cannot finish is not "visible without hovering". */
-.sct-mu-usage-ring-row {
-  display: grid;
-  justify-items: center;
-  gap: 9px;
+/* The pooled tail: an empty well, a muted name, a gray bar. */
+.sct-mu-usage-face.is-other {
+  border-radius: 50%;
+  background: var(--sc-surface-sink);
 }
 
-.sct-mu-usage-ring {
-  width: 92px;
-  height: 92px;
-}
-
-/* Drawn here rather than in the markup: one dashed circle per slice, no chart
-   library and no canvas. The stroke width is the ring's thickness. */
-.sct-mu-usage-arc {
-  fill: none;
-  stroke-width: 17;
-  transition: opacity 0.15s ease;
-}
-
-.sct-mu-usage-ring:hover .sct-mu-usage-arc {
-  opacity: 0.55;
-}
-
-.sct-mu-usage-ring .sct-mu-usage-arc:hover {
-  opacity: 1;
-}
-
-/* The legend is the chart. Every name and percentage is here as text, in rank
-   order, so the ring can be ignored entirely - by a screen reader, by a reader
-   who cannot separate two tints of one hue, or by a print stylesheet. */
-.sct-mu-usage-keys {
-  display: grid;
-  gap: 3px;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  min-width: 0;
-  list-style: none;
-}
-
-.sct-mu-usage-key {
-  display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 7px;
-}
-
-.sct-mu-usage-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
-.sct-mu-usage-key-name {
-  /* Shrink to the name. A linked name carries an underline rule, and a grid
-     item stretched to its column would draw that rule past the last letter. */
-  justify-self: start;
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sc-navy);
-}
-
-/* The pooled tail is not a player and must not read as one. */
-.sct-mu-usage-key-name.is-other {
+.sct-mu-usage-bar-name.is-other {
   font-weight: 700;
   color: var(--sc-muted);
-}
-
-.sct-mu-usage-key-pct {
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
 }
 
 /* A zero denominator. There is no share of no carries, and an empty ring would
@@ -12004,11 +11956,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
   .sct-mu-usage-team + .sct-mu-usage-team {
     padding-top: 12px;
-  }
-
-  .sct-mu-usage-ring {
-    width: 84px;
-    height: 84px;
   }
 
 }
@@ -12566,8 +12513,10 @@ a.sct-ex-game:hover .sct-ex-line {
   display: none;
 }
 
-/* The fantasy section below the tabs shows on every tab but Recap. */
-.sct-mu[data-mu-active="recap"] .sct-mu-foot > section:has(> #fantasy-outlook) {
+/* The fantasy outlook below the tabs shows on Stats & Fantasy alone (mak,
+   2026-11-02; every tab but Recap until then). Only once the tabs script has
+   run; with every panel stacked it stays. */
+.sct-mu[data-mu-tabs="js"][data-mu-active]:not([data-mu-active="fantasy"]) .sct-mu-foot > section:has(> #fantasy-outlook) {
   display: none;
 }
 
@@ -12627,14 +12576,198 @@ a.sct-ex-game:hover .sct-ex-line {
   min-width: 0;
 }
 
-/* ---- Betting tab */
+/* ---- Betting tab (mak, 2026-11-02): one results strip, one takeaway, one
+   shared trends table, the fine print. Hairlines, 24px gaps. */
 
-.sct-bet .sct-rb-alltime {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* Two panels, Result and Season trends, side by side from 768px up (mak,
+   2026-11-02): a 60/40 split, the bars need the width and the table does
+   not. Under that they stack, which is the layout they had before. */
+.sct-bet-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
 }
 
-.sct-bet-implied {
+@media (min-width: 768px) {
+  .sct-bet-grid.has-trends {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.sct-bet-panel {
   min-width: 0;
+  padding: 14px 18px 16px;
+  border: 1px solid var(--rb-line);
+  border-radius: 12px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-bet-panel-k {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+/* The result grid (mak, 2026-11-02): away | label | home, like the team
+   stats table. Spread, implied, scored, the bars, then the shared total. */
+.sct-bet-sides {
+  display: grid;
+  gap: 8px;
+}
+
+.sct-bet-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sct-bet-head {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct-bet-k {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct-bet-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  min-width: 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+.sct-bet-cell.is-away {
+  justify-content: flex-start;
+}
+
+.sct-bet-cell.is-home {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.sct-bet-team {
+  --sc-font: var(--rb-display);
+  font-family: var(--rb-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--rb-team, var(--rb-ink));
+}
+
+.sct-bet-line-v {
+  --sc-font: var(--rb-display);
+  font-family: var(--rb-display);
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-bet-verdict {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-ink);
+}
+
+.sct-bet-verdict.is-yes span {
+  color: var(--rb-green);
+}
+
+.sct-bet-verdict.is-no span {
+  color: var(--rb-red);
+}
+
+.sct-bet-verdict.is-push {
+  color: var(--rb-slate);
+}
+
+.sct-bet-imp-implied {
+  color: var(--rb-slate);
+}
+
+.sct-bet-imp-actual {
+  --sc-font: var(--rb-display);
+  font-family: var(--rb-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--rb-ink);
+}
+
+.sct-bet-cell .sct-fp-diff {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* The bars grow out from the label column, the tick is the implied total. */
+.sct-bet-bars {
+  align-items: center;
+  margin-top: 2px;
+}
+
+.sct-bet-imp-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink, #e9edf2);
+}
+
+.sct-bet-imp-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--rb-team, var(--rb-ink));
+  opacity: 0.8;
+}
+
+.sct-bet-imp-track.is-away .sct-bet-imp-fill {
+  right: 0;
+}
+
+.sct-bet-imp-track.is-home .sct-bet-imp-fill {
+  left: 0;
+}
+
+.sct-bet-imp-tick {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--rb-ink);
+}
+
+.sct-rb .sct-bet-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 10px;
+  margin: 6px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 15px;
+}
+
+.sct-bet .sct-bet-take {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 14px;
 }
 
 .sct-bet .sct-bet-take a {
@@ -12644,57 +12777,79 @@ a.sct-ex-game:hover .sct-ex-line {
   text-decoration-thickness: 2px;
 }
 
-.sct-bet-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.sct-bet-card {
-  padding: 16px 18px;
-  border: 1px solid var(--rb-line);
-  border-top: 4px solid var(--rb-team, var(--rb-ink));
-  border-radius: 12px;
-  background: var(--rb-card);
-}
-
-.sct .sct-bet-card-name {
-  --sc-font: var(--rb-display);
+/* The story line is the trends panel's title. */
+.sct-rb .sct-bet-story {
   margin: 0 0 10px;
-  font-size: 17px !important;
-  font-weight: 700;
-  color: var(--rb-ink) !important;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--rb-ink);
 }
 
-.sct-bet .sct-rb-dl {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 6px 16px;
+.sct-bet-trends-panel .sct-fp-wrap {
   margin: 0;
-  font-size: 15px;
 }
 
-.sct-bet .sct-rb-dl dt {
+:is(.sct, #sct-table-armour) table.sct-fp-table.sct-bet-trends:not(.variations) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+/* Three columns in a 40% panel: no shared-table minimums, tighter cells. */
+:is(.sct, #sct-table-armour) .sct-bet-trends :is(th, td) {
+  padding: 7px 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-bet-trends thead th:first-child,
+:is(.sct, #sct-table-armour) .sct-bet-trends tbody th {
+  min-width: 0;
+  white-space: normal;
+}
+
+:is(.sct, #sct-table-armour) .sct-bet-trends th[scope="row"] {
+  font-weight: 500;
+  text-align: left;
   color: var(--rb-slate);
 }
 
-.sct-bet .sct-rb-dl dd {
-  margin: 0;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+:is(.sct, #sct-table-armour) .sct-bet-trends thead th,
+:is(.sct, #sct-table-armour) .sct-bet-trends td {
+  text-align: center;
 }
 
-.sct-bet .sct-bet-next dt {
+:is(.sct, #sct-table-armour) .sct-bet-trends thead th {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-bet-trends td {
   font-weight: 700;
 }
 
-.sct-bet .sct-bet-next a {
+:is(.sct, #sct-table-armour) .sct-bet-trends td small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-bet-cap {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--rb-slate);
+}
+
+/* The series line closes the trends panel. */
+.sct-rb .sct-bet-series {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 14px;
+  font-weight: 600;
   color: var(--rb-ink);
 }
 
 .sct-bet-fine {
-  margin-top: 28px;
-  padding-top: 14px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--rb-line);
   font-size: 13px;
   line-height: 1.5;
@@ -12714,13 +12869,8 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--rb-red);
 }
 
-@media (max-width: 640px) {
-  .sct-bet-cards {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* ---- highlights: the player once pressed */
+/* ---- highlights: the box is one link out to YouTube (2026-11-02), so the
+   anchor fills it like the old play button did and keeps its white text. */
 
 .sct-hl-box .sct-hl-play {
   position: absolute;
@@ -12733,22 +12883,9 @@ a.sct-ex-game:hover .sct-ex-line {
   background: none;
   cursor: pointer;
   font: inherit;
-  color: #fff;
+  color: #fff !important;
   text-align: left;
-}
-
-.sct-hl-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.sct-hl-noscript {
-  position: absolute;
-  inset: auto 12px 12px;
-  color: #fff;
+  text-decoration: none !important;
 }
 
 .sct-mu .sct-rb-note a {
@@ -12775,7 +12912,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ---- surfaces in dark mode: blocks that set white or paper directly */
 
-.sct-mu:has(.sct-rb) :is(.sct-ls-card, .sct-meant-card, .sct-fp-card, .sct-fp-stock-card, .sct-rb-tool, .sct-ex-col, .sct-ex-log) {
+.sct-mu:has(.sct-rb) :is(.sct-ls-card, .sct-meant-card, .sct-fp-card, .sct-fp-stock-card, .sct-rb-tool, .sct-ex-col, .sct-ex-team) {
   background: var(--rb-card);
   border-color: var(--rb-line);
 }
@@ -12795,10 +12932,6 @@ a.sct-ex-game:hover .sct-ex-line {
   .sct-mu-tabs {
     display: none !important;
   }
-}
-
-.sct-bet .sct-rb-alltime {
-  max-width: none;
 }
 
 /* On a phone the chart is too small to carry labels; the key swings below
@@ -13000,26 +13133,6 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* The environment strip: five equal cards, two across on a narrow column. */
-:is(.sct, #sct-table-armour) .sct-us-env {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 18px;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-envcard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--us-radius);
-  background: var(--sc-surface);
-  /* Centered (mak, 2026-10-22). */
-  text-align: center;
-}
-
 :is(.sct, #sct-table-armour) .sct-us-rank {
   font-size: 0.82rem;
   font-weight: 800;
@@ -13033,10 +13146,226 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--us-amber);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-envnote {
-  color: var(--sc-muted-strong);
+/* The Targets / Carries boards above the environment cards (mak,
+   2026-11-02, after attached_assets/ref1.png): two bordered panels side by
+   side, one table each, a face well and position chip per row, and the
+   backfield grid's 7px track for the shares. */
+:is(.sct, #sct-table-armour) .sct-us-boards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+/* Dense since 2026-11-02 (mak: 30% shorter, through the internal padding). */
+:is(.sct, #sct-table-armour) .sct-us-board {
+  min-width: 0;
+  padding: 10px 14px 2px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--us-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board .sct-us-h3 {
+  /* No sub line under it (2026-11-02): the heading sits straight on the table. */
+  margin-bottom: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-scroll {
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-us-board-table:not(.variations) {
+  width: 100%;
+  min-width: 340px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  background: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table :where(th, td) {
+  padding: 3px 6px;
+  line-height: 1.2;
+  border: 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  background: none;
+  color: var(--sc-ink);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table thead th {
+  padding: 2px 6px 5px;
+  color: var(--sc-muted) !important;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table tbody tr:last-child :where(th, td) {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table :where(th, td):first-child {
+  padding-left: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table :where(th, td):last-child {
+  padding-right: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table th.is-player {
+  min-width: 150px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table .is-count,
+:is(.sct, #sct-table-armour) .sct-us-board-table .is-air {
+  text-align: right;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table tbody .is-count,
+:is(.sct, #sct-table-armour) .sct-us-board-table tbody .is-air {
+  --sc-font: var(--us-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-face {
+  display: block;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
+    );
+}
+
+:is(.sct, #sct-table-armour) .sct-us-face-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-who-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-who-text .sct-slot {
+  line-height: 1.1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-name {
+  color: var(--sc-navy);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-name.sct-player-link {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-name.sct-player-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-share {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 84px;
+}
+
+/* One track per row (2026-11-02): the season fill with the last-3 tick. */
+:is(.sct, #sct-table-armour) .sct-us-track {
+  position: relative;
+  flex: 1 1 48px;
+  min-width: 32px;
+  max-width: 120px;
+  height: 7px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-track .sct-us-gbar {
+  display: block;
+  width: 100%;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tick {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 13px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table .is-recent {
+  text-align: right;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-recent-val {
+  --sc-font: var(--us-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-table .is-recent .sct-us-arrow {
+  margin-left: 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-board-more td {
+  padding-top: 5px;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-share-val {
+  --sc-font: var(--us-display);
+  min-width: 3.4ch;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-arrow {
   font-size: 0.78rem;
-  line-height: 1.4;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-arrow.is-up {
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-arrow.is-down {
+  color: var(--us-red);
 }
 
 /* Stacked bars: the Target Tree and the backfield's weighted opportunities. */
@@ -13192,11 +13521,37 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--us-green);
 }
 
+/* The situation grid and its takeaways on one row at equal height (mak,
+   2026-11-02): the grid takes the wider column, the takeaway boxes stack in
+   the narrower one and stretch to fill it. */
+:is(.sct, #sct-table-armour) .sct-us-bfrow {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-bfrow .sct-us-grid {
+  margin-top: 0;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-takeaways {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 16px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-bfrow .sct-us-takeaways {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
+  margin: 0;
+}
+
+/* Vertically centered in its stretched box without turning the inline copy
+   into column items (flex would put every <strong> on its own line). */
+:is(.sct, #sct-table-armour) .sct-us-bfrow .sct-us-takeaway {
+  align-content: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-takeaway {
@@ -13722,8 +14077,43 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 @container usage (max-width: 860px) {
-  :is(.sct, #sct-table-armour) .sct-us-env {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Stacked again below tablet width: grid, then the takeaways. */
+  :is(.sct, #sct-table-armour) .sct-us-bfrow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-bfrow .sct-us-takeaways {
+    grid-auto-rows: auto;
+    margin-top: 16px;
+  }
+
+    :is(.sct, #sct-table-armour) .sct-us-boards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Values and marks only: a phone column has no room for the tracks. */
+  :is(.sct, #sct-table-armour) .sct-us-share .sct-us-track {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-share {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) table.sct-us-board-table:not(.variations) {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-board-table thead th {
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-board-table :where(th, td) {
+    padding: 3px 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-board-table th.is-player {
+    min-width: 118px;
   }
 
   :is(.sct, #sct-table-armour) .sct-us-metrics {
@@ -13793,58 +14183,6 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* ---- product bridges (mak, 2026-10-05): where the report hands off to a
-   tool. A compact CTA box after the intro and after Buy Low / Sell High, one
-   quiet line under a section elsewhere, and the two-product close. */
-:is(.sct, #sct-table-armour) .sct-us-cta {
-  margin: 0 0 26px;
-  padding: 14px 16px;
-  border-left: 3px solid var(--us-gold);
-  border-radius: 0 10px 10px 0;
-  background: #fdf8ec;
-}
-
-/* The tools under the call to action, one per line, in the tool's own name. */
-:is(.sct, #sct-table-armour) .sct-us-cta-links {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-cta-links li {
-  margin: 0 0 4px;
-  padding: 0;
-  font-size: 0.88rem;
-  font-weight: 800;
-  line-height: 1.5;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-cta-title {
-  margin: 0 0 4px;
-  padding: 0;
-  color: var(--sc-navy);
-  font-size: 0.98rem;
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-cta-body,
-:is(.sct, #sct-table-armour) .sct-us-cta-more {
-  margin: 0;
-  padding: 0;
-  color: var(--sc-ink);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-:is(.sct, #sct-table-armour) .sct-us-cta-more {
-  margin-top: 6px;
-  color: var(--sc-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-us-cta .sct-us-btn {
-  margin-top: 10px;
-}
-
 :is(.sct, #sct-table-armour) a.sct-us-btn {
   display: inline-block;
   padding: 8px 14px;
@@ -13862,6 +14200,12 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) a.sct-us-btn:hover,
 :is(.sct, #sct-table-armour) a.sct-us-btn:focus-visible {
   background: var(--sc-navy-deep, #060d21);
+}
+
+/* The first bridge under the run-direction block (which closes with its
+   note box) gets a little more room than one bridge under another. */
+:is(.sct, #sct-table-armour) .sct-us-run + .sct-us-bridge {
+  margin-top: 18px;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-bridge {
@@ -13970,17 +14314,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 0.84rem;
 }
 
-/* The action links under a CTA box, and under a "Put this to work" card. */
-:is(.sct, #sct-table-armour) .sct-us-cta-links,
-:is(.sct, #sct-table-armour) .sct-us-product-links {
-  margin: 10px 0 0;
-  padding: 0;
-  color: var(--sc-muted);
-  font-size: 0.84rem;
-  font-weight: 700;
-  line-height: 1.7;
-}
-
 /* One link per line in a card: a wrapped row leaves its separators dangling. */
 :is(.sct, #sct-table-armour) .sct-us-product-links {
   display: flex;
@@ -13997,16 +14330,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-product-links .sct-textlink {
   align-self: flex-start;
-}
-
-/* The trade box's one-line read on the two cards above it. */
-:is(.sct, #sct-table-armour) .sct-us-cta-lead {
-  margin: 0 0 6px;
-  padding: 0;
-  color: var(--sc-navy);
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1.5;
 }
 
 /* A decision card: the question as its title, the answer as its lead.
@@ -14167,7 +14490,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-name {
-  margin: 4px 0 10px;
+  margin: 4px 0 0;
   padding: 0;
   color: var(--sc-navy) !important;
   font-size: 1.6rem !important;
@@ -14177,14 +14500,29 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-roleline {
-  margin: 0;
+  margin: 6px 0 10px;
   color: var(--sc-muted);
   font-size: 0.8rem;
   line-height: 1.45;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-scheme {
-  margin: 18px 0 0;
+/* Title, name and role on the left, the lineage chip on the right of the
+   same row (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-cardhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-cardhead-main {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-cardhead .sct-co-tree {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  text-align: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-tree {
@@ -14275,11 +14613,32 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-step-team {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
   color: var(--sc-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+/* The club's crest beside its code (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-step-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-step-crest {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-step-sep {
+  color: var(--sc-border);
 }
 
 :is(.sct, #sct-table-armour) .sct-co-step-role {
@@ -14359,68 +14718,6 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.5;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-ledger {
-  margin: 12px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--sc-hairline);
-}
-
-:is(.sct, #sct-table-armour) p.sct-co-ledger {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-ledger-val {
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-chips {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
-  gap: 6px;
-  margin: 7px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-chip {
-  padding: 10px 10px 9px;
-  border-radius: var(--sc-radius-xs);
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-chip-val {
-  --sc-font: var(--co-display);
-  display: block;
-  color: var(--sc-navy);
-  font-family: var(--co-display);
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-chip-label {
-  display: block;
-  margin-top: 4px;
-  color: var(--sc-muted);
-  font-size: 0.64rem;
-  font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-ledger-note {
-  margin: 8px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.76rem;
-  line-height: 1.45;
-}
-
 /* ---- the tendencies pane */
 
 :is(.sct, #sct-table-armour) .sct-co-tend {
@@ -14444,29 +14741,16 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.25;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-tend-sub {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.86rem;
-  line-height: 1.4;
-}
-
+/* Chips alone, no label or grey panel (mak, 2026-11-02). */
 :is(.sct, #sct-table-armour) .sct-co-identity {
   margin: 14px 0 12px;
-  padding: 10px 12px 12px;
-  border-radius: 6px;
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-identity .sct-co-label {
-  color: var(--sc-muted);
 }
 
 :is(.sct, #sct-table-armour) .sct-co-idchips {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   gap: 8px;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -14482,12 +14766,16 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: 6px;
   background: var(--sc-surface);
   color: var(--sc-navy);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  line-height: 1.15;
   text-align: center;
   text-transform: uppercase;
-  white-space: nowrap;
+  /* A long name ("4th-down aggression") wraps inside its cell rather than
+     running out of it (2026-11-02). */
+  min-width: 0;
+  white-space: normal;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-idarrow {
@@ -14611,8 +14899,105 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 500;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-table tbody tr.is-flagged .sct-co-td.is-tendency {
+/* The headline rows (mak, 2026-11-02): the old signal cards folded into the
+   table. A warm tint across the row and the verdict under the label. */
+:is(.sct, #sct-table-armour) .sct-co-table tbody tr.is-signal .sct-co-td {
+  background: #fdf8ec;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-table tbody tr.is-signal .sct-co-td.is-tendency {
   box-shadow: inset 3px 0 0 var(--sc-gold);
+}
+
+/* The Change cell: a per-row strip (prior dot, current dot, the move as a
+   bar between them, the NFL average as a tick) over the number. */
+:is(.sct, #sct-table-armour) .sct-co-table .sct-co-td.is-change {
+  min-width: 128px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 132px;
+  height: 12px;
+  margin: 0 0 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sc-hairline);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-bar {
+  position: absolute;
+  top: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sc-navy);
+  opacity: 0.85;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-bar.is-up {
+  background: var(--co-green, #15803d);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-bar.is-down {
+  background: var(--co-red, #b91c1c);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-bar.is-flat {
+  background: #94a3b8;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-prior,
+:is(.sct, #sct-table-armour) .sct-co-strip-now,
+:is(.sct, #sct-table-armour) .sct-co-strip-avg {
+  position: absolute;
+  top: 2px;
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-prior {
+  border: 2px solid #8a96a8;
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-now {
+  background: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-strip-avg {
+  top: 0;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: #b7c0cc;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-chg-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-legend {
+  margin: 8px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
 }
 
 /* The row label opens the methodology popover: a dotted underline instead
@@ -14777,65 +15162,7 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.25;
 }
 
-/* The section's hero cards: a faint navy-gray fill and a thin gold top rule
-   set the insights apart from the white staff cards under them (mak,
-   2026-10-05). Compact type; the sample note is a quiet footer. */
-:is(.sct, #sct-table-armour) .sct-co-shifts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-shift {
-  display: flex;
-  flex-direction: column;
-  padding: 14px 16px 12px;
-  border: 1px solid #dce3ea;
-  border-top: 2px solid var(--sc-gold);
-  border-radius: var(--co-radius);
-  background: #fafbfd;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-shift:first-child {
-  border-left: 1px solid #dce3ea;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-label {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-value {
-  --sc-font: var(--co-display);
-  margin: 0;
-  color: var(--sc-ink);
-  font-family: var(--co-display);
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  margin: 5px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-top .sct-co-sig-value {
-  margin-right: 2px;
-}
-
-/* Rankings and meaningful moves: the one orange accent in the card. */
+/* The standing pill (kept for the DC card's rank). */
 :is(.sct, #sct-table-armour) .sct-co-sig-pill {
   display: inline-block;
   padding: 2px 8px;
@@ -14854,44 +15181,13 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted-strong);
 }
 
-:is(.sct, #sct-table-armour) .sct-co-sig-line {
-  margin: 0 0 4px;
-  color: var(--sc-muted-strong);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-head {
-  margin: 10px 0 2px;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 1rem !important;
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-body {
-  margin: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.75rem;
-  line-height: 1.45;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-sig-note {
-  margin: auto 0 0;
-  padding-top: 10px;
-  color: #94a3b8;
-  font-size: 0.62rem;
-  font-weight: 600;
-}
-
 /* ---------------------------------------------------------- staff profile */
 
-/* Weighted cards: offense widest, defense next, continuity a compact KPI.
-   Same card as the signals above. */
+/* Two tight cards (mak, 2026-11-02): offense a little wider than defense.
+   The Continuity KPI card is gone; the coach card's reliability meter says it. */
 :is(.sct, #sct-table-armour) .sct-co-staff {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 2.4fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
   gap: 12px;
 }
 
@@ -14904,10 +15200,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-staffcard:first-child {
   border-left: 1px solid var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-staffcard.is-kpi {
-  background: var(--sc-surface);
 }
 
 :is(.sct, #sct-table-armour) .sct-co-role {
@@ -14942,14 +15234,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 1.2rem !important;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-staffcard.is-kpi .sct-co-h4 {
-  --sc-font: var(--co-display);
-  font-family: var(--co-display);
-  font-size: 1.75rem !important;
-  font-weight: 700;
-  line-height: 1;
-}
-
 :is(.sct, #sct-table-armour) .sct-co-staff-sub {
   margin: 0 0 8px;
   color: var(--sc-muted-strong);
@@ -14963,20 +15247,36 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-gold-deep);
 }
 
+/* The DC's scheme chips: small neutral tags, one per family. */
+:is(.sct, #sct-table-armour) .sct-co-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-tag {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 3px 9px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted-strong);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
 :is(.sct, #sct-table-armour) .sct-co-staffcard .sct-co-body {
   color: var(--sc-muted-strong);
   font-size: 0.75rem;
   line-height: 1.5;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-kpi-rating {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 8px 0 6px;
-  color: var(--sc-navy);
-  font-size: 0.75rem;
-  font-weight: 700;
 }
 
 /* The DC card's number, pulled out of its sentence. */
@@ -15046,7 +15346,13 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.5;
 }
 
-/* ---------------------------------------------------------- career dossier */
+/* ---------------------------------------------------------- career dossier
+ *
+ * Two exhibits since 2026-11-02 (mak's design note): the career scoring
+ * chart (one flat club-colored segment per stop, head-coach years dashed,
+ * the NFL average as a dim line, peak and current flagged) and the scheme
+ * fingerprint table for the tracked seasons. The year rows and identity
+ * tiles are gone. */
 
 :is(.sct, #sct-table-armour) .sct-co-dsub {
   margin: -8px 0 12px;
@@ -15055,239 +15361,373 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 400;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-dnote {
-  margin: 0 0 12px;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-idtiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+:is(.sct, #sct-table-armour) .sct-co-chart {
   margin: 0 0 18px;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-idtile {
-  padding: 14px;
+  padding: 14px 14px 12px;
   border: 1px solid var(--sc-border);
   border-radius: var(--co-radius);
   background: var(--sc-surface);
 }
 
-:is(.sct, #sct-table-armour) .sct-co-idtile:first-child {
-  border-left: 1px solid var(--sc-border);
+:is(.sct, #sct-table-armour) .sct-co-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-idtile .sct-co-label {
-  color: var(--sc-muted);
+:is(.sct, #sct-table-armour) .sct-co-chart svg.is-narrow {
+  display: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-idtile-v {
-  --sc-font: var(--co-display);
-  margin: 6px 0 0;
-  color: var(--sc-ink);
-  font-family: var(--co-display);
-  font-size: 1.75rem;
+/* Recessive scaffolding: hairline grid, muted ticks, the base a shade darker. */
+:is(.sct, #sct-table-armour) .sct-co-ch-grid {
+  stroke: var(--sc-hairline);
+  stroke-width: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-grid.is-base {
+  stroke: var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-tick,
+:is(.sct, #sct-table-armour) .sct-co-ch-year {
+  fill: var(--sc-muted);
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-idtile-sub {
-  margin: 6px 0 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.76rem;
-  font-weight: 600;
+:is(.sct, #sct-table-armour) .sct-co-ch-avg {
+  fill: none;
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-/* The timeline: a rail down the left edge, a dot per stop. */
-:is(.sct, #sct-table-armour) ol.sct-co-dossier {
-  position: relative;
-  margin: 0;
-  padding: 0 0 0 22px;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) ol.sct-co-dossier::before {
-  content: "";
-  position: absolute;
-  top: 14px;
-  bottom: 14px;
-  left: 6px;
-  width: 2px;
-  background: var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dstop {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 5fr);
-  gap: 6px 16px;
-  align-items: start;
-  margin: 0 0 6px;
-  padding: 12px 14px;
-  border-left: 2px solid transparent;
-  border-radius: var(--sc-radius-xs);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dstop::before {
-  content: "";
-  position: absolute;
-  top: 15px;
-  left: -21px;
-  width: 10px;
-  height: 10px;
-  border: 2px solid var(--sc-surface);
-  border-radius: 50%;
-  background: #94a3b8;
-  box-shadow: 0 0 0 1px var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dstop.is-current {
-  border-left-color: var(--sc-gold);
-  background: rgba(11, 22, 52, 0.012);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dstop.is-current::before {
-  background: var(--sc-gold);
-  box-shadow: 0 0 0 1px var(--sc-gold), 0 0 0 4px rgba(212, 175, 55, 0.22);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dyears {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 8px;
-  margin: 0;
-  color: var(--sc-navy);
-  font-size: 1.1rem;
-  font-weight: 800;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dcur {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--co-gold-soft);
-  color: var(--sc-gold-deep);
-  font-size: 0.6rem;
+:is(.sct, #sct-table-armour) .sct-co-ch-avglabel {
+  fill: #94a3b8;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-drole {
-  margin: 3px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.62rem;
+/* The step between stops is a neutral riser; the stint carries the club. */
+:is(.sct, #sct-table-armour) .sct-co-ch-link {
+  stroke: #cbd5e1;
+  stroke-width: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-seg {
+  fill: none;
+  stroke: var(--seg);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-width 0.12s;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-seg.is-hc {
+  stroke-dasharray: 5 4;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-dot {
+  fill: var(--seg);
+  stroke: var(--sc-surface);
+  stroke-width: 2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-dot.is-hollow {
+  fill: var(--sc-surface);
+  stroke: var(--seg);
+  stroke-width: 2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-halo {
+  fill: var(--sc-gold);
+  opacity: 0.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-stop rect {
+  fill: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-stop:hover .sct-co-ch-seg {
+  stroke-width: 4;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-pt:hover .sct-co-ch-dot {
+  r: 5.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-code {
+  fill: var(--sc-muted);
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-dwin {
-  margin: 3px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.78rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-dppg {
-  --sc-font: var(--co-display);
-  margin: 0;
-  color: var(--sc-ink);
+/* Peak and current: the value in the condensed numeral face, the word muted. */
+:is(.sct, #sct-table-armour) .sct-co-ch-flag .v {
+  fill: var(--sc-ink);
   font-family: var(--co-display);
-  font-size: 1.45rem;
-  font-weight: 700;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-drank {
-  margin: 3px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
+  font-size: 13px;
   font-weight: 700;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-fp-none,
-:is(.sct, #sct-table-armour) .sct-co-fp-text {
-  margin: 2px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.84rem;
-}
-
-:is(.sct, #sct-table-armour) p.sct-co-fp-none {
-  margin-top: 6px;
-  color: #94a3b8;
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fp-label {
-  margin: 0 0 4px;
-  color: var(--sc-muted);
-  font-size: 0.64rem;
+:is(.sct, #sct-table-armour) .sct-co-ch-flag .k {
+  fill: var(--sc-muted);
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-fp {
+:is(.sct, #sct-table-armour) .sct-co-ch-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-key li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-sw {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--seg);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-sw.is-hc {
+  background: repeating-linear-gradient(90deg, var(--sc-muted-strong) 0 4px, transparent 4px 7px);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-sw.is-hollow {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--sc-muted-strong);
+  border-radius: 50%;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-sw.is-avg {
+  height: 2px;
+  background: #94a3b8;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ch-cap {
+  margin: 6px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  text-align: left;
+}
+
+/* The fingerprint block: title and the two career stats on one row, then
+   the dense rows. */
+/* Title, then the two career stats under it, all left-aligned (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-fphead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptitle {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpstats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-fp-row {
-  display: grid;
-  grid-template-columns: 86px 70px 44px minmax(0, 1fr);
+:is(.sct, #sct-table-armour) .sct-co-fpstat {
+  display: inline-flex;
   align-items: baseline;
-  gap: 8px;
-  font-size: 0.84rem;
-  line-height: 1.6;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-fp-g {
-  color: #94a3b8;
-  font-size: 0.6rem;
+:is(.sct, #sct-table-armour) .sct-co-fpstat-v {
+  --sc-font: var(--co-display);
+  color: var(--sc-ink);
+  font-family: var(--co-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpstat-l {
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) table.sct-co-fptable:not(.variations) {
+  width: 100%;
+  min-width: 720px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable .sct-co-td {
+  padding: 9px 10px;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpyear {
+  --sc-font: var(--co-display);
+  display: block;
+  color: var(--sc-navy);
+  font-family: var(--co-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpv {
+  display: block;
+  color: var(--sc-navy);
   font-weight: 800;
-  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Share and lead-back values step back unless they are the row's story:
+   the season's distinctive share, or a workhorse back. */
+:is(.sct, #sct-table-armour) .sct-co-fptable :is(.is-share, .is-lb) .sct-co-fpv {
+  display: inline;
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-share .sct-co-fpv.is-lean,
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-lb .sct-co-fpv.is-workhorse {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpv.is-none {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* The gap to league beside the share: blue up, amber down, muted within 3. */
+:is(.sct, #sct-table-armour) .sct-co-fpd {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpd.is-up {
+  color: var(--co-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpd.is-down {
+  color: var(--co-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpd.is-flat {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Share and lead-back columns centered, head and cells; finishes hard right (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-share,
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-lb {
+  white-space: nowrap;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-fins {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable .is-fins .sct-co-fp-pills {
+  justify-content: flex-end;
+}
+
+/* One label per stint, with a club-colored band down the group's edge. */
+:is(.sct, #sct-table-armour) .sct-co-fptable th.is-stint {
+  border-left: 3px solid var(--seg);
+  vertical-align: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable tr.is-stint-start .sct-co-td {
+  border-top: 1px solid var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fptable th.is-stint .sct-co-cell-sub {
+  display: block;
+}
+
+/* The club's crest beside its code on the stint label (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-fpclub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fpclub .sct-co-step-crest {
+  width: 22px;
+  height: 22px;
+}
+
+/* A year with no play-calling stop: a labeled break, not a silent jump. */
+:is(.sct, #sct-table-armour) .sct-co-fpgap td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--sc-hairline);
+  background: var(--sc-surface-soft);
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* The season's finishes under its tendencies: outcome follows usage. */
-:is(.sct, #sct-table-armour) .sct-co-fp-row.is-outcome {
-  margin-top: 4px;
+:is(.sct, #sct-table-armour) .sct-co-fpill-part {
+  margin-left: 1px;
+  font-size: 0.7em;
+  line-height: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fp-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  grid-column: 2 / -1;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fp-pills .sct-co-fpill {
   padding: 0 6px;
   font-size: 0.7rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fp-k {
-  color: var(--sc-muted-strong);
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fp-v {
-  color: var(--sc-navy);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fp-ctx {
-  color: var(--sc-muted);
 }
 
 /* ------------------------------------------------------------- finishes */
@@ -15367,36 +15807,13 @@ a.sct-ex-game:hover .sct-ex-line {
   text-transform: uppercase;
 }
 
-/* The table's read before its rows: the best settled finish per position. */
-:is(.sct, #sct-table-armour) .sct-co-fbest {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: var(--sc-surface-soft);
+/* The four position columns are centered, head and cells (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-co-finishes .is-fin {
+  text-align: center;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-fbest-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fbest-list li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fbest-who {
-  color: var(--sc-muted-strong);
-  font-size: 0.78rem;
+:is(.sct, #sct-table-armour) .sct-co-finishes .is-fin .sct-co-fwho {
+  display: block;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fnote {
@@ -15599,23 +16016,6 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-range {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-range-v {
-  --sc-font: var(--co-display);
-  margin-right: 10px;
-  color: var(--sc-ink);
-  font-family: var(--co-display);
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
 /* Each panel closes the same way: the takeaway, then its scope or sample. */
 :is(.sct, #sct-table-armour) .sct-co-take {
   margin: 14px 0 0;
@@ -15736,13 +16136,6 @@ a.sct-ex-game:hover .sct-ex-line {
     border-bottom: 1px solid var(--sc-border);
   }
 
-  :is(.sct, #sct-table-armour) .sct-co-dstop {
-    grid-template-columns: minmax(130px, 1fr) minmax(0, 1.4fr);
-  }
-
-  :is(.sct, #sct-table-armour) .sct-co-dprint {
-    grid-column: 1 / -1;
-  }
 }
 
 @container coaching (max-width: 560px) {
@@ -15751,19 +16144,13 @@ a.sct-ex-game:hover .sct-ex-line {
     gap: 1px;
   }
 
-  :is(.sct, #sct-table-armour) .sct-co-fp-pills {
-    grid-column: 1 / -1;
+  /* The chart at phone width: the 360-wide render, its type unscaled. */
+  :is(.sct, #sct-table-armour) .sct-co-chart svg.is-wide {
+    display: none;
   }
 
-  /* The fingerprint's group label takes its own line above its row. */
-  :is(.sct, #sct-table-armour) .sct-co-fp-row {
-    grid-template-columns: 74px 40px minmax(0, 1fr);
-    row-gap: 0;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-co-fp-g {
-    grid-column: 1 / -1;
-    margin-top: 4px;
+  :is(.sct, #sct-table-armour) .sct-co-chart svg.is-narrow {
+    display: block;
   }
 
   /* Label and value share a line; the bar runs full width under them, so
@@ -16087,14 +16474,17 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1;
 }
 
-/* The kickoff chips sit on the footer line, right of the book note. */
+/* The kickoff chips sit centered on the footer line (mak, 2026-11-02; flush
+   right of the book note until then). */
 :is(.sct, #sct-table-armour) .sct-pv-chips {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  margin-left: auto;
+  margin: 0 auto;
+  padding: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-chip {
@@ -16119,12 +16509,15 @@ a.sct-ex-game:hover .sct-ex-line {
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* Each market centered in its cell (mak, 2026-11-02). */
 :is(.sct, #sct-table-armour) .sct-pv-bet {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1px;
   padding: 7px 12px 6px;
   background: rgba(5, 12, 24, 0.72);
+  text-align: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bet-k {
@@ -16144,19 +16537,30 @@ a.sct-ex-game:hover .sct-ex-line {
   opacity: 0.8;
 }
 
-/* Row 4: the book note and the kickoff chips on one line. */
-:is(.sct, #sct-table-armour) .sct-pv-foot {
+/* Row 4: the book note and the kickoff chips on one line. Scoped to the
+   hero: the page footer at the bottom shares the class name and was being
+   laid out as this row (mak, 2026-11-02: "most text is on the right"). */
+:is(.sct, #sct-table-armour) .sct-pv-hero .sct-pv-foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 6px 16px;
   margin-top: 10px;
+  padding-top: 0;
+  border-top: 0;
   font-size: 11px;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-bets-note {
   opacity: 0.65;
+}
+
+/* Beside the book note the chips sit flush right (mak, 2026-11-02); alone
+   on the line, as on a page without lines, they stay centered. */
+:is(.sct, #sct-table-armour) .sct-pv-hero .sct-pv-bets-note + .sct-pv-chips {
+  justify-content: flex-end;
+  margin: 0 0 0 auto;
 }
 
 /* ---- shared */
@@ -17240,6 +17644,16 @@ a.sct-ex-game:hover .sct-ex-line {
   padding-top: 0;
 }
 
+/* The injury rows lead with a face (mak, 2026-11-02): the chip and text sit
+   on the face's center line. */
+:is(.sct, #sct-table-armour) .sct-pv-inj-row {
+  align-items: flex-start;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-inj-row .sct-pv-inj {
+  margin-top: 9px;
+}
+
 :is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-row-name {
   font-size: 14px;
 }
@@ -17530,16 +17944,16 @@ a.sct-ex-game:hover .sct-ex-line {
  * game's gold top) stay where they were. Nested tiles keep their own. */
 :is(.sct, #sct-table-armour) .sct-section :is(
   .sct-metric, .sct-tile, .sct-mix,
-  .sct-us-envcard, .sct-us-signal, .sct-us-product, .sct-us-scroll,
-  .sct-co-grid, .sct-co-shift, .sct-co-staffcard, .sct-co-idtile, .sct-co-panel,
+  .sct-us-signal, .sct-us-product, .sct-us-scroll,
+  .sct-co-grid, .sct-co-staffcard, .sct-co-chart, .sct-co-panel,
   .sct-game, .sct-sboard, .sct-panel, .sct-outlook-player
 ) {
   border-radius: var(--sc-radius);
 }
 :is(.sct, #sct-table-armour) .sct-section :is(
   .sct-metric, .sct-tile, .sct-mix,
-  .sct-us-envcard, .sct-us-signal, .sct-us-product, .sct-us-scroll,
-  .sct-co-grid, .sct-co-shift, .sct-co-staffcard, .sct-co-idtile, .sct-co-panel,
+  .sct-us-signal, .sct-us-product, .sct-us-scroll,
+  .sct-co-grid, .sct-co-staffcard, .sct-co-chart, .sct-co-panel,
   .sct-sboard, .sct-panel
 ) {
   box-shadow: var(--sc-shadow);
@@ -17605,7 +18019,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us :is(.sct-us-fine, .sct-us-legend li, .sct-us-chip > span:not(.sct-us-num), .sct-us-bridge.is-quiet) {
   font-size: 0.78rem;
 }
-:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-toolrow, .sct-us-cta-links, .sct-us-product-links, .sct-us-product-lead, .sct-us-bridge:not(.is-quiet), .sct-us-sub, .sct-us-pnote, .sct-us-cta-body, .sct-us-takeaway, .sct-us-note) {
+:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-toolrow, .sct-us-product-links, .sct-us-product-lead, .sct-us-bridge:not(.is-quiet), .sct-us-sub, .sct-us-pnote, .sct-us-takeaway, .sct-us-note) {
   font-size: 0.86rem;
 }
 
@@ -18117,10 +18531,11 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 6px 16px;
 }
 
+/* A face leads each row (mak, 2026-11-02). */
 :is(.sct, #sct-table-armour) .sct-mu-last-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "who pts" "line line";
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas: "face who pts" "face line line";
   align-items: baseline;
   gap: 0 10px;
   padding: 8px 10px;
@@ -18129,6 +18544,25 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--sc-card, #fff);
   font-size: 13px;
   line-height: 1.35;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-face {
+  grid-area: face;
+  align-self: center;
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--pv-gray-bg, #eef1f5);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-last-who {
@@ -18348,30 +18782,39 @@ a.sct-ex-game:hover .sct-ex-line {
   letter-spacing: 0.01em;
 }
 
+/* The figure and its rank (the "PPR PPG" label under them went 2026-11-02;
+   the switch in the heading row names the scoring instead). */
 :is(.sct, #sct-table-armour) .sct-mu-pr-pts {
   flex: none;
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-template-rows: auto auto;
-  column-gap: 10px;
+  display: flex;
   align-items: baseline;
+  gap: 8px;
   text-align: right;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-pr-pts b {
-  grid-row: 1 / 3;
   font: 700 20px/1 var(--pv-display);
   color: var(--pv-ink);
   font-variant-numeric: tabular-nums;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-pr-k {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted);
-  white-space: nowrap;
+/* The starters heading and the scoring switch on one row. */
+:is(.sct, #sct-table-armour) .sct-mu-st-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-head > .sct-h2 {
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-st-head .sct-mu-scoring {
+  margin: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-pr-rank {
@@ -19409,7 +19852,6 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-status:is(
-    [data-status="ir"],
     [data-status="pup"],
     [data-status="nfi"],
     [data-status="reserve"],
@@ -19417,6 +19859,11 @@ a.sct-ex-game:hover .sct-ex-line {
     [data-status="exempt"]
   ) {
   color: #8a5f05;
+}
+
+/* Injured reserve reads red, not amber (mak, 2026-11-02). */
+:is(.sct, #sct-table-armour) .sct-dr-status[data-status="ir"] {
+  color: #b91c1c;
 }
 
 /* Where a departed player is now, under the way they left (2026-10-29). */
@@ -19770,28 +20217,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 1.45rem;
 }
 
-:is(.sct, #sct-table-armour) .sct-ct-lg-kicker {
-  margin: 10px 0 0;
-  color: var(--sc-ink);
-  font-size: 0.86rem;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
-/* The page's main action, with the hub's arrow. */
-:is(.sct, #sct-table-armour) .sct-ct-lg-link {
-  color: var(--sc-navy);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-ct-lg-link::after {
-  content: " \2192";
-  text-decoration: none;
-}
-
 /* Context, not state: the theoretical figure dims. */
 :is(.sct, #sct-table-armour) .sct-ct-lg-row.is-dim .sct-ct-lg-value .sct-ct-num {
   color: var(--sc-muted);
@@ -20143,6 +20568,41 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ct-table thead th abbr {
   cursor: help;
+}
+
+/* The head's sort buttons (2026-11-02): the label itself, reset of the host's
+   button styles; only the sorted column shows a direction mark. */
+:is(.sct, #sct-table-armour) .sct-ct-sort {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-sort:hover {
+  color: var(--sc-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-sort:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th[aria-sort] .sct-ct-sort::after {
+  content: " \25BE";
+  color: var(--sc-gold-deep);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-table thead th[aria-sort="ascending"] .sct-ct-sort::after {
+  content: " \25B4";
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-table thead th.is-sorted {
@@ -20724,12 +21184,21 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ---- dead money and the note --------------------------------------------- */
 
+/* One Dead Money card (2026-11-02): the ledger's three figures over the
+   list, in the ledger cards' frame. */
 :is(.sct, #sct-table-armour) .sct-ct-dead {
   margin: 0;
-  padding: 14px 16px 12px;
+  padding: 18px 18px 14px;
   border: 1px solid var(--sc-border);
-  border-radius: var(--ct-radius);
+  border-radius: var(--sc-radius);
   background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-ct-dead-dek {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sc-hairline);
 }
 
 :is(.sct, #sct-table-armour) .sct-ct-h3-sum {

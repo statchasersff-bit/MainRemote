@@ -111,7 +111,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".sct-rb-main h2")].map(text),
       [
-        "Why the Rams won",
+        "Cardinals vs Rams team stats",
         "Cardinals vs Rams head-to-head",
         "Cardinals vs Rams fantasy outlook for 2026",
         "Cardinals vs Rams Game FAQ",
@@ -181,39 +181,35 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     );
   });
 
-  test("head-to-head: record counted from the scores, tiles oldest first", () => {
+  test("head-to-head: one header line with the record, the count and the run; no strip", () => {
     assert.equal(text(doc.querySelector(".sct-rb-h2h-figure")), `8${DASH}3`);
     assert.equal(text(doc.querySelector(".sct-rb-h2h-lead")), "Rams lead");
-    assert.equal(
-      text(doc.querySelector(".sct-rb-h2h-note")),
-      "11 meetings since the 2021 season, regular season and playoffs.",
-    );
-    const tiles = [...doc.querySelectorAll("ol.sct-rb-tiles li")];
-    assert.equal(tiles.map(text).join(""), "CRRRCRRCRRR");
-    assert.equal(tiles[0].getAttribute("aria-label"), `2021 Wk 4: Cardinals 37${DASH}20`);
-    assert.equal(tiles[0].getAttribute("title"), tiles[0].getAttribute("aria-label"));
-    assert.equal(tiles.filter((t) => t.classList.contains("is-current")).length, 1);
-    assert.equal(tiles[2].getAttribute("aria-label"), `2021 Wild Card: Rams 34${DASH}11`);
-    assert.equal(
-      text(doc.querySelector(".sct-rb-legend")),
-      "Oldest to newest. R = Rams win, C = Cardinals win, outlined = this game.",
-    );
+    assert.equal(text(doc.querySelector(".sct-rb-h2h-note")), "11 meetings since 2021, incl. playoffs");
+    assert.equal(text(doc.querySelector(".sct-rb-h2h-run")), "Rams have won the last 3");
+    assert.equal(doc.querySelector(".sct-rb-tiles"), null, "the letter strip is gone (mak, 2026-11-02)");
+    assert.equal(doc.querySelector(".sct-rb-legend"), null);
+    assert.equal(text(doc.querySelector(".sct-rb-since")), "Since 2021");
   });
 
-  test("recent meetings: newest first, winner first, this game unlinked", () => {
+  test("one meetings list: upcoming first, then recent newest first, winner first, this game unlinked", () => {
     const lists = doc.querySelectorAll("ul.sct-rb-meetings");
-    assert.equal(lists.length, 2);
-    const upcoming = [...lists[0].querySelectorAll("li")];
+    assert.equal(lists.length, 1, "one list since 2026-11-02");
+    assert.ok(lists[0].previousElementSibling.classList.contains("sct-rb-h2h-summary"), "the header line sits on the list");
+    const all = [...lists[0].querySelectorAll("li")];
+    const upcoming = all.filter((li) => li.classList.contains("is-upcoming"));
     assert.equal(upcoming.length, 2);
+    assert.deepEqual(all.slice(0, 2), upcoming, "the upcoming games lead the list");
     assert.match(text(upcoming[0]), /^Week 6 Cardinals at Rams Sun, Oct 18, 2026 Upcoming$/);
-    const rows = [...lists[1].querySelectorAll("li")];
+    const rows = all.slice(2);
     assert.equal(rows.length, 11);
     assert.equal(text(rows[0].querySelector(".sct-rb-mt-label")), "2025 Wk 18");
-    assert.equal(text(rows[0].querySelector("time")), "Sun, Jan 4, 2026", "a 2025 game played in January");
-    assert.equal(text(rows[0].querySelector(".sct-rb-mt-score")), "LAR 37 ARI 20");
-    assert.equal(text(rows[0].querySelector(".sct-rb-chip")), "LAR W");
+    assert.equal(rows[0].querySelector("time"), null, "played rows carry no date; the week label places them");
+    assert.equal(text(rows[0].querySelector(".sct-rb-mt-score")), `LAR 37${DASH}20`, "winner first, one chip");
+    assert.ok(rows[0].querySelector(".sct-rb-chip.is-win"));
+    assert.ok(rows[0].querySelector("a.sct-rb-mt-link .sct-rb-mt-score"), "the whole row is the link");
     const current = rows.find((r) => r.classList.contains("is-current"));
     assert.equal(text(current.querySelector(".sct-rb-mt-label")), "2021 Wild Card");
+    assert.equal(text(current.querySelector(".sct-rb-mt-this")), "This game");
     assert.equal(current.querySelector("a"), null, "this game is not a link");
     assert.equal(doc.querySelectorAll(".sct-rb-mt-link").length, 10);
     assert.doesNotMatch(doc.body.textContent, /Recap →/);
@@ -356,12 +352,9 @@ describe("changing one score moves everything with it", () => {
 
   test("record, tiles, list, FAQ and JSON-LD", () => {
     assert.equal(text(doc.querySelector(".sct-rb-h2h-figure")), `7${DASH}4`);
-    const tile = [...doc.querySelectorAll("ol.sct-rb-tiles li")][1];
-    assert.equal(text(tile), "C");
-    assert.equal(tile.getAttribute("aria-label"), `2021 Wk 14: Cardinals 31${DASH}30`);
-    const row = [...doc.querySelectorAll("ul.sct-rb-meetings")[1].querySelectorAll("li")][9];
-    assert.equal(text(row.querySelector(".sct-rb-mt-score")), "ARI 31 LAR 30");
-    assert.equal(text(row.querySelector(".sct-rb-chip")), "ARI W");
+    const row = [...doc.querySelectorAll("ul.sct-rb-meetings")[0].querySelectorAll("li:not(.is-upcoming)")][9];
+    assert.equal(text(row.querySelector(".sct-rb-mt-score")), `ARI 31${DASH}30`);
+    assert.ok(row.querySelector(".sct-rb-chip.is-win"));
     const faq = body.recapFaq(flipped).find((q) => /record since/.test(q.question)).answer;
     assert.equal(faq, `The Rams lead 7${DASH}4 across 11 meetings since the 2021 season, including this game.`);
     assert.match(body.recapFaqSchema(body.recapFaq(flipped), false), new RegExp(`7${DASH}4`));
@@ -386,7 +379,8 @@ describe("a game the away team won", () => {
   const doc = render(input);
 
   test("is headed for the away side and credits Arizona", () => {
-    assert.equal(text(doc.querySelector("#why")), "Why the Cardinals won");
+    assert.equal(text(doc.querySelector("#why")), "Cardinals vs Rams team stats");
+    assert.equal(doc.querySelector(".sct-rb-why"), null, "no 'Why the X won' line since 2026-11-02");
     assert.equal(
       text(doc.querySelector("#why ~ .sct-rb-sub")),
       "Arizona won the turnover and time of possession battles.",
@@ -424,13 +418,10 @@ describe("a tie", () => {
   const doc = render(input);
 
   test("by the numbers, no takeaways, tie in the series and the facts", () => {
-    assert.equal(text(doc.querySelector("#why")), "Cardinals vs Rams by the numbers");
+    assert.equal(text(doc.querySelector("#why")), "Cardinals vs Rams team stats");
     assert.equal(doc.querySelector(".sct-rb-takeaways"), null);
-    const tie = [...doc.querySelectorAll("ol.sct-rb-tiles li")].find((t) => t.classList.contains("is-tie"));
-    assert.equal(text(tie), "T");
-    assert.equal(tie.getAttribute("aria-label"), `2022 Wk 3: Tie 20${DASH}20`);
-    assert.match(text(doc.querySelector(".sct-rb-legend")), /T = tie/);
-    assert.equal(text(doc.querySelector(".sct-rb-meetings .is-current .sct-rb-chip")), "T");
+    assert.equal(text(doc.querySelector(".sct-rb-meetings .is-current .sct-rb-chip.is-tie")), `Tie 20${DASH}20`);
+    assert.equal(doc.querySelector(".sct-rb-h2h-run"), null, "two games: no run to speak of");
     assert.equal(text(doc.querySelector(".sct-rb-h2h-figure")), `1${DASH}0${DASH}1`);
     assert.match(body.recapFaq(input)[0].answer, /^The Arizona Cardinals and Los Angeles Rams tied 20–20/);
     const dl = [...doc.querySelectorAll(".sct-rb-dl dt")].map(text);
@@ -494,10 +485,10 @@ describe("two nicknames with one initial", () => {
   };
   const doc = render(input);
 
-  test("tiles use the abbreviations, widened", () => {
-    assert.ok(doc.querySelector("ol.sct-rb-tiles").classList.contains("is-wide"));
-    assert.deepEqual([...doc.querySelectorAll("ol.sct-rb-tiles li")].map(text), ["KC", "KC", "LAC"]);
-    assert.equal(text(doc.querySelector(".sct-rb-legend")), "Oldest to newest. KC = Chiefs win, LAC = Chargers win.");
+  test("chips use the abbreviations; the run reads the last games", () => {
+    const chips = [...doc.querySelectorAll(".sct-rb-meetings .sct-rb-chip")].map((c) => text(c).split(" ")[0]);
+    assert.deepEqual(chips, ["LAC", "KC", "KC"]);
+    assert.equal(doc.querySelector(".sct-rb-h2h-run"), null, "three games, no streak of three");
     assert.equal(text(doc.querySelector(".sct-rb-redraft h3")), "Got a Chief or Charger on your team?");
   });
 

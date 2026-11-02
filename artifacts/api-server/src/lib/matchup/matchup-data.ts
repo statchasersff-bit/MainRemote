@@ -82,6 +82,13 @@ export interface MatchupFpa {
   /** "Week 3", "Preseason Baseline" - what the numbers are drawn from. */
   dataMode: string;
   format: string;
+  /**
+   * The same two rows in each scoring (mak, 2026-11-02: the preview's
+   * PPR / Half PPR / Standard switch drives every points-allowed figure). A
+   * format whose table did not load is null there and the page falls back to
+   * PPR for it.
+   */
+  byFormat: Record<"ppr" | "half" | "std", { a: FpaRow | null; b: FpaRow | null } | null>;
 }
 
 export interface MatchupData {
@@ -392,11 +399,15 @@ export async function getMatchupData(
   // Allowed to fail on its own, like the prior-season schedules above: an FPA
   // table that will not load costs this page one block, not the page.
   // PPR, the format the matchup pages are called for (mak, 2026-10-05).
-  const fpaTable = await getFpaTable({ format: "ppr" }).catch(() => null);
-  const fpaFor = (team: NflTeam): FpaRow | null =>
-    fpaTable?.rows.find(
-      (row) => row.team?.abbreviation === team.abbreviation,
-    ) ?? null;
+  const [fpaTable, fpaHalf, fpaStd] = await Promise.all([
+    getFpaTable({ format: "ppr" }).catch(() => null),
+    getFpaTable({ format: "half" }).catch(() => null),
+    getFpaTable({ format: "standard" }).catch(() => null),
+  ]);
+  const rowFor = (table: typeof fpaTable, team: NflTeam): FpaRow | null =>
+    table?.rows.find((row) => row.team?.abbreviation === team.abbreviation) ?? null;
+  const fpaFor = (team: NflTeam): FpaRow | null => rowFor(fpaTable, team);
+  const pairRows = (table: typeof fpaTable) => (table ? { a: rowFor(table, pair.a), b: rowFor(table, pair.b) } : null);
   const fpa: MatchupFpa | null = fpaTable
     ? {
         a: fpaFor(pair.a),
@@ -404,6 +415,7 @@ export async function getMatchupData(
         season: fpaTable.season,
         dataMode: fpaTable.dataMode,
         format: fpaTable.format,
+        byFormat: { ppr: pairRows(fpaTable), half: pairRows(fpaHalf), std: pairRows(fpaStd) },
       }
     : null;
 

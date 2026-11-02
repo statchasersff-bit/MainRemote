@@ -199,24 +199,71 @@ describe("possessions", () => {
 });
 
 describe("betting, video and the jump links", () => {
-  test("Rams covered by 19.5, under", () => {
+  test("the result grid: both clubs side by side, no final score, each side of the spread with its verdict", () => {
     const html = extras.renderBetting(GAME, ODDS);
-    assert.match(html, /LAR −3\.5/);
-    assert.match(html, /Rams covered by 19\.5/);
-    assert.match(html, /Under: 45 points scored/);
+    // The header carries the score, so the panel does not (mak, 2026-11-02).
+    assert.doesNotMatch(html, /sct-bet-final/);
+    // Away left, home right, the label between.
+    assert.match(html, /<div class="sct-bet-row sct-bet-head"><span class="sct-bet-cell is-away sct-bet-team"[^>]*>ARI<\/span><span class="sct-bet-k" aria-hidden="true"><\/span><span class="sct-bet-cell is-home sct-bet-team"[^>]*>LAR<\/span><\/div>/);
+    assert.match(html, /<span class="sct-bet-cell is-away"[^>]*><b class="sct-bet-line-v">\+3\.5<\/b> <span class="sct-bet-verdict is-no"><span aria-hidden="true">✗<\/span> Failed by 19\.5<\/span><\/span><span class="sct-bet-k">Spread<\/span><span class="sct-bet-cell is-home"[^>]*><b class="sct-bet-line-v">−3\.5<\/b> <span class="sct-bet-verdict is-yes"><span aria-hidden="true">✓<\/span> Covered by 19\.5<\/span>/);
+    assert.match(html, /<p class="sct-bet-total"><span class="sct-bet-k">Total<\/span> <b class="sct-bet-line-v">49\.5<\/b> <span class="sct-bet-verdict is-yes"><span aria-hidden="true">✓<\/span> Under by 4\.5 \(45 pts\)<\/span><\/p>/);
     assert.match(html, /1-800-GAMBLER/);
+    // A failed cover is marked as one on the favorite's side, and as a cover on the underdog's.
+    const fail = extras.renderBetting(GAME, { favorite: "LAR", line: 24.5, total: 49.5 });
+    assert.match(fail, /is-home"[^>]*><b class="sct-bet-line-v">−24\.5<\/b> <span class="sct-bet-verdict is-no"><span aria-hidden="true">✗<\/span> Failed by 1\.5<\/span>/);
+    assert.match(fail, /is-away"[^>]*><b class="sct-bet-line-v">\+24\.5<\/b> <span class="sct-bet-verdict is-yes"><span aria-hidden="true">✓<\/span> Covered by 1\.5<\/span>/);
   });
 
-  test("the spec's reference lines: tiles, implied team totals, no moneyline or props", () => {
+  test("implied and scored per side, bars on one scale, the difference from the rounded implied figure", () => {
     const html = extras.renderBetting(GAME, ODDS);
     assert.match(html, /<h2 class="sct-rb-h2" id="betting">Cardinals vs Rams odds and results<\/h2>/);
-    assert.match(html, /Under: 45 points scored \(by 4\.5\)/);
-    const rows = [...html.matchAll(/<tr><th scope="row"[^>]*>(\w+)<\/th><td>([\d.]+)<\/td><td>(\d+)<\/td><td[^>]*>([^<]+)<\/td><\/tr>/g)].map((m) => m.slice(1));
-    assert.deepEqual(rows, [
-      ["Rams", "26.5", "34", "+7.5"],
-      ["Cardinals", "23.0", "11", "−12.0"],
-    ]);
+    const implied = [...html.matchAll(/<span class="sct-bet-imp-implied">([\d.]+)<\/span>/g)].map((m) => m[1]);
+    assert.deepEqual(implied, ["23.0", "26.5"], "away then home");
+    const scored = [...html.matchAll(/<span class="sct-bet-imp-actual">(\d+)<\/span> <b class="sct-fp-diff[^"]*">([^<]+)<\/b>/g)].map((m) => m.slice(1));
+    assert.deepEqual(scored, [["11", "−12.0"], ["34", "+7.5"]]);
+    const bars = [...html.matchAll(/<span class="sct-bet-imp-track is-(\w+)"[^>]*><span class="sct-bet-imp-fill" style="width:([\d.]+%)"><\/span><span class="sct-bet-imp-tick" style="(right|left):([\d.]+%)">/g)].map((m) => m.slice(1));
+    assert.deepEqual(bars.map((b) => [b[0], b[2]]), [["away", "right"], ["home", "left"]], "the bars grow out from the middle");
+    const [ari, lar] = bars;
+    assert.ok(parseFloat(lar[1]) > parseFloat(lar[3]), "the Rams' bar passes their tick");
+    assert.ok(parseFloat(ari[1]) < parseFloat(ari[3]), "the Cardinals' bar stops short of theirs");
+    assert.equal(Math.round(parseFloat(lar[1]) / 34 * 100), Math.round(parseFloat(ari[3]) / 23 * 100), "one scale for both bars");
+    // A rounding seam: 35 against an implied 24.75 reads +10.2 (from the printed 24.8), not +10.3.
+    const seam = extras.renderBetting(
+      { ...GAME, away: { ...GAME.away, quarters: [0, 6, 0, 0] }, home: { ...GAME.home, quarters: [14, 7, 7, 7] } },
+      { favorite: "LAR", line: 3, total: 46.5 },
+    );
+    assert.match(seam, /<span class="sct-bet-imp-implied">24\.8<\/span>.*?<span class="sct-bet-imp-actual">35<\/span> <b class="sct-fp-diff is-pos">\+10\.2<\/b>/);
     assert.doesNotMatch(html, /Moneyline|First half|Player props/);
+  });
+
+  test("the trends: one bold story, one shared table, captions", () => {
+    const t = (a, b, push = 0) => ({ a, b, push });
+    const extrasIn = {
+      meetings: [],
+      seasons: {
+        ARI: { ats: t(1, 1, 1), ou: t(0, 3), atsFavorite: t(1, 0), atsUnderdog: t(0, 1, 1), atsVenue: t(0, 1, 1), venue: "away" },
+        LAR: { ats: t(2, 1), ou: t(1, 2), atsFavorite: t(2, 0), atsUnderdog: t(0, 1), atsVenue: t(2, 0), venue: "home" },
+      },
+    };
+    const html = extras.renderBetting(GAME, ODDS, extrasIn);
+    assert.match(html, /<p class="sct-bet-story"><b>Every Cardinals game this season has gone under the total \(3 games\)\.<\/b><\/p>/);
+    const heads = [...html.matchAll(/<th scope="col"[^>]*>(?:<span class="sct-rb-sr">)?([^<]*)/g)].map((m) => m[1]);
+    assert.deepEqual(heads, ["Record", "ARI", "LAR"]);
+    const rows = [...html.matchAll(/<tr><th scope="row">([^<]+)<\/th><td>([^<]+)(?: <small>(\w+)<\/small>)?<\/td><td>([^<]+)(?: <small>(\w+)<\/small>)?<\/td><\/tr>/g)].map((m) => m.slice(1));
+    assert.deepEqual(rows, [
+      ["ATS", "1–1–1", undefined, "2–1", undefined],
+      ["O/U (overs first)", "0–3", undefined, "1–2", undefined],
+      ["ATS as favorite", "1–0", undefined, "2–0", undefined],
+      ["ATS as underdog", "0–1–1", undefined, "0–1", undefined],
+      ["ATS at this game's venue", "0–1–1", "road", "2–0", "home"],
+    ]);
+    assert.match(html, /<p class="sct-bet-cap">Each team&#39;s 2021 season through this game, including it\.<\/p>/);
+    assert.doesNotMatch(html, /sct-bet-card/);
+    // Two panels side by side (mak, 2026-11-02): no "Betting trends" heading,
+    // the story line heads the trends panel.
+    assert.doesNotMatch(html, /Betting trends/);
+    assert.match(html, /<div class="sct-bet-grid has-trends"><div class="sct-bet-panel sct-bet-result"><p class="sct-bet-panel-k">Result<\/p>/);
+    assert.match(html, /<div class="sct-bet-panel sct-bet-trends-panel"><p class="sct-bet-panel-k">Season trends<\/p><p class="sct-bet-story">/);
   });
 
   test("no closing total, no tab", () => {
@@ -233,13 +280,13 @@ describe("betting, video and the jump links", () => {
     }
   });
 
-  test("the video is a click-to-load button, and is absent without an upload", () => {
+  test("the video is a link out to YouTube in a new tab, and is absent without an upload", () => {
     const html = extras.renderHighlights(GAME, { youtubeId: "VfMqgtKsoag", title: "Highlights", uploadDate: "2022-01-18", publisher: "NFL" });
-    assert.match(html, /<button type="button" class="sct-hl-play" data-hl-embed="https:\/\/www\.youtube-nocookie\.com\/embed\/VfMqgtKsoag\?autoplay=1&amp;rel=0"/);
-    assert.match(html, /<noscript><a class="sct-hl-noscript" href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag"/);
+    assert.match(html, /<a class="sct-hl-play" href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener" aria-label="Watch on YouTube: Highlights">/);
+    assert.doesNotMatch(html, /<button|data-hl-embed|youtube-nocookie|<noscript/);
     assert.match(html, /<section class="sct-rb-section sct-hl" id="highlights" aria-label="Game highlights">/);
     assert.doesNotMatch(html, /Game Highlights<\/h2>/);
-    assert.match(html, /Official NFL highlights · Opens from <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">YouTube<\/a>/);
+    assert.match(html, /Official NFL highlights · Opens on <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">YouTube<\/a>/);
     assert.doesNotMatch(html, /<iframe/);
     assert.equal(extras.renderHighlights(GAME, null), "");
   });

@@ -121,7 +121,6 @@ describe("the ten components, in order", () => {
     const order = [
       ".sct-us-head",
       ".sct-us-intro",
-      ".sct-us-env",
       ".sct-us-card",
       ".sct-us-scroll",
       ".sct-us-legend",
@@ -132,9 +131,10 @@ describe("the ten components, in order", () => {
     const idx = order.map((el) => all.indexOf(el));
     assert.deepEqual([...idx].sort((a, b) => a - b), idx);
     const h3s = [...root.querySelectorAll(".sct-us-card > .sct-us-h3")].map((h) => h.textContent);
-    assert.equal(h3s[0], "The Target Tree");
-    assert.equal(h3s[1], "The Backfield Split");
-    assert.match(h3s[2], /^Where \S+ Attacks$/);
+    // The Target Tree went 2026-11-02 (mak): the backfield split leads the cards.
+    assert.ok(!h3s.includes("The Target Tree"));
+    assert.equal(h3s[0], "The Backfield Split");
+    assert.match(h3s[1], /^Where \S+ Attacks$/);
   });
 
   test("freshness chip is driven by the data file", async () => {
@@ -159,7 +159,13 @@ describe("the ten components, in order", () => {
     const { doc } = await page("/team/buffalo-bills/");
     const intro = doc.querySelector(".sct-us-intro").textContent;
     assert.match(intro, /^Fantasy production follows opportunity\./);
-    assert.match(intro, /Start with target share, snap share, and red-zone touches\./);
+    // mak's 2026-11-02 copy: the metrics are bolded in the first sentence.
+    assert.match(intro, /Track target share, snap share, and red-zone touches before the box score catches up\./);
+    assert.ok(!/xFP measures/.test(intro), "the xFP/FPOE bullets are gone");
+    // No bold in the three body paragraphs (mak, 2026-11-02); only the closing line is bold.
+    const ps = [...doc.querySelectorAll(".sct-us-intro p")];
+    assert.ok(ps.slice(0, -1).every((p) => !p.querySelector("strong")), "body paragraphs carry no bold");
+    assert.ok(ps.at(-1).querySelector("strong"), "the closing line keeps its bold");
     assert.match(intro, /Follow the opportunity before the fantasy points follow it\.$/);
     // The weighted-opportunities caption came off the backfield legend (2026-10-01).
     assert.equal(doc.querySelector(".sct-us-keys .is-def"), null);
@@ -355,11 +361,9 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     // Intro, handcuff, the close cards and the umbrella line (the projections
     // line under the table went 2026-10-22).
     // (The "Turn the usage signal into a trade" block, the target-tree and
-    // pass-map bridges and the footer tool row went 2026-10-20 at mak's request.)
+    // pass-map bridges and the footer tool row went 2026-10-20 at mak's request;
+    // the intro's "Turn usage into a roster decision" box went 2026-11-02.)
     for (const want of [
-      "trade-analyzer-usage-intro",
-      "ros-rankings-usage-intro",
-      "league-analyzer-usage-intro",
       "rb-handcuffs-usage-handcuff",
       "waiver-wire-usage-handcuff",
       "dynasty-trade-calc-usage-handcuff",
@@ -388,8 +392,8 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     );
     assert.equal(us.querySelector(".sct-us-toolrow"), null);
     // The anchors carry the tool's name, which is the search signal.
-    const trade = us.querySelector("[data-cta='trade-analyzer-usage-intro']");
-    assert.equal(trade.textContent, "Fantasy Football Trade Analyzer");
+    const trade = us.querySelector("[data-cta='trade-analyzer-usage-close']");
+    assert.equal(trade.textContent, "Open Trade Analyzer");
     assert.equal(trade.getAttribute("href"), "https://statchasers.com/redraft-command/fantasy-football-trade-calculator");
     // The handcuff line still links the Dynasty Trade Calculator; the close card no longer does (2026-10-22).
     assert.equal(

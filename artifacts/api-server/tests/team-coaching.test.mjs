@@ -86,11 +86,8 @@ describe("the components, in order", () => {
       ".sct-co-head",
       ".sct-co-intro",
       ".sct-co-grid",
-      ".sct-co-shifts",
-      ".sct-co-staff",
-      ".sct-co-dossier",
-      ".sct-co-finishes",
       ".sct-co-panels",
+      ".sct-co-dossier",
       ".sct-co-bottom",
     ].map((sel) => root.querySelector(sel));
     order.forEach((el, i) => assert.ok(el, `component ${i} present`));
@@ -125,7 +122,7 @@ describe("the components, in order", () => {
 });
 
 describe("the coach card", () => {
-  test("title, name, accented role line, scheme tag, timeline, reliability word and ledger chips", async () => {
+  test("title, name, accented role line, scheme tag on the header row, timeline and reliability word", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const card = doc.querySelector(".sct-co-card");
     assert.equal(card.querySelector(".sct-co-kicker").textContent, "Head coach");
@@ -145,10 +142,10 @@ describe("the coach card", () => {
       card.querySelector(".sct-co-rel-note").textContent,
       "Same caller for a third straight season. 2025 is a strong baseline for 2026 tendencies.",
     );
-    const chips = [...card.querySelectorAll(".sct-co-chip")].map((c) => c.textContent);
-    assert.deepEqual(chips, ["3 / 32026 games", "2+Prior seasons", "2023First Bills calls"]);
-    // The qualifier the bare count loses rides under the chips.
-    assert.match(card.querySelector(".sct-co-ledger-note").textContent, /partial 2023 \(Wks 11\+\)/);
+    // The play-caller ledger (chips + note) went 2026-11-02; the lineage chip shares the header row.
+    assert.equal(card.querySelectorAll(".sct-co-chip").length, 0);
+    assert.equal(card.querySelector(".sct-co-ledger"), null);
+    assert.ok(card.querySelector(".sct-co-cardhead > .sct-co-tree"));
   });
 });
 
@@ -171,8 +168,14 @@ describe("the tendencies table", () => {
     // The pane carries its own heading and the identity chips above the table.
     const pane = doc.querySelector(".sct-co-tend");
     assert.equal(pane.querySelector(".sct-co-tend-title").textContent, "Offensive tendencies");
-    assert.equal(pane.querySelector(".sct-co-tend-sub").textContent, "How Buffalo's 2026 offense is changing under Joe Brady");
+    // No subtitle (mak, 2026-11-02): the identity chips are the one summary.
+    assert.equal(pane.querySelector(".sct-co-tend-sub"), null);
     assert.ok(pane.querySelector(".sct-co-identity"));
+    assert.equal(pane.querySelector(".sct-co-identity .sct-co-label"), null, "no identity label (mak, 2026-11-02)");
+    assert.ok(pane.querySelector(".sct-co-legend"));
+    // Sub-captions stay only where the denominator is not guessable.
+    const subs = [...table.querySelectorAll(".sct-co-cell-sub")].map((s) => s.textContent);
+    assert.deepEqual(subs, ["situation-adjusted", "opponent territory, 2 yds or less"]);
   });
 
   test("the feed-backed rows carry the usage file's live numbers, not the spec placeholders", async () => {
@@ -191,101 +194,125 @@ describe("the tendencies table", () => {
 });
 
 describe("staff, dossier and finishes", () => {
-  test("the OC card wears the delegation watch; the DC card speaks to offense fantasy", async () => {
+  test("the Staff profile strip is gone (mak, 2026-11-02)", async () => {
     const { doc } = await page("/team/buffalo-bills/");
-    const cards = [...doc.querySelectorAll(".sct-co-staffcard")];
-    assert.equal(cards.length, 3);
-    assert.ok(cards[0].classList.contains("is-watch"));
-    assert.match(cards[0].querySelector(".sct-co-role").textContent, /Delegation watch/i);
-    // The DC card leads with the EPA number and its rank; the stored body's
-    // offense angle (game script) folds under More, word for word.
-    assert.equal(cards[1].querySelector(".sct-co-defval").textContent, "0.07");
-    assert.equal(cards[1].querySelector(".sct-co-defmetric .sct-co-sig-pill").textContent, "23rd");
-    assert.equal(cards[1].querySelector(".sct-co-body").textContent, "Early results are weak, but the 3-week sample is still small.");
-    const rest = coaching.teams.buf.staff.dc.body.replace(/^.*?play-by-play\)\.\s*/, "");
-    assert.ok(cards[1].querySelector("details.sct-co-more").textContent.includes(rest));
-    assert.match(cards[2].querySelector(".sct-co-h4").textContent, /Year 3/);
+    assert.equal(doc.querySelector(".sct-co-staff"), null);
+    assert.equal(doc.querySelectorAll(".sct-co-staffcard").length, 0);
+    assert.doesNotMatch(doc.querySelector("#coaching").textContent, /Staff profile/);
   });
 
-  test("the current dossier and finishes rows are the gold ones", async () => {
+  test("the current chart stop, fingerprint row and finishes row are the gold ones", async () => {
     const { doc } = await page("/team/buffalo-bills/");
-    const dossier = [...doc.querySelectorAll("ol.sct-co-dossier > li.sct-co-dstop")];
-    assert.equal(dossier.length, coaching.teams.buf.dossier.length);
-    assert.ok(dossier[dossier.length - 1].classList.contains("is-current"));
-    assert.equal(doc.querySelectorAll("ol.sct-co-dossier > li.is-current").length, 1);
-    assert.equal(dossier[dossier.length - 1].querySelector(".sct-co-dcur").textContent, "Current");
-    const finishes = [...doc.querySelectorAll("table.sct-co-finishes tbody tr")];
-    assert.equal(finishes.length, coaching.teams.buf.finishes.rows.length);
-    assert.ok(finishes[finishes.length - 1].classList.contains("is-current"));
-    // The in-season row is unmistakably provisional: its own label, dashed pills.
-    const now = finishes[finishes.length - 1];
-    assert.match(now.textContent, /Through Week \d+In-season/);
-    assert.equal(now.querySelectorAll(".sct-co-fpill.is-provisional").length, 4);
-    // Settled rows: the rank leads as a tier pill, the player under it, uncolored.
-    const first = finishes[0].querySelectorAll("td")[0];
-    assert.match(first.querySelector(".sct-co-fpill").className, /is-(elite|strong|mid|low)$/);
-    assert.ok(first.querySelector(".sct-co-fwho").textContent.length > 0);
-    assert.ok(doc.querySelectorAll(".sct-co-finishes .sct-co-fpill.is-elite").length >= 3);
+    // The dossier is a chart plus a fingerprint table since 2026-11-02: no year rows, no tiles.
+    const block = doc.querySelector(".sct-co-dossier");
+    assert.equal(block.querySelectorAll(".sct-co-dstop, .sct-co-idtile").length, 0);
+    const stops = [...block.querySelectorAll("svg.is-wide .sct-co-ch-stop")];
+    assert.equal(stops.length, coaching.teams.buf.dossier.length);
+    assert.ok(stops[stops.length - 1].classList.contains("is-current"));
+    assert.equal(block.querySelectorAll("svg.is-wide .sct-co-ch-stop.is-current").length, 1);
+    const prints = [...block.querySelectorAll("table.sct-co-fptable tbody tr")];
+    assert.ok(prints[prints.length - 1].classList.contains("is-current"));
+    assert.equal(prints[prints.length - 1].querySelector(".sct-co-fnow").textContent, "In-season");
+    // The finishes table is unmounted (mak, 2026-11-02); its pills live in the fingerprint rows.
+    assert.equal(doc.querySelector("table.sct-co-finishes"), null);
+    assert.doesNotMatch(doc.querySelector("#coaching").textContent, /Fantasy finishes by coaching stop/);
   });
 });
 
 describe("signals, staff profile and dossier redesign", () => {
-  test("signals lead with the metric, its standing and a muted sample note", async () => {
+  test("the signals live in the table (mak, 2026-11-02): tinted rows with the verdict under the label", async () => {
     const { doc } = await page("/team/new-england-patriots/");
-    const cards = [...doc.querySelectorAll(".sct-co-shifts > .sct-co-shift")];
-    assert.equal(cards.length, coaching.teams.ne.shifts.length);
-    for (const card of cards) {
-      assert.ok(card.querySelector(".sct-co-sig-label").textContent.length > 0);
-      assert.match(card.querySelector(".sct-co-sig-value").textContent, /^[+−]?\d/);
-      assert.ok(card.querySelector(".sct-co-sig-head"));
+    assert.equal(doc.querySelector(".sct-co-shifts"), null);
+    const rows = [...doc.querySelectorAll("table.sct-co-table tbody tr.is-signal")];
+    const shifts = coaching.teams.ne.shifts;
+    assert.equal(rows.length, shifts.length);
+    // The tint alone marks a headline move (mak, 2026-11-02): no verdict text under the label.
+    assert.equal(doc.querySelectorAll(".sct-co-verdict").length, 0);
+    assert.ok(shifts.every((s) => s.key), "every signal names its row");
+    // Every numeric row's change is a strip over the number; the NFL average is a tick on it.
+    const all = [...doc.querySelectorAll("table.sct-co-table tbody tr")];
+    const numeric = all.filter((tr) => /\d/.test(tr.querySelector(".is-prior").textContent));
+    assert.equal(all.filter((tr) => tr.querySelector(".sct-co-strip")).length, numeric.length);
+    for (const tr of numeric) {
+      const strip = tr.querySelector(".sct-co-strip");
+      assert.ok(strip.querySelector(".sct-co-strip-prior") && strip.querySelector(".sct-co-strip-now"));
+      assert.ok(strip.querySelector(".sct-co-strip-avg"), "NFL average tick");
+      assert.ok(tr.querySelector(".sct-co-chg-line .sct-co-change"));
     }
-    const notes = cards.map((c) => c.querySelector(".sct-co-sig-note")?.textContent ?? "");
-    assert.deepEqual(notes, ["3-game sample · 15 red-zone plays", "3-game sample", "3-game sample"]);
-    // Standing as pills, the move as its own "prior -> now" line.
-    const pills = cards.map((c) => [...c.querySelectorAll(".sct-co-sig-pill")].map((p) => p.textContent));
-    assert.deepEqual(pills, [["2nd"], ["−6.3 pts YoY"], ["Run-leaning", "−4.6 pts YoY"]]);
-    assert.equal(cards[0].querySelector(".sct-co-sig-line").textContent, "54% → 80% YoY");
-    assert.equal(cards[0].querySelector(".sct-co-sig-head").textContent, "Pass-heavy in the red zone.");
-    assert.equal(cards[0].querySelector(".sct-co-sig-body").textContent, "More receiving TD opportunity, less goal-line rushing volume.");
-    // The caveat left the body for the note.
-    assert.ok(cards.every((c) => !/sample is still small/.test(c.querySelector(".sct-co-sig-body").textContent)));
   });
 
-  test("a caller OC is not on delegation watch, and no card says 'see the card above'", async () => {
+  test("no card says 'see the card above'", async () => {
     const { doc } = await page("/team/new-england-patriots/");
-    const oc = doc.querySelector(".sct-co-staffcard.is-oc");
-    assert.ok(!oc.classList.contains("is-watch"));
-    assert.equal(oc.querySelector(".sct-co-staff-sub").textContent, "Primary play-caller");
     assert.doesNotMatch(doc.querySelector(".sct-co").textContent, /see the card above/);
-    // The DC's long scheme note sits behind a disclosure, its first clause up top.
-    const dc = doc.querySelector(".sct-co-staffcard.is-dc");
-    assert.equal(dc.querySelector(".sct-co-staff-sub").textContent, "Man-heavy, multiple-front Vrabel defense");
-    assert.ok(dc.querySelector("details.sct-co-more"));
   });
 
-  test("the dossier states the pre-2016 caveat once and reads fingerprints as numbers", async () => {
+  test("the dossier is a career scoring chart plus a fingerprint table (mak, 2026-11-02)", async () => {
     const { doc } = await page("/team/new-england-patriots/");
-    const block = doc.querySelector("ol.sct-co-dossier").parentElement;
-    assert.equal(block.querySelectorAll(".sct-co-dnote").length, 1);
-    assert.doesNotMatch(block.textContent, /predates our target-tracking window/);
-    const stops = [...block.querySelectorAll(".sct-co-dstop")];
-    assert.equal(stops[0].querySelector(".sct-co-drole").textContent, "NE · QB coach");
-    assert.equal(stops[0].querySelector(".sct-co-drank").textContent, "10th in NFL");
-    assert.equal(stops[1].querySelector(".sct-co-drank").textContent, "Best: 1st in NFL");
-    assert.equal(stops[4].querySelector(".sct-co-drole").textContent, "STL · Offensive coordinator");
-    const raiders = stops.find((s) => s.querySelector(".sct-co-dyears").textContent === "2022");
-    const rows = [...raiders.querySelectorAll(".sct-co-fp-row")].map((r) => r.textContent);
-    // Grouped (target share, then backfield) and read as the gap to league.
-    // ...then the same season's finishes: tendency, then outcome.
-    assert.deepEqual(rows, ["Target shareTE18%↓ 3 pts vs league", "BackfieldLead back78%weighted opps", "FinishesQB17RB3WR3TE28"]);
-    assert.equal(stops[0].querySelector(".sct-co-fp-none").textContent, "No target data");
-    assert.equal(block.querySelector(".sct-co-dnote").textContent, "Target fingerprints available from 2016 onward. Earlier stops show scoring output only.");
-    const tiles = [...block.querySelectorAll(".sct-co-idtile")].map((t) => [...t.children].map((c) => c.textContent));
-    assert.deepEqual(tiles.slice(0, 3), [
-      ["Scoring peak", "28.8 PPG", "1st in NFL · 2006-08 NE"],
-      ["Peak backfield concentration", "80%", "Lead-back share · 2023 LV"],
-      ["TE target share", "3 / 4", "tracked stops below league"],
+    const block = doc.querySelector(".sct-co-dossier");
+    assert.doesNotMatch(block.textContent, /from 2016 onward|predates our target-tracking window|No target data|in NFL/);
+    // The chart: one stop per dossier row; the 2005 QB-coach year is a hollow
+    // dot off the line, head-coach stints are dashed, the NFL average is drawn.
+    const svg = block.querySelector("figure.sct-co-chart svg.is-wide");
+    const stops = [...svg.querySelectorAll(".sct-co-ch-stop")];
+    assert.equal(stops.length, coaching.teams.ne.dossier.length);
+    assert.equal(stops[0].querySelector("title").textContent, "2005 · NE · QB coach · 23.7 PPG · 10th");
+    assert.ok(stops[0].querySelector(".sct-co-ch-dot.is-hollow"));
+    assert.equal(stops[0].querySelector(".sct-co-ch-seg"), null);
+    assert.equal(svg.querySelectorAll(".sct-co-ch-seg").length, stops.length - 1);
+    assert.equal(svg.querySelectorAll(".sct-co-ch-seg.is-hc").length, 4);
+    assert.ok(svg.querySelector(".sct-co-ch-avg"));
+    // One point per season, not per stint (mak, 2026-11-02: "why is 2012 to
+    // 2022 a straight line"): the ten-year Patriots stop is ten dots.
+    const seasons = coaching.teams.ne.dossier.flatMap((r) => r.seasons);
+    assert.equal(svg.querySelectorAll(".sct-co-ch-pt").length, seasons.length);
+    assert.equal(stops[5].querySelectorAll(".sct-co-ch-dot").length, 10);
+    assert.equal(stops[5].querySelectorAll(".sct-co-ch-pt")[2].querySelector("title").textContent, "2014 · NE · Offensive coordinator · 29.3 PPG · 4th");
+    // Peak and current are flags on the line, not tiles above it; the peak is the best single season he called.
+    const best = Math.max(...coaching.teams.ne.dossier.filter((r) => !/QB coach/.test(r.stop)).flatMap((r) => r.seasons.map((p) => p.ppg)));
+    const flags = [...svg.querySelectorAll(".sct-co-ch-flag")].map((t) => t.textContent);
+    assert.deepEqual(flags, [`${best.toFixed(1)} peak`, "23.0 current"]);
+    assert.equal(svg.querySelectorAll("table.sct-visually-hidden tbody tr").length, 0);
+    const livePts = [...svg.querySelectorAll(".sct-co-ch-stop.is-current .sct-co-ch-pt title")].map((t) => t.textContent);
+    assert.equal(livePts.length, 2);
+    assert.match(livePts[1], /^2026 · NE · Offensive coordinator · 23 PPG · 16th · 2026 thru Wk \d+$/);
+    // Club codes label the line, once per run; both the wide and narrow renders exist.
+    assert.deepEqual([...svg.querySelectorAll(".sct-co-ch-code")].map((t) => t.textContent), ["NE", "DEN", "STL", "NE", "LV", "NE"]);
+    assert.ok(block.querySelector("figure.sct-co-chart svg.is-narrow"));
+    assert.deepEqual([...block.querySelectorAll(".sct-co-ch-key li")].map((li) => li.textContent), ["NE", "DEN", "STL", "LV", "Head coach", "Not the caller", "NFL avg"]);
+    // The same numbers in a hidden table for screen readers, one row per season.
+    assert.equal(block.querySelectorAll("figure table.sct-visually-hidden tbody tr").length, seasons.length);
+    // The fingerprint table (mak's design note, 2026-11-02): every tracked
+    // season, one row each; three share columns with the gap to league
+    // beside each and the distinctive one bold; stints grouped under one
+    // label; a labeled break for 2024, when he was not calling plays.
+    assert.equal(block.querySelector(".sct-co-fptitle").textContent, "Scheme fingerprint, 2016-26");
+    const stats = [...block.querySelectorAll(".sct-co-fpstat")].map((li) => li.textContent);
+    assert.equal(stats[0], "80%Peak lead-back share · 2023 LV");
+    assert.match(stats[1], /^\d+ \/ 10seasons with (WR|RB|TE) share 3\+ pts (below|above) league$/);
+    const all = [...block.querySelectorAll("table.sct-co-fptable tbody tr")];
+    const gaps = all.filter((tr) => tr.classList.contains("sct-co-fpgap"));
+    assert.deepEqual(gaps.map((tr) => tr.textContent), ["2024 · not calling plays"]);
+    const rows = all.filter((tr) => !tr.classList.contains("sct-co-fpgap"));
+    const cells = (tr) => [...tr.children].map((c) => c.textContent);
+    assert.deepEqual(rows.map((tr) => cells(tr)[0]), ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023Wks 1-8", "2025", "2026In-season"]);
+    // One label per stint group; Vegas 2022 and the windowed 2023 stint share a band.
+    assert.deepEqual([...block.querySelectorAll("th.is-stint")].map((th) => [th.textContent, th.getAttribute("rowspan")]), [
+      ["NEOffensive coordinator2012-21", "6"],
+      ["LVHead coach2022-23", "2"],
+      ["NEOffensive coordinator2025-26", "2"],
     ]);
+    assert.deepEqual(cells(rows[6]), ["2022", "LVHead coach2022-23", "62%+2", "20%+1", "18%↓ 3", "78%", "QB17RB3WR3TE28"]);
+    assert.deepEqual(cells(rows[7]), ["2023Wks 1-8", "63%+2", "25%↑ 6", "12%↓ 9", "80%", "QB30°RB9°WR13°TE37°"]);
+    assert.deepEqual(cells(rows[9]).slice(0, 5), ["2026In-season", "59%+1", "18%0", "24%0", "55%"]);
+    // The distinctive share is the bold one; a 65%+ lead back is bold too.
+    assert.equal(rows[2].querySelector(".is-share .sct-co-fpv.is-lean").textContent, "36%");
+    assert.equal(rows[2].querySelectorAll(".is-share .sct-co-fpv.is-lean").length, 1);
+    assert.deepEqual([...block.querySelectorAll(".is-lb .is-workhorse")].map((v) => v.textContent), ["78%", "80%"]);
+    assert.equal(rows[7].querySelectorAll(".sct-co-fpill-part").length, 4);
+    // Only the live season is the gold row, not every season of the current stop.
+    assert.equal(block.querySelectorAll("table.sct-co-fptable tbody tr.is-current").length, 1);
+    assert.equal(rows[9].querySelectorAll(".sct-co-fpill.is-provisional").length, 4);
+    assert.match(block.querySelector(".sct-co-fnote").textContent, /° marks a partial season/);
   });
 });
 
@@ -349,7 +376,7 @@ describe("panels", () => {
     assert.equal(panel.querySelectorAll(".sct-co-bfill.is-gold").length, 1);
     assert.equal(panel.querySelector(".sct-co-take-line").textContent, "Running backs have drawn 25% of targets vs 20% league average.");
     const bf = [...doc.querySelectorAll(".sct-co-panel")][1];
-    assert.equal(bf.querySelector(".sct-co-range").textContent, "Tracked range27% → 80%202651%");
+    assert.equal(bf.querySelector(".sct-co-range"), null, "the tracked-range line went 2026-11-02");
     assert.equal(bf.querySelector(".sct-co-colnow").textContent, "Current");
   });
 });
@@ -401,16 +428,18 @@ describe("design polish (mak, 2026-10-05)", () => {
     const badges = [...doc.querySelectorAll(".sct-co-table .sct-co-badge")].map((b) => b.textContent);
     assert.deepEqual(badges, ["4th", "6th", "7th", "Biggest YoY move"]);
     assert.equal(doc.querySelector(".sct-co-table .sct-co-badge").getAttribute("title"), "4th-fastest in NFL");
-    assert.equal(doc.querySelectorAll(".sct-co-table tr.is-flagged").length, 2);
+    assert.equal(doc.querySelectorAll(".sct-co-table tr.is-flagged").length, 0);
+    assert.equal(doc.querySelectorAll(".sct-co-table tr.is-signal").length, coaching.teams.buf.shifts.length);
     const chips = [...doc.querySelectorAll(".sct-co-idchip")].map((c) => c.textContent);
     assert.deepEqual(chips, ["Pace↑", "Shotgun↓", "Play action↑", "RZ passing↑"]);
   });
 
-  test("the caller note's lead sentence shows, the rest folds under More", async () => {
+  test("no caller note under the lineage chip (mak, 2026-11-02), and the reliability line stands", async () => {
     const { doc } = await page("/team/new-england-patriots/");
     const card = doc.querySelector(".sct-co-card");
-    assert.match(card.querySelector(".sct-co-card-sub").textContent, /^McDaniels remains New England's offensive play-caller in 2026 .*\.$/);
-    assert.match(card.querySelector(".sct-co-more .sct-co-more-a").textContent, /^Vrabel's September comments/);
+    assert.equal(card.querySelector(".sct-co-card-sub"), null);
+    assert.ok(!card.textContent.includes("McDaniels remains New England's offensive play-caller"));
+    assert.equal(card.querySelector(".sct-co-more"), null);
     assert.equal(
       card.querySelector(".sct-co-rel-note").textContent,
       "Same caller as last season. 2025 is a strong baseline for 2026 tendencies.",
@@ -418,19 +447,3 @@ describe("design polish (mak, 2026-10-05)", () => {
   });
 });
 
-describe("fantasy finishes by coaching stop", () => {
-  test("a real header, the best settled finishes first, and a short methodology line", async () => {
-    const { doc } = await page("/team/new-england-patriots/");
-    const block = doc.querySelector("table.sct-co-finishes").closest(".sct-co-block");
-    assert.equal(block.querySelector(".sct-co-eyebrow").textContent, "Fantasy finishes by coaching stop");
-    const best = [...block.querySelectorAll(".sct-co-fbest-list li")].map((li) => li.textContent);
-    assert.deepEqual(best, ["QB2Maye · 2025", "RB3Jacobs · 2022", "WR3Adams · 2022", "TE9Henry · 2025"]);
-    assert.equal(
-      block.querySelector(".sct-co-fnote").textContent,
-      "PPR positional finishes. Partial-season rows rank only the games McDaniels called. Historical outcomes, not projections.",
-    );
-    assert.ok(block.querySelector("details.sct-co-more").textContent.includes("McDaniels's offenses have put up repeated top-ten"));
-    const stop = block.querySelector("tbody tr .sct-co-fstop").textContent;
-    assert.equal(stop, "Patriots · 2021");
-  });
-});

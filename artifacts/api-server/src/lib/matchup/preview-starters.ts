@@ -27,7 +27,7 @@ import { loadGameLogs } from "../player/data";
 import { passerRating } from "../player/stats-profile";
 import type { ProductionTotals } from "../player/player-data";
 import type { GameLogEntry } from "../player/types";
-import type { Pos, Preview, PreviewSide } from "./preview";
+import { SCORING_FORMATS, fmtData, perFormat, type Pos, type Preview, type PreviewSide, type ScoringFormat } from "./preview";
 import { headshotImg } from "../headshot-html";
 
 const e = escapeHtml;
@@ -118,16 +118,22 @@ function badge(status: string | null): string {
   return "";
 }
 
-function defenseCard(side: PreviewSide, maxByPos: Record<Pos, number>, season: number): string {
-  const fpa = side.fpa!;
+/** The side's points-allowed row in a scoring, the PPR row when that table is missing. */
+function fpaIn(side: PreviewSide, f: ScoringFormat): NonNullable<PreviewSide["fpa"]> {
+  return side.fpaFormats[f] ?? side.fpa!;
+}
+
+function defenseCard(side: PreviewSide, maxByPos: Record<ScoringFormat, Record<Pos, number>>, season: number): string {
   const rows = POSITIONS.map((pos) => {
-    const { fpa: pts, rank } = fpa.byPos[pos];
-    const width = maxByPos[pos] > 0 ? Math.round((pts / maxByPos[pos]) * 100) : 0;
+    // Every figure in all three scorings; the switch swaps them (mak, 2026-11-02).
+    const cell = perFormat((f) => fpaIn(side, f).byPos[pos]);
+    const width = perFormat((f) => (maxByPos[f][pos] > 0 ? Math.round((cell[f].fpa / maxByPos[f][pos]) * 100) : 0));
+    const { fpa: pts, rank } = cell.ppr;
     return (
       `<tr><th scope="row">${pos}</th>` +
-      `<td><span class="sct-pv-rank" data-tier="${tier(rank)}">${e(ordinal(rank))}</span></td>` +
-      `<td class="sct-mu-st-bar"><span class="sct-pv-cbar" aria-hidden="true"><i data-tier="${tier(rank)}" style="width:${width}%"></i></span></td>` +
-      `<td class="sct-mu-st-num">${pts.toFixed(1)}</td></tr>`
+      `<td><span class="sct-pv-rank" data-tier="${tier(rank)}"${fmtData(perFormat((f) => ordinal(cell[f].rank)))}${fmtData(perFormat((f) => tier(cell[f].rank)), "tier")}>${e(ordinal(rank))}</span></td>` +
+      `<td class="sct-mu-st-bar"><span class="sct-pv-cbar" aria-hidden="true"><i data-tier="${tier(rank)}" style="width:${width.ppr}%"${fmtData(width, "w")}${fmtData(perFormat((f) => tier(cell[f].rank)), "tier")}></i></span></td>` +
+      `<td class="sct-mu-st-num"${fmtData(perFormat((f) => cell[f].fpa.toFixed(1)))}>${pts.toFixed(1)}</td></tr>`
     );
   }).join("");
   const abbr = side.team.code.toUpperCase();
@@ -145,9 +151,19 @@ function defenseCard(side: PreviewSide, maxByPos: Record<Pos, number>, season: n
 /**
  * The starters as a lineup table in the Sleeper matchup style (mak,
  * 2026-10-23): headshot, name, slot, the matchup pill, and at the right the
- * season PPR per game with his league-wide positional rank ("QB8"). No
- * start/sit call, no projection, no usage line.
+ * season points per game with his league-wide positional rank ("QB8"), in
+ * the scoring the page's switch has chosen (PPR as printed). No start/sit
+ * call, no projection, no usage line.
  */
+/** data-ppr / data-half / data-std for one figure, or nothing without a line. */
+function fmtAttrs(
+  ppr: PreviewSide["ppr"][string] | undefined,
+  text: (v: { ppg: number; posRank: number | null }) => string,
+): string {
+  if (!ppr) return "";
+  return SCORING_FORMATS.map((f) => ` data-${f}="${e(text(ppr.formats[f]))}"`).join("");
+}
+
 function offenseCard(side: PreviewSide, season: number): string {
   const defense = side.opponent.code.toUpperCase();
   const rows = SLOTS.flatMap(({ pos, n }) =>
@@ -161,8 +177,11 @@ function offenseCard(side: PreviewSide, season: number): string {
         face(r, side) +
         `<div class="sct-mu-pr-id"><p class="sct-mu-pr-name">${who}${badge(r.injuryStatus)}</p>` +
         `<p class="sct-mu-pr-pos">${e(slot)}<span class="sct-mu-st-vs" data-pos="${pos}"></span></p></div>` +
-        `<div class="sct-mu-pr-pts"><b>${ppr ? ppr.ppg.toFixed(1) : "-"}</b><span class="sct-mu-pr-k">PPR PPG</span>` +
-        `<span class="sct-mu-pr-rank">${ppr && ppr.posRank !== null ? `${pos}${ppr.posRank}` : "-"}</span></div>` +
+        // The figure and its rank carry all three scoring formats; the
+        // page's switch swaps the text (mak, 2026-11-02; a "PPR PPG" label
+        // sat under the figure until then).
+        `<div class="sct-mu-pr-pts"><b${fmtAttrs(ppr, (v) => v.ppg.toFixed(1))}>${ppr ? ppr.ppg.toFixed(1) : "-"}</b>` +
+        `<span class="sct-mu-pr-rank"${fmtAttrs(ppr, (v) => (v.posRank !== null ? `${pos}${v.posRank}` : "-"))}>${ppr && ppr.posRank !== null ? `${pos}${ppr.posRank}` : "-"}</span></div>` +
         `</li>`
       );
     }),
@@ -184,21 +203,35 @@ export function renderPreviewStarters(p: Preview): string {
   const { away, home, meeting } = p;
   if (!away.fpa || !home.fpa || !away.roster.length || !home.roster.length) return "";
   const season = meeting.season;
-  const maxByPos = Object.fromEntries(
-    POSITIONS.map((pos) => [pos, Math.max(away.fpa!.byPos[pos].fpa, home.fpa!.byPos[pos].fpa)]),
-  ) as Record<Pos, number>;
+  const maxByPos = perFormat(
+    (f) =>
+      Object.fromEntries(
+        POSITIONS.map((pos) => [pos, Math.max(fpaIn(away, f).byPos[pos].fpa, fpaIn(home, f).byPos[pos].fpa)]),
+      ) as Record<Pos, number>,
+  );
 
   // The chip beside each starter names the opposing defense's rank against
   // his position; filled here, where both sides' rows are in hand.
   const withChips = (html: string, opp: PreviewSide): string =>
     html.replace(/<span class="sct-mu-st-vs" data-pos="(QB|RB|WR|TE)"><\/span>/g, (_m, pos: Pos) => {
-      const { rank } = opp.fpa!.byPos[pos];
-      return `<span class="sct-mu-st-vs" data-tier="${chipTier(rank)}">${e(ordinal(rank))} vs ${pos}</span>`;
+      const rank = perFormat((f) => fpaIn(opp, f).byPos[pos].rank);
+      return (
+        `<span class="sct-mu-st-vs" data-tier="${chipTier(rank.ppr)}"` +
+        fmtData(perFormat((f) => `${ordinal(rank[f])} vs ${pos}`)) +
+        fmtData(perFormat((f) => chipTier(rank[f])), "tier") +
+        `>${e(ordinal(rank.ppr))} vs ${pos}</span>`
+      );
     });
 
   return (
-    `<section class="sct-pv-sec sct-mu-starters" aria-labelledby="sct-mu-st-h">` +
+    // data-pv-fmt: the scoring switch rewrites the figures inside (team.ts).
+    `<section class="sct-pv-sec sct-mu-starters" aria-labelledby="sct-mu-st-h" data-pv-fmt>` +
+    // The heading and the PPR / Half PPR / Standard switch share a row; the
+    // client builds the switch in the slot (wireScoring in team.ts).
+    `<div class="sct-mu-st-head">` +
     `<h2 class="sct-h2 sct-pv-h2" id="sct-mu-st-h">${e(`${away.team.nickname} vs ${home.team.nickname} Starters vs the Defense`)}</h2>` +
+    `<div class="sct-mu-scoring-slot" data-sct-scoring-slot></div>` +
+    `</div>` +
     `<div class="sct-pv-cards">${defenseCard(away, maxByPos, season)}${defenseCard(home, maxByPos, season)}</div>` +
     `<p class="sct-mu-st-note">1st = the most fantasy points allowed = the softest matchup for the offense facing it. Full ${season} season per-game averages.</p>` +
     `<div class="sct-pv-cards">${withChips(offenseCard(away, season), home)}${withChips(offenseCard(home, season), away)}</div>` +
