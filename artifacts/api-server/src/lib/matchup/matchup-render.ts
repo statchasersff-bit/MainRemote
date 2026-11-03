@@ -3832,9 +3832,9 @@ function renderLastMeeting(data: MatchupData, options: MatchupRenderOptions): st
         face +
         `<span class="sct-mu-last-who">${who}` +
         `<span class="sct-mu-last-team">${escapeHtml(player.team)}${player.pos ? ` · ${escapeHtml(player.pos)}` : ""}</span></span>` +
-        // All three scorings on the figure and its unit, for the page's switch (mak, 2026-11-02).
-        `<span class="sct-mu-last-pts"><span${fmtData({ ppr: ppr.toFixed(1), half: fantasyPoints(player.stats, "half").toFixed(1), std: fantasyPoints(player.stats, "standard").toFixed(1) })}>${escapeHtml(ppr.toFixed(1))}</span>` +
-        `<small${fmtData({ ppr: " PPR", half: " Half PPR", std: " Std" })}> PPR</small></span>` +
+        // All three scorings on the figure, for the page's switch (mak, 2026-11-02);
+        // no unit beside it, the switch names the scoring (mak, 2026-11-03).
+        `<span class="sct-mu-last-pts"><span${fmtData({ ppr: ppr.toFixed(1), half: fantasyPoints(player.stats, "half").toFixed(1), std: fantasyPoints(player.stats, "standard").toFixed(1) })}>${escapeHtml(ppr.toFixed(1))}</span></span>` +
         `<span class="sct-mu-last-line">${escapeHtml(statLine(player))}</span>` +
         `</li>`
       );

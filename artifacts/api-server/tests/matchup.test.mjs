@@ -1908,7 +1908,7 @@ describe("one owner per game", () => {
       assert.ok(rows.length <= 6);
       for (const row of rows) {
         assert.ok(row.querySelector(".sct-mu-last-who a[href*='/nfl/players/']"), "linked to the profile");
-        assert.match(row.querySelector(".sct-mu-last-pts").textContent, /^\d+\.\d PPR$/);
+        assert.match(row.querySelector(".sct-mu-last-pts").textContent, /^\d+\.\d$/, "the figure alone, no unit");
       }
       assert.match(doc.querySelector("title").textContent, /Fantasy Preview & (Last Meeting )?Stats$/);
       return;
