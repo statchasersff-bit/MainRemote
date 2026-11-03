@@ -562,15 +562,19 @@ function levPill(chip: Leverage): string {
 function renderLeverage(p: Preview): string {
   if (!p.leverage.length) return "";
   const team = (k: SideKey) => (k === "away" ? p.away : p.home).team;
-  // The headshot (mak, 2026-10-23) in a round well washed with the team color.
+  // The headshot (mak, 2026-10-23) in a round well washed with the team color,
+  // the club crest on its bottom-right corner (mak, 2026-11-03).
   const face = (r: LeverageRow) => {
     const img = r.sleeperId
       ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
       : "";
-    return `<span class="sct-pv-lb-face is-${r.side}" aria-hidden="true">${img}</span>`;
+    const logo = team(r.side).logo;
+    const crest = logo ? `<img class="sct-pv-lb-crest" src="${e(logo)}" alt="" width="16" height="16" loading="lazy" decoding="async">` : "";
+    return `<span class="sct-pv-lb-avatar" aria-hidden="true"><span class="sct-pv-lb-face is-${r.side}">${img}</span>${crest}</span>`;
   };
+  // Team code and position on their own line under the name (mak, 2026-11-03).
   const who = (r: LeverageRow) =>
-    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)} <span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span></span>`;
+    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)}<span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span></span>`;
 
   // The "Leverage read" box (counts, best edge, toughest matchup, conflict)
   // and the usage-through meta line came off 2026-10-22 (mak); leverageRead
@@ -715,8 +719,9 @@ const rankBar = (rank: number | null | undefined): number | undefined => (rank =
 
 /**
  * The Team Matchup as a comparison graphic (mak, 2026-10-23): mirrored rank
- * bars out from the center, the advantage side in its team color, and a
- * marker that names the edge ("CHI advantage", "NE softer", "Close").
+ * bars out from the center, the advantage side in its team color. The
+ * "CHI advantage" / "NE softer" / "Close" pills under each label were
+ * removed 2026-11-03 at mak's request; the colored bar alone names the edge.
  * Three groups: Offense, Defense, and the per-position Matchups.
  */
 function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
@@ -728,16 +733,11 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
     const close = a.rank === null || h.rank === null || Math.abs(a.rank - h.rank) <= 2;
     return close ? "even" : a.rank! < h.rank! ? "away" : "home";
   };
-  const markerOf = (a: Side, h: Side, word: string): string => {
-    const adv = advOf(a, h);
-    return adv === "even" ? (a.rank === null || h.rank === null ? "" : "Close") : `${adv === "away" ? A : H} ${word}`;
-  };
   const widthOf = (s: Side): number => (s.rank === null ? 0 : Math.round(((33 - s.rank) / 32) * 100));
   // `formats`: the same row in each scoring, for the points-allowed rows the
   // page's switch rewrites (mak, 2026-11-02); the other rows have none.
-  const row = (label: string, a: Side, h: Side, word: "advantage" | "softer", formats?: Record<ScoringFormat, { a: Side; h: Side }>): string => {
+  const row = (label: string, a: Side, h: Side, formats?: Record<ScoringFormat, { a: Side; h: Side }>): string => {
     const adv = advOf(a, h);
-    const marker = markerOf(a, h, word);
     const sideIn = (f: ScoringFormat, k: "a" | "h"): Side => (formats ? formats[f][k] : k === "a" ? a : h);
     const bar = (s: Side, cls: string, k: "a" | "h") =>
       s.rank === null
@@ -755,11 +755,7 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
       `<div class="sct-pv-cmp-row" data-adv="${adv}"${formats ? fmtData(perFormat((f) => advOf(formats[f].a, formats[f].h)), "adv") : ""}>` +
       val(a, "is-l", "a") +
       bar(a, "is-l", "a") +
-      `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">${e(label)}</span>` +
-      (marker || formats
-        ? `<span class="sct-pv-cmp-adv"${formats ? fmtData(perFormat((f) => markerOf(formats[f].a, formats[f].h, word))) : ""}>${e(marker)}</span>`
-        : "") +
-      `</span>` +
+      `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">${e(label)}</span></span>` +
       bar(h, "is-r", "h") +
       val(h, "is-r", "h") +
       `</div>`
@@ -773,18 +769,12 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
       label,
       { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel },
       { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel },
-      "advantage",
     );
   };
   const group = (title: string, rows: string) =>
     rows ? `<div class="sct-pv-cmp-group"><h3 class="sct-pv-cmp-gh">${e(title)}</h3>${rows}</div>` : "";
 
-  const record =
-    away.record || home.record
-      ? `<div class="sct-pv-cmp-row is-plain" data-adv="even"><span class="sct-pv-cmp-v is-l"><b>${e(away.record ?? "-")}</b></span><span></span>` +
-        `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">Record</span></span><span></span>` +
-        `<span class="sct-pv-cmp-v is-r"><b>${e(home.record ?? "-")}</b></span></div>`
-      : "";
+  // The Record row (W-L under each code) came out 2026-11-03 at mak's request.
   const offense = group("Offense", stat("off-points", "Points/G") + stat("off-total-yards", "Yards/G") + stat("off-yards-per-play", "Yards/play"));
   const defense = group("Defense", stat("def-points", "Points/G allowed") + stat("def-total-yards", "Yards/G allowed"));
   // Matchups: what each defense allows at the position, 1st = the most = the
@@ -803,7 +793,6 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
                 `${pos} pts allowed`,
                 sideIn(away, "ppr"),
                 sideIn(home, "ppr"),
-                "softer",
                 perFormat((f) => ({ a: sideIn(away, f), h: sideIn(home, f) })),
               );
             })
@@ -817,7 +806,6 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
     h2("pv-snap", `${pairOf(p)} Team Matchup`) +
     `<div class="sct-pv-card sct-pv-cmp">` +
     `<div class="sct-pv-cmp-head" aria-hidden="true"><span>${e(A)}</span><span>${e(H)}</span></div>` +
-    record +
     offense +
     defense +
     matchups +
@@ -883,15 +871,17 @@ function renderInjuries(p: Preview): string {
           listed
             .map(
               (r) =>
-                // The face first (mak, 2026-11-02), in a round well washed with the team color.
-                `<li class="sct-pv-row sct-pv-inj-row"><span class="sct-pv-lb-face sct-pv-inj-face is-${s.key}" aria-hidden="true">` +
+                // The face first (mak, 2026-11-02), in a round well washed with the
+                // team color; the status chip rides its top-right corner instead of
+                // taking a column of its own (mak, 2026-11-03).
+                `<li class="sct-pv-row sct-pv-inj-row"><span class="sct-pv-inj-avatar"><span class="sct-pv-lb-face sct-pv-inj-face is-${s.key}" aria-hidden="true">` +
                 (r.sleeperId
                   ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
                   : "") +
                 `</span>` +
-                `<span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span>` +
+                `<span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span></span>` +
                 `<div class="sct-pv-row-body"><p class="sct-pv-row-name">${playerLink(r.name)}` +
-                (r.pos ? ` <span class="sct-pv-pos">${e(r.pos)}</span>` : "") +
+                (r.pos ? ` <span class="sct-pv-pos" data-pos="${e(r.pos)}">${e(r.pos)}</span>` : "") +
                 `</p><p class="sct-pv-row-why">${e(r.fallout)}</p></div></li>`,
             )
             .join("") +

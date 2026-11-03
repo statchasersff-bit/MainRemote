@@ -10,6 +10,7 @@
     "ingest": "node ./scripts/ingest.mjs",
     "ingest-fpa": "node ./scripts/ingest-fpa.mjs",
     "refresh-fpa": "node ./scripts/refresh-fpa.mjs",
+    "warm-live": "node ./scripts/warm-live.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json",
     "test": "pnpm run build && node --test --test-concurrency=1 tests/*.test.mjs",
     "x-push": "node ./scripts/x-push.mjs",

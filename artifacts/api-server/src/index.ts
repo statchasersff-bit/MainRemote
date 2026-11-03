@@ -13,6 +13,7 @@ import { startWatchdog } from "./lib/watchdog";
 import { startMemLog } from "./lib/mem-log";
 import { warmRenders, warmupEnabled } from "./lib/warmup";
 import { edgePrefetchEnabled, startEdgePrefetch } from "./lib/edge-prefetch";
+import { liveWarmEnabled, startLiveWarm } from "./lib/live-warm";
 import { loadImageVersions } from "./lib/image-versions";
 import { reloadFreshness } from "./lib/freshness";
 import { loadKnownNews } from "./lib/news-known";
@@ -76,6 +77,15 @@ app.listen(port, (err) => {
   // first to ask the cold origin for them (lib/edge-prefetch.ts).
   if (edgePrefetchEnabled()) {
     startEdgePrefetch().catch((err) => logger.warn({ err }, "Edge prefetch failed"));
+  }
+
+  // The live site's pages, asked for through WordPress one every 1.6 s once
+  // the boot chain is done and the public origin reports this build, so the
+  // page and fragment caches hold a render before a visitor asks for one
+  // (lib/live-warm.ts, scripts/warm-live.mjs). A child process, not a walk
+  // through our own port: the 2026-10 in-process warm-up is off for a reason.
+  if (liveWarmEnabled()) {
+    startLiveWarm().catch((err) => logger.warn({ err }, "Live warm crawl failed"));
   }
 
   // The hot renders, one at a time through our own port, once the headshot
