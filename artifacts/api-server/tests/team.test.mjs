@@ -245,15 +245,28 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.ok(navLinks.length >= 2, "section nav rendered");
     for (const link of navLinks) {
       const id = link.getAttribute("data-sct-panel-id");
-      assert.ok(doc.getElementById(id), `nav names a real panel: ${id}`);
+      // The hub prints the panels that are its own - the Outlook, the hub-only
+      // tabs and the schedule preview. A section with an address of its own
+      // (Usage, Stats, News, Depth Chart) is printed ONLY there, so its tab
+      // names no panel in this document: it is a link to that address, and
+      // the hub's HTML does not carry a second copy of that page's content
+      // (see ownsAddress in team-render.ts).
+      const hubPanel = ["outlook", "coaching", "draft", "contracts", "schedule"].includes(id);
+      assert.equal(
+        Boolean(doc.getElementById(id)),
+        hubPanel,
+        hubPanel ? `nav names a real panel: ${id}` : `${id} is not printed on the hub`,
+      );
       assert.equal(
         link.getAttribute("href"),
         // The Outlook is the hub, so its tab links to the hub. Coaching is
         // hub-only - its public URL waits on approval - so its tab is the
         // hub's address plus the panel hash (see team-render.ts).
+        // The Schedule is a preview on the hub (mak, 2026-11-03), so its
+        // tab is a hash tab here and the panel's own link leads to the page.
         id === "outlook"
           ? "/team/new-england-patriots/"
-          : id === "coaching" || id === "draft" || id === "contracts"
+          : id === "coaching" || id === "draft" || id === "contracts" || id === "schedule"
             ? `/team/new-england-patriots/#${id}`
             : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
@@ -392,7 +405,8 @@ describe("embedded mode", () => {
     // name: the dictionary indexes ~600 players and carries ~4,000, so a name
     // it does not index gets no link rather than a link to a page that is not
     // there.
-    const { doc } = await dom("/team/new-england-patriots");
+    // The injury list is the News tab's rail, which prints at /news/ now.
+    const { doc } = await dom("/team/new-england-patriots/news/");
     const unlinked = [...doc.querySelectorAll("span.sct-injury-name")];
     const linked = [...doc.querySelectorAll("a.sct-injury-name")];
     assert.ok(
@@ -411,7 +425,7 @@ describe("embedded mode", () => {
     // a finished meeting's row moves on to the game's dated page. The index
     // under the board names all 31 opponents, so every pair is reached from
     // both of its hubs whether or not the clubs meet this year.
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/schedule/");
     const links = [...doc.querySelectorAll("#schedule .sct-series a.sct-series-link")];
     assert.equal(links.length, 31, "one link per opponent");
     const hrefs = links.map((a) => a.getAttribute("href"));
@@ -430,8 +444,8 @@ describe("embedded mode", () => {
     assert.equal(east.querySelectorAll("a").length, 3);
   });
 
-  test("the Schedule tab links every game to its pair page, so Matchups need not", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+  test("the Schedule page links every game to its pair page, so Matchups need not", async () => {
+    const { doc } = await dom("/team/new-england-patriots/schedule/");
     // The Matchups tab was the same fixture list a second time. It came off the
     // strip on the condition that Schedule carries the links it existed for, so
     // that is what this asserts: every row that names a resolvable opponent
@@ -445,11 +459,11 @@ describe("embedded mode", () => {
       // dropping it; anything else is a link.
       if (cell.tagName === "A") {
         assert.match(cell.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
-        // "View Recap" once the game is final (mak, 2026-10-22), "View
+        // "View recap" once the game is final (mak, 2026-10-22), "View
         // matchup" ahead of it.
         const played = !!row.querySelector(".sct-result");
         assert.equal(
-          cell.textContent.trim().startsWith(played ? "View Recap" : "View matchup"),
+          cell.textContent.trim().startsWith(played ? "View recap" : "View matchup"),
           true,
           `row ${row.textContent.trim().slice(0, 30)}: ${cell.textContent.trim()}`,
         );
@@ -458,17 +472,19 @@ describe("embedded mode", () => {
     const linked = rows.filter((r) => r.querySelector("a.sct-srow-view"));
     assert.ok(linked.length > 0, "at least some rows link to a pair page");
 
-    const cards = [...doc.querySelectorAll("#schedule .sct-game")];
-    assert.ok(cards.length > 0, "the upcoming cards rendered");
+    // The hub's preview cards offer the same links.
+    const hub = await dom("/team/new-england-patriots");
+    const cards = [...hub.doc.querySelectorAll("#schedule .sct-game")];
+    assert.ok(cards.length > 0, "the preview cards rendered");
     for (const card of cards) {
       const cta = card.querySelector(".sct-game-cta a");
-      assert.ok(cta, "an upcoming card offers its matchup");
+      assert.ok(cta, "a preview card offers its matchup or recap");
       assert.match(cta.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
     }
   });
 
   test("the season shape rail only ever counts the rows beside it", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/schedule/");
     const rows = [...doc.querySelectorAll("#schedule .sct-srow:not(.is-bye)")];
     const shape = doc.querySelector("#schedule .sct-shape");
     if (rows.length === 0) {
@@ -489,10 +505,14 @@ describe("embedded mode", () => {
     const home = rows.filter((row) =>
       row.querySelector('.sct-srow-ha[data-kind="home"]'),
     ).length;
+    const neutral = rows.filter((row) =>
+      row.querySelector('.sct-srow-ha[data-kind="neutral"]'),
+    ).length;
 
     assert.equal(figures.get("Games"), String(rows.length));
     assert.equal(figures.get("Home"), String(home));
-    assert.equal(figures.get("Away"), String(rows.length - home));
+    assert.equal(figures.get("Away"), String(rows.length - home - neutral));
+    assert.equal(figures.get("Neutral") ?? "0", String(neutral));
 
     // The strip is the same season again: one cell per home and away row, and
     // a bye cell only where the table gave the bye a row of its own.
@@ -503,8 +523,9 @@ describe("embedded mode", () => {
     assert.equal(kinds.filter((kind) => kind === "home").length, home);
     assert.equal(
       kinds.filter((kind) => kind === "away").length,
-      rows.length - home,
+      rows.length - home - neutral,
     );
+    assert.equal(kinds.filter((kind) => kind === "neutral").length, neutral);
     assert.equal(kinds.filter((kind) => kind === "bye").length, byeRow ? 1 : 0);
     assert.equal(
       figures.get("Bye week"),
@@ -572,12 +593,15 @@ describe("embedded mode", () => {
       [
         ["Home", figures.get("Home")],
         ["Away", figures.get("Away")],
+        // A third bar only for a club with a neutral-site game (Munich,
+        // London, ...), drawn from the same figure.
+        ...(figures.has("Neutral") ? [["Neutral", figures.get("Neutral")]] : []),
       ],
     );
   });
 
   test("the schedule FAQ answers from the rows above it", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/schedule/");
     const entries = faqEntries(doc, tailOf("schedule"));
     assert.ok(entries.length >= 5, `expected a schedule FAQ, got ${entries.length}`);
 
@@ -622,21 +646,20 @@ describe("embedded mode", () => {
     // lib/team/schedule-faq.ts. Once the season is over the cards fall back to
     // its tail and the question is not asked at all, which is why this pairs
     // the card with the answer rather than asserting the answer exists.
-    const card = doc.querySelector('#schedule .sct-game[data-next="1"]');
+    const card = doc.querySelector('#schedule .sct-ng-cell[data-kind="next"]');
     const next = entries.find((e) => /play next\?$/.test(e.question));
     if (card && next) {
-      const week = card.querySelector(".sct-game-week").textContent.trim();
+      const week = card.querySelector(".sct-ng-week").textContent.trim();
       assert.ok(
         next.answer.includes(week),
         `the next-game answer is not about ${week}: ${next.answer}`,
       );
-      const nickname = card
-        .querySelector(".sct-game-opp")
-        .textContent.trim()
-        .replace(/^(vs|at)\s+/, "");
+      const opponent = [...card.querySelectorAll(".sct-ng-team")]
+        .map((n) => n.textContent.trim())
+        .find((name) => name !== "New England Patriots");
       assert.ok(
-        next.answer.includes(nickname),
-        `the next-game answer names a different opponent than the card (${nickname}): ${next.answer}`,
+        next.answer.includes(opponent),
+        `the next-game answer names a different opponent than the module (${opponent}): ${next.answer}`,
       );
     }
   });
@@ -656,7 +679,7 @@ describe("embedded mode", () => {
   });
 
   test("every opponent carries a shorter spelling, and only to the eye", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/schedule/");
     const cells = [...doc.querySelectorAll("#schedule .sct-srow-name")];
     assert.ok(cells.length > 0, "the schedule rendered opponent names");
 
@@ -843,7 +866,7 @@ describe("embedded mode", () => {
   });
 
   test("the depth chart FAQ names the players the chart above it lists", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
     const scope = '[data-sct-faq-for="depth-chart"]';
     const entries = faqEntries(doc, scope);
     assert.ok(entries.length >= 5, `expected a depth FAQ, got ${entries.length}`);
@@ -987,7 +1010,7 @@ describe("tab FAQs", () => {
   });
 
   test("the Stats tab answers from its own numbers", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/stats/");
     const entries = faqEntries(doc, tailOf("stats"));
     assert.ok(entries.length >= 4, `expected a stats FAQ, got ${entries.length}`);
 
@@ -1007,7 +1030,7 @@ describe("tab FAQs", () => {
   });
 
   test("the Stats FAQ says how many games it is built on", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    const { doc } = await dom("/team/new-england-patriots/stats/");
     const entries = faqEntries(doc, tailOf("stats"));
     // A per-game rate with no denominator is the one way this block can
     // mislead, and early in a season it is the whole story.
@@ -1024,7 +1047,15 @@ describe("tab FAQs", () => {
   });
 
   test("the questions stay their own tab's, and one level under their heading", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
+    // Each section with an address of its own prints there and nowhere else
+    // (ownsAddress in team-render.ts), so each tab is read on its own page;
+    // the Outlook is the hub's.
+    const pages = {
+      outlook: (await dom("/team/new-england-patriots")).doc,
+      stats: (await dom("/team/new-england-patriots/stats/")).doc,
+      "depth-chart": (await dom("/team/new-england-patriots/depth-chart/")).doc,
+      schedule: (await dom("/team/new-england-patriots/schedule/")).doc,
+    };
     // The questions render after the "Explore StatChasers" block rather than
     // inside their panel, but they are still a tab's questions, not a shared
     // FAQ: each tail carries exactly one block, and the tail names the panel it
@@ -1033,6 +1064,7 @@ describe("tab FAQs", () => {
     // in the outline under the tool list, which is neither where they are nor
     // what they are about.
     for (const id of ["outlook", "stats", "depth-chart", "schedule"]) {
+      const doc = pages[id];
       const scope = `[data-sct-faq-for="${id}"]`;
       const questions = doc.querySelectorAll(`${scope} .sct-faq-item`);
       assert.ok(questions.length > 0, `${id} must carry questions`);
@@ -1066,13 +1098,20 @@ describe("tab FAQs", () => {
     // keeps the outline identical whether the answer is open or not. The
     // answers stay in the DOM: the FAQPage node above is only honest if they
     // are on the page.
-    const { doc } = await dom("/team/new-england-patriots");
+    // Each tab on its own page (see the test above).
+    const pages = {
+      outlook: (await dom("/team/new-england-patriots")).doc,
+      stats: (await dom("/team/new-england-patriots/stats/")).doc,
+      "depth-chart": (await dom("/team/new-england-patriots/depth-chart/")).doc,
+      schedule: (await dom("/team/new-england-patriots/schedule/")).doc,
+    };
     for (const [id, tag] of [
       ['[data-sct-faq-for="outlook"]', "H3"],
       ['[data-sct-faq-for="stats"]', "H3"],
       ['[data-sct-faq-for="depth-chart"]', "H3"],
       ['[data-sct-faq-for="schedule"]', "H3"],
     ]) {
+      const doc = pages[id.match(/for="([^"]+)"/)[1]];
       assert.equal(
         doc.querySelector(`${id} details.sct-faq-fold`),
         null,
@@ -1103,6 +1142,7 @@ describe("tab FAQs", () => {
       ['[data-sct-faq-for="depth-chart"]', ".sct-h2"],
       ['[data-sct-faq-for="schedule"]', ".sct-h2"],
     ]) {
+      const doc = pages[id.match(/for="([^"]+)"/)[1]];
       const headings = [...doc.querySelectorAll(`${id} ${selector}`)].filter(
         (node) => node.textContent.trim() === "Common questions",
       );
@@ -1118,10 +1158,15 @@ describe("tab FAQs", () => {
   test("one FAQPage for the document, covering every tab that has questions", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc);
+    // Two of the hub's OWN tabs: the Stats questions live on /stats/ now,
+    // with the rest of that page.
     assert.ok(
-      faqEntries(doc, tailOf("outlook")).length > 0 && faqEntries(doc, tailOf("stats")).length > 0,
+      faqEntries(doc, tailOf("outlook")).length > 0 && faqEntries(doc, tailOf("coaching")).length > 0,
       "this test is only meaningful with both tabs carrying questions",
     );
+    for (const id of ["usage", "stats", "depth-chart"]) {
+      assert.equal(doc.querySelector(tailOf(id)), null, `${id}: its questions are not on the hub`);
+    }
 
     const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')]
       .map((node) => JSON.parse(node.textContent))
@@ -1217,7 +1262,12 @@ describe("honest empty states", () => {
       const { doc } = await dom(`/team/${slug}`);
       for (const link of doc.querySelectorAll(".sct-nav-link")) {
         const id = link.getAttribute("data-sct-panel-id");
-        const section = doc.getElementById(id);
+        const href = link.getAttribute("href");
+        // A tab to another address renders there, not here: that page is
+        // one panel, and it is this one.
+        const section = href.includes("#") || id === "outlook"
+          ? doc.getElementById(id)
+          : (await dom(href)).doc.querySelector(`[data-sct-root][data-section="${id}"] [data-sct-panel]#${id}`);
         assert.ok(section, `${slug}: #${id} exists`);
         assert.ok(
           section.textContent.trim().length > 0,
@@ -1230,7 +1280,7 @@ describe("honest empty states", () => {
   test("a team with no archived news says so instead of showing nothing", async () => {
     // Whichever team it is today, the empty state and a populated list are
     // mutually exclusive and one of them must be present.
-    const { doc } = await dom("/team/carolina-panthers");
+    const { doc } = await dom("/team/carolina-panthers/news/");
     const hasCards = doc.querySelectorAll(".sct-news").length > 0;
     const hasEmpty = doc.querySelectorAll(".sct-empty").length > 0;
     assert.ok(hasCards || hasEmpty, "news section is never simply blank");
@@ -2601,7 +2651,7 @@ describe("the Stats heading", () => {
       // Still asked for by anything holding the old spelling: it gets the hub.
       "&section=outlook": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
       "&section=stats": /^New England Patriots Stats 2\d{3}$/,
-      "&section=schedule": /^New England Patriots Schedule 2\d{3}$/,
+      "&section=schedule": /^New England Patriots Schedule$/,
       "&section=depth-chart": /^New England Patriots Depth Chart$/,
       "&section=matchups": /^New England Patriots Matchups 2\d{3}$/,
       "&section=news": /^New England Patriots News 2\d{3}$/,
@@ -2900,19 +2950,21 @@ describe("team section URLs", () => {
     const heading = doc.querySelector("h1");
     const landed = heading.textContent.trim();
 
-    const stats = doc.querySelector('.sct-nav-link[data-sct-panel-id="stats"]');
-    assert.ok(stats, "the Stats tab is there");
+    // Coaching: a hub-only panel, so it switches in place. Stats owns an
+    // address and is not printed here - its tab is a plain link, below.
+    const coaching = doc.querySelector('.sct-nav-link[data-sct-panel-id="coaching"]');
+    assert.ok(coaching, "the Coaching tab is there");
 
-    stats.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    coaching.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
 
     assert.equal(
-      window.location.pathname,
-      "/team/new-england-patriots/stats/",
+      window.location.pathname + window.location.hash,
+      "/team/new-england-patriots/#coaching",
       "the address bar names the section",
     );
     assert.ok(
-      doc.getElementById("stats").classList.contains("is-active"),
-      "the stats panel is the one showing",
+      doc.getElementById("coaching").classList.contains("is-active"),
+      "the coaching panel is the one showing",
     );
     assert.equal(
       doc.getElementById("outlook").classList.contains("is-active"),
@@ -2925,9 +2977,27 @@ describe("team section URLs", () => {
       "the H1 did not follow - the hero is the club on every tab",
     );
 
-    // Nothing loaded: the other four panels are still in the document, which is
-    // what separates this from having navigated.
-    assert.equal(doc.querySelectorAll("[data-sct-panel]").length >= 5, true);
+    // Nothing loaded: the hub's other panels are still in the document, which
+    // is what separates this from having navigated.
+    assert.equal(doc.querySelectorAll("[data-sct-panel]").length >= 2, true);
+
+    // The Stats tab is a link to the Stats page and nothing else: no panel of
+    // its own here, no tab role claimed for it, and the strip is not a
+    // tablist, because a tablist whose children load other pages lies to a
+    // screen reader. The hub's own tabs mark the current one with aria-current.
+    const stats = doc.querySelector('.sct-nav-link[data-sct-panel-id="stats"]');
+    assert.ok(stats, "the Stats tab is there");
+    assert.equal(stats.getAttribute("href"), "/team/new-england-patriots/stats/");
+    assert.equal(doc.getElementById("stats"), null, "the Stats panel is not on the hub");
+    assert.equal(stats.getAttribute("role"), null);
+    assert.equal(doc.querySelector(".sct-nav-list").getAttribute("role"), null);
+    assert.equal(coaching.getAttribute("aria-current"), "true");
+    // Intent prefetches the page the link leads to.
+    stats.dispatchEvent(new window.Event("mouseenter"));
+    assert.ok(
+      doc.querySelector('link[rel="prefetch"][href="/team/new-england-patriots/stats/"]'),
+      "hovering the Stats tab prefetches the Stats page",
+    );
 
     window.history.back();
     await new Promise((r) => setTimeout(r, 50));
@@ -2996,7 +3066,9 @@ describe("team section URLs", () => {
     // a twenty-letter name lands on the shorter rung of each ladder.
     const expected = {
       stats: "New England Patriots Stats 2026: Offense & Defense Rankings",
-      schedule: "New England Patriots Schedule 2026: Dates, Opponents & Results",
+      // The full ladder rung is 63 characters for this club, so fitTitle()
+      // drops to the second one; "Indianapolis Colts" keeps "& Results".
+      schedule: "New England Patriots Schedule 2026: Dates, Times & TV",
       "depth-chart": "New England Patriots Depth Chart 2026: Starters & Backups",
       news: "New England Patriots News 2026: Injuries & Roster Moves",
       matchups: "New England Patriots Matchups 2026: Opponents & Head-to-Head",

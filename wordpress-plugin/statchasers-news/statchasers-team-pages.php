@@ -1333,18 +1333,21 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 				),
 			);
 
+		// Mirrors sectionMeta() in src/lib/team-seo.ts (mak's schedule brief,
+		// 2026-11-03): dates, times, TV, results - what a schedule search wants.
 		case 'schedule':
 			return array(
 				'title'       => statchasers_fit_title(
 					array(
-						sprintf( '%s Schedule %s: Dates, Opponents & Results', $name, $season ),
-						sprintf( '%s Schedule %s: Opponents & Results', $name, $season ),
+						sprintf( '%s Schedule %s: Dates, Times, TV & Results', $name, $season ),
+						sprintf( '%s Schedule %s: Dates, Times & TV', $name, $season ),
+						sprintf( '%s Schedule %s', $name, $season ),
 					)
 				),
 				'description' => sprintf(
-					'The full %1$s %2$s schedule: every opponent, kickoff time and result, plus the %3$s bye week and what is next on the calendar.',
-					$season,
+					'%1$s schedule for the %2$s NFL season: every game with date, kickoff time, TV network, venue and result, the %3$s bye week, and the next game.',
 					$name,
+					$season,
 					$nick
 				),
 			);
@@ -1456,10 +1459,11 @@ function statchasers_team_heading( string $slug, string $section ): string {
 	// nothing a reader searches for.
 	$phrase = $phrases[ $section ] ?? 'Fantasy Football Outlook & Stats';
 
-	// The depth chart carries no year (UNDATED_SECTION_HEADINGS in the API):
-	// "Buffalo Bills Depth Chart" is the phrase searched, and the page's own
-	// stamp line says which season and when it was refreshed (2026-11-03).
-	if ( 'depth-chart' === $section ) {
+	// The depth chart and the schedule carry no year (UNDATED_SECTION_HEADINGS
+	// in the API): "Buffalo Bills Depth Chart" and "Buffalo Bills Schedule"
+	// are the phrases searched, and each page's own context line says which
+	// season it is (2026-11-03).
+	if ( 'depth-chart' === $section || 'schedule' === $section ) {
 		return sprintf( '%s %s', $row[0], $phrase );
 	}
 

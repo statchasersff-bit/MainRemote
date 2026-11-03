@@ -10,10 +10,13 @@
  * adds only the list. The plugin grafts it into that graph; the standalone page
  * prints it on its own.
  *
- * A game makes the list only when it has a kickoff and a venue. Google reads a
- * SportsEvent as an Event, and an Event without startDate or location is an
- * error in Search Console - the thing this node exists to stop producing. The
- * games that miss out are the unscheduled ones, which the table marks TBD.
+ * A game makes the list only when it has a CONFIRMED kickoff and a venue.
+ * Google reads a SportsEvent as an Event, and an Event without startDate or
+ * location is an error in Search Console - the thing this node exists to stop
+ * producing. The games that miss out are the ones the league has not
+ * scheduled, which the table marks TBD: a placeholder date in structured data
+ * is a fabricated date, and the one place a wrong kickoff would be repeated
+ * by every search engine that read it.
  */
 
 import type { NflTeam } from "./teams";
@@ -30,25 +33,28 @@ function teamNode(team: NflTeam | null, fallbackName: string): Node {
 }
 
 /**
- * Kickoff as schema.org wants it. A time ESPN has not confirmed is a
- * placeholder, so only its date is claimed - in Eastern time, the zone the NFL
- * schedules in, so a late kickoff does not roll over to the next UTC day.
+ * Kickoff as schema.org wants it, and only when both halves are confirmed.
+ * A date without a time is not claimed either: the only date the feeds hold
+ * for an unscheduled game is the filing-convention Sunday, which the league
+ * may move to Saturday.
  */
 function startDate(game: ScheduleGame): string | null {
-  if (game.kickoffMs === null) return null;
-  const at = new Date(game.kickoffMs);
-  if (game.timeConfirmed) return at.toISOString();
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(at);
+  if (game.kickoffMs === null || !game.timeConfirmed || !game.dateConfirmed) return null;
+  return new Date(game.kickoffMs).toISOString();
 }
+
+const EVENT_STATUS: Record<string, string> = {
+  scheduled: "https://schema.org/EventScheduled",
+  live: "https://schema.org/EventScheduled",
+  final: "https://schema.org/EventScheduled",
+  postponed: "https://schema.org/EventPostponed",
+  canceled: "https://schema.org/EventCancelled",
+};
 
 function gameNode(team: NflTeam, game: ScheduleGame): Node | null {
   const start = startDate(game);
   if (!start || !game.venue) return null;
+  if (game.status === "canceled") return null;
 
   const us = teamNode(team, team.fullName);
   const them = teamNode(game.opponent, game.opponentName);
@@ -62,7 +68,7 @@ function gameNode(team: NflTeam, game: ScheduleGame): Node | null {
     name: `${awayName} ${game.neutralSite ? "vs." : "at"} ${homeName}`,
     sport: "American football",
     startDate: start,
-    eventStatus: "https://schema.org/EventScheduled",
+    eventStatus: EVENT_STATUS[game.status] ?? "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     homeTeam: home,
     awayTeam: away,

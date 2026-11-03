@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.45
+Stable tag: 1.10.46
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.46 =
+* Team schedule pages (mak's schedule brief, 2026-11-03). The API's schedule model now refuses a kickoff no source has confirmed: ESPN's scoreboard `timeValid` flag is read for every open week, so the Week 16 Saturday-pool games and all of Week 18 print TBD instead of nflverse's placeholder "Sunday 1:00 PM", and a neutral-site game (London, Munich, Madrid, Mexico City, Melbourne, Rio, Paris) is counted as neutral rather than as a road game. The /schedule/ page is rebuilt for the search: H1 "{Team} Schedule" (no year; the season, record, division, bye and an "Updated" stamp from the data's own refresh time sit on the line under it), a next-game module with the last result beside it, a Results board (score and record after each game) and a Remaining Schedule board (time, TV, venue), a postseason board for clubs that have one, the season snapshot with home / away / neutral, the division slate with each meeting's result or date, a "More {Team}" link block, and a FAQ answered from the same rows (TBD stays TBD; a "remaining schedule" question is new). Networks are one spelling each (FOX, NFL Network, Prime Video, ESPN / ABC). The team hub's Schedule tab is now a compact preview - last game, next game, the two after, and a link to the page - so the hub no longer carries the whole schedule and its questions. Title: "{Team} Schedule {Year}: Dates, Times, TV & Results". URLs, canonicals, robots and the sitemap are unchanged; the game-list schema island now only ever carries games with a confirmed kickoff.
 
 = 1.10.45 =
 * Depth charts (mak's team depth-chart brief, 2026-11-03): the refresh now stores every slot as the club lists it - WR / WR / WR, LDE / NT / RDE, LCB / RCB / NB and so on - beside the folded columns (`slots` and `formations` on each team), and the team page's /depth-chart/ section prints the football chart from them: Offense, Defense and Special Teams first as Position / Starter / Second / Third / Fourth rows, the fantasy hierarchy after. The team page's H1 is "{Team} Depth Chart" (no year) and its description names the whole chart, not the offensive one. Fixed: an ESPN-only refresh (Footballguys down) folded a base offense's three WR slots into one and dropped two starting receivers, because the slots were keyed by their shared abbreviation. Slot rows take the blended columns' designations by name, so PUP / NFI / IR / SUS read the same on both.

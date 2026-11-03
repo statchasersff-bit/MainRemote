@@ -23,6 +23,41 @@ const ROOT_SELECTOR = "[data-sct-root]";
 /* -------------------------------------------------------------- tabs ---- */
 
 /**
+ * Prefetch a link's page the first time the reader shows intent - a hover, a
+ * focus, or the start of a touch - so the navigation it leads to lands fast.
+ *
+ * `<link rel="prefetch">` rather than a fetch(): it is a hint the browser
+ * schedules at idle priority and keeps in its HTTP cache, which is exactly
+ * what the following full-page load reads from. Same-origin only - on
+ * statchasers.com the section links are same-origin; on the bare tool they
+ * are too. Once per link, whichever event fires first.
+ */
+function prefetchOnIntent(link: HTMLAnchorElement): void {
+  let done = false;
+  const go = (): void => {
+    if (done) return;
+    done = true;
+    let url: URL;
+    try {
+      url = new URL(link.href, location.href);
+    } catch {
+      return;
+    }
+    if (url.origin !== location.origin) return;
+    if (url.pathname + url.search === location.pathname + location.search) return;
+    if (document.querySelector(`link[rel="prefetch"][href="${url.pathname + url.search}"]`)) return;
+    const hint = document.createElement("link");
+    hint.rel = "prefetch";
+    hint.as = "document";
+    hint.href = url.pathname + url.search;
+    document.head.appendChild(hint);
+  };
+  link.addEventListener("mouseenter", go, { once: true, passive: true });
+  link.addEventListener("focus", go, { once: true, passive: true });
+  link.addEventListener("touchstart", go, { once: true, passive: true });
+}
+
+/**
  * Turn the section bar into a tab strip.
  *
  * The panels are already one-at-a-time before this runs - CSS `:target` does
@@ -59,6 +94,16 @@ function wireTabs(root: HTMLElement): void {
     if (!panel) continue;
     tabs.push({ id, link, panel });
   }
+  // A link with no panel in this document is a tab to another address: on the
+  // hub, the sections that own a URL of their own (Usage, Stats, News, Depth
+  // Chart) are printed only there - see ownsAddress() in team-render.ts. The
+  // link stays exactly what the server sent, a link, and loads the page it
+  // names. What this adds is a prefetch of that page the moment the reader
+  // shows intent, so the load it leads to is a warm one.
+  for (const link of links) {
+    if (!tabs.some((tab) => tab.link === link)) prefetchOnIntent(link);
+  }
+
   // Below two there is nothing to switch between, and taking over would only
   // mean hiding the one panel there is.
   //
@@ -68,16 +113,25 @@ function wireTabs(root: HTMLElement): void {
   // ordinary link that loads the page it names.
   if (tabs.length < 2) return;
 
-  list?.setAttribute("role", "tablist");
+  // The roles only when every link in the strip is a tab. `role="tablist"`
+  // promises that its children are tabs that switch panels in this document,
+  // and the hub's strip also holds links that load another page - a tablist
+  // with ordinary links in it tells a screen reader the wrong thing about
+  // half of them. On a mixed strip the panel-backed links switch in place
+  // just the same, and the current one says so with aria-current instead.
+  const mixed = tabs.length < links.length;
+  if (!mixed) list?.setAttribute("role", "tablist");
   for (const { id, link, panel } of tabs) {
-    link.setAttribute("role", "tab");
-    link.setAttribute("aria-controls", id);
-    panel.setAttribute("role", "tabpanel");
+    if (!mixed) {
+      link.setAttribute("role", "tab");
+      link.setAttribute("aria-controls", id);
+      panel.setAttribute("role", "tabpanel");
+      const item = link.closest("li");
+      if (item) item.setAttribute("role", "presentation");
+    }
     // Focusable so the reader who just chose a tab lands on its content, and so
     // a panel that scrolls can be scrolled from the keyboard.
     panel.setAttribute("tabindex", "0");
-    const item = link.closest("li");
-    if (item) item.setAttribute("role", "presentation");
   }
 
   function select(id: string, focusPanel: boolean): void {
@@ -85,9 +139,14 @@ function wireTabs(root: HTMLElement): void {
       const on = tab.id === id;
       tab.panel.classList.toggle("is-active", on);
       tab.link.classList.toggle("is-active", on);
-      tab.link.setAttribute("aria-selected", on ? "true" : "false");
-      // Roving tabindex: one stop for the whole strip, arrows move within it.
-      tab.link.tabIndex = on ? 0 : -1;
+      if (mixed) {
+        if (on) tab.link.setAttribute("aria-current", "true");
+        else tab.link.removeAttribute("aria-current");
+      } else {
+        tab.link.setAttribute("aria-selected", on ? "true" : "false");
+        // Roving tabindex: one stop for the whole strip, arrows move within it.
+        tab.link.tabIndex = on ? 0 : -1;
+      }
     }
     if (focusPanel) {
       const current = tabs.find((tab) => tab.id === id);
@@ -225,8 +284,11 @@ function wireTabs(root: HTMLElement): void {
     select(id, false);
   });
 
-  // Arrow keys move between tabs, which is what role="tab" above promised.
+  // Arrow keys move between tabs, which is what role="tab" above promised -
+  // and only where it was promised: a mixed strip is a list of links, and
+  // links do not move focus on arrow keys.
   list?.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (mixed) return;
     const index = tabs.findIndex((tab) => tab.link === document.activeElement);
     if (index < 0) return;
 

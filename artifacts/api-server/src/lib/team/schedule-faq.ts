@@ -7,52 +7,49 @@
  * directly above them, so an answer cannot put the bye in a different week than
  * the row that says "Bye week", or name a network the column does not.
  *
- * What is particular to this one is that a schedule is half memory and half
- * plan, and the same question changes tense in the middle of a season. So
- * nothing here is phrased from the calendar: a game is described as played
- * because it carries a result, and as upcoming because it does not. That is the
- * same distinction the table draws in its last column - see gameStatusCell() -
- * and it survives a postponed game, a Thursday night still in progress, and the
- * fortnight in February when the season is over but the page is still up.
+ * Since 2026-11-03 every reading here comes from lib/team/schedule.ts's own
+ * helpers - nextGame(), lastResult(), splitSchedule(), siteCounts(),
+ * recordThrough() - which are the same functions the next-game card, the two
+ * tables and the snapshot call. That is what makes the no-contradiction rule
+ * mechanical rather than a matter of care: one game has one status, one
+ * kickoff and one site, read once.
  *
- * Two rules follow from it.
+ * Three rules the answers keep.
  *
- * First, "next" means strictly the next unplayed game. upcomingGames() falls
- * back to the tail of the season so the cards above never render empty, which
- * is right for a row of cards and wrong for a sentence: "the Lions' next game
- * is Week 18 against the Vikings" about a game played in January is a false
- * statement rather than a graceful degradation. When there is no unplayed game
- * left, this module asks no question about one.
+ * 1. "Next" means strictly the next game not yet final. A game that ended an
+ *    hour ago is never "next", and once the season is played out the question
+ *    is not asked at all - "the Lions' next game is Week 18" in February is a
+ *    false statement, not a graceful degradation.
+ * 2. A kickoff the league has not set is said to be unset. The feeds hold a
+ *    placeholder Sunday for those games and the model refuses it (see
+ *    schedule-data.ts, resolveKickoff), so there is nothing here to print but
+ *    "TBD" - and that is what is printed.
+ * 3. A neutral-site game is neither a home game nor a road game. It is
+ *    counted apart and named with its venue and city.
  *
- * Second, nothing is derived from a week number. A team on bye has played fewer
- * games than the league week, and a schedule fetched mid-flex can be missing a
- * kickoff time; every count here is a count of rows, and every date comes from
- * that row's own kickoff.
- *
- * On dates: the table sets them short ("Sun, Sep 27") because it is a column.
- * Prose gets the long form, from the same epoch milliseconds, because a
- * sentence that says "Sun, Sep 27" is a table someone typed out. The time is
- * the preformatted Eastern string the rest of the page uses, so the FAQ and the
- * row cannot disagree about a kickoff.
+ * On dates: the table sets them short ("Nov 8") because it is a column. Prose
+ * gets the long form, from the same epoch milliseconds, because a sentence that
+ * says "Sun, Nov 8" is a table someone typed out.
  */
 
 import { easternParts } from "../news-card";
+import { easternDate } from "../schedule/schedule-data";
 import type { NflTeam } from "./teams";
-import type { ScheduleGame, TeamSchedule } from "./schedule";
+import {
+  isOnDate,
+  lastResult,
+  nextGame,
+  recordThrough,
+  siteCounts,
+  splitSchedule,
+  type ScheduleGame,
+  type TeamSchedule,
+} from "./schedule";
 
 export interface ScheduleFaq {
   question: string;
   answer: string;
 }
-
-/**
- * A game is still "next" until it has been over for a while.
- *
- * Same four hours upcomingGames() allows, and for the same reason: a game that
- * kicked off two hours ago is the game a reader is asking about, and ESPN does
- * not always mark a final the moment one ends.
- */
-const RECENTLY_ENDED_MS = 4 * 60 * 60 * 1000;
 
 /** "the Lions'", "the Rams'" - the apostrophe-only form every current nickname takes. */
 function possessive(nickname: string): string {
@@ -71,12 +68,8 @@ function count(n: number, one: string, many: string): string {
 }
 
 /**
- * "Sunday, September 27" - the long form, in the same timezone the page sets
+ * "Sunday, November 8" - the long form, in the same timezone the page sets
  * every other kickoff in.
- *
- * Its own formatter rather than easternParts(), whose weekday and month are
- * abbreviated for a table cell. The time still comes from easternParts so the
- * "ET" and the 12-hour formatting are decided in one place.
  */
 const LONG_DATE = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/New_York",
@@ -85,46 +78,66 @@ const LONG_DATE = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
+/** "Nov 8" - the short form, for a list of many games. */
+function shortDate(game: ScheduleGame): string | null {
+  if (game.kickoffMs === null || !game.dateConfirmed) return null;
+  const parts = easternParts(game.kickoffMs);
+  return `${parts.month} ${parts.day}`;
+}
+
 /**
- * "Sunday, September 27 at 1:00 PM ET", or the date alone, or "".
- *
- * Three states, because ESPN publishes a schedule before it publishes windows:
- * a fixture can have a real kickoff, a placeholder kickoff on the right day
- * (`timeValid` false, which is what a Sunday game with no window looks like),
- * or no date at all. The middle one keeps the date and drops the time - the
- * table does exactly this, and a sentence claiming 1:00 PM for a game the
- * league has not scheduled is the one error a reader would act on.
+ * "Sunday, November 8 at 1:00 PM ET", or "" for a game the league has not
+ * scheduled. There is no middle state any more: the model clears the date
+ * along with the time when a window is TBD, because the only date it could
+ * keep is the feeds' filing-convention Sunday.
  */
 function kickoffPhrase(game: ScheduleGame): string {
-  if (game.kickoffMs === null) return "";
+  if (game.kickoffMs === null || !game.dateConfirmed) return "";
   const date = LONG_DATE.format(new Date(game.kickoffMs));
   if (!game.timeConfirmed) return date;
   return `${date} at ${easternParts(game.kickoffMs).time}`;
 }
 
+/** What to say about a kickoff that has none. */
+const TBD_PHRASE = "the NFL has not set the date and time yet";
+
 /**
  * The opponent as a sentence names them: "the New York Jets".
  *
  * The article is attached here rather than at every call site because it is not
- * always right: ESPN names an opponent this server cannot resolve with whatever
- * string it has, and "the Opponent TBD" is a sentence about a team that does
- * not exist. A resolved club takes "the"; a bare name is printed as given.
+ * always right: a feed can name an opponent this server cannot resolve, and
+ * "the Opponent TBD" is a sentence about a team that does not exist. A resolved
+ * club takes "the"; a bare name is printed as given.
  */
 function opponentPhrase(game: ScheduleGame): string {
   return game.opponent ? `the ${game.opponent.fullName}` : game.opponentName;
 }
 
 /**
- * Where a game is played, as a phrase: "at Ford Field", else "at home".
+ * Where a game is played, as a phrase: "at Ford Field", "at Tottenham Hotspur
+ * in London, UK (a neutral-site game)", else "at home" / "on the road".
  *
- * The venue is preferred over the home/away word wherever ESPN gives one,
+ * The venue is preferred over the home/away word wherever a feed gives one,
  * because "at Allianz Arena" is the answer to the question a reader asking
- * about a home game in Munich actually has. The word is the fallback, not the
- * default - a fixture with no venue yet still has a side.
+ * about a game in Munich actually has. A neutral site always says so.
  */
 function wherePhrase(game: ScheduleGame): string {
-  if (game.venue) return `at ${game.venue}`;
-  return game.homeAway === "home" ? "at home" : "on the road";
+  const venue = game.venue ? `at ${game.venue}` : null;
+  if (game.site === "neutral") {
+    const place = venue
+      ? game.venueCity
+        ? `${venue} in ${game.venueCity}`
+        : venue
+      : "at a neutral site";
+    return `${place} (a neutral-site game)`;
+  }
+  if (venue) return venue;
+  return game.site === "home" ? "at home" : "on the road";
+}
+
+/** "vs" / "at" - the short form the remaining-schedule list uses. */
+function versus(game: ScheduleGame): string {
+  return game.site === "away" ? "at" : "vs";
 }
 
 /** "beat", "lost to", "tied" - a result as a sentence states it. */
@@ -135,16 +148,15 @@ function resultVerb(outcome: "W" | "L" | "T"): string {
 /**
  * The venue a team plays its ordinary home games in, or null.
  *
- * The most-used venue among home games rather than a stadium name held in the
- * team table: a club playing a season in a temporary ground, or an
- * international fixture nominally at home, is exactly the case where a stored
- * name would be wrong and this is right. Null when the schedule names no venue
- * at all, which is the state a fixture list published before its venues is in.
+ * The most-used venue among true home games rather than a stadium name held
+ * in the team table: a club playing a season in a temporary ground is exactly
+ * the case where a stored name would be wrong and this is right. Null when the
+ * schedule names no venue at all.
  */
 function homeStadium(home: ScheduleGame[]): string | null {
   const tally = new Map<string, number>();
   for (const game of home) {
-    if (!game.venue || game.neutralSite) continue;
+    if (!game.venue) continue;
     tally.set(game.venue, (tally.get(game.venue) ?? 0) + 1);
   }
   let best: string | null = null;
@@ -177,35 +189,43 @@ export function scheduleFaq(input: {
   const city = team.city;
   const faq: ScheduleFaq[] = [];
 
-  /* ------------------------------------------------------------- next game */
+  const next = nextGame(schedule, now);
+  const latest = lastResult(schedule);
+  const { results, remaining } = splitSchedule(schedule);
+  const sites = siteCounts(games);
+  const record = recordThrough(games);
+  const today = easternDate(now);
 
-  // Unplayed, not "late in the list": see the note at the top of the file.
-  const next = games.find(
-    (game) =>
-      game.status !== "final" &&
-      (game.kickoffMs === null || game.kickoffMs + RECENTLY_ENDED_MS > now),
-  );
+  /* ------------------------------------------------------------- next game */
 
   if (next) {
     const opponent = opponentPhrase(next);
     const when = kickoffPhrase(next);
     const where = wherePhrase(next);
-    // A city only when it adds something. "at Ford Field in Detroit" is noise;
-    // "at Allianz Arena in Munich" is the fact the fixture is famous for.
-    const place =
-      next.international && next.venueCity ? `${where} in ${next.venueCity}` : where;
+    const onTv = next.network ? ` The game is on ${next.network}.` : "";
 
-    faq.push({
-      question: `Who do the ${club} play next?`,
-      answer:
-        (next.status === "live"
-          ? `The ${nick} are playing ${opponent} ${place} right now, in Week ${next.week} of the ${season} season.`
-          : `The ${possessive(nick)} next game is Week ${next.week} against ${opponent} ${place}.` +
-            (when
-              ? ` Kickoff is scheduled for ${when}.`
-              : ` A kickoff date has not been set.`)) +
-        (next.network ? ` The game is on ${next.network}.` : ""),
-    });
+    let answer: string;
+    if (next.status === "live") {
+      answer =
+        `The ${nick} are playing ${opponent} ${where} right now, in ${next.weekLabel} of the ${season} season.` +
+        onTv;
+    } else if (next.status === "postponed") {
+      answer =
+        `The ${possessive(nick)} next game is ${next.weekLabel} against ${opponent} ${where}. ` +
+        `It has been postponed, and a new date has not been announced.`;
+    } else if (isOnDate(next, today)) {
+      // "Today" only when it is: this sentence is generated per render, so it
+      // is true on the day and gone the next.
+      answer =
+        `The ${nick} play today, ${when}, against ${opponent} ${where} in ${next.weekLabel}.` + onTv;
+    } else {
+      answer =
+        `The ${possessive(nick)} next game is ${next.weekLabel} against ${opponent} ${where}.` +
+        (when ? ` Kickoff is ${when}.` : ` Kickoff is TBD: ${TBD_PHRASE}.`) +
+        onTv;
+    }
+
+    faq.push({ question: `Who do the ${club} play next?`, answer });
   }
 
   /**
@@ -218,7 +238,7 @@ export function scheduleFaq(input: {
    * one this module already computed: no unplayed game left is a season that
    * has been played.
    */
-  const running = next !== undefined;
+  const running = next !== null;
   const v = {
     play: running ? "play" : "played",
     has: running ? "has" : "had",
@@ -237,10 +257,15 @@ export function scheduleFaq(input: {
       question: `What is the ${club} schedule for ${season}?`,
       answer:
         `The ${nick} ${v.play} ${count(games.length, "regular-season game", "regular-season games")} ` +
-        `in ${season}, opening in Week ${opener.week} against ${opponentPhrase(opener)} ` +
-        `${wherePhrase(opener)} and finishing in Week ${finale.week} against ` +
-        `${opponentPhrase(finale)} ${wherePhrase(finale)}. Every week's date, opponent, ` +
-        `venue, network and result is listed in the schedule above.`,
+        `in ${season}: ${sites.home} at home, ${sites.away} on the road` +
+        (sites.neutral ? ` and ${count(sites.neutral, "neutral-site game", "neutral-site games")}` : "") +
+        `. They open in Week ${opener.week} against ${opponentPhrase(opener)} ` +
+        `${wherePhrase(opener)} and finish in Week ${finale.week} against ` +
+        `${opponentPhrase(finale)} ${wherePhrase(finale)}. Every game's date, opponent, ` +
+        `kickoff time, TV network, venue and result is listed in the schedule above` +
+        (running
+          ? `; a game the NFL has not scheduled yet is marked TBD.`
+          : `.`),
     });
   }
 
@@ -261,24 +286,44 @@ export function scheduleFaq(input: {
           ? `, between their Week ${before.week} game against ${opponentPhrase(before)} ` +
             `and their Week ${after.week} game against ${opponentPhrase(after)}.`
           : `.`) +
-        ` The bye is listed in the schedule above as its own week, with no fixture against it.`,
+        ` The bye is listed in the schedule above as its own week, with no game against it.`,
+    });
+  }
+
+  /* ------------------------------------------------------ remaining schedule */
+
+  if (running && remaining.length) {
+    const items = remaining.map((game) => {
+      const date = shortDate(game);
+      const name = game.opponent?.nickname ?? game.opponentName;
+      const where = game.site === "neutral" ? ` (neutral site)` : "";
+      return `Week ${game.week} ${versus(game)} ${name}${where} (${date ?? "TBD"})`;
+    });
+    const tbd = remaining.filter((game) => !game.dateConfirmed).length;
+    faq.push({
+      question: `What is the ${club} remaining schedule?`,
+      answer:
+        `The ${nick} have ${count(remaining.length, "game", "games")} left in ${season}: ` +
+        `${listOf(items)}.` +
+        (tbd
+          ? ` ${count(tbd, "game", "games")} ${tbd === 1 ? "is" : "are"} marked TBD because ${TBD_PHRASE}.`
+          : "") +
+        ` The full remaining schedule, with kickoff times, TV networks and venues, is above.`,
     });
   }
 
   /* ------------------------------------------------------------- home games */
 
-  const home = games.filter((game) => game.homeAway === "home");
+  const home = games.filter((game) => game.site === "home");
+  const neutral = games.filter((game) => game.site === "neutral");
 
   if (home.length) {
     const stadium = homeStadium(home);
-    // Home games played somewhere other than the home ground: the London,
-    // Munich and São Paulo fixtures, and any season played in a temporary
-    // stadium. Counted as home games because that is what they are on the
-    // schedule, and named separately because nobody driving to one should be
-    // sent to the usual address.
-    const elsewhere = stadium
-      ? home.filter((game) => game.neutralSite || game.venue !== stadium)
-      : [];
+    // True home games played somewhere other than the usual home ground: a
+    // season in a temporary stadium, or a home game relocated. Named
+    // separately because nobody driving to one should be sent to the usual
+    // address. A neutral-site game is not a home game and is listed after.
+    const elsewhere = stadium ? home.filter((game) => game.venue !== stadium) : [];
     const atStadium = home.length - elsewhere.length;
 
     faq.push({
@@ -288,9 +333,6 @@ export function scheduleFaq(input: {
         (stadium
           ? elsewhere.length
             ? `, ${atStadium} of them at ${stadium}. ` +
-              // A sentence each, rather than a list: two relocated home games
-              // are two different venues in two different weeks, and a reader
-              // going to one of them needs the pair kept apart.
               elsewhere
                 .map(
                   (game) =>
@@ -300,7 +342,18 @@ export function scheduleFaq(input: {
                 .join(" ")
             : `, all of them at ${stadium}.`
           : `.`) +
-        ` Each one is marked HOME in the schedule above.`,
+        ` The other ${count(sites.away, "game is", "games are")} on the road` +
+        (neutral.length
+          ? `, and ${count(neutral.length, "game is", "games are")} at a neutral site: ` +
+            neutral
+              .map(
+                (game) =>
+                  `Week ${game.week} against ${opponentPhrase(game)} ${wherePhrase(game)}`,
+              )
+              .join("; ") +
+            `.`
+          : `.`) +
+        ` Home games are marked "vs" in the schedule above and road games "at".`,
     });
   }
 
@@ -329,8 +382,8 @@ export function scheduleFaq(input: {
       const meetings = meetingsWith(rival);
       return (
         meetings.length === 2 &&
-        meetings.some((game) => game.homeAway === "home") &&
-        meetings.some((game) => game.homeAway === "away")
+        meetings.some((game) => game.site === "home") &&
+        meetings.some((game) => game.site === "away")
       );
     });
 
@@ -340,7 +393,7 @@ export function scheduleFaq(input: {
         `The ${nick} ${v.play} ${count(divisionGames.length, "division game", "division games")} ` +
         `in ${season}, ${homeAndAway ? "home and away against the " : "against the "}` +
         `${listOf(rivals.map((rival) => rival.fullName))}. ` +
-        `Division games are marked DIV in the schedule above.`,
+        `Each meeting is listed in the ${team.division} schedule beside the table above.`,
     });
   }
 
@@ -372,7 +425,8 @@ export function scheduleFaq(input: {
             upcoming.map((game) => {
               const when = kickoffPhrase(game);
               return (
-                `Week ${game.week} ${wherePhrase(game)}` + (when ? ` on ${when}` : "")
+                `Week ${game.week} ${wherePhrase(game)}` +
+                (when ? ` on ${when}` : ` (date and time TBD)`)
               );
             }),
           )}.`,
@@ -401,7 +455,9 @@ export function scheduleFaq(input: {
     // of them.
     const ranked = [...networkTally.entries()].sort((a, b) => b[1] - a[1]);
     const leader = ranked[0] as [string, number];
-    const unscheduled = games.filter((game) => !game.network).length;
+    // Only the games still to be played can be waiting on a network; a played
+    // game with none is a gap in the record, not a pending assignment.
+    const unassigned = remaining.filter((game) => !game.network).length;
 
     faq.push({
       question: `What channel are ${club} games on in ${season}?`,
@@ -411,53 +467,47 @@ export function scheduleFaq(input: {
         (ranked.length > 1
           ? `${leader[0]} ${v.carries} the most with ${count(leader[1], "game", "games")}. `
           : "") +
-        `The network for each week is shown in the schedule above` +
-        (unscheduled
-          ? `; ${count(unscheduled, "game", "games")} ${unscheduled === 1 ? "has" : "have"} ` +
-            `no broadcast window assigned yet and ${unscheduled === 1 ? "shows" : "show"} none.`
+        (next && next.network
+          ? `The next game, ${next.weekLabel} against ${opponentPhrase(next)}, is on ${next.network}. `
+          : "") +
+        `The network for each game is shown in the TV column of the schedule above` +
+        (unassigned
+          ? `; ${count(unassigned, "upcoming game", "upcoming games")} ${unassigned === 1 ? "does" : "do"} ` +
+            `not have a network assigned yet and ${unassigned === 1 ? "shows" : "show"} TBD.`
           : `.`),
     });
   }
 
   /* ------------------------------------------------------ scores and results */
 
-  const finals = games.filter((game) => game.result);
-
-  if (finals.length) {
-    const wins = finals.filter((game) => game.result?.outcome === "W").length;
-    const losses = finals.filter((game) => game.result?.outcome === "L").length;
-    const ties = finals.filter((game) => game.result?.outcome === "T").length;
-    const record = ties ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
-    const latest = finals[finals.length - 1] as ScheduleGame;
+  if (results.length && latest?.result) {
     const result = latest.result;
-
     faq.push({
       question: `Where can I see ${club} scores and results?`,
       answer:
-        `Every completed game shows its final score in the schedule above` +
-        // Dropped once there is nothing left to play: a finished season has no
-        // row showing a date instead of a score, so the clause would describe
-        // a table that is not there.
-        (running ? `, and upcoming games show the date, venue and network instead` : ``) +
+        `Every completed game shows its final score and the ${possessive(nick)} record after it ` +
+        `in the results table above` +
+        (running ? `, and the remaining schedule lists the games still to be played` : ``) +
         `. ` +
         (running
-          ? `The ${nick} are ${record} through ${count(finals.length, "game", "games")} in ${season}`
-          : `The ${nick} finished ${season} at ${record}`) +
+          ? `The ${nick} are ${record.text} through ${count(results.length, "game", "games")} in ${season}`
+          : `The ${nick} finished ${season} at ${record.text}`) +
         // The latest result, while there is a next one to place it against.
         // "Most recently" about a season that ended in January is a phrase
         // pointing at nothing - the record above is the whole answer by then.
-        (running && result
+        (running
           ? `, most recently ${resultVerb(result.outcome)} ${opponentPhrase(latest)} ` +
-            `${result.teamScore}-${result.opponentScore} in Week ${latest.week}.`
+            `${result.teamScore}-${result.opponentScore} in ${latest.weekLabel}. ` +
+            `Each completed game links to its recap and box score.`
           : `.`),
     });
   } else {
     faq.push({
       question: `Where can I see ${club} scores and results?`,
       answer:
-        `No ${season} ${nick} games have been played yet. Each row in the schedule ` +
-        `above shows the date, venue and network now, and carries the final score ` +
-        `once the game has been played.`,
+        `No ${season} ${nick} games have been played yet. Each game in the schedule ` +
+        `above shows its date, kickoff time, TV network and venue now, and moves to the ` +
+        `results table with its final score once it has been played.`,
     });
   }
 
