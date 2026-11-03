@@ -93,9 +93,10 @@ import { titleCase } from "../player/title-case";
 import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
 import { logger } from "../logger";
 import { loadPlayers } from "../player/data";
+import { teamCode } from "../player/ranks";
 import { playerForSearchKey } from "../team/roster";
 import { appearances } from "./appearances";
-import { buildGamePlayers, nameKey, type GamePlayers } from "./game-players";
+import { buildGamePlayers, nameKey, type GamePlayer, type GamePlayers } from "./game-players";
 import { renderLeadersStrip } from "./leaders-strip";
 import { renderScoringSummary, runningScore, validateScoringPlays } from "./scoring-summary";
 import { historyForPair } from "./rivalry-data";
@@ -648,6 +649,46 @@ function rosterId(name: string): string | null {
     if (hit) return hit.id;
   }
   return null;
+}
+
+/**
+ * Where a box-score name plays NOW, as the site's team code, or null when
+ * neither the roster index nor the dictionary knows him. The roster index is
+ * this week's; the dictionary's team is the post-offseason one.
+ */
+function currentTeamOf(name: string): string | null {
+  const key = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  if (key) {
+    for (const suffix of ["", "jr", "ii", "iii", "iv", "sr"]) {
+      const hit = playerForSearchKey(key + suffix);
+      if (hit?.team) return teamCode(hit.team);
+    }
+  }
+  const id = dictionaryId(name);
+  if (id) {
+    const player = loadPlayers().find((x) => x.id === id);
+    if (player?.team) return teamCode(player.team);
+  }
+  return null;
+}
+
+/**
+ * The highlight line of a last-meeting card: statLine() without the noise a
+ * reviewer flagged (mak, 2026-11-03) - a back's receiving tail when it was a
+ * catch or two for nothing ("1 REC, -2 REC YDS"), a receiver's lone carry.
+ */
+function highlightLine(player: GamePlayer): string {
+  const s = player.stats;
+  const thinReceiving = (s.recYds ?? 0) < 10 && !(s.recTd ?? 0);
+  return statLine(player)
+    .split(", ")
+    .filter((part) => !(thinReceiving && /\bREC\b/.test(part)))
+    .filter((part) => !/^-\d/.test(part))
+    .join(", ");
 }
 
 const playersCache = new WeakMap<MatchupData, GamePlayers>();
@@ -3819,36 +3860,71 @@ function renderLastMeeting(data: MatchupData, options: MatchupRenderOptions): st
     ? buildGamePlayers(boxscore.players, null, boxscore.scoringPlays, dictionaryPosition)
     : {};
   const top = topScorers({ players }).slice(0, 6);
+  // How stale the box score is (mak, 2026-11-03): a player who has moved on
+  // wears a dim "now NYJ" tag, and the header says how many of the six have.
+  const seasonsAgo = data.state.season - meeting.season;
+  const moves = top.map(({ name, player }) => {
+    const now = currentTeamOf(name);
+    const then = teamCode(player.team);
+    return now && then && now !== then ? now : null;
+  });
+  const departed = moves.filter(Boolean).length;
   const rows = top
-    .map(({ name, ppr, player }) => {
+    .map(({ name, ppr, player }, i) => {
       const url = getPlayerProfileUrl(name);
       const who = url ? `<a href="${escapeHtml(url)}">${escapeHtml(name)}</a>` : escapeHtml(name);
       // The face before the name (mak, 2026-11-02); a name the dictionary and
       // the rosters don't know keeps the empty well.
       const key = dictionaryId(name) ?? rosterId(name);
       const face = key ? playerPhoto(key, "sct-mu-last-face", 36) : `<span class="sct-mu-last-face" aria-hidden="true"></span>`;
+      // The club crest on the face's bottom-right corner (mak, 2026-11-03);
+      // the box score names the club by abbreviation.
+      const club = [meeting.away, meeting.home].find((t) => t.abbreviation.toUpperCase() === String(player.team ?? "").toUpperCase());
+      const crest = club?.logo
+        ? `<img class="sct-mu-last-crest" src="${escapeHtml(club.logo)}" alt="" width="16" height="16" loading="lazy" decoding="async">`
+        : "";
       return (
         `<li class="sct-mu-last-row">` +
-        face +
+        `<span class="sct-mu-last-avatar" aria-hidden="true">${face}${crest}</span>` +
         `<span class="sct-mu-last-who">${who}` +
-        `<span class="sct-mu-last-team">${escapeHtml(player.team)}${player.pos ? ` · ${escapeHtml(player.pos)}` : ""}</span></span>` +
+        `<span class="sct-mu-last-team">${escapeHtml(player.team)}${player.pos ? ` · ${escapeHtml(player.pos)}` : ""}</span>` +
+        (moves[i] ? `<span class="sct-mu-last-moved">${moves[i] === "FA" ? "no team" : `now ${escapeHtml(moves[i]!)}`}</span>` : "") +
+        `</span>` +
         // All three scorings on the figure, for the page's switch (mak, 2026-11-02);
         // no unit beside it, the switch names the scoring (mak, 2026-11-03).
         `<span class="sct-mu-last-pts"><span${fmtData({ ppr: ppr.toFixed(1), half: fantasyPoints(player.stats, "half").toFixed(1), std: fantasyPoints(player.stats, "standard").toFixed(1) })}>${escapeHtml(ppr.toFixed(1))}</span></span>` +
-        `<span class="sct-mu-last-line">${escapeHtml(statLine(player))}</span>` +
+        `<span class="sct-mu-last-line">${escapeHtml(highlightLine(player))}</span>` +
         `</li>`
       );
     })
     .join("");
 
+  // When this is the only meeting in the Head-to-Head window, that block is
+  // not rendered (it would repeat this one three times) and its one forward-
+  // looking fact, the total against this game's line, lands here (mak,
+  // 2026-11-03, from a review). The staleness caveat joins the same line.
+  const h2h = data.preview?.h2h ?? null;
+  const merged = h2h !== null && h2h.games.length === 1;
+  const kicker = [
+    merged ? `The only meeting since ${h2h.since}.` : "",
+    merged && h2h.avgPoints !== null ? `Totaled ${Number.isInteger(h2h.avgPoints) ? String(h2h.avgPoints) : h2h.avgPoints.toFixed(1)}${h2h.avgVsTotal ? `, ${h2h.avgVsTotal}` : ""}.` : "",
+    seasonsAgo >= 1 && departed > 0
+      ? `${seasonsAgo} season${seasonsAgo === 1 ? "" : "s"} ago: ${departed} of these ${top.length} have since changed teams.`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     `<section class="sct-pv-sec sct-mu-last" aria-labelledby="sct-mu-last-h" data-pv-fmt>` +
     `<h2 class="sct-h2 sct-pv-h2" id="sct-mu-last-h">${escapeHtml(line)}</h2>` +
+    (kicker ? `<p class="sct-mu-last-kicker">${escapeHtml(kicker)}</p>` : "") +
     `<p class="sct-mu-last-link"><a class="sct-textlink" href="${escapeHtml(href)}">` +
     `${escapeHtml(`${meeting.away.nickname} vs ${meeting.home.nickname} full box score and player stats`)} ${ARROW}</a></p>` +
     // The "Top fantasy scorers from that game (PPR)" label over the list
     // came off 2026-10-22 (mak); the list is still labelled for assistive tech.
-    (rows ? `<ol class="sct-mu-last-list" aria-label="Top fantasy scorers from that game (PPR)">${rows}</ol>` : "") +
+    // One ranked list (mak, 2026-11-03); the switch re-sorts it by the figure.
+    (rows ? `<ol class="sct-mu-last-list" aria-label="Top fantasy scorers from that game (PPR)" data-pv-sort=".sct-mu-last-pts">${rows}</ol>` : "") +
     `</section>`
   );
 }

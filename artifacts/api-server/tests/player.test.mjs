@@ -239,24 +239,27 @@ describe("player page content", () => {
     assert.ok(!header.textContent.includes("·"), "no middle dots in the header");
   });
 
-  test("the H1 is the player's name and the tab's subtitle", async () => {
+  test("the H1 is the player's name, and nothing else", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const headings = doc.querySelectorAll("h1");
     assert.equal(headings.length, 1, "one H1 on the page");
     const [h1] = headings;
     assert.ok(h1.matches("header.scp-phead h1.scp-phead-h1"), "and it is the header's");
     assert.equal(h1.querySelector(".scp-phead-name").textContent.trim(), fixture.name);
-    assert.match(
-      h1.querySelector(".scp-phead-kind").textContent,
-      /^Fantasy outlook(, stats and Week \d+ start\/sit| and stats) for 20\d\d$/,
-    );
+    // The profile's heading is the entity (mak's brief, 2026-11-03): no
+    // second line, so the H1's text is exactly the name.
+    assert.equal(h1.querySelector(".scp-phead-kind"), null);
+    assert.equal(h1.textContent.replace(/\s+/g, " ").trim(), fixture.name);
 
-    // Every tab link carries its own subtitle, for the client to swap in.
+    // Every section tab link carries its word, for the client to swap in;
+    // the Overview's is empty, which is the name alone.
     const links = [...doc.querySelectorAll(".scp-nav-link")];
     assert.ok(links.length >= 2);
-    const kinds = links.map((link) => link.getAttribute("data-scp-kind"));
-    assert.ok(kinds.every(Boolean), "every tab has a subtitle");
-    assert.equal(new Set(kinds).size, kinds.length, "and no two tabs share one");
+    const kinds = links.map((link) => [link.dataset.scpPanelId, link.getAttribute("data-scp-kind")]);
+    assert.equal(kinds.find(([id]) => id === "overview")?.[1], "");
+    const sections = kinds.filter(([id]) => id !== "overview").map(([, kind]) => kind);
+    assert.ok(sections.every(Boolean), "every section tab has a word");
+    assert.equal(new Set(sections).size, sections.length, "and no two share one");
   });
 
   test("the scoreboard is three labeled figures, the first in gold", async () => {
@@ -1819,18 +1822,15 @@ describe("the injury tab", () => {
     const h1 = doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim();
     assert.equal(
       h1,
-      `${found[0].player.name} Injury status and history`,
-      "the H1 is the player and the tab's subtitle",
+      `${found[0].player.name} Injury Status`,
+      "the H1 is the player and the section's word (the entity brief, 2026-11-03)",
     );
+    // The panel's own name is not printed under an H1 that already says it.
+    assert.equal(doc.querySelector("#injury .scp-h2"), null, "no duplicate panel heading on the section page");
     assert.match(
-      doc.querySelector("#injury .scp-h2")?.textContent ?? "",
-      /Injury Update & History$/,
-      "and the section carries the search phrase",
-    );
-    assert.match(
-      doc.querySelector("title")?.textContent ?? "",
-      /Injury Update & History \(Updated [A-Z][a-z]{2} \d{1,2}\)$/,
-      "and the title carries the date of the latest report (mak, 2026-10-09)",
+      doc.querySelector("head > title")?.textContent ?? "",
+      /^.+ Injury Status(?: & History)?(?: \| StatChasers)?$/,
+      "the evergreen title of the brief",
     );
 
     // The whole point of scoping: the other six sections are NOT here, or the
@@ -1852,8 +1852,8 @@ describe("the injury tab", () => {
       "and its H1 still names the player",
     );
     assert.ok(
-      !fullDoc.querySelector("h1").textContent.includes("Injury status"),
-      "under the profile's own subtitle, not the injury page's",
+      !fullDoc.querySelector("h1").textContent.includes("Injury Status"),
+      "the profile's own heading, not the injury page's",
     );
   });
 });
@@ -1978,8 +1978,10 @@ describe("the bio tab", () => {
       assert.equal(bio.querySelector(".scp-bio"), null, `${page.player.slug}: the old narrative is gone`);
       assert.equal(bio.querySelector(".scp-stints"), null, `${page.player.slug}: the old timeline is gone`);
       const headings = [...bio.querySelectorAll("h2")].map((h) => h.textContent.trim());
-      assert.equal(headings.filter((h) => /\bBio$/.test(h)).length, 1, `${page.player.slug}: one bio heading (${headings.join(" | ")})`);
-      assert.ok(headings.includes(`${page.player.name} Bio`));
+      // "{Name} Bio" is the section page's H1 (the hero's heading, the entity
+      // brief of 2026-11-03); the panel no longer repeats it as an H2.
+      assert.equal(headings.filter((h) => /\bBio$/.test(h)).length, 0, `${page.player.slug}: no repeated bio heading (${headings.join(" | ")})`);
+      assert.equal(page.doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim(), `${page.player.name} Bio`);
       assert.equal(headings.filter((h) => /timeline/i.test(h)).length, 1, `${page.player.slug}: one timeline`);
 
       // The bio text comes first and carries the facts the Quick Facts show.
@@ -2152,12 +2154,12 @@ describe("the bio tab", () => {
     // answers for is also the section's own heading, and the title below.
     assert.equal(
       doc.querySelector("h1").textContent.replace(/\s+/g, " ").trim(),
-      `${name} Bio, career timeline and draft history`,
+      `${name} Bio`,
     );
-    assert.equal(doc.querySelector("#bio .scp-h2").textContent.trim(), `${name} Bio`);
+    assert.equal(doc.querySelector("#bio .scp-h2"), null, "the panel does not repeat the H1");
     assert.match(
       doc.querySelector("title").textContent,
-      /Bio: Age, Height, College & Draft$/,
+      /Bio: Age, Height(?:, College)? & (?:Draft|College)(?: \| StatChasers)?$/,
       "the title targets the biographical cluster",
     );
     assert.ok(
@@ -2645,7 +2647,7 @@ describe("the embedded fragment", () => {
     const { doc } = await dom(`/player/${fixture.slug}/stats/`);
     assert.equal(doc.querySelector("#stats .scp-h2"), null, "no panel heading");
     assert.ok(!doc.querySelector("#stats").textContent.includes(`${fixture.name} Stats 2`));
-    const first = doc.querySelector("#stats h1, #stats h2");
+    const first = doc.querySelector("#stats h2");
     assert.equal(first?.id, "scp-st-prod-h", "the production section comes first");
     // mak removed the old "2026 Production", "Career Rates", "Fantasy Finish
     // History" and "Career Bests" blocks the same day.
@@ -2833,30 +2835,31 @@ describe("the embedded fragment", () => {
     return { doc, h1: h1[0], text: h1[0].textContent.replace(/\s+/g, " ").trim() };
   };
 
-  test("?h1=1: the profile's one H1 names the player and the page", async () => {
+  test("?h1=1: the profile's one H1 is the player's name, in the hero, before every H2", async () => {
     const { doc, h1, text } = h1Of((await get(`/embed/player/${fixture.slug}?h1=1`)).body);
-    assert.equal(text, `${fixture.name} Fantasy Football`, "the hub's H1 since 2026-10-09 (mak)");
-    assert.ok(h1.matches("#overview h1.scp-h2"), "the opening panel's heading, promoted");
-    assert.match(
-      h1.nextElementSibling?.className ?? "",
-      /scp-head-sub/,
-      "with the small position-and-team line under it",
-    );
-    assert.ok(doc.querySelector("header.scp-phead h2.scp-phead-h1"), "the header stays an H2");
+    assert.equal(text, fixture.name, "the hub's H1 is the entity (mak's brief, 2026-11-03)");
+    assert.ok(h1.matches("header.scp-phead h1.scp-phead-h1"), "the hero's heading");
+    assert.equal(doc.querySelector("#overview h1, #overview .scp-h2"), null, "no promoted panel heading");
+    // The H1 is the first heading in the fragment: nothing ranks above it.
+    const first = doc.querySelector("h1, h2, h3, h4");
+    assert.equal(first, h1, "no heading before the H1");
   });
 
-  test("?h1=1: each section page's H1 is its own phrase", async () => {
+  test("?h1=1: each section page's H1 is the name and the section's word", async () => {
     for (const [section, want] of [
-      // The spec's "{Name} {season} stats" since mak dropped the panel heading (2026-09-30).
-      ["stats", new RegExp(`^${fixture.name} 2\\d{3} Stats$`)],
-      ["game-log", new RegExp(`^${fixture.name} Game Log 2\\d{3}$`)],
-      // The spec's take heading since mak dropped "<season> Outlook" (2026-09-30).
-      ["outlook", new RegExp(`^${fixture.name} Rest-of-Season Outlook$`)],
+      ["stats", `${fixture.name} Stats`],
+      ["game-log", `${fixture.name} Game Log`],
+      ["outlook", `${fixture.name} Fantasy Outlook`],
+      ["news", `${fixture.name} News`],
+      ["bio", `${fixture.name} Bio`],
     ]) {
       const res = await get(`/embed/player/${fixture.slug}?section=${section}&h1=1`);
+      if (res.status !== 200) continue;
       const { doc, text } = h1Of(res.body);
-      assert.match(text, want, section);
-      assert.ok(doc.querySelector("header.scp-phead h2.scp-phead-h1"), `${section}: the name stays an H2`);
+      assert.equal(text, want, section);
+      assert.ok(doc.querySelector("header.scp-phead h1.scp-phead-h1"), `${section}: the hero's heading`);
+      const first = doc.querySelector("h1, h2, h3, h4");
+      assert.ok(first?.matches("h1"), `${section}: no heading before the H1`);
     }
   });
 
@@ -2905,7 +2908,8 @@ describe("the embedded fragment", () => {
       assert.ok(island, `${section}: no page-data island`);
       const copy = JSON.parse(island[1]);
       assert.ok(copy.title.length > 10 && copy.description.length > 40, `${section}: thin copy`);
-      assert.doesNotMatch(copy.title, /StatChasers$/, "the plugin appends the site name");
+      // The brand is on the title itself since the entity brief (2026-11-03).
+      assert.ok(copy.title.length <= 70, `${section}: ${copy.title}`);
       copies.set(section, copy);
     }
     assert.equal(new Set([...copies.values()].map((c) => c.title)).size, 6, "six distinct titles");
@@ -2917,8 +2921,8 @@ describe("the embedded fragment", () => {
     const own = profile.body.match(/<script type="application\/json" class="scp-page-data">(.*?)<\/script>/s);
     assert.ok(own, "the profile hands the plugin its own copy");
     const hub = JSON.parse(own[1]);
-    assert.match(hub.title, new RegExp(`^${fixture.name} Fantasy(?: Football)? \\d{4}: Stats`), "the hub's title");
-    assert.ok(hub.title.length <= 60, `hub title within 60: ${hub.title}`);
+    assert.match(hub.title, new RegExp(`^${fixture.name} Stats, News(?:, Bio)? & (?:Fantasy )?Outlook(?: \\| StatChasers)?$`), "the hub's evergreen title");
+    assert.ok(hub.title.length <= 70, `hub title within 70: ${hub.title}`);
     assert.ok(hub.description.length <= 155, `hub description within 155: ${hub.description}`);
   });
 
@@ -3129,11 +3133,11 @@ describe("player section URLs", () => {
    */
   const PHRASES = {
     stats: / 2\d{3} Stats$/,
-    injury: /Injury Update & History$/,
-    "game-log": /Game Log 2\d{3}$/,
+    injury: /^Is .+ injured\?$/,
+    "game-log": /Where His Weeks Finished$/,
     outlook: /Rest-of-Season Outlook$/,
-    news: /^Latest .+ News & Updates$/,
-    bio: /Bio$/,
+    news: /Season Timeline$/,
+    bio: /Career Timeline$/,
   };
 
   /*
@@ -3180,10 +3184,11 @@ describe("player section URLs", () => {
         `${id}: under the subtitle its own tab link carries`,
       );
 
-      // The Stats and Outlook tabs are headed by a spec section now (mak, 2026-09-30).
-      const lead = { stats: "#scp-st-prod-h", outlook: "#scp-ol-take-h" }[id];
-      const own = panels[0].querySelector(lead ?? ".scp-h2");
-      assert.ok(own, `${id}: the section heads itself`);
+      // The panel's own name is gone from the section page (it would repeat
+      // the H1); its first H2 is a section of the page.
+      assert.equal(panels[0].querySelector(".scp-h2"), null, `${id}: no duplicate panel heading`);
+      const own = panels[0].querySelector("h2");
+      assert.ok(own, `${id}: the section has an H2`);
       assert.match(
         own.textContent.replace(/\s+/g, " ").trim(),
         PHRASES[id],
@@ -3391,8 +3396,8 @@ describe("player section URLs", () => {
     assert.equal(tab.getAttribute("href"), tabHref("overview"), "the tab links to the profile");
     assert.equal(
       tab.getAttribute("data-scp-heading"),
-      `${fixture.name} Fantasy Football`,
-      "and carries the profile's heading",
+      fixture.name,
+      "and carries the profile's heading: the name",
     );
   });
 

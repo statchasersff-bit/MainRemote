@@ -124,14 +124,80 @@ describe("overview sections", () => {
       assert.equal(sec.getAttribute("aria-labelledby"), h2.id);
       return text(h2);
     });
+    // The order of mak's entity brief (2026-11-03): the player's season, the
+    // news (here the recaps the log and schedule make), his numbers, then
+    // the fantasy read and the rest. The About block needs facts this state
+    // does not carry, so it does not render.
     assert.deepEqual(heads, [
       "Jacoby Brissett's 2026 Season, Week by Week",
+      "Jacoby Brissett Latest News",
+      "Jacoby Brissett 2026 Season Stats",
       "Should You Start or Roster Jacoby Brissett?",
-      "Jacoby Brissett 2026 Game Log",
-      "Career Fantasy Stats by Season",
+      "Jacoby Brissett Recent Games",
       "Rest-of-Season Outlook and Availability",
+      "Jacoby Brissett Career Stats",
       "Jacoby Brissett Fantasy Football FAQ",
     ]);
+  });
+
+  test("the season table sums the log the same way the hero does, and links to Stats", () => {
+    const doc = render(state(), { playerPathPrefix: "/nfl/players/" });
+    const sec = doc.querySelector("#scp-ox-season-h").closest("section");
+    assert.equal(text(sec.querySelector(".scp-ox-lede")), "Through Week 3");
+    const heads = [...sec.querySelectorAll("thead th")].map(text);
+    assert.deepEqual(heads, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "PPR PTS", "PPG"]);
+    const row = [...sec.querySelectorAll("tbody td")].map(text);
+    assert.equal(row[0], "3", "three games played");
+    assert.equal(row[8], "49.6", "the fantasy total of the three weeks");
+    assert.equal(row[9], "16.5");
+    assert.equal(sec.querySelector(".scp-ox-more").getAttribute("href"), "/nfl/players/jacoby-brissett/stats/");
+    assert.match(text(sec.querySelector(".scp-ox-more")), /^Complete Jacoby Brissett stats/);
+    // Every percentage-free cell is a number or a dash, never NaN.
+    for (const cell of row) assert.doesNotMatch(cell, /NaN|undefined/);
+    // Not for a season he has not played in.
+    assert.equal(render(state({ leagueWeek: 0, gameLog: [], schedule: [] })).querySelector("#scp-ox-season-h"), null);
+  });
+
+  test("the news digest is the newest items of the feed, linked to the News tab", () => {
+    const doc = render(state(), { playerPathPrefix: "/nfl/players/" });
+    const sec = doc.querySelector("#scp-ox-news-h").closest("section");
+    const items = [...sec.querySelectorAll(".scp-nw-dg-item")];
+    assert.ok(items.length >= 1 && items.length <= 4, `${items.length} items`);
+    for (const item of items) {
+      assert.ok(item.querySelector("h3 a"), "a headline link");
+      assert.ok(item.querySelector(".scp-nw-meta"), "a category and date line");
+    }
+    assert.equal(sec.querySelector(".scp-ox-more").getAttribute("href"), "/nfl/players/jacoby-brissett/news/");
+  });
+
+  test("About: the facts the page can state, nothing fantasy, linked to the Bio tab", () => {
+    const doc = render(
+      state({
+        player: { ...state().player, number: 7 },
+        bioPage: {
+          quick: [
+            { label: "Born", value: "Dec 11, 1992" },
+            { label: "Age", value: "33" },
+            { label: "Height", value: "6'4\"" },
+            { label: "College", value: "NC State" },
+            { label: "Jersey No.", value: "7" },
+            { label: "Drafted", value: "2016, Rd 3, #91 (NE)" },
+          ],
+        },
+      }),
+      { playerPathPrefix: "/nfl/players/", teamPathPrefix: "/nfl/teams/" },
+    );
+    const sec = doc.querySelector("#scp-ox-about-h").closest("section");
+    assert.equal(text(sec.querySelector("h2")), "About Jacoby Brissett");
+    const rows = [...sec.querySelectorAll(".scp-ox-about > div")].map((d) => [text(d.querySelector("dt")), text(d.querySelector("dd"))]);
+    assert.deepEqual(rows.slice(0, 2), [["Team", ARI.fullName], ["Position", "Quarterback (QB)"]]);
+    assert.ok(rows.some(([k, v]) => k === "College" && v === "NC State"));
+    assert.equal(rows.filter(([k]) => /jersey|number/i.test(k)).length, 1, "the number once");
+    assert.equal(sec.querySelector(".scp-ox-about a").getAttribute("href"), "/nfl/teams/arizona-cardinals/");
+    assert.equal(sec.querySelector(".scp-ox-more").getAttribute("href"), "/nfl/players/jacoby-brissett/bio/");
+    assert.doesNotMatch(text(sec), /fantasy|PPR|start/i);
+    // Without facts the block is left out rather than printed with two rows.
+    assert.equal(render(state()).querySelector("#scp-ox-about-h"), null);
   });
 
   test("the strip: seven cells, three played then upcoming, home and away from the schedule", () => {

@@ -1899,7 +1899,10 @@ describe("one owner per game", () => {
       if (!block) continue; // The two have never met.
       assert.ok(block.closest(".sct-pv"), "inside the preview");
       assert.equal(block.previousElementSibling?.getAttribute("aria-label"), "Need a replacement?", "under the injury report's waiver CTA");
-      assert.equal(block.nextElementSibling?.getAttribute("aria-labelledby"), "pv-h2h", "above Head-to-Head");
+      // Head-to-Head follows when the window holds two or more meetings; at
+      // one meeting that block is folded into this one and the CTA follows.
+      const next = block.nextElementSibling;
+      assert.ok(next?.getAttribute("aria-labelledby") === "pv-h2h" || next?.classList.contains("sct-pv-cta"), "above Head-to-Head or the CTA");
       assert.match(block.querySelector("h2").textContent, /^Last meeting: [A-Za-z0-9 .]+ \d+, [A-Za-z0-9 .]+ \d+ \(Week \d+, [A-Z][a-z]{2} \d{1,2}, \d{4}\)$/);
       const link = block.querySelector("a.sct-textlink");
       assert.match(link.getAttribute("href"), /\/\d{4}-week-\d{1,2}\/$/, "to the dated page");

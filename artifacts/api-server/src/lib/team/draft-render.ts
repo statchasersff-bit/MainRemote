@@ -317,9 +317,9 @@ function collegeCell(college: string): string {
         className: "sct-dr-crest-img",
         alt: "",
         variants: COLLEGE_LOGO_VARIANTS,
-        sizes: "28px",
-        width: 28,
-        height: 28,
+        sizes: "24px",
+        width: 24,
+        height: 24,
         loading: "lazy",
         extra: ` aria-hidden="true"`,
       })

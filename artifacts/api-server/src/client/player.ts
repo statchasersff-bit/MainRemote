@@ -340,9 +340,24 @@ function wireHeader(root: HTMLElement): void {
  * carries the line; the tag is the button's stem plus the tab.
  */
 function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void {
-  const kind = link.dataset["scpKind"];
-  const line = root.querySelector<HTMLElement>(".scp-phead-kind");
-  if (line && kind) line.textContent = kind;
+  const kind = link.dataset["scpKind"] ?? "";
+  const heading = root.querySelector<HTMLElement>(".scp-phead-h1");
+  let line = root.querySelector<HTMLElement>(".scp-phead-kind");
+  // The profile's heading is the bare name and carries no line (mak's entity
+  // brief, 2026-11-03), so the span is made on the first switch to a section
+  // and taken out again on the way back - the heading's text is then exactly
+  // what the server would print for the open tab.
+  if (kind) {
+    if (!line && heading) {
+      line = document.createElement("span");
+      line.className = "scp-phead-kind";
+      heading.append(" ", line);
+    }
+    if (line) line.textContent = kind;
+  } else if (line) {
+    if (line.previousSibling?.nodeType === Node.TEXT_NODE) line.previousSibling.remove();
+    line.remove();
+  }
   const tab = id.replace(/[^a-z0-9]/gi, "").toLowerCase();
   for (const cta of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-cta]"))) {
     cta.setAttribute("data-cta", `${cta.dataset["scpCta"]}-${tab}`);

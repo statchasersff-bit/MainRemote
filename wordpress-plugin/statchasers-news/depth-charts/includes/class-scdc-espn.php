@@ -129,18 +129,35 @@ class SCDC_Espn {
 		}
 		$scheme = self::detect_scheme( $formation_names );
 
-		// Collect best (longest) slot list per slot abbreviation, tracking parent.
-		$group_players = array(); // slotAbbr => array of players
-		$slot_parent   = array(); // slotAbbr => parentAbbr
+		// Collect the best (longest) list per SLOT, tracking its abbreviation,
+		// parent and side.
+		//
+		// Keyed by ESPN's own position key ("wr1", "wr2", "wr3", "lde", "nt"),
+		// not by the printed abbreviation: a base offense lists three WR slots
+		// that all abbreviate to "WR", and keyed by abbreviation the first one
+		// (three names deep) beat the other two under the longest-list rule, so
+		// an ESPN-only refresh lost two starting receivers (fixed 2026-11-03).
+		// Footballguys hid it while its fetch succeeded.
+		$group_players = array(); // slotKey => array of players
+		$slot_abbr_of  = array(); // slotKey => slot abbreviation (WR, LDE, PK)
+		$slot_parent   = array(); // slotKey => parentAbbr
+		$slot_side     = array(); // slotKey => offense | defense | specialTeams
+		$formations    = array(); // side => the formation name it was read from
+		$formation_size = array(); // side => how many slots that formation had
 
 		foreach ( $depthchart as $formation ) {
 			$positions = isset( $formation['positions'] ) && is_array( $formation['positions'] ) ? $formation['positions'] : array();
-			foreach ( $positions as $slot ) {
+			$formation_name = isset( $formation['name'] ) ? trim( (string) $formation['name'] ) : '';
+			$sides_here     = array();
+			foreach ( $positions as $pos_key => $slot ) {
 				$slot_abbr   = isset( $slot['position']['abbreviation'] ) ? strtoupper( $slot['position']['abbreviation'] ) : '';
 				$parent_abbr = isset( $slot['position']['parent']['abbreviation'] ) ? strtoupper( $slot['position']['parent']['abbreviation'] ) : '';
 				if ( '' === $slot_abbr ) {
 					continue;
 				}
+				// A payload with a list instead of a map falls back to the
+				// abbreviation, which is unique everywhere but the receivers.
+				$slot_key = is_string( $pos_key ) && '' !== $pos_key ? strtoupper( $pos_key ) : $slot_abbr;
 
 				$athletes = isset( $slot['athletes'] ) && is_array( $slot['athletes'] ) ? $slot['athletes'] : array();
 				if ( empty( $athletes ) ) {
@@ -148,12 +165,14 @@ class SCDC_Espn {
 				}
 
 				// Side of ball must be recognized, else skip.
-				if ( null === self::category( $slot_abbr, $parent_abbr ) ) {
+				$side = self::category( $slot_abbr, $parent_abbr );
+				if ( null === $side ) {
 					continue;
 				}
+				$sides_here[ $side ] = isset( $sides_here[ $side ] ) ? $sides_here[ $side ] + 1 : 1;
 
 				// Keep the formation that lists the most players for this slot.
-				if ( isset( $group_players[ $slot_abbr ] ) && count( $group_players[ $slot_abbr ] ) >= count( $athletes ) ) {
+				if ( isset( $group_players[ $slot_key ] ) && count( $group_players[ $slot_key ] ) >= count( $athletes ) ) {
 					continue;
 				}
 
@@ -185,16 +204,27 @@ class SCDC_Espn {
 					$rank++;
 				}
 
-				$group_players[ $slot_abbr ] = $players;
-				$slot_parent[ $slot_abbr ]   = $parent_abbr;
+				$group_players[ $slot_key ] = $players;
+				$slot_abbr_of[ $slot_key ]  = $slot_abbr;
+				$slot_parent[ $slot_key ]   = $parent_abbr;
+				$slot_side[ $slot_key ]     = $side;
+			}
+			// The formation a side's slots were read from: "3WR 1TE", "Base
+			// 3-4 D". The one with the most slots on that side names it.
+			foreach ( $sides_here as $side => $count ) {
+				if ( '' !== $formation_name && ( ! isset( $formation_size[ $side ] ) || $count > $formation_size[ $side ] ) ) {
+					$formations[ $side ]     = $formation_name;
+					$formation_size[ $side ] = $count;
+				}
 			}
 		}
 
 		// Fold slots into canonical column buckets.
 		$buckets = array(); // canonKey => array of slot player-lists
-		foreach ( $group_players as $slot_abbr => $players ) {
-			$parent = isset( $slot_parent[ $slot_abbr ] ) ? $slot_parent[ $slot_abbr ] : '';
-			$canon  = self::canonical_key( $slot_abbr, $parent, $scheme );
+		foreach ( $group_players as $slot_key => $players ) {
+			$slot_abbr = $slot_abbr_of[ $slot_key ];
+			$parent    = isset( $slot_parent[ $slot_key ] ) ? $slot_parent[ $slot_key ] : '';
+			$canon     = self::canonical_key( $slot_abbr, $parent, $scheme );
 			if ( null === $canon ) {
 				continue;
 			}
@@ -207,6 +237,24 @@ class SCDC_Espn {
 		$positions = array();
 		foreach ( $buckets as $canon => $slot_lists ) {
 			$positions[ $canon ] = self::interleave_dedupe( $slot_lists );
+		}
+
+		// The slots themselves, as the source lists them (2026-11-03): one
+		// entry per depth-chart slot in the formation's order, so the team
+		// page can print WR / WR / WR, LDE / NT / RDE and LCB / RCB / NB as
+		// rows instead of the folded columns above. Holders are left out: the
+		// column views never had one and the slot is the punter's second job.
+		$slots = array();
+		foreach ( $group_players as $slot_key => $players ) {
+			if ( 'H' === $slot_abbr_of[ $slot_key ] ) {
+				continue;
+			}
+			$slots[] = array(
+				'key'     => strtolower( $slot_key ),
+				'slot'    => $slot_abbr_of[ $slot_key ],
+				'side'    => $slot_side[ $slot_key ],
+				'players' => $players,
+			);
 		}
 
 		// Fantasy/team DEF column is the team nickname.
@@ -225,8 +273,10 @@ class SCDC_Espn {
 				'name' => $name,
 				'logo' => $logo,
 			),
-			'season'    => $season,
-			'positions' => $positions,
+			'season'     => $season,
+			'positions'  => $positions,
+			'slots'      => $slots,
+			'formations' => $formations,
 		);
 	}
 

@@ -884,17 +884,29 @@ function statchasers_player_shortcode( $atts = array() ): string {
 
 	if ( null === $data || '' === $data['html'] ) {
 		// Unlike the news tool there is no client-side render to fall back to:
-		// the player bundle only enhances markup that is already there. An empty
-		// string is the honest answer, and it leaves the rest of the page - the
-		// H1, the copy, the internal links - intact.
+		// the player bundle only enhances markup that is already there.
+		//
+		// What this page must NOT become is a cached shell. On 2026-11-03
+		// mak's crawl found section URLs with no content and the profile's
+		// title: a fetch that timed out during a cold publish, printed as an
+		// empty page and then held by the page cache for its whole lifetime.
+		// So the empty render is marked uncacheable for WP Rocket and the
+		// edge, and the page keeps a heading, the way back to the profile
+		// and its siblings, so a crawler that does land here finds the
+		// player, not nothing.
+		statchasers_player_mark_uncacheable();
 		if ( current_user_can( 'manage_options' ) ) {
 			return sprintf(
 				'<p><strong>StatChasers Player:</strong> the API returned nothing for <code>%s</code>. Check the slug and that the deployment is up.</p>',
 				esc_html( $args['slug'] )
 			);
 		}
-		return '';
+		return statchasers_player_unavailable_html( $args['slug'], $args['section'] );
 	}
+
+	// A fresher render than the last one this site held: the player's other
+	// addresses are now a snapshot behind this one.
+	statchasers_player_purge_siblings( $args['slug'], (string) ( $data['version'] ?? '' ) );
 
 	/**
 	 * Filters the server-rendered player fragment before it is printed.
@@ -916,6 +928,101 @@ function statchasers_player_shortcode( $atts = array() ): string {
 	);
 }
 add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
+
+/**
+ * Keep this response out of every page cache.
+ *
+ * WP Rocket honors DONOTCACHEPAGE; the Cache-Control that nocache_headers()
+ * sends is what the edge reads. Only called for a render with no fragment
+ * in it - the one page nobody should keep.
+ */
+function statchasers_player_mark_uncacheable(): void {
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+	if ( ! headers_sent() ) {
+		nocache_headers();
+	}
+}
+
+/**
+ * What a player page prints while the API is away: the page's heading when
+ * the theme has stood down (otherwise there would be no H1 at all), one
+ * line saying the page is loading, and the links a crawler needs - the
+ * profile and the six sections - so the cluster stays connected.
+ */
+function statchasers_player_unavailable_html( string $slug, string $section ): string {
+	$name = function_exists( 'statchasers_player_name' ) ? statchasers_player_name( $slug ) : '';
+	$base = home_url( '/' . statchasers_player_url_base() . '/' . $slug . '/' );
+	$html = '<div class="scp scp-unavailable" data-scp-unavailable="1">';
+	if ( function_exists( 'statchasers_h1_tool_supplies_heading' ) && statchasers_h1_tool_supplies_heading()
+		&& function_exists( 'statchasers_player_heading' ) ) {
+		$heading = statchasers_player_heading( $slug, $section );
+		if ( '' !== $heading ) {
+			$html .= '<h1>' . esc_html( $heading ) . '</h1>';
+		}
+	}
+	$html .= '<p>' . esc_html( ( '' === $name ? 'This player page' : $name . '\'s page' ) . ' is loading. Refresh in a moment.' ) . '</p>';
+	$links = array( '' => 'Overview', 'stats' => 'Stats', 'game-log' => 'Game Log', 'outlook' => 'Fantasy Outlook', 'injury' => 'Injury Status', 'news' => 'News', 'bio' => 'Bio' );
+	$items = array();
+	foreach ( $links as $path => $label ) {
+		$items[] = sprintf(
+			'<li><a href="%s">%s</a></li>',
+			esc_url( '' === $path ? $base : $base . $path . '/' ),
+			esc_html( '' === $name ? $label : ( '' === $path ? $name : $name . ' ' . $label ) )
+		);
+	}
+	$html .= '<ul>' . implode( '', $items ) . '</ul></div>';
+	return $html;
+}
+
+/**
+ * The public addresses of one player: the profile and its six sections.
+ *
+ * @return string[]
+ */
+function statchasers_player_public_urls( string $slug ): array {
+	$base = home_url( '/' . statchasers_player_url_base() . '/' . $slug . '/' );
+	$urls = array( $base );
+	foreach ( STATCHASERS_PLAYER_INDEXED_SECTIONS as $section ) {
+		$urls[] = $base . $section . '/';
+	}
+	return $urls;
+}
+
+/**
+ * Purge a player's other pages when one of them has moved on.
+ *
+ * Each of a player's seven addresses is a page of its own to the page
+ * cache, with its own lifetime, so after a data refresh the overview could
+ * show Week 8 while /stats/ still showed Week 7 for as long as its cached
+ * copy lived (mak's crawl, 2026-11-03). The fragment's ETag is the API's
+ * fingerprint of the data behind it: when a fresh fetch returns a different
+ * one from the last this site recorded for the player, every address of
+ * his is purged from WP Rocket, so the next visit to any of them renders
+ * from the same snapshot. Once per version per player, recorded in a
+ * transient, so a purge does not follow every fetch.
+ *
+ * Only the page cache this plugin can reach: rocket_clean_files() when WP
+ * Rocket is active. A host CDN that caches on top of it has to be purged
+ * from its own side (see docs on the Rocket.net edge).
+ */
+function statchasers_player_purge_siblings( string $slug, string $version ): void {
+	if ( '' === $version || ! function_exists( 'rocket_clean_files' ) ) {
+		return;
+	}
+	$key  = 'sc_player_ver_' . md5( $slug );
+	$seen = (string) get_transient( $key );
+	if ( $seen === $version ) {
+		return;
+	}
+	set_transient( $key, $version, STATCHASERS_PLAYER_BACKUP_TTL );
+	if ( '' === $seen ) {
+		// The first fetch this site has recorded for him: nothing is stale yet.
+		return;
+	}
+	rocket_clean_files( statchasers_player_public_urls( $slug ) );
+}
 
 /* --------------------------------------------------------------- FAQ schema */
 
@@ -1536,6 +1643,17 @@ function statchasers_player_request_meta(): ?array {
 
 	$html = statchasers_player_page_html();
 	if ( ! preg_match( '#<script type="application/json" class="scp-page-data">(.*?)</script>#s', $html, $match ) ) {
+		// No island: the API did not answer (an outage, or the first minutes
+		// after a publish). A section URL still gets its own title and
+		// description, built here from the same wording, rather than the
+		// profile's stored copy - six addresses must not claim to be one
+		// page because the origin was slow (mak's brief, 2026-11-03).
+		$section = statchasers_player_indexed_section();
+		if ( '' !== $section && function_exists( 'statchasers_player_fallback_meta' ) ) {
+			$queried = get_queried_object();
+			$slug    = $queried instanceof WP_Post ? (string) $queried->post_name : '';
+			$meta    = '' === $slug ? null : statchasers_player_fallback_meta( $slug, $section );
+		}
 		return $meta;
 	}
 

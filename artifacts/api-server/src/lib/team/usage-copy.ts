@@ -216,10 +216,10 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
       d == null
         ? ""
         : d >= 1.5
-          ? ` His workload is up **${signed(d)} weighted opportunities/game** from last season.`
+          ? ` His workload is up ${signed(d)} weighted opportunities/game from last season.`
           : d <= -1.5
-            ? ` His workload is down **${Math.abs(d).toFixed(1)} weighted opportunities/game** from last season.`
-            : ` His workload is level with last season (**${signed(d)} weighted opportunities/game**).`;
+            ? ` His workload is down ${Math.abs(d).toFixed(1)} weighted opportunities/game from last season.`
+            : ` His workload is level with last season (${signed(d)} weighted opportunities/game).`;
     out.push({
       lead: `${surname(rb1.name)}:`,
       body:
@@ -241,8 +241,8 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
 
   if (passingOwner && passingOwner !== rb1 && (ownerShare(passingOwner) ?? 0) >= 40) {
     const where = thirdSample
-      ? `**${ownerShare(passingOwner)}% of the backs' third-down carries + targets**`
-      : `**${ownerShare(passingOwner)}% of the backfield's targets**`;
+      ? `${ownerShare(passingOwner)}% of the backs' third-down carries + targets`
+      : `${ownerShare(passingOwner)}% of the backfield's targets`;
     const tm = twoMin(passingOwner);
     out.push({
       lead: `Why ${surname(rb1.name)}'s reception count stays capped:`,
@@ -261,8 +261,8 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
     // third down role exactly?"): the lead carries the back, the body his share.
     const share = ownerShare(rb1);
     const path = thirdSample
-      ? `${share != null ? `**${share}% of the backs' third-down carries + targets**` : "His third-down role"} gives him receiving value even when rushing volume falls`
-      : `${share != null ? `**${share}% of the backfield's targets**` : "His share of the backfield's targets"} gives him receiving value even when rushing volume falls`;
+      ? `${share != null ? `${share}% of the backs' third-down carries + targets` : "His third-down role"} gives him receiving value even when rushing volume falls`
+      : `${share != null ? `${share}% of the backfield's targets` : "His share of the backfield's targets"} gives him receiving value even when rushing volume falls`;
     const script =
       trailing == null
         ? "."
@@ -284,9 +284,9 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
       lead: `If ${surname(rb1.name)} misses time:`,
       body:
         `${surname(rb2.name)} projects for ` +
-        (projShare != null ? `roughly **${projShare}% of backfield weighted opportunities**, or about ` : "about ") +
-        `**${projected.toFixed(1)} per active game** - ${level}` +
-        (startable ? (stash ? " and why he remains a **stash**, not a cut." : ", worth a bench spot in deeper leagues.") : "."),
+        (projShare != null ? `roughly ${projShare}% of backfield weighted opportunities, or about ` : "about ") +
+        `${projected.toFixed(1)} per active game - ${level}` +
+        (startable ? (stash ? " and why he remains a stash, not a cut." : ", worth a bench spot in deeper leagues.") : "."),
     });
   } else {
     out.push({

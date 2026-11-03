@@ -20,6 +20,8 @@ import type { PlayerPageData } from "./player-data";
 import { SCORING_SHORT } from "./scoring";
 import { OUTLOOK_SEASON } from "./outlook-2026";
 import { sectionHref } from "./sections";
+import { getEntryPoints } from "./scoring";
+import { heroCells, playedEntries, seasonTotals } from "./season-line";
 import type { UpcomingGame } from "./upcoming";
 
 const DASH = "-";
@@ -237,47 +239,31 @@ export function teamInk(team: NflTeam | null): string | null {
 
 /* ---------------------------------------------------------- the H1 subtitle */
 
-/** What the Stats tab covers, by position. */
-const STAT_CATEGORIES: Record<string, string> = {
-  QB: "passing, rushing",
-  RB: "rushing, receiving",
-  WR: "receiving",
-  TE: "receiving",
-  K: "kicking",
+/**
+ * The second line of the header's heading, per tab.
+ *
+ * The name and this line are one heading, so every section address has its
+ * own H1 - "George Pickens / Stats", "George Pickens / Injury Status" -
+ * without the name itself ever changing. The profile has no second line at
+ * all: its H1 is the player's name and nothing else (mak's player-entity
+ * brief, 2026-11-03), because the hub is the player's page before it is a
+ * page about any one thing. The nav links carry the line for each tab
+ * (data-scp-kind) and client/player.ts swaps it on a click.
+ *
+ * The phrases are the section H1s of the brief, and statchasers_player_heading()
+ * in the WordPress plugin spells them the same way for the theme's title.
+ */
+export const SECTION_KINDS: Record<string, string> = {
+  stats: "Stats",
+  "game-log": "Game Log",
+  outlook: "Fantasy Outlook",
+  injury: "Injury Status",
+  news: "News",
+  bio: "Bio",
 };
 
-/**
- * The second line of the header's H1, per tab.
- *
- * The name and this line are one heading, so every tab's address has its own
- * H1 - "Jacoby Brissett / Game log: 2026 weekly stats and fantasy points" -
- * without the name itself ever changing. The nav links carry the line for
- * each tab (data-scp-kind) and client/player.ts swaps it on a click.
- */
-export function headerKind(data: PlayerPageData, tab: string): string {
-  const leagueSeason = data.leagueSeason ?? data.season;
-  switch (tab) {
-    case "stats": {
-      const cats = STAT_CATEGORIES[data.player.position ?? ""];
-      return `Stats: ${data.season} and career ${cats ? `${cats} and ` : ""}fantasy numbers`;
-    }
-    case "game-log":
-      return `Game log: ${data.season} weekly stats and fantasy points`;
-    case "outlook":
-      return `${OUTLOOK_SEASON} fantasy outlook and rest-of-season projection`;
-    case "injury":
-      return "Injury status and history";
-    case "news":
-      return "Latest news and fantasy analysis";
-    case "bio":
-      return "Bio, career timeline and draft history";
-    default: {
-      const next = headerFixture(data);
-      return next && !seasonNotStarted(data)
-        ? `Fantasy outlook, stats and Week ${next.game.week} start/sit for ${leagueSeason}`
-        : `Fantasy outlook and stats for ${leagueSeason}`;
-    }
-  }
+export function headerKind(_data: PlayerPageData, tab: string): string {
+  return SECTION_KINDS[tab] ?? "";
 }
 
 /** The tab as the analytics attribute spells it: "game-log" is "gamelog". */
@@ -466,6 +452,56 @@ function injuryPill(
   );
 }
 
+/** "Nov 2, 2026" in the Eastern calendar, for the production line's stamp. */
+function updatedLabel(ms: number): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(ms));
+}
+
+/**
+ * The season's counting line under the identity: "2026 season, through
+ * Week 8", then REC, YDS, TD and Y/R for a receiver (season-line.ts has the
+ * other positions). Nothing for a player with no logged game this season,
+ * and nothing for a position the logs carry no line for.
+ *
+ * The stamp beside the caption is the day the season's game logs were last
+ * written (data.statsUpdatedMs, the file's own write time) - a real date
+ * from the data, never the clock. Left out when the data layer has none.
+ */
+function renderProductionLine(data: PlayerPageData): string {
+  const played = playedEntries(data.gameLog ?? []);
+  if (played.length === 0) return "";
+  const totals = seasonTotals(played, (e) => getEntryPoints(e.stats, data.format));
+  const cells = heroCells(data.player.position, totals);
+  if (cells.length === 0) return "";
+
+  const current = data.season === (data.leagueSeason ?? data.season) && (data.leagueWeek ?? 0) > 0;
+  const caption = current ? `${data.season} season, through Week ${data.leagueWeek}` : `${data.season} season`;
+  const updated =
+    typeof data.statsUpdatedMs === "number" && Number.isFinite(data.statsUpdatedMs) && data.statsUpdatedMs > 0
+      ? ` <time class="scp-pline-upd" datetime="${escapeHtml(new Date(data.statsUpdatedMs).toISOString())}">` +
+        `${escapeHtml(`Updated ${updatedLabel(data.statsUpdatedMs)}`)}</time>`
+      : "";
+
+  return (
+    `<div class="scp-pline-wrap">` +
+    `<p class="scp-pline-cap"><span>${escapeHtml(caption)}</span>${updated}</p>` +
+    `<dl class="scp-pline">` +
+    cells
+      .map(
+        (c) =>
+          `<div><dt><abbr title="${escapeHtml(c.title)}">${escapeHtml(c.label)}</abbr></dt> ` +
+          `<dd>${escapeHtml(c.value)}</dd></div>`,
+      )
+      .join(" ") +
+    `</dl></div>`
+  );
+}
+
 /**
  * The profile header: photo well, identity, scoreboard, and the strip under
  * them with the next matchup and the two ways on.
@@ -484,14 +520,17 @@ export function renderHero(
   tab = "overview",
 ): string {
   const { player, team } = data;
-  // The page's H1 on the standalone page. Embedded it is an H2, including when
-  // the tool supplies the heading: that H1 is a panel's promoted heading, the
-  // keyword phrase the SEO audit asked for - see promoteHeading().
-  const Heading = options.embed ? "h2" : "h1";
+  // The page's H1: on the standalone page, and on the host once it has
+  // stood down (the plugin's "the tool supplies the heading" mode, ?h1=1).
+  // Only a plain embed, where the theme prints the page title above the
+  // fragment, keeps this an H2 - there the host's title is the H1, and the
+  // plugin spells it the way this heading reads (statchasers_player_heading).
+  const Heading = options.embed && !options.ownHeading ? "h2" : "h1";
   const prefix = options.playerPathPrefix ?? "/player/";
   const teamPrefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
   const tabUrl = (id: string): string => `${prefix}${player.slug}/${id}/${query}`;
+  const kind = headerKind(data, tab);
 
   /* ---- the tag row ---- */
 
@@ -522,6 +561,12 @@ export function renderHero(
   const height = formatHeight(player.height);
   const build = [height, player.weight ? `${player.weight} lb` : ""].filter(Boolean).join(", ");
   if (build) spec.push(["Height / weight", build]);
+  // The college beside the measurements (the entity brief, 2026-11-03):
+  // "where did he go to college" is a question the hero can answer in a
+  // word. From the bio profile, which reads the draft record first and the
+  // fact store second; a player with neither gets no cell.
+  const college = data.bioProfile?.college ?? null;
+  if (college) spec.push(["College", college]);
   if (player.years_exp !== null && player.years_exp !== undefined) {
     spec.push([
       "Experience",
@@ -542,6 +587,14 @@ export function renderHero(
         .join(" ") +
       `</dl>`
     : "";
+
+  /* ---- the production line ---- */
+
+  // His NFL numbers this season, under the identity and before the fantasy
+  // board (the entity brief's hierarchy: who he is, what he has done, then
+  // what it is worth in fantasy). Summed from the same game log the Stats
+  // tab sums, through season-line.ts, so the hero and the tables agree.
+  const line = renderProductionLine(data);
 
   /* ---- the scoreboard ---- */
 
@@ -643,10 +696,14 @@ export function renderHero(
       .split(/\s+/)
       .map((word) => `<span class="scp-phead-word">${escapeHtml(word)}</span>`)
       .join(" ") +
-    `</span> ` +
-    `<span class="scp-phead-kind">${escapeHtml(headerKind(data, tab))}</span>` +
+    `</span>` +
+    // The section's word under the name, as part of the heading: "George
+    // Pickens Stats". The profile has none, so its heading is the name
+    // alone - no empty span, so the H1's text IS the name.
+    (kind ? ` <span class="scp-phead-kind">${escapeHtml(kind)}</span>` : "") +
     `</${Heading}>` +
     specRow +
+    line +
     `</div>` +
     scoreboard +
     `</div>` +

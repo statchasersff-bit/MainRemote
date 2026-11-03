@@ -1381,13 +1381,19 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 			);
 
 		case 'depth-chart':
+			// mak's depth-chart brief (2026-11-03): the whole chart, not the
+			// offensive one. Mirrors sectionMeta() in the API's team-seo.ts.
 			return array(
-				'title'       => sprintf( '%s Depth Chart %s: Starters & Backups', $name, $season ),
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Depth Chart %s: Starters & Backups', $name, $season ),
+						sprintf( '%s Depth Chart %s', $name, $season ),
+					)
+				),
 				'description' => sprintf(
-					'The %1$s offensive depth chart for %2$s: starters and backups by position, with the %3$s roles that decide fantasy value.',
+					'View the %1$s depth chart for the %2$s NFL season, including current starters, backups, offense, defense, special teams and fantasy skill-position rankings.',
 					$name,
-					$season,
-					$nick
+					$season
 				),
 			);
 	}
@@ -1449,6 +1455,13 @@ function statchasers_team_heading( string $slug, string $section ): string {
 	// The hub's phrase mirrors teamHubHeading(). It was "Team Hub", which says
 	// nothing a reader searches for.
 	$phrase = $phrases[ $section ] ?? 'Fantasy Football Outlook & Stats';
+
+	// The depth chart carries no year (UNDATED_SECTION_HEADINGS in the API):
+	// "Buffalo Bills Depth Chart" is the phrase searched, and the page's own
+	// stamp line says which season and when it was refreshed (2026-11-03).
+	if ( 'depth-chart' === $section ) {
+		return sprintf( '%s %s', $row[0], $phrase );
+	}
 
 	return sprintf( '%s %s %s', $row[0], $phrase, STATCHASERS_TEAM_SEASON );
 }

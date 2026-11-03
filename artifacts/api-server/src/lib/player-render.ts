@@ -38,6 +38,7 @@
  * palest step never has to carry meaning alone.
  */
 
+import { logger } from "./logger";
 import { escapeHtml, escapeJsonLd, safeUrl } from "./render";
 import { headshotImg } from "./headshot-html";
 import { assetUrl } from "./asset-origin";
@@ -86,6 +87,7 @@ import { percentileWord } from "./player/fantasy-read";
 import type { OutlookBand } from "./player/types";
 import {
   headerKind,
+  SECTION_KINDS,
   matchupBand,
   OUTLOOK_SEASON,
   renderHero,
@@ -169,12 +171,12 @@ export interface PlayerRenderOptions {
    * The host has stood down: this fragment supplies the page's <h1>.
    *
    * Set by the WordPress plugin's "the tool supplies the heading" mode, which
-   * empties the theme's page title. Without it the theme prints the same phrase
-   * above the tool and the page carries the heading twice - once in the theme's
-   * serif, once here with the gold rule under it.
+   * empties the theme's page title. Without it the theme prints the page's
+   * name above the tool and the page carries the heading twice.
    *
-   * Exactly one panel is promoted either way. See promoteHeading(). The
-   * header stays an <h2> in this mode as in any embed.
+   * The hero's heading is the H1 in this mode (the name on the profile, the
+   * name and the section's word on a section page - header.ts), exactly as
+   * on the standalone page. A plain embed keeps it an <h2>.
    */
   ownHeading?: boolean;
   /**
@@ -188,37 +190,25 @@ export interface PlayerRenderOptions {
 }
 
 /**
- * How a section-scoped page names itself.
- *
- * The heading is the page's H1 (its H2 in embed mode, where WordPress supplies
- * the H1) and is written as the phrase people search rather than as a tab
- * label: "Injury Update & History", not "Injury". Sections not listed here can
+ * How a section-scoped page names itself: "{Name} Stats", "{Name} Injury
+ * Status" - the H1s of mak's player-entity brief (2026-11-03). The hero
+ * prints the name and the section's word as one heading (header.ts,
+ * SECTION_KINDS); this is the same phrase in one string, for the nav's
+ * data-scp-heading and the plugin's probe. Sections not listed here can
  * still be addressed; they just fall back to the tab's own label.
  */
-const SECTION_HEADINGS: Record<string, string> = {
-  stats: "Stats",
-  injury: "Injury Update & History",
-  "game-log": "Game Log",
-  outlook: "Fantasy Outlook",
-  // mak, 2026-09-30 (was "News & Analysis"); worded "Latest {name} News &
-  // Updates" by sectionHeading() below.
-  news: "News & Updates",
-  bio: "Bio",
-};
+const SECTION_HEADINGS: Record<string, string> = SECTION_KINDS;
 
 /**
- * The heading of the profile itself: "Josh Allen Fantasy Football".
+ * The heading of the profile itself: the player's name, and nothing else.
  *
- * The profile's address is the Overview's address - `/overview/` 301s here - so
- * this is also the Overview tab's heading. It names the player and the intent,
- * like the six section headings beside it. The two it replaced did not: the
- * panel's "2026 Fantasy Snapshot" was the same words on every profile, and the
- * bare name was the same words as the hero.
+ * The profile's address is the Overview's address - `/overview/` 301s here -
+ * so this is also the Overview tab's heading. It was "{Name} Fantasy
+ * Football" (mak, 2026-10-09); the entity brief of 2026-11-03 makes the hub
+ * the player's page first, so the H1 is the entity: the name.
  */
 export function profileHeading(playerName: string): string {
-  // "{Name} Fantasy Football" since 2026-10-09 (mak): the hub's search is
-  // "X fantasy", and "Stats" belongs to the Stats tab's heading.
-  return `${playerName} Fantasy Football`;
+  return playerName;
 }
 
 /** The small line under the hub's H1: "RB, Atlanta Falcons". */
@@ -226,21 +216,18 @@ export function profileSubtitle(data: PlayerPageData): string {
   return [data.player.position, data.team?.fullName].filter(Boolean).join(", ");
 }
 
-/** The public heading for a section page, e.g. "Jacoby Brissett Injury Update & History". */
+/** The public heading for a section page, e.g. "George Pickens Injury Status". */
 export function sectionHeading(
   playerName: string,
   section: string,
-  season?: number,
+  _season?: number,
 ): string | null {
   const phrase = SECTION_HEADINGS[section];
   if (!phrase) return null;
-  // "Jacoby Brissett Stats 2026" - the year is part of the phrase people type
-  // for stats, a game log and an outlook, and not for the others. The outlook's
-  // year is the one it projects, which is not always the season on the page.
-  if (section === "outlook") return `${playerName} ${phrase} ${OUTLOOK_SEASON}`;
-  if (section === "news") return `Latest ${playerName} ${phrase}`;
-  const dated = season && (section === "stats" || section === "game-log");
-  return dated ? `${playerName} ${phrase} ${season}` : `${playerName} ${phrase}`;
+  // No year in any of them: the year lives in the H2s under the heading
+  // ("{Name} 2026 Stats"), which roll with the league season, and the
+  // address is evergreen.
+  return `${playerName} ${phrase}`;
 }
 
 /* ------------------------------------------------------------------ atoms */
@@ -289,64 +276,19 @@ function h3(text: string): string {
 }
 
 /**
- * Promote a panel's own heading to the page's <h1>.
+ * Take a panel's own name off a section page.
  *
- * Every section opens with `h2()` - "Jacoby Brissett Stats 2026" and its six
- * siblings - because the fragment is normally mounted in a page that already
- * has an H1 of its own. On a section address the host prints that same phrase
- * in the theme's title and the reader sees it twice: once in the theme's serif
- * at the top, once here with the gold rule under it, saying the same words.
- *
- * Where the host has agreed to stand down (the plugin's "the tool supplies the
- * heading" mode empties the theme's title), the panel's heading IS the page's
- * heading and should be marked up as one. Only the class stays - the styling is
- * `.scp-h2` in both cases, so this changes the document outline and nothing a
- * reader can see.
- *
- * The FIRST match only, and only ever one panel's worth: a section page renders
- * one panel, and the all-tabs page promotes just the panel it opens on, so the
- * document has exactly one H1 either way.
- *
- * `text` replaces the heading's words as well. The all-tabs page passes
- * profileHeading(): its opening panel is headed "2026 Fantasy Snapshot", which
- * names nobody and read the same on every profile once it was the H1.
+ * Every panel opens with `h2()` - "George Pickens Injury Update & History",
+ * "Latest George Pickens News & Updates" - because on the all-tabs page it
+ * is the heading that names the panel. On the section's own address the
+ * hero's H1 already says "George Pickens Injury Status" a few lines above,
+ * and the same words twice in two sizes is the duplicate the brief asks to
+ * end. The FIRST `.scp-head` only, and only the plain panel heading: a
+ * spec's lead heading ("George Pickens 2026 Stats", .is-lead) is a section
+ * of the page and stays.
  */
-function promoteHeading(html: string, text?: string, subtitle?: string): string {
-  return html.replace(
-    /<h2 class="scp-h2">([\s\S]*?)<\/h2>/,
-    (_, inner: string) =>
-      `<h1 class="scp-h2">${text === undefined ? inner : escapeHtml(text)}</h1>` +
-      // The hub's small line under its H1 - "RB, Atlanta Falcons" (mak,
-      // 2026-10-09). Only the promoted heading carries it: the panel's own
-      // <h2> is a snapshot caption, not the page's name.
-      (subtitle ? `<p class="scp-head-sub">${escapeHtml(subtitle)}</p>` : ""),
-  );
-}
-
-/**
- * Tabs whose panel heading is gone, and the section heading that is theirs now.
- *
- * mak dropped the Stats panel heading and the Outlook's "<season> Outlook" head
- * (2026-09-30), so each tab's first spec heading is the one the page's H1 has
- * to be: "{Name} {season} stats", "{Name} rest-of-season outlook". Its own
- * words, not sectionHeading()'s, so the H1 is the heading a reader sees.
- */
-const LEAD_HEADINGS: Record<string, string> = {
-  stats: STATS_LEAD_ID,
-  outlook: "scp-ol-take-h",
-};
-
-/**
- * promoteHeading() for a tab in LEAD_HEADINGS. One that still has its old
- * panel heading (a Stats tab with no production section) promotes that, as
- * before.
- */
-function promoteLeadHeading(html: string, id: string, fallbackText?: string): string {
-  if (/<h2 class="scp-h2">/.test(html)) return promoteHeading(html, fallbackText);
-  return html.replace(
-    new RegExp(`<h2 class="scp-ox-h2 is-lead" id="${id}">([\\s\\S]*?)</h2>`),
-    (_, inner: string) => `<h1 class="scp-ox-h2 is-lead" id="${id}">${inner}</h1>`,
-  );
+function dropPanelHeading(html: string): string {
+  return html.replace(/^<div class="scp-head"><h2 class="scp-h2">[\s\S]*?<\/h2>(?:<p class="scp-head-sub">[\s\S]*?<\/p>)?<\/div>/, "");
 }
 
 /**
@@ -501,6 +443,23 @@ function whole(value: number | null | undefined): string {
     /\B(?=(\d{3})+(?!\d))/g,
     ",",
   )}`;
+}
+
+/**
+ * A share or rate already expressed in percent, checked before it prints.
+ *
+ * Null for nothing; the value for 0-100; null WITH a warning for anything
+ * else, so a share stored as a fraction (0.21) or doubled (2100) is left off
+ * the page and lands in the log instead of in a crawler's cache. A clamp
+ * would hide the bug that produced it.
+ */
+export function sharePct(value: number | null | undefined, what: string): number | null {
+  if (value === null || value === undefined || !Number.isFinite(value)) return null;
+  if (value < 0 || value > 100) {
+    logger.warn({ what, value }, "player page: a share outside 0-100% was dropped");
+    return null;
+  }
+  return value;
 }
 
 function pct(value: number | null | undefined, digits = 0): string {
@@ -818,25 +777,15 @@ function pageUrl(
  * the inputs are missing.
  */
 /**
- * "Bijan Robinson is the RB3 in PPR this season (21.4 points per game) and
- * faces the Buccaneers in Week 6." - the hub's answer, near the top, in the
- * server HTML (mak, 2026-10-09). The rank phrase links to the Outlook tab and
- * the fixture to his start/sit page. A player on last season's page gets
- * last season's finish and this season's opener; a player with no rank gets
- * nothing rather than a sentence with a hole in it.
+ * The Overview's opening block: nothing, since the entity brief of
+ * 2026-11-03. It carried the heading promoteHeading() turned into the host's
+ * H1 ("{Name} Fantasy Football"); the hero's own heading is the H1 now, on
+ * the host and standalone alike, so the slot - and the "Fantasy Snapshot"
+ * caption before it (mak, 2026-10-23) - is gone. Kept as a function so the
+ * assembly below reads as it did and a future opening block has a place.
  */
-/**
- * The Overview's opening heading, and nothing under it (mak, 2026-10-23: the
- * snapshot rail, the answer sentence and the Role Direction rail are gone).
- * The heading stays because it is the slot promoteHeading() turns into the
- * page's H1 on the host - "Jacoby Brissett Fantasy Football" with the small
- * position-and-team line - so it wears those words here too instead of a
- * "Fantasy Snapshot" caption over no snapshot.
- */
-function renderFantasySnapshot(data: PlayerPageData): string {
-  const { stats } = data;
-  if (!stats || stats.gamesPlayed === 0) return "";
-  return `<section class="scp-read-hero">${h2(profileHeading(data.player.name))}</section>`;
+function renderFantasySnapshot(_data: PlayerPageData): string {
+  return "";
 }
 
 /* --------------------------------------------------------------------- bio */
@@ -1296,9 +1245,15 @@ function renderWeekDetail(
     facts.push({ label: "Offensive snaps", value: whole(snaps) });
   }
 
-  const targetShare = statOf(entry, "target_share");
+  // `target_share` is written as a PERCENT (20.0, not 0.20) by
+  // enrichWithTeamMetrics() in ranks.ts - the only writer there is. This
+  // row multiplied it by a hundred again and printed "Target share 2000.0%"
+  // on every game-log card (found by mak's crawl, 2026-11-03). sharePct()
+  // prints it as is, and drops the row rather than print anything outside
+  // 0-100, which would be a pipeline bug worth seeing, not clamping.
+  const targetShare = sharePct(statOf(entry, "target_share"), `${player.slug} week ${entry.week} target_share`);
   if (targetShare !== null && targetShare > 0) {
-    facts.push({ label: "Target share", value: pct(targetShare * 100, 1) });
+    facts.push({ label: "Target share", value: pct(targetShare, 1) });
   }
 
   if (facts.length === 0) return "";
@@ -2228,7 +2183,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
   // The panel's own heading, printed on the scoped URL too. Since 2026-09-30
   // only when the spec's production section is missing (a rookie's college
   // tab, a kicker): mak dropped it, and "{Name} {season} stats" right under
-  // it now heads the tab and becomes the WordPress H1 (promoteLeadHeading).
+  // it now heads the tab under the hero's H1.
   const heading = spec.top.includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
 
   return {
@@ -2707,21 +2662,12 @@ export function renderPlayerPage(
       `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
-      // In the address's words, not the panel's: the Outlook panel opens on
-      // "2026 Outlook", which names nobody. The words are the ones the strip
-      // hands the host's H1 for this tab, so the two cannot disagree.
-      (options.ownHeading
-        ? LEAD_HEADINGS[scoped.id]
-          ? promoteLeadHeading(
-              panelHtml,
-              LEAD_HEADINGS[scoped.id]!,
-              scoped.id === "stats" ? undefined : sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
-            )
-          : promoteHeading(
-              panelHtml,
-              sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
-            )
-        : panelHtml) +
+      // The hero's heading is this page's H1 ("{Name} Injury Status") wherever
+      // the hero is allowed one - standalone, or on a host that stood down -
+      // so the panel's own name under it would be the same phrase twice. A
+      // plain embed keeps it: there the host's title is the H1 and the panel
+      // heading is the first thing of ours a reader sees.
+      (!options.embed || options.ownHeading ? dropPanelHeading(panelHtml) : panelHtml) +
       `</section>` +
       // The tab's footer, the rail, then its FAQ (mak, 2026-09-30) - except
       // Stats, whose footer closes the page under the FAQ (mak, 2026-10-02).
@@ -2745,12 +2691,11 @@ export function renderPlayerPage(
         `<section class="scp-section${i === 0 ? " is-default is-active" : ""}"` +
         ` data-scp-panel id="${escapeHtml(section.id)}"` +
         ` aria-labelledby="${escapeHtml(section.id)}-tab">` +
-        // Only the panel the page opens on. The other six keep their <h2>, so
-        // the document has one H1 whichever tab a reader switches to. It reads
-        // as the profile rather than as the panel: this address is the profile.
-        (options.ownHeading && i === 0
-          ? promoteHeading(section.html, profileHeading(data.player.name), profileSubtitle(data))
-          : section.html) +
+        // No panel is promoted: the hero's heading is the profile's H1 (the
+        // name), standalone and on a host that stood down alike. Every panel
+        // keeps its own <h2>, so the document has one H1 whichever tab a
+        // reader switches to.
+        section.html +
         `</section>`,
     )
     .join("");

@@ -657,6 +657,58 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   };
 }
 
+/**
+ * The Overview's news digest (mak's player-entity brief, 2026-11-03): the
+ * newest few items of the same feed the News tab is built from - the lead
+ * first, then the rest in date order - as a compact list: category and
+ * date, the headline as a link, one sentence. Nothing the News tab does not
+ * already say, and a link to it at the foot. Empty when the feed is empty.
+ *
+ * The headline links where the News tab's does: a wire report to its
+ * source, a recap to the game log. The same markup classes as the feed row
+ * (player.css "news"), so the digest wears the tab's type without a second
+ * stylesheet block.
+ */
+export function renderNewsDigest(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+  limit = 4,
+): string {
+  const ctx = context(data, options);
+  if (!ctx) return "";
+  const { items } = buildFeed(ctx, data.news ?? []);
+  const lead = pickLead(items);
+  const ordered = lead ? [lead, ...items.filter((i) => i !== lead)] : items;
+  const shown = ordered.slice(0, limit);
+  if (shown.length === 0) return "";
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const q = options.linkQuery ?? "";
+  const href = `${prefix}${data.player.slug}/news/${q}`;
+
+  const rows = shown
+    .map((i) => {
+      const game = i.type === "game";
+      const sentence = game ? i.takeaway ?? "" : firstSentence(i.summary).first || i.take;
+      const line = game && i.panel ? timelineStats(i.panel.lines) : "";
+      return (
+        `<li class="scp-nw-dg-item is-${i.impact}" data-type="${i.type}">` +
+        `<p class="scp-nw-meta">${catBadge(i)}${stamp(i.ms, i.hasTime)}${game ? "" : `<span>${sourceBits(i)}</span>`}</p>` +
+        `<h3 class="scp-nw-dg-h">${link(i.url, i.headline, "", i.external)}</h3>` +
+        (line ? `<p class="scp-nw-statline">${escapeHtml(line)}</p>` : "") +
+        (sentence ? `<p class="scp-nw-dg-sum">${escapeHtml(sentence)}</p>` : "") +
+        `</li>`
+      );
+    })
+    .join("");
+
+  // Inside a .scp-nw scope, so the badges and the meta row wear the News
+  // tab's rules; the list's own layout is player.css "news digest".
+  return (
+    `<div class="scp-nw scp-nw-dg"><ol class="scp-nw-digest">${rows}</ol></div>` +
+    `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`All ${data.player.name} news and updates`)}</a>`
+  );
+}
+
 export function renderNewsTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const parts = renderNewsTabParts(data, options);
   return parts ? parts.body + parts.faq : "";

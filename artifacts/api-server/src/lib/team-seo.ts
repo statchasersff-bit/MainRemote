@@ -125,12 +125,17 @@ function sectionMeta(
     };
   }
 
+  // Description per mak's depth-chart brief (2026-11-03): the whole chart,
+  // not the offensive one, with the fantasy hierarchy named last.
   if (section === "depth-chart") {
     return {
-      title: `${name} Depth Chart ${season}: Starters & Backups`,
+      title: fitTitle([
+        `${name} Depth Chart ${season}: Starters & Backups`,
+        `${name} Depth Chart ${season}`,
+      ]),
       description:
-        `The ${name} offensive depth chart for ${season}: starters and backups by ` +
-        `position, with the ${nick} roles that decide fantasy value.`,
+        `View the ${name} depth chart for the ${season} NFL season, including current starters, ` +
+        `backups, offense, defense, special teams and fantasy skill-position rankings.`,
     };
   }
 

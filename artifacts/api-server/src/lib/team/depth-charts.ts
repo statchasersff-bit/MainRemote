@@ -44,9 +44,28 @@ interface ToolPlayer {
   movement: Movement | null;
 }
 
+/** A side of the ball, as the tool's document spells it. */
+export type ToolSide = "offense" | "defense" | "specialTeams";
+
+/**
+ * One depth-chart slot as the club lists it (plugin 1.7.2, 2026-11-03): the
+ * source's own key ("wr1", "lde", "nb"), its printed abbreviation and the
+ * players in its order. Three WR slots are three entries. Older documents
+ * have none, and the football chart is then folded from the columns.
+ */
+interface ToolSlot {
+  key: string;
+  slot: string;
+  side: ToolSide;
+  players: ToolPlayer[];
+}
+
 interface ToolTeam {
   team: { abbr: string; name: string; logo: string | null };
   positions: Record<string, ToolPlayer[]>;
+  slots?: ToolSlot[];
+  /** The formation each side's slots were read from: "3WR 1TE", "Base 3-4 D". */
+  formations?: Partial<Record<ToolSide, string>>;
 }
 
 export interface DepthChartsDoc {
@@ -153,10 +172,38 @@ export interface DepthView {
   columns: DepthColumn[];
 }
 
+/** One row of the football chart: a slot and its depth string. */
+export interface FootballSlot {
+  /** The source's key, unique within the team: "wr1", "lde". */
+  key: string;
+  /** What the row label prints: "WR", "LDE", "K". */
+  pos: string;
+  /** Spelled out: "Wide receiver", "Left defensive end". */
+  label: string;
+  rows: DepthRow[];
+}
+
+export interface FootballSide {
+  key: "offense" | "defense" | "special";
+  label: string;
+  /** The formation the slots were read from ("3WR 1TE"), or null. */
+  formation: string | null;
+  /**
+   * True when the document carried no slots and these rows are the folded
+   * columns, one row per column: a base offense's three WR slots read as one
+   * WR row there.
+   */
+  folded: boolean;
+  slots: FootballSlot[];
+}
+
 export interface TeamDepthCharts {
   fetchedAt: string;
   season: number;
+  /** The tool's four views, in its order (Fantasy first). */
   views: DepthView[];
+  /** The football chart: offense, defense, special teams, slot by slot. */
+  football: FootballSide[];
 }
 
 /* ------------------------------------------------------------------ read */
@@ -202,6 +249,75 @@ export function nameKey(name: string): string {
   return words.join(" ");
 }
 
+/**
+ * What a slot abbreviation spells out, for the row's screen-reader text and
+ * tooltip. ESPN's abbreviations, plus the folded columns' for an old document.
+ */
+const SLOT_LABELS: Record<string, string> = {
+  QB: "Quarterback",
+  RB: "Running back",
+  HB: "Halfback",
+  FB: "Fullback",
+  WR: "Wide receiver",
+  TE: "Tight end",
+  LT: "Left tackle",
+  LG: "Left guard",
+  C: "Center",
+  RG: "Right guard",
+  RT: "Right tackle",
+  OL: "Offensive line",
+  DE: "Defensive end",
+  LDE: "Left defensive end",
+  RDE: "Right defensive end",
+  DT: "Defensive tackle",
+  LDT: "Left defensive tackle",
+  RDT: "Right defensive tackle",
+  NT: "Nose tackle",
+  DL: "Defensive line",
+  EDGE: "Edge rusher",
+  LB: "Linebacker",
+  MLB: "Middle linebacker",
+  ILB: "Inside linebacker",
+  LILB: "Left inside linebacker",
+  RILB: "Right inside linebacker",
+  OLB: "Outside linebacker",
+  LOLB: "Left outside linebacker",
+  ROLB: "Right outside linebacker",
+  WLB: "Weakside linebacker",
+  SLB: "Strongside linebacker",
+  CB: "Cornerback",
+  LCB: "Left cornerback",
+  RCB: "Right cornerback",
+  NB: "Nickel back",
+  NCB: "Nickel back",
+  DB: "Defensive back",
+  S: "Safety",
+  SS: "Strong safety",
+  FS: "Free safety",
+  K: "Kicker",
+  PK: "Kicker",
+  P: "Punter",
+  LS: "Long snapper",
+  KR: "Kick returner",
+  PR: "Punt returner",
+  H: "Holder",
+};
+
+/** "K" for ESPN's "PK"; every other abbreviation prints as the source has it. */
+function slotPos(slot: string): string {
+  return slot === "PK" ? "K" : slot;
+}
+
+export function slotLabel(slot: string): string {
+  return SLOT_LABELS[slot] ?? slot;
+}
+
+const SIDES: Array<{ side: ToolSide; key: FootballSide["key"]; label: string }> = [
+  { side: "offense", key: "offense", label: "Offense" },
+  { side: "defense", key: "defense", label: "Defense" },
+  { side: "specialTeams", key: "special", label: "Special Teams" },
+];
+
 /** One team's four views, or null when the document has no entry for it. */
 export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null {
   const doc = readDoc();
@@ -219,6 +335,21 @@ export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null
     }
   }
 
+  const toRow = (player: ToolPlayer, borrowFrom: ToolPlayer[]): DepthRow => {
+    const key = nameKey(player.name);
+    const status =
+      player.status ?? borrowFrom.find((other) => nameKey(other.name) === key)?.status ?? null;
+    return {
+      rank: player.rank,
+      name: player.name,
+      id: typeof player.id === "string" && player.id ? player.id : null,
+      injuryStatus: statusWord(status),
+      injuryBodyPart: null,
+      headshot: player.headshot ?? headshots.get(key) ?? null,
+      movement: player.movement ?? null,
+    };
+  };
+
   const views = DEPTH_VIEWS.map((view) => ({
     key: view.key,
     label: view.label,
@@ -227,25 +358,47 @@ export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null
       const borrowFrom = column.key.startsWith("FAN_") ? positions[column.key.slice(4)] ?? [] : [];
       const rows = [...(positions[column.key] ?? [])]
         .sort((a, b) => a.rank - b.rank)
-        .map((player): DepthRow => {
-          const key = nameKey(player.name);
-          const status =
-            player.status ?? borrowFrom.find((other) => nameKey(other.name) === key)?.status ?? null;
-          return {
-            rank: player.rank,
-            name: player.name,
-            id: typeof player.id === "string" && player.id ? player.id : null,
-            injuryStatus: statusWord(status),
-            injuryBodyPart: null,
-            headshot: player.headshot ?? headshots.get(key) ?? null,
-            movement: player.movement ?? null,
-          };
-        });
+        .map((player) => toRow(player, borrowFrom));
       return { ...column, rows };
     }),
   }));
 
-  return { fetchedAt: doc.fetchedAt, season: doc.season, views };
+  // The football chart. From the document's slots when it has them: the
+  // source's rows in the source's order, never re-sorted by anything here
+  // (and never by a fantasy rank - that order lives in the Fantasy view
+  // alone). An older document is folded from the column views, one row per
+  // column, and says so.
+  const slots = Array.isArray(entry.slots) ? entry.slots : [];
+  const football: FootballSide[] = SIDES.map(({ side, key, label }) => {
+    const formation = entry.formations?.[side]?.trim() || null;
+    if (slots.length > 0) {
+      const own = slots
+        .filter((slot) => slot.side === side && slot.players?.length)
+        .map(
+          (slot): FootballSlot => ({
+            key: slot.key,
+            pos: slotPos(slot.slot),
+            label: slotLabel(slot.slot),
+            rows: [...slot.players].sort((a, b) => a.rank - b.rank).map((p) => toRow(p, [])),
+          }),
+        );
+      return { key, label, formation, folded: false, slots: own };
+    }
+    const view = views.find((v) => v.key === key);
+    const own = (view?.columns ?? [])
+      .filter((column) => column.rows.length)
+      .map(
+        (column): FootballSlot => ({
+          key: column.key.toLowerCase(),
+          pos: column.pos,
+          label: slotLabel(column.pos),
+          rows: column.rows,
+        }),
+      );
+    return { key, label, formation, folded: true, slots: own };
+  });
+
+  return { fetchedAt: doc.fetchedAt, season: doc.season, views, football };
 }
 
 /* ----------------------------------------------------------- slot index */
@@ -376,10 +529,8 @@ export function parseDepthChartsDoc(body: unknown): { doc: DepthChartsDoc } | { 
     const positionsIn = (item as Record<string, unknown>)["positions"];
     if (!positionsIn || typeof positionsIn !== "object") return { error: `${abbr} has no positions` };
 
-    const positions: Record<string, ToolPlayer[]> = {};
-    for (const [key, list] of Object.entries(positionsIn as Record<string, unknown>)) {
-      if (!/^[A-Z_]{1,8}$/.test(key) || !Array.isArray(list)) continue;
-      positions[key] = list.slice(0, 20).flatMap((p): ToolPlayer[] => {
+    const players = (list: unknown): ToolPlayer[] =>
+      (Array.isArray(list) ? list : []).slice(0, 20).flatMap((p): ToolPlayer[] => {
         const player = p as Record<string, unknown> | null;
         const name = str(player?.["name"], 80);
         const rank = player?.["rank"];
@@ -397,7 +548,40 @@ export function parseDepthChartsDoc(body: unknown): { doc: DepthChartsDoc } | { 
           },
         ];
       });
+
+    const positions: Record<string, ToolPlayer[]> = {};
+    for (const [key, list] of Object.entries(positionsIn as Record<string, unknown>)) {
+      if (!/^[A-Z_]{1,8}$/.test(key) || !Array.isArray(list)) continue;
+      positions[key] = players(list);
     }
+
+    // The slot rows (optional): the same field checks, plus a key and a side.
+    const slotsIn = (item as Record<string, unknown>)["slots"];
+    const slots: ToolSlot[] = [];
+    const seenSlotKeys = new Set<string>();
+    for (const raw of Array.isArray(slotsIn) ? slotsIn.slice(0, 60) : []) {
+      const slot = raw as Record<string, unknown> | null;
+      const key = str(slot?.["key"], 12);
+      const pos = str(slot?.["slot"], 8);
+      const side = str(slot?.["side"], 16);
+      if (!key || !/^[a-z0-9]{1,8}$/.test(key) || seenSlotKeys.has(key)) continue;
+      if (!pos || !/^[A-Z]{1,6}$/.test(pos)) continue;
+      if (side !== "offense" && side !== "defense" && side !== "specialTeams") continue;
+      const list = players(slot?.["players"]);
+      if (list.length === 0) continue;
+      seenSlotKeys.add(key);
+      slots.push({ key, slot: pos, side, players: list });
+    }
+
+    const formationsIn = (item as Record<string, unknown>)["formations"];
+    const formations: Partial<Record<ToolSide, string>> = {};
+    if (formationsIn && typeof formationsIn === "object") {
+      for (const side of ["offense", "defense", "specialTeams"] as const) {
+        const name = str((formationsIn as Record<string, unknown>)[side], 40);
+        if (name) formations[side] = name;
+      }
+    }
+
     const logo = str(team?.["logo"], 300);
     teams.push({
       team: {
@@ -406,6 +590,8 @@ export function parseDepthChartsDoc(body: unknown): { doc: DepthChartsDoc } | { 
         logo: logo && /^https:\/\//.test(logo) ? logo : null,
       },
       positions,
+      ...(slots.length ? { slots } : {}),
+      ...(Object.keys(formations).length ? { formations } : {}),
     });
   }
   return { doc: { version: 1, season, fetchedAt, teams } };

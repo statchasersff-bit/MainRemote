@@ -216,38 +216,74 @@ describe("the markup", () => {
     assert.match(html, /data-scsos-endpoint="https:\/\/x\/embed\/sos"/);
   });
 
-  test("the FAQ: every question, under the board and outside the swapped view, with the RB/PPR cards quoted", () => {
+  test("the FAQ: mak's nineteen questions, under the board, keyed to the board's position and scoring", () => {
     const facts = faq.sosFaqFacts(board);
-    assert.ok(facts, "the RB/PPR board yields the four team facts");
+    assert.ok(facts && facts.ros && facts.playoff, "the board yields the rest-of-season and playoff pairs");
+    assert.equal(facts.ros.span, "ros", "the season is still being played");
     assert.equal(faq.sosFaqFacts(null), null);
-    assert.equal(faq.sosFaqFacts({ ...board, position: "WR" }), null, "only the RB/PPR board is quoted");
 
-    const html = render.renderSosPage(board, team, { embed: true, faq: facts });
+    const html = render.renderSosPage(board, team, { embed: true });
     const faqAt = html.indexOf('<section class="scsos-faq"');
     assert.ok(faqAt > html.indexOf("</table>"), "after the board");
     assert.ok(faqAt > html.lastIndexOf('<div class="scsos-view">'), "outside .scsos-view");
     assert.ok(faqAt < html.indexOf("scsos-page-data"), "before the island");
+    assert.match(html, /<section class="scsos-faq" aria-labelledby="scsos-faq-title" data-pos="rb" data-scoring="ppr">/);
     assert.match(html, /<h2 id="scsos-faq-title" class="scsos-faq-title">Fantasy Football Strength of Schedule FAQ<\/h2>/);
-    assert.equal((html.match(/<details class="scsos-faq-item">/g) ?? []).length, 20, "twenty questions");
-    assert.equal(faq.sosFaqEntries(board.season, facts).length, 20);
+    assert.equal((html.match(/<details class="scsos-faq-item">/g) ?? []).length, 19, "nineteen questions");
+    assert.equal(faq.sosFaqEntries(board).length, 19);
     assert.doesNotMatch(html, /\u2014/, "no em dashes");
+    assert.doesNotMatch(html, /<p><ul/, "the position list is a block of its own");
 
-    const easiest = board.teamCards.find((c) => c.id === "easiest-full");
-    const toughest = board.teamCards.find((c) => c.id === "toughest-full");
-    const po = board.teamCards.find((c) => c.id === "easiest-playoff");
-    const poBad = board.teamCards.find((c) => c.id === "toughest-playoff");
+    // The four team answers read the board's rows: ROS rank 1 and 32, playoff rank 1 and 32.
+    const byRos = [...board.teams].filter((t) => t.ros).sort((a, b) => a.rosRank - b.rosRank);
+    const byPo = [...board.teams].filter((t) => t.po3).sort((a, b) => a.playoffRank - b.playoffRank);
+    const rosEasy = byRos[0];
+    const rosHard = byRos[byRos.length - 1];
+    const poEasy = byPo[0];
+    const poHard = byPo[byPo.length - 1];
+    assert.match(html, new RegExp(`Which team has the easiest RB schedule for the rest of the ${board.season} season\\?`));
     assert.match(
       html,
-      new RegExp(`For ${board.season} PPR scoring, the ${easiest.team.fullName} currently rank No\\. 1 in full-season running back strength of schedule\\. Their opponents average ${easiest.afpa.toFixed(1)} adjusted fantasy points allowed to running backs, which is \\d+\\.\\d points (above|below) the league average\\.`),
+      new RegExp(`The ${rosEasy.team.fullName} currently have the easiest rest-of-season schedule for running backs in PPR scoring, based on the average adjusted fantasy points allowed by their remaining opponents \\(${rosEasy.ros.afpa.toFixed(1)} per game\\)\\.`),
     );
-    assert.match(html, new RegExp(`the ${toughest.team.fullName} currently rank No\\. ${board.teams.find((t) => t.team.abbreviation === toughest.team.abbreviation).overallRank} in full-season`));
-    assert.match(html, new RegExp(`${po.team.city} currently has the easiest ${board.season} fantasy playoff schedule for running backs in PPR scoring\\. ${po.team.nickname} running backs face opponents allowing an average of ${po.afpa.toFixed(1)} adjusted fantasy points`));
-    assert.match(html, new RegExp(`${poBad.team.city} currently has the toughest ${board.season} fantasy playoff schedule for running backs in PPR scoring\\. The ${poBad.team.nickname}' playoff opponents allow an average of ${poBad.afpa.toFixed(1)} adjusted fantasy points to running backs\\.`));
-    assert.match(html, new RegExp(`StatChasers uses a ${board.season - 1}\u2013${board.season} data blend`), "the blend names the seasons");
+    assert.match(html, /Which team has the hardest RB schedule for the rest of the season\?/);
+    assert.match(html, new RegExp(`The ${rosHard.team.fullName} currently have the toughest rest-of-season schedule for running backs based on opponent aFPA in PPR scoring \\(${rosHard.ros.afpa.toFixed(1)} adjusted fantasy points allowed per game by their remaining opponents\\)\\.`));
+    assert.match(html, /A difficult schedule does not automatically make a running back a sit/);
+    assert.match(html, new RegExp(`Which team has the easiest RB fantasy playoff schedule\\?.*?The ${poEasy.team.fullName} currently have the easiest fantasy playoff schedule for running backs, with their playoff opponents allowing approximately ${poEasy.po3.afpa.toFixed(1)} adjusted fantasy points per game to the position in PPR scoring\\.`));
+    assert.match(html, new RegExp(`Which team has the hardest RB fantasy playoff schedule\\?.*?The ${poHard.team.fullName} currently have the toughest fantasy playoff schedule for running backs, with their playoff opponents allowing approximately ${poHard.po3.afpa.toFixed(1)} adjusted fantasy points per game`));
+    assert.match(html, /This board is showing PPR scoring, and the strength of schedule rankings can also be viewed in Half-PPR and Standard\./);
+    assert.match(html, new RegExp(`data from both ${board.season - 1} and ${board.season}`), "the blend names the seasons");
+    assert.match(html, new RegExp(`The table above shows ${board.season} fantasy football strength of schedule for all 32 NFL teams`));
 
-    const bare = render.renderSosPage(board, team, { embed: true });
-    assert.match(bare, /the Easiest Full-Season card above names the team at No\. 1/, "without facts the four answers point at the cards");
-    assert.equal((bare.match(/<details class="scsos-faq-item">/g) ?? []).length, 20);
+    // Another position and scoring: the questions and answers follow the board.
+    const wrHalf = { ...board, position: "WR", scoring: "half-ppr" };
+    const wr = faq.renderSosFaq(wrHalf);
+    assert.match(wr, /data-pos="wr" data-scoring="half-ppr"/);
+    assert.match(wr, new RegExp(`Which team has the easiest WR schedule for the rest of the ${board.season} season\\?`));
+    assert.match(wr, /easiest rest-of-season schedule for wide receivers in Half-PPR scoring/);
+    assert.match(wr, /Which team has the easiest WR fantasy playoff schedule\?/);
+    assert.match(wr, /does not automatically make a wide receiver a sit/);
+    assert.match(wr, /This board is showing Half-PPR scoring, and the strength of schedule rankings can also be viewed in PPR and Standard\./);
+    assert.doesNotMatch(wr, /running backs in Half-PPR/, "no RB copy on the WR board");
+    const entries = faq.sosFaqEntries(wrHalf);
+    assert.equal(entries[1].question, `Which team has the easiest WR schedule for the rest of the ${board.season} season?`);
+    assert.doesNotMatch(entries[5].answer, /<|>/, "entries carry no markup");
+    assert.match(entries[5].answer, /Quarterbacks \(QB\), Running backs \(RB\), Wide receivers \(WR\), Tight ends \(TE\)\./);
+
+    // Once the regular fantasy season is over there is no rest of it: the pair reads the full season.
+    const over = { ...board, teams: board.teams.map((t) => ({ ...t, ros: null })) };
+    const overFacts = faq.sosFaqFacts(over);
+    assert.equal(overFacts.ros.span, "full");
+    const done = faq.renderSosFaq(over);
+    assert.match(done, new RegExp(`Which team had the easiest RB schedule in the ${board.season} season\\?`));
+    assert.match(done, /easiest full-season schedule for running backs in PPR scoring, based on the average adjusted fantasy points allowed by their opponents/);
+    assert.doesNotMatch(done, /rest-of-season schedule for running backs/);
+
+    // No rows at all: the four answers point at the columns instead.
+    const bare = faq.renderSosFaq({ ...board, teams: [] });
+    assert.match(bare, /The team ranked No\. 1 in the ROS column above currently has the easiest rest-of-season schedule for running backs in PPR scoring/);
+    assert.match(bare, /The team ranked No\. 32 in the Playoff column above/);
+    assert.equal((bare.match(/<details class="scsos-faq-item">/g) ?? []).length, 19);
   });
 
   test("standalone: the H1, and no island", () => {
@@ -290,7 +326,7 @@ describe("the markup", () => {
     assert.equal(render.sosPagePath("/x/", "te"), "/x/te/");
   });
 
-  test("a position page: mak's copy, the answer above the table, the Updated line, team links and Related, no FAQ", () => {
+  test("a position page: mak's copy, the answer above the table, the Updated line, team links, Related and its own FAQ", () => {
     const html = render.renderSosPage(board, team, { embed: true, page: "rb", updatedAt: Date.UTC(2026, 9, 9, 16) });
     const island = JSON.parse(html.match(/class="scsos-page-data">(.*?)<\/script>/)[1]);
     assert.equal(island.title, "RB Strength of Schedule 2026: Fantasy Matchups");
@@ -318,10 +354,11 @@ describe("the markup", () => {
       32,
     );
     assert.equal(render.teamScheduleHref(TEAMS[0]), `https://statchasers.com/nfl/teams/${TEAMS[0].slug}/schedule/`);
-    // The Related block replaces the FAQ, outside the swapped view.
-    assert.doesNotMatch(html, /scsos-faq/);
+    // The Related block, then the page's own FAQ, both outside the swapped view.
     const related = html.indexOf('<nav class="scsos-related"');
-    assert.ok(related > html.lastIndexOf("</table>") && related < html.indexOf("scsos-page-data"));
+    const faqAt = html.indexOf('<section class="scsos-faq"');
+    assert.ok(related > html.lastIndexOf("</table>") && related < faqAt && faqAt < html.indexOf("scsos-page-data"));
+    assert.match(html, /scsos-faq" aria-labelledby="scsos-faq-title" data-pos="rb" data-scoring="ppr"/);
     assert.deepEqual(
       render.sosRelatedLinks("rb").map((l) => l.href),
       [
@@ -467,12 +504,13 @@ describe("the routes", () => {
     assert.match(html, /data-pos="rb" data-scoring="ppr" data-page="rb"/);
     assert.match(html, /href="https:\/\/statchasers\.com\/nfl\/fantasy-football-strength-of-schedule\/qb\/" data-page="qb"/);
     assert.match(html, /<nav class="scsos-related"/);
-    assert.doesNotMatch(html, /scsos-faq/);
+    assert.match(html, /scsos-faq" aria-labelledby="scsos-faq-title" data-pos="rb" data-scoring="ppr"/);
     const pinned = await (await get("/embed/sos?page=wr&pos=te")).text();
     assert.match(pinned, /data-pos="wr" data-scoring="ppr" data-page="wr"/, "a page's board is its own, whatever ?pos= says");
     const po = await (await get("/embed/sos?page=playoffs&tab=player")).text();
     assert.match(po, /data-tab="team" data-pos="rb" data-scoring="ppr" data-page="playoffs"/);
     assert.match(po, /data-kind="playoffs"/);
+    assert.doesNotMatch(po, /scsos-faq/, "the playoffs page reads all four positions, so no one position's FAQ");
     const overview = await (await get("/embed/sos")).text();
     assert.match(overview, /data-page="all"/);
     assert.match(overview, /scsos-faq/);

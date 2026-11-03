@@ -1116,6 +1116,20 @@ body.scsos-page {
   font-weight: 800;
 }
 
+/* The position list in one answer: the Divi host zeroes list padding and
+   strips bullets on bare lists, so both are set here. */
+.scsos .scsos-faq-a ul.scsos-faq-list-items {
+  margin: 0 0 8px;
+  padding: 0 0 0 20px;
+  list-style: disc;
+}
+
+.scsos .scsos-faq-a ul.scsos-faq-list-items li {
+  margin: 0 0 2px;
+  padding: 0;
+  line-height: 1.6;
+}
+
 /* ------------------------------------------------- the per-position pages */
 
 /* The answer sentence under the standalone page's H1 (the WordPress page

@@ -208,6 +208,62 @@ describe("the highlights", () => {
   });
 });
 
+describe("the table (mak's critique, 2026-11-03)", () => {
+  test("rows sit in position bands, each naming its opportunity metric once", async () => {
+    const { doc } = await page("/team/new-england-patriots/");
+    const bands = [...doc.querySelectorAll(".sct-us-table tbody.sct-us-band")];
+    assert.deepEqual(
+      bands.map((b) => b.querySelector(".sct-us-band-name").textContent),
+      ["Running backs", "Receivers", "Quarterback"],
+    );
+    for (const band of bands) {
+      assert.match(band.querySelector(".sct-us-band-metric").textContent, /^Opportunity = .* percentile of NFL/);
+      const positions = new Set([...band.querySelectorAll(".sct-us-row .sct-us-role")].map((r) => r.textContent.slice(0, 2)));
+      const allowed = { "Running backs": ["RB"], Receivers: ["WR", "TE"], Quarterback: ["QB"] }[band.querySelector(".sct-us-band-name").textContent];
+      for (const pos of positions) assert.ok(allowed.includes(pos), `${pos} in ${allowed}`);
+    }
+  });
+
+  test("the read comes right after the player; opportunity is a percentile with the native stat under it", async () => {
+    const { doc } = await page("/team/new-england-patriots/");
+    const heads = [...doc.querySelectorAll(".sct-us-table thead tr:first-child th")].map((th) => th.textContent);
+    assert.deepEqual(heads, ["Profile", "Player", "Read", "Opportunity", "Snaps", "Red zone"]);
+    for (const row of doc.querySelectorAll(".sct-us-row")) {
+      const cells = [...row.children];
+      assert.ok(cells[2].classList.contains("is-read") && cells[2].querySelector(".sct-us-tier"));
+      assert.ok(cells[2].querySelector(".sct-us-tier").getAttribute("title").length > 20, "the read carries its rule");
+      const opp = cells[3];
+      assert.ok(opp.classList.contains("is-opp"));
+      assert.match(opp.querySelector(".sct-us-num").textContent, /^(\d+(st|nd|rd|th)|–)$/);
+      assert.ok(opp.querySelector(".sct-us-pbar") || opp.querySelector(".sct-us-num").textContent === "–");
+    }
+    // The QB is no longer a blank cell under a header meant for everyone.
+    const qb = doc.querySelector(".sct-us-band.is-qb .sct-us-row td.is-opp");
+    assert.match(qb.textContent, /pctile QB/);
+    assert.match(qb.querySelector(".sct-us-cap").textContent, /^every dropback/);
+  });
+
+  test("one move window, said once in the header; the player's own weeks only in his profile", async () => {
+    const { doc } = await page("/team/new-england-patriots/");
+    const sub = doc.querySelector(".sct-us-table thead tr.sct-us-th-sub");
+    assert.match(sub.textContent, /a move is the last three games against the three before them/);
+    for (const d of doc.querySelectorAll(".sct-us-row .sct-us-delta")) {
+      assert.match(d.textContent, /^(steady|[+−-]\d+(\.\d+)? last 3)$/);
+    }
+    const win = [...doc.querySelectorAll(".sct-us-detail .sct-us-win")];
+    assert.ok(win.length > 0);
+    assert.match(win[0].textContent, /^Moves in the row: his last three games \(W\d+(-\d+)?\) against the three before them \(W\d+(-\d+)?\)\.$/);
+  });
+
+  test("the red-zone leader's caption is the badge, not three descriptors", async () => {
+    const { doc } = await page("/team/new-england-patriots/");
+    const leader = [...doc.querySelectorAll(".sct-us-row")].find((r) => r.querySelector(".sct-us-leads"));
+    assert.ok(leader);
+    const cap = leader.querySelector(".sct-us-leads").closest(".sct-us-cap").textContent;
+    assert.ok(!/steady/.test(cap), cap);
+  });
+});
+
 describe("profiles", () => {
   test("every toggle controls a detail row that exists", async () => {
     const { doc } = await page("/team/buffalo-bills/");

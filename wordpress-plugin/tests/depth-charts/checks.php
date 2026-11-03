@@ -244,6 +244,18 @@ foreach ( ( is_array( $espn ) ? $espn['positions'] : array() ) as $players ) {
 	}
 }
 check( 'espn: injury designations come through', ! empty( $statuses ), 'none found' );
+// The slot rows (1.7.2): one per ESPN slot, the three WR slots kept apart.
+$slots = is_array( $espn ) && isset( $espn['slots'] ) ? $espn['slots'] : array();
+$slot_keys = array_map( function ( $s ) { return $s['key']; }, $slots );
+check( 'espn: slot rows come through', ! empty( $slots ), 'none' );
+check( 'espn: the three WR slots are separate rows', array( 'wr1', 'wr2', 'wr3' ) === array_values( array_intersect( $slot_keys, array( 'wr1', 'wr2', 'wr3' ) ) ), implode( ',', $slot_keys ) );
+check( 'espn: no holder row', ! in_array( 'h', $slot_keys, true ) );
+$wr_slots = array_values( array_filter( $slots, function ( $s ) { return 'WR' === $s['slot']; } ) );
+$wr_total = array_sum( array_map( function ( $s ) { return count( $s['players'] ); }, $wr_slots ) );
+check( 'espn: the folded WR column holds every receiver from all three slots', is_array( $espn ) && count( $espn['positions']['WR'] ?? array() ) === $wr_total && $wr_total > 3, ( is_array( $espn ) ? count( $espn['positions']['WR'] ?? array() ) : 0 ) . " vs $wr_total" );
+check( 'espn: the folded WR column leads with the three starters', is_array( $espn ) && count( $wr_slots ) === 3 && array( $wr_slots[0]['players'][0]['name'], $wr_slots[1]['players'][0]['name'], $wr_slots[2]['players'][0]['name'] ) === array_map( function ( $p ) { return $p['name']; }, array_slice( $espn['positions']['WR'] ?? array(), 0, 3 ) ) );
+check( 'espn: every slot names its side', ! array_diff( array_unique( array_map( function ( $s ) { return $s['side']; }, $slots ) ), array( 'offense', 'defense', 'specialTeams' ) ) );
+check( 'espn: the formation names ride along', is_array( $espn ) && ! empty( $espn['formations']['offense'] ) && ! empty( $espn['formations']['defense'] ), wp_json_encode( $espn['formations'] ?? null ) );
 
 $fbg = SCDC_Footballguys::parse_html( file_get_contents( "$src/footballguys-all.html" ) );
 check( 'footballguys: both stored teams parse', array( 'BUF', 'PIT' ) === array_keys( $fbg ), implode( ',', array_keys( $fbg ) ) );
