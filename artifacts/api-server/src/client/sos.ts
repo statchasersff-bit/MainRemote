@@ -225,8 +225,12 @@ function viewOf(el: HTMLElement): View | null {
   };
 }
 
-/** The blocks a view change rewrites. The standalone page's H1 is not one of them. */
-const SWAPPABLE = [".scsos-bar", ".scsos-view"] as const;
+/**
+ * The blocks a view change rewrites: the bar, the board, and the FAQ, whose
+ * questions name the view's position and scoring. The standalone page's H1
+ * and the Related block are not among them.
+ */
+const SWAPPABLE = [".scsos-bar", ".scsos-view", ".scsos-faq"] as const;
 
 async function swapTo(root: HTMLElement, view: View): Promise<boolean> {
   const endpoint = root.dataset["scsosEndpoint"];

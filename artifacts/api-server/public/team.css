@@ -13700,8 +13700,76 @@ a.sct-ex-game:hover .sct-ex-line {
   padding-right: 0;
 }
 
+/* Position bands (mak's critique, 2026-11-03): the metric only changes at a
+   visible seam, and the seam names it once. */
+:is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-band-row > th {
+  padding: 8px 12px 6px;
+  background: var(--sc-surface-soft);
+  border-bottom: 1px solid var(--sc-border);
+  white-space: normal;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table tbody.sct-us-band + tbody.sct-us-band tr.sct-us-band-row > th {
+  border-top: 1px solid var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-band-name {
+  display: inline-block;
+  margin-right: 10px;
+  color: var(--sc-navy);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-band-metric {
+  display: inline;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+/* The one move window, said once under the three stat headers. */
+:is(.sct, #sct-table-armour) .sct-us-table thead tr.sct-us-th-sub th {
+  padding: 0 12px 7px;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Opportunity as a percentile: the bar sits under the number, before the
+   native stat. */
+:is(.sct, #sct-table-armour) .sct-us-table td.is-opp .sct-us-pbar {
+  width: 110px;
+  margin: 4px 0 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table td.is-read {
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-detail .sct-us-win {
+  display: block;
+  margin: -8px 0 12px;
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-table th.is-player {
   min-width: 215px;
+}
+
+/* The player cell carries the boards' face well (mak, 2026-11-03); a larger
+   well than the boards', as the row is taller. */
+:is(.sct, #sct-table-armour) .sct-us-table th.is-player .sct-us-face {
+  width: 36px;
+  height: 36px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table th.is-player .sct-us-who {
+  gap: 10px;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-detail > td {
@@ -15860,11 +15928,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 0.86rem;
 }
 
-:is(.sct, #sct-table-armour) .sct-co-key {
-  margin: 0 0 10px;
-  color: var(--sc-muted-strong);
-  font-size: 0.76rem;
-}
 
 :is(.sct, #sct-table-armour) .sct-co-brow {
   display: grid;
@@ -15999,22 +16062,6 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-/* Under the label, out of the flow, so every season label sits on one line. */
-:is(.sct, #sct-table-armour) .sct-co-colnow {
-  position: absolute;
-  top: 100%;
-  margin-top: 3px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--co-gold-soft);
-  color: var(--sc-gold-deep);
-  font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.6;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 
 /* Each panel closes the same way: the takeaway, then its scope or sample. */
 :is(.sct, #sct-table-armour) .sct-co-take {
@@ -18079,20 +18126,30 @@ a.sct-ex-game:hover .sct-ex-line {
   --sct-dcx-out: #dc2626;
 }
 
-/* The line under the tab heading, one per view; the filter shows the pressed
-   view's. With scripting off they are hidden and the cards' own titles label
-   them instead. */
-:is(.sct, #sct-table-armour) .sct-dc-notes {
-  margin: -8px 0 2px;
+/* The stamp under the heading - season, then the refresh time the document
+   itself carries - and the one-paragraph summary of the listed starters. */
+:is(.sct, #sct-table-armour) .sct-dc-stamp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: -6px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-note {
-  margin: 0;
+:is(.sct, #sct-table-armour) .sct-dc-stamp time {
+  color: var(--sc-ink);
 }
 
-:is(.sct, #sct-table-armour) .sct-dc-note[hidden],
-:is(.sct, #sct-table-armour) .sct-dc:not([data-sct-dc="js"]) .sct-dc-notes {
-  display: none;
+:is(.sct, #sct-table-armour) .sct-dc-summary {
+  margin: 8px 0 0;
+  max-width: 72ch;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--sc-ink);
 }
 
 /* The view filter. With scripting off every card shows and the buttons, which
@@ -18179,24 +18236,31 @@ a.sct-ex-game:hover .sct-ex-line {
   text-transform: uppercase;
 }
 
-/* Once the filter is live the pressed button names the view, so the title is
-   read aloud only; a head left with nothing visible (no grades) folds away. */
-:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+/* The formation chip and the unit grades share the title's row. */
+:is(.sct, #sct-table-armour) .sct-dcx-aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-formation {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sc-navy) 8%, #fff);
+  color: var(--sc-navy);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-head {
-  justify-content: flex-start;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dcx-head:not(:has(.sct-dcx-grades)) {
-  display: none;
+:is(.sct, #sct-table-armour) .sct-dcx-folded,
+:is(.sct, #sct-table-armour) .sct-dcx-fan-note {
+  margin: -4px 0 12px;
 }
 
 .sct-dcx-title[data-view="fantasy"] { color: var(--sct-dcx-fantasy) !important; }
@@ -18491,6 +18555,89 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
+/* The fantasy card: one group per position under its own heading, the
+   boxes four across like the chart, each labelled with its rank. */
+:is(.sct, #sct-table-armour) .sct-dcx-fan {
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.sct-dcx-fan-title {
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-fan {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* The rank label in a fantasy box ("WR1"): a small navy pill, so it never
+   reads as the league PPR rank beside it. */
+:is(.sct, #sct-table-armour) .sct-dcx-fan .sct-dcx-subpos,
+:is(.sct, #sct-table-armour) .sct-dcx-more .sct-dcx-subpos {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sc-navy) 8%, #fff);
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dcx-rank-key {
+  margin-right: 3px;
+  color: var(--sc-muted);
+  font-family: inherit;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* The two link clusters under the questions: compact pills in a wrapping
+   row, the club's own pages first, then the fantasy tools. */
+:is(.sct, #sct-table-armour) .sct-dc-linklist {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-linklist > li {
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-navy);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-link:hover,
+:is(.sct, #sct-table-armour) .sct-dc-link:focus-visible {
+  border-color: var(--sc-navy);
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-link .sct-arrow {
+  color: var(--sc-gold-deep);
+}
+
 /* Narrow: no room for five columns. The string heads go, each position
    stacks its label over a two-across run of boxes, and every box prints its
    own string number in the corner so the order still reads. */
@@ -18510,7 +18657,8 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 
   :is(.sct, #sct-table-armour) ol.sct-dcx-cells,
-  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose {
+  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose,
+  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-fan {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
@@ -18548,13 +18696,51 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
 }
 
+/* The kicker under the heading (mak, 2026-11-03): the only-meeting note, the
+   total against this game's line, and how many of the six have moved on. */
+:is(.sct, #sct-table-armour) .sct-mu-last-kicker {
+  margin: -4px 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--pv-muted-strong, #475569);
+}
+
+/* One ranked list (mak, 2026-11-03), top scorer first; two columns read as
+   two unrelated stacks. */
 :is(.sct, #sct-table-armour) .sct-mu-last-list {
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+/* Linked and unlinked names look alike; the link shows on hover (a reviewer
+   flagged the mixed underlines, 2026-11-03). */
+:is(.sct, #sct-table-armour) .sct-mu-last-who a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-who a:hover,
+:is(.sct, #sct-table-armour) .sct-mu-last-who a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--pv-gold);
+  text-underline-offset: 3px;
+}
+
+/* "now NYJ": the player has moved on since that game. */
+:is(.sct, #sct-table-armour) .sct-mu-last-moved {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pv-muted, #64748b);
+  background: color-mix(in srgb, var(--pv-ink, #0f172a) 6%, transparent);
 }
 
 /* A face leads each row (mak, 2026-11-02). */
@@ -18572,15 +18758,33 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.35;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-last-face {
+:is(.sct, #sct-table-armour) .sct-mu-last-avatar {
   grid-area: face;
   align-self: center;
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-last-face {
   display: block;
   width: 36px;
   height: 36px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--pv-gray-bg, #eef1f5);
+}
+
+/* The club crest on the face's corner, bare, as on the Leverage board (mak, 2026-11-03). */
+:is(.sct, #sct-table-armour) .sct-mu-last-crest {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  background: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-last-face img {
@@ -18632,9 +18836,6 @@ a.sct-ex-game:hover .sct-ex-line {
   opacity: 0.8;
 }
 
-@media (max-width: 640px) {
-  :is(.sct, #sct-table-armour) .sct-mu-last-list { grid-template-columns: minmax(0, 1fr); }
-}
 
 /* ---- "Starters vs the Defense" under the Last meeting cards (mak,
    2026-10-22, from a screenshot of another tool, in house style): two
@@ -18986,11 +19187,9 @@ a.sct-ex-game:hover .sct-ex-line {
   bottom: -3px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  padding: 1px;
-  background: var(--pv-card);
-  box-shadow: 0 0 0 1.5px var(--pv-card);
   object-fit: contain;
+  /* No disc or ring behind the crest (mak, 2026-11-03). */
+  background: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-lb-name {
@@ -19123,7 +19322,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-gh {
-  margin: 8px 0 2px !important;
+  margin: 6px 0 1px !important;
   text-align: center;
   font-size: 10.5px !important;
   font-weight: 800;
@@ -19132,12 +19331,14 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-muted) !important;
 }
 
+/* Equal fixed value columns keep the two bars the same length, so the eye
+   can compare them; the label column was 150px (tightened 2026-11-03). */
 :is(.sct, #sct-table-armour) .sct-pv-cmp-row {
   display: grid;
-  grid-template-columns: 118px minmax(0, 1fr) 150px minmax(0, 1fr) 118px;
-  gap: 0 10px;
+  grid-template-columns: 128px minmax(0, 1fr) 124px minmax(0, 1fr) 128px;
+  gap: 0 8px;
   align-items: center;
-  padding: 7px 0;
+  padding: 5px 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-v {
@@ -19156,11 +19357,25 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-bar {
+  position: relative;
   display: block;
   height: 8px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--pv-ink) 6%, transparent);
   overflow: hidden;
+}
+
+/* A faint tick at league average (rank 16.5 = half the track), so two
+   middling bars read as middling rather than as a close race (2026-11-03). */
+:is(.sct, #sct-table-armour) .sct-pv-cmp-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: color-mix(in srgb, var(--pv-ink) 38%, transparent);
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-bar i {
@@ -19198,7 +19413,7 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-cmp-bar { display: none; }
   :is(.sct, #sct-table-armour) .sct-pv-cmp-row > span:empty { display: none; }
   :is(.sct, #sct-table-armour) .sct-pv-cmp-v b { font-size: 15px; }
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-mid { min-width: 110px; }
+  :is(.sct, #sct-table-armour) .sct-pv-cmp-mid { min-width: 96px; }
 }
 
 /* ======================================================================
@@ -19706,7 +19921,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-table :where(th, td) {
-  padding: 8px 12px;
+  padding: 5px 12px;
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
   color: var(--sc-ink);
@@ -19717,7 +19932,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-table thead th {
-  padding: 9px 12px;
+  padding: 7px 12px;
   background: var(--sc-surface-soft);
   color: var(--sc-muted) !important;
   font-size: 0.66rem;
@@ -19767,6 +19982,7 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  vertical-align: middle;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-face {
@@ -19798,20 +20014,21 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
+  gap: 0;
+  vertical-align: middle;
 }
 
 :is(.sct, #sct-table-armour) .sct-dr-crest {
   display: block;
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 /* The name sits under the crest (mak, 2026-10-29), small and quiet. */
 :is(.sct, #sct-table-armour) .sct-dr-college-name {
   font-size: 0.74rem;
-  line-height: 1.2;
+  line-height: 1.1;
   color: var(--sc-muted);
 }
 
@@ -19987,6 +20204,17 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-college {
   align-items: center;
   text-align: center;
+}
+
+/* Rows 30% shorter (mak, 2026-11-03): 2px vertical cell padding, and the
+   two-line Pos column (position over depth slot) on tight line heights so
+   the crest-over-name stack sets the row, not the text. */
+:is(.sct, #sct-table-armour) .sct-dr-table .is-pos {
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-slot {
+  line-height: 1.15;
 }
 
 @media (max-width: 900px) {

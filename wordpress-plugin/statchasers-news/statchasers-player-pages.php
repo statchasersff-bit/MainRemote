@@ -813,28 +813,41 @@ function statchasers_player_build_batch_locked( int $offset, array $roster, arra
  */
 function statchasers_player_page_meta( array $row ): array {
 
-	// "Bijan Robinson (RB, ATL)" - the opening the API's profileMeta() uses.
-	$who = $row['name'];
-	if ( '' !== $row['position'] && '' !== $row['team'] ) {
-		$who = sprintf( '%s (%s, %s)', $row['name'], $row['position'], $row['team'] );
-	} elseif ( '' !== $row['position'] ) {
-		$who = sprintf( '%s (%s)', $row['name'], $row['position'] );
-	}
+	// "George Pickens, Dallas Cowboys WR:" - the opening the API's
+	// profileMeta() uses, with the full club name where it fits the 155
+	// characters a results page shows, the nickname where it does not.
+	$tail = 'stats, game logs, news, injury updates, bio, career numbers and fantasy football outlook. Updated throughout the NFL season.';
+	$who  = static function ( string $club ) use ( $row ): string {
+		if ( '' !== $club && '' !== $row['position'] ) {
+			return sprintf( '%s, %s %s:', $row['name'], $club, $row['position'] );
+		}
+		if ( '' !== $row['position'] ) {
+			return sprintf( '%s, %s:', $row['name'], $row['position'] );
+		}
+		return $row['name'];
+	};
+	$team_name = (string) ( $row['teamName'] ?? '' );
+	$nickname  = '' === $team_name ? '' : (string) preg_replace( '/^.*\s/', '', $team_name );
 
 	return array(
-		// mak's refresh of 2026-10-09: the hub's search is "X fantasy", so the
-		// title leads with it and the year, and gives way by rungs for the long
-		// names (statchasers_player_title_ladder). No " | StatChasers" since
-		// 2026-10-08. statchasers_player_retitle_apply() moves the stored
+		// mak's player-entity brief of 2026-11-03: the hub is the player's
+		// page, so its title is the evergreen "{Name} Stats, News, Bio &
+		// Fantasy Outlook | StatChasers" with no year; the brand gives way
+		// first for a long name (statchasers_branded_title), then the wording
+		// shortens. statchasers_player_retitle_apply() moves the stored
 		// titles over.
-		'title'       => statchasers_fit_title( statchasers_player_title_ladder( $row['name'] ) ),
-		// The offseason wording. In season the API builds one from live data
-		// (rank, rate, next game) and the plugin prefers it: see
-		// statchasers_player_request_meta().
-		'description' => sprintf(
-			'%1$s fantasy football profile: %2$s outlook, projections, stats, injury history and dynasty value.',
-			$who,
-			STATCHASERS_TEAM_SEASON
+		'title'       => statchasers_branded_title( statchasers_player_title_ladder( $row['name'] ) ),
+		// The evergreen wording the API's profileMeta() writes; the plugin
+		// prefers the API's live copy when it has it (statchasers_player_request_meta).
+		'description' => statchasers_fit_title(
+			array(
+				$who( $team_name ) . ' ' . $tail,
+				$who( $nickname ) . ' ' . $tail,
+				$who( (string) $row['team'] ) . ' ' . $tail,
+				$who( '' ) . ' ' . $tail,
+				sprintf( '%s stats, game logs, news, injury updates, bio and fantasy outlook.', $row['name'] ),
+			),
+			155
 		),
 	);
 }
@@ -847,10 +860,91 @@ function statchasers_player_page_meta( array $row ): array {
  */
 function statchasers_player_title_ladder( string $name ): array {
 	return array(
-		sprintf( '%s Fantasy Football %s: Stats, Outlook & News', $name, STATCHASERS_TEAM_SEASON ),
-		sprintf( '%s Fantasy Football %s: Stats & Outlook', $name, STATCHASERS_TEAM_SEASON ),
-		sprintf( '%s Fantasy %s: Stats & Outlook', $name, STATCHASERS_TEAM_SEASON ),
+		sprintf( '%s Stats, News, Bio & Fantasy Outlook', $name ),
+		sprintf( '%s Stats, News & Fantasy Outlook', $name ),
+		sprintf( '%s Stats, News & Outlook', $name ),
+		sprintf( '%s Stats & News', $name ),
 	);
+}
+
+/**
+ * The first wording that fits, branded where the brand still fits.
+ *
+ * MIRRORS brandedTitle() in the API's src/lib/player-seo.ts: each rung is
+ * tried with " | StatChasers" (within seventy characters), then bare
+ * (within sixty), before the next rung is tried at all. mak's player-entity
+ * brief (2026-11-03) puts the brand on every player title; the brand is the
+ * one part a results page may cut without losing meaning, so it is allowed
+ * ten characters past the sixty-character rule of 2026-10-08 and is the
+ * first thing to go for a long name.
+ *
+ * @param string[] $cores Wordings without the brand, fullest first.
+ */
+function statchasers_branded_title( array $cores ): string {
+	foreach ( $cores as $core ) {
+		$branded = $core . ' | StatChasers';
+		if ( strlen( $branded ) <= 70 ) {
+			return $branded;
+		}
+		if ( strlen( $core ) <= 60 ) {
+			return $core;
+		}
+	}
+	return (string) end( $cores );
+}
+
+/**
+ * A section page's title and description when the API has not answered.
+ *
+ * The API's island (player-seo.ts) is the source of every section's copy;
+ * this is the same wording built here, for the request where the fragment
+ * is empty - an outage, or the first minutes after a publish - so a section
+ * URL never wears the profile's stored title while the API is away. The
+ * description is the offseason wording; the API's live one (the latest
+ * game, the current designation) returns with the API.
+ *
+ * @return array{title:string,description:string}|null Null for a section
+ *   this function has no words for.
+ */
+function statchasers_player_fallback_meta( string $slug, string $section ): ?array {
+	$name = statchasers_player_name( $slug );
+	if ( '' === $name ) {
+		return null;
+	}
+	$season = STATCHASERS_TEAM_SEASON;
+	switch ( $section ) {
+		case 'stats':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' Stats & Career Statistics', $name . ' Stats & Career Stats', $name . ' Stats' ) ),
+				'description' => sprintf( '%1$s %2$s stats and career statistics: season totals, advanced metrics, fantasy points and positional rank, and points per game every season.', $name, $season ),
+			);
+		case 'game-log':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' Game Log & Weekly Stats', $name . ' Game Log' ) ),
+				'description' => sprintf( '%1$s %2$s game log: fantasy points by week, stats game by game, weekly positional finish and the last-five-games trend.', $name, $season ),
+			);
+		case 'outlook':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' Fantasy Outlook, Rankings & Projections', $name . ' Fantasy Outlook & Projections', $name . ' Fantasy Outlook' ) ),
+				'description' => sprintf( '%1$s %2$s fantasy outlook: his role, the usage behind it and what it is worth for the rest of the season.', $name, $season ),
+			);
+		case 'injury':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' Injury Status & History', $name . ' Injury Status' ) ),
+				'description' => sprintf( '%1$s injury status: current designation, %2$s games missed, and every logged injury of his career with games missed by body part.', $name, $season ),
+			);
+		case 'news':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' News & Latest Updates', $name . ' News' ) ),
+				'description' => sprintf( 'The latest %s news and updates: injury reports, practice notes, game recaps and transactions, and what each one changes for fantasy.', $name ),
+			);
+		case 'bio':
+			return array(
+				'title'       => statchasers_branded_title( array( $name . ' Bio: Age, Height, College & Draft', $name . ' Bio: Age, Height & College', $name . ' Bio' ) ),
+				'description' => sprintf( '%s bio: age, height, weight, college, NFL draft position and full career team history.', $name ),
+			);
+	}
+	return null;
 }
 
 /**
@@ -1186,14 +1280,11 @@ add_action( 'template_redirect', 'statchasers_player_legacy_redirect', 8 );
  * The H1 for one profile URL, built from the player and the section.
  *
  * MIRRORS sectionHeading() and profileHeading() in the API's
- * src/lib/player-render.ts, including which sections carry a year: stats, the
- * game log and the outlook do, because the year is part of the phrase people
- * type for those three and not for the others.
+ * src/lib/player-render.ts. No section carries a year any more.
  *
- * The profile itself (no section) is "Josh Allen Fantasy Football Stats &
- * Analysis" - the player and what the page is for, like the six beside it. It
- * was the bare name, which is the hero's words and says nothing about intent.
- * The Overview has no heading of its own: `/overview/` 301s to the profile.
+ * The profile itself (no section) is the player's name - the entity the page
+ * is about (mak's brief of 2026-11-03). The Overview has no heading of its
+ * own: `/overview/` 301s to the profile.
  *
  * The name comes from the roster when it is cached and from the page's own
  * title when it is not - with the "(QB)" the builder appends taken back off,
@@ -1206,31 +1297,27 @@ function statchasers_player_heading( string $slug, string $section ): string {
 		return '';
 	}
 
+	// The section H1s of mak's player-entity brief (2026-11-03); the API's
+	// hero prints the same phrase as the name plus the section's word
+	// (SECTION_KINDS in src/lib/player/header.ts). No year in any of them:
+	// the year lives in the H2s under the heading and the address is evergreen.
 	$phrases = array(
 		'stats'    => 'Stats',
-		'injury'   => 'Injury Update & History',
+		'injury'   => 'Injury Status',
 		'game-log' => 'Game Log',
 		'outlook'  => 'Fantasy Outlook',
-		// Was "News & Analysis"; mak approved the change on 2026-09-30.
-		'news'     => 'News & Updates',
+		'news'     => 'News',
 		'bio'      => 'Bio',
 	);
 
 	if ( ! isset( $phrases[ $section ] ) ) {
-		// "{Name} Fantasy Football" since 2026-10-09 (mak); "Stats" belongs to
-		// the Stats tab's heading. The small line under it is the lead.
-		return $name . ' Fantasy Football';
+		// The profile's H1 is the player's name, and nothing else: the hub
+		// is the player's page first (the brief of 2026-11-03; it was
+		// "{Name} Fantasy Football" from 2026-10-09).
+		return $name;
 	}
 
-	if ( 'news' === $section ) {
-		return sprintf( 'Latest %s %s', $name, $phrases['news'] );
-	}
-
-	$dated = in_array( $section, array( 'stats', 'game-log', 'outlook' ), true );
-
-	return $dated
-		? sprintf( '%s %s %s', $name, $phrases[ $section ], STATCHASERS_TEAM_SEASON )
-		: sprintf( '%s %s', $name, $phrases[ $section ] );
+	return sprintf( '%s %s', $name, $phrases[ $section ] );
 }
 
 /**
@@ -1500,11 +1587,16 @@ function statchasers_player_generated_title( string $title ): string {
 	$title = trim( $title );
 	// The wording until 2026-10-09, with and without the brand.
 	if ( 1 === preg_match( '/^(.+) Fantasy Football Stats & Analysis(?: \| StatChasers)?$/', $title, $m ) ) {
-		return statchasers_fit_title( statchasers_player_title_ladder( $m[1] ) );
+		return statchasers_branded_title( statchasers_player_title_ladder( $m[1] ) );
 	}
-	// The wording since: any rung of the ladder, for any year.
+	// The dated ladder of 2026-10-09 to 2026-11-03: any rung, for any year.
 	if ( 1 === preg_match( '/^(.+) Fantasy(?: Football)? (\d{4}): Stats(?:, Outlook & News| & Outlook)$/', $title, $m ) ) {
-		return statchasers_fit_title( statchasers_player_title_ladder( $m[1] ) );
+		return statchasers_branded_title( statchasers_player_title_ladder( $m[1] ) );
+	}
+	// The evergreen ladder since 2026-11-03 (mak's player-entity brief):
+	// any rung, with or without the brand.
+	if ( 1 === preg_match( '/^(.+) Stats(?:, News(?:, Bio)? & (?:Fantasy )?Outlook| & News)(?: \| StatChasers)?$/', $title, $m ) ) {
+		return statchasers_branded_title( statchasers_player_title_ladder( $m[1] ) );
 	}
 	return '';
 }
@@ -1620,9 +1712,9 @@ function statchasers_player_retitle_panel(): void {
 	$custom   = count( $plan['custom'] );
 
 	echo '<h2>Profile titles</h2>';
-	echo '<p>The profile title is now <code>&lt;player&gt; Fantasy Football Stats &amp; Analysis</code>, with no ' .
-		'<code>| StatChasers</code>: with the brand, every name past twelve letters ran over the sixty characters ' .
-		'a results page shows. Pages still carrying it, or no title, can be moved here. ' .
+	echo '<p>The profile title is now <code>&lt;player&gt; Stats, News, Bio &amp; Fantasy Outlook | StatChasers</code> ' .
+		'(mak&#8217;s player-entity brief, 2026-11-03): evergreen, no year, the brand dropped first for a long name. ' .
+		'Pages still carrying an earlier wording, or no title, can be moved here. ' .
 		'A title someone typed by hand is never touched.</p>';
 	printf(
 		'<p><strong>%d eligible &middot; %d custom title%s left alone</strong></p>',

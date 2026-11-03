@@ -545,7 +545,7 @@ echo "team headings\n";
 is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'outlook is the hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'news' ), 'New England Patriots News 2026', 'news' );
-is( statchasers_team_heading( 'new-england-patriots', 'depth-chart' ), 'New England Patriots Depth Chart 2026', 'depth chart' );
+is( statchasers_team_heading( 'new-england-patriots', 'depth-chart' ), 'New England Patriots Depth Chart', 'depth chart (no year, 2026-11-03)' );
 
 echo "\nteam section meta mirrors the API\n";
 $news = statchasers_team_section_meta( 'new-england-patriots', 'news' );
@@ -606,25 +606,37 @@ $meta = statchasers_player_page_meta( array(
 	'slug' => 'kyler-murray', 'name' => 'Kyler Murray', 'position' => 'QB',
 	'team' => 'MIN', 'teamName' => 'Minnesota Vikings', 'id' => '1',
 ) );
-is( $meta['title'], 'Kyler Murray Fantasy Football ' . STATCHASERS_TEAM_SEASON . ': Stats, Outlook & News', 'title: the hub leads with "fantasy football" and the year (mak, 2026-10-09)' );
+is( $meta['title'], 'Kyler Murray Stats, News, Bio & Fantasy Outlook | StatChasers', 'title: the evergreen entity wording, branded (mak, 2026-11-03)' );
 is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers' ), $meta['title'], 'retitle: the old branded wording is ours' );
 is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis' ), $meta['title'], 'retitle: the 2026-10-08 wording is ours' );
-is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football 2025: Stats & Outlook' ), $meta['title'], 'retitle: an earlier year of the current ladder is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football 2025: Stats & Outlook' ), $meta['title'], 'retitle: an earlier year of the dated ladder is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football 2026: Stats, Outlook & News' ), $meta['title'], 'retitle: the dated ladder of 2026-10-09 is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Stats, News & Fantasy Outlook' ), $meta['title'], 'retitle: a bare rung of the evergreen ladder is ours' );
 is( statchasers_player_generated_title( 'Kyler Murray: the QB nobody expected' ), '', 'retitle: a typed title is left alone' );
 is(
-	statchasers_fit_title( statchasers_player_title_ladder( 'Marquez Valdes-Scantling' ) ),
-	'Marquez Valdes-Scantling Fantasy ' . STATCHASERS_TEAM_SEASON . ': Stats & Outlook',
-	'title: the longest names drop to the last rung'
+	statchasers_branded_title( statchasers_player_title_ladder( 'Marquez Valdes-Scantling' ) ),
+	'Marquez Valdes-Scantling Stats, News, Bio & Fantasy Outlook',
+	'title: a long name drops the brand before it drops words'
 );
-is( strlen( $meta['title'] ) <= 60, true, 'title: within sixty characters' );
-is( false !== strpos( $meta['description'], 'fantasy football profile: ' . STATCHASERS_TEAM_SEASON . ' outlook' ), true, 'description: the stored copy is the offseason wording' );
+is(
+	statchasers_branded_title( statchasers_player_title_ladder( 'Christian McCaffrey-Longname Jr.' ) ),
+	'Christian McCaffrey-Longname Jr. Stats, News & Outlook | StatChasers',
+	'title: the longest names shorten the wording and keep the brand where it fits'
+);
+is(
+	statchasers_branded_title( statchasers_player_title_ladder( 'Christian McCaffrey-Longname-Longername-Longest Jr.' ) ),
+	'Christian McCaffrey-Longname-Longername-Longest Jr. Stats & News',
+	'title: the last rung is returned bare'
+);
+is( strlen( $meta['title'] ) <= 70, true, 'title: within seventy characters with the brand' );
+is( false !== strpos( $meta['description'], 'Updated throughout the NFL season.' ), true, 'description: the stored copy is the evergreen wording' );
 is( statchasers_player_generated_title( 'Kyler Murray: Our Take | StatChasers' ), '', 'retitle: a custom title stays custom' );
 is(
 	$meta['description'],
-	'Kyler Murray (QB, MIN) fantasy football profile: ' . STATCHASERS_TEAM_SEASON . ' outlook, projections, stats, injury history and dynasty value.',
-	'description'
+	'Kyler Murray, Vikings QB: stats, game logs, news, injury updates, bio, career numbers and fantasy football outlook. Updated throughout the NFL season.',
+	'description: the nickname rung, since the full club name runs past 155'
 );
-
+is( strlen( $meta['description'] ) <= 155, true, 'description: within 155 characters' );
 echo "\nH1 verdict logic\n";
 is( statchasers_h1_normalise( "<span>New  England\nPatriots</span> " ), 'New England Patriots', 'normalize' );
 is( statchasers_h1_should_print(), false, 'no verdict -> prints nothing' );
@@ -888,11 +900,15 @@ $allen->ID         = 71;
 $allen->post_name  = 'josh-allen-h1-test';
 $allen->post_title = 'Josh Allen (QB)';
 $GLOBALS['page']   = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $allen );
-is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen Fantasy Football', 'player H1: the profile is "{Name} Fantasy Football" (mak, 2026-10-09)' );
-is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats ' . STATCHASERS_TEAM_SEASON, 'player H1: stats is dated' );
-is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook ' . STATCHASERS_TEAM_SEASON, 'player H1: so is the outlook' );
-is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Update & History', 'player H1: injury is not' );
-is( statchasers_player_heading( 'josh-allen-h1-test', 'news' ), 'Latest Josh Allen News & Updates', 'player H1: news leads with Latest (mak, 2026-09-30)' );
+is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen', 'player H1: the profile is the name (mak, 2026-11-03)' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats', 'player H1: stats is undated' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook', 'player H1: so is the outlook' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Status', 'player H1: injury status' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'news' ), 'Josh Allen News', 'player H1: news' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'bio' ), 'Josh Allen Bio', 'player H1: bio' );
+$fallback = statchasers_player_fallback_meta( 'josh-allen-h1-test', 'news' );
+is( $fallback['title'] ?? '', 'Josh Allen News & Latest Updates | StatChasers', 'fallback meta: a section URL gets its own title without the API' );
+is( statchasers_player_fallback_meta( 'josh-allen-h1-test', 'nope' ), null, 'fallback meta: nothing for an unknown section' );
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 $GLOBALS['page'] = array();

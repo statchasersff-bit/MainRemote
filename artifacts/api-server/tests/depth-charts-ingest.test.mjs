@@ -113,4 +113,47 @@ describe("depth charts push", () => {
     assert.equal(stored.teams[0].positions.QB[0].headshot, null);
     assert.equal(stored.teams[0].positions["<bad>"], undefined);
   });
+
+  test("a push's slot rows become the football chart, and are checked field by field", async () => {
+    const doc = push(new Date(Date.now() + 8000).toISOString(), "Slot Quarterback");
+    const ne = doc.teams.find((t) => t.team.abbr === "NE");
+    ne.slots = [
+      { key: "wr1", slot: "WR", side: "offense", players: [{ rank: 1, name: "First Receiver" }, { rank: 2, name: "Fourth Receiver" }] },
+      { key: "wr2", slot: "WR", side: "offense", players: [{ rank: 1, name: "Second Receiver" }] },
+      { key: "qb", slot: "QB", side: "offense", players: [{ rank: 1, name: "Slot Quarterback", extra: "<script>" }] },
+      { key: "pk", slot: "PK", side: "specialTeams", players: [{ rank: 1, name: "Slot Kicker" }] },
+      { key: "mlb", slot: "MLB", side: "defense", players: [{ rank: 1, name: "Slot Backer" }] },
+      { key: "<bad>", slot: "WR", side: "offense", players: [{ rank: 1, name: "Dropped" }] },
+      { key: "nb", slot: "NB", side: "elsewhere", players: [{ rank: 1, name: "Dropped Too" }] },
+      { key: "wr1", slot: "WR", side: "offense", players: [{ rank: 1, name: "Duplicate Key" }] },
+    ];
+    ne.formations = { offense: "2WR 2TE", defense: "Base 4-3 D", bogus: "x" };
+    assert.equal((await post(doc)).status, 200);
+    const stored = JSON.parse(fs.readFileSync(file, "utf8")).teams.find((t) => t.team.abbr === "NE");
+    assert.deepEqual(stored.slots.map((s) => s.key), ["wr1", "wr2", "qb", "pk", "mlb"]);
+    assert.equal(stored.slots[2].players[0].extra, undefined);
+    assert.deepEqual(stored.formations, { offense: "2WR 2TE", defense: "Base 4-3 D" });
+
+    const html = await depthTab();
+    // Two WR rows, the source's order, the kicker printed as K.
+    const rows = [...html.matchAll(/<div class="sct-dcx-row" data-pos="([^"]+)" data-slot="([^"]+)">/g)].map((m) => `${m[2]}:${m[1]}`);
+    assert.deepEqual(rows, ["wr1:WR", "wr2:WR", "qb:QB", "mlb:MLB", "pk:K"]);
+    assert.ok(html.indexOf("First Receiver") < html.indexOf("Second Receiver"), "slots in the pushed order");
+    assert.match(html, /Base offense: 2 WR, 2 TE/);
+    assert.match(html, /Base defense: 4-3/);
+    assert.ok(!html.includes("Dropped"), "rows that failed the checks are not on the page");
+  });
+
+  test("a document without slots folds the football chart from the columns and says so", async () => {
+    const doc = push(new Date(Date.now() + 9000).toISOString(), "Column Quarterback");
+    for (const team of doc.teams) {
+      delete team.slots;
+      delete team.formations;
+    }
+    assert.equal((await post(doc)).status, 200);
+    const html = await depthTab();
+    assert.match(html, /sct-dcx-folded/);
+    assert.equal([...html.matchAll(/data-sct-dc-panel="offense"[\s\S]*?<div class="sct-dcx-row" data-pos="WR"/g)].length, 1, "one folded WR row");
+    assert.ok(html.includes("Column Quarterback"));
+  });
 });

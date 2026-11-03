@@ -26,16 +26,13 @@ import { getTeamHubUrl } from "./team/links";
 import { injuryAnswer } from "./player/injury-tab";
 import { SCORING_SHORT } from "./player/scoring";
 import {
-  currentRank,
   gamePoints,
   inSeason,
   lastGame,
-  nextGame,
   oneDecimal,
   oppPhrase,
-  seasonPpg,
 } from "./player/season-phase";
-import { fitTitle } from "./title-fit";
+import { fitTitle, TITLE_MAX } from "./title-fit";
 
 export interface PlayerPageMeta {
   title: string;
@@ -51,11 +48,37 @@ const SITE_NAME = "StatChasers";
 /** What a results page shows of a description before it cuts it. */
 const DESCRIPTION_MAX = 155;
 
-/** The month-and-day a title carries: "Oct 9". */
-function monD(iso: string): string {
-  const [, m, d] = iso.split("-").map(Number);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[(m ?? 1) - 1]} ${d}`;
+/**
+ * How long a title may run when it ends in " | StatChasers".
+ *
+ * mak's player-entity brief (2026-11-03) puts the brand on every player
+ * title: "{Name} Stats, News, Bio & Fantasy Outlook | StatChasers". The
+ * sixty-character rule of 2026-10-08 still governs the words before the
+ * brand; the brand itself is the one thing a results page may cut without
+ * losing meaning, so a branded title is allowed ten more characters and the
+ * brand is the first rung to go for a long name. The plugin's stored copy
+ * (statchasers_player_title_ladder) is built the same way.
+ */
+const BRANDED_MAX = TITLE_MAX + 10;
+
+/**
+ * The first wording that fits, branded where the brand still fits.
+ *
+ * `cores` is a ladder of wordings, fullest first, without the brand. Each
+ * rung is tried with " | StatChasers" (within BRANDED_MAX), then bare (within
+ * TITLE_MAX), before the next rung is tried at all - so a name that forces
+ * the brand off keeps the fuller wording, and only the longest names lose
+ * both. The last rung is returned bare whatever its length.
+ *
+ * MIRRORED in statchasers_branded_title() in the WordPress plugin.
+ */
+export function brandedTitle(cores: string[]): string {
+  for (const core of cores) {
+    const branded = `${core} | ${SITE_NAME}`;
+    if (branded.length <= BRANDED_MAX) return branded;
+    if (core.length <= TITLE_MAX) return core;
+  }
+  return cores[cores.length - 1] ?? "";
 }
 
 /**
@@ -79,19 +102,26 @@ function sectionMeta(
 
   if (section === "stats") {
     return {
-      // Every section title is a ladder for fitTitle(): the fullest wording
-      // that fits sixty characters, and a shorter rung for the longest names
-      // (mak approved the wording, 2026-10-08).
-      title: fitTitle([
-        `${player.name} Stats ${season}: Fantasy Points & Career Stats`,
-        `${player.name} Stats ${season}: Fantasy Points & Rank`,
+      // Every section title is a ladder: the fullest wording that fits, and
+      // a shorter rung for the longest names. The wording is mak's
+      // player-entity brief of 2026-11-03 - the page owns "stats" and
+      // "career statistics", and the year lives in the H2s, not the title,
+      // so the address stays evergreen.
+      title: brandedTitle([
+        `${player.name} Stats & Career Statistics`,
+        `${player.name} Stats & Career Stats`,
+        `${player.name} Stats`,
       ]),
-      // Reworded 2026-10-22 (mak's OK): the career-by-season table left the
-      // tab, so the description names what is there instead.
-      description:
-        `${player.name} ${season} stats: ${position}season totals, fantasy ` +
-        `points and positional rank, advanced metrics, points per game every ` +
-        `season, and career bests.`,
+      description: fitTitle(
+        [
+          `${player.name} ${season} stats and career statistics: ${position}season totals, ` +
+            `advanced metrics, fantasy points and positional rank, and points per game every season.`,
+          `${player.name} ${season} stats and career statistics: ${position}season totals, ` +
+            `advanced metrics, fantasy points, positional rank and points per game.`,
+          `${player.name} ${season} stats and career statistics: season totals, advanced metrics and fantasy points.`,
+        ],
+        DESCRIPTION_MAX,
+      ),
     };
   }
 
@@ -101,15 +131,18 @@ function sectionMeta(
     // description opens on the same Yes/No the page does. The answer needs
     // the injury record; without one the section does not exist and the
     // plugin redirects it, so the wording below it is only ever a fallback.
+    // The title is mak's brief of 2026-11-03: "{Name} Injury Status &
+    // History", evergreen. The date of the latest report moved from the
+    // title into the description's "(checked Mon D)" and the page's
+    // dateModified, where it still says how fresh the answer is.
+    const title = brandedTitle([
+      `${player.name} Injury Status & History`,
+      `${player.name} Injury Status`,
+    ]);
     const ans = injuryAnswer(data);
     if (ans) {
-      const when = monD(ans.updated);
       return {
-        title: fitTitle([
-          `${player.name} Injury Update & History (Updated ${when})`,
-          `${player.name} Injury Update & History (${when})`,
-          `${player.name} Injury Update (${when})`,
-        ]),
+        title,
         description: fitTitle(
           [
             `${ans.lead} ${player.name} injury history: every logged injury, games missed and recovery timelines.`,
@@ -121,12 +154,9 @@ function sectionMeta(
       };
     }
     return {
-      title: fitTitle([
-        `${player.name} Injury Update, Status & History ${season}`,
-        `${player.name} Injury Update & History ${season}`,
-      ]),
+      title,
       description:
-        `${player.name} injury update: current status and designation, ` +
+        `${player.name} injury status: current designation, ` +
         `${season} games missed, and every logged injury of his career with ` +
         `games missed by body part.`,
     };
@@ -142,7 +172,11 @@ function sectionMeta(
     const profile = data.bioProfile;
     const born = profile.facts.find((fact) => fact.label === "Born")?.value;
     const college = profile.college;
-    const title = `${player.name} Bio: Age, Height, College & Draft`;
+    const title = brandedTitle([
+      `${player.name} Bio: Age, Height, College & Draft`,
+      `${player.name} Bio: Age, Height & College`,
+      `${player.name} Bio`,
+    ]);
     const specDescription = data.bioPage ? bioDescription(data, data.bioPage) : null;
     if (specDescription) return { title, description: specDescription };
 
@@ -166,23 +200,23 @@ function sectionMeta(
     // wording stands. The spec gives no shorter rung for the in-season
     // title, so the long names fall back to "ROS Value", then to the bare
     // phrase.
+    // The title is mak's brief of 2026-11-03, evergreen; the season phase
+    // still decides the description, which is where the year belongs.
+    const title = brandedTitle([
+      `${player.name} Fantasy Outlook, Rankings & Projections`,
+      `${player.name} Fantasy Outlook & Projections`,
+      `${player.name} Fantasy Outlook`,
+    ]);
     if (inSeason(data)) {
       return {
-        title: fitTitle([
-          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Rest-of-Season Value`,
-          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: ROS Value`,
-          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}`,
-        ]),
+        title,
         description:
           `${player.name} rest-of-season fantasy outlook: role, usage trend and ` +
           `trade and lineup value for the rest of ${OUTLOOK_SEASON}.`,
       };
     }
     return {
-      title: fitTitle([
-        `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role, Usage & Value`,
-        `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role & Usage`,
-      ]),
+      title,
       description:
         `${player.name} ${OUTLOOK_SEASON} fantasy outlook: his ${position}role, the ` +
         `usage behind it and what it is worth on draft day.`,
@@ -191,10 +225,13 @@ function sectionMeta(
 
   if (section === "news") {
     return {
-      title: `${player.name} News & Fantasy Analysis`,
+      title: brandedTitle([
+        `${player.name} News & Latest Updates`,
+        `${player.name} News`,
+      ]),
       description:
-        `The latest ${player.name} news and updates, and what each item ` +
-        `changes for fantasy.`,
+        `The latest ${player.name} news and updates: injury reports, practice ` +
+        `notes, game recaps and transactions, and what each one changes for fantasy.`,
     };
   }
 
@@ -204,9 +241,9 @@ function sectionMeta(
     // where it was, so the page is still the current season's game log and a
     // title naming 2023 would describe the block at the bottom of it.
     const year = data.season;
-    const title = fitTitle([
-      `${player.name} Game Log ${year}: Fantasy Points by Week`,
-      `${player.name} Game Log ${year}: Week by Week`,
+    const title = brandedTitle([
+      `${player.name} Game Log & Weekly Stats`,
+      `${player.name} Game Log`,
     ]);
     // The description leads with his latest game (mak, 2026-10-09): "how many
     // fantasy points did X have" is the tab's top search.
@@ -239,56 +276,53 @@ function sectionMeta(
 }
 
 /**
- * The profile's own title and description (mak, 2026-10-09).
+ * The profile's own title and description.
  *
- * The title names the search the hub ranks for - "X fantasy" - and the year,
- * and gives way by rungs for the long names. The description is built from
- * live data in season: his rank, his points per game and the next game. The
- * Stats, Injury and Bio tabs own "stats", "injury" and "age", so neither
- * string reaches for those words beyond the title's one "Stats".
+ * mak's player-entity brief (2026-11-03): the hub is the player's page, not
+ * a fantasy page, so the title is the evergreen "{Name} Stats, News, Bio &
+ * Fantasy Outlook | StatChasers" with no year - the URL does not change
+ * with the season and the title should not either. The year lives in the
+ * section headings ("{Name} 2026 Stats"), which roll with the league season.
+ * The brand gives way first for a long name, then the wording shortens.
+ *
+ * The description names what the page holds and, where it reads naturally,
+ * the club and position - "George Pickens, Dallas Cowboys WR: ..." - so the
+ * snippet answers "what team is he on" before the page is opened. The
+ * "updated throughout the NFL season" close is true of every profile: the
+ * season's data lands on the same page every week.
  *
  * MIRRORED in statchasers_player_page_meta() in the WordPress plugin, which
- * writes the stored copy; in season the plugin prefers this live one.
+ * writes the stored copy; the plugin prefers this live one when it has it.
  */
 export function profileMeta(data: PlayerPageData): { title: string; description: string } {
   const { player } = data;
-  const year = data.leagueSeason;
   const pos = player.position ?? "";
-  const team = data.team?.code ?? "";
-  const who = pos && team ? `${player.name} (${pos}, ${team})` : pos ? `${player.name} (${pos})` : player.name;
+  const team = data.team;
 
-  const title = fitTitle([
-    `${player.name} Fantasy Football ${year}: Stats, Outlook & News`,
-    `${player.name} Fantasy Football ${year}: Stats & Outlook`,
-    `${player.name} Fantasy ${year}: Stats & Outlook`,
+  const title = brandedTitle([
+    `${player.name} Stats, News, Bio & Fantasy Outlook`,
+    `${player.name} Stats, News & Fantasy Outlook`,
+    `${player.name} Stats, News & Outlook`,
+    `${player.name} Stats & News`,
   ]);
 
-  const rank = currentRank(data);
-  const ppg = seasonPpg(data);
-  const next = nextGame(data);
-  // ppg > 0, not just played: a rank by total points with 0.0 beside it is
-  // true of every healthy scratch and reads as a mistake.
-  if (inSeason(data) && data.season === year && pos && rank !== null && ppg !== null && ppg > 0 && next) {
-    const scoring = SCORING_SHORT[data.format];
-    const game = `Week ${next.week} ${next.homeAway === "home" ? "vs" : "at"} ${next.opponentCode}`;
-    return {
-      title,
-      description: fitTitle(
-        [
-          `${who} fantasy outlook: ${pos}${rank} with ${oneDecimal(ppg)} ${scoring} points per game in ${year}. ` +
-            `${game}: start/sit call, injury status and trade value.`,
-          `${who} fantasy outlook: ${pos}${rank}, ${oneDecimal(ppg)} ${scoring} points per game in ${year}. ` +
-            `${game}: start/sit, injury status and trade value.`,
-        ],
-        DESCRIPTION_MAX,
-      ),
-    };
-  }
+  const tail =
+    "stats, game logs, news, injury updates, bio, career numbers and fantasy " +
+    "football outlook. Updated throughout the NFL season.";
+  const who = (club: string | null): string =>
+    club && pos ? `${player.name}, ${club} ${pos}:` : pos ? `${player.name}, ${pos}:` : player.name;
   return {
     title,
-    description:
-      `${who} fantasy football profile: ${year} outlook, projections, stats, ` +
-      `injury history and dynasty value.`,
+    description: fitTitle(
+      [
+        `${who(team?.fullName ?? null)} ${tail}`,
+        `${who(team?.nickname ?? null)} ${tail}`,
+        `${who(team?.code ?? null)} ${tail}`,
+        `${who(null)} ${tail}`,
+        `${player.name} stats, game logs, news, injury updates, bio and fantasy outlook.`,
+      ],
+      DESCRIPTION_MAX,
+    ),
   };
 }
 
@@ -348,19 +382,38 @@ export function renderPlayerHeadTags(meta: PlayerPageMeta): string {
  * The Person the hub's ProfilePage is about (the SEO brief of 2026-10-10):
  * the Bio tab's node - name, birth date, height, weight, position - with his
  * club as an affiliation that links the team hub. Built from the approved
- * fact store only, like the Bio's; null for a player with no bio record,
- * who gets no ProfilePage rather than a bare one. No sameAs: nothing on a
- * page names an outside source (house rule, 2026-10-09).
+ * fact store where the player has a record. A player without one (mak's
+ * entity brief, 2026-11-03) gets the minimal node the page itself supports:
+ * his name, his position as jobTitle, his club and his headshot - every one
+ * of them printed in the hero - and nothing the page does not state. No
+ * sameAs: nothing on a page names an outside source (house rule, 2026-10-09).
  */
 export function hubPersonNode(data: PlayerPageData): Record<string, unknown> | null {
-  if (!data.bioPage) return null;
-  const node = bioPersonNode(data, data.bioPage);
+  const node: Record<string, unknown> = data.bioPage
+    ? bioPersonNode(data, data.bioPage)
+    : { "@type": "Person", name: data.player.name };
+  if (!data.bioPage) {
+    const image = playerShareImage(data);
+    if (image) node["image"] = image.url;
+    const pos = POSITION_TITLES[data.player.position ?? ""];
+    if (pos) node["jobTitle"] = pos;
+  }
   if (data.team) {
     const url = getTeamHubUrl(data.team);
     node["affiliation"] = { "@type": "SportsTeam", name: data.team.fullName, ...(url ? { url } : {}) };
   }
   return node;
 }
+
+/** jobTitle for the hub's fallback Person: the same words the Bio node uses. */
+const POSITION_TITLES: Record<string, string> = {
+  QB: "Quarterback",
+  RB: "Running Back",
+  WR: "Wide Receiver",
+  TE: "Tight End",
+  K: "Kicker",
+  FB: "Fullback",
+};
 
 /**
  * The day a page's data last moved, "2026-10-09" in the Eastern calendar:

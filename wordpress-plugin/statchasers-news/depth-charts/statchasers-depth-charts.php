@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * hub.css. Bump it when those files change, or a browser keeps the old ones.
  * 1.7.0 was the last standalone release; 1.7.1 is the first embedded one.
  */
-define( 'SCDC_VERSION', '1.7.1' );
+define( 'SCDC_VERSION', '1.7.2' );
 define( 'SCDC_PLUGIN_FILE', __FILE__ );
 define( 'SCDC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCDC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

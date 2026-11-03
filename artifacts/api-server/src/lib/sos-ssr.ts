@@ -35,7 +35,6 @@ import {
 import { fpaSnapshotState } from "./fpa/fpa-data";
 import type { FantasyPosition } from "./fpa/nflverse";
 import { renderSosHeadTags } from "./sos-seo";
-import { sosFaqFacts } from "./sos-faq";
 import { LruCache } from "./lru";
 
 export interface SosSsrResult {
@@ -93,16 +92,6 @@ export async function renderSosFragment(
     return { html: renderSosEmpty(options), version: "empty", board: null };
   }
 
-  // The overview's FAQ quotes the RB/PPR cards whatever the view (sos-faq.ts);
-  // the same inputs as this view's board, so it is there whenever the board is.
-  const rbBoard =
-    page !== "all"
-      ? null
-      : board.position === "RB" && board.scoring === "ppr"
-        ? board
-        : await getSosBoard("RB", "ppr");
-  const faq = page === "all" ? sosFaqFacts(rbBoard) : null;
-
   // The playoffs page reads every position's Weeks 15-17 at once.
   let boards: Partial<Record<FantasyPosition, SosBoard>> | undefined;
   if (page === "playoffs") {
@@ -120,7 +109,6 @@ export async function renderSosFragment(
   const key = optionKey(state, options);
   const versions = [
     board.version,
-    rbBoard?.version ?? "x",
     ...(boards ? SOS_POSITIONS.map((p) => boards?.[p]?.version ?? "x") : []),
     updatedAt ?? "x",
   ];
@@ -129,7 +117,7 @@ export async function renderSosFragment(
   if (hit && hit.version === version) return hit;
 
   const result: SosSsrResult = {
-    html: renderSosPage(board, state, { ...options, faq, boards, updatedAt }),
+    html: renderSosPage(board, state, { ...options, boards, updatedAt }),
     version,
     board,
   };

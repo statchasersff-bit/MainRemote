@@ -27,7 +27,7 @@ import { loadGameLogs } from "../player/data";
 import { passerRating } from "../player/stats-profile";
 import type { ProductionTotals } from "../player/player-data";
 import type { GameLogEntry } from "../player/types";
-import { SCORING_FORMATS, fmtData, perFormat, type Pos, type Preview, type PreviewSide, type ScoringFormat } from "./preview";
+import { SCORING_FORMATS, allowPhrase, fmtData, perFormat, type Pos, type Preview, type PreviewSide, type ScoringFormat } from "./preview";
 import { headshotImg } from "../headshot-html";
 
 const e = escapeHtml;
@@ -211,15 +211,17 @@ export function renderPreviewStarters(p: Preview): string {
   );
 
   // The chip beside each starter names the opposing defense's rank against
-  // his position; filled here, where both sides' rows are in hand.
+  // his position; filled here, where both sides' rows are in hand. It says
+  // which way the rank runs ("7th-most vs RB", "9th-fewest vs QB"), as the
+  // Leverage board and the Team Matchup rows do (mak, 2026-11-03).
   const withChips = (html: string, opp: PreviewSide): string =>
     html.replace(/<span class="sct-mu-st-vs" data-pos="(QB|RB|WR|TE)"><\/span>/g, (_m, pos: Pos) => {
       const rank = perFormat((f) => fpaIn(opp, f).byPos[pos].rank);
       return (
         `<span class="sct-mu-st-vs" data-tier="${chipTier(rank.ppr)}"` +
-        fmtData(perFormat((f) => `${ordinal(rank[f])} vs ${pos}`)) +
+        fmtData(perFormat((f) => `${allowPhrase(rank[f])} vs ${pos}`)) +
         fmtData(perFormat((f) => chipTier(rank[f])), "tier") +
-        `>${e(ordinal(rank.ppr))} vs ${pos}</span>`
+        `>${e(allowPhrase(rank.ppr))} vs ${pos}</span>`
       );
     });
 

@@ -644,13 +644,24 @@ function passMap(view: UsageView, team: NflTeam, links: UsageLinks): string {
 /* ------------------------------------------------------------------- table */
 
 /**
- * "+8 vs W1-3", "steady": the last three games' average against the three
- * games before them.
+ * "+8 last 3", "steady": the last three games' average against the three
+ * games before them. The window is the same for every row and the table
+ * header says so once; the week numbers it covers for this player are in
+ * his expanded profile (mak's critique, 2026-11-03: a "+6 vs W3-5" beside a
+ * "−7 vs W1" read as cherry-picked windows, when both were the one rule).
  */
 function delta(t: Trend, places: number): string {
   if (t.delta == null || t.baseWeek == null) return "";
   if (t.direction === "flat") return `<span class="sct-us-delta is-flat">steady</span>`;
-  return `<span class="sct-us-delta is-${t.direction}">${e(`${signed(t.delta, places)} vs ${baseLabel(t)}`)}</span>`;
+  return `<span class="sct-us-delta is-${t.direction}">${e(`${signed(t.delta, places)} last 3`)}</span>`;
+}
+
+/** "Last three games W6-8, against W3-5": the player's own window, for his expanded profile. */
+function windowLine(row: UsageRow): string {
+  const t = row.snap.baseWeeks.length ? row.snap : row.ts.baseWeeks.length ? row.ts : row.rz;
+  if (!t.baseWeeks.length || !t.trailWeeks.length) return "";
+  const trail = t.trailWeeks.length === 1 ? `W${t.trailWeeks[0]}` : `W${t.trailWeeks[0]}-${t.trailWeeks[t.trailWeeks.length - 1]}`;
+  return `Moves in the row: his last three games (${trail}) against the three before them (${baseLabel(t)}).`;
 }
 
 /**
@@ -665,43 +676,129 @@ function shareCell(value: number | null, t: Trend, places: number): string {
 }
 
 /**
- * Opportunity is position-aware. A receiver reads WOPR with the target share
- * and its move under it; a back reads his share of the backfield's touches
- * with weighted opportunities per game under it. A passer has no opportunity
- * score - every dropback is his - so the cell stays quiet and the Snaps column
- * carries his involvement.
+ * The position bands the table is grouped into, and the one opportunity
+ * metric each reads (mak's critique, 2026-11-03: the column spoke three
+ * languages - "53% backfield share", "0.30 WOPR", "every dropback" - so no
+ * two rows compared). The big number is now the same scale for everyone: the
+ * player's percentile among NFL players at his position on the band's
+ * metric, the one his league rank is counted on. The native stat sits under
+ * it, with WOPR demoted to the caption it used to headline.
  */
+type Band = "rb" | "rec" | "qb";
+
+const BAND: Record<Band, { name: string; metric: string; key: string; unit: string }> = {
+  rb: {
+    name: "Running backs",
+    metric: "Opportunity = weighted opportunities per active game (carries + 2 × targets), as a percentile of NFL RBs",
+    key: "woppPerGame",
+    unit: "pctile RB",
+  },
+  rec: {
+    name: "Receivers",
+    metric: "Opportunity = target share, as a percentile of NFL WRs or TEs · WOPR = 1.5 × target share + 0.7 × air-yards share",
+    key: "targetShare",
+    unit: "pctile",
+  },
+  qb: {
+    name: "Quarterback",
+    metric: "Opportunity = expected fantasy points per game, as a percentile of NFL QBs",
+    key: "xfpPerGame",
+    unit: "pctile QB",
+  },
+};
+
+const bandOf = (p: UsagePlayer): Band => (p.pos === "RB" ? "rb" : p.pos === "QB" ? "qb" : "rec");
+
+/** "78th" */
+const nth = (n: number): string => {
+  const rem = n % 100;
+  const suffix = rem >= 11 && rem <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+  return `${n}${suffix}`;
+};
+
 function opportunityCell(row: UsageRow): string {
   const p = row.player;
+  const band = BAND[bandOf(p)];
+  const pct = p.pct[band.key] ?? null;
+  const unit = band.unit === "pctile" ? `pctile ${p.pos}` : band.unit;
+  let native: string;
   if (p.pos === "WR" || p.pos === "TE") {
-    const w = p.wopr;
     const d = p.targetShare == null ? "" : delta(row.ts, 1);
-    const targets = p.targetShare == null ? "" : `${e(`${p.targetShare.toFixed(1)}% targets`)}${d ? ` · ${d}` : ""}`;
-    return (
-      `<td class="sct-us-td">` +
-      (w == null ? num("–", "is-lead") : `${num(w.toFixed(2), "is-lead")}<span class="sct-us-unit">WOPR</span>`) +
-      (targets ? `<span class="sct-us-cap">${targets}</span>` : "") +
-      `</td>`
-    );
+    native =
+      (p.targetShare == null ? "" : e(`${p.targetShare.toFixed(1)}% targets`)) +
+      (p.wopr == null ? "" : `${p.targetShare == null ? "" : " · "}${e(`${p.wopr.toFixed(2)} WOPR`)}`) +
+      (d ? ` · ${d}` : "");
+  } else if (p.pos === "RB") {
+    native =
+      (p.touchShare == null ? "" : e(`${p.touchShare}% of RB touches`)) +
+      (p.woppPerGame == null ? "" : `${p.touchShare == null ? "" : " · "}${e(`${p.woppPerGame.toFixed(1)} weighted opps/game`)}`);
+  } else {
+    native = `every dropback${p.xfpPerGame == null ? "" : e(` · ${p.xfpPerGame.toFixed(1)} xFP/game`)}`;
   }
-  if (p.pos === "RB") {
-    const wopp = p.woppPerGame == null ? "" : `${p.woppPerGame.toFixed(1)} weighted opps/game`;
-    return (
-      `<td class="sct-us-td">` +
-      (p.touchShare == null
-        ? num("–", "is-lead")
-        : `${num(`${p.touchShare}%`, "is-lead")}<span class="sct-us-unit">backfield share</span>`) +
-      (wopp ? `<span class="sct-us-cap">${e(wopp)}</span>` : "") +
-      `</td>`
-    );
-  }
-  return `<td class="sct-us-td"><span class="sct-us-cap">every dropback</span></td>`;
+  const t = tone(pct);
+  const label = pct == null ? "" : `${nth(pct)} percentile vs. NFL ${p.pos}s`;
+  return (
+    `<td class="sct-us-td is-opp">` +
+    (pct == null
+      ? num("–", "is-lead")
+      : `${num(nth(pct), "is-lead")}<span class="sct-us-unit">${e(unit)}</span>` +
+        `<span class="sct-us-pbar is-${t}" role="img" aria-label="${e(label)}" title="${e(label)}"><span style="width:${Math.max(3, pct)}%"></span></span>`) +
+    (native ? `<span class="sct-us-cap">${native}</span>` : "") +
+    `</td>`
+  );
 }
 
-/** Red-zone opportunities: the count, its move, and who leads the team. */
+/**
+ * The read's rule, as its tooltip (mak's critique, 2026-11-03: the verdict
+ * words had no key on the row - a red Volatile on a receiver whose targets
+ * are trending up needs the rule stated). Mirrors tierFor() in usage.ts.
+ */
+function tierHelp(row: UsageRow): string {
+  const pos = row.player.pos;
+  if (pos === "QB") {
+    return {
+      set: "Set & forget: a top-eight QB by expected fantasy points per game.",
+      starter: "Starter: a top-16 QB by expected fantasy points per game.",
+      flex: "Flex: matchup-dependent.",
+      volatile: "Volatile: outside the top 16 QBs by expected fantasy points per game. Week to week, the scoring depends on the matchup.",
+      stash: "Stash: the role behind the role.",
+    }[row.tier];
+  }
+  if (pos === "RB") {
+    return {
+      set: "Set & forget: a lead back with 65%+ of the backfield's weighted opportunities. Start everywhere.",
+      starter: "Starter: a lead back with 50%+ of the backfield's weighted opportunities, or 15+ per game. Weekly lineup play.",
+      flex: "Flex: a committee lead with 40%+ of the backfield's weighted opportunities, or 12+ per game. Matchup-dependent.",
+      volatile: "Volatile: a split role, under 40% of the backfield's weighted opportunities for a lead back or 35%+ for a secondary back. Usage swings week to week, so the scoring is touchdown-dependent.",
+      stash: "Stash: the role behind the role, under 35% of the backfield's weighted opportunities. Bench him for the week the lead back misses.",
+    }[row.tier];
+  }
+  return {
+    set: "Set & forget: 20%+ target share. Start everywhere.",
+    starter: "Starter: 17-19% target share. Weekly lineup play.",
+    flex: "Flex: 15-16% target share. Matchup-dependent.",
+    volatile: "Volatile: under 15% target share. Usage swings week to week, so the scoring is touchdown-dependent - a rising move in the Opportunity caption is the thing to watch.",
+    stash: "Stash: the role behind the role.",
+  }[row.tier];
+}
+
+function readCell(row: UsageRow): string {
+  return (
+    `<td class="sct-us-td is-read">` +
+    `<span class="sct-us-tier is-${row.tier}" title="${e(tierHelp(row))}">${e(TIER_LABEL[row.tier])}</span>` +
+    `</td>`
+  );
+}
+
+/**
+ * Red-zone opportunities: the count, its move, and who leads the team. The
+ * lead is the badge-worthy part, so on the leader's row a flat move yields
+ * to it rather than making a three-descriptor caption (mak, 2026-11-03).
+ */
 function rzCell(row: UsageRow): string {
   const lead = row.rzCoLead ? "co-leads team" : row.leadsRz ? "leads team" : "";
-  const parts = [delta(row.rz, 0), lead ? `<span class="sct-us-leads">${lead}</span>` : ""].filter(Boolean);
+  const move = lead && row.rz.direction === "flat" ? "" : delta(row.rz, 0);
+  const parts = [move, lead ? `<span class="sct-us-leads">${lead}</span>` : ""].filter(Boolean);
   return (
     `<td class="sct-us-td">${num(String(row.player.rzTouches), "is-mid")}` +
     (parts.length ? `<span class="sct-us-cap">${parts.join(" · ")}</span>` : "") +
@@ -792,33 +889,55 @@ function detailRow(row: UsageRow, view: UsageView, id: string): string {
     `<tr class="sct-us-detail" id="${e(id)}" hidden>` +
     `<td colspan="6" class="sct-us-td">` +
     (rank ? `<span class="sct-us-lrank">${e(rank)}</span>` : "") +
+    (windowLine(row) ? `<span class="sct-us-win">${e(windowLine(row))}</span>` : "") +
     `<ul class="sct-us-metrics">${blocks}</ul>` +
     `<p class="sct-us-pnote"><strong>${e(note.thesis)}</strong>${e(note.body)}</p>` +
     `</td></tr>`
   );
 }
 
+/**
+ * The table, after mak's critique (2026-11-03): rows grouped into position
+ * bands whose header names the band's opportunity metric once, so the metric
+ * only changes at a visible seam; the Read right after the player, so the
+ * row reads verdict-then-evidence; one move window, stated once under the
+ * three stat headers. The row order inside a band is the report's own.
+ */
 function table(view: UsageView, team: NflTeam): string {
   if (view.rows.length === 0) return "";
-  const rows = view.rows
-    .map((row) => {
-      const p = row.player;
-      const id = `usage-${team.abbreviation}-${p.id.replace(/[^a-z0-9]/gi, "")}`;
-      return (
-        `<tr class="sct-us-row">` +
-        `<td class="sct-us-td is-toggle"><button type="button" class="sct-us-toggle" aria-expanded="false" aria-controls="${e(id)}"` +
-        ` aria-label="${e(`Show ${p.name}'s advanced profile`)}"><span aria-hidden="true">+</span></button></td>` +
-        `<th scope="row" class="sct-us-td is-player">${playerLink(p, "sct-us-name")}` +
-        roleCell(row) +
-        `</th>` +
-        opportunityCell(row) +
-        shareCell(p.snapShare, row.snap, 0) +
-        rzCell(row) +
-        `<td class="sct-us-td"><span class="sct-us-tier is-${row.tier}">${e(TIER_LABEL[row.tier])}</span></td>` +
-        `</tr>` +
-        detailRow(row, view, id)
-      );
-    })
+  const rowHtml = (row: UsageRow): string => {
+    const p = row.player;
+    const id = `usage-${team.abbreviation}-${p.id.replace(/[^a-z0-9]/gi, "")}`;
+    return (
+      `<tr class="sct-us-row">` +
+      `<td class="sct-us-td is-toggle"><button type="button" class="sct-us-toggle" aria-expanded="false" aria-controls="${e(id)}"` +
+      ` aria-label="${e(`Show ${p.name}'s advanced profile`)}"><span aria-hidden="true">+</span></button></td>` +
+      // The headshot well the Targets/Carries boards use (mak, 2026-11-03).
+      `<th scope="row" class="sct-us-td is-player"><span class="sct-us-who">${faceWell(p)}` +
+      `<span class="sct-us-who-text">${playerLink(p, "sct-us-name")}` +
+      roleCell(row) +
+      `</span></span></th>` +
+      readCell(row) +
+      opportunityCell(row) +
+      shareCell(p.snapShare, row.snap, 0) +
+      rzCell(row) +
+      `</tr>` +
+      detailRow(row, view, id)
+    );
+  };
+  const bands = (["rb", "rec", "qb"] as Band[])
+    .map((band) => ({ band, rows: view.rows.filter((r) => bandOf(r.player) === band) }))
+    .filter(({ rows }) => rows.length > 0)
+    .map(
+      ({ band, rows }) =>
+        `<tbody class="sct-us-band is-${band}">` +
+        `<tr class="sct-us-band-row"><th scope="colgroup" colspan="6" class="sct-us-td">` +
+        `<span class="sct-us-band-name">${e(BAND[band].name)}</span>` +
+        `<span class="sct-us-band-metric">${e(BAND[band].metric)}</span>` +
+        `</th></tr>` +
+        rows.map(rowHtml).join("") +
+        `</tbody>`,
+    )
     .join("");
   return (
     `<div class="sct-us-scroll" tabindex="0" role="region" aria-label="${e(`${team.nickname} player usage`)}">` +
@@ -826,12 +945,15 @@ function table(view: UsageView, team: NflTeam): string {
     `<thead><tr>` +
     `<th scope="col" class="sct-us-th"><span class="sct-us-sr">Profile</span></th>` +
     `<th scope="col" class="sct-us-th">Player</th>` +
+    `<th scope="col" class="sct-us-th">Read</th>` +
     `<th scope="col" class="sct-us-th">Opportunity</th>` +
     `<th scope="col" class="sct-us-th">Snaps</th>` +
     `<th scope="col" class="sct-us-th">Red zone</th>` +
-    `<th scope="col" class="sct-us-th">Read</th>` +
+    `</tr>` +
+    `<tr class="sct-us-th-sub"><th class="sct-us-th" colspan="3"><span class="sct-us-sr">Window</span></th>` +
+    `<th class="sct-us-th" colspan="3">Season to date · a move is the last three games against the three before them</th>` +
     `</tr></thead>` +
-    `<tbody>${rows}</tbody>` +
+    bands +
     `</table></div>`
   );
 }
@@ -843,9 +965,8 @@ function legend(): string {
     ["flex", "Flex", "15–16% share or a committee lead - matchup-dependent"],
     ["volatile", "Volatile", "under 15% - deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
-    ["", "Opportunity", "WOPR (1.5 × target share + 0.7 × air-yards share) with the target share under it for receivers; share of the backfield's touches with weighted opportunities per game for backs"],
-    ["", "Snaps and Red zone", "season to date; the line under it is the last three games' average against the three games before them"],
-    ["", "Target share move", "the same three-game comparison, under the receiver's WOPR"],
+    ["", "Opportunity", "the player's percentile among NFL players at his position on the band's metric: weighted opportunities per active game for backs, target share for receivers, expected fantasy points per game for the passer. The native stat sits under it - target share and WOPR (1.5 × target share + 0.7 × air-yards share) for receivers, share of the backfield's touches and weighted opportunities per game for backs"],
+    ["", "Moves", "every \"last 3\" is the last three games' average against the three games before them; the weeks that covers for a player are in his expanded profile"],
     ["", "+ button", "opens the full advanced profile - league rank, first-read share, air-yards share, inside-10 carries, xFP/FPOE - with percentile bars vs. the league"],
   ];
   return (

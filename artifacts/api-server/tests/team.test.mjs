@@ -698,116 +698,148 @@ describe("embedded mode", () => {
   const rowName = (row) =>
     (row.querySelector(".sct-depth-name-long") ?? row.querySelector(".sct-depth-name")).textContent.trim();
 
-  test("the Depth Chart tab is the depth-charts tool's team view", async () => {
+  test("the Depth Chart tab is the football chart first, the fantasy chart last", async () => {
     const { doc } = await dom("/team/new-england-patriots/depth-chart/");
     const snapshot = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data/depth-charts/statchasers/depth-charts.json"), "utf8"),
     );
     const ne = snapshot.teams.find((t) => t.team.abbr === "NE");
     assert.ok(ne, "the snapshot has the Patriots");
+    assert.ok(Array.isArray(ne.slots) && ne.slots.length > 0, "the snapshot carries slot rows");
 
-    // The tool's four views behind a filter, Fantasy first and pressed; every
-    // card is in the HTML, not fetched.
-    const buttons = [...doc.querySelectorAll("#depth-chart [data-sct-dc-view]")];
+    // The panel heads itself with the page's phrase, then the stamp (the
+    // document's own refresh time, never the render time) and a one-paragraph
+    // summary naming listed starters.
+    const panel = doc.querySelector("#depth-chart");
+    assert.equal(panel.querySelector(".sct-h2").textContent.trim(), "New England Patriots Depth Chart");
+    const stamp = panel.querySelector(".sct-dc-stamp");
+    assert.match(stamp.textContent, new RegExp(`^${snapshot.season} NFL season`));
+    assert.equal(stamp.querySelector("time").getAttribute("datetime"), new Date(snapshot.fetchedAt).toISOString());
+    assert.equal(panel.querySelector(".sct-dc-note"), null, "no instructional view notes");
+    const summary = panel.querySelector(".sct-dc-summary").textContent;
+    assert.match(summary, /^The New England Patriots depth chart has .+ starting at quarterback/);
+    const qbSlot = ne.slots.find((slot) => slot.key === "qb");
+    assert.ok(summary.includes(qbSlot.players[0].name), "the summary names the listed QB1");
+
+    // Four views behind a filter, Offense first and pressed; every card is in
+    // the HTML, not fetched; Fantasy is last.
+    const buttons = [...panel.querySelectorAll("[data-sct-dc-view]")];
     assert.deepEqual(
       buttons.map((b) => b.textContent.trim()),
-      ["Fantasy", "Offense", "Defense", "Special Teams"],
+      ["Offense", "Defense", "Special Teams", "Fantasy"],
     );
     assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
-    const panels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")];
-    assert.deepEqual(
-      panels.map((p) => p.querySelector(".sct-dcx-title").textContent.trim()),
-      buttons.map((b) => b.textContent.trim()),
-    );
+    const panels = [...panel.querySelectorAll("[data-sct-dc-panel]")];
     assert.deepEqual(
       panels.map((p) => p.dataset.sctDcPanel),
       buttons.map((b) => b.dataset.sctDcView),
     );
-    // One line under the heading per view, the pressed view's shown.
-    const notes = [...doc.querySelectorAll("#depth-chart [data-sct-dc-note]")];
     assert.deepEqual(
-      notes.map((n) => n.dataset.sctDcNote),
-      buttons.map((b) => b.dataset.sctDcView),
+      panels.map((p) => p.querySelector(".sct-dcx-title").textContent.trim()),
+      [
+        "New England Patriots Offense Depth Chart",
+        "New England Patriots Defense Depth Chart",
+        "New England Patriots Special Teams Depth Chart",
+        "New England Patriots Fantasy Depth Chart",
+      ],
     );
-    assert.deepEqual(notes.map((n) => n.hasAttribute("hidden")), [false, true, true, true]);
-    assert.match(notes[0].textContent, /^Fantasy view prioritizes/);
-    assert.equal(doc.querySelector("#depth-chart .sct-dc-updated"), null, "no Updated stamp");
-    // The Fantasy view carries each skill player's season PPR rank ("WR7")
-    // ahead of his service line; no other view does.
-    const chips = [...panels[0].querySelectorAll(".sct-dcx-rank")];
-    assert.ok(chips.length > 0, "PPR ranks on the Fantasy view");
-    for (const chip of chips) {
-      assert.match(chip.textContent, /^(QB|RB|WR|TE)\d+$/);
-      const card = chip.closest(".sct-dcx-card");
-      const pos = card.closest(".sct-dcx-row")?.dataset.pos ?? card.querySelector(".sct-dcx-subpos").textContent.slice(0, 2);
-      assert.ok(chip.textContent.startsWith(pos), `${chip.textContent} on a ${pos} card`);
-      assert.ok(
-        chip.nextElementSibling === null || /^(Exp \d+|Rookie)$/.test(chip.nextElementSibling.textContent),
-        "the rank sits left of the service",
-      );
-    }
-    assert.equal(panels.slice(1).flatMap((p) => [...p.querySelectorAll(".sct-dcx-rank")]).length, 0);
 
-    // Column for column, rank for rank, the tool's order: the first four
-    // strings across the row, anyone deeper in the "Also listed" strip.
-    const columns = {
-      fantasy: ["FAN_QB", "FAN_RB", "FAN_WR", "FAN_TE", "FAN_K"],
-      offense: ["QB", "RB", "WR", "TE", "LT", "LG", "C", "RG", "RT"],
-      defense: ["EDGE", "DL", "LB", "CB", "S"],
-      special: ["K", "P", "LS", "KR", "PR"],
-    };
-    for (const panel of panels) {
-      const keys = columns[panel.dataset.sctDcPanel];
-      const labels = [...panel.querySelectorAll(".sct-dcx-labels > span")].map((s) => s.textContent);
-      assert.deepEqual(labels, ["Pos", "First", "Second", "Third", "Fourth"]);
-      const rows = [...panel.querySelectorAll(".sct-dcx-row")];
-      const more = [...panel.querySelectorAll(".sct-dcx-more .sct-dcx-card")];
-      const listed = keys.filter((k) => (ne.positions[k] ?? []).length);
+    // The football cards: Position | Starter | Second | Third | Fourth, one
+    // row per SLOT in the source's order (a base offense has three WR rows),
+    // the source's ranks, nothing re-sorted, no fantasy rank anywhere.
+    const sides = { offense: "offense", defense: "defense", special: "specialTeams" };
+    for (const [key, side] of Object.entries(sides)) {
+      const card = panels.find((p) => p.dataset.sctDcPanel === key);
+      const labels = [...card.querySelectorAll(".sct-dcx-labels > span")].map((s) => s.textContent);
+      assert.deepEqual(labels, ["Pos", "Starter", "Second", "Third", "Fourth"]);
+      const expected = ne.slots.filter((slot) => slot.side === side && slot.players.length);
+      const rows = [...card.querySelectorAll(".sct-dcx-row")];
       assert.deepEqual(
-        rows.map((r) => r.dataset.pos),
-        listed.map((k) => k.replace(/^FAN_/, "")),
-        `${panel.dataset.sctDcPanel}: a row per listed position`,
+        rows.map((r) => r.dataset.slot),
+        expected.map((slot) => slot.key),
+        `${key}: a row per slot, in the source's order`,
       );
-      for (const key of listed) {
-        const pos = key.replace(/^FAN_/, "");
-        const expected = [...ne.positions[key]].sort((a, b) => a.rank - b.rank);
-        const row = rows.find((r) => r.dataset.pos === pos);
+      const more = [...card.querySelectorAll(".sct-dcx-more .sct-dcx-card")];
+      for (const slot of expected) {
+        const row = rows.find((r) => r.dataset.slot === slot.key);
+        const pos = slot.slot === "PK" ? "K" : slot.slot;
+        assert.equal(row.dataset.pos, pos);
         const cards = [...row.querySelectorAll(".sct-dcx-card")];
-        assert.ok(cards.length <= 4, `${key}: at most four strings across`);
-        const deeper = more.filter((c) => c.querySelector(".sct-dcx-subpos").textContent === `${pos}${c.dataset.rank}`);
+        assert.ok(cards.length <= 4, `${slot.key}: at most four strings across`);
+        const deeper = more.filter((c) => c.querySelector(".sct-dcx-subpos")?.textContent === `${pos}${c.dataset.rank}`);
+        const players = [...slot.players].sort((a, b) => a.rank - b.rank);
         assert.deepEqual(
           [...cards, ...deeper].map(rowName),
-          expected.map((p) => p.name),
-          `${key}: names in the tool's order`,
+          players.map((p) => p.name),
+          `${slot.key}: names in the source's order`,
         );
         assert.deepEqual(
           [...cards, ...deeper].map((c) => Number(c.dataset.rank)),
-          expected.map((p) => p.rank),
-          `${key}: the tool's ranks`,
+          players.map((p) => p.rank),
+          `${slot.key}: the source's ranks`,
         );
-        // Every box: the headshot well, no position label (the row says it).
         for (const card of cards) {
           assert.ok(card.querySelector(".sct-dcx-well"), "headshot well");
-          assert.equal(card.querySelector(".sct-dcx-subpos"), null);
+          assert.equal(card.querySelector(".sct-dcx-subpos"), null, "the row labels the slot");
         }
       }
-      // The strip is only there when someone is deeper than fourth string.
-      const overflow = listed.reduce((n, k) => n + Math.max(0, ne.positions[k].length - 4), 0);
-      assert.equal(more.length, overflow, `${panel.dataset.sctDcPanel}: the Also listed strip`);
+      assert.equal(card.querySelectorAll(".sct-dcx-rank").length, 0, `${key}: no PPR rank on the football chart`);
+      assert.equal(card.querySelector(".sct-dcx-folded"), null, `${key}: slotted, not folded`);
+    }
+    const offense = panels[0];
+    assert.equal(offense.querySelectorAll('.sct-dcx-row[data-pos="WR"]').length, ne.slots.filter((s) => s.slot === "WR").length);
+    assert.match(offense.querySelector(".sct-dcx-formation")?.textContent ?? "", /^Base offense: /);
+
+    // The fantasy card: one group per position under a long-tail heading,
+    // every box labelled with its rank in the hierarchy, the four skill
+    // positions carrying the league PPR rank too.
+    const fantasy = panels[3];
+    const groups = [...fantasy.querySelectorAll(".sct-dcx-fan")];
+    assert.deepEqual(
+      groups.map((g) => g.querySelector(".sct-dcx-fan-title").textContent.trim()),
+      ["QB", "RB", "WR", "TE", "K"]
+        .filter((pos) => (ne.positions[`FAN_${pos}`] ?? []).length)
+        .map((pos) => `New England Patriots ${{ QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", K: "Kicker" }[pos]} Depth Chart`),
+    );
+    for (const group of groups) {
+      const pos = group.dataset.pos;
+      const expected = [...ne.positions[`FAN_${pos}`]].sort((a, b) => a.rank - b.rank);
+      const cards = [...group.querySelectorAll(".sct-dcx-card")];
+      assert.deepEqual(cards.map(rowName), expected.map((p) => p.name), `${pos}: the fantasy order`);
+      assert.deepEqual(
+        cards.map((c) => c.querySelector(".sct-dcx-subpos").textContent),
+        expected.map((p) => `${pos}${p.rank}`),
+        `${pos}: WR1 / WR2 labels`,
+      );
+    }
+    const chips = [...fantasy.querySelectorAll(".sct-dcx-rank")];
+    assert.ok(chips.length > 0, "PPR ranks on the Fantasy view");
+    for (const chip of chips) {
+      assert.match(chip.textContent, /^PPR(QB|RB|WR|TE)\d+$/);
+      const pos = chip.closest(".sct-dcx-fan").dataset.pos;
+      assert.ok(chip.textContent.startsWith(`PPR${pos}`), `${chip.textContent} on a ${pos} card`);
     }
 
     // The Fantasy columns carry no status in the document; each row borrows the
     // Offense column's for the same player.
-    const fantasy = panels[0];
     for (const pos of ["QB", "RB", "WR", "TE"]) {
-      const offense = ne.positions[pos] ?? [];
+      const offenseCol = ne.positions[pos] ?? [];
       for (const player of ne.positions[`FAN_${pos}`] ?? []) {
-        const twin = offense.find((o) => o.name === player.name);
+        const twin = offenseCol.find((o) => o.name === player.name);
         if (player.status || !twin?.status) continue;
         const card = [...fantasy.querySelectorAll(".sct-dcx-card")].find((c) => rowName(c) === player.name);
         assert.ok(card?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
       }
     }
+
+    // Under the questions: this club's pages, then the fantasy tools, every
+    // player name on the chart a crawlable link where a profile exists.
+    const tail = doc.querySelector(tailOf("depth-chart"));
+    const clusters = [...tail.querySelectorAll(".sct-dc-links .sct-h2")].map((h) => h.textContent.trim());
+    assert.deepEqual(clusters, ["More New England Patriots", "Fantasy Football Tools"]);
+    const own = [...tail.querySelector(".sct-dc-links").querySelectorAll(".sct-dc-link")].map((a) => a.getAttribute("href"));
+    assert.ok(own.includes("/team/new-england-patriots/") && own.includes("/team/new-england-patriots/schedule/"), own.join(" "));
+    assert.ok(panel.querySelectorAll(".sct-dcx-card a.sct-player-link[href]").length > 10, "player names link to profiles");
   });
 
   test("the depth chart FAQ names the players the chart above it lists", async () => {
@@ -835,21 +867,26 @@ describe("embedded mode", () => {
         .filter(Boolean),
     );
     assert.ok(charted.size > 0, "the chart rendered names to check against");
-    // A sidelined player in the Fantasy view is named as such, so an order
-    // that skips him reads as an injury and not as a wrong chart.
+    // A sidelined receiver in the fantasy hierarchy is named as such in the
+    // fantasy WR1 answer, so an order that skips him reads as an injury and
+    // not as a wrong chart; a listed football starter who is out is named
+    // with his designation in the starter answer.
     const sidelined = [
-      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-dcx-card.is-sidelined'),
-    ]
-      .filter((card) =>
-        /^(QB|RB|WR|TE)/.test(
-          card.closest(".sct-dcx-row")?.dataset.pos ?? card.querySelector(".sct-dcx-subpos")?.textContent ?? "",
-        ),
-      )
-      .map(rowName);
+      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-dcx-fan[data-pos="WR"] .sct-dcx-card.is-sidelined'),
+    ].map(rowName);
     for (const who of sidelined) {
       assert.ok(
         entries.some((e) => e.answer.includes(who)),
-        `a sidelined player on the chart (${who}) goes unmentioned`,
+        `a sidelined receiver on the fantasy chart (${who}) goes unmentioned`,
+      );
+    }
+    for (const row of doc.querySelectorAll('#depth-chart [data-sct-dc-panel="offense"] .sct-dcx-row')) {
+      const first = row.querySelector(".sct-dcx-card");
+      if (!first?.classList.contains("is-sidelined") || !["QB", "RB", "TE"].includes(row.dataset.pos)) continue;
+      const who = rowName(first);
+      assert.ok(
+        entries.some((e) => e.answer.includes(who) && /(injured reserve|PUP list|non-football injury|suspended|is out)/.test(e.answer)),
+        `the listed ${row.dataset.pos} starter ${who} is out and the answer does not say so`,
       );
     }
 
@@ -2565,7 +2602,7 @@ describe("the Stats heading", () => {
       "&section=outlook": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
       "&section=stats": /^New England Patriots Stats 2\d{3}$/,
       "&section=schedule": /^New England Patriots Schedule 2\d{3}$/,
-      "&section=depth-chart": /^New England Patriots Depth Chart 2\d{3}$/,
+      "&section=depth-chart": /^New England Patriots Depth Chart$/,
       "&section=matchups": /^New England Patriots Matchups 2\d{3}$/,
       "&section=news": /^New England Patriots News 2\d{3}$/,
     };
@@ -2734,7 +2771,7 @@ describe("team section URLs", () => {
   const SECTIONS = [
     ["stats", /^Patriots Team Stats 2\d{3}$/],
     ["schedule", /Patriots Schedule$/],
-    ["depth-chart", /^Patriots Fantasy Depth Chart$/],
+    ["depth-chart", /^New England Patriots Depth Chart$/],
   ];
   const TEAM = "New England Patriots";
   const at = (id) => `/team/new-england-patriots/${id}/`;

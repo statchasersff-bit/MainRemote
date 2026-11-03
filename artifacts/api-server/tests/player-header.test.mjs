@@ -97,10 +97,9 @@ describe("player header", () => {
       "QB Arizona Cardinals #7",
     );
     assert.equal(text(h.querySelector(".scp-phead-name")), "Jacoby Brissett");
-    assert.equal(
-      text(h.querySelector(".scp-phead-kind")),
-      "Fantasy outlook, stats and Week 4 start/sit for 2026",
-    );
+    // The profile's heading is the name alone (mak's entity brief, 2026-11-03).
+    assert.equal(h.querySelector(".scp-phead-kind"), null, "no second line on the profile");
+    assert.equal(text(h.querySelector(".scp-phead-h1")), "Jacoby Brissett");
 
     const spec = [...h.querySelectorAll(".scp-pspec > div")].map((d) => [
       text(d.querySelector("dt")),
@@ -142,32 +141,68 @@ describe("player header", () => {
     assert.ok(!h.textContent.includes("·"), "no middle dots anywhere in the header");
   });
 
-  test("the H1 subtitle and analytics tags follow the tab", () => {
+  test("the heading's second line is the section's word, and the analytics tags follow the tab", () => {
+    // The section H1s of mak's entity brief (2026-11-03): the name, then
+    // the section's word, as one heading.
     const cases = {
-      stats: "Stats: 2026 and career passing, rushing and fantasy numbers",
-      "game-log": "Game log: 2026 weekly stats and fantasy points",
-      outlook: "2026 fantasy outlook and rest-of-season projection",
-      injury: "Injury status and history",
-      news: "Latest news and fantasy analysis",
-      bio: "Bio, career timeline and draft history",
+      stats: "Stats",
+      "game-log": "Game Log",
+      outlook: "Fantasy Outlook",
+      injury: "Injury Status",
+      news: "News",
+      bio: "Bio",
     };
     for (const [tab, kind] of Object.entries(cases)) {
       const h = header(state(), {}, tab);
       assert.equal(text(h.querySelector(".scp-phead-kind")), kind, tab);
+      assert.equal(text(h.querySelector(".scp-phead-h1")), `Jacoby Brissett ${kind}`, `${tab}: one heading`);
       const cta = tab.replace("-", "");
       assert.equal(h.querySelector(".scp-pbtn--line").getAttribute("data-cta"), `redraft-command-header-${cta}`);
     }
-    const wr = header(state({ player: { ...state().player, position: "WR" } }), {}, "stats");
-    assert.equal(text(wr.querySelector(".scp-phead-kind")), "Stats: 2026 and career receiving and fantasy numbers");
+    assert.equal(render.headerKind(state(), "overview"), "");
   });
 
-  test("the heading is an H1 only on the standalone page", () => {
+  test("the heading is an H1 wherever the hero may own one", () => {
     assert.ok(header(state()).querySelector("h1.scp-phead-h1"), "standalone: H1");
-    assert.ok(header(state(), { embed: true }).querySelector("h2.scp-phead-h1"), "embedded: H2");
-    // When the tool supplies the heading, a panel's promoted heading is the H1.
+    assert.ok(header(state(), { embed: true }).querySelector("h2.scp-phead-h1"), "plain embed: H2, the host prints the title");
+    // When the tool supplies the heading, the hero's heading is the H1 (the
+    // entity brief, 2026-11-03): no panel heading is promoted any more.
     assert.ok(
-      header(state(), { embed: true, ownHeading: true }).querySelector("h2.scp-phead-h1"),
-      "embedded, tool supplies the heading: still H2",
+      header(state(), { embed: true, ownHeading: true }).querySelector("h1.scp-phead-h1"),
+      "embedded, tool supplies the heading: H1",
+    );
+  });
+
+  test("the college joins the spec row, and the production line sums the log", () => {
+    const log = [
+      { week: 1, game_status: "active", stats: { pass_att: 30, pass_cmp: 20, pass_yd: 250, pass_td: 2, pass_int: 1 } },
+      { week: 2, game_status: "active", stats: { pass_att: 35, pass_cmp: 22, pass_yd: 300, pass_td: 1, pass_int: 0 } },
+      { week: 3, game_status: "inactive", stats: {} },
+    ];
+    const h = header(state({ gameLog: log, bioProfile: { draft: { year: 2016, round: 3, pick: 91 }, college: "NC State" }, statsUpdatedMs: Date.UTC(2026, 10, 2, 12) }));
+    const spec = [...h.querySelectorAll(".scp-pspec > div")].map((d) => text(d.querySelector("dt")));
+    assert.deepEqual(spec, ["Age", "Height / weight", "College", "Experience", "Drafted"]);
+    assert.equal(text([...h.querySelectorAll(".scp-pspec > div")][2].querySelector("dd")), "NC State");
+    const line = [...h.querySelectorAll(".scp-pline > div")].map((d) => [text(d.querySelector("dt")), text(d.querySelector("dd"))]);
+    assert.deepEqual(line, [["CMP/ATT", "42/65"], ["PASS YDS", "550"], ["PASS TD", "3"], ["INT", "1"]]);
+    assert.equal(text(h.querySelector(".scp-pline-cap span")), "2026 season, through Week 3");
+    assert.equal(text(h.querySelector(".scp-pline-upd")), "Updated Nov 2, 2026");
+    assert.ok(h.querySelector(".scp-pline-upd").getAttribute("datetime").startsWith("2026-11-02"));
+    // The identity column reads: tags, name, spec, production, in that order.
+    const pid = h.querySelector(".scp-pid");
+    assert.deepEqual([...pid.children].map((c) => c.className.split(" ")[0]), ["scp-ptags", "scp-phead-h1", "scp-pspec", "scp-pline-wrap"]);
+    assert.ok(!h.textContent.includes("·"), "no middle dots in the header");
+
+    // No log: no line, no stamp, and no empty wrapper.
+    assert.equal(header(state()).querySelector(".scp-pline-wrap"), null);
+    // A receiver reads REC, YDS, TD, Y/R.
+    const wr = header(state({
+      player: { ...state().player, position: "WR" },
+      gameLog: [{ week: 1, game_status: "active", stats: { rec_tgt: 10, rec: 7, rec_yd: 91, rec_td: 1 } }],
+    }));
+    assert.deepEqual(
+      [...wr.querySelectorAll(".scp-pline > div dd")].map(text),
+      ["7", "91", "1", "13.0"],
     );
   });
 
@@ -211,7 +246,7 @@ describe("player header", () => {
     assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 Season");
     assert.equal(text(h.querySelector(".scp-pbtn--dark")), "See Brissett's 2026 outlook");
     assert.match(h.querySelector(".scp-pbtn--dark").getAttribute("href"), /\/jacoby-brissett\/outlook\/$/);
-    assert.equal(text(h.querySelector(".scp-phead-kind")), "Fantasy outlook and stats for 2026");
+    assert.equal(h.querySelector(".scp-phead-kind"), null, "the profile's heading is the name alone");
   });
 
   test("before Week 1 with no Outlook tab, the button is not drawn", () => {

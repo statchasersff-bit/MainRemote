@@ -213,9 +213,21 @@ class SCDC_Refresh {
 			$prev = isset( $prev_positions[ $abbr ] ) ? $prev_positions[ $abbr ] : null;
 			self::apply_movement( $positions, $prev );
 
+			// 4. The slots (ESPN's rows, one per depth-chart slot) take the
+			// blended columns' designations by name, so a player is never "Q"
+			// on the slot chart and "PUP" in the folded column beside it.
+			// Order within a slot stays ESPN's: Footballguys publishes no
+			// slots to take it from.
+			$slots = isset( $normalized['slots'] ) && is_array( $normalized['slots'] ) ? $normalized['slots'] : array();
+			self::apply_statuses_to_slots( $slots, $positions );
+			$prev_slots = isset( $prev_teams[ $abbr ]['slots'] ) && is_array( $prev_teams[ $abbr ]['slots'] ) ? $prev_teams[ $abbr ]['slots'] : array();
+			self::apply_slot_movement( $slots, $prev_slots );
+
 			$teams_out[] = array(
-				'team'      => $normalized['team'],
-				'positions' => $positions,
+				'team'       => $normalized['team'],
+				'positions'  => $positions,
+				'slots'      => $slots,
+				'formations' => isset( $normalized['formations'] ) && is_array( $normalized['formations'] ) ? $normalized['formations'] : array(),
 			);
 			++$ok;
 		}
@@ -337,6 +349,66 @@ class SCDC_Refresh {
 			unset( $player );
 		}
 		unset( $players );
+	}
+
+	/**
+	 * Give every slot player the designation the blended columns carry for his
+	 * name (Footballguys' PUP / NFI / IR / SUS codes where ESPN only has "O" or
+	 * nothing). A name the columns do not list keeps what ESPN said.
+	 *
+	 * @param array $slots     Slot rows (by reference).
+	 * @param array $positions Blended canonical columns.
+	 * @return void
+	 */
+	private static function apply_statuses_to_slots( &$slots, $positions ) {
+		$by_name = array();
+		foreach ( $positions as $pos_key => $players ) {
+			if ( 'DEF' === $pos_key || 0 === strpos( $pos_key, 'FAN_' ) ) {
+				continue;
+			}
+			foreach ( $players as $p ) {
+				if ( empty( $p['name'] ) || empty( $p['status'] ) ) {
+					continue;
+				}
+				$key = self::normalize_name_key( $p['name'] );
+				if ( ! isset( $by_name[ $key ] ) ) {
+					$by_name[ $key ] = $p['status'];
+				}
+			}
+		}
+		foreach ( $slots as &$slot ) {
+			foreach ( $slot['players'] as &$player ) {
+				$key = self::normalize_name_key( $player['name'] );
+				if ( isset( $by_name[ $key ] ) ) {
+					$player['status'] = $by_name[ $key ];
+				}
+			}
+			unset( $player );
+		}
+		unset( $slot );
+	}
+
+	/**
+	 * Movement for the slot rows, slot key by slot key, the way apply_movement()
+	 * does it for the columns.
+	 *
+	 * @param array $slots      Current slot rows (by reference).
+	 * @param array $prev_slots Prior slot rows for the same team.
+	 * @return void
+	 */
+	private static function apply_slot_movement( &$slots, $prev_slots ) {
+		$previous = array();
+		foreach ( $prev_slots as $slot ) {
+			if ( isset( $slot['key'], $slot['players'] ) ) {
+				$previous[ $slot['key'] ] = $slot['players'];
+			}
+		}
+		foreach ( $slots as &$slot ) {
+			$column = array( $slot['key'] => $slot['players'] );
+			self::apply_movement( $column, isset( $previous[ $slot['key'] ] ) ? array( $slot['key'] => $previous[ $slot['key'] ] ) : null );
+			$slot['players'] = $column[ $slot['key'] ];
+		}
+		unset( $slot );
 	}
 
 	/**

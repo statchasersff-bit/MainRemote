@@ -1,12 +1,19 @@
 /**
- * The Overview tab's lower sections, to mak's spec of 2026-09-29.
+ * The Overview tab's sections, to mak's spec of 2026-09-29, in the order of
+ * his player-entity brief of 2026-11-03.
  *
- * Sections under what the tab already had: the season strip, the read and its
- * sidebar, the efficiency meters, a game log summary, a career summary, the
- * outlook and availability cards, a FAQ and a footer. (The spec's nearby-peers
- * section was removed at mak's request; the profile's own peers rail stays.) Each is
- * a <section aria-labelledby> with its own H2 and a one-line lede, and each is
- * left out whole when its data is not there, never rendered empty.
+ * The brief's hierarchy is the player first, his statistics second, the
+ * current context third and the fantasy analysis under those - so the tab
+ * runs: the season strip, the latest news, the season's stat line, the
+ * read with its usage meters, the recent games, the outlook and
+ * availability cards, the career table, the About facts, then the peers
+ * rail and the FAQ. The news, season-stats and About blocks are compact
+ * versions of the News, Stats and Bio tabs with a link into each, so the
+ * hub is a complete player page without reprinting those tabs. (The spec's
+ * nearby-peers section was removed at mak's request; the profile's own
+ * peers rail stays.) Each is a <section aria-labelledby> with its own H2
+ * and, where the spec gives one, a one-line lede, and each is left out
+ * whole when its data is not there, never rendered empty.
  *
  * Its own module, like ./header.ts, so tests/player-overview.test.mjs can
  * render it against hand-built states without the database. It reads the
@@ -31,6 +38,8 @@ import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import type { GameLogEntry } from "./types";
 import { TIER_FILL, weeklyTier } from "./metrics";
+import { renderNewsDigest } from "./news-tab";
+import { seasonTotals, tableCols } from "./season-line";
 import type { UpcomingGame } from "./upcoming";
 import {
   designationSeverity,
@@ -621,7 +630,10 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${query}`;
 
   return (
-    sectionOpen("scp-ox-log-h", `${data.player.name} ${data.season} game log`, "") +
+    // "{Name} recent games" (the entity brief, 2026-11-03): the Game Log tab
+    // owns "{Name} game log", and the same words twice on one page is the
+    // repetition the brief asks to end.
+    sectionOpen("scp-ox-log-h", `${data.player.name} recent games`, "") +
     // The Game Log tab's table, in its classes (mak, 2026-09-30); no caption.
     `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-table--log scp-ox-log">` +
     `<thead><tr><th scope="col">Wk</th><th scope="col">Opp</th><th scope="col">Result</th>` +
@@ -711,7 +723,9 @@ function renderCareer(data: PlayerPageData, s: Season, options: PlayerRenderOpti
 
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
   return (
-    sectionOpen("scp-ox-career-h", "Career fantasy stats by season", "") +
+    // "{Name} career stats" (the entity brief, 2026-11-03); the Stats tab's
+    // own table is "... career stats by season".
+    sectionOpen("scp-ox-career-h", `${data.player.name} career stats`, "") +
     // The Game Log tab's table, in its classes (mak, 2026-09-30).
     `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-table--log scp-ox-career">` +
     `<thead><tr><th scope="col">Season</th><th scope="col">Team</th><th scope="col">GP</th>` +
@@ -719,6 +733,98 @@ function renderCareer(data: PlayerPageData, s: Season, options: PlayerRenderOpti
     `<th scope="col" class="scp-col-pts">FPTS</th><th scope="col">PPG</th><th scope="col" class="scp-col-fin">Finish</th></tr></thead>` +
     `<tbody>${body}</tbody><tfoot>${career}</tfoot></table></div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`All ${rows.length} seasons and advanced stats`)}</a>` +
+    `</section>`
+  );
+}
+
+/* ----------------------------------------- the entity brief's blocks */
+
+/**
+ * The latest news, compact (the entity brief, 2026-11-03): the News tab's
+ * feed, four items deep, with the tab linked under it. Under the strip and
+ * before the numbers, because "what happened to him this week" is the
+ * second thing a reader asks after "who is he".
+ */
+function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const digest = renderNewsDigest(data, options, 4);
+  if (!digest) return "";
+  return sectionOpen("scp-ox-news-h", `${data.player.name} latest news`, "") + digest + `</section>`;
+}
+
+/**
+ * The season's stat line as a one-row table (the entity brief, 2026-11-03):
+ * the counting stats by position, the rate the position is read by, then
+ * the fantasy total and rate - summed through season-line.ts from the same
+ * weeks the hero's line and the Stats tab's production section sum, so the
+ * three cannot disagree. Only for a season in progress with a game in it;
+ * the career table below covers everything else.
+ */
+function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
+  if (!s.current || s.played.length === 0) return "";
+  const cols = tableCols(s.pos, SCORING_SHORT[data.format]);
+  if (cols.length === 0) return "";
+  const totals = seasonTotals(s.played, s.pts);
+  const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
+  const through = s.leagueWeek > 0 ? `Through Week ${s.leagueWeek}` : "";
+  return (
+    // "{Name} 2026 season stats": the Stats tab's lead heading is "{Name}
+    // 2026 stats", and the hub carries both panels.
+    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, through ? escapeHtml(through) : "") +
+    `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-ox-season">` +
+    `<thead><tr>` +
+    cols.map((c) => `<th scope="col"><abbr title="${escapeHtml(c.title)}">${escapeHtml(c.label)}</abbr></th>`).join("") +
+    `</tr></thead>` +
+    `<tbody><tr>${cols.map((c) => `<td>${escapeHtml(c.of(totals))}</td>`).join("")}</tr></tbody>` +
+    `</table></div>` +
+    `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`Complete ${data.player.name} stats and career statistics`)}</a>` +
+    `</section>`
+  );
+}
+
+/** The position spelled out beside its code: "Wide receiver (WR)". */
+const POSITION_WORDS: Record<string, string> = {
+  QB: "Quarterback",
+  RB: "Running back",
+  WR: "Wide receiver",
+  TE: "Tight end",
+  K: "Kicker",
+  FB: "Fullback",
+};
+
+/**
+ * "About {Name}" (the entity brief, 2026-11-03): the facts that answer the
+ * plain questions - what team, what number, how old, how tall, where he
+ * went to college, when he was drafted - as a definition list, with the
+ * Bio tab linked under it. The sourced fact store's quick facts where the
+ * player has a record, the dictionary-and-draft profile where he has not;
+ * never both, and never a fact that is not there. Nothing fantasy.
+ */
+function renderAbout(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const { player, team } = data;
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const q = options.linkQuery ?? "";
+  const teamPrefix = options.teamPathPrefix ?? "/team/";
+  const rows: Array<[string, string]> = [];
+  const pos = player.position ?? "";
+  if (team) rows.push(["Team", a(`${teamPrefix}${team.slug}/${q}`, team.fullName, ` target="_top"`)]);
+  else rows.push(["Team", "Free agent"]);
+  if (pos) rows.push(["Position", escapeHtml(POSITION_WORDS[pos] ? `${POSITION_WORDS[pos]} (${pos})` : pos)]);
+  const facts: Array<{ label: string; value: string }> =
+    data.bioPage?.quick?.length ? data.bioPage.quick : data.bioProfile?.facts ?? [];
+  // The sourced quick facts carry his jersey number themselves ("Jersey
+  // No."); the dictionary's number only fills in where they do not.
+  if (player.number && !facts.some((f) => /jersey|number/i.test(f.label))) {
+    rows.push(["Number", escapeHtml(`#${player.number}`)]);
+  }
+  for (const f of facts) rows.push([f.label, escapeHtml(f.value)]);
+  if (rows.length < 4) return "";
+  const href = `${prefix}${player.slug}/bio/${q}`;
+  return (
+    sectionOpen("scp-ox-about-h", `About ${player.name}`, "") +
+    `<dl class="scp-ox-about">` +
+    rows.map(([dt, dd]) => `<div><dt>${escapeHtml(dt)}</dt><dd>${dd}</dd></div>`).join("") +
+    `</dl>` +
+    `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`${player.name} bio, career timeline and draft history`)}</a>` +
     `</section>`
   );
 }
@@ -831,10 +937,13 @@ export function renderOverviewSections(
   const open = `<div class="scp-ox"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>`;
   const before =
     renderStrip(data, s, options) +
+    renderNews(data, options) +
+    renderSeasonStats(data, s, options) +
     renderRead(data, s, options) +
     renderLog(data, s, options) +
+    renderCards(data, options) +
     renderCareer(data, s, options) +
-    renderCards(data, options);
+    renderAbout(data, options);
   const faq = renderFaq(data, options);
   // The rail stands between two wrappers rather than inside one, so it
   // inherits the panel's type exactly as its copy under the other tabs does.

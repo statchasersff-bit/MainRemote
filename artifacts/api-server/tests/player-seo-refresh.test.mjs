@@ -61,22 +61,22 @@ after(async () => {
   await server?.stop();
 });
 
-test("the hub: title names the search and the year, the H1 is the name and the game", async () => {
+test("the hub: an evergreen entity title, the H1 is the name", async () => {
   const { body } = await text(`/player/${fixture.slug}`);
   const { title, description } = head(body);
   const year = /data-season="(\d{4})"/.exec(body)?.[1];
+  // mak's player-entity brief (2026-11-03): no year, the brand where it fits.
   assert.match(
     title,
-    new RegExp(`^${fixture.name} Fantasy(?: Football)? \\d{4}: Stats(?:, Outlook & News| & Outlook)$`),
+    new RegExp(`^${fixture.name} Stats, News(?:, Bio)? & (?:Fantasy )?Outlook(?: \\| StatChasers)?$`),
     title,
   );
-  assert.ok(title.length <= TITLE_MAX, `${title.length}: ${title}`);
-  assert.doesNotMatch(title, /StatChasers/);
+  assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
+  assert.doesNotMatch(title, /\b20\d{2}\b/, "evergreen: no year in the title");
   assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
-  assert.ok(
-    /fantasy outlook: [A-Z]+\d+ with \d+\.\d [A-Z]+ points per game in \d{4}\. Week \d+ (?:vs|at) [A-Z]+: start\/sit call, injury status and trade value\.$/.test(
-      description,
-    ) || /fantasy football profile: \d{4} outlook, projections, stats, injury history and dynasty value\.$/.test(description),
+  assert.match(
+    description,
+    /stats, game logs, news, injury updates, bio(?:, career numbers)? and fantasy (?:football )?outlook\./,
     description,
   );
   assert.ok(year, "the page names its season");
@@ -84,11 +84,9 @@ test("the hub: title names the search and the year, the H1 is the name and the g
   const { body: embed } = await text(`/embed/player/${fixture.slug}?h1=1`);
   const doc = new JSDOM(embed).window.document;
   const h1 = doc.querySelector("h1");
-  assert.equal(h1.textContent, `${fixture.name} Fantasy Football`);
-  const sub = h1.nextElementSibling;
-  assert.ok(sub?.classList.contains("scp-head-sub"), "a small line under the H1");
-  assert.match(sub.textContent, /^[A-Z]{1,3}, .+/, `position, team name: ${sub.textContent}`);
-  assert.doesNotMatch(h1.textContent, /age|injury|stats/i, "the hub stays off the other tabs' words");
+  assert.equal(h1.textContent.replace(/\s+/g, " ").trim(), fixture.name);
+  assert.ok(h1.closest("header.scp-phead"), "the hero's heading is the H1");
+  assert.equal(doc.querySelector("#overview .scp-head-sub"), null, "no promoted panel heading with a small line");
 
   // The answer sentence and the snapshot rail are gone (mak, 2026-10-23):
   // the H1 and its small line open straight onto the week-by-week strip.
@@ -143,10 +141,11 @@ test("the longest name on the roster still gets a title within sixty characters"
   const { status, body } = await text(`/player/${longName.slug}`);
   assert.equal(status, 200, longName.slug);
   const { title } = head(body);
-  assert.ok(title.length <= TITLE_MAX, `${title.length}: ${title}`);
-  assert.match(title, new RegExp(`^${longName.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} Fantasy`));
-  if (`${longName.name} Fantasy Football 2026: Stats, Outlook & News`.length > TITLE_MAX) {
-    assert.doesNotMatch(title, /Stats, Outlook & News$/, "the full wording gave way");
+  assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
+  assert.match(title, new RegExp(`^${longName.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} Stats`));
+  assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
+  if (`${longName.name} Stats, News, Bio & Fantasy Outlook | StatChasers`.length > TITLE_MAX + 10) {
+    assert.doesNotMatch(title, /Stats, News, Bio & Fantasy Outlook \| StatChasers$/, "the full branded wording gave way");
   }
 });
 
@@ -169,10 +168,10 @@ test("the injury page: a dated title, the question and its Yes/No answer first, 
 
   async function check(player, html) {
     const { doc, title, description } = head(html);
-    const dated = /^(.+) Injury Update(?: & History)? \((?:Updated )?([A-Z][a-z]{2} \d{1,2})\)$/.exec(title);
+    const dated = /^(.+) Injury Status(?: & History)?(?: \| StatChasers)?$/.exec(title);
     assert.ok(dated, title);
     assert.equal(dated[1], player.name);
-    assert.ok(title.length <= TITLE_MAX, `${title.length}: ${title}`);
+    assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
     assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
     assert.match(
       description,
@@ -198,9 +197,10 @@ test("the injury page: a dated title, the question and its Yes/No answer first, 
     const copy = island(embed);
     assert.equal(copy.title, title);
     assert.match(copy.modified, /^\d{4}-\d{2}-\d{2}$/);
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const [, m, d] = copy.modified.split("-").map(Number);
-    assert.equal(`${months[m - 1]} ${d}`, dated[2], "the title's date is the island's");
+    // The report date left the title (the entity brief, 2026-11-03): the
+    // description still says when the designation was checked, and the
+    // island's `modified` still dates the page for the WebPage node.
+    assert.match(description, /\(checked [A-Z][a-z]{2} \d{1,2}\)/, description);
   }
 });
 
@@ -215,17 +215,16 @@ test("the outlook page: wording follows the season phase, and the body opens on 
   }
   assert.ok(page, "no player with an outlook page");
   const { doc, title, description } = head(page.body);
-  assert.ok(title.length <= TITLE_MAX, `${title.length}: ${title}`);
+  assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
   assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
   const live = /rest-of-season fantasy outlook/.test(description);
+  assert.match(title, /^.+ Fantasy Outlook(?:, Rankings & Projections| & Projections)?(?: \| StatChasers)?$/, title);
   if (live) {
-    assert.match(title, /Fantasy Outlook \d{4}(?:: Rest-of-Season Value|: ROS Value)?$/, title);
     assert.doesNotMatch(description, /draft day/);
   } else {
-    assert.match(title, /Fantasy Outlook \d{4}: Role(?:, Usage & Value| & Usage)$/, title);
     assert.match(description, /draft day\.$/);
   }
-  const h1 = doc.querySelector("#outlook h1, #outlook h2.is-lead");
+  const h1 = doc.querySelector("#outlook h2.is-lead");
   assert.match(h1.textContent, /Rest-of-Season Outlook$/);
   // The lede sentence under the heading went 2026-10-22 (mak).
   assert.equal(doc.querySelector("#outlook .scp-ol-lede"), null, "no lede under the heading");
@@ -235,7 +234,7 @@ test("the game log page: the description leads with the latest game", async () =
   const { status, body } = await text(`/player/${fixture.slug}/game-log/`);
   assert.equal(status, 200);
   const { title, description } = head(body);
-  assert.ok(title.length <= TITLE_MAX, `${title.length}: ${title}`);
+  assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
   assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
   assert.match(
     description,
@@ -249,9 +248,11 @@ test("every tab of the fixture fits the title and description budgets", async ()
     const { status, body } = await text(`/player/${fixture.slug}/${section}`);
     if (status !== 200) continue;
     const { title, description } = head(body);
-    assert.ok(title.length <= TITLE_MAX, `${section}: ${title.length}: ${title}`);
+    assert.ok(title.length <= TITLE_MAX + 10, `${section}: ${title.length}: ${title}`);
     assert.ok(description.length <= DESCRIPTION_MAX, `${section}: ${description.length}: ${description}`);
-    assert.ok(title.startsWith(fixture.name) || title.startsWith(`Latest ${fixture.name}`), `${section}: name first: ${title}`);
-    assert.doesNotMatch(title, /\| StatChasers/);
+    assert.ok(title.startsWith(fixture.name), `${section}: name first: ${title}`);
+    // The brand closes a title where it fits (the entity brief, 2026-11-03);
+    // the words before it stay within the sixty a results page shows.
+    assert.ok(title.replace(/ \| StatChasers$/, "").length <= TITLE_MAX, `${section}: ${title}`);
   }
 });

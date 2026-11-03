@@ -37,6 +37,12 @@ export interface NflInjuryEntry {
   play?: InjuryPlay | null;
   /** The weekly report rows for this injury, in week order (2026-10-22). */
   reports?: InjuryReportRow[] | null;
+  /**
+   * True for an entry the Injury tool's store wrote (buildInjuryHistory.mjs
+   * --all, 2026-10-30): one per run of report weeks, which injury-tab-data.ts
+   * reads to keep two such entries as two injuries.
+   */
+  report?: boolean;
 }
 
 export interface InjuryPlay {

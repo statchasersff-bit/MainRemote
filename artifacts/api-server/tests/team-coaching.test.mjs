@@ -377,28 +377,69 @@ describe("panels", () => {
     assert.equal(panel.querySelector(".sct-co-take-line").textContent, "Running backs have drawn 25% of targets vs 20% league average.");
     const bf = [...doc.querySelectorAll(".sct-co-panel")][1];
     assert.equal(bf.querySelector(".sct-co-range"), null, "the tracked-range line went 2026-11-02");
-    assert.equal(bf.querySelector(".sct-co-colnow").textContent, "Current");
+    assert.equal(bf.querySelector(".sct-co-colnow"), null, "the Current pill went 2026-11-03");
+    assert.ok(bf.querySelector(".sct-co-col.is-current"), "the live column is still tinted");
   });
 });
 
 describe("FAQ", () => {
-  test("the coaching question is visible in its tail and links to #coaching", async () => {
+  test("the coaching questions are visible in the tail, in the brief's order and count", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const tail = doc.querySelector('[data-sct-faq-for="coaching"]');
     assert.ok(tail);
-    assert.equal(tail.querySelector(".sct-faq-q").textContent, coaching.teams.buf.faq.question);
-    assert.equal(tail.querySelector(".sct-faq-more a").getAttribute("href"), "#coaching");
+    const qs = [...tail.querySelectorAll(".sct-faq-q")].map((q) => q.textContent);
+    assert.ok(qs.length >= 12 && qs.length <= 16, `12-16 questions, got ${qs.length}`);
+    assert.equal(qs[0], "Who is the Bills offensive coordinator in 2026?");
+    assert.equal(qs[1], "Who calls plays for the Bills offense?");
+    assert.ok(qs.some((q) => /^Are the Bills a pass-heavy offense/.test(q)));
+    assert.ok(qs.some((q) => /target running backs often/.test(q)));
+    assert.ok(qs.some((q) => /mean for fantasy football/.test(q)));
+    // No per-question "See the full coaching profile" link any more.
+    assert.equal(tail.querySelector(".sct-faq-more"), null);
   });
 
-  test("…and is in the page's FAQPage with the answer the page shows", async () => {
+  test("a returning caller is asked how the offense changed; a new caller what changed", async () => {
+    const buf = await page("/team/buffalo-bills/");
+    const bufQs = [...buf.doc.querySelectorAll('[data-sct-faq-for="coaching"] .sct-faq-q')].map((q) => q.textContent);
+    assert.ok(bufQs.includes("How has the Bills offense changed in 2026?"));
+    assert.ok(bufQs.includes("Is 2025 a useful baseline for predicting the Bills offense in 2026?"));
+    const det = await page("/team/detroit-lions/");
+    const detQs = [...det.doc.querySelectorAll('[data-sct-faq-for="coaching"] .sct-faq-q')].map((q) => q.textContent);
+    assert.ok(detQs.includes("What changed with the Lions offense in 2026?"));
+    const baseline = [...det.doc.querySelectorAll('[data-sct-faq-for="coaching"] .sct-faq-item')].find((d) =>
+      /useful baseline/.test(d.querySelector(".sct-faq-q").textContent),
+    );
+    assert.ok(/^Only with care\./.test(baseline.querySelector(".sct-faq-a").textContent));
+  });
+
+  test("the answers quote the tendencies table's own numbers", async () => {
+    const { doc } = await page("/team/buffalo-bills/");
+    const tail = doc.querySelector('[data-sct-faq-for="coaching"]');
+    const rz = [...tail.querySelectorAll(".sct-faq-item")].find((d) => /pass in the red zone/.test(d.querySelector(".sct-faq-q").textContent));
+    assert.ok(rz);
+    const m = rz.querySelector(".sct-faq-a").textContent.match(/passed on (\d+(?:\.\d+)?)% of red-zone plays/);
+    assert.ok(m, "the red-zone answer quotes a rate");
+    const rows = [...doc.querySelectorAll(".sct-co-table tbody tr")];
+    const rzRow = rows.find((r) => /Red-zone pass rate/.test(r.textContent));
+    assert.ok(rzRow && rzRow.textContent.includes(`${m[1]}%`), "the same rate the table shows");
+  });
+
+  test("…and every question is in the page's FAQPage with the answer the page shows", async () => {
     const { doc, body } = await page("/team/buffalo-bills/");
     const faq = [...doc.querySelectorAll('script[type="application/ld+json"]')]
       .map((s) => JSON.parse(s.textContent))
       .find((j) => j["@type"] === "FAQPage");
-    const entry = faq.mainEntity.find((q) => /Joe Brady/.test(q.name));
-    assert.ok(entry, "coaching question in the FAQPage");
-    assert.equal(entry.acceptedAnswer.text, coaching.teams.buf.faq.answer);
-    assert.ok(body.includes(coaching.teams.buf.faq.answer));
+    const tail = doc.querySelector('[data-sct-faq-for="coaching"]');
+    const items = [...tail.querySelectorAll(".sct-faq-item")];
+    assert.ok(items.length > 0);
+    for (const item of items) {
+      const q = item.querySelector(".sct-faq-q").textContent;
+      const entry = faq.mainEntity.find((x) => x.name === q);
+      assert.ok(entry, `"${q}" is in the FAQPage`);
+      const visible = [...item.querySelectorAll(".sct-faq-a")].map((p) => p.textContent).join("\n\n");
+      assert.equal(entry.acceptedAnswer.text, visible);
+      assert.ok(body.includes(item.querySelector(".sct-faq-a").textContent));
+    }
   });
 });
 

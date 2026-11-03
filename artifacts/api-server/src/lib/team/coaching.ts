@@ -186,6 +186,47 @@ export function getCoachingDoc(season: number): CoachingDoc | null {
   return readDataJson<CoachingDoc>(dataPath("team", `coaching_${season}.json`));
 }
 
+/**
+ * One club's entry in the researched staff file (coaching_staff_<season>.json,
+ * the hand-editable layer buildCoaching.mjs reads): the names the generated
+ * entry does not carry (head coach, the previous season's caller) and the
+ * calling stops the FAQ counts a stint from.
+ */
+export interface CoachingStaffEntry {
+  hc: string;
+  oc: string;
+  dc: string;
+  playCaller: { name: string; title: string; basis?: string; note?: string };
+  /** Who called plays here the season before, as the research file words it. */
+  prevCaller: string | null;
+  tree: string | null;
+  callingStops: Array<{ team: string; role: string; years: string; seasons: number[]; fromWeek?: number; toWeek?: number }>;
+  hcFirstSeasonWithTeam: number | null;
+}
+
+interface CoachingStaffDoc {
+  season: number;
+  teams: Record<string, Record<string, unknown>>;
+}
+
+export function getCoachingStaff(abbreviation: string, season: number): CoachingStaffEntry | null {
+  const doc = readDataJson<CoachingStaffDoc>(dataPath("team", `coaching_staff_${season}.json`));
+  const raw = doc?.teams?.[abbreviation.toLowerCase()];
+  if (!raw) return null;
+  const str = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v : null);
+  const pc = (raw.playCaller ?? {}) as Record<string, unknown>;
+  return {
+    hc: str(raw.hc) ?? "",
+    oc: str(raw.oc) ?? "",
+    dc: str(raw.dc) ?? "",
+    playCaller: { name: str(pc.name) ?? "", title: str(pc.title) ?? "", basis: str(pc.basis) ?? undefined, note: str(pc.note) ?? undefined },
+    prevCaller: str(raw[`prev${season - 1}Caller`]),
+    tree: str(raw.tree),
+    callingStops: Array.isArray(raw.callingStops) ? (raw.callingStops as CoachingStaffEntry["callingStops"]) : [],
+    hcFirstSeasonWithTeam: typeof raw.hcFirstSeasonWithTeam === "number" ? raw.hcFirstSeasonWithTeam : null,
+  };
+}
+
 /** One club's dossier, by lowercase abbreviation. Null = no section. */
 export function getTeamCoaching(
   abbreviation: string,

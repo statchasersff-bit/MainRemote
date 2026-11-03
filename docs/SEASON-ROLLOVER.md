@@ -34,7 +34,7 @@ Outlooks are hand-written per season. There is nothing to flip until the new one
 
 - **`artifacts/api-server/data/player/fantasy_outlook_2027.json`:** write it. `scripts/player/buildFantasyOutlook2026.js` and `outlookPrep.js` are the 2026 pipeline, so copy and rename them.
 - **`artifacts/api-server/src/lib/player/data.ts:56`:** point `OUTLOOK_FILE` at the new file.
-- **`artifacts/api-server/src/lib/player-render.ts:253`:** set `OUTLOOK_SEASON` to 2027. It drives the Outlook section's title and H1 ("Fantasy Outlook 2027").
+- **`artifacts/api-server/src/lib/player/outlook-2026.ts`:** set `OUTLOOK_SEASON` to 2027. It drives the Outlook tab's wording (its title and H1 are evergreen since 2026-11-03: "{Name} Fantasy Outlook, Rankings & Projections" / "{Name} Fantasy Outlook").
 - **`artifacts/api-server/src/lib/team/outlook.ts`:** add the 32 team outlooks, each with `season: 2027` and an `updated:` date. The per-team `season: 2026` entries start at line 122.
 
 ### 2. August: FPA preseason mode
@@ -64,7 +64,7 @@ Bump the plugin version, rebuild the zip (`bash wordpress-plugin/scripts/build-z
 
 **Stored meta does not follow the constant.** Rank Math titles and descriptions are written into each page's meta *only when empty*, so the 611 player descriptions ("… 2026 game log …") and 32 team hub titles keep saying 2026. Two ways to refresh them:
 
-- **Player titles and descriptions:** since 1.10.34 (2026-10-09) the profile's stored title is dated ("{Name} Fantasy Football 2026: Stats, Outlook & News") and the Tools-screen **retitle** recognizes that ladder for any year, so pressing it after the rollover moves every generated title to 2027. The stored description is only the offseason fallback - in season the plugin takes the API's live one from the fragment's `scp-page-data` island - so re-run `create-player-pages.sh` with `--force`, or clear `rank_math_description` on the player pages and press **Build player pages** (it refills empty fields).
+- **Player titles and descriptions:** since 1.10.44 (2026-11-03, mak's player-entity brief) the profile's stored title and description are EVERGREEN ("{Name} Stats, News, Bio & Fantasy Outlook | StatChasers"; "... Updated throughout the NFL season.") and the six section titles carry no year either, so nothing on the player pages needs a retitle at the rollover. The year lives in the on-page H2s ("{Name} 2027 Stats"), which follow the league season automatically. The Tools-screen **retitle** still recognizes the older dated ladders, for any page that never moved.
 - **Team hub titles:** the Tools-screen retitle only recognizes the old `YYYY {Team} Fantasy Football Hub | StatChasers` template (`statchasers-team-pages.php` ≈ 1679-1688). It will treat the current "{Team} 2026: Record, …" titles as custom and skip them. Either update that pattern to recognize the current template before the rollover, or clear `rank_math_title` on the hubs and rebuild.
 
 ### 4. RB handcuffs: owner decision

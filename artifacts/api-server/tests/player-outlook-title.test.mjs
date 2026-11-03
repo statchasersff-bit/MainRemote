@@ -24,14 +24,17 @@ test("a player whose page is on last season still gets this season's outlook tit
     if (res.status !== 200) continue;
     const html = await res.text();
     const season = Number(/data-season="(\d{4})"/.exec(html)?.[1]);
-    const h1 = /Fantasy Outlook (\d{4})/.exec(
-      (await (await fetch(`${server.origin}/embed/player/${player.slug}?section=outlook&h1=1`)).text()),
-    )?.[1];
-    if (!season || !h1 || season >= Number(h1)) continue;
-    const title = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "";
-    assert.match(title, new RegExp(`Fantasy Outlook ${h1}:`), `${player.slug}: ${title}`);
+    // The take's heading names the outlook season; the page's own season
+    // (data-season) can be an earlier one for a player with no snaps yet.
+    const take = /Rest-of-Season Outlook|(\d{4}) Outlook/.exec(html);
+    if (!season || !take) continue;
+    const title = (/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "").replace(/&amp;/g, "&");
+    // Evergreen since the entity brief (2026-11-03): the title names no
+    // year at all, so it cannot name the wrong one.
+    assert.match(title, /^.+ Fantasy Outlook(?:, Rankings & Projections| & Projections)?(?: \| StatChasers)?$/, `${player.slug}: ${title}`);
+    assert.doesNotMatch(title, /\b20\d{2}\b/, `${player.slug}: no year in the title`);
     checked = player.slug;
     break;
   }
-  assert.ok(checked, "found a player whose page is on an earlier season than the outlook");
+  assert.ok(checked, "found a player with an outlook page");
 });

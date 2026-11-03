@@ -245,22 +245,38 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	# design, so these three are the page's only ones - and the robots value is
 	# the difference between a profile that ranks and one that quietly doesn't.
 	# The same ladder as statchasers_player_page_meta() in the plugin (mak's
-	# refresh, 2026-10-09): the fullest wording that fits sixty characters.
-	seo_title="$name Fantasy Football $SEASON: Stats, Outlook & News"
-	[ "${#seo_title}" -gt 60 ] && seo_title="$name Fantasy Football $SEASON: Stats & Outlook"
-	[ "${#seo_title}" -gt 60 ] && seo_title="$name Fantasy $SEASON: Stats & Outlook"
+	# player-entity brief, 2026-11-03): evergreen, no year; each wording is
+	# tried with " | StatChasers" within seventy characters, then bare within
+	# sixty, before the next, shorter wording.
+	seo_title=""
+	for core in "$name Stats, News, Bio & Fantasy Outlook" "$name Stats, News & Fantasy Outlook" "$name Stats, News & Outlook" "$name Stats & News"; do
+		branded="$core | StatChasers"
+		if [ "${#branded}" -le 70 ]; then seo_title="$branded"; break; fi
+		if [ "${#core}" -le 60 ]; then seo_title="$core"; break; fi
+	done
+	[ -z "$seo_title" ] && seo_title="$name Stats & News"
 
 	who="$name"
-	if [ -n "$position" ] && [ -n "$team" ]; then
-		who="$name ($position, $team)"
+	if [ -n "$position" ] && [ -n "$team_name" ]; then
+		who="$name, $team_name $position:"
+	elif [ -n "$position" ] && [ -n "$team" ]; then
+		who="$name, $team $position:"
 	elif [ -n "$position" ]; then
-		who="$name ($position)"
+		who="$name, $position:"
 	fi
 
 	set_meta "$id" rank_math_title "$seo_title"
 	# The offseason wording; in season the plugin prefers the API's live copy.
-	set_meta "$id" rank_math_description \
-		"$who fantasy football profile: $SEASON outlook, projections, stats, injury history and dynasty value."
+	# The evergreen wording of the API's profileMeta(); the nickname where the
+	# club's full name runs the line past 155 characters.
+	tail="stats, game logs, news, injury updates, bio, career numbers and fantasy football outlook. Updated throughout the NFL season."
+	seo_desc="$who $tail"
+	if [ "${#seo_desc}" -gt 155 ] && [ -n "$team_name" ] && [ -n "$position" ]; then
+		seo_desc="$name, ${team_name##* } $position: $tail"
+	fi
+	[ "${#seo_desc}" -gt 155 ] && seo_desc="$name, $position: $tail"
+	[ "${#seo_desc}" -gt 155 ] && seo_desc="$name stats, game logs, news, injury updates, bio and fantasy outlook."
+	set_meta "$id" rank_math_description "$seo_desc"
 	set_meta "$id" rank_math_robots '["index","follow"]' --format=json
 
 	if [ "$WITH_IMAGES" -eq 1 ] && meta_is_empty "$id" _thumbnail_id; then

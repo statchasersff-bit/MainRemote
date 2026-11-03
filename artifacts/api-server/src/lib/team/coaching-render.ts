@@ -18,6 +18,7 @@
 import { escapeHtml, TEAM_ACCENTS, TEAM_COLORS } from "../render";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import {
+  getCoachingStaff,
   getLeaguePpg,
   RELIABILITY_PCT,
   reliabilityRating,
@@ -28,6 +29,8 @@ import {
 } from "./coaching";
 import type { UsageView } from "./usage";
 import { signed } from "./usage-copy";
+import { coachingFaq } from "./coaching-faq";
+import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
 
@@ -1446,14 +1449,14 @@ function distLean(c: TeamCoaching): BarRow | null {
 }
 
 function distribution(c: TeamCoaching): string {
-  const name = c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
   const lean = distLean(c);
   const many = /^Across his/.test(c.distribution.note);
   return (
     `<div class="sct-co-panel">` +
     h3("How he distributes the ball") +
     `<p class="sct-co-panel-sub">${e(c.distribution.sub)}</p>` +
-    `<p class="sct-co-key">${e(`Filled bar = ${name} offenses · thin marker = league average`)}</p>` +
+    // The "Filled bar = X offenses · thin marker = league average" key went
+    // 2026-11-03 (mak); the "+5 vs NFL" pills carry the comparison.
     c.distribution.rows
       .map((row) => {
         const d = (row.pct ?? 0) - (row.nfl ?? 0);
@@ -1508,7 +1511,8 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
           // bar must leave them ~34px. Linear, so the bars stay proportional.
           `<span class="sct-co-colbar" style="height:${Math.round(bar.value * 0.72)}%"></span>` +
           `<span class="sct-co-collabel">${e(bar.label)}</span>` +
-          (bar.current ? `<span class="sct-co-colnow">Current</span>` : "") +
+          // The "Current" pill under the live bar went 2026-11-03 (mak); the
+          // is-current tint on the column still marks it.
           `</div>`,
       )
       .join("") +
@@ -1678,16 +1682,11 @@ export function renderCoachingSection(
     bottomLine(coaching, view) +
     `</div>`;
 
-  // Same contract as the usage FAQ: the link sits outside .sct-faq-a so the
-  // schema's answer and the visible answer are the same text.
-  const faq = coaching.faq;
-  const faqHtml =
-    `<div class="sct-block">` +
-    `<h2 class="sct-h2">Common questions</h2>` +
-    `<div class="sct-faq"><details class="sct-faq-item">` +
-    `<summary class="sct-faq-q-row"><h3 class="sct-faq-q">${e(faq.question)}</h3></summary>` +
-    `<p class="sct-faq-a">${e(faq.answer)}</p>` +
-    `<p class="sct-faq-more"><a class="sct-textlink" href="#coaching">See the full coaching profile</a></p>` +
-    `</details></div></div>`;
-  return { html, faqHtml, faq: [faq] };
+  // mak's question list (2026-11-03) replaces the builder's single question:
+  // written by rule from the same data as the tab, in the page's FAQPage too
+  // (the coaching FAQ has been in the schema since the spec). The stored
+  // `coaching.faq` stays in the data but is no longer rendered.
+  const items = coachingFaq(coaching, team, view, getCoachingStaff(team.abbreviation, seasonOf(coaching)));
+  const faqHtml = renderFaqBlock("Common questions", items, "sct-co-faq");
+  return { html, faqHtml, faq: faqEntries(items) };
 }

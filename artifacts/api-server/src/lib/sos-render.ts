@@ -20,7 +20,7 @@
 
 import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
-import { renderSosFaq, type SosFaqFacts } from "./sos-faq";
+import { renderSosFaq } from "./sos-faq";
 import { getFPAUrl, getPlayerPageUrl, getTeamHubUrl } from "./team/links";
 import type { FantasyPosition } from "./fpa/nflverse";
 import type { NflTeam } from "./team/teams";
@@ -56,11 +56,6 @@ export interface SosRenderOptions {
   endpoint?: string;
   /** The CSV route, absolute when embedded (it lives on this origin, not WordPress). */
   csvBase?: string;
-  /**
-   * The FAQ's four team answers, from the RB/PPR board (sos-faq.ts). Unset,
-   * the FAQ still prints with those answers pointing at the cards instead.
-   */
-  faq?: SosFaqFacts | null;
   /**
    * Which page this render is (sos-model.ts). The overview unless said
    * otherwise; a position page's board is that position's.
@@ -897,10 +892,12 @@ export function renderSosPage(
     table +
     `</div>` +
     `</div>` +
-    // Outside .scsos-view, so a view swap (client/sos.ts) leaves them alone.
-    // The FAQ is the overview's (mak, 2026-10-08); the sub-pages carry the
-    // Related block instead of a sixth copy of it.
-    (page === "all" ? renderSosFaq(board.season, options.faq ?? null) : renderRelated(page)) +
+    // Outside .scsos-view: the Related block stays through a view swap, the
+    // FAQ is swapped with the view (client/sos.ts) because its questions and
+    // team answers are the board's position's and scoring's (mak, 2026-11-03).
+    // The playoffs page reads all four positions at once, so it has no FAQ.
+    renderRelated(page) +
+    (playoffs ? "" : renderSosFaq(board)) +
     renderMetaIsland(board, options) +
     `</div>`
   );

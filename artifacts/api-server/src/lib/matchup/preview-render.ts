@@ -574,7 +574,7 @@ function renderLeverage(p: Preview): string {
   };
   // Team code and position on their own line under the name (mak, 2026-11-03).
   const who = (r: LeverageRow) =>
-    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)}<span class="sct-pv-pos">${e(`${code(team(r.side))} · ${r.pos}`)}</span></span>`;
+    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)}<span class="sct-pv-pos"><span class="sct-pos" data-pos="${e(r.pos)}">${e(r.pos)}</span> · ${e(code(team(r.side)))}</span></span>`;
 
   // The "Leverage read" box (counts, best edge, toughest matchup, conflict)
   // and the usage-through meta line came off 2026-10-22 (mak); leverageRead
@@ -767,8 +767,9 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
     if (!a && !h) return "";
     return row(
       label,
-      { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel },
-      { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel },
+      // No "T-" tie prefix on the chip (mak, 2026-11-03).
+      { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel?.replace(/^T-/i, "") },
+      { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel?.replace(/^T-/i, "") },
     );
   };
   const group = (title: string, rows: string) =>
@@ -776,31 +777,32 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
 
   // The Record row (W-L under each code) came out 2026-11-03 at mak's request.
   const offense = group("Offense", stat("off-points", "Points/G") + stat("off-total-yards", "Yards/G") + stat("off-yards-per-play", "Yards/play"));
-  const defense = group("Defense", stat("def-points", "Points/G allowed") + stat("def-total-yards", "Yards/G allowed"));
-  // Matchups: what each defense allows at the position, 1st = the most = the
-  // softest, so the lower rank number is the softer defense.
-  const matchups =
+  // Points allowed by position, under Defense since 2026-11-03 (mak; the
+  // separate "Matchups" group and its framing line are gone). The FPA rank
+  // runs 1st = most allowed, so the bar and the advantage use the reverse
+  // (33 - rank): in this group a longer bar is the stingier defense, the
+  // same reading as the two rows above. The chip still says "7th-most" /
+  // "6th-fewest", as the Leverage board does.
+  const allowed =
     away.fpa && home.fpa
-      ? group(
-          "Matchups",
-          (["QB", "RB", "WR", "TE"] as Pos[])
-            .map((pos) => {
-              const sideIn = (s: PreviewSide, f: ScoringFormat): Side => {
-                const cell = (s.fpaFormats[f] ?? s.fpa!).byPos[pos];
-                return { value: one(cell.fpa), rank: cell.rank };
-              };
-              return row(
-                `${pos} pts allowed`,
-                sideIn(away, "ppr"),
-                sideIn(home, "ppr"),
-                perFormat((f) => ({ a: sideIn(away, f), h: sideIn(home, f) })),
-              );
-            })
-            .join(""),
-        )
+      ? (["QB", "RB", "WR", "TE"] as Pos[])
+          .map((pos) => {
+            const sideIn = (s: PreviewSide, f: ScoringFormat): Side => {
+              const cell = (s.fpaFormats[f] ?? s.fpa!).byPos[pos];
+              return { value: one(cell.fpa), rank: cell.rank === null ? null : 33 - cell.rank, rankLabel: cell.rank === null ? null : allowPhrase(cell.rank) };
+            };
+            return row(
+              `${pos} pts allowed`,
+              sideIn(away, "ppr"),
+              sideIn(home, "ppr"),
+              perFormat((f) => ({ a: sideIn(away, f), h: sideIn(home, f) })),
+            );
+          })
+          .join("")
       : "";
+  const defense = group("Defense", stat("def-points", "Points/G allowed") + stat("def-total-yards", "Yards/G allowed") + allowed);
 
-  if (!offense && !defense && !matchups) return "";
+  if (!offense && !defense) return "";
   return (
     `<section class="sct-pv-sec" aria-labelledby="pv-snap" data-pv-fmt>` +
     h2("pv-snap", `${pairOf(p)} Team Matchup`) +
@@ -808,7 +810,9 @@ function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
     `<div class="sct-pv-cmp-head" aria-hidden="true"><span>${e(A)}</span><span>${e(H)}</span></div>` +
     offense +
     defense +
-    matchups +
+    // The bar caption and the per-row "Favors NE RBs" line came off again
+    // 2026-11-03 (mak); the tick, the Matchups framing line and the
+    // "-most / -fewest" chips stay.
     `</div>` +
     `</section>`
   );
@@ -910,6 +914,9 @@ function renderInjuries(p: Preview): string {
 function renderH2h(p: Preview, ctx: PreviewRenderContext): string {
   const h = p.h2h;
   if (!h) return "";
+  // One meeting in the window is the Last meeting block above, which carries
+  // the total-vs-line fact itself; this block would repeat it (mak, 2026-11-03).
+  if (h.games.length < 2) return "";
   // Every tile: the figure, its label in caps, then an optional note.
   const stat = (value: string, label: string, note?: string | null) =>
     `<div class="sct-pv-stat"><span class="sct-pv-stat-v">${e(value)}</span><span class="sct-pv-stat-k">${e(label)}</span>` +

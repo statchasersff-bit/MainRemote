@@ -350,7 +350,10 @@ describe("rendered (Brissett)", async () => {
     if (faq) assert.ok(bo.compareDocumentPosition(faq) & 4, "the FAQ stays last");
     const h2s = [...doc.querySelectorAll("#bio h2, .scp-bo h2")].map((h) => h.textContent.trim());
     // "Transactions", not "Trades and team changes": Brissett has approved dated moves since the 2026-09-30 bulk approval.
-    assert.ok(h2s.includes("Jacoby Brissett Bio") && h2s.includes("Career Timeline") && h2s.includes("Transactions"), h2s.join(" | "));
+    // "Jacoby Brissett Bio" is the page's H1 now (the hero's heading, the
+    // entity brief of 2026-11-03), not a panel H2 repeated under it.
+    assert.equal(doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim(), "Jacoby Brissett Bio");
+    assert.ok(h2s.includes("Career Timeline") && h2s.includes("Transactions"), h2s.join(" | "));
     const rail = [...bo.querySelectorAll(".scp-bo-st b")].map((b) => b.textContent);
     assert.deepEqual(rail, ["400", "6,059", "1,283", "2,608", "224", "826", "4,018"]);
     assert.match(bo.textContent, /15,418 yards and 80 touchdowns/);

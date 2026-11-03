@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.43
+Stable tag: 1.10.45
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,12 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.45 =
+* Depth charts (mak's team depth-chart brief, 2026-11-03): the refresh now stores every slot as the club lists it - WR / WR / WR, LDE / NT / RDE, LCB / RCB / NB and so on - beside the folded columns (`slots` and `formations` on each team), and the team page's /depth-chart/ section prints the football chart from them: Offense, Defense and Special Teams first as Position / Starter / Second / Third / Fourth rows, the fantasy hierarchy after. The team page's H1 is "{Team} Depth Chart" (no year) and its description names the whole chart, not the offensive one. Fixed: an ESPN-only refresh (Footballguys down) folded a base offense's three WR slots into one and dropped two starting receivers, because the slots were keyed by their shared abbreviation. Slot rows take the blended columns' designations by name, so PUP / NFI / IR / SUS read the same on both.
+
+= 1.10.44 =
+* Player pages are the player's pages first (mak's player-entity brief, 2026-11-03). The profile's title is the evergreen "{Name} Stats, News, Bio & Fantasy Outlook | StatChasers" (no year; the brand gives way first for a long name), its H1 is the player's name, and the six sections are "{Name} Stats & Career Statistics", "{Name} Game Log & Weekly Stats", "{Name} Fantasy Outlook, Rankings & Projections", "{Name} Injury Status & History", "{Name} News & Latest Updates" and "{Name} Bio: Age, Height, College & Draft", each with the matching H1 ("{Name} Stats", "{Name} Injury Status", ...). The H1 is now the hero's own heading in "let the tool supply the heading" mode, so no H2 precedes it; statchasers_player_heading() and the stored-title ladder mirror the API's wording and the retitle panel moves stored titles over. A section URL whose fragment did not arrive (a timed-out fetch during a cold publish) no longer prints an empty page under the profile's title: it gets the section's own title and description, a heading, the links to the player's other pages, and is marked uncacheable so no page cache keeps the shell. When a fresh fragment carries a new data version, the player's seven addresses are purged from WP Rocket so no section stays a week behind the overview. URLs, canonicals, robots and the sitemap are unchanged.
 
 = 1.10.43 =
 * Matchup pages read as NFL game and player-stat pages first. Search Console (2026-10-16 to 10-30) showed the pair pages earning their impressions for "{team} vs {team} match player stats", "player stats", "stats", "box score" and "score" - 170k impressions and two clicks for one game - under titles that led with "Fantasy Points" and named the teams in the URL's alphabetical order. The API now sends "{Away} vs {Home} Match Player Stats & Box Score (Week N, YYYY)" as the title, "{Away full} vs {Home full} Match Player Stats" as the H1 (the dated game pages add ": Week N, YYYY"), a context line under the H1 (week, date, final), an intro sentence under the scoreboard and a description that names both teams, the week, what the page holds and the final. This plugin's fallback strings (statchasers_matchup_meta, statchasers_matchup_game_meta, statchasers_matchup_heading, for an API that sends no header) mirror the new ladder through statchasers_matchup_completed_meta(). URLs, canonicals, sitemaps, schema and the upcoming-game preview titles are unchanged; nothing fantasy was removed. In the fragment the tab holding the stat tables is now labelled "Stats & Fantasy" and the team-stats section is headed "{Away} vs {Home} Team Stats" with "Why the X Won" as the analysis label under it.

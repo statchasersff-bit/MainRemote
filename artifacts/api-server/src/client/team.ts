@@ -1098,6 +1098,17 @@ function wireScoring(root: HTMLElement): void {
           el.setAttribute("data-lev", lev);
         }
       }
+      // A ranked list re-orders by its swapped figure (the last meeting's
+      // scorers), so the order means the same thing in every scoring.
+      for (const list of Array.from(region.querySelectorAll<HTMLElement>("[data-pv-sort]"))) {
+        const selector = list.getAttribute("data-pv-sort") ?? "";
+        const items = Array.from(list.children) as HTMLElement[];
+        const value = (item: HTMLElement): number => parseFloat(item.querySelector(selector)?.textContent ?? "") || 0;
+        items
+          .map((item, index) => ({ item, index, value: value(item) }))
+          .sort((a, b) => b.value - a.value || a.index - b.index)
+          .forEach(({ item }) => list.appendChild(item));
+      }
     }
     for (const cell of Array.from(root.querySelectorAll<HTMLElement>(`td[data-fmt-${format}]`))) {
       cell.textContent = cell.getAttribute(`data-fmt-${format}`) ?? "";
