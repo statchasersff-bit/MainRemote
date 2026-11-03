@@ -23,7 +23,7 @@ import { ensureTeams } from "../teams";
 import { itemTimestamp, type NewsItem } from "../render";
 import { nflState, type NflState } from "./nfl-state";
 import { getTeamProfile, type TeamProfile } from "./profile";
-import { getTeamSchedule, upcomingGames, type TeamSchedule } from "./schedule";
+import { getTeamPostseason, getTeamSchedule, nextGame, type TeamSchedule } from "./schedule";
 import { getTeamSnapshot, type TeamSnapshot } from "./snapshot";
 import { getTeamStats, type TeamStats } from "./stats";
 import {
@@ -84,6 +84,13 @@ export interface TeamPageData {
   depthCharts: TeamDepthCharts | null;
 
   schedule: TeamSchedule | null;
+  /**
+   * The postseason, from the same slate. An empty schedule for a team that
+   * has not played one (most teams, most of the year); null only when the
+   * slate could not be read at all. The Schedule page renders it only when
+   * it has games, so no club gets a playoff section it has not earned.
+   */
+  postseason: TeamSchedule | null;
   profile: TeamProfile | null;
   snapshot: TeamSnapshot | null;
   /**
@@ -171,7 +178,7 @@ async function opponentDefense(
   schedule: TeamSchedule | null,
   season: number,
 ): Promise<TeamPageData["nextOpponentDefense"]> {
-  const opponent = upcomingGames(schedule, Date.now(), 1)[0]?.opponent;
+  const opponent = nextGame(schedule, Date.now())?.opponent;
   if (!opponent) return null;
   const stats = await getTeamStats(opponent, season).catch(() => null);
   const row = stats?.defense.find((cell) => cell.key === "def-points");
@@ -197,10 +204,11 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     new Promise((resolve) => setTimeout(resolve, 3_000).unref()),
   ]);
 
-  const [newsResult, scheduleResult, profileResult, snapshotResult, statsResult] =
+  const [newsResult, scheduleResult, postseasonResult, profileResult, snapshotResult, statsResult] =
     await Promise.allSettled([
       listNewsForTeam(team.abbreviation, { limit: TEAM_NEWS_LIMIT }),
       getTeamSchedule(team, state.season),
+      getTeamPostseason(team, state.season),
       getTeamProfile(team, state.season),
       getTeamSnapshot(team, state.statsSeason),
       getTeamStats(team, state.statsSeason),
@@ -210,6 +218,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
   const roster = getTeamRoster(team.abbreviation);
   const profile = settled(profileResult);
   const schedule = settled(scheduleResult);
+  const postseason = settled(postseasonResult);
 
   const newsUpdatedAtMs = news.reduce<number | null>((newest, item) => {
     const ts = itemTimestamp(item);
@@ -230,6 +239,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     rosterFetchedAt: rosterFetchedAt(),
     depthCharts: getTeamDepthCharts(team.abbreviation),
     schedule,
+    postseason,
     profile:
       profile && !recordDescribesSeason(profile, schedule, state)
         ? // ESPN's "record" still describes the preseason. Drop the field
@@ -259,6 +269,11 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     data.newsUpdatedAtMs ?? 0,
     data.rosterFetchedAt,
     data.schedule?.fetchedAt ?? 0,
+    // The slate's fingerprint, not just its fetch stamp: a final score, a
+    // flexed kickoff or a network assignment lands in the live layer between
+    // slate fetches, and the page has to re-render for it.
+    data.schedule?.version ?? "",
+    data.postseason?.version ?? "",
     data.profile?.fetchedAt ?? 0,
     data.snapshot?.fetchedAt ?? 0,
     data.stats?.fetchedAt ?? 0,

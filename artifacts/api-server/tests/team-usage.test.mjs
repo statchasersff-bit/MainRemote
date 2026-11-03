@@ -72,11 +72,14 @@ describe("placement", () => {
   test("the panel sits between Outlook and Stats, with id usage", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     // Coaching sits between Usage and Stats since 2026-10-01, per its spec.
-    const panels = [...doc.querySelectorAll("[data-sct-panel]")].map((s) => s.id);
-    assert.deepEqual(panels.slice(0, 2), ["outlook", "usage"]);
-    assert.ok(panels.indexOf("stats") > panels.indexOf("usage"));
-    const tabs = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
-    assert.deepEqual(tabs.slice(0, 2), ["Outlook", "Usage"]);
+    // The strip carries the order; the Usage panel itself prints only at
+    // /usage/ (ownsAddress in team-render.ts), so the hub has no #usage.
+    const tabs = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
+    assert.deepEqual(tabs.slice(0, 2), ["outlook", "usage"]);
+    assert.ok(tabs.indexOf("stats") > tabs.indexOf("usage"));
+    assert.equal(doc.getElementById("usage"), null, "the Usage panel is not printed on the hub");
+    const labels = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
+    assert.deepEqual(labels.slice(0, 2), ["Outlook", "Usage"]);
   });
 
   test("the tab links to the section's own address", async () => {
@@ -116,7 +119,7 @@ describe("placement", () => {
 
 describe("the ten components, in order", () => {
   test("header, intro, environment, tree, backfield, pass map, table, legend, signals, closing", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const root = doc.querySelector("#usage .sct-us");
     const order = [
       ".sct-us-head",
@@ -138,7 +141,7 @@ describe("the ten components, in order", () => {
   });
 
   test("freshness chip is driven by the data file", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     assert.equal(
       doc.querySelector(".sct-us-fresh").textContent,
       `Updated through Week ${Math.max(...usage.teams.buf.games)} · refreshed daily`,
@@ -149,14 +152,14 @@ describe("the ten components, in order", () => {
     // A Thursday game puts one matchup's week into the feed days before the
     // rest: only the teams that played it may say that week.
     for (const [abbr, slug] of [["ne", "new-england-patriots"], ["cle", "cleveland-browns"]]) {
-      const { doc } = await page(`/team/${slug}/`);
+      const { doc } = await page(`/team/${slug}/usage/`);
       const last = Math.max(...usage.teams[abbr].games);
       assert.equal(doc.querySelector(".sct-us-fresh").textContent, `Updated through Week ${last} · refreshed daily`, slug);
     }
   });
 
   test("the verbatim definitions stay in plain prose", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const intro = doc.querySelector(".sct-us-intro").textContent;
     assert.match(intro, /^Fantasy production follows opportunity\./);
     // mak's 2026-11-02 copy: the metrics are bolded in the first sentence.
@@ -172,7 +175,7 @@ describe("the ten components, in order", () => {
   });
 
   test("no umbrella line and no Command links: the close cards end the block (mak, 2026-10-22)", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const us = doc.querySelector(".sct-us");
     assert.equal(us.querySelector(".sct-us-close"), null);
     assert.ok(!us.textContent.includes("core inputs behind our player pricing"));
@@ -186,7 +189,7 @@ describe("the ten components, in order", () => {
 
 describe("the highlights", () => {
   test("exactly one gold gap and one gold zone; one owner per situation row", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     assert.equal(doc.querySelectorAll(".sct-us-gap.is-best").length, 1);
     assert.equal(doc.querySelectorAll(".sct-us-zone.is-best").length, 1);
     const rows = [...doc.querySelectorAll(".sct-us-grow:not(.is-head)")];
@@ -195,13 +198,13 @@ describe("the highlights", () => {
   });
 
   test("trend colors follow the sign of the delta", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     for (const d of doc.querySelectorAll(".sct-us-delta.is-up")) assert.match(d.textContent, /^\+/);
     for (const d of doc.querySelectorAll(".sct-us-delta.is-down")) assert.match(d.textContent, /^−/);
   });
 
   test("every sparkline and bar carries its numbers in text", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     for (const el of doc.querySelectorAll(".sct-us-spark, .sct-us-pbar, .sct-us-bar, .sct-us-gauge")) {
       assert.ok(el.getAttribute("aria-label"), el.className);
     }
@@ -210,7 +213,7 @@ describe("the highlights", () => {
 
 describe("the table (mak's critique, 2026-11-03)", () => {
   test("rows sit in position bands, each naming its opportunity metric once", async () => {
-    const { doc } = await page("/team/new-england-patriots/");
+    const { doc } = await page("/team/new-england-patriots/usage/");
     const bands = [...doc.querySelectorAll(".sct-us-table tbody.sct-us-band")];
     assert.deepEqual(
       bands.map((b) => b.querySelector(".sct-us-band-name").textContent),
@@ -225,7 +228,7 @@ describe("the table (mak's critique, 2026-11-03)", () => {
   });
 
   test("the read comes right after the player; opportunity is a percentile with the native stat under it", async () => {
-    const { doc } = await page("/team/new-england-patriots/");
+    const { doc } = await page("/team/new-england-patriots/usage/");
     const heads = [...doc.querySelectorAll(".sct-us-table thead tr:first-child th")].map((th) => th.textContent);
     assert.deepEqual(heads, ["Profile", "Player", "Read", "Opportunity", "Snaps", "Red zone"]);
     for (const row of doc.querySelectorAll(".sct-us-row")) {
@@ -244,7 +247,7 @@ describe("the table (mak's critique, 2026-11-03)", () => {
   });
 
   test("one move window, said once in the header; the player's own weeks only in his profile", async () => {
-    const { doc } = await page("/team/new-england-patriots/");
+    const { doc } = await page("/team/new-england-patriots/usage/");
     const sub = doc.querySelector(".sct-us-table thead tr.sct-us-th-sub");
     assert.match(sub.textContent, /a move is the last three games against the three before them/);
     for (const d of doc.querySelectorAll(".sct-us-row .sct-us-delta")) {
@@ -256,7 +259,7 @@ describe("the table (mak's critique, 2026-11-03)", () => {
   });
 
   test("the red-zone leader's caption is the badge, not three descriptors", async () => {
-    const { doc } = await page("/team/new-england-patriots/");
+    const { doc } = await page("/team/new-england-patriots/usage/");
     const leader = [...doc.querySelectorAll(".sct-us-row")].find((r) => r.querySelector(".sct-us-leads"));
     assert.ok(leader);
     const cap = leader.querySelector(".sct-us-leads").closest(".sct-us-cap").textContent;
@@ -266,7 +269,7 @@ describe("the table (mak's critique, 2026-11-03)", () => {
 
 describe("profiles", () => {
   test("every toggle controls a detail row that exists", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const buttons = [...doc.querySelectorAll(".sct-us-toggle")];
     assert.ok(buttons.length >= 4);
     for (const b of buttons) {
@@ -279,7 +282,7 @@ describe("profiles", () => {
   });
 
   test("with the bundle, + opens and − closes", async () => {
-    const { doc, window, errors } = await hydrated("/team/buffalo-bills/");
+    const { doc, window, errors } = await hydrated("/team/buffalo-bills/usage/");
     const button = doc.querySelector(".sct-us-toggle");
     const row = doc.getElementById(button.getAttribute("aria-controls"));
     button.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
@@ -293,25 +296,38 @@ describe("profiles", () => {
     assert.deepEqual(errors, []);
   });
 
-  test("the Usage tab switches in place and puts /usage/ in the address", async () => {
+  test("on the hub the Usage tab is a link to /usage/, and the report is not printed there", async () => {
+    // The report belongs to its own address (ownsAddress in team-render.ts):
+    // the hub's HTML carries the tab, not the panel, so clicking it loads
+    // the Usage page rather than switching a hidden copy into view. The
+    // bundle leaves the link alone and prefetches the page on intent.
     const { doc, window } = await hydrated("/team/buffalo-bills/");
-    doc.querySelector("#usage-tab").dispatchEvent(new window.MouseEvent("click", { bubbles: true, button: 0 }));
-    assert.ok(doc.querySelector("#usage").classList.contains("is-active"));
-    assert.equal(window.location.pathname, "/team/buffalo-bills/usage/");
-    doc.querySelector("#outlook-tab").dispatchEvent(new window.MouseEvent("click", { bubbles: true, button: 0 }));
-    assert.ok(doc.querySelector("#outlook").classList.contains("is-active"));
-    assert.equal(window.location.pathname, "/team/buffalo-bills/");
+    const tab = doc.querySelector("#usage-tab");
+    assert.equal(tab.getAttribute("href"), "/team/buffalo-bills/usage/");
+    assert.equal(doc.querySelector("#usage"), null, "no #usage panel on the hub");
+    assert.equal(doc.querySelector(".sct-us"), null, "no report markup on the hub");
+    assert.equal(tab.getAttribute("role"), null, "a link, not a tab");
+    const event = new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    // jsdom does not navigate; what matters is that the bundle did not
+    // intercept the click, so the browser would.
+    tab.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, false, "the click is the browser's");
+    assert.equal(window.location.pathname, "/team/buffalo-bills/", "nothing was pushed in place");
   });
 
-  test("a deep link to #usage opens the panel", async () => {
+  test("a deep link to #usage on the hub has nothing to open; /usage/ is the address", async () => {
     const { doc } = await hydrated("/team/buffalo-bills/#usage");
-    assert.ok(doc.querySelector("#usage").classList.contains("is-active"));
+    assert.equal(doc.querySelector("#usage"), null);
+    assert.ok(doc.querySelector("#outlook").classList.contains("is-active"), "the hub opens on the Outlook");
+    const page = await hydrated("/team/buffalo-bills/usage/");
+    assert.ok(page.doc.querySelector("#usage"), "the Usage page carries the panel");
+    assert.equal(page.doc.querySelectorAll("[data-sct-panel]").length, 1);
   });
 });
 
 describe("FAQ", () => {
   test("the questions are visible, with no report link under them", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const tail = doc.querySelector('[data-sct-faq-for="usage"]');
     assert.equal(tail.querySelector(".sct-faq-q").textContent, "Who leads the Bills in target share?");
     assert.equal(tail.querySelectorAll(".sct-faq-item").length, 15);
@@ -319,7 +335,7 @@ describe("FAQ", () => {
   });
 
   test("…and is in the FAQPage with the answer the page shows", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const node = [...doc.querySelectorAll('script[type="application/ld+json"]')]
       .map((s) => JSON.parse(s.textContent))
       .find((j) => j["@type"] === "FAQPage");
@@ -333,7 +349,7 @@ describe("FAQ", () => {
   });
 
   test("answers link their tools inline (mak, 2026-10-05)", async () => {
-    const { doc } = await page("/team/buffalo-bills/");
+    const { doc } = await page("/team/buffalo-bills/usage/");
     const ctas = [...doc.querySelectorAll('[data-sct-faq-for="usage"] .sct-faq-a a[data-cta]')].map((a) =>
       a.getAttribute("data-cta"),
     );
@@ -343,7 +359,7 @@ describe("FAQ", () => {
   });
 
   test("embedded, it rides in the data island for Rank Math", async () => {
-    const res = await fetch(`${server.origin}/embed/team/buf`);
+    const res = await fetch(`${server.origin}/embed/team/buf?section=usage`);
     const body = await res.text();
     const island = body.match(/<script type="application\/json" class="sct-faq-data">(.*?)<\/script>/s);
     assert.ok(JSON.parse(island[1]).some((e) => e.q === "Who leads the Bills in target share?"));
@@ -358,7 +374,7 @@ describe("all 32 clubs", () => {
     const slugs = [...new Set([...index.matchAll(/href="\/team\/([a-z0-9-]+)\/"/g)].map((m) => m[1]))];
     assert.equal(slugs.length, 32);
     for (const slug of slugs) {
-      const { doc } = await page(`/team/${slug}/`);
+      const { doc } = await page(`/team/${slug}/usage/`);
       const section = doc.querySelector("#usage");
       assert.ok(section, slug);
       // The FAQ renders below the tools block, outside the panel.
@@ -396,7 +412,7 @@ describe("all 32 clubs", () => {
     const index = await (await fetch(`${server.origin}/team`)).text();
     const slugs = [...new Set([...index.matchAll(/href="\/team\/([a-z0-9-]+)\/"/g)].map((m) => m[1]))];
     for (const slug of slugs) {
-      const { doc } = await page(`/team/${slug}/`);
+      const { doc } = await page(`/team/${slug}/usage/`);
       const section = doc.querySelector("#usage");
       section.querySelector(".sct-us-intro")?.remove();
       const text = section.textContent + (doc.querySelector('[data-sct-faq-for="usage"]')?.textContent ?? "");
@@ -410,7 +426,7 @@ describe("all 32 clubs", () => {
 
 describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
   test("each section hands off to the specific tool that answers its next question", async () => {
-    const res = await fetch(`${server.origin}/team/new-england-patriots/`);
+    const res = await fetch(`${server.origin}/team/new-england-patriots/usage/`);
     const doc = new JSDOM(await res.text()).window.document;
     const us = doc.querySelector(".sct-us");
     const ctas = [...us.querySelectorAll("[data-cta]")].map((a) => a.getAttribute("data-cta"));

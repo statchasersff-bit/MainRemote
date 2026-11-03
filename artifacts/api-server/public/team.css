@@ -1386,10 +1386,13 @@ body.sct-page.is-embed {
 
 /* Sections are panels: one at a time, switched by the bar above.
  *
- * Every panel is still in the HTML the server sent - this hides them, it does
- * not withhold them. That matters twice over: a crawler reads the whole hub
- * from one response, and "Depth Chart" is one request away from any other tab
- * rather than being a page that has to be fetched.
+ * Only the panels the page OWNS are in the HTML the server sent. The hub
+ * prints the Outlook, the hub-only panels (Coaching, Draft, Contracts) and the
+ * schedule preview; a section with an address of its own (Usage, Stats, News,
+ * Depth Chart) is printed only at that address, and its tab in the strip is a
+ * plain link there - see ownsAddress() in team-render.ts. So these rules
+ * switch between the panels that are here; they are not what separates one
+ * URL's content from another's.
  *
  * Two mechanisms, in this order:
  *
@@ -21788,4 +21791,478 @@ a.sct-ex-game:hover .sct-ex-line {
     min-width: 50px;
     padding: 2px 4px;
   }
+}
+
+/* ======================================================================
+ * Schedule page (mak's schedule brief, 2026-11-03)
+ *
+ * The page's own blocks: the context line under the H1, the next-game
+ * module, the two boards (results and remaining) and their extra columns,
+ * the neutral-site treatments, the "More <team>" links and the hub's
+ * four-card preview. Appended after the shared schedule rules above so
+ * the board templates below win over the six-column ones at every width.
+ * ====================================================================== */
+
+/* "2026 NFL season · 2-6 · AFC South · Bye Week 13 · Updated Nov 3" */
+.sct-sched-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0;
+  margin: -6px 0 14px;
+  color: var(--sc-muted-strong);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.sct-sched-dot {
+  margin: 0 0.5em;
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+.sct-sched-updated {
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+/* ---- next game + last game ------------------------------------------- */
+
+.sct-nextgame-module {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 0;
+  margin: 0 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(11, 22, 52, 0.09);
+  background: var(--sc-surface);
+  box-shadow:
+    0 1px 2px rgba(11, 22, 52, 0.02),
+    0 8px 24px rgba(11, 22, 52, 0.045);
+  overflow: hidden;
+}
+
+.sct-nextgame-module.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sct-ng-cell {
+  position: relative;
+  min-width: 0;
+  padding: 12px 16px 12px;
+}
+
+.sct-ng-cell[data-kind="next"] {
+  border-top: 2px solid var(--sc-gold);
+}
+
+.sct-ng-cell[data-kind="last"] {
+  border-left: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+}
+
+.sct-ng-label {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0 0 6px;
+  color: var(--sc-gold-deep);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-ng-cell[data-kind="last"] .sct-ng-label {
+  color: var(--sc-muted);
+}
+
+.sct-ng-week {
+  color: var(--sc-muted);
+}
+
+.sct-ng-live {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: rgba(153, 46, 46, 0.1);
+  color: #94363a;
+  letter-spacing: 0.04em;
+}
+
+.sct-ng-fixture {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 0 0 6px;
+  color: var(--sc-navy);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.sct-ng-logo {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.sct-ng-logo.is-small {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 0 4px 0 2px;
+  vertical-align: -5px;
+}
+
+.sct-ng-team {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+a.sct-ng-team {
+  border-bottom: 1px solid transparent;
+}
+
+a.sct-ng-team:hover,
+a.sct-ng-team:focus-visible {
+  border-bottom-color: var(--sc-gold);
+}
+
+.sct-ng-at {
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sct-ng-when {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sct-ng-tv {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sct-ng-tbd,
+.sct-srow-tbd {
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sct-ng-venue {
+  margin: 2px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.sct-ng-cta {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+}
+
+.sct-ng-score {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.sct-ng-score .sct-result {
+  font-size: 1.05rem;
+}
+
+.sct-ng-opp {
+  color: var(--sc-navy);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+/* ---- the boards ------------------------------------------------------- */
+
+.sct-sched-block {
+  margin: 0 0 22px;
+}
+
+.sct-sched-block .sct-h2.is-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+
+.sct-sched-range {
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sct-sched-block .sct-sboard {
+  margin-top: 10px;
+}
+
+/* Results: Wk · Opponent · Date · Result · Record · link. */
+.sct-sboard[data-board="results"] .sct-slist-head,
+.sct-sboard[data-board="results"] .sct-srow {
+  grid-template-columns: 38px minmax(0, 1fr) 64px 84px 54px 104px;
+}
+
+/* Remaining: Wk · Opponent · Date · Time · TV · Venue · link. */
+.sct-sboard[data-board="remaining"] .sct-slist-head,
+.sct-sboard[data-board="remaining"] .sct-srow {
+  grid-template-columns: 38px minmax(0, 1.2fr) 64px 76px 66px minmax(0, 1fr) 104px;
+}
+
+.sct-srow-record {
+  color: var(--sc-muted-strong);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sct-srow-venue {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.sct-srow-week.is-round {
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: normal;
+  line-height: 1.1;
+}
+
+/* The opponent's name as a link to its hub: the same ink as the text it
+   replaces, underlined only on hover so a column of seventeen links does
+   not read as a column of seventeen underlines. */
+a.sct-srow-team {
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+a.sct-srow-team:hover,
+a.sct-srow-team:focus-visible {
+  color: var(--sc-navy);
+  border-bottom-color: var(--sc-gold);
+}
+
+/* A neutral site keeps "vs" and marks it: the seam under the word turns
+   navy-and-gold rather than gold, and the title says why. */
+.sct-srow-ha[data-kind="neutral"] {
+  color: var(--sc-navy);
+}
+
+.sct-srow-ha[data-kind="neutral"]::after {
+  background: linear-gradient(90deg, var(--sc-navy) 50%, var(--sc-gold) 50%);
+}
+
+.sct-sstatus[data-state="postponed"],
+.sct-sstatus[data-state="canceled"] {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(11, 22, 52, 0.06);
+  color: var(--sc-navy);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ---- the rail: neutral site ------------------------------------------ */
+
+.sct-path-week[data-kind="neutral"] {
+  border-color: var(--sc-navy);
+  background: linear-gradient(135deg, var(--sc-navy) 50%, transparent 50%);
+}
+
+.sct-mix-key[data-kind="neutral"]::before {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--sc-navy);
+  border-radius: 1px;
+  background: linear-gradient(135deg, var(--sc-navy) 50%, transparent 50%);
+}
+
+.sct-snap-bars .sct-shape-bar[data-kind="neutral"] .sct-shape-bar-fill {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* The division slate: the result or the date beside each meeting. */
+.sct-slate {
+  grid-template-columns: 28px 20px minmax(0, max-content) auto;
+}
+
+.sct-slate-status {
+  justify-self: end;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.sct-slate-status .sct-result {
+  font-size: 0.68rem;
+}
+
+.sct-slate-when {
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- more <team> ------------------------------------------------------ */
+
+.sct-sched-more {
+  margin: 22px 0 0;
+}
+
+.sct-sched-more-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+}
+
+/* ---- the hub's preview ------------------------------------------------ */
+
+.sct-games.is-preview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sct-game[data-last] {
+  border-top: 2px solid var(--sc-border);
+  padding-top: 8px;
+}
+
+.sct-game[data-last] .sct-game-next {
+  color: var(--sc-muted);
+}
+
+@media (max-width: 1080px) {
+  .sct-games.is-preview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .sct-games.is-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-nextgame-module {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-ng-cell[data-kind="last"] {
+    border-left: 0;
+    border-top: 1px solid var(--sc-border);
+  }
+}
+
+/* ---- the boards at narrower widths ----------------------------------- */
+
+/* The venue is the first column to go: it is the one a reader scans least
+   and the widest, and the next-game module above still names it for the
+   game that matters most. */
+@container (max-width: 760px) {
+  .sct-sboard[data-board="remaining"] .sct-slist-head,
+  .sct-sboard[data-board="remaining"] .sct-srow {
+    grid-template-columns: 38px minmax(0, 1fr) 64px 76px 66px 104px;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-slist-head > :nth-child(6),
+  .sct-sboard[data-board="remaining"] .sct-srow-venue {
+    display: none;
+  }
+}
+
+@container (max-width: 560px) {
+  .sct-sboard[data-board="results"] .sct-slist-head,
+  .sct-sboard[data-board="results"] .sct-srow {
+    grid-template-columns: 30px minmax(0, 1fr) 54px 68px 40px 24px;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-slist-head,
+  .sct-sboard[data-board="remaining"] .sct-srow {
+    grid-template-columns: 30px minmax(0, 1fr) 54px 64px 46px 24px;
+  }
+}
+
+/* Under 370px of board the row is three lines of one card (see the shared
+   rule above). The record and the venue join the logistics line. */
+@container (max-width: 370px) {
+  .sct-sboard[data-board="results"] .sct-srow,
+  .sct-sboard[data-board="remaining"] .sct-srow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .sct-srow-record {
+    grid-area: 2 / 3 / 3 / -1;
+    justify-self: end;
+  }
+
+  .sct-srow-venue {
+    display: block;
+    grid-area: 2 / 1 / 3 / 3;
+    white-space: normal;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-srow-when {
+    grid-area: 1 / 3 / 2 / 4;
+    justify-self: end;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-sstatus {
+    grid-area: 2 / 3 / 3 / 4;
+    justify-self: end;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-srow-tv {
+    grid-area: 3 / 1 / 4 / 2;
+    justify-self: start;
+  }
+
+  .sct-sboard[data-board="remaining"] .sct-srow-view {
+    grid-area: 3 / 2 / 4 / -1;
+  }
+}
+
+/* Four cards across leave each head about 250px: "Next game · Week 9" and
+   "Sun, Nov 8 · 1:00 PM ET" cannot share that line, so the line wraps as a
+   whole rather than breaking the label after "Week". */
+.sct-games.is-preview .sct-game-head {
+  flex-wrap: wrap;
+}
+
+.sct-games.is-preview .sct-game-label,
+.sct-games.is-preview .sct-game-when {
+  white-space: nowrap;
 }

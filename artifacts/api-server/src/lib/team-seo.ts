@@ -89,15 +89,18 @@ function sectionMeta(
     };
   }
 
+  // Per mak's schedule brief (2026-11-03): the four things a schedule search
+  // wants - dates, times, TV, results - in the title, in that order.
   if (section === "schedule") {
     return {
       title: fitTitle([
-        `${name} Schedule ${season}: Dates, Opponents & Results`,
-        `${name} Schedule ${season}: Opponents & Results`,
+        `${name} Schedule ${season}: Dates, Times, TV & Results`,
+        `${name} Schedule ${season}: Dates, Times & TV`,
+        `${name} Schedule ${season}`,
       ]),
       description:
-        `The full ${season} ${name} schedule: every opponent, kickoff time and result, ` +
-        `plus the ${nick} bye week and what is next on the calendar.`,
+        `${name} schedule for the ${season} NFL season: every game with date, kickoff time, ` +
+        `TV network, venue and result, the ${nick} bye week, and the next game.`,
     };
   }
 

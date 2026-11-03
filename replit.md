@@ -266,10 +266,18 @@ _Replace the heading above with the project's name, and this line with one sente
   no longer linked from the hub, which leaves it orphaned by design.
   `?section=<id>` is the internal spelling: `/embed/team/:slug?section=` is
   what the WordPress plugin fetches, and on `/team/:slug` it 301s to the pretty
-  path (`news` alone renders scoped there, having no public address). Neither
-  the hub nor a section page prints a strip of links to the section pages;
-  their discovery rests on the plugin's sitemap entries. The plugin mirrors the
-  list as `STATCHASERS_TEAM_SECTIONS` - keep the two together.
+  path. The hub and every section page print the same section strip - real
+  links to the section addresses, which the bundle intercepts only for panels
+  present in the document. **The hub prints only its own panels** (since
+  2026-11-03, `ownsAddress()` in `team-render.ts`): the Outlook, the hub-only
+  hash tabs (Coaching, Draft, Contracts) and the schedule preview. A section
+  with a public address of its own - Usage, Stats, News, Depth Chart - is
+  printed ONLY at that address; on the hub its tab is a plain link there,
+  prefetched on hover/focus by `client/team.ts`. The hub used to carry every
+  section hidden by CSS, which put four other URLs' complete content (and
+  their FAQ questions) inside `/<slug>/`'s HTML. The hub's FAQPage covers the
+  printed panels only. The plugin mirrors the section list as
+  `STATCHASERS_TEAM_SECTIONS` - keep the two together.
 - **Matchup pages.** `src/lib/matchup/` is its own family beside `team/`:
   `pair.ts` (the ONE place two teams become a URL - alphabetical by slug, 496
   pairs, aliases resolved, same-team and unknown refused), `matchup-data.ts`

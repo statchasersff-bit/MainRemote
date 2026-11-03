@@ -48,8 +48,13 @@ async function page(pathname) {
 describe("placement", () => {
   test("the panel sits between Usage and Stats, with id coaching", async () => {
     const { doc } = await page("/team/buffalo-bills/");
+    // The strip carries the order. Usage and Stats own addresses of their
+    // own and print only there (ownsAddress in team-render.ts), so among the
+    // hub's printed panels Coaching follows the Outlook directly.
+    const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
+    assert.deepEqual(ids.slice(0, 4), ["outlook", "usage", "coaching", "stats"]);
     const panels = [...doc.querySelectorAll("[data-sct-panel]")].map((s) => s.id);
-    assert.deepEqual(panels.slice(0, 4), ["outlook", "usage", "coaching", "stats"]);
+    assert.deepEqual(panels.slice(0, 2), ["outlook", "coaching"]);
     const tabs = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
     assert.deepEqual(tabs.slice(0, 4), ["Outlook", "Usage", "Coaching", "Stats"]);
   });

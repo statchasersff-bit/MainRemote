@@ -15,6 +15,7 @@
 
 import http from "node:http";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
@@ -22,18 +23,48 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(HERE, "..", "fixtures", "team-upstream-2026-09-30.json.gz");
 const GAMES_FIXTURE = path.join(HERE, "..", "fixtures", "games-2026-10-20.csv.gz");
+/**
+ * ESPN's scoreboard for all 18 weeks of 2026, reduced to the fields the slate
+ * reads (timeValid, neutralSite, venue, broadcasts, status, score) and made
+ * consistent with the games fixture: weeks the 2026-10-20 snapshot had not
+ * scored are "scheduled" with no score. Recorded 2026-11-03. It carries the
+ * league's TBDs (Week 16's Saturday pool, all of Week 18) and the neutral
+ * flags of the international games, which is what the schedule tests need.
+ */
+const SCOREBOARD_FIXTURE = path.join(HERE, "..", "fixtures", "espn-scoreboard-2026.json.gz");
 
-export async function startUpstreamReplay() {
+/**
+ * @param {{scoreboard?: boolean}} [options] `scoreboard: true` also replays
+ *   ESPN's scoreboard and switches the slate's live layer on, with the layer
+ *   file sent to a scratch directory so a run never reads or writes the
+ *   repo's real one.
+ */
+export async function startUpstreamReplay(options = {}) {
   const recorded = JSON.parse(zlib.gunzipSync(fs.readFileSync(FIXTURE)).toString("utf8"));
   // The slate the team hubs read their schedules from since 2026-10-20 (they
   // used to ask ESPN per team): nflverse's games.csv as snapshotted that day.
   const gamesCsv = zlib.gunzipSync(fs.readFileSync(GAMES_FIXTURE)).toString("utf8");
+  const scoreboard = options.scoreboard
+    ? JSON.parse(zlib.gunzipSync(fs.readFileSync(SCOREBOARD_FIXTURE)).toString("utf8"))
+    : null;
+  const layerDir = options.scoreboard
+    ? fs.mkdtempSync(path.join(os.tmpdir(), "sc-schedule-layer-"))
+    : "";
   const misses = [];
   const server = http.createServer((req, res) => {
     if (req.url === "/nflverse/games.csv") {
       res.writeHead(200, { "Content-Type": "text/csv; charset=utf-8" });
       res.end(gamesCsv);
       return;
+    }
+    const week = scoreboard && /^\/espn-site\/apis\/site\/v2\/sports\/football\/nfl\/scoreboard\?dates=2026&seasontype=2&week=(\d+)$/.exec(req.url ?? "");
+    if (week) {
+      const body = scoreboard[week[1]];
+      if (body) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(body));
+        return;
+      }
     }
     const body = recorded[req.url];
     if (body === undefined) {
@@ -54,10 +85,20 @@ export async function startUpstreamReplay() {
       SC_ESPN_CORE_BASE: `${origin}/espn-core`,
       SC_SLEEPER_BASE: `${origin}/sleeper`,
       SC_SCHEDULE_CSV_URL: `${origin}/nflverse/games.csv`,
-      // No scoreboard layer either: the fixture's scores are nflverse's.
-      SC_SCHEDULE_ESPN: "0",
+      // Without the scoreboard, no live layer: the fixture's scores are
+      // nflverse's. With it, the layer reads the replay and keeps its file
+      // in a scratch directory.
+      SC_SCHEDULE_ESPN: scoreboard ? "1" : "0",
+      ...(layerDir ? { SC_SCHEDULE_LAYER_DIR: layerDir } : {}),
     },
     misses,
-    stop: () => new Promise((resolve) => server.close(resolve)),
+    layerDir,
+    stop: () =>
+      new Promise((resolve) => {
+        server.close(() => {
+          if (layerDir) fs.rmSync(layerDir, { recursive: true, force: true });
+          resolve();
+        });
+      }),
   };
 }

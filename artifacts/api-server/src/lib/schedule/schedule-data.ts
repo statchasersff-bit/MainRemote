@@ -28,10 +28,15 @@
  *
  * ## What this module will not do
  *
- * It does not invent a kickoff. A flexible future week has an empty `gameday`
- * and `gametime` in the feed, and those stay null all the way to the renderer,
- * which prints "TBD". Filling them with a plausible Sunday afternoon would make
- * the page confidently wrong about the one thing a schedule is for.
+ * It does not invent a kickoff - and, since 2026-11-03, it does not pass one
+ * on either. nflverse files EVERY game with a `gameday` and `gametime`, and
+ * for a window the league has not set (the Week 16 Saturday pool, all of
+ * Week 18) that is a placeholder Sunday 1:00 PM the feed cannot distinguish
+ * from a real one. ESPN can: its scoreboard carries `timeValid`, false for
+ * exactly those games. So a kickoff reaches the renderer only when a source
+ * vouches for it (see resolveKickoff), and otherwise the page prints "TBD".
+ * Filling the gap with a plausible Sunday afternoon would make the page
+ * confidently wrong about the one thing a schedule is for.
  */
 
 import fs from "node:fs";
@@ -83,7 +88,27 @@ const FEED_TIME_ZONE = "America/New_York";
  */
 const SCHEDULE_USER_AGENT = "StatChasersSchedule/1.0 (+statchasers.com)";
 
-export type GameStatus = "scheduled" | "live" | "final";
+/**
+ * Where a game stands.
+ *
+ * "postponed" and "canceled" come from ESPN's status (STATUS_POSTPONED,
+ * STATUS_CANCELED); nflverse carries neither, so without the live layer a
+ * postponed game reads as scheduled until the feed moves its date.
+ */
+export type GameStatus = "scheduled" | "live" | "final" | "postponed" | "canceled";
+
+/**
+ * Who vouched for the kickoff the game carries.
+ *
+ * - "live": ESPN's scoreboard, with `timeValid` true - the league's published
+ *   window, and the first place a flex or a time change lands.
+ * - "slate": nflverse alone. Its date and time for a future game are usually
+ *   the league's, but it fills a window the league has not set with a
+ *   placeholder Sunday 1:00 PM, so this is secondary evidence, never used for
+ *   a game ESPN has marked TBD or for the final regular-season week.
+ * - "none": nobody. The game has no confirmed date or time and prints TBD.
+ */
+export type KickoffSource = "live" | "slate" | "none";
 
 export interface ScheduleGame {
   /** nflverse's own game id, e.g. "2026_03_ATL_GB". Stable across refreshes. */
@@ -94,14 +119,30 @@ export interface ScheduleGame {
    */
   espnId: string | null;
   week: number;
-  /** ISO date, or null when the week is still flexible. */
+  /**
+   * ISO date of a CONFIRMED kickoff, or null while the league has not set
+   * one. A flexible week's placeholder never reaches here - see
+   * `tentativeDate`.
+   */
   date: string | null;
-  /** The feed's own weekday name, which survives a missing date. */
+  /** The feed's own weekday name, for a confirmed date; null otherwise. */
   weekday: string | null;
-  /** Kickoff as "HH:MM" in US Eastern, or null. */
+  /** Kickoff as "HH:MM" in US Eastern, confirmed, or null. */
   time: string | null;
-  /** Kickoff in epoch ms, or null when either half of it is missing. */
+  /** Kickoff in epoch ms, or null when the date or the time is not confirmed. */
   kickoffMs: number | null;
+  /** True when a source this module trusts has set the kickoff time. */
+  timeConfirmed: boolean;
+  /** True when the calendar day is set, even if the time is not. */
+  dateConfirmed: boolean;
+  kickoffSource: KickoffSource;
+  /**
+   * The calendar day the feeds hold for a game whose date is NOT confirmed -
+   * the Sunday of its week, as nflverse and ESPN both file it. Kept for
+   * ordering and for working out which week is current; never printed as a
+   * date, because it is a filing convention rather than a fact.
+   */
+  tentativeDate: string | null;
   awayCode: string;
   homeCode: string;
   /** Resolved through the canonical team table; null if the feed names a team we don't know. */
@@ -112,6 +153,7 @@ export interface ScheduleGame {
   status: GameStatus;
   /** ESPN's display-ready detail ("Q3 5:23", "Final/OT"), when we have one. */
   statusDetail: string | null;
+  /** Normalized broadcaster name(s): "FOX", "NFL Network", "ESPN / ABC". */
   network: string | null;
   stadium: string | null;
   /** City, for the international games the feed only marks "Neutral". */
@@ -132,6 +174,14 @@ export interface ScheduleSeason {
   liveNow: boolean;
   /** When the slate half was last fetched. */
   fetchedAt: number;
+  /**
+   * When any source feeding this season last answered - the slate fetch or
+   * the live layer's last successful sweep, whichever is later. This is the
+   * page's "Updated" stamp, and it is a refresh time rather than a request
+   * time: a reader sees when the schedule was last checked against its
+   * sources, not when their browser asked for the page.
+   */
+  updatedAtMs: number;
   /** Fingerprint of everything above; the response ETag is built from it. */
   version: string;
 }
@@ -272,6 +322,54 @@ export function venueFlag(city: string | null): string {
 const INTERNATIONAL_HINT =
   /london|munich|berlin|madrid|dublin|s[ãa]o paulo|melbourne|mexico|rio de janeiro|tottenham|wembley|bernabeu|maracana/i;
 
+/* --------------------------------------------------------------- networks */
+
+/**
+ * One spelling per broadcaster.
+ *
+ * ESPN names the same carrier several ways across a season - "Fox" and "FOX",
+ * "NFL Net" and "NFL Network" - and the schedule, the FAQ and the next-game
+ * card all print the string, so the normalization lives here, once, on the
+ * way in. A simulcast arrives as "ESPN / ABC" and keeps its two halves. A
+ * local call sign ("WBZ", "FOX59") that is not an exact match is left as it
+ * came: it is a station, and renaming it to its network would claim more
+ * than ESPN said.
+ */
+const NETWORK_NAMES: Record<string, string> = {
+  fox: "FOX",
+  cbs: "CBS",
+  nbc: "NBC",
+  abc: "ABC",
+  espn: "ESPN",
+  espn2: "ESPN2",
+  "espn+": "ESPN+",
+  "espn/abc": "ESPN / ABC",
+  "nfl net": "NFL Network",
+  "nfl network": "NFL Network",
+  nfln: "NFL Network",
+  "nfl+": "NFL+",
+  "prime video": "Prime Video",
+  "amazon prime video": "Prime Video",
+  amazon: "Prime Video",
+  prime: "Prime Video",
+  netflix: "Netflix",
+  peacock: "Peacock",
+  "paramount+": "Paramount+",
+  youtube: "YouTube",
+  "youtube tv": "YouTube",
+};
+
+export function normalizeNetwork(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const parts = raw
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => NETWORK_NAMES[part.toLowerCase()] ?? part);
+  if (parts.length === 0) return null;
+  return [...new Set(parts)].join(" / ");
+}
+
 /* ------------------------------------------------------------- ESPN layer */
 
 interface EspnGame {
@@ -281,12 +379,28 @@ interface EspnGame {
   detail: string | null;
   awayScore: number | null;
   homeScore: number | null;
+  /**
+   * ESPN's own word on whether the kickoff is set. False is the league's
+   * "TBD" - a flexed late-season window, or all of the final week before the
+   * league announces it. Null for an entry recorded before this field was
+   * read, which the normalizer treats as "unknown", never as "confirmed".
+   */
+  timeValid: boolean | null;
+  /** ESPN's instant for the game; a placeholder (midnight Eastern) when timeValid is false. */
+  kickoffMs: number | null;
+  neutralSite: boolean | null;
+  venue: string | null;
+  venueCity: string | null;
+  /** "STATUS_POSTPONED", "STATUS_CANCELED" - the status name when it is one of those. */
+  statusName: string | null;
 }
 
 interface EspnEvent {
   id?: string;
+  date?: string;
   status?: {
     type?: {
+      name?: string;
       state?: string;
       completed?: boolean;
       shortDetail?: string;
@@ -294,14 +408,30 @@ interface EspnEvent {
     };
   };
   competitions?: Array<{
+    timeValid?: boolean;
+    neutralSite?: boolean;
+    venue?: {
+      fullName?: string;
+      address?: { city?: string; state?: string; country?: string };
+    };
     broadcasts?: Array<{ names?: string[]; media?: { shortName?: string } }>;
     competitors?: Array<{ homeAway?: string; score?: string }>;
   }>;
 }
 
+/** "London, England", "Indianapolis, IN" - ESPN's venue address as one line. */
+function espnVenueCity(address: { city?: string; state?: string; country?: string } | undefined): string | null {
+  if (!address?.city) return null;
+  if (address.state) return `${address.city}, ${address.state}`;
+  if (address.country && address.country !== "USA") return `${address.city}, ${address.country}`;
+  return address.city;
+}
+
 function readEspnEvent(event: EspnEvent): EspnGame | null {
   if (!event.id) return null;
   const competition = event.competitions?.[0];
+  const kickoffMs = event.date ? Date.parse(event.date) : Number.NaN;
+  const statusName = event.status?.type?.name ?? null;
 
   const names = (competition?.broadcasts ?? []).flatMap((broadcast) =>
     broadcast.names?.length
@@ -330,6 +460,37 @@ function readEspnEvent(event: EspnEvent): EspnGame | null {
       event.status?.type?.shortDetail ?? event.status?.type?.detail ?? null,
     awayScore: score("away"),
     homeScore: score("home"),
+    timeValid: typeof competition?.timeValid === "boolean" ? competition.timeValid : null,
+    kickoffMs: Number.isFinite(kickoffMs) ? kickoffMs : null,
+    neutralSite: typeof competition?.neutralSite === "boolean" ? competition.neutralSite : null,
+    venue: competition?.venue?.fullName?.trim() || null,
+    venueCity: espnVenueCity(competition?.venue?.address),
+    statusName:
+      statusName === "STATUS_POSTPONED" || statusName === "STATUS_CANCELED" ? statusName : null,
+  };
+}
+
+/**
+ * An entry read back from the layer file, with the fields a file written
+ * before 2026-11-03 does not carry filled in as "unknown" - except that
+ * ESPN's detail string "TBD" is the same fact as `timeValid: false`, and an
+ * old entry that says so is honored.
+ */
+function upgradeEspnEntry(raw: Partial<EspnGame> & Pick<EspnGame, "state">): EspnGame {
+  return {
+    network: raw.network ?? null,
+    state: raw.state,
+    completed: raw.completed === true,
+    detail: raw.detail ?? null,
+    awayScore: raw.awayScore ?? null,
+    homeScore: raw.homeScore ?? null,
+    timeValid:
+      typeof raw.timeValid === "boolean" ? raw.timeValid : raw.detail === "TBD" ? false : null,
+    kickoffMs: typeof raw.kickoffMs === "number" ? raw.kickoffMs : null,
+    neutralSite: typeof raw.neutralSite === "boolean" ? raw.neutralSite : null,
+    venue: raw.venue ?? null,
+    venueCity: raw.venueCity ?? null,
+    statusName: raw.statusName ?? null,
   };
 }
 
@@ -357,6 +518,8 @@ interface EspnEntry {
   fullRefreshAt: number;
   /** Set on total failure so the slate does not re-attempt on every request. */
   failedAt: number;
+  /** The last sweep that reached ESPN, for the season's "Updated" stamp. 0 if never. */
+  reachedAt: number;
 }
 
 const espnCache = new Map<number, EspnEntry>();
@@ -445,8 +608,12 @@ function unseenWeeks(rows: RawGame[], games: ReadonlyMap<string, EspnGame>): num
   const seen = new Set<number>();
   const all = new Set<number>();
   for (const row of rows) {
+    // A row with no ESPN id can never be matched to a scoreboard event, so
+    // asking for its week would be asking forever. Only weeks with an id to
+    // look up count as seen or unseen.
+    if (!row.espnId) continue;
     all.add(row.week);
-    if (row.espnId && games.has(row.espnId)) seen.add(row.week);
+    if (games.has(row.espnId)) seen.add(row.week);
   }
   return [...all].filter((week) => !seen.has(week)).sort((a, b) => a - b);
 }
@@ -524,10 +691,12 @@ async function refreshEspn(
     }
   }
 
+  const reachedAt = reached && weeks.length ? nowMs : (cached?.reachedAt ?? layerSeedStamp(season));
+
   // Only the season in play is worth remembering: a past season's layer is
   // never asked for again, and the test suite's 2024 fixture must not leave
   // a file behind in the repo's data directory.
-  if (reached && weeks.length && season === scheduleSeason()) saveLayer(season, games);
+  if (reached && weeks.length && season === scheduleSeason()) saveLayer(season, games, reachedAt);
 
   const live = [...games.values()].some((game) => game.state === "in");
   const past = season < scheduleSeason();
@@ -544,9 +713,15 @@ async function refreshEspn(
             : ESPN_IDLE_TTL_MS),
     fullRefreshAt: fullRefresh && reached ? nowMs : (cached?.fullRefreshAt ?? 0),
     failedAt: reached ? 0 : nowMs,
+    reachedAt,
   });
 
   return games;
+}
+
+/** When the live layer last reached ESPN for a season, or 0. */
+function espnReachedAt(season: number): number {
+  return espnCache.get(season)?.reachedAt ?? 0;
 }
 
 /**
@@ -557,34 +732,65 @@ async function refreshEspn(
  * was the pattern mak asked to end. Best-effort both ways: a missing or
  * unwritable file is an empty seed and a skipped save, never an error.
  */
+/**
+ * `SC_SCHEDULE_LAYER_DIR` moves the layer files. The test suite points it at
+ * a scratch directory so a run that replays a recorded scoreboard neither
+ * reads the repo's real layer nor overwrites it.
+ */
+function layerDir(): string {
+  const override = (process.env["SC_SCHEDULE_LAYER_DIR"] ?? "").trim();
+  return override || dataPath("schedule");
+}
+
 function layerPath(season: number): string {
-  return dataPath("schedule", `espn-layer-${season}.json`);
+  return `${layerDir()}/espn-layer-${season}.json`;
+}
+
+/** The one key in the layer file that is not a game: when it was last written. */
+const LAYER_META_KEY = "__meta__";
+
+interface LayerMeta {
+  reachedAt?: number;
+}
+
+function readLayerFile(season: number): Record<string, unknown> | null {
+  if (!espnEnabled() || season !== scheduleSeason()) return null;
+  try {
+    return JSON.parse(fs.readFileSync(layerPath(season), "utf8")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 }
 
 function loadLayerSeed(season: number): Map<string, EspnGame> {
   const seed = new Map<string, EspnGame>();
-  if (!espnEnabled() || season !== scheduleSeason()) return seed;
-  try {
-    const parsed = JSON.parse(fs.readFileSync(layerPath(season), "utf8")) as Record<
-      string,
-      EspnGame
-    >;
-    for (const [id, game] of Object.entries(parsed)) {
-      // Only what is settled: a live state or a kickoff-less entry would be
-      // stale the moment it was read back.
-      if (game && game.state !== "in") seed.set(id, game);
-    }
-  } catch {
-    // No seed. The refresh fills it.
+  const parsed = readLayerFile(season);
+  if (!parsed) return seed;
+  for (const [id, game] of Object.entries(parsed)) {
+    if (id === LAYER_META_KEY) continue;
+    // Only what is settled: a live state or a kickoff-less entry would be
+    // stale the moment it was read back.
+    const entry = game as Partial<EspnGame> | null;
+    if (entry && entry.state && entry.state !== "in") seed.set(id, upgradeEspnEntry(entry as Partial<EspnGame> & Pick<EspnGame, "state">));
   }
   return seed;
 }
 
-function saveLayer(season: number, games: Map<string, EspnGame>): void {
+/** The stamp the stored layer carries, so a restart does not reset "Updated" to "never". */
+function layerSeedStamp(season: number): number {
+  const meta = readLayerFile(season)?.[LAYER_META_KEY] as LayerMeta | undefined;
+  return typeof meta?.reachedAt === "number" ? meta.reachedAt : 0;
+}
+
+function saveLayer(season: number, games: Map<string, EspnGame>, reachedAt: number): void {
   try {
     const file = layerPath(season);
-    fs.mkdirSync(dataPath("schedule"), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(Object.fromEntries(games)));
+    fs.mkdirSync(layerDir(), { recursive: true });
+    const meta: LayerMeta = { reachedAt };
+    fs.writeFileSync(
+      file,
+      JSON.stringify({ ...Object.fromEntries(games), [LAYER_META_KEY]: meta }),
+    );
   } catch (err) {
     logger.debug({ err, season }, "could not store the schedule's ESPN layer");
   }
@@ -777,6 +983,110 @@ const slateCache = createKeyedCache<RawGame[]>({
 
 /* --------------------------------------------------------- normalization */
 
+interface ResolvedKickoff {
+  kickoffMs: number | null;
+  date: string | null;
+  weekday: string | null;
+  time: string | null;
+  timeConfirmed: boolean;
+  dateConfirmed: boolean;
+  source: KickoffSource;
+}
+
+/** The Eastern calendar date and clock of an instant, as the feed spells them. */
+function easternClock(ms: number): { date: string; weekday: string; time: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: FEED_TIME_ZONE,
+    hour12: false,
+    weekday: "long",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(new Date(ms));
+  const read = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
+  const hour = read("hour") === "24" ? "00" : read("hour");
+  return {
+    date: `${read("year")}-${read("month")}-${read("day")}`,
+    weekday: read("weekday"),
+    time: `${hour}:${read("minute")}`,
+  };
+}
+
+/**
+ * Which kickoff a game carries, and who vouches for it.
+ *
+ * Source precedence, highest first (docs/SCHEDULE-DATA-PRECEDENCE.md):
+ *
+ * 1. A game that has been played or is being played has happened: its
+ *    kickoff is confirmed by the fact, ESPN's instant preferred over the
+ *    slate's where both exist.
+ * 2. ESPN's scoreboard, when it has the game. `timeValid` true is the
+ *    league's published window and the instant is ESPN's own - the first
+ *    place a flex lands. `timeValid` false is the league's TBD: no date, no
+ *    time, whatever the slate says.
+ * 3. nflverse alone. Its row carries a date and time for every game, and for
+ *    most future games those are the league's - but for a window the league
+ *    has not set it files a placeholder Sunday 1:00 PM, and nothing in the
+ *    row says which is which. So the slate's kickoff stands for an ordinary
+ *    week and is refused for the final regular-season week, which the league
+ *    never schedules before the week before it is played. A Saturday pool
+ *    game in Week 16 that ESPN has never been asked about would slip past
+ *    this rule, which is why the live layer sweeps every open week.
+ * 4. Nothing: TBD.
+ */
+function resolveKickoff(
+  row: RawGame,
+  live: EspnGame | undefined,
+  status: GameStatus,
+): ResolvedKickoff {
+  const slateMs = row.date && row.time ? easternToUtcMs(row.date, row.time) : null;
+  const confirmed = (ms: number, source: KickoffSource): ResolvedKickoff => {
+    const clock = easternClock(ms);
+    return {
+      kickoffMs: ms,
+      date: clock.date,
+      weekday: clock.weekday,
+      time: clock.time,
+      timeConfirmed: true,
+      dateConfirmed: true,
+      source,
+    };
+  };
+  const unknown: ResolvedKickoff = {
+    kickoffMs: null,
+    date: null,
+    weekday: null,
+    time: null,
+    timeConfirmed: false,
+    dateConfirmed: false,
+    source: "none",
+  };
+
+  if (status === "final" || status === "live") {
+    if (live?.kickoffMs !== null && live?.kickoffMs !== undefined) return confirmed(live.kickoffMs, "live");
+    if (slateMs !== null) return confirmed(slateMs, "slate");
+    return unknown;
+  }
+  if (status === "canceled") return unknown;
+
+  if (live && live.timeValid !== null) {
+    if (!live.timeValid) return unknown;
+    if (live.kickoffMs !== null) return confirmed(live.kickoffMs, "live");
+    if (slateMs !== null) return confirmed(slateMs, "slate");
+    return unknown;
+  }
+
+  // A postponed game's new date is whatever the feeds move it to; until the
+  // live layer says the time is valid again, it is not claimed.
+  if (status === "postponed") return unknown;
+
+  const finalRegularWeek = row.gameType === "REG" && row.week >= TOTAL_WEEKS;
+  if (slateMs !== null && !finalRegularWeek) return confirmed(slateMs, "slate");
+  return unknown;
+}
+
 function normalize(
   row: RawGame,
   season: number,
@@ -785,15 +1095,27 @@ function normalize(
   const away = getTeamByAbbreviation(row.awayCode);
   const home = getTeamByAbbreviation(row.homeCode);
 
-  const neutralSite = row.location?.toLowerCase() === "neutral";
+  const liveEntry = row.espnId ? espn.get(row.espnId) : undefined;
+  // Either source may know. nflverse files London as "Neutral"; ESPN marks
+  // the competition `neutralSite`. One saying so is enough - a neutral game
+  // the other feed filed under the designated host is still neutral.
+  const neutralSite =
+    row.location?.toLowerCase() === "neutral" || liveEntry?.neutralSite === true;
   const international =
     neutralSite ||
-    INTERNATIONAL_HINT.test(`${row.location ?? ""} ${row.stadium ?? ""}`);
+    INTERNATIONAL_HINT.test(`${row.location ?? ""} ${row.stadium ?? ""} ${liveEntry?.venueCity ?? ""}`);
 
+  // ESPN is the live authority; nflverse only publishes a final score hours
+  // after the whistle, so a Sunday-afternoon reader would otherwise see a game
+  // that finished an hour ago still listed as upcoming.
+  const live = liveEntry;
+
+  const rawStadium = row.stadium ?? live?.venue ?? null;
   const stadium =
-    row.stadium === "Tottenham Hotspur Stadium" ? "Tottenham Hotspur" : row.stadium;
+    rawStadium === "Tottenham Hotspur Stadium" ? "Tottenham Hotspur" : rawStadium;
 
-  const venueCity = row.stadium ? (VENUE_CITIES[row.stadium] ?? null) : null;
+  const venueCity =
+    (row.stadium ? (VENUE_CITIES[row.stadium] ?? null) : null) ?? live?.venueCity ?? null;
   const location = international
     ? (row.location && row.location !== "Neutral" && row.location !== "Home"
         ? row.location
@@ -802,27 +1124,36 @@ function normalize(
       ? (home?.city ?? null)
       : row.location;
 
-  // ESPN is the live authority; nflverse only publishes a final score hours
-  // after the whistle, so a Sunday-afternoon reader would otherwise see a game
-  // that finished an hour ago still listed as upcoming.
-  const live = row.espnId ? espn.get(row.espnId) : undefined;
   const finalFromFeed = row.awayScore !== null && row.homeScore !== null;
   const isFinal = live
     ? live.completed || (live.state === "post" && live.awayScore !== null)
     : finalFromFeed;
   const status: GameStatus =
-    live?.state === "in" ? "live" : isFinal ? "final" : "scheduled";
-  const useLiveScore = live !== undefined && status !== "scheduled";
+    live?.state === "in"
+      ? "live"
+      : isFinal
+        ? "final"
+        : live?.statusName === "STATUS_POSTPONED"
+          ? "postponed"
+          : live?.statusName === "STATUS_CANCELED"
+            ? "canceled"
+            : "scheduled";
+  const useLiveScore = live !== undefined && (status === "live" || status === "final");
+
+  const kickoff = resolveKickoff(row, live, status);
 
   return {
     id: row.id,
     espnId: row.espnId || null,
     week: row.week,
-    date: row.date,
-    weekday: row.weekday,
-    time: row.time,
-    kickoffMs:
-      row.date && row.time ? easternToUtcMs(row.date, row.time) : null,
+    date: kickoff.date,
+    weekday: kickoff.dateConfirmed ? (kickoff.weekday ?? row.weekday) : null,
+    time: kickoff.time,
+    kickoffMs: kickoff.kickoffMs,
+    timeConfirmed: kickoff.timeConfirmed,
+    dateConfirmed: kickoff.dateConfirmed,
+    kickoffSource: kickoff.source,
+    tentativeDate: kickoff.dateConfirmed ? null : row.date,
     awayCode: away?.code ?? row.awayCode,
     homeCode: home?.code ?? row.homeCode,
     away,
@@ -831,7 +1162,7 @@ function normalize(
     homeScore: useLiveScore ? (live.homeScore ?? row.homeScore) : row.homeScore,
     status,
     statusDetail: status === "scheduled" ? null : (live?.detail ?? null),
-    network: live?.network ?? null,
+    network: normalizeNetwork(live?.network),
     stadium,
     location,
     international,
@@ -870,6 +1201,10 @@ function fingerprint(season: number, games: ScheduleGame[]): string {
       game.id,
       game.date ?? "",
       game.time ?? "",
+      game.timeConfirmed ? "t" : "",
+      game.dateConfirmed ? "d" : "",
+      game.neutralSite ? "n" : "",
+      game.stadium ?? "",
       game.status,
       game.awayScore ?? "",
       game.homeScore ?? "",
@@ -988,11 +1323,13 @@ async function build(
         a.id.localeCompare(b.id),
     );
 
+  const fetchedAt = slateCache.peek(String(season)).fetchedAt;
   return {
     season,
     games,
     liveNow: games.some((game) => game.status === "live"),
-    fetchedAt: slateCache.peek(String(season)).fetchedAt,
+    fetchedAt,
+    updatedAtMs: Math.max(fetchedAt, espnReachedAt(season)),
     version: fingerprint(season, games),
   };
 }

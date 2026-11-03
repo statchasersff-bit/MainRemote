@@ -320,9 +320,13 @@ function asGame(meeting: Meeting): ScheduleGame {
     seasonType: meeting.seasonType,
     weekLabel: meeting.weekLabel,
     espnEventId: meeting.espnEventId,
+    gameId: meeting.espnEventId ?? `${meeting.week}-${meeting.home.code}-${meeting.away.code}`,
     kickoffMs: meeting.kickoffMs,
     timeConfirmed: meeting.timeConfirmed,
+    dateConfirmed: meeting.kickoffMs !== null,
+    kickoffSource: meeting.kickoffMs !== null ? "slate" : "none",
     homeAway: "home",
+    site: meeting.neutralSite ? "neutral" : "home",
     neutralSite: meeting.neutralSite,
     opponent: meeting.away,
     opponentName: meeting.away.fullName,
@@ -333,6 +337,7 @@ function asGame(meeting: Meeting): ScheduleGame {
     divisional: meeting.home.division === meeting.away.division,
     network: meeting.network,
     status: meeting.status,
+    statusDetail: null,
     result: null,
   };
 }

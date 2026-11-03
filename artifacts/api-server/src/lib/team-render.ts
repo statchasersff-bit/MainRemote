@@ -97,7 +97,18 @@ import {
   type SkillPosition,
   type RosterPlayer,
 } from "./team/roster";
-import { upcomingGames, type ScheduleGame, type TeamSchedule } from "./team/schedule";
+import {
+  isOnDate,
+  lastResult,
+  nextGame,
+  recordThrough,
+  siteCounts,
+  splitSchedule,
+  upcomingGames,
+  type ScheduleGame,
+  type TeamSchedule,
+} from "./team/schedule";
+import { easternDate } from "./schedule/schedule-data";
 import { scheduleItemList } from "./team/schedule-schema";
 import {
   canonicalizeMatchupPair,
@@ -251,9 +262,12 @@ export function teamHubHeading(teamName: string, season: number): string {
  * Sections whose heading carries no season. The depth chart is the roster as
  * it stands today, and the page's stamp line says which season and when it
  * was refreshed; "Buffalo Bills Depth Chart" is also the phrase searched
- * (mak's depth-chart brief, 2026-11-03). Mirrored in PHP.
+ * (mak's depth-chart brief, 2026-11-03). The schedule likewise (mak's
+ * schedule brief, same day): "Indianapolis Colts Schedule" is the H1, and
+ * the season, record and bye sit on the context line directly under it.
+ * Mirrored in PHP.
  */
-const UNDATED_SECTION_HEADINGS = new Set(["depth-chart"]);
+const UNDATED_SECTION_HEADINGS = new Set(["depth-chart", "schedule"]);
 
 export function teamSectionHeading(
   teamName: string,
@@ -642,6 +656,10 @@ interface Section {
    * matchup" link in, so the two tabs were the same list twice. The page at
    * /<slug>/matchups/ still renders; the hub just stops offering a second way
    * into it.
+   *
+   * A tab is not a panel. A section with a public address of its own (see
+   * ownsAddress) is a tab on the hub and a link to that address, and its
+   * markup is printed ONLY there - see renderTeamPage.
    */
   hubTab?: boolean;
   /**
@@ -662,6 +680,16 @@ interface Section {
    * Coaching wears it while its public URL waits on approval.
    */
   hash?: boolean;
+  /**
+   * The hub carries a compact PREVIEW of this section, and the full section
+   * lives only at its own address. On the hub the tab is a hash tab (the
+   * preview switches in place, and its "View full ..." link is the way to
+   * the page); on a section page the strip links to the real address.
+   * The Schedule wears it (mak, 2026-11-03): the hub used to carry the whole
+   * schedule and all its questions, which made the hub and /schedule/ the
+   * same page twice.
+   */
+  previewOnHub?: boolean;
 }
 
 /**
@@ -728,7 +756,11 @@ function renderNav(
       // hub-only panel, so its address, heading and title are the hub's too -
       // the page never leaves the hub's URL bar one hash.
       const isHub = section.id === HUB_SECTION;
-      const hubLike = isHub || section.hash === true;
+      // `activeId` is set only on a section page; on the hub a preview
+      // section's tab is a hash tab, so the panel switches in place.
+      const hashTab =
+        section.hash === true || (section.previewOnHub === true && activeId === undefined);
+      const hubLike = isHub || hashTab;
       const heading = hubLike
         ? teamHubHeading(team.fullName, season)
         : (teamSectionHeading(team.fullName, section.id, season) ?? team.fullName);
@@ -737,7 +769,7 @@ function renderNav(
       // The title the tab's address carries on WordPress, for the bundle to set
       // before it pushes that address. The hub's stored title is the Outlook's.
       const title = teamPageMeta(team, season, "", hubLike ? "outlook" : section.id).title;
-      const href = section.hash
+      const href = hashTab
         ? `${sectionPath(prefix, team.slug, HUB_SECTION)}#${section.id}`
         : sectionPath(prefix, team.slug, section.id);
 
@@ -2462,11 +2494,22 @@ function renderInjuryPanel(data: TeamPageData): string {
 
 /* ------------------------------------------------------------- next game */
 
+/**
+ * The two halves of "when", as the cards print them.
+ *
+ * Three states, and the model decides which: a confirmed kickoff prints its
+ * day and its time; a confirmed date with no time prints the day and "Time
+ * TBD"; a game the league has not scheduled prints "Date/Time TBD" and
+ * nothing else. The feeds' placeholder Sunday never reaches this function -
+ * lib/schedule/schedule-data.ts clears it before the game is built.
+ */
 export function gameDateLine(game: ScheduleGame): {
   date: string;
   time: string;
 } {
-  if (game.kickoffMs === null) return { date: "Date TBD", time: "" };
+  if (game.kickoffMs === null || !game.dateConfirmed) {
+    return { date: "Date/Time TBD", time: "" };
+  }
   const parts = easternParts(game.kickoffMs);
   return {
     date: `${parts.weekday}, ${parts.month} ${parts.day}`,
@@ -2475,23 +2518,24 @@ export function gameDateLine(game: ScheduleGame): {
 }
 
 /**
- * "Sep 13" - the date as a table column rather than as a line of prose.
- *
- * The cards above spell the weekday because a card is read once and "Monday"
- * is the fact that makes it a night game. A column of seventeen dates is
- * scanned, not read, and the weekday is the part that makes every row start
- * with a different three letters before the month a reader is actually
- * counting down. It also drops the time, which has moved one column right into
- * the Result cell - see gameStatusCell().
+ * "Sep 13" - the date as a table column rather than as a line of prose, and
+ * "TBD" for a game the league has not dated.
  *
  * The same month/day pair lib/schedule/format.ts's formatShortDate() sets for
  * the standalone tool, from this file's own Eastern parse so the row's date and
  * its kickoff cannot disagree about which day a late game falls on.
  */
 export function gameShortDate(game: ScheduleGame): string {
-  if (game.kickoffMs === null) return "TBD";
+  if (game.kickoffMs === null || !game.dateConfirmed) return "TBD";
   const parts = easternParts(game.kickoffMs);
   return `${parts.month} ${parts.day}`;
+}
+
+/** "Sun, Nov 8" - the short date with its weekday, for the boards. */
+function gameShortDay(game: ScheduleGame): string {
+  if (game.kickoffMs === null || !game.dateConfirmed) return "TBD";
+  const parts = easternParts(game.kickoffMs);
+  return `${parts.weekday}, ${parts.month} ${parts.day}`;
 }
 
 /**
@@ -2527,18 +2571,31 @@ export function matchupSide(
   );
 }
 
+/**
+ * "Next Game", "Today's Game" or "Live Now" - what the next fixture is called
+ * at this moment. "Today" is only ever said on the day; it is computed per
+ * render and gone the next morning.
+ */
+function nextGameLabel(game: ScheduleGame, now: number): string {
+  if (game.status === "live") return "Live Now";
+  if (game.status === "postponed") return "Postponed";
+  if (isOnDate(game, easternDate(now))) return "Today's Game";
+  return "Next Game";
+}
+
 function renderNextGamePanel(data: TeamPageData, now: number): string {
-  const next = upcomingGames(data.schedule, now, 1)[0];
+  const next = nextGame(data.schedule, now);
   if (!next) return "";
   const when = gameDateLine(next);
-  const away = next.homeAway === "away";
+  const neutral = next.site === "neutral";
+  const away = next.site === "away";
 
   // Away side first, home side second - the order every scoreboard uses, so the
   // card says who is traveling without a word for it. A neutral-site game has
   // no host to put second, so it reads "vs" and keeps this team on the left.
-  const left = away || next.neutralSite ? data.team : next.opponent;
-  const right = away || next.neutralSite ? next.opponent : data.team;
-  const leftIsTeam = away || next.neutralSite;
+  const left = away || neutral ? data.team : next.opponent;
+  const right = away || neutral ? next.opponent : data.team;
+  const leftIsTeam = away || neutral;
 
   const matchup =
     // Hidden wholesale from assistive tech, with the sentence below carrying
@@ -2551,7 +2608,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
       leftIsTeam,
     ) +
     `<span class="sct-matchup-at" aria-hidden="true">` +
-    `${next.neutralSite ? "vs" : "@"}</span>` +
+    `${neutral ? "vs" : "@"}</span>` +
     matchupSide(
       right,
       leftIsTeam ? next.opponentName : data.team.nickname,
@@ -2561,8 +2618,8 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
     // The visual matchup is three logos and two codes, which a screen reader
     // would read as an alphabet. This is the same fact as a sentence.
     `<p class="sct-visually-hidden">${escapeHtml(
-      `${data.team.nickname} ${next.neutralSite ? "vs" : away ? "at" : "host"} ` +
-        `${next.opponent?.nickname ?? next.opponentName}`,
+      `${data.team.nickname} ${neutral ? "vs" : away ? "at" : "host"} ` +
+        `${next.opponent?.nickname ?? next.opponentName}${neutral ? " at a neutral site" : ""}`,
     )}</p>`;
 
   // One line of context, and only when it is about the fixture actually shown -
@@ -2587,11 +2644,12 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
     // Rearranged at mak's request (2026-10-22): the week sits on the title's
     // row, hard right; the date and time take the line the week used to hold,
     // above the matchup; the venue line is gone.
-    `<h2 class="sct-panel-title">Next Game` +
-    `<span class="sct-nextgame-week">${escapeHtml(`Week ${next.week}`)}</span>` +
+    `<h2 class="sct-panel-title">${escapeHtml(nextGameLabel(next, now))}` +
+    `<span class="sct-nextgame-week">${escapeHtml(next.weekLabel)}</span>` +
     `</h2>` +
     `<p class="sct-nextgame-when">${escapeHtml(when.date)}` +
     (when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : "") +
+    (next.network ? `<span class="sct-nextgame-time"> · ${escapeHtml(next.network)}</span>` : "") +
     `</p>` +
     matchup +
     context +
@@ -2731,12 +2789,12 @@ function renderMatchups(
   const hrefFor = (opponent: NflTeam | null): string | null =>
     matchupHref(team, opponent, options);
 
-  const next = upcomingGames(schedule, now, 1)[0];
+  const next = nextGame(schedule, now);
   const nextHref = next ? hrefFor(next.opponent) : null;
   const when = next ? gameDateLine(next) : null;
   // Away side first, as the Next Game card does; a neutral site keeps this
   // team on the left and reads "vs".
-  const teamLeft = !!next && (next.homeAway === "away" || next.neutralSite);
+  const teamLeft = !!next && next.site !== "home";
   const upNext =
     next && nextHref && when
       ? `<div class="sct-mu-upnext">` +
@@ -2754,7 +2812,7 @@ function renderMatchups(
           !teamLeft,
         ) +
         `</div>` +
-        `<p class="sct-visually-hidden">${escapeHtml(`${team.nickname} ${next.neutralSite ? "vs" : next.homeAway === "away" ? "at" : "host"} ${next.opponent?.nickname ?? next.opponentName}`)}</p>` +
+        `<p class="sct-visually-hidden">${escapeHtml(`${team.nickname} ${next.site === "neutral" ? "vs" : next.site === "away" ? "at" : "host"} ${next.opponent?.nickname ?? next.opponentName}`)}</p>` +
         `<p class="sct-nextgame-when">${escapeHtml(`Week ${next.week} · ${when.date}`)}${when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : ""}</p>` +
         `<p class="sct-block-footer"><a class="sct-textlink" href="${escapeHtml(nextHref)}">View matchup ${ARROW}</a></p>` +
         `</div>`
@@ -2766,7 +2824,7 @@ function renderMatchups(
       const line = gameDateLine(game);
       const status = game.result
         ? `<span class="sct-mu-result">${escapeHtml(`${game.result.outcome} ${game.result.teamScore}–${game.result.opponentScore}`)}</span>`
-        : `<span class="sct-mu-result is-pending">${game.status === "live" ? "Live" : "Upcoming"}</span>`;
+        : `<span class="sct-mu-result is-pending">${game.status === "live" ? "Live" : game.status === "postponed" ? "Postponed" : game.status === "canceled" ? "Canceled" : "Upcoming"}</span>`;
       const opponentName = game.opponent?.nickname ?? game.opponentName;
       return (
         `<li class="sct-srow sct-mu-row">` +
@@ -2776,7 +2834,7 @@ function renderMatchups(
           ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async" />`
           : "") +
         `<span class="sct-srow-name">${escapeHtml(
-          game.homeAway === "home" ? `${team.nickname} vs ${opponentName}` : `${opponentName} vs ${team.nickname}`,
+          game.site === "away" ? `${opponentName} vs ${team.nickname}` : `${team.nickname} vs ${opponentName}`,
         )}</span></span>` +
         `<span class="sct-srow-when">${escapeHtml(line.date)}</span>` +
         status +
@@ -3565,12 +3623,9 @@ export function networkDefs(networks: Array<string | null>): string {
  * That is why the cell is never empty.
  *
  * What it says before kickoff is the time, not the word "Upcoming" - the
- * standalone tool's lens puts the clock here, and it is the better tenant: on
- * seventeen unplayed rows "Upcoming" is the same word seventeen times, while
- * the window is the thing a reader came to the column for. That is also what
- * frees the date cell beside it to drop to "Sep 13". "TBD" is the fallback for
- * a game the league has not given a window yet, which is a different fact from
- * a game with no result.
+ * window is the thing a reader came to the column for. "TBD" is what it says
+ * for a game the league has not given a window: the model has already refused
+ * the feeds' placeholder, so there is no time here to print by mistake.
  */
 export function gameStatusCell(game: ScheduleGame): string {
   if (game.result) {
@@ -3579,7 +3634,7 @@ export function gameStatusCell(game: ScheduleGame): string {
     // as a subtraction next to a W.
     return (
       `<span class="sct-result" data-outcome="${outcome}">` +
-      `<span aria-hidden="true">${escapeHtml(`${outcome} ${teamScore}\u2013${opponentScore}`)}</span>` +
+      `<span aria-hidden="true">${escapeHtml(`${outcome} ${teamScore}–${opponentScore}`)}</span>` +
       `<span class="sct-visually-hidden">` +
       `${outcome === "W" ? "Won" : outcome === "L" ? "Lost" : "Tied"} ${teamScore} to ${opponentScore}` +
       `</span></span>`
@@ -3588,72 +3643,79 @@ export function gameStatusCell(game: ScheduleGame): string {
   if (game.status === "live") {
     return `<span class="sct-sstatus" data-state="live">Live</span>`;
   }
-  // `timeConfirmed` is the flag that separates the two: ESPN publishes a
-  // placeholder kickoff for a game whose window it has not set, and printing
-  // that placeholder as a time is the one thing this cell must not do.
+  if (game.status === "postponed") {
+    return `<span class="sct-sstatus" data-state="postponed">Postponed</span>`;
+  }
+  if (game.status === "canceled") {
+    return `<span class="sct-sstatus" data-state="canceled">Canceled</span>`;
+  }
   const kickoff =
-    game.kickoffMs !== null && game.timeConfirmed
-      ? easternParts(game.kickoffMs).time
-      : "TBD";
+    game.kickoffMs !== null && game.timeConfirmed ? easternParts(game.kickoffMs).time : "TBD";
   return (
     `<span class="sct-sstatus" data-state="upcoming">${escapeHtml(kickoff)}</span>`
   );
 }
 
+/** "vs" for a home or neutral game, "at" for a road game. */
+function sideWord(game: ScheduleGame): "vs" | "at" {
+  return game.site === "away" ? "at" : "vs";
+}
+
 /**
- * One upcoming fixture.
+ * The opponent's hub, or null for an opponent the table does not know.
+ *
+ * The same prefix the switcher and the tab strip use, so on a WordPress mount
+ * the row links to statchasers.com's team page rather than this origin's.
+ */
+function teamHubHref(opponent: NflTeam | null, options: TeamRenderOptions): string | null {
+  if (!opponent) return null;
+  const prefix = options.teamPathPrefix ?? "/team/";
+  return sectionPath(prefix, opponent.slug, HUB_SECTION) + (options.linkQuery ?? "");
+}
+
+/**
+ * One upcoming fixture, as the hub's preview cards draw it.
  *
  * The card is read top to bottom as: which week and where it is played, who it
- * is against, then when and on what. That ordering is the whole design - the
- * three lines that used to sit loose in the middle (date, venue, network) are
- * now one metadata block below a hairline, and the home/away chip that used to
- * dangle at the bottom has moved up to pair with the week, which is the other
- * half of the same fact.
- *
- * `index === 0` is the next game. It gets a gold rule across its top and a
- * label, so a row of three is a hierarchy rather than three equal boxes.
+ * is against, then when and on what. `index === 0` is the next game. It gets a
+ * gold rule across its top and a label, so a row of three is a hierarchy
+ * rather than three equal boxes. A game with no window prints "Date/Time
+ * TBD" where the date goes - the one thing the card must never do is print
+ * the feeds' placeholder.
  */
 export function renderUpcomingCard(
   game: ScheduleGame,
   index: number,
   matchupUrl: string | null = null,
+  label = "Next game",
 ): string {
   const when = gameDateLine(game);
   const opponent = game.opponent;
   const nickname = opponent?.nickname ?? game.opponentName;
 
-  // Venue and network on one line. Either can be missing - ESPN has no network
-  // for a game it has not scheduled a window for - and a lone separator is
-  // worse than a shorter line. The network is markup rather than text because
-  // it may be a mark; the venue is escaped here so the two can be joined.
+  // Venue, site and network on one line. Any can be missing - a game the
+  // league has not scheduled has no network - and a lone separator is worse
+  // than a shorter line. The network is markup rather than text because it
+  // may be a mark; the rest is escaped here so the parts can be joined.
   const where = [
     game.venue ? escapeHtml(game.venue) : "",
+    game.site === "neutral"
+      ? escapeHtml(game.venueCity ? `${game.venueCity} · Neutral site` : "Neutral site")
+      : "",
     game.network ? networkHtml(game.network, "sct-game-tv") : "",
   ].filter(Boolean);
 
   return (
     `<li class="sct-game"${index === 0 ? ` data-next="1"` : ""}>` +
-    // The opponent's mark, at 2.5% opacity behind the content. Decorative and
-    // hidden from assistive tech: the same logo is already in the matchup line
-    // above, where it is the one that counts.
     (opponent
       ? `<img class="sct-game-mark" src="${escapeHtml(opponent.logo)}" alt=""` +
         ` aria-hidden="true" width="120" height="120" loading="lazy" decoding="async" />`
       : "") +
-    // Compact (mak's spec, 2026-10-20): "Next game" is a prefix on the week
-    // line rather than a line of its own, the full name shares a line with
-    // the date and time, and the venue and network follow on one more. Five
-    // lines of text in a card about 115px tall, where the old card was
-    // seven lines in 180.
     `<div class="sct-game-head">` +
     `<span class="sct-game-label">` +
-    (index === 0 ? `<span class="sct-game-next">Next game</span>` : "") +
-    `<span class="sct-game-week">${escapeHtml(`Week ${game.week}`)}</span>` +
+    (index === 0 ? `<span class="sct-game-next">${escapeHtml(label)}</span>` : "") +
+    `<span class="sct-game-week">${escapeHtml(game.weekLabel)}</span>` +
     `</span>` +
-    // The date and time, where the Div / Home / Away pills used to sit (mak,
-    // 2026-10-22). "vs" and "at" on the opponent line already say which side
-    // of the ball the game is on, and the division tag said nothing a reader
-    // was asking the card.
     `<span class="sct-game-when">${escapeHtml(when.date)}` +
     (when.time
       ? ` · <span class="sct-game-time">${escapeHtml(when.time)}</span>`
@@ -3667,10 +3729,8 @@ export function renderUpcomingCard(
       : "") +
     `<span class="sct-game-teams">` +
     `<span class="sct-game-opp">` +
-    `<span class="sct-homeaway">${game.homeAway === "home" ? "vs" : "at"}</span> ` +
+    `<span class="sct-homeaway">${sideWord(game)}</span> ` +
     `${escapeHtml(nickname)}</span>` +
-    // The full name under the nickname. The kickoff used to share this line
-    // and now heads the card.
     (opponent
       ? `<span class="sct-game-line"><span class="sct-game-full">${escapeHtml(opponent.fullName)}</span></span>`
       : "") +
@@ -3679,9 +3739,6 @@ export function renderUpcomingCard(
     (where.length
       ? `<p class="sct-game-where">${where.join(" · ")}</p>`
       : "") +
-    // Last, under the logistics: the card states the fixture first and offers
-    // the deeper read once it has. Null for an opponent the pair slug cannot be
-    // built from, which is the same rule the rows below follow.
     (matchupUrl
       ? `<p class="sct-game-cta">` +
         `<a class="sct-textlink" href="${escapeHtml(matchupUrl)}">View matchup ${ARROW}</a>` +
@@ -3692,135 +3749,490 @@ export function renderUpcomingCard(
 }
 
 /**
- * The full season as rows, with the bye slotted into its own week.
+ * The last completed game, as a card beside the upcoming ones on the hub.
  *
- * Inserting the bye is what turns a list of 17 fixtures into a calendar a
- * fantasy manager can read - the week their roster loses a starter is the one
- * week that is not in the fixture list at all.
- *
- * ## The columns are the standalone tool's
- *
- * Wk, Opponent, Date, Result, TV, under a head row that names them: the five
- * the NFL schedule tool's team lens sets, in that order, plus the link out to
- * the pair page that only this table has. Three things came out to pay for it.
- *
- * 1. **The home/away chip is now "vs" / "at" inside the opponent cell.** A
- *    column of its own was the right call while the cell held a bare nickname;
- *    beside a full team name the preposition reads as part of the fixture,
- *    which is what it is, and the column it vacated went to the name.
- * 2. **The venue column is gone.** Seventeen stadium names are the column a
- *    reader scans least and the one that costs the most width, and the three
- *    cards above still name the venue for the games that have not been played.
- * 3. **The DIV / INTL / NEUTRAL pills are gone from the rows.** The division
- *    games are listed in full by the slate card in the rail beside this table,
- *    which is where the standalone tool leaves them too - and the pills were
- *    the first thing the old row dropped when it narrowed anyway.
- *
- * The head row is `aria-hidden`: these are list items with a grid over them,
- * not table cells, so the labels are a legend for the eye and each row states
- * its own fields to a screen reader. That is the source's arrangement as well.
+ * The same shell as renderUpcomingCard() so the four read as one strip; what
+ * differs is the content - the result where the kickoff would be, and the
+ * recap link in place of the matchup preview.
  */
-function renderFullSchedule(
+function renderLastGameCard(
+  team: NflTeam,
+  game: ScheduleGame,
+  record: string,
+  recapUrl: string | null,
+): string {
+  const opponent = game.opponent;
+  const nickname = opponent?.nickname ?? game.opponentName;
+  const where = [
+    gameShortDay(game) !== "TBD" ? escapeHtml(gameShortDay(game)) : "",
+    game.venue ? escapeHtml(game.venue) : "",
+    game.site === "neutral" ? "Neutral site" : "",
+  ].filter(Boolean);
+  return (
+    `<li class="sct-game" data-last="1">` +
+    (opponent
+      ? `<img class="sct-game-mark" src="${escapeHtml(opponent.logo)}" alt=""` +
+        ` aria-hidden="true" width="120" height="120" loading="lazy" decoding="async" />`
+      : "") +
+    `<div class="sct-game-head">` +
+    `<span class="sct-game-label">` +
+    `<span class="sct-game-next">Last game</span>` +
+    `<span class="sct-game-week">${escapeHtml(game.weekLabel)}</span>` +
+    `</span>` +
+    `<span class="sct-game-when">${gameStatusCell(game)}` +
+    `<span class="sct-game-time"> · ${escapeHtml(record)}</span></span>` +
+    `</div>` +
+    `<div class="sct-game-matchup">` +
+    (opponent
+      ? `<img class="sct-game-logo" src="${escapeHtml(opponent.logo)}" alt=""` +
+        ` width="46" height="46" loading="lazy" decoding="async" />`
+      : "") +
+    `<span class="sct-game-teams">` +
+    `<span class="sct-game-opp"><span class="sct-homeaway">${sideWord(game)}</span> ${escapeHtml(nickname)}</span>` +
+    (opponent
+      ? `<span class="sct-game-line"><span class="sct-game-full">${escapeHtml(opponent.fullName)}</span></span>`
+      : "") +
+    `</span>` +
+    `</div>` +
+    (where.length ? `<p class="sct-game-where">${where.join(" · ")}</p>` : "") +
+    (recapUrl
+      ? `<p class="sct-game-cta"><a class="sct-textlink" href="${escapeHtml(recapUrl)}">View recap ${ARROW}</a></p>`
+      : "") +
+    `<span class="sct-visually-hidden">${escapeHtml(`${team.nickname} record after the game: ${record}`)}</span>` +
+    `</li>`
+  );
+}
+
+/* ---------------------------------------------------------------- boards */
+
+type BoardKind = "results" | "remaining";
+
+/**
+ * The cells of one game, in the column order of its board.
+ *
+ * Results: Wk · Opponent · Date · Result · Record · recap link.
+ * Remaining: Wk · Opponent · Date · Time · TV · Venue · matchup link.
+ *
+ * Both boards start the same way - the week and the opponent are what a row
+ * is found by - and part where the facts part: a played game has a score and
+ * a record after it, a game to come has a window, a network and a venue. The
+ * week cell carries the round's name for a postseason game ("Wild Card")
+ * because a week number means nothing there.
+ */
+function scheduleRow(
+  kind: BoardKind,
+  team: NflTeam,
+  game: ScheduleGame,
+  schedule: TeamSchedule,
+  options: TeamRenderOptions,
+  now: number,
+  record: string | null,
+): string {
+  const shown = game.opponent?.fullName ?? game.opponentName;
+  const brief = briefTeamName(game.opponent, shown);
+  // Three spellings, narrowest last: "Seattle Seahawks", "Seahawks", "SEA".
+  // The code is the third tier (mak, 2026-10-20): it is what keeps the row
+  // on one line down to 400px of board instead of stacking at 900px of
+  // window with most of the table still empty.
+  const code = brief && game.opponent ? game.opponent.code.trim() : "";
+  const nameInner = brief
+    ? `<span class="sct-srow-name-long">${escapeHtml(shown)}</span>` +
+      `<span class="sct-srow-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>` +
+      (code && code !== brief
+        ? `<span class="sct-srow-name-code" aria-hidden="true">${escapeHtml(code)}</span>`
+        : "")
+    : escapeHtml(shown);
+  // The opponent's name is a link to its hub (mak's brief, 2026-11-03): a
+  // schedule is a list of 17 other clubs, and every one of them has a page.
+  const hub = teamHubHref(game.opponent, options);
+  const nameCell = hub
+    ? `<a class="sct-srow-name sct-srow-team" href="${escapeHtml(hub)}">${nameInner}</a>`
+    : `<span class="sct-srow-name">${nameInner}</span>`;
+
+  const weekCell =
+    game.seasonType === "post"
+      ? `<span class="sct-srow-week is-round">${escapeHtml(game.weekLabel)}</span>`
+      : `<span class="sct-srow-week">${escapeHtml(`W${game.week}`)}</span>`;
+
+  // "vs" and "at" set in the muted weight the name is not, so the eye lands
+  // on the opponent and the preposition is read second. A neutral site keeps
+  // "vs" and carries its own mark: it is not a home game and the counts in
+  // the rail do not call it one.
+  const side =
+    `<span class="sct-srow-ha" data-kind="${game.site}"` +
+    (game.site === "neutral" ? ` title="Neutral site"` : "") +
+    `>${sideWord(game)}</span>`;
+
+  const opponentCell =
+    `<span class="sct-srow-opp">` +
+    side +
+    (game.opponent
+      ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
+        ` width="22" height="22" loading="lazy" decoding="async" />`
+      : "") +
+    nameCell +
+    // After the name, so a screen reader hears "vs Washington Commanders,
+    // neutral site" rather than the site before the opponent.
+    (game.site === "neutral" ? `<span class="sct-visually-hidden">, neutral site</span>` : "") +
+    `</span>`;
+
+  const dateCell =
+    `<span class="sct-srow-when"${game.dateConfirmed ? "" : ` title="Date and time to be announced by the NFL"`}>` +
+    `${escapeHtml(gameShortDate(game))}</span>`;
+
+  const href = gameMatchupHref(team, game, schedule, options, now);
+  const linkCell = href
+    ? `<a class="sct-textlink sct-srow-view" href="${escapeHtml(href)}">` +
+      `<span class="sct-srow-view-label">${game.status === "final" ? "View recap" : "View matchup"}</span> ${ARROW}</a>`
+    : `<span class="sct-srow-view"></span>`;
+
+  if (kind === "results") {
+    return (
+      `<li class="sct-srow" data-site="${game.site}">` +
+      weekCell +
+      opponentCell +
+      dateCell +
+      gameStatusCell(game) +
+      `<span class="sct-srow-record">${escapeHtml(record ?? "")}</span>` +
+      linkCell +
+      `</li>`
+    );
+  }
+
+  const venue = [
+    game.venue ?? "",
+    game.site === "neutral" ? (game.venueCity ?? "Neutral site") : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    `<li class="sct-srow" data-site="${game.site}">` +
+    weekCell +
+    opponentCell +
+    dateCell +
+    gameStatusCell(game) +
+    (game.network
+      ? networkHtml(game.network, "sct-srow-tv")
+      : // Kept, and empty: the league has not assigned a network to a game it
+        // has not put in a window, and dropping the cell would shift every
+        // column to its right on exactly those rows.
+        `<span class="sct-srow-tv"><span class="sct-srow-tbd">TBD</span></span>`) +
+    `<span class="sct-srow-venue">${escapeHtml(venue)}</span>` +
+    linkCell +
+    `</li>`
+  );
+}
+
+function byeRow(week: number): string {
+  return (
+    `<li class="sct-srow is-bye">` +
+    `<span class="sct-srow-week">${escapeHtml(`W${week}`)}</span>` +
+    // One cell across the rest of the row. The bye is the only row with
+    // nothing to say in the other columns, and filling them with empty spans
+    // drew column rules through the one row that is not a fixture.
+    `<span class="sct-srow-bye">Bye week</span>` +
+    `</li>`
+  );
+}
+
+/**
+ * One board: a head row and its games, in one grid so a column label sits
+ * over the column it names at every width. `data-board` is what team.css
+ * picks the column template by.
+ */
+function renderBoard(kind: BoardKind, rows: string[]): string {
+  const head =
+    kind === "results"
+      ? `<span>Wk</span><span>Opponent</span><span>Date</span><span>Result</span><span>Record</span><span></span>`
+      : `<span>Wk</span><span>Opponent</span><span>Date</span><span>Time</span><span>TV</span><span>Venue</span><span></span>`;
+  return (
+    `<div class="sct-sboard" data-board="${kind}">` +
+    `<div class="sct-slist-head" aria-hidden="true">${head}</div>` +
+    `<ol class="sct-slist">${rows.join("")}</ol>` +
+    `</div>`
+  );
+}
+
+/**
+ * The two boards the season splits into, with the bye slotted into whichever
+ * half its week falls in.
+ *
+ * One list, one pass (splitSchedule), two groups: a game is in exactly one of
+ * them, and the record column is the record AFTER each result, counted in
+ * schedule order so a reader can run a finger down it.
+ */
+function renderSeasonBoards(
   data: TeamPageData,
   options: TeamRenderOptions,
   now: number,
 ): string {
-  const schedule = data.schedule;
+  const { team, schedule } = data;
   if (!schedule) return "";
+  const { results, remaining } = splitSchedule(schedule);
+  const bye = schedule.byeWeek;
+  const lastPlayedWeek = results.length ? (results[results.length - 1] as ScheduleGame).week : 0;
 
-  interface Row {
-    week: number;
-    html: string;
-  }
-  const rows: Row[] = schedule.games.map((game) => {
-    // Both spellings, and team.css picks: the full name everywhere it fits, the
-    // nickname in the band where it does not. The full one is only ever hidden
-    // from the eye, never from a screen reader, which is why the brief one is
-    // the aria-hidden of the pair.
-    const shown = game.opponent?.fullName ?? game.opponentName;
-    const brief = briefTeamName(game.opponent, shown);
-    // Three spellings, narrowest last: "Seattle Seahawks", "Seahawks", "SEA".
-    // The code is the third tier (mak, 2026-10-20): it is what keeps the row
-    // on one line down to 400px of board instead of stacking at 900px of
-    // window with most of the table still empty.
-    const code = brief && game.opponent ? game.opponent.code.trim() : "";
-    const nameCell = brief
-      ? `<span class="sct-srow-name-long">${escapeHtml(shown)}</span>` +
-        `<span class="sct-srow-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>` +
-        (code && code !== brief
-          ? `<span class="sct-srow-name-code" aria-hidden="true">${escapeHtml(code)}</span>`
-          : "")
-      : escapeHtml(shown);
-    return {
-      week: game.week,
-      html:
-        `<li class="sct-srow">` +
-        `<span class="sct-srow-week">${escapeHtml(`W${game.week}`)}</span>` +
-        `<span class="sct-srow-opp">` +
-        // "vs" and "at" set in the muted weight the name is not, so the eye
-        // lands on the opponent and the preposition is read second.
-        `<span class="sct-srow-ha" data-kind="${game.homeAway}">` +
-        `${game.homeAway === "home" ? "vs" : "at"}</span>` +
-        (game.opponent
-          ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
-            ` width="22" height="22" loading="lazy" decoding="async" />`
-          : "") +
-        `<span class="sct-srow-name">${nameCell}</span>` +
-        `</span>` +
-        `<span class="sct-srow-when">${escapeHtml(gameShortDate(game))}</span>` +
-        gameStatusCell(game) +
-        // Its own cell rather than trailing the date. In a table the network is
-        // a column people run their eye down looking for the games they can
-        // watch.
-        (game.network
-          ? networkHtml(game.network, "sct-srow-tv")
-          : // Kept, and empty. ESPN has no network for a game it has not put in
-            // a window yet, and dropping the cell would shift every column to
-            // its right on exactly those rows.
-            `<span class="sct-srow-tv"></span>`) +
-        // The cell is emitted even when there is no pair page to point at -
-        // an opponent this server cannot resolve to a team, which is what a
-        // TBD playoff slot looks like. Dropping it on those rows alone would
-        // leave a five-column row in a six-column table.
-        (gameMatchupHref(data.team, game, schedule, options, now)
-          ? `<a class="sct-textlink sct-srow-view"` +
-            ` href="${escapeHtml(gameMatchupHref(data.team, game, schedule, options, now) ?? "")}">` +
-            // A played game offers its recap, not a matchup preview (mak,
-            // 2026-10-22). Same page either way; the word is what changes.
-            `<span class="sct-srow-view-label">${game.status === "final" ? "View Recap" : "View matchup"}</span> ${ARROW}</a>`
-          : `<span class="sct-srow-view"></span>`) +
-        `</li>`,
-    };
-  });
+  const resultRows = results.map((game) =>
+    scheduleRow("results", team, game, schedule, options, now, recordThrough(schedule.games, game).text),
+  );
+  const remainingRows = remaining.map((game) =>
+    scheduleRow("remaining", team, game, schedule, options, now, null),
+  );
 
-  if (schedule.byeWeek) {
-    rows.push({
-      week: schedule.byeWeek,
-      html:
-        `<li class="sct-srow is-bye">` +
-        `<span class="sct-srow-week">${escapeHtml(`W${schedule.byeWeek}`)}</span>` +
-        // One cell across the rest of the row. The bye is the only row with
-        // nothing to say in five of the six columns, and filling them with
-        // empty spans drew five column rules through the one row that is not a
-        // fixture.
-        `<span class="sct-srow-bye">Bye week</span>` +
-        `</li>`,
-    });
+  // The bye goes where its week falls: among the results once the team has
+  // played past it, otherwise ahead with the games still to come.
+  if (bye) {
+    const row = byeRow(bye);
+    if (bye < lastPlayedWeek) {
+      const at = results.findIndex((game) => game.week > bye);
+      resultRows.splice(at === -1 ? resultRows.length : at, 0, row);
+    } else {
+      const at = remaining.findIndex((game) => game.week > bye);
+      remainingRows.splice(at === -1 ? remainingRows.length : at, 0, row);
+    }
   }
 
-  rows.sort((a, b) => a.week - b.week);
+  const resultsRange = results.length
+    ? results.length === 1
+      ? `Week ${(results[0] as ScheduleGame).week}`
+      : `Weeks ${(results[0] as ScheduleGame).week}–${(results[results.length - 1] as ScheduleGame).week}`
+    : "";
+  const remainingRange = remaining.length
+    ? remaining.length === 1
+      ? `Week ${(remaining[0] as ScheduleGame).week}`
+      : `Weeks ${(remaining[0] as ScheduleGame).week}–${(remaining[remaining.length - 1] as ScheduleGame).week}`
+    : "";
 
-  // The head and the list share one shell and one grid, so a column label sits
-  // over the column it names at every width. The shell moved out of .sct-slist
-  // onto this wrapper for that: a <div> is not allowed inside an <ol>.
+  const resultsBlock =
+    `<div class="sct-sched-block" id="results">` +
+    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Results`)}` +
+    (resultsRange ? `<span class="sct-sched-range">${escapeHtml(resultsRange)}</span>` : "") +
+    `</h2>` +
+    (resultRows.length
+      ? renderBoard("results", resultRows)
+      : `<p class="sct-note">No ${schedule.season} games have been played yet.</p>`) +
+    `</div>`;
+
+  const remainingBlock =
+    `<div class="sct-sched-block" id="remaining-schedule">` +
+    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Remaining Schedule`)}` +
+    (remainingRange ? `<span class="sct-sched-range">${escapeHtml(remainingRange)}</span>` : "") +
+    `</h2>` +
+    (remainingRows.length
+      ? renderBoard("remaining", remainingRows)
+      : `<p class="sct-note">The ${schedule.season} regular season is complete.</p>`) +
+    `</div>`;
+
+  // Results first while the season is on; once it is over there is nothing
+  // remaining and the results are the whole page. Before it starts the
+  // remaining board is the schedule and the empty results block waits below.
+  return results.length ? resultsBlock + remainingBlock : remainingBlock + resultsBlock;
+}
+
+/**
+ * The postseason, only for a club that has one.
+ *
+ * The same rows as the season boards - a played round carries its result and
+ * a round to come its window - under the round's name in the week column. An
+ * empty postseason renders nothing: no club gets a playoff heading it has
+ * not earned.
+ */
+function renderPostseasonBoard(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+  now: number,
+): string {
+  const { team, postseason } = data;
+  if (!postseason || postseason.games.length === 0) return "";
+  const { results, remaining } = splitSchedule(postseason);
+  const blocks: string[] = [];
+  if (results.length) {
+    blocks.push(
+      renderBoard(
+        "results",
+        results.map((game) =>
+          scheduleRow("results", team, game, postseason, options, now, recordThrough(postseason.games, game).text),
+        ),
+      ),
+    );
+  }
+  if (remaining.length) {
+    blocks.push(
+      renderBoard(
+        "remaining",
+        remaining.map((game) => scheduleRow("remaining", team, game, postseason, options, now, null)),
+      ),
+    );
+  }
   return (
-    `<div class="sct-sboard">` +
-    `<div class="sct-slist-head" aria-hidden="true">` +
-    `<span>Wk</span><span>Opponent</span><span>Date</span>` +
-    `<span>Result</span><span>TV</span><span></span>` +
-    `</div>` +
-    `<ol class="sct-slist">${rows.map((row) => row.html).join("")}</ol>` +
+    `<div class="sct-sched-block" id="postseason-schedule">` +
+    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Postseason Schedule`)}</h2>` +
+    blocks.join("") +
     `</div>`
+  );
+}
+
+/* --------------------------------------------------------- next and last */
+
+/**
+ * "Updated Nov 3" - the schedule's own refresh time, never the request's.
+ *
+ * The stamp is the later of the slate fetch and the live layer's last
+ * successful sweep (TeamSchedule.updatedAtMs). A page served from cache
+ * carries the stamp of the data it was rendered from, which is the honest
+ * answer to "how fresh is this".
+ */
+function updatedStamp(ms: number): string {
+  if (!ms) return "";
+  const parts = easternParts(ms);
+  return (
+    `<span class="sct-sched-updated">Updated ` +
+    `<time datetime="${escapeHtml(new Date(ms).toISOString())}">${escapeHtml(`${parts.month} ${parts.day}`)}</time>` +
+    `</span>`
+  );
+}
+
+/**
+ * The line under the H1: season, record, division, bye, freshness.
+ *
+ * Every figure is read from the schedule rows below it - the record is the
+ * finals added up, not ESPN's standings line - so the line cannot say 3-5
+ * over a board that shows four wins.
+ */
+function scheduleContext(data: TeamPageData): string {
+  const { team, schedule } = data;
+  if (!schedule) return "";
+  const record = recordThrough(schedule.games);
+  const parts = [
+    `${schedule.season} NFL season`,
+    record.played ? record.text : "",
+    team.division,
+    schedule.byeWeek ? `Bye Week ${schedule.byeWeek}` : "",
+  ]
+    .filter(Boolean)
+    .map((part) => `<span>${escapeHtml(part)}</span>`);
+  const stamp = updatedStamp(schedule.updatedAtMs);
+  if (stamp) parts.push(stamp);
+  return `<p class="sct-sched-context">${parts.join(`<span class="sct-sched-dot" aria-hidden="true">·</span>`)}</p>`;
+}
+
+/**
+ * The next game and the last result, as one compact module above the boards.
+ *
+ * Opponent, site, date, kickoff, network, venue and the matchup link - the
+ * seven things a "next game" search is for - and beside them the last
+ * result with the record after it and the recap link. NFL.com's own team
+ * page makes exactly this pair, and it is the right size: one block, two
+ * cells, nothing that the boards below do not also hold.
+ *
+ * The label moves with the game: Upcoming -> Today's Game -> Live Now ->
+ * (final lands, the game moves to the Last cell) -> the next one. "Today"
+ * is said only on the day.
+ */
+function renderNextGameModule(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+  now: number,
+): string {
+  const { team, schedule } = data;
+  if (!schedule) return "";
+  const next = nextGame(schedule, now);
+  const last = lastResult(schedule);
+  if (!next && !last) return "";
+
+  const fixtureSide = (club: NflTeam | null, name: string, isTeam: boolean): string =>
+    (club
+      ? `<img class="sct-ng-logo" src="${escapeHtml(club.logo)}" alt="" width="28" height="28" loading="lazy" decoding="async" />`
+      : "") +
+    (club && !isTeam
+      ? (() => {
+          const href = teamHubHref(club, options);
+          return href
+            ? `<a class="sct-ng-team" href="${escapeHtml(href)}">${escapeHtml(name)}</a>`
+            : `<span class="sct-ng-team">${escapeHtml(name)}</span>`;
+        })()
+      : `<span class="sct-ng-team is-team">${escapeHtml(name)}</span>`);
+
+  let nextCell = "";
+  if (next) {
+    const when = gameDateLine(next);
+    const opponentName = next.opponent?.fullName ?? next.opponentName;
+    // Away at home, as a scoreboard reads; a neutral site puts this team
+    // first and says "vs".
+    const fixture =
+      next.site === "home"
+        ? fixtureSide(next.opponent, opponentName, false) +
+          `<span class="sct-ng-at">at</span>` +
+          fixtureSide(team, team.fullName, true)
+        : next.site === "away"
+          ? fixtureSide(team, team.fullName, true) +
+            `<span class="sct-ng-at">at</span>` +
+            fixtureSide(next.opponent, opponentName, false)
+          : fixtureSide(team, team.fullName, true) +
+            `<span class="sct-ng-at">vs</span>` +
+            fixtureSide(next.opponent, opponentName, false);
+    const detail =
+      next.status === "live" && next.statusDetail
+        ? `<span class="sct-ng-live">${escapeHtml(next.statusDetail)}</span>`
+        : "";
+    const whenParts = [
+      escapeHtml(when.date),
+      when.time ? escapeHtml(when.time) : "",
+      next.network ? networkHtml(next.network, "sct-ng-tv") : next.status === "scheduled" ? `<span class="sct-ng-tbd">TV TBD</span>` : "",
+    ].filter(Boolean);
+    const venueParts = [
+      next.venue ? escapeHtml(next.venue) : "",
+      next.site === "neutral"
+        ? escapeHtml(next.venueCity ? `${next.venueCity} · Neutral site` : "Neutral site")
+        : next.international && next.venueCity
+          ? escapeHtml(next.venueCity)
+          : "",
+    ].filter(Boolean);
+    const href = gameMatchupHref(team, next, schedule, options, now);
+    nextCell =
+      `<div class="sct-ng-cell" data-kind="next">` +
+      `<p class="sct-ng-label">${escapeHtml(nextGameLabel(next, now))}` +
+      `<span class="sct-ng-week">${escapeHtml(next.weekLabel)}</span>${detail}</p>` +
+      `<p class="sct-ng-fixture">${fixture}</p>` +
+      `<p class="sct-ng-when">${whenParts.join(`<span class="sct-sched-dot" aria-hidden="true">·</span>`)}</p>` +
+      (venueParts.length ? `<p class="sct-ng-venue">${venueParts.join(" · ")}</p>` : "") +
+      (href
+        ? `<p class="sct-ng-cta"><a class="sct-textlink" href="${escapeHtml(href)}">View matchup ${ARROW}</a></p>`
+        : "") +
+      `</div>`;
+  }
+
+  let lastCell = "";
+  if (last?.result) {
+    const record = recordThrough(schedule.games, last).text;
+    const opponentName = last.opponent?.nickname ?? last.opponentName;
+    const href = gameMatchupHref(team, last, schedule, options, now);
+    lastCell =
+      `<div class="sct-ng-cell" data-kind="last">` +
+      `<p class="sct-ng-label">Last Game<span class="sct-ng-week">${escapeHtml(last.weekLabel)}</span></p>` +
+      `<p class="sct-ng-score">${gameStatusCell(last)}` +
+      `<span class="sct-ng-opp">${sideWord(last)} ` +
+      (last.opponent
+        ? `<img class="sct-ng-logo is-small" src="${escapeHtml(last.opponent.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />`
+        : "") +
+      `${escapeHtml(opponentName)}</span></p>` +
+      `<p class="sct-ng-when">${escapeHtml(gameShortDay(last))}` +
+      `<span class="sct-sched-dot" aria-hidden="true">·</span>` +
+      `<span>${escapeHtml(`Record ${record}`)}</span></p>` +
+      (href
+        ? `<p class="sct-ng-cta"><a class="sct-textlink" href="${escapeHtml(href)}">View recap ${ARROW}</a></p>`
+        : "") +
+      `</div>`;
+  }
+
+  return (
+    `<section class="sct-nextgame-module${nextCell && lastCell ? "" : " is-single"}" aria-label="${escapeHtml(
+      `${team.nickname} next game and last result`,
+    )}">` +
+    nextCell +
+    lastCell +
+    `</section>`
   );
 }
 
@@ -3831,30 +4243,14 @@ function renderFullSchedule(
  *
  * The four cards the standalone NFL schedule tool puts in its team lens
  * sidebar, brought onto the hub's Schedule tab in the same rail: the season in
- * five numbers with the home/road split, the path through it, the division
+ * figures with the home/road/neutral split, the path through it, the division
  * slate, and where the rest of the opponents come from. Everything is
  * arithmetic on the rows to the left - team/season-shape.ts does the counting
  * and states what it refuses to infer.
  *
- * ## Dress
- *
  * House components, not the source's: `.sct-mix` is the card, `.sct-mix-label`
- * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the ladder's
- * geometry. The one thing carried over intact is the color logic - home takes
- * the team's own primary, away takes the gold - because that is the pair
- * `.sct-mix-seg` already uses one tab over for the pass/run split, and two
- * different meanings for the same two colors on one page is worse than either
- * choice.
- *
- * The five figures are plain `<dt>`/`<dd>` pairs inside the snapshot card
- * rather than the `.sct-tile` cards they were when this was a full-width band.
- * A 300px rail cannot hold five bordered cards, and a card inside a card is not
- * a thing this design system does at any width.
- *
- * The bye week appears here as well as in the hero chip and as a row in the
- * table. That is a repeat, and a deliberate one: the hero states it as a fact
- * about the club, the table as a week with no fixture, and this as a position
- * in the season the four cards are describing.
+ * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the
+ * ladder's geometry.
  */
 function renderSeasonShape(
   data: TeamPageData,
@@ -3870,24 +4266,28 @@ function renderSeasonShape(
     ["Games", String(shape.total)],
     ["Home", String(shape.home)],
     ["Away", String(shape.away)],
+    // Only when there is one: a "Neutral 0" cell on thirty clubs' pages is a
+    // figure about nothing. When there is one it is the figure that stops
+    // the home and away counts adding up to a lie.
+    ...(shape.neutral ? ([["Neutral", String(shape.neutral)]] as Array<[string, string]>) : []),
     ["Division", String(shape.division)],
+    ["Remaining", String(shape.remaining)],
     // "TBD", not a guess: schedule.ts returns null for a bye it cannot
     // establish, and a wrong bye is the one number on this card a fantasy
-    // manager would act on. "W7" rather than "Week 7" because the table's own
-    // week column now reads "W7" too.
+    // manager would act on.
     ["Bye week", shape.bye ? `W${shape.bye}` : "TBD"],
   ];
 
-  // Home against road, on the ladder's track. The pair is the only thing on the
-  // card that is a proportion rather than a count, which is why it is drawn
-  // rather than left as two of the five figures above it.
-  const splitMax = Math.max(shape.home, shape.away, 1);
-  const split = (["home", "away"] as const)
+  // Home against road (against neutral), on the ladder's track.
+  const kinds = (["home", "away", ...(shape.neutral ? ["neutral"] : [])] as const);
+  const splitMax = Math.max(shape.home, shape.away, shape.neutral, 1);
+  const split = kinds
     .map((kind) => {
-      const value = kind === "home" ? shape.home : shape.away;
+      const value = kind === "home" ? shape.home : kind === "away" ? shape.away : shape.neutral;
+      const label = kind === "home" ? "Home" : kind === "away" ? "Away" : "Neutral";
       return (
         `<div class="sct-shape-bar" data-kind="${kind}">` +
-        `<dt class="sct-shape-bar-label">${kind === "home" ? "Home" : "Away"}</dt>` +
+        `<dt class="sct-shape-bar-label">${label}</dt>` +
         `<dd class="sct-shape-bar-body">` +
         `<span class="sct-shape-bar-track" aria-hidden="true">` +
         `<span class="sct-shape-bar-fill" style="${escapeHtml(
@@ -3903,9 +4303,7 @@ function renderSeasonShape(
 
   const snapshotCard =
     `<div class="sct-mix" data-kind="snapshot">` +
-    `<p class="sct-mix-label">${escapeHtml(
-      `${shape.season} season snapshot`,
-    )}</p>` +
+    `<p class="sct-mix-label">${escapeHtml(`${shape.season} season snapshot`)}</p>` +
     `<dl class="sct-snap">` +
     figures
       .map(
@@ -3920,11 +4318,10 @@ function renderSeasonShape(
     `<dl class="sct-shape-bars sct-snap-bars">${split}</dl>` +
     `</div>`;
 
-  // Eighteen weeks as eighteen blocks, and no number in them: filled for home,
-  // hollow for away, dashed for the bye, which is the source's strip exactly.
-  // At the rail's twelve pixels a week there is nowhere to put a number anyway.
-  // Never color alone - every block carries its week and its opponent in a
-  // title and in a hidden label.
+  // Eighteen weeks as eighteen blocks: filled for home, hollow for away,
+  // half-filled for a neutral site, dashed for the bye. Never color alone -
+  // every block carries its week and its opponent in a title and in a hidden
+  // label.
   const strip =
     `<ol class="sct-path">` +
     shape.marks
@@ -3962,13 +4359,14 @@ function renderSeasonShape(
     `<p class="sct-mix-legend" aria-hidden="true">` +
     `<span class="sct-mix-key" data-kind="home">Home</span>` +
     `<span class="sct-mix-key" data-kind="away">Away</span>` +
+    (shape.neutral ? `<span class="sct-mix-key" data-kind="neutral">Neutral</span>` : "") +
     `<span class="sct-mix-key" data-kind="bye">Bye</span>` +
     `</p>` +
     segments +
-    `<p class="sct-shape-take">${escapeHtml(shape.takeaway.title)}</p>` +
-    `<p class="sct-mix-caption">${escapeHtml(shape.takeaway.body)}</p>` +
     `</div>`;
 
+  // The division slate, each meeting with its result or its date (mak's
+  // brief, 2026-11-03), read from the same row the board prints.
   const slateRows = shape.slate
     .map((game) => {
       const fixture = schedule.games.find(
@@ -3980,6 +4378,11 @@ function renderSeasonShape(
       const name = href
         ? `<a class="sct-slate-link" href="${escapeHtml(href)}">${escapeHtml(game.name)}</a>`
         : escapeHtml(game.name);
+      const status = fixture
+        ? fixture.result
+          ? gameStatusCell(fixture)
+          : `<span class="sct-slate-when">${escapeHtml(gameShortDate(fixture))}</span>`
+        : "";
       return (
         `<li class="sct-slate-row">` +
         `<span class="sct-slate-week">${escapeHtml(`W${game.week}`)}</span>` +
@@ -3987,7 +4390,8 @@ function renderSeasonShape(
           ? `<img class="sct-slate-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
             ` width="20" height="20" loading="lazy" decoding="async" />`
           : `<span class="sct-slate-logo"></span>`) +
-        `<span class="sct-slate-name">${game.atHome ? "vs " : "at "}${name}</span>` +
+        `<span class="sct-slate-name">${game.site === "away" ? "at " : "vs "}${name}</span>` +
+        `<span class="sct-slate-status">${status}</span>` +
         `</li>`
       );
     })
@@ -3999,7 +4403,10 @@ function renderSeasonShape(
     (shape.slate.length
       ? `<ul class="sct-slate">${slateRows}</ul>` +
         `<p class="sct-mix-caption">${escapeHtml(
-          `${shape.slateHome} home · ${shape.slateAway} away`,
+          `${shape.slateHome} home · ${shape.slateAway} away` +
+            (shape.slate.length - shape.slateHome - shape.slateAway
+              ? ` · ${shape.slate.length - shape.slateHome - shape.slateAway} neutral`
+              : ""),
         )}</p>`
       : `<p class="sct-mix-caption">No division games scheduled.</p>`) +
     `</div>`;
@@ -4052,18 +4459,118 @@ function renderSeasonShape(
   );
 }
 
+/**
+ * "More <team>": the club's other pages, as plain links under the schedule.
+ *
+ * The tab strip already links them; this is the same set in the body, where
+ * a reader at the bottom of a long page is, and where a crawler finds them
+ * without reading a nav.
+ */
+function renderMoreLinks(team: NflTeam, options: TeamRenderOptions): string {
+  const prefix = options.teamPathPrefix ?? "/team/";
+  const query = options.linkQuery ?? "";
+  const links: Array<[string, string]> = [
+    [sectionPath(prefix, team.slug, HUB_SECTION) + query, `${team.fullName} team page`],
+    [sectionPath(prefix, team.slug, "depth-chart") + query, "Depth chart"],
+    [sectionPath(prefix, team.slug, "stats") + query, "Team stats"],
+    [sectionPath(prefix, team.slug, "usage") + query, "Usage report"],
+    [sectionPath(prefix, team.slug, "news") + query, "News and injuries"],
+  ];
+  const full = getTeamScheduleUrl(team);
+  return (
+    `<nav class="sct-sched-more" aria-label="${escapeHtml(`More ${team.nickname}`)}">` +
+    h2(`More ${team.nickname}`, "is-sub") +
+    `<ul class="sct-sched-more-list">` +
+    links
+      .map(
+        ([href, label]) =>
+          `<li><a class="sct-textlink" href="${escapeHtml(href)}">${escapeHtml(label)} ${ARROW}</a></li>`,
+      )
+      .join("") +
+    (full ? `<li>${siteLink(full, `Full NFL schedule ${ARROW}`, "sct-textlink")}</li>` : "") +
+    `</ul>` +
+    `</nav>`
+  );
+}
+
+/**
+ * The hub's compact schedule: last game, next game, the two after, and the
+ * way to the whole thing.
+ *
+ * This is all the schedule the hub carries (mak, 2026-11-03). The full
+ * boards, the rail, the pair index and the questions live at /schedule/,
+ * which is the page that owns schedule searches; the hub owning a second
+ * copy made the two compete.
+ */
+function renderSchedulePreview(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+  now: number,
+): string {
+  const { team, schedule } = data;
+  if (!schedule) return "";
+  const last = lastResult(schedule);
+  const upcoming = schedule.games.filter((game) => !(game.status === "final" && game.result)).slice(0, 3);
+  const prefix = options.teamPathPrefix ?? "/team/";
+  const fullHref = sectionPath(prefix, team.slug, "schedule") + (options.linkQuery ?? "");
+
+  const cards: string[] = [];
+  if (last) {
+    cards.push(
+      renderLastGameCard(
+        team,
+        last,
+        recordThrough(schedule.games, last).text,
+        gameMatchupHref(team, last, schedule, options, now),
+      ),
+    );
+  }
+  upcoming.forEach((game, i) => {
+    cards.push(
+      renderUpcomingCard(
+        game,
+        i,
+        gameMatchupHref(team, game, schedule, options, now),
+        nextGameLabel(game, now).replace(/ Game$/, " game").replace(/^Live Now$/, "Live now"),
+      ),
+    );
+  });
+
+  return (
+    h2(`${team.nickname} Schedule`) +
+    scheduleContext(data) +
+    networkDefs(upcoming.map((game) => game.network)) +
+    (cards.length
+      ? `<ul class="sct-games is-preview">${cards.join("")}</ul>`
+      : `<p class="sct-note">No ${schedule.season} games are on the slate yet.</p>`) +
+    `<p class="sct-block-footer">` +
+    `<a class="sct-textlink" href="${escapeHtml(fullHref)}">${escapeHtml(`View full ${team.fullName} schedule`)} ${ARROW}</a>` +
+    `</p>`
+  );
+}
+
+/**
+ * The Schedule page, or the hub's preview of it.
+ *
+ * "full" is the page at /<slug>/schedule/, in the order a schedule search
+ * wants it: the heading and its context line, the next game, the results
+ * board, the remaining board, the postseason if there is one, then the rail
+ * of season figures, the pair index and the club's other pages. The questions
+ * render as the section's tail. "preview" is what the hub carries instead.
+ */
 function renderSchedule(
   data: TeamPageData,
   options: TeamRenderOptions,
   now: number,
   faq: FaqSink,
   tail: TailSink,
+  mode: "full" | "preview",
 ): string {
   const { team, schedule } = data;
 
   if (!schedule) {
     return (
-      h2(`${data.state.season} ${team.nickname} Schedule`) +
+      h2(`${team.fullName} Schedule`) +
       `<div class="sct-empty">` +
       `<p class="sct-empty-title">Schedule information is temporarily unavailable.</p>` +
       `<p class="sct-empty-body">It will reappear here as soon as the fixture data loads.</p>` +
@@ -4071,24 +4578,20 @@ function renderSchedule(
     );
   }
 
-  const next = upcomingGames(schedule, now, 3);
-  const full = getTeamScheduleUrl(team);
+  if (mode === "preview") return renderSchedulePreview(data, options, now);
 
-  // The table and the four summary cards side by side, as the standalone tool's
-  // team lens lays them out: the fixtures in the fluid column, a 300px rail of
-  // cards whose first one starts level with the head row. The cards fall under
-  // the table as a band once the rail stops paying for itself - see team.css.
-  //
-  // Not a grid when there is no shape to put in the rail. seasonShape() returns
-  // null for a schedule that rendered no rows, and a two-column layout with an
-  // empty second column would take 300px off the table for nothing.
+  // The boards and the four summary cards side by side, as the standalone
+  // tool's team lens lays them out: the fixtures in the fluid column, a 300px
+  // rail of cards. The cards fall under the boards as a band once the rail
+  // stops paying for itself - see team.css.
   const shape = renderSeasonShape(data, options, now);
+  const boards = renderSeasonBoards(data, options, now) + renderPostseasonBoard(data, options, now);
   const board = shape
     ? `<div class="sct-sched-grid">` +
-      `<div class="sct-sched-main">${renderFullSchedule(data, options, now)}</div>` +
+      `<div class="sct-sched-main">${boards}</div>` +
       shape +
       `</div>`
-    : renderFullSchedule(data, options, now);
+    : boards;
 
   // Below the tools block with the other tabs' questions, and assigned after
   // the early return above: a team whose fixtures did not load carries no
@@ -4097,31 +4600,20 @@ function renderSchedule(
     faqList(scheduleFaq({ team, schedule, now }), faq, "h3"),
   );
 
+  const networks = [
+    ...schedule.games.map((game) => game.network),
+    ...(data.postseason?.games.map((game) => game.network) ?? []),
+  ];
+
   return (
-    h2(`${schedule.season} ${team.nickname} Schedule`) +
-    networkDefs(schedule.games.map((game) => game.network)) +
-    // The upcoming cards carry no label of their own. The bye note and the
-    // "Next N games" eyebrow that used to sit here were both removed: the cards
-    // state their own dates, and the bye is already a row in the full schedule
-    // below, so both lines only repeated what the block already shows.
-    (next.length
-      ? `<ul class="sct-games">${next
-          .map((game, i) =>
-            renderUpcomingCard(game, i, matchupHref(team, game.opponent, options)),
-          )
-          .join("")}</ul>`
-      : "") +
+    h2(`${team.fullName} Schedule`) +
+    scheduleContext(data) +
+    networkDefs(networks) +
+    renderNextGameModule(data, options, now) +
     board +
     // Every opponent, not just this season's: see renderSeriesIndex().
     renderSeriesIndex(team, options) +
-    (full
-      ? `<p class="sct-block-footer">` +
-        // "View full NFL schedule", not "See the full 2026 schedule": the
-        // heading above already carries the season and the team, and the depth
-        // chart's footer three tabs over now reads the same way.
-        siteLink(full, `View full NFL schedule ${ARROW}`, "sct-textlink") +
-        `</p>`
-      : "")
+    renderMoreLinks(team, options)
   );
 }
 
@@ -4134,6 +4626,34 @@ function renderSchedule(
  * whose tab is open and hides the rest, using the same :target / .is-active
  * pair the panels themselves switch on.
  */
+/**
+ * Whether a section's content belongs to an address other than the hub's.
+ *
+ * True for the sections in PUBLIC_SECTIONS that are neither the hub itself nor
+ * carried on it as a hash tab or a preview: Usage, Stats, News, the Depth
+ * Chart and Matchups. Each of those is a page of its own, with its own title,
+ * description, canonical and sitemap entry - so the hub does not print it.
+ *
+ * It used to. Every section rendered into the hub's HTML and CSS hid all but
+ * one, which made `/<slug>/` a document that contained, in full, the semantic
+ * content of four other indexable URLs: the Stats tables, the Usage report,
+ * the news archive and the depth chart, each duplicated under the hub's
+ * address and each describing itself in the hub's FAQPage. The hub now ships
+ * what is its own - the Outlook, the hub-only panels and the schedule preview
+ * - plus the shared shell: the hero and the section strip, whose links still
+ * name every address. A reader clicking Stats loads the Stats page, which is
+ * what the link always said it did; client/team.ts prefetches it on intent so
+ * that load is warm.
+ */
+function ownsAddress(section: Section): boolean {
+  return (
+    section.id !== HUB_SECTION &&
+    section.hash !== true &&
+    section.previewOnHub !== true &&
+    (PUBLIC_SECTIONS as readonly string[]).includes(section.id)
+  );
+}
+
 function renderTails(sections: Section[]): string {
   return sections
     .filter((section) => section.tail)
@@ -4168,7 +4688,7 @@ function renderResources(
 ): string {
   const { team } = data;
   const prefix = options.teamPathPrefix ?? "/team/";
-  const next = data.schedule ? upcomingGames(data.schedule, now, 1)[0] : undefined;
+  const next = nextGame(data.schedule, now);
   const preview = next ? matchupHref(team, next.opponent, options) : null;
   // The Usage tab closes on its own conversion block ("Put this usage data
   // to work"), so the shared one is hidden there by team.css and left out of
@@ -4228,7 +4748,9 @@ export function renderTeamPage(
   // URL emits one panel and its schema must describe that panel alone. The
   // sections still all render - the tab strip is built from what produced
   // markup - so a single sink would put the Stats questions in the Schedule
-  // page's FAQPage, which is markup saying something the page does not.
+  // page's FAQPage, which is markup saying something the page does not. The
+  // hub's FAQPage is the same rule from the other side: only the questions of
+  // the panels the hub actually prints (see ownsAddress).
   // Concatenated in section order below, which is the render order the
   // page-level FAQPage already had.
   const outlookFaq: FaqSink = [];
@@ -4248,10 +4770,10 @@ export function renderTeamPage(
     data.roster?.players ?? null,
   );
   // The report's matchup handoffs point at the next game's page.
-  const nextGame = data.schedule ? upcomingGames(data.schedule, now, 1)[0] : undefined;
-  const nextHref = nextGame ? matchupHref(team, nextGame.opponent, options) : null;
+  const upNext = nextGame(data.schedule, now);
+  const nextHref = upNext ? matchupHref(team, upNext.opponent, options) : null;
   const usage = renderUsageSection(usageView, team, {
-    matchup: nextHref && nextGame?.opponent ? { href: nextHref, opponent: nextGame.opponent.nickname } : null,
+    matchup: nextHref && upNext?.opponent ? { href: nextHref, opponent: upNext.opponent.nickname } : null,
   });
   const teamCoaching = getTeamCoaching(team.abbreviation, data.state.season);
   const coaching = renderCoachingSection(teamCoaching, team, usageView);
@@ -4298,7 +4820,16 @@ export function renderTeamPage(
   const contractsFaqItems = contracts && contractsView ? contractsFaq(team, contractsView) : [];
   const draftTail = renderFaqBlock(`${team.fullName} Draft Picks & History FAQ`, draftFaqItems, "sct-dr-faq");
   const contractsTail = renderFaqBlock(`${team.fullName} Contracts & Salary Cap FAQ`, contractsFaqItems, "sct-ct-faq");
-  const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);
+  // The whole schedule only on its own address; the hub gets the preview
+  // (last game, next game, the two after) and a link to the page.
+  const schedule = renderSchedule(
+    data,
+    options,
+    now,
+    scheduleFaqItems,
+    scheduleTail,
+    options.section === "schedule" ? "full" : "preview",
+  );
   const matchups = renderMatchups(data, options, now);
 
   // Built from what actually rendered: a section that produced no markup is not
@@ -4359,6 +4890,7 @@ export function renderTeamPage(
       html: schedule,
       faq: scheduleFaqItems,
       tail: scheduleTail.html,
+      previewOnHub: true,
     },
     { id: "matchups", label: "Matchups", html: matchups, hubTab: false },
   ].filter((section) => section.html !== "");
@@ -4429,16 +4961,22 @@ export function renderTeamPage(
     );
   }
 
+  // The panels the hub prints: its own section, the hub-only hash tabs and
+  // the schedule preview. A section that owns an address is a tab here and a
+  // panel only at that address (ownsAddress) - the strip above still links to
+  // it, so the hub's navigation is whole while its content is its own.
+  const panels = tabs.filter((section) => !ownsAddress(section));
+
   // `is-default` marks the panel that shows when the URL names no section. It
   // is a class rather than :first-of-type because the CSS must not depend on
   // this element being the first <section> among its siblings - the hero and
   // the resources block are sections too, and a reorder here would silently
   // blank the page rather than fail visibly.
-  // The hub's FAQPage: every section's questions, in the order the sections
-  // appear, which is the order their questions appear in the document.
-  const faq: FaqSink = tabs.flatMap((section) => section.faq ?? []);
+  // The hub's FAQPage: every printed panel's questions, in the order the
+  // panels appear, which is the order their questions appear in the document.
+  const faq: FaqSink = panels.flatMap((section) => section.faq ?? []);
 
-  const body = tabs
+  const body = panels
     .map(
       (section, i) =>
         `<section class="sct-section${i === 0 ? " is-default is-active" : ""}"` +
@@ -4459,7 +4997,7 @@ export function renderTeamPage(
     renderHero(data, options) +
     renderNav(tabs, team, data.state.season, options) +
     body +
-    renderTails(tabs) +
+    renderTails(panels) +
     // After the sections, because it describes them: `faq` is only complete
     // once every block above has had its chance to render.
     faqSchema(faq, options) +
