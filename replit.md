@@ -54,7 +54,20 @@ _Replace the heading above with the project's name, and this line with one sente
   deployment's Logs pane what happened. Plugin 1.10.41 completes it on the
   WordPress side: when `/embed/assets.json` does not answer, the stylesheets
   are enqueued with the last hash the API gave (kept a week) for one minute,
-  not the plugin's own version for fifteen.
+  not the plugin's own version for fifteen. Since 2026-11-03 the fourth thing
+  is the live-site warm crawl, `lib/live-warm.ts` (`SC_LIVE_WARM`, production
+  default on): four minutes after boot, and only once the public origin's
+  `/embed/assets.json` reports this build (up to ten checks a minute apart,
+  the edge pre-fetch's guard, since a crawl of the previous build would fill
+  WordPress's page cache with its markup), it runs `scripts/warm-live.mjs` as
+  a child: the page sitemaps' team URLs (every tab) then the player hub pages
+  through statchasers.com, one request every 1.6 s (the site's rate limit),
+  so the page and fragment caches hold a render before a visitor asks; 864
+  pages take ~23 min, `[live-warm]` lines on stderr. `pnpm warm-live` runs the
+  same crawl from the workspace after any publish (`--teams-only`,
+  `--all-tabs`, `--limit`, `--verbose`). The 2026-11-02 publish measured the
+  problem it solves: cold Usage/Stats pages 8-16 s in the first ten minutes,
+  2-3 s after, 0.1 s once something had asked for the page.
 - Required env: `DATABASE_URL` - Postgres connection string (the news archive),
   `DYNASTY_NEWS_API_URL` - upstream feed. **Both must be set on the deployment,
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the
