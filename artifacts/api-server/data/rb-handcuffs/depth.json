@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-02T14:21:14.255Z",
+  "generated_at": "2026-11-04T13:23:16.207Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -7,13 +7,13 @@
   "teams": {
     "ARI": {
       "rb1": "Tyler Allgeier",
-      "rb2": "Jeremiyah Love",
-      "rb3": "Bam Knight"
+      "rb2": "Bam Knight",
+      "rb3": "Evan Hull"
     },
     "ATL": {
       "rb1": "Bijan Robinson",
       "rb2": "Brian Robinson Jr.",
-      "rb3": "Khalil Herbert"
+      "rb3": null
     },
     "BAL": {
       "rb1": "Derrick Henry",
@@ -53,7 +53,7 @@
     "DEN": {
       "rb1": "Jonah Coleman",
       "rb2": "J.K. Dobbins",
-      "rb3": "Cody Schrader"
+      "rb3": null
     },
     "DET": {
       "rb1": "Jahmyr Gibbs",
@@ -108,7 +108,7 @@
     "MIN": {
       "rb1": "Jordan Mason",
       "rb2": "Aaron Jones SR.",
-      "rb3": "DeeJay Dallas"
+      "rb3": "Demond Claiborne"
     },
     "NE": {
       "rb1": "Rhamondre Stevenson",
@@ -132,8 +132,8 @@
     },
     "PHI": {
       "rb1": "Saquon Barkley",
-      "rb2": "Elijah Mitchell",
-      "rb3": "Jaydon Blue"
+      "rb2": "Jaydon Blue",
+      "rb3": null
     },
     "PIT": {
       "rb1": "Jaylen Warren",
@@ -142,8 +142,8 @@
     },
     "SEA": {
       "rb1": "Zach Charbonnet",
-      "rb2": "Emanuel Wilson",
-      "rb3": "George Holani"
+      "rb2": "Jadarian Price",
+      "rb3": "Emanuel Wilson"
     },
     "SF": {
       "rb1": "Christian McCaffrey",
@@ -163,7 +163,7 @@
     "WAS": {
       "rb1": "Rachaad White",
       "rb2": "Austin Ekeler",
-      "rb3": "Jeremy McNichols"
+      "rb3": "Robert Henry Jr."
     }
   },
   "players": {
@@ -212,7 +212,7 @@
       "team": "JAX",
       "sleeperId": "12490",
       "age": 23,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "bijan robinson": {
@@ -244,7 +244,7 @@
       "team": "NYJ",
       "sleeperId": "8155",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "brian robinson": {
@@ -252,7 +252,7 @@
       "team": "ATL",
       "sleeperId": "8154",
       "age": 27,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "bucky irving": {
@@ -284,7 +284,7 @@
       "team": "JAX",
       "sleeperId": "10219",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "christian mccaffrey": {
@@ -308,15 +308,7 @@
       "team": "NO",
       "sleeperId": "13277",
       "age": 22,
-      "injuryStatus": "Out",
-      "status": "Active"
-    },
-    "cody schrader": {
-      "name": "Cody Schrader",
-      "team": "DEN",
-      "sleeperId": "11644",
-      "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "corey kiner": {
@@ -348,7 +340,7 @@
       "team": "HOU",
       "sleeperId": "5892",
       "age": 29,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "dean connors": {
@@ -356,14 +348,14 @@
       "team": "LAR",
       "sleeperId": "13315",
       "age": 23,
-      "injuryStatus": null,
-      "status": "Active"
+      "injuryStatus": "IR",
+      "status": "Inactive"
     },
-    "deejay dallas": {
-      "name": "DeeJay Dallas",
+    "demond claiborne": {
+      "name": "Demond Claiborne",
       "team": "MIN",
-      "sleeperId": "6931",
-      "age": 28,
+      "sleeperId": "13347",
+      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -407,14 +399,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "elijah mitchell": {
-      "name": "Elijah Mitchell",
-      "team": "PHI",
-      "sleeperId": "7561",
-      "age": 28,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "emanuel wilson": {
       "name": "Emanuel Wilson",
       "team": "SEA",
@@ -431,10 +415,10 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "george holani": {
-      "name": "George Holani",
-      "team": "SEA",
-      "sleeperId": "12048",
+    "evan hull": {
+      "name": "Evan Hull",
+      "team": "ARI",
+      "sleeperId": "9220",
       "age": 26,
       "injuryStatus": null,
       "status": "Active"
@@ -471,6 +455,14 @@
       "injuryStatus": "Questionable",
       "status": "Active"
     },
+    "jadarian price": {
+      "name": "Jadarian Price",
+      "team": "SEA",
+      "sleeperId": "13286",
+      "age": 23,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "jahmyr gibbs": {
       "name": "Jahmyr Gibbs",
       "team": "DET",
@@ -492,7 +484,7 @@
       "team": "BUF",
       "sleeperId": "8138",
       "age": 27,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "javonte williams": {
@@ -533,22 +525,6 @@
       "sleeperId": "11643",
       "age": 23,
       "injuryStatus": null,
-      "status": "Active"
-    },
-    "jeremiyah love": {
-      "name": "Jeremiyah Love",
-      "team": "ARI",
-      "sleeperId": "13287",
-      "age": 21,
-      "injuryStatus": "Out",
-      "status": "Active"
-    },
-    "jeremy mcnichols": {
-      "name": "Jeremy McNichols",
-      "team": "WAS",
-      "sleeperId": "4219",
-      "age": 30,
-      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "jonah coleman": {
@@ -647,14 +623,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "khalil herbert": {
-      "name": "Khalil Herbert",
-      "team": "ATL",
-      "sleeperId": "7608",
-      "age": 28,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "kimani vidal": {
       "name": "Kimani Vidal",
       "team": "LAC",
@@ -668,7 +636,7 @@
       "team": "CHI",
       "sleeperId": "12534",
       "age": 24,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "kyren williams": {
@@ -783,6 +751,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "robert henry": {
+      "name": "Robert Henry Jr.",
+      "team": "WAS",
+      "sleeperId": "13418",
+      "age": 24,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "roschon johnson": {
       "name": "Roschon Johnson",
       "team": "CHI",
@@ -852,7 +828,7 @@
       "team": "NE",
       "sleeperId": "12529",
       "age": 24,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "trevor etienne": {
@@ -900,7 +876,7 @@
       "team": "HOU",
       "sleeperId": "12474",
       "age": 25,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "zach charbonnet": {
@@ -916,7 +892,7 @@
       "team": "ARI",
       "sleeperId": "8122",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     }
   }
