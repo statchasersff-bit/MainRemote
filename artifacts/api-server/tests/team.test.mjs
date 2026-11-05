@@ -1001,7 +1001,7 @@ describe("the team header (mak's pick of 2026-11-05: the bright blue hero and th
       const b = doc.querySelector(".sct-tpb");
       assert.ok(b, `${path}: the header renders`);
       assert.equal(root.firstElementChild, b, `${path}: first thing in the page`);
-      assert.equal(doc.querySelectorAll(".sct-hero, .sct-nav, [data-sct-premium=\"team-header\"], [data-sct-premium=\"team-header-b\"]").length, 0, "no old header, strip or comparison block");
+      assert.equal(doc.querySelectorAll(".sct-hero, .sct-nav, [data-sct-premium=\"team-header-b\"]").length, 0, "no old header or strip, and no B comparison block: B is the header");
       // Two separate blocks: the hero, then the strip as the next sibling (not inside the hero).
       const hero = b.querySelector("header.sct-tpb-hero");
       const strip = b.querySelector("nav.sct-tpb-navigation[data-sct-nav]");
@@ -1026,8 +1026,8 @@ describe("the team header (mak's pick of 2026-11-05: the bright blue hero and th
       // The KPI cards: Record / Standing / Head Coach / Bye in that order, each with a gold icon.
       const kpis = [...hero.querySelectorAll(".sct-tpb-kpi")].map((k) => k.querySelector(".sct-tpb-kpi-label").textContent);
       const order = ["Record", "Standing", "Head Coach", "Bye"];
+      // Tolerant of the providers: a fact ESPN did not return is not printed.
       assert.deepEqual(kpis, order.filter((l) => kpis.includes(l)), `${path}: facts in order`);
-      assert.ok(kpis.length >= 2, `${path}: facts rendered (${kpis.join(", ")})`);
       for (const k of hero.querySelectorAll(".sct-tpb-kpi")) {
         assert.ok(k.querySelector(".sct-tpb-kpi-icon svg"), "an icon on every card");
         assert.ok(k.querySelector(".sct-tpb-kpi-value").textContent.length > 0);
@@ -1077,6 +1077,58 @@ describe("the team header (mak's pick of 2026-11-05: the bright blue hero and th
     for (const dead of [/\n\.sct-hero\b/, /\n\.sct-nav\b/, /\.sct-facts/, /\.sct-tp-/, /\.sct \.sct-tp\b/]) assert.doesNotMatch(css, dead, `${dead} still in team.css`);
     // The club's name is armoured against the host theme's heading sizes.
     assert.match(css, /\.sct \.sct-tpb-title \{[^}]*font-size:[^;]*!important/);
+  });
+});
+
+describe("Premium Design A · Dark Navy, the comparison under the header (back at mak's request, 2026-11-05)", () => {
+  test("directly under the header on the hub and on section pages, on the same facts, switcher and tabs, unwired", async () => {
+    for (const path of ["/team/new-england-patriots", "/team/kansas-city-chiefs/coaching/", "/team/washington-commanders/usage/"]) {
+      const { doc } = await dom(path);
+      const b = doc.querySelector(".sct-tpb");
+      const tp = doc.querySelector('[data-sct-premium="team-header"]');
+      assert.ok(tp, `${path}: Design A renders`);
+      assert.equal(b.nextElementSibling, tp, `${path}: directly under the header`);
+      assert.equal(tp.querySelector(".sct-cp-flag").textContent, "Premium Design A · Dark Navy");
+      assert.equal(tp.querySelector("h1, h2, h3, h4"), null, "no heading inside the comparison: the page keeps its one H1");
+      assert.equal(doc.querySelectorAll("h1").length <= 1, true);
+      // Isolation both ways.
+      assert.equal(tp.querySelector('[class*="sct-tpb"]'), null, "no header classes inside A");
+      assert.equal(b.querySelector('[class*="sct-tp-"], .sct-tp'), null, "no A classes inside the header");
+      // The same identity, facts and stamp as the header.
+      assert.equal(tp.querySelector(".sct-tp-title").textContent, b.querySelector(".sct-tpb-title").textContent);
+      assert.equal(tp.querySelector(".sct-tp-eyebrow").textContent, b.querySelector(".sct-tpb-eyebrow").textContent);
+      assert.equal(tp.querySelector(".sct-tp-sub").textContent, b.querySelector(".sct-tpb-sub").textContent);
+      assert.equal(tp.querySelector(".sct-tp-logo").getAttribute("src"), b.querySelector(".sct-tpb-logo").getAttribute("src"));
+      const facts = (root, card, label, value) => [...root.querySelectorAll(card)].map((k) => [k.querySelector(label).textContent, k.querySelector(value).textContent]);
+      assert.deepEqual(facts(tp, ".sct-tp-kpi", ".sct-tp-kpi-label", ".sct-tp-kpi-value"), facts(b, ".sct-tpb-kpi", ".sct-tpb-kpi-label", ".sct-tpb-kpi-value"), `${path}: facts`);
+      for (const k of tp.querySelectorAll(".sct-tp-kpi")) assert.ok(k.querySelector(".sct-tp-kpi-icon svg"), "a gold icon on every card");
+      const t0 = b.querySelector(".sct-tpb-updated time");
+      const t1 = tp.querySelector(".sct-tp-updated time");
+      if (t0) {
+        assert.equal(t1.getAttribute("datetime"), t0.getAttribute("datetime"));
+        assert.equal(t1.getAttribute("data-ts"), t0.getAttribute("data-ts"));
+      } else assert.equal(t1, null);
+      // The switcher: the same 32 destinations and current club; only the header's is wired.
+      const hrefs = (el) => [...el.querySelectorAll(".sct-switch-team")].map((a) => a.getAttribute("href"));
+      assert.deepEqual(hrefs(tp), hrefs(b));
+      assert.equal(tp.querySelector(".sct-switch-team.is-current").textContent, b.querySelector(".sct-switch-team.is-current").textContent);
+      assert.ok(tp.querySelector("details.sct-switch.sct-tp-switch"));
+      assert.equal(tp.querySelector("[data-sct-switch]"), null);
+      assert.equal(doc.querySelectorAll("[data-sct-switch]").length, 1);
+      // The strip: the same tabs, addresses and open tab as the header's; an icon on each; no hooks, no ids.
+      const tabs = [...tp.querySelectorAll(".sct-tp-tab")];
+      const links = [...b.querySelectorAll(".sct-nav-link")];
+      assert.deepEqual(tabs.map((a) => a.querySelector(".sct-tp-tab-label").textContent), links.map((a) => a.textContent));
+      assert.deepEqual(tabs.map((a) => a.getAttribute("href")), links.map((a) => a.getAttribute("href")));
+      assert.deepEqual(tabs.map((a) => a.classList.contains("is-active")), links.map((a) => a.classList.contains("is-active")));
+      assert.equal(tp.querySelector(".sct-tp-tab.is-active").getAttribute("aria-current"), "page");
+      for (const a of tabs) assert.ok(a.querySelector(".sct-tp-tab-icon svg"), "an icon on every tab");
+      assert.equal(tp.querySelector(".sct-nav-link, [data-sct-nav], [data-sct-panel-id], [data-sct-lead]"), null, "none of the bundle's hooks");
+      assert.equal(tp.querySelector("[id]"), null, "no ids inside the comparison");
+      const ids = [...doc.querySelectorAll("[data-sct-root] [id]")].map((el) => el.id);
+      assert.equal(new Set(ids).size, ids.length, `${path}: duplicate ids`);
+      assert.doesNotMatch(tp.textContent, /\u2014/);
+    }
   });
 });
 
