@@ -171,7 +171,7 @@ function timeTag(ms: number, text: string): string {
 
 /* ------------------------------------------------------------------ model */
 
-type StatusCode = "ACTIVE" | "Q" | "D" | "O" | "IR" | "PUP" | "NFI" | "SUSP" | "OFFSEASON";
+export type StatusCode = "ACTIVE" | "Q" | "D" | "O" | "IR" | "PUP" | "NFI" | "SUSP" | "OFFSEASON";
 
 const STATUS_WORD: Record<StatusCode, string> = {
   ACTIVE: "Active",
@@ -657,34 +657,7 @@ function renderStatus(m: Model, data: PlayerPageData): string {
         `</span>`
       : "";
 
-  const cells: string[] = [];
-  if (m.seasonMissed !== null) {
-    const lp = m.lastPlayedWeek;
-    const g = lp !== null ? data.schedule.find((s) => s.week === lp && s.kickoffMs !== null) : null;
-    cells.push(
-      cell(
-        `${m.season} games missed`,
-        String(m.seasonMissed),
-        lp !== null ? `Last played Week ${lp}${g ? `, ${mmmD(et(g.kickoffMs!).iso)}` : ""}` : "Hasn't played this season",
-      ),
-    );
-  }
-  const latest = m.t.latest;
-  if (latest) {
-    const when = latest.phase === "PRE" ? `Preseason ${latest.season}` : latest.week ? `Week ${latest.week}, ${latest.season}` : String(latest.season);
-    cells.push(
-      cell(
-        "Latest injury",
-        latest.category === OTHER_CATEGORY ? cap(injuryName(latest.type)) : latest.category.split(" / ")[0]!,
-        `${when}, ${latest.games ? `${games(latest.games)} missed` : "played through"}`,
-      ),
-    );
-  }
-  if (m.next) {
-    const { line } = nextGameText(m.next);
-    const [where, ...when] = line.split(", ");
-    cells.push(cell("Next game", `Week ${m.next.week} ${where}`, when.join(", ")));
-  }
+  const cells = statusCells(m, data).map((c) => cell(c.label, c.value, c.sub));
 
   return (
     `<div class="scp-in-statusbar">` +
@@ -696,6 +669,45 @@ function renderStatus(m: Model, data: PlayerPageData): string {
     cells.join("") +
     `</div>`
   );
+}
+
+/** One of the status strip's short facts. */
+export interface StatusCell {
+  key: "missed" | "latest" | "next";
+  label: string;
+  value: string;
+  sub: string;
+}
+
+/** The three short facts beside the status: games missed this season, the latest injury, the next game. */
+function statusCells(m: Model, data: PlayerPageData): StatusCell[] {
+  const cells: StatusCell[] = [];
+  if (m.seasonMissed !== null) {
+    const lp = m.lastPlayedWeek;
+    const g = lp !== null ? data.schedule.find((s) => s.week === lp && s.kickoffMs !== null) : null;
+    cells.push({
+      key: "missed",
+      label: `${m.season} games missed`,
+      value: String(m.seasonMissed),
+      sub: lp !== null ? `Last played Week ${lp}${g ? `, ${mmmD(et(g.kickoffMs!).iso)}` : ""}` : "Hasn't played this season",
+    });
+  }
+  const latest = m.t.latest;
+  if (latest) {
+    const when = latest.phase === "PRE" ? `Preseason ${latest.season}` : latest.week ? `Week ${latest.week}, ${latest.season}` : String(latest.season);
+    cells.push({
+      key: "latest",
+      label: "Latest injury",
+      value: latest.category === OTHER_CATEGORY ? cap(injuryName(latest.type)) : latest.category.split(" / ")[0]!,
+      sub: `${when}, ${latest.games ? `${games(latest.games)} missed` : "played through"}`,
+    });
+  }
+  if (m.next) {
+    const { line } = nextGameText(m.next);
+    const [where, ...when] = line.split(", ");
+    cells.push({ key: "next", label: "Next game", value: `Week ${m.next.week} ${where}`, sub: when.join(", ") });
+  }
+  return cells;
 }
 
 function cell(label: string, value: string, sub: string): string {
@@ -1023,28 +1035,8 @@ function renderReports(ev: InjuryEvent): string {
   return `<ul class="scp-in-reports" aria-label="Weekly injury reports">${cells.join("")}</ul>`;
 }
 
-function renderHistory(m: Model): string {
-  const items: string[] = [];
-  const thisSeason = m.events.some((e) => e.season === m.season);
-  if (!thisSeason && m.seasonMissed === 0 && m.lastPlayedWeek !== null && m.playedThisSeason > 0) {
-    items.push(
-      `<li><span class="scp-in-yr">${m.season}</span><span class="scp-in-node is-now"></span>` +
-        `<div class="scp-in-ev is-now"><h3>Healthy <span class="scp-in-chip is-good scp-in-miss">0 games missed</span></h3>` +
-        `<p>${escapeHtml(`No injury has cost ${m.last} a game this season.`)}</p></div></li>`,
-    );
-  }
-  const evs = m.events.map(renderEvent);
-  let list: string;
-  if (m.events.length >= TIMELINE_FOLD) {
-    list =
-      `<ol class="scp-in-tl">${items.join("")}${evs.slice(0, 10).join("")}</ol>` +
-      `<details class="scp-in-more"><summary>${escapeHtml(`Show all ${m.events.length} injuries`)}</summary>` +
-      `<ol class="scp-in-tl" start="11">${evs.slice(10).join("")}</ol></details>`;
-  } else {
-    list = `<ol class="scp-in-tl">${items.join("")}${evs.join("")}</ol>`;
-  }
-
-  // Sidebar.
+/** The Fantasy impact sentence (with its Outlook link) and the Redraft Command card's line. */
+function impactCopy(m: Model): { impactHtml: string; rcText: string } {
   const since = m.season - 3;
   const recentGames = m.events.filter((e) => e.season > since).reduce((n, e) => n + e.games, 0);
   const lastMissed = m.events.find((e) => e.games > 0)?.season ?? null;
@@ -1091,11 +1083,46 @@ function renderHistory(m: Model): string {
       : m.code === "OFFSEASON"
         ? "Heading into next season"
         : `${STATUS_WORD[m.code]} this week`;
+  return { impactHtml: impact, rcText: `${lead}: see how Redraft Command weighs that in ${possessive(m.last)} rest-of-season rank and trade value.` };
+}
+
+/** Whether the timeline opens on a "Healthy" row for this season. */
+function healthyRow(m: Model): string | null {
+  const thisSeason = m.events.some((e) => e.season === m.season);
+  if (!thisSeason && m.seasonMissed === 0 && m.lastPlayedWeek !== null && m.playedThisSeason > 0) {
+    return `No injury has cost ${m.last} a game this season.`;
+  }
+  return null;
+}
+
+function renderHistory(m: Model): string {
+  const items: string[] = [];
+  const healthy = healthyRow(m);
+  if (healthy) {
+    items.push(
+      `<li><span class="scp-in-yr">${m.season}</span><span class="scp-in-node is-now"></span>` +
+        `<div class="scp-in-ev is-now"><h3>Healthy <span class="scp-in-chip is-good scp-in-miss">0 games missed</span></h3>` +
+        `<p>${escapeHtml(healthy)}</p></div></li>`,
+    );
+  }
+  const evs = m.events.map(renderEvent);
+  let list: string;
+  if (m.events.length >= TIMELINE_FOLD) {
+    list =
+      `<ol class="scp-in-tl">${items.join("")}${evs.slice(0, 10).join("")}</ol>` +
+      `<details class="scp-in-more"><summary>${escapeHtml(`Show all ${m.events.length} injuries`)}</summary>` +
+      `<ol class="scp-in-tl" start="11">${evs.slice(10).join("")}</ol></details>`;
+  } else {
+    list = `<ol class="scp-in-tl">${items.join("")}${evs.join("")}</ol>`;
+  }
+
+  // Sidebar.
+  const { impactHtml: impact, rcText } = impactCopy(m);
   const sidebar =
     `<aside aria-label="Fantasy impact">` +
     `<div class="scp-ox-panel"><h3>Fantasy impact</h3><p class="scp-in-impact">${impact}</p></div>` +
     `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
-    `<p>${escapeHtml(`${lead}: see how Redraft Command weighs that in ${possessive(m.last)} rest-of-season rank and trade value.`)}</p>` +
+    `<p>${escapeHtml(rcText)}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-injury-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}</a>` +
     `</div></aside>`;
 
@@ -1110,10 +1137,17 @@ function renderHistory(m: Model): string {
 
 /* ---------------------------------------------------- section 5: backup */
 
-function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): string {
-  if (!m.starter) return "";
+/** The "If he misses time" cards: each a heading and an HTML paragraph (names link), plus the position CTA. */
+export interface ContingencyModel {
+  heading: string;
+  cards: Array<{ key: "next" | "others"; title: string; html: string }>;
+  cta: { text: string; href: string; label: string };
+}
+
+function contingencyModel(m: Model, data: PlayerPageData): ContingencyModel | null {
+  if (!m.starter) return null;
   const next = data.depth?.next ?? null;
-  const cards: string[] = [];
+  const cards: ContingencyModel["cards"] = [];
   if (next) {
     const nm = next.slug ? a(m.playerUrl(next.slug), next.name) : escapeHtml(next.name);
     const advice: Record<string, string> = {
@@ -1122,10 +1156,11 @@ function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): s
       WR: `The targets would likely spread across the offense rather than pass to one player, so he's a waiver add only if ${m.last} misses time.`,
       TE: `Tight end targets would mostly move to the receivers, so he's a streaming option at best if ${m.last} misses time.`,
     };
-    cards.push(
-      `<div class="scp-ox-card"><h3>${escapeHtml(`Next man up: ${next.name}`)}</h3>` +
-        `<p>${nm}${escapeHtml(` is next on the ${m.nickname ?? "team"} depth chart at ${POS_WORD[m.pos] ?? m.pos}. ${advice[m.pos] ?? ""}`)}</p></div>`,
-    );
+    cards.push({
+      key: "next",
+      title: `Next man up: ${next.name}`,
+      html: `${nm}${escapeHtml(` is next on the ${m.nickname ?? "team"} depth chart at ${POS_WORD[m.pos] ?? m.pos}. ${advice[m.pos] ?? ""}`)}`,
+    });
   }
   const mates = (data.teammates ?? []).slice(0, 2);
   if (mates.length) {
@@ -1137,22 +1172,140 @@ function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): s
       m.pos === "QB"
         ? `A quarterback change matters most for ${joined}, his ${mates.length === 2 ? "two most-targeted pass catchers" : "most-targeted pass catcher"} this season.`
         : `His absence would move work to the rest of the offense, and ${joined} would lose one of ${mates.length === 1 ? "his" : "their"} main options.`;
-    cards.push(`<div class="scp-ox-card"><h3>Who else it affects</h3><p>${text}</p></div>`);
+    cards.push({ key: "others", title: "Who else it affects", html: text });
   }
-  if (cards.length === 0) return "";
+  if (cards.length === 0) return null;
   const pos = m.pos.toLowerCase();
+  return {
+    heading: `If ${m.last} misses time`,
+    cards,
+    cta: {
+      text: `Want a backup plan at ${POS_WORD[m.pos] ?? m.pos} before you need one?`,
+      href: `${REDRAFT_COMMAND_URL}?position=${encodeURIComponent(pos)}`,
+      label: `See rest-of-season ${m.pos} rankings in Redraft Command`,
+    },
+  };
+}
+
+function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): string {
+  const cm = contingencyModel(m, data);
+  if (!cm) return "";
+  const cards = cm.cards.map((c) => `<div class="scp-ox-card"><h3>${escapeHtml(c.title)}</h3><p>${c.html}</p></div>`);
   const cta =
-    `<div class="scp-in-cta"><span>${escapeHtml(`Want a backup plan at ${POS_WORD[m.pos] ?? m.pos} before you need one?`)}</span>` +
-    a(
-      `${REDRAFT_COMMAND_URL}?position=${encodeURIComponent(pos)}`,
-      `See rest-of-season ${m.pos} rankings in Redraft Command`,
-      ` data-cta="redraft-command-injury-backup"`,
-    ) +
+    `<div class="scp-in-cta"><span>${escapeHtml(cm.cta.text)}</span>` +
+    a(cm.cta.href, cm.cta.label, ` data-cta="redraft-command-injury-backup"`) +
     `</div>`;
   return (
-    open("scp-in-plan-h", `If ${m.last} misses time`, "", emphasis ? " scp-in-urgent" : "") +
+    open("scp-in-plan-h", cm.heading, "", emphasis ? " scp-in-urgent" : "") +
     `<div class="scp-ox-two">${cards.join("")}</div>${cta}</section>`
   );
+}
+
+/* ------------------------------------------- the premium comparison's model */
+
+/** One practice day, as the strip prints it: "Wed: Limited". */
+export interface PremiumPracticeDay {
+  day: string;
+  text: string;
+  kind: string;
+}
+
+export interface PremiumPracticeWeek {
+  week: number;
+  current: boolean;
+  where: string;
+  injury: string | null;
+  days: PremiumPracticeDay[];
+  game: { text: string; kind: string };
+}
+
+/**
+ * What the premium Injury Status and History comparison prints from (mak's
+ * brief, 2026-11-05; lib/player/injury-premium.ts): the same model the tab's
+ * own sections read, exposed as facts so the two cannot disagree. Null when
+ * the tab itself would not render.
+ */
+export interface InjuryPremiumModel {
+  name: string;
+  last: string;
+  pos: string;
+  posWord: string;
+  nickname: string | null;
+  logo: string | null;
+  season: number;
+  out: boolean;
+  status: { code: StatusCode; word: string; kind: string; answer: string; checked: { iso: string; text: string } | null; stale: boolean };
+  cells: StatusCell[];
+  practice: { head: string; note: string | null; empty: string | null; weeks: PremiumPracticeWeek[] };
+  healthy: string | null;
+  events: InjuryEvent[];
+  impactHtml: string;
+  rc: { href: string; text: string; cta: string };
+  contingency: ContingencyModel | null;
+}
+
+export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOptions = {}): InjuryPremiumModel | null {
+  const m = model(data, options);
+  if (!m) return null;
+  const out = m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI";
+  const stale = m.checkedMs > 0 && m.next !== null && m.now - m.checkedMs > STALE_MS;
+  const weeks: PremiumPracticeWeek[] = m.practice.map((r) => ({
+    week: r.week,
+    current: r.current,
+    where: r.where,
+    injury: r.injury,
+    days: r.days.map((d) => {
+      if (d.value === "PENDING") return { day: d.day, text: `due ${mmmD(d.date)}`, kind: "soon" };
+      const [kind, text] = PILL[d.value]!;
+      return { day: d.day, text: `${text}${d.estimated ? " (est.)" : ""}`, kind };
+    }),
+    game: r.game.kind === "soon" ? { text: `Due ${r.days[r.days.length - 1]!.day}`, kind: "soon" } : r.game,
+  }));
+  // No report rows: a player with a designation has a report the feed has
+  // not carried yet, which is not the same as never being listed.
+  const listed = m.code !== "ACTIVE" && m.code !== "OFFSEASON" && m.code !== "SUSP";
+  const empty = m.next
+    ? weeks.length
+      ? null
+      : listed
+        ? `No practice report on file for Week ${m.next.week} yet.`
+        : `${m.last} hasn't appeared on an injury report this season.`
+    : null;
+  const { impactHtml, rcText } = impactCopy(m);
+  return {
+    name: m.name,
+    last: m.last,
+    pos: m.pos,
+    posWord: POS_WORD[m.pos] ?? m.pos,
+    nickname: m.nickname,
+    logo: data.team?.logo ?? null,
+    season: m.season,
+    out,
+    status: {
+      code: m.code,
+      word: STATUS_WORD[m.code],
+      kind: STATUS_KIND[m.code],
+      answer: statusAnswer(m),
+      checked: m.checkedMs > 0 ? { iso: new Date(m.checkedMs).toISOString(), text: stampText(m.checkedMs) } : null,
+      stale,
+    },
+    cells: statusCells(m, data),
+    practice: { head: m.practiceHead, note: m.practiceNote, empty, weeks },
+    healthy: healthyRow(m),
+    events: m.events,
+    impactHtml,
+    rc: { href: m.rc, text: rcText, cta: `Open ${m.last} in Redraft Command` },
+    contingency: contingencyModel(m, data),
+  };
+}
+
+/** The timeline's words for an event, shared with the premium cards. */
+export function eventWords(ev: InjuryEvent): { title: string; side: string; meta: string; chip: { kind: string; text: string } } {
+  const side = ev.side ? (ev.side === "R" ? "Right" : "Left") : "";
+  const title = /\b(surgery)\b/i.test(ev.type) || !ev.surgery ? ev.type : `${ev.type}, surgery`;
+  const chip =
+    ev.phase === "POST" ? { kind: "mid", text: "Postseason" } : ev.games > 0 ? { kind: "bad", text: games(ev.games) } : { kind: "mid", text: "Played through" };
+  return { title, side, meta: metaFor(ev), chip };
 }
 
 /* ------------------------------------------------------- section 6: FAQ */
@@ -1359,8 +1512,9 @@ export function renderInjuryTab(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
   moreFaq: Array<{ question: string; answer: string }> = [],
+  tail = "",
 ): string {
-  const parts = injuryTabParts(data, options, moreFaq);
+  const parts = injuryTabParts(data, options, moreFaq, tail);
   return parts ? parts.body + parts.foot + parts.faq : "";
 }
 
@@ -1372,26 +1526,20 @@ export function injuryTabParts(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
   moreFaq: Array<{ question: string; answer: string }> = [],
+  /** The tab's body: the premium dashboard (player-render.ts renderInjury). */
+  tail = "",
 ): InjuryTabParts | null {
   const m = model(data, options);
   if (!m) return null;
-  const out = m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI";
-  const plan = renderContingency(m, data, out);
-  const body =
-    renderSection1(m, data) +
-    (out ? plan : "") +
-    // Redraft Command's injury card (mak, 2026-10-30), moved ABOVE "Injury
-    // History at a Glance" at mak's request, 2026-11-05. Empty for a player
-    // outside the durability set.
-    renderDurabilitySection(data, options) +
-    // "Injury History at a Glance" (grade, games missed, injuries, longest
-    // absence) removed at mak's request, 2026-11-05; renderGlance stays
-    // unmounted. The Durability Profile carries the grade and the counts.
-    // "Where He's Been Hurt" (body map, injuries-by-body-part table and the
-    // risk profile) removed at mak's request, 2026-11-05. renderMap stays
-    // unmounted; the Durability Profile card carries its own figure.
-    renderHistory(m) +
-    (out ? "" : plan);
+  // The tab's body IS the premium dashboard (lib/player/injury-premium.ts,
+  // mak's brief of 2026-11-05; "remove the older version" the same day),
+  // handed in as `tail` by player-render.ts renderInjury(). The sections it
+  // replaced stay here unmounted - renderSection1 (question + status strip +
+  // practice grid), renderDurabilitySection, renderHistory, renderContingency,
+  // and before them renderGlance and renderMap - and the premium prints from
+  // their models (injuryPremiumModel, durabilityParts), so the words and
+  // numbers are the same. The FAQ below is unchanged.
+  const body = tail;
   const faqItems = selectFaq(injuryPool(m, data, options));
 
   // No methodology footer since 2026-10-22 (mak): the status strip carries

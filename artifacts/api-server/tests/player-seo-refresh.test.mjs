@@ -180,17 +180,20 @@ test("the injury page: a dated title, the question and its Yes/No answer first, 
     );
     assert.match(description, /\(checked [A-Z][a-z]{2} \d{1,2}\)\. .+ injury history/, description);
 
-    const h2 = doc.querySelector("#injury .scp-in-ask h2");
-    assert.equal(h2?.textContent, `Is ${player.name} injured?`);
-    // The on-page answer sentence and games-missed line were removed 2026-10-22 (mak).
+    // The tab's lead heading is the premium banner's (mak's brief, 2026-11-05,
+    // the tab's own design the same day); "Is X injured?" opens the FAQ.
+    const h2 = doc.querySelector("#injury .scp-inp-title");
+    assert.equal(h2?.textContent, `${player.name} Injury Status and History`);
+    assert.equal(doc.querySelector("#injury .scp-in-ask"), null);
     assert.equal(doc.querySelector("#injury .scp-in-answer"), null);
     assert.equal(doc.querySelector("#injury .scp-in-missedline"), null);
+    // ("Is X injured?" opens the FAQ: player.test.mjs "the FAQ leads with the two questions people actually type".)
 
-    // Before the history table and the status strip.
-    const history = doc.querySelector("#injury .scp-in-tl, #injury .scp-in-parts");
-    assert.ok(history, "a history table");
-    assert.ok(h2.compareDocumentPosition(history) & 4, "the question precedes the history");
-    assert.ok(h2.compareDocumentPosition(doc.querySelector("#injury .scp-in-statusbar")) & 4, "and the status strip");
+    // Before the status row and the history timeline.
+    const history = doc.querySelector("#injury .scp-inp-tl");
+    assert.ok(history, "a history timeline");
+    assert.ok(h2.compareDocumentPosition(history) & 4, "the heading precedes the history");
+    assert.ok(h2.compareDocumentPosition(doc.querySelector("#injury .scp-inp-status")) & 4, "and the status row");
 
     // The island carries the same date for the WebPage node.
     const { body: embed } = await text(`/embed/player/${player.slug}?section=injury`);

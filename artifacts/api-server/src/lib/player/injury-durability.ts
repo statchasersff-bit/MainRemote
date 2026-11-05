@@ -692,3 +692,61 @@ export function renderDurabilitySection(data: PlayerPageData, _options: PlayerRe
     `</div></section>`
   );
 }
+
+/* ------------------------------------------- the premium comparison's parts */
+
+/** One of the four summary tiles. */
+export interface DurabilityTile {
+  value: string;
+  label: string;
+  title: string | null;
+}
+
+/**
+ * The card's pieces for the premium Injury Status and History comparison
+ * (mak's brief, 2026-11-05; lib/player/injury-premium.ts): the same figure,
+ * pills, records and grid the card prints (so client/player.ts wires the
+ * premium block's region selection exactly as it wires the card), with the
+ * figures the premium lays out its own way.
+ */
+export interface DurabilityParts {
+  score: number;
+  tier: { key: GmPlayer["tier"]["key"]; name: string; color: string };
+  availPct: number;
+  seasons: number;
+  tiles: DurabilityTile[];
+  regions: Array<{ key: string; label: string; episodes: number; gamesMissed: number }>;
+  worst: string | null;
+  figure: string;
+  pills: string;
+  details: string;
+  grid: string;
+}
+
+export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
+  const m = durabilityModel(data);
+  if (!m) return null;
+  const { gm, regions, worst } = m;
+  const current = { season: data.leagueSeason, week: data.leagueWeek };
+  const worstView = regions.find((r) => r.region.key === worst) ?? null;
+  const highlight = worstView ? regionLostWeeks(worstView.episodes) : null;
+  const seasons = gm.seasonYears.length;
+  return {
+    score: gm.score,
+    tier: { key: gm.tier.key, name: gm.tier.name, color: TIER_COLOR[gm.tier.key] },
+    availPct: gm.availPct,
+    seasons,
+    tiles: [
+      { value: String(gm.major), label: "Major Injuries", title: null },
+      { value: String(gm.soft), label: "Soft-Tissue Events", title: null },
+      { value: String(gm.gmTot), label: "Games Missed", title: `Over ${seasons} season${seasons === 1 ? "" : "s"}` },
+      { value: n1(gm.perYearRate), label: "Missed / Season", title: null },
+    ],
+    regions: regions.map((r) => ({ key: r.region.key, label: r.region.label, episodes: r.episodes.length, gamesMissed: r.gamesMissed })),
+    worst,
+    figure: renderFigure(data, regions, worst),
+    pills: renderPills(regions, worst),
+    details: renderDetails(regions, worst),
+    grid: renderAvailGrid(gm, current, highlight),
+  };
+}

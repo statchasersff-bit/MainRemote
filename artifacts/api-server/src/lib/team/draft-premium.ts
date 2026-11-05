@@ -1,14 +1,12 @@
 /**
- * The premium "Draft Picks & History" comparison (mak's brief, 2026-11-05,
- * attached_assets/draftref.png): a navy-and-gold banner, the class tables
- * on the left under navy year headers, and a rail on the right with the next
- * draft's ledger, the Last 5 Drafts mix, the Round 1 list and the position
- * group note.
+ * The Draft tab (mak's brief, 2026-11-05, attached_assets/draftref.png;
+ * approved and the old layout removed the same day): a navy-and-gold banner
+ * carrying the heading, the class tables on the left under navy year
+ * headers, and a rail on the right with the next draft's ledger, the Last 5
+ * Drafts mix, the Round 1 list and the position group note.
  *
- * Presentation only. Every figure is the DraftView the original tab reads
- * (team/draft.ts); the sentences are the original tab's helpers
- * (draft-render.ts), so the two blocks can never disagree. Mounted under the
- * original by renderDraftSection until mak approves it as the design.
+ * Presentation only. Every figure is the DraftView (team/draft.ts) the FAQ
+ * reads too; the sentences are draft-render.ts's helpers.
  */
 
 import { headshotImg } from "../headshot-html";
@@ -68,7 +66,8 @@ function banner(team: NflTeam, view: DraftView): string {
     logo +
     `<span class="sct-drp-hero-rule" aria-hidden="true"></span>` +
     `<div class="sct-drp-hero-copy">` +
-    `<h2 class="sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>` +
+    // .sct-h2: the tab's heading, like every hub panel's.
+    `<h2 class="sct-h2 sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>` +
     `<p class="sct-drp-sub">${e(sub)}</p>` +
     `</div>` +
     `<span class="sct-drp-stripes" aria-hidden="true"></span>` +
@@ -155,7 +154,9 @@ function statusCell(status: PickStatus): string {
   const label = status.label === "-" ? "" : status.label;
   return (
     `<span class="sct-drp-status">` +
-    (label ? `<span class="sct-drp-badge" data-tone="${tone(status)}">${e(label)}</span>` : `<span class="sct-drp-none">-</span>`) +
+    (label
+      ? `<span class="sct-drp-badge" data-tone="${tone(status)}" data-status="${e(status.key)}">${e(label)}</span>`
+      : `<span class="sct-drp-none">-</span>`) +
     (status.sub ? `<span class="sct-drp-status-sub">${e(status.sub)}</span>` : "") +
     `</span>`
   );
@@ -381,7 +382,6 @@ export function renderDraftPremium(team: NflTeam, view: DraftView, season: numbe
     (view.history ? historyCard(view.history) + roundOneCard(team, view.history.roundOnePicks) + methodNote() : "");
   return (
     `<div class="sct-drp" data-sct-draft-premium>` +
-    `<p class="sct-drp-flag">New design - comparison</p>` +
     banner(team, view) +
     `<div class="sct-drp-layout${tables ? "" : " is-rail-only"}">` +
     tables +

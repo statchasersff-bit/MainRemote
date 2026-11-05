@@ -19730,3 +19730,1362 @@ a.scp-peer:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ------------------------------------ injury: status + history premium comparison */
+
+/*
+ * The premium comparison of the Injury tab (lib/player/injury-premium.ts;
+ * mak's brief of 2026-11-05, built to attached_assets/injury1.png with the
+ * heading corrected to "{Name} Injury Status and History"). Printed inside
+ * the tab's wrap under everything the tab has, labelled "New design -
+ * comparison". Its own size container ("inp"): the two-column panels go
+ * single-column below 950, the status row stacks and the practice strip
+ * wraps below 760, the KPIs and the missed-time cards stack below 650.
+ * The figure, region pills, open record and availability grid are the
+ * Durability card's own markup (`.scp-in-*`), restyled here under
+ * `.scp .scp-inp`. The tab's own design since 2026-11-05 ("remove the older
+ * version"); the old `.scp-in-*` section rules above are dead apart from
+ * the figure, grid, pills and record ones this block reuses. Every other
+ * rule starts `.scp .scp-inp`.
+ */
+.scp .scp-inp {
+  --inp-navy-950: #071a35;
+  --inp-navy-900: #0b2345;
+  --inp-navy-800: #103862;
+  --inp-navy: #0b3a7a;
+  --inp-gold: #d4af37;
+  --inp-gold-bright: #f0c13b;
+  --inp-gold-light: #fff3d8;
+  --inp-gold-ink: #7a5c0e;
+  --inp-text: #102344;
+  --inp-muted: #5b7290;
+  --inp-surface: #fff;
+  --inp-surface-light: #f8fbff;
+  --inp-surface-blue: #edf4fb;
+  --inp-border: #cbdbea;
+  --inp-border-light: #e1e9f3;
+  --inp-green: #087a42;
+  --inp-green-light: #e6f6ea;
+  --inp-green-line: #bfe3cc;
+  --inp-amber: #a97108;
+  --inp-amber-light: #fff2d1;
+  --inp-amber-line: #ecd48f;
+  --inp-red: #b83238;
+  --inp-red-light: #fce9eb;
+  --inp-red-line: #efc9cc;
+  --inp-inactive: #9baec2;
+  --inp-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  --inp-bar:
+    repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
+    linear-gradient(110deg, #071a35 0%, #103f74 65%, #092448 100%);
+  --s: 1;
+  container-type: inline-size;
+  container-name: inp;
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  color: var(--inp-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-inp *,
+.scp .scp-inp *::before,
+.scp .scp-inp *::after {
+  box-sizing: border-box;
+}
+
+.scp .scp-inp-svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+/* ---- gold diagonals at a navy bar's right edge */
+.scp .scp-inp-stripes {
+  position: absolute;
+  top: -20px;
+  right: 16px;
+  bottom: -20px;
+  width: 44px;
+  background: linear-gradient(115deg, transparent 0 38%, var(--inp-gold) 38% 52%, transparent 52% 64%, var(--inp-gold-bright) 64% 78%, transparent 78%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---- the title banner */
+.scp .scp-inp-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  color: #fff;
+  background: var(--inp-bar);
+  box-shadow: var(--inp-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-inp-crest {
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.scp .scp-inp-hero-rule {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 48px;
+  border-radius: 2px;
+  background: var(--inp-gold);
+}
+
+.scp .scp-inp-hero-t {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-right: 110px;
+}
+
+.scp .scp-inp .scp-inp-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-size: 29px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  text-transform: none;
+}
+
+.scp .scp-inp .scp-inp-title::after,
+.scp .scp-inp .scp-inp-title::before {
+  display: none;
+}
+
+.scp .scp-inp-sub {
+  margin: 4px 0 0;
+  color: #c9d8ee;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.scp .scp-inp-hero-geo {
+  position: absolute;
+  top: 0;
+  right: 60px;
+  bottom: 0;
+  width: 240px;
+  background: linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.05) 30% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.04) 58% 74%, transparent 74%);
+  pointer-events: none;
+}
+
+/* ---- the status row: the designation card and three facts */
+.scp .scp-inp-status {
+  display: grid;
+  grid-template-columns: minmax(230px, 28fr) minmax(0, 72fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.scp .scp-inp-now {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 76px;
+  padding: 10px 14px;
+  border: 1px solid var(--inp-amber-line);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fffaec 0%, var(--inp-amber-light) 100%);
+  box-shadow: var(--inp-shadow);
+}
+
+.scp .scp-inp-now-word {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--inp-amber);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.scp .scp-inp-dot {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--inp-gold-bright);
+  box-shadow: 0 0 0 3px rgba(240, 193, 59, 0.3);
+}
+
+.scp .scp-inp-now-text {
+  margin: 0;
+  color: var(--inp-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.scp .scp-inp-checked {
+  color: var(--inp-muted);
+  font-size: 11px;
+}
+
+.scp .scp-inp-now.is-good {
+  border-color: var(--inp-green-line);
+  background: linear-gradient(135deg, #f6fdf8 0%, var(--inp-green-light) 100%);
+}
+
+.scp .scp-inp-now.is-good .scp-inp-now-word {
+  color: var(--inp-green);
+}
+
+.scp .scp-inp-now.is-good .scp-inp-dot {
+  background: #1aa35a;
+  box-shadow: 0 0 0 3px rgba(26, 163, 90, 0.25);
+}
+
+.scp .scp-inp-now.is-bad {
+  border-color: var(--inp-red-line);
+  background: linear-gradient(135deg, #fff7f7 0%, var(--inp-red-light) 100%);
+}
+
+.scp .scp-inp-now.is-bad .scp-inp-now-word {
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-now.is-bad .scp-inp-dot {
+  background: #d8434a;
+  box-shadow: 0 0 0 3px rgba(216, 67, 74, 0.25);
+}
+
+.scp .scp-inp-now.is-susp {
+  border-color: var(--inp-border);
+  background: linear-gradient(135deg, #fff 0%, var(--inp-surface-blue) 100%);
+}
+
+.scp .scp-inp-now.is-susp .scp-inp-now-word {
+  color: var(--inp-muted);
+}
+
+.scp .scp-inp-now.is-susp .scp-inp-dot {
+  background: var(--inp-inactive);
+  box-shadow: none;
+}
+
+.scp .scp-inp-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--inp-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, var(--inp-surface-light) 100%);
+  box-shadow: var(--inp-shadow);
+}
+
+.scp .scp-inp-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 14px;
+}
+
+.scp .scp-inp-kpi + .scp-inp-kpi {
+  border-left: 1px solid var(--inp-border-light);
+}
+
+.scp .scp-inp-kpi > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.scp .scp-inp-kpi-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--inp-navy);
+  font-size: 26px;
+}
+
+.scp .scp-inp-kpi-l {
+  color: var(--inp-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-inp-kpi-v {
+  color: var(--inp-text);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.scp .scp-inp-kpi-s {
+  color: var(--inp-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* ---- the practice strip */
+.scp .scp-inp-practice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 1px solid var(--inp-border);
+  border-radius: 12px;
+  background: linear-gradient(90deg, #fff 0%, var(--inp-surface-light) 100%);
+  box-shadow: 0 2px 6px rgba(10, 30, 60, 0.05);
+}
+
+.scp .scp-inp-phead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scp .scp-inp-picon {
+  display: inline-flex;
+  color: var(--inp-navy);
+  font-size: 22px;
+}
+
+.scp .scp-inp .scp-inp-ptitle {
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  color: var(--inp-text) !important;
+  font-size: 16px !important;
+  font-weight: 800;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.scp .scp-inp-pbody {
+  flex: 1 1 320px;
+  min-width: 0;
+  color: var(--inp-text);
+  font-size: 13px;
+}
+
+.scp .scp-inp-ptext,
+.scp .scp-inp-pnote {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.scp .scp-inp-pnote {
+  margin-top: 3px;
+  color: var(--inp-muted);
+  font-size: 12px;
+}
+
+.scp .scp-inp-pw {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.scp .scp-inp-pwk b {
+  font-weight: 800;
+}
+
+.scp .scp-inp-pwk small {
+  color: var(--inp-muted);
+  font-size: 11.5px;
+}
+
+.scp .scp-inp-pinj {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--inp-surface-blue);
+  color: var(--inp-navy);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.scp .scp-inp-pdays {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.scp .scp-inp-pd {
+  white-space: nowrap;
+}
+
+.scp .scp-inp-pd b {
+  color: var(--inp-muted);
+  font-weight: 700;
+}
+
+.scp .scp-inp-pd.is-full {
+  color: var(--inp-green);
+  font-weight: 700;
+}
+
+.scp .scp-inp-pd.is-lim {
+  color: var(--inp-amber);
+  font-weight: 700;
+}
+
+.scp .scp-inp-pd.is-dnp {
+  color: var(--inp-red);
+  font-weight: 700;
+}
+
+.scp .scp-inp-pd.is-soon,
+.scp .scp-inp-pd.is-none {
+  color: var(--inp-muted);
+}
+
+.scp .scp-inp-psep {
+  color: var(--inp-border);
+}
+
+.scp .scp-inp-pg {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: var(--inp-surface-blue);
+  color: var(--inp-navy);
+}
+
+.scp .scp-inp-pg.is-lim {
+  background: var(--inp-amber-light);
+  color: var(--inp-amber);
+}
+
+.scp .scp-inp-pg.is-dnp {
+  background: var(--inp-red-light);
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-pg.is-clear {
+  background: var(--inp-green-light);
+  color: var(--inp-green);
+}
+
+.scp .scp-inp-pmore {
+  margin-top: 4px;
+}
+
+.scp .scp-inp-pmore summary {
+  cursor: pointer;
+  color: var(--inp-navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scp .scp-inp-pmore .scp-inp-pw {
+  margin-top: 4px;
+  opacity: 0.85;
+}
+
+.scp .scp-inp-pctx {
+  margin-left: auto;
+  color: var(--inp-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---- the sections and their navy bars */
+.scp .scp-inp-sec {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--inp-border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  box-shadow: var(--inp-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-inp-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  min-height: 46px;
+  padding: 8px 20px;
+  color: #fff;
+  background: var(--inp-bar);
+  overflow: hidden;
+}
+
+.scp .scp-inp-bar-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--inp-gold-bright);
+  font-size: 25px;
+}
+
+.scp .scp-inp .scp-inp-bar-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-size: 21px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.scp .scp-inp .scp-inp-bar-title::after,
+.scp .scp-inp .scp-inp-bar-title::before {
+  display: none;
+}
+
+.scp .scp-inp-bar-note {
+  position: relative;
+  z-index: 1;
+  margin: 0 70px 0 auto;
+  color: #c9d8ee;
+  font-size: 12.5px;
+  text-align: right;
+}
+
+/* ---- Durability Profile */
+.scp .scp-inp-dur {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(290px, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.scp .scp-inp-dur-l,
+.scp .scp-inp-dur-r {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  align-content: start;
+}
+
+.scp .scp-inp-dur-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.scp .scp-inp .scp-in-av {
+  --ab: 9px;
+  --abg: 3px;
+  font-size: 11px;
+  color: var(--inp-muted);
+}
+
+.scp .scp-inp .scp-in-av-head {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inp-text);
+}
+
+.scp .scp-inp .scp-in-av-row {
+  padding: 1.5px 0;
+}
+
+.scp .scp-inp .scp-in-av-year {
+  color: var(--inp-text);
+  font-weight: 700;
+}
+
+.scp .scp-inp .scp-in-ab.is-g {
+  background: #1f9d5a;
+}
+
+.scp .scp-inp .scp-in-ab.is-r {
+  background: #d8434a;
+}
+
+.scp .scp-inp .scp-in-ab.is-d {
+  background: #c3cfdc;
+}
+
+.scp .scp-inp .scp-in-av-legend {
+  margin-top: 6px;
+  color: var(--inp-text);
+  font-size: 11.5px;
+}
+
+.scp .scp-inp-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scp .scp-inp-dt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 8px 12px;
+  border: 1px solid var(--inp-border);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff 0%, var(--inp-surface-light) 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.05);
+}
+
+.scp .scp-inp-dt > div {
+  display: grid;
+  min-width: 0;
+}
+
+.scp .scp-inp-dt-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--inp-navy);
+  font-size: 19px;
+}
+
+.scp .scp-inp-dt-v {
+  color: var(--inp-text);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.scp .scp-inp-dt-k {
+  color: var(--inp-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp .scp-inp-dt-k small {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.scp .scp-inp-regions {
+  display: grid;
+  gap: 10px;
+}
+
+.scp .scp-inp .scp-in-rp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scp .scp-inp .scp-in-rp {
+  min-height: 30px;
+  padding: 0 13px;
+  border: 1px solid #c5d8ee;
+  border-radius: 999px;
+  background: var(--inp-surface-blue);
+  color: var(--inp-navy);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: none;
+}
+
+.scp .scp-inp .scp-in-rp b {
+  font-weight: 800;
+}
+
+.scp .scp-inp .scp-in-rp.is-on {
+  border-color: var(--inp-gold);
+  background: linear-gradient(180deg, #fff1c9, #f3d98a);
+  color: var(--inp-text);
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+}
+
+.scp .scp-inp .scp-in-rp:focus-visible,
+.scp .scp-inp .scp-in-fl:focus-visible,
+.scp .scp-inp .scp-in-mk:focus-visible,
+.scp .scp-inp a:focus-visible,
+.scp .scp-inp summary:focus-visible {
+  outline: 3px solid var(--inp-gold-bright);
+  outline-offset: 2px;
+}
+
+.scp .scp-inp .scp-in-rd {
+  padding: 12px 14px;
+  border: 1px solid #c5d8ee;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff 0%, var(--inp-surface-blue) 100%);
+}
+
+.scp .scp-inp .scp-in-rd-head {
+  margin-bottom: 8px;
+  color: var(--inp-text);
+  font-size: 14px;
+}
+
+.scp .scp-inp .scp-in-rd-head b {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.scp .scp-inp .scp-in-rd-list > li + li {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--inp-border-light);
+}
+
+.scp .scp-inp .scp-in-rd-line {
+  font-size: 13px;
+}
+
+.scp .scp-inp .scp-in-rd p {
+  color: var(--inp-text);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.scp .scp-inp .scp-in-figwrap {
+  max-width: 410px;
+}
+
+.scp .scp-inp .scp-in-fl b {
+  color: var(--inp-text);
+}
+
+.scp .scp-inp .scp-in-fl span {
+  color: var(--inp-muted);
+}
+
+/* the HP bar and the status line */
+.scp .scp-inp-hp {
+  max-width: 380px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.scp .scp-inp-hp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.scp .scp-inp-hp-k {
+  color: var(--inp-gold-ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: help;
+}
+
+.scp .scp-inp-hp-v b {
+  color: var(--hp, var(--inp-gold));
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.scp .scp-inp-hp-v small {
+  color: var(--inp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scp .scp-inp-hp-bar {
+  position: relative;
+  height: 14px;
+  border: 1px solid #b9c7d8;
+  border-radius: 7px;
+  background: #dde5ef;
+  overflow: hidden;
+}
+
+.scp .scp-inp-hp-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hp, var(--inp-gold)) 80%, #fff), var(--hp, var(--inp-gold)));
+}
+
+.scp .scp-inp-hp-notches {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(255, 255, 255, 0.55) calc(10% - 1px) 10%);
+  pointer-events: none;
+}
+
+.scp .scp-inp-hp-tier {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--inp-amber-light);
+  color: var(--inp-amber);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scp .scp-inp-hp-tier.is-iron {
+  background: var(--inp-green-light);
+  color: var(--inp-green);
+}
+
+.scp .scp-inp-hp-tier.is-elevated,
+.scp .scp-inp-hp-tier.is-high {
+  background: var(--inp-red-light);
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-dur-status {
+  max-width: 380px;
+  width: 100%;
+  margin: 0 auto;
+  color: var(--inp-text);
+  font-size: 13px;
+}
+
+.scp .scp-inp-dur-status b {
+  font-weight: 800;
+}
+
+.scp .scp-inp-dur-status b.is-mid {
+  color: var(--inp-amber);
+}
+
+.scp .scp-inp-dur-status b.is-bad {
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-dur-status b.is-good {
+  color: var(--inp-green);
+}
+
+.scp .scp-inp-dur-status i {
+  color: var(--inp-muted);
+  font-style: normal;
+}
+
+/* ---- Injury History: the timeline and the sidebar */
+.scp .scp-inp-hist {
+  display: grid;
+  grid-template-columns: minmax(0, 68fr) minmax(250px, 32fr);
+  gap: 16px;
+  padding: 16px;
+  align-items: start;
+}
+
+.scp .scp-inp-tlwrap {
+  min-width: 0;
+}
+
+.scp .scp-inp-tl {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-inp-tl::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 61px;
+  width: 2px;
+  background: #d4e0ef;
+}
+
+.scp .scp-inp-tl-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px 26px minmax(0, 1fr);
+  align-items: start;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-inp-yr {
+  padding-top: 8px;
+  color: var(--inp-text);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.scp .scp-inp-node {
+  position: relative;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin: 13px 0 0 8px;
+  border: 2px solid var(--inp-green);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.scp .scp-inp-tl-item.is-thru .scp-inp-node {
+  border-color: var(--inp-amber);
+}
+
+.scp .scp-inp-tl-item:not(.is-now):not(.is-thru) .scp-inp-node {
+  border-color: var(--inp-red);
+}
+
+.scp .scp-inp-ev {
+  min-width: 0;
+  padding: 10px 14px 11px;
+  border: 1px solid var(--inp-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--inp-surface-light) 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.05);
+}
+
+.scp .scp-inp-ev-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+
+.scp .scp-inp .scp-inp-ev-title {
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  color: var(--inp-text) !important;
+  font-size: 15px !important;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.scp .scp-inp-ev-title small {
+  color: var(--inp-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scp .scp-inp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.scp .scp-inp-badge.is-bad {
+  background: var(--inp-red-light);
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-badge.is-mid {
+  background: var(--inp-amber-light);
+  color: var(--inp-amber);
+}
+
+.scp .scp-inp-badge.is-good {
+  background: var(--inp-green-light);
+  color: var(--inp-green);
+}
+
+.scp .scp-inp-ev-meta {
+  margin: 2px 0 0;
+  color: var(--inp-muted);
+  font-size: 12.5px;
+}
+
+.scp .scp-inp-ev-note {
+  margin: 4px 0 0;
+  color: var(--inp-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.scp .scp-inp-play {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.scp .scp-inp-play b {
+  color: var(--inp-navy);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.scp .scp-inp-play-d {
+  flex-basis: 100%;
+  color: var(--inp-muted);
+}
+
+.scp .scp-inp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-inp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border: 1px solid #c5d8ee;
+  border-radius: 999px;
+  background: var(--inp-surface-blue);
+  color: var(--inp-navy);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.scp .scp-inp-chip b {
+  font-weight: 800;
+}
+
+.scp .scp-inp-chip.is-q {
+  border-color: var(--inp-amber-line);
+  background: var(--inp-amber-light);
+  color: var(--inp-amber);
+}
+
+.scp .scp-inp-chip.is-out {
+  border-color: var(--inp-red-line);
+  background: var(--inp-red-light);
+  color: var(--inp-red);
+}
+
+.scp .scp-inp-more {
+  margin-top: 10px;
+}
+
+.scp .scp-inp-more summary {
+  cursor: pointer;
+  color: var(--inp-navy);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.scp .scp-inp-more .scp-inp-tl {
+  margin-top: 10px;
+}
+
+.scp .scp-inp-none {
+  margin: 0;
+  color: var(--inp-muted);
+  font-size: 13px;
+}
+
+.scp .scp-inp-side {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.scp .scp-inp-impact,
+.scp .scp-inp-rc,
+.scp .scp-inp-plan-card {
+  padding: 14px 16px;
+  border: 1px solid var(--inp-border);
+  border-radius: 12px;
+  background: linear-gradient(160deg, #fff 0%, var(--inp-surface-light) 100%);
+  box-shadow: 0 2px 6px rgba(10, 30, 60, 0.05);
+}
+
+.scp .scp-inp-rc {
+  border-color: #e6cc7a;
+  background: linear-gradient(160deg, #fffdf4 0%, var(--inp-gold-light) 100%);
+}
+
+.scp .scp-inp .scp-inp-card-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px !important;
+  padding: 0;
+  border: 0;
+  color: var(--inp-text) !important;
+  font-size: 16px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-inp-card-icon {
+  display: inline-flex;
+  color: var(--inp-gold);
+  font-size: 21px;
+}
+
+.scp .scp-inp-impact p,
+.scp .scp-inp-rc p,
+.scp .scp-inp-plan-card p {
+  margin: 0;
+  color: var(--inp-text);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.scp .scp-inp .scp-inp-impact a,
+.scp .scp-inp .scp-inp-plan-card a {
+  color: var(--inp-navy) !important;
+  font-weight: 700;
+  text-decoration: underline !important;
+  text-decoration-color: var(--inp-gold);
+  text-underline-offset: 2px;
+}
+
+.scp .scp-inp .scp-inp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 12px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, var(--inp-navy-800), var(--inp-navy-950));
+  color: #fff !important;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none !important;
+  box-shadow: 0 3px 10px rgba(7, 26, 53, 0.25);
+}
+
+.scp .scp-inp-btn-icon {
+  display: inline-flex;
+  font-size: 15px;
+}
+
+/* ---- If He Misses Time */
+.scp .scp-inp-plan {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.scp .scp-inp-plan-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.scp .scp-inp-plan-card {
+  border-color: #c5d8ee;
+}
+
+.scp .scp-inp-sec.is-urgent .scp-inp-plan-card.is-next {
+  border-color: var(--inp-gold);
+}
+
+.scp .scp-inp-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #e6cc7a;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #fff8e3 0%, #fdefc4 100%);
+}
+
+.scp .scp-inp-cta-icon {
+  display: inline-flex;
+  color: var(--inp-amber);
+  font-size: 18px;
+}
+
+.scp .scp-inp-cta-text {
+  color: var(--inp-text);
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.scp .scp-inp .scp-inp-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--inp-navy) !important;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: underline !important;
+  text-decoration-color: var(--inp-gold);
+  text-underline-offset: 3px;
+}
+
+.scp .scp-inp-cta-arrow {
+  display: inline-flex;
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scp .scp-inp * {
+    transition: none !important;
+  }
+}
+
+/* ---- narrower blocks: reflow, never miniaturize */
+@container inp (max-width: 950px) {
+  .scp .scp-inp-dur,
+  .scp .scp-inp-hist {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-dur-r {
+    justify-items: center;
+  }
+
+  .scp .scp-inp-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@container inp (max-width: 760px) {
+  .scp .scp-inp-status {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-hero-t {
+    padding-right: 70px;
+  }
+
+  .scp .scp-inp .scp-inp-title {
+    font-size: 24px !important;
+  }
+
+  .scp .scp-inp-hero-geo {
+    display: none;
+  }
+
+  .scp .scp-inp-pctx {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .scp .scp-inp-bar-note {
+    flex-basis: 100%;
+    margin-right: 0;
+    text-align: left;
+  }
+}
+
+@container inp (max-width: 650px) {
+  .scp .scp-inp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-inp-kpi + .scp-inp-kpi {
+    border-left: 0;
+  }
+
+  .scp .scp-inp-kpi:nth-child(2n) {
+    border-left: 1px solid var(--inp-border-light);
+  }
+
+  .scp .scp-inp-kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--inp-border-light);
+  }
+
+  .scp .scp-inp-dur-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-plan-cards,
+  .scp .scp-inp-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-dur,
+  .scp .scp-inp-hist,
+  .scp .scp-inp-plan {
+    padding: 12px;
+  }
+
+  .scp .scp-inp-hero {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .scp .scp-inp-crest {
+    width: 48px;
+    height: 48px;
+  }
+
+  .scp .scp-inp-stripes {
+    display: none;
+  }
+
+  .scp .scp-inp-hero-t {
+    padding-right: 0;
+  }
+
+  .scp .scp-inp .scp-inp-bar-title {
+    font-size: 19px !important;
+  }
+
+  .scp .scp-inp-tl::before {
+    left: 49px;
+  }
+
+  .scp .scp-inp-tl-item {
+    grid-template-columns: 40px 20px minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-yr {
+    font-size: 15px;
+  }
+
+  .scp .scp-inp-node {
+    margin-left: 4px;
+  }
+
+  .scp .scp-inp .scp-inp-cta-link {
+    margin-left: 0;
+  }
+}
+
+@container inp (max-width: 420px) {
+  .scp .scp-inp-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-inp-kpi:nth-child(2n) {
+    border-left: 0;
+  }
+
+  .scp .scp-inp-kpi + .scp-inp-kpi {
+    border-top: 1px solid var(--inp-border-light);
+  }
+
+  .scp .scp-inp-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

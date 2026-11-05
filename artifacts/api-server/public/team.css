@@ -255,7 +255,7 @@ body.sct-page.is-embed {
  * are the same weight and come later, still win over the base rule.
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
- * .sct-band-label, .sct-depth-pos, .sct-dcx-pos, .sct-dcx-more-title, .sct-ladder-title, .sct-mu-h3,
+ * .sct-band-label, .sct-depth-pos, .sct-ladder-title, .sct-mu-h3,
  * .sct-news-title, .sct-outlook-name, .sct-faq-q, .sct-sbh-title, .sct-mu-story-title, .sct-rb-h2, .sct-rb-h3,
  * .sct-rb-redraft-title - every <h1>-<h4> the hub
  * prints. The list is the checklist: a heading class added below and left off
@@ -379,7 +379,6 @@ body.sct-page.is-embed {
   max-width: none;
 }
 
-
 .sct-visually-hidden {
   position: absolute;
   width: 1px;
@@ -398,7 +397,6 @@ body.sct-page.is-embed {
   color: var(--sc-gold);
   transition: transform 160ms ease;
 }
-
 
 /* --------------------------------------------------------- team switcher */
 
@@ -487,7 +485,6 @@ body.sct-page.is-embed {
   color: var(--sc-ink);
   box-shadow: 0 22px 60px rgba(6, 13, 33, 0.28);
 }
-
 
 .sct-switch-heading {
   margin: 0 0 12px;
@@ -851,7 +848,6 @@ body.sct-page.is-embed {
   margin-top: 0;
 }
 
-
 /* -------------------------------------------------------------- sections */
 
 .sct-section {
@@ -1044,7 +1040,6 @@ body.sct-page.is-embed {
     display: block !important;
   }
 }
-
 
 .sct-h2 {
   position: relative;
@@ -1917,185 +1912,6 @@ ul.sct-faq-list li {
   font-size: 0.85rem;
 }
 
-/* -------------------------------------------------------- advanced stats */
-
-/* The Stats tab.
- *
- * Its whole job is comparison, so it is built out of two things the rest of the
- * page does not need: a pair of ladders that line up row for row, and a track
- * that shows a rank as a length. Everything else - the card, the hairline, the
- * rank chip, the tier tints - is the vocabulary already established above by
- * .sct-metric, reused rather than re-invented so the tab does not read as a
- * different product bolted on.
- */
-
-.sct-ladders {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin: 18px 0 0;
-}
-
-/* Compact since 2026-10-20 (mak): about 40% shorter than the first cut.
-   Tighter card padding, rows with 3px of padding instead of 8, a smaller value
-   figure, and the rank as bare tinted text instead of a pill. */
-.sct-ladder {
-  padding: 12px 18px 10px;
-  border-radius: var(--sc-radius);
-  border: 1px solid var(--sc-hairline);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-.sct-ladder-title {
-  position: relative;
-  margin: 0;
-  padding-left: 12px;
-  color: var(--sc-navy) !important;
-  font-size: 1.02rem !important;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-
-/* A short bar in the margin rather than a rule underneath: the .sct-h2 above it
-   already owns the gold underline, and repeating it here would read as two
-   headings of equal rank. Gold marks the side that scores, navy the side that
-   stops - the only place on this tab where color carries a label. */
-.sct-ladder-title::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.18em;
-  bottom: 0.18em;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--sc-gold);
-}
-
-.sct-ladder[data-unit="defense"] .sct-ladder-title::before {
-  background: var(--sc-navy);
-}
-
-/* The team-level buckets (Possession & Discipline, Pace & Play Style) are
-   neither side, so their mark is neither color: a slate between the two. And
-   they run the width of the grid - one ladder, not a pair. */
-.sct-ladder[data-unit="team"] .sct-ladder-title::before {
-  background: color-mix(in srgb, var(--sc-navy) 45%, #fff);
-}
-
-.sct-ladder.is-wide {
-  grid-column: 1 / -1;
-}
-
-/* The bucket's summary row - turnover margin, over the takeaways and
-   giveaways it is the difference of. A tinted band with the figure a step
-   larger, so the three do not read as three equal cards (mak, 2026-10-20). */
-.sct-stat.is-summary {
-  margin: 0 -18px 4px;
-  padding: 6px 18px;
-  border-bottom: 1px solid var(--sc-hairline);
-  background: rgba(212, 175, 55, 0.1);
-}
-
-.sct-stat.is-summary .sct-stat-label {
-  color: var(--sc-navy);
-}
-
-.sct-stat.is-summary .sct-stat-value {
-  font-size: 1rem;
-}
-
-.sct-ladder-caption {
-  margin: 2px 0 0;
-  padding-left: 12px;
-  color: var(--sc-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.sct-ladder-list {
-  margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* label | track | value | rank.
-   The track is given the most room after the label because it is the thing
-   being compared. The value and rank columns are fixed widths, not auto: every
-   row is its own grid, so an auto column sized by "4.20" in one row and
-   "102.1" in the next put the numbers on different left edges down the ladder
-   (mak, 2026-10-20). 52px holds the widest value the ladder prints ("102.1",
-   "47.6%") and 64px the widest pill ("T-22nd"). */
-.sct-stat {
-  display: grid;
-  grid-template-columns:
-    minmax(84px, 0.95fr) minmax(44px, 1.2fr) 52px 64px;
-  align-items: center;
-  gap: 10px;
-  padding: 3px 0;
-  line-height: 1.2;
-  border-bottom: 1px solid var(--sc-hairline);
-}
-
-.sct-stat:last-child {
-  border-bottom: 0;
-}
-
-.sct-stat-label {
-  min-width: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.sct-stat-bar {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--sc-surface-sink);
-  overflow: hidden;
-}
-
-/* No rank, no track. An empty groove beside a real number would imply a league
-   position that was never established. */
-.sct-stat-bar.is-empty {
-  background: transparent;
-}
-
-.sct-stat-fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  /* Mid is a lightened navy rather than a gray: gray next to green and red
-     reads as "no data", and the middle of the league is a result, not a gap. */
-  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
-}
-
-.sct-stat-bar[data-tier="good"] .sct-stat-fill {
-  background: #0f6b4f;
-}
-
-.sct-stat-bar[data-tier="poor"] .sct-stat-fill {
-  background: #94363a;
-}
-
-/* Only reachable from a volume metric, which is never drawn with a bar today.
-   Kept so a future volume row in a ladder gets the neutral team accent instead
-   of inheriting a judgment it has not earned. */
-.sct-stat-bar[data-tier="none"] .sct-stat-fill {
-  background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
-}
-
-.sct-stat-value {
-  justify-self: stretch;
-  text-align: right;
-  color: var(--sc-navy);
-  font-size: 0.85rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
 /* Bare tinted text, no pill (mak, 2026-10-20): the tier color and the fixed
    right-aligned column are what keep the ordinal from reading as a fifth
    column of numbers. */
@@ -2116,250 +1932,6 @@ ul.sct-faq-list li {
   color: #94363a;
 }
 
-/* ------------------------------------------------------------- stat tiles */
-
-/* The column count is set per block rather than left to auto-fit: eight tiles
-   want four across and six want three, and auto-fit would give both whatever
-   the viewport happened to allow - an eight-across row of 140px cards at one
-   width and a ragged five at another. */
-.sct-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct-tiles[data-cols="3"] {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.sct-tile {
-  position: relative;
-  overflow: hidden;
-  padding: 13px 15px 15px;
-  border-radius: var(--sc-radius-sm);
-  /* A shade darker than the page hairline and a shadow tinted navy rather than
-     black. These cards sit on a soft ground and were dissolving into it; this
-     is the least weight that gives eight of them an edge apiece. */
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  box-shadow: 0 1px 2px rgba(11, 22, 52, 0.05);
-  background: var(--sc-surface);
-}
-
-/* The gold mark. One 6px square beside the label - enough to say whose page
-   this is, small enough that eight of them in a grid read as a rhythm rather
-   than as eight bullets demanding to be counted. */
-.sct-tile-label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sct-tile-label::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: var(--sc-gold);
-}
-
-.sct-tile-value {
-  margin: 6px 0 0;
-  color: var(--sc-navy);
-  font-size: 1.5rem;
-  line-height: 1.02;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* The footer: rank at the left, movement flush right, a hairline above them.
-   The rule is what turns three loose lines into a card with a head and a foot,
-   and it costs 1px where the old 9px gaps cost most of the card's height. */
-.sct-tile-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 9px 0 0;
-  padding: 7px 0 0;
-  border-top: 1px solid var(--sc-hairline);
-}
-
-.sct-tile-rank {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  min-width: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.72rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-/* The tier as a dot rather than as a filled pill. A pill behind every ordinal
-   put a second block of color under a value that is already the loudest thing
-   on the card; the dot says the same thing in 6px and lets the ordinal itself
-   carry the tint. */
-.sct-tile-dot {
-  align-self: center;
-  flex: 0 0 auto;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: currentcolor;
-}
-
-.sct-tile-rank-value {
-  white-space: nowrap;
-}
-
-/* Top five. Gold, and the only place on the tab it is spent on a result.
-   Darker than the brand gold because 11px bold on white has to clear 4.5:1 and
-   --sc-gold-deep only reaches 3.9 - so the text is the deeper bronze and the
-   dot beside it keeps the brighter gold, where contrast is not a requirement. */
-.sct-tile-rank[data-accent="elite"] {
-  color: #8a6500;
-}
-
-.sct-tile-rank[data-accent="elite"] .sct-tile-dot {
-  background: var(--sc-gold-deep);
-}
-
-.sct-tile-rank[data-accent="good"] {
-  color: #0f6b4f;
-}
-
-.sct-tile-rank[data-accent="poor"] {
-  color: #94363a;
-}
-
-/* The percentile groove, flush with the bottom edge of the card. Full width is
-   1st and a stub is 32nd, so a block of eight can be read as a shape before any
-   of the ordinals are read as numbers. */
-.sct-tile-track {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: var(--sc-surface-sink);
-}
-
-.sct-tile-fill {
-  display: block;
-  height: 100%;
-  /* Mid is a lightened navy rather than a gray, as in the ladders: gray between
-     green and red reads as "no data", and the middle of the league is a result
-     rather than a gap. */
-  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
-}
-
-.sct-tile-track[data-tier="elite"] .sct-tile-fill {
-  background: var(--sc-gold);
-}
-
-.sct-tile-track[data-tier="good"] .sct-tile-fill {
-  background: #0f6b4f;
-}
-
-.sct-tile-track[data-tier="poor"] .sct-tile-fill {
-  background: #94363a;
-}
-
-/* A volume metric is ranked but never judged - the neutral team accent, the
-   same license the play-mix bar takes. */
-.sct-tile-track[data-tier="none"] .sct-tile-fill {
-  background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
-}
-
-/* ---------------------------------------------------------------- play mix */
-
-.sct-mixes {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin: 20px 0 0;
-}
-
-.sct-mix {
-  padding: 16px 18px 14px;
-  border-radius: var(--sc-radius-sm);
-  border: 1px solid var(--sc-hairline);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-.sct-mix-label {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sct-mix-bar {
-  display: flex;
-  height: 14px;
-  margin: 11px 0 0;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--sc-surface-sink);
-}
-
-.sct-mix-seg {
-  display: block;
-  height: 100%;
-}
-
-/* The one place on this tab the team's own color appears - the same license
-   the player card's photo well takes, and for the same reason: a proportion has
-   no good end, so there is no tier tint competing for the slot. */
-.sct-mix-seg[data-kind="pass"],
-.sct-mix-key[data-kind="pass"]::before {
-  background: color-mix(in srgb, var(--team-primary, #0b1634) 72%, #fff);
-}
-
-.sct-mix-seg[data-kind="rush"],
-.sct-mix-key[data-kind="rush"]::before {
-  background: var(--sc-gold);
-}
-
-.sct-mix-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin: 10px 0 0;
-}
-
-.sct-mix-key {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--sc-navy);
-  font-size: 0.78rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.sct-mix-key::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 3px;
-  flex: 0 0 auto;
-}
-
 .sct-mix-caption {
   margin: 8px 0 0;
   color: var(--sc-muted);
@@ -2368,22 +1940,6 @@ ul.sct-faq-list li {
 }
 
 /* ------------------------------------------------------- season history */
-
-/* The one block on this tab that scrolls sideways.
-   Six metric columns against five seasons cannot stack into a phone without
-   becoming five separate cards, and the comparison between seasons - the whole
-   reason the table exists - does not survive that. So it scrolls, and the fade
-   on the right edge is what says so, exactly as the section nav does at the
-   same width. */
-.sct-hist-scroll {
-  margin: 18px 0 0;
-  overflow-x: auto;
-  border-radius: var(--sc-radius);
-  border: 1px solid var(--sc-hairline);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-  -webkit-overflow-scrolling: touch;
-}
 
 /* ====================================================================== */
 /* The tables, armed against the host theme.                               */
@@ -4552,15 +4108,6 @@ ul.sct-faq-list li {
   margin-top: 18px;
 }
 
-/* Centered, which is the source's own arrangement for these four and the reason
-   they read as a rail rather than as four more left-ranged blocks under the
-   table. The bars and the slate rows range themselves back where the eye needs
-   a column to run down. */
-.sct-shape .sct-mix {
-  padding: 12px 16px 14px;
-  text-align: center;
-}
-
 /* ---- the snapshot card ------------------------------------------------- */
 
 /* The one filled card on the tab. Navy ground, gold eyebrow, white figures -
@@ -4572,11 +4119,6 @@ ul.sct-faq-list li {
   background: var(--sc-navy);
   box-shadow: 0 1px 2px rgba(11, 22, 52, 0.18);
   padding: 14px 16px 16px;
-}
-
-.sct-shape [data-kind="snapshot"] .sct-mix-label {
-  color: var(--sc-gold);
-  letter-spacing: 0.16em;
 }
 
 /* --- the snapshot ------------------------------------------------------- */
@@ -4709,45 +4251,6 @@ ul.sct-faq-list li {
   background: var(--sc-surface-sink);
 }
 
-/* The key. Its swatches repeat the three cell treatments above rather than
-   referring to them, because a legend that drifts from the thing it explains is
-   worse than no legend - keep these three in step with the three
-   `.sct-path-week` rules. */
-.sct-shape .sct-mix-legend {
-  justify-content: center;
-  gap: 4px 12px;
-  margin: 0;
-}
-
-.sct-shape .sct-mix-key {
-  gap: 5px;
-  color: var(--sc-muted);
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sct-mix-key[data-kind="home"]::before,
-.sct-mix-key[data-kind="away"]::before,
-.sct-mix-key[data-kind="bye"]::before {
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--sc-border);
-  border-radius: 1px;
-  background: transparent;
-}
-
-.sct-mix-key[data-kind="home"]::before {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-}
-
-.sct-mix-key[data-kind="bye"]::before {
-  border-style: dashed;
-  background: var(--sc-surface-sink);
-}
-
 /* --- the thirds --------------------------------------------------------- */
 
 /* The source's own arrangement: one run per line, the weeks ranged left and
@@ -4800,15 +4303,6 @@ ul.sct-faq-list li {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-
-/* The path card measures itself, because the same card is 264px of content in
-   the rail and about 500px when the rail has fallen under the table - and the
-   two want different things from the thirds. Asking the card rather than the
-   window is also the only question with a reliable answer here: this markup is
-   printed into a WordPress column. */
-.sct-mix[data-kind="path"] {
-  container-type: inline-size;
 }
 
 /* Three runs side by side, but only where they can be compared without either
@@ -5235,47 +4729,6 @@ ul.sct-faq-list li {
 }
 
 @media (max-width: 900px) {
-  /* The hero is not here any more. It used to restack at this width - see
-     .sct-hero-head, which now lets the switcher pick its own width per team. */
-
-  /* Two ladders side by side stop being comparable long before they stop
-     fitting: at this width the labels wrap and the tracks are shorter than the
-     rank chips beside them. Stacked they are still readable - one after the
-     other rather than one against the other, which is the trade the width
-     forces. */
-  .sct-ladders,
-  .sct-mixes {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  /* Stacked, each unit's extra ladders follow their own unit: Offense,
-     Offense Efficiency, Pass Protection, then Defense, Defense Efficiency,
-     Pass Rush. Two across, the source order already puts each one under its
-     unit. */
-  .sct-ladder[data-unit="offense"][data-kind="efficiency"] {
-    order: 1;
-  }
-
-  .sct-ladder[data-unit="offense"][data-kind="passrush"] {
-    order: 2;
-  }
-
-  .sct-ladder[data-unit="defense"] {
-    order: 3;
-  }
-
-  .sct-ladder[data-unit="defense"][data-kind="efficiency"] {
-    order: 4;
-  }
-
-  .sct-ladder[data-unit="defense"][data-kind="passrush"] {
-    order: 5;
-  }
-
-  .sct-tiles,
-  .sct-tiles[data-cols="3"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   /* The shape cards stack for the reason the ladders above them do: the slate
      and the opponent bars are still legible in half a column, but they stop
@@ -5398,7 +4851,6 @@ ul.sct-faq-list li {
     --sct-gutter: 0px;
   }
 
-
   .sct-switch-summary {
     width: 100%;
     justify-content: space-between;
@@ -5461,7 +4913,6 @@ ul.sct-faq-list li {
     gap: 16px 12px;
   }
 
-
   .sct-section {
     padding-top: 32px;
   }
@@ -5503,37 +4954,6 @@ ul.sct-faq-list li {
     font-size: 1.95rem;
   }
 
-  /* A ladder row loses its middle column. Four cells across 343px leaves the
-     track about 40px wide, which is not a bar, it is a dot - and a label that
-     wraps to two lines under a value that does not. Label and numbers on one
-     line, the track its own full-width line beneath: the comparison survives
-     and it is the only one of the four that needs the room. */
-  .sct-ladder {
-    padding: 12px 14px 10px;
-  }
-
-  /* The summary band bleeds to the card edge, so it follows the padding. */
-  .sct-stat.is-summary {
-    margin-left: -14px;
-    margin-right: -14px;
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .sct-stat {
-    grid-template-columns: minmax(0, 1fr) 52px 64px;
-    column-gap: 8px;
-    row-gap: 4px;
-    padding: 4px 0;
-  }
-
-  /* Same fade the section nav uses at this width, for the same reason: a row
-     that scrolls with no visible edge reads as a row that ends. */
-  .sct-hist-scroll {
-    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
-    mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
-  }
-
   :is(.sct, #sct-table-armour) .sct-hist {
     font-size: 0.8rem;
     /* The table already scrolls at this width, so the floor comes down: a
@@ -5555,32 +4975,12 @@ ul.sct-faq-list li {
     padding-left: 20px;
   }
 
-  .sct-stat-bar {
-    order: 1;
-    grid-column: 1 / -1;
-    height: 6px;
-  }
-
-  .sct-tiles,
-  .sct-tiles[data-cols="3"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
   /* The band above widened the season's five figures to one row; a phone takes
      that back. Five across here is about 62px a column, which "Bye week" over
      "W7" fills exactly and a longer label would not. Three across is the
      arrangement the card is drawn at in the rail. */
   .sct-shape [data-kind="snapshot"] .sct-snap {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .sct-tile {
-    padding: 11px 12px 13px;
-  }
-
-  .sct-tile-value {
-    font-size: 1.3rem;
   }
 
   .sct-players {
@@ -5640,7 +5040,6 @@ ul.sct-faq-list li {
   }
 }
 
-
 /* Two standings cards stop fitting here: a card is about 330px by this point,
    and a nickname beside a crest, a place and five record tracks wants more
    than half of that. One card per row, and the page is a list a thumb runs
@@ -5694,7 +5093,6 @@ ul.sct-faq-list li {
 }
 
 @media (max-width: 420px) {
-
 
   .sct-depth {
     grid-template-columns: minmax(0, 1fr);
@@ -5826,7 +5224,6 @@ ul.sct-faq-list li {
     border-bottom-color: rgba(11, 22, 52, 0.2);
   }
 
-
   /* What replaces hover on a touch screen. A press is real feedback at the
      moment of the tap and gone the instant it ends, which is the whole reason
      it is safe where :hover is not.
@@ -5855,7 +5252,6 @@ ul.sct-faq-list li {
   .sct-quicklink {
     min-height: 44px;
   }
-
 
 }
 
@@ -5886,7 +5282,6 @@ ul.sct-faq-list li {
     transform: none;
   }
 }
-
 
 /* ------------------------------------------------------------- matchups */
 
@@ -7852,7 +7247,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   outline: 3px solid var(--rb-gold, #ffa300);
   outline-offset: 3px;
 }
-
 
 /* Head-to-head since {season} (mak, 2026-11-02): one header line with the
    record, the count and the recent run, then one list. The letter strip,
@@ -15198,7 +14592,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 0.86rem;
 }
 
-
 :is(.sct, #sct-table-armour) .sct-co-brow {
   display: grid;
   /* A fixed value column, so every track in a panel is the same length and
@@ -15331,7 +14724,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 700;
   white-space: nowrap;
 }
-
 
 /* Each panel closes the same way: the takeaway, then its scope or sample. */
 :is(.sct, #sct-table-armour) .sct-co-take {
@@ -17372,384 +16764,6 @@ a.sct-ex-game:hover .sct-ex-line {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
 
-/* ------------------------------------------------ depth chart: tool views
- *
- * The depth-charts tool's team view (2026-10-05), redrawn on 2026-10-23 as a
- * printed depth chart: one card per side - Fantasy / Offense / Defense /
- * Special Teams, behind a filter - with the side's name as an italic condensed title,
- * its unit grades on the right, and a POS / FIRST / SECOND / THIRD / FOURTH
- * grid beneath in which every player is a box: headshot, name with any
- * designation, "Exp 6" beneath. Anyone listed deeper than fourth string
- * sits in the "Also listed" strip under the grid. Hub tokens throughout. */
-:is(.sct, #sct-table-armour) .sct-dc {
-  display: grid;
-  gap: 14px;
-  margin: 10px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc {
-  --sct-dcx-fantasy: var(--sc-gold-deep);
-  --sct-dcx-offense: #1b6fc2;
-  --sct-dcx-defense: #d3313a;
-  --sct-dcx-special: #0f6b4f;
-  --sct-dcx-ok: #16a34a;
-  --sct-dcx-out: #dc2626;
-}
-
-/* The one-paragraph summary of the listed starters, directly under the heading. */
-:is(.sct, #sct-table-armour) .sct-dc-summary {
-  margin: 8px 0 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--sc-ink);
-}
-
-/* The view filter. With scripting off every card shows and the buttons, which
-   could do nothing, are hidden; wireDepthViews sets data-sct-dc="js" and hides
-   all but the pressed view. */
-:is(.sct, #sct-table-armour) .sct-dc-views {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc:not([data-sct-dc="js"]) .sct-dc-views {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-view {
-  margin: 0;
-  padding: 7px 14px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface);
-  box-shadow: none;
-  color: var(--sc-navy);
-  font-family: var(--sc-font);
-  font-size: 0.86rem;
-  font-weight: 700;
-  line-height: 1.2;
-  text-transform: none;
-  letter-spacing: 0;
-  cursor: pointer;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-view:hover {
-  border-color: var(--sc-navy);
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-view[aria-pressed="true"] {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-  color: #fff;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-view:focus-visible {
-  outline: 2px solid var(--sc-gold);
-  outline-offset: 2px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx[hidden] {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx {
-  margin: 0;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
-  margin: 0 0 12px;
-}
-
-/* The formation chip and the unit grades open the card now that it has no title. */
-:is(.sct, #sct-table-armour) .sct-dcx-aside {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-formation {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--sc-navy) 8%, #fff);
-  color: var(--sc-navy);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-folded,
-:is(.sct, #sct-table-armour) .sct-dcx-fan-note {
-  margin: -4px 0 12px;
-}
-
-
-/* Unit grades: "PASSING GAME  A" in a thin outlined pill, the letter in the
-   tone of the rank it stands for. */
-:is(.sct, #sct-table-armour) .sct-dcx-grades {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-grade {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border: 1px solid var(--sc-border);
-  border-radius: 4px;
-  background: var(--sc-surface);
-  color: var(--sc-navy);
-  font-size: 0.66rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-grade-mark {
-  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  font-family: var(--sc-font);
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0;
-  color: var(--sc-gold-deep);
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-grade[data-tone="good"] .sct-dcx-grade-mark { color: var(--sct-dcx-ok); }
-:is(.sct, #sct-table-armour) .sct-dcx-grade[data-tone="poor"] .sct-dcx-grade-mark { color: var(--sct-dcx-out); }
-
-/* The grid: a label column and four strings. The label row and each position
-   row share one template, so the FIRST / SECOND heads sit over their cells. */
-:is(.sct, #sct-table-armour) .sct-dcx-grid {
-  --sct-dcx-pos-col: 52px;
-  --sct-dcx-gap: 10px;
-  display: block;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-row {
-  display: grid;
-  grid-template-columns: var(--sct-dcx-pos-col) minmax(0, 1fr);
-  gap: 0 var(--sct-dcx-gap);
-  align-items: center;
-}
-
-/* The string heads, laid over the cell columns with the cells' own gap: the
-   label column, then four equal tracks, which is what the cells divide the
-   remaining width into. */
-:is(.sct, #sct-table-armour) .sct-dcx-labels {
-  display: grid;
-  grid-template-columns: var(--sct-dcx-pos-col) repeat(4, minmax(0, 1fr));
-  gap: 0 var(--sct-dcx-gap);
-  padding: 0 0 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-labels > span {
-  color: var(--sc-muted);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-row {
-  padding: 7px 0;
-  border-top: 1px solid var(--sc-border);
-}
-
-/* The position label. Divi's bare <h4> rules are the reason for the full
-   reset; the !important pair is the heading armour (see the checklist at the
-   top of this file). */
-.sct-dcx-pos {
-  margin: 0;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 0.8rem !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* The cells: Divi's `#left-area ol` (padding 0 0 23px, line-height 26px) and
-   `ol li` margin outrank one class, hence the armour prefix and the reset. */
-:is(.sct, #sct-table-armour) ol.sct-dcx-cells {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--sct-dcx-gap);
-  margin: 0;
-  padding: 0;
-  line-height: 1.3;
-}
-
-:is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-cells > li {
-  margin: 0;
-  padding: 0;
-}
-
-/* One player in a box: the headshot well, then name over service. */
-:is(.sct, #sct-table-armour) .sct-dcx-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  min-height: 56px;
-  padding: 7px 10px;
-  border: 1px solid var(--sc-border);
-  border-radius: 6px;
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-avatar {
-  position: relative;
-  display: block;
-  width: 40px;
-  height: 40px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-well {
-  position: relative;
-  display: block;
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  border-radius: 50%;
-  background-color: color-mix(in srgb, var(--team-primary, #0b1634) 10%, #fff);
-  box-shadow: inset 0 0 0 1px var(--sc-hairline);
-}
-
-/* Top-anchored like every other headshot on the page: shoulders-up crops lose
-   the forehead when centered. */
-:is(.sct, #sct-table-armour) .sct-dcx-photo {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-body {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name {
-  font-size: 0.84rem;
-  font-weight: 700;
-  line-height: 1.25;
-  white-space: normal;
-  color: var(--sc-ink);
-}
-
-/* Whole names: the box is the width of a quarter of the chart, and the tool
-   itself prints the name rather than an ellipsis. */
-:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name-long {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  clip-path: none;
-  white-space: normal;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-card .sct-depth-name-brief {
-  display: none;
-}
-
-/* The designation as a tag on the photo's bottom-right corner, ringed in the
-   box color so it reads as sitting on top of the circle. */
-:is(.sct, #sct-table-armour) .sct-dcx-card .sct-dcx-tag {
-  position: absolute;
-  right: -7px;
-  bottom: -3px;
-  min-width: 0;
-  padding: 1px 5px;
-  font-size: 0.56rem;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 0 2px var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-sub {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  color: var(--sc-muted);
-  font-size: 0.66rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-subpos {
-  color: var(--sc-muted-strong);
-  letter-spacing: 0.04em;
-}
-
-/* The Fantasy view's season PPR rank, "WR7", ahead of the service line. */
-:is(.sct, #sct-table-armour) .sct-dcx-rank {
-  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  font-family: var(--sc-font);
-  color: var(--sc-navy);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-rookie {
-  color: var(--sct-dcx-defense);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-new {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--sct-pos-rb) 12%, #fff);
-  color: var(--sct-pos-rb);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 :is(.sct, #sct-table-armour) .sct-dc-move {
   font-size: 0.55rem;
   line-height: 1;
@@ -17757,77 +16771,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-dc-move.is-up { color: var(--sct-pos-rb); }
 :is(.sct, #sct-table-armour) .sct-dc-move.is-down { color: var(--sct-pos-qb); }
-
-/* In the order, not set apart: the tool lists him where he stands. Only the
-   photo drops back; the name stays at full contrast. */
-:is(.sct, #sct-table-armour) .sct-dcx-card.is-sidelined .sct-dcx-photo {
-  filter: grayscale(0.7);
-  opacity: 0.6;
-}
-
-/* Deeper than fourth string. */
-:is(.sct, #sct-table-armour) .sct-dcx-more {
-  margin: 14px 0 0;
-  padding: 12px 0 0;
-  border-top: 1px solid var(--sc-border);
-}
-
-.sct-dcx-more-title {
-  margin: 0 0 8px;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 0.68rem !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-more-count {
-  color: var(--sc-muted);
-}
-
-/* The fantasy card: one group per position under its own heading, the
-   boxes four across like the chart, each labelled with its rank. */
-:is(.sct, #sct-table-armour) .sct-dcx-fan {
-  padding: 10px 0 2px;
-  border-top: 1px solid var(--sc-border);
-}
-
-.sct-dcx-fan-title {
-  margin: 0 0 8px;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 0.8rem !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-fan {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-/* The rank label in a fantasy box ("WR1"): a small navy pill, so it never
-   reads as the league PPR rank beside it. */
-:is(.sct, #sct-table-armour) .sct-dcx-fan .sct-dcx-subpos,
-:is(.sct, #sct-table-armour) .sct-dcx-more .sct-dcx-subpos {
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--sc-navy) 8%, #fff);
-  color: var(--sc-navy);
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-dcx-rank-key {
-  margin-right: 3px;
-  color: var(--sc-muted);
-  font-family: inherit;
-  font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
 
 /* The two link clusters under the questions: compact pills in a wrapping
    row, the club's own pages first, then the fantasy tools. */
@@ -17873,50 +16816,6 @@ a.sct-ex-game:hover .sct-ex-line {
 /* Narrow: no room for five columns. The string heads go, each position
    stacks its label over a two-across run of boxes, and every box prints its
    own string number in the corner so the order still reads. */
-@media (max-width: 640px) {
-  :is(.sct, #sct-table-armour) .sct-dcx {
-    padding: 14px 12px 16px;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dcx-labels {
-    display: none;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dcx-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-    padding: 10px 0;
-  }
-
-  :is(.sct, #sct-table-armour) ol.sct-dcx-cells,
-  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-loose,
-  :is(.sct, #sct-table-armour) ol.sct-dcx-cells.is-fan {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dcx-blank {
-    display: none;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-dcx-card {
-    padding: 6px 8px;
-    padding-right: 18px;
-  }
-
-  /* Bottom corner, clear of a designation badge wrapping after the name. */
-  :is(.sct, #sct-table-armour) .sct-dcx-cells:not(.is-loose) .sct-dcx-card::after {
-    content: attr(data-rank);
-    position: absolute;
-    right: 7px;
-    bottom: 6px;
-    color: var(--sc-muted);
-    font-size: 0.6rem;
-    font-weight: 800;
-    line-height: 1;
-  }
-}
-
 /* ---- the pair page's "Last meeting" block above the preview (the SEO brief
    of 2026-10-10): the result as the section title, the dated page's box score
    as one link, then the top six fantasy scorers from that game. House style:
@@ -18067,7 +16966,6 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 12px;
   opacity: 0.8;
 }
-
 
 /* ---- "Starters vs the Defense" under the Last meeting cards (mak,
    2026-10-22, from a screenshot of another tool, in house style): two
@@ -18649,828 +17547,6 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ======================================================================
-   Draft tab (2026-10-23): the next draft's picks by round, and the last five
-   draft classes. One continuous view since 2026-10-29 (the two used to sit
-   behind the Depth Chart tab's view switch): an intro line, then the two
-   panels stacked. Everything below is the content.
-   ====================================================================== */
-
-:is(.sct, #sct-table-armour) .sct-dr {
-  --dr-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --dr-radius: 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-note {
-  margin: 0 0 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-panel + .sct-dr-panel {
-  margin-top: 18px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-panel {
-  /* A grid item: without this the table's minimum width is the panel's. */
-  min-width: 0;
-  margin: 0;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-h3 {
-  margin: 0 0 4px;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 1.15rem !important;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-h4 {
-  margin: 0;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-size: 0.98rem !important;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-lede {
-  margin: 0 0 16px;
-  color: var(--sc-ink);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-/* The numerals wear the hub's figure face, through --sc-font so the theme
-   armour's font-family pin does not win over them. */
-:is(.sct, #sct-table-armour) .sct-dr-num {
-  --sc-font: var(--dr-display);
-  font-family: var(--dr-display);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-foot {
-  margin: 16px 0 0;
-}
-
-/* ---- picks view: a capital sheet (2026-10-29) ------------------------
-   Title, a stat strip, a kicker line, then one row per round: the round
-   number in the display face, the picks as dots, the count held at the
-   right edge. Luxury is margin at the edges, density in the data. The
-   copy above and below the ledger is centered (mak, same day); the ledger
-   itself keeps its left edge. */
-
-:is(.sct, #sct-table-armour) .sct-dr-cap :is(.sct-dr-h3, .sct-dr-kicker, .sct-dr-foot) {
-  text-align: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-cap :is(.sct-dr-strip, .sct-dr-legend) {
-  justify-content: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 0;
-  margin: 2px 0 6px;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-strip-item + .sct-dr-strip-item::before {
-  content: "\00b7";
-  margin: 0 7px;
-  color: var(--sc-border);
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-strip .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 1rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-kicker {
-  margin: 0 0 14px;
-  color: var(--sc-ink);
-  font-size: 0.86rem;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-ledger {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--sc-hairline);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-row {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 24px;
-  align-items: center;
-  gap: 10px;
-  min-height: 34px;
-  margin: 0;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--sc-hairline);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-rd {
-  display: flex;
-  align-items: baseline;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-rd .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 1.05rem;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-rd .sct-dr-num:first-of-type {
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-right: 1px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dots {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 14px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dot {
-  display: inline-block;
-  flex: 0 0 auto;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--sc-navy);
-  box-sizing: border-box;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dot.is-from {
-  background: var(--sc-gold);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dot.is-sent {
-  background: transparent;
-  border: 2px solid #d3313a;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dot-club {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--sc-navy);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-mark.is-sent .sct-dr-dot-club {
-  color: var(--sc-muted);
-  font-weight: 600;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-mark.is-sent .sct-dr-dot-crest {
-  opacity: 0.55;
-  filter: grayscale(1);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-dot-crest {
-  display: block;
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-none {
-  color: var(--sc-muted);
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-row-count {
-  text-align: right;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-row-count .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 1.05rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-row.is-empty .sct-dr-row-count .sct-dr-num,
-:is(.sct, #sct-table-armour) .sct-dr-row.is-empty .sct-dr-rd .sct-dr-num {
-  color: var(--sc-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 10px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-legend .sct-dr-dot {
-  width: 9px;
-  height: 9px;
-}
-
-/* ---- the tab's grid: a rail of two cards beside the class tables ------ */
-
-:is(.sct, #sct-table-armour) .sct-dr-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  grid-template-areas: "classes rail";
-  gap: 20px;
-  align-items: start;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-grid.is-rail-only {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "rail";
-}
-
-/* The rail: the next draft's picks card, then the Last 5 Drafts card. */
-:is(.sct, #sct-table-armour) .sct-dr-rail {
-  grid-area: rail;
-  display: grid;
-  gap: 18px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-rail > .sct-dr-panel {
-  margin: 0;
-  padding: 18px 18px 20px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-classes {
-  grid-area: classes;
-  min-width: 0;
-}
-
-/* The Last 5 Drafts card: centered copy (mak, 2026-10-29): the title, lede,
-   box headings and Round 1 chips. The share rows keep their label / bar /
-   count grid, since the bars only read against a shared left edge. */
-:is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
-  display: grid;
-  gap: 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-hist-card :is(.sct-dr-h3, .sct-dr-kicker, .sct-dr-h4, .sct-dr-r1-none, .sct-dr-foot) {
-  text-align: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-hist-card .sct-dr-strip {
-  justify-content: center;
-}
-
-/* The gold Round 1 marker on a bar row, and the key under the list. */
-:is(.sct, #sct-table-armour) .sct-dr-share-r1 {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 5px;
-  border-radius: 50%;
-  background: var(--sc-gold);
-  vertical-align: 2px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-key {
-  margin: 8px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-key .sct-dr-share-r1 {
-  margin: 0 5px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-shares {
-  padding: 14px 16px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--dr-radius);
-  background: var(--sc-surface-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-shares .sct-dr-h4 {
-  margin-bottom: 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-list {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 72px;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-label {
-  color: var(--sc-navy);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-bar {
-  display: block;
-  height: 8px;
-  border-radius: 4px;
-  background: var(--sc-hairline);
-  overflow: hidden;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-fill {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--team-primary, var(--sc-navy));
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-pct {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-pct .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 1.05rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-share-count {
-  color: var(--sc-muted);
-  font-size: 0.74rem;
-  font-weight: 600;
-  min-width: 2.6em;
-  text-align: right;
-}
-
-/* The Round 1 picks as a timeline (2026-10-29): one container with the
-   club's rule down its left edge, one hairline row per pick, the year
-   first in the display face, the name, the broad group, the slot at the
-   right edge. */
-:is(.sct, #sct-table-armour) .sct-dr-r1-list {
-  margin: 0;
-  padding: 0 0 0 10px;
-  list-style: none;
-  border-left: 3px solid var(--team-primary, var(--sc-navy));
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1 {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--sc-hairline);
-  font-size: 0.86rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1:last-child {
-  border-bottom: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1-year .sct-dr-num {
-  color: var(--sc-navy);
-  font-size: 0.98rem;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1 .sct-dr-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1 .sct-dr-pos {
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--sc-surface);
-  border: 1px solid var(--sc-border);
-  color: var(--sc-navy);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1-meta {
-  color: var(--sc-muted);
-  font-size: 0.76rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-r1-none {
-  margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.86rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-season + .sct-dr-season {
-  margin-top: 18px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-season-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 0 0 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-season-sum {
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-scroll {
-  margin: 0;
-  overflow-x: auto;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--dr-radius);
-  background: var(--sc-surface);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-scroll:focus-visible {
-  outline: 2px solid var(--sc-navy);
-  outline-offset: 2px;
-}
-
-:is(.sct, #sct-table-armour) table.sct-dr-table:not(.variations) {
-  width: 100%;
-  min-width: 700px;
-  margin: 0;
-  border: 0;
-  border-collapse: collapse;
-  font-size: 0.86rem;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td) {
-  padding: 5px 12px;
-  border: 0;
-  border-bottom: 1px solid var(--sc-hairline);
-  color: var(--sc-ink);
-  font-weight: 400;
-  text-align: left;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table thead th {
-  padding: 7px 12px;
-  background: var(--sc-surface-soft);
-  color: var(--sc-muted) !important;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table thead th abbr {
-  text-decoration: none;
-  border: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table tbody tr:last-child :where(th, td) {
-  border-bottom: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td).is-num {
-  text-align: right;
-  width: 1%;
-}
-
-/* Rd and Pick read from the left (mak, 2026-10-29); Pro Bowls stays right. */
-:is(.sct, #sct-table-armour) .sct-dr-table :where(th, td).is-num:not(.is-pb) {
-  text-align: left;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table tbody td.is-num {
-  --sc-font: var(--dr-display);
-  font-family: var(--dr-display);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--sc-navy);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table th.is-player {
-  width: 1%;
-  min-width: 190px;
-}
-
-/* Player column (2026-10-29): the headshot in a small round well ahead of
-   the name, the same pipeline and ground as the Contracts release cards.
-   A pick without a photo keeps the empty well, so the names stay in one
-   column whether or not the crosswalk knows the player. */
-:is(.sct, #sct-table-armour) .sct-dr-player {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  vertical-align: middle;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-face {
-  display: block;
-  flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
-  overflow: hidden;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      120% 90% at 50% 8%,
-      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
-      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
-    );
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-face-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-}
-
-/* College column (same date): the school's crest, shown whole in a small
-   square beside the name. The square stays when no crest is paired. */
-:is(.sct, #sct-table-armour) .sct-dr-college {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-  vertical-align: middle;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-crest {
-  display: block;
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-}
-
-/* The name sits under the crest (mak, 2026-10-29), small and quiet. */
-:is(.sct, #sct-table-armour) .sct-dr-college-name {
-  font-size: 0.74rem;
-  line-height: 1.1;
-  color: var(--sc-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-crest-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* The college column takes the slack, so the name does not sit a field
-   away from its position pill. */
-:is(.sct, #sct-table-armour) .sct-dr-table .is-college {
-  width: auto;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-name {
-  color: var(--sc-navy);
-  font-weight: 700;
-}
-
-/* One affordance for every name: no resting underline on the linked ones,
-   a gold underline on hover; a name without a page is ink, not link navy. */
-:is(.sct, #sct-table-armour) a.sct-dr-name {
-  border-bottom: 0;
-}
-
-:is(.sct, #sct-table-armour) a.sct-dr-name:hover {
-  text-decoration: underline;
-  text-decoration-color: var(--sc-gold);
-  text-underline-offset: 2px;
-}
-
-:is(.sct, #sct-table-armour) span.sct-dr-name {
-  color: var(--sc-ink);
-}
-
-/* Round boundaries: a heavier rule where the round changes, and the round
-   number bold only on its first row, so the draft's shape - early capital,
-   late darts - reads down the first column. */
-:is(.sct, #sct-table-armour) .sct-dr-table tbody tr.is-round-start :where(th, td) {
-  border-top: 2px solid var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table tbody td.is-round-again {
-  color: var(--sc-muted);
-  font-weight: 500;
-}
-
-/* Status badges: the one grade the table gives. Right-aligned, header and
-   cells, with the where-now line under the badge's right edge (mak,
-   2026-10-29). */
-:is(.sct, #sct-table-armour) .sct-dr-table .is-status {
-  width: 1%;
-  text-align: right;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-status {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--sc-surface-soft);
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-status[data-status="active"] {
-  color: #1d6b43;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-status[data-status="traded"] {
-  color: var(--sc-navy);
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-status:is(
-    [data-status="pup"],
-    [data-status="nfi"],
-    [data-status="reserve"],
-    [data-status="suspended"],
-    [data-status="exempt"]
-  ) {
-  color: #8a5f05;
-}
-
-/* Injured reserve reads red, not amber (mak, 2026-11-02). */
-:is(.sct, #sct-table-armour) .sct-dr-status[data-status="ir"] {
-  color: #b91c1c;
-}
-
-/* Where a departed player is now, under the way they left (2026-10-29). */
-:is(.sct, #sct-table-armour) .sct-dr-status-sub {
-  display: block;
-  margin-top: 1px;
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  white-space: nowrap;
-}
-
-/* In the tables the Pos and Status columns are plain text, not pills
-   (mak, 2026-10-29: "remove the pills used in the status and POS
-   columns"); the Round 1 chip list keeps its position pill. Status keeps
-   its ink cue (green Starter, amber Rotational) without the box. */
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-pos,
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-status {
-  display: inline;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-pos {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-status {
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table td.is-pb {
-  color: var(--sc-muted);
-  font-weight: 500;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table td.is-pb.has-pb {
-  color: var(--sc-navy);
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-pos {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--sc-surface-soft);
-  border: 1px solid var(--sc-border);
-  color: var(--sc-navy);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table .is-college {
-  color: var(--sc-muted);
-}
-
-/* The depth chart slot under the position: "LT2", small and quiet. */
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-slot {
-  display: block;
-  margin-top: 2px;
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Pos and College centered, header and cells (mak, 2026-10-29). */
-:is(.sct, #sct-table-armour) .sct-dr-table :is(.is-pos, .is-college) {
-  text-align: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-college {
-  align-items: center;
-  text-align: center;
-}
-
-/* Rows 30% shorter (mak, 2026-11-03): 2px vertical cell padding, and the
-   two-line Pos column (position over depth slot) on tight line heights so
-   the crest-over-name stack sets the row, not the text. */
-:is(.sct, #sct-table-armour) .sct-dr-table .is-pos {
-  line-height: 1.15;
-}
-
-:is(.sct, #sct-table-armour) .sct-dr-table .sct-dr-slot {
-  line-height: 1.15;
-}
-
-@media (max-width: 900px) {
-  :is(.sct, #sct-table-armour) .sct-dr-grid {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "rail" "classes";
-  }
-  :is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-}
-
-@media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-dr-hist-boxes {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  :is(.sct, #sct-table-armour) .sct-dr-panel,
-  :is(.sct, #sct-table-armour) .sct-dr-rail > .sct-dr-panel {
-    padding: 14px 14px 16px;
-  }
-}
-
-/* ======================================================================
    Contracts tab (2026-10-23, redesigned the same day): the hub's cap
    sheet as one analysis workspace. A strip of four cap tiles, then a
    single surface holding a band of derived figures, the cut-scenario
@@ -19658,7 +17734,6 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 6px 0;
   border-top: 1px solid var(--sc-hairline);
 }
-
 
 :is(.sct, #sct-table-armour) .sct-ct-lg-label {
   grid-area: label;
@@ -20494,7 +18569,6 @@ a.sct-ex-game:hover .sct-ex-line {
   text-decoration-color: var(--ct-bad-ink);
 }
 
-
 /* ---- the release panel --------------------------------------------------- */
 
 /* The cards from before the redesign, kept at mak's request (2026-10-23):
@@ -21327,14 +19401,6 @@ a.sct-srow-team:focus-visible {
 
 .sct-path-week[data-kind="neutral"] {
   border-color: var(--sc-navy);
-  background: linear-gradient(135deg, var(--sc-navy) 50%, transparent 50%);
-}
-
-.sct-mix-key[data-kind="neutral"]::before {
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--sc-navy);
-  border-radius: 1px;
   background: linear-gradient(135deg, var(--sc-navy) 50%, transparent 50%);
 }
 
@@ -23887,8 +21953,6 @@ a.sct-srow-team:focus-visible {
  *   - .sct-ladder-title had a short bar in its left margin (see its own
  *     comment); the bar moves underneath, and keeps gold for the side that
  *     scores and navy for the side that stops.
- *   - .sct-dr-h4 only where it heads a draft class ("2025 Draft", in
- *     .sct-dr-season-head); the same class is a card sub-label elsewhere.
  *
  * Centered titles (the draft and contracts cards) center the bar.
  *
@@ -23898,13 +21962,13 @@ a.sct-srow-team:focus-visible {
 /* `!important` on the two spacing properties: the per-tab rules above state
    `padding: 0` on these headings with a heavier selector (`.sct-us .sct-us-h3`
    and the like), and without the bar's room the rule draws through the text. */
-:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title) {
+:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title) {
   position: relative;
   margin-bottom: 10px !important;
   padding-bottom: 10px !important;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title)::after {
+:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title)::after {
   content: "";
   position: absolute;
   left: 0;
@@ -23915,7 +21979,7 @@ a.sct-srow-team:focus-visible {
   background: var(--sc-gold);
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-dr-cap .sct-dr-h3, .sct-dr-hist-card .sct-dr-h3, .sct-ct-cuts .sct-ct-h3, .sct-ct-lg-h)::after {
+:is(.sct, #sct-table-armour) :is(.sct-ct-cuts .sct-ct-h3, .sct-ct-lg-h)::after {
   left: 50%;
   transform: translateX(-50%);
 }
@@ -26428,7 +24492,6 @@ a.sct-srow-team:focus-visible {
   background: linear-gradient(145deg, #fff 0%, #f9fbfe 60%, #eff5fc 100%);
 }
 
-
 /* ---- header: icon, gold rule, title over subtitle, the faint ball, gold accents */
 :is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit {
   min-height: 98px;
@@ -27607,7 +25670,6 @@ a.sct-srow-team:focus-visible {
   }
 }
 
-
 /* ===================================================================
  * Team page: the header - the hero and the tab strip (team/team-header.ts).
  * mak's pick of 2026-11-05 from two premium comparisons: "Design B", the
@@ -28306,24 +26368,11 @@ a.sct-srow-team:focus-visible {
   container-type: inline-size;
   display: grid;
   gap: 16px;
-  margin: 28px 0 0;
+  margin: 0;
   color: var(--drp-text);
   font-family: var(--sc-font);
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-flag {
-  display: inline-block;
-  justify-self: start;
-  margin: 0;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--drp-gold-light);
-  color: var(--sc-gold-deep);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
 
 :is(.sct, #sct-table-armour) .sct-drp-num {
   font-family: "Barlow", var(--sc-font);
@@ -28391,14 +26440,22 @@ a.sct-srow-team:focus-visible {
   min-width: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-title {
+:is(.sct, #sct-table-armour) .sct-drp-title,
+:is(.sct, #sct-table-armour) .sct-drp-title.sct-h2 {
   margin: 0;
   padding: 0;
+  border: 0;
   color: #fff !important;
   font-size: 1.95rem !important;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* No gold rule under the banner's heading: the banner is the rule. */
+:is(.sct, #sct-table-armour) .sct-drp-title.sct-h2::after {
+  display: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-sub {
@@ -28606,6 +26663,8 @@ a.sct-srow-team:focus-visible {
   color: var(--drp-navy-900);
   font-weight: 700;
   text-decoration: none;
+  /* The chart's link rule draws a border under a name at rest; not here. */
+  border-bottom: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-table .sct-dr-name,
@@ -29162,7 +27221,8 @@ a.sct-srow-team:focus-visible {
     height: 46px;
   }
 
-  :is(.sct, #sct-table-armour) .sct-drp-title {
+  :is(.sct, #sct-table-armour) .sct-drp-title,
+  :is(.sct, #sct-table-armour) .sct-drp-title.sct-h2 {
     font-size: 1.4rem !important;
   }
 
@@ -29751,23 +27811,9 @@ a.sct-srow-team:focus-visible {
   container-type: inline-size;
   display: grid;
   gap: 14px;
-  margin: 28px 0 0;
+  margin: 0;
   color: var(--dpp-text);
   font-family: var(--sc-font);
-}
-
-:is(.sct, #sct-table-armour) .sct-dpp-flag {
-  display: inline-block;
-  justify-self: start;
-  margin: 0;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--dpp-gold-light);
-  color: var(--sc-gold-deep);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 /* ---- the banner */
@@ -29827,14 +27873,22 @@ a.sct-srow-team:focus-visible {
   min-width: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-dpp-title {
+:is(.sct, #sct-table-armour) .sct-dpp-title,
+:is(.sct, #sct-table-armour) .sct-dpp-title.sct-h2 {
   margin: 0;
   padding: 0;
+  border: 0;
   color: #fff !important;
   font-size: 1.95rem !important;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* No gold rule under the banner's heading: the banner is the rule. */
+:is(.sct, #sct-table-armour) .sct-dpp-title.sct-h2::after {
+  display: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-dpp-sub {
@@ -30410,7 +28464,8 @@ a.sct-srow-team:focus-visible {
     height: 46px;
   }
 
-  :is(.sct, #sct-table-armour) .sct-dpp-title {
+  :is(.sct, #sct-table-armour) .sct-dpp-title,
+  :is(.sct, #sct-table-armour) .sct-dpp-title.sct-h2 {
     font-size: 1.4rem !important;
   }
 
@@ -30479,11 +28534,13 @@ a.sct-srow-team:focus-visible {
 }
 
 /* ===================================================================
- * Stats tab: the premium comparison of the whole tab (mak's brief,
- * 2026-11-05, attached_assets/teamstats.png), rendered UNDER the original
- * blocks (team/stats-premium.ts). Own size container ("sp"); every rule is
- * under .sct .sct-sp and nothing reaches the original ladders. The bar fill
- * and tier tints are the tab's own (rankFill / statTier), only restyled. */
+ * Stats tab: THE tab since 2026-11-05 (mak's brief, attached_assets/
+ * teamstats.png, approved the same day; the old ladders, tiles, mixes and
+ * history table are gone). Drawn by team/stats-premium.ts. Own size container
+ * ("sp"); every rule is under .sct .sct-sp. The bar fill and tier tints are
+ * the tab's own (rankFill / statTier), only restyled. The banner holds the
+ * tab's heading (an .sct-h2, promoted to the H1 on the section address), so
+ * the .sct-h2 dress is undone there and the heading is white. */
 
 .sct .sct-sp {
   --sp-navy-950: #071a35;
@@ -30506,7 +28563,7 @@ a.sct-srow-team:focus-visible {
   --sp-track: #dbe5f0;
   container-type: inline-size;
   container-name: sp;
-  margin: 36px 0 8px;
+  margin: 0 0 8px;
   color: var(--sp-text);
   font-family: var(--sc-font-text, inherit);
 }
@@ -30528,15 +28585,39 @@ a.sct-srow-team:focus-visible {
   margin: 0;
 }
 
+/* Headings inside the tab: the host theme's h2/h3 rules (margins, sizes,
+   colors) are undone here; each heading takes its block's size below. */
+.sct .sct-sp h2,
+.sct .sct-sp h3 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.sct .sct-sp .sct-sp-band-title,
+.sct .sct-sp .sct-sp-unit-title {
+  font-size: 1.15rem !important;
+}
+
+.sct .sct-sp .sct-sp-panel-title {
+  font-size: 0.98rem !important;
+}
+
+.sct .sct-sp .sct-sp-mix-title {
+  font-size: 0.95rem !important;
+}
+
 /* ---- the title banner */
 .sct .sct-sp-hero {
   position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 84px;
+  min-height: 80px;
   margin: 0 0 16px;
-  padding: 12px 24px;
+  padding: 9px 24px;
   border-radius: 14px;
   background: linear-gradient(110deg, #071a35 0%, #10447d 65%, #092448 100%);
   color: #fff;
@@ -30596,12 +28677,23 @@ a.sct-srow-team:focus-visible {
   padding-right: 80px;
 }
 
-.sct .sct-sp-title {
-  color: #fff;
-  font-size: 1.9rem;
+.sct .sct-sp-hero .sct-sp-title,
+.sct .sct-sp-hero .sct-sp-title.sct-h2 {
+  margin: 0;
+  padding: 0;
+  color: #fff !important;
+  font-size: 1.9rem !important;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.1;
+}
+
+.sct .sct-sp-hero .sct-sp-title::after {
+  display: none;
+}
+
+.sct .sct-sp-note {
+  margin: -8px 0 16px !important;
 }
 
 .sct .sct-sp-sub {
@@ -30837,9 +28929,9 @@ a.sct-srow-team:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 42px;
+  min-height: 40px;
   margin: 0 -12px 4px;
-  padding: 6px 12px;
+  padding: 3px 12px;
   border-bottom: 1px solid var(--sp-border-light);
   background: linear-gradient(180deg, #eef4fc 0%, #e4edf9 100%);
 }
@@ -30899,7 +28991,7 @@ a.sct-srow-team:focus-visible {
 }
 
 .sct .sct-sp-mix {
-  padding: 10px 14px 10px;
+  padding: 8px 14px 8px;
   border: 1px solid var(--sp-border);
   border-radius: 12px;
   background: var(--sp-surface);
@@ -30910,7 +29002,7 @@ a.sct-srow-team:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
 .sct .sct-sp-mix-title {
@@ -30941,8 +29033,10 @@ a.sct-srow-team:focus-visible {
 
 .sct .sct-sp-mix-legend {
   display: flex;
-  gap: 16px;
-  margin-top: 6px !important;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin-top: 5px !important;
   font-size: 0.78rem;
   font-weight: 800;
   color: var(--sp-text);
@@ -30964,9 +29058,10 @@ a.sct-srow-team:focus-visible {
 }
 
 .sct .sct-sp-mix-caption {
-  margin-top: 2px !important;
+  margin-top: 0 !important;
   color: var(--sp-muted);
   font-size: 0.7rem;
+  font-weight: 400;
 }
 
 /* ---- Season History: the tinted table */
@@ -31148,8 +29243,9 @@ a.sct-srow-team:focus-visible {
     display: none;
   }
 
-  .sct .sct-sp-title {
-    font-size: 1.4rem;
+  .sct .sct-sp-hero .sct-sp-title,
+  .sct .sct-sp-hero .sct-sp-title.sct-h2 {
+    font-size: 1.4rem !important;
   }
 
   .sct .sct-sp-sub {
@@ -31166,6 +29262,8 @@ a.sct-srow-team:focus-visible {
   .sct .sct-sp-label {
     font-size: 0.68rem;
     letter-spacing: 0.02em;
+    line-height: 1.1;
+    white-space: normal;
   }
 
   .sct .sct-sp-value {

@@ -673,22 +673,6 @@ export const TIER_WORD: Record<string, string> = {
 };
 
 /**
- * The accent a card paints a rank with - the tier, plus a top-five band.
- *
- * A shade finer than the tier itself, and only ever a color. The tier is the
- * page's verdict and stays three buckets wide everywhere it is spoken aloud,
- * because the difference between 11th and 13th is noise. This exists because a
- * row of cards has to be sortable at a glance, and 2nd earns the right to
- * separate itself from 8th when the two are sitting side by side. Gold rather
- * than a deeper green: the top of the league is the one result on this page
- * worth spending the brand color on.
- */
-function rankAccent(tier: string, rank: number | null): string {
-  if (tier === "good" && rank !== null && rank <= 5) return "elite";
-  return tier;
-}
-
-/**
  * The Stats tab's opening heading, and nothing else. The four per-game cards
  * (Points/G, Pass Yds/G, Rush Yds/G, Total Yds/G) that used to sit under it
  * were removed at mak's request (2026-10-22); the ladders below carry the same
@@ -760,76 +744,6 @@ function statTier(row: StatRow): "good" | "mid" | "poor" | "none" {
 }
 
 /**
- * One row of a ladder: label, rank bar, value, rank.
- *
- * The bar carries `aria-hidden` because it says nothing the rank chip beside it
- * does not already say in words - the same reasoning as the tier color on the
- * snapshot cards, which is doubled by TIER_WORD rather than left to color.
- */
-function statRow(row: StatRow, summary = false): string {
-  const tier = statTier(row);
-  const bar =
-    row.rank !== null
-      ? `<span class="sct-stat-bar" data-tier="${tier}" aria-hidden="true">` +
-        `<span class="sct-stat-fill" style="${escapeHtml(`width:${rankFill(row.rank)}`)}"></span>` +
-        `</span>`
-      : // No rank, no track. An empty bar next to a real number would imply a
-        // league position we did not establish.
-        `<span class="sct-stat-bar is-empty" aria-hidden="true"></span>`;
-
-  const rank = row.rankLabel
-    ? `<span class="sct-stat-rank" data-tier="${tier}">${escapeHtml(row.rankLabel)}` +
-      (tier !== "none"
-        ? `<span class="sct-visually-hidden"> of 32 - ${escapeHtml(TIER_WORD[tier] ?? "")}</span>`
-        : `<span class="sct-visually-hidden"> of 32</span>`) +
-      `</span>`
-    : "";
-
-  return (
-    `<li class="sct-stat${summary ? " is-summary" : ""}">` +
-    `<span class="sct-stat-label">${escapeHtml(row.label)}` +
-    `<span class="sct-visually-hidden"> - ${escapeHtml(row.description)}</span></span>` +
-    bar +
-    `<span class="sct-stat-value">${escapeHtml(row.value)}</span>` +
-    rank +
-    `</li>`
-  );
-}
-
-/**
- * One unit's ladder.
- *
- * `data-unit` is what the stylesheet uses to put the gold rule beside Offense
- * and the navy one beside Defense; nothing here decides color. `kind` marks
- * the Efficiency ladders so the phone layout can slot each one under its own
- * unit instead of after both.
- */
-function statLadder(
-  unit: "offense" | "defense" | "team",
-  title: string,
-  caption: string,
-  rows: StatRow[],
-  kind = "",
-  options: {
-    /** Spans both columns of the ladder grid: the team-level buckets. */
-    wide?: boolean;
-    /** The row drawn as the bucket's summary - turnover margin. */
-    summaryKey?: string;
-  } = {},
-): string {
-  if (rows.length === 0) return "";
-  return (
-    `<section class="sct-ladder${options.wide ? " is-wide" : ""}" data-unit="${unit}"${kind ? ` data-kind="${kind}"` : ""}>` +
-    `<h3 class="sct-ladder-title">${escapeHtml(title)}</h3>` +
-    `<p class="sct-ladder-caption">${escapeHtml(caption)}</p>` +
-    `<ul class="sct-ladder-list">${rows
-      .map((row) => statRow(row, row.key === options.summaryKey))
-      .join("")}</ul>` +
-    `</section>`
-  );
-}
-
-/**
  * The week the stats provider's numbers have reached: the week of the team's
  * Nth regular-season game, N being the games the provider says it has played.
  * Read off the schedule rather than the calendar because the document is
@@ -895,74 +809,8 @@ const PACE_KEYS = [
 const prefixed = (prefix: string, keys: readonly string[]): string[] =>
   keys.map((key) => `${prefix}-${key}`);
 
-/** A tile footer's accent, from the row's tier. */
-function tileAccent(row: StatRow): string {
-  return rankAccent(statTier(row), row.rank);
-}
-
-/** A compact card for the metrics that are a number rather than a comparison. */
-function statTile(row: StatRow): string {
-  const tier = statTier(row);
-  const accent = tileAccent(row);
-
-  // The percentile groove along the bottom edge. Same rank-not-value fill as a
-  // ladder bar, drawn at 3px because it is a texture for scanning eight cards
-  // at once rather than a figure to be read off - the ordinal above it is the
-  // figure. No rank, no groove, for the reason the ladder gives.
-  const track =
-    row.rank !== null
-      ? `<span class="sct-tile-track" data-tier="${accent}" aria-hidden="true">` +
-        `<span class="sct-tile-fill" style="${escapeHtml(`width:${rankFill(row.rank)}`)}"></span>` +
-        `</span>`
-      : "";
-
-  // The rank alone on one ruled line. The year-on-year movement arrow that
-  // used to sit beside it was removed at mak's request (2026-10-20).
-  const foot = row.rankLabel
-    ? `<p class="sct-tile-foot">` +
-      // The tier is carried as a word as well as a color and a dot - a reader
-      // who cannot distinguish the tints still gets the judgment.
-      `<span class="sct-tile-rank" data-tier="${tier}" data-accent="${accent}">` +
-      `<span class="sct-tile-dot" aria-hidden="true"></span>` +
-      `<span class="sct-tile-rank-value">${escapeHtml(row.rankLabel)}</span>` +
-      // No "NFL rank" caption beside the ordinal (mak, 2026-10-20), matching
-      // the snapshot cards and the ladders. A screen reader is still told the
-      // denominator and the tier outright.
-      `<span class="sct-visually-hidden"> of 32` +
-      (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
-      `</span>` +
-      `</span>` +
-      `</p>`
-    : "";
-
-  return (
-    `<li class="sct-tile">` +
-    `<p class="sct-tile-label">${escapeHtml(row.label)}` +
-    `<span class="sct-visually-hidden"> (${escapeHtml(row.description)})</span></p>` +
-    `<p class="sct-tile-value">${escapeHtml(row.value)}</p>` +
-    foot +
-    track +
-    `</li>`
-  );
-}
-
 /* ---------------------------------------------------------- season history */
 
-/**
- * Five seasons as a table.
- *
- * A real `<table>`, unlike everything else on this page. The rest of the hub is
- * lists of things that happen to be laid out in columns - a schedule, a depth
- * chart - and those are marked up as lists because that is what they are. This
- * is genuinely a matrix: every cell is the intersection of a season and a
- * metric, and a reader on a screen reader needs to be told which row and which
- * column they are in. `<th scope>` is the only thing that does that.
- *
- * It is the one block on the tab that scrolls sideways on a phone. Six metric
- * columns cannot be stacked without becoming five separate cards - at which
- * point the comparison between seasons, the entire reason the block exists, is
- * gone. The stylesheet fades the right edge so the scroll is visible.
- */
 /**
  * Rank tiers for the history table, finer than the page-wide three.
  *
@@ -984,268 +832,17 @@ function historyTier(row: StatRow): "elite" | "good" | "mid" | "poor" | "none" {
 }
 
 /**
- * Which of the three groups a history column belongs to.
- *
- * Read off the key prefix the metric definitions already use rather than a
- * second list kept in step by hand: a column added to HISTORY_KEYS lands in the
- * right group without this being touched, and one that is neither side of the
- * ball - turnover margin is the only one today - falls into its own group at
- * the end, which is where the table wants it anyway.
- */
-/**
- * The heat-map tint behind a history cell, from its rank.
- *
- * A diverging scale: 1st is the deepest green, 32nd the deepest red, and the
- * middle of the league fades to nothing so the eye lands on the extremes. The
- * tints are alpha washes over the row rather than solid fills, so the navy
- * figure and the tier-colored ordinal keep their contrast on every cell.
- * Volume rows and unranked cells get no wash (mak, 2026-10-22: the table is a
- * heat map).
- */
-function historyHeat(row: StatRow): string {
-  if (row.direction === "volume" || row.rank === null) return "";
-  const t = Math.min(1, Math.max(0, (row.rank - 1) / 31));
-  const strength = Math.abs(t - 0.5) * 2; // 0 at 16th/17th, 1 at the ends
-  const alpha = (0.06 + strength * 0.3).toFixed(3);
-  return t <= 0.5
-    ? `rgba(20,107,82,${alpha})`
-    : `rgba(148,54,58,${alpha})`;
-}
-
-function historyGroup(key: string): string {
-  if (key.startsWith("off-")) return "offense";
-  if (key.startsWith("def-")) return "defense";
-  return "other";
-}
-
-/**
- * The number behind a preformatted cell value: "28.8", "+3", "42.9%".
- *
- * Null when there is nothing to read, so a caller comparing seasons skips the
- * cell rather than treating it as a zero.
- */
-function historyNumber(value: string): number | null {
-  const parsed = Number.parseFloat(value.replace(/[^0-9.+-]/g, ""));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-/**
- * The best figure this team has posted in each column, across the seasons shown.
- *
- * The table already says where a season stood in its own league year. This is
- * the other axis, and the one a rank cannot give: whether 28.8 is a good number
- * FOR THIS TEAM, which is most of what five seasons side by side are for.
- *
- * "Best" is the metric's own good end - highest points scored, lowest points
- * allowed - so a volume metric has none and is skipped rather than being handed
- * one arbitrarily. Ties are kept: two seasons at +7 are two best seasons and
- * both get marked.
- *
- * A season still in progress is excluded from the cumulative columns, where a
- * running total is not yet the same kind of number as a finished season's.
- */
-function historyBests(history: readonly HistorySeason[]): Map<string, number> {
-  const mostGames = Math.max(
-    0,
-    ...history.map((season) => season.gamesPlayed ?? 0),
-  );
-  const bests = new Map<string, number>();
-  for (const season of history) {
-    const partial = (season.gamesPlayed ?? 0) < mostGames;
-    for (const cell of season.cells) {
-      if (cell.direction === "volume") continue;
-      if (partial && cell.cumulative) continue;
-      const value = historyNumber(cell.value);
-      if (value === null) continue;
-      const current = bests.get(cell.key);
-      if (
-        current === undefined ||
-        (cell.direction === "low" ? value < current : value > current)
-      ) {
-        bests.set(cell.key, value);
-      }
-    }
-  }
-  return bests;
-}
-
-function renderHistory(stats: TeamStats): string {
-  if (stats.history.length < 2) return "";
-
-  // Column heads come from the first row, so a metric ESPN dropped for one old
-  // season cannot silently shift the columns underneath it - a row that is
-  // missing a cell is padded below rather than closing up.
-  const columns = stats.history[0]?.cells.map((cell) => cell.key) ?? [];
-  if (columns.length === 0) return "";
-
-  // Where one group of metrics ends and the next begins, so the stylesheet can
-  // put a gap and a header divider there. Computed once from the column order
-  // rather than asked per cell, because every row needs the same answer and the
-  // first column of the table is never a boundary - there is nothing to its
-  // left to be separated from.
-  const groups = columns.map(historyGroup);
-  const startsGroup = groups.map(
-    (group, i) => i > 0 && group !== groups[i - 1],
-  );
-  const attrs = (i: number) =>
-    ` data-group="${escapeHtml(groups[i] ?? "")}"` +
-    (startsGroup[i] ? ` class="is-group-start"` : "");
-
-  const head =
-    `<tr><th scope="col" class="sct-hist-season">Season</th>` +
-    (stats.history[0]?.cells ?? [])
-      .map(
-        (cell, i) =>
-          `<th scope="col"${attrs(i)}>${escapeHtml(cell.label)}` +
-          `<span class="sct-visually-hidden"> - ${escapeHtml(cell.description)}</span></th>`,
-      )
-      .join("") +
-    `</tr>`;
-
-  const bests = historyBests(stats.history);
-  const seasonCount = stats.history.length;
-
-  const body = stats.history
-    .map((season, i) => {
-      const cells = new Map(season.cells.map((cell) => [cell.key, cell]));
-      const row = columns
-        .map((key, col) => {
-          const cell = cells.get(key);
-          // An absent cell is an empty cell. It is not a zero and it is not a
-          // dash pretending to be a measurement.
-          if (!cell)
-            return `<td class="sct-hist-cell is-empty"${attrs(col)}></td>`;
-          const tier = historyTier(cell);
-          const best =
-            bests.has(key) && historyNumber(cell.value) === bests.get(key);
-          // The gold mark is a color, so it says nothing on its own. The note
-          // is what actually carries it to a reader who is not looking at the
-          // table, and it is per-cell rather than a legend because a legend
-          // several rows away is not an explanation of this number.
-          const bestNote = best
-            ? `<span class="sct-visually-hidden"> - best of the last ` +
-              `${escapeHtml(String(seasonCount))} seasons</span>`
-            : "";
-          const cls =
-            "sct-hist-cell" + (startsGroup[col] ? " is-group-start" : "");
-          const heat = historyHeat(cell);
-          return (
-            `<td class="${cls}" data-group="${escapeHtml(groups[col] ?? "")}"` +
-            ` data-tier="${tier}"` +
-            (heat ? ` style="${escapeHtml(`--sct-heat:${heat}`)}"` : "") +
-            `>` +
-            `<span class="sct-hist-value${best ? " is-best" : ""}">` +
-            `${escapeHtml(cell.value)}${bestNote}</span>` +
-            (cell.rankLabel
-              ? `<span class="sct-hist-rank" data-tier="${tier}">` +
-                `${escapeHtml(cell.rankLabel)}` +
-                `<span class="sct-visually-hidden"> of 32</span></span>`
-              : "") +
-            `</td>`
-          );
-        })
-        .join("");
-      // "17 games" rather than "17 G". The abbreviation saved a character in a
-      // cell that had the room for the word, and read as a stat line of its own
-      // sitting directly under a four-digit year.
-      const games = season.gamesPlayed
-        ? `<span class="sct-hist-games">${escapeHtml(
-            `${season.gamesPlayed} ${season.gamesPlayed === 1 ? "game" : "games"}`,
-          )}</span>`
-        : "";
-      // The top row already carries a gold hairline down its left edge. The
-      // chip says the same thing in words, which the hairline cannot, and marks
-      // the row whose numbers are the ones every other page on this hub is
-      // quoting.
-      const current = i === 0 ? `<span class="sct-hist-now">Current</span>` : "";
-      return (
-        `<tr${i === 0 ? ` class="is-current"` : ""}>` +
-        `<th scope="row" class="sct-hist-season">` +
-        `<span class="sct-hist-year">${escapeHtml(String(season.season))}` +
-        current +
-        `</span>` +
-        games +
-        `</th>` +
-        row +
-        `</tr>`
-      );
-    })
-    .join("");
-
-  const span = stats.history[stats.history.length - 1]?.season;
-  return (
-    `<div class="sct-block">` +
-    h2("Season History", "is-sub") +
-    `<p class="sct-note">${escapeHtml(
-      span
-        ? `Every season back to ${span}, each number ranked against the 32 teams of that year. Greener cells rank nearer the top of the league, redder cells nearer the bottom.`
-        : "Each number ranked against the 32 teams of its own season. Greener cells rank nearer the top of the league, redder cells nearer the bottom.",
-    )}</p>` +
-    `<div class="sct-hist-scroll">` +
-    `<table class="sct-hist">` +
-    `<caption class="sct-visually-hidden">` +
-    `Team production by season, with each figure's NFL rank for that season.` +
-    `</caption>` +
-    `<thead>${head}</thead><tbody>${body}</tbody>` +
-    `</table>` +
-    `</div>` +
-    `</div>`
-  );
-}
-
-/**
- * A tile grid.
- *
- * `cols` is the intended full-width row length for this block - four for the
- * eight situational metrics, three for the six volume ones - so each block
- * fills complete rows rather than leaving a stray pair hanging off the end of
- * one shared four-column grid. The stylesheet overrides it below 900px, where
- * neither number fits.
- */
-function statTiles(rows: StatRow[], cols: 3 | 4): string {
-  if (rows.length === 0) return "";
-  return (
-    `<ul class="sct-tiles" data-cols="${cols}">` +
-    rows.map(statTile).join("") +
-    `</ul>`
-  );
-}
-
-/**
- * The pass/run split as one bar.
- *
- * Two numbers that sum to 100 are a proportion, and a proportion is the one
- * thing a bar shows better than a pair of figures does. Both halves are still
- * printed underneath - the bar is the shape, the legend is the fact.
- */
-function playMix(label: string, caption: string, balance: PlayBalance): string {
-  return (
-    `<div class="sct-mix">` +
-    `<p class="sct-mix-label">${escapeHtml(label)}</p>` +
-    `<span class="sct-mix-bar" aria-hidden="true">` +
-    `<span class="sct-mix-seg" data-kind="pass" style="${escapeHtml(`width:${balance.passPct.toFixed(1)}%`)}"></span>` +
-    `<span class="sct-mix-seg" data-kind="rush" style="${escapeHtml(`width:${balance.rushPct.toFixed(1)}%`)}"></span>` +
-    `</span>` +
-    `<p class="sct-mix-legend">` +
-    `<span class="sct-mix-key" data-kind="pass">Pass ${escapeHtml(balance.passPct.toFixed(1))}%</span>` +
-    `<span class="sct-mix-key" data-kind="rush">Run ${escapeHtml(balance.rushPct.toFixed(1))}%</span>` +
-    `</p>` +
-    `<p class="sct-mix-caption">${escapeHtml(caption)}</p>` +
-    `</div>`
-  );
-}
-
-/**
  * The Stats tab.
  *
- * Three blocks, in the order a reader actually asks the questions: how good is
- * each unit, how does it behave in the situations that decide drives, and how
- * much work is there to go round - which is the only one of the three a fantasy
- * manager is really here for.
+ * The blocks in the order a reader actually asks the questions: how good is
+ * each unit, how efficient, how it holds up under the rush, what it does with
+ * the ball, how much work there is to go round - and last, whether any of
+ * that is new (the history). Drawn by team/stats-premium.ts since 2026-11-05;
+ * this function decides the rows, the weeks and the heading.
  *
- * The two ladders are the same nine metrics in the same order, so the columns
- * line up row for row and "28.8 scored / 18.8 allowed" can be read across
- * without hunting. That symmetry is enforced in lib/team/stats.ts, not here.
+ * The Offense and Defense panels are the same six metrics in the same order,
+ * so the columns line up row for row and "28.8 scored / 18.8 allowed" can be
+ * read across without hunting. That symmetry is enforced in lib/team/stats.ts.
  */
 function renderTeamStats(
   data: TeamPageData,
@@ -1285,102 +882,6 @@ function renderTeamStats(
   // still serving.
   const liveWeek = stats.source === "file" && effWeek ? effWeek : statsThroughWeek(data);
   const liveThrough = liveWeek ? ` · through Week ${liveWeek}` : "";
-  // Production: the volume ladder pair, same six rows each side.
-  const ladders =
-    statLadder(
-      "offense",
-      "Offense",
-      `What they did${liveThrough}`,
-      pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
-    ) +
-    statLadder(
-      "defense",
-      "Defense",
-      `What they allowed${liveThrough}`,
-      pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
-    );
-
-  // Efficiency: the EPA rows, then the same idea in yards, all from the one
-  // play-by-play file.
-  const efficiency =
-    statLadder(
-      "offense",
-      "Offense Efficiency",
-      `Per play, what they did${eff ? effThrough : liveThrough}`,
-      eff ? efficiencyRows(eff, "offense") : pickRows(stats.offense, prefixed("off", RATE_KEYS)),
-      "efficiency",
-    ) +
-    statLadder(
-      "defense",
-      "Defense Efficiency",
-      `Per play, what they allowed${eff ? effThrough : liveThrough}`,
-      eff ? efficiencyRows(eff, "defense") : pickRows(stats.defense, prefixed("def", RATE_KEYS)),
-      "efficiency",
-    );
-
-  // Pass Protection / Pass Rush: blitzes faced and sent, with the EPA cost,
-  // time to throw from the passers' side (the defense's is the passers it
-  // faced), and the sacks at each end. Blitz rate and time to throw have no
-  // better end, so those rows rank most to least and come through untinted.
-  const passRush =
-    statLadder(
-      "offense",
-      "Pass Protection",
-      `Under the rush, what they faced${eff ? effThrough : liveThrough}`,
-      eff ? passRushRows(eff, "offense") : pickRows(stats.situational, ["sacks-allowed"]),
-      "passrush",
-    ) +
-    statLadder(
-      "defense",
-      "Pass Rush",
-      `The rush they sent, and what it allowed${eff ? effThrough : liveThrough}`,
-      eff ? passRushRows(eff, "defense") : pickRows(stats.situational, ["sacks-made"]),
-      "passrush",
-    );
-
-  // Possession & Discipline: one wide ladder, turnover margin as its summary
-  // row - takeaways and giveaways are its two halves and sit under it.
-  const possession = statLadder(
-    "team",
-    "Turnovers, Downs & Penalties",
-    `Turnover margin first; takeaways and giveaways are its two halves${liveThrough}`,
-    pickRows(stats.situational, POSSESSION_KEYS),
-    "possession",
-    { wide: true, summaryKey: "turnover-margin" },
-  );
-
-  // Pace & Play Style: the volume rows, ranked most to least, no better end.
-  const pace = statLadder(
-    "team",
-    "Snaps, Attempts & Scores",
-    `Ranked most to least, with no better end${liveThrough}`,
-    pickRows(stats.volume, PACE_KEYS),
-    "pace",
-    { wide: true },
-  );
-
-  const mix =
-    (stats.balance
-      ? playMix(
-          "Own play mix",
-          "How this offense splits its snaps.",
-          stats.balance,
-        )
-      : "") +
-    (stats.balanceFaced
-      ? playMix(
-          "Play mix faced",
-          "How opponents attack this defense.",
-          stats.balanceFaced,
-        )
-      : "");
-
-  const history = renderHistory(stats);
-
-  if (!ladders && !efficiency && !passRush && !possession && !pace && !mix && !history) {
-    return "";
-  }
-
   const games =
     stats.gamesPlayed && stats.gamesPlayed > 0
       ? ` · ${stats.gamesPlayed} game${stats.gamesPlayed === 1 ? "" : "s"}`
@@ -1389,112 +890,55 @@ function renderTeamStats(
   // getTeamStats() falls back a year when the current season has no completed
   // football in it yet, and the sentence has to describe what is on the screen
   // - `state.statsSeasonIsPrior` describes the request and would say "2026" over
-  // a block of 2025 numbers through the whole of Week 1.
-  // Only the fallback warning survives. In season the "regular season to date
-  // · N games" line under Common Questions is gone (mak, 2026-10-22).
+  // a block of 2025 numbers through the whole of Week 1. In season there is no
+  // note (mak, 2026-10-20/22); only the fallback warning survives.
   const seasonNote =
     stats.season < data.state.season
       ? `${stats.season} regular season${games} - the ${data.state.season} season has no completed team stats yet.`
       : "";
-  const blocks: string[] = [];
 
-  // No heading or note over the first ladder group: the "Offense & Defense"
-  // sub-heading went 2026-10-22 and the season/games line went 2026-10-20,
-  // both at mak's request. The tab's opening heading directly above is the
-  // only title these ladders need; each row's hidden text still says "of 32"
-  // and its tier for a screen reader.
-  if (ladders) {
-    blocks.push(
-      `<div class="sct-block">` +
-        `<div class="sct-ladders">${ladders}</div>` +
-        `</div>`,
-    );
-  }
-
-  if (efficiency) {
-    blocks.push(
-      `<div class="sct-block">` +
-        h2("Efficiency", "is-sub") +
-        `<p class="sct-note">Per play, how well each side performs - expected ` +
-        `points, success and explosive rates, and yards per play, attempt and ` +
-        `carry. Ranked among all 32 teams; 1st = best on either side.</p>` +
-        `<div class="sct-ladders">${efficiency}</div>` +
-        `</div>`,
-    );
-  }
-
-  if (passRush) {
-    blocks.push(
-      `<div class="sct-block">` +
-        h2("Pass Protection & Pass Rush", "is-sub") +
-        `<p class="sct-note">Blitzes faced and sent, what each cost, how long ` +
-        `passers held the ball, and the sacks at both ends. Blitz rate and time ` +
-        `to throw rank most to least, with no better end.</p>` +
-        `<div class="sct-ladders">${passRush}</div>` +
-        `</div>`,
-    );
-  }
-
-  if (possession) {
-    blocks.push(
-      `<div class="sct-block">` +
-        h2("Possession & Discipline", "is-sub") +
-        `<p class="sct-note">What each side does with the football. Turnover ` +
-        `margin is the summary; takeaways and giveaways are its two halves.</p>` +
-        `<div class="sct-ladders">${possession}</div>` +
-        `</div>`,
-    );
-  }
-
-  if (pace || mix) {
-    blocks.push(
-      `<div class="sct-block">` +
-        h2("Pace & Play Style", "is-sub") +
-        `<p class="sct-note">Opportunity, not quality: how many snaps there are ` +
-        `to go round and how they are divided. Ranks here are most to least, ` +
-        `with no better end.</p>` +
-        (pace ? `<div class="sct-ladders">${pace}</div>` : "") +
-        (mix ? `<div class="sct-mixes">${mix}</div>` : "") +
-        `</div>`,
-    );
-  }
-
-  // Last, deliberately. The three blocks above answer "what is this team now",
-  // which is the question almost everyone arrives with; the history answers
-  // "and is that new", which only makes sense once the first is answered.
-  if (history) blocks.push(history);
-
-  // The premium comparison of the whole tab (mak's brief, 2026-11-05), under
-  // everything above, labeled, on the same rows, bars and tiers. Not the
-  // default until mak approves.
-  blocks.push(
-    renderStatsPremium({
-      team: data.team,
-      season: stats.season,
-      liveWeek: liveWeek ?? null,
-      effWeek: eff ? effWeek || null : (liveWeek ?? null),
-      production: {
-        offense: pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
-        defense: pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
-      },
-      efficiency: {
-        offense: eff ? efficiencyRows(eff, "offense") : pickRows(stats.offense, prefixed("off", RATE_KEYS)),
-        defense: eff ? efficiencyRows(eff, "defense") : pickRows(stats.defense, prefixed("def", RATE_KEYS)),
-      },
-      passRush: {
-        offense: eff ? passRushRows(eff, "offense") : pickRows(stats.situational, ["sacks-allowed"]),
-        defense: eff ? passRushRows(eff, "defense") : pickRows(stats.situational, ["sacks-made"]),
-      },
-      possession: pickRows(stats.situational, POSSESSION_KEYS),
-      pace: pickRows(stats.volume, PACE_KEYS),
-      balance: stats.balance,
-      balanceFaced: stats.balanceFaced,
-      history: stats.history,
-      tier: statTier,
-      fill: rankFill,
-      historyTier,
-    }),
-  );
+  // The tab (mak's brief and approval, 2026-11-05: "remove the old version"):
+  // the banner carrying the tab's heading, Offense / Defense, Efficiency, Pass
+  // Protection & Pass Rush, Possession & Discipline, Pace & Play Style with the
+  // two play-mix bars, and the five-season history, all drawn by
+  // team/stats-premium.ts from the rows below. The ladders, tiles, mixes and
+  // history table that drew them before are gone; the row sets, the rank bar
+  // fill and the tier tints are the same.
+  //
+  // The heading is `${nickname} Team Stats ${season}` keyed on `stats.season`,
+  // NOT `data.state.season`: through Week 1 the numbers are last season's.
+  const page = renderStatsPremium({
+    team: data.team,
+    season: stats.season,
+    heading: h2(`${data.team.nickname} Team Stats ${stats.season}`, "sct-sp-title"),
+    note: seasonNote,
+    liveWeek: liveWeek ?? null,
+    effWeek: eff ? effWeek || null : (liveWeek ?? null),
+    production: {
+      offense: pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
+      defense: pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
+    },
+    // Efficiency, Pass Protection and Pass Rush read the play-by-play file and
+    // ONLY it; the provider's rows stand in only when there is no file for the
+    // season at all (an all-provider ladder is one source too).
+    efficiency: {
+      offense: eff ? efficiencyRows(eff, "offense") : pickRows(stats.offense, prefixed("off", RATE_KEYS)),
+      defense: eff ? efficiencyRows(eff, "defense") : pickRows(stats.defense, prefixed("def", RATE_KEYS)),
+    },
+    passRush: {
+      offense: eff ? passRushRows(eff, "offense") : pickRows(stats.situational, ["sacks-allowed"]),
+      defense: eff ? passRushRows(eff, "defense") : pickRows(stats.situational, ["sacks-made"]),
+    },
+    possession: pickRows(stats.situational, POSSESSION_KEYS),
+    pace: pickRows(stats.volume, PACE_KEYS),
+    balance: stats.balance,
+    balanceFaced: stats.balanceFaced,
+    history: stats.history,
+    tier: statTier,
+    fill: rankFill,
+    historyTier,
+  });
+  if (!page) return "";
 
   // Below the tools block, for the same reason the outlook's questions are:
   // they are this tab re-cut into the forms people search for, which reads as
@@ -1509,7 +953,7 @@ function renderTeamStats(
   // stay on the page and only the answers fold.
   tail.html = faqBlock(questions, seasonNote);
 
-  return blocks.join("");
+  return page;
 }
 
 /* ----------------------------------------------------- fantasy cornerstones */
@@ -2848,14 +2292,6 @@ function depthName(player: { name: string }): string {
 }
 
 /**
- * The strings the chart prints across; anyone deeper goes to the "Also
- * listed" strip. "Starter", not "First": the football chart's first column is
- * the player who starts at that slot, and the word keeps it apart from the
- * fantasy chart's WR1 / WR2, which is a ranking (mak's brief, 2026-11-03).
- */
-const DEPTH_COLUMNS = ["Starter", "Second", "Third", "Fourth"] as const;
-
-/**
  * The tool's movement mark against the last refresh: an arrow beside the name
  * for a player who moved, a NEW chip for one who was not listed before.
  */
@@ -2906,98 +2342,9 @@ function depthExperience(team: NflTeam, name: string): number | null {
   return typeof hit?.yearsExp === "number" ? hit.yearsExp : null;
 }
 
-/**
- * One boxed player: the headshot in the team-tinted well with any designation
- * tagged on its corner, the name to its right, and the years of service
- * beneath. `slot`
- * is printed ahead of the service only in the overflow strip, where no row
- * label says which position he is listed at.
- */
-function depthCard(
-  team: NflTeam,
-  row: DepthRow,
-  slot: string | null,
-  ppr: { pos: string; ranks: PprRanks } | null,
-): string {
-  const sidelined = isOutDesignation(row.injuryStatus);
-  const exp = depthExperience(team, row.name);
-  // The Fantasy view's "WR7": his league-wide PPR rank this season, by the
-  // Sleeper id the Fantasy columns carry, else by club and name.
-  const posRank = ppr
-    ? ppr.ranks.rankOf(/^\d+$/.test(row.id ?? "") ? row.id : null, team.abbreviation, row.name)
-    : null;
-  // "PPR WR7": the league-wide rank by PPR points per game, keyed so it never
-  // reads as the WR1 / WR2 rank label beside it on the fantasy chart.
-  const rankChip =
-    posRank === null
-      ? ""
-      : `<span class="sct-dcx-rank" title="League rank by PPR points per game this season">` +
-        `<span class="sct-dcx-rank-key">PPR</span>${escapeHtml(`${ppr!.pos}${posRank}`)}</span>`;
-  const service =
-    exp === null
-      ? ""
-      : exp === 0
-        ? `<span class="sct-dcx-rookie">Rookie</span>`
-        : `<span class="sct-dcx-exp">Exp ${exp}</span>`;
-  const sub =
-    (slot ? `<span class="sct-dcx-subpos">${escapeHtml(slot)}</span>` : "") + rankChip + service;
-  return (
-    `<li class="sct-dcx-card${sidelined ? " is-sidelined" : ""}" data-rank="${row.rank}">` +
-    // Decorative, so the alt is empty: the name is on the same card. A player
-    // the tool has no headshot for sits in the bare team-tinted well.
-    // The designation rides the photo's corner (IR, Out, Q...), outside the
-    // well because the well clips to its circle.
-    `<span class="sct-dcx-avatar">` +
-    `<span class="sct-dcx-well">` +
-    (headshotImg({
-      src: row.headshot,
-      className: "sct-dcx-photo",
-      alt: "",
-      variants: ["160"],
-      width: 40,
-      height: 40,
-      loading: "lazy",
-    }) ?? "") +
-    `</span>` +
-    injuryBadge(row, "sct-dcx-tag") +
-    `</span>` +
-    `<span class="sct-dcx-body">` +
-    `<span class="sct-dcx-top">` +
-    depthName(row) +
-    (row.movement === "new" ? `<span class="sct-dc-new">New</span>` : "") +
-    depthMovement(row) +
-    `</span>` +
-    (sub ? `<span class="sct-dcx-sub">${sub}</span>` : "") +
-    `</span>` +
-    `</li>`
-  );
-}
-
 /** The ranker for a column that has one: the four skill positions, not K. */
 function pprFor(pos: string, ranks: PprRanks | null): { pos: string; ranks: PprRanks } | null {
   return ranks && (SKILL_POSITIONS as readonly string[]).includes(pos) ? { pos, ranks } : null;
-}
-
-/**
- * One slot's row on the football chart: the club's own slot in the first
- * column (WR, LDE, NB, K - spelled out for the screen reader), then the first
- * four strings as boxed cards, the empty strings left as empty cells so the
- * grid keeps its columns. A base offense therefore prints three WR rows, one
- * per starting slot, exactly as the team's chart does.
- */
-function depthSlotRow(team: NflTeam, slot: FootballSlot): string {
-  const shown = slot.rows.slice(0, DEPTH_COLUMNS.length);
-  const cells = shown.map((row) => depthCard(team, row, null, null)).join("");
-  const blanks = DEPTH_COLUMNS.length - shown.length;
-  return (
-    `<div class="sct-dcx-row" data-pos="${escapeHtml(slot.pos)}" data-slot="${escapeHtml(slot.key)}">` +
-    `<h4 class="sct-dcx-pos"><span class="sct-dcx-pos-name">${escapeHtml(slot.pos)}</span>` +
-    `<span class="sct-visually-hidden"> - ${escapeHtml(slot.label)}</span></h4>` +
-    `<ol class="sct-dcx-cells">${cells}` +
-    (blanks > 0 ? `<li class="sct-dcx-blank" aria-hidden="true"></li>`.repeat(blanks) : "") +
-    `</ol>` +
-    `</div>`
-  );
 }
 
 /**
@@ -3058,18 +2405,6 @@ export function depthGradeUnits(data: TeamPageData, view: DepthView["key"]): Dep
     }));
 }
 
-function depthGrades(data: TeamPageData, view: DepthView["key"]): string {
-  const pills = depthGradeUnits(data, view).map(
-    ({ label, grade, tone, detail }) =>
-      `<span class="sct-dcx-grade" data-tone="${tone}" title="${escapeHtml(detail)}">` +
-      `<span class="sct-dcx-grade-label">${escapeHtml(label)}</span>` +
-      `<span class="sct-dcx-grade-mark">${escapeHtml(grade)}</span>` +
-      `<span class="sct-visually-hidden">, ${escapeHtml(detail)}</span>` +
-      `</span>`,
-  );
-  return pills.length ? `<div class="sct-dcx-grades">${pills.join("")}</div>` : "";
-}
-
 /** "A", "A and B", "A, B and C". */
 function depthList(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "";
@@ -3116,7 +2451,6 @@ function depthFaqInput(charts: TeamDepthCharts): {
   return { offense, folded: offenseSide?.folded ?? true, fantasy: fantasyRows, fantasyInjuries };
 }
 
-
 /**
  * One compact paragraph naming the listed starters at the three fantasy
  * positions plus every starting WR slot, from the football chart alone. A
@@ -3153,11 +2487,6 @@ function depthSummaryParts(team: NflTeam, football: FootballSide[]): { lead: str
   return { lead, tail };
 }
 
-function depthSummary(team: NflTeam, football: FootballSide[]): string {
-  const { lead, tail } = depthSummaryParts(team, football);
-  return `<p class="sct-dc-summary">${escapeHtml(lead ? `${lead} ${tail}` : tail)}</p>`;
-}
-
 /**
  * The formation a side's chart is listed in, as a short chip: ESPN names them
  * "3WR 1TE" and "Base 3-4 D". Only what the source says; nothing is inferred
@@ -3173,96 +2502,7 @@ function depthFormationText(side: FootballSide): string | null {
   return front ? `Base defense: ${front[0]}` : `Base defense: ${side.formation}`;
 }
 
-function depthFormation(side: FootballSide): string {
-  const text = depthFormationText(side);
-  return text ? `<span class="sct-dcx-formation">${escapeHtml(text)}</span>` : "";
-}
 
-/**
- * One side of the football chart as a card: "{Team} Offense Depth Chart" as
- * the title with the formation chip and unit grades beside it, a POS /
- * STARTER / SECOND / THIRD / FOURTH grid of boxed players beneath, one row per
- * slot in the club's order, and a strip for anyone listed deeper than fourth
- * string. No fantasy rank anywhere on it: the order is the source's.
- */
-function depthFootballCard(data: TeamPageData, side: FootballSide): string {
-  const { team } = data;
-  const overflow = side.slots.flatMap((slot) =>
-    slot.rows
-      .slice(DEPTH_COLUMNS.length)
-      .map((row) => depthCard(team, row, `${slot.pos}${row.rank}`, null)),
-  );
-  const aside = depthFormation(side) + depthGrades(data, side.key);
-  return (
-    // No card title: the page heading and the pressed view button already
-    // name the side, so the card opens on the formation chip and grades.
-    `<section class="sct-dcx" data-sct-dc-panel="${side.key}" aria-label="${escapeHtml(`${team.fullName} ${side.label} Depth Chart`)}">` +
-    (aside ? `<div class="sct-dcx-head"><div class="sct-dcx-aside">${aside}</div></div>` : "") +
-    // An older document has no slots: the rows are the folded position
-    // groups, and the card says so rather than letting one WR row read as
-    // one starting receiver.
-    (side.folded
-      ? `<p class="sct-note sct-dcx-folded">Listed by position group; the club's individual slots were not in this refresh.</p>`
-      : "") +
-    `<div class="sct-dcx-grid">` +
-    `<div class="sct-dcx-labels" aria-hidden="true"><span>Pos</span>` +
-    DEPTH_COLUMNS.map((label) => `<span>${label}</span>`).join("") +
-    `</div>` +
-    side.slots.map((slot) => depthSlotRow(team, slot)).join("") +
-    `</div>` +
-    (overflow.length
-      ? `<div class="sct-dcx-more">` +
-        `<h4 class="sct-dcx-more-title">Also listed<span class="sct-dcx-more-count"> · ${overflow.length}</span></h4>` +
-        `<ol class="sct-dcx-cells is-loose">${overflow.join("")}</ol>` +
-        `</div>`
-      : "") +
-    `</section>`
-  );
-}
-
-/** The long-tail phrase each fantasy group is headed with. */
-const FANTASY_POSITION_NAMES: Record<string, string> = {
-  QB: "Quarterback",
-  RB: "Running Back",
-  WR: "Wide Receiver",
-  TE: "Tight End",
-  K: "Kicker",
-};
-
-/**
- * The fantasy chart as a card: StatChasers' hierarchy, one group per
- * position under its own heading ("{Team} Wide Receiver Depth Chart"), every
- * box labelled with its rank in the hierarchy (WR1, WR2...) and, for the
- * four skill positions, the player's league-wide PPR rank this season. The
- * one place on the page a fantasy order appears.
- */
-function depthFantasyCard(data: TeamPageData, view: DepthView): string {
-  const { team } = data;
-  const usage = getUsageDoc(data.state.statsSeason);
-  const ranks = usage ? pprPositionRanks(usage) : null;
-  const groups = view.columns
-    .filter((column) => column.rows.length)
-    .map((column) => {
-      const cells = column.rows
-        .map((row) => depthCard(team, row, `${column.pos}${row.rank}`, pprFor(column.pos, ranks)))
-        .join("");
-      const name = FANTASY_POSITION_NAMES[column.pos] ?? column.label;
-      return (
-        `<div class="sct-dcx-fan" data-pos="${escapeHtml(column.pos)}">` +
-        `<h4 class="sct-dcx-fan-title">${escapeHtml(`${team.fullName} ${name} Depth Chart`)}</h4>` +
-        `<ol class="sct-dcx-cells is-fan">${cells}</ol>` +
-        `</div>`
-      );
-    })
-    .join("");
-  return (
-    `<section class="sct-dcx" data-sct-dc-panel="fantasy" aria-label="${escapeHtml(`${team.fullName} Fantasy Depth Chart`)}">` +
-    `<p class="sct-note sct-dcx-fan-note">StatChasers' fantasy hierarchy at each skill position. ` +
-    `WR1, WR2 and WR3 rank players by fantasy value, so the order can differ from the starting slots on the team depth chart.</p>` +
-    groups +
-    `</section>`
-  );
-}
 
 /**
  * The page's two link clusters, below the questions: this club's other
@@ -3308,16 +2548,15 @@ function depthLinks(team: NflTeam, options: TeamRenderOptions): string {
 }
 
 /**
- * The team's depth chart, football first (mak's brief, 2026-11-03).
- *
- * The heading is "{Team} Depth Chart" - the section page's H1 - over a stamp
- * line (season, last refresh) and a one-paragraph summary of the listed
- * starters. Then four cards behind a row of filter buttons, Offense pressed:
- * Offense, Defense and Special Teams as the club lists them, slot by slot,
- * and the Fantasy chart last as StatChasers' own hierarchy. All four cards
- * are in the HTML; the buttons only hide three (client/team.ts,
- * wireDepthViews), so a crawler and a reader without scripting see the
- * whole chart stacked.
+ * The team's depth chart, football first (mak's brief, 2026-11-03), in the
+ * premium design (mak's brief, 2026-11-05): a navy banner carrying the
+ * heading - "{Team} Depth Chart", the section page's H1 - and the summary
+ * sentence, pill buttons for Offense / Defense / Special Teams / Fantasy
+ * (Offense pressed), a scheme-and-grades strip per side and the POS /
+ * STARTER / SECOND / THIRD / FOURTH matrix, the Fantasy hierarchy last.
+ * All four panels are in the HTML; the buttons only hide three
+ * (client/team.ts, wireDepthViews), so a crawler and a reader without
+ * scripting see the whole chart stacked. Markup: team/depth-premium.ts.
  *
  * The data is the depth-charts tool's own document, pushed by the WordPress
  * plugin after each refresh (lib/team/depth-charts.ts); the football rows
@@ -3344,26 +2583,10 @@ function renderDepthChart(
     faqBlock(faqList(depthFaq({ team, ...depthFaqInput(depthCharts) }), faq, "h3")) +
     depthLinks(team, options);
 
-  const panels: Array<{ key: string; label: string; html: string }> = [
-    ...football.map((side) => ({ key: side.key, label: side.label, html: depthFootballCard(data, side) })),
-    ...(fantasy ? [{ key: "fantasy", label: "Fantasy", html: depthFantasyCard(data, fantasy) }] : []),
-  ];
-
-  const switcher =
-    `<div class="sct-dc-views" role="group" aria-label="Depth chart view">` +
-    panels
-      .map(
-        (panel, i) =>
-          `<button type="button" class="sct-dc-view" data-sct-dc-view="${panel.key}"` +
-          ` aria-pressed="${i === 0 ? "true" : "false"}">${escapeHtml(panel.label)}</button>`,
-      )
-      .join("") +
-    `</div>`;
-
-  // The premium comparison (mak's brief, 2026-11-05) under the whole
-  // original; the original stays the design until mak approves it. Both
-  // read the same charts; the premium block's view buttons are a second
-  // [data-sct-dc] block, wired by the same client loop.
+  // The tab is the premium design (mak's brief, 2026-11-05; approved and the
+  // original removed the same day): the banner carries the heading, then
+  // the view buttons, strip and matrix. Helpers are handed in so the chart
+  // prints exactly what this file's FAQ and summary read.
   const usage = getUsageDoc(data.state.statsSeason);
   const ranks = usage ? pprPositionRanks(usage) : null;
   const premium = renderDepthPremium(data, {
@@ -3383,12 +2606,7 @@ function renderDepthChart(
     },
   });
 
-  return (
-    h2(`${team.fullName} Depth Chart`) +
-    depthSummary(team, football) +
-    `<div class="sct-dc" data-sct-dc>${switcher}${panels.map((panel) => panel.html).join("")}</div>` +
-    premium
-  );
+  return premium;
 }
 
 /* --------------------------------------------------------------- schedule */
@@ -4576,7 +3794,6 @@ function renderTails(sections: Section[]): string {
     .join("");
 }
 
-
 /**
  * "Use this research": the page's conversion block (mak, 2026-10-05). The two
  * products first, then the two team pages a reader acts on next - this club's
@@ -4710,12 +3927,11 @@ export function renderTeamPage(
     (sidebar ? `<aside class="sct-sidebar">${sidebar}</aside>` : "") +
     `</div>`;
 
-  // The snapshot heading leads the Stats tab. Concatenated rather than folded
-  // into renderTeamStats() so the tab still appears carrying the heading alone
-  // when ESPN's season statistics fail but its team summary does not - the two
-  // come from different endpoints and fail independently.
-  const stats =
-    renderSnapshot(data) + renderTeamStats(data, statsFaq, statsTail);
+  // The Stats tab carries its own heading in its banner (team/stats-premium.ts);
+  // the snapshot heading stands in alone when the season statistics fail but
+  // the team summary does not - the two come from different endpoints and fail
+  // independently.
+  const stats = renderTeamStats(data, statsFaq, statsTail) || renderSnapshot(data);
   const depth = renderDepthChart(data, options, depthChartFaq, depthTail);
   // Next draft's picks by round and the last five draft classes, from two
   // committed files (team/draft.ts). "" when neither has this club.
