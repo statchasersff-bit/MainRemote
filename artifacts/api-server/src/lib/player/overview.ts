@@ -37,7 +37,7 @@ import type { CareerStatRow } from "./stats-profile";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import type { GameLogEntry } from "./types";
-import { TIER_FILL, weeklyTier } from "./metrics";
+import { weeklyTier } from "./metrics";
 import { renderNewsDigest } from "./news-tab";
 import { seasonTotals, tableCols } from "./season-line";
 import type { UpcomingGame } from "./upcoming";
@@ -586,11 +586,15 @@ function renderMeterCards(data: PlayerPageData, s: Season): string {
 
 /* ------------------------------------------- section 4: the game log */
 
-/** A weekly finish as the Game Log tab prints it: a pill in its tier's blue. */
-function finishPill(pos: string, rank: number | null | undefined): string {
+/**
+ * A weekly finish as plain text, "WR4" (mak, 2026-11-04: no pills in this
+ * table). The tier rides along as a data attribute for anything that wants
+ * it; nothing styles it.
+ */
+function finishText(pos: string, rank: number | null | undefined): string {
   const tier = weeklyTier(rank);
   if (!tier || !rank) return DASH;
-  return `<span class="scp-tier" data-tier="${tier}" style="--tier-fill:${TIER_FILL[tier]}">${escapeHtml(`${pos}${rank}`)}</span>`;
+  return `<span class="scp-fin" data-tier="${tier}">${escapeHtml(`${pos}${rank}`)}</span>`;
 }
 
 function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
@@ -606,8 +610,13 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
       const game = bySchedule.get(e.week);
       const opp = game?.opponent ?? getTeamByAbbreviation(e.opp);
       const mark = game?.homeAway === "away" ? "@ " : game?.homeAway === "home" ? "vs " : "";
+      // The opponent's crest ahead of the name, as the Game Log tab's table
+      // sets it (mak, 2026-11-04 for this table).
+      const crest = opp?.logo
+        ? `<img class="scp-opp-logo" src="${escapeHtml(opp.logo)}" alt="" aria-hidden="true" width="18" height="18" loading="lazy" decoding="async" />`
+        : "";
       const oppCell = opp
-        ? `${mark}${a(`${teamPrefix}${opp.slug}/${query}`, opp.nickname, ` target="_top"`)}`
+        ? `${crest}${mark}${a(`${teamPrefix}${opp.slug}/${query}`, opp.nickname, ` target="_top"`)}`
         : escapeHtml(`${mark}${e.opp}`);
       const r = game?.result?.outcome ?? (e.score?.r as "W" | "L" | "T" | undefined) ?? null;
       if (r === "W") w += 1; else if (r === "L") l += 1; else if (r === "T") t += 1;
@@ -619,7 +628,7 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
       return (
         `<tr class="scp-row"><th scope="row">${e.week}</th><td class="scp-opp">${oppCell}</td>` +
         `<td class="scp-score">${r ? escapeHtml(r + sc) : DASH}</td><td class="scp-pts">${one(p)}</td>` +
-        `<td class="scp-col-fin">${finishPill(pos, e.pos_rank)}</td></tr>`
+        `<td class="scp-col-fin">${finishText(pos, e.pos_rank)}</td></tr>`
       );
     })
     .join("");
@@ -636,7 +645,7 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
     sectionOpen("scp-ox-log-h", `${data.player.name} recent games`, "") +
     // The Game Log tab's table, in its classes (mak, 2026-09-30); no caption.
     `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-table--log scp-ox-log">` +
-    `<thead><tr><th scope="col">Wk</th><th scope="col">Opp</th><th scope="col">Result</th>` +
+    `<thead><tr><th scope="col">Wk</th><th scope="col">Opp</th><th scope="col" class="scp-col-res">Result</th>` +
     `<th scope="col" class="scp-col-pts">FPTS</th><th scope="col" class="scp-col-fin">Finish</th></tr></thead>` +
     `<tbody>${rows}</tbody>` +
     `<tfoot><tr class="scp-total"><th scope="row">Total</th><td></td><td>${escapeHtml(record)}</td>` +
@@ -765,11 +774,11 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
   if (cols.length === 0) return "";
   const totals = seasonTotals(s.played, s.pts);
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
-  const through = s.leagueWeek > 0 ? `Through Week ${s.leagueWeek}` : "";
   return (
     // "{Name} 2026 season stats": the Stats tab's lead heading is "{Name}
-    // 2026 stats", and the hub carries both panels.
-    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, through ? escapeHtml(through) : "") +
+    // 2026 stats", and the hub carries both panels. No "Through Week N"
+    // lede under it (mak, 2026-11-04); the hero's strip already says it.
+    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, "") +
     `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-ox-season">` +
     `<thead><tr>` +
     cols.map((c) => `<th scope="col"><abbr title="${escapeHtml(c.title)}">${escapeHtml(c.label)}</abbr></th>`).join("") +

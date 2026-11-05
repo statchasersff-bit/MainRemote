@@ -130,8 +130,10 @@ export interface StoryGame {
   wasUnderdog: boolean;
   /** Trailed by 10+ at any point in the second half, from the scoring plays. */
   trailing2hBy10: boolean;
-  /** For the "clean, mistake-free {start|game}" word. */
+  /** Started the game: the log's own `gs` flag where the builder kept it, else the box score's volume read. */
   started: boolean;
+  /** A quarterback who threw without starting: came on in relief (never "a start"). */
+  relief?: boolean;
   usage: {
     /** Teammates' targets that game, every receiver, most-targeted first. */
     targets?: Array<{ name: string; targets: number }>;
@@ -492,12 +494,34 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
     ? `<i aria-hidden="true"> · </i><b class="scp-gl-avgsum">${escapeHtml(`Avg ${pos}${avg.rank}`)}</b>`
     : "";
 
+  // The compact read (2026-11-04): the three tier counts as tiles with their
+  // shares, then the best week and the average in one line, and the ladder
+  // under them (mak kept it in view).
+  const n = games.length;
+  const t1 = games.filter((g) => g.rank <= scale.t1).length;
+  const t2 = games.filter((g) => g.rank > scale.t1 && g.rank <= scale.t2).length;
+  const bust = n - t1 - t2;
+  const share = (k: number): string => `${Math.round((k / n) * 100)}% of weeks`;
+  const tile = (count: number, label: string): string =>
+    `<div class="scp-gl-tile"><b>${count}</b><span>${escapeHtml(label)}</span><small>${escapeHtml(share(count))}</small></div>`;
+  const tiles =
+    `<div class="scp-gl-tiles">` +
+    tile(t1, `${pos}1 weeks`) +
+    tile(t2, `${pos}2 weeks`) +
+    tile(bust, `${pos}${scale.t2 + 1}+ weeks`) +
+    `</div>`;
+  // No "Best week ... · Average weekly finish ..." line (mak, 2026-11-04):
+  // the ladder marks the best week and the headrow carries the average.
+
   return (
     `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
     `<div class="scp-gl-headrow">` +
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Where his weeks finished"))}</h2>` +
     `<p class="scp-gl-sum">${summary}${avgSummary}</p>` +
     `</div>` +
+    tiles +
+    // The ladder itself, in view under the tiles (mak, 2026-11-04: "bring
+    // back the visual bar"); it folded behind a control for an hour.
     `<figure class="scp-gl-ladder" style="margin:0">` +
     tiers +
     `<div class="scp-gl-track${hasBelow ? " has-below" : ""}" role="img" aria-label="${escapeHtml(
@@ -576,13 +600,14 @@ export function headlineFor(
   const resultWord =
     game.result.wlt === "W" ? "win" : game.result.wlt === "L" ? "loss" : "tie";
 
-  // 1. The season's highest-points game, finished top-5.
+  // 1. The season's highest-points game, finished top-5 (three games or
+  //    more: one game is nobody's season high).
   if (seasonHigh && game.rank <= 5) {
     if (game.result.teamScore + game.result.oppScore >= 60) return "Season high in a shootout";
     return game.result.wlt === "L" ? "Season high in a loss" : "Season high in a win";
   }
-  // 2. A tier-1 week.
-  if (game.rank <= scale.t1) return `${pos}1 week ${at} ${city}`;
+  // 2. A tier-1 week - in relief, when he did not start (2026-11-04).
+  if (game.rank <= scale.t1) return game.relief ? `${pos}1 week in relief ${at} ${city}` : `${pos}1 week ${at} ${city}`;
   // 3. A bust.
   if (game.rank > scale.t2) {
     return game.result.wlt === "L" ? `Shut down by ${city}` : `Held in check by ${city}`;
@@ -600,10 +625,10 @@ export function headlineFor(
     }
     return "Efficient in a home win";
   }
-  // 5. Everything else.
-  return game.rank <= scale.t2
-    ? `Steady in a ${resultWord} ${at} ${city}`
-    : `Quiet ${resultWord} ${at} ${city}`;
+  // 5. Everything else: the finish and the result, which differ game to
+  //    game, rather than "Steady in a loss" on every card (2026-11-04).
+  if (game.relief) return `Relief appearance in a ${resultWord} ${at} ${city}`;
+  return `${pos}${game.rank} week in a ${resultWord} ${at} ${city}`;
 }
 
 /* ------------------------------------------------------------------ notes */
@@ -623,10 +648,12 @@ export function noteFor(
   const s = game.stats;
   const sentences: string[] = [];
 
+  // 0. A relief appearance is the first fact of the game (2026-11-04): the
+  //    starter's numbers and his are not the same kind of line.
+  if (game.relief) sentences.push("Came on in relief; not a start.");
+
   // 1. Volume outlier - defined for the quarterback's attempt count.
-  let usedVolume = false;
-  if (pos === "QB" && season.avgAtt > 0 && s.att >= 1.25 * season.avgAtt) {
-    usedVolume = true;
+  if (pos === "QB" && season.avgAtt > 0 && s.att >= 1.25 * season.avgAtt && !game.relief) {
     const chasing = game.trailing2hBy10 ? " while chasing points" : "";
     const totalTd = s.passTd + s.rushTd + s.recTd;
     sentences.push(
@@ -636,20 +663,14 @@ export function noteFor(
     );
   }
 
-  // 2. Usage, only where the box score supplied it.
-  if (pos === "QB" && game.usage?.targets && game.usage.targets.length >= 2) {
-    const [a, b] = game.usage.targets;
-    const sum = a!.targets + b!.targets;
-    const whose = usedVolume ? "those" : `his ${s.att}`;
-    let sentence = `${sum} of ${whose} throws went to ${a!.name} (${a!.targets} targets) and ${b!.name} (${b!.targets})`;
-    const tds = game.usage.tdReceivers ?? [];
-    if (tds.length > 0) {
-      // Full names on first mention within the note, last names after.
-      const mentioned = new Set([nameKey(a!.name), nameKey(b!.name)]);
-      const names = tds.map((n) => (mentioned.has(nameKey(n)) ? lastName(n) : n));
-      sentence += `, and his TD pass${tds.length === 1 ? "" : "es"} went to ${joinAnd(names)}`;
-    }
-    sentences.push(sentence + ".");
+  // 2. Usage, only where it is HIS. The box score's target counts are the
+  //    club's receivers for the whole game, not this passer's throws, and a
+  //    two-quarterback game put "19 of his 17 passes" on the page
+  //    (2026-11-04): that sentence is gone until targets can be tied to the
+  //    passer. His touchdown passes are his - the scoring play names him.
+  if (pos === "QB" && game.usage?.tdReceivers && game.usage.tdReceivers.length > 0) {
+    const tds = game.usage.tdReceivers;
+    sentences.push(`His TD pass${tds.length === 1 ? "" : "es"} went to ${joinAnd(tds)}.`);
   } else if (pos === "RB" && game.usage?.snapPct != null && game.usage.carries != null) {
     sentences.push(
       `He played ${Math.round(game.usage.snapPct)}% of the snaps and handled ${game.usage.carries} carries.`,
@@ -664,59 +685,57 @@ export function noteFor(
     const unit = pos === "QB" ? "attempt" : pos === "RB" ? "carry" : "target";
     const g1 = Number(eff.toFixed(1));
     const s1 = Number(season.seasonEff.toFixed(1));
+    // "Most efficient game of the season" only against a season: the caller
+    // sets bestEffWeek from three games or more (2026-11-04).
     if (bestEffWeek !== null && game.week === bestEffWeek) {
       sentences.push(`His most efficient game of the season at ${one(g1)} yards per ${unit}.`);
     } else if (g1 <= s1 - 1.5) {
       sentences.push(`Just ${one(g1)} yards per ${unit}.`);
-    } else if (pos === "QB" && g1 < s1) {
-      sentences.push(`At ${one(g1)} yards per attempt, most of it came underneath.`);
     } else if (pos === "QB" && g1 >= s1 + 1.0) {
       sentences.push(`At ${one(g1)} yards per attempt, he pushed the ball downfield.`);
     }
-    // The in-between readings are quarterback sentences - "underneath" and
-    // "downfield" describe throws - so the other positions skip them.
+    // The "most of it came underneath" reading for a merely below-average
+    // Y/A is gone: it described every ordinary game the same way.
   }
 
-  // 4. A bust that still found the end zone.
+  // 4. A bust that still found the end zone: the fact, without the forecast
+  //    ("this is his floor when...") that followed it on every such card.
   const totalTd = s.passTd + s.rushTd + s.recTd;
   if (game.rank > scale.t2 && totalTd > 0) {
-    sentences.push(
-      `The touchdown${totalTd === 1 ? "" : "s"} kept it from being a total loss, but this is his floor when the offense can't sustain drives.`,
-    );
+    sentences.push(`The touchdown${totalTd === 1 ? "" : "s"} kept it from being a total loss.`);
   }
 
-  // 5. Ball security, and where the game landed against his average.
-  if (season.ppg > 0) {
-    const delta = (game.pts - season.ppg) / season.ppg;
-    const relation =
-      Math.abs(delta) <= 0.1
-        ? `right at his ${season.pastTense ? "" : "current "}season average`
-        : delta > 0
-          ? "well above his season average"
-          : "well below his season average";
-    const ints = pos === "QB" ? s.passInt : 0;
-    const fum = s.fumLost;
-    if (ints === 0 && fum === 0) {
-      sentences.push(
-        `A clean, mistake-free ${game.started ? "start" : "game"} that landed ${relation}.`,
-      );
-    } else if (ints > 0 || (fum ?? 0) > 0) {
-      // With no interceptions the sentence opens on the fumbles instead of a
-      // "Zero interceptions" nobody would write.
-      const parts: string[] = [];
-      if (ints > 0) parts.push(`${capWord(ints)} interception${ints === 1 ? "" : "s"}`);
-      if ((fum ?? 0) > 0) {
-        const f = fum!;
-        const clause = `${ints > 0 ? word(f) : capWord(f)} lost fumble${f === 1 ? "" : "s"}`;
-        parts.push(clause);
-      }
-      sentences.push(`${parts.join(" and ")} in a game that landed ${relation}.`);
-    }
-    // ints === 0 with fumbles unknown: the box score had no player block, so
-    // neither "mistake-free" nor a turnover count can be verified. Dropped.
+  // 5. Turnovers, when there were any. The "clean, mistake-free start that
+  //    landed well above his season average" sentence is gone (2026-11-04):
+  //    it called a relief appearance a start, and "well above / well below
+  //    his season average" closed most cards on the page with the same
+  //    words. The finish badge beside the card already says where the game
+  //    landed.
+  const ints = pos === "QB" ? s.passInt : 0;
+  const fum = s.fumLost ?? 0;
+  if (ints > 0 || fum > 0) {
+    const parts: string[] = [];
+    if (ints > 0) parts.push(`${capWord(ints)} interception${ints === 1 ? "" : "s"}`);
+    if (fum > 0) parts.push(`${ints > 0 ? word(fum) : capWord(fum)} lost fumble${fum === 1 ? "" : "s"}`);
+    sentences.push(`${parts.join(" and ")}.`);
   }
 
   return sentences.slice(0, 3).join(" ");
+}
+
+/**
+ * How much a game stands out from its season, for the archive's short list
+ * (2026-11-04): the season high, tier-1 weeks, busts and relief
+ * appearances first, then distance from his average. Ties go to the later
+ * week, so the list reads newest first among equals.
+ */
+function notability(game: StoryGame, season: StorySeason, scale: LadderScale, high: StoryGame | null): number {
+  let score = Math.abs(game.pts - season.ppg);
+  if (high && game === high) score += 100;
+  if (game.rank <= scale.t1) score += 50;
+  if (game.rank > scale.t2) score += 30;
+  if (game.relief) score += 40;
+  return score;
 }
 
 /* ------------------------------------------------------------------- cards */
@@ -732,14 +751,18 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
   const pos = season.pos;
   const id = `gl-breakdown-h${season.idSuffix}`;
 
-  // Season-wide readings each card compares itself against.
+  // Season-wide readings each card compares itself against - from three
+  // games on. One or two games make no season to be the high or the most
+  // efficient of (2026-11-04).
   let high: StoryGame | null = null;
-  for (const g of games) {
-    if (!high || g.pts > high.pts || (g.pts === high.pts && g.week > high.week)) high = g;
+  if (games.length >= 3) {
+    for (const g of games) {
+      if (!high || g.pts > high.pts || (g.pts === high.pts && g.week > high.week)) high = g;
+    }
   }
   // The most efficient game of the season, at the position's minimum volume.
   let bestEffWeek: number | null = null;
-  if (pos === "QB") {
+  if (pos === "QB" && games.length >= 3) {
     let bestEff = -Infinity;
     for (const g of games) {
       if (g.stats.att < 15) continue;
@@ -775,9 +798,18 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
     );
   })();
 
-  const cards = [...games]
-    .sort((a, b) => b.week - a.week)
-    .map((game) => {
+  // A finished season leads with its two or three most notable games and
+  // folds the rest behind one control (2026-11-04); the season in progress
+  // shows every card, newest first, as before.
+  const byWeek = [...games].sort((a, b) => b.week - a.week);
+  const lead = new Set<StoryGame>();
+  if (season.pastTense && games.length > 4) {
+    [...games]
+      .sort((a, b) => notability(b, season, scale, high) - notability(a, season, scale, high) || b.week - a.week)
+      .slice(0, 3)
+      .forEach((g) => lead.add(g));
+  }
+  const card = (game: StoryGame): string => {
       const cardCls =
         game.rank <= scale.t1 ? " is-t12" : game.rank > scale.t2 ? " is-low" : "";
       const badgeCls =
@@ -814,14 +846,25 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
         `<span class="scp-gl-fbadge ${badgeCls}">${escapeHtml(`${pos}${game.rank}`)}</span></div>` +
         `</article>`
       );
-    })
-    .join("");
+  };
+
+  let cards: string;
+  if (lead.size) {
+    const rest = byWeek.filter((g) => !lead.has(g));
+    cards =
+      `<div class="scp-gl-games">${byWeek.filter((g) => lead.has(g)).map(card).join("")}</div>` +
+      `<details class="scp-gl-more"><summary>${escapeHtml(`Show all ${games.length} games`)}</summary>` +
+      `<div class="scp-gl-games">${rest.map(card).join("")}</div></details>`;
+  } else {
+    cards = `<div class="scp-gl-games">${byWeek.map(card).join("")}</div>`;
+  }
 
   return (
     `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Game-by-game breakdown"))}</h2>` +
     (byline ? `<p class="scp-gl-byline">${byline}</p>` : "") +
-    `<div class="scp-gl-games">${cards}</div>` +
+    (lead.size ? `<p class="scp-gl-lede">${escapeHtml(`The ${lead.size} games that stood out, then the rest of the season.`)}</p>` : "") +
+    cards +
     `</section>`
   );
 }
@@ -986,13 +1029,26 @@ const NICKNAME_CLUBS = new Set(["LAR", "LAC", "NYG", "NYJ"]);
  * position has no ladder, nothing was played, or no played week has a stored
  * box score to read the schedule facts from.
  */
-export function renderGamelogStory(
+/** What renderGamelogStory() draws from: the played games with a stored box score, the season they sit in, and the team ink. */
+export interface GamelogStory {
+  games: StoryGame[];
+  story: StorySeason;
+  ink: string | null;
+}
+
+/**
+ * The ladder's and the cards' inputs, built once from the page data so the
+ * premium comparison block (gamelog-premium.ts, 2026-11-05) reads the SAME
+ * games, counts and average the sections above it do. Null wherever the
+ * sections would render nothing.
+ */
+export function buildGamelogStory(
   data: PlayerPageData,
   opts: { archive?: boolean } = {},
-): string {
+): GamelogStory | null {
   const pos = data.player.position ?? "";
   const scale = SCALES[pos];
-  if (!scale) return "";
+  if (!scale) return null;
 
   const season = opts.archive ? data.logSeason : data.season;
   const log = data.seasonLog;
@@ -1000,7 +1056,7 @@ export function renderGamelogStory(
     (e): e is GameLogEntry & { pos_rank: number } =>
       e.game_status === "active" && typeof e.pos_rank === "number",
   );
-  if (played.length === 0) return "";
+  if (played.length === 0) return null;
 
   const index = seasonIndex(season);
   const games: StoryGame[] = [];
@@ -1058,7 +1114,10 @@ export function renderGamelogStory(
       rank: entry.pos_rank,
       wasUnderdog: ctx.wasUnderdog,
       trailing2hBy10: ctx.trailing2hBy10,
-      started: ctx.started,
+      // The log's own starter flag (Sleeper's gs, kept since 2026-11-04)
+      // where the row has one; the box score's volume read for older rows.
+      started: typeof s.gs === "number" ? s.gs > 0 : ctx.started,
+      relief: pos === "QB" && typeof s.gs === "number" && s.gs === 0 && (s.pass_att ?? 0) > 0,
       usage: {
         targets: ctx.targets,
         tdReceivers: ctx.tdReceivers,
@@ -1068,7 +1127,7 @@ export function renderGamelogStory(
       override: copyOverride(data.player.id, season, entry.week),
     });
   }
-  if (games.length === 0) return "";
+  if (games.length === 0) return null;
 
   // Season figures, computed from the same played games the pins show.
   const sum = (f: (g: StoryGame) => number): number => games.reduce((t, g) => t + f(g), 0);
@@ -1107,9 +1166,18 @@ export function renderGamelogStory(
     idSuffix: opts.archive ? `-${season}` : "",
   };
 
+  return { games, story, ink: teamInk(data.seasonTeam ?? data.team) };
+}
+
+export function renderGamelogStory(
+  data: PlayerPageData,
+  opts: { archive?: boolean } = {},
+): string {
+  const built = buildGamelogStory(data, opts);
+  if (!built) return "";
+  const { games, story, ink } = built;
   const html =
     renderLadderSection(games, story) + renderBreakdownSection(games, story);
   if (!html) return "";
-  const ink = teamInk(data.seasonTeam ?? data.team);
   return `<div class="scp-ox scp-gl"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>`;
 }

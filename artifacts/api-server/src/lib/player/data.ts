@@ -583,6 +583,22 @@ export function dataStamp(): string {
   } catch {
     parts.push("adv:0");
   }
+  // The team usage report and the rest-of-season board too: the Outlook tab
+  // reads both (2026-11-05), and each is rewritten by hand or by the refresh.
+  for (const [dir, prefix] of [
+    [dataPath("team"), "usage_"],
+    [dataPath("rankings"), "ros-"],
+  ] as const) {
+    try {
+      for (const name of fs.readdirSync(dir).sort()) {
+        if (!name.startsWith(prefix)) continue;
+        const st = fs.statSync(path.join(dir, name));
+        parts.push(`${name}:${Math.round(st.mtimeMs)}.${st.size}`);
+      }
+    } catch {
+      parts.push(`${prefix}0`);
+    }
+  }
   for (const season of getAvailableSeasons()) parts.push(String(season));
   stamp = hash(parts.join("|"));
   return stamp;

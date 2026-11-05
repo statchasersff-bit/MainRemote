@@ -254,9 +254,10 @@ body.scs-page.is-embed {
   color: hsl(var(--scs-primary));
 }
 
+/* No measure cap (11-04, mak): the standfirst runs the same width as the grid
+   below it, like the FAQ answers at the foot of the page. */
 .scs-lede {
   margin: 8px 0 0;
-  max-width: 68ch;
   color: hsl(var(--scs-muted-foreground));
   font-size: 13px;
   line-height: 1.5;
@@ -398,26 +399,6 @@ body.scs-page.is-embed {
   letter-spacing: normal;
 }
 
-
-/* The line under a view's heading that says how to read what is below it. It
-   was named for the team lens while that was the other thing that had one. */
-.scs-view-note {
-  margin: 4px 0 0;
-  color: hsl(var(--scs-muted-foreground));
-  font-size: 12px;
-}
-
-/*
- * The grid's head is the instruction alone.
- *
- * It had a heading and two sentences of page copy above this line, which the
- * page's own <h1> and standfirst now say once instead of twice. What is left is
- * a single short line, which is what `.scs-viewhead`'s flex row was built for -
- * so the stacked-lede wrapper it needed went with the copy.
- */
-.scs-viewhead > .scs-view-note {
-  max-width: 72ch;
-}
 
 /* -------------------------------------------------------------- the rail */
 
@@ -1302,10 +1283,16 @@ a.scs-game-name:focus-visible {
  * the hub's markup under a different prefix - so it is built from the hub's
  * measurements rather than invented here: the gold-barred heading, the
  * hairline-separated rows with no card around them, the 8px chevron rotating on
- * open, the 72ch answer column indented to the question's text. A reader who
- * meets an FAQ on a team page and then on a week page should not be able to
- * tell the two tools apart by their appendix. See team.css `.sct-faq`, which is
- * the original, and fpa.css `.scf-faq`, which made the same move.
+ * open. A reader who meets an FAQ on a team page and then on a week page should
+ * not be able to tell the two tools apart by their appendix. See team.css
+ * `.sct-faq`, which is the original, and fpa.css `.scf-faq`, which made the
+ * same move.
+ *
+ * One departure (11-04, mak): the answers are NOT the hub's 72ch column
+ * indented to the question's text. On the matrix the grid above runs the full
+ * shell and the answers were stopping at ~670px with 600px of empty page to
+ * their right, so each answer spans the same width as the table - the block's
+ * full width, flush with the chevron and the grid's left edge.
  *
  * Two things do NOT come across, because this sheet is the source repo's design
  * system and not the house one (see the file header):
@@ -1412,11 +1399,9 @@ a.scs-game-name:focus-visible {
   line-height: 1.45;
 }
 
-/* 72ch, the measure the hub's answers read at, indented to the question's text
-   rather than to the chevron. */
+/* The table's width, not the hub's 72ch: see the block comment above. */
 .scs-faq-a {
-  margin: 7px 0 0 20px;
-  max-width: 72ch;
+  margin: 7px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;

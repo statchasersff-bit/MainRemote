@@ -67,6 +67,16 @@ function extractPlayerStats(statsObj, position) {
     pts_half_ppr: s.pts_half_ppr ?? null,
     off_snp: s.off_snp || 0,
     tm_off_snp: s.tm_off_snp || 0,
+    // Sleeper's own game count and starts (2026-11-04): a player can be
+    // active with no snap and still count as a game played (PFR's "G"), and
+    // these are the only source here for games started. Sacks taken and
+    // fumbles are the standard-stat columns the Stats tab was missing.
+    gp: s.gp || 0,
+    gs: s.gs || 0,
+    pass_sack: s.pass_sack || 0,
+    pass_sack_yds: s.pass_sack_yds || 0,
+    fum: s.fum || 0,
+    fum_lost: s.fum_lost || 0,
   };
 
   if (position === 'QB') {

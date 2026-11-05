@@ -34,14 +34,23 @@
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "./logger";
-import { renderFpaEmpty, renderFpaPage, type FpaRenderOptions } from "./fpa-render";
+import {
+  renderFpaEmpty,
+  renderFpaPage,
+  TEASER_COUNT,
+  type FpaRail,
+  type FpaRenderOptions,
+} from "./fpa-render";
 import {
   getFpaTable,
   type FpaQuery,
   type FpaTableData,
 } from "./fpa/fpa-data";
+import { FANTASY_POSITIONS, type FantasyPosition } from "./fpa/nflverse";
 import { fpaPageMeta, renderFpaHeadTags } from "./fpa-seo";
 import { LruCache } from "./lru";
+import { currentAssetOrigin } from "./asset-origin";
+import { DEFAULT_STATE, getSosBoard, rosEasiest } from "./sos/sos-data";
 
 export interface FpaSsrResult {
   html: string;
@@ -99,10 +108,66 @@ function kickLazyIngest(): void {
     });
 }
 
+/* -------------------------------------------------------------- the rail */
+
+/**
+ * The rail's teaser: the easiest remaining schedules per position, read from
+ * the SAME boards the linked pages render, through the same helper their
+ * answer sentence uses (rosEasiest), in the scoring those pages open on. One
+ * computation, so the teaser and the top of the page it links to cannot
+ * disagree. The version is the boards' own, so a schedule moving a week
+ * forward refreshes the fragment the way a new ingest does.
+ *
+ * Only the live table has a rest of season. An archive, or any board that
+ * cannot be built (no schedule yet), leaves the rail to its six links.
+ */
+async function railFor(data: FpaTableData): Promise<{ rail: FpaRail; version: string }> {
+  if (data.kind !== "live") return { rail: { teaser: null }, version: "" };
+  try {
+    const boards = await Promise.all(
+      FANTASY_POSITIONS.map((p) => getSosBoard(p, DEFAULT_STATE.scoring)),
+    );
+    const teaser = {} as NonNullable<FpaRail["teaser"]>;
+    const versions: string[] = [];
+    for (const [i, p] of FANTASY_POSITIONS.entries()) {
+      const board = boards[i];
+      if (!board) return { rail: { teaser: null }, version: "" };
+      versions.push(board.version);
+      const easiest = rosEasiest(board, TEASER_COUNT);
+      const top = easiest[0];
+      if (!top || !top.ros) return { rail: { teaser: null }, version: "" };
+      // The delta is against the mean of every team with a rest of season,
+      // as the SOS page's own cards figure theirs.
+      const withRos = board.teams.filter((t) => t.ros !== null);
+      const mean = withRos.reduce((a, t) => a + t.ros!.afpa, 0) / Math.max(1, withRos.length);
+      teaser[p as FantasyPosition] = {
+        top: {
+          code: top.team.code,
+          fullName: top.team.fullName,
+          logo: top.team.logo,
+          afpa: top.ros.afpa,
+          delta: top.ros.afpa - mean,
+        },
+        easiest: easiest.map((row) => ({ code: row.team.code, fullName: row.team.fullName })),
+      };
+    }
+    return { rail: { teaser }, version: versions.join(".") };
+  } catch (err) {
+    logger.warn({ err }, "FPA rail: the strength-of-schedule boards did not build; rail links only");
+    return { rail: { teaser: null }, version: "" };
+  }
+}
+
 /* ------------------------------------------------------------- the render */
 
 function optionKey(query: FpaQuery, options: FpaRenderOptions): string {
   return JSON.stringify([
+    // The request's asset origin: every crest in the table and the rail is
+    // printed with it (lib/asset-origin.ts), and the standalone page's other
+    // options are the same on every host. Without this, a localhost curl
+    // cached crests at http://localhost:8080/... for the preview domain, and
+    // the table showed no logos (the team hub had the same bug, 2026-10-23).
+    currentAssetOrigin(),
     query.season ?? 0,
     query.format ?? "half",
     query.view ?? "raw",
@@ -114,6 +179,7 @@ function optionKey(query: FpaQuery, options: FpaRenderOptions): string {
     // served the first caller's origin to everyone.
     options.endpoint ?? "",
     options.csvBase ?? "",
+    options.sosBase ?? "",
   ]);
 }
 
@@ -132,12 +198,13 @@ export async function renderFpaFragment(
     return { html: renderFpaEmpty(options), version: "empty", data: null };
   }
 
-  const version = `${data.version}-${hash(key)}`;
+  const { rail, version: railVersion } = await railFor(data);
+  const version = `${data.version}-${hash(key + railVersion)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
 
   const result: FpaSsrResult = {
-    html: renderFpaPage(data, options),
+    html: renderFpaPage(data, options, rail),
     version,
     data,
   };

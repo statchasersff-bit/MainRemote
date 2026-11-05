@@ -161,7 +161,10 @@ export function coachingFaq(
 
   const row = (key: string) => c.tendencies.rows.find((r) => r.key === key);
   const nums = (key: string) => rowNums(row(key), view);
-  const shifts = c.shifts.filter((s) => s.key && (SHIFT_PHRASE[s.key] || SHIFT_NOUN[s.key]));
+  // A fourth-down move on fewer than 15 opportunities is not a headline
+  // change (mak's coaching brief, 2026-11-05); its own question states the sample.
+  const smallFourth = (c.tendencies.samples?.fourthShortAll ?? 15) < 15;
+  const shifts = c.shifts.filter((s) => s.key && (SHIFT_PHRASE[s.key] || SHIFT_NOUN[s.key]) && !(s.key === "fourthGoRate" && smallFourth));
   const shiftDir = (key: string): "up" | "down" | null => {
     const r = row(key);
     if (!r) return null;
@@ -330,8 +333,15 @@ export function coachingFaq(
   const fourth = nums("fourthGoRate");
   const fourthRow = row("fourthGoRate");
   if (fourthRow) {
+    // The samples the builder stores (2026-11-05), else the shift note's count.
+    const smp = c.tendencies.samples;
     const snaps = c.shifts.find((s) => s.key === "fourthGoRate")?.note?.match(/(\d+) such snaps/);
-    const sample = snaps ? ` That is ${snaps[1]} such snaps so far, so the rate can swing.` : "";
+    const count = smp?.fourthShortAll ?? (snaps ? Number(snaps[1]) : null);
+    const went = smp?.fourthShortGo ?? null;
+    const sample =
+      count != null && count < 15
+        ? ` That is ${went != null ? `${went} of ${count}` : count} such ${count === 1 ? "opportunity" : "opportunities"} so far, a small sample that can swing with one decision; fourth-down calls are game management shared with the head coach.`
+        : "";
     if (fourth.current == null) {
       ask(
         `How aggressive are the ${nick} on fourth down?`,
@@ -351,7 +361,10 @@ export function coachingFaq(
         `How aggressive are the ${nick} on fourth down?`,
         `The ${nick} have been ${level} in short-yardage situations in opponent territory.`,
         `${through}, ${city} has gone for it on ${f1(fourth.current)}% of tracked fourth downs with two yards or fewer to gain in opponent territory` +
-          (fourth.prior != null ? `, compared with ${f1(fourth.prior)}% ${returning ? `in ${prior}` : `for the ${prior} staff`}` : "") +
+          (went != null && count ? ` (${went} of ${count})` : "") +
+          (fourth.prior != null
+            ? `, compared with ${f1(fourth.prior)}%${smp?.priorFourthShortAll && smp.priorFourthShortGo != null ? ` (${smp.priorFourthShortGo} of ${smp.priorFourthShortAll})` : ""} ${returning ? `in ${prior}` : `for the ${prior} staff`}`
+            : "") +
           (fourth.nflAvg != null ? ` and a league average near ${f1(fourth.nflAvg)}%` : "") +
           `.${sample}`,
       );

@@ -241,10 +241,11 @@ describe("game-by-game breakdown (Brissett, Part 6)", () => {
     );
     assert.equal(
       c.querySelector(".scp-gl-note").textContent,
+      // No receiver-target attribution (the box score's targets are the
+      // club's, not this passer's) and no "came underneath" filler
+      // (2026-11-04); his TD passes are his, the scoring play names him.
       "A 52-attempt game while chasing points produced three total touchdowns. " +
-        "28 of those throws went to Michael Wilson (17 targets) and Trey McBride (11), " +
-        "and his TD passes went to Wilson and Jeremiyah Love. " +
-        "At 5.4 yards per attempt, most of it came underneath.",
+        "His TD passes went to Michael Wilson and Jeremiyah Love.",
     );
     assert.equal(c.querySelector(".scp-gl-fp b").textContent, "25.6");
     const badge = c.querySelector(".scp-gl-fbadge");
@@ -263,9 +264,9 @@ describe("game-by-game breakdown (Brissett, Part 6)", () => {
     );
     assert.equal(
       c.querySelector(".scp-gl-note").textContent,
-      "Just 3.4 yards per attempt. The touchdown kept it from being a total loss, " +
-        "but this is his floor when the offense can't sustain drives. " +
-        "One interception in a game that landed well below his season average.",
+      // The fact without the forecast, the turnover without the "landed well
+      // below his season average" tail every card wore (2026-11-04).
+      "Just 3.4 yards per attempt. The touchdown kept it from being a total loss. One interception.",
     );
     assert.equal(c.querySelector(".scp-gl-fp b").textContent, "7.5");
     assert.ok(c.querySelector(".scp-gl-fbadge").classList.contains("is-low"));
@@ -284,11 +285,69 @@ describe("game-by-game breakdown (Brissett, Part 6)", () => {
     );
     assert.equal(
       c.querySelector(".scp-gl-note").textContent,
-      "His most efficient game of the season at 7.5 yards per attempt. " +
-        "A clean, mistake-free start that landed right at his current season average.",
+      // The "clean, mistake-free start" sentence is gone (2026-11-04).
+      "His most efficient game of the season at 7.5 yards per attempt.",
     );
     assert.equal(c.querySelector(".scp-gl-fp b").textContent, "16.5");
     assert.ok(c.querySelector(".scp-gl-fbadge").classList.contains("is-t24"));
+  });
+});
+
+describe("the game-log audit (2026-11-04)", () => {
+  test("a relief appearance is named as one and never called a start", () => {
+    const relief = game({
+      week: 8, opp: TEAMS.DEN, homeAway: "home",
+      result: { wlt: "W", teamScore: 33, oppScore: 30 },
+      stats: qbStats({ cmp: 17, att: 23, passYds: 188, passTd: 3 }),
+      pts: 19.5, rank: 10, started: false, relief: true,
+      usage: { targets: [{ name: "Michael Wilson", targets: 15 }, { name: "Trey McBride", targets: 8 }], tdReceivers: [] },
+    });
+    const doc = dom(mod.renderBreakdownSection([relief], { ...SEASON, avgAtt: 23, seasonEff: 188 / 23, ppg: 19.5 }));
+    const c = doc.querySelector(".scp-gl-game");
+    assert.equal(c.querySelector(".scp-gl-head").textContent, "QB1 week in relief vs. Denver");
+    assert.equal(c.querySelector(".scp-gl-note").textContent, "Came on in relief; not a start.");
+    assert.ok(!doc.body.textContent.includes("throws went to"), "no target attribution");
+    assert.ok(!doc.body.textContent.includes("most efficient game"), "one game is nobody's season high");
+    assert.ok(!doc.body.textContent.includes("Season high"), "nor its season high");
+  });
+
+  test("ordinary games carry their finish, not 'Steady in a loss'", () => {
+    const doc = dom(mod.renderBreakdownSection(BRISSETT, SEASON));
+    const heads = [...doc.querySelectorAll(".scp-gl-head")].map((h) => h.textContent);
+    assert.ok(heads.every((h) => !/^(Steady|Quiet) /.test(h)), heads.join(" | "));
+    assert.ok(!doc.body.textContent.includes("season average"), "no 'well above his season average' tail");
+  });
+
+  test("a finished season leads with three notable games and folds the rest", () => {
+    const games = Array.from({ length: 8 }, (_, i) =>
+      game({ week: i + 1, stats: qbStats({ cmp: 20, att: 30, passYds: 200, passTd: 1 }), pts: 12 + (i % 3), rank: 18 }),
+    );
+    games[2] = game({ week: 3, stats: qbStats({ cmp: 30, att: 40, passYds: 350, passTd: 4 }), pts: 32, rank: 1 });
+    games[5] = game({ week: 6, stats: qbStats({ cmp: 10, att: 25, passYds: 90, passInt: 2 }), pts: 1.6, rank: 31 });
+    const doc = dom(mod.renderBreakdownSection(games, { ...SEASON, pastTense: true, ppg: 12 }));
+    const lead = [...doc.querySelectorAll(".scp-gl-sec > .scp-gl-games .scp-gl-game .scp-gl-when")].map((w) => w.textContent);
+    assert.equal(lead.length, 3, "three lead cards");
+    assert.ok(lead.includes("Week 3, Sep 13") && lead.includes("Week 6, Sep 13"), lead.join(" | "));
+    const more = doc.querySelector("details.scp-gl-more");
+    assert.equal(more.querySelector("summary").textContent, "Show all 8 games");
+    assert.equal(more.querySelectorAll(".scp-gl-game").length, 5);
+    assert.match(doc.querySelector(".scp-gl-lede").textContent, /^The 3 games that stood out/);
+    // The season in progress shows every card as before.
+    const live = dom(mod.renderBreakdownSection(games, { ...SEASON, ppg: 12 }));
+    assert.equal(live.querySelector("details.scp-gl-more"), null);
+    assert.equal(live.querySelectorAll(".scp-gl-game").length, 8);
+  });
+
+  test("the finishes block: tier tiles with shares, the best week and the average, the ladder behind a control", () => {
+    const doc = dom(mod.renderLadderSection(BRISSETT, SEASON));
+    const tiles = [...doc.querySelectorAll(".scp-gl-tile")].map((t) => [...t.children].map((c) => c.textContent));
+    assert.deepEqual(tiles, [["1", "QB1 weeks", "33% of weeks"], ["1", "QB2 weeks", "33% of weeks"], ["1", "QB25+ weeks", "33% of weeks"]]);
+    // No best-week / average line (mak, 2026-11-04): the ladder marks the
+    // best week and the headrow carries the average. The ladder stays in
+    // view, straight under the tiles.
+    assert.equal(doc.querySelector(".scp-gl-bestline"), null);
+    assert.equal(doc.querySelector("details.scp-gl-chart"), null);
+    assert.ok(doc.querySelector(".scp-gl-tiles + figure.scp-gl-ladder"), "the ladder follows the tiles");
   });
 });
 

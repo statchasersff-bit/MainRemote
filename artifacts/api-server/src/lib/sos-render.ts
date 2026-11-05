@@ -31,6 +31,7 @@ import {
   FANTASY_WEEKS,
   PO3_WEEKS,
   pagePosition,
+  rosEasiest,
   SCORING_LABELS,
   SOS_POSITIONS,
   SOS_SCORINGS,
@@ -180,8 +181,10 @@ export function sosPositionAnswer(board: SosBoard): string {
   const pos = board.position;
   const ros = board.teams.filter((t) => t.ros !== null);
   if (ros.length >= 2) {
+    // The same helper the FPA rail's "Easiest ROS" teaser reads, so the two
+    // can never name different teams (sos-model.ts, rosEasiest).
+    const easiest = rosEasiest(board, 1)[0]!;
     const sorted = [...ros].sort((a, b) => a.rosRank - b.rosRank);
-    const easiest = sorted[0]!;
     const hardest = sorted[sorted.length - 1]!;
     return (
       `Easiest rest-of-season ${pos} schedule: ${easiest.team.fullName} ` +
@@ -240,6 +243,23 @@ function renderUpdated(ms: number | null | undefined): string {
   const d = new Date(ms);
   const text = d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
   return `<p class="scsos-updated">Updated <time datetime="${escapeHtml(d.toISOString().slice(0, 10))}">${escapeHtml(text)}</time></p>`;
+}
+
+/**
+ * The position pages' one-line methodology note, behind an info glyph beside
+ * the Updated line: what the ROS figures are, for a reader who arrived from
+ * the Fantasy Points Allowed table, which is season-to-date where this is
+ * forward-looking. The same popover pattern the legend's tip uses.
+ */
+function renderMethodNote(): string {
+  return (
+    `<details class="scsos-pop scsos-method">` +
+    `<summary class="scsos-info" aria-label="How the rest-of-season figures are calculated">i</summary>` +
+    `<div class="scsos-pop-body">` +
+    `<p>Opponent fantasy points allowed, remaining weeks.</p>` +
+    `<p>Each team's remaining opponents, averaged on what those defenses allow to this position per game, adjusted for the offenses they have faced. Rank 1 is the easiest remaining schedule.</p>` +
+    `</div></details>`
+  );
 }
 
 const TAB_LABELS: Record<SosTab, string> = { team: "Team SOS", player: "Player SOS" };
@@ -670,8 +690,11 @@ function renderTeamTable(board: SosBoard): string {
   ];
   const first: Column = { key: "team", label: "Team", title: "NFL team. Each weekly cell shows the opponent's defense difficulty vs this position.", type: "text" };
 
+  // The id is what a Fantasy Points Allowed cell links to: every DET x RB cell
+  // there is a link to `/rb/#scsos-team-det` here (fpa-render.ts). Keep the
+  // shape; the bundle highlights the row the address names (client/sos.ts).
   const row = (r: SosTeamRow) =>
-    `<tr data-row="team-${escapeHtml(r.team.abbreviation)}">` +
+    `<tr data-row="team-${escapeHtml(r.team.abbreviation)}" id="scsos-team-${escapeHtml(r.team.abbreviation)}">` +
     `<th scope="row" class="scsos-first" data-sort="${escapeHtml(r.team.code)}">` +
     teamCell(r.team) +
     `</th>` +
@@ -735,6 +758,7 @@ function renderPlayerTable(board: SosBoard): string {
   }
 
   return (
+    renderPlayerFinder(board) +
     `<table class="scsos-table" data-scsos-table data-kind="player">` +
     `<caption class="scsos-sr">${escapeHtml(
       `${board.season} fantasy strength of schedule for ${board.players.length} ${POSITION_NAMES[board.position]}, ` +
@@ -743,6 +767,32 @@ function renderPlayerTable(board: SosBoard): string {
     )}</caption>` +
     `<thead>${headRow([first], columns)}</thead>` +
     `<tbody>${board.players.map(row).join("")}</tbody></table>`
+  );
+}
+
+/**
+ * The player finder: type a name, keep that player's row.
+ *
+ * What "Find a player" on the Fantasy Points Allowed rail lands on. It ships
+ * hidden and client/sos.ts reveals it, for the reason the player pages' search
+ * does: without script it is a box that swallows typing. The rows it filters
+ * are the board's own - every player's weekly strip is already in the markup,
+ * so a search is a filter, not a fetch. A query that matches nobody never
+ * leaves a dead empty state: the client offers the nearest names instead.
+ */
+function renderPlayerFinder(board: SosBoard): string {
+  return (
+    `<div class="scsos-find" id="scsos-find" data-scsos-find hidden>` +
+    `<label class="scsos-find-field">` +
+    `<span class="scsos-sr">Find a ${escapeHtml(board.position)}</span>` +
+    `<svg class="scsos-find-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
+    `<circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" /><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />` +
+    `</svg>` +
+    `<input class="scsos-find-input" type="search" autocomplete="off" spellcheck="false"` +
+    ` placeholder="${escapeHtml(`Find a ${board.position} by name`)}" />` +
+    `</label>` +
+    `<p class="scsos-find-status" role="status" aria-live="polite"></p>` +
+    `</div>`
   );
 }
 
@@ -881,7 +931,9 @@ export function renderSosPage(
       ? ""
       : `<h1 class="scsos-h1">${escapeHtml(copy.h1)}</h1>` +
         (page !== "all" && copy.lead ? `<p class="scsos-answer">${escapeHtml(copy.lead)}</p>` : "")) +
-    (page === "all" ? "" : renderUpdated(options.updatedAt)) +
+    (page === "all"
+      ? ""
+      : `<div class="scsos-updated-row">${renderUpdated(options.updatedAt)}${renderMethodNote()}</div>`) +
     renderBar(board, state, options) +
     `<div class="scsos-view">` +
     (playoffs ? "" : renderCards(board, state)) +

@@ -565,10 +565,14 @@ foreach ( statchasers_team_table() as $sc_slug => $sc_row ) {
 is( statchasers_fit_title( array( 'a much longer candidate that does not fit', 'short' ), 20 ), 'short', 'fit_title takes the first rung that fits' );
 is( statchasers_fit_title( array( 'too long for the budget', 'also too long for it' ), 10 ), 'also too long for it', 'fit_title falls back to the last rung' );
 is( in_array( 'news', STATCHASERS_TEAM_SECTIONS, true ), true, 'news is a public section' );
-is( count( STATCHASERS_TEAM_SECTIONS ), 7, 'seven sections' );
-is( statchasers_team_heading( 'new-england-patriots', 'usage' ), 'New England Patriots Usage & Opportunity Report 2026', 'usage' );
-is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['title'], 'New England Patriots Target Share & Snap Counts 2026', 'usage title: the short rung' );
-is( statchasers_team_section_meta( 'buffalo-bills', 'usage' )['title'], 'Buffalo Bills Target Share & Snap Counts 2026: Usage Report', 'usage title: the full rung' );
+is( count( STATCHASERS_TEAM_SECTIONS ), 8, 'eight sections' );
+is( statchasers_team_heading( 'new-england-patriots', 'coaching' ), 'New England Patriots Offensive Coordinator & Scheme (2026)', 'coaching heading' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'coaching' )['title'], 'New England Patriots Offensive Coordinator & Scheme 2026', 'coaching title' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'coaching' )['description'], 'Explore the 2026 New England Patriots offense: who calls the plays, pass rate, formations, offensive tendencies, and coaching history.', 'coaching description' );
+is( statchasers_team_heading( 'new-england-patriots', 'usage' ), 'New England Patriots Snap Counts & Player Usage (2026)', 'usage' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['title'], 'New England Patriots Snap Counts & Player Usage 2026', 'usage title: the full rung' );
+is( statchasers_team_section_meta( 'washington-commanders', 'usage' )['title'], 'Washington Commanders Snap Counts & Player Usage 2026', 'usage title: the longest name still fits' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['description'], 'Explore 2026 New England Patriots snap counts, target share, rushing usage, red-zone opportunities, and weekly player trends.', 'usage description' );
 
 echo "\nurl switches default on\n";
 is( statchasers_team_section_urls_enabled(), true, 'team sections' );
@@ -902,7 +906,8 @@ $allen->post_title = 'Josh Allen (QB)';
 $GLOBALS['page']   = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $allen );
 is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen', 'player H1: the profile is the name (mak, 2026-11-03)' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats', 'player H1: stats is undated' );
-is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook', 'player H1: so is the outlook' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen 2026 Fantasy Outlook', 'player H1: the outlook is the one dated section (mak, 2026-11-05)' );
+is( statchasers_player_fallback_meta( 'josh-allen-h1-test', 'outlook' )['title'], 'Josh Allen Fantasy Outlook 2026: ROS Analysis | StatChasers', 'outlook fallback title: the dated ROS rung (mak, 2026-11-05)' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Status', 'player H1: injury status' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'news' ), 'Josh Allen News', 'player H1: news' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'bio' ), 'Josh Allen Bio', 'player H1: bio' );

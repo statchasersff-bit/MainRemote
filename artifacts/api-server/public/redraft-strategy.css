@@ -1458,8 +1458,9 @@ body.scds-page {
 }
 
 .scds-faq-a {
-  margin: 8px 0 0 20px;
-  max-width: 72ch;
+  /* Full width (11-04, mak): no 72ch measure, no indent to the question's
+     text - the answers run the width of the page like everything above. */
+  margin: 8px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.875rem;
   line-height: 1.6;

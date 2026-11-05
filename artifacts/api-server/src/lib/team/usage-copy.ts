@@ -198,103 +198,243 @@ export function handcuffProjection(view: UsageView): HandcuffProjection | null {
 }
 
 /**
- * The backfield paragraphs, in mak's compact wording (2026-10-20): the lead
- * back's workload with last season for scale, his receiving path, then the
- * handcuff math. The stat chips that used to carry the first of these are
- * gone; the numbers live in the prose.
+ * The Situational Usage paragraphs, in NFL terms (mak's brief, 2026-11-05):
+ * the lead back's workload as counts and shares, who handles the backs'
+ * work on passing downs and whether that holds when the club trails, and
+ * what a proportional redistribution of the lead back's work would mean for
+ * the next back. The fantasy reading of the same projection (stash, not a
+ * cut) is handcuffFantasyLine(), in the fantasy section.
  */
-export function backfieldTakeaways(view: UsageView): Takeaway[] {
+export function backfieldTakeaways(view: UsageView, nick = "the team"): Takeaway[] {
   const [rb1, rb2] = view.rbs;
   if (!rb1) return [];
   const out: Takeaway[] = [];
   const totals = view.team.rbSituationTotals;
+  const they = nick === "the team" ? "the team trails" : `the ${nick} trail`;
 
   if (rb1.woppPerGame != null) {
-    const rank = rb1.qualified ? rb1.leagueRank.rank : null;
     const d = rb1.lastSeasonWoppPerGame == null ? null : rb1.woppPerGame - rb1.lastSeasonWoppPerGame;
     const scale =
       d == null
         ? ""
         : d >= 1.5
-          ? ` His workload is up ${signed(d)} weighted opportunities/game from last season.`
+          ? ` His per-game workload (carries + 2 × targets) is up ${d.toFixed(1)} from last season.`
           : d <= -1.5
-            ? ` His workload is down ${Math.abs(d).toFixed(1)} weighted opportunities/game from last season.`
-            : ` His workload is level with last season (${signed(d)} weighted opportunities/game).`;
+            ? ` His per-game workload (carries + 2 × targets) is down ${Math.abs(d).toFixed(1)} from last season.`
+            : ` His per-game workload (carries + 2 × targets) is level with last season (${signed(d)}).`;
+    const share = rb1.touchShare != null ? `, ${rb1.touchShare}% of the backs' touches` : "";
+    const snaps = rb1.snapShare != null ? ` and ${rb1.snapShare}% of the offensive snaps` : "";
     out.push({
       lead: `${surname(rb1.name)}:`,
       body:
-        `${rb1.woppPerGame.toFixed(1)} weighted opportunities per active game${rank ? `, RB${rank} in the NFL` : ""}, with ${rb1.hvt} high-value touch${rb1.hvt === 1 ? "" : "es"}.` +
+        `${rb1.carries} carries and ${rb1.targets} targets in ${rb1.games} game${rb1.games === 1 ? "" : "s"}${share}${snaps}.` +
         scale,
     });
   }
 
-  // Who owns passing downs: third down when the sample can carry it, the
-  // room's targets when it cannot.
+  // Who handles passing downs: third down when the sample can carry it, the
+  // room's targets when it cannot. Shares are of the backs' carries + targets.
   const thirdSample = totals.third >= 8;
-  const passingOwner = thirdSample
-    ? [...view.rbs].sort((a, b) => b.situation.third - a.situation.third)[0]
-    : [...view.rbs].sort((a, b) => b.targets - a.targets)[0];
+  const byThird = [...view.rbs].sort((a, b) => b.situation.third - a.situation.third);
+  const byTargets = [...view.rbs].sort((a, b) => b.targets - a.targets);
+  const passingOwner = thirdSample ? byThird[0] : byTargets[0];
   const roomTargets = view.rbs.reduce((s, p) => s + p.targets, 0);
   const ownerShare = (p: UsagePlayer) =>
     thirdSample ? situationShare(view, p, "third") : roomTargets ? Math.round((100 * p.targets) / roomTargets) : null;
-  const twoMin = (p: UsagePlayer) => (totals.twoMin >= 5 ? situationShare(view, p, "twoMin") : null);
+  const where = thirdSample ? `of the backs' third-down carries and targets (${totals.third} opportunities)` : `of the backfield's ${roomTargets} targets`;
+  const others = (thirdSample ? byThird : byTargets)
+    .filter((p) => p !== passingOwner && (ownerShare(p) ?? 0) > 0)
+    .slice(0, 2)
+    .map((p) => `${ownerShare(p)}% for ${p.name}`);
+  const compared = others.length ? `, compared with ${list(others)}` : "";
 
   if (passingOwner && passingOwner !== rb1 && (ownerShare(passingOwner) ?? 0) >= 40) {
-    const where = thirdSample
-      ? `${ownerShare(passingOwner)}% of the backs' third-down carries + targets`
-      : `${ownerShare(passingOwner)}% of the backfield's targets`;
-    const tm = twoMin(passingOwner);
     out.push({
-      lead: `Why ${surname(rb1.name)}'s reception count stays capped:`,
+      lead: `Passing downs:`,
       body:
-        `${passingOwner.name} has ${where}${tm != null && tm >= 40 ? ` and ${tm}% of the two-minute work` : ""}, ` +
-        `so ${surname(rb1.name)}'s receptions have to come on other downs.`,
+        `${passingOwner.name} handles ${ownerShare(passingOwner)}% ${where}${compared}, ` +
+        `so ${surname(rb1.name)}'s receptions come on other downs.`,
     });
   } else {
     const trailing = totals.trailing >= 6 ? situationShare(view, rb1, "trailing") : null;
     // His share of the room's carries + targets in every situation, to judge
-    // whether the trailing split is holding up or shrinking. Opportunity, not
-    // snaps: participation data (who was on the field) arrives after the season.
+    // whether the trailing split is holding up or shrinking, and who leads
+    // it outright. Opportunity, not snaps: participation data (who was on
+    // the field) arrives after the season.
     const roomWork = view.rbs.reduce((s, p) => s + p.carries + p.targets, 0);
     const overall = roomWork ? Math.round((100 * (rb1.carries + rb1.targets)) / roomWork) : null;
-    // Named and numbered like the other two boxes (mak, 2026-11-02: "who's
-    // third down role exactly?"): the lead carries the back, the body his share.
     const share = ownerShare(rb1);
-    const path = thirdSample
-      ? `${share != null ? `${share}% of the backs' third-down carries + targets` : "His third-down role"} gives him receiving value even when rushing volume falls`
-      : `${share != null ? `${share}% of the backfield's targets` : "His share of the backfield's targets"} gives him receiving value even when rushing volume falls`;
-    const script =
-      trailing == null
-        ? "."
-        : overall == null || trailing >= overall * 0.75
-          ? ", and his share holds up in negative game scripts."
-          : ", though negative game scripts reduce his share of the backfield.";
-    out.push({ lead: `${surname(rb1.name)} on passing downs:`, body: path + script });
+    const trailingLeader = [...view.rbs].sort((a, b) => b.situation.trailing - a.situation.trailing)[0];
+    const leadsTrailing =
+      trailingLeader === rb1 && view.rbs.filter((p) => p.situation.trailing === rb1.situation.trailing).length === 1;
+    let script = "";
+    if (trailing != null) {
+      if (leadsTrailing && (overall == null || trailing >= overall * 0.75)) {
+        script = ` He has kept the leading role in passing situations, including when ${they} by seven or more points (${trailing}% of the backs' opportunities, ${totals.trailing} in the sample).`;
+      } else if (leadsTrailing) {
+        script = ` When ${they} by seven or more, his share of the backs' opportunities drops to ${trailing}% (${totals.trailing} in the sample), though he still leads the room.`;
+      } else if (trailingLeader && trailingLeader !== rb1) {
+        const other = situationShare(view, trailingLeader, "trailing");
+        script = ` When ${they} by seven or more, ${trailingLeader.name} takes the larger share of the backs' opportunities (${other}% to ${trailing}%, ${totals.trailing} in the sample).`;
+      } else {
+        script = ` When ${they} by seven or more, his share of the backs' opportunities is ${trailing}% (${totals.trailing} in the sample), level with another back.`;
+      }
+    }
+    out.push({
+      lead: `Passing downs:`,
+      body:
+        (share != null
+          ? `${rb1.name} accounts for ${share}% ${where}${compared}.`
+          : `${rb1.name} takes the largest share ${where}.`) + script,
+    });
   }
 
-  // The handcuff: RB1's work redistributed in proportion to who takes the
+  // The next back: RB1's work redistributed in proportion to who takes the
   // valuable (early-down and red-zone) carries + targets behind him.
   const cuff = handcuffProjection(view);
   if (rb2 && cuff) {
-    const { projected, projShare, grade } = cuff;
-    const level = grade.startsWith("a top") ? "RB1-level volume" : grade.startsWith("an RB2") ? "RB2-level volume" : "flex-level volume at best";
-    const startable = level !== "flex-level volume at best";
-    const stash = view.rows.some((r) => r.player === rb2 && r.tier === "stash");
+    const { projected, projShare } = cuff;
+    const rank = rbRankFor(view.doc.rbWoppPool, projected);
+    const level = rank <= 12 ? "a lead back's workload" : rank <= 24 ? "a starter's workload" : "a committee workload";
     out.push({
       lead: `If ${surname(rb1.name)} misses time:`,
       body:
-        `${surname(rb2.name)} projects for ` +
-        (projShare != null ? `roughly ${projShare}% of backfield weighted opportunities, or about ` : "about ") +
-        `${projected.toFixed(1)} per active game - ${level}` +
-        (startable ? (stash ? " and why he remains a stash, not a cut." : ", worth a bench spot in deeper leagues.") : "."),
+        `${surname(rb2.name)} is next in line. A proportional share of ${surname(rb1.name)}'s work would put him at ` +
+        (projShare != null ? `roughly ${projShare}% of the backfield's carries + 2 × targets, about ` : "about ") +
+        `${projected.toFixed(1)} per game - ${level} by this season's NFL rates.`,
     });
   } else {
     out.push({
-      lead: `No clear handcuff behind ${surname(rb1.name)}:`,
-      body: `No other back has 5% of the backfield's weighted opportunities, so an absence would be settled on the waiver wire, not by a stash on your bench.`,
+      lead: `Behind ${surname(rb1.name)}:`,
+      body: `No other back has 5% of the backfield's carries + 2 × targets, so an absence would open a role no one on the roster currently holds.`,
     });
   }
   return out;
+}
+
+/**
+ * The handcuff projection in fantasy terms, for the Advanced & Fantasy
+ * Analysis section: the same numbers as the Situational Usage takeaway
+ * (both read handcuffProjection()), with the lineup reading attached.
+ */
+export function handcuffFantasyLine(view: UsageView): Takeaway | null {
+  const cuff = handcuffProjection(view);
+  if (!cuff) return null;
+  const { rb1, rb2, projected, projShare, grade } = cuff;
+  const level = grade.startsWith("a top") ? "RB1-level volume" : grade.startsWith("an RB2") ? "RB2-level volume" : "flex-level volume at best";
+  const startable = level !== "flex-level volume at best";
+  const stash = view.rows.some((r) => r.player === rb2 && r.tier === "stash");
+  return {
+    lead: `Handcuff:`,
+    body:
+      `if ${surname(rb1.name)} misses time, ${surname(rb2.name)} projects for ` +
+      (projShare != null ? `roughly ${projShare}% of backfield weighted opportunities, or about ` : "about ") +
+      `${projected.toFixed(1)} per active game - ${level}` +
+      (startable ? (stash ? " and why he remains a stash, not a cut." : ", worth a bench spot in deeper leagues.") : "."),
+  };
+}
+
+/* ------------------------------------------------------------------ trends */
+
+export interface UsageTrend {
+  player: UsagePlayer;
+  direction: "up" | "down";
+  /** The lead number, "+12 pp". */
+  headline: string;
+  /** The sentence after the name. */
+  body: string;
+  /** The same facts in a clause for the FAQ: "snap share +12 points (W6-8 vs W3-5)". */
+  short: string;
+}
+
+/** "Weeks 6-8" when the weeks run, "Weeks 2, 4 and 5" when they do not, so a window never implies a game that was missed. */
+function weeksList(weeks: number[], short = false): string {
+  if (weeks.length === 0) return "";
+  const w = short ? "W" : "Week";
+  const ws = short ? "W" : "Weeks";
+  if (weeks.length === 1) return `${w}${short ? "" : " "}${weeks[0]}`;
+  const contiguous = weeks.every((n, i) => i === 0 || n === weeks[i - 1]! + 1);
+  if (contiguous) return `${ws}${short ? "" : " "}${weeks[0]}-${weeks[weeks.length - 1]}`;
+  return `${ws}${short ? "" : " "}${short ? weeks.join(", ") : list(weeks.map(String))}`;
+}
+
+/** "over his last three games (Weeks 6-8) against the three before them (Weeks 3-5)", with short windows counted. */
+function windowWords(t: { trailWeeks: number[]; baseWeeks: number[] }): string {
+  const played = t.trailWeeks.length;
+  const base = t.baseWeeks.length;
+  const count = (n: number) => (n === 1 ? "one game" : n === 2 ? "two games" : "three games");
+  return (
+    `over his last ${count(played)} (${weeksList(t.trailWeeks)}) against ${base === 3 ? "the three before them" : `the ${count(base)} before`} (${weeksList(t.baseWeeks)})`
+  );
+}
+
+/** The table's own steady bands (usage.ts): a smaller move is "steady". */
+const BAND_SNAP = 5;
+const BAND_TS = 2;
+
+/**
+ * Notable Usage Changes (mak's brief, 2026-11-05): every player in the
+ * report whose snap share has moved by 5+ points or whose target share by
+ * 2+ (the table's steady bands) with the latest game confirming it, as a
+ * neutral sentence that states both windows. The other share is described
+ * for what it is: inside the band, or a move the latest game did not hold.
+ * Ordered by the size of the move; a quarterback's snap share is not a role
+ * change and is left out.
+ */
+export function usageTrends(view: UsageView): UsageTrend[] {
+  const out: Array<UsageTrend & { size: number }> = [];
+  for (const r of view.rows) {
+    const p = r.player;
+    if (p.pos === "QB") continue;
+    const receiver = p.pos === "WR" || p.pos === "TE";
+    const snapMove = r.snap.delta != null && r.snap.direction !== "flat" && r.snap.confirmed && r.snap.baseWeeks.length > 0;
+    const tsMove = receiver && r.ts.delta != null && r.ts.direction !== "flat" && r.ts.confirmed && r.ts.baseWeeks.length > 0;
+    if (!snapMove && !tsMove) continue;
+    const snapD = r.snap.delta ?? 0;
+    const tsD = r.ts.delta ?? 0;
+    const sameWindow = r.ts.baseWeeks.join() === r.snap.baseWeeks.join() && r.ts.trailWeeks.join() === r.snap.trailWeeks.join();
+
+    // The other share, described exactly: inside its band, or outside it
+    // without the latest game holding the level (so not called a move).
+    const other = (kind: "snap" | "ts"): string => {
+      const t = kind === "snap" ? r.snap : r.ts;
+      const d = t.delta;
+      if (d == null || t.baseWeeks.length === 0) return "";
+      const name = kind === "snap" ? "snap share" : "target share";
+      const band = kind === "snap" ? BAND_SNAP : BAND_TS;
+      const places = kind === "snap" ? 0 : 1;
+      if (Math.abs(d) < band) return `, with his ${name} within the steady band (${signed(d, places)} points)`;
+      return `, and his ${name} is ${d > 0 ? "up" : "down"} ${Math.abs(d).toFixed(places)} points${sameWindow ? "" : ` ${windowWords(t)}`}, though his latest game did not hold that level`;
+    };
+
+    let body: string;
+    let short: string;
+    if (snapMove && tsMove) {
+      body =
+        `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))} percentage points ${windowWords(r.snap)}, ` +
+        `while his target share has ${tsD > 0 ? "risen" : "fallen"} ${Math.abs(tsD).toFixed(1)} points${sameWindow ? "" : ` ${windowWords(r.ts)}`}.`;
+      short = `snap share ${signed(snapD, 0)} points and target share ${signed(tsD)} points (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
+    } else if (snapMove) {
+      body = `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))} percentage points ${windowWords(r.snap)}${receiver ? other("ts") : ""}.`;
+      short = `snap share ${signed(snapD, 0)} points (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
+    } else {
+      body = `has seen his target share ${tsD > 0 ? "rise" : "fall"} ${Math.abs(tsD).toFixed(1)} points ${windowWords(r.ts)}${other("snap")}.`;
+      short = `target share ${signed(tsD)} points (${weeksList(r.ts.trailWeeks, true)} vs ${weeksList(r.ts.baseWeeks, true)})`;
+    }
+    const lead = snapMove ? snapD : tsD;
+    out.push({
+      player: p,
+      direction: lead > 0 ? "up" : "down",
+      headline: snapMove ? `${signed(snapD, 0)} pp` : `${signed(tsD, 1)} pts`,
+      body,
+      short,
+      size: Math.abs(snapD) + 2 * Math.abs(tsD),
+    });
+  }
+  return out
+    .sort((a, b) => b.size - a.size)
+    .slice(0, 5)
+    .map(({ size: _size, ...t }) => t);
 }
 
 /* ----------------------------------------------------------- run direction */

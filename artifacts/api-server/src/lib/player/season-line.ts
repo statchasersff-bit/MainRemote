@@ -76,34 +76,37 @@ export interface LineCell {
 }
 
 /**
- * The four figures under the name, by position.
+ * The four figures of the hero's strip, by position.
  *
  * Counting stats and one rate, the way a box score reads: what he did, not
- * how he scored. Empty for a position the logs carry nothing for, and for a
- * player with no games - the caller leaves the line out.
+ * how he scored. The label is the word printed AFTER the figure in the
+ * strip's dotted run ("42/65 cmp · 550 yds · 3 TD · 1 INT"), so it is the
+ * unit in its everyday spelling rather than a column head. Empty for a
+ * position the logs carry nothing for, and for a player with no games - the
+ * caller leaves the group out.
  */
 export function heroCells(position: string | null, t: SeasonTotals): LineCell[] {
   if (t.gp === 0) return [];
   switch (position) {
     case "QB":
       return [
-        { label: "CMP/ATT", value: `${whole(t.cmp)}/${whole(t.att)}`, title: "Completions and attempts" },
-        { label: "PASS YDS", value: whole(t.passYd), title: "Passing yards" },
-        { label: "PASS TD", value: whole(t.passTd), title: "Passing touchdowns" },
+        { label: "cmp", value: `${whole(t.cmp)}/${whole(t.att)}`, title: "Completions and attempts" },
+        { label: "yds", value: whole(t.passYd), title: "Passing yards" },
+        { label: "TD", value: whole(t.passTd), title: "Passing touchdowns" },
         { label: "INT", value: whole(t.int), title: "Interceptions" },
       ];
     case "RB":
       return [
-        { label: "CAR", value: whole(t.rushAtt), title: "Carries" },
-        { label: "RUSH YDS", value: whole(t.rushYd), title: "Rushing yards" },
+        { label: "car", value: whole(t.rushAtt), title: "Carries" },
+        { label: "yds", value: whole(t.rushYd), title: "Rushing yards" },
         { label: "TD", value: whole(t.rushTd + t.recTd), title: "Rushing and receiving touchdowns" },
-        { label: "REC", value: whole(t.rec), title: "Receptions" },
+        { label: "rec", value: whole(t.rec), title: "Receptions" },
       ];
     case "WR":
     case "TE":
       return [
-        { label: "REC", value: whole(t.rec), title: "Receptions" },
-        { label: "YDS", value: whole(t.recYd), title: "Receiving yards" },
+        { label: "rec", value: whole(t.rec), title: "Receptions" },
+        { label: "yds", value: whole(t.recYd), title: "Receiving yards" },
         { label: "TD", value: whole(t.recTd), title: "Receiving touchdowns" },
         { label: "Y/R", value: per(t.recYd, t.rec), title: "Yards per reception" },
       ];

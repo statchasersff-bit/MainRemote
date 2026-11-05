@@ -790,10 +790,12 @@ describe("the schedule page", () => {
       "and prints no heading of its own at all",
     );
 
-    // The instruction the reader actually needs is still there.
-    assert.match(
-      doc.querySelector(".scs-viewhead .scs-view-note").textContent,
-      /marks a road game/,
+    // The "@ marks a road game" instruction line went too (11-04): the grid
+    // opens on the table, and the FAQ under it answers what the @ means.
+    assert.equal(
+      doc.querySelector(".scs-view-note"),
+      null,
+      "no instruction line above the grid",
     );
   });
 

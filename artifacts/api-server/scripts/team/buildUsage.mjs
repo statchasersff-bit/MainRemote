@@ -60,6 +60,14 @@
  * (spikes are already gone, some throwaways) are not mapped.
  * deepTargets = a player's targets 20+ air yards, from any passer.
  * rushYards = box-score rushing yards: carries, scrambles AND kneels.
+ * kneels / kneelYards = the kneel-downs the box score counts as rushing
+ * attempts and `carries` here does not (NE 2026 wk 1-8: Maye 46 official =
+ * 35 carries + 11 kneels); the page prints the reconciliation.
+ * recYards = receiving yards on completions. passAttempts = a passer's
+ * attempts, charted or not, so the pass map can say how many it mapped.
+ * snaps / weekly[].snapN / team snapsByWeek = raw offensive snap counts
+ * (2026-11-05), for the snap-count table and its week selector. A skill
+ * player with snaps and no touch gets a row for that table.
  * rzTouches = red-zone opportunities: carries + targets inside the 20.
  *
  * NOT built, on purpose (the spec: omit rather than estimate): route share,
@@ -289,6 +297,10 @@ export async function buildUsage(season) {
       zones: {}, // passer gsis -> zone -> {att, yds, receivers}
       rbSituation: { early: 0, third: 0, rz: 0, in10: 0, twoMin: 0, trailing: 0 },
       dropbacks: new Map(), // passer gsis -> count
+      // Kneel-downs, which the official box score counts as rushing
+      // attempts and this file does not (see the header). Counted so the
+      // page can say by how much its carries sit under the official number.
+      kneels: 0,
     }));
 
   const playerAcc = (c, id) =>
@@ -297,6 +309,7 @@ export async function buildUsage(season) {
       id,
       targets: 0,
       receptions: 0,
+      recYards: 0,
       airYards: 0,
       ezTargets: 0,
       deepTargets: 0,
@@ -305,10 +318,17 @@ export async function buildUsage(season) {
       gzCarries: 0,
       rzTouches: 0,
       rushYards: 0,
+      // Kneel-downs by this player: in rushYards (the box score's number),
+      // not in carries. The count and their yards let the page reconcile
+      // both with the official line.
+      kneels: 0,
+      kneelYards: 0,
       designedRuns: 0,
       scrambles: 0,
       dropbacks: 0,
       sacks: 0,
+      // Every pass attempt (no sack), charted or not: the pass map's coverage line.
+      passAttempts: 0,
       passAttAir: 0,
       passAirYards: 0,
       longestRuns: [], // [yards, gap]
@@ -336,7 +356,12 @@ export async function buildUsage(season) {
       // Kneels count nowhere else, but the box score's rushing yards include
       // them, and the QB copy quotes that number (NE 2026 wk 1-3: Maye 82).
       if (playType === "qb_kneel" && r.rusher_player_id && r.rusher_player_id !== "NA") {
-        playerAcc(c, r.rusher_player_id).rushYards += num(r.rushing_yards) ?? 0;
+        const k = playerAcc(c, r.rusher_player_id);
+        const yds = num(r.rushing_yards) ?? 0;
+        k.rushYards += yds;
+        k.kneels += 1;
+        k.kneelYards += yds;
+        teamAcc(c).kneels += 1;
       }
       last = null;
       continue;
@@ -409,6 +434,7 @@ export async function buildUsage(season) {
       t.passAtt += 1;
       const air = num(r.air_yards);
       const passer = r.passer_player_id;
+      if (passer && passer !== "NA") playerAcc(c, passer).passAttempts += 1;
       if (passer && passer !== "NA" && air != null) {
         const q = playerAcc(c, passer);
         q.passAttAir += 1;
@@ -435,7 +461,10 @@ export async function buildUsage(season) {
         teamWeekTargets.set(`${c}|${week}`, (teamWeekTargets.get(`${c}|${week}`) ?? 0) + 1);
         const p = playerAcc(c, rec);
         p.targets += 1;
-        if (r.complete_pass === "1") p.receptions += 1;
+        if (r.complete_pass === "1") {
+          p.receptions += 1;
+          p.recYards += num(r.receiving_yards) ?? 0;
+        }
         if (air != null) p.airYards += air;
         if (air != null && yl != null && air >= yl) p.ezTargets += 1;
         if (air != null && air >= 20) p.deepTargets += 1;
@@ -521,10 +550,19 @@ export async function buildUsage(season) {
     teamSnaps.set(key, Math.max(teamSnaps.get(key) ?? 0, off));
     if (gsis && off > 0) snapRows.push({ c, gsis, week, off, share });
   }
+  const snapCounts = new Map(); // `${club}|${gsis}` -> Map(week -> offensive snaps)
   for (const s of snapRows) {
     ensure(snaps, `${s.c}|${s.gsis}`, () => new Map()).set(s.week, s.share);
+    ensure(snapCounts, `${s.c}|${s.gsis}`, () => new Map()).set(s.week, s.off);
     const tot = ensure(snapTotals, `${s.c}|${s.gsis}`, () => ({ snaps: 0 }));
     tot.snaps += s.off;
+  }
+  // A skill player who took snaps without a touch (a blocking tight end, a
+  // fourth receiver) belongs in the snap-count table, so he gets a row too.
+  for (const key of snaps.keys()) {
+    const [c, gsis] = key.split("|");
+    const pos = info.get(gsis)?.position ?? sleeper.get(sleeperByGsis.get(gsis) ?? "")?.position ?? null;
+    if (["QB", "RB", "FB", "WR", "TE"].includes(pos) && teams.has(c)) playerAcc(c, gsis);
   }
 
   // ---- expected fantasy points
@@ -577,6 +615,7 @@ export async function buildUsage(season) {
     const t = teams.get(p.club);
     const games = gamesOf(p.club);
     const snapWeeks = snaps.get(`${p.club}|${p.id}`) ?? new Map();
+    const snapNs = snapCounts.get(`${p.club}|${p.id}`) ?? new Map();
     const played = new Set([...p.weeks.keys(), ...snapWeeks.keys()]);
     const gp = played.size || 1;
     const teamSnapTotal = games.reduce((s, w) => s + (snapWeeks.has(w) ? teamSnaps.get(`${p.club}|${w}`) ?? 0 : 0), 0);
@@ -606,6 +645,8 @@ export async function buildUsage(season) {
         teamTgt: playedThis ? tgts : null,
         teamCar: playedThis ? cars : null,
         snap: snap != null ? Math.round(snap * 100) : null,
+        // The raw offensive snap count behind the share (the snap table, 2026-11-05).
+        snapN: snapNs.get(w) ?? null,
         rz: playedThis ? (wk?.rz ?? 0) : null,
       };
     });
@@ -620,7 +661,11 @@ export async function buildUsage(season) {
       games: gp,
       targets: p.targets,
       receptions: p.receptions,
+      recYards: p.recYards,
       carries: p.carries,
+      kneels: p.kneels,
+      kneelYards: p.kneelYards,
+      passAttempts: p.passAttempts,
       targetShare: round(ts, 1),
       airYardsShare: round(ays, 1),
       wopr: ts != null && ays != null ? round(1.5 * (ts / 100) + 0.7 * (ays / 100), 2) : null,
@@ -629,6 +674,8 @@ export async function buildUsage(season) {
       deepTargets: p.deepTargets,
       firstReadShare: readThrown.size && t.firstReadTargets ? round(pct(p.firstReadTargets, t.firstReadTargets), 1) : null,
       snapShare: allTeamSnaps ? round(pct(snaps.has(`${p.club}|${p.id}`) ? snapTotals.get(`${p.club}|${p.id}`).snaps : 0, allTeamSnaps), 0) : null,
+      // Season offensive snaps, the count behind snapShare (the snap table).
+      snaps: snapTotals.get(`${p.club}|${p.id}`)?.snaps ?? 0,
       rzTouches: p.rzTouches,
       rushYards: p.rushYards,
       gzCarries: p.gzCarries,
@@ -765,6 +812,9 @@ export async function buildUsage(season) {
       passAttempts: t.passAtt,
       targets: t.targets,
       carries: t.carries,
+      kneels: t.kneels,
+      // The club's offensive snaps each game (the snap-count table's denominators).
+      snapsByWeek: Object.fromEntries(gamesOf(c).map((w) => [w, teamSnaps.get(`${c}|${w}`) ?? 0])),
       passerId,
       passerZoneAttempts: zoneTotal,
       env: {
@@ -780,7 +830,7 @@ export async function buildUsage(season) {
       runs,
       zones,
       players: roster
-        .filter((p) => p.targets + p.carries + p.dropbacks > 0)
+        .filter((p) => p.targets + p.carries + p.dropbacks > 0 || p.snaps > 0)
         .sort((a, b) => b.wopp - a.wopp)
         .map(strip),
     };

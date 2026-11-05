@@ -37,6 +37,13 @@ export interface GameLogStats {
   off_snp?: number;
   /** The team's offensive snaps that week - the denominator for a snap share. */
   tm_off_snp?: number;
+  /** Sleeper's own game played / game started flags (kept since 2026-11-04). */
+  gp?: number;
+  gs?: number;
+  pass_sack?: number;
+  pass_sack_yds?: number;
+  fum?: number;
+  fum_lost?: number;
   /** Derived in enrichWithTeamMetrics(), not present in the source data. */
   target_share?: number | null;
   team_pass_rate?: number | null;
@@ -247,8 +254,19 @@ export interface RosterPctDoc {
 export interface CareerSeasonStat {
   season: number;
   gp: number;
+  /** Games started, from the logs' `gs` (0 for seasons built before it was kept). */
+  gs: number;
   ppg: number;
+  /** Fantasy points in the page's format, summed week by week. */
+  points: number;
   posRank: number | null;
+  /** Sacks taken and fumbles lost, from the logs (0 before the builder kept them). */
+  sacks: number;
+  fum_lost: number;
+  /** Weekly finishes inside the position's starter line (top 12 at QB/TE, top 24 at RB/WR), and the best week. */
+  top_weeks: number;
+  ranked_weeks: number;
+  best_week: number;
   pass_att: number;
   pass_cmp: number;
   pass_yd: number;

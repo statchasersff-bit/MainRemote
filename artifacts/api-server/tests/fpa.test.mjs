@@ -194,7 +194,7 @@ describe("fpa routes", () => {
     // exception and are checked in the embed suite below.
     assert.equal(doc.querySelectorAll("h1").length, 0, "no H1 of its own");
     assert.equal(
-      doc.querySelectorAll(".scf h2:not(.scf-faq-title):not(.scf-related-title)").length,
+      doc.querySelectorAll(".scf h2:not(.scf-faq-title)").length,
       0,
       "no heading above the table",
     );
@@ -213,14 +213,15 @@ describe("fpa routes", () => {
     requireData();
     const res = await get("/fpa");
     const at = (needle) => res.body.indexOf(needle);
-    for (const needle of ["scf-updated", "scf-answer", "scf-controls", "scf-table", "scf-mode", "scf-legend-wrap", "scf-related", "scf-faq-title"]) {
+    for (const needle of ["scf-updated", "scf-controls", "scf-legend-wrap", "scf-table", "scf-faq-title"]) {
       assert.ok(at(needle) > 0, needle);
     }
-    assert.ok(at("scf-updated") < at("scf-answer"), "the Updated line opens the page");
-    assert.ok(at("scf-answer") < at("scf-controls"), "the answer sentence sits above the controls");
-    assert.ok(at("scf-table") < at("scf-mode"), "the blend note sits directly under the table");
-    assert.ok(at("scf-mode") < at("scf-legend-wrap"), "and before the legend");
-    assert.ok(at("scf-related") < at("scf-faq-title"), "Related comes before the FAQ");
+    assert.equal(at("scf-mode"), -1, "the blend note is no longer printed (mak, 2026-11-04)");
+    assert.equal(at("scf-seasons"), -1, "the archive list is no longer printed on the live page (mak, 2026-11-04)");
+    assert.ok(at("scf-updated") < at("scf-controls"), "the Updated line opens the page");
+    assert.equal(at("scf-answer"), -1, "the answer sentence is no longer printed (mak, 2026-11-04)");
+    assert.ok(at("scf-controls") < at("scf-legend-wrap") && at("scf-legend-wrap") < at("scf-table"), "the legend is on the controls row (mak, 2026-11-04)");
+    assert.equal(at("scf-related"), -1, "the Related block is gone (mak, 2026-11-04)");
 
     const doc = new JSDOM(res.body).window.document;
     assert.match(doc.title, /^Fantasy Points Allowed by Position \d{4} \((Weeks 1\u2013\d{1,2}|Preseason)\)$/);
@@ -228,7 +229,6 @@ describe("fpa routes", () => {
     const description = doc.querySelector('meta[name="description"]').getAttribute("content");
     assert.ok(description.length <= 155, `description within 155 characters: ${description}`);
     assert.match(description, /by all 32 NFL defenses/);
-    assert.match(doc.querySelector(".scf-answer").textContent, /^Softest matchups (through Week \d{1,2}|on the \d{4} baseline): .+ allows the most fantasy points to (QB|RB|WR|TE)s \(\d+\.\d per game\)/);
     assert.match(doc.querySelector(".scf-updated").textContent, /^(Updated [A-Z][a-z]{2} \d{1,2}, (through Week \d{1,2}|before Week 1)|Through Week \d{1,2}, \d{4}|Before Week 1 of \d{4})$/);
 
     // Every team links to its schedule page, not its hub (mak, 2026-10-10).
@@ -236,26 +236,15 @@ describe("fpa routes", () => {
     assert.equal(teamLinks.length, 32);
     for (const href of teamLinks) assert.match(href, /^\/team\/[a-z0-9-]+\/schedule\/$/);
 
-    // Related: the four position SOS pages, the projections and the start/sit tool.
-    const related = Array.from(doc.querySelectorAll(".scf-related-list a")).map((a) => a.getAttribute("href"));
-    assert.deepEqual(related, [
-      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/qb/",
-      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/rb/",
-      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/wr/",
-      "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/te/",
-      "https://statchasers.com/redraft-command/fantasy-football-projections",
-      "https://statchasers.com/redraft-command/who-should-i-start",
-    ]);
   });
 
   test("a finished season is a full-season archive of its own", async () => {
     requireData();
     const live = await get("/fpa");
     const liveDoc = new JSDOM(live.body).window.document;
-    const archiveLinks = Array.from(liveDoc.querySelectorAll(".scf-season-link")).map((a) => a.getAttribute("href"));
-    assert.ok(archiveLinks.length >= 1, "the current table links to at least one finished season");
-    assert.match(archiveLinks[0], /^\/fpa\?season=\d{4}$/);
-    const season = Number(archiveLinks[0].match(/\d{4}/)[0]);
+    // The live page no longer lists its archives (mak, 2026-11-04); the
+    // finished season is the one before the table's own.
+    const season = Number(liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")) - 1;
 
     const res = await get(`/fpa?season=${season}`);
     assert.equal(res.status, 200);
@@ -263,12 +252,9 @@ describe("fpa routes", () => {
     assert.equal(doc.title, `Fantasy Points Allowed by Position ${season} (Full Season)`);
     assert.equal(doc.querySelectorAll(".scf-row").length, 32, "the whole season's table");
     assert.equal(doc.querySelector("[data-scf-root]").getAttribute("data-kind"), "archive");
-    assert.match(doc.querySelector(".scf-answer").textContent, new RegExp(`^Softest matchups of the ${season} season: `));
-    assert.match(doc.querySelector(".scf-mode-body").textContent, new RegExp(`^The complete ${season} regular season, weeks 1-17: `));
     assert.equal(doc.querySelector(".scf-season-link").textContent, `Current ${liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")} data`);
     assert.equal(doc.querySelector(".scf-faq"), null, "the FAQ belongs to the current page only");
     assert.equal(doc.querySelector('script[type="application/ld+json"]'), null, "and so does its schema");
-    assert.ok(doc.querySelector(".scf-related"), "Related still closes the page");
     assert.equal(doc.querySelectorAll(".scf-season-link").length, 1, "an archive links to the current table, not to itself");
 
     // The current season under its own name is the default table, and a season
@@ -297,10 +283,11 @@ describe("fpa routes", () => {
     );
   });
 
-  test("the adjusted view says it is a model", async () => {
+  test("the adjusted view is marked on the root, and carries no blend note (mak, 2026-11-04)", async () => {
     requireData();
     const res = await get("/fpa?view=adjusted");
-    assert.match(res.body, /It is a model/);
+    assert.match(res.body, /data-view="adjusted"/);
+    assert.doesNotMatch(res.body, /scf-mode/);
   });
 
   test("the CSV matches what is on screen", async () => {
@@ -321,7 +308,7 @@ describe("fpa routes", () => {
     // and the CSV's first field is the name.
     const doc = new JSDOM(page.body).window.document;
     const firstOnPage = doc
-      .querySelector(".scf-row .scf-team .scf-team-name")
+      .querySelector(".scf-row .scf-team .scf-team-name-full")
       .textContent.trim();
     assert.ok(
       lines[1].startsWith(firstOnPage) || lines[1].startsWith(`"${firstOnPage}`),
@@ -470,19 +457,21 @@ describe("the embedded fpa fragment", () => {
     assert.ok(res.body.includes("data-scf-root"));
   });
 
-  test("the CSV points at this server, not at the page it is mounted in", async () => {
+  test("the legend sits where the Download CSV link was, and the link is gone (mak, 2026-11-04)", async () => {
     requireData();
     const res = await get("/embed/fpa");
     const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
-    const href = doc.querySelector(".scf-csv").getAttribute("href");
-
-    // The CSV is a route on THIS server. Built from the page path it is
-    // mounted at - which SC_FPA_PATH makes a WordPress page path - it came out
-    // as "/nfl/fantasy-points-allowed-by-position//download.csv", and a
-    // leading "//" is not a path: a browser reads it as protocol-relative and
-    // goes looking for a host called download.csv.
-    assert.ok(!href.includes("//download.csv"), href);
-    assert.match(href, /^https?:\/\/[^/]+\/fpa\/download\.csv\?/, href);
+    assert.equal(doc.querySelector(".scf-csv"), null, "no CSV link on the page");
+    const legend = doc.querySelector(".scf-controls .scf-legend-wrap");
+    assert.ok(legend, "the legend is inside the controls row");
+    assert.deepEqual(
+      [...legend.querySelectorAll(".scf-legend-label")].map((l) => l.textContent),
+      ["Softest (1\u20136)", "Soft (7\u201312)", "Tough (21\u201326)", "Toughest (27\u201332)"],
+    );
+    assert.equal(doc.querySelectorAll(".scf-legend-wrap").length, 1, "once, not also under the table");
+    // The route itself still serves.
+    const csv = await get("/fpa/download.csv?format=half&view=raw");
+    assert.equal(csv.status, 200);
   });
 
   test("the fragment's endpoint is absolute, because WordPress owns the page", async () => {
@@ -570,13 +559,8 @@ describe("the embedded fpa fragment", () => {
     const headings = [...doc.querySelectorAll("h2, h3")];
     assert.ok(headings.length > 0, "the FAQ is in the fragment");
     for (const heading of headings) {
-      assert.ok(
-        heading.closest(".scf-faq") || heading.closest(".scf-related"),
-        `${heading.tagName} "${heading.textContent}" is outside the FAQ and Related`,
-      );
+      assert.ok(heading.closest(".scf-faq"), `${heading.tagName} "${heading.textContent}" is outside the FAQ`);
     }
-    assert.equal(doc.querySelectorAll(".scf-related h2").length, 1, "Related has one H2 and no H3s");
-    assert.equal(doc.querySelectorAll(".scf-related h3").length, 0);
     assert.equal(doc.querySelectorAll(".scf-faq h2").length, 1);
     assert.equal(
       doc.querySelectorAll(".scf-faq h3").length,
@@ -638,6 +622,172 @@ describe("the embedded fpa fragment", () => {
     const res = await get("/embed/fpa?season=1999");
     assert.equal(res.status, 404);
     assert.ok(!/scf-row/.test(res.body));
+  });
+});
+
+describe("the schedule rail (mak, 2026-11-04)", () => {
+  test("six cards, the current view docked and pressed, no headings of its own", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+
+    const rail = doc.querySelector("nav.scf-rail[data-scf-rail]");
+    assert.ok(rail, "the rail is in the markup");
+    assert.ok(rail.closest(".scf-body"), "inside the body grid, beside the sheet");
+    assert.equal(rail.querySelectorAll("h1, h2, h3, h4").length, 0, "no headings of its own");
+
+    const cards = [...rail.querySelectorAll("a.scf-card")];
+    assert.equal(cards.length, 6);
+    // The finder sits second, under the current view (mak, 2026-11-04).
+    assert.deepEqual(
+      [cards[0], ...cards.slice(2, 6)].map((a) => a.querySelector(".scf-card-title").textContent),
+      ["Most FPts allowed", "Easiest QB Schedule", "Easiest RB Schedule", "Easiest WR Schedule", "Easiest TE Schedule"],
+    );
+    // Destination-named titles; the note says what the card leads with.
+    for (const card of cards.slice(2, 6)) {
+      assert.doesNotMatch(card.querySelector(".scf-card-title").textContent, /ROS/);
+    }
+
+    const current = cards.filter((a) => a.classList.contains("is-current"));
+    assert.equal(current.length, 1, "exactly one current view");
+    assert.equal(current[0], cards[0], "docked at the top");
+    assert.equal(current[0].getAttribute("aria-current"), "page");
+    assert.match(current[0].querySelector(".scf-card-note").textContent, /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}|\d{4} season (baseline|\(Weeks 1\u2013\d{1,2}\)))\. Softest defense overall\.$/);
+    // It leads with the softest defense overall: OFF rank 1, and its figure.
+    const softest = [...doc.querySelectorAll(".scf-row")].find((r) => r.querySelectorAll(".scf-cell")[4].querySelector(".scf-rank").textContent === "1");
+    assert.equal(current[0].querySelector(".scf-card-name").textContent, softest.getAttribute("data-team"));
+    assert.equal(current[0].querySelector(".scf-card-value").textContent, `${softest.querySelectorAll(".scf-cell")[4].querySelector(".scf-fpa").textContent}FPA`);
+    assert.equal(rail.querySelectorAll(".scf-card-tag").length, 0, "no Viewing pill (mak, 2026-11-04)");
+    assert.equal(current[0].querySelector(".scf-card-cta"), null, "no call to action on the page being viewed");
+
+    assert.deepEqual(
+      cards.slice(2, 6).map((a) => a.getAttribute("href")),
+      ["/strength-of-schedule/qb", "/strength-of-schedule/rb", "/strength-of-schedule/wr", "/strength-of-schedule/te"],
+    );
+    for (const [i, pos] of ["QB", "RB", "WR", "TE"].entries()) {
+      assert.equal(cards[i + 2].getAttribute("data-pos"), pos, "the card carries the position");
+      assert.equal(cards[i + 2].querySelector(".scf-rail-chip"), null, "no chip repeating it (mak, 2026-11-04)");
+    }
+    const search = cards[1];
+    assert.ok(search.classList.contains("is-search"));
+    assert.equal(search.getAttribute("href"), "/strength-of-schedule/?tab=player#scsos-find");
+    assert.ok(search.querySelector("svg.scf-card-glass"), "the magnifier");
+    assert.equal(search.querySelector(".scf-card-placeholder").textContent, "Find a player's schedule");
+
+    // No second list of the four positions: the easiest-three live in the cards.
+    assert.equal(rail.querySelectorAll(".scf-rail-teaser, [data-scf-rail-slot]").length, 0);
+
+    // Under it, the start/sit container: two tool cards for the coming week.
+    const startSit = doc.querySelector("nav.scf-rail-startsit[data-scf-startsit]");
+    assert.ok(startSit && startSit.previousElementSibling === rail, "directly under the schedules");
+    assert.equal(doc.querySelectorAll(".scf-rail-eyebrow").length, 0, "no eyebrows (mak, 2026-11-04)");
+    const tools = [...startSit.querySelectorAll("a.scf-card")];
+    assert.deepEqual(tools.map((a) => a.getAttribute("href")), [
+      "https://statchasers.com/redraft-command/who-should-i-start",
+    ]);
+    assert.deepEqual(tools.map((a) => a.querySelector(".scf-card-title").textContent), ["Who Should I Start?"]);
+    for (const a of tools) {
+      assert.match(a.querySelector(".scf-card-note").textContent, /^(Week \d{1,2}|This week)[: ]/);
+      assert.equal(a.getAttribute("target"), "_blank");
+      assert.equal(a.querySelector(".scf-card-body"), null, "title, note and a call to action");
+      assert.ok(a.querySelector(".scf-card-cta"), "the call to action");
+    }
+    const through = doc.querySelector(".scf-scope").textContent.match(/Weeks 1\u2013(\d+)/);
+    if (through) assert.match(tools[0].querySelector(".scf-card-note").textContent, new RegExp(`^Week ${Number(through[1]) + 1}:`), "the week being set is the one after the table's last");
+
+    // The rail comes before the table in the markup: it is the grid above it
+    // when collapsed, and reached first in a tab order either way.
+    assert.ok(res.body.indexOf("scf-rail") < res.body.indexOf("scf-table"));
+    assert.ok(res.body.indexOf("scf-rail") < res.body.indexOf("scf-controls"));
+  });
+
+  test("each position card previews its board in the SOS page's card dress, leading with the team the page opens with", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+    const rail = doc.querySelector(".scf-rail");
+    const cards = [...rail.querySelectorAll("a.scf-card:not(.is-current):not(.is-search)")];
+    if (rail.classList.contains("is-sparse")) {
+      // No schedule, or no weeks left: title and note only.
+      assert.equal(rail.querySelectorAll(".scf-card:not(.is-current) .scf-card-body").length, 0);
+      return;
+    }
+    for (const card of cards) {
+      const pos = card.getAttribute("data-pos");
+      assert.equal(card.querySelector(".scf-card-note").textContent, `Easiest rest-of-season ${pos} schedule by opponent aFPA.`);
+      assert.ok(card.querySelector("img.scf-card-mark") && card.querySelector("img.scf-card-img"), "the faded crest and the crest");
+      const code = card.querySelector(".scf-card-name").textContent;
+      assert.match(code, /^[A-Z]{2,3}$/);
+      assert.match(card.querySelector(".scf-card-value").textContent, /^\d+\.\d(aFPA)$/);
+      assert.match(card.querySelector(".scf-card-delta").textContent, /^[+-]\d+\.\d vs avg$/);
+      assert.equal(card.querySelector(".scf-card-cta").textContent, `View All ${pos} Schedules`, "the call to action");
+      assert.equal(card.querySelector(".scf-card-sub"), null, "no full name on the card (mak, 2026-11-04)");
+      // The team is the one the position page's own answer sentence names:
+      // both read rosEasiest() (sos-model.ts). The full name is the code's title.
+      const name = card.querySelector(".scf-card-name").getAttribute("title");
+      assert.match(card.getAttribute("aria-label"), new RegExp(`Easiest: ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+      const page = await get(`/strength-of-schedule/${pos.toLowerCase()}`);
+      const answer = new JSDOM(page.body).window.document.querySelector(".scsos-answer")?.textContent ?? "";
+      assert.ok(answer.startsWith(`Easiest rest-of-season ${pos} schedule: ${name} (`), `${pos}: "${answer}" opens with ${name}`);
+      assert.ok(answer.includes(`(${card.querySelector(".scf-card-value").textContent.replace("aFPA", "")} fantasy points`), "and the same figure");
+    }
+  });
+
+  test("the cells are the links; there is no column of them", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+
+    for (const row of doc.querySelectorAll(".scf-row")) {
+      // One team cell, five figure cells, the games cell: nothing else.
+      assert.equal(row.querySelectorAll("th").length, 1);
+      assert.equal(row.querySelectorAll("td").length, 6);
+      assert.equal(row.querySelectorAll("td.scf-cell").length, 5);
+      assert.equal(row.querySelectorAll("td.scf-games").length, 1);
+      assert.ok(row.querySelector("td.scf-games .scf-row-go[aria-hidden=\"true\"]"), "the row-end affordance");
+
+      const abbr = row.getAttribute("data-team");
+      const cells = [...row.querySelectorAll("td.scf-cell")];
+      const teamHref = row.querySelector(".scf-team-link[href]")?.getAttribute("href");
+      if (!teamHref) continue; // a defense the team table cannot resolve stays plain
+      for (const [i, pos] of ["QB", "RB", "WR", "TE"].entries()) {
+        const link = cells[i].querySelector("a.scf-cell-link");
+        assert.ok(link, `${abbr} ${pos} is a link`);
+        assert.match(link.getAttribute("href"), new RegExp(`^/strength-of-schedule/${pos.toLowerCase()}#scsos-team-[a-z]{2,3}$`));
+        assert.match(link.getAttribute("aria-label"), new RegExp(`^.+ ${pos} schedule$`));
+        assert.ok(link.querySelector(".scf-fpa") && link.querySelector(".scf-rank"), "figure and rank inside the link");
+      }
+      const off = cells[4].querySelector("a.scf-cell-link");
+      assert.equal(off.getAttribute("href"), teamHref, "OFF goes where the team cell goes");
+      assert.match(off.getAttribute("aria-label"), /^.+ schedule$/);
+    }
+    assert.equal(doc.querySelectorAll(".scf-cell-link").length, 32 * 5);
+  });
+
+  test("the table says what it covers, and the embed's links go to statchasers.com", async () => {
+    requireData();
+    const page = new JSDOM((await get("/fpa")).body).window.document;
+    assert.match(
+      page.querySelector(".scf-caption .scf-scope").textContent,
+      /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}|\d{4} season baseline)\.$/,
+    );
+
+    const res = await get("/embed/fpa");
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+    const base = "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/";
+    const links = [...doc.querySelectorAll("[data-scf-rail] a.scf-card")].map((a) => a.getAttribute("href"));
+    assert.deepEqual(links.slice(1), [`${base}?tab=player#scsos-find`, `${base}qb/`, `${base}rb/`, `${base}wr/`, `${base}te/`]);
+    const det = doc.querySelector(".scf-row[data-team=\"DET\"] td.scf-cell a.scf-cell-link");
+    assert.equal(det.getAttribute("href"), `${base}qb/#scsos-team-det`);
+    assert.equal(det.getAttribute("aria-label"), "Detroit QB schedule");
+    for (const a of doc.querySelectorAll(".scf-cell-link, .scf-card.is-current")) {
+      assert.equal(a.getAttribute("target"), "_top", "escapes the legacy iframe mount like every other link");
+    }
+    // The five destination cards open in a new tab (mak, 2026-11-04).
+    for (const a of doc.querySelectorAll(".scf-card:not(.is-current)")) {
+      assert.equal(a.getAttribute("target"), "_blank");
+      assert.equal(a.getAttribute("rel"), "noopener");
+    }
   });
 });
 

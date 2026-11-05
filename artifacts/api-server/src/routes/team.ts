@@ -98,6 +98,7 @@ const TEAM_PATH_PREFIX = "/team/";
 const SECTIONS = new Set([
   "outlook",
   "usage",
+  "coaching",
   "stats",
   "news",
   "depth-chart",

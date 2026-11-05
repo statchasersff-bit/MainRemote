@@ -1,46 +1,56 @@
 /**
- * The Outlook tab's spec sections, to mak's "Build Instructions: StatChasers
- * Player Outlook Tab" of 2026-09-29, appended UNDER the tab's existing content
- * (mak's instruction; see new-spec-sections-go-below).
+ * The Outlook tab: what to expect going forward, and why.
  *
- * Seven sections: the take, the expectation check, the written outlook with its
- * sidebar, the drivers with their rank strips, contract and job security, what
- * could change his value, and a FAQ; then the Outlook footer. Each is a
- * <section aria-labelledby> with an H2 and is left out whole when its data is
- * not there.
+ * Built to mak's "Build Instructions: StatChasers Player Outlook Tab" of
+ * 2026-09-29, then reshaped on 2026-11-05 to the reviewer's brief mak forwarded
+ * ("the Outlook tab doesn't yet do enough to explain what should happen next").
+ * Five sections, each answering a forward question, plus the FAQ:
  *
- * What the spec asks for that this server cannot supply, and what it does
- * instead, all within the spec's own fallbacks:
- *   - No weekly analyst take exists, so the staleness rule always resolves to
- *     the template version: tier line, summary and four paragraphs are built
- *     from the numbers on the page. The byline only dates the preseason piece.
- *     The authored record (fantasy_outlook_2026.json) is the preseason piece and
- *     is the archived "preseason outlook", printed as published.
- *   - No Redraft Command rank reaches this server, so the league-fit chips are
- *     derived from his season-to-date positional rank (last season's finish
- *     before Week 1) through the spec's cutoff table.
- *   - No contract feed: the deal card is hidden, as the spec says, and "How he
- *     got here" is his draft and club history from the bio.
- *   - No authored upside/risk bullets: generated from the schedule, the drivers,
- *     the depth chart and the injury designation.
- *   - SEO is untouched (mak): no title, meta or JSON-LD changes, and this FAQ
- *     is not added to the page's FAQPage node.
+ *   1. ROS Outlook        the assessment: role tags, a two-paragraph read built
+ *                         on opportunity (xFP) against production, the listed
+ *                         quarterback TODAY, the schedule's verdict; what
+ *                         supports and what threatens the value; the sidebar
+ *                         (Redraft Command, Best fit by league from the ROS board)
+ *   2. Opportunity vs.    PPR points against expected points, target / snap /
+ *      Production         first-read shares, the last three games' drift
+ *   3. What drives his    rank strips: target share, xFP, FPOE, first-read share,
+ *      outlook            air-yards share (per position); the advanced row under
+ *   4. What could change  catalysts and risks that are CHANGES with evidence -
+ *      his value          a quarterback change, a rising or sliding share, the
+ *                         gap between expected and actual, a matchup stretch -
+ *                         never a generic "could get hurt or benched"
+ *   5. Remaining schedule the next four opponents with their rank and band, the
+ *                         verdict, and the fantasy-playoff weeks
+ *   -  the preseason piece, collapsed, at the bottom (history, not the outlook)
+ *   -  the FAQ, answered from the same model as the sections above
  *
- * Pure apart from the driver field (outlook-tab-data.ts), which reads the
- * outlook records.
+ * Rules the brief set, kept here on purpose:
+ *   - The quarterback is the depth chart's listed starter (outlook-context.ts),
+ *     not whoever threw the most passes so far; when those differ the tab says
+ *     so, as a change, everywhere the passer matters.
+ *   - The schedule is read once (scheduleRead) and appears as upside OR risk,
+ *     never both: more soft matchups than tough is upside, more tough than soft
+ *     is risk, a split is neither.
+ *   - xFP against actual is the lead opportunity read (mak's wording from the
+ *     usage report: a gap "does not guarantee" improvement).
+ *   - League-fit chips come from the rest-of-season board when he is on it,
+ *     and say what they assume.
+ *   - SEO is untouched: the lead heading keeps its words, no title, meta or
+ *     JSON-LD here, and the H2 ladder the brief proposed waits for mak.
  */
 
 import { escapeHtml } from "../render";
-import { possessive } from "./title-case";
-import { titleCase } from "./title-case";
+import { possessive, titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, teamInk } from "./header";
-import { outlookMeasures, type DriverRow, type OutlookMeasures } from "./outlook-tab-data";
+import { outlookMeasures, tierOf, type DriverRow, type OutlookMeasures, type Tier } from "./outlook-tab-data";
 import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
+import { samePerson, type PlayerUsage, type RosRank, type StartingQb, type UsageMetric } from "./outlook-context";
+import { baseWords, surname, type Trend } from "../team/usage";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 const MINUS = "−";
@@ -58,6 +68,8 @@ function ordinal(n: number): string {
 const word = (n: number): string => WORDS[n] ?? String(n);
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const one = (v: number): string => v.toFixed(1).replace(/^-/, MINUS);
+const signed = (v: number): string => `${v > 0 ? "+" : v < 0 ? MINUS : ""}${Math.abs(v).toFixed(1)}`;
+const pct = (v: number): string => `${v.toFixed(1)}%`;
 
 function a(href: string, text: string, attrs = ""): string {
   return `<a href="${escapeHtml(href)}"${attrs}>${escapeHtml(text)}</a>`;
@@ -80,6 +92,19 @@ function dateParts(raw: string | null | undefined): { iso: string; text: string;
   return { iso: `${m[1]}-${m[2]}-${m[3]}`, text: `${month} ${Number(m[3])}, ${m[1]}`, month: `${month} ${m[1]}` };
 }
 
+/** "November 4", in Eastern time, for the as-of line. */
+function easternDay(ms: number): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "long", day: "numeric" }).format(new Date(ms));
+}
+
+const NOUN: Record<string, string> = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" };
+const noun = (pos: string): string => NOUN[pos] ?? pos;
+
+function listWords(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
 /* ------------------------------------------------------------------ model */
 
 type Chip = { label: string; kind: "good" | "mid" | "bad" };
@@ -98,7 +123,7 @@ const LEAGUES: Record<string, [string, string, string]> = {
   TE: ["TE-premium", "12-team", "10-team"],
 };
 
-/** The spec's cutoff table: his rank to a chip per league row. */
+/** The spec's cutoff table (2026-09-29): his rank to a chip per league row. */
 export function leagueChips(pos: string, rank: number): [Chip, Chip, Chip] {
   if (pos === "QB") {
     if (rank <= 12) return [STARTER, STARTER, STARTER];
@@ -119,12 +144,45 @@ export function leagueChips(pos: string, rank: number): [Chip, Chip, Chip] {
   return [WAIVER, WAIVER, WAIVER];
 }
 
+/**
+ * Lineup-aware chips for the two flex positions (the brief, 2026-11-05): a
+ * 12-team league starts three receivers and a flex, a 10-team league two and
+ * a flex, so the same rank is a starter in one and a flex in the other. The
+ * assumptions are printed under the chips. Quarterbacks and tight ends keep
+ * the spec's table, which already splits by league shape.
+ */
+export function fitChips(pos: string, rank: number): [Chip, Chip, Chip] {
+  if (pos === "QB" || pos === "TE") return leagueChips(pos, rank);
+  const ladder = (starter: number, flex: number, stash: number): Chip =>
+    rank <= starter ? STARTER : rank <= flex ? FLEX : rank <= stash ? STASH : WAIVER;
+  if (pos === "RB") return [ladder(20, 30, 45), ladder(16, 26, 40), ladder(20, 30, 45)];
+  return [ladder(30, 42, 60), ladder(20, 32, 48), ladder(30, 42, 60)];
+}
+
+const FIT_ASSUMES: Record<string, string> = {
+  RB: "Assumes two backs and a flex in a 12-team league, two and a flex in a 10-team league; half-PPR reads the same rank.",
+  WR: "Assumes three receivers and a flex in a 12-team league, two and a flex in a 10-team league; half-PPR reads the same rank.",
+  QB: "Assumes one starting quarterback per lineup in 1QB leagues, two in superflex.",
+  TE: "Assumes one starting tight end per lineup.",
+};
+
 interface SeasonLine {
   season: number;
   gp: number;
   points: number;
   ppg: number;
   rank: number | null;
+}
+
+interface ScheduleRead {
+  /** The next four fixtures that carry a matchup rank. */
+  next: UpcomingGame[];
+  soft: UpcomingGame[];
+  tough: UpcomingGame[];
+  /** More soft than tough is an upside, more tough than soft a risk, a split neither. */
+  verdict: "soft" | "tough" | "mixed" | "none";
+  /** Weeks 15 to 17, the usual fantasy playoffs, with a matchup rank. */
+  playoffs: UpcomingGame[];
 }
 
 interface Model {
@@ -143,9 +201,23 @@ interface Model {
   projected: number | null;
   measures: OutlookMeasures | null;
   chips: [Chip, Chip, Chip] | null;
+  /** Where the chips' rank came from. */
+  fit: { rank: number; source: "ros" | "season" } | null;
+  ros: RosRank | null;
   injured: string | null;
+  /** A Questionable / Doubtful tag, when the designation is short of out. */
+  questionable: string | null;
   upcoming: UpcomingGame[];
+  sched: ScheduleRead;
   scoring: string;
+  usage: PlayerUsage | null;
+  qb: StartingQb | null;
+  /** The season's leading passer, when the listed starter is someone else. */
+  qbChange: { from: string; to: StartingQb } | null;
+  nickname: string | null;
+  teamSlug: string | null;
+  /** "November 4": the stats' refresh day, for the as-of line. */
+  updated: string | null;
 }
 
 /** The rank the header prints for this season. */
@@ -177,6 +249,16 @@ export function projectedRank(data: PlayerPageData): number | null {
   return m ? Number(m[1]) : null;
 }
 
+function scheduleRead(upcoming: UpcomingGame[], season: UpcomingGame[]): ScheduleRead {
+  const next = upcoming.filter((g) => g.matchup).slice(0, 4);
+  const soft = next.filter((g) => matchupBand(g.matchup!.rank) === "soft");
+  const tough = next.filter((g) => matchupBand(g.matchup!.rank) === "tough");
+  const verdict: ScheduleRead["verdict"] =
+    next.length === 0 ? "none" : tough.length >= 2 && tough.length > soft.length ? "tough" : soft.length >= 2 && soft.length > tough.length ? "soft" : "mixed";
+  const playoffs = season.filter((g) => g.matchup && g.week >= 15 && g.week <= 17);
+  return { next, soft, tough, verdict, playoffs };
+}
+
 function model(data: PlayerPageData): Model | null {
   const pos = data.player.position ?? "";
   if (!LEAGUES[pos]) return null;
@@ -188,12 +270,25 @@ function model(data: PlayerPageData): Model | null {
   const rank = preseason ? prior?.rank ?? null : now?.rank ?? null;
   const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
   const out = /^(out|ir|pup|injured reserve|doubtful)/i.test(status);
+  const questionable = !out && /^questionable/i.test(status) ? "Questionable" : null;
   const part = data.designation?.injuryBodyPart ?? null;
-  let chips = rank === null ? null : leagueChips(pos, rank);
+
+  // The chips judge the rest-of-season board's rank when he is on it (the
+  // brief: "connect league-fit labels to actual rankings"), else the
+  // season-to-date rank the page already prints.
+  const ros = preseason ? null : data.rosRank ?? null;
+  const fit = ros ? { rank: ros.rank, source: "ros" as const } : rank === null ? null : { rank, source: "season" as const };
+  let chips = fit ? fitChips(pos, fit.rank) : null;
   if (chips && out) {
     // Injured: a spot on the bench or nothing, never a start.
     chips = chips.map((c) => (c.kind === "bad" ? WAIVER : STASH)) as [Chip, Chip, Chip];
   }
+
+  const qb = data.startingQb ?? null;
+  const passer = pos !== "QB" ? (data.teammates ?? [])[0] ?? null : null;
+  const qbChange = qb && passer && !samePerson(passer.name, qb.name) ? { from: passer.name, to: qb } : null;
+  const upcoming = (data.upcoming ?? []).slice(0, 4);
+
   return {
     name: data.player.name,
     last: lastName(data.player.name),
@@ -215,9 +310,19 @@ function model(data: PlayerPageData): Model | null {
       position: pos,
     }),
     chips,
+    fit,
+    ros,
     injured: out ? `${cap(status.toLowerCase() === "ir" ? "on injured reserve" : status.toLowerCase())}${part ? `, ${part.toLowerCase()}` : ""}` : null,
-    upcoming: (data.upcoming ?? []).slice(0, 4),
+    questionable: questionable ? `${questionable}${part ? ` (${part.toLowerCase()})` : ""}` : null,
+    upcoming,
+    sched: scheduleRead(upcoming, data.upcomingSeason ?? []),
     scoring: SCORING_SHORT[data.format] ?? "PPR",
+    usage: preseason ? null : data.usage ?? null,
+    qb,
+    qbChange,
+    nickname: data.team?.nickname ?? null,
+    teamSlug: data.team?.slug ?? null,
+    updated: data.statsUpdatedMs ? easternDay(data.statsUpdatedMs) : null,
   };
 }
 
@@ -249,7 +354,7 @@ export function outlookSnapshot(data: PlayerPageData): { tier: string; call: str
 
 /** "QB2": the fantasy tier a rank sits in. */
 function bucket(pos: string, rank: number): string {
-  const size = pos === "QB" || pos === "TE" ? 12 : 12;
+  const size = 12;
   const tier = Math.floor((rank - 1) / size) + 1;
   if (pos === "TE" && tier > 2) return "depth TE";
   if (tier > 4) return `depth ${pos}`;
@@ -262,10 +367,11 @@ const ADJECTIVE: Record<string, string> = {
   Rushing: "Dual-threat",
   "Rushing volume": "Workhorse",
   "Receiving role": "Pass-catching",
-  "Target volume": "Target-heavy",
+  "Target share": "Target-heavy",
   "Downfield role": "Downfield",
   "Route participation": "Every-down",
-  "Target share": "Target-heavy",
+  "Expected points": "High-opportunity",
+  "First-read share": "First-read",
 };
 
 const PHRASE: Record<string, string> = {
@@ -277,14 +383,17 @@ const PHRASE: Record<string, string> = {
   "Waiver wire": "for deep leagues only",
 };
 
+/** The rows the drivers section shows, ranked; FPOE is left out of "top" and "weak". */
+function rankedDrivers(m: Model): DriverRow[] {
+  return driverRows(m).filter((d) => d.rank !== null && d.label !== "Points over expected");
+}
+
 function topDriver(m: Model): DriverRow | null {
-  const ranked = (m.measures?.drivers ?? []).filter((d) => d.rank !== null);
-  return ranked.sort((x, y) => x.rank! / x.of - y.rank! / y.of)[0] ?? null;
+  return [...rankedDrivers(m)].sort((x, y) => x.rank! / x.of - y.rank! / y.of)[0] ?? null;
 }
 
 function weakDriver(m: Model): DriverRow | null {
-  const ranked = (m.measures?.drivers ?? []).filter((d) => d.rank !== null);
-  const worst = ranked.sort((x, y) => y.rank! / y.of - x.rank! / x.of)[0] ?? null;
+  const worst = [...rankedDrivers(m)].sort((x, y) => y.rank! / y.of - x.rank! / x.of)[0] ?? null;
   return worst && worst.tier !== "good" ? worst : null;
 }
 
@@ -332,73 +441,148 @@ function chipPhrase(c: Chip): string {
   return c.label === "Waiver wire" ? "waiver-wire material" : `a ${c.label.toLowerCase()}`;
 }
 
-/** A starter in every league the page lists: his job is not the question. */
-function elite(m: Model): boolean {
-  return Boolean(m.chips?.every((c) => c.label === "Weekly starter"));
-}
-
-function favorable(m: Model): UpcomingGame[] {
-  return m.upcoming.filter((g) => g.matchup && matchupBand(g.matchup.rank) === "soft");
-}
-
 function oppName(g: UpcomingGame): string {
   return g.opponent?.nickname ?? g.opponentName;
-}
-
-function listWords(parts: string[]): string {
-  if (parts.length <= 1) return parts[0] ?? "";
-  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 }
 
 function matchupList(games: UpcomingGame[]): string {
   return listWords(games.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week}`));
 }
 
+/* ------------------------------------------------------------ usage reads */
+
+const u = (m: Model): PlayerUsage["row"] | null => m.usage?.row ?? null;
+const n = (v: number | null | undefined): v is number => typeof v === "number" && Number.isFinite(v);
+
+/** "10th of 96" for a usage metric, or null when he is not ranked on it. */
+function uRank(m: Model, metric: UsageMetric): { rank: number; of: number } | null {
+  return m.usage?.ranks[metric] ?? null;
+}
+
+function rankWords(r: { rank: number; of: number } | null, pos: string): string {
+  return r ? `${ordinal(r.rank)} of ${r.of} ${pos}s` : "";
+}
+
+/** The gap between production and expected, in the usage report's three bands. */
+function fpoeBand(m: Model): "under" | "over" | "near" | null {
+  const row = u(m);
+  if (!row || !n(row.fpoePerGame) || !n(row.xfpPerGame)) return null;
+  return row.fpoePerGame <= -1.5 ? "under" : row.fpoePerGame >= 1.5 ? "over" : "near";
+}
+
+/** The usage report's buy-low rule, by the points: volume the box score has not paid. */
+function unpaid(m: Model): boolean {
+  const row = u(m);
+  return Boolean(row && n(row.fpoePerGame) && n(row.xfpPerGame) && row.fpoePerGame <= -2 && row.xfpPerGame >= 9);
+}
+
+function mean3(t: Trend): number | null {
+  const known = t.trail.filter((v): v is number => v !== null);
+  return known.length ? known.reduce((s, v) => s + v, 0) / known.length : null;
+}
+
+/** The role in a tag: "High-volume starter", "Lead back", "QB1 range" - or his spot on the chart when he is not the starter. */
+function roleTag(m: Model, depth: PlayerPageData["depth"] = null): Chip | null {
+  if (depth && depth.order > 1) return { label: `${depth.position}${depth.order} on the depth chart`, kind: "bad" };
+  const row = u(m);
+  if (row) {
+    if (m.pos === "WR") {
+      const ts = row.targetShare ?? 0;
+      if (ts >= 20) return { label: "High-volume starter", kind: "good" };
+      if (ts >= 17) return { label: "Starter-level role", kind: "good" };
+      if (ts >= 15) return { label: "Flex-range role", kind: "mid" };
+      return { label: "Secondary role", kind: "mid" };
+    }
+    if (m.pos === "TE") {
+      const ts = row.targetShare ?? 0;
+      if (ts >= 17) return { label: "High-volume TE1", kind: "good" };
+      if (ts >= 12) return { label: "Starting TE role", kind: "good" };
+      return { label: "Secondary role", kind: "mid" };
+    }
+    if (m.pos === "RB") {
+      const share = row.woppShare ?? 0;
+      if (share >= 65) return { label: "Workhorse back", kind: "good" };
+      if (share >= 50) return { label: "Lead back", kind: "good" };
+      if (share >= 35) return { label: "Committee back", kind: "mid" };
+      return { label: "Change-of-pace role", kind: "mid" };
+    }
+    const r = uRank(m, "xfpPerGame");
+    if (r) {
+      if (r.rank <= 8) return { label: "Top-8 opportunity QB", kind: "good" };
+      if (r.rank <= 16) return { label: "QB1-range opportunity", kind: "good" };
+      return { label: "Streaming-range QB", kind: "mid" };
+    }
+  }
+  if (m.rank !== null && m.chips) return { label: `${bucket(m.pos, m.rank)}, ${m.chips[1].label.toLowerCase()}`, kind: m.chips[1].kind };
+  return null;
+}
+
+/** The hero's tags: role, the expected-points gap, a quarterback change, the schedule, a designation. */
+function tags(m: Model, depth: PlayerPageData["depth"]): Chip[] {
+  const out: Chip[] = [];
+  const role = roleTag(m, depth);
+  if (role) out.push(role);
+  if (m.injured) out.push({ label: m.injured.split(",")[0]!, kind: "bad" });
+  else if (m.questionable) out.push({ label: "Questionable", kind: "bad" });
+  if (m.qbChange) out.push({ label: "QB change", kind: "mid" });
+  if (m.sched.verdict === "tough") out.push({ label: "Tough upcoming schedule", kind: "bad" });
+  else if (m.sched.verdict === "soft") out.push({ label: "Soft upcoming schedule", kind: "good" });
+  const band = fpoeBand(m);
+  const row = u(m);
+  if (band === "under" && row && row.fpoePerGame! <= -2) out.push({ label: "Scoring under expected", kind: "mid" });
+  else if (band === "over" && row && row.fpoePerGame! >= 2) out.push({ label: "Scoring over expected", kind: "mid" });
+  return out.slice(0, 5);
+}
+
 /* ------------------------------------------------------ section 1: the take */
 
 /**
- * The hero's content: the lead heading and, when he is out, the injured line.
- *
- * Since 2026-10-29 (mak) it is printed INSIDE the Our Take read grid in
- * season, at the top of the prose column, so the Redraft Command card and the
- * Best fit chips start on the heading's row instead of a heading-height below
- * it. renderTake() wraps it in a section of its own for the cases that have no
- * read grid to join: the preseason piece, and a take with no prose.
+ * The hero: the lead heading (its words are the H1 in tool mode - unchanged),
+ * the as-of line, the tags, and when he is out the injured line. Printed at
+ * the top of the read grid's prose column in season (mak, 2026-10-29) so the
+ * sidebar starts on the heading's row.
  */
-function takeInner(m: Model): string {
+function takeInner(m: Model, depth: PlayerPageData["depth"] = null): string {
   const tier = tierLine(m);
   if (!tier || !m.chips) return "";
+  // No "Updated {date}" line (mak, 2026-11-05, keeping the 10-02 byline cut);
+  // the week the read runs through is the one fact the line keeps.
+  const asOf = m.week >= 1 ? `Through Week ${m.week}` : "";
+  const chips = tags(m, depth);
   return (
     `<div class="scp-ol-take">` +
-    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
+    // "{Name} Rest-of-Season Projection" (the brief's H2 ladder, approved
+    // 2026-11-05): the section carries his rest-of-season board rank and the
+    // league-by-league call, which is the forward output the word promises.
+    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season projection`))}</h2>` +
+    (asOf ? `<p class="scp-ol-asof">${escapeHtml(asOf)}</p>` : "") +
+    (chips.length
+      ? `<div class="scp-ol-tags" role="list" aria-label="Outlook at a glance">` +
+        chips.map((c) => `<span class="scp-ol-chip is-${c.kind}" role="listitem">${escapeHtml(c.label)}</span>`).join("") +
+        `</div>`
+      : "") +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
     `</div>`
   );
 }
 
-function renderTake(m: Model): string {
-  const inner = takeInner(m);
+function renderTake(m: Model, depth: PlayerPageData["depth"] = null): string {
+  const inner = takeInner(m, depth);
   if (!inner) return "";
-
-  // mak's hero rework, 2026-10-01, then 2026-10-05: the dot-separated meta
-  // line under the tier ("QB17 through Week 4 · 15.8 PPG · 34.6 att/game")
-  // is gone, and the tier line wears the section ledes' style. The full
-  // reasoning lives one section down, in Our Take; the league-by-league call
-  // is the chips beside it, under a "Best fit" label.
-  // The lede sentence and the tier line that sat under the heading are gone
-  // (mak, 2026-10-22); the tier still feeds the FAQ. The injured line stays.
-  // The Best fit chips moved to the Our Take sidebar the same day, in place
-  // of the "Outlook at a glance" card, so the hero is the heading.
   return `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h">${inner}</section>`;
 }
 
 /**
- * The Best fit panel: the league-by-league call. A sidebar card since
- * 2026-10-22 (mak), where "Outlook at a glance" used to sit.
+ * The Best fit panel: the league-by-league call, judged on the ROS board's
+ * rank when he is on it, with the lineup assumptions written under it.
  */
 function renderFits(m: Model): string {
-  if (!m.chips) return "";
+  if (!m.chips || !m.fit) return "";
   const leagues = LEAGUES[m.pos]!;
+  const basis =
+    m.fit.source === "ros" && m.ros
+      ? `Based on his StatChasers rest-of-season rank, ${m.pos}${m.ros.rank}${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}.`
+      : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.`;
   return (
     `<div class="scp-ox-panel scp-ol-fitwrap"><h3>Best fit</h3>` +
     `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
@@ -409,83 +593,192 @@ function renderFits(m: Model): string {
           `<span class="scp-ol-chip is-${chip.kind}">${escapeHtml(chip.label)}</span></div>`,
       )
       .join("") +
-    `</div></div>`
+    `</div>` +
+    `<p class="scp-ol-fitnote">${escapeHtml(`${basis} ${FIT_ASSUMES[m.pos] ?? ""}`.trim())}</p>` +
+    `</div>`
   );
 }
 
-/* Section 2, the "Preseason / last season final / Through Week n" panel
-   row, is gone (mak, 2026-10-22). */
+/* ---------------------------------------------- section 1: the written read */
 
-/* ---------------------------------------------- section 3: written outlook */
+/** The opportunity sentence: shares and ranks, then expected against actual. */
+function opportunityParagraph(m: Model): string | null {
+  const row = u(m);
+  if (!row) return null;
+  const parts: string[] = [];
+  const pos = m.pos;
+  if (pos === "WR" || pos === "TE") {
+    const ts = uRank(m, "targetShare");
+    const ays = uRank(m, "airYardsShare");
+    const fr = uRank(m, "firstReadShare");
+    if (n(row.targetShare)) {
+      parts.push(
+        `${possessive(m.last)} ${pct(row.targetShare)} target share${ts ? ` ranks ${ordinal(ts.rank)} among ${ts.of} qualifying ${noun(pos)}s` : " leads his role"}` +
+          (n(row.airYardsShare) && ays ? `, and his ${pct(row.airYardsShare)} air-yards share ${ordinal(ays.rank)}` : "") +
+          `.`,
+      );
+    }
+    if (n(row.firstReadShare) && fr) {
+      parts.push(`He is the first read on ${pct(row.firstReadShare)} of his quarterback's dropbacks (${ordinal(fr.rank)} of ${fr.of}), so the targets are designed, not incidental.`);
+    }
+  } else if (pos === "RB") {
+    const w = uRank(m, "woppPerGame");
+    if (n(row.woppShare) && n(row.woppPerGame)) {
+      parts.push(
+        `${m.last} handles ${pct(row.woppShare)} of the ${m.nickname ?? "team"} backfield's weighted opportunities, ${one(row.woppPerGame)} a game${w ? ` (${ordinal(w.rank)} of ${w.of} qualifying backs)` : ""}.`,
+      );
+    }
+    if (row.rzTouches > 0) parts.push(`${m.usage!.leadsRz ? (m.usage!.rzCoLead ? "He co-leads" : "He leads") : "He has"} ${m.usage!.leadsRz ? "the club with" : ""} ${row.rzTouches} red-zone touches.`.replace(/\s+/g, " "));
+  } else {
+    const x = uRank(m, "xfpPerGame");
+    if (n(row.xfpPerGame)) parts.push(`${m.last} earns ${one(row.xfpPerGame)} expected PPR points a game${x ? `, ${ordinal(x.rank)} of ${x.of} qualifying quarterbacks` : ""}.`);
+    if (n(row.designedRunRate) && row.designedRunRate >= 8) parts.push(`A ${row.designedRunRate}% designed-run rate adds a rushing floor.`);
+  }
+  const band = fpoeBand(m);
+  if (band && n(row.fpPerGame) && n(row.xfpPerGame)) {
+    parts.push(
+      band === "under"
+        ? `He is earning high-value opportunities but averaging just ${one(row.fpPerGame)} PPR points against ${one(row.xfpPerGame)} expected.`
+        : band === "over"
+          ? `He is averaging ${one(row.fpPerGame)} PPR points against ${one(row.xfpPerGame)} expected, efficiency that may not repeat.`
+          : `His ${one(row.fpPerGame)} PPR points a game sit right at the ${one(row.xfpPerGame)} expected, so this is volume, not a hot streak.`,
+    );
+  }
+  return parts.length ? parts.join(" ") : null;
+}
 
+/** The forward sentence(s): the quarterback, the schedule, and what makes the read less sure. */
+function forwardParagraph(m: Model, depth: PlayerPageData["depth"]): string | null {
+  const parts: string[] = [];
+  const unsure: Array<{ text: string; plural: boolean }> = [];
+  if (m.qbChange) {
+    const to = m.qbChange.to;
+    const attempts = to.attempts > 0 ? `, and ${surname(to.name)} has ${to.attempts} attempts so far` : "";
+    parts.push(
+      `${to.name} is now the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback; ${m.qbChange.from} threw most of the passes through Week ${m.week}${attempts}. That introduces uncertainty around how the targets are distributed.`,
+    );
+    unsure.push({ text: "a new quarterback", plural: false });
+  } else if (m.qb && m.pos !== "QB") {
+    parts.push(`${m.qb.name} is his quarterback.`);
+  }
+  const s = m.sched;
+  const withRank = (g: UpcomingGame): string => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`;
+  if (s.verdict === "tough") {
+    parts.push(`${cap(word(s.tough.length))} of his next ${word(s.next.length)} opponents ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s: ${listWords(s.tough.map(withRank))}.`);
+    unsure.push({ text: "difficult upcoming matchups", plural: true });
+  } else if (s.verdict === "soft") {
+    parts.push(`${cap(word(s.soft.length))} of his next ${word(s.next.length)} opponents ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s: ${listWords(s.soft.map(withRank))}.`);
+  } else if (s.verdict === "mixed" && (s.soft.length || s.tough.length)) {
+    parts.push(
+      `His next ${word(s.next.length)} matchups are mixed${s.soft.length ? `: ${listWords(s.soft.map(withRank))} ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s` : ""}${
+        s.tough.length ? `${s.soft.length ? ", while" : ":"} ${listWords(s.tough.map(withRank))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest` : ""
+      }.`,
+    );
+  }
+  if (m.usage?.ts.confirmed && (m.usage.ts.delta ?? 0) <= -3) unsure.push({ text: "a sliding target share", plural: false });
+  if (m.injured) unsure.unshift({ text: `his ${m.injured.toLowerCase()} status`, plural: false });
+  const plural = unsure.length > 1 || unsure.some((x) => x.plural);
+  const role = roleTag(m, depth);
+  if (depth && depth.order > 1 && !m.injured) {
+    parts.push(
+      `He is ${depth.position}${depth.order} on the depth chart, so his value depends on the players ahead of him${unsure.length ? `, and ${listWords(unsure.map((x) => x.text))} make${plural ? "" : "s"} even that less predictable` : ""}.`,
+    );
+    return parts.join(" ");
+  }
+  const roleWords = role && role.kind === "good" ? "His established role supports his fantasy value" : "His role is what his fantasy value rides on";
+  if (unsure.length) parts.push(`${roleWords}, but ${listWords(unsure.map((x) => x.text))} make${plural ? "" : "s"} his near-term production less predictable.`);
+  else if (parts.length) parts.push(`${roleWords}, and nothing in the schedule or the depth chart changes the read right now.`);
+  return parts.length ? parts.join(" ") : null;
+}
+
+/** The read's paragraphs, in season. */
 function paragraphs(m: Model, data: PlayerPageData): string[] {
   const out: string[] = [];
-  const top = topDriver(m);
-  const weak = weakDriver(m);
-  // 1. Performance against expectation.
-  if (!m.preseason && m.now) {
-    let p = m.projected ? `We projected ${m.last} in the ${m.pos}${m.projected} range this summer. ` : "";
-    p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "-"} at ${one(m.now.ppg)} ${m.scoring} points per game`;
-    if (m.prior) {
-      p += `, against ${one(m.prior.ppg)} over ${m.prior.gp} games last season${m.prior.rank ? ` (${m.pos}${m.prior.rank})` : ""}.`;
-      const diff = m.now.ppg - m.prior.ppg;
-      p +=
-        Math.abs(diff) <= 1
-          ? " The role is producing the same fantasy output two years running."
-          : diff > 0
-            ? " He's running ahead of last season's pace."
-            : " He's running behind last season's pace.";
-    } else p += ".";
-    out.push(p);
-  }
-  // 2. How he produces.
-  const drivers = (m.measures?.drivers ?? []).filter((d) => d.rank !== null);
-  if (drivers.length) {
-    const ms = m.measures!;
-    let p =
-      `${ms.season === m.season && ms.week !== null ? `Through Week ${ms.week} he ranks ` : `Last season he ranked `}` +
-      listWords(drivers.map((d) => `${ordinal(d.rank!)} of ${d.of} in ${d.label.toLowerCase()} (${d.unit === d.label.toLowerCase() ? d.value : `${d.value} ${d.unit}`})`)) +
-      `.`;
-    if (top && top.tier === "good") p += ` His points come from his ${top.label.toLowerCase()}.`;
-    if (weak) p += ` ${cap(weak.label.toLowerCase())} is the soft spot.`;
-    const mates = data.teammates ?? [];
-    if (m.pos === "QB" && mates.length >= 2) {
-      p += ` ${mates[0]!.name} and ${mates[1]!.name} are his top two targets.`;
-    } else if (m.pos !== "QB" && mates[0]) {
-      p += ` ${mates[0].name} is his quarterback.`;
+  const opp = opportunityParagraph(m);
+  if (opp) out.push(opp);
+  else {
+    // No usage row: the season line and the drivers, as before.
+    const top = topDriver(m);
+    const weak = weakDriver(m);
+    if (m.now) {
+      let p = m.projected ? `We projected ${m.last} in the ${m.pos}${m.projected} range this summer. ` : "";
+      p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "-"} at ${one(m.now.ppg)} ${m.scoring} points per game`;
+      if (m.prior) {
+        p += `, against ${one(m.prior.ppg)} over ${m.prior.gp} games last season${m.prior.rank ? ` (${m.pos}${m.prior.rank})` : ""}.`;
+        const diff = m.now.ppg - m.prior.ppg;
+        p += Math.abs(diff) <= 1 ? " The role is producing the same fantasy output two years running." : diff > 0 ? " He's running ahead of last season's pace." : " He's running behind last season's pace.";
+      } else p += ".";
+      out.push(p);
     }
-    out.push(p);
+    const drivers = rankedDrivers(m);
+    if (drivers.length) {
+      const ms = m.measures!;
+      let p =
+        `${ms.season === m.season && ms.week !== null ? `Through Week ${ms.week} he ranks ` : `Last season he ranked `}` +
+        listWords(drivers.map((d) => `${ordinal(d.rank!)} of ${d.of} in ${d.label.toLowerCase()} (${d.unit === d.label.toLowerCase() ? d.value : `${d.value} ${d.unit}`})`)) +
+        `.`;
+      if (top && top.tier === "good") p += ` His points come from his ${top.label.toLowerCase()}.`;
+      if (weak) p += ` ${cap(weak.label.toLowerCase())} is the soft spot.`;
+      const mates = data.teammates ?? [];
+      if (m.pos === "QB" && mates.length >= 2) p += ` ${mates[0]!.name} and ${mates[1]!.name} are his top two targets.`;
+      out.push(p);
+    }
   }
-  // 3. The biggest risk to his role.
-  const depth = data.depth;
+  const fwd = forwardParagraph(m, data.depth);
+  if (fwd) out.push(fwd);
   if (m.injured) {
-    out.push(`He's ${m.injured.toLowerCase()}. Until he's back, his value is a bench spot at most${depth?.next ? `, and ${depth.next.name} takes his snaps` : ""}.`);
-  } else if (depth && depth.order === 1 && depth.next && elite(m)) {
-    out.push(
-      `The job is secure: he's the listed starter and one of the best at his position. The main risk is health, and ${depth.next.name} is next on the depth chart if he misses time.`,
-    );
-  } else if (depth && depth.order === 1 && depth.next) {
-    out.push(
-      `The main risk is the job itself. He's the listed starter with ${depth.next.name} next on the depth chart, and a benching or an injury would take his value to zero overnight.`,
-    );
-  } else if (depth && depth.order > 1) {
-    out.push(`He's ${m.pos}${depth.order} on the depth chart, so his value depends on the players ahead of him.`);
-  }
-  // 4. The schedule ahead. This paragraph used to reopen with the league-fit
-  // sentence ("Until something changes, he's a weekly starter in superflex
-  // and 2QB…") - the third statement of the league call on one tab. mak
-  // (2026-10-01): the league types are said once, in the hero, so the close
-  // keeps only what is new here. With no favorable matchup coming, it is
-  // nothing, and the take ends on the role paragraph.
-  const fav = favorable(m);
-  if (fav.length) {
-    out.push(
-      `The next favorable ${fav.length === 1 ? "matchup is" : "matchups are"} ${listWords(
-        fav.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)} against ${m.pos}s)`),
-      )}.`,
-    );
+    out.push(`He's ${m.injured.toLowerCase()}. Until he's back, his value is a bench spot at most${data.depth?.next ? `, and ${data.depth.next.name} takes his snaps` : ""}.`);
   }
   return out;
+}
+
+/** What supports and what threatens the value, as short phrases. */
+function supportsThreatens(m: Model, data: PlayerPageData): { supports: string[]; threatens: string[] } {
+  const supports: string[] = [];
+  const threatens: string[] = [];
+  const row = u(m);
+  const usage = m.usage;
+  // A player the chart no longer lists first is not supported by the usage he
+  // had as the starter; the depth chart is the read.
+  const benched = Boolean(data.depth && data.depth.order > 1 && !m.injured);
+  if (row && !benched) {
+    if (m.pos === "WR" || m.pos === "TE") {
+      const ts = uRank(m, "targetShare");
+      if (n(row.targetShare) && row.targetShare >= 17) supports.push(`heavy target volume (${pct(row.targetShare)}${ts ? `, ${ordinal(ts.rank)} of ${ts.of}` : ""})`);
+      const fr = uRank(m, "firstReadShare");
+      if (n(row.firstReadShare) && fr && fr.rank <= Math.ceil(fr.of / 3)) supports.push(`strong first-read involvement (${pct(row.firstReadShare)})`);
+      const ays = uRank(m, "airYardsShare");
+      if (n(row.airYardsShare) && ays && ays.rank <= Math.ceil(ays.of / 3)) supports.push(`substantial downfield opportunity (${pct(row.airYardsShare)} air-yards share)`);
+    } else if (m.pos === "RB") {
+      if (n(row.woppShare) && row.woppShare >= 50) supports.push(`a lead role (${pct(row.woppShare)} of the backfield's weighted opportunities)`);
+      if (n(row.targetShare) && row.targetShare >= 10) supports.push(`a receiving role (${pct(row.targetShare)} target share)`);
+    } else {
+      const x = uRank(m, "xfpPerGame");
+      if (x && x.rank <= 12) supports.push(`top-12 opportunity (${one(row.xfpPerGame!)} expected points a game)`);
+      if (n(row.designedRunRate) && row.designedRunRate >= 8) supports.push(`a designed-run role (${row.designedRunRate}%)`);
+    }
+    if (usage?.leadsRz && row.rzTouches >= 5) supports.push(`${usage.rzCoLead ? "a share of the" : "the"} red-zone lead (${row.rzTouches} touches)`);
+    if (usage?.ts.confirmed && (usage.ts.delta ?? 0) >= 3) supports.push(`a rising target share (up ${one(usage.ts.delta!)} points over his last three games)`);
+    if (unpaid(m)) supports.push(`room for the points to catch his opportunity (${one(row.xfpPerGame!)} expected against ${one(row.fpPerGame!)} scored)`);
+  }
+  if (!supports.length && !benched) {
+    const top = topDriver(m);
+    if (top && top.tier === "good") supports.push(`${top.label.toLowerCase()} (${top.value} ${top.unit}, ${ordinal(top.rank!)} of ${top.of})`);
+  }
+
+  if (m.injured) threatens.push(`his ${m.injured.toLowerCase()} status`);
+  else if (m.questionable) threatens.push(`a ${m.questionable.toLowerCase()} designation this week`);
+  if (m.sched.verdict === "tough") threatens.push(`${word(m.sched.tough.length)} difficult matchups in his next ${word(m.sched.next.length)}`);
+  else if (m.sched.tough.length > m.sched.soft.length) threatens.push(`a tough matchup against the ${oppName(m.sched.tough[0]!)} in Week ${m.sched.tough[0]!.week}`);
+  if (m.qbChange) threatens.push(`uncertainty over how targets are distributed with ${surname(m.qbChange.to.name)} starting`);
+  if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) threatens.push(`a target share down ${one(Math.abs(usage.ts.delta!))} points over his last three games`);
+  if (usage?.snap.confirmed && (usage.snap.delta ?? 0) <= -10) threatens.push(`a snap share down ${Math.round(Math.abs(usage.snap.delta!))} points over his last three games`);
+  if (fpoeBand(m) === "over" && row && row.fpoePerGame! >= 2) threatens.push(`production ${signed(row.fpoePerGame!)} a game over his opportunity, which may not repeat`);
+  if (data.depth && data.depth.order > 1 && !m.injured) threatens.push(`a ${data.depth.position}${data.depth.order} spot on the depth chart`);
+  if (usage && usage.aheadOfHim.length >= 2) threatens.push(`${listWords(usage.aheadOfHim.slice(0, 2))} ahead of him in target share`);
+  const weak = weakDriver(m);
+  if (weak && weak.tier === "bad" && threatens.length < 3) threatens.push(`${weak.label.toLowerCase()} in the bottom third (${weak.value} ${weak.unit})`);
+  return { supports: supports.slice(0, 3), threatens: threatens.slice(0, 3) };
 }
 
 /**
@@ -495,15 +788,12 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
  */
 function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
   const record = data.fantasyOutlook2026;
-  const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
 
-  // No Redraft Command link in the prose (mak, 2026-10-01): the tab carries
-  // exactly two - the sidebar card beside this text, and the quiet line at
-  // the foot of upside/risk. The take ends on its own last sentence.
   let prose: string[];
-  let byline: string;
-  let archive = "";
+  let byline = "";
+  let after = "";
   if (m.preseason) {
     if (preseasonParas.length === 0) return "";
     prose = preseasonParas.map((p) => escapeHtml(p));
@@ -511,21 +801,25 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
   } else {
     prose = paragraphs(m, data).map((p) => escapeHtml(p));
     if (prose.length === 0) return "";
-    // mak, 2026-09-30: no "Updated automatically after Week n" line;
-    // 2026-10-02: no "Preseason outlook originally published" line either.
-    byline = "";
-    if (preseasonParas.length && published) {
-      archive =
-        `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
-        `<div class="scp-ox-prose">` +
-        `<p class="scp-ol-stamp">${escapeHtml(`Published ${published.text}. Kept for reference; the take above replaces it.`)}</p>` +
-        preseasonParas.map((p) => `<p>${escapeHtml(p)}</p>`).join("") +
-        `</div></details>`;
+    const { supports, threatens } = supportsThreatens(m, data);
+    if (supports.length || threatens.length) {
+      const cell = (title: string, items: string[], kind: string, empty: string): string =>
+        `<div class="scp-ol-st-cell is-${kind}"><h3>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : empty)}</p></div>`;
+      after =
+        `<div class="scp-ol-st">` +
+        cell(
+          "What supports his value",
+          supports,
+          "up",
+          data.depth && data.depth.order > 1 && !m.injured
+            ? "His season-to-date usage was a starter's, but the depth chart no longer lists him first."
+            : "Nothing in the usage data stands out yet.",
+        ) +
+        cell("What threatens his value", threatens, "risk", "No material threat in the data right now: his role, his quarterback and his next four matchups are steady.") +
+        `</div>`;
     }
   }
 
-  // Sidebar: Redraft Command, then Best fit. The "Outlook at a glance" card
-  // (role, backup, top targets, next matchups) is gone (mak, 2026-10-22).
   const rc =
     `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
     `<p>${escapeHtml(
@@ -535,9 +829,6 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
     `</div>`;
   const fits = renderFits(m);
 
-  // In season the section has no heading (mak, 2026-10-22): "Our take after
-  // Week n" is gone and the prose opens under the hero. The preseason piece
-  // keeps its title.
   return (
     (m.preseason
       ? open("scp-ol-read-h", `Our ${m.season} preseason outlook`, "")
@@ -547,25 +838,156 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
     `<div class="scp-ox-read">` +
     `<div>${m.preseason ? "" : lead}${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
     `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>` +
-    archive +
+    after +
     `</div>` +
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
     `</div></section>`
   );
 }
 
-/* --------------------------------------------------------- section 4: drivers */
+/* ------------------------------------- section 2: opportunity vs. production */
+
+function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
+  const row = u(m);
+  const usage = m.usage;
+  if (!row || !usage || !n(row.xfpPerGame) || !n(row.fpPerGame)) return "";
+  const posWord = `${m.pos}s`;
+  const tile = (label: string, value: string, sub: string): string =>
+    `<div class="scp-ol-tile"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>${sub ? `<span class="scp-ol-tsub">${escapeHtml(sub)}</span>` : ""}</div>`;
+  const tiles: string[] = [
+    tile("PPR points per game", one(row.fpPerGame), "actual"),
+    tile("Expected points per game", one(row.xfpPerGame), rankWords(uRank(m, "xfpPerGame"), m.pos) || "xFP"),
+    tile("Points over expected", n(row.fpoePerGame) ? signed(row.fpoePerGame) : "-", "per game"),
+  ];
+  if (m.pos === "WR" || m.pos === "TE") {
+    if (n(row.targetShare)) tiles.push(tile("Target share", pct(row.targetShare), rankWords(uRank(m, "targetShare"), m.pos)));
+    if (n(row.firstReadShare)) tiles.push(tile("First-read share", pct(row.firstReadShare), rankWords(uRank(m, "firstReadShare"), m.pos)));
+    if (n(row.snapShare)) tiles.push(tile("Snap share", `${Math.round(row.snapShare)}%`, rankWords(uRank(m, "snapShare"), m.pos)));
+  } else if (m.pos === "RB") {
+    if (n(row.woppShare)) tiles.push(tile("Backfield share", pct(row.woppShare), "of weighted opportunities"));
+    if (n(row.woppPerGame)) tiles.push(tile("Weighted opportunities", one(row.woppPerGame), `per game, ${rankWords(uRank(m, "woppPerGame"), m.pos)}`.replace(/, $/, "")));
+    if (n(row.snapShare)) tiles.push(tile("Snap share", `${Math.round(row.snapShare)}%`, rankWords(uRank(m, "snapShare"), m.pos)));
+  } else {
+    tiles.push(tile("Dropbacks per game", one(row.dropbacks / Math.max(1, row.games)), ""));
+    if (n(row.designedRunRate)) tiles.push(tile("Designed-run rate", `${row.designedRunRate}%`, ""));
+    tiles.push(tile("Carries inside the 10", String(row.gzCarries), ""));
+  }
+
+  // mak's xFP language from the usage report (2026-10-03), the gap never a promise.
+  const band = fpoeBand(m);
+  const gap = Math.abs(row.fpoePerGame ?? 0);
+  const read =
+    band === "under"
+      ? `${m.last} is averaging ${one(row.xfpPerGame)} expected PPR points a game but producing ${one(row.fpPerGame)}. His opportunity profile is stronger than his output, running ${one(gap)} points a game below the value of his opportunities: a potential regression signal if the role holds, though the gap does not guarantee improvement.`
+      : band === "over"
+        ? `${m.last} is scoring ${signed(row.fpoePerGame!)} points a game over expected, efficiency that may not repeat; his ${one(row.xfpPerGame)} expected points a game is the opportunity underneath it.`
+        : `${possessive(m.last)} production is running right at expected (${one(row.fpPerGame)} scored against ${one(row.xfpPerGame)} expected), so this is volume, not a hot streak.`;
+
+  // The last three games against the three before (usage.ts trend()).
+  const drift: string[] = [];
+  const share = m.pos === "WR" || m.pos === "TE" ? "target share" : null;
+  if (share) {
+    const t = usage.ts;
+    const recent = mean3(t);
+    if (recent !== null && t.delta !== null && t.baseWeeks.length) {
+      drift.push(
+        Math.abs(t.delta) < 2
+          ? `His ${share} is steady: ${pct(recent)} over his last three games against ${pct(recent - t.delta)} in ${baseWords(t)}.`
+          : `His ${share} over his last three games (${pct(recent)}) is ${t.delta > 0 ? "up" : "down"} ${one(Math.abs(t.delta))} points on ${baseWords(t)}${t.confirmed ? "" : ", though the latest game did not extend the move"}.`,
+      );
+    }
+  }
+  const sn = usage.snap;
+  const snapRecent = mean3(sn);
+  if (snapRecent !== null && sn.delta !== null && Math.abs(sn.delta) >= 5 && sn.baseWeeks.length) {
+    drift.push(`His snap share is ${sn.delta > 0 ? "up" : "down"} ${Math.round(Math.abs(sn.delta))} points over the same window (${Math.round(snapRecent)}% of snaps).`);
+  }
+
+  const teamPrefix = options.teamPathPrefix ?? "/team/";
+  const q = options.linkQuery ?? "";
+  const link = m.teamSlug
+    ? `<p class="scp-ol-more">${a(`${teamPrefix}${m.teamSlug}/usage/${q}`, `See the ${m.nickname ?? "team"} usage report`)}</p>`
+    : "";
+  return (
+    open(
+      "scp-ol-opp-h",
+      "Opportunity vs. production",
+      `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. Ranks are among qualifying ${posWord} league-wide.`,
+    ) +
+    `<dl class="scp-ol-opp">${tiles.join("")}</dl>` +
+    `<div class="scp-ox-prose"><p>${escapeHtml(read)}</p>${drift.length ? `<p>${escapeHtml(drift.join(" "))}</p>` : ""}</div>` +
+    link +
+    `</section>`
+  );
+}
+
+/* --------------------------------------------------------- section 3: drivers */
+
+/** The usage report's metrics as driver rows, ranked league-wide. */
+function usageDriverRows(m: Model): DriverRow[] {
+  const row = u(m);
+  if (!row) return [];
+  const rows: DriverRow[] = [];
+  const push = (metric: UsageMetric, label: string, unit: string, value: string, words: [string, string, string], tier?: Tier): void => {
+    const r = uRank(m, metric);
+    const t = tier ?? (r ? tierOf(r.rank, r.of) : null);
+    rows.push({
+      label,
+      word: t === null ? null : words[t === "good" ? 0 : t === "mid" ? 1 : 2],
+      tier: t,
+      value,
+      unit,
+      rank: r?.rank ?? null,
+      of: r?.of ?? 0,
+    });
+  };
+  if (n(row.xfpPerGame)) push("xfpPerGame", "Expected points", "xFP per game", one(row.xfpPerGame), ["High-value", "Average", "Low-value"]);
+  if (n(row.fpoePerGame)) {
+    const band = fpoeBand(m);
+    push(
+      "fpoePerGame",
+      "Points over expected",
+      "FPOE per game",
+      signed(row.fpoePerGame),
+      ["Over expected", "Near expected", "Under expected"],
+      band === "over" ? "good" : band === "under" ? "bad" : "mid",
+    );
+  }
+  if ((m.pos === "WR" || m.pos === "TE") && n(row.firstReadShare)) push("firstReadShare", "First-read share", "first-read share", pct(row.firstReadShare), ["Primary", "Secondary", "Limited"]);
+  return rows;
+}
+
+/**
+ * The rows the drivers section shows, in the brief's order: the position's
+ * share metric, expected points, the gap, first-read share, then the rest.
+ */
+function driverRows(m: Model): DriverRow[] {
+  const adv = m.measures?.drivers ?? [];
+  const usage = usageDriverRows(m);
+  if (!usage.length) return adv;
+  const by = (label: string): DriverRow | undefined => adv.find((d) => d.label === label) ?? usage.find((d) => d.label === label);
+  const order: Record<string, string[]> = {
+    WR: ["Target share", "Expected points", "Points over expected", "First-read share", "Downfield role"],
+    TE: ["Route participation", "Target share", "Expected points", "Points over expected", "First-read share"],
+    RB: ["Rushing volume", "Receiving role", "Expected points", "Points over expected", "Efficiency"],
+    QB: ["Passing volume", "Efficiency", "Rushing", "Expected points", "Points over expected"],
+  };
+  return (order[m.pos] ?? []).map(by).filter((d): d is DriverRow => Boolean(d));
+}
 
 function renderDrivers(m: Model): string {
   const ms = m.measures;
-  if (!ms || ms.drivers.length === 0) return "";
-  const noun = `${ms.position}s`;
-  const rows = ms.drivers
+  const rows = driverRows(m);
+  if (!rows.length) return "";
+  const season = ms?.season ?? m.usage?.season ?? m.season;
+  const week = ms?.week ?? m.usage?.throughWeek ?? null;
+  const posWord = `${m.pos}s`;
+  const strips = rows
     .map((d) => {
       const strip =
         d.rank === null
-          ? `<p class="scp-ol-unranked">${escapeHtml(`Fewer than ${ms.minGames} games in ${ms.season}, so not ranked.`)}</p>`
-          : `<div class="scp-ol-dots" role="img" aria-label="${escapeHtml(`${ordinal(d.rank)} of ${d.of} ${noun}`)}" style="--scp-ol-cols:${d.of}">` +
+          ? `<p class="scp-ol-unranked">${escapeHtml(`Fewer than ${ms?.minGames ?? 6} games in ${season}, so not ranked.`)}</p>`
+          : `<div class="scp-ol-dots" role="img" aria-label="${escapeHtml(`${ordinal(d.rank)} of ${d.of} ${posWord}`)}" style="--scp-ol-cols:${d.of}">` +
             Array.from({ length: d.of }, (_, i) => (i === d.rank! - 1 ? `<i class="is-me"></i>` : `<i></i>`)).join("") +
             `</div>` +
             `<div class="scp-ol-axis"><span>1st</span><span><b>${escapeHtml(`${ordinal(d.rank)} of ${d.of}`)}</b></span><span>${ordinal(d.of)}</span></div>`;
@@ -578,153 +1000,122 @@ function renderDrivers(m: Model): string {
       );
     })
     .join("");
-  const adv = ms.advanced.length
+  const adv = ms?.advanced.length
     ? `<dl class="scp-ol-adv" aria-label="${escapeHtml(`${ms.season} advanced profile`)}">` +
       ms.advanced.map((c) => `<div><dt>${escapeHtml(c.label)}</dt><dd>${escapeHtml(c.value)}</dd></div>`).join("") +
       `</dl>`
     : "";
-  const noun1 = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[ms.position] ?? ms.position;
-  const games = `${word(ms.minGames)} game${ms.minGames === 1 ? "" : "s"}`;
+  const n1 = noun(m.pos);
+  const min = ms?.minGames ?? 6;
+  const games = `${word(min)} game${min === 1 ? "" : "s"}`;
+  // Two tables feed the rows (the advanced table and the usage report), each
+  // with its own field, so the lede does not name one count; each row does.
+  const mixed = rows.some((d) => d.of !== rows[0]!.of);
+  const field = mixed || !ms?.field ? `the ${n1}s` : `the ${ms.field} ${n1}s`;
+  const each = mixed ? ` Each row names its field.` : "";
   return (
     open(
       "scp-ol-drv-h",
-      "What drives his outlook",
-      ms.week !== null
-        ? `His ${ms.season} rank through Week ${ms.week} among the ${ms.field} ${noun1}s who have played at least ${games}. Each bar is one ${noun1}, best on the left; his is highlighted.`
-        : `His ${ms.season} rank among the ${ms.field} ${noun1}s who played at least ${games}. Each bar is one ${noun1}, best on the left; his is highlighted.`,
+      `What drives ${possessive(m.name)} fantasy value?`,
+      week !== null
+        ? `His ${season} rank through Week ${week} among ${field} who have played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`
+        : `His ${season} rank among ${field} who played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`,
     ) +
-    `<div class="scp-ol-drivers">${rows}</div>` +
+    `<div class="scp-ol-drivers">${strips}</div>` +
     adv +
     `</section>`
   );
 }
 
-/* ---------------------------------------------------------- section 5: contract */
-
-function renderContract(m: Model, data: PlayerPageData): string {
-  const bio = data.bioProfile;
-  const stints = (bio?.stints ?? []).filter((s) => s.kind === "nfl");
-  const events: Array<{ when: string; text: string }> = [];
-  const draft = bio?.draft;
-  if (draft?.year && draft.round && draft.pick) {
-    events.push({
-      when: String(draft.year),
-      text: `Drafted in round ${draft.round}, pick ${draft.pick}${draft.team ? ` by the ${draft.team.nickname}` : ""}.`,
-    });
-  }
-  for (const stint of stints.slice(-3)) {
-    if (!stint.team) continue;
-    // "2025–" is a stint still running: the year he joined, said as such.
-    const current = /–$/.test(stint.years);
-    // The club that drafted him, the year it did: the draft row already says so.
-    if (draft?.year && draft.team?.slug === stint.team.slug && stint.years.startsWith(String(draft.year))) continue;
-    events.push({
-      when: current ? stint.years.replace(/–$/, "") : stint.years,
-      text: current
-        ? `Joined the ${stint.team.nickname}${stint.detail ? ` (${stint.detail})` : ""}.`
-        : `Played for the ${stint.team.nickname}${stint.detail ? ` (${stint.detail})` : ""}.`,
-    });
-  }
-  if (m.prior?.rank) {
-    events.push({ when: String(m.prior.season), text: `Finished ${m.pos}${m.prior.rank} at ${one(m.prior.ppg)} points per game over ${m.prior.gp} games.` });
-  }
-  const depth = data.depth;
-  if (depth) {
-    events.push({
-      when: String(m.season),
-      text: depth.order === 1 ? `Listed as the starter${depth.next ? `, with ${depth.next.name} behind him` : ""}.` : `Listed as ${depth.position}${depth.order} on the depth chart.`,
-    });
-  }
-  const timeline = events.slice(-5);
-  if (timeline.length < 2) return "";
-
-  const angle =
-    depth?.order === 1
-      ? `He holds the job today${depth.next ? `, and ${depth.next.name} is the next man up` : ""}. With no contract terms on file here, the job is his only as long as he produces.`
-      : depth
-        ? `He's ${depth.position}${depth.order} on the depth chart, so he needs an injury or a demotion ahead of him to start. That caps his value until the chart changes.`
-        : `His club's depth chart doesn't list him, so treat his role as unsettled. That caps his value until it's clear.`;
-
-  return (
-    open("scp-ol-con-h", "Contract and job security", "") +
-    `<div class="scp-ol-contract">` +
-    `<div class="scp-ol-card"><h3>How he got here</h3><p class="scp-ol-cardsub">And what it means for his fantasy value.</p>` +
-    `<ol class="scp-ol-timeline">` +
-    timeline.map((e) => `<li><span class="scp-ol-when-b">${escapeHtml(e.when)}</span><span>${escapeHtml(e.text)}</span></li>`).join("") +
-    `</ol>` +
-    `<div class="scp-ol-angle"><strong>Fantasy angle:</strong> ${escapeHtml(angle)}</div>` +
-    `</div></div></section>`
-  );
-}
-
-/* ---------------------------------------------------- section 6: upside / risk */
-
-function schedChips(m: Model): string {
-  const games = m.upcoming.filter((g) => g.matchup);
-  if (!games.length) return "";
-  return (
-    `<span class="scp-ol-sched">` +
-    games
-      .map((g) => {
-        const band = matchupBand(g.matchup!.rank);
-        const kind = band === "soft" ? "good" : band === "tough" ? "bad" : "mid";
-        return `<span class="scp-ol-chip is-${kind}">${escapeHtml(`Wk ${g.week} ${g.opponentCode}, ${ordinal(g.matchup!.rank)}`)}</span>`;
-      })
-      .join("") +
-    `</span>`
-  );
-}
+/* ---------------------------------------------------- section 4: upside / risk */
 
 function renderTriggers(m: Model, data: PlayerPageData): string {
   const up: string[] = [];
   const risk: string[] = [];
   // The claim is the line you read; the evidence sits under it as subtext
-  // (mak, 2026-10-01). Both halves are the same words as before - what moved
-  // is the emphasis, so the list scans as six claims instead of six sentences.
+  // (mak, 2026-10-01). Every item is a CHANGE with its evidence (the brief,
+  // 2026-11-05) - not the drivers restated, and never "could get hurt".
   const b = (label: string, text: string): string =>
     `<span class="scp-ol-claim">${escapeHtml(label.replace(/\.$/, ""))}</span>` +
     `<span class="scp-ol-evid">${escapeHtml(text)}</span>`;
+  const row = u(m);
+  const usage = m.usage;
+  const depth = data.depth;
+  const season = m.usage?.season ?? m.measures?.season ?? m.season;
+  const withRank = (g: UpcomingGame): string => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`;
 
-  const fav = favorable(m);
-  const games = m.upcoming.filter((g) => g.matchup);
-  if (games.length) {
-    up.push(
-      (fav.length
-        ? b(fav.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(matchupList(fav))} ${fav.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s.`)
-        : b("The schedule.", `None of his next ${word(games.length)} opponents is a top-10 matchup for ${m.pos}s.`)) + schedChips(m),
+  // Upside: catalysts. A player listed below first on the chart gets none
+  // from the usage he had as the starter.
+  const benched = Boolean(depth && depth.order > 1 && !m.injured);
+  if (row && unpaid(m) && !benched) {
+    up.push(b("Room for the points to catch his role.", `${one(row.xfpPerGame!)} expected PPR points a game against ${one(row.fpPerGame!)} scored; if the role holds, that gap is where the upside is.`));
+  }
+  if (usage?.ts.confirmed && (usage.ts.delta ?? 0) >= 3) {
+    up.push(b("Target share is climbing.", `${pct(mean3(usage.ts)!)} over his last three games, up ${one(usage.ts.delta!)} points on ${baseWords(usage.ts)}.`));
+  }
+  if (usage?.snap.confirmed && (usage.snap.delta ?? 0) >= 10) {
+    up.push(b("More snaps.", `${Math.round(mean3(usage.snap)!)}% of snaps over his last three games, up ${Math.round(usage.snap.delta!)} points on ${baseWords(usage.snap)}.`));
+  }
+  if (usage?.leadsRz && row && row.rzTouches >= 5) {
+    up.push(b("The red-zone role.", `${usage.rzCoLead ? "Co-leads" : "Leads"} the ${m.nickname ?? "club"} with ${row.rzTouches} red-zone touches through Week ${usage.throughWeek}.`));
+  }
+  const s = m.sched;
+  if (s.soft.length > s.tough.length) {
+    up.push(b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s.`));
+  }
+  // The drivers are restated here only when there is no catalyst at all - the
+  // card is for changes, not a second copy of the strips above.
+  if (up.length === 0) {
+    const good = rankedDrivers(m).filter((d) => d.tier === "good");
+    for (const d of good.slice(0, 2)) {
+      const label = d.label.toLowerCase().startsWith((d.word ?? "").toLowerCase()) ? `${d.label}.` : `${d.word} ${d.label.toLowerCase()}.`;
+      up.push(b(label, `${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${season}.`));
+    }
+  }
+
+  // Risk: changes and headwinds with evidence.
+  if (m.injured) risk.push(b("Injury.", `He's ${m.injured.toLowerCase()}${depth?.next ? `, and ${depth.next.name} is next on the depth chart` : ""}.`));
+  else if (m.questionable) risk.push(b("Questionable.", `Listed ${m.questionable.toLowerCase()} this week; check the Injury tab before kickoff.`));
+  if (m.qbChange) {
+    const to = m.qbChange.to;
+    risk.push(
+      b(
+        "A new quarterback.",
+        `${to.name} is now the listed starter; ${m.qbChange.from} threw most of the passes through Week ${m.week}. How targets are distributed under ${surname(to.name)} is unknown${to.attempts > 0 ? ` (${to.attempts} attempts so far)` : ""}.`,
+      ),
     );
   }
-  const drivers = (m.measures?.drivers ?? []).filter((d) => d.rank !== null && d.tier === "good");
-  const driverLabel = (d: DriverRow): string =>
-    d.label.toLowerCase().startsWith((d.word ?? "").toLowerCase()) ? `${d.label}.` : `${d.word} ${d.label.toLowerCase()}.`;
-  for (const d of drivers.slice(0, 2)) {
-    up.push(b(driverLabel(d), `${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${m.measures!.season}.`));
+  if (s.tough.length > s.soft.length) {
+    const through = row && n(row.targetShare) && row.targetShare >= 20 ? ` His ${pct(row.targetShare)} target share is the way through them.` : "";
+    risk.push(b(s.tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(s.tough.map(withRank)))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.${through}`));
   }
-
-  const depth = data.depth;
-  if (m.injured) risk.push(b("Injury.", `He's ${m.injured.toLowerCase()}${depth?.next ? `, and ${depth.next.name} is next on the depth chart` : ""}.`));
-  else if (depth?.order === 1 && depth.next && elite(m)) risk.push(b("Health.", `His role is secure; if he misses time, ${depth.next.name} is next on the depth chart.`));
-  else if (depth?.order === 1 && depth.next) risk.push(b("Job security.", `${depth.next.name} is next on the depth chart; a benching or injury hands him the job.`));
-  else if (depth && depth.order > 1) risk.push(b("Role.", `He's ${depth.position}${depth.order} on the depth chart.`));
-  const weak = (m.measures?.drivers ?? []).filter((d) => d.rank !== null && d.tier === "bad");
+  if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) {
+    risk.push(b("Target share is sliding.", `${pct(mean3(usage.ts)!)} over his last three games, down ${one(Math.abs(usage.ts.delta!))} points on ${baseWords(usage.ts)}.`));
+  }
+  if (usage?.snap.confirmed && (usage.snap.delta ?? 0) <= -10) {
+    risk.push(b("Fewer snaps.", `${Math.round(mean3(usage.snap)!)}% of snaps over his last three games, down ${Math.round(Math.abs(usage.snap.delta!))} points on ${baseWords(usage.snap)}.`));
+  }
+  if (row && fpoeBand(m) === "over" && row.fpoePerGame! >= 2) {
+    risk.push(b("Scoring over his opportunity.", `${signed(row.fpoePerGame!)} points a game over expected (${one(row.xfpPerGame!)} xFP); efficiency that may not repeat.`));
+  }
+  if (depth && depth.order > 1 && !m.injured) risk.push(b("Role.", `He's ${depth.position}${depth.order} on the depth chart, so a bigger role needs a change ahead of him.`));
+  if (usage && usage.aheadOfHim.length >= 2) risk.push(b("Competition for targets.", `${listWords(usage.aheadOfHim.slice(0, 2))} both carry a bigger target share.`));
+  const weak = rankedDrivers(m).filter((d) => d.tier === "bad");
   for (const d of weak.slice(0, 1)) {
-    risk.push(b(driverLabel(d), `${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${m.measures!.season}.`));
-  }
-  const tough = games.filter((g) => matchupBand(g.matchup!.rank) === "tough");
-  if (tough.length) {
-    risk.push(b(tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(tough.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`)))} ${tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.`));
+    const label = d.label.toLowerCase().startsWith((d.word ?? "").toLowerCase()) ? `${d.label}.` : `${d.word} ${d.label.toLowerCase()}.`;
+    if (risk.length < 3) risk.push(b(label, `${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${season}.`));
   }
   // The same line the drivers were read from, so the season named matches.
   const ks = m.measures?.line ?? data.fantasyOutlook2026?.keyStats;
-  const n = (k: string): number | null => (typeof ks?.[k] === "number" ? (ks[k] as number) : null);
-  if (risk.length < 3 && m.pos === "QB" && n("sacks") !== null && n("pressurePct") !== null) {
-    risk.push(b("Pressure and sacks.", `${n("sacks")} sacks and a ${n("pressurePct")!.toFixed(1)}% pressure rate in ${m.measures?.season ?? m.season - 1}.`));
+  const k = (key: string): number | null => (typeof ks?.[key] === "number" ? (ks[key] as number) : null);
+  if (risk.length < 3 && m.pos === "QB" && k("sacks") !== null && k("pressurePct") !== null) {
+    risk.push(b("Pressure and sacks.", `${k("sacks")} sacks and a ${k("pressurePct")!.toFixed(1)}% pressure rate in ${m.measures?.season ?? m.season - 1}.`));
   }
-  if (risk.length < 3 && m.pos !== "QB" && n("fumbles") && n("fumbles")! >= 2) {
-    risk.push(b("Ball security.", `${n("fumbles")} fumbles in ${m.measures?.season ?? m.season - 1}.`));
+  if (risk.length < 3 && m.pos !== "QB" && k("fumbles") && k("fumbles")! >= 2) {
+    risk.push(b("Ball security.", `${k("fumbles")} fumbles in ${m.measures?.season ?? m.season - 1}.`));
   }
-  if (risk.length < 3 && (m.pos === "WR" || m.pos === "TE") && n("dropPct") !== null && n("dropPct")! >= 6) {
-    risk.push(b("Drops.", `A ${n("dropPct")!.toFixed(1)}% drop rate in ${m.measures?.season ?? m.season - 1}.`));
+  if (risk.length < 3 && (m.pos === "WR" || m.pos === "TE") && k("dropPct") !== null && k("dropPct")! >= 6) {
+    risk.push(b("Drops.", `A ${k("dropPct")!.toFixed(1)}% drop rate in ${m.measures?.season ?? m.season - 1}.`));
   }
 
   if (up.length === 0 && risk.length === 0) return "";
@@ -732,24 +1123,89 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
     items.length
       ? `<div class="scp-ol-card is-${kind}"><h3>${title}</h3><ul>${items.slice(0, 3).map((i) => `<li>${i}</li>`).join("")}</ul></div>`
       : "";
-  const noun = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[m.pos] ?? m.pos;
   return (
     // No lede (mak, 2026-10-02).
     open("scp-ol-ur-h", "What could change his value", "") +
     `<div class="scp-ol-ur">${card("Upside", up, "up")}${card("Risk", risk, "risk")}</div>` +
-    `<div class="scp-ol-cta"><span>${escapeHtml(`Weighing ${m.last} against another ${noun} on your roster?`)}</span>` +
+    `<div class="scp-ol-cta"><span>${escapeHtml(`Weighing ${m.last} against another ${noun(m.pos)} on your roster?`)}</span>` +
     `<a href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-risk">Compare them in Redraft Command</a></div>` +
     `</section>`
   );
 }
 
-/* ------------------------------------------------------------- section 7: FAQ */
+/* ------------------------------------------------------- section 5: schedule */
+
+const BAND_WORD = { soft: "Favorable", mid: "Neutral", tough: "Tough" } as const;
+
+function renderSchedule(m: Model): string {
+  const s = m.sched;
+  if (!s.next.length) return "";
+  const cards = s.next
+    .map((g) => {
+      const band = matchupBand(g.matchup!.rank);
+      const kind = band === "soft" ? "good" : band === "tough" ? "bad" : "mid";
+      return (
+        `<li class="scp-ol-sgame is-${kind}">` +
+        `<span class="scp-ol-swk">Wk ${g.week}</span>` +
+        `<span class="scp-ol-sopp">${escapeHtml(`${g.homeAway === "away" ? "at" : "vs"} ${g.opponentCode}`)}</span>` +
+        `<span class="scp-ol-srank">${escapeHtml(`${ordinal(g.matchup!.rank)} vs ${m.pos}s`)}</span>` +
+        `<span class="scp-ol-chip is-${kind}">${BAND_WORD[band]}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+  const verdict =
+    s.verdict === "tough"
+      ? `A difficult stretch: ${word(s.tough.length)} of the next ${word(s.next.length)} are bottom-10 matchups for ${m.pos}s${s.soft.length ? `, with ${word(s.soft.length)} top-10 matchup to break it up` : ""}.`
+      : s.verdict === "soft"
+        ? `A favorable stretch: ${word(s.soft.length)} of the next ${word(s.next.length)} are top-10 matchups for ${m.pos}s${s.tough.length ? `, against ${word(s.tough.length)} tough one` : ""}.`
+        : s.soft.length || s.tough.length
+          ? `A mixed stretch: ${word(s.soft.length)} top-10 matchup${s.soft.length === 1 ? "" : "s"} and ${word(s.tough.length)} bottom-10 in the next ${word(s.next.length)}.`
+          : `A neutral stretch: none of the next ${word(s.next.length)} is a top-10 or a bottom-10 matchup for ${m.pos}s.`;
+  const playoffs = s.playoffs.length
+    ? `Fantasy playoffs (Weeks 15 to 17): ${listWords(
+        s.playoffs.map((g) => `${g.homeAway === "away" ? "at" : "vs"} ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`),
+      )}; ${(() => {
+        const soft = s.playoffs.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
+        const tough = s.playoffs.filter((g) => matchupBand(g.matchup!.rank) === "tough").length;
+        return soft && !tough ? `${word(soft)} favorable, none tough` : tough && !soft ? `${word(tough)} tough, none favorable` : soft || tough ? `${word(soft)} favorable, ${word(tough)} tough` : "none favorable or tough";
+      })()}.`
+    : "";
+  return (
+    open("scp-ol-sch-h", `${m.name} upcoming matchups`, `His next ${word(s.next.length)} opponents, ranked by ${m.scoring} points allowed to ${m.pos}s this season: 1st allows the most, 32nd the fewest.`) +
+    `<ul class="scp-ol-schedule" aria-label="Next opponents">${cards}</ul>` +
+    `<div class="scp-ox-prose"><p>${escapeHtml(verdict)}</p>${playoffs ? `<p>${escapeHtml(playoffs)}</p>` : ""}</div>` +
+    `</section>`
+  );
+}
+
+/* ----------------------------------------------------- the preseason archive */
+
+/** The June piece, collapsed, at the foot of the tab (the brief: history last). */
+function renderArchive(m: Model, data: PlayerPageData): string {
+  if (m.preseason) return "";
+  const record = data.fantasyOutlook2026;
+  const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
+  const paras = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (!paras.length || !published) return "";
+  return (
+    `<section class="scp-ox-sec scp-ol-sec-prev" aria-label="Preseason outlook">` +
+    `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
+    `<div class="scp-ox-prose">` +
+    `<p class="scp-ol-stamp">${escapeHtml(
+      `Published ${published.text}. Kept for reference; the outlook above replaces it. Point totals in this piece are as published in June; the figures above are ${m.scoring} points per game.`,
+    )}</p>` +
+    paras.map((p) => `<p>${escapeHtml(p)}</p>`).join("") +
+    `</div></details></section>`
+  );
+}
+
+/* ------------------------------------------------------------- section 6: FAQ */
 
 /**
- * The Outlook FAQ (faq-engine.ts): forward-looking only. Rest-of-season value,
- * rank against the projection, buy or sell, role, volume trend, upside, risk,
- * the schedule and the playoffs, each answered with the model's own numbers.
- * Rosterability is the Overview's; last season's line is the Stats tab's.
+ * The Outlook FAQ (faq-engine.ts): forward-looking only, answered from the
+ * same model as the sections above so the two never disagree. Rosterability
+ * is the Overview's; last season's line is the Stats tab's.
  */
 function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions): Array<FaqCandidate | null> {
   const pool: Array<FaqCandidate | null> = [];
@@ -757,11 +1213,17 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   const ros = m.week >= 1 ? `the rest of the ${m.season} season` : `the ${m.season} season`;
   const top = topDriver(m);
   const weak = weakDriver(m);
-  const drv = (d: DriverRow): string => `${d.label.toLowerCase()} (${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${m.measures!.season})`;
-  const noun = m.pos === "QB" ? "pass attempts" : m.pos === "RB" ? "touches" : "targets";
+  const row = u(m);
+  const usage = m.usage;
+  const season = usage?.season ?? m.measures?.season ?? m.season;
+  const drv = (d: DriverRow): string => `${d.label.toLowerCase()} (${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${season})`;
+  const nounV = m.pos === "QB" ? "pass attempts" : m.pos === "RB" ? "touches" : "targets";
   const log = data.season === m.season ? (data.gameLog ?? []).filter((e) => (e.game_status ?? "active") === "active" && e.stats) : [];
   const vol = (e: (typeof log)[number]): number =>
     m.pos === "QB" ? e.stats.pass_att ?? 0 : m.pos === "RB" ? (e.stats.rush_att ?? 0) + (e.stats.rec_tgt ?? 0) : e.stats.rec_tgt ?? 0;
+  const s = m.sched;
+  const withRank = (g: UpcomingGame): string => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`;
+  const band = fpoeBand(m);
 
   // 1. The outlook.
   const tier = tierLine(m);
@@ -769,26 +1231,46 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     pool.push({
       key: "outlook",
       q: `What is ${possessive(m.name)} fantasy outlook for ${ros}?`,
-      a: `${m.name} projects as ${/^[aeiou]/i.test(tier) ? "an" : "a"} ${tier.charAt(0).toLowerCase() + tier.slice(1)} for ${ros}: ${fitSentence(m)}.` +
-        (top && top.tier === "good" ? ` His ${drv(top)} supports that.` : "") +
-        (weak ? ` His ${drv(weak)} holds him back.` : ""),
+      a:
+        `${m.name} projects as ${/^[aeiou]/i.test(tier) ? "an" : "a"} ${tier.charAt(0).toLowerCase() + tier.slice(1)} for ${ros}: ${fitSentence(m)}.` +
+        (row && band && n(row.xfpPerGame) && n(row.fpPerGame)
+          ? band === "under"
+            ? ` He is averaging ${one(row.fpPerGame)} PPR points against ${one(row.xfpPerGame)} expected, so his opportunity is stronger than his output.`
+            : band === "over"
+              ? ` He is averaging ${one(row.fpPerGame)} PPR points against ${one(row.xfpPerGame)} expected, efficiency that may not repeat.`
+              : ` His ${one(row.fpPerGame)} PPR points a game match his ${one(row.xfpPerGame)} expected, so the production is the role.`
+          : top && top.tier === "good"
+            ? ` His ${drv(top)} supports that.`
+            : "") +
+        (m.qbChange ? ` ${m.qbChange.to.name} taking over at quarterback makes the near term less predictable.` : weak ? ` His ${drv(weak)} holds him back.` : ""),
       link: { href: m.rc, text: `See his live rank in Redraft Command.` },
     });
   }
 
-  // 2. Rank against the projection.
+  // 2. Rank against the projection and the ROS board.
   if (m.rank !== null) {
     pool.push({
       key: "rosrank",
       q: `What is ${possessive(m.name)} rest-of-season fantasy ranking?`,
-      a: `${m.name} is the ${m.pos}${m.rank} in ${m.scoring} points per game${through}` +
-        (m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
-        `. That puts him in ${bucket(m.pos, m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
+      a:
+        `${m.name} is the ${m.pos}${m.rank} in ${m.scoring} points per game${through}` +
+        (m.ros ? `, and ${m.pos}${m.ros.rank} on the StatChasers rest-of-season board` : m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
+        `. That puts him in ${bucket(m.pos, m.fit?.rank ?? m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
     });
   }
 
-  // 3. Buy low or sell high, from the gap between rank and projection.
-  if (m.rank !== null && m.projected && m.week >= 2 && !m.injured) {
+  // 3. Buy low or sell high: from expected points when the report has him, else from the projection.
+  if (row && band && n(row.xfpPerGame) && n(row.fpPerGame) && m.week >= 2 && !m.injured) {
+    pool.push({
+      key: "trade",
+      q: `Should I buy low or sell high on ${m.name}?`,
+      a: unpaid(m)
+        ? `${m.name} is a buy-low candidate on the numbers: ${one(row.xfpPerGame)} expected PPR points a game against ${one(row.fpPerGame)} scored. The role is there and the points are not yet; if the role holds, that gap is a potential regression signal, though it does not guarantee improvement${m.qbChange ? `, and a new quarterback adds uncertainty` : ""}.`
+        : band === "over" && row.fpoePerGame! >= 2
+          ? `${m.name} is a sell-high candidate on the numbers: ${signed(row.fpoePerGame!)} PPR points a game over his ${one(row.xfpPerGame)} expected. Efficiency like that may not repeat, so an offer that pays for the points rather than the role is worth taking.`
+          : `Neither: ${possessive(m.name)} ${one(row.fpPerGame)} PPR points a game sit close to his ${one(row.xfpPerGame)} expected, so his price matches his role. Hold him unless a trade fills a bigger need.`,
+    });
+  } else if (m.rank !== null && m.projected && m.week >= 2 && !m.injured) {
     const gap = m.projected - m.rank;
     pool.push({
       key: "trade",
@@ -796,13 +1278,23 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       a: gap >= 6
         ? `${m.name} is outperforming his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, so his trade value is near its high. Selling is reasonable if an offer pays for the ${bucket(m.pos, m.rank)} he has been rather than the ${bucket(m.pos, m.projected)} he was projected to be.`
         : gap <= -6
-          ? `${m.name} is below his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, which is a buy-low window if his usage holds` +
-            (top && top.tier === "good" ? `: his ${drv(top)} is still there.` : ".")
+          ? `${m.name} is below his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, which is a buy-low window if his usage holds` + (top && top.tier === "good" ? `: his ${drv(top)} is still there.` : ".")
           : `Neither: ${m.name} is playing to his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, so his price matches his production. Hold him unless a trade fills a bigger need.`,
     });
   }
 
-  // 4. Role going forward.
+  // 4. The quarterback.
+  if (m.qb && m.pos !== "QB") {
+    pool.push({
+      key: "quarterback",
+      q: `Who is ${possessive(m.name)} quarterback?`,
+      a: m.qbChange
+        ? `${m.qbChange.to.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback now. ${m.qbChange.from} threw most of the passes through Week ${m.week}${m.qbChange.to.attempts > 0 ? `; ${surname(m.qbChange.to.name)} has ${m.qbChange.to.attempts} attempts so far` : ""}. How the targets are distributed under the new starter is the open question for ${possessive(m.last)} rest-of-season value.`
+        : `${m.qb.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback${m.qb.attempts > 0 ? `, with ${m.qb.attempts} pass attempts through Week ${m.week}` : ""}.`,
+    });
+  }
+
+  // 5. Role going forward.
   const depth = data.depth;
   if (depth) {
     pool.push({
@@ -810,33 +1302,39 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       q: `What is ${possessive(m.name)} projected role going forward?`,
       a: depth.order === 1
         ? `${m.name} is the listed starting ${depth.position}${depth.next ? `, with ${depth.next.name} next on the depth chart` : ""}. ` +
-          (m.injured ? `He is ${m.injured.toLowerCase()} for now, which puts that role on hold.` : `Nothing on the chart threatens the job, so the role is his to lose on performance.`)
+          (m.injured
+            ? `He is ${m.injured.toLowerCase()} for now, which puts that role on hold.`
+            : row && n(row.targetShare) && (m.pos === "WR" || m.pos === "TE")
+              ? `His ${pct(row.targetShare)} target share${usage?.ts.delta !== null && usage?.ts.delta !== undefined && Math.abs(usage.ts.delta) >= 2 ? ` is ${usage.ts.delta > 0 ? "up" : "down"} ${one(Math.abs(usage.ts.delta))} points over his last three games` : " has held steady"}${m.qbChange ? `; the quarterback change is the variable to watch` : ""}.`
+              : `Nothing on the chart threatens the job, so the role is his to lose on performance.`)
         : `${m.name} is ${depth.position}${depth.order} on the depth chart, so a bigger role needs an injury or a change ahead of him.`,
     });
   }
 
-  // 5. Volume trend (three games or more).
+  // 6. Volume trend (three games or more).
   if (log.length >= 3) {
-    const season = log.reduce((t, e) => t + vol(e), 0) / log.length;
+    const avg = log.reduce((t, e) => t + vol(e), 0) / log.length;
     const recent = log.slice(-2).reduce((t, e) => t + vol(e), 0) / 2;
-    const diff = recent - season;
-    const steady = Math.abs(diff) < Math.max(1.5, season * 0.08);
+    const diff = recent - avg;
+    const steady = Math.abs(diff) < Math.max(1.5, avg * 0.08);
     pool.push({
       key: "volume",
-      q: `Will ${m.name} get more ${noun}?`,
-      a: `${possessive(m.name)} ${noun} are ${steady ? "holding steady" : diff > 0 ? "trending up" : "trending down"}: ${one(recent)} a game over his last two games against ${one(season)} for the season.` +
-        (m.pos === "QB" ? ` Game script drives much of that, and trailing teams throw more.` : ` His share of the offense is what his fantasy value rides on.`),
+      q: `Will ${m.name} get more ${nounV}?`,
+      a:
+        `${possessive(m.name)} ${nounV} are ${steady ? "holding steady" : diff > 0 ? "trending up" : "trending down"}: ${one(recent)} a game over his last two games against ${one(avg)} for the season.` +
+        (m.qbChange ? ` With ${m.qbChange.to.name} now starting, the next two games will say more than the last two.` : m.pos === "QB" ? ` Game script drives much of that, and trailing teams throw more.` : ` His share of the offense is what his fantasy value rides on.`),
     });
   }
 
-  // 6. Upside.
+  // 7. Upside.
   const bestWeek = log.length ? [...log].sort((x, y) => getEntryPoints(y.stats, data.format) - getEntryPoints(x.stats, data.format))[0] : null;
-  const fav = favorable(m);
-  if (bestWeek || (top && top.tier === "good") || fav.length) {
+  const softUp = s.soft.length > s.tough.length ? s.soft : [];
+  if (bestWeek || (top && top.tier === "good") || softUp.length || unpaid(m)) {
     const parts: string[] = [];
+    if (row && unpaid(m)) parts.push(`his ${one(row.xfpPerGame!)} expected points a game say the role is worth more than the ${one(row.fpPerGame!)} he has scored`);
     if (bestWeek) parts.push(`his ceiling this season is ${one(getEntryPoints(bestWeek.stats, data.format))} ${m.scoring} points (Week ${bestWeek.week}${bestWeek.pos_rank ? `, ${m.pos}${bestWeek.pos_rank}` : ""})`);
     if (top && top.tier === "good") parts.push(`his ${drv(top)} gives him a weekly floor to build on`);
-    if (fav.length) parts.push(`${matchupList(fav)} ${fav.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s`);
+    if (softUp.length) parts.push(`${matchupList(softUp)} ${softUp.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s`);
     pool.push({
       key: "upside",
       q: `What is ${possessive(m.name)} fantasy football upside?`,
@@ -844,13 +1342,15 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     });
   }
 
-  // 7. Risk.
+  // 8. Risk.
   const risks: string[] = [];
   if (m.injured) risks.push(`he is ${m.injured.toLowerCase()}`);
-  if (depth?.order === 1 && depth.next && !m.injured) risks.push(`${depth.next.name} is next on the depth chart if he is benched or hurt`);
-  if (weak) risks.push(`his ${drv(weak)} limits his scoring`);
-  const tough = m.upcoming.filter((g) => g.matchup && matchupBand(g.matchup.rank) === "tough");
-  if (tough.length) risks.push(`${listWords(tough.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week}`))} ${tough.length === 1 ? "is a tough matchup" : "are tough matchups"}`);
+  if (m.qbChange) risks.push(`${m.qbChange.to.name} has taken over at quarterback, so how the targets are shared is unsettled`);
+  if (s.tough.length > s.soft.length) risks.push(`${listWords(s.tough.slice(0, 2).map(withRank))} ${s.tough.length === 1 ? "is a tough matchup" : "are tough matchups"}`);
+  if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) risks.push(`his target share is down ${one(Math.abs(usage.ts.delta!))} points over his last three games`);
+  if (row && band === "over" && row.fpoePerGame! >= 2) risks.push(`he is scoring ${signed(row.fpoePerGame!)} a game over his opportunity, which may not repeat`);
+  if (depth && depth.order > 1 && !m.injured) risks.push(`he is ${depth.position}${depth.order} on the depth chart`);
+  if (weak && weak.tier === "bad") risks.push(`his ${drv(weak)} limits his scoring`);
   if (risks.length) {
     pool.push({
       key: "risk",
@@ -860,24 +1360,22 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     });
   }
 
-  // 8. The remaining schedule, and 9. the playoffs.
-  const strip = (data.upcomingStrip ?? []).filter((g) => g.matchup);
-  if (strip.length >= 3) {
-    const soft = strip.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
-    const hard = strip.filter((g) => matchupBand(g.matchup!.rank) === "tough").length;
+  // 9. The remaining schedule, and 10. the playoffs - the same read as the section.
+  if (s.next.length >= 3) {
     pool.push({
       key: "schedule",
       q: `How difficult is ${possessive(m.name)} remaining fantasy schedule?`,
-      a: `${soft > hard ? "Favorable" : hard > soft ? "Difficult" : "About average"}: of his next ${word(strip.length)} games, ${soft} ${soft === 1 ? "comes" : "come"} against a top-10 matchup for ${m.pos}s and ${hard} against one of the stingiest defenses, by ${m.scoring} points allowed to the position.`,
+      a: `${s.verdict === "soft" ? "Favorable" : s.verdict === "tough" ? "Difficult" : "Mixed"}: of his next ${word(s.next.length)} games, ${word(s.soft.length)} ${s.soft.length === 1 ? "comes" : "come"} against a top-10 matchup for ${m.pos}s and ${word(s.tough.length)} against one of the stingiest defenses, by ${m.scoring} points allowed to the position${
+        s.tough.length > s.soft.length && row && n(row.targetShare) && row.targetShare >= 20 ? `. A ${pct(row.targetShare)} target share is how a receiver plays through tough matchups` : ""
+      }.`,
     });
   }
-  const playoffs = strip.filter((g) => g.week >= 15 && g.week <= 17);
-  if (playoffs.length >= 2) {
-    const soft = playoffs.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
+  if (s.playoffs.length >= 2) {
+    const soft = s.playoffs.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
     pool.push({
       key: "playoffs",
       q: `Is ${m.name} a good fantasy playoff option?`,
-      a: `His Weeks 15 to 17 opponents are ${listWords(playoffs.map((g) => `the ${oppName(g)} (${ordinal(g.matchup!.rank)} in points allowed to ${m.pos}s)`))}; ${soft ? `${word(soft)} of them ${soft === 1 ? "is" : "are"} favorable` : "none of them is a top-10 matchup"}.`,
+      a: `His Weeks 15 to 17 opponents are ${listWords(s.playoffs.map((g) => `the ${oppName(g)} (${ordinal(g.matchup!.rank)} in points allowed to ${m.pos}s)`))}; ${soft ? `${word(soft)} of them ${soft === 1 ? "is" : "are"} favorable` : "none of them is a top-10 matchup"}.`,
     });
   }
   return pool;
@@ -889,9 +1387,6 @@ function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions)
 }
 
 /* ------------------------------------------------------------------ the tab */
-
-/** "Contract and job security" is hidden for now, at mak's request (2026-09-30). Flip back to show it. */
-const SHOW_CONTRACT = false;
 
 export function renderOutlookTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const parts = outlookTabParts(data, options);
@@ -910,14 +1405,16 @@ export function outlookTabParts(
   if (!m) return null;
   // In season the hero rides inside the read grid (takeInner); it stands
   // alone only when there is no read to carry it, or in the preseason.
-  const lead = m.preseason ? "" : takeInner(m);
+  const lead = m.preseason ? "" : takeInner(m, data.depth);
   const read = renderRead(m, data, lead);
   const main =
-    (read && lead ? "" : renderTake(m)) +
+    (read && lead ? "" : renderTake(m, data.depth)) +
     read +
+    renderOpportunity(m, options) +
     renderDrivers(m) +
-    (SHOW_CONTRACT ? renderContract(m, data) : "") +
-    renderTriggers(m, data);
+    renderTriggers(m, data) +
+    renderSchedule(m) +
+    renderArchive(m, data);
   const faq = renderFaq(m, data, options);
   if (!main && !faq) return null;
   // No methodology footer (mak, 2026-10-02).

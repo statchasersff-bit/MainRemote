@@ -41,7 +41,7 @@ import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
-import { getEntryPoints } from "./scoring";
+import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { passerRating } from "./stats-profile";
 import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSeason } from "./stats-tab-data";
 import type { GameLogEntry } from "./types";
@@ -56,7 +56,7 @@ const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /* ------------------------------------------------------------------ atoms */
 
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
@@ -137,6 +137,8 @@ const teamGames = (season: number): number => (season <= 2020 ? 16 : 17);
 
 interface Line {
   gp: number;
+  /** Starts, sacks taken, fumbles lost: 0 for a season logged before the builder kept them. */
+  gs: number; sacks: number; fumLost: number;
   att: number; cmp: number; passYd: number; passTd: number; int: number;
   rushAtt: number; rushYd: number; rushTd: number; rushLong: number | null;
   tgt: number; rec: number; recYd: number; recTd: number;
@@ -144,7 +146,7 @@ interface Line {
 }
 
 const EMPTY: Line = {
-  gp: 0, att: 0, cmp: 0, passYd: 0, passTd: 0, int: 0,
+  gp: 0, gs: 0, sacks: 0, fumLost: 0, att: 0, cmp: 0, passYd: 0, passTd: 0, int: 0,
   rushAtt: 0, rushYd: 0, rushTd: 0, rushLong: null,
   tgt: 0, rec: 0, recYd: 0, recTd: 0, pts: 0,
 };
@@ -155,6 +157,7 @@ function sumLine(entries: GameLogEntry[], pts: (e: GameLogEntry) => number): Lin
   for (const e of entries) {
     const st = e.stats as unknown as Record<string, unknown>;
     t.gp += 1;
+    t.gs += v(st.gs); t.sacks += v(st.pass_sack); t.fumLost += v(st.fum_lost);
     t.att += v(st.pass_att); t.cmp += v(st.pass_cmp); t.passYd += v(st.pass_yd);
     t.passTd += v(st.pass_td); t.int += v(st.pass_int);
     t.rushAtt += v(st.rush_att); t.rushYd += v(st.rush_yd); t.rushTd += v(st.rush_td);
@@ -265,7 +268,7 @@ function byPct(metrics: AdvMetric[]): AdvMetric[] {
 /** Section 1's heading: the tab's heading, and on WordPress its H1 (player-render's promoteLeadHeading). */
 export const STATS_LEAD_ID = "scp-st-prod-h";
 
-interface Stat {
+export interface Stat {
   label: string;
   total: string;
   /** The per-game figure, for a counting stat; rates and ranks have none. */
@@ -279,7 +282,7 @@ interface Stat {
  * supplementary line. mak (2026-10-03) asked for the floating groups to become
  * one light-gray rail split by faint vertical separators.
  */
-interface Cell {
+export interface Cell {
   label: string;
   main: Stat[];
   sub: Stat[];
@@ -298,7 +301,7 @@ function pair(label: string, a: number, b: number, gp: number): Stat {
 }
 
 /** A figure, carrying both of its numbers when the toggle can switch it. */
-function figure(s: Stat): string {
+export function figure(s: Stat): string {
   const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
   return `<span${toggle}>${escapeHtml(s.total)}</span>`;
 }
@@ -315,6 +318,21 @@ function renderCell(cell: Cell): string {
   );
 }
 
+/**
+ * The first cell of every rail: games played, with starts under it. The
+ * standard-stat audit (2026-11-04) put games started first among what the tab
+ * was missing - for a quarterback it is what tells a backup's appearances
+ * from a starter's season.
+ */
+function gamesCell(t: Line): Cell {
+  // The figure alone (mak, 2026-11-05: "8 8 GS" read as a doubled number);
+  // starts stay in the career table's GS column.
+  return { label: "Games", main: [{ label: "GP", total: whole(t.gp) }], sub: [] };
+}
+
+/** "Fum lost N" as a cell's second line. */
+const fumbles = (t: Line): Stat => counting("Fum lost", t.fumLost, t.gp);
+
 function passingCells(t: Line): Cell[] {
   const r = rating(t);
   return [
@@ -322,15 +340,17 @@ function passingCells(t: Line): Cell[] {
     { label: "Comp %", main: [{ label: "Comp %", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH }], sub: [pair("Comp/Att", t.cmp, t.att, t.gp)] },
     { label: "Pass TD", main: [counting("TD", t.passTd, t.gp)], sub: [{ label: "Rating", total: r === null ? DASH : r.toFixed(1) }] },
     { label: "INT", main: [counting("INT", t.int, t.gp)], sub: [] },
+    // Sacks taken and fumbles lost: standard columns the tab lacked (2026-11-04).
+    { label: "Sacks", main: [counting("Sacks", t.sacks, t.gp)], sub: [fumbles(t)] },
   ];
 }
 
-/** A quarterback's or receiver's rushing: one cell, the yards (no TD figure since 2026-10-22, mak). */
+/** A quarterback's or receiver's rushing: one cell, the yards as the figure (mak, 2026-10-22); the TDs ride the second line. */
 function rushingCell(t: Line): Cell {
   return {
     label: "Rushing",
     main: [counting("Yards", t.rushYd, t.gp)],
-    sub: [counting("Att", t.rushAtt, t.gp), { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }],
+    sub: [counting("Att", t.rushAtt, t.gp), { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }, counting("TD", t.rushTd, t.gp)],
   };
 }
 
@@ -342,7 +362,7 @@ function runnerCells(t: Line): Cell[] {
       main: [{ label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }],
       sub: t.rushLong !== null ? [{ label: "Long", total: whole(t.rushLong) }] : [],
     },
-    { label: "Rush TD", main: [counting("TD", t.rushTd, t.gp)], sub: [] },
+    { label: "Rush TD", main: [counting("TD", t.rushTd, t.gp)], sub: [fumbles(t)] },
     {
       label: "Receiving",
       main: [counting("Rec", t.rec, t.gp, "rec"), counting("Yards", t.recYd, t.gp, "yds")],
@@ -355,7 +375,7 @@ function receiverCells(t: Line): Cell[] {
   return [
     { label: "Receptions", main: [counting("Rec", t.rec, t.gp)], sub: [counting("Targets", t.tgt, t.gp)] },
     { label: "Rec yards", main: [counting("Yards", t.recYd, t.gp)], sub: [{ label: "Y/R", total: fmtRatio(t.recYd, t.rec) }] },
-    { label: "Rec TD", main: [counting("TD", t.recTd, t.gp)], sub: [] },
+    { label: "Rec TD", main: [counting("TD", t.recTd, t.gp)], sub: t.fumLost > 0 ? [fumbles(t)] : [] },
     { label: "Catch %", main: [{ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH }], sub: [] },
   ];
 }
@@ -390,16 +410,19 @@ function tdPoints(t: Line): number {
   return t.passTd * 4 + (t.rushTd + t.recTd) * 6;
 }
 
+/** The rail's cells for a season line, by position. */
+function railCells(pos: string, t: Line): Cell[] {
+  if (pos === "QB") return [gamesCell(t), ...passingCells(t), rushingCell(t)];
+  if (pos === "RB") return [gamesCell(t), ...runnerCells(t)];
+  // Rushing is hidden for a receiver without a carry.
+  return [gamesCell(t), ...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
+}
+
 function renderProduction(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string {
   const row = c.focus;
   if (!row) return "";
   const t = row.line;
-  const pos = c.pos;
-  let cells: Cell[];
-  if (pos === "QB") cells = [...passingCells(t), rushingCell(t)];
-  else if (pos === "RB") cells = runnerCells(t);
-  // Rushing is hidden for a receiver without a carry.
-  else cells = [...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
+  const cells = railCells(c.pos, t);
 
   return (
     // The toggle on the heading's row, right of it (mak, 2026-09-30).
@@ -424,7 +447,7 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
 
 /* ---------------------------------------------------- section 2: advanced */
 
-interface AdvColumn {
+export interface AdvColumn {
   title: string;
   /** Under the title: how far in, or where from. */
   sub: string;
@@ -435,7 +458,7 @@ interface AdvColumn {
  * A percentile's tint (mak, 2026-10-03): 0-24 red, 25-74 navy, 75-100 green,
  * all subdued, and gray for a style reading, which is neither good nor bad.
  */
-function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
+export function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
   if (m.standing === "muted" || m.pctl == null) return "muted";
   return m.pctl >= 75 ? "good" : m.pctl >= 25 ? "mid" : "bad";
 }
@@ -445,7 +468,7 @@ function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
  * ball first and set heavier, then how much of it he gets, how he plays, and
  * what surrounds him. A key not listed here reads under Efficiency.
  */
-const TIERS: Array<{ name: string; keys: string[] }> = [
+export const TIERS: Array<{ name: string; keys: string[] }> = [
   { name: "Efficiency", keys: ["epa", "success", "cmp", "ypa", "tdr", "yaco", "ybc", "expl", "bt", "ppo", "yprr", "ypt", "ppt", "catch", "yac"] },
   { name: "Usage", keys: ["apg", "snap", "tgts", "tpg", "route", "ays", "rzo", "rzt"] },
   { name: "Style", keys: ["ttt", "aya", "deep", "adot"] },
@@ -462,11 +485,11 @@ const LABEL_KEY: Record<string, string> = {
   "Yards per route run": "yprr", "Route participation": "route", "YAC per reception": "yac", "Catch rate": "catch",
   "Yards per target": "ypt", "Air-yards share": "ays", "Red-zone targets": "rzt", "Fantasy points per target": "ppt",
 };
-const keyOf = (m: { key?: string; label: string }): string => {
+export const keyOf = (m: { key?: string; label: string }): string => {
   const k = m.key ?? m.label;
   return LABEL_KEY[k] ?? k;
 };
-const tierOf = (key: string): number => {
+export const tierOf = (key: string): number => {
   const i = TIERS.findIndex((t) => t.keys.includes(key));
   return i < 0 ? 0 : i;
 };
@@ -479,6 +502,43 @@ const tierOf = (key: string): number => {
  * metric neither season has a figure for is dropped. The college column's
  * metrics have no tier and print as one untitled group.
  */
+/**
+ * What each metric is, with its denominator, as the label's tooltip
+ * (2026-11-04: "provide a tooltip defining the metric, its denominator, and
+ * the qualification threshold"; the threshold is in the footnote, once).
+ */
+export const DEFS: Record<string, string> = {
+  epa: "Expected points added per play: the change in his team's expected points on each of his dropbacks or touches, averaged.",
+  success: "Success rate: share of his plays that gained enough to stay on schedule (40% of the yards needed on 1st down, 60% on 2nd, 100% on 3rd and 4th).",
+  cmp: "Completion rate: completions divided by pass attempts.",
+  ypa: "Yards per attempt: passing yards divided by pass attempts.",
+  tdr: "TD rate: touchdown passes as a share of pass attempts.",
+  apg: "Pass attempts per game: pass attempts divided by games played.",
+  ttt: "Time to throw: average seconds from snap to release.",
+  aya: "Air yards per attempt: average distance the ball traveled past the line of scrimmage, per pass attempt.",
+  deep: "Deep-attempt rate: share of pass attempts thrown 20 or more yards downfield.",
+  cpoe: "Completion percentage over expected, in percentage points: his completion rate minus the rate expected from the difficulty of his throws.",
+  press: "Pressure rate: share of dropbacks on which he was pressured (sacks included, counted beside it).",
+  yaco: "Yards after contact per carry: rushing yards gained after first contact, divided by carries.",
+  ybc: "Yards before contact per carry: rushing yards gained before first contact, divided by carries.",
+  bt: "Broken tackles: tackles he broke or evaded on his touches.",
+  expl: "Explosive run rate: share of carries that gained 10 or more yards.",
+  snap: "Snap share: his offensive snaps as a share of his team's.",
+  tgts: "Target share: his targets as a share of his team's pass attempts.",
+  tpg: "Targets per game: targets divided by games played.",
+  rzo: "Red-zone opportunities: carries plus targets inside the opponent's 20.",
+  rzt: "Red-zone targets: targets inside the opponent's 20.",
+  ppo: "Fantasy points per opportunity: PPR points divided by carries plus targets.",
+  ppt: "Fantasy points per target: PPR points divided by targets.",
+  adot: "Average depth of target: average air yards on his targets.",
+  yprr: "Yards per route run: receiving yards divided by routes run.",
+  route: "Route participation: routes run as a share of his team's dropbacks.",
+  yac: "YAC per reception: yards after the catch divided by receptions.",
+  catch: "Catch rate: receptions divided by targets.",
+  ypt: "Yards per target: receiving yards divided by targets.",
+  ays: "Air-yards share: his targets' air yards as a share of his team's.",
+};
+
 /**
  * One ladder row, in the team pages' anatomy (mak, 2026-10-22): the label,
  * a rank bar, the value, the rank as bare tinted text ("20th of 36"; ranks,
@@ -504,9 +564,14 @@ function ladderRow(m: AdvMetric): string {
       ? `<span class="scp-st-stat-rank" data-tier="none">${DASH}</span>`
       : `<span class="scp-st-stat-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(ordinal(m.pctl))}` +
         `<span class="scp-sr"> percentile</span></span>`;
+  const def = DEFS[keyOf(m)];
+  // The full read rides along for screen readers only where there is a
+  // rank; an unranked row's reason is in the footnote, once, not on every
+  // row ("consolidate into a single qualification note", 2026-11-04).
+  const sr = ranked || m.pctl != null ? `<span class="scp-sr"> - ${escapeHtml(m.read)}</span>` : "";
   return (
     `<li class="scp-st-stat">` +
-    `<span class="scp-st-stat-label">${escapeHtml(m.label)}<span class="scp-sr"> - ${escapeHtml(m.read)}</span></span>` +
+    `<span class="scp-st-stat-label"${def ? ` title="${escapeHtml(def)}"` : ""}>${escapeHtml(m.label)}${sr}</span>` +
     bar +
     `<span class="scp-st-stat-value">${escapeHtml(signed(m.value))}</span>` +
     rank +
@@ -627,7 +692,7 @@ const PROFILE: Record<string, [string, string]> = {
  * (2026-10-03) for the two to be one "SC Analysis" module, a component every
  * player page carries.
  */
-function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string {
+function fantasyParts(data: PlayerPageData, c: Career, cards: AdvCard[]): AnalysisPart[] {
   const last = lastName(data.player.name);
   const pos = c.pos;
   const ranked = byPct(cards.flatMap((x) => (x.qualified ? x.metrics : [])));
@@ -653,41 +718,128 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
   const good = pick(ranked.filter((m) => m.standing === "good"), 0);
   const bad = pick(ranked.filter((m) => m.standing === "bad").reverse(), 1);
   const row = c.focus;
-  const parts: string[] = [];
+  const parts: AnalysisPart[] = [];
   if (good.length || bad.length) {
     const sentence = good.length
       ? `${last} ${listWords(good)}${bad.length ? `, but ${listWords(bad)}` : ""}.`
       : `${last} ${listWords(bad)}.`;
     const kind = pos === "QB" ? "Passing" : pos === "RB" ? "Rushing" : "Receiving";
-    parts.push(scaPart(`${kind} profile`, escapeHtml(sentence)));
+    parts.push({ title: `${kind} profile`, html: escapeHtml(sentence), note: "" });
   }
-  if (row && row.line.gp) {
-    const t = row.line;
-    const volume =
-      pos === "QB" ? `${one(t.att / t.gp)} pass attempts and ${one(t.rushAtt / t.gp)} carries a game`
-        : pos === "RB" ? `${one(t.rushAtt / t.gp)} carries and ${one(t.tgt / t.gp)} targets a game`
-          : `${one(t.tgt / t.gp)} targets a game`;
-    parts.push(
-      scaPart(
-        "Fantasy impact",
-        escapeHtml(`His floor is his volume: ${volume}${row.inProgress ? " this season" : ` in ${row.season}`}. Efficiency decides how much of it becomes points.`),
-      ),
-    );
-  }
-  return scaModule(parts);
+  if (row && row.line.gp) parts.push(fantasyImpact(last, pos, row, c));
+  return parts;
 }
 
-/** One titled paragraph of the SC Analysis module. */
-function scaPart(title: string, html: string): string {
-  return `<div class="scp-st-sca-part"><h3 class="scp-st-sca-h">${escapeHtml(title)}</h3><p>${html}</p></div>`;
+/** One titled paragraph of the analysis: the title, the paragraph's HTML, an optional qualifier under it. */
+export interface AnalysisPart {
+  title: string;
+  html: string;
+  note: string;
+}
+
+/**
+ * How much of a season there is to read: a handful of games or touches is a
+ * small sample, a starter's volume is a starter's season, and the rest is a
+ * reserve's. The analysis is conditional on this (2026-11-04): one
+ * appearance does not establish a floor.
+ */
+type Sample = "small" | "starter" | "reserve";
+
+function sampleOf(pos: string, t: Line): Sample {
+  const touches = pos === "QB" ? t.att : pos === "RB" ? t.rushAtt + t.tgt : t.tgt;
+  const floor = pos === "QB" ? 60 : pos === "RB" ? 40 : 20;
+  if (t.gp < 4 || touches < floor) return "small";
+  return isStarterSeason(pos, t) ? "starter" : "reserve";
+}
+
+/** What he did, as a box score reads it: "threw for 188 yards and three touchdowns on 23 attempts". */
+function boxLine(pos: string, t: Line): string {
+  if (pos === "QB") {
+    return `threw for ${whole(t.passYd)} yards and ${word(t.passTd)} touchdown${t.passTd === 1 ? "" : "s"} on ${whole(t.att)} attempts`;
+  }
+  if (pos === "RB") {
+    const td = t.rushTd + t.recTd;
+    return `ran ${whole(t.rushAtt)} times for ${whole(t.rushYd)} yards and caught ${whole(t.rec)} of ${whole(t.tgt)} targets, with ${word(td)} touchdown${td === 1 ? "" : "s"}`;
+  }
+  return `caught ${whole(t.rec)} of ${whole(t.tgt)} targets for ${whole(t.recYd)} yards and ${word(t.recTd)} touchdown${t.recTd === 1 ? "" : "s"}`;
+}
+
+/**
+ * The "Fantasy impact" paragraph, by sample size.
+ *
+ *   small    what he did, the touchdown share, and that the trends are not
+ *            established yet - never a floor read off one game;
+ *   starter  the old read: his volume is his floor, efficiency the rest;
+ *   reserve  appearances against starts, and that playing time, not
+ *            efficiency, decides his value.
+ *
+ * A player who has not played this season reads his latest season, and says
+ * so, rather than an empty analysis.
+ */
+function fantasyImpact(last: string, pos: string, row: SeasonRow, c: Career): AnalysisPart {
+  const t = row.line;
+  const now = row.inProgress;
+  const when = now ? "this season" : `in ${row.season}`;
+  const stale = c.leagueWeek > 0 && row.season < c.leagueSeason;
+  const lead = stale ? `${last} has not played in ${c.leagueSeason}; these are his ${row.season} numbers. ` : "";
+  const touches = pos === "QB" ? t.att : pos === "RB" ? t.rushAtt + t.tgt : t.tgt;
+  const unit = pos === "QB" ? "attempt" : pos === "RB" ? "touch" : "target";
+  const volume =
+    pos === "QB" ? `${one(t.att / t.gp)} pass attempts and ${one(t.rushAtt / t.gp)} carries a game`
+      : pos === "RB" ? `${one(t.rushAtt / t.gp)} carries and ${one(t.tgt / t.gp)} targets a game`
+        : `${one(t.tgt / t.gp)} targets a game`;
+  const band = sampleOf(pos, t);
+
+  if (band === "small") {
+    const share = t.pts > 0 ? Math.round((tdPoints(t) / t.pts) * 100) : 0;
+    const span = t.gp === 1
+      ? `in his ${now ? "first " : ""}appearance ${now ? `of ${row.season}` : `in ${row.season}`}`
+      : `across his ${now ? "first " : ""}${word(t.gp)} appearances ${now ? `of ${row.season}` : `in ${row.season}`}`;
+    const tdWord = pos === "QB" ? "Touchdown passes" : "Touchdowns";
+    const shareLine = share > 0 ? `${tdWord} generated ${share}% of his fantasy points.` : "None of his fantasy points came from touchdowns.";
+    return scaPart(
+      "Fantasy impact",
+      escapeHtml(
+        `${lead}${last} ${boxLine(pos, t)} ${span}. ${shareLine} With only ${plural(t.gp, "game")} played, his season-long efficiency and workload trends are not yet established.`,
+      ),
+      `Small sample · ${plural(t.gp, "game")} · ${plural(touches, unit)}`,
+    );
+  }
+  if (band === "starter") {
+    return scaPart(
+      "Fantasy impact",
+      escapeHtml(`${lead}His floor is his volume: ${volume} across ${plural(t.gp, "game")} ${when}. Efficiency decides how much of it becomes points.`),
+    );
+  }
+  const starts = t.gs > 0 ? ` (${plural(t.gs, "start")})` : "";
+  return scaPart(
+    "Fantasy impact",
+    escapeHtml(
+      `${lead}${last} has ${now ? "made" : "had"} ${plural(t.gp, "appearance")}${starts} ${when} at ${volume}: a reserve's workload, so his fantasy value turns on playing time before efficiency.`,
+    ),
+    `Reserve role · ${plural(t.gp, "game")} · ${plural(t.gs, "start")}`,
+  );
+}
+
+/** One titled paragraph of the SC Analysis module, with an optional small qualifier under it. */
+function scaPart(title: string, html: string, note = ""): AnalysisPart {
+  return { title, html, note };
+}
+
+function scaPartHtml(p: AnalysisPart): string {
+  return (
+    `<div class="scp-st-sca-part"><h3 class="scp-st-sca-h">${escapeHtml(p.title)}</h3><p>${p.html}</p>` +
+    (p.note ? `<p class="scp-st-sca-note">${escapeHtml(p.note)}</p>` : "") +
+    `</div>`
+  );
 }
 
 /** The tag, then the parts side by side as equal columns (mak, 2026-10-22). */
-function scaModule(parts: string[]): string {
+function scaModule(parts: AnalysisPart[]): string {
   if (parts.length === 0) return "";
   return (
-    `<div class="scp-st-read scp-st-sca"><span class="scp-st-sca-tag">SC Analysis</span>` +
-    `<div class="scp-st-sca-cols">${parts.join("")}</div></div>`
+    `<div class="scp-st-read scp-st-sca"><span class="scp-st-sca-tag">StatChasers Analysis</span>` +
+    `<div class="scp-st-sca-cols">${parts.map(scaPartHtml).join("")}</div></div>`
   );
 }
 
@@ -705,10 +857,45 @@ function collegeLede(data: PlayerPageData, card: CollegeCard): string {
   return escapeHtml(`${last} arrives from ${card.school}.`);
 }
 
-function renderAdvanced(data: PlayerPageData, c: Career): string {
+/**
+ * The StatChasers Analysis module (the profile sentence and the fantasy
+ * impact), as its own section UNDER the career-by-season table (mak,
+ * 2026-11-05); it used to close the advanced section.
+ */
+/** The analysis module's parts: the authored note when there is one, else the generated profile and impact. */
+function analysisParts(data: PlayerPageData, c: Career): AnalysisPart[] {
   const adv = data.statsAdvanced;
   const college = isRookie(data, c) ? collegeCard(data.college, c.pos) : null;
-  if ((!adv || (!adv.current && !adv.last)) && !college) return "";
+  if ((!adv || (!adv.current && !adv.last)) && !college) return [];
+  const used: AdvCard[] = [];
+  if (adv?.current) used.push(adv.current);
+  if (college) used.push(college);
+  else if (adv?.last && !adv.current) used.push(adv.last);
+  const copy = data.statsCopy;
+  return own(copy?.adv_fantasy_note)
+    ? [scaPart("Fantasy impact", copyHtml(own(copy?.adv_fantasy_note)!))]
+    : fantasyParts(data, c, used);
+}
+
+function renderAnalysis(data: PlayerPageData, c: Career): string {
+  const note = scaModule(analysisParts(data, c));
+  return note ? `<section class="scp-ox-sec scp-st-scasec" aria-label="StatChasers analysis">${note}</section>` : "";
+}
+
+/** The advanced section's inputs: its columns, the footnote's lines and the one-line summary. */
+export interface AdvancedModel {
+  /** "passing" / "rushing" / "receiving". */
+  cats: string;
+  cols: AdvColumn[];
+  notes: string[];
+  /** The summary under the title, as HTML. */
+  summary: string;
+}
+
+function advancedModel(data: PlayerPageData, c: Career): AdvancedModel | null {
+  const adv = data.statsAdvanced;
+  const college = isRookie(data, c) ? collegeCard(data.college, c.pos) : null;
+  if ((!adv || (!adv.current && !adv.last)) && !college) return null;
   const pos = c.pos;
   const cats = pos === "QB" ? "passing" : pos === "RB" ? "rushing" : "receiving";
   const cols: AdvColumn[] = [];
@@ -722,8 +909,8 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     used.push(cur);
     notes.push(
       cur.qualified
-        ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""} among ${cur.qualifiedCount} qualified ${pos}s`
-        : `${cur.season}: below the qualifying line so far, so no ranks`,
+        ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""} among ${cur.qualifiedCount} qualified ${pos}s${cur.qualifyNote ? ` (${cur.qualifyNote})` : ""}`
+        : `${cur.season}: below the qualifying line so far${cur.qualifyNote ? ` (${cur.qualifyNote})` : ""}, so no ranks`,
     );
   }
   if (college) {
@@ -751,9 +938,6 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   // says its rows have no better end.
 
   const copy = data.statsCopy;
-  const note = own(copy?.adv_fantasy_note)
-    ? scaModule([scaPart("Fantasy impact", copyHtml(own(copy?.adv_fantasy_note)!))])
-    : fantasyNote(data, c, used);
   // The section header: "<Name> Passing Stats" as the H2 (mak, 2026-10-05;
   // the eyebrow, the "how he's creating" line and the profile tags are gone),
   // then a one-line read.
@@ -761,16 +945,62 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   const summary = own(copy?.adv_lede)
     ? copyHtml(own(copy?.adv_lede)!)
     : college && !adv?.current ? collegeLede(data, college) : card ? escapeHtml(profileLine(pos, card)) : "";
+  return { cats, cols, notes, summary };
+}
+
+function renderAdvanced(data: PlayerPageData, c: Career): string {
+  const m = advancedModel(data, c);
+  if (!m) return "";
   const id = "scp-st-adv-h";
   return (
     `<section class="scp-ox-sec scp-st-advsec" aria-labelledby="${id}">` +
-    `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(cats)} Stats`)}</h2>` +
-    (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
-    renderAdvLadders(cols) +
-    `<p class="scp-st-foot-note">${escapeHtml(`Ranks: ${notes.join(" · ")}.`)}</p>` +
-    note +
+    `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(m.cats)} Stats`)}</h2>` +
+    (m.summary ? `<p class="scp-ox-lede scp-st-sum">${m.summary}</p>` : "") +
+    renderAdvLadders(m.cols) +
+    `<p class="scp-st-foot-note">${escapeHtml(`Ranks: ${m.notes.join(" · ")}.`)}</p>` +
     `</section>`
   );
+}
+
+/* ------------------------------------------------ the premium comparison */
+
+/**
+ * Everything the premium comparison version (stats-premium.ts) prints,
+ * from the same code paths the sections above print it from: the season
+ * line's rail cells, the lede, the advanced columns with their notes, the
+ * analysis parts, and the career table the caller inserts. Null when the
+ * tab itself would have no season to show.
+ */
+export interface StatsPremiumModel {
+  name: string;
+  pos: string;
+  season: number;
+  inProgress: boolean;
+  /** The production lede, as HTML. */
+  lede: string;
+  cells: Cell[];
+  advanced: AdvancedModel | null;
+  analysis: AnalysisPart[];
+  careerTable: string;
+  scoring: string;
+}
+
+export function statsPremiumModel(data: PlayerPageData, inserts: { careerTable?: string } = {}): StatsPremiumModel | null {
+  const c = career(data);
+  if (!["QB", "RB", "WR", "TE"].includes(c.pos) || !c.focus) return null;
+  const row = c.focus;
+  return {
+    name: data.player.name,
+    pos: c.pos,
+    season: row.season,
+    inProgress: row.inProgress,
+    lede: own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row),
+    cells: railCells(c.pos, row.line),
+    advanced: advancedModel(data, c),
+    analysis: analysisParts(data, c),
+    careerTable: inserts.careerTable ?? "",
+    scoring: SCORING_SHORT[data.format] ?? "PPR",
+  };
 }
 
 /* ------------------------------------------------------- section 3: chart */
@@ -815,9 +1045,13 @@ function renderChart(data: PlayerPageData, c: Career): string {
     (showAvg ? `. Career average ${one(careerPpg)}.` : ".");
 
   const avgPos = Math.min(1, careerPpg / scale);
+  // The H2 is the SEO ladder's "{Name} Fantasy Football Stats" (mak,
+  // 2026-11-04): the fantasy layer under the NFL sections, named as such.
+  // The chart keeps its old title as its caption.
   return (
-    sectionOpen("scp-st-arc-h", "Fantasy points per game, every season", "") +
+    sectionOpen("scp-st-arc-h", `${data.player.name} fantasy football stats`, "") +
     `<figure class="scp-st-arc${showAvg ? " has-avg" : ""}" style="--scp-n:${n};--scp-avg:${avgPos.toFixed(4)}">` +
+    `<figcaption class="scp-st-arc-cap">Fantasy points per game, every season</figcaption>` +
     // The scroller is the chart alone; client/player.ts opens it on the
     // newest season. No legend under it (removed 2026-10-21).
     `<div class="scp-st-arc-scroll" data-scp-arc>` +
@@ -865,11 +1099,13 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
   const topSeasons = done.filter((r) => r.finish && r.finish <= good).sort((x, y) => x.season - y.season);
   const starter = rows.filter((r) => isStarterSeason(pos, r.line));
   const backup = rows.filter((r) => !isStarterSeason(pos, r.line));
+  // "Season finish" in so many words: the tile above counts top-12 WEEKS,
+  // and the two read as a contradiction when both just say "top-12".
   let p1 =
     `${last} has averaged ${one(ppg(total))} fantasy points per game over ${plural(total.gp, "game")} and ${plural(n, "season")}` +
     (topSeasons.length
-      ? `, with ${word(topSeasons.length)} top-${good} finish${topSeasons.length > 1 ? "es" : ""} (${topSeasons.map((r) => r.season).join(", ")}).`
-      : done.length ? `, without a top-${good} finish.` : ".");
+      ? `, with ${word(topSeasons.length)} top-${good} season finish${topSeasons.length > 1 ? "es" : ""} (${topSeasons.map((r) => r.season).join(", ")}).`
+      : done.length ? `, without a top-${good} season finish.` : ".");
   if (starter.length && backup.length) {
     p1 += ` The average hides two careers: ${one(ppg(addLines(starter.map((r) => r.line))))} a game in his ${word(starter.length)} ${starter.length === 1 ? "season" : "seasons"} with a starter's volume, ` +
       `${one(ppg(addLines(backup.map((r) => r.line))))} in the ${word(backup.length)} without it.`;
@@ -888,8 +1124,13 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
     const volNow = vol(now.line);
     const volThen = vol(prev.line);
     const change = Math.abs(diff) < 0.5 ? "level with" : diff > 0 ? `up ${one(diff)} from` : `down ${one(-diff)} from`;
+    // Fewer than four games on either side is not a trend (2026-11-04): one
+    // appearance against four does not say he is "up 19.3".
+    const thin = (r: SeasonRow): boolean => r.line.gp < 4;
     let why: string;
-    if (Math.abs(dv) < 1) {
+    if (thin(now) || thin(prev)) {
+      why = "";
+    } else if (Math.abs(dv) < 1) {
       why = `His volume has held at about ${one(volNow)} ${unit} a game, so ${Math.abs(diff) < 0.5 ? "the output has too" : "the change is efficiency and scoring"}.`;
     } else if (Math.abs(diff) < 0.5) {
       why = `His volume is ${dv > 0 ? "up" : "down"} (${one(volNow)} ${unit} a game against ${one(volThen)}) but ${dv > 0 ? "less of it is turning into points" : "he is doing more with it"}.`;
@@ -898,9 +1139,10 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
     } else {
       why = `That is despite ${dv > 0 ? "more" : "less"} volume (${one(volNow)} ${unit} a game against ${one(volThen)}), so efficiency and scoring are doing it.`;
     }
-    const p2 =
-      (now.inProgress ? `So far in ${now.season} he is at ` : `In ${now.season} he averaged `) + `${one(ppg(now.line))} per game, ` +
-      `${change} ${prev.season}. ${why}`;
+    const p2 = thin(now) || thin(prev)
+      ? `${now.inProgress ? `So far in ${now.season} he has` : `In ${now.season} he had`} ${plural(now.line.gp, "game")} (${one(ppg(now.line))} a game) against ${plural(prev.line.gp, "appearance")} in ${prev.season}: too little on ${thin(now) && thin(prev) ? "either" : "one"} side to call a trend.`
+      : (now.inProgress ? `So far in ${now.season} he is at ` : `In ${now.season} he averaged `) + `${one(ppg(now.line))} per game, ` +
+        `${change} ${prev.season}. ${why}`;
     const mates = data.teammates ?? [];
     let mateHtml = "";
     const when = now.inProgress ? "this season" : `in ${now.season}`;
@@ -977,10 +1219,17 @@ function renderCareerRates(data: PlayerPageData, c: Career): string {
   const sd = stdev(allWeeks.map(c.pts));
   const tiles: string[] = [
     // Short captions (mak, 2026-10-22): the strip is a footer to the chart.
-    rate(one(ppg(total)), "Career PPG", `${plural(total.gp, "game")}, ${plural(n, "season")}`),
+    // The scoring is named (2026-11-04: "identify the scoring system used").
+    rate(one(ppg(total)), "Career PPG", `${plural(total.gp, "game")}, ${plural(n, "season")} · ${SCORING_SHORT[data.format]}`),
   ];
-  if (games > 0) tiles.push(rate(`${Math.min(100, Math.round((total.gp / games) * 100))}%`, "Availability", "Share of team games played"));
-  if (ranked.length) tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, n12 === 12 ? `${pos}1 finishes` : `Top-${n12} ${pos} finishes`));
+  // "Appearance rate", not availability (2026-11-04): a healthy backup who
+  // did not dress for a game was available for it.
+  if (games > 0) tiles.push(rate(`${Math.min(100, Math.round((total.gp / games) * 100))}%`, "Appearance rate", "Share of team games appeared in"));
+  // Weekly finishes, with the count beside the share, so "22% top-12 weeks"
+  // cannot be read against "no top-12 season finish" below.
+  if (ranked.length) {
+    tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, `${top} of ${plural(ranked.length, "week")} inside the weekly top ${n12}`));
+  }
   if (n > 1 && allWeeks.length > 1) {
     const w = swingWord(pos, sd);
     tiles.push(rate(one(sd), "Weekly swing", `${w[0]!.toUpperCase()}${w.slice(1)} week-to-week`));
@@ -1146,10 +1395,22 @@ export function renderStatsTabParts(
   if (!c.focus) {
     // No NFL games: only his college seasons can say anything here.
     if (!collegeCard(data.college, c.pos)) return none;
-    return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "", foot: "" };
+    return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos) + renderAnalysis(data, c)), rest: "", foot: "" };
   }
+  // The column switch on the heading's row (2026-11-04): NFL stats or
+  // fantasy stats, so the sheet is never sixteen columns wide at once. Both
+  // sets are in the served table; the switch only hides one.
   const careerTable = inserts.careerTable
-    ? sectionOpen("scp-st-career-h", `${data.player.name} career stats by season`, "") +
+    ? sectionOpen(
+        "scp-st-career-h",
+        `${data.player.name} career stats by season`,
+        "",
+        `<div class="scp-st-headctl">` +
+          `<div class="scp-st-seg" role="group" aria-label="Show columns" data-scp-view-seg>` +
+          `<button type="button" data-view="nfl" aria-pressed="true">NFL stats</button>` +
+          `<button type="button" data-view="fantasy" aria-pressed="false">Fantasy</button>` +
+          `</div></div>`,
+      ) +
       inserts.careerTable +
       `</section>`
     : "";
@@ -1158,6 +1419,8 @@ export function renderStatsTabParts(
       renderProduction(data, c, options) +
         renderAdvanced(data, c) +
         careerTable +
+        // The analysis reads under the career table (mak, 2026-11-05).
+        renderAnalysis(data, c) +
         renderChart(data, c) +
         renderCareerRates(data, c),
     ),

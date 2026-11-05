@@ -218,14 +218,14 @@ test("the outlook page: wording follows the season phase, and the body opens on 
   assert.ok(title.length <= TITLE_MAX + 10, `${title.length}: ${title}`);
   assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
   const live = /rest-of-season fantasy outlook/.test(description);
-  assert.match(title, /^.+ Fantasy Outlook(?:, Rankings & Projections| & Projections)?(?: \| StatChasers)?$/, title);
+  assert.match(title, /^.+ Fantasy Outlook(?: 2026(?:: ROS Analysis|: Rankings & Projections)?)?(?: \| StatChasers)?$/, title);
   if (live) {
     assert.doesNotMatch(description, /draft day/);
   } else {
     assert.match(description, /draft day\.$/);
   }
   const h1 = doc.querySelector("#outlook h2.is-lead");
-  assert.match(h1.textContent, /Rest-of-Season Outlook$/);
+  assert.match(h1.textContent, /Rest-of-Season Projection$/);
   // The lede sentence under the heading went 2026-10-22 (mak).
   assert.equal(doc.querySelector("#outlook .scp-ol-lede"), null, "no lede under the heading");
 });

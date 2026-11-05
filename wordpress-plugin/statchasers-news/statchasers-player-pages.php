@@ -915,8 +915,8 @@ function statchasers_player_fallback_meta( string $slug, string $section ): ?arr
 	switch ( $section ) {
 		case 'stats':
 			return array(
-				'title'       => statchasers_branded_title( array( $name . ' Stats & Career Statistics', $name . ' Stats & Career Stats', $name . ' Stats' ) ),
-				'description' => sprintf( '%1$s %2$s stats and career statistics: season totals, advanced metrics, fantasy points and positional rank, and points per game every season.', $name, $season ),
+				'title'       => statchasers_branded_title( array( $name . ' Stats: ' . $season . ' & Career NFL Stats', $name . ' Stats: ' . $season . ' & Career Stats', $name . ' Stats' ) ),
+				'description' => sprintf( '%1$s %2$s NFL stats and career statistics: season totals, games started, advanced metrics, fantasy points by season and career highs.', $name, $season ),
 			);
 		case 'game-log':
 			return array(
@@ -925,7 +925,10 @@ function statchasers_player_fallback_meta( string $slug, string $section ): ?arr
 			);
 		case 'outlook':
 			return array(
-				'title'       => statchasers_branded_title( array( $name . ' Fantasy Outlook, Rankings & Projections', $name . ' Fantasy Outlook & Projections', $name . ' Fantasy Outlook' ) ),
+				// The Outlook brief mak approved on 2026-11-05: dated, "ROS Analysis".
+				// The API's in-season rung; its off-season rung says "Rankings &
+				// Projections" and returns with the API.
+				'title'       => statchasers_branded_title( array( $name . ' Fantasy Outlook ' . $season . ': ROS Analysis', $name . ' Fantasy Outlook ' . $season, $name . ' Fantasy Outlook' ) ),
 				'description' => sprintf( '%1$s %2$s fantasy outlook: his role, the usage behind it and what it is worth for the rest of the season.', $name, $season ),
 			);
 		case 'injury':
@@ -1299,13 +1302,14 @@ function statchasers_player_heading( string $slug, string $section ): string {
 
 	// The section H1s of mak's player-entity brief (2026-11-03); the API's
 	// hero prints the same phrase as the name plus the section's word
-	// (SECTION_KINDS in src/lib/player/header.ts). No year in any of them:
-	// the year lives in the H2s under the heading and the address is evergreen.
+	// (SECTION_KINDS in src/lib/player/header.ts). No year in any of them
+	// but the outlook's, which is dated since the Outlook brief mak approved
+	// on 2026-11-05 ("{Name} 2026 Fantasy Outlook"); the address stays evergreen.
 	$phrases = array(
 		'stats'    => 'Stats',
 		'injury'   => 'Injury Status',
 		'game-log' => 'Game Log',
-		'outlook'  => 'Fantasy Outlook',
+		'outlook'  => STATCHASERS_TEAM_SEASON . ' Fantasy Outlook',
 		'news'     => 'News',
 		'bio'      => 'Bio',
 	);

@@ -36,6 +36,9 @@ import { titleCase } from "./title-case";
 import { outlookShort } from "./outlook-tab";
 import { sectionHref } from "./sections";
 import type { BioPageFacts, BioStop } from "./bio-tab-data";
+import { headshotImg } from "../headshot-html";
+import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
+import { collegeLogoFor } from "../team/draft";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
@@ -139,15 +142,20 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
   }
 
   /* The stop list: team, years and the sentences - the numbers are right
-     above. Each card carries the club's crest, faded, in its corner (mak,
-     2026-10-23); the local SVG, decorative, so no alt text. */
+     above. Each card opens with the crest beside its heading (mak,
+     2026-11-04, "add team and college logos"; it replaces the 13% watermark
+     in the corner of 2026-10-23): the club's local SVG, or the school's
+     crest through the image route the team Draft tab uses. Decorative, so
+     no alt text; a stop with no crest keeps the empty square so the
+     headings line up. */
+  const crestWell = (img: string): string => `<span class="scp-bo-ev-crest" aria-hidden="true">${img}</span>`;
   const cards = [...stops].reverse().map((s) => {
     const tag = s.spell > 1 ? `, ${["", "", "second", "third", "fourth"][s.spell] ?? `${s.spell}th`} stint` : "";
     const crest = s.team?.logo
-      ? `<img class="scp-bo-ev-logo" src="${escapeHtml(s.team.logo)}" alt="" aria-hidden="true" width="96" height="96" loading="lazy" decoding="async" />`
+      ? `<img src="${escapeHtml(s.team.logo)}" alt="" width="40" height="40" loading="lazy" decoding="async" />`
       : "";
     return (
-      `<li style="--c:${escapeHtml(s.primary)}"><div class="scp-bo-ev">${crest}` +
+      `<li style="--c:${escapeHtml(s.primary)}"><div class="scp-bo-ev">${crestWell(crest)}` +
       `<h3>${escapeHtml(s.name)}${s.current ? ` <span class="scp-bo-chip">Current team</span>` : ""}` +
       `<span class="scp-bo-yr">${escapeHtml(years(s, "present") + tag)}</span></h3>` +
       (s.sentences.length ? `<p>${escapeHtml(s.sentences.join(" "))}</p>` : "") +
@@ -155,8 +163,23 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
     );
   });
   if (page.college) {
+    // The first school the crest register knows (data/team/college_logos.json).
+    const logo = page.college.names.map((n) => collegeLogoFor(n)).find((l) => l !== null) ?? null;
+    const img = logo
+      ? headshotImg({
+          src: null,
+          id: `ncaa:${logo.id}`,
+          className: "scp-bo-ev-college",
+          alt: "",
+          variants: COLLEGE_LOGO_VARIANTS,
+          sizes: "40px",
+          width: 40,
+          height: 40,
+          loading: "lazy",
+        }) ?? ""
+      : "";
     cards.push(
-      `<li class="is-college"><div class="scp-bo-ev"><h3>${escapeHtml(`College: ${page.college.names.join(", ")}`)}</h3></div></li>`,
+      `<li class="is-college"><div class="scp-bo-ev">${crestWell(img)}<h3>${escapeHtml(`College: ${page.college.names.join(", ")}`)}</h3></div></li>`,
     );
   }
 

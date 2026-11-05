@@ -132,7 +132,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Drake Maye",
@@ -177,7 +177,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Romeo Doubs",
@@ -230,7 +230,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Josh Allen",
@@ -492,7 +492,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Derrick Henry",
@@ -527,7 +527,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Mark Andrews",
@@ -590,7 +590,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Ja'Marr Chase",
@@ -635,7 +635,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Mike Gesicki",
@@ -765,7 +765,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "DK Metcalf",
@@ -852,7 +852,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Nico Collins",
@@ -960,7 +960,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jonathan Taylor",
@@ -1048,7 +1048,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Trevor Lawrence",
@@ -1265,7 +1265,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Bo Nix",
@@ -1363,7 +1363,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Patrick Mahomes",
@@ -1408,7 +1408,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Xavier Worthy",
@@ -1569,7 +1569,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Justin Herbert",
@@ -1666,7 +1666,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Dak Prescott",
@@ -1764,7 +1764,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jaxson Dart",
@@ -1809,7 +1809,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Theo Johnson",
@@ -1851,7 +1851,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jalen Hurts",
@@ -1906,7 +1906,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Marquise Brown",
@@ -1959,7 +1959,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jayden Daniels",
@@ -2004,7 +2004,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Rachaad White",
@@ -2046,7 +2046,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Caleb Williams",
@@ -2101,7 +2101,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Kyle Monangai",
@@ -2144,7 +2144,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jahmyr Gibbs",
@@ -2199,7 +2199,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Isaac TeSlaa",
@@ -2241,7 +2241,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Josh Jacobs",
@@ -2286,7 +2286,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Matthew Golden",
@@ -2339,7 +2339,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Justin Jefferson",
@@ -2384,7 +2384,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Jauan Jennings",
@@ -2438,7 +2438,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Bijan Robinson",
@@ -2526,7 +2526,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Tetairoa McMillan",
@@ -2581,7 +2581,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Xavier Legette",
@@ -2624,7 +2624,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Chris Olave",
@@ -2679,7 +2679,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Alvin Kamara",
@@ -2723,7 +2723,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Emeka Egbuka",
@@ -2768,7 +2768,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Kenny Gainwell",
@@ -2822,7 +2822,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Trey McBride",
@@ -2867,7 +2867,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Jacoby Brissett",
@@ -2920,7 +2920,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Puka Nacua",
@@ -2965,7 +2965,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Blake Corum",
@@ -3019,7 +3019,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Christian McCaffrey",
@@ -3117,7 +3117,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     groups: [
       {
-        label: "Core fantasy pieces",
+        label: "Core Fantasy Pieces",
         players: [
           {
             name: "Jaxon Smith-Njigba",
@@ -3172,7 +3172,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
         ],
       },
       {
-        label: "Secondary options",
+        label: "Secondary Options",
         players: [
           {
             name: "Rashid Shaheed",

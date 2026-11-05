@@ -685,6 +685,26 @@ function wireStatsToggle(root: HTMLElement): void {
 }
 
 /**
+ * The career table's column switch (2026-11-04): NFL stats or fantasy
+ * stats. Both sets are served; the table's data-scp-view says which one
+ * shows, and the stylesheet hides the other.
+ */
+function wireCareerView(root: HTMLElement): void {
+  for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-view-seg]"))) {
+    const section = group.closest("section") ?? root;
+    const table = section.querySelector<HTMLElement>("table[data-scp-view]");
+    if (!table) continue;
+    const buttons = Array.from(group.querySelectorAll<HTMLButtonElement>("button[data-view]"));
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        table.dataset.scpView = button.dataset.view ?? "nfl";
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+      });
+    }
+  }
+}
+
+/**
  * The career chart opens on its newest season.
  *
  * On a narrow screen a long career's chart scrolls, and left alone it opens on
@@ -1008,6 +1028,7 @@ function wireProfile(root: HTMLElement): void {
   wireExpandableLog(root);
   wirePeerRail(root);
   wireStatsToggle(root);
+  wireCareerView(root);
   wireNewsFilter(root);
   wireCareerChart(root);
   wireStateSwap(root);

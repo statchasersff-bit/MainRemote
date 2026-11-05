@@ -66,6 +66,8 @@ export interface AdvCard {
   games: number;
   qualified: boolean;
   qualifiedCount: number;
+  /** The qualifying line in words ("50+ pass attempts and 6+ games"), for the footnote. */
+  qualifyNote?: string;
   metrics: AdvMetric[];
   /**
    * Every metric either season's card carries, in one order, so the advanced
@@ -313,6 +315,9 @@ function buildCard(
   const scale = inProgress && week ? Math.min(1, week / 17) : 1;
   const thresholds = defaultThresholds(pos as StatsPosition, false, scale);
   const pool = rows.filter((r) => passesThresholds(r, pos as StatsPosition, thresholds));
+  const volume =
+    pos === "QB" ? `${thresholds.minPassAtt}+ pass attempts` : pos === "RB" ? `${thresholds.minRushAtt}+ carries` : `${thresholds.minTgt}+ targets`;
+  const qualifyNote = `${volume}, ${thresholds.minGP}+ games and a ${thresholds.minSnapPct}%+ snap share`;
   const qualified = pool.includes(row);
   const pct: Record<string, number | null> = {};
   const metrics = defs(rows).map((def) => {
@@ -328,6 +333,7 @@ function buildCard(
     games: num(row, "games") ?? 0,
     qualified,
     qualifiedCount: pool.length,
+    qualifyNote,
     metrics,
     all,
     row,

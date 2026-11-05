@@ -257,7 +257,8 @@ body.sca-page {
    width like the others. */
 .sca-copy > p,
 .sca-faq {
-  max-width: 80ch;
+  /* Full width (11-04, mak); it was capped at 80ch. */
+  max-width: none;
 }
 
 /* One question, one fold - rankings.css's FAQ, restated for this sheet. */
@@ -311,8 +312,9 @@ body.sca-page {
 }
 
 .sca-faq-a {
-  margin: 7px 0 0 20px;
-  max-width: 72ch;
+  /* Full width (11-04, mak): no 72ch measure, no indent to the question's
+     text - the answers run the width of the page like everything above. */
+  margin: 7px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;

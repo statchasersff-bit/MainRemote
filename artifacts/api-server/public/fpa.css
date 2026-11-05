@@ -47,7 +47,12 @@
      leaves nothing to win: both rules read whatever the tier set. */
   --scf-cell-pad-x: 10px;
   --scf-crest: 22px;
-
+  /* The app's position inks (player.css, team.css), by value: the rail's
+     chips wear them and nothing else here does. */
+  --sc-pos-qb: #99323a;
+  --sc-pos-rb: #0f6b4f;
+  --sc-pos-wr: #1d4e8c;
+  --sc-pos-te: #a87905;
   --sc-shell: 1180px;
   --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --scf-gutter: 24px;
@@ -269,33 +274,8 @@ body.scf-page {
   display: none;
 }
 
-.scf-csv {
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--sc-navy);
-  text-decoration: none;
-  border-bottom: 2px solid var(--sc-gold);
-  padding-bottom: 1px;
-}
-
-.scf-csv:hover {
-  color: var(--sc-gold-deep);
-}
-
 
 /* ---------------------------------------------- answer, updated, seasons */
-
-/* The one sentence under the heading (fpa-seo.ts): the softest defense per
-   position. Reads as copy, not as chrome, so it sits in the text color at the
-   lead size rather than in a tinted box. */
-.scf-answer {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--sc-ink, #0b1220);
-  max-width: 72ch;
-}
 
 /* "Updated Oct 8, through Week 5". Standalone only; the WordPress page prints
    the same line under its own H1. */
@@ -329,63 +309,6 @@ body.scf-page {
   color: var(--sc-gold-deep);
 }
 
-/* ---------------------------------------------------------------- related */
-
-/* The Related links, in the FAQ title's dress: the gold-barred heading and a
-   hairline list, the same block the SOS position pages close with. */
-.scf-related {
-  margin-top: 36px;
-}
-
-.scf-related-title {
-  position: relative;
-  margin: 0 0 6px;
-  padding-bottom: 10px;
-  color: var(--sc-navy);
-  font-size: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.scf-related-title::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 44px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--sc-gold);
-}
-
-.scf-related-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.scf-related-list a {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--sc-navy);
-  text-decoration: none;
-  border-bottom: 2px solid var(--sc-gold);
-  padding-bottom: 1px;
-}
-
-.scf-related-list a:hover {
-  color: var(--sc-gold-deep);
-}
-
-/* The FAQ follows Related now, so it needs less of its own air above. */
-.scf-related + .scf-faq {
-  margin-top: 44px;
-}
-
 /* -------------------------------------------------------------------- faq */
 
 /*
@@ -393,8 +316,10 @@ body.scf-page {
  *
  * This is the same object as the hub's "Common questions" block, so it is built
  * from the hub's measurements rather than its own: the gold-barred heading of
- * .sct-h2, the hairline-separated rows, the 8px chevron, the 72ch answer
- * column. A reader meeting an FAQ on the team page and then on this one should
+ * .sct-h2, the hairline-separated rows, the 8px chevron. The one departure is
+ * the answer column: the hub caps it at 72ch, this one runs the full width of
+ * the block so the FAQ lines up with the table's right edge as well as its
+ * left. A reader meeting an FAQ on the team page and then on this one should
  * not be able to tell the two tools apart by their appendix.
  *
  * The rem type sizes and the hairline token come across with the metrics, even
@@ -407,9 +332,9 @@ body.scf-page {
  * puts the heading bar and the list on the same left edge as the table.
  */
 .scf-faq {
-  /* The hub opens its FAQ with 50px of padding; this one keeps the gap it was
-     given, which the border-top and its padding used to make up part of. */
-  margin-top: 77px;
+  /* 84px (mak, 2026-11-04): 44 once the Related block between it and the
+     table went, then 20 more, twice. */
+  margin-top: 84px;
 }
 
 /* Still an <h2>, and still not a click target - the block does not fold, the
@@ -489,13 +414,16 @@ body.scf-page {
   line-height: 1.45;
 }
 
-/* 72ch, the measure the hub's answers read at, indented to the question's text
-   rather than to the chevron. One of these per question, holding one or two
-   paragraphs - the answers that state a rule and then qualify it break, and a
-   qualification welded onto its rule is read as part of it. */
+/* Full width, like the table above it: the answer runs to the block's right
+   edge rather than stopping at the hub's 72ch measure (mak, 2026-11-04).
+   Indented to the question's text rather than to the chevron. One of these per
+   question, holding one or two paragraphs - the answers that state a rule and
+   then qualify it break, and a qualification welded onto its rule is read as
+   part of it. */
 .scf-faq-a {
-  margin: 7px 0 0 20px;
-  max-width: 72ch;
+  /* Full width (11-04, mak): no 72ch measure, no indent to the question's
+     text - the answers run the width of the page like everything above. */
+  margin: 7px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;
@@ -540,6 +468,13 @@ body.scf-page {
 .scf-scroll {
   margin-top: 18px;
   overflow-x: auto;
+  /* Never vertically. `overflow-x: auto` alone computes overflow-y to auto as
+     well, and the table's rounding overshoots its box by a pixel, which on a
+     browser with classic scrollbars drew a vertical bar down the table, ate
+     ~15px, and pushed the OFF column into a sideways scroll on a phone-width
+     window (mak, 2026-11-05: "truncated"). The box is as tall as its table,
+     so there is nothing for it to scroll to. */
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -564,10 +499,66 @@ body.scf-page {
 
 .scf-caption {
   caption-side: bottom;
-  margin-top: 2px;
+  /* 12px, up from 2 in two steps (mak, 2026-11-04): a breath between the
+     grid and its caption. */
+  margin-top: 12px;
   font-size: 12px;
   color: var(--sc-muted);
   text-align: left;
+}
+
+/* "Fantasy points allowed per game, Weeks 1–8": the table's own label, a
+   step up from the rest of the caption, because it is the one phrase that
+   tells the season-to-date table from the rail's rest-of-season views. */
+.scf-scope {
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+/*
+ * The cells are the links (mak's rail spec, 2026-11-04): DET x RB opens the
+ * Lions' row on the RB strength-of-schedule board. The link fills the cell
+ * - negative margins take back the cell's padding and put it on the anchor -
+ * so the whole tinted box is the target, and it inherits the figure's ink so
+ * the heatmap stays the dominant visual. The affordance is the cursor and the
+ * row-end arrow below, not an underline or a color.
+ */
+.scf-cell-link {
+  display: block;
+  margin: calc(-1 * var(--scf-cell-pad-y)) calc(-1 * var(--scf-cell-pad-x));
+  padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.scf-cell-link:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+/* The row-end arrow: no width of its own, so the games column does not grow
+   for it; it sits in the cell's right padding and shows on hover, or while a
+   link in the row has keyboard focus. */
+.scf-row-go {
+  display: inline-block;
+  width: 0;
+  margin-left: 3px;
+  overflow: visible;
+  vertical-align: middle;
+  color: var(--sc-gold-deep);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.scf-row-go svg {
+  display: block;
+}
+
+.scf-row:hover .scf-row-go,
+.scf-row:focus-within .scf-row-go {
+  opacity: 1;
 }
 
 .scf-table thead th {
@@ -643,6 +634,11 @@ body.scf-page {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+/* The short spelling is not rendered until the column is squeezed. */
+.scf-team-name-short {
+  display: none;
 }
 
 /* Under it, quieter: the name is the fallback reading, not the primary one. */
@@ -783,8 +779,11 @@ body.scf-page {
 
 /* ----------------------------------------------------------------- legend */
 
+/* On the controls row, right-aligned, where the Download CSV link used to
+   be (mak, 2026-11-04). The row wraps, so on a narrow screen the legend takes
+   the line under the pills. */
 .scf-legend-wrap {
-  margin-top: 20px;
+  margin-left: auto;
 }
 
 .scf-legend {
@@ -831,7 +830,474 @@ body.scf-page {
   font-size: 14px;
 }
 
+/* ------------------------------------------------------------------- rail */
+
+/*
+ * The schedule rail (mak's spec, 2026-11-04; the cards in the
+ * strength-of-schedule page's dress from the same afternoon).
+ *
+ * Two containers - the schedules, and start/sit under them - each a hairline
+ * box on the sheet's soft tint, stacked in a column to the table's right at
+ * 561px and up, and above the controls as a grid of the same cards below
+ * that (mak, 2026-11-05: the desktop cards at every size).
+ *
+ * The cards are sos.css's .scsos-card, measured across: a 1px border with a
+ * 4px colored left edge, the faded crest bottom right, an uppercase title,
+ * a two-line note, then crest + code + figure on one row and name + delta
+ * on the next. The left edge is the position's ink; the current view's is
+ * gold, and it is pressed in rather than lifted on hover.
+ */
+.scf-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0 0;
+}
+
+/* Stacked (under 561px, or a narrow container): the rail comes FIRST in the
+   markup, for the column layout, but reads LAST here - under the table and
+   its caption, not above the controls (mak, 2026-11-05). The grid layout
+   below places the aside by row and column, so the order is inert there. */
+.scf-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.scf-body > .scf-aside {
+  order: 1;
+}
+
+/* No box and no eyebrow (mak, 2026-11-04): the cards stand on their own. */
+.scf-rail {
+  margin: 0;
+  padding: 0;
+}
+
+/* Explicit, with the element in the selector: the host theme bullets and
+   indents every list it is not told about. */
+.scf ul.scf-rail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scf li.scf-rail-item {
+  margin: 0;
+  padding: 0;
+}
+
+.scf a.scf-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  min-width: 0;
+  padding: 10px 14px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(11, 31, 58, 0.14);
+  border-left-width: 4px;
+  border-left-color: var(--sc-navy);
+  border-radius: 14px;
+  background: var(--sc-surface);
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.06), 0 8px 24px -8px rgba(11, 31, 58, 0.14);
+  color: var(--sc-ink);
+  text-decoration: none;
+  /* Centered, every line of it (mak, 2026-11-04). */
+  text-align: center;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.scf a.scf-card[data-pos="QB"] { border-left-color: var(--sc-pos-qb); }
+.scf a.scf-card[data-pos="RB"] { border-left-color: var(--sc-pos-rb); }
+.scf a.scf-card[data-pos="WR"] { border-left-color: var(--sc-pos-wr); }
+.scf a.scf-card[data-pos="TE"] { border-left-color: var(--sc-pos-te); }
+
+.scf a.scf-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(11, 31, 58, 0.08), 0 14px 30px -10px rgba(11, 31, 58, 0.22);
+}
+
+.scf a.scf-card:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+}
+
+/* The current view: docked, pressed in, gold-edged, and still. */
+.scf a.scf-card.is-current {
+  border-left-color: var(--sc-gold);
+  background: linear-gradient(180deg, var(--sc-surface-soft) 0%, var(--sc-surface-sink) 100%);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.1), inset 0 1px 1px rgba(15, 23, 42, 0.06);
+}
+
+.scf a.scf-card.is-current:hover {
+  transform: none;
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.1), inset 0 1px 1px rgba(15, 23, 42, 0.06);
+}
+
+/* The faded crest, bottom right. */
+.scf .scf-card-mark {
+  position: absolute;
+  right: -12px;
+  bottom: -16px;
+  width: 96px;
+  height: 96px;
+  max-width: none;
+  object-fit: contain;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.scf-card-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scf-card-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sc-navy);
+}
+
+.scf a.scf-card[data-pos="QB"] .scf-card-title { color: var(--sc-pos-qb); }
+.scf a.scf-card[data-pos="RB"] .scf-card-title { color: var(--sc-pos-rb); }
+.scf a.scf-card[data-pos="WR"] .scf-card-title { color: var(--sc-pos-wr); }
+.scf a.scf-card[data-pos="TE"] .scf-card-title { color: var(--sc-pos-te); }
+
+.scf a.scf-card:hover .scf-card-title {
+  color: var(--sc-gold-deep);
+}
+
+/* The start/sit card's title carries a gold underline (mak, 2026-11-04). */
+.scf .scf-rail-startsit .scf-card-title {
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--sc-gold);
+}
+
+/* Two lines reserved, so every card's stat block sits on one baseline. */
+.scf-card-note {
+  position: relative;
+  display: -webkit-box;
+  min-height: 2.6em;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* The team block (mak, 2026-11-04): two columns side by side. Left, the
+   crest directly above the code; right, the figure directly above the
+   delta - so row one is crest and figure, row two is code and delta. */
+.scf-card-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.scf-card-team,
+.scf-card-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.scf .scf-card-img {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  max-width: none;
+  object-fit: contain;
+}
+
+/* The code, at the delta's size: a label under the crest, not a second
+   figure (mak, 2026-11-04). */
+.scf-card-name {
+  color: var(--sc-ink);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.scf-card-value {
+  /* The figure sits as tall as the crest, so the two rows line up. */
+  display: flex;
+  align-items: center;
+  height: 32px;
+  color: var(--sc-ink);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scf-card-value small {
+  margin-left: 3px;
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.scf-card-delta {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* The call to action at the card's foot (mak, 2026-11-04): a full-width
+   navy pill naming the destination, so the card reads as somewhere to go
+   and not only as a stat. Gold on hover, with the arrow nudged along - the
+   page's one accent, on the one thing a hover is for. */
+.scf-card-cta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.scf-card-cta-arrow {
+  flex: none;
+  transition: transform 150ms ease;
+}
+
+.scf a.scf-card:hover .scf-card-cta {
+  background: var(--sc-gold);
+  color: var(--sc-navy);
+}
+
+.scf a.scf-card:hover .scf-card-cta-arrow {
+  transform: translateX(2px);
+}
+
+/* Find a player: shaped like the search box it opens - magnifier, then
+   placeholder-gray text - so its function is read before it is. */
+.scf a.scf-card.is-search {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 0;
+  padding: 10px 12px;
+  border-left-width: 1px;
+  border-left-color: rgba(11, 31, 58, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.06);
+}
+
+.scf a.scf-card.is-search:hover {
+  transform: none;
+  border-color: var(--sc-gold);
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.06);
+}
+
+.scf-card-glass {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--sc-muted);
+}
+
+.scf-card-placeholder {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--sc-muted);
+}
+
+.scf a.scf-card.is-search:hover .scf-card-placeholder,
+.scf a.scf-card.is-search:hover .scf-card-glass {
+  color: var(--sc-gold-deep);
+}
+
+/*
+ * The column.
+ *
+ * A viewport question first (the rail is for screens 561px and up, mak
+ * 2026-11-04; it was 1240, then 960), then a container one (a window with
+ * the table in a very narrow column has no room for it). The
+ * sheet's wrapper dissolves into the grid so its blocks can be placed one
+ * by one: the controls over the table in row 1, then the table, the note
+ * and the legend down the first column with the two containers beside
+ * them, starting where the table starts. The bundle swaps the controls, the
+ * table and the note in place by class, so the placement survives a swap.
+ */
+@media (min-width: 561px) {
+  @container scf (min-width: 480px) {
+    .scf-body {
+      display: grid;
+      /* 276px: the 240 the cards were cut for, 15% wider (mak, 2026-11-04). */
+      grid-template-columns: minmax(0, 1fr) 276px;
+      column-gap: 24px;
+      align-items: start;
+    }
+
+    /* Down to 561px (mak, 2026-11-04): between 960 and 1100 the column
+       narrows to 240px so the table keeps its ~626px without scrolling;
+       under 960 it is 200px and the table scrolls sideways in its box. */
+    @media (max-width: 1099px) {
+      .scf-body {
+        grid-template-columns: minmax(0, 1fr) 240px;
+        column-gap: 20px;
+      }
+    }
+
+    @media (max-width: 959px) {
+      .scf-body {
+        grid-template-columns: minmax(0, 1fr) 200px;
+        column-gap: 16px;
+      }
+
+      /* The rail has squeezed the table's column: the defense column keeps
+         a name, but the nickname ("Panthers") rather than the city and the
+         nickname (mak, 2026-11-04). Overrides the narrow tiers' display:none
+         on the name line, which is written for the phone layout. */
+      .scf-body .scf-team-name {
+        display: block;
+      }
+
+      .scf-body .scf-team-name-full {
+        display: none;
+      }
+
+      .scf-body .scf-team-name-short {
+        display: inline;
+      }
+    }
+
+    /* 561-640px (mak, 2026-11-05): no name line at all in the column
+       layout; the defense column is the crest and the abbreviation. */
+    @media (max-width: 640px) {
+      .scf-body .scf-team-name {
+        display: none;
+      }
+    }
+
+    .scf-main {
+      display: contents;
+    }
+
+    .scf-controls {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .scf-scroll {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    /* One row, the table's. Spanning rows that no longer hold anything (the
+       blend note and the legend left the column) handed each of them a
+       third of the rail's height and opened ~700px under the table. */
+    .scf-aside {
+      grid-column: 2;
+      grid-row: 2;
+      margin: 18px 0 0;
+    }
+
+    .scf ul.scf-rail-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* The docked card stands a little apart from the four it leads. */
+    .scf li.scf-rail-item:first-child {
+      margin-bottom: 4px;
+    }
+
+  }
+}
+
+/* Below the column the list is a grid of the SAME cards (mak, 2026-11-05:
+   the desktop design at every size - no stripped phone variant). Where two
+   fit across, only the four position cards pair up: the docked card, the
+   search row and the start/sit card each take a full row, so nothing
+   stands half-width beside an empty cell. */
+.scf li.scf-rail-item:first-child,
+.scf li.scf-rail-item:has(> .scf-card.is-search),
+.scf .scf-rail-startsit li.scf-rail-item {
+  grid-column: 1 / -1;
+}
+
 /* ------------------------------------------------------------ responsive */
+
+/* Stacked (560px and under, mak 2026-11-05): everything that is not the
+   table is centered - the Updated line, the two control groups, the legend
+   and the FAQ heading with its gold bar. The rail cards center their own
+   text already. A viewport question, like the stacked layout it dresses. */
+@media (max-width: 560px) {
+  .scf-updated {
+    text-align: center;
+  }
+
+  .scf-controls {
+    justify-content: center;
+  }
+
+  .scf-control-set {
+    justify-content: center;
+  }
+
+  .scf-legend-wrap {
+    margin: 0 auto;
+  }
+
+  .scf-legend {
+    justify-content: center;
+  }
+
+  .scf-faq-title {
+    text-align: center;
+  }
+
+  .scf-faq-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .scf-table .scf-caption {
+    text-align: center;
+  }
+}
 
 /* The page's own gutter is a genuine window question, so it stays a media
    query: it is about the edge of the screen, not the width of the table. */
@@ -862,7 +1328,6 @@ body.scf-page {
   .scf-team-name {
     display: none;
   }
-
 }
 
 /*
@@ -889,21 +1354,6 @@ body.scf-page {
     --scf-cell-pad-x: 7px;
   }
 
-  /*
-   * The CSV link goes rather than wrapping.
-   *
-   * The controls row needs ~471px to hold both filter groups and the link on
-   * one line - down from 621 when the option labels were long - so this is
-   * where the link would start wrapping, and a lone button on a row of its own
-   * reads as a layout accident rather than a choice.
-   *
-   * The file itself is not gone: /fpa/download.csv still serves it, with the
-   * same format and view the page is on. What goes is the affordance, on the
-   * screens least likely to want a spreadsheet.
-   */
-  .scf-csv {
-    display: none;
-  }
 }
 
 /*
@@ -933,23 +1383,45 @@ body.scf-page {
 }
 
 /*
- * Narrowest: the games column goes, and that is the end of the line.
- *
- * ~335px with it and ~282px without, so 360px is the threshold on the same
- * ~8% headroom the other two carry. It is last on purpose - it is the only
- * column here that is not fantasy points allowed, and the one a reader gives up
- * least by losing, because the note above the table already says how much of
- * the season is in the figures.
+ * The games column goes at 730px (mak, 2026-11-05; it was the last thing to
+ * go, at 360px). It is the only column here that is not fantasy points
+ * allowed, and the one a reader gives up least by losing, because the
+ * caption under the table already says how much of the season is in the
+ * figures. The row-end hover arrow lives in that cell and goes with it.
  *
  * Hidden with display:none rather than clipped: unlike the rank, this is not a
  * second reading of something else on the row, so leaving it in the
  * accessibility tree would just be a column screen-reader users have and
  * sighted ones do not. The CSV still carries it either way.
  */
-@container scf (max-width: 360px) {
+@container scf (max-width: 730px) {
   .scf-games,
   .scf-th-games {
     display: none;
+  }
+}
+
+/*
+ * Narrowest: the controls row gives up its gutters, and that is the end of
+ * the line.
+ */
+@container scf (max-width: 360px) {
+  /* The defense column gives up most of its gutter (mak, 2026-11-05): the
+     "Defense" label with 7px a side held the column at 69px while the
+     abbreviation under it needs ~40, and those 6px are what gets the
+     table under a 319px screen (289px with them, 283 without). Through
+     the token, for the same armor reason as the 540px tier. */
+  .scf-team,
+  .scf-table thead .scf-th-team {
+    --scf-cell-pad-x: 4px;
+  }
+
+  /* And the figures give up 2px a side, so the table clears 319px with
+     room for a desktop scrollbar: 263px against a 287px box. */
+  .scf-cell,
+  .scf-games,
+  .scf-table thead th:not(.scf-th-team) {
+    --scf-cell-pad-x: 5px;
   }
 
   /*
@@ -1009,9 +1481,6 @@ body.scf-page {
     --scf-cell-pad-x: 7px;
   }
 
-  .scf-csv {
-    display: none;
-  }
 }
 
 @media (max-width: 400px) {
@@ -1024,10 +1493,39 @@ body.scf-page {
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 730px) {
   .scf-games,
   .scf-th-games {
     display: none;
+  }
+}
+
+/* 350px and under (mak, 2026-11-05): the table's crests go and nothing else
+   changes; the defense column is the abbreviation alone. The rail cards
+   keep theirs. */
+@media (max-width: 350px) {
+  .scf-table .scf-team-logo {
+    display: none;
+  }
+
+  /* The crest was what set the row's height; keep that height without it,
+     so the rows do not tighten when it goes. */
+  .scf-table .scf-team-id {
+    min-height: var(--scf-crest);
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .scf-team,
+  .scf-table thead .scf-th-team {
+    --scf-cell-pad-x: 4px;
+  }
+
+  .scf-cell,
+  .scf-games,
+  .scf-table thead th:not(.scf-th-team) {
+    --scf-cell-pad-x: 5px;
   }
 
   .scf-control-set {
@@ -1200,6 +1698,14 @@ body.scf-page {
   color: var(--sc-gold-soft);
 }
 
+/* The cell links wear the figure's ink, not the theme's link blue, and no
+   underline: the tint is the reading and the cursor is the affordance. */
+.scf .scf-table .scf-cell-link,
+.scf .scf-table .scf-cell-link:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
 /* Links. Each of these is a brand color doing a job - the muted pill, the
    active pill, the gold-ruled CSV, the team's navy - and a theme's one link
    blue flattens the distinction between all four. */
@@ -1210,11 +1716,6 @@ body.scf-page {
 
 .scf .scf-opt.is-active {
   color: #fff;
-}
-
-.scf .scf-csv {
-  color: var(--sc-navy);
-  text-decoration: none;
 }
 
 .scf .scf-team-link {

@@ -1194,17 +1194,14 @@ function renderMatrixView(
     );
   }).join("");
 
-  // No heading of its own. The grid IS the page at `/schedule`, so the page's
-  // own <h1> names it - printed here when this is the standalone page, and by
-  // the WordPress page when it is embedded. A second heading saying "Season
-  // Grid" under an <h1> saying "2026 NFL Schedule" was the same sentence twice.
-  // What survives is the instruction, which is not a heading: without it the @
-  // is a symbol the reader has to work out.
+  // No heading of its own, and no instruction line either. The grid IS the
+  // page at `/schedule`, so the page's own <h1> names it - printed here when
+  // this is the standalone page, and by the WordPress page when it is
+  // embedded. A second heading saying "Season Grid" under an <h1> saying
+  // "2026 NFL Schedule" was the same sentence twice. The "@ marks a road game"
+  // line that used to sit here went 11-04 at mak's request; the FAQ under the
+  // grid answers what the @ means.
   return (
-    `<div class="scs-viewhead">` +
-    `<p class="scs-view-note">` +
-    `A cell is the opponent; <strong>@</strong> marks a road game. Choose one to open that week's board.` +
-    `</p></div>` +
     `<div class="scs-matrix-scroll" tabindex="0" role="region" aria-label="Season matrix">` +
     `<table class="scs-matrix"><caption class="scs-visually-hidden">` +
     `${schedule.season} NFL regular-season opponents by team and week</caption>` +

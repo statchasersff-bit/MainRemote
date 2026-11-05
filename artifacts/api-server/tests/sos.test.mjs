@@ -189,6 +189,36 @@ describe("the model", () => {
     assert.deepEqual(ranks, [1, 2], "dense among the players listed");
   });
 
+  test("rosEasiest: rank, then fewest tough games left, then the code - and nothing once ROS is over", () => {
+    // The helper the position page's answer and the FPA rail's teaser share.
+    const easiest = model.rosEasiest(board, 3);
+    assert.equal(easiest.length, 3);
+    assert.ok(easiest.every((r) => r.ros !== null));
+    assert.ok(easiest[0].rosRank <= easiest[1].rosRank && easiest[1].rosRank <= easiest[2].rosRank);
+    assert.match(render.sosPositionAnswer(board), new RegExp(`^Easiest rest-of-season RB schedule: ${easiest[0].team.fullName} \\(`));
+
+    const row = (code, rosRank, weeks, ros = { afpa: 1, bucket: "neutral" }) => ({
+      team: { code },
+      rosRank,
+      ros,
+      weeks: weeks.map(([week, bucket]) => ({ week, bucket })),
+    });
+    const tied = {
+      rosFrom: 10,
+      teams: [
+        row("B", 1, [[10, "tough"], [11, "neutral"]]),
+        row("A", 1, [[10, "avoid"], [11, "neutral"]]),
+        // Its tough game was week 5: already played, not "remaining".
+        row("C", 1, [[5, "tough"], [10, "neutral"]]),
+        row("D", 2, [[10, "neutral"]]),
+        row("E", 1, [[10, "neutral"]], null),
+      ],
+    };
+    assert.deepEqual(model.rosEasiest(tied, 5).map((r) => r.team.code), ["C", "A", "B", "D"]);
+    assert.deepEqual(model.rosEasiest(tied, 2).map((r) => r.team.code), ["C", "A"]);
+    assert.deepEqual(model.rosEasiest({ rosFrom: 18, teams: tied.teams.map((r) => ({ ...r, ros: null })) }, 3), []);
+  });
+
   test("the version moves with the FPA table", () => {
     const moved = model.buildSosBoard({ ...fpaTable(), version: "fixture-2" }, schedule(), POOL, "RB", "ppr");
     assert.notEqual(moved.version, board.version);
@@ -406,6 +436,23 @@ describe("the markup", () => {
     assert.match(html, /data-page="playoffs" aria-current="page">Playoffs</);
     assert.match(html, /<span class="scsos-po-rank">#\d+<\/span>/);
     assert.match(html, /rest-of-season-rankings\/"/, "Related links the rankings at their base");
+  });
+
+  test("the FPA cells land here: every team row carries an id, a position page carries the method note", () => {
+    const html = render.renderSosPage(board, team, { embed: true, page: "rb" });
+    for (const t of TEAMS) {
+      assert.match(html, new RegExp(`<tr data-row="team-${t.abbreviation}" id="scsos-team-${t.abbreviation}">`));
+    }
+    assert.match(html, /<div class="scsos-updated-row">.*<details class="scsos-pop scsos-method">.*Opponent fantasy points allowed, remaining weeks\..*<\/details><\/div><div class="scsos-bar">/);
+    // The overview has no Updated line and no note; its board is one of four.
+    const overview = render.renderSosPage(board, team, { embed: true });
+    assert.doesNotMatch(overview, /scsos-method/);
+  });
+
+  test("the player board carries the finder, shipped hidden for the bundle to reveal", () => {
+    const html = render.renderSosPage(board, { ...team, tab: "player" }, { embed: true });
+    assert.match(html, /<div class="scsos-find" id="scsos-find" data-scsos-find hidden>.*<input class="scsos-find-input" type="search"[^>]*placeholder="Find a RB by name" \/>.*<\/div><table class="scsos-table" data-scsos-table data-kind="player">/);
+    assert.doesNotMatch(render.renderSosPage(board, team, { embed: true }), /scsos-find/, "the team board has no finder");
   });
 
   test("the player grid: full and short names, and a link only where there is a page", () => {

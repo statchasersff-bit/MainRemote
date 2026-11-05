@@ -340,6 +340,125 @@ function wireHistory(): void {
   });
 }
 
+/* ------------------------------------------------------------- the finder */
+
+/** A name as the matcher sees it: lowercase, no accents, no punctuation. */
+function foldName(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Letter pairs, for the nearest-name score. */
+function bigrams(value: string): Set<string> {
+  const out = new Set<string>();
+  const text = value.replace(/ /g, "");
+  for (let i = 0; i + 1 < text.length; i += 1) out.add(text.slice(i, i + 2));
+  return out;
+}
+
+/** Dice coefficient over letter pairs: 1 is the same name, 0 shares nothing. */
+function nearness(a: Set<string>, b: Set<string>): number {
+  if (!a.size || !b.size) return 0;
+  let shared = 0;
+  for (const g of a) if (b.has(g)) shared += 1;
+  return (2 * shared) / (a.size + b.size);
+}
+
+const SUGGEST = 3;
+
+/**
+ * The player board's finder (renderPlayerFinder in lib/sos-render.ts).
+ *
+ * Typing keeps the rows whose name contains the words typed, in any order,
+ * and hides the rest; the strip for the player asked for is what is left.
+ * Nobody matching is never a blank table: the closest names are offered as
+ * buttons, and picking one types it. Nothing is fetched and nothing is written
+ * to the address - the board is already on the page.
+ */
+function wireFind(root: HTMLElement): void {
+  const box = root.querySelector<HTMLElement>("[data-scsos-find]");
+  const input = box?.querySelector<HTMLInputElement>(".scsos-find-input");
+  const status = box?.querySelector<HTMLElement>(".scsos-find-status");
+  const body = root.querySelector<HTMLElement>('table[data-kind="player"] tbody');
+  if (!box || !input || !status || !body) return;
+
+  const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>('tr[data-row^="player-"]')).map((row) => {
+    const name = row.querySelector<HTMLElement>("th.scsos-first")?.getAttribute("data-sort") ?? row.textContent ?? "";
+    const folded = foldName(name);
+    return { row, name, folded, grams: bigrams(folded) };
+  });
+  if (!rows.length) return;
+
+  const apply = (raw: string) => {
+    const query = foldName(raw);
+    const words = query.split(" ").filter(Boolean);
+    let shown = 0;
+    for (const r of rows) {
+      const hit = words.every((w) => r.folded.includes(w));
+      r.row.hidden = !hit;
+      if (hit) shown += 1;
+    }
+    status.replaceChildren();
+    if (!words.length) return;
+    if (shown > 0) {
+      status.textContent = `${shown} of ${rows.length} players`;
+      return;
+    }
+    // Nearest names, by shared letter pairs; three of them, never none.
+    const q = bigrams(query);
+    const nearest = rows
+      .map((r) => ({ r, score: nearness(q, r.grams) }))
+      .sort((a, b) => b.score - a.score || a.r.name.localeCompare(b.r.name))
+      .slice(0, SUGGEST);
+    status.append(`No ${root.dataset["pos"]?.toUpperCase() ?? "player"} named "${raw.trim()}". Closest: `);
+    nearest.forEach(({ r }, i) => {
+      const pick = document.createElement("button");
+      pick.type = "button";
+      pick.className = "scsos-find-pick";
+      pick.textContent = r.name;
+      pick.addEventListener("click", () => {
+        input.value = r.name;
+        apply(r.name);
+        input.focus();
+      });
+      if (i > 0) status.append(", ");
+      status.append(pick);
+    });
+  };
+
+  input.addEventListener("input", () => apply(input.value));
+  input.addEventListener("search", () => apply(input.value));
+  box.hidden = false;
+  // "Find a player" on the Fantasy Points Allowed rail lands on #scsos-find:
+  // the reader came here to type, so the caret is already in the box. After
+  // load, not at DOMContentLoaded: the browser's own scroll to the fragment
+  // comes between the two and clears whatever was focused before it.
+  if (window.location.hash === "#scsos-find") {
+    const focus = () => input.focus();
+    if (document.readyState === "complete") focus();
+    else window.addEventListener("load", () => window.setTimeout(focus, 0), { once: true });
+  }
+}
+
+/**
+ * An address naming a team row (`#scsos-team-det`, the Fantasy Points
+ * Allowed cells' links) gets the row lit the way a card click lights it. The
+ * browser has already scrolled to the id; this is the part it cannot do.
+ */
+function focusHashRow(root: HTMLElement): void {
+  const hash = window.location.hash;
+  if (!hash.startsWith("#scsos-team-")) return;
+  const row = root.querySelector<HTMLElement>(`tr[data-row="${hash.slice("#scsos-".length)}"]`);
+  if (!row) return;
+  row.classList.add("is-focus");
+  window.setTimeout(() => row.classList.remove("is-focus"), 4000);
+}
+
 /* -------------------------------------------------------------------- boot */
 
 function enhanceView(root: HTMLElement): void {
@@ -347,6 +466,7 @@ function enhanceView(root: HTMLElement): void {
   wireCards(root, sortBy);
   wireCompactNames(root);
   wireCardNames(root);
+  wireFind(root);
   wireFrameHeight(root);
 }
 
@@ -357,6 +477,7 @@ function boot(): void {
     root.dataset["scsosWired"] = "1";
     enhanceView(root);
     wireViews(root);
+    focusHashRow(root);
   }
   if (roots.length) {
     wirePopovers();

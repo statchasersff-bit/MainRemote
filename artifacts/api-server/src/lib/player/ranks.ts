@@ -45,6 +45,32 @@ export function hasParticipation(
   stats: GameLogStats,
   position: string | null,
 ): boolean {
+  return hasTouch(stats, position);
+}
+
+/**
+ * A game played, the way a games-played column counts it (2026-11-04).
+ *
+ * Sleeper logs `gp: 1` for every game a player was active for, snap or no
+ * snap - the same count as a reference site's "G" - and that is what the
+ * career table has always printed for a finished season. The chart, the
+ * career rates and the read were counting only weeks with a touch, which
+ * put Gardner Minshew's 2023 at 16 games in one place and 17 in the next on
+ * the same page. Everything that prints a games-played figure on the Stats
+ * tab goes through this one rule. Rows written before the builder kept
+ * `gp` fall back to a touch, so an unrebuilt season still counts.
+ */
+export function isGamePlayed(entry: { stats: GameLogStats; game_status?: string | null }, position: string | null): boolean {
+  if (entry.game_status === "out" || entry.game_status === "bye") return false;
+  const gp = (entry.stats as { gp?: number }).gp;
+  if (typeof gp === "number") return gp > 0 || hasTouch(entry.stats, position);
+  return hasTouch(entry.stats, position);
+}
+
+function hasTouch(
+  stats: GameLogStats,
+  position: string | null,
+): boolean {
   if ((stats.off_snp ?? 0) > 0) return true;
   if (position === "QB") {
     return (stats.pass_att ?? 0) > 0 || (stats.rush_att ?? 0) > 0;
@@ -570,9 +596,30 @@ function getSeasonMaxWeek(season: number, team: string | null): number {
   return teamWeeks > 0 ? teamWeeks : max;
 }
 
+/**
+ * A club's bye: the week its results skip, when the season's results are
+ * stored, else the bye table. The results come first because the table has
+ * been wrong (2024 Raiders filed as Week 11, played every week but Week 10)
+ * and a week with no game between two played weeks is not a judgment call.
+ * The first gap only: a club has one bye, and a gap after its last stored
+ * result is the season still being played.
+ */
 function getByeWeek(season: number, team: string | null): number | null {
   if (!team) return null;
-  return loadByeWeeks()[String(season)]?.[teamCode(team)] ?? null;
+  const code = teamCode(team);
+  const scores = loadGameScores()[String(season)];
+  if (scores) {
+    const weeks = new Set<number>();
+    for (const key of Object.keys(scores)) {
+      const m = /^([A-Z]+)_(\d+)$/.exec(key);
+      if (m && m[1] === code) weeks.add(Number(m[2]));
+    }
+    if (weeks.size >= 2) {
+      const last = Math.max(...weeks);
+      for (let w = 1; w < last; w += 1) if (!weeks.has(w)) return w;
+    }
+  }
+  return loadByeWeeks()[String(season)]?.[code] ?? null;
 }
 
 function getGameScore(

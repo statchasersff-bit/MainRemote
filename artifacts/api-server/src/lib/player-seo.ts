@@ -103,22 +103,24 @@ function sectionMeta(
   if (section === "stats") {
     return {
       // Every section title is a ladder: the fullest wording that fits, and
-      // a shorter rung for the longest names. The wording is mak's
-      // player-entity brief of 2026-11-03 - the page owns "stats" and
-      // "career statistics", and the year lives in the H2s, not the title,
-      // so the address stays evergreen.
+      // a shorter rung for the longest names. The wording is the stats
+      // audit's SEO ladder (mak, 2026-11-04: "fix seo ladder"): the page
+      // owns "stats", this season's and the career's, and says NFL stats
+      // first - the standard line is what a "{name} stats" search wants
+      // before the fantasy layer. The year is back in this one title on
+      // that instruction; the hub's stays evergreen.
       title: brandedTitle([
-        `${player.name} Stats & Career Statistics`,
-        `${player.name} Stats & Career Stats`,
+        `${player.name} Stats: ${season} & Career NFL Stats`,
+        `${player.name} Stats: ${season} & Career Stats`,
         `${player.name} Stats`,
       ]),
       description: fitTitle(
         [
-          `${player.name} ${season} stats and career statistics: ${position}season totals, ` +
-            `advanced metrics, fantasy points and positional rank, and points per game every season.`,
-          `${player.name} ${season} stats and career statistics: ${position}season totals, ` +
-            `advanced metrics, fantasy points, positional rank and points per game.`,
-          `${player.name} ${season} stats and career statistics: season totals, advanced metrics and fantasy points.`,
+          `${player.name} ${season} NFL stats and career statistics: ${position}season totals, games started, ` +
+            `advanced metrics, fantasy points by season and career highs.`,
+          `${player.name} ${season} NFL stats and career statistics: ${position}season totals, ` +
+            `advanced metrics, fantasy points by season and career highs.`,
+          `${player.name} ${season} NFL stats and career statistics: season totals, advanced metrics and fantasy points.`,
         ],
         DESCRIPTION_MAX,
       ),
@@ -202,9 +204,13 @@ function sectionMeta(
     // phrase.
     // The title is mak's brief of 2026-11-03, evergreen; the season phase
     // still decides the description, which is where the year belongs.
+    // The Outlook brief mak approved on 2026-11-05: "{Name} Fantasy Outlook
+    // 2026: ROS Analysis" in season; the off-season rung keeps the rankings
+    // wording. The year is the outlook's, so it is right for a player whose
+    // page is still on last season.
     const title = brandedTitle([
-      `${player.name} Fantasy Outlook, Rankings & Projections`,
-      `${player.name} Fantasy Outlook & Projections`,
+      `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: ${inSeason(data) ? "ROS Analysis" : "Rankings & Projections"}`,
+      `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}`,
       `${player.name} Fantasy Outlook`,
     ]);
     if (inSeason(data)) {
