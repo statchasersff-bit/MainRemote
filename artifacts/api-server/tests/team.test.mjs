@@ -283,8 +283,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       );
     }
     // The team switcher is 32 crawlable internal links, not a scripted menu.
-    // (The premium header preview carries its own copy; the hero's is the one counted.)
-    const switcher = doc.querySelectorAll(".sct-hero .sct-switch-team");
+    const switcher = doc.querySelectorAll(".sct-tpb .sct-switch-team");
     assert.equal(switcher.length, 32, "switcher links every team");
     for (const link of switcher) {
       assert.match(link.getAttribute("href"), /^\/team\/[a-z0-9-]+/);
@@ -328,7 +327,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       (img) => img.getAttribute("fetchpriority") === "high",
     );
     assert.equal(priority.length, 1);
-    assert.ok(priority[0].classList.contains("sct-hero-logo"));
+    assert.ok(priority[0].classList.contains("sct-tpb-logo"));
     for (const img of images) {
       if (img === priority[0]) continue;
       assert.equal(
@@ -349,8 +348,8 @@ describe("embedded mode", () => {
       "the WordPress page supplies the H1",
     );
     // The team name is still the visual heading, just demoted.
-    assert.match(doc.querySelector(".sct-title").textContent, /Patriots/);
-    assert.equal(doc.querySelector(".sct-title").tagName, "H2");
+    assert.match(doc.querySelector(".sct-tpb-title").textContent, /Patriots/);
+    assert.equal(doc.querySelector(".sct-tpb-title").tagName, "H2");
   });
 
   test("the shell drops its own background and gutter", async () => {
@@ -994,130 +993,90 @@ describe("embedded mode", () => {
  * visible text, and that there is exactly one FAQPage for the whole document
  * however many tabs carry questions.
  */
-describe("the premium team header comparison (mak's brief, 2026-11-05)", () => {
-  test("under the original hero and strip, on the hub and on a section page, on the same facts, switcher and tabs", async () => {
-    for (const path of ["/team/new-england-patriots", "/team/kansas-city-chiefs/coaching/", "/team/washington-commanders/usage/"]) {
-      const { doc } = await dom(path);
-      const hero = doc.querySelector(".sct-hero");
-      const nav = doc.querySelector(".sct-nav");
-      const tp = doc.querySelector('[data-sct-premium="team-header"]');
-      assert.ok(tp, `${path}: the premium header renders`);
-      assert.equal(nav.nextElementSibling, tp, `${path}: directly under the original strip`);
-      assert.equal(tp.querySelector(".sct-cp-flag").textContent, "Premium Design A · Dark Navy");
-      assert.equal(tp.querySelector("h1, h2, h3, h4"), null, "no heading inside the preview: the page keeps its one H1");
-      assert.equal(tp.querySelector(".sct-tp-title").textContent, hero.querySelector(".sct-title").textContent);
-      assert.equal(tp.querySelector(".sct-tp-eyebrow").textContent, hero.querySelector(".sct-eyebrow").textContent);
-      assert.equal(tp.querySelector(".sct-tp-sub").textContent, hero.querySelector(".sct-subtitle").textContent);
-      assert.equal(tp.querySelector(".sct-tp-logo").getAttribute("src"), hero.querySelector(".sct-hero-logo").getAttribute("src"));
-      // The KPI cards are the hero's facts, label for label, in their full form.
-      const facts = [...hero.querySelectorAll(".sct-facts .sct-fact")].map((f) => [
-        f.querySelector(".sct-fact-label").textContent,
-        (f.querySelector(".sct-swap--full") ?? f.querySelector(".sct-fact-value")).textContent,
-      ]);
-      const kpis = [...tp.querySelectorAll(".sct-tp-kpi")].map((k) => [k.querySelector(".sct-tp-kpi-label").textContent, k.querySelector(".sct-tp-kpi-value").textContent]);
-      assert.deepEqual(kpis, facts, `${path}: facts`);
-      for (const k of tp.querySelectorAll(".sct-tp-kpi")) assert.ok(k.querySelector(".sct-tp-kpi-icon svg"), "a gold icon on every card");
-      // The freshness line is the hero's own stamp, so the bundle rewrites both the same way.
-      const t0 = hero.querySelector(".sct-hero-updated time");
-      const t1 = tp.querySelector(".sct-tp-updated time");
-      if (t0) {
-        assert.equal(t1.getAttribute("datetime"), t0.getAttribute("datetime"));
-        assert.equal(t1.getAttribute("data-ts"), t0.getAttribute("data-ts"));
-      } else assert.equal(t1, null);
-      // The switcher: the same 32 destinations and the same current club; only the original is wired.
-      const hrefs = (el) => [...el.querySelectorAll(".sct-switch-team")].map((a) => a.getAttribute("href"));
-      assert.deepEqual(hrefs(tp), hrefs(hero));
-      assert.equal(tp.querySelector(".sct-switch-team.is-current").textContent, hero.querySelector(".sct-switch-team.is-current").textContent);
-      assert.equal(tp.querySelector("[data-sct-switch]"), null);
-      assert.equal(doc.querySelectorAll("[data-sct-switch]").length, 1);
-      assert.equal(tp.querySelector(".sct-switch-summary .sct-switch-name").textContent, hero.querySelector(".sct-switch-summary .sct-switch-name").textContent);
-      // The strip: the same tabs, addresses and open tab; an icon on each; none of the bundle's hooks and no ids.
-      const tabs = [...tp.querySelectorAll(".sct-tp-tab")];
-      const links = [...nav.querySelectorAll(".sct-nav-link")];
-      assert.deepEqual(tabs.map((a) => a.querySelector(".sct-tp-tab-label").textContent), links.map((a) => a.textContent));
-      assert.deepEqual(tabs.map((a) => a.getAttribute("href")), links.map((a) => a.getAttribute("href")));
-      assert.deepEqual(tabs.map((a) => a.classList.contains("is-active")), links.map((a) => a.classList.contains("is-active")));
-      assert.equal(tabs.filter((a) => a.classList.contains("is-active")).length, 1);
-      assert.equal(tp.querySelector(".sct-tp-tab.is-active").getAttribute("aria-current"), "page");
-      for (const a of tabs) assert.ok(a.querySelector(".sct-tp-tab-icon svg"), "an icon on every tab");
-      assert.equal(tp.querySelector(".sct-nav-link, [data-sct-nav], [data-sct-panel-id], [data-sct-facts], [data-sct-lead]"), null, "none of the bundle's hooks");
-      assert.equal(tp.querySelector("[id]"), null, "no ids inside the preview");
-      const ids = [...doc.querySelectorAll("[data-sct-root] [id]")].map((el) => el.id);
-      assert.equal(new Set(ids).size, ids.length, `${path}: duplicate ids`);
-      assert.doesNotMatch(tp.textContent, /—/);
-    }
-  });
-});
-
-describe("Premium Design B of the team header (mak's brief, 2026-11-05: bright blue, light strip)", () => {
-  test("directly under Design A on the hub and on section pages, on the same facts, switcher and tabs, isolated from A", async () => {
+describe("the team header (mak's pick of 2026-11-05: the bright blue hero and the light strip)", () => {
+  test("the hero and the strip on the hub and on section pages: facts, switcher, tabs, heading, hooks", async () => {
     for (const path of ["/team/new-england-patriots", "/team/kansas-city-chiefs/coaching/", "/team/dallas-cowboys/stats/", "/team/new-york-jets/schedule/", "/team/washington-commanders/usage/"]) {
       const { doc } = await dom(path);
-      const hero = doc.querySelector(".sct-hero");
-      const nav = doc.querySelector(".sct-nav");
-      const a = doc.querySelector('[data-sct-premium="team-header"]');
-      const b = doc.querySelector('[data-sct-premium="team-header-b"]');
-      assert.ok(b, `${path}: Design B renders`);
-      assert.equal(a.nextElementSibling, b, `${path}: directly under Design A`);
-      assert.equal(b.querySelector(".sct-cp-flag").textContent, "Premium Design B · Bright Blue");
-      assert.equal(b.querySelector("h1, h2, h3, h4"), null, "no heading inside the preview: the page keeps its one H1");
-      assert.ok(doc.querySelectorAll("h1").length <= 1, `${path}: one H1 at most`);
-      // Isolation: nothing of Design A's markup inside B, and nothing of B's inside A.
-      assert.equal(b.querySelector('[class*="sct-tp-"], .sct-tp'), null, `${path}: no Design A classes inside B`);
-      assert.equal(a.querySelector('[class*="sct-tpb"]'), null, `${path}: no Design B classes inside A`);
-      // Two separate blocks: the hero, then the light strip as the next sibling (not inside the hero).
-      const heroB = b.querySelector(".sct-tpb-hero");
-      const stripB = b.querySelector(".sct-tpb-navigation");
-      assert.equal(heroB.nextElementSibling, stripB);
-      assert.equal(stripB.closest(".sct-tpb-hero"), null);
-      // The left panel, the gold divider, the white circle, the watermark: present, decorative, hidden.
-      const decor = heroB.querySelector(".sct-tpb-decor");
+      const root = doc.querySelector("[data-sct-root]");
+      const b = doc.querySelector(".sct-tpb");
+      assert.ok(b, `${path}: the header renders`);
+      assert.equal(root.firstElementChild, b, `${path}: first thing in the page`);
+      assert.equal(doc.querySelectorAll(".sct-hero, .sct-nav, [data-sct-premium=\"team-header\"], [data-sct-premium=\"team-header-b\"]").length, 0, "no old header, strip or comparison block");
+      // Two separate blocks: the hero, then the strip as the next sibling (not inside the hero).
+      const hero = b.querySelector("header.sct-tpb-hero");
+      const strip = b.querySelector("nav.sct-tpb-navigation[data-sct-nav]");
+      assert.ok(hero && strip);
+      assert.equal(hero.nextElementSibling, strip);
+      assert.equal(strip.getAttribute("aria-label"), "Team sections");
+      // The left panel, the gold divider, the watermark, the top line: decorative, hidden.
+      const decor = hero.querySelector(".sct-tpb-decor");
       assert.equal(decor.getAttribute("aria-hidden"), "true");
       for (const cls of ["sct-tpb-logo-panel", "sct-tpb-divider", "sct-tpb-watermark", "sct-tpb-topline"]) assert.ok(decor.querySelector(`.${cls}`), cls);
-      assert.ok(heroB.querySelector(".sct-tpb-logo-circle .sct-tpb-logo"));
-      // The same identity as the original hero.
-      assert.equal(b.querySelector(".sct-tpb-title").textContent, hero.querySelector(".sct-title").textContent);
-      assert.equal(b.querySelector(".sct-tpb-eyebrow").textContent, hero.querySelector(".sct-eyebrow").textContent);
-      assert.equal(b.querySelector(".sct-tpb-sub").textContent, hero.querySelector(".sct-subtitle").textContent);
-      assert.equal(b.querySelector(".sct-tpb-logo").getAttribute("src"), hero.querySelector(".sct-hero-logo").getAttribute("src"));
-      // The KPI cards are the hero's facts, label for label, in their full form, each with a gold icon.
-      const facts = [...hero.querySelectorAll(".sct-facts .sct-fact")].map((f) => [
-        f.querySelector(".sct-fact-label").textContent,
-        (f.querySelector(".sct-swap--full") ?? f.querySelector(".sct-fact-value")).textContent,
-      ]);
-      const kpis = [...b.querySelectorAll(".sct-tpb-kpi")].map((k) => [k.querySelector(".sct-tpb-kpi-label").textContent, k.querySelector(".sct-tpb-kpi-value").textContent]);
-      assert.deepEqual(kpis, facts, `${path}: facts`);
-      for (const k of b.querySelectorAll(".sct-tpb-kpi")) assert.ok(k.querySelector(".sct-tpb-kpi-icon svg"), "an icon on every card");
-      // The freshness line is the hero's own stamp.
-      const t0 = hero.querySelector(".sct-hero-updated time");
-      const t1 = b.querySelector(".sct-tpb-updated time");
-      if (t0) {
-        assert.equal(t1.getAttribute("datetime"), t0.getAttribute("datetime"));
-        assert.equal(t1.getAttribute("data-ts"), t0.getAttribute("data-ts"));
-      } else assert.equal(t1, null);
-      // The switcher: the same 32 destinations and current club; its own class; only the original is wired.
-      const hrefs = (el) => [...el.querySelectorAll(".sct-switch-team")].map((x) => x.getAttribute("href"));
-      assert.deepEqual(hrefs(b), hrefs(hero));
-      assert.equal(b.querySelector(".sct-switch-team.is-current").textContent, hero.querySelector(".sct-switch-team.is-current").textContent);
-      assert.ok(b.querySelector("details.sct-switch.sct-tpb-switch"));
-      assert.ok(a.querySelector("details.sct-switch.sct-tp-switch"));
-      assert.equal(b.querySelector("[data-sct-switch]"), null);
+      // The crest on its white circle is the LCP candidate, named for assistive technology.
+      const logo = hero.querySelector(".sct-tpb-logo-circle img.sct-tpb-logo");
+      assert.equal(logo.getAttribute("fetchpriority"), "high");
+      assert.equal(logo.getAttribute("alt"), `${hero.querySelector(".sct-tpb-title").textContent} logo`);
+      // Standalone the club's name is the one H1; the page has no other.
+      assert.equal(hero.querySelector(".sct-tpb-title").tagName, "H1");
+      assert.equal(doc.querySelectorAll("h1").length, 1, `${path}: one H1`);
+      assert.match(hero.querySelector(".sct-tpb-eyebrow").textContent, /^(AFC|NFC) (East|West|North|South) · \d{4} Season$/);
+      const sub = hero.querySelector(".sct-tpb-sub");
+      assert.equal(sub.textContent, `${hero.querySelector(".sct-tpb-title").textContent} fantasy football hub`);
+      assert.equal(sub.getAttribute("data-sct-lead"), "", "the standfirst ships with the bundle's hook and no state");
+      // The KPI cards: Record / Standing / Head Coach / Bye in that order, each with a gold icon.
+      const kpis = [...hero.querySelectorAll(".sct-tpb-kpi")].map((k) => k.querySelector(".sct-tpb-kpi-label").textContent);
+      const order = ["Record", "Standing", "Head Coach", "Bye"];
+      assert.deepEqual(kpis, order.filter((l) => kpis.includes(l)), `${path}: facts in order`);
+      assert.ok(kpis.length >= 2, `${path}: facts rendered (${kpis.join(", ")})`);
+      for (const k of hero.querySelectorAll(".sct-tpb-kpi")) {
+        assert.ok(k.querySelector(".sct-tpb-kpi-icon svg"), "an icon on every card");
+        assert.ok(k.querySelector(".sct-tpb-kpi-value").textContent.length > 0);
+      }
+      // The freshness line is a stamp the bundle rewrites to relative time.
+      const t = hero.querySelector(".sct-tpb-updated time");
+      if (t) {
+        assert.ok(t.getAttribute("datetime"));
+        assert.ok(t.getAttribute("data-ts"));
+      }
+      // The switcher: wired, 32 destinations, the current club marked.
+      const details = hero.querySelector(".sct-tpb-actions details.sct-switch[data-sct-switch]");
+      assert.ok(details, "the switcher is the wired one");
       assert.equal(doc.querySelectorAll("[data-sct-switch]").length, 1);
-      // The strip: the same tabs, addresses and open tab as the original; text-first (no icons); no hooks, no ids.
-      const tabs = [...b.querySelectorAll(".sct-tpb-tab")];
-      const links = [...nav.querySelectorAll(".sct-nav-link")];
-      assert.deepEqual(tabs.map((x) => x.textContent), links.map((x) => x.textContent));
-      assert.deepEqual(tabs.map((x) => x.getAttribute("href")), links.map((x) => x.getAttribute("href")));
-      assert.deepEqual(tabs.map((x) => x.classList.contains("is-active")), links.map((x) => x.classList.contains("is-active")));
-      assert.equal(tabs.filter((x) => x.classList.contains("is-active")).length, 1);
-      assert.equal(b.querySelector(".sct-tpb-tab.is-active").getAttribute("aria-current"), "page");
-      assert.equal(b.querySelector(".sct-tpb-tab svg"), null, "text-first tabs");
-      assert.equal(b.querySelector(".sct-nav-link, [data-sct-nav], [data-sct-panel-id], [data-sct-facts], [data-sct-lead]"), null, "none of the bundle's hooks");
-      assert.equal(b.querySelector("[id]"), null, "no ids inside the preview");
+      assert.equal(details.querySelectorAll(".sct-switch-team").length, 32);
+      assert.equal(details.querySelector(".sct-switch-team.is-current").getAttribute("aria-current"), "page");
+      // The strip: text-first links carrying the bundle's contract, one open.
+      const links = [...strip.querySelectorAll(".sct-nav-list .sct-nav-link")];
+      assert.ok(links.length >= 2);
+      for (const a of links) {
+        assert.ok(a.id.endsWith("-tab"));
+        assert.equal(a.id, `${a.getAttribute("data-sct-panel-id")}-tab`);
+        for (const attr of ["data-sct-heading", "data-sct-lead", "data-sc-title"]) assert.ok(a.getAttribute(attr), `${attr} on ${a.textContent}`);
+        assert.match(a.getAttribute("href"), /^\/team\//);
+        assert.equal(a.querySelector("svg"), null, "text-first tabs");
+      }
+      const open = links.filter((a) => a.classList.contains("is-active"));
+      assert.equal(open.length, 1);
+      assert.equal(open[0].getAttribute("aria-current"), "page");
       const ids = [...doc.querySelectorAll("[data-sct-root] [id]")].map((el) => el.id);
       assert.equal(new Set(ids).size, ids.length, `${path}: duplicate ids`);
       assert.doesNotMatch(b.textContent, /\u2014/);
     }
+  });
+
+  test("the open tab follows the address", async () => {
+    for (const [path, id] of [["/team/new-england-patriots", "outlook"], ["/team/new-england-patriots/coaching/", "coaching"], ["/team/new-england-patriots/stats/", "stats"], ["/team/new-england-patriots/news/", "news"]]) {
+      const { doc } = await dom(path);
+      assert.equal(doc.querySelector(".sct-tpb .sct-nav-link.is-active").getAttribute("data-sct-panel-id"), id, path);
+    }
+  });
+
+  test("the stylesheet: the header's rules are scoped, the strip is sticky, the old rules are gone", async () => {
+    const css = (await get("/team.css")).body;
+    assert.match(css, /\.sct \.sct-tpb-navigation \{[^}]*position:\s*sticky/);
+    assert.match(css, /\.sct \.sct-tpb-navigation \{[^}]*top:\s*var\(--sct-nav-offset/);
+    for (const dead of [/\n\.sct-hero\b/, /\n\.sct-nav\b/, /\.sct-facts/, /\.sct-tp-/, /\.sct \.sct-tp\b/]) assert.doesNotMatch(css, dead, `${dead} still in team.css`);
+    // The club's name is armoured against the host theme's heading sizes.
+    assert.match(css, /\.sct \.sct-tpb-title \{[^}]*font-size:[^;]*!important/);
   });
 });
 
@@ -1438,257 +1397,9 @@ describe("caching", () => {
 });
 
 describe("mobile layout", () => {
-  /**
-   * The team switcher is thirty-two internal links and the only way to move
-   * between hubs, and it is trivially easy to break by clipping.
-   *
-   * `.sct-hero` used to carry `overflow: hidden` for the aura and the
-   * watermark. An absolutely positioned panel inside an overflow-hidden
-   * ancestor is cut off at that ancestor's edge, and this panel opens BELOW its
-   * summary - so most of it was thrown away, and nearly all of it on a phone
-   * where the hero is short. The fix moves the clip onto an inner decoration
-   * layer. Both halves of that are asserted here because either one alone
-   * silently restores the bug: the wrapper with no clip lets the decorations
-   * bleed, and the clip back on the hero eats the panel again.
-   */
-  test("the hero clips its decorations without clipping the switcher", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
 
-    const decor = doc.querySelector(".sct-hero > .sct-hero-decor");
-    assert.ok(decor, "the hero's decorations live in their own layer");
-    assert.ok(
-      decor.querySelector(".sct-hero-aura") &&
-        decor.querySelector(".sct-hero-watermark"),
-      "both decorations are inside that layer, so the layer is what clips",
-    );
 
-    const css = await get("/team.css");
-    assert.equal(css.status, 200);
-    // The declaration block alone. The comment above .sct-hero-decor explains
-    // the very property being asserted against, so a wider slice matches its
-    // own prose.
-    const heroAt = css.body.indexOf("\n.sct-hero {");
-    assert.ok(heroAt > 0, "located the .sct-hero rule");
-    const hero = css.body.slice(heroAt, css.body.indexOf("}", heroAt));
-    assert.ok(
-      !/overflow:\s*hidden/.test(hero),
-      ".sct-hero must not clip - that clips the open team switcher with it",
-    );
-    assert.ok(
-      /\.sct-hero-decor\s*\{[^}]*overflow:\s*hidden/.test(css.body),
-      ".sct-hero-decor is the element that clips",
-    );
-  });
 
-  /**
-   * The watermark, in the stacked hero, is bottom-right and bigger.
-   *
-   * Centered on the right edge is a desktop arrangement: there, half of an
-   * 1100px hero is empty. Stacked there is no empty half - the chips and the
-   * switcher are opaque cards filling the width - so a 240px mark centered
-   * behind them showed in the gaps between cards and nowhere else, which is
-   * what mak reported as too small to see. The corner under the switcher is
-   * the one part of this hero that is reliably not a card.
-   *
-   * The transform is the trap and the reason this is pinned: the desktop rule
-   * centers with `translateY(-50%)`, which pairs with `top: 50%`. Left in
-   * place alongside `bottom`, it lifts the mark by half its own height and
-   * puts it back behind the cards - a change that looks like nothing in the
-   * diff and undoes the whole rule.
-   */
-  test("the stacked hero hangs its watermark in the corner", async () => {
-    const css = (await get("/team.css")).body;
-
-    const desktopAt = css.indexOf("\n.sct-hero-watermark {");
-    assert.ok(desktopAt > 0, "located the desktop watermark rule");
-    const desktop = css.slice(desktopAt, css.indexOf("}", desktopAt));
-    assert.match(desktop, /top:\s*50%/, "the desktop mark is centered");
-    assert.match(desktop, /transform:\s*translateY\(-50%\)/);
-
-    const phone = css.slice(
-      css.indexOf("@media (max-width: 720px)"),
-      css.indexOf("@media (max-width: 420px)"),
-    );
-    const phoneAt = phone.indexOf(".sct-hero-watermark {");
-    assert.ok(phoneAt > 0, "the phone block places it again");
-    const stacked = phone.slice(phoneAt, phone.indexOf("}", phoneAt));
-
-    assert.match(stacked, /top:\s*auto/, "off the vertical center");
-    assert.match(stacked, /bottom:\s*-?\d+px/, "and anchored to the bottom");
-    assert.match(
-      stacked,
-      /transform:\s*none/,
-      "with the centering transform canceled - see this test's note",
-    );
-
-    const size = (block) => Number(block.match(/width:\s*(\d+)px/)[1]);
-    assert.ok(
-      size(stacked) > size(desktop) * 0.9,
-      "and no smaller than the desktop mark: it was 240 against 300",
-    );
-    const weight = (block) => Number(block.match(/opacity:\s*([\d.]+)/)[1]);
-    assert.ok(
-      weight(stacked) > weight(desktop),
-      "at more weight, because what shows here is only the part clear of a card",
-    );
-
-    // And below 450px it is gone. A 300px mark in a 358px hero is not a
-    // watermark, it is a picture the content is printed over - there is no
-    // part of the card it is not behind, so what shows is whatever the gaps
-    // between the chips expose. The crest beside the name still carries the
-    // club at that width.
-    const small = css.slice(
-      css.indexOf("@media (max-width: 450px)"),
-      css.indexOf("@media (max-width: 420px)"),
-    );
-    assert.ok(small.length > 0, "located the 450px block");
-    assert.match(
-      small,
-      /\.sct-hero-watermark \{\s*display:\s*none/,
-      "the smallest screens have no watermark",
-    );
-    // Source order is the whole mechanism here: both rules are one class, so
-    // a 450px block written ABOVE the 720px one would be overruled by it and
-    // the mark would come back.
-    assert.ok(
-      css.indexOf("@media (max-width: 450px)") >
-        css.indexOf("@media (max-width: 720px)"),
-      "and that block has to come after the one it overrules",
-    );
-  });
-
-  /**
-   * The hero's top row breaks on the name, not at a width.
-   *
-   * It used to restack at 900px, which is a number that fits no team: the
-   * switcher is a pill as wide as the club's name, so at 900 "Philadelphia
-   * Eagles" still had room to spare while "Washington Commanders" had been
-   * wrapping to two lines for fifty pixels. The row is a flex line now, and
-   * what makes it break is the name's own width - which is only true while the
-   * name cannot wrap and the block holding it keeps its automatic minimum.
-   * Both halves are asserted because either alone puts the old behavior back:
-   * a wrapping name shrinks to nothing and the switcher never moves, and
-   * `min-width: 0` lets the row squeeze the name instead of breaking.
-   */
-  test("the hero's name and switcher share a row until the name needs it", async () => {
-    const { doc } = await dom("/team/washington-commanders");
-
-    const head = doc.querySelector(".sct-hero-inner > .sct-hero-head");
-    assert.ok(head, "the three blocks beside the crest share one flex row");
-    for (const part of ["sct-hero-text", "sct-hero-meta", "sct-hero-actions"]) {
-      assert.ok(head.querySelector(`:scope > .${part}`), `${part} is in it`);
-    }
-    // The chips stay ahead of the switcher in the markup; `order` is what puts
-    // them under it. See renderHero().
-    const order = [...head.children].map((el) => el.className);
-    assert.deepEqual(order, [
-      "sct-hero-text",
-      "sct-hero-meta",
-      "sct-hero-actions",
-    ]);
-
-    const css = await get("/team.css");
-    assert.equal(css.status, 200);
-
-    const textAt = css.body.indexOf("\n.sct-hero-text {");
-    assert.ok(textAt > 0, "located the .sct-hero-text rule");
-    const text = css.body.slice(textAt, css.body.indexOf("}", textAt));
-    assert.ok(
-      !/min-width:\s*0/.test(text),
-      ".sct-hero-text keeps its automatic minimum - that is the breakpoint",
-    );
-
-    assert.ok(
-      /\.sct-hero-text \.sct-title \{[^}]*white-space:\s*nowrap/.test(css.body),
-      "the hub hero's name is what cannot wrap",
-    );
-    // Scoped, because .sct-title is also the matchup strip's heading: "Tampa
-    // Bay Buccaneers vs Jacksonville Jaguars" is a sentence and must wrap.
-    const titleAt = css.body.indexOf("\n.sct-title {");
-    assert.ok(titleAt > 0, "located the .sct-title rule");
-    const title = css.body.slice(titleAt, css.body.indexOf("}", titleAt));
-    assert.ok(
-      !/white-space/.test(title),
-      ".sct-title itself must not be armed with it - the matchup heading wraps",
-    );
-
-    // And no width may put the switcher back on a row of its own above the
-    // phone stack, which is the rule this replaced.
-    const tablet = css.body.slice(
-      css.body.indexOf("@media (max-width: 900px)"),
-      css.body.indexOf("@media (max-width: 720px)"),
-    );
-    assert.ok(tablet.length > 0, "located the tablet block");
-    assert.ok(
-      !/\.sct-hero-(inner|actions)\s*\{/.test(tablet),
-      "the 900px block must not lay the hero out again",
-    );
-  });
-
-  /**
-   * The crest and the name stay on one row, at every width.
-   *
-   * The phone hero used to stack them - a 72px disc, then the eyebrow, then
-   * the name, then the standfirst, four things down the screen where the first
-   * says the least and the hero ran to about 400px before a reader reached the
-   * chips. mak asked for the mark and the name back on one line, which is also
-   * what they are: one statement of whose page this is.
-   *
-   * Only the top row pairs up. The chips and the switcher keep full rows of
-   * their own underneath, both being wider than what a 360px screen has left
-   * once the crest has taken its 64 - so this asserts the areas, not just that
-   * the grid has two columns.
-   */
-  test("the phone hero keeps the crest beside the name", async () => {
-    const css = (await get("/team.css")).body;
-    const phone = css.slice(
-      css.indexOf("@media (max-width: 720px)"),
-      css.indexOf("@media (max-width: 420px)"),
-    );
-    assert.ok(phone.length > 0, "located the phone block");
-
-    const innerAt = phone.indexOf(".sct-hero-inner {");
-    assert.ok(innerAt > 0, "the phone block lays the hero out");
-    const inner = phone.slice(innerAt, phone.indexOf("}", innerAt));
-
-    assert.match(
-      inner,
-      /grid-template-columns:\s*auto minmax\(0, 1fr\)/,
-      "the crest's column and the name's column",
-    );
-    // Whitespace-insensitive: the declaration is written over three lines.
-    const areas = inner.match(/grid-template-areas:([^;]*);/);
-    assert.ok(areas, "the phone hero names its areas");
-    assert.deepEqual(
-      areas[1].match(/"[^"]*"/g),
-      ['"crest text"', '"meta meta"', '"actions actions"'],
-      "crest beside the name, then the chips, then the switcher",
-    );
-
-    // The name has to be allowed to wrap beside it - the desktop nowrap is
-    // what makes the flex row break on the name's length, and inside a column
-    // that is now 64px narrower it would set the hero's width instead.
-    assert.match(
-      phone,
-      /\.sct-hero-text \.sct-title \{\s*white-space:\s*normal/,
-      "and the name may wrap in the column the crest left it",
-    );
-
-    // The timestamp is the 2x2 grid's footnote, so it is centered under it:
-    // the grid has two columns and a center rather than a left end for a line
-    // to hang off. Left-aligned on a desktop, where the chips are a row.
-    assert.match(
-      phone,
-      /\.sct-hero-updated \{[^}]*text-align:\s*center/,
-      "the timestamp is centered under the stacked chips",
-    );
-    const deskAt = css.indexOf("\n.sct-hero-updated {");
-    assert.ok(deskAt > 0, "located the desktop timestamp rule");
-    assert.ok(
-      !/text-align/.test(css.slice(deskAt, css.indexOf("}", deskAt))),
-      "and takes the root's left alignment everywhere else",
-    );
-  });
 
   /**
    * The standfirst goes rather than taking a second line.
@@ -1708,7 +1419,7 @@ describe("mobile layout", () => {
   test("the hero standfirst ships with a hook and is only ever hidden", async () => {
     const { doc } = await dom("/team/washington-commanders");
 
-    const lead = doc.querySelector(".sct-hero .sct-subtitle");
+    const lead = doc.querySelector(".sct-tpb .sct-tpb-sub");
     assert.ok(lead, "the standfirst is server-rendered");
     assert.equal(
       lead.textContent,
@@ -1725,21 +1436,21 @@ describe("mobile layout", () => {
     const css = (await get("/team.css")).body;
     assert.match(
       css,
-      /\.sct-subtitle\[data-sct-lead="off"\] \{\s*display:\s*none/,
+      /\.sct \.sct-tpb-sub\[data-sct-lead="off"\] \{\s*display:\s*none/,
       "the stylesheet hides the dropped state, and only that state",
     );
     // The hook alone must not hide anything, or the line would be off for
     // every reader with JavaScript disabled - which is the one case where
     // nothing can ever measure it and the full line is what ships.
     assert.ok(
-      !/\.sct-subtitle\[data-sct-lead\] \{[^}]*display:\s*none/.test(css),
+      !/\.sct-tpb-sub\[data-sct-lead\] \{[^}]*display:\s*none/.test(css),
       "the bare hook must not hide it",
     );
     // And no width may do it either: this is measured, not a breakpoint.
-    for (const [, block] of css.matchAll(/@media[^{]*max-width[^{]*\{([\s\S]*?)\n\}/g)) {
+    for (const [, block] of css.matchAll(/@(?:media|container)[^{]*max-width[^{]*\{([\s\S]*?)\n\}/g)) {
       assert.ok(
-        !/\.sct-subtitle[^{]*\{[^}]*display:\s*none/.test(block),
-        "no media query may hide the standfirst",
+        !/\.sct-tpb-sub[^{]*\{[^}]*display:\s*none/.test(block),
+        "no media or container query may hide the standfirst",
       );
     }
 
@@ -1755,154 +1466,7 @@ describe("mobile layout", () => {
     );
   });
 
-  /**
-   * The chips row shortens itself rather than wrapping.
-   *
-   * Five chips need 555–617px on one line depending on the club, and under
-   * that the Bye chip drops to a row of its own for one short word. Two chips
-   * carry a shorter spelling for that, spent in the order a reader can most
-   * afford them: the standing's division first ("2nd in AFC East" → "2nd",
-   * which is the chip two to its left anyway), then the bye ("Week 11" →
-   * "W11", under a label that still reads BYE). Both spellings ship; which one
-   * shows is client/team.ts's, after it measures the row.
-   *
-   * Under both rungs there is a third, and it is not a spelling: the Bye chip
-   * leaves the row. "W11" is the shortest true form of the fact, so a row that
-   * still will not fit it has only the two endings - the chip alone on a
-   * second line, which is what mak asked to stop seeing, or no chip. The bye
-   * is the one fact in this row the hub states in full a tab away, on the
-   * Schedule tab, which is what makes it the affordable one.
-   *
-   * Tolerant of the providers, like the rest of this file: either fact can be
-   * absent when ESPN is down, so each is asserted only if it rendered, and the
-   * stylesheet half of the contract is asserted either way.
-   */
-  test("the fact chips carry short forms for a row that will not fit", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
 
-    const chips = [...doc.querySelectorAll(".sct-facts .sct-fact")];
-    const chipFor = (label) =>
-      chips.find(
-        (chip) =>
-          chip.querySelector(".sct-fact-label")?.textContent.trim() === label,
-      );
-
-    // Rung, and how the short form relates to the full one.
-    const ladder = [
-      // ESPN also sends bare places ("1st"), which have nothing to shorten -
-      // hence a standing chip with no swap at all is allowed.
-      { label: "Standing", spend: "short", optional: true },
-      { label: "Bye", spend: "tight", optional: false },
-    ];
-
-    for (const rung of ladder) {
-      const chip = chipFor(rung.label);
-      if (!chip) continue;
-      const full = chip.querySelector(".sct-swap--full");
-      const short = chip.querySelector(".sct-swap--short");
-      if (!full && !short && rung.optional) continue;
-
-      assert.ok(full && short, `${rung.label} ships both spellings or neither`);
-      assert.ok(
-        short.textContent.length < full.textContent.length,
-        `${rung.label}'s short form must be shorter`,
-      );
-      assert.equal(
-        chip.getAttribute("data-sct-spend"),
-        rung.spend,
-        `${rung.label} gives way at the ${rung.spend} rung`,
-      );
-      assert.equal(
-        chip.getAttribute("title"),
-        full.textContent,
-        `${rung.label}'s full text stays answerable on the chip's title`,
-      );
-    }
-
-    const css = await get("/team.css");
-    assert.equal(css.status, 200);
-    assert.ok(
-      /\.sct-swap--short \{[^}]*display:\s*none/.test(css.body),
-      "the short forms are off until something turns them on",
-    );
-    // `~=`, because the row's attribute LISTS the rungs spent: "short", then
-    // "short tight". An `=` here would put the standing back the moment the
-    // bye was spent.
-    for (const rung of ladder) {
-      assert.ok(
-        css.body.includes(
-          `[data-sct-facts-form~="${rung.spend}"] [data-sct-spend="${rung.spend}"] .sct-swap--full`,
-        ),
-        `the ${rung.spend} rung swaps the chips that spend at it`,
-      );
-    }
-
-    // The attribute those rules wait for has to have an author.
-    const bundle = await get("/dist/statchasers-team.js");
-    assert.equal(bundle.status, 200);
-    assert.ok(
-      bundle.body.includes("data-sct-facts-form"),
-      "the hub bundle is what sets the form",
-    );
-    for (const rung of ladder) {
-      assert.ok(
-        bundle.body.includes(`"${rung.spend}"`),
-        `the bundle knows the ${rung.spend} rung`,
-      );
-    }
-    assert.ok(bundle.body.includes('"drop"'), "and the rung under them both");
-  });
-
-  /**
-   * The last rung: the Bye chip leaves rather than wrapping.
-   *
-   * Two halves, and the reason there are two is that the row is two different
-   * layouts. Above 720px it is a flex row the bundle measures, so the chip
-   * goes only when it would actually have wrapped - which is a different width
-   * for all 32 clubs, the coach's name being the widest thing in the row. At
-   * 720px and under the row is a two-column grid where the fifth chip is
-   * ALWAYS on a row of its own with an empty cell beside it, so no measuring
-   * is needed or wanted and the stylesheet takes it off outright.
-   */
-  test("the bye chip is the one the row may drop, and does under 720px", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
-
-    const chips = [...doc.querySelectorAll(".sct-facts .sct-fact")];
-    const droppable = chips.filter((chip) => chip.hasAttribute("data-sct-drop"));
-    const bye = chips.find(
-      (chip) => chip.querySelector(".sct-fact-label")?.textContent.trim() === "Bye",
-    );
-    if (bye) {
-      assert.deepEqual(droppable, [bye], "the bye, and nothing else, may go");
-      // It ships in the HTML either way: what is dropped is dropped by CSS at
-      // a width, or by the bundle after measuring, never by the renderer.
-      assert.ok(bye.querySelector(".sct-swap--short"), "it still shortens first");
-    } else {
-      assert.equal(droppable.length, 0, "no bye, nothing marked droppable");
-    }
-
-    const css = (await get("/team.css")).body;
-    assert.match(
-      css,
-      /\[data-sct-facts-form~="drop"\] \[data-sct-drop\] \{\s*display:\s*none/,
-      "the rung the bundle spends takes the chip off the flex row",
-    );
-
-    // The grid half. Asserted inside the 720px block rather than anywhere in
-    // the file, because that is the layout it is a statement about.
-    const narrow = css.slice(css.indexOf("@media (max-width: 720px)"));
-    const stanza = narrow.slice(0, narrow.indexOf("@media (max-width: 420px)"));
-    // `:nth-child(odd):last-child`, not the bye's own name: the condition is
-    // "this chip has nothing beside it in a two-column grid", which is true of
-    // the fifth of five and false of the fourth of four. A club out of season
-    // with no record and no standing keeps its bye, because there it shares a
-    // row like everything else.
-    assert.match(
-      stanza,
-      /\.sct-fact\[data-sct-drop\]:nth-child\(odd\):last-child \{\s*display:\s*none/,
-      "and at 720px and under the stranded cell goes, unmeasured",
-    );
-  });
 
   /**
    * Anchor targets. `scroll-padding-top` on .sct does nothing - scroll padding
@@ -1950,29 +1514,11 @@ describe("mobile layout", () => {
     const css = await get("/team.css");
     assert.match(
       css.body,
-      /\.sct-section,\s*\n\.sct-hero\s*\{[^}]*scroll-margin-top:/,
+      /\.sct-section,\s*\n\.sct-tpb-hero\s*\{[^}]*scroll-margin-top:/,
       "sections carry scroll-margin-top for the sticky nav",
     );
   });
 
-  /**
-   * The sticky bar has to span the page gutter, or the page is visible
-   * scrolling through the strip either side of it. It cancels the gutter with a
-   * negative margin, which only works while both come from the same property.
-   */
-  test("the sticky nav spans the page gutter", async () => {
-    const css = await get("/team.css");
-    assert.match(
-      css.body,
-      /\.sct\s*\{[^}]*--sct-gutter:/,
-      "the gutter is a custom property",
-    );
-    assert.match(
-      css.body,
-      /\.sct-nav\s*\{[^}]*margin:\s*0 calc\(var\(--sct-gutter[^)]*\) \* -1\)/,
-      "the nav cancels exactly that gutter",
-    );
-  });
 });
 
 describe("preview switcher", () => {
@@ -2367,7 +1913,7 @@ describe("the team index", () => {
     // the reason this asserts rather than merely no longer testing the hero is
     // that the markup is easy to put back by habit.
     const { doc } = await dom("/team");
-    assert.equal(doc.querySelectorAll(".sct-hero").length, 0);
+    assert.equal(doc.querySelectorAll(".sct-tpb, .sct-tpb-hero").length, 0);
     assert.equal(doc.querySelectorAll("h1").length, 0);
     // The title tag still names the page - the heading went, not the page.
     assert.equal(doc.title, "NFL Team Hubs | StatChasers");

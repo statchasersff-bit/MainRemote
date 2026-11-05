@@ -28,11 +28,12 @@ import type {
 } from "./draft";
 import { CATEGORY_LABEL, collegeLogoFor, getDraftStatus, pickCategory, pickStatus } from "./draft";
 import { depthSlotFor } from "./depth-charts";
+import { renderDraftPremium } from "./draft-premium";
 
 const e = escapeHtml;
 
 /** "Texans", or the code when a club is unknown to the site. */
-function nick(abbr: string): string {
+export function nick(abbr: string): string {
   return getTeamByAbbreviation(abbr)?.nickname ?? abbr.toUpperCase();
 }
 
@@ -65,7 +66,7 @@ function roundList(rounds: number[]): string {
  * or bare, and whether Day 2 (Rounds 2-3) gained anything. Rule-based, so
  * every club gets a true sentence from the same file.
  */
-function capitalKicker(c: DraftCapitalView): string {
+export function capitalKicker(c: DraftCapitalView): string {
   const multi = c.rounds.filter((r) => r.holds.length > 1).map((r) => r.round);
   const empty = c.rounds.filter((r) => r.holds.length === 0).map((r) => r.round);
   const fromRounds = c.rounds.filter((r) => r.holds.some((h) => h.from !== null)).map((r) => r.round);
@@ -254,7 +255,7 @@ function roundOneList(team: NflTeam, picks: DraftPick[]): string {
  * its share, so "58% of picks spent on OL, DL and DB" says the thing the
  * nine rows only imply.
  */
-function historyKicker(h: DraftHistoryView): string {
+export function historyKicker(h: DraftHistoryView): string {
   if (h.total === 0) return "";
   const sum = (cats: string[]): number =>
     h.allPicks.filter((r) => cats.includes(r.category)).reduce((n, r) => n + r.count, 0);
@@ -265,7 +266,7 @@ function historyKicker(h: DraftHistoryView): string {
   return `${pct}% of picks spent on ${label}.`;
 }
 
-function playerCell(pick: DraftPick): string {
+export function playerCell(pick: DraftPick): string {
   const href = getPlayerProfileUrl(pick.name);
   return href
     ? `<a class="sct-dr-name sct-player-link" href="${e(href)}" target="_top">${e(pick.name)}</a>`
@@ -279,8 +280,13 @@ function playerCell(pick: DraftPick): string {
  * pairing, or whom Sleeper has no photo of, keeps a bare well so the names
  * stay aligned and nobody wears another player's face.
  */
+/** The id the headshot route knows the pick by, or null when no pairing is known. */
+export function faceIdFor(team: NflTeam, pick: DraftPick): string | null {
+  return pick.sleeperId ?? rosterPlayer(team, pick.name)?.id ?? null;
+}
+
 function faceWell(team: NflTeam, pick: DraftPick): string {
-  const id = pick.sleeperId ?? rosterPlayer(team, pick.name)?.id ?? null;
+  const id = faceIdFor(team, pick);
   const img = id
     ? headshotImg({
         src: null,
@@ -360,7 +366,7 @@ export function collegeName(college: string): string {
  * traded or waived player shows where they sit on the new club's chart and
  * the Status column says which club that is. Empty when no chart lists them.
  */
-function depthSlotCell(pick: DraftPick, club: string, statusDoc: DraftStatusDoc | null): string {
+export function depthSlotCell(pick: DraftPick, club: string, statusDoc: DraftStatusDoc | null): string {
   const entry = pick.gsisId ? statusDoc?.players[pick.gsisId] : undefined;
   const now = entry?.now;
   if (now && (now.kind === "none" || now.kind === "retired")) return "";
@@ -513,7 +519,10 @@ export function renderDraftSection(team: NflTeam, view: DraftView, season: numbe
     `<aside class="sct-dr-rail">${rail.join("")}</aside>` +
     classes +
     `</div>` +
-    `</div>`
+    `</div>` +
+    // The premium comparison (mak's brief, 2026-11-05) under the whole
+    // original tab; the original stays the design until mak approves.
+    renderDraftPremium(team, view, season)
     // The club-specific FAQ (draft-faq.ts, mak 2026-11-02) is the section's
     // tail, placed by team-render.ts like every other tab's questions.
   );

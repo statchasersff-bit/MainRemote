@@ -59,8 +59,7 @@ import { faqEntries, renderFaqBlock } from "./team/faq-block";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
-import { renderPremiumTeamHeader } from "./team/team-header-premium";
-import { renderPremiumTeamHeaderB } from "./team/team-header-premium-b";
+import { renderTeamHeader } from "./team/team-header";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
@@ -361,54 +360,10 @@ function siteLink(
 
 /* ------------------------------------------------------------------- hero */
 
-/**
- * The place alone, out of a standing that spells the division out after it.
- *
- * ESPN sends "2nd in AFC East", and the division half of that is the chip
- * immediately to its left - so it is the one piece of text in this row that can
- * go without taking a fact with it. Returns nothing if the string is not in
- * that shape: ESPN also sends bare places ("1st"), and a club with no division
- * standing at all gets whatever it does send, unshortened.
- */
-function shortStanding(standing: string): string | undefined {
-  const place = standing.split(/\s+in\s+/)[0]?.trim();
-  return place && place !== standing.trim() ? place : undefined;
-}
-
-/**
- * A fact chip, and the order in which the row gives things up.
- *
- * `spend` is the rung at which this chip's short form takes over. The row goes
- * down the ladder one rung at a time and stops as soon as it fits, so the order
- * is a ranking of what a reader can most afford to lose:
- *
- *   short - the standing's division, which is the chip two to its left;
- *   tight - "Week 11" down to "W11", where the label still says BYE;
- *   drop  - the Bye chip itself, off the row.
- *
- * Adding a rung means a name here, a rule in team.css, and its place in
- * FACT_STAGES in client/team.ts. Nothing else reads these.
- */
+/** A header fact: the label the KPI card prints over the value. */
 export interface HeroFact {
   label: string;
   value: string;
-  /** The same fact, shorter. Without one the chip never changes. */
-  short?: string;
-  spend?: "short" | "tight";
-  /**
-   * Whether the row may take this chip off altogether at the last rung.
-   *
-   * The rung above this one has already spent every abbreviation there is, so
-   * what is left when the row still does not fit is a choice between a chip on
-   * a second line and no chip. A wrapped Bye is one short word alone on a row
-   * with the rest of the line empty beside it - it reads as a mistake, and it
-   * is mak's own call that it should go instead.
-   *
-   * Only a fact the hub states somewhere else may carry this. The bye does:
-   * the Schedule tab prints it as a row of the season table and again in the
-   * summary beside it, so what goes here is a shortcut, not the information.
-   */
-  drop?: boolean;
 }
 
 /** The hero's facts in order: record, standing, head coach, bye; each only when the data has it. */
@@ -424,73 +379,19 @@ export function heroFactList(data: TeamPageData): HeroFact[] {
     facts.push({ label: "Record", value: data.profile.record });
   }
   if (data.profile?.standing) {
-    facts.push({
-      label: "Standing",
-      value: data.profile.standing,
-      short: shortStanding(data.profile.standing),
-      spend: "short",
-    });
+    facts.push({ label: "Standing", value: data.profile.standing });
   }
   if (data.profile?.headCoach) {
     facts.push({ label: "Head Coach", value: data.profile.headCoach });
   }
   if (data.schedule?.byeWeek) {
-    // "W11" only ever shows under a label that already says BYE, which is what
-    // makes a single letter readable: the chip is "BYE / W11", not "W11".
-    facts.push({
-      label: "Bye",
-      value: `Week ${data.schedule.byeWeek}`,
-      short: `W${data.schedule.byeWeek}`,
-      spend: "tight",
-      // The last thing the row gives up, and the only chip it may give up
-      // whole. See HeroFact.drop.
-      drop: true,
-    });
+    facts.push({ label: "Bye", value: `Week ${data.schedule.byeWeek}` });
   }
 
   return facts;
 }
 
-function heroFacts(data: TeamPageData): string {
-  const facts = heroFactList(data);
-  if (facts.length === 0) return "";
-
-  // Both spellings ship, and one of them is `display: none` - so exactly one is
-  // in the accessibility tree and each fact is announced once. Which one shows
-  // is client/team.ts's only layout decision: it is made by measuring this row,
-  // because the width at which five chips stop fitting depends on a coach's
-  // name as much as on the window. With no script the row keeps every full
-  // form and wraps, which is what it did before there were short ones. The
-  // full text is on the chip's `title` either way.
-  return (
-    `<ul class="sct-facts" data-sct-facts>` +
-    facts
-      .map((fact) => {
-        const swaps = fact.short && fact.spend;
-        const value = swaps
-          ? `<span class="sct-swap sct-swap--full">${escapeHtml(fact.value)}</span>` +
-            `<span class="sct-swap sct-swap--short">${escapeHtml(fact.short!)}</span>`
-          : escapeHtml(fact.value);
-        const spend = swaps
-          ? ` data-sct-spend="${fact.spend}" title="${escapeHtml(fact.value)}"`
-          : "";
-        // Marked in the markup rather than found by label in the bundle: which
-        // chip may go is a decision about the facts, and it belongs with them.
-        const drop = fact.drop ? ` data-sct-drop` : "";
-        return (
-          `<li class="sct-fact"${spend}${drop}>` +
-          `<span class="sct-fact-label">${escapeHtml(fact.label)}</span>` +
-          `<span class="sct-fact-value">${value}</span>` +
-          `</li>`
-        );
-      })
-      .join("") +
-    `</ul>`
-  );
-}
-
-/** `premium`: the class a premium comparison copy carries instead of data-sct-switch (A: sct-tp-switch, B: sct-tpb-switch). */
-export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium: false | string = false): string {
+export function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
 
@@ -536,9 +437,7 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium:
   // <a href> - so the switcher is also 31 crawlable internal links rather than
   // a dead end. The client bundle only adds outside-click and Escape.
   return (
-    // The premium header's copy carries no data-sct-switch: the bundle wires
-    // the first one only, and both work without it (a <details>).
-    `<details class="sct-switch${premium ? ` ${premium}` : ""}"${premium ? "" : " data-sct-switch"}>` +
+    `<details class="sct-switch" data-sct-switch>` +
     `<summary class="sct-switch-summary">` +
     // Lazy even though it is above the fold: a lazy image inside the viewport
     // is still fetched straight away, just at a lower priority than the hero
@@ -557,131 +456,34 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium:
   );
 }
 
-function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
-  const { team } = data;
-  // Standalone, the hero is the page's <h1>. Embedded, WordPress supplies the
-  // H1: from the theme's title above the fragment (so this is an <h2> under
-  // it), or - in "the tool supplies the heading" mode - promoted from the
-  // panel's own opening heading BELOW this hero. In that mode an <h2> here
-  // would be the first heading on the page, ahead of the H1, so the club's
-  // name is printed as a plain block with the heading's class and look. The
-  // page-specific heading is the one that names the page (2026-11-03).
-  const headingTag = options.ownHeading ? "p" : options.embed ? "h2" : "h1";
-
-  // The team's name, on every one of the hub's addresses.
-  //
-  // A section-scoped URL used to put the page's subject here instead - "New
-  // England Patriots Depth Chart 2026" - which meant the header rewrote itself
-  // every time a reader clicked a tab. The hero is the club's identity and it
-  // does not track which panel is open. Each section prints its own heading
-  // again, scoped or not, so the phrase is still on the page and still exactly
-  // once; see renderOutlook(), renderSchedule(), renderDepthChart() and
-  // renderMatchups(). The document title, the description and the tab strip
-  // are what say which address this is.
-  const heroTitle = team.fullName;
-
-  const updated =
-    data.newsUpdatedAtMs !== null
-      ? (() => {
-          const parts = easternParts(data.newsUpdatedAtMs);
-          return (
-            `<p class="sct-hero-updated">Last updated ` +
-            `<time datetime="${escapeHtml(new Date(data.newsUpdatedAtMs).toISOString())}"` +
-            ` data-ts="${data.newsUpdatedAtMs}">` +
-            `${escapeHtml(`${parts.month} ${parts.day}, ${parts.time}`)}</time></p>`
-          );
-        })()
-      : "";
-
-  return (
-    `<header class="sct-hero">` +
-    // Two decorative layers: the team-colored aura behind the crest and the
-    // oversized crest itself at 4% opacity. Both aria-hidden, both painted from
-    // custom properties set on the root element so there is one place a team's
-    // colors enter the page.
-    //
-    // They are wrapped rather than being direct children of the hero because
-    // the wrapper is what carries the clip. The hero itself used to, and an
-    // `overflow: hidden` hero also clips the team switcher's dropdown - which
-    // opens below its summary and was therefore being cut off. See
-    // .sct-hero-decor in team.css.
-    `<span class="sct-hero-decor" aria-hidden="true">` +
-    `<span class="sct-hero-aura"></span>` +
-    `<span class="sct-hero-watermark"></span>` +
-    `</span>` +
-    `<div class="sct-hero-inner">` +
-    `<div class="sct-hero-crest">` +
-    // The hero logo is the page's likeliest LCP element, so it loads eagerly and
-    // at high priority. It is the only image on the page that does.
-    `<img class="sct-hero-logo" src="${escapeHtml(team.logo)}"` +
-    ` alt="${escapeHtml(`${team.fullName} logo`)}" width="88" height="88"` +
-    ` fetchpriority="high" decoding="sync" />` +
-    `</div>` +
-    // One wrapper around the three blocks beside the crest, because the row
-    // they share has to break on its CONTENT rather than at a width. The
-    // switcher is a pill as wide as the team's name - "Washington Commanders"
-    // is 265px, "Chicago Bears" is 190 - so the width at which it stops fitting
-    // beside the title is a different width for every team. A flex row that
-    // wraps answers that per team; a media query can only answer it once, for
-    // the worst case. See .sct-hero-head in team.css.
-    `<div class="sct-hero-head">` +
-    `<div class="sct-hero-text">` +
-    `<p class="sct-eyebrow">${escapeHtml(`${team.division} · ${data.state.season} Season`)}</p>` +
-    `<${headingTag} class="sct-title">${escapeHtml(heroTitle)}</${headingTag}>` +
-    // On the section pages too: the hero is the same block wherever the reader
-    // is in the hub, and a standfirst that disappeared on four of five tabs was
-    // the other half of the header moving under them.
-    //
-    // `data-sct-lead` is the hook the bundle drops it by when it would take a
-    // second line - the same trade the Bye chip makes, and mak's call for the
-    // same reason: this line says what the <h1> above it and the eyebrow above
-    // that have already said between them, so on a phone it is two rows of
-    // repetition where the hero has no rows to spare. It ships with no value
-    // and stays in the markup at every width; client/team.ts sets "off" after
-    // measuring, and team.css is what hides it. A width cannot decide this -
-    // the line is the club's own name plus four words, so it wraps at 470px
-    // for Washington and at 360px for Buffalo.
-    `<p class="sct-subtitle" data-sct-lead>${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
-    `</div>` +
-    // The chips and the timestamp are a row of their own rather than the tail
-    // of the name block, because the name block is boxed in by the switcher
-    // beside it and they are not. Sharing that column cost them about 220px -
-    // the width of the switcher and its gap - and the Bye chip was dropping to
-    // a second line at around 1000px with the whole of that width sitting
-    // empty underneath the button. On its own grid row it spans under the
-    // switcher and stays one line to roughly 780px, below which the hero
-    // restacks anyway. Kept after .sct-hero-text in the markup so the reading
-    // and tab order is still name, then facts, then the switcher; that it is
-    // PAINTED after the switcher is one `order` declaration in team.css.
-    `<div class="sct-hero-meta">${heroFacts(data)}${updated}</div>` +
-    `<div class="sct-hero-actions">${teamSwitcher(team, options)}</div>` +
-    `</div>` +
-    `</div>` +
-    `</header>`
-  );
-}
-
 /**
- * The premium comparisons of the hero and the strip (mak's briefs, 2026-11-05):
- * Design A (dark navy) then Design B (bright blue, light strip), under both
- * originals, labeled, on the same facts, switcher links and tab addresses.
- * Neither is the default until mak picks one.
+ * The page header: the hero (crest, division and season, the club's name, the
+ * switcher, the KPI cards, the freshness line) and the section strip under
+ * it, both drawn by team/team-header.ts (mak's pick, 2026-11-05: "Design B",
+ * the bright blue hero with the light strip; the original header and the dark
+ * "Design A" were removed the same day).
+ *
+ * Standalone, the club's name is the page's <h1>. Embedded, WordPress supplies
+ * the H1 and the name is an <h2>. On a page whose own heading WordPress
+ * promotes (`ownHeading`), it is a plain block with the heading's look: the
+ * page-specific heading is the one that names the page (2026-11-03).
+ *
+ * The name is the club's on every one of the hub's addresses. A section URL
+ * used to put the page's subject here instead, which meant the header rewrote
+ * itself every time a reader clicked a tab. Each section prints its own
+ * heading again, so the phrase is still on the page exactly once; the document
+ * title, the description and the strip are what say which address this is.
  */
-function premiumHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Section[], activeId?: string): string {
-  const input = (switcher: string) => ({
+function teamHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Section[], activeId?: string): string {
+  return renderTeamHeader({
     team: data.team,
     season: data.state.season,
-    facts: heroFactList(data).map((f) => ({ label: f.label, value: f.value })),
+    headingTag: options.ownHeading ? "p" : options.embed ? "h2" : "h1",
+    facts: heroFactList(data),
     updatedMs: data.newsUpdatedAtMs,
-    switcher,
+    switcher: teamSwitcher(data.team, options),
     tabs: navItems(tabs, data.team, data.state.season, options, activeId),
   });
-  // A (dark navy, integrated strip) then B (bright blue, light strip), each on
-  // its own copy of the switcher so the bundle wires only the original.
-  return (
-    renderPremiumTeamHeader(input(teamSwitcher(data.team, options, "sct-tp-switch"))) +
-    renderPremiumTeamHeaderB(input(teamSwitcher(data.team, options, "sct-tpb-switch")))
-  );
 }
 
 /* ------------------------------------------------------------- section nav */
@@ -826,36 +628,6 @@ export function navItems(
         : sectionPath(prefix, team.slug, section.id);
       return { id: section.id, label: section.label, href, active: section.id === active, heading, lead, title };
     });
-}
-
-function renderNav(
-  sections: Section[],
-  team: NflTeam,
-  season: number,
-  options: TeamRenderOptions,
-  activeId?: string,
-): string {
-  const list = navItems(sections, team, season, options, activeId);
-  if (!list.length) return "";
-  const items = list
-    .map(
-      (t) =>
-        `<li><a class="sct-nav-link${t.active ? " is-active" : ""}"` +
-        ` id="${escapeHtml(t.id)}-tab"` +
-        ` href="${escapeHtml(t.href)}"` +
-        ` data-sct-panel-id="${escapeHtml(t.id)}"` +
-        ` data-sct-heading="${escapeHtml(t.heading)}"` +
-        ` data-sct-lead="${escapeHtml(t.lead)}"` +
-        ` data-sc-title="${escapeHtml(t.title)}"` +
-        `>${escapeHtml(t.label)}</a></li>`,
-    )
-    .join("");
-
-  return (
-    `<nav class="sct-nav" aria-label="Team sections" data-sct-nav>` +
-    `<ul class="sct-nav-list">${items}</ul>` +
-    `</nav>`
-  );
 }
 
 /* --------------------------------------------------------------- snapshot */
@@ -2288,7 +2060,7 @@ function renderOutlook(
   return (
     `<div class="sct-block">` +
     // Printed on a section page too - the hero is the club's name alone and
-    // this is what names the panel. See renderHero().
+    // this is what names the panel. See teamHeader().
     h2(`${outlook.season} Fantasy Outlook`) +
     `<p class="sct-outlook-stamp">${meta}</p>` +
     `<p class="sct-outlook-lede">${escapeHtml(outlook.summary)}</p>` +
@@ -4983,9 +4755,7 @@ export function renderTeamPage(
   if (scoped) {
     return (
       `<div ${rootAttrs} data-section="${escapeHtml(scoped.id)}"${rootStyle}>` +
-      renderHero(data, options) +
-      renderNav(tabs, team, data.state.season, options, scoped.id) +
-      premiumHeader(data, options, tabs, scoped.id) +
+      teamHeader(data, options, tabs, scoped.id) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
       (options.ownHeading
@@ -5037,9 +4807,7 @@ export function renderTeamPage(
 
   return (
     `<div ${rootAttrs}${rootStyle}>` +
-    renderHero(data, options) +
-    renderNav(tabs, team, data.state.season, options) +
-    premiumHeader(data, options, tabs) +
+    teamHeader(data, options, tabs) +
     body +
     renderTails(panels) +
     // After the sections, because it describes them: `faq` is only complete

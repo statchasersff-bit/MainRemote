@@ -14,6 +14,7 @@ import { cleanupBundles, importModule } from "./helpers/bundle.mjs";
 
 const ol = await importModule("lib/player/outlook-tab");
 const olp = await importModule("lib/player/outlook-premium");
+const olr = await importModule("lib/player/outlook-projection-premium");
 const measures = await importModule("lib/player/outlook-tab-data");
 const data = await importModule("lib/player/data");
 
@@ -502,5 +503,101 @@ describe("the premium comparison of the four closing sections (mak's brief, 2026
 
   test("a position the spec does not cover renders nothing", () => {
     assert.equal(olp.renderOutlookPremium(state({ player: { id: "1", slug: "x", name: "X Y", position: "K", injury_status: null } })), "");
+  });
+});
+
+describe("the premium comparison of the projection and opportunity sections (mak's brief, 2026-11-05, no portrait)", () => {
+  const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+  const both = (s) => {
+    const opts = { playerPathPrefix: "/nfl/players/", teamPathPrefix: "/nfl/teams/" };
+    const page = new JSDOM(`<!doctype html><body>${ol.renderOutlookTab(s, opts)}${olr.renderOutlookProjectionPremium(s, opts)}</body>`).window.document;
+    return { page, orig: page.querySelector(".scp-ol"), prm: page.querySelector("#outlook-projection-premium") };
+  };
+
+  test("renders under the originals from the same model: every word, figure and link agrees", () => {
+    const { orig, prm } = both(wr());
+    assert.ok(prm, "the premium block renders");
+    assert.match(text(prm.querySelector(".scp-olr-flag")), /^New design - comparison$/);
+    // No portrait, no image of any kind, no empty art column.
+    assert.equal(prm.querySelectorAll("img, picture, .scp-ol-feat, .scp-ol-feat-art").length, 0);
+    // Titles are h3s: the approved H2 ladder is not duplicated while both versions are on the page.
+    assert.equal(prm.querySelectorAll("h1, h2").length, 0);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-bar-title")].map(text), ["Michael Wilson Rest-of-Season Projection", "Opportunity vs. Production"]);
+    assert.equal(text(prm.querySelector(".is-proj .scp-olr-bar-sub")), "Through Week 8");
+    // The badges are the hero's chips, same words, same colors.
+    const chips = [...orig.querySelectorAll(".scp-ol-tags .scp-ol-chip")].map((c) => `${c.className.match(/is-\w+/)[0]}:${text(c)}`);
+    const tags = [...prm.querySelectorAll(".scp-olr-tag")].map((c) => `${c.className.match(/is-\w+/)[0]}:${text(c)}`);
+    assert.deepEqual(tags, chips);
+    assert.ok(tags.length >= 2);
+    // The takeaway and the read's sentences, with the figures bolded.
+    assert.equal(text(prm.querySelector(".scp-olr-thesis")), text(orig.querySelector(".scp-ol-feat-h")));
+    const paras = [...orig.querySelectorAll(".scp-ol-sec-read .scp-ox-prose p")].map(text);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), paras);
+    assert.ok(prm.querySelector(".scp-olr-ob p strong"), "figures are bolded");
+    assert.match(prm.querySelector(".scp-olr-ob p").innerHTML, /<strong>19\.4<\/strong>/);
+    // Supports / threatens: the same sentences.
+    assert.deepEqual(
+      [...prm.querySelectorAll(".scp-olr-factor p")].map(text),
+      [...orig.querySelectorAll(".scp-ol-st-cell p")].map(text),
+    );
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-factor-h")].map(text), ["What supports his value", "What threatens his value"]);
+    // Redraft Command: the same link, its own data-cta, the same copy.
+    const btn = prm.querySelector(".scp-olr-btn");
+    assert.equal(btn.getAttribute("href"), orig.querySelector(".scp-ox-panel.is-rc .scp-ox-btn").getAttribute("href"));
+    assert.equal(btn.getAttribute("data-cta"), "redraft-command-outlook-projection-premium");
+    assert.equal(text(btn), "Open Wilson in Redraft Command");
+    assert.equal(text(prm.querySelector(".scp-olr-rc p")), text(orig.querySelector(".scp-ox-panel.is-rc p")));
+    // Best fit: the same rows and chips, the same assumptions line.
+    assert.deepEqual(
+      [...prm.querySelectorAll(".scp-olr-fit-row")].map((r) => `${text(r.querySelector(".scp-olr-fit-league"))}=${text(r.querySelector(".scp-olr-pill"))}`),
+      [...orig.querySelectorAll(".scp-ol-fit")].map((r) => `${text(r.children[0])}=${text(r.children[1])}`),
+    );
+    assert.equal(text(prm.querySelector(".scp-olr-fit-note")), text(orig.querySelector(".scp-ol-fitnote")));
+    // Opportunity: the same six figures, split 3 + 3 into the two groups, the first gold.
+    const kpis = [...prm.querySelectorAll(".scp-olr-kpi")].map((t) => `${text(t.querySelector("dt"))}=${text(t.querySelector("dd"))}`);
+    const tiles = [...orig.querySelectorAll(".scp-ol-tile")].map((t) => `${text(t.querySelector("dt"))}=${text(t.querySelector("dd"))}`);
+    assert.deepEqual(kpis, tiles);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-group-label")].map(text), ["Production Efficiency", "Opportunity Share"]);
+    assert.equal(prm.querySelectorAll(".scp-olr-group.is-prod .scp-olr-kpi").length, 3);
+    assert.equal(prm.querySelectorAll(".scp-olr-group.is-opp .scp-olr-kpi").length, 3);
+    assert.ok(prm.querySelector(".scp-olr-kpi:first-child").classList.contains("is-lead"));
+    assert.deepEqual(
+      [...prm.querySelectorAll(".scp-olr-kpi-sub")].map(text),
+      [...orig.querySelectorAll(".scp-ol-tsub")].map(text),
+    );
+    assert.equal(text(prm.querySelector(".scp-olr-lede")), text(orig.querySelector(".scp-ol-sec-opp .scp-ox-lede")));
+    // The takeaway rows: the same claims and sentences.
+    assert.deepEqual(
+      [...prm.querySelectorAll(".scp-olr-read")].map((r) => `${text(r.querySelector(".scp-olr-read-claim"))} ${text(r.querySelector(".scp-olr-read-text"))}`),
+      [...orig.querySelectorAll(".scp-ol-tk-row p")].map(text),
+    );
+    assert.equal(prm.querySelector(".scp-olr-more a").getAttribute("href"), orig.querySelector(".scp-ol-more a").getAttribute("href"));
+    assert.match(prm.querySelector(".scp-olr-more a").getAttribute("href"), /^\/nfl\/teams\/arizona-cardinals\/usage\/$/);
+    assert.doesNotMatch(prm.textContent, /—/);
+    assert.doesNotMatch(prm.innerHTML, /&amp;#39;|&#39;s<strong>/, "apostrophes survive the bolding");
+  });
+
+  test("bolding the figures: entities and glued digits are left alone", () => {
+    assert.equal(olr.emphasize("Wilson's 27.6% share, 6th of 97, Week 9, Top-8, WR16, 2QB, +0.4"), "Wilson&#39;s <strong>27.6%</strong> share, <strong>6th of 97</strong>, <strong>Week 9</strong>, Top-8, WR16, 2QB, <strong>+0.4</strong>");
+  });
+
+  test("an injured player: the designation badge, the injured sentence as the alert row, no usage-based supports when benched", () => {
+    const s = wr({ player: { id: "10232", slug: "michael-wilson", name: "Michael Wilson", position: "WR", injury_status: "Out" }, designation: { injury_status: "Out", injury_body_part: "Knee" } });
+    const { orig, prm } = both(s);
+    if (!prm) return; // the originals render nothing for this state either
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), [...orig.querySelectorAll(".scp-ol-sec-read .scp-ox-prose p")].map(text));
+    const last = prm.querySelector(".scp-olr-ob:last-child");
+    if (prm.querySelectorAll(".scp-olr-ob").length > 1 && /out/i.test(text(last))) assert.ok(last.classList.contains("is-alert"));
+  });
+
+  test("no usage row (the QB fixture): the projection renders, the opportunity section is left out as in the original; a position the spec does not cover, or the preseason, renders nothing", () => {
+    const { orig, prm } = both(state());
+    assert.ok(prm);
+    assert.ok(prm.querySelector(".scp-olr-sec.is-proj"));
+    assert.equal(orig.querySelector(".scp-ol-sec-opp"), null);
+    assert.equal(prm.querySelector(".scp-olr-sec.is-opp"), null);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), [...orig.querySelectorAll(".scp-ol-sec-read .scp-ox-prose p")].map(text));
+    assert.equal(olr.renderOutlookProjectionPremium(state({ player: { ...state().player, position: "K" } })), "");
+    assert.equal(olr.renderOutlookProjectionPremium(state({ leagueWeek: 0, season: 2026 })), "");
   });
 });

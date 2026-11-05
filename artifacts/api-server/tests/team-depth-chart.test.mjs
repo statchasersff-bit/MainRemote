@@ -74,7 +74,7 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
       assert.equal(text(h1s[0]), `${name} Depth Chart`);
       const headings = [...doc.querySelectorAll("h1, h2, h3, h4, h5, h6")];
       assert.equal(headings[0], h1s[0], `the H1 is the first heading, not ${text(headings[0])}`);
-      assert.equal(doc.querySelector(".sct-hero .sct-title").tagName, "P");
+      assert.equal(doc.querySelector(".sct-tpb .sct-tpb-title").tagName, "P");
 
       // No season / refresh stamp under the heading (mak, 2026-11-05).
       assert.equal(doc.querySelector("#depth-chart .sct-dc-stamp"), null);
