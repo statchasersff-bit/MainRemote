@@ -38,7 +38,7 @@ const stroke = (d: string, size = 24, extra = "") =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</g>${extra}</svg>`;
 
 /** Inline icons drawn in currentColor, one per section and metric; decorative. */
-const ICON: Record<string, string> = {
+export const ICON: Record<string, string> = {
   layers: stroke(`<path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5L12 21l9-4.5"/>`, 30),
   bars: stroke(`<path d="M4 20h16"/><path d="M7 20v-7M12 20V5M17 20v-10"/>`, 26),
   target: stroke(`<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>`, 26, `<circle cx="12" cy="12" r="1.8" fill="currentColor"/>`),

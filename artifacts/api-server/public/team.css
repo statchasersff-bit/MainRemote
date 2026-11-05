@@ -26714,3 +26714,493 @@ a.sct-srow-team:focus-visible {
     display: none;
   }
 }
+
+/* ===================================================================
+ * Coaching: the premium comparison of Coaching Career & Historical
+ * Performance (mak's brief, 2026-11-05, attached_assets/historical
+ * reference.png), rendered under the complete original career block.
+ * The block carries .sct-cp + .sct-cpt for the shared tokens and header,
+ * and every rule here is under .sct-cc-. Tiers on `premium`: wide
+ * (900+), narrow (600-899, the chart scrolls), mobile (<600). */
+
+:is(.sct, #sct-table-armour) .sct-cp.sct-cc {
+  margin: 26px 0 30px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body {
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafd 100%);
+}
+
+/* ---- the career as stop rows on a rail */
+:is(.sct, #sct-table-armour) .sct-cc-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 0 34px;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 128px 156px 1px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  min-height: 54px;
+  margin: 0;
+  padding: 7px 16px;
+  border: 1px solid var(--cp-line-soft);
+  border-radius: 13px;
+  background: linear-gradient(100deg, #edf4fc 0%, #f7faff 100%);
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+/* The rail: each row draws its own piece, so the line meets the first and last dots and stops there. */
+:is(.sct, #sct-table-armour) .sct-cc-stop::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  left: -27px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: #cfdcec;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop:first-child::before {
+  top: 50%;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop:last-child::before {
+  bottom: 50%;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-node {
+  position: absolute;
+  top: 50%;
+  left: -27px;
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #8fa9c8;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 3px rgba(13, 35, 67, 0.25);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current {
+  border-color: #e8c75b;
+  background: linear-gradient(100deg, #fffaf0 0%, #fff 100%);
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.18), inset 0 1px 0 #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current .sct-cc-node {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #fff;
+  background: var(--cp-gold);
+  box-shadow: 0 0 0 2.5px var(--cp-gold), 0 0 0 7px rgba(212, 175, 55, 0.18);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-years {
+  --sc-font: var(--cp-display);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 4px 12px;
+  border-radius: 9px;
+  background: #dfe9f5;
+  color: var(--cp-navy-deep);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current .sct-cc-years {
+  background: #fdf2cf;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-crest {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-code {
+  --sc-font: var(--cp-display);
+  color: var(--cp-navy-deep);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-slash {
+  color: var(--cp-muted);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sep {
+  width: 1px;
+  height: 28px;
+  background: #c4d2e3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-role {
+  min-width: 0;
+  color: var(--cp-ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* ---- the chart card */
+:is(.sct, #sct-table-armour) .sct-cc-chartbody {
+  padding: 14px 16px 14px;
+  background: var(--cp-card);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-chart {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--sc-font);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-svg.is-narrow {
+  display: none;
+  min-width: 690px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-grid {
+  stroke: #dbe4ef;
+  stroke-width: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-grid.is-base {
+  stroke: #c4d2e3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-tick {
+  fill: #50657f;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-year {
+  fill: #50657f;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-year.is-current {
+  fill: var(--cp-navy-deep);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-avg {
+  fill: none;
+  stroke: #b2c5de;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-link {
+  stroke: #c3d1e2;
+  stroke-width: 2;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-seg {
+  fill: none;
+  stroke: var(--seg);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-seg.is-hc {
+  stroke-dasharray: 2 9;
+  stroke-width: 4;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-dot {
+  fill: var(--seg);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-dot.is-hollow {
+  fill: #fff;
+  stroke: var(--seg);
+  stroke-width: 2.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-dot.is-current {
+  fill: var(--cp-navy-deep);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-ring {
+  fill: #fff;
+  stroke: var(--cp-gold);
+  stroke-width: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pt:focus {
+  outline: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pt:focus-visible .sct-cc-dot {
+  stroke: var(--cp-gold);
+  stroke-width: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stem {
+  stroke: #9fb4cc;
+  stroke-width: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill rect {
+  fill: #e9f1fa;
+  stroke: #cfdded;
+  stroke-width: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill text {
+  fill: var(--cp-navy-deep);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill.is-avg rect {
+  fill: #e6eef8;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill.is-avg text {
+  fill: #50657f;
+  font-size: 13px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout rect {
+  fill: #fff;
+  stroke: #cfdded;
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 4px rgba(13, 35, 67, 0.12));
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout .v {
+  fill: var(--cp-navy-deep);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout .k {
+  fill: #50657f;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout.is-current rect {
+  stroke: #e8c75b;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout.is-current .k {
+  fill: var(--cp-gold-text);
+}
+
+/* ---- legend and note */
+:is(.sct, #sct-table-armour) .sct-cc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 10px 0 12px;
+  padding: 0 4px;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #50657f;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw {
+  display: inline-block;
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--seg);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw.is-hc {
+  height: 0;
+  border-top: 4px dotted var(--cp-navy-deep);
+  background: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw.is-hollow {
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2.5px solid var(--cp-navy-deep);
+  border-radius: 50%;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw.is-avg {
+  background: #b2c5de;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--cp-line-soft);
+  border-radius: 10px;
+  background: #eef4fb;
+  color: #3f556f;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-note-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--cp-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-empty {
+  margin: 0;
+  color: var(--cp-muted);
+  font-size: 0.86rem;
+}
+
+/* ---- narrow: 600-899px (the live column is ~720px). Rows tighten; the chart scrolls at its narrow size. */
+@container premium (max-width: 899px) {
+  :is(.sct, #sct-table-armour) .sct-cc-stop {
+    grid-template-columns: 106px 124px 1px minmax(0, 1fr);
+    gap: 12px;
+    padding: 6px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-years {
+    min-height: 34px;
+    padding: 4px 9px;
+    font-size: 1.25rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-crest {
+    width: 26px;
+    height: 26px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-code {
+    font-size: 1.15rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-role {
+    font-size: 0.88rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-wide {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-narrow {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body,
+  :is(.sct, #sct-table-armour) .sct-cc-chartbody {
+    padding: 14px;
+  }
+}
+
+/* ---- mobile: under 600px. Year and club on one line, the role under them; the chart scrolls. */
+@container premium (max-width: 599px) {
+  :is(.sct, #sct-table-armour) .sct-cc-stops {
+    padding-left: 28px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-stop {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "years team" "role role";
+    row-gap: 6px;
+    column-gap: 12px;
+    padding: 10px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-stop::before,
+  :is(.sct, #sct-table-armour) .sct-cc-node {
+    left: -22px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-years {
+    grid-area: years;
+    font-size: 1.15rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-team {
+    grid-area: team;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-sep {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-role {
+    grid-area: role;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-narrow {
+    min-width: 700px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-legend {
+    gap: 6px 14px;
+  }
+}

@@ -909,8 +909,8 @@ describe("the game log tab", () => {
     const newRows = [...wrap.querySelectorAll(".scp-bkp-row")].map((r) => ({
       week: text(r.querySelector(".scp-bkp-week b")),
       head: text(r.querySelector(".scp-bkp-head")),
-      line: text(r.querySelector(".scp-bkp-line")).replace(new RegExp(` ${text(r.querySelector(".scp-bkp-note")).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), ""),
-      note: text(r.querySelector(".scp-bkp-note")),
+      line: text(r.querySelector(".scp-bkp-line")).replace(new RegExp(` ${text(r.querySelector(".scp-bkp-rnote")).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), ""),
+      note: text(r.querySelector(".scp-bkp-rnote")),
       pts: text(r.querySelector(".scp-bkp-fp-v b")),
       badge: text(r.querySelector(".scp-bkp-fbadge")),
     }));
