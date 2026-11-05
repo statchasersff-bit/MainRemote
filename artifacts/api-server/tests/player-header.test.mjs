@@ -101,24 +101,29 @@ describe("player header", () => {
     assert.equal(h.querySelector(".scp-phead-kind"), null, "no second line on the profile");
     assert.equal(text(h.querySelector(".scp-phead-h1")), "Jacoby Brissett");
 
-    const spec = [...h.querySelectorAll(".scp-pspec > div")].map((d) => [
-      text(d.querySelector("dt")),
-      text(d.querySelector("dd")),
-    ]);
-    assert.deepEqual(spec, [
-      ["Age", "33"],
-      ["Height / weight", `6'4", 235 lb`],
-      ["Experience", "11th season"],
-      ["Drafted", "2016 R3, #91"],
-    ]);
+    // One dotted line, no labels (mak, 2026-11-04); the readings survive
+    // as tooltips.
+    assert.equal(text(h.querySelector(".scp-pspec")), `33 yrs · 6'4", 235 · 11th season · 2016 R3 #91`);
+    assert.equal(h.querySelector(".scp-pspec").tagName, "P");
+    assert.deepEqual(
+      [...h.querySelectorAll(".scp-pspec-i")].map((i) => i.getAttribute("title")),
+      ["Age", "Height, weight (lb)", "Experience", "Drafted 2016, round 3, pick 91"],
+    );
+    assert.equal(h.querySelector(".scp-pspec dt"), null, "no labels");
 
-    // "2026 Season" above the board, outside it (mak, 2026-09-30).
-    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2026 Season");
-    assert.equal(h.querySelector(".scp-pboard .scp-pboard-cap"), null);
+    // The fantasy board: one dotted run in the navy card, beside the
+    // identity under a caption that says it is fantasy (mak, 2026-11-04).
+    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2026 Fantasy Season");
     assert.ok(h.querySelector(".scp-pboard-wrap > .scp-pboard-cap + .scp-pboard"));
-    const board = [...h.querySelectorAll(".scp-pboard-stats > div")].map((d) => text(d.querySelector("dd")));
-    assert.deepEqual(board, ["16.5", "QB17", "13%"]);
-    assert.ok(h.querySelector(".scp-pboard-stats > div:first-child").classList.contains("is-lead"));
+    assert.ok(h.querySelector(".scp-pid + .scp-pboard-wrap"), "the board follows the identity column");
+    assert.equal(h.querySelector(".scp-pid .scp-pboard"), null, "not inside it");
+    assert.equal(text(h.querySelector(".scp-pboard-fan")), "16.5 PPG · QB17 · 13% rostered");
+    assert.equal(h.querySelector(".scp-pline"), null, "no game log, no counting line");
+    const fan = [...h.querySelectorAll(".scp-pboard-fan .scp-pstat")];
+    assert.deepEqual(fan.map((c) => text(c.querySelector("b"))), ["16.5", "QB17", "13%"]);
+    assert.ok(fan[0].classList.contains("is-lead"));
+    assert.equal(fan[0].querySelector("abbr").getAttribute("title"), "PPR fantasy points per game");
+    assert.equal(fan[1].querySelector("abbr"), null, "QB17 says what it is");
 
     assert.equal(
       text(h.querySelector(".scp-pstrip-mu")),
@@ -138,7 +143,11 @@ describe("player header", () => {
     assert.equal(img.getAttribute("alt"), "Jacoby Brissett headshot");
     assert.ok(img.getAttribute("width") && img.getAttribute("height"), "the photo reserves its box");
 
-    assert.ok(!h.textContent.includes("·"), "no middle dots anywhere in the header");
+    // The dotted runs are the only middle dots: none in the tags, the
+    // heading or the action strip.
+    for (const zone of [".scp-ptags", ".scp-phead-h1", ".scp-pstrip"]) {
+      assert.ok(!h.querySelector(zone).textContent.includes("·"), `no middle dots in ${zone}`);
+    }
   });
 
   test("the heading's second line is the section's word, and the analytics tags follow the tab", () => {
@@ -173,37 +182,49 @@ describe("player header", () => {
     );
   });
 
-  test("the college joins the spec row, and the production line sums the log", () => {
+  test("the college joins the bio line, and the strip's second group sums the log", () => {
     const log = [
       { week: 1, game_status: "active", stats: { pass_att: 30, pass_cmp: 20, pass_yd: 250, pass_td: 2, pass_int: 1 } },
       { week: 2, game_status: "active", stats: { pass_att: 35, pass_cmp: 22, pass_yd: 300, pass_td: 1, pass_int: 0 } },
       { week: 3, game_status: "inactive", stats: {} },
     ];
     const h = header(state({ gameLog: log, bioProfile: { draft: { year: 2016, round: 3, pick: 91 }, college: "NC State" }, statsUpdatedMs: Date.UTC(2026, 10, 2, 12) }));
-    const spec = [...h.querySelectorAll(".scp-pspec > div")].map((d) => text(d.querySelector("dt")));
-    assert.deepEqual(spec, ["Age", "Height / weight", "College", "Experience", "Drafted"]);
-    assert.equal(text([...h.querySelectorAll(".scp-pspec > div")][2].querySelector("dd")), "NC State");
-    const line = [...h.querySelectorAll(".scp-pline > div")].map((d) => [text(d.querySelector("dt")), text(d.querySelector("dd"))]);
-    assert.deepEqual(line, [["CMP/ATT", "42/65"], ["PASS YDS", "550"], ["PASS TD", "3"], ["INT", "1"]]);
-    assert.equal(text(h.querySelector(".scp-pline-cap span")), "2026 season, through Week 3");
-    assert.equal(text(h.querySelector(".scp-pline-upd")), "Updated Nov 2, 2026");
-    assert.ok(h.querySelector(".scp-pline-upd").getAttribute("datetime").startsWith("2026-11-02"));
-    // The identity column reads: tags, name, spec, production, in that order.
+    assert.equal(text(h.querySelector(".scp-pspec")), `33 yrs · 6'4", 235 · NC State · 11th season · 2016 R3 #91`);
+    // The counting line is a second text line under the bio line, not part
+    // of the board (mak, 2026-11-04); its suffix says how far the season has
+    // run. The old "2026 season, through Week 3" caption and "Updated"
+    // stamp are gone, the stamp surviving as the suffix's tooltip.
+    assert.equal(text(h.querySelector(".scp-pboard-fan")), "16.5 PPG · QB17 · 13% rostered");
+    assert.equal(text(h.querySelector(".scp-pline")), "42/65 cmp · 550 yds · 3 TD · 1 INT · thru Wk 3");
+    assert.equal(h.querySelector(".scp-pline").tagName, "P");
+    assert.equal(h.querySelector(".scp-pboard .scp-pline"), null, "not inside the navy board");
+    const raw = [...h.querySelectorAll(".scp-pline .scp-pstat")].map((c) => [text(c.querySelector("b")), text(c.querySelector("abbr"))]);
+    assert.deepEqual(raw, [["42/65", "cmp"], ["550", "yds"], ["3", "TD"], ["1", "INT"]]);
+    assert.equal(h.querySelector(".scp-pline .scp-pstat abbr").getAttribute("title"), "Completions and attempts");
+    assert.equal(h.querySelector(".scp-pline-thru").getAttribute("title"), "Updated Nov 2, 2026");
+    assert.equal(h.querySelector(".scp-pline-wrap"), null);
+    assert.equal(h.querySelector(".scp-pline-upd"), null);
+    assert.ok(!h.textContent.includes("through Week"));
+    assert.ok(!h.textContent.includes("Updated"));
+    // The identity column reads: tags, name, bio line, counting line.
     const pid = h.querySelector(".scp-pid");
-    assert.deepEqual([...pid.children].map((c) => c.className.split(" ")[0]), ["scp-ptags", "scp-phead-h1", "scp-pspec", "scp-pline-wrap"]);
-    assert.ok(!h.textContent.includes("·"), "no middle dots in the header");
+    assert.deepEqual([...pid.children].map((c) => c.className.split(" ")[0]), ["scp-ptags", "scp-phead-h1", "scp-pspec", "scp-pline"]);
 
-    // No log: no line, no stamp, and no empty wrapper.
-    assert.equal(header(state()).querySelector(".scp-pline-wrap"), null);
-    // A receiver reads REC, YDS, TD, Y/R.
+    // No log: no counting line, and no suffix anywhere (the caption scopes the board).
+    const none = header(state());
+    assert.equal(none.querySelector(".scp-pline"), null);
+    assert.equal(none.querySelector(".scp-pline-thru"), null);
+    // A receiver reads rec, yds, TD, Y/R; a back car, yds, TD, rec.
     const wr = header(state({
       player: { ...state().player, position: "WR" },
       gameLog: [{ week: 1, game_status: "active", stats: { rec_tgt: 10, rec: 7, rec_yd: 91, rec_td: 1 } }],
     }));
-    assert.deepEqual(
-      [...wr.querySelectorAll(".scp-pline > div dd")].map(text),
-      ["7", "91", "1", "13.0"],
-    );
+    assert.equal(text(wr.querySelector(".scp-pline")), "7 rec · 91 yds · 1 TD · 13.0 Y/R · thru Wk 3");
+    const rb = header(state({
+      player: { ...state().player, position: "RB" },
+      gameLog: [{ week: 1, game_status: "active", stats: { rush_att: 18, rush_yd: 80, rush_td: 1, rec: 3, rec_td: 1 } }],
+    }));
+    assert.equal(text(rb.querySelector(".scp-pline")), "18 car · 80 yds · 2 TD · 3 rec · thru Wk 3");
   });
 
   test("a bye next: the strip says so and the button targets the game after it", () => {
@@ -243,7 +264,9 @@ describe("player header", () => {
         stats: { gamesPlayed: 17, ppg: 14.2 },
       }),
     );
-    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 Season");
+    // A finished season's figures: the caption names it.
+    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 Fantasy Season");
+    assert.equal(text(h.querySelector(".scp-pboard-fan")), "14.2 PPG · QB22 · 13% rostered");
     assert.equal(text(h.querySelector(".scp-pbtn--dark")), "See Brissett's 2026 outlook");
     assert.match(h.querySelector(".scp-pbtn--dark").getAttribute("href"), /\/jacoby-brissett\/outlook\/$/);
     assert.equal(h.querySelector(".scp-phead-kind"), null, "the profile's heading is the name alone");
@@ -268,8 +291,10 @@ describe("player header", () => {
 
   test("no games played: dashes, never 0.0", () => {
     const h = header(state({ stats: { gamesPlayed: 0, ppg: 0 }, rosterPct: null }));
-    const board = [...h.querySelectorAll(".scp-pboard-stats dd")].map(text);
+    const board = [...h.querySelectorAll(".scp-pboard-fan .scp-pstat b")].map(text);
     assert.deepEqual(board, ["-", "-", "-"]);
+    // The dash cannot say what it stands for, so the rank's word comes back.
+    assert.equal(text(h.querySelector(".scp-pboard-fan")), "- PPG · - rank · - rostered");
   });
 
   test("a free agent: ink-2, no link, no strip", () => {
@@ -313,7 +338,7 @@ describe("player header", () => {
     assert.equal(text(arsb.querySelector(".scp-pbtn--dark")), "Should I start St. Brown in Week 4?");
 
     const owned = (value) =>
-      text(header(state({ rosterPct: { owned: value } })).querySelector(".scp-pboard-stats > div:last-child dd"));
+      text(header(state({ rosterPct: { owned: value } })).querySelector(".scp-pboard-fan .scp-pstat:nth-child(3) b"));
     assert.equal(owned(0.3), "<1%");
     assert.equal(owned(4.6), "5%");
     assert.equal(owned(99.6), "99%");

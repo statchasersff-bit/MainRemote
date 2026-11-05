@@ -143,7 +143,7 @@ const DRIVERS: Record<string, Spec[]> = {
     { label: "Efficiency", unit: "yards after contact per carry", read: total("yardsAfterContactPerAttempt"), format: two, words: ["Strong", "Average", "Weak"] },
   ],
   WR: [
-    { label: "Target volume", unit: "target share", read: total("targetSharePct"), format: pct, words: ["Heavy", "Moderate", "Low"] },
+    { label: "Target share", unit: "target share", read: total("targetSharePct"), format: pct, words: ["Heavy", "Moderate", "Low"] },
     { label: "Downfield role", unit: "air-yards share", read: total("airYardsSharePct"), format: pct, words: ["Downfield", "Moderate", "Limited"] },
     { label: "Efficiency", unit: "yards per route run", read: total("yardsPerRouteRun"), format: two, words: ["Strong", "Average", "Weak"] },
   ],

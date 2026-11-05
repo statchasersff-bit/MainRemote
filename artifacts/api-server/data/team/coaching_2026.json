@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-04",
+  "builtAt": "2026-11-05",
   "sources": [
     "nflverse play-by-play (tendencies, score states, 4th downs, defensive EPA)",
     "FTN Data charting via nflverse, CC-BY-SA 4.0 (play action, motion)",
@@ -191,7 +191,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 5,
+          "rzPlays": 83,
+          "priorFourthShortAll": 19,
+          "priorFourthShortGo": 18,
+          "priorRzPlays": 190
+        }
       },
       "shifts": [
         {
@@ -917,7 +927,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 11,
+          "fourthShortGo": 9,
+          "rzPlays": 111,
+          "priorFourthShortAll": 5,
+          "priorFourthShortGo": 3,
+          "priorRzPlays": 165
+        }
       },
       "shifts": [
         {
@@ -1384,7 +1404,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 9,
+          "fourthShortGo": 6,
+          "rzPlays": 60,
+          "priorFourthShortAll": 13,
+          "priorFourthShortGo": 10,
+          "priorRzPlays": 138
+        }
       },
       "shifts": [
         {
@@ -1802,7 +1832,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 5,
+          "rzPlays": 83,
+          "priorFourthShortAll": 9,
+          "priorFourthShortGo": 8,
+          "priorRzPlays": 175
+        }
       },
       "shifts": [
         {
@@ -2169,7 +2209,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 6,
+          "fourthShortGo": 5,
+          "rzPlays": 71,
+          "priorFourthShortAll": 17,
+          "priorFourthShortGo": 15,
+          "priorRzPlays": 144
+        }
       },
       "shifts": [
         {
@@ -2536,7 +2586,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 12,
+          "fourthShortGo": 10,
+          "rzPlays": 124,
+          "priorFourthShortAll": 15,
+          "priorFourthShortGo": 12,
+          "priorRzPlays": 174
+        }
       },
       "shifts": [
         {
@@ -3094,7 +3154,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 3,
+          "rzPlays": 73,
+          "priorFourthShortAll": 11,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 146
+        }
       },
       "shifts": [
         {
@@ -3873,7 +3943,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 3,
+          "fourthShortGo": 2,
+          "rzPlays": 55,
+          "priorFourthShortAll": 10,
+          "priorFourthShortGo": 8,
+          "priorRzPlays": 125
+        }
       },
       "shifts": [
         {
@@ -4447,7 +4527,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 4,
+          "fourthShortGo": 4,
+          "rzPlays": 104,
+          "priorFourthShortAll": 15,
+          "priorFourthShortGo": 14,
+          "priorRzPlays": 196
+        }
       },
       "shifts": [
         {
@@ -5233,7 +5323,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 6,
+          "fourthShortGo": 2,
+          "rzPlays": 63,
+          "priorFourthShortAll": 9,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 164
+        }
       },
       "shifts": [
         {
@@ -5600,7 +5700,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 4,
+          "fourthShortGo": 4,
+          "rzPlays": 92,
+          "priorFourthShortAll": 13,
+          "priorFourthShortGo": 13,
+          "priorRzPlays": 190
+        }
       },
       "shifts": [
         {
@@ -6113,7 +6223,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 9,
+          "fourthShortGo": 8,
+          "rzPlays": 87,
+          "priorFourthShortAll": 11,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 169
+        }
       },
       "shifts": [
         {
@@ -6938,7 +7058,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 7,
+          "fourthShortAll": 8,
+          "fourthShortGo": 3,
+          "rzPlays": 66,
+          "priorFourthShortAll": 17,
+          "priorFourthShortGo": 10,
+          "priorRzPlays": 160
+        }
       },
       "shifts": [
         {
@@ -7344,7 +7474,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 14,
+          "fourthShortGo": 8,
+          "rzPlays": 68,
+          "priorFourthShortAll": 19,
+          "priorFourthShortGo": 18,
+          "priorRzPlays": 187
+        }
       },
       "shifts": [
         {
@@ -8162,7 +8302,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 3,
+          "fourthShortGo": 2,
+          "rzPlays": 67,
+          "priorFourthShortAll": 21,
+          "priorFourthShortGo": 18,
+          "priorRzPlays": 203
+        }
       },
       "shifts": [
         {
@@ -8621,7 +8771,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 10,
+          "fourthShortGo": 7,
+          "rzPlays": 75,
+          "priorFourthShortAll": 16,
+          "priorFourthShortGo": 13,
+          "priorRzPlays": 186
+        }
       },
       "shifts": [
         {
@@ -9632,7 +9792,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 1,
+          "fourthShortGo": 0,
+          "rzPlays": 51,
+          "priorFourthShortAll": 15,
+          "priorFourthShortGo": 7,
+          "priorRzPlays": 165
+        }
       },
       "shifts": [
         {
@@ -10189,7 +10359,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 6,
+          "fourthShortGo": 5,
+          "rzPlays": 85,
+          "priorFourthShortAll": 22,
+          "priorFourthShortGo": 18,
+          "priorRzPlays": 198
+        }
       },
       "shifts": [
         {
@@ -11052,7 +11232,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 9,
+          "fourthShortGo": 5,
+          "rzPlays": 94,
+          "priorFourthShortAll": 12,
+          "priorFourthShortGo": 10,
+          "priorRzPlays": 114
+        }
       },
       "shifts": [
         {
@@ -11642,7 +11832,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 6,
+          "fourthShortGo": 5,
+          "rzPlays": 61,
+          "priorFourthShortAll": 10,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 140
+        }
       },
       "shifts": [
         {
@@ -12103,7 +12303,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 4,
+          "fourthShortGo": 4,
+          "rzPlays": 44,
+          "priorFourthShortAll": 12,
+          "priorFourthShortGo": 10,
+          "priorRzPlays": 146
+        }
       },
       "shifts": [
         {
@@ -12622,12 +12832,12 @@
       "verified": true,
       "playCaller": {
         "name": "Josh McDaniels",
-        "kicker": "Offensive coordinator · 15th season as Patriots OC · 16th Patriots season with play-calling responsibility",
+        "kicker": "Offensive coordinator · 15th season as Patriots OC · 15th Patriots season with play-calling responsibility",
         "tree": "Belichick / Patriots lineage; historically Erhardt-Perkins-based terminology with substantial evolution over McDaniels' career",
         "subline": "McDaniels remains New England's offensive play-caller in 2026 after directing the NFL's second-highest-scoring offense in 2025 and winning AP Assistant Coach of the Year. Vrabel's September comments continue to describe McDaniels as central to the offensive game-planning and play-calling process.",
         "careerPath": [
           {
-            "role": "Patriots assistant, then QB coach & play-caller (2005); OC & play-caller from 2006 under Belichick",
+            "role": "Patriots assistant, then QB coach (2005; reporting differs on his play-calling that season); OC & play-caller from 2006 under Belichick",
             "years": "2001-08"
           },
           {
@@ -12653,19 +12863,19 @@
         ]
       },
       "reliability": {
-        "priorSeasonsAsCaller": 15,
+        "priorSeasonsAsCaller": 14,
         "sameSchemeFamily": true,
-        "explanation": "Same play-caller as last season: McDaniels returns for Year 2 of his current Patriots stint, his 16th Patriots season with play-calling responsibility. The 2025 offense is a strong stylistic baseline for 2026.",
-        "ledger": "McDaniels - 8 of 8 games in 2026 · 15 prior seasons as caller here, counting 2005, when he called plays as QB coach before taking the OC title; his official bio counts 2026 as his 15th season as OC",
+        "explanation": "Same play-caller as last season: McDaniels returns for Year 2 of his current Patriots stint, his 15th Patriots season with play-calling responsibility. The 2025 offense is a strong stylistic baseline for 2026.",
+        "ledger": "McDaniels - 8 of 8 games in 2026 · 14 prior seasons as caller here (2006-08, 2012-21, 2025); his official bio counts 2026 as his 15th season as Patriots OC. 2005, when he was quarterbacks coach, is not counted: reporting differs on whether he called plays that season",
         "ledgerStats": {
           "called": 8,
           "games": 8,
-          "priorSeasons": 15,
+          "priorSeasons": 14,
           "firstSeason": 2005,
-          "note": "15 prior seasons as caller here, counting 2005, when he called plays as QB coach before taking the OC title; his official bio counts 2026 as his 15th season as OC"
+          "note": "14 prior seasons as caller here (2006-08, 2012-21, 2025); his official bio counts 2026 as his 15th season as Patriots OC. 2005, when he was quarterbacks coach, is not counted: reporting differs on whether he called plays that season"
         }
       },
-      "introAnswer": "For the Patriots the answer is stable: Josh McDaniels called this offense last season too - his 16th Patriots season with play-calling responsibility, across three stints - so last year's tendencies still mean something.",
+      "introAnswer": "For the Patriots the answer is stable: Josh McDaniels called this offense last season too - his 15th Patriots season with play-calling responsibility, across three stints - so last year's tendencies still mean something.",
       "tendencies": {
         "priorLabel": "2025 (McDaniels)",
         "currentLabel": "2026 (McDaniels)",
@@ -12808,7 +13018,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 3,
+          "fourthShortGo": 3,
+          "rzPlays": 63,
+          "priorFourthShortAll": 18,
+          "priorFourthShortGo": 11,
+          "priorRzPlays": 171
+        }
       },
       "shifts": [
         {
@@ -12851,7 +13071,7 @@
         },
         "continuity": {
           "stat": "Year 2",
-          "sub": "Second year of the current McDaniels installation; 16th Patriots play-calling season overall",
+          "sub": "Second year of the current McDaniels installation; 15th Patriots play-calling season overall",
           "body": "A returning install: the same caller as 2025, back for a third stint here. That makes the 2025 column of the table above a legitimate baseline rather than another team's data."
         }
       },
@@ -13639,7 +13859,7 @@
       "bottomLine": "The fantasy bottom line: McDaniels is in his second consecutive season of his current Patriots stint, giving 2025 tendencies more predictive value than they would have after a play-caller change. Through 8 games, the Patriots have been more aggressive on short 4th downs, more pass-heavy in the red zone and more motion-heavy than in 2025. Historically, McDaniels's offenses have also directed an above-average share of targets to running backs. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Josh McDaniels's play-calling affect Patriots fantasy players?",
-        "answer": "Josh McDaniels called the Patriots offense last season too, and 2026 is his 16th Patriots season with play-calling responsibility, so last year's tendencies remain predictive. Through Week 8 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate above league average (62% vs 53%). The lead back handles 55% of backfield weighted opportunities, and the target split leans toward running backs (25% vs a 20% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Josh McDaniels called the Patriots offense last season too, and 2026 is his 15th Patriots season with play-calling responsibility, so last year's tendencies remain predictive. Through Week 8 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate above league average (62% vs 53%). The lead back handles 55% of backfield weighted opportunities, and the target split leans toward running backs (25% vs a 20% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "no": {
@@ -13824,7 +14044,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 7,
+          "fourthShortAll": 9,
+          "fourthShortGo": 9,
+          "rzPlays": 71,
+          "priorFourthShortAll": 16,
+          "priorFourthShortGo": 14,
+          "priorRzPlays": 123
+        }
       },
       "shifts": [
         {
@@ -14638,7 +14868,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 7,
+          "fourthShortAll": 6,
+          "fourthShortGo": 5,
+          "rzPlays": 53,
+          "priorFourthShortAll": 9,
+          "priorFourthShortGo": 7,
+          "priorRzPlays": 181
+        }
       },
       "shifts": [
         {
@@ -15369,7 +15609,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 8,
+          "fourthShortGo": 7,
+          "rzPlays": 69,
+          "priorFourthShortAll": 10,
+          "priorFourthShortGo": 8,
+          "priorRzPlays": 121
+        }
       },
       "shifts": [
         {
@@ -16210,7 +16460,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 5,
+          "rzPlays": 60,
+          "priorFourthShortAll": 8,
+          "priorFourthShortGo": 8,
+          "priorRzPlays": 151
+        }
       },
       "shifts": [
         {
@@ -16576,7 +16836,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 1,
+          "rzPlays": 70,
+          "priorFourthShortAll": 11,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 164
+        }
       },
       "shifts": [
         {
@@ -17424,7 +17694,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 7,
+          "fourthShortGo": 7,
+          "rzPlays": 76,
+          "priorFourthShortAll": 14,
+          "priorFourthShortGo": 9,
+          "priorRzPlays": 166
+        }
       },
       "shifts": [
         {
@@ -17787,7 +18067,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 7,
+          "fourthShortAll": 6,
+          "fourthShortGo": 4,
+          "rzPlays": 73,
+          "priorFourthShortAll": 19,
+          "priorFourthShortGo": 14,
+          "priorRzPlays": 196
+        }
       },
       "shifts": [
         {
@@ -18793,7 +19083,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 5,
+          "fourthShortGo": 3,
+          "rzPlays": 78,
+          "priorFourthShortAll": 13,
+          "priorFourthShortGo": 12,
+          "priorRzPlays": 141
+        }
       },
       "shifts": [
         {
@@ -19257,7 +19557,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 8,
+          "throughWeek": 8,
+          "fourthShortAll": 3,
+          "fourthShortGo": 3,
+          "rzPlays": 76,
+          "priorFourthShortAll": 15,
+          "priorFourthShortGo": 12,
+          "priorRzPlays": 101
+        }
       },
       "shifts": [
         {
@@ -20021,7 +20331,17 @@
             },
             "nflAvg": "75%"
           }
-        ]
+        ],
+        "samples": {
+          "games": 7,
+          "throughWeek": 8,
+          "fourthShortAll": 8,
+          "fourthShortGo": 5,
+          "rzPlays": 59,
+          "priorFourthShortAll": 11,
+          "priorFourthShortGo": 10,
+          "priorRzPlays": 151
+        }
       },
       "shifts": [
         {

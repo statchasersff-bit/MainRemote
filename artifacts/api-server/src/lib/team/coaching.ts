@@ -96,6 +96,21 @@ export interface TeamCoaching {
     priorLabel: string;
     currentLabel: string;
     rows: TendencyRow[];
+    /**
+     * The samples behind the situational rates (builder, 2026-11-05), so a
+     * 100% fourth-down go rate prints as "3 of 3 opportunities". Absent on
+     * an older file.
+     */
+    samples?: {
+      games: number;
+      throughWeek: number;
+      fourthShortAll: number;
+      fourthShortGo: number;
+      rzPlays: number;
+      priorFourthShortAll: number | null;
+      priorFourthShortGo: number | null;
+      priorRzPlays: number | null;
+    };
   };
   shifts: Array<{
     /** The tendency row this signal reads; absent on the "holding steady" card. */

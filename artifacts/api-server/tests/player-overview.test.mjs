@@ -16,7 +16,7 @@ const ov = await importModule("lib/player/overview");
 after(cleanupBundles);
 
 const team = (code, slug, nickname) => ({
-  code, slug, nickname, fullName: nickname, primaryColor: "#97233F", secondaryColor: "#FFB612", logo: "",
+  code, slug, nickname, fullName: nickname, primaryColor: "#97233F", secondaryColor: "#FFB612", logo: `/team-logos/${code.toLowerCase()}.svg`,
 });
 const ARI = team("ARI", "arizona-cardinals", "Cardinals");
 const LAC = team("LAC", "los-angeles-chargers", "Chargers");
@@ -143,7 +143,7 @@ describe("overview sections", () => {
   test("the season table sums the log the same way the hero does, and links to Stats", () => {
     const doc = render(state(), { playerPathPrefix: "/nfl/players/" });
     const sec = doc.querySelector("#scp-ox-season-h").closest("section");
-    assert.equal(text(sec.querySelector(".scp-ox-lede")), "Through Week 3");
+    assert.equal(sec.querySelector(".scp-ox-lede"), null, "no 'Through Week N' lede (mak, 2026-11-04)");
     const heads = [...sec.querySelectorAll("thead th")].map(text);
     assert.deepEqual(heads, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "PPR PTS", "PPG"]);
     const row = [...sec.querySelectorAll("tbody td")].map(text);
@@ -311,8 +311,12 @@ describe("overview sections", () => {
     assert.equal(logTotal.toFixed(1), strip.toFixed(1));
     assert.equal(season.toFixed(1), logTotal.toFixed(1), "the career table's current row is the log's sum");
     assert.equal(text(log.querySelector("tfoot tr.scp-total td:nth-child(3)")), "1–2");
-    // Weekly finishes are the Game Log's tier pills.
-    assert.ok(log.querySelector("tbody td.scp-col-fin .scp-tier[data-tier]"));
+    // Weekly finishes are plain text, not pills (mak, 2026-11-04); the
+    // opponent carries its crest ahead of the name; Result and FPTS center.
+    assert.equal(log.querySelector("tbody td.scp-col-fin .scp-tier"), null, "no pill");
+    assert.match(text(log.querySelector("tbody td.scp-col-fin")), /^(QB\d+|-)$/);
+    assert.ok(log.querySelector("tbody td.scp-opp img.scp-opp-logo[aria-hidden='true']"), "the opponent's crest");
+    assert.ok(log.querySelector("thead th.scp-col-res"), "the Result head is classed for centering");
   });
 
   test("career totals are summed from the season rows", () => {

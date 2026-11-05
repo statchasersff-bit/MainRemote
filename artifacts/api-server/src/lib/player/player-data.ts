@@ -22,6 +22,7 @@
 
 import { listNewsForPlayerName, listNewsForTeam } from "../news-query";
 import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
+import { playerUsage, rosRank, startingQb, type PlayerUsage, type RosRank, type StartingQb } from "./outlook-context";
 import {
   careerHighs,
   careerStatRows,
@@ -93,6 +94,7 @@ import {
   enrichWithTeamMetrics,
   fillMissingWeeks,
   hasParticipation,
+  isGamePlayed,
   leagueWeeksLogged,
   PPG_MIN_GAMES,
   resolveSeasonTeam,
@@ -181,6 +183,10 @@ export interface ProductionTotals {
   rec: number;
   recYd: number;
   recTd: number;
+  /** Starts, sacks taken, fumbles lost: from the logs (stats-profile.ts); absent in the stored production file. */
+  gs?: number;
+  sacks?: number;
+  fumLost?: number;
 }
 
 export interface ProductionSeason {
@@ -371,6 +377,14 @@ export interface PlayerPageData {
   meters: OverviewMeters | null;
   teammates: Teammate[];
   depth: DepthRole | null;
+  /** The club's listed starting quarterback (null on a QB's own page). Outlook tab. */
+  startingQb: StartingQb | null;
+  /** His row of the team usage report, with league ranks and trends. Outlook tab. */
+  usage: PlayerUsage | null;
+  /** His rank on the rest-of-season board, when he is on it. Outlook tab. */
+  rosRank: RosRank | null;
+  /** Every remaining fixture this season, for the Outlook's schedule and playoff read. */
+  upcomingSeason: UpcomingGame[];
   seasonClubs: Record<number, string[]>;
   /** "Week 3", "Preseason baseline" - what the matchup ranks are measured over. */
   upcomingMatchupMode: string | null;
@@ -1118,11 +1132,13 @@ export async function getPlayerPageData(
     );
     if (totals) careerSeasons.push(totals);
 
-    // The Stats tab's lower sections sum every career figure from these.
+    // The Stats tab's lower sections sum every career figure from these -
+    // every game he was active for (ranks.ts isGamePlayed), the same count
+    // the career table prints, so the chart's GP is the table's GP.
     logCareer.push({
       season: candidate,
       weeks: ranked
-        .filter((e) => hasParticipation(e.stats, player.position))
+        .filter((e) => isGamePlayed(e, player.position))
         .sort((a, b) => a.week - b.week),
       finish: finish.total,
     });
@@ -1321,6 +1337,16 @@ export async function getPlayerPageData(
     meters: overviewMeters(player, season, format, allPlayers),
     teammates: overviewTeammates(player, season, allPlayers),
     depth: depthRole(player, team),
+    startingQb: startingQb(player, team, leagueSeason, allPlayers),
+    usage: playerUsage(player, team, leagueSeason),
+    rosRank: rosRank(player, leagueSeason),
+    upcomingSeason: buildUpcoming({
+      position: player.position,
+      schedule,
+      fpa: fpaTable,
+      now: Date.now(),
+      count: 18,
+    }),
     seasonClubs: seasonClubs(player.id, logSeasons),
     logCareer,
     statsUpdatedMs: gameLogUpdatedMs(season),

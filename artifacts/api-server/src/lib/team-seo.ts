@@ -64,16 +64,33 @@ function sectionMeta(
     };
   }
 
-  // Approved by mak 2026-09-30 with the Usage tab's own address.
+  // mak's NFL-first usage brief (2026-11-05): the page is a snap-count and
+  // player-usage resource, so the title names that search. The brief's
+  // "| StatChasers" suffix is left to Rank Math, like every other title here.
   if (section === "usage") {
     return {
       title: fitTitle([
-        `${name} Target Share & Snap Counts ${season}: Usage Report`,
-        `${name} Target Share & Snap Counts ${season}`,
+        `${name} Snap Counts & Player Usage ${season}`,
+        `${nick} Snap Counts & Player Usage ${season}`,
       ]),
       description:
-        `${name} target share, snap share and red-zone touches for ${season}, updated every ` +
-        `Tuesday: the ${nick} target tree, backfield split, pass map and buy-low / sell-high signals.`,
+        `Explore ${season} ${name} snap counts, target share, rushing usage, red-zone ` +
+        `opportunities, and weekly player trends.`,
+    };
+  }
+
+  // mak's coaching brief (2026-11-05). The brief's description names the
+  // play-caller; the plugin's mirror has no coach names, so both say "who
+  // calls the plays" and the H1/body carry the name.
+  if (section === "coaching") {
+    return {
+      title: fitTitle([
+        `${name} Offensive Coordinator & Scheme ${season}`,
+        `${nick} Offensive Coordinator & Scheme ${season}`,
+      ]),
+      description:
+        `Explore the ${season} ${name} offense: who calls the plays, pass rate, formations, ` +
+        `offensive tendencies, and coaching history.`,
     };
   }
 

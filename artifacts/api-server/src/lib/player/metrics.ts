@@ -19,7 +19,7 @@
  */
 
 import { getEntryPoints, type ScoringFormat } from "./scoring";
-import { hasParticipation } from "./ranks";
+import { hasParticipation, isGamePlayed } from "./ranks";
 import type {
   CareerSeasonStat,
   GameLogEntry,
@@ -297,7 +297,9 @@ export function careerSeasonTotals(
   format: ScoringFormat,
   posRank: number | null,
 ): CareerSeasonStat | null {
-  const played = entries.filter((e) => hasParticipation(e.stats, position));
+  // Games played as the career table counts them (ranks.ts isGamePlayed):
+  // one rule for every games-played figure on the Stats tab.
+  const played = entries.filter((e) => isGamePlayed(e, position));
   if (played.length === 0) return null;
 
   const total = (key: string) => sumStat(played, key);
@@ -306,12 +308,23 @@ export function careerSeasonTotals(
   const rec_td = total("rec_td");
   const rush_yd = total("rush_yd");
   const rec_yd = total("rec_yd");
+  const weekPts = played.map((e) => fpts(e, format));
+  const points = weekPts.reduce((s, v) => s + v, 0);
+  const line = position === "RB" || position === "WR" ? 24 : 12;
+  const ranked = played.filter((e) => typeof e.pos_rank === "number");
 
   return {
     season,
     gp: played.length,
-    ppg: played.reduce((s, e) => s + fpts(e, format), 0) / played.length,
+    gs: total("gs"),
+    ppg: points / played.length,
+    points,
     posRank,
+    sacks: total("pass_sack"),
+    fum_lost: total("fum_lost"),
+    top_weeks: ranked.filter((e) => e.pos_rank! <= line).length,
+    ranked_weeks: ranked.length,
+    best_week: weekPts.length ? Math.max(...weekPts) : 0,
     pass_att: total("pass_att"),
     pass_cmp: total("pass_cmp"),
     pass_yd: total("pass_yd"),

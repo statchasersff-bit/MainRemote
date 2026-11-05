@@ -91,7 +91,7 @@ function updatedIso(ms: number | null | undefined): string {
  * coin flip - those get the full name. A row the team table cannot resolve
  * keeps its abbreviation.
  */
-function teamLabel(row: FpaRow, rows: FpaRow[]): string {
+export function teamLabel(row: FpaRow, rows: FpaRow[]): string {
   const team = row.team;
   if (!team) return row.abbr;
   const shared = rows.some((r) => r.team && r.team !== team && r.team.city === team.city);
@@ -139,6 +139,28 @@ export function fpaAnswerSentence(data: Pick<FpaTableData, "rows" | "kind" | "se
 }
 
 /** The page's words for one table. See FpaPageCopy. */
+/**
+ * What the table covers, in one phrase: "Fantasy points allowed per game,
+ * Weeks 1–8". Printed as the table's own label (mak's rail spec, 2026-11-04)
+ * because the rail beside it links to rest-of-season views, and a reader
+ * moving between the two needs the season-to-date table to say so where the
+ * numbers are, not only in the heading above them.
+ */
+export function fpaScopeLabel(
+  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason">,
+): string {
+  return `Fantasy points allowed per game, ${fpaScopeRange(data)}`;
+}
+
+/** The range alone: "Weeks 1–8", "2025 season (Weeks 1–17)", "2025 season baseline". */
+export function fpaScopeRange(
+  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason">,
+): string {
+  if (data.kind === "archive") return `${data.season} season (Weeks 1${RANGE}${data.weekNumber ?? 17})`;
+  if (data.isPreseason || data.weekNumber === null) return `${data.baselineSeason} season baseline`;
+  return `Weeks 1${RANGE}${data.weekNumber}`;
+}
+
 export function fpaPageCopy(data: FpaTableData): FpaPageCopy {
   const season = data.season;
   const week = data.weekNumber;

@@ -47,7 +47,8 @@ if ( $request === $base || 0 === strpos( $request, $base . '/' ) ) {
 	if ( isset( $segs[2] ) ) { $GLOBALS['wp_query_vars']['sc_position'] = $segs[2]; }
 }
 
-require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php';
+// The merged plugin (10-09): the standalone statchasers-depth-charts/ folder is gone.
+require __DIR__ . '/../../statchasers-news/depth-charts/statchasers-depth-charts.php';
 do_action( 'plugins_loaded' );
 
 // Nothing but the JSON may reach stdout.

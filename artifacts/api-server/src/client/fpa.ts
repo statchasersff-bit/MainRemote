@@ -108,7 +108,7 @@ function wireSortableTable(root: HTMLElement): void {
  * because the active states and the CSV link live there; the answer sentence
  * because its figures are the view's.
  */
-const SWAPPABLE = [".scf-answer", ".scf-controls", ".scf-mode", ".scf-scroll"] as const;
+const SWAPPABLE = [".scf-controls", ".scf-mode", ".scf-scroll"] as const;
 
 /** The combination a control selects, or null if it is not one. */
 function selection(

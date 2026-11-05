@@ -38,6 +38,8 @@ import {
 } from "../lib/fpa/fpa-data";
 import { refreshFpa } from "../lib/fpa/refresh";
 import { requireIngestSecret } from "../lib/ingest-auth";
+import { getSOSUrl } from "../lib/team/links";
+import { SOS_DEFAULT_PAGE_BASE } from "../lib/sos-render";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -124,6 +126,7 @@ router.get("/fpa", (req, res) => {
           // Relative is right here: this page is served from the same origin
           // the fragment is.
           endpoint: FPA_FRAGMENT_PATH,
+          sosBase: SOS_DEFAULT_PAGE_BASE,
         },
       );
 
@@ -237,6 +240,9 @@ router.get("/embed/fpa", (req, res) => {
         // same kind of thing - a route on this server, not a page on theirs.
         endpoint: browserEndpoint(req, FPA_FRAGMENT_PATH),
         csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
+        // The strength-of-schedule pages on statchasers.com (SC_SOS_URL), the
+        // same base the SOS fragment's own position links use.
+        sosBase: getSOSUrl() ?? SOS_DEFAULT_PAGE_BASE,
       });
 
       if (!result.data) {

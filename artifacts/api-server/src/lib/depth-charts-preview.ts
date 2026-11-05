@@ -15,7 +15,7 @@
  *
  *   https://statchasers.com/nfl/nfl-depth-charts/...        -> /preview/depth-charts/...
  *   https://statchasers.com/nfl/teams/<slug>/depth-chart/   -> /team/<slug>/depth-chart/
- *   .../wp-content/plugins/statchasers-depth-charts/assets  -> /preview/depth-charts-assets/
+ *   .../wp-content/plugins/statchasers-news/depth-charts/assets -> /preview/depth-charts-assets/
  *   .../wp-content/uploads/statchasers/depth-charts.json    -> /preview/depth-charts-data.json
  *
  * The data is the snapshot in data/depth-charts/, written by
@@ -46,9 +46,10 @@ const WP_PLUGIN_DIR = firstExisting([
   path.resolve(DATA_ROOT, "..", "..", "..", "wordpress-plugin"),
 ]);
 
-/** The plugin's own directory, for serving its assets/ untouched. */
+/** The plugin's own directory, for serving its assets/ untouched. Inside the
+ * merged StatChasers plugin since 10-09; the standalone folder is gone. */
 export const PLUGIN_DIR = WP_PLUGIN_DIR
-  ? path.join(WP_PLUGIN_DIR, "statchasers-depth-charts")
+  ? path.join(WP_PLUGIN_DIR, "statchasers-news", "depth-charts")
   : null;
 
 /** Where snapshot.php writes; the plugin's "uploads" base directory. */
@@ -89,7 +90,7 @@ export interface DepthChartsRender {
 /** The plugin's statchasers.com URLs, pointed at the preview's routes. */
 function mapUrls(html: string): string {
   return html
-    .split(`${ORIGIN}/wp-content/plugins/statchasers-depth-charts/assets/`)
+    .split(`${ORIGIN}/wp-content/plugins/statchasers-news/depth-charts/assets/`)
     .join(PREVIEW_ASSETS)
     .replace(
       /https:\/\/statchasers\.com\/wp-content\/uploads\/statchasers\/depth-charts\.json/g,

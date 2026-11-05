@@ -236,7 +236,11 @@ describe("player page content", () => {
     }
     // The old header's measured squeeze is gone, and so are its hooks.
     assert.equal(doc.querySelectorAll("[data-scp-hero], .scp-hero-probe").length, 0);
-    assert.ok(!header.textContent.includes("·"), "no middle dots in the header");
+    // The bio line and the strip are dotted runs (mak, 2026-11-04); the
+    // tags, the heading and the action strip carry no middle dot.
+    for (const zone of [".scp-ptags", ".scp-phead-h1", ".scp-pstrip"]) {
+      assert.ok(!header.querySelector(zone).textContent.includes("·"), `no middle dots in ${zone}`);
+    }
   });
 
   test("the H1 is the player's name, and nothing else", async () => {
@@ -262,21 +266,26 @@ describe("player page content", () => {
     assert.equal(new Set(sections).size, sections.length, "and no two share one");
   });
 
-  test("the scoreboard is three labeled figures, the first in gold", async () => {
+  test("the strip's fantasy trio is three figures, the first in gold", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const cells = [...doc.querySelectorAll(".scp-pboard-stats > div")];
+    const cells = [...doc.querySelectorAll(".scp-pboard-fan .scp-pstat")];
     assert.equal(cells.length, 3);
     assert.ok(cells[0].classList.contains("is-lead"));
     const [ppg, rank, owned] = cells.map((cell) => [
-      cell.querySelector("dt").textContent.trim(),
-      cell.querySelector("dd").textContent.trim(),
+      cell.querySelector("abbr")?.textContent.trim() ?? "",
+      cell.querySelector("b").textContent.trim(),
     ]);
-    assert.match(ppg[0], /^(PPR|HALF|STD) PPG$/);
-    assert.match(ppg[1], /^(\d+\.\d| - )$/);
-    assert.equal(rank[0], "Pos rank");
-    assert.match(rank[1], /^([A-Z]+\d+| - )$/, "a rank is a position and a place");
-    assert.equal(owned[0], "Rostered");
-    assert.match(owned[1], /^(<1|\d+)%$|^ - $/, "ownership is a whole percentage");
+    assert.equal(ppg[0], "PPG");
+    assert.match(cells[0].querySelector("abbr").getAttribute("title"), /^(PPR|HALF|STD) fantasy points per game$/);
+    assert.match(ppg[1], /^(\d+\.\d|-)$/);
+    assert.match(rank[1], /^([A-Z]+\d+|-)$/, "a rank is a position and a place");
+    assert.equal(rank[0], rank[1] === "-" ? "rank" : "", "the rank names itself unless it is a dash");
+    assert.equal(owned[0], "rostered");
+    assert.match(owned[1], /^(<1|\d+)%$|^-$/, "ownership is a whole percentage");
+    assert.match(doc.querySelector(".scp-pboard-cap").textContent.trim(), /^\d{4} Fantasy Season$/);
+    // The counting line's suffix: "thru Wk N" in season, the year otherwise.
+    const thru = doc.querySelector(".scp-pline-thru");
+    if (thru) assert.match(thru.textContent.trim(), /^(thru Wk \d+|\d{4} season)$/);
   });
 
   test("the strip's buttons say where they go and tag the tab", async () => {
@@ -816,143 +825,55 @@ describe("the game log tab", () => {
     }
   });
 
-  test("the season selector leads with All and offers every season but the one on screen", async () => {
+  test("the season selector offers every season, newest first, the one on screen lit", async () => {
+    // One log on the page (the game-log audit, 2026-11-04): picking a year
+    // REPLACES the log, so the current season is a chip like the rest and
+    // there is no "All".
     const { doc } = await dom(`/player/${fixture.slug}`);
     const chips = [...doc.querySelectorAll("#game-log .scp-season-opt")];
     if (chips.length === 0) return; // a single-season player gets no selector
 
-    // All is the resting state and comes first: it is where the selector is
-    // when the URL asks for nothing, and what it opens is the career table.
-    assert.equal(chips[0].getAttribute("data-season"), "all");
-    assert.equal(chips[0].textContent.trim(), "All");
-    assert.ok(chips[0].classList.contains("is-active"), "All is the default");
-    assert.equal(chips[0].getAttribute("aria-current"), "true");
-    assert.ok(
-      !chips[0].getAttribute("href").includes("log="),
-      "All is the bare address, not a pinned one",
-    );
-
-    // Past that, the switcher is an archive: it offers somewhere to GO, and
-    // the year already rendered above is not somewhere to go.
-    const shown = Number(
-      doc.querySelector("[data-scp-root]")?.getAttribute("data-log-season"),
-    );
-    const years = chips.slice(1).map((a) => Number(a.textContent.trim()));
-    assert.ok(
-      years.every(Number.isFinite),
-      "every chip after All is a year",
-    );
-    assert.ok(
-      !years.includes(shown),
-      `the selector offers ${shown}, which is the season it is standing on`,
-    );
-    assert.equal(
-      chips.filter((a) => a.classList.contains("is-active")).length,
-      1,
-      "exactly one chip is lit, and with nothing pinned it is All",
-    );
-
-    assert.deepEqual(
-      years,
-      [...years].sort((a, b) => b - a),
-      "seasons run newest first",
-    );
-
+    const shown = Number(doc.querySelector("[data-scp-root]")?.getAttribute("data-log-season"));
+    const years = chips.map((a) => Number(a.textContent.trim()));
+    assert.ok(years.every(Number.isFinite), "every chip is a year");
+    assert.ok(years.includes(shown), `the season on screen (${shown}) is a chip, and the lit one`);
+    assert.deepEqual(years, [...years].sort((a, b) => b - a), "seasons run newest first");
+    assert.equal(new Set(years).size, years.length, "no year is offered twice");
+    const lit = chips.filter((a) => a.classList.contains("is-active"));
+    assert.equal(lit.length, 1);
+    assert.equal(Number(lit[0].textContent.trim()), shown);
+    assert.equal(lit[0].getAttribute("aria-current"), "true");
+    assert.ok(!lit[0].getAttribute("href").includes("log="), "the current season is the bare address");
     for (const chip of chips) {
-      // One game log is the page that ranks; a pinned season is a rendering of
+      // One game log is the page that ranks; a past season is a rendering of
       // it rather than a second address competing with it.
-      assert.equal(
-        chip.getAttribute("rel"),
-        "nofollow",
-        "an off-season link is not offered to the crawler",
-      );
+      const past = Number(chip.textContent.trim()) !== shown;
+      assert.equal(chip.getAttribute("rel"), past ? "nofollow" : null, `${chip.textContent.trim()}: nofollow only on a past year`);
+      if (past) assert.ok(chip.getAttribute("href").includes("log="), "a past year is ?log=");
     }
-  });
-
-  test("All is the selector at rest, and a year opens its log under it", async () => {
-    // Exactly one block sits under the selector either way - the heading row
-    // the chips ride on when nothing is pinned, or the pinned season's log,
-    // never both. The career table that used to open under All moved to the
-    // Stats tab on 2026-10-29 (see "the Stats tab carries the career table").
-    const { doc } = await dom(`/player/${fixture.slug}`);
+    // The selector sits under the tab's heading and above the table.
     const nav = doc.querySelector("#game-log .scp-seasonnav");
-    if (!nav) return; // a single-season player gets no selector and no All
-
-    const blocks = [...doc.querySelectorAll("#game-log .scp-archive")];
-    assert.equal(blocks.length, 1, "one block under the selector");
-    assert.equal(blocks[0].getAttribute("data-season"), "all");
-    // The selector rides the heading of the block it belongs to, so the block
-    // CONTAINS it: the row of years and the name of what they open are one line.
-    assert.equal(
-      nav.closest(".scp-archive"),
-      blocks[0],
-      "the selector sits on the heading of the block resting on All",
-    );
-    assert.match(
-      blocks[0].querySelector(".scp-sect-title").textContent,
-      /Game Logs by Season/,
-    );
-    assert.equal(
-      doc.querySelector("#game-log table.scp-table--career"),
-      null,
-      "the career table no longer lives on the Game Log tab",
-    );
-
-    // Pinning a year swaps the block rather than adding to it.
-    const pinnedUrl = nav
-      .querySelector('.scp-season-opt:not([data-season="all"])')
-      .getAttribute("href");
-    const pinned = await dom(pinnedUrl);
-    const after = [...pinned.doc.querySelectorAll("#game-log .scp-archive")];
-    assert.equal(after.length, 1, "still one block under the selector");
-    assert.ok(
-      after[0].querySelector("table.scp-table--log"),
-      "a pinned year shows its log",
-    );
-  });
-
-  test("the season archive sits under the fixtures, not above the numbers", async () => {
-    // It used to stand between a heading that had just named the season and the
-    // numbers that answer it. A reader arriving on this tab wants this year.
-    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const nav = doc.querySelector("#game-log .scp-seasonnav");
-    if (!nav) return; // a single-season player gets no archive
-
     const table = doc.querySelector("#game-log table.scp-table--log");
-    assert.ok(
-      table.compareDocumentPosition(nav) & 4,
-      "the archive comes after the log it is an archive of",
-    );
-    assert.ok(
-      nav.closest(".scp-archive"),
-      "and it rides that archive block's heading rather than standing alone",
-    );
-
-    const fixtures = doc.querySelector("#game-log .scp-nexts");
-    if (fixtures) {
-      assert.ok(
-        fixtures.compareDocumentPosition(nav) & 4,
-        "the archive comes after the fixtures",
-      );
-    }
+    assert.ok(nav.compareDocumentPosition(table) & 4, "the selector comes before the log it selects");
+    assert.equal(doc.querySelector("#game-log .scp-archive"), null, "no second log block under the page");
   });
 
-  /** The Game Log tab's own blocks - never the pinned archive season's. */
-  function currentSeasonBlock(doc) {
-    const own = (selector) =>
-      [...doc.querySelectorAll(`#game-log ${selector}`)].find(
-        (el) => !el.closest(".scp-archive"),
-      );
-    return {
-      heading: own(".scp-h2")?.textContent.trim(),
-      tiles: own(".scp-tiles--log")?.outerHTML,
-      intro: own(".scp-logintro")?.outerHTML,
-      table: own("table.scp-table--log")?.outerHTML,
-      fixtures: own(".scp-nexts")?.outerHTML,
-    };
-  }
+  test("the season at a glance sits over the table, summed from the same rows", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
+    const tiles = [...doc.querySelectorAll("#game-log .scp-gl-summary .scp-st-rate")];
+    if (tiles.length === 0) return;
+    const titles = tiles.map((t) => t.querySelector("h3").textContent.trim());
+    assert.deepEqual(titles.slice(0, 2), [/^Games?$/.test(titles[0]) ? titles[0] : "Games", "FPTS/G"]);
+    assert.ok(titles.includes("Best FPTS"));
+    const games = Number(tiles[0].querySelector(".scp-st-v").textContent);
+    const active = doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row[data-status='active']").length;
+    assert.equal(games, active, "the Games tile counts the table's played rows");
+    assert.match(tiles[0].querySelector("p:last-child").textContent, /^Regular season · (PPR|Half-PPR|Standard)/);
+    const table = doc.querySelector("#game-log table.scp-table--log");
+    assert.ok(doc.querySelector("#game-log .scp-gl-summary").compareDocumentPosition(table) & 4, "tiles before the table");
+  });
 
-  test("a pinned season opens under the selector and leaves the tab alone", async () => {
+  test("a past season replaces the log: its heading, its table, no fixtures, the profile untouched", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const chips = [...doc.querySelectorAll("#game-log .scp-season-opt")];
     const other = chips.find((a) => !a.classList.contains("is-active"));
@@ -960,61 +881,21 @@ describe("the game log tab", () => {
 
     const year = Number(other.textContent.trim());
     const pinned = await dom(`${other.getAttribute("href")}`);
+    const gl = pinned.doc.querySelector("#game-log");
+    assert.match(gl.querySelector(".scp-h2").textContent, new RegExp(`Game Log ${year}$`), "the heading names the year");
+    assert.equal(gl.querySelectorAll("table.scp-table--log").length, 1, "one log on the page");
+    const ids = [...gl.querySelectorAll("tr.scp-detail")].map((r) => r.id);
+    assert.ok(ids.length === 0 || ids.every((id) => id.startsWith(`gl-${year}-`)), `the rows are ${year}'s: ${ids.slice(0, 3)}`);
+    assert.equal(gl.querySelector(".scp-nexts"), null, "a finished season has no fixtures");
+    assert.equal(gl.querySelector(".scp-archive"), null, "and no second block under it");
 
-    // The whole point of the selector's new behavior: picking 2025 ADDS 2025.
-    // The current season's heading, table and fixtures have to
-    // come back byte for byte, or "do not touch the current season" is a
-    // comment rather than a property.
-    assert.deepEqual(
-      currentSeasonBlock(pinned.doc),
-      currentSeasonBlock(doc),
-      "pinning a season changed the season above it",
-    );
-
-    // ...and the year the reader asked for is below the selector, named.
-    const archive = pinned.doc.querySelector("#game-log .scp-archive");
-    assert.ok(archive, `${year} is rendered`);
-    assert.equal(archive.getAttribute("data-season"), String(year));
-    assert.match(
-      archive.querySelector(".scp-sect-title").textContent,
-      new RegExp(String(year)),
-    );
-    assert.ok(
-      archive.querySelector("table.scp-table--log"),
-      "the archive season brings its table",
-    );
-    assert.ok(
-      archive.textContent.includes(String(year)),
-      `the archive prose names ${year}`,
-    );
-
-    const nav = pinned.doc.querySelector("#game-log .scp-seasonnav");
-    assert.equal(
-      nav.closest(".scp-archive"),
-      archive,
-      "the selector sits on the heading of the season it opened",
-    );
-    assert.ok(
-      nav.compareDocumentPosition(archive.querySelector("table")) & 4,
-      "and that season's numbers come after it",
-    );
-
-    // A finished season has no fixtures and no form to read, so the blocks
-    // that are about a season in progress stay out of it.
-    assert.equal(archive.querySelector(".scp-nexts"), null);
-    assert.equal(archive.querySelector(".scp-spark"), null);
-
-    // The lit chip is the way back out.
-    const lit = nav.querySelector(".scp-season-opt.is-active");
+    // The lit chip is the year; the current season's chip is the way back.
+    const lit = gl.querySelector(".scp-season-opt.is-active");
     assert.equal(lit.textContent.trim(), String(year));
-    assert.equal(lit.getAttribute("aria-current"), "true");
-    assert.ok(
-      !lit.getAttribute("href").includes("log="),
-      "clicking the lit year clears it rather than re-pinning it",
-    );
+    const back = [...gl.querySelectorAll(".scp-season-opt")].find((a) => !a.getAttribute("href").includes("log="));
+    assert.ok(back, "the current season's chip is the bare address");
 
-    // And the rest of the profile is untouched: pinning the log is not a second
-    // profile at an old season's numbers.
+    // The rest of the profile is untouched: the hero and the title's year.
     assert.equal(
       pinned.doc.querySelector("[data-scp-root]").getAttribute("data-season"),
       doc.querySelector("[data-scp-root]").getAttribute("data-season"),
@@ -1023,19 +904,44 @@ describe("the game log tab", () => {
     assert.equal(
       pinned.doc.querySelector("[data-scp-root]").getAttribute("data-log-season"),
       doc.querySelector("[data-scp-root]").getAttribute("data-log-season"),
-      "the year in the document title is the tab's, not the archive's",
+      "the year in the document title is the tab's",
+    );
+    assert.equal(
+      pinned.doc.querySelector(".scp-phead .scp-pboard-fan")?.textContent,
+      doc.querySelector(".scp-phead .scp-pboard-fan")?.textContent,
+      "the hero's board is the current season's",
     );
   });
 
-  test("the season selector never offers the season already on screen", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}`);
-    const root = doc.querySelector("[data-scp-root]");
-    const active = root.getAttribute("data-season");
+  test("the Difficulty cell carries the defense rank chip and its band word", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
+    const heads = [...doc.querySelectorAll("#game-log table.scp-table--log thead th")].map((th) => th.textContent.trim());
+    assert.deepEqual(heads.slice(0, 3), ["Wk", "Opp", "Difficulty"]);
+    for (const row of doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row[data-status='active']")) {
+      const cell = row.querySelector("td.scp-diff");
+      assert.ok(cell, "every played row has the cell");
+      // The rank moved out of the Opp cell on 2026-11-05: Opp is crest + code only.
+      assert.equal(row.querySelector("td.scp-opp .scp-opp-rank"), null, "no rank chip in the Opp cell");
+      const chip = cell.querySelector(".scp-opp-rank");
+      if (!chip) { assert.equal(cell.textContent.trim(), "-"); continue; }
+      const rank = Number.parseInt(chip.textContent, 10);
+      const want = rank <= 10 ? "Favorable" : rank >= 23 ? "Tough" : "Neutral";
+      const word = cell.textContent.replace(chip.textContent, "").trim();
+      assert.equal(word, want, `${chip.textContent}: ${cell.textContent}`);
+    }
+    // The Avg row carries the season's average matchup in the same word.
+    const avg = doc.querySelector("#game-log table.scp-table--log tfoot td.scp-diff");
+    if (avg) assert.match(avg.textContent.trim(), /^(Favorable|Neutral|Tough|-)$/);
+  });
 
-    const years = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")]
-      .map((a) => a.textContent.trim());
-    assert.ok(!years.includes(active), `${active} is the tab, not a destination`);
-    assert.equal(new Set(years).size, years.length, "no year is offered twice");
+  test("absences say only what is known: a bye, an injury, or nothing", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
+    const labels = [...doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row:not([data-status='active']) .scp-row-empty")]
+      .map((td) => td.textContent.trim());
+    for (const label of labels) {
+      assert.match(label, /^(Bye week|Active, did not play|Did not play( \([a-z][a-z /-]+\))?)$/, label);
+      assert.ok(!label.includes("inactive"), "no unconfirmed 'inactive'");
+    }
   });
 
   test("an unplayed season is ignored rather than rendered empty", async () => {
@@ -1351,6 +1257,8 @@ describe("the game log tab", () => {
         card.querySelector(".scp-next-name").textContent,
         ha === "away" ? /^Away at / : /^Home vs /,
       );
+      // A row of the compact table (2026-11-04), not a card.
+      assert.equal(card.tagName, "TR");
     }
 
     // Ascending, and no week repeated - a bye is absent rather than rendered.
@@ -1446,6 +1354,24 @@ describe("the game log tab", () => {
     const sec = career.closest("section.scp-ox-sec");
     assert.ok(sec, "the table sits in a spec section of the Stats tab");
     assert.match(sec.querySelector("h2").textContent, /Career Stats by Season/);
+    // Two column sets behind the switch on the heading (2026-11-04): the
+    // standard line with starts, sacks and fumbles, then the fantasy set with
+    // the weekly top-12 count and the best week; both served, one shown.
+    assert.equal(career.getAttribute("data-scp-view"), "nfl");
+    assert.ok(sec.querySelector("[data-scp-view-seg] button[data-view='fantasy']"), "the switch is on the heading row");
+    const heads = [...career.querySelectorAll("thead tr:last-child th")].map((th) => [th.textContent.trim(), th.classList.contains("is-fan")]);
+    assert.deepEqual(heads.slice(0, 3).map(([h]) => h), ["Season", "GP", "GS"]);
+    for (const h of ["Sacks", "Fum lost", "FPTS", "PPG", "Finish", "Best wk"]) assert.ok(heads.some(([x]) => x === h), `${h} column`);
+    assert.ok(heads.filter(([, fan]) => fan).length >= 5, "the fantasy set is marked");
+    assert.ok(heads.some(([h, fan]) => h === "FPTS" && fan));
+    assert.ok(heads.some(([h, fan]) => h === "Sacks" && !fan));
+    // Games played: one count on the whole tab. The table's Career GP is the
+    // rates tile's game count and the chart's bars sum to it.
+    const careerGp = Number(career.querySelector("tfoot td")?.textContent);
+    const tileGames = Number(/(\d+) games?, \d+ seasons?/.exec(doc.querySelector("#stats .scp-st-rate p:last-child")?.textContent ?? "")?.[1]);
+    assert.equal(tileGames, careerGp, "the Career PPG tile counts the table's games");
+    const barGp = [...doc.querySelectorAll("#stats .scp-st-x small")].reduce((s, el) => s + Number.parseInt(el.textContent, 10), 0);
+    assert.equal(barGp, careerGp, "the chart's GP labels sum to the table's Career GP");
     const chart = doc.querySelector("#stats #scp-st-arc-h");
     assert.ok(chart, "the per-season chart is on the tab");
     assert.ok(
@@ -2509,12 +2435,8 @@ describe("the positional peers rail", () => {
   test("the card the reader is on agrees with the header", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
 
-    const cells = [...doc.querySelectorAll(".scp-pboard-stats > div")];
-    const rankCell = cells.find(
-      (cell) =>
-        /pos rank/i.test(cell.querySelector("dt").textContent) &&
-        cell.querySelector("dd").textContent.trim() !== "-",
-    );
+    const cells = [...doc.querySelectorAll(".scp-pboard-fan .scp-pstat")];
+    const rankCell = cells.find((cell) => /^[A-Z]+\d+$/.test(cell.querySelector("b").textContent.trim()));
     const current = doc.querySelector(".scp-peer.is-current .scp-peer-rank");
     assert.ok(current, "the reader's card carries its rank");
 
@@ -2523,7 +2445,7 @@ describe("the positional peers rail", () => {
     if (rankCell) {
       assert.equal(
         current.textContent.trim(),
-        rankCell.querySelector("dd").textContent.trim(),
+        rankCell.querySelector("b").textContent.trim(),
         "one player, one positional rank, whatever measure produced it",
       );
     }
@@ -3135,7 +3057,7 @@ describe("player section URLs", () => {
     stats: / 2\d{3} Stats$/,
     injury: /^Is .+ injured\?$/,
     "game-log": /Where His Weeks Finished$/,
-    outlook: /Rest-of-Season Outlook$/,
+    outlook: /Rest-of-Season Projection$/,
     news: /Season Timeline$/,
     bio: /Career Timeline$/,
   };
@@ -3510,7 +3432,9 @@ describe("a state swap", () => {
       doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
     assert.equal(pinned(), "", "the page arrives with nothing pinned");
 
-    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    // A past season: the chip that is not lit (since 2026-11-04 the current
+    // season is a chip too, and the lit one; there is no "all").
+    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
     if (!year) return; // a single-season player has no selector to press
     const want = year.getAttribute("data-season");
 
@@ -3543,16 +3467,19 @@ describe("a state swap", () => {
     const pick = (season) =>
       chips(doc).find((chip) => chip.getAttribute("data-season") === season);
 
-    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    // A past season: the chip that is not lit (since 2026-11-04 the current
+    // season is a chip too, and the lit one; there is no "all").
+    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
     if (!year) return;
     const want = year.getAttribute("data-season");
 
     year.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
     assert.ok(await settled(pinned, want), `${want} pinned`);
 
-    // All is the resting state, so its chip is the bare address - the one the
-    // reader is standing on. Following it must still swap rather than navigate.
-    pick("all").dispatchEvent(
+    // The current season's chip is the bare address - the one the reader is
+    // standing on. Following it must still swap rather than navigate.
+    const current = doc.querySelector("[data-scp-root]").getAttribute("data-season");
+    pick(current).dispatchEvent(
       new window.MouseEvent("click", { bubbles: true, cancelable: true }),
     );
     assert.ok(await settled(pinned, ""), "the pin came off");
@@ -3570,7 +3497,9 @@ describe("a state swap", () => {
     click(doc.querySelector('.scp-nav-link[data-scp-panel-id="game-log"]'));
     assert.ok(doc.getElementById("game-log").classList.contains("is-active"));
 
-    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    // A past season: the chip that is not lit (since 2026-11-04 the current
+    // season is a chip too, and the lit one; there is no "all").
+    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
     if (!year) return;
     click(year);
     assert.ok(await settled(pinned, year.getAttribute("data-season")));
@@ -3586,7 +3515,9 @@ describe("a state swap", () => {
     // the other season in a new tab. Swallowing that would be taking a real
     // link away from them.
     const { window, doc } = await hydrated(`/player/${fixture.slug}`);
-    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    // A past season: the chip that is not lit (since 2026-11-04 the current
+    // season is a chip too, and the lit one; there is no "all").
+    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
     if (!year) return;
 
     const event = new window.MouseEvent("click", {

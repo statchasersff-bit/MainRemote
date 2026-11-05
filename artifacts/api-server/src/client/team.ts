@@ -848,6 +848,88 @@ function wireUsageProfiles(root: HTMLElement): void {
 }
 
 /**
+ * The Snap Counts & Playing Time table's Season / Last 3 / Week switch and
+ * position filter (team/usage-render.ts, 2026-11-05).
+ *
+ * Every view is already on each row as `data-v-<key>="snaps|share|change"`
+ * (season, last3, w1…wN), so switching rewrites three cells, hides the rows
+ * with no snaps in that window, and re-sorts by share. Nothing is fetched.
+ * The controls ship `hidden` and only show once this has run, so with
+ * scripting off the season view is simply the table.
+ */
+function wireSnapTables(root: HTMLElement): void {
+  for (const block of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-snaps]"))) {
+    const controls = block.querySelector<HTMLElement>(".sct-us-snap-controls");
+    const body = block.querySelector<HTMLTableSectionElement>("tbody");
+    if (!controls || !body) continue;
+    const buttons = Array.from(controls.querySelectorAll<HTMLButtonElement>("[data-snap-view]"));
+    const week = controls.querySelector<HTMLSelectElement>("[data-snap-week]");
+    const pos = controls.querySelector<HTMLSelectElement>("[data-snap-pos]");
+    const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>("tr"));
+    const weekWrap = week?.closest<HTMLElement>(".sct-us-switch-select") ?? null;
+    let view = "season";
+
+    const parse = (row: HTMLTableRowElement, key: string): [number, number | null, number | null] | null => {
+      const raw = row.getAttribute(`data-v-${key}`);
+      if (raw == null) return null;
+      const [snaps, share, change] = raw.split("|");
+      return [Number(snaps ?? 0), share ? Number(share) : null, change ? Number(change) : null];
+    };
+
+    const render = (): void => {
+      const wanted = pos?.value ?? "";
+      const ranked = rows
+        .map((row) => ({ row, v: parse(row, view) }))
+        .sort((a, b) => (b.v?.[1] ?? -1) - (a.v?.[1] ?? -1) || (b.v?.[0] ?? 0) - (a.v?.[0] ?? 0));
+      for (const { row, v } of ranked) {
+        const shown = !!v && v[0] > 0 && (!wanted || row.dataset["pos"] === wanted);
+        row.hidden = !shown;
+        if (!v) continue;
+        const n = row.querySelector<HTMLElement>(".sct-us-snap-n");
+        const fill = row.querySelector<HTMLElement>(".sct-us-gbar > span");
+        const val = row.querySelector<HTMLElement>(".sct-us-share-val");
+        const chg = row.querySelector<HTMLElement>(".sct-us-snap-chg");
+        if (n) n.textContent = String(v[0]);
+        const share = v[1] ?? 0;
+        if (fill) fill.style.width = `${Math.max(0, Math.min(100, share))}%`;
+        if (val) val.textContent = `${share}%`;
+        if (chg) {
+          const c = v[2];
+          chg.innerHTML = "";
+          const span = document.createElement("span");
+          span.className = `sct-us-delta is-${c == null ? "none" : c === 0 ? "flat" : c > 0 ? "up" : "down"}`;
+          span.textContent = c == null ? "\u2013" : c === 0 ? "0 pp" : `${c > 0 ? "+" : "\u2212"}${Math.abs(c)} pp`;
+          chg.appendChild(span);
+        }
+        body.appendChild(row);
+      }
+      for (const b of buttons) {
+        const on = b.dataset["snapView"] === view;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", String(on));
+      }
+      if (weekWrap) weekWrap.classList.toggle("is-on", view.startsWith("w"));
+    };
+
+    for (const b of buttons) {
+      b.addEventListener("click", () => {
+        view = b.dataset["snapView"] ?? "season";
+        if (week) week.value = "";
+        render();
+      });
+    }
+    week?.addEventListener("change", () => {
+      if (week.value) view = week.value;
+      else view = "season";
+      render();
+    });
+    pos?.addEventListener("change", render);
+    controls.hidden = false;
+    block.dataset["sctSnaps"] = "js";
+  }
+}
+
+/**
  * The Depth Chart tab's Fantasy / Offense / Defense / Special Teams switch.
  *
  * All four views are in the HTML, and team.css shows them stacked under their
@@ -1589,6 +1671,7 @@ function boot(): void {
     wirePlayerStatsMore(root);
     wireUsageDetail(root);
     wireUsageProfiles(root);
+    wireSnapTables(root);
     wireDepthViews(root);
     wireCutScenario(root);
     wireBarHeight(root);

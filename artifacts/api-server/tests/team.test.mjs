@@ -251,7 +251,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       // names no panel in this document: it is a link to that address, and
       // the hub's HTML does not carry a second copy of that page's content
       // (see ownsAddress in team-render.ts).
-      const hubPanel = ["outlook", "coaching", "draft", "contracts", "schedule"].includes(id);
+      const hubPanel = ["outlook", "draft", "contracts", "schedule"].includes(id);
       assert.equal(
         Boolean(doc.getElementById(id)),
         hubPanel,
@@ -259,14 +259,14 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       );
       assert.equal(
         link.getAttribute("href"),
-        // The Outlook is the hub, so its tab links to the hub. Coaching is
-        // hub-only - its public URL waits on approval - so its tab is the
-        // hub's address plus the panel hash (see team-render.ts).
+        // The Outlook is the hub, so its tab links to the hub. Draft and
+        // Contracts are hub-only hash tabs; Coaching has its own address
+        // since mak's coaching brief (2026-11-05).
         // The Schedule is a preview on the hub (mak, 2026-11-03), so its
         // tab is a hash tab here and the panel's own link leads to the page.
         id === "outlook"
           ? "/team/new-england-patriots/"
-          : id === "coaching" || id === "draft" || id === "contracts" || id === "schedule"
+          : id === "draft" || id === "contracts" || id === "schedule"
             ? `/team/new-england-patriots/#${id}`
             : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
@@ -939,20 +939,23 @@ describe("embedded mode", () => {
     assert.ok(usage.doc.querySelector(".sct-us-convert"));
   });
 
-  test("the Targets and Carries boards sit above the environment cards (mak, 2026-11-02)", async () => {
+  test("the Target and Rushing Distribution boards sit between the snap table and Situational Usage (mak, 2026-11-05)", async () => {
     const { doc } = await dom("/team/new-england-patriots/usage/");
     const boards = [...doc.querySelectorAll(".sct-us-board")];
     assert.deepEqual(
       boards.map((b) => b.querySelector(".sct-us-h3")?.textContent),
-      ["Targets", "Carries"],
+      ["Target Distribution", "Rushing Distribution"],
     );
-    // The environment cards went 2026-11-02; the boards now lead into the
-    // first card (the backfield split). DOCUMENT_POSITION_FOLLOWING = 4.
+    // The environment cards went 2026-11-02; since the NFL-first rebuild the
+    // boards follow the snap table and lead into Situational Usage.
+    // DOCUMENT_POSITION_FOLLOWING = 4.
     assert.equal(doc.querySelector(".sct-us-env"), null, "no environment cards");
-    const firstCard = doc.querySelector(".sct-us-card");
-    assert.ok(firstCard && boards[0].compareDocumentPosition(firstCard) & 4, "boards come before the first card");
+    const situational = doc.querySelector("#situational");
+    assert.ok(situational && boards[0].compareDocumentPosition(situational) & 4, "boards come before Situational Usage");
+    assert.ok(doc.querySelector(".sct-us-snaps").compareDocumentPosition(boards[0]) & 4, "the snap table comes first");
     for (const [i, board] of boards.entries()) {
-      const counts = [...board.querySelectorAll("td.is-count")].map((td) => Number(td.textContent));
+      // The first count cell per named row (the boards also carry Rec/Yds or Yds/YPC since 2026-11-05).
+      const counts = [...board.querySelectorAll("tbody tr:not(.sct-us-board-more)")].map((tr) => Number(tr.querySelector("td.is-count").textContent));
       assert.ok(counts.length > 0 && counts.length <= 8, `${i}: ${counts.length} rows`);
       assert.ok(counts.every((c, j) => j === 0 || c <= counts[j - 1]), `${i}: not sorted: ${counts}`);
       assert.equal(board.querySelectorAll(".sct-us-face").length, counts.length, `${i}: a face well per row`);
@@ -1144,9 +1147,9 @@ describe("tab FAQs", () => {
     ]) {
       const doc = pages[id.match(/for="([^"]+)"/)[1]];
       const headings = [...doc.querySelectorAll(`${id} ${selector}`)].filter(
-        (node) => node.textContent.trim() === "Common questions",
+        (node) => node.textContent.trim() === "Common Questions",
       );
-      assert.equal(headings.length, 1, `${id}: one "Common questions" heading`);
+      assert.equal(headings.length, 1, `${id}: one "Common Questions" heading`);
       assert.equal(
         headings[0].closest("summary"),
         null,
@@ -1158,13 +1161,13 @@ describe("tab FAQs", () => {
   test("one FAQPage for the document, covering every tab that has questions", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc);
-    // Two of the hub's OWN tabs: the Stats questions live on /stats/ now,
-    // with the rest of that page.
+    // Two of the hub's OWN tabs: the Stats and Coaching questions live on
+    // /stats/ and /coaching/ now, with the rest of those pages.
     assert.ok(
-      faqEntries(doc, tailOf("outlook")).length > 0 && faqEntries(doc, tailOf("coaching")).length > 0,
+      faqEntries(doc, tailOf("outlook")).length > 0 && faqEntries(doc, tailOf("draft")).length > 0,
       "this test is only meaningful with both tabs carrying questions",
     );
-    for (const id of ["usage", "stats", "depth-chart"]) {
+    for (const id of ["usage", "coaching", "stats", "depth-chart"]) {
       assert.equal(doc.querySelector(tailOf(id)), null, `${id}: its questions are not on the hub`);
     }
 
@@ -1899,7 +1902,9 @@ describe("shortcode preview harness", () => {
       "/preview/news",
       "/preview/team/new-england-patriots",
       "/preview/team/ne",
+      "/preview/team/new-england-patriots/usage/",
       `/preview/player/${playerSlug}`,
+      `/preview/player/${playerSlug}/injury/`,
       `/preview/raw/player/${playerSlug}`,
       "/preview/fpa",
       "/preview/raw/fpa",
@@ -2950,21 +2955,23 @@ describe("team section URLs", () => {
     const heading = doc.querySelector("h1");
     const landed = heading.textContent.trim();
 
-    // Coaching: a hub-only panel, so it switches in place. Stats owns an
+    // Draft: a hub-only panel, so it switches in place. Stats owns an
     // address and is not printed here - its tab is a plain link, below.
-    const coaching = doc.querySelector('.sct-nav-link[data-sct-panel-id="coaching"]');
-    assert.ok(coaching, "the Coaching tab is there");
+    // (Coaching used to be the hub-only example; it has its own address
+    // since mak's coaching brief, 2026-11-05.)
+    const draft = doc.querySelector('.sct-nav-link[data-sct-panel-id="draft"]');
+    assert.ok(draft, "the Draft tab is there");
 
-    coaching.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    draft.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
 
     assert.equal(
       window.location.pathname + window.location.hash,
-      "/team/new-england-patriots/#coaching",
+      "/team/new-england-patriots/#draft",
       "the address bar names the section",
     );
     assert.ok(
-      doc.getElementById("coaching").classList.contains("is-active"),
-      "the coaching panel is the one showing",
+      doc.getElementById("draft").classList.contains("is-active"),
+      "the draft panel is the one showing",
     );
     assert.equal(
       doc.getElementById("outlook").classList.contains("is-active"),
@@ -2991,7 +2998,7 @@ describe("team section URLs", () => {
     assert.equal(doc.getElementById("stats"), null, "the Stats panel is not on the hub");
     assert.equal(stats.getAttribute("role"), null);
     assert.equal(doc.querySelector(".sct-nav-list").getAttribute("role"), null);
-    assert.equal(coaching.getAttribute("aria-current"), "true");
+    assert.equal(draft.getAttribute("aria-current"), "true");
     // Intent prefetches the page the link leads to.
     stats.dispatchEvent(new window.Event("mouseenter"));
     assert.ok(

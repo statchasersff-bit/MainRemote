@@ -27,8 +27,21 @@ export function injuryForWeek(
   return null;
 }
 
-/** "Did not play (hamstring)" or "Did not play (inactive)". */
-export function didNotPlayLabel(injury: NflInjuryEntry | null): string {
+/**
+ * "Did not play (hamstring)", "Active, did not play" or "Did not play".
+ *
+ * Only what is known (the game-log audit, 2026-11-04): the injury when the
+ * record has one; "active" when the week's log row says he dressed (Sleeper's
+ * gp) and took no snap - a healthy backup, not an inactive; and plain "Did
+ * not play" otherwise, because the log has no inactive list to confirm the
+ * word against.
+ */
+export function didNotPlayLabel(
+  injury: NflInjuryEntry | null,
+  stats?: { gp?: number } | null,
+): string {
   const reason = injury ? (injury.bodyPart ?? injury.type ?? "").trim().toLowerCase() : "";
-  return `Did not play (${reason || "inactive"})`;
+  if (reason) return `Did not play (${reason})`;
+  if ((stats?.gp ?? 0) > 0) return "Active, did not play";
+  return "Did not play";
 }

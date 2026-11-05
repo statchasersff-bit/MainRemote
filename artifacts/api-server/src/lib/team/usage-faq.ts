@@ -1,37 +1,38 @@
 /**
- * The Usage tab's Common questions - mak's list (2026-10-05), in his order.
+ * The Snap Counts & Player Usage page's Common questions.
  *
- * Every answer is written from the same view the report draws, by rule, so an
- * answer cannot quote a number the tab above it does not show. A question that
- * names a player (the TE1, the buy-low, the RB1, the passer) is asked only when
- * the view has that player, and a question the data cannot answer is left out
- * rather than answered with a guess. The questions are in the page's FAQPage
- * too, so every answer is plain text; a link (mak, 2026-10-05) is a phrase of
- * that text the renderer wraps, so the schema's answer and the visible answer
- * stay the same words. A tool whose address is not set yet (null in
+ * Rewritten 2026-11-05 on mak's NFL-first brief: the questions are the ones
+ * a reader searching for a club's snap counts, target leaders, backfield
+ * split and offensive tendencies asks, in the order the page answers them,
+ * with the fantasy questions (usage profiles, the handcuff, xFP/FPOE, how to
+ * use the data) kept at the end for the readers who want them.
+ *
+ * Every answer is written from the same view the report draws, by rule, so
+ * an answer cannot quote a number the page above it does not show. A
+ * question that names a player (the lead back, the passer) is asked only
+ * when the view has that player, and a question the data cannot answer is
+ * left out rather than answered with a guess. The questions are in the
+ * page's FAQPage too, so every answer is plain text; a link is a phrase of
+ * that text the renderer wraps, so the schema's answer and the visible
+ * answer stay the same words. A tool whose address is not set yet (null in
  * matchup/recap.ts) drops its sentence, not just its link.
  */
 
 import {
+  GAP_LABEL,
+  ZONE_LABEL,
   art,
+  bestGap,
   bestZone,
   handcuffProjection,
   list,
   signed,
   situationShare,
-  TIER_LABEL,
-  woprCaption,
-  ZONE_LABEL,
+  usageTrends,
 } from "./usage-copy";
-import { baseWords, getTargetShareCliff, surname, type UsagePlayer, type UsageRow, type UsageView, type Zone } from "./usage";
+import { baseWords, getTargetShareCliff, surname, type RunGap, type UsagePlayer, type UsageRow, type UsageView, type Zone } from "./usage";
 import type { NflTeam } from "./teams";
-import {
-  BUY_LOW_SELL_HIGH_URL,
-  RB_HANDCUFF_RANKINGS_URL,
-  REDRAFT_COMMAND_URL,
-  START_SIT_URL,
-  TRADE_CALCULATOR_URL,
-} from "../matchup/recap";
+import { RB_HANDCUFF_RANKINGS_URL, REDRAFT_COMMAND_URL, START_SIT_URL, TRADE_CALCULATOR_URL } from "../matchup/recap";
 
 export interface FaqLink {
   /** A phrase that appears in the answer exactly once. */
@@ -64,70 +65,60 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
 
   const rows = view.rows;
   const skill = rows.filter((r) => r.player.pos !== "QB" && r.tier !== "stash");
-  const receivers = rows
-    .filter((r) => r.player.pos !== "QB" && r.player.targetShare != null)
-    .sort((a, b) => (b.player.targetShare ?? 0) - (a.player.targetShare ?? 0));
-  const passCatchers = receivers.filter((r) => r.player.pos === "WR" || r.player.pos === "TE");
+  const tgt = view.team.targets;
+  const byTargets = view.all.filter((p) => p.targets > 0).sort((a, b) => b.targets - a.targets);
+  const tShare = (p: UsagePlayer) => (tgt ? f1((100 * p.targets) / tgt) : null);
   const [rb1, rb2, rb3] = view.rbs;
-  const rb1Row = rows.find((r) => r.player === rb1);
+  const cuff = handcuffProjection(view);
+  const totals = view.team.rbSituationTotals;
   const byXfp = [...skill]
     .filter((r) => r.player.xfpPerGame != null)
     .sort((a, b) => (b.player.xfpPerGame ?? 0) - (a.player.xfpPerGame ?? 0))[0];
-  const buy = view.signals.find((s) => s.kind === "buy");
-  const sell = view.signals.find((s) => s.kind === "sell");
-  const cuff = handcuffProjection(view);
-  const totals = view.team.rbSituationTotals;
-  // The backfield bar's own math, so "88.1%" here is the 88.1% on the bar.
-  const roomWopp = view.rbs.reduce((sum, p) => sum + Math.max(0, p.wopp), 0);
-  const woppPct = (p: UsagePlayer) => (roomWopp > 0 && p.wopp > 0 ? `${f1((100 * p.wopp) / roomWopp)}%` : null);
 
-  // 1. Target-share leader.
+  // 1. Target leader.
   {
-    const [lead, second] = receivers;
+    const [lead, second, third] = byTargets;
+    const leadRow = rows.find((r) => r.player === lead);
     ask(
-      `Who leads the ${nick} in target share?`,
-      lead
-        ? `${lead.player.name} leads the ${nick} with ${art(f1(lead.player.targetShare!))} ${f1(lead.player.targetShare!)}% target share ${wk}${trendClause(lead)}.` +
-            (second ? ` ${second.player.name} is second at ${f1(second.player.targetShare!)}%.` : "")
+      `Who leads the ${nick} in targets?`,
+      lead && tShare(lead)
+        ? `${lead.name} leads the ${nick} with ${plural(lead.targets, "target")} ${wk}, ${art(tShare(lead))} ${tShare(lead)}% share of the team's ${tgt}${leadRow ? trendClause(leadRow) : ""}.` +
+            (second ? ` ${second.name} is second with ${second.targets} (${tShare(second)}%)` + (third ? `, then ${third.name} with ${third.targets}.` : ".") : "")
         : null,
     );
   }
 
-  // 2. WR1.
+  // 2. Snap leaders.
   {
-    const wr1 = rows.find((r) => r.player.pos === "WR" && r.depth === 1);
-    const wr2 = rows.find((r) => r.player.pos === "WR" && r.depth === 2);
-    const p = wr1?.player;
+    const withSnaps = view.all.filter((p) => (p.snaps ?? 0) > 0 && p.snapShare != null);
+    const teamSnaps = view.team.snapsByWeek ? Object.values(view.team.snapsByWeek).reduce((s, n) => s + n, 0) : 0;
+    const qb = withSnaps.filter((p) => p.pos === "QB").sort((a, b) => (b.snaps ?? 0) - (a.snaps ?? 0))[0];
+    const others = withSnaps.filter((p) => p.pos !== "QB").sort((a, b) => (b.snaps ?? 0) - (a.snaps ?? 0)).slice(0, 3);
+    const line = (p: UsagePlayer) => `${p.name} (${p.snaps} snaps, ${p.snapShare}%)`;
     ask(
-      `Who is the ${poss} WR1 for fantasy football?`,
-      wr1 && p && p.targetShare != null
-        ? `${p.name} is the ${poss} WR1 by usage ${wk}: ${art(f1(p.targetShare))} ${f1(p.targetShare)}% target share` +
-            (p.leagueRank.rank ? ` (WR${p.leagueRank.rank} in the NFL)` : "") +
-            (p.wopr != null ? `, a ${p.wopr.toFixed(2)} WOPR (${woprCaption(p)})` : "") +
-            (p.snapShare != null ? ` and ${art(p.snapShare)} ${p.snapShare}% snap share` : "") +
-            `. His usage tier is ${TIER_LABEL[wr1.tier]}.` +
-            (wr2?.player.targetShare != null ? ` ${wr2.player.name} is the WR2 at ${f1(wr2.player.targetShare)}%.` : "")
+      `Who plays the most offensive snaps for the ${nick}?`,
+      teamSnaps && others.length
+        ? (qb ? `${qb.name} has played ${qb.snaps} of the ${poss} ${teamSnaps} offensive snaps (${qb.snapShare}%) ${wk}. ` : "") +
+            `Among the backs, receivers and tight ends, ${list(others.map(line))} lead${others.length === 1 ? "s" : ""} the team. ` +
+            `Snap share is a player's offensive snaps over the team's in the games counted.`
         : null,
     );
   }
 
   // 3. Lead back.
   ask(
-    `Who is the ${poss} lead running back by usage?`,
+    `Who is the ${poss} lead running back?`,
     rb1
-      ? `${rb1.name} is the ${poss} lead back ${wk}` +
-          (woppPct(rb1) ? `, with ${woppPct(rb1)} of the backfield's weighted opportunities` : "") +
-          (rb1.touchShare != null ? ` and ${rb1.touchShare}% of RB touches` : "") +
+      ? `${rb1.name} is the ${poss} lead back ${wk} with ${plural(rb1.carries, "carry", "carries")}` +
+          (rb1.touchShare != null ? `, ${rb1.touchShare}% of the running backs' touches` : "") +
+          (rb1.snapShare != null ? `, on ${rb1.snapShare}% of the offensive snaps` : "") +
           `.` +
-          (rb1.woppPerGame != null
-            ? ` His ${f1(rb1.woppPerGame)} weighted opportunities per active game ` +
-              (rb1.qualified && rb1.leagueRank.rank ? `rank RB${rb1.leagueRank.rank} in the NFL.` : `are his weekly workload.`)
-            : "") +
-          ` Weighted opportunities count a target as two carries, a better view of RB opportunity than raw touches alone.`
+          (rb2 ? ` ${rb2.name} is next with ${plural(rb2.carries, "carry", "carries")}${rb3 && rb3.carries > 0 ? `, then ${rb3.name} with ${rb3.carries}` : ""}.` : "") +
+          ` Carries count scrambles and exclude kneel-downs.`
       : null,
   );
 
-  // 4. Backfield split.
+  // 4. The split by situation.
   if (rb1 && rb2) {
     const pair = (key: keyof UsagePlayer["situation"]) => {
       const a = situationShare(view, rb1, key);
@@ -135,19 +126,20 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
       return a == null || b == null ? null : `${a}% to ${b}%`;
     };
     const splits = [
-      totals.early >= 10 && pair("early") ? `on early downs it is ${pair("early")}` : null,
-      totals.third >= 5 && pair("third") ? `on third down ${pair("third")} (${plural(totals.third, "opportunity", "opportunities")})` : null,
-      totals.rz >= 5 && pair("rz") ? `in the red zone ${pair("rz")}` : null,
+      totals.early >= 10 && pair("early") ? `on early downs it is ${pair("early")} (${plural(totals.early, "opportunity", "opportunities")})` : null,
+      totals.third >= 5 && pair("third") ? `on third down ${pair("third")} (${totals.third})` : null,
+      totals.rz >= 5 && pair("rz") ? `in the red zone ${pair("rz")} (${totals.rz})` : null,
+      totals.trailing >= 6 && pair("trailing") ? `trailing by seven or more ${pair("trailing")} (${totals.trailing})` : null,
     ].filter((s): s is string => s != null);
+    const roomWork = view.rbs.reduce((s, p) => s + p.carries + p.targets, 0);
+    const share = (p: UsagePlayer) => (roomWork ? Math.round((100 * (p.carries + p.targets)) / roomWork) : null);
     ask(
-      `What is the ${poss} backfield split between ${rb1.name} and ${rb2.name}?`,
-      woppPct(rb1) && woppPct(rb2)
-        ? `${rb1.name} has ${woppPct(rb1)} of the ${poss} running back weighted opportunities ${wk} and ${rb2.name} has ${woppPct(rb2)}` +
-            (rb3 && (rb3.woppShare ?? 0) >= 5 && woppPct(rb3) ? `, with ${rb3.name} at ${woppPct(rb3)}` : "") +
+      `How do the ${nick} split the backfield between ${rb1.name} and ${rb2.name}?`,
+      share(rb1) != null && share(rb2) != null
+        ? `${rb1.name} has ${share(rb1)}% of the ${poss} running back carries and targets ${wk} and ${rb2.name} has ${share(rb2)}%` +
+            (rb3 && (share(rb3) ?? 0) >= 5 ? `, with ${rb3.name} at ${share(rb3)}%` : "") +
             `.` +
-            (splits.length
-              ? ` By situation, counting the backs' carries + targets, ${list(splits)}.`
-              : "")
+            (splits.length ? ` By situation, ${list(splits)}. Shares are of the backs' carries + targets, not snaps.` : "")
         : null,
     );
   }
@@ -172,90 +164,124 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     );
   }
 
-  // 6. Best usage profile.
+  // 6. How the passer spreads it.
+  if (view.qb && tgt) {
+    const top = byTargets.filter((p) => p.pos !== "QB").slice(0, 3);
+    if (top.length) {
+      const topShare = Math.round(top.reduce((s, p) => s + (100 * p.targets) / tgt, 0));
+      const shape = topShare >= 65 ? "a concentrated distribution" : topShare <= 50 ? "a spread-out distribution" : null;
+      const zones = view.team.zones;
+      const deep = (["DL", "DM", "DR"] as Zone[]).reduce((s, k) => s + (zones[k]?.att ?? 0), 0);
+      const all = (Object.values(zones) as Array<{ att: number }>).reduce((s, z) => s + z.att, 0);
+      const best = bestZone(view);
+      const qbName = surname(view.qb.name);
+      ask(
+        `How does ${view.qb.name} distribute his passes?`,
+        `${list(top.map((p) => `${p.name} (${tShare(p)}%)`))} lead the ${tgt} ${nick} targets ${wk}, so the top ${top.length === 1 ? "one takes" : `${top.length} take`} ${topShare}% of the looks${shape ? `, ${shape}` : ""}.` +
+          (all
+            ? ` By field zone, ${qbName} keeps ${Math.round((100 * (all - deep)) / all)}% of his ${all} charted attempts under 20 air yards` +
+              (best && zones[best]?.ypa != null
+                ? `, and the ${ZONE_LABEL[best].toLowerCase()} has been his most efficient high-volume zone at ${f1(zones[best]!.ypa!)} yards per attempt on ${zones[best]!.att}`
+                : "") +
+              `.`
+            : ""),
+      );
+    }
+  }
+
+  // 7. Run direction.
+  {
+    const runs = view.team.runs;
+    const gaps = Object.keys(runs) as RunGap[];
+    const total = gaps.reduce((s, g) => s + runs[g].att, 0);
+    const best = bestGap(view);
+    if (total >= 10) {
+      const pctOf = (n: number) => Math.round((100 * n) / total);
+      const left = runs.LT.att + runs.LE.att;
+      const right = runs.RT.att + runs.RE.att;
+      ask(
+        `Where do the ${nick} run the ball?`,
+        `Of the ${poss} ${total} designed runs ${wk}, ${pctOf(runs.MID.att)}% have gone inside (${runs.MID.att} attempts${runs.MID.ypc != null ? `, ${f1(runs.MID.ypc)} yards per carry` : ""}), ${pctOf(left)}% to the left side and ${pctOf(right)}% to the right.` +
+          (best
+            ? ` The most efficient gap with a real sample is the ${GAP_LABEL[best].toLowerCase()} at ${f1(runs[best].ypc!)} yards per carry on ${runs[best].att} attempts.`
+            : "") +
+          ` "Inside" includes runs behind either guard; scrambles and kneel-downs are not designed runs.`,
+      );
+    }
+  }
+
+  // 8. Who is gaining and losing.
+  {
+    const trends = usageTrends(view);
+    const up = trends.filter((t) => t.direction === "up").map((t) => `${t.player.name} (${t.short})`);
+    const down = trends.filter((t) => t.direction === "down").map((t) => `${t.player.name} (${t.short})`);
+    const base = skill[0] ? baseWords(skill[0].ts) : "";
+    ask(
+      `Which ${nick} players' roles are growing or shrinking?`,
+      up.length || down.length
+        ? (up.length ? `Growing ${wk}: ${list(up)}.` : `No ${nick} player has a confirmed rise in role ${wk}.`) +
+            (down.length ? ` Shrinking: ${list(down)}.` : ` No one's role is in a confirmed decline.`) +
+            ` Each move is the player's last three games against the three he played before them; it counts when it clears the steady band (5 points of snap share, 2 of target share) and the latest game confirms it.`
+        : skill.length
+          ? `No ${nick} player's role has moved enough to call a trend ${wk}${base ? `: the last three games' snap and target shares are within the steady band of ${base} or the latest game has not confirmed the move` : ""}.`
+          : null,
+    );
+  }
+
+  // 9. Definitions.
+  {
+    const kneels = view.team.kneels;
+    const qb = view.qb;
+    ask(
+      `How are snap counts, targets and carries counted on this page?`,
+      `Snaps are offensive snaps from the official gamebooks, and snap share is a player's snaps over the ${poss} offensive snaps in the games counted. ` +
+        `A target is a pass attempt with an intended receiver, so throwaways and spikes carry none; target share is a player's targets over the team's ${tgt}. ` +
+        `Carries include quarterback scrambles and exclude kneel-downs${kneels != null ? ` (${kneels} ${wk})` : ""}, which the official box score counts as rushing attempts` +
+        (qb && qb.kneels ? `; ${surname(qb.name)}'s official total is his ${qb.carries} carries here plus ${qb.kneels} kneels` : "") +
+        `. Situational shares are of the running backs' carries + targets, not snaps, and each row prints the number of opportunities it is measured on.`,
+    );
+  }
+
+  // 10. The next back.
+  if (rb1 && rb2) {
+    ask(
+      `Who is the ${poss} backup running back behind ${rb1.name}?`,
+      cuff
+        ? `${rb2.name} is next in line behind ${rb1.name} by carries and targets ${wk}, with ${plural(rb2.carries, "carry", "carries")}, ${plural(rb2.targets, "target")}${rb2.snapShare != null ? ` and ${art(rb2.snapShare)} ${rb2.snapShare}% snap share` : ""}. ` +
+            `If ${surname(rb1.name)} missed time and his work were shared out in proportion to who takes the early-down and red-zone touches behind him, ${surname(rb2.name)} would be at about ${f1(cuff.projected)} carries + 2 × targets per game` +
+            (cuff.projShare != null ? `, roughly ${cuff.projShare}% of the backfield's work` : "") +
+            `.`
+        : `No back behind ${rb1.name} has 5% of the backfield's carries + 2 × targets ${wk}, so the ${nick} have no established second back; an absence would open a role no one on the roster currently holds.`,
+    );
+  }
+
+  // 11. (fantasy) Best usage profile.
   if (byXfp) {
     const p = byXfp.player;
+    const cliff = getTargetShareCliff();
     const source =
       p.pos === "RB"
-        ? woppPct(p)
-          ? ` It comes from ${woppPct(p)} of the backfield's weighted opportunities${p.qualified && p.leagueRank.rank ? ` (RB${p.leagueRank.rank} per active game in the NFL)` : ""}.`
+        ? p.woppShare != null
+          ? ` It comes from ${p.woppShare}% of the backfield's weighted opportunities (carries + 2 × targets)${p.qualified && p.leagueRank.rank ? `, RB${p.leagueRank.rank} per active game in the NFL` : ""}.`
           : ""
         : p.targetShare != null
           ? ` It comes from ${art(f1(p.targetShare))} ${f1(p.targetShare)}% target share${p.wopr != null ? ` and a ${p.wopr.toFixed(2)} WOPR` : ""}.`
           : "";
     ask(
       `Which ${nick} player has the best fantasy football usage profile?`,
-      `${p.name} has the ${poss} strongest usage profile ${wk}: ${f1(p.xfpPerGame!)} expected fantasy points (xFP) per game, the most of any ${nick} ${view.qb ? "skill player outside the quarterback" : "skill player"}.` +
+      `${p.name} has the ${poss} strongest fantasy usage profile ${wk}: ${f1(p.xfpPerGame!)} expected fantasy points (xFP) per game, the most of any ${nick} ${view.qb ? "skill player outside the quarterback" : "skill player"}.` +
         source +
-        fpoeClause(p),
+        fpoeClause(p) +
+        (cliff
+          ? ` For scale, since ${cliff.seasons.slice(0, 4)} receivers with a 20%+ target share have averaged ${cliff.above20.ppg} fantasy points per game, against ${cliff.from10to20.ppg} for receivers between 10% and 20%.`
+          : ""),
     );
   }
 
-  // 7. The TE1's targets.
-  {
-    const te1 = rows.find((r) => r.player.pos === "TE" && r.depth === 1);
-    const p = te1?.player;
-    if (te1 && p && p.targetShare != null) {
-      const rank = p.leagueRank.rank;
-      const ts = p.targetShare;
-      const verdict =
-        ts >= 17 || (rank != null && rank <= 8)
-          ? ["Yes.", "That is a starting tight end's share of the targets."]
-          : rank != null && rank <= 14
-            ? ["Borderline.", "That is streaming range at tight end: startable in the right matchup, not every week."]
-            : ["Not yet.", "That is below a weekly starter's share at tight end; he needs a bigger role first."];
-      ask(
-        `Is ${p.name} getting enough targets to be a fantasy starter?`,
-        `${verdict[0]} ${p.name} has ${art(f1(ts))} ${f1(ts)}% target share ${wk}` +
-          (rank ? `, TE${rank} in the NFL` : "") +
-          (p.wopr != null ? `, and a ${p.wopr.toFixed(2)} WOPR (${woprCaption(p)})` : "") +
-          `.` +
-          (te1.ts.direction !== "flat" && te1.ts.delta != null && te1.ts.baseWeek != null
-            ? ` His share over the last three games is ${te1.ts.direction} ${Math.abs(te1.ts.delta).toFixed(1)} points on ${baseWords(te1.ts)}.`
-            : "") +
-          ` ${verdict[1]}`,
-      );
-    }
-  }
-
-  // 8. The buy-low card's player.
-  if (buy) {
-    const p = buy.row.player;
-    const r = buy.row;
-    const gains = [
-      r.ts.delta != null && r.ts.delta > 0 ? `target share up ${f1(r.ts.delta)} points over the last three games on ${baseWords(r.ts)}` : null,
-      r.snap.delta != null && r.snap.delta > 0 ? `snap share up ${Math.round(r.snap.delta)} points over the last three games on ${baseWords(r.snap)}` : null,
-    ].filter((s): s is string => s != null);
-    const blsh = BUY_LOW_SELL_HIGH_URL ? ` See every current riser and faller league-wide on our Buy Low, Sell High board.` : "";
-    ask(
-      `Is ${p.name} a buy-low fantasy football target?`,
-      buy.reason === "points" && p.xfpPerGame != null && p.fpPerGame != null && p.fpoePerGame != null
-        ? `Yes, he is our current ${nick} buy-low. ${p.name} is averaging ${f1(p.xfpPerGame)} expected fantasy points per game but only ${f1(p.fpPerGame)} actual ${wk}, ${f1(Math.abs(p.fpoePerGame))} a game below the value of his opportunities. If the role holds, that gap is a potential regression signal, so check why before you trade for him.${blsh}`
-        : gains.length
-          ? `Yes, he is our current ${nick} buy-low because his role is growing: ${list(gains)}. The role is arriving before the box score does, so the time to trade for him is before a big game makes it obvious to your league.${blsh}`
-          : null,
-      [link(BUY_LOW_SELL_HIGH_URL, "Buy Low, Sell High board", "blsh-usage-faq")],
-    );
-  }
-
-  // 9. The RB1 as a set-and-forget starter.
-  if (rb1 && rb1Row && woppPct(rb1)) {
-    const share = `${woppPct(rb1)} of the backfield's weighted opportunities`;
-    const rank = rb1.qualified && rb1.leagueRank.rank ? ` (RB${rb1.leagueRank.rank} per active game in the NFL)` : "";
-    const rz = rb1.rzOppShare != null ? ` and ${rb1.rzOppShare}% of the backs' red-zone carries + targets` : "";
-    const answers: Record<string, string> = {
-      set: `Yes. ${rb1.name} has ${share}${rank}${rz} ${wk}. That is a workhorse share, and it grades Set & forget in our usage table.`,
-      starter: `Not quite. ${rb1.name} has ${share}${rank}${rz} ${wk}: enough volume to start most weeks, but another back takes a real cut, so he grades Starter rather than Set & forget.`,
-      flex: `No. ${rb1.name} has ${share}${rank} ${wk}, a shared backfield that grades Flex: his weekly volume depends on how the split breaks.`,
-      volatile: `No. ${rb1.name} has only ${share} ${wk}, a split that grades Volatile in our usage table.`,
-    };
-    ask(`Is ${rb1.name} a set-and-forget fantasy football starter?`, answers[rb1Row.tier] ?? null);
-  }
-
-  // 10. The handcuff.
+  // 12. (fantasy) The handcuff.
   if (rb1) {
     ask(
-      `Who is the ${poss} top running back handcuff?`,
+      `Who is the ${poss} top fantasy football handcuff?`,
       cuff
         ? `${cuff.rb2.name} is the ${poss} top handcuff: he is next in line behind ${rb1.name} by weighted opportunities` +
             (cuff.rb2.woppPerGame != null ? `, with ${f1(cuff.rb2.woppPerGame)} per active game ${wk}` : ` ${wk}`) +
@@ -267,102 +293,7 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     );
   }
 
-  // 11. How the passer spreads it.
-  if (view.qb && view.team.targets) {
-    const tgt = view.team.targets;
-    const top = view.all
-      .filter((p) => p.pos !== "QB" && p.targets > 0)
-      .sort((a, b) => b.targets - a.targets)
-      .slice(0, 3);
-    if (top.length) {
-      const share = (p: UsagePlayer) => (100 * p.targets) / tgt;
-      const topShare = Math.round(top.reduce((s, p) => s + share(p), 0));
-      const shape = topShare >= 65 ? "a concentrated tree" : topShare <= 50 ? "a spread-out tree" : null;
-      const zones = view.team.zones;
-      const deep = (["DL", "DM", "DR"] as Zone[]).reduce((s, k) => s + (zones[k]?.att ?? 0), 0);
-      const all = (Object.values(zones) as Array<{ att: number }>).reduce((s, z) => s + z.att, 0);
-      const best = bestZone(view);
-      const qbName = surname(view.qb.name);
-      ask(
-        `How is ${view.qb.name} distributing targets in the ${nick} offense?`,
-        `${list(top.map((p) => `${p.name} (${f1(share(p))}%)`))} lead the ${tgt} ${nick} targets ${wk}, so the top ${top.length === 1 ? "one takes" : `${top.length} take`} ${topShare}% of the looks${shape ? `, ${shape}` : ""}.` +
-          (all
-            ? ` ${qbName} keeps ${Math.round((100 * (all - deep)) / all)}% of his throws under 20 air yards` +
-              (best && zones[best]?.ypa != null
-                ? `, and the ${ZONE_LABEL[best].toLowerCase()} has been his most efficient high-volume zone at ${f1(zones[best]!.ypa!)} yards per attempt`
-                : "") +
-              `.`
-            : ""),
-      );
-    }
-  }
-
-  // 12. Who is gaining and losing.
-  {
-    // One verdict per player: a pass-catcher's target share decides it when
-    // it has a confirmed move, a back's (or a flat share's) snap share
-    // otherwise, and a snap move the other way is named as the caveat.
-    const tsMove = (r: UsageRow) =>
-      (r.player.pos === "WR" || r.player.pos === "TE") && r.ts.direction !== "flat" && r.ts.confirmed && r.ts.delta != null
-        ? r.ts.direction
-        : null;
-    const snapMove = (r: UsageRow) =>
-      r.snap.direction !== "flat" && r.snap.confirmed && r.snap.delta != null && Math.abs(r.snap.delta) >= 10
-        ? r.snap.direction
-        : null;
-    const tsText = (r: UsageRow) => `target share ${signed(r.ts.delta!)} points, last three games vs ${baseWords(r.ts)}`;
-    const snapText = (r: UsageRow) => `snap share ${signed(r.snap.delta!, 0)}, last three games vs ${baseWords(r.snap)}`;
-    const moves = (dir: "up" | "down") =>
-      skill.flatMap((r) => {
-        const ts = tsMove(r);
-        const snap = snapMove(r);
-        if (ts === dir) {
-          const against =
-            snap && snap !== dir
-              ? `, even as his snap share ${snap === "up" ? "rose" : "fell"} ${Math.abs(Math.round(r.snap.delta!))} points`
-              : snap === dir
-                ? `, ${snapText(r)}`
-                : "";
-          return [`${r.player.name} (${tsText(r)}${against})`];
-        }
-        if (!ts && snap === dir) return [`${r.player.name} (${snapText(r)})`];
-        return [];
-      });
-    const up = moves("up").slice(0, 3);
-    const down = moves("down").slice(0, 3);
-    const base = skill[0] ? baseWords(skill[0].ts) : "";
-    ask(
-      `Which ${nick} players are gaining or losing fantasy football opportunity?`,
-      up.length || down.length
-        ? (up.length ? `Gaining ${wk}: ${list(up)}.` : `No ${nick} player has a confirmed rise in role ${wk}.`) +
-            (down.length ? ` Losing: ${list(down)}.` : ` No one's role is in a confirmed decline.`) +
-            ` A trend only counts here when the latest game confirms it.`
-        : skill.length
-          ? `No ${nick} player's role has moved enough to call a trend ${wk}${base ? `: the last three games' target shares are within 2 points of ${base} or the latest game has not confirmed the move` : ""}.`
-          : null,
-    );
-  }
-
-  // 13. What target share means.
-  {
-    const cliff = getTargetShareCliff();
-    const above = passCatchers.filter((r) => (r.player.targetShare ?? 0) >= 20);
-    const closest = passCatchers[0];
-    ask(
-      `What does target share mean for ${nick} fantasy football players?`,
-      `Target share is the percentage of a team's targets that go to one player. ` +
-        (cliff
-          ? `Since ${cliff.seasons.slice(0, 4)}, receivers with a 20%+ target share have averaged ${cliff.above20.ppg} fantasy points per game, compared with ${cliff.from10to20.ppg} for receivers between 10% and 20%. `
-          : "") +
-        (above.length
-          ? `On the ${nick}, ${list(above.map((r) => `${r.player.name} (${f1(r.player.targetShare!)}%)`))} ${above.length === 1 ? "is" : "are"} above 20% ${wk}.`
-          : closest
-            ? `No ${nick} receiver is above 20% ${wk}; ${closest.player.name} is closest at ${f1(closest.player.targetShare!)}%.`
-            : ""),
-    );
-  }
-
-  // 14. xFP and FPOE.
+  // 13. (fantasy) xFP and FPOE.
   {
     const swing = [...skill]
       .filter((r) => r.player.fpoePerGame != null && Math.abs(r.player.fpoePerGame) >= 1.5)
@@ -375,21 +306,23 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
             (swing ? `, and ${swing.player.name} is running ${signed(swing.player.fpoePerGame!)} FPOE per game` : "") +
             `. `
           : "") +
-        `Opportunity tends to be more stable than short-term efficiency, so xFP is often the better guide to what comes next.`,
+        `Opportunity tends to be more stable than short-term efficiency, so xFP is often the better guide to what comes next. Both sit behind the + button in the Advanced & Fantasy Analysis table.`,
     );
   }
 
-  // 15. Putting it to work.
+  // 14. (fantasy) Putting it to work.
   {
     const set = skill.filter((r) => r.tier === "set").map((r) => r.player.name);
     if (view.qb && rows.some((r) => r.player === view.qb && r.tier === "set")) set.push(view.qb.name);
+    const buy = view.signals.find((s) => s.kind === "buy");
+    const sell = view.signals.find((s) => s.kind === "sell");
     const trades = [
       buy ? `${buy.row.player.name} is the current buy-low` : null,
       sell ? `${sell.row.player.name} the current sell-high` : null,
     ].filter((s): s is string => s != null);
     ask(
-      `How should I use ${nick} usage data for trades, waivers and start/sit decisions?`,
-      `Start with the shares: target share, snap share and red-zone opportunities show who is earning work before the box score does. ` +
+      `How should I use ${nick} usage data for fantasy trades, waivers and start/sit decisions?`,
+      `Start with the shares: snap share, target share and red-zone opportunities show who is earning work before the box score does. ` +
         (set.length ? `For start/sit, the ${poss} Set & forget players ${wk} are ${list(set)}; settle the closer calls in our Start/Sit tool. ` : `For start/sit, settle the close calls in our Start/Sit tool. `) +
         `For trades, look for a role that is growing or a gap between xFP and actual points` +
         (trades.length ? `; ${list(trades)}` : "") +
@@ -411,8 +344,8 @@ function trendClause(row: UsageRow): string {
   const t = row.ts;
   if (t.delta == null || t.baseWeek == null) return "";
   return t.direction === "flat"
-    ? `, holding steady over the last three games against ${baseWords(t)}`
-    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)} points over the last three games against ${baseWords(t)}`;
+    ? `, holding steady over his last three games against ${baseWords(t)}`
+    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)} points over his last three games against ${baseWords(t)}`;
 }
 
 function fpoeClause(p: UsagePlayer): string {

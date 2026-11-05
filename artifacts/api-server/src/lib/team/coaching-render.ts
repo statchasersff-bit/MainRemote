@@ -1,12 +1,19 @@
 /**
- * Markup for the team hub's Coaching Profile & Tendencies section.
+ * Markup for the team pages' Offensive Coaching & Scheme section.
  *
- * Server-rendered in full like the usage tab beside it: everything is in the
- * HTML the server sends, and nothing here needs the client bundle. The ten
- * components render in the build spec's order - header + intro, the coach
- * card beside the tendencies table, three shift cards, the staff strip, the
- * career dossier, the positional finishes, the rookie note, the two
- * fingerprint panels, the two situational panels, and the gold bottom line.
+ * Server-rendered in full like the usage page beside it: everything is in
+ * the HTML the server sends, and nothing here needs the client bundle.
+ * Rebuilt 2026-11-05 on mak's coaching brief, an NFL report first: (1) the
+ * coordinator & scheme overview - the coach card with its Coaching
+ * Continuity meter beside the season's offensive identity (four KPIs and a
+ * generated paragraph); (2) the offensive tendencies in two groups, Play
+ * Calling and Formations & Tempo, each with a sentence written from its
+ * meaningful changes; (3) Formations & Personnel; (4) Situational Play
+ * Calling - score state, red zone and fourth down with their samples; (5)
+ * Target & Backfield Tendencies; (6) Coaching Career & Historical
+ * Performance - the timeline, the scoring chart and a season-by-season NFL
+ * table; (7) Fantasy Impact, one collapsed section holding the finishes,
+ * the signal readings and the bottom line.
  *
  * The section is mostly the evergreen layer read from
  * data/team/coaching_<season>.json. The weekly surface our own feed carries -
@@ -15,6 +22,7 @@
  * chain while everything editorial stays put (see coaching.ts).
  */
 
+import { titleCase } from "../player/title-case";
 import { escapeHtml, TEAM_ACCENTS, TEAM_COLORS } from "../render";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import {
@@ -30,12 +38,17 @@ import {
 import type { UsageView } from "./usage";
 import { signed } from "./usage-copy";
 import { coachingFaq } from "./coaching-faq";
+import { renderCoachingPremium } from "./coaching-premium";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
 
+/**
+ * A panel's title. Title Case with the gold rule under it (mak, 2026-11-04),
+ * the same dress as every other section title on the hub.
+ */
 function h3(text: string): string {
-  return `<h3 class="sct-co-h3">${e(text)}</h3>`;
+  return `<h3 class="sct-co-h3">${e(titleCase(text))}</h3>`;
 }
 
 const ordinal = (n: number): string => {
@@ -45,61 +58,42 @@ const ordinal = (n: number): string => {
   return `${n}${suffix}`;
 };
 
+const ORDINAL_WORDS = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+/** "third", or "15th" past ten. */
+const ordinalWord = (n: number): string => ORDINAL_WORDS[n] ?? ordinal(n);
+
+/** "a, b and c" - the house list, no serial comma. */
+function list(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
 /* ------------------------------------------------------------ header/intro */
 
 function header(): string {
   return (
-    `<div class="sct-co-head"><h2 class="sct-h2">Coaching Profile &amp; Tendencies</h2>` +
-    `<p class="sct-co-dek">How stable is the play-calling environment, and what changed?</p></div>`
+    `<div class="sct-co-head"><h2 class="sct-h2">Offensive Coaching &amp; Scheme</h2>` +
+    `<p class="sct-co-dek">Play-calling tendencies, offensive philosophy, formations, and coaching history.</p></div>`
   );
 }
 
-const seasonOf = (c: TeamCoaching): number => parseInt(c.tendencies.currentLabel, 10);
+export const seasonOf = (c: TeamCoaching): number => parseInt(c.tendencies.currentLabel, 10);
 
 /** "Buffalo's", or "the Giants'" where two clubs share a city. */
 function placeOf(team: NflTeam): string {
   return /^(New York|Los Angeles)$/.test(team.city) ? `the ${team.nickname}'` : `${team.city}'s`;
 }
 
+/** "New England", or "the Giants" where two clubs share a city. */
+export function cityOf(team: NflTeam): string {
+  return /^(New York|Los Angeles)$/.test(team.city) ? `the ${team.nickname}` : team.city;
+}
+
 /** "third" from the kicker's "Third season as caller here", else counted. */
 function nthSeason(c: TeamCoaching): string {
   const m = c.playCaller.kicker.match(/(?:^| · )(\S+) season as caller here/i);
   return m ? m[1].toLowerCase() : ordinal(c.reliability.priorSeasonsAsCaller + 1);
-}
-
-/**
- * One visible sentence: this club's answer, by rule from the reliability
- * rating. The continuity principle and the longer original reasoning open
- * from an inline "Why this matters" link (a native popover, like the table's
- * row definitions), so the analytics start sooner and nothing citable is
- * dropped from the page.
- */
-function intro(c: TeamCoaching, team: NflTeam): string {
-  const season = seasonOf(c);
-  const prior = season - 1;
-  const name = c.playCaller.name;
-  const rating = reliabilityRating(c);
-  const answer =
-    rating === "HIGH"
-      ? `${name} returns as ${placeOf(team)} primary play-caller for a ${nthSeason(c)} season, making ${prior} a meaningful baseline for evaluating how the ${season} offense is changing.`
-      : rating === "MEDIUM" && c.reliability.priorSeasonsAsCaller === 1
-        ? `${name} returns as ${placeOf(team)} primary play-caller for a second season, making ${prior} a usable baseline built on one season.`
-        : rating === "MEDIUM"
-          ? `${name} is new to the ${team.nickname} call sheet but comes from the same scheme family, so treat ${prior} as context, not baseline.`
-          : `${name} is calling the ${team.nickname} offense for the first time, so the ${season} sample is the signal, not last year's.`;
-  return (
-    `<p class="sct-co-intro">${e(answer)} ` +
-    `<button type="button" class="sct-co-why-q" popovertarget="sct-co-why">Why this matters</button></p>` +
-    `<div class="sct-co-def sct-co-why" id="sct-co-why" popover>` +
-    `<p class="sct-co-def-head">Why this matters` +
-    `<button type="button" class="sct-co-def-close" popovertarget="sct-co-why"` +
-    ` popovertargetaction="hide" aria-label="Close">&times;</button></p>` +
-    `<p class="sct-co-def-body sct-co-why-a">${e(
-      "Play-calling tendencies are most useful when the same caller remains in place. They carry over from season to season when the play-caller stays the same - and become unreliable the moment he changes. " +
-        `That's the whole reason this module exists: before you trust any ${team.nickname} projection, you need to know whose fingerprints are on the offense and how stable they are. ` +
-        c.introAnswer,
-    )}</p></div>`
-  );
 }
 
 /* -------------------------------------------------------------- coach card */
@@ -110,7 +104,7 @@ function intro(c: TeamCoaching, team: NflTeam): string {
  * Perkins-based terminology...". The stored sentence is verified copy, so it
  * is split, never rewritten.
  */
-function splitTree(tree: string): { tag: string; note: string } {
+export function splitTree(tree: string): { tag: string; note: string } {
   const m = tree.match(/^(.+?)(?:;\s+|\s+-\s+|,\s+|\s+\((.+)\)$|(?:\s+blended)?\s+(?=with\s))(.*)$/);
   if (!m) return { tag: tree, note: "" };
   const rest = (m[2] ?? m[3] ?? "").trim();
@@ -205,69 +199,121 @@ function timelineStep(step: { role: string; years: string }): string {
  * "straight", and the kicker already carries the count); new-caller
  * explanations pass through, since who called last year is the point.
  */
-function relNote(c: TeamCoaching, rating: Reliability): string {
-  const text = c.reliability.explanation;
-  if (!/^Same play-caller as last season\b/.test(text)) return text;
-  const m = text.match(/^Same play-caller as last season - his (\S+) season calling this offense\./);
+/** The continuity line, one clause each side of a dot (mak's critique, 2026-11-05). */
+export function relNote(c: TeamCoaching, rating: Reliability): string {
   const season = seasonOf(c);
-  const lead = m ? `Same caller for a ${m[1]} straight season.` : "Same caller as last season.";
-  return `${lead} ${season - 1} is a ${rating === "HIGH" ? "strong" : "usable"} baseline for ${season} tendencies.`;
+  const prior = season - 1;
+  if (rating === "HIGH") return `Same caller as ${prior} · strong baseline.`;
+  if (rating === "MEDIUM" && c.reliability.priorSeasonsAsCaller === 1) return `Second season as caller · ${prior} is a usable baseline.`;
+  if (rating === "MEDIUM") return `New caller, same scheme family · ${prior} is context, not baseline.`;
+  return `New caller in ${season} · ${prior} is context, not baseline.`;
 }
 
+/**
+ * Coaching Continuity (mak's brief, 2026-11-05: the rating is about the
+ * caller staying put, not a promise that every tendency carries over, so
+ * the label says continuity and each metric keeps its own sample note).
+ */
 function reliabilityBox(c: TeamCoaching, team: NflTeam): string {
+  void team;
   const rating = reliabilityRating(c);
   const pct = RELIABILITY_PCT[rating];
   const tone: Record<Reliability, string> = { HIGH: "high", MEDIUM: "medium", LOW: "low" };
+  const word = { HIGH: "High", MEDIUM: "Medium", LOW: "Low" }[rating];
   return (
     `<div class="sct-co-rel">` +
-    `<p class="sct-co-rel-row"><span class="sct-co-label">Tendency reliability</span>` +
-    `<span class="sct-co-rating is-${tone[rating]}">${rating}</span></p>` +
-    `<span class="sct-co-relbar" role="img" aria-label="${e(`Tendency reliability: ${rating}`)}">` +
+    `<p class="sct-co-rel-row"><span class="sct-co-label">Coaching continuity</span>` +
+    `<span class="sct-co-rating is-${tone[rating]}">${word}</span></p>` +
+    `<span class="sct-co-relbar" role="img" aria-label="${e(`Coaching continuity: ${word}`)}">` +
     `<span style="width:${pct}%"></span></span>` +
     `<p class="sct-co-rel-note">${e(relNote(c, rating))}</p>` +
-    // The play-caller ledger (chips + note) went 2026-11-02 (mak).
     `</div>`
   );
 }
 
 /**
- * The caller note's first sentence - "he remains the caller" - stays on the
- * card; the sourcing and history behind it fold under "More". The stored
- * note is verified copy, so it is split at a sentence break, never edited.
+ * "Third stint with New England" / "Fourth season calling plays for the
+ * Bills": the caller's history with this club, from the research file's
+ * calling stops (runs of consecutive seasons here).
+ */
+export function stintLine(c: TeamCoaching, team: NflTeam): string {
+  const staff = getCoachingStaff(team.abbreviation, seasonOf(c));
+  const season = seasonOf(c);
+  const abbr = team.abbreviation.toUpperCase();
+  const here = [...new Set((staff?.callingStops ?? []).filter((st) => st.team === abbr).flatMap((st) => st.seasons))].sort((a, b) => a - b);
+  if (!here.length || c.reliability.priorSeasonsAsCaller === 0) return `First season calling plays for the ${team.nickname}`;
+  const runs = here.filter((y, i) => i === 0 || y !== here[i - 1]! + 1).length;
+  if (runs > 1) {
+    const word = ordinalWord(runs);
+    return `${word[0]!.toUpperCase()}${word.slice(1)} stint with ${cityOf(team)}`;
+  }
+  // The count the research file keeps (full seasons; a partial first season
+  // is a note there, not a season), so the card and the FAQ agree.
+  void season;
+  const word = ordinalWord(c.reliability.priorSeasonsAsCaller + 1);
+  return `${word[0]!.toUpperCase()}${word.slice(1)} season calling plays for the ${team.nickname}`;
+}
+
+/**
+ * The coordinator card (mak's brief, 2026-11-05): who runs the offense,
+ * under which head coach, in which stint, from which lineage, and how much
+ * coaching continuity the page's comparisons rest on. The career timeline
+ * that used to close the card lives in the Coaching Career block now.
  */
 function coachCard(c: TeamCoaching, team: NflTeam): string {
-  // The kicker's first part is the title and wears the accent; tenure and
-  // role sit under the name in one muted line, so the name dominates.
-  const [title, ...rest] = c.playCaller.kicker.split(" · ");
-  const tenure = rest
-    .filter((part) => !/^primary play-caller$/i.test(part))
-    .map((part) => part.replace(/ as caller here$/i, " as caller"));
+  const [title] = c.playCaller.kicker.split(" · ");
+  const staff = getCoachingStaff(team.abbreviation, seasonOf(c));
+  const isHC = /head coach/i.test(title ?? "");
+  const role = isHC ? "Head Coach & Play-Caller" : `${title ?? "Offensive Coordinator"} & Play-Caller`.replace(/^offensive coordinator/i, "Offensive Coordinator");
+  const under = !isHC && staff?.hc ? `Under head coach ${staff.hc}` : "";
   const tree = c.playCaller.tree ? splitTree(c.playCaller.tree) : null;
   return (
     `<div class="sct-co-card">` +
-    // The lineage chip shares the header row with the title and name
-    // (mak, 2026-11-02); its note, when there is one, stays under the row.
     `<div class="sct-co-cardhead">` +
     `<div class="sct-co-cardhead-main">` +
-    `<p class="sct-co-kicker">${e(title)}</p>` +
+    `<p class="sct-co-kicker">${e(role)}</p>` +
     `<h3 class="sct-co-name">${e(c.playCaller.name)}</h3>` +
     `</div>` +
-    `<p class="sct-co-tree">${e(tree ? tree.tag : "No established tree")}</p>` +
+    `<p class="sct-co-chips">` +
+    `<span class="sct-co-tree"${tree?.note ? ` title="${e(tree.note)}"` : ""}>${e(tree ? tree.tag : "No established tree")}</span>` +
+    (tree?.note && schemeChip(tree.note) ? `<span class="sct-co-tree is-scheme" title="${e(tree.note)}">${e(schemeChip(tree.note) as string)}</span>` : "") +
+    `</p>` +
     `</div>` +
-    // The role line sits under the header row so it runs the card's full
-    // width like the scheme note, instead of wrapping beside the chip.
-    `<p class="sct-co-roleline">${e([...tenure, "Primary play-caller"].join(" · "))}</p>` +
-    (tree?.note ? `<p class="sct-co-scheme-note">${e(tree.note)}</p>` : "") +
-    // The caller note under the lineage chip went 2026-11-02 (mak).
-    `<ol class="sct-co-path">${c.playCaller.careerPath.map(timelineStep).join("")}</ol>` +
+    `<p class="sct-co-roleline">${e([under, stintLine(c, team)].filter(Boolean).join(" · "))}</p>` +
     reliabilityBox(c, team) +
     `</div>`
   );
 }
 
+/** Scheme families a lineage note names, as a chip ("Erhardt-Perkins tree"); the sentence itself rides in the title. */
+const SCHEME_FAMILIES: Array<[RegExp, string]> = [
+  [/Erhardt[- ]Perkins/i, "Erhardt-Perkins tree"],
+  [/West Coast/i, "West Coast tree"],
+  [/Air Coryell|Coryell/i, "Air Coryell tree"],
+  [/Air Raid/i, "Air Raid tree"],
+  [/run[- ]and[- ]shoot/i, "Run-and-shoot tree"],
+  [/wide[- ]zone|outside zone/i, "Wide-zone scheme"],
+  [/spread/i, "Spread scheme"],
+  [/Shanahan|Kubiak/i, "Shanahan/Kubiak tree"],
+  [/McVay/i, "McVay tree"],
+  [/Reid/i, "Reid tree"],
+  [/play[- ]action/i, "Play-action scheme"],
+];
+
+export function schemeChip(note: string): string | null {
+  const hit = SCHEME_FAMILIES.find(([re]) => re.test(note));
+  return hit ? hit[1] : null;
+}
+
+/** The caller's career as the timeline the card used to carry. */
+function careerTimeline(c: TeamCoaching): string {
+  if (!c.playCaller.careerPath.length) return "";
+  return `<ol class="sct-co-path is-career">${c.playCaller.careerPath.map(timelineStep).join("")}</ol>`;
+}
+
 /* -------------------------------------------------------------- tendencies */
 
-interface RowView {
+export interface RowView {
   current: string;
   change: { dir: "up" | "down" | "flat"; text: string };
   /** The move in the row's unit: points, or seconds for pace (+ = faster). */
@@ -283,7 +329,7 @@ interface RowView {
  * Changes are points or seconds, never a bare number, and the pace row
  * inverts: fewer seconds is "up" and reads "1.1s faster".
  */
-function rowView(row: TendencyRow, view: UsageView | null): RowView {
+export function rowView(row: TendencyRow, view: UsageView | null): RowView {
   const env = row.feed && view ? view.team.env[row.feed] : undefined;
   const value = env?.value;
   if (row.feed && row.priorNum != null && value != null) {
@@ -314,7 +360,7 @@ function rowView(row: TendencyRow, view: UsageView | null): RowView {
 }
 
 /** A league standing, only at the edges: top ten, or bottom five. */
-const atEdge = (rank: number | null): rank is number => rank != null && (rank <= 10 || rank >= 28);
+export const atEdge = (rank: number | null): rank is number => rank != null && (rank <= 10 || rank >= 28);
 
 /** The signals' wording: "4th-fastest in NFL". */
 function rankText(row: TendencyRow, rank: number | null): string {
@@ -389,7 +435,7 @@ function identityStrip(
  * These rates are denominator-sensitive, and this is where a reader finds out
  * why ours differs from another site's.
  */
-function rowLabel(row: TendencyRow, id: string): string {
+export function rowLabel(row: TendencyRow, id: string): string {
   if (!row.def) return `<span class="sct-co-tlabel">${e(row.label)}</span>`;
   return (
     `<button type="button" class="sct-co-tlabel is-def" popovertarget="${e(id)}"` +
@@ -411,9 +457,9 @@ function seasonHead(label: string, sub?: string): string {
 }
 
 /** The sub-captions worth keeping under a label: denominators a reader cannot guess. */
-const KEEP_SUB = new Set(["proe", "fourthGoRate"]);
+export const KEEP_SUB = new Set(["proe", "fourthGoRate"]);
 
-function num(text: string): number | null {
+export function num(text: string): number | null {
   const m = text.replace(/−/g, "-").match(/-?\d+(?:\.\d+)?/);
   return m ? Number(m[0]) : null;
 }
@@ -445,70 +491,396 @@ function changeStrip(row: TendencyRow, v: RowView, priorYear: string, season: nu
   return (
     `<span class="sct-co-strip" role="img" aria-label="${e(label)}" title="${e(label)}">` +
     `<span class="sct-co-strip-bar is-${v.change.dir}" style="left:${Math.min(a, b).toFixed(1)}%;width:${Math.abs(b - a).toFixed(1)}%"></span>` +
-    (avg == null ? "" : `<span class="sct-co-strip-avg" style="left:${x(avg).toFixed(1)}%"></span>`) +
+    (avg == null ? "" : `<span class="sct-co-strip-avg" style="left:${x(avg).toFixed(1)}%" title="${e(`NFL avg ${row.nflAvg}`)}"></span>`) +
     `<span class="sct-co-strip-prior" style="left:${a.toFixed(1)}%"></span>` +
     `<span class="sct-co-strip-now" style="left:${b.toFixed(1)}%"></span>` +
     `</span>`
   );
 }
 
+/**
+ * The change as the table prints it: an arrow for direction (neutral ink,
+ * never red/green: a lower pass rate is not "bad"), the size in percentage
+ * points, pace in seconds. The strip beside it carries the same move.
+ */
+export function changeText(row: TendencyRow, v: RowView): string {
+  if (v.change.dir === "flat") return "steady";
+  if (v.delta == null) return v.change.text;
+  const arrow = v.delta > 0 ? "↑" : "↓";
+  if (row.key === "pace" || row.invert) return `${arrow} ${Math.abs(v.delta).toFixed(1)}s ${v.delta > 0 ? "faster" : "slower"}`;
+  return `${arrow} ${Math.abs(v.delta).toFixed(1)} pp`;
+}
+
+/** The brief's two groups (2026-11-05); fourth down moves to Situational Play Calling. */
+export const GROUPS: Array<{ title: string; keys: string[] }> = [
+  { title: "Play Calling", keys: ["passRate", "proe", "earlyDownPassRate", "rzPassRate", "paRate"] },
+  { title: "Formations & Tempo", keys: ["motionRate", "shotgunRate", "noHuddleRate", "pace"] },
+];
+
+/** Keys the tendencies table and its chips do not headline: shown with their sample in Situational Play Calling. */
+export const SITUATIONAL_KEYS = new Set(["fourthGoRate"]);
+
+/** How each tendency reads as a change, in NFL terms, for the generated group sentences. */
+export const MOVE_PHRASE: Record<string, (up: boolean, pts: string) => string> = {
+  passRate: (up, pts) => `passing ${up ? "more" : "less"} often (${pts})`,
+  proe: (up, pts) => `${up ? "more" : "less"} pass-heavy than its situations predict (${pts})`,
+  earlyDownPassRate: (up, pts) => `${up ? "passing" : "running"} more on early downs (${pts})`,
+  rzPassRate: (up, pts) => `throwing ${up ? "more" : "less"} in the red zone (${pts})`,
+  paRate: (up, pts) => `using ${up ? "more" : "less"} play-action (${pts})`,
+  motionRate: (up, pts) => `using ${up ? "more" : "less"} pre-snap motion (${pts})`,
+  shotgunRate: (up, pts) => `lining up in shotgun ${up ? "more" : "less"} often (${pts})`,
+  noHuddleRate: (up, pts) => `going no-huddle ${up ? "more" : "less"} (${pts})`,
+  pace: (up, pts) => `playing ${up ? "faster" : "slower"} (${pts})`,
+};
+
+/** Lower-case names for the league comparison. */
+export const LEAGUE_NAME: Record<string, string> = {
+  passRate: "pass rate",
+  proe: "pass rate over expected",
+  earlyDownPassRate: "early-down pass rate",
+  rzPassRate: "red-zone pass rate",
+  paRate: "play-action rate",
+  motionRate: "motion rate",
+  shotgunRate: "shotgun rate",
+  noHuddleRate: "no-huddle rate",
+  pace: "neutral pace",
+};
+
+/**
+ * One sentence per group, written from the meaningful changes (3+ points,
+ * or a second of pace) against the prior season, then the one tendency
+ * furthest from the NFL average when it is 3+ points off. Team subject,
+ * never the coach: a pass rate is the offense's, not one man's.
+ */
+export function groupSentence(
+  group: Array<{ row: TendencyRow; v: RowView }>,
+  team: NflTeam,
+  priorYear: string,
+  returning: boolean,
+): string {
+  const city = cityOf(team);
+  const moves = group
+    .filter(({ row, v }) => v.delta != null && Math.abs(v.delta) >= (row.key === "pace" ? 1 : 3) && row.key && MOVE_PHRASE[row.key])
+    .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
+    .map(({ row, v }) => {
+      const d = v.delta as number;
+      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+      return MOVE_PHRASE[row.key as string]!(d > 0, pts);
+    });
+  const vs = group
+    .map(({ row, v }) => {
+      const now = num(v.current);
+      const avg = num(row.nflAvg);
+      if (now == null || avg == null || !row.key) return null;
+      const gap = row.invert ? avg - now : now - avg;
+      return { row, v, gap, now, avg };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null && Math.abs(x.gap) >= (x.row.key === "pace" ? 1 : 3))
+    .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0];
+  const first = moves.length
+    ? `Compared with ${returning ? priorYear : `the ${priorYear} staff`}, ${city} is ${list(moves)}.`
+    : `No tendency in this group has moved 3 percentage points (or a second of pace) from ${priorYear}.`;
+  const second = vs
+    ? ` Against the league, its ${LEAGUE_NAME[vs.row.key as string]} (${vs.v.current}) is ${
+        vs.row.key === "pace" ? (vs.gap > 0 ? "faster" : "slower") : vs.gap > 0 ? "above" : "below"
+      } the NFL average of ${vs.row.nflAvg}${vs.v.rank != null && atEdge(vs.v.rank) ? ` (${ordinal(vs.v.rank)} in the NFL)` : ""}.`
+    : "";
+  return first + second;
+}
+
+function tendencyTable(
+  group: Array<{ row: TendencyRow; v: RowView; i: number }>,
+  c: TeamCoaching,
+  team: NflTeam,
+  title: string,
+  priorYear: string,
+  season: number,
+  biggest: { row: TendencyRow; v: RowView } | undefined,
+  signalByKey: Map<string, TeamCoaching["shifts"][number]>,
+  returning: boolean,
+): string {
+  if (!group.length) return "";
+  const flagBiggest = biggest && Math.abs(biggest.v.delta as number) >= 5 && !rankBadge(biggest.row, biggest.v.rank);
+  const rows = group
+    .map(({ row, v, i }) => {
+      const signal = row.key ? signalByKey.get(row.key) : undefined;
+      const badge = rankBadge(row, v.rank) || (flagBiggest && row === biggest!.row ? `<span class="sct-co-badge">Biggest YoY move</span>` : "");
+      const sub = row.sub && row.key && KEEP_SUB.has(row.key) ? `<span class="sct-co-cell-sub">${e(row.sub)}</span>` : "";
+      return (
+        `<tr${signal ? ` class="is-signal"` : ""}>` +
+        `<th scope="row" class="sct-co-td is-tendency">${rowLabel(row, `sct-co-def-${i}`)}${sub}</th>` +
+        `<td class="sct-co-td is-prior">${e(row.prior)}</td>` +
+        `<td class="sct-co-td is-now">${e(v.current)}</td>` +
+        `<td class="sct-co-td is-change"><span class="sct-co-chg">${changeStrip(row, v, priorYear, season)}` +
+        `<span class="sct-co-change is-${v.change.dir}">${e(changeText(row, v))}</span>${badge}</span></td>` +
+        `</tr>`
+      );
+    })
+    .join("");
+  return (
+    `<div class="sct-co-group">` +
+    `<p class="sct-co-group-title">${e(title)}</p>` +
+    `<div class="sct-co-scroll" tabindex="0" role="region" aria-label="${e(`${team.nickname} ${title.toLowerCase()} tendencies`)}">` +
+    `<table class="sct-co-table">` +
+    `<thead><tr>` +
+    `<th scope="col" class="sct-co-th">Metric</th>` +
+    `<th scope="col" class="sct-co-th is-prior">${seasonHead(c.tendencies.priorLabel)}</th>` +
+    `<th scope="col" class="sct-co-th is-now">${seasonHead(c.tendencies.currentLabel, "Current")}</th>` +
+    `<th scope="col" class="sct-co-th">Change<span class="sct-co-th-sub">vs ${e(priorYear)} · tick = NFL avg</span></th>` +
+    `</tr></thead>` +
+    `<tbody>${rows}</tbody>` +
+    `</table></div>` +
+    `<p class="sct-co-groupnote">${e(groupSentence(group, team, priorYear, returning))}</p>` +
+    `</div>`
+  );
+}
+
+/** Every row read once: the views the tendencies, the overview and the sentences share. */
+export function rowViews(c: TeamCoaching, view: UsageView | null): Array<{ row: TendencyRow; v: RowView; i: number }> {
+  return c.tendencies.rows.map((row, i) => ({ row, v: rowView(row, view), i }));
+}
+
 function tendencies(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
   const season = seasonOf(c);
   const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
-  const views = c.tendencies.rows.map((row) => ({ row, v: rowView(row, view) }));
+  const returning = c.reliability.priorSeasonsAsCaller > 0;
+  const views = rowViews(c, view).filter(({ row }) => !(row.key && SITUATIONAL_KEYS.has(row.key)));
 
   // The one move worth flagging when no league rank already flags it.
   const biggest = views
     .filter(({ row, v }) => v.delta != null && row.key !== "pace")
     .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))[0];
-  const flagBiggest =
-    biggest && Math.abs(biggest.v.delta as number) >= 5 && !rankBadge(biggest.row, biggest.v.rank);
-
-  // The headline rows (mak, 2026-11-02): the builder's signals, folded into
-  // the table as tinted rows with the one-sentence verdict under the label.
-  // The separate "Offensive signals" rail is gone; its implication line is
-  // the verdict's title, its sample caveat sits muted after the verdict.
   const signalByKey = new Map(c.shifts.filter((s) => s.key).map((s) => [s.key as string, s]));
 
-  const rows = views
-    .map(({ row, v }, i) => {
-      const signal = row.key ? signalByKey.get(row.key) : undefined;
-      const badge = rankBadge(row, v.rank) || (flagBiggest && row === biggest.row ? `<span class="sct-co-badge">Biggest YoY move</span>` : "");
-      const sub = row.sub && row.key && KEEP_SUB.has(row.key) ? `<span class="sct-co-cell-sub">${e(row.sub)}</span>` : "";
-      // The verdict line under a tinted row ("Less play-action.", "3 such
-      // snaps") went 2026-11-02 (mak); the tint alone marks a headline move.
-      const verdict = "";
+  const groups = GROUPS.map((g) =>
+    tendencyTable(
+      g.keys.map((k) => views.find((x) => x.row.key === k)).filter((x): x is NonNullable<typeof x> => !!x),
+      c, team, g.title, priorYear, season, biggest, signalByKey, returning,
+    ),
+  ).join("");
+  // Rows the groups do not name (an entry with keys this page has not seen) still print, under the second group.
+  const named = new Set(GROUPS.flatMap((g) => g.keys));
+  const rest = views.filter(({ row }) => !row.key || !named.has(row.key));
+  const restHtml = rest.length ? tendencyTable(rest, c, team, "Other", priorYear, season, biggest, signalByKey, returning) : "";
+  // One header for the whole identity block (mak's critique, 2026-11-05):
+  // no "Offensive Tendencies" title or chip row here; the tiles above
+  // summarize, the tables are the evidence.
+  void identityStrip;
+  return (
+    `<div class="sct-co-tend">` +
+    groups +
+    restHtml +
+    `<p class="sct-co-legend">${e(
+      `Select a metric for how it is counted. Strip: hollow dot ${priorYear}, filled dot ${season}, grey tick the NFL average (hover for it); tinted rows are the season's headline moves.`,
+    )}</p>` +
+    `</div>`
+  );
+}
+
+/* ---------------------------------------------------------------- overview */
+
+/** The four identity KPIs (mak's brief, 2026-11-05): pass rate, red-zone pass rate, pre-snap motion, neutral pace. */
+export const IDENTITY_KEYS = ["passRate", "rzPassRate", "motionRate", "pace"];
+
+/**
+ * "{season} Offensive Identity · Through Week N": four tiles, each the
+ * current value with its change against the prior season (or its league
+ * rank at an edge), then the identity paragraph - the two group sentences
+ * in one, so the overview answers "what does this offense look like now".
+ */
+function identityPane(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  void team;
+  const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
+  const views = rowViews(c, view);
+  const tiles = IDENTITY_KEYS.map((k) => views.find((x) => x.row.key === k))
+    .filter((x): x is NonNullable<typeof x> => !!x)
+    .map(({ row, v }) => {
+      const label = row.key === "pace" ? "Neutral pace" : row.key === "motionRate" ? "Pre-snap motion" : row.key === "rzPassRate" ? "Red-zone pass rate" : "Pass rate";
+      let line = "";
+      let tone = "flat";
+      if (atEdge(v.rank)) {
+        line = `${ordinal(v.rank as number)} in NFL`;
+        tone = "rank";
+      } else if (v.delta != null && v.change.dir !== "flat") {
+        line = `${changeText(row, v)} ${row.key === "pace" ? "than" : "vs"} ${priorYear}`;
+        tone = "move";
+      } else if (v.delta != null) {
+        line = `Level with ${priorYear}`;
+      }
       return (
-        `<tr${signal ? ` class="is-signal"` : ""}>` +
-        `<th scope="row" class="sct-co-td is-tendency">${rowLabel(row, `sct-co-def-${i}`)}${sub}${verdict}</th>` +
-        `<td class="sct-co-td is-prior">${e(row.prior)}</td>` +
-        `<td class="sct-co-td is-now">${e(v.current)}</td>` +
-        `<td class="sct-co-td is-change">${changeStrip(row, v, priorYear, season)}` +
-        `<span class="sct-co-chg-line"><span class="sct-co-change is-${v.change.dir}">${e(v.change.text)}</span>${badge}</span></td>` +
-        `<td class="sct-co-td is-avg">${e(row.nflAvg)}</td>` +
-        `</tr>`
+        `<li class="sct-co-kpi">` +
+        `<span class="sct-co-kpi-label">${e(label)}</span>` +
+        `<span class="sct-co-kpi-value">${e(v.current)}</span>` +
+        (line ? `<span class="sct-co-kpi-line is-${tone}">${e(line)}</span>` : "") +
+        `</li>`
       );
     })
     .join("");
-  // No subtitle under the heading (mak, 2026-11-02): the identity chips are
-  // the section's one summary; the intro and header already frame "what changed".
+  // The identity paragraph went with the fused header (mak's critique,
+  // 2026-11-05): the callout under each table says it beside its evidence.
+  return `<div class="sct-co-identity-pane">` + (tiles ? `<ul class="sct-co-kpis">${tiles}</ul>` : "") + `</div>`;
+}
+
+/**
+ * The overview paragraph: the two or three biggest moves against the prior
+ * season across both groups, in one sentence (play calling first, then
+ * "while" the formations and tempo), and the one tendency furthest from the
+ * NFL average. The group notes under the tables carry the full lists.
+ */
+function identityParagraph(
+  views: Array<{ row: TendencyRow; v: RowView }>,
+  team: NflTeam,
+  priorYear: string,
+  returning: boolean,
+): string {
+  const city = cityOf(team);
+  const usable = views.filter(({ row }) => row.key && !SITUATIONAL_KEYS.has(row.key) && MOVE_PHRASE[row.key]);
+  const pick = (keys: string[], n: number) =>
+    usable
+      .filter(({ row, v }) => keys.includes(row.key as string) && v.delta != null && Math.abs(v.delta) >= (row.key === "pace" ? 1 : 3))
+      .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
+      .slice(0, n)
+      .map(({ row, v }) => {
+        const d = v.delta as number;
+        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+        return MOVE_PHRASE[row.key as string]!(d > 0, pts);
+      });
+  const calling = pick(GROUPS[0]!.keys, 2);
+  const form = pick(GROUPS[1]!.keys, 2);
+  const against = returning ? priorYear : `the ${priorYear} staff`;
+  let first: string;
+  if (calling.length && form.length) first = `Compared with ${against}, ${city} is ${list(calling)}, while ${list(form)}.`;
+  else if (calling.length || form.length) first = `Compared with ${against}, ${city} is ${list([...calling, ...form])}.`;
+  else first = `${city} is running the offense much as it did in ${priorYear}: no tendency has moved 3 points, or a second of pace.`;
+  const vs = usable
+    .map(({ row, v }) => {
+      const now = num(v.current);
+      const avg = num(row.nflAvg);
+      if (now == null || avg == null) return null;
+      const gap = row.invert ? avg - now : now - avg;
+      return { row, v, gap };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null && Math.abs(x.gap) >= (x.row.key === "pace" ? 1 : 3))
+    .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0];
+  const second = vs
+    ? ` Its ${LEAGUE_NAME[vs.row.key as string]} (${vs.v.current}) is ${
+        vs.row.key === "pace" ? (vs.gap > 0 ? "faster" : "slower") : vs.gap > 0 ? "above" : "below"
+      } the NFL average of ${vs.row.nflAvg}${vs.v.rank != null && atEdge(vs.v.rank) ? `, ${ordinal(vs.v.rank)} in the league` : ""}.`
+    : "";
+  return first + second;
+}
+
+void identityParagraph;
+
+/* ------------------------------------------------------------- formations */
+
+/**
+ * Formations & Personnel (mak's brief, section 3): how the offense lines up
+ * from the rows the play-by-play and charting support - shotgun against
+ * under center, motion, play-action, no-huddle - and a plain statement of
+ * what is not charted in season (personnel groupings, pistol, motion at
+ * the snap versus before it), rather than an estimate.
+ */
+function formations(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const views = rowViews(c, view);
+  const find = (k: string) => views.find((x) => x.row.key === k);
+  const shotgun = find("shotgunRate");
+  const sg = shotgun ? num(shotgun.v.current) : null;
+  const sgAvg = shotgun ? num(shotgun.row.nflAvg) : null;
+  const tile = (key: string, label: string) => {
+    const x = find(key);
+    if (!x) return "";
+    const now = num(x.v.current);
+    const avg = num(x.row.nflAvg);
+    const gap = now != null && avg != null ? Math.round((now - avg) * 10) / 10 : null;
+    return (
+      `<li class="sct-co-ftile">` +
+      `<span class="sct-co-kpi-label">${e(label)}</span>` +
+      `<span class="sct-co-kpi-value">${e(x.v.current)}</span>` +
+      (gap != null ? `<span class="sct-co-kpi-line is-${Math.abs(gap) >= 3 ? (gap > 0 ? "up" : "down") : "flat"}">${e(`${signed(gap)} vs NFL avg ${x.row.nflAvg}`)}</span>` : "") +
+      `</li>`
+    );
+  };
+  if (!shotgun && !find("motionRate") && !find("paRate")) return "";
+  const under = sg != null ? Math.round((100 - sg) * 10) / 10 : null;
   return (
-    `<div class="sct-co-tend">` +
-    `<div class="sct-co-tend-head"><h3 class="sct-co-tend-title">Offensive tendencies</h3></div>` +
-    identityStrip(c, views) +
-    `<div class="sct-co-scroll" tabindex="0" role="region" aria-label="${e(`${team.nickname} play-calling tendencies`)}">` +
-    `<table class="sct-co-table">` +
-    `<thead><tr>` +
-    `<th scope="col" class="sct-co-th">Tendency</th>` +
-    `<th scope="col" class="sct-co-th is-prior">${seasonHead(c.tendencies.priorLabel)}</th>` +
-    `<th scope="col" class="sct-co-th is-now">${seasonHead(c.tendencies.currentLabel, "Current")}</th>` +
-    `<th scope="col" class="sct-co-th">Change</th>` +
-    `<th scope="col" class="sct-co-th is-avg">NFL avg</th>` +
-    `</tr></thead>` +
-    `<tbody>${rows}</tbody>` +
-    `</table></div>` +
-    `<p class="sct-co-legend">${e(
-      `Select a tendency for how it is counted. Strip: hollow dot ${priorYear}, filled dot ${season}, grey tick NFL average; tinted rows are the season's headline moves.`,
+    `<div class="sct-co-block sct-co-form">` +
+    h3("Formations & Personnel") +
+    `<p class="sct-co-dsub">${e(`How the ${team.nickname} line up, from the play-by-play and charting that are published in season.`)}</p>` +
+    (sg != null
+      ? `<div class="sct-co-split" role="img" aria-label="${e(`Shotgun ${sg}% of snaps, under center ${under}%${sgAvg != null ? `; NFL average shotgun ${sgAvg}%` : ""}`)}">` +
+        `<span class="sct-co-split-bar"><span class="sct-co-split-sg" style="width:${sg}%"></span>` +
+        (sgAvg != null ? `<span class="sct-co-split-avg" style="left:${sgAvg}%"></span>` : "") +
+        `</span>` +
+        `<span class="sct-co-split-key"><span><b>${e(`${sg}%`)}</b> shotgun</span><span><b>${e(`${under}%`)}</b> under center</span>` +
+        (sgAvg != null ? `<span class="sct-co-split-avgkey">NFL avg shotgun ${e(`${sgAvg}%`)}</span>` : "") +
+        `</span></div>`
+      : "") +
+    `<ul class="sct-co-ftiles">${tile("motionRate", "Pre-snap motion")}${tile("paRate", "Play-action rate")}${tile("noHuddleRate", "No-huddle rate")}</ul>` +
+    `<p class="sct-co-note is-form">${e(
+      "Not charted in season, so not estimated here: personnel groupings (11, 12, 21 personnel), pistol as distinct from shotgun, motion at the snap as distinct from motion before it, and zone versus gap run concepts. The league publishes participation data after the season.",
+    )}</p>` +
+    `</div>`
+  );
+}
+
+/* ------------------------------------------------------------ situational */
+
+/**
+ * Red zone and fourth down with their samples (mak's brief, 2026-11-05):
+ * the fourth-down go rate reads "3 of 3 opportunities", never a headline
+ * rank, and the head coach's part in those decisions is said.
+ */
+function redZoneFourth(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const views = rowViews(c, view);
+  const rz = views.find((x) => x.row.key === "rzPassRate");
+  const fourth = views.find((x) => x.row.key === "fourthGoRate");
+  if (!rz && !fourth) return "";
+  const s = c.tendencies.samples;
+  const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
+  const staff = getCoachingStaff(team.abbreviation, seasonOf(c));
+  const hc = staff?.hc ?? null;
+  const callerIsHC = /head coach/i.test(c.playCaller.kicker);
+  const stat = (label: string, value: string, lines: string[]) =>
+    `<div class="sct-co-sit">` +
+    `<span class="sct-co-kpi-label">${e(label)}</span>` +
+    `<span class="sct-co-kpi-value">${e(value)}</span>` +
+    lines.filter(Boolean).map((l) => `<span class="sct-co-sit-line">${e(l)}</span>`).join("") +
+    `</div>`;
+  let rzHtml = "";
+  if (rz) {
+    const lines = [
+      rz.v.delta != null && rz.v.change.dir !== "flat" ? `${changeText(rz.row, rz.v)} vs ${priorYear} (${rz.row.prior})` : rz.v.delta != null ? `Level with ${priorYear} (${rz.row.prior})` : "",
+      `NFL average ${rz.row.nflAvg}${atEdge(rz.v.rank) ? ` · ${ordinal(rz.v.rank as number)} in NFL` : ""}`,
+      s ? `${s.rzPlays} red-zone plays this season${s.priorRzPlays != null ? `; ${s.priorRzPlays} in ${priorYear}` : ""}` : "",
+    ];
+    rzHtml = stat("Red-zone pass rate", rz.v.current, lines);
+  }
+  let fourthHtml = "";
+  if (fourth) {
+    const n = s?.fourthShortAll ?? null;
+    const go = s?.fourthShortGo ?? null;
+    const noteSnaps = c.shifts.find((x) => x.key === "fourthGoRate")?.note?.match(/(\d+) such snaps/);
+    const count = n ?? (noteSnaps ? Number(noteSnaps[1]) : null);
+    const went = go ?? (count != null && fourth.v.current !== "-" ? Math.round((Number(num(fourth.v.current)) / 100) * count) : null);
+    const value = count != null && went != null && count > 0 ? `${went} of ${count}` : fourth.v.current;
+    const lines = [
+      count != null && count > 0 ? `${fourth.v.current} go rate on 4th-and-2 or less in opponent territory` : "Fewer than three such snaps so far",
+      fourth.row.prior !== "-"
+        ? `${priorYear}: ${s?.priorFourthShortGo != null && s.priorFourthShortAll ? `${s.priorFourthShortGo} of ${s.priorFourthShortAll} (${fourth.row.prior})` : fourth.row.prior}`
+        : "",
+      `NFL average ${fourth.row.nflAvg}`,
+      count != null && count < 15 ? `A small sample: a tendency to watch, not a settled one.` : "",
+    ];
+    fourthHtml = stat("Fourth-down go rate", value, lines);
+  }
+  return (
+    `<div class="sct-co-panel sct-co-rz4">` +
+    h3("Red zone and fourth down") +
+    `<p class="sct-co-panel-sub">${e(`Play selection inside the 20 and on short fourth downs, ${seasonOf(c)} to date, with the plays each rate is measured on.`)}</p>` +
+    `<div class="sct-co-sits">${rzHtml}${fourthHtml}</div>` +
+    `<p class="sct-co-take-ctx">${e(
+      `Fourth-down decisions are game management${hc && !callerIsHC ? `, shared with head coach ${hc}` : ""}; red-zone play selection counts plays, not trips, so a few long drives move it early in a season.`,
     )}</p>` +
     `</div>`
   );
@@ -1137,41 +1509,52 @@ function careerChart(c: TeamCoaching, stops: Stop[]): string {
  * did not call; finishes as pills, partial seasons marked. The two career
  * stats the chart cannot show sit under the title.
  */
-function fingerprintTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string>): string {
-  const rows = stops.flatMap((s) => s.prints.map((p) => ({ s, p })));
+/**
+ * Season by season under the caller (mak's brief, 2026-11-05): the NFL view
+ * first - points per game and league rank for every season he called,
+ * with the target shares and lead-back share where tracking covers them
+ * (2016 on) - stints grouped under one band, a labeled row for any year he
+ * did not call. The fantasy finishes left this table for the Fantasy Impact
+ * section. The two career stats the chart cannot show sit under the title.
+ */
+function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string>): string {
+  // One row per season he was on a stop, in order; a stop's print (shares)
+  // joins its season by year and, for a windowed stop, by its label.
+  const rows = stops.flatMap((s) =>
+    s.points.map((pt) => ({ s, pt, p: s.prints.find((p) => p.year === pt.year && (!s.window || /\(Wks/.test(p.label))) ?? s.prints.find((p) => p.year === pt.year) ?? null })),
+  );
   if (!rows.length) return "";
-  const first = rows[0].p.year;
-  const lastYr = rows[rows.length - 1].p.year;
+  const first = rows[0].pt.year;
+  const lastYr = rows[rows.length - 1].pt.year;
   const span = first === lastYr ? String(first) : `${first}-${String(lastYr).slice(2)}`;
   const season = seasonOf(c);
 
-  // Career stats: the most concentrated backfield, and the position whose
-  // share sat 3+ points off the league most often (either direction).
   const stat = (value: string, label: string) =>
     `<li class="sct-co-fpstat"><span class="sct-co-fpstat-v">${e(value)}</span><span class="sct-co-fpstat-l">${e(label)}</span></li>`;
   const stats: string[] = [];
-  const withLb = rows.filter((r) => r.p.leadBack != null);
+  const prints = rows.filter((r) => r.p).map((r) => ({ s: r.s, p: r.p as Print }));
+  const withLb = prints.filter((r) => r.p.leadBack != null);
   if (withLb.length >= 2) {
     const top = withLb.reduce((a, b) => ((b.p.leadBack as number) > (a.p.leadBack as number) ? b : a));
     stats.push(stat(`${top.p.leadBack}%`, `Peak lead-back share · ${top.p.year} ${top.s.code}`));
   }
-  if (rows.length >= 2) {
+  if (prints.length >= 2) {
     let best: { pos: Pos; side: "below" | "above"; n: number; of: number } | null = null;
     for (const pos of POS) {
-      const known = rows.filter((r) => r.p.shares[pos] != null && r.p.league[pos] != null);
+      const known = prints.filter((r) => r.p.shares[pos] != null && r.p.league[pos] != null);
       const below = known.filter((r) => (r.p.shares[pos] as number) <= (r.p.league[pos] as number) - 3).length;
       const above = known.filter((r) => (r.p.shares[pos] as number) >= (r.p.league[pos] as number) + 3).length;
       for (const [side, n] of [["below", below], ["above", above]] as const) {
         if (n && (!best || n > best.n)) best = { pos, side, n, of: known.length };
       }
     }
-    if (best) stats.push(stat(`${best.n} / ${best.of}`, `seasons with ${best.pos} share 3+ pts ${best.side} league`));
+    if (best) stats.push(stat(`${best.n} / ${best.of}`, `tracked seasons with ${best.pos} share 3+ pp ${best.side} league`));
   }
 
   const sub = (text: string) => `<span class="sct-co-cell-sub">${e(text)}</span>`;
-  const shareCell = (p: Print, pos: Pos, lean: Pos | null) => {
-    const v = p.shares[pos];
-    const lg = p.league[pos];
+  const shareCell = (p: Print | null, pos: Pos, lean: Pos | null) => {
+    const v = p?.shares[pos] ?? null;
+    const lg = p?.league[pos] ?? null;
     if (v == null) return `<td class="sct-co-td is-share"><span class="sct-co-fpv is-none">-</span></td>`;
     const d = lg != null ? Math.round(v - lg) : null;
     const dir = d == null ? "" : d >= 3 ? "is-up" : d <= -3 ? "is-down" : "is-flat";
@@ -1182,24 +1565,19 @@ function fingerprintTable(c: TeamCoaching, stops: Stop[], colors: Map<string, st
     return `<td class="sct-co-td is-share"><span class="sct-co-fpv${lean === pos ? " is-lean" : ""}">${v}%</span>${delta}</td>`;
   };
 
-  // Rows in order, grouped by stint; a stint's first row carries its label
-  // for the whole group, and a year between stints with no stop at all
-  // gets a labeled break instead of a silent jump.
   const covered = new Set(stops.flatMap((s) => Array.from({ length: s.end - s.start + 1 }, (_, i) => s.start + i)));
   let body = "";
   for (let i = 0; i < rows.length; i++) {
-    const { s, p } = rows[i];
+    const { s, pt, p } = rows[i];
     const prev = rows[i - 1];
     if (prev) {
       const missing: number[] = [];
-      for (let yr = prev.p.year + 1; yr < p.year; yr++) if (!covered.has(yr)) missing.push(yr);
+      for (let yr = prev.pt.year + 1; yr < pt.year; yr++) if (!covered.has(yr)) missing.push(yr);
       if (missing.length) {
         const label = missing.length === 1 ? String(missing[0]) : `${missing[0]}-${String(missing[missing.length - 1]).slice(2)}`;
-        body += `<tr class="sct-co-fpgap"><td colspan="7">${e(`${label} · not calling plays`)}</td></tr>`;
+        body += `<tr class="sct-co-fpgap"><td colspan="8">${e(`${label} · not calling plays`)}</td></tr>`;
       }
     }
-    // A group is a run of the same club and role: Vegas 2022 and the
-    // windowed 2023 stint are two dossier stops but one band here.
     const same = (a: Stop, b: Stop) => a.code === b.code && a.role === b.role;
     const groupStart = !prev || !same(prev.s, s);
     const groupLen = groupStart ? rows.slice(i).findIndex((r) => !same(r.s, s)) : 0;
@@ -1211,77 +1589,71 @@ function fingerprintTable(c: TeamCoaching, stops: Stop[], colors: Map<string, st
           return a === b ? String(a) : `${a}-${String(b).slice(2)}`;
         })()
       : "";
-    const win = p.label.match(/\((Wks [^)]+)\)/)?.[1];
-    const live = s.current && p.year === season;
-    const lean = leanOf(p);
-    const fin = finishFor(c, p.label);
-    const pills = (fin?.cells ?? [])
-      .map((cell) => readFinish(cell.text))
-      .filter((f): f is NonNullable<ReturnType<typeof readFinish>> => f !== null)
-      .map((f) => finishPill(f.pos, f.rank, fin?.current, Boolean(win)))
-      .join("");
+    const win = s.window ? s.window.replace(/^play-caller /i, "") : "";
+    const live = s.current && pt.year === season;
+    const lean = p ? leanOf(p) : null;
     const stint =
       groupStart
         ? `<th scope="rowgroup" rowspan="${groupLen === -1 ? rows.length - i : groupLen}" class="sct-co-td is-stint">` +
           `<span class="sct-co-fpv sct-co-fpclub">${stepCrest(s.code)}${e(s.code)}</span>${sub(s.role)}${sub(groupYears)}</th>`
         : "";
+    const rankText = s.caller ? pt.rank.replace(/ · \d{4} thru Wk \d+$/, "") : "";
     body +=
-      `<tr class="${live ? "is-current" : ""}${groupStart ? " is-stint-start" : ""}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
-      `<th scope="row" class="sct-co-td is-season"><span class="sct-co-fpyear">${p.year}</span>` +
+      `<tr class="${live ? "is-current" : ""}${groupStart ? " is-stint-start" : ""}${s.caller ? "" : " is-notcaller"}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
+      `<th scope="row" class="sct-co-td is-season"><span class="sct-co-fpyear">${pt.year}</span>` +
       (win ? sub(win) : "") +
-      (live ? `<span class="sct-co-fnow">In-season</span>` : "") +
+      (live ? `<span class="sct-co-fnow">In-season</span>` : s.caller ? "" : sub("not the caller")) +
       `</th>` +
       stint +
+      `<td class="sct-co-td is-ppg"><span class="sct-co-fpv">${e(pt.ppg.toFixed(1))}</span></td>` +
+      `<td class="sct-co-td is-rank">${rankText ? `<span class="sct-co-fpv">${e(rankText)}</span>` : `<span class="sct-co-fpv is-none">-</span>`}</td>` +
       POS.map((pos) => shareCell(p, pos, lean)).join("") +
       `<td class="sct-co-td is-lb">` +
-      (p.leadBack != null ? `<span class="sct-co-fpv${p.leadBack >= 65 ? " is-workhorse" : ""}">${p.leadBack}%</span>` : `<span class="sct-co-fpv is-none">-</span>`) +
+      (p?.leadBack != null ? `<span class="sct-co-fpv${p.leadBack >= 65 ? " is-workhorse" : ""}">${p.leadBack}%</span>` : `<span class="sct-co-fpv is-none">-</span>`) +
       `</td>` +
-      `<td class="sct-co-td is-fins">${pills ? `<span class="sct-co-fp-pills">${pills}</span>` : "-"}</td>` +
       `</tr>`;
   }
 
-  const last = c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
-  const partial = rows.some((r) => /\(Wks/.test(r.p.label));
+  const last = surnameOf(c);
+  const tracked = prints.length ? ` Target shares and the lead back's share are tracked from ${prints[0]!.p.year} on.` : "";
   return (
     `<div class="sct-co-fpblock">` +
-    `<div class="sct-co-fphead"><p class="sct-co-fptitle">${e(`Scheme fingerprint, ${span}`)}</p>` +
+    `<div class="sct-co-fphead"><p class="sct-co-fptitle">${e(`Season by Season Under ${last}, ${span}`)}</p>` +
     (stats.length ? `<ul class="sct-co-fpstats">${stats.join("")}</ul>` : "") +
     `</div>` +
-    `<div class="sct-co-scroll" tabindex="0" role="region" aria-label="${e(`Scheme fingerprint by season, ${span}`)}">` +
+    `<div class="sct-co-scroll" tabindex="0" role="region" aria-label="${e(`Season by season under ${last}, ${span}`)}">` +
     `<table class="sct-co-fptable">` +
     `<thead><tr>` +
     `<th scope="col" class="sct-co-th">Season</th>` +
-    `<th scope="col" class="sct-co-th">Stop</th>` +
+    `<th scope="col" class="sct-co-th">Team</th>` +
+    `<th scope="col" class="sct-co-th is-ppg">Points/G</th>` +
+    `<th scope="col" class="sct-co-th is-rank">NFL rank</th>` +
     `<th scope="col" class="sct-co-th is-share">WR share<span class="sct-co-th-sub">of targets · vs league</span></th>` +
     `<th scope="col" class="sct-co-th is-share">RB share</th>` +
     `<th scope="col" class="sct-co-th is-share">TE share</th>` +
-    `<th scope="col" class="sct-co-th is-lb">Lead back<span class="sct-co-th-sub">% of weighted opps</span></th>` +
-    `<th scope="col" class="sct-co-th is-fins">Finishes<span class="sct-co-th-sub">PPR, QB · RB1 · WR1 · TE1</span></th>` +
+    `<th scope="col" class="sct-co-th is-lb">Lead back<span class="sct-co-th-sub">% of carries + 2 × targets</span></th>` +
     `</tr></thead><tbody>${body}</tbody></table></div>` +
     `<p class="sct-co-fnote">${e(
-      `Bold share: the season's distinctive position, 3+ points off the league. Bold lead back: 65%+ of the backfield's weighted opportunities. ` +
-        `Finishes are season-long PPR ranks under ${last}` +
-        (partial ? "; ° marks a partial season, ranked over the weeks he called only" : "") +
-        `. Dashed chips are this season's pace, not a finish.`,
+      `Team offenses by season, scoring and rank from the league's game results. Bold share: the season's distinctive position, 3+ points off the league. Bold lead back: 65%+ of the backfield's carries + 2 × targets.${tracked} A windowed season covers the weeks he called only.`,
     )}</p>` +
     `</div>`
   );
 }
 
-function dossier(c: TeamCoaching): string {
+function career(c: TeamCoaching): string {
   const stops = readStops(c);
-  // One stop makes a flat line; the table alone carries a single-stop career.
   const chart = stops.length >= 2 ? careerChart(c, stops) : "";
-  const prints = fingerprintTable(c, stops, stopColors(stops));
-  if (!chart && !prints) return "";
-  const last = c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
-  const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
+  const table = historyTable(c, stops, stopColors(stops));
+  const timeline = careerTimeline(c);
+  if (!chart && !table && !timeline) return "";
+  const possessive = /s$/.test(surnameOf(c)) ? `${surnameOf(c)}'` : `${surnameOf(c)}'s`;
   return (
     `<div class="sct-co-block sct-co-dossier">` +
-    `<p class="sct-co-eyebrow">Career dossier</p>` +
-    `<p class="sct-co-dsub">${e(`How ${possessive} offenses have changed across stops`)}</p>` +
+    h3("Coaching Career & Historical Performance") +
+    `<p class="sct-co-dsub">${e(`${possessive} stops, and how the offenses he called have scored and distributed the ball`)}</p>` +
+    timeline +
     chart +
-    prints +
+    table +
     `</div>`
   );
 }
@@ -1348,11 +1720,14 @@ function finishFor(c: TeamCoaching, fpYear: string): FinishRow | undefined {
  * three-week QB34 never reads like a season-end one. The stored methodology
  * note sits one click down.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function finishes(c: TeamCoaching, team: NflTeam): string {
   const last = c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
-  const rows = c.finishes.rows
+  // Every tracked season (the builder's history) plus the in-season row.
+  const all: FinishRow[] = c.finishes.history
+    ? [...c.finishes.history.map((r) => ({ ...r, current: false })), ...c.finishes.rows.filter((r) => r.current)]
+    : c.finishes.rows;
+  const rows = all
     .map((row) => {
       const { club, year } = finishStop(row);
       const pace = row.context.match(/^pace through (Week \d+)$/i);
@@ -1375,8 +1750,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     })
     .join("");
   return (
-    `<div class="sct-co-block">` +
-    `<p class="sct-co-eyebrow">Fantasy finishes by coaching stop</p>` +
+    `<div class="sct-co-block sct-co-finblock">` +
+    `<p class="sct-co-eyebrow">Fantasy finishes by season</p>` +
     `<p class="sct-co-dsub">${e(`Where ${possessive} QB1, RB1, WR1 and TE1 finished in PPR fantasy scoring`)}</p>` +
     // The "Best finishes" strip went 2026-11-02 (mak).
     `<div class="sct-co-scroll" tabindex="0" role="region" aria-label="${e(`Positional fantasy finishes under the ${team.nickname} play-caller`)}">` +
@@ -1448,12 +1823,14 @@ function distLean(c: TeamCoaching): BarRow | null {
   return top && Math.abs((top.pct as number) - (top.nfl as number)) >= 3 ? top : null;
 }
 
+const surnameOf = (c: TeamCoaching): string => c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
+
 function distribution(c: TeamCoaching): string {
   const lean = distLean(c);
   const many = /^Across his/.test(c.distribution.note);
   return (
     `<div class="sct-co-panel">` +
-    h3("How he distributes the ball") +
+    h3(`Target distribution under ${surnameOf(c)}`) +
     `<p class="sct-co-panel-sub">${e(c.distribution.sub)}</p>` +
     // The "Filled bar = X offenses · thin marker = league average" key went
     // 2026-11-03 (mak); the "+5 vs NFL" pills carry the comparison.
@@ -1473,7 +1850,7 @@ function distribution(c: TeamCoaching): string {
       lean
         ? `${lean.label} have drawn ${lean.pct}% of targets vs ${lean.nfl}% league average.`
         : "Every position sits within a few points of league average: the target tree follows the talent.",
-      many ? "Historical tendency only; current roster usage matters more." : "One season of data; current roster usage matters more.",
+      many ? "Across the offenses he has called: a historical tendency, read alongside the current roster." : "One season of data, read alongside the current roster.",
     ) +
     `</div>`
   );
@@ -1499,7 +1876,7 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
   // The "Tracked range 27% -> 80% · 2026 55%" line went 2026-11-02 (mak).
   return (
     `<div class="sct-co-panel">` +
-    h3("How he manages a backfield") +
+    h3(`Backfield share under ${surnameOf(c)}`) +
     `<p class="sct-co-panel-sub">${e(c.backfield.sub)}</p>` +
     `<div class="sct-co-cols" role="img" aria-label="${e(`Lead back share by season: ${caption}`)}">` +
     bars
@@ -1517,7 +1894,7 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
       )
       .join("") +
     `</div>` +
-    takeaway(line, /^Starred seasons/.test(note) ? "Starred seasons were a previous staff's: context, not his record." : "Weighted opportunities = carries + 2×targets.") +
+    takeaway(line, /^Starred seasons/.test(note) ? "Starred seasons were a previous staff's: context, not his record." : "Lead back's share of the backfield's carries + 2 × targets, by season.") +
     `</div>`
   );
 }
@@ -1525,7 +1902,7 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
 function personnel(c: TeamCoaching): string {
   if (!c.personnel) return "";
   return (
-    `<div class="sct-co-panel">` +
+    `<div class="sct-co-panel is-solo">` +
     h3("Personnel groupings - usage & result") +
     `<p class="sct-co-panel-sub">${e(c.personnel.sub)}</p>` +
     c.personnel.rows
@@ -1556,7 +1933,7 @@ function scoreState(c: TeamCoaching): string {
         : `${Math.abs(swing) < 10 ? "Small" : "Clear"} trailing ${swing > 0 ? "bump" : "dip"}: ${t}% pass when trailing by 7+, vs ${base}% when leading by 7+.`;
   // Solo when the entry has no personnel panel: spans both grid columns.
   return (
-    `<div class="sct-co-panel${c.personnel ? "" : " is-solo"}">` +
+    `<div class="sct-co-panel">` +
     h3("Play-calling by score state") +
     `<p class="sct-co-panel-sub">${e(c.scoreState.sub)}</p>` +
     rows
@@ -1568,7 +1945,7 @@ function scoreState(c: TeamCoaching): string {
         const diff =
           i === 0
             ? `<span class="sct-co-diff">Baseline</span>`
-            : `<span class="sct-co-diff${flag ? " is-lean" : ""}">${e(`${signedPts(d)} pts`)}</span>`;
+            : `<span class="sct-co-diff${flag ? " is-lean" : ""}">${e(`${signedPts(d)} pp`)}</span>`;
         return barRow(
           { ...row, gold: flag },
           `${row.label}: ${row.result}`,
@@ -1592,7 +1969,9 @@ function bottomLine(c: TeamCoaching, view: UsageView | null): string {
   const season = seasonOf(c);
   const rating = reliabilityRating(c);
   const carry = { HIGH: "Strong", MEDIUM: "Partial", LOW: "Limited" }[rating];
+  const small = (c.tendencies.samples?.fourthShortAll ?? 15) < 15;
   const signals = c.shifts
+    .filter((s) => !(s.key && SITUATIONAL_KEYS.has(s.key) && small))
     .map((s) => {
       const row = s.key ? c.tendencies.rows.find((r) => r.key === s.key) : undefined;
       const v = row ? rowView(row, view) : null;
@@ -1650,6 +2029,43 @@ export interface CoachingSection {
   faq: Array<{ question: string; answer: string }>;
 }
 
+/**
+ * Fantasy Impact (mak's brief, section 7): one collapsed section - the
+ * signal readings in fantasy terms, the positional finishes by season, the
+ * rookie note where an entry has one, and the StatChasers bottom line.
+ */
+function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const season = seasonOf(c);
+  const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
+  const reads = c.shifts
+    .filter((s) => s.key && !SITUATIONAL_KEYS.has(s.key))
+    .map((s) => {
+      const row = c.tendencies.rows.find((r) => r.key === s.key);
+      const v = row ? rowView(row, view) : null;
+      const move = row && v ? `${row.prior} → ${v.current}` : "";
+      return (
+        `<li class="sct-co-fread">` +
+        `<span class="sct-co-fread-h">${e(s.heading)}</span>` +
+        (move ? `<span class="sct-co-fread-move">${e(`${priorYear} ${move.split(" → ")[0]} → ${season} ${move.split(" → ")[1]}`)}</span>` : "") +
+        `<span class="sct-co-fread-b">${e(s.body)}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+  return (
+    `<details class="sct-co-fantasy">` +
+    `<summary class="sct-co-fantasy-sum"><span class="sct-co-h3 is-sum">Fantasy Impact</span>` +
+    `<span class="sct-co-fantasy-hint">${e(`What the ${season} tendencies and ${surnameOf(c)}'s history mean for fantasy lineups`)}</span></summary>` +
+    `<div class="sct-co-fantasy-body">` +
+    (reads ? `<p class="sct-co-eyebrow">What the signals mean</p><ul class="sct-co-freads">${reads}</ul>` : "") +
+    finishes(c, team) +
+    rookieNote(c) +
+    bottomLine(c, view) +
+    `</div>` +
+    `</details>`
+  );
+}
+
 export function renderCoachingSection(
   coaching: TeamCoaching | null,
   team: NflTeam,
@@ -1659,34 +2075,49 @@ export function renderCoachingSection(
   const html =
     `<div class="sct-block sct-co">` +
     header() +
-    intro(coaching, team) +
-    `<div class="sct-co-grid">` +
+    // 1 + 2. One block (mak's critique, 2026-11-05): the identity header,
+    // the card beside the four tiles, then the tendency tables with their
+    // callouts.
+    // No "{season} Offensive Identity · Through Week N" title above the
+    // block (mak, 2026-11-05): the page heading and dek introduce it.
+    `<div class="sct-co-block sct-co-identity-block">` +
+    `<div class="sct-co-grid is-overview">` +
     coachCard(coaching, team) +
+    identityPane(coaching, team, view) +
+    `</div>` +
     tendencies(coaching, team, view) +
     `</div>` +
-    // The Staff profile strip is unmounted (mak, 2026-11-02: "remove");
-    // staff() stays for the helpers that read its copy.
-    // The four panels sit above the Career dossier (mak, 2026-11-02); the
-    // finishes table is unmounted (same day), its pills live in the
-    // fingerprint table.
+    // 3. Formations & Personnel.
+    formations(coaching, team, view) +
+    // 4. Situational Play Calling.
+    `<div class="sct-co-block sct-co-situational">` +
+    h3("Situational Play Calling") +
+    `<div class="sct-co-panels">` +
+    scoreState(coaching) +
+    redZoneFourth(coaching, team, view) +
+    `</div>` +
+    `</div>` +
+    // 5. Target & Backfield Tendencies.
+    `<div class="sct-co-block sct-co-targets">` +
+    h3("Target & Backfield Tendencies") +
     `<div class="sct-co-panels">` +
     distribution(coaching) +
     backfield(coaching, view) +
     `</div>` +
-    `<div class="sct-co-panels">` +
     personnel(coaching) +
-    scoreState(coaching) +
     `</div>` +
-    dossier(coaching) +
-    rookieNote(coaching) +
-    bottomLine(coaching, view) +
-    `</div>`;
+    // 6. Coaching Career & Historical Performance.
+    career(coaching) +
+    // 7. Fantasy Impact, collapsed.
+    fantasyImpact(coaching, team, view) +
+    `</div>` +
+    // The premium comparison version (mak, 2026-11-05): rendered under the
+    // whole section, the original untouched, so the two can be compared.
+    renderCoachingPremium(coaching, team, view);
 
   // mak's question list (2026-11-03) replaces the builder's single question:
-  // written by rule from the same data as the tab, in the page's FAQPage too
-  // (the coaching FAQ has been in the schema since the spec). The stored
-  // `coaching.faq` stays in the data but is no longer rendered.
+  // written by rule from the same data as the page, in the page's FAQPage too.
   const items = coachingFaq(coaching, team, view, getCoachingStaff(team.abbreviation, seasonOf(coaching)));
-  const faqHtml = renderFaqBlock("Common questions", items, "sct-co-faq");
+  const faqHtml = renderFaqBlock("Common Questions", items, "sct-co-faq");
   return { html, faqHtml, faq: faqEntries(items) };
 }

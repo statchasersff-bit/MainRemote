@@ -125,6 +125,9 @@ export function pointsBreakdown(
   add("Receiving TD", stats.rec_td ?? 0, 6, "TD");
   add("Field goals", stats.fgm ?? 0, 3, "FG");
   add("Extra points", stats.xpm ?? 0, 1, "XP");
+  // From the log's own fumble column (kept since 2026-11-04): -2 a lost ball
+  // in every format, the way Sleeper's stored points count it.
+  add("Fumbles lost", stats.fum_lost ?? 0, -2, "lost");
 
   return rows;
 }

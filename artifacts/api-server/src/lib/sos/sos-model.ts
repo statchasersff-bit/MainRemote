@@ -338,6 +338,36 @@ function slots(schedule: ScheduleSeason): Map<string, Map<number, Slot>> {
   return out;
 }
 
+/**
+ * The easiest remaining schedules on a board, in order.
+ *
+ * ONE computation, used by everything that names the easiest rest-of-season
+ * schedule: the position page's answer sentence (sos-render.ts) and the
+ * "Easiest ROS" teaser on the Fantasy Points Allowed rail (fpa-render.ts).
+ * The two must agree exactly - the teaser is a promise about what the linked
+ * page says - so neither may sort the rows its own way.
+ *
+ * Order: rosRank first (dense, so a tie shares a rank). A tie breaks on the
+ * fewest tough remaining matchups (opponent in the tough or avoid bucket),
+ * then alphabetically by team code, so the order is the same on every reload.
+ * Empty once no weeks remain, which is also when the teaser is omitted.
+ */
+export function rosEasiest(board: Pick<SosBoard, "teams" | "rosFrom">, count: number): SosTeamRow[] {
+  const toughLeft = (row: SosTeamRow): number =>
+    row.weeks.filter(
+      (c) => c.week >= board.rosFrom && (c.bucket === "tough" || c.bucket === "avoid"),
+    ).length;
+  return board.teams
+    .filter((row) => row.ros !== null)
+    .sort(
+      (a, b) =>
+        a.rosRank - b.rosRank ||
+        toughLeft(a) - toughLeft(b) ||
+        a.team.code.localeCompare(b.team.code),
+    )
+    .slice(0, count);
+}
+
 /** The first fantasy week with a game still to finish. */
 export function rosStartWeek(schedule: ScheduleSeason): number {
   for (const week of FANTASY_WEEKS) {

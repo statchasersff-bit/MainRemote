@@ -346,6 +346,7 @@ async function seasonTendencies(season) {
       rzPlays: t.rzPass + t.rzRush,
       fourthGoRate: t.fourthShortAll >= 3 ? round(pct(t.fourthShortGo, t.fourthShortAll), 0) : null,
       fourthShortAll: t.fourthShortAll,
+      fourthShortGo: t.fourthShortGo,
       states: {
         lead: { passRate: round(pct(t.states.lead[0], t.states.lead[1]), 0), plays: t.states.lead[1] },
         close: { passRate: round(pct(t.states.close[0], t.states.close[1]), 0), plays: t.states.close[1] },
@@ -1231,6 +1232,19 @@ function composeEntry({
       priorLabel: `${season - 1}${newCaller ? " (prev. staff)" : ` (${callerLast})`}`,
       currentLabel: `${season} (${callerLast})`,
       rows,
+      // The samples behind the situational rates (mak's coaching brief,
+      // 2026-11-05: a 100% go rate must read "3 of 3 opportunities", not a
+      // headline rank), for this season and the prior one.
+      samples: {
+        games: cur.games,
+        throughWeek,
+        fourthShortAll: cur.fourthShortAll ?? 0,
+        fourthShortGo: cur.fourthShortGo ?? 0,
+        rzPlays: cur.rzPlays ?? 0,
+        priorFourthShortAll: prior?.fourthShortAll ?? null,
+        priorFourthShortGo: prior?.fourthShortGo ?? null,
+        priorRzPlays: prior?.rzPlays ?? null,
+      },
     },
     shifts,
     staff: {

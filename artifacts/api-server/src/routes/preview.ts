@@ -52,7 +52,9 @@ import { linkTemplatesFromEnv, relatedLinksFromEnv } from "../lib/links";
 import { publicOrigin } from "../lib/request";
 import { renderNewsFragment } from "../lib/ssr";
 import { renderTeamFragment } from "../lib/team-ssr";
+import { HUB_SECTION, PUBLIC_SECTIONS } from "../lib/team-render";
 import { renderPlayerFragment } from "../lib/player-ssr";
+import { PLAYER_SECTIONS } from "./player";
 import { renderFpaFragment } from "../lib/fpa-ssr";
 import { renderRankingsFragment } from "../lib/rankings-ssr";
 import { POSITIONS } from "../lib/rankings/rankings-data";
@@ -273,11 +275,24 @@ router.get("/preview/news", (req, res) => {
 });
 
 /** [statchasers_team team="…"] as it renders on a page. */
-router.get("/preview/team/:slug", (req, res) => {
+/**
+ * The hub at /preview/team/<slug>, and a section page at
+ * /preview/team/<slug>/<section>/ - the same two shapes as /team/<slug> and
+ * /team/<slug>/<section>/. Since 11-03 the hub prints only its own panels and
+ * the Usage, Stats and News tabs are plain links to their section URLs, which
+ * the hub mints under this harness's prefix; without this second shape those
+ * tabs landed on the app's 404 page from inside the preview.
+ */
+router.get(["/preview/team/:slug", "/preview/team/:slug/:section"], (req, res) => {
   void (async () => {
     const team = normalizeTeamName(String(req.params.slug ?? ""));
     if (!team) {
       res.status(404).type("text/plain").send("Unknown team");
+      return;
+    }
+    const scoped = String(req.params["section"] ?? "");
+    if (scoped && !(PUBLIC_SECTIONS as readonly string[]).includes(scoped)) {
+      res.status(404).type("text/plain").send("Not found");
       return;
     }
     try {
@@ -286,6 +301,8 @@ router.get("/preview/team/:slug", (req, res) => {
         // Point the switcher at this harness rather than at the bare tool, so
         // picking a team from inside the preview keeps you inside the preview.
         teamPathPrefix: "/preview/team/",
+        // The Outlook is the hub itself (HUB_SECTION), so it scopes to nothing.
+        section: scoped && scoped !== HUB_SECTION ? scoped : undefined,
       });
       send(
         req,
@@ -305,13 +322,25 @@ router.get("/preview/team/:slug", (req, res) => {
   })();
 });
 
-/** [statchasers_player slug="…"] as it renders on a page. */
-router.get("/preview/player/:slug", (req, res) => {
+/**
+ * [statchasers_player slug="…"] as it renders on a page, and one of its
+ * sections at /preview/player/<slug>/<section>/ - the shape the profile's own
+ * tab strip links to under this prefix. Same arrangement as the team preview
+ * above, for the same reason.
+ */
+router.get(["/preview/player/:slug", "/preview/player/:slug/:section"], (req, res) => {
   void (async () => {
     const slug = String(req.params.slug ?? "").trim().toLowerCase();
+    const scoped = String(req.params["section"] ?? "");
+    if (scoped && !PLAYER_SECTIONS.has(scoped)) {
+      res.status(404).type("text/plain").send("Not found");
+      return;
+    }
     try {
       const result = await renderPlayerFragment(slug, {
         embed: true,
+        // The Overview is the profile itself (PROFILE_SECTION in routes/player.ts).
+        section: scoped && scoped !== "overview" ? scoped : undefined,
         // Point links at this harness rather than at the bare tool, so moving
         // between players from inside the preview keeps you inside the preview.
         playerPathPrefix: "/preview/player/",

@@ -1,5 +1,5 @@
 /**
- * The player profile header: photo well, identity, scoreboard, action strip.
+ * The player profile header: photo well, identity, navy strip, action strip.
  *
  * Its own module, like lib/matchup/scoreboard-hero.ts, for the same reason:
  * it is one self-contained component with a spec of its own (mak's, of
@@ -256,7 +256,10 @@ export function teamInk(team: NflTeam | null): string | null {
 export const SECTION_KINDS: Record<string, string> = {
   stats: "Stats",
   "game-log": "Game Log",
-  outlook: "Fantasy Outlook",
+  // "{Name} 2026 Fantasy Outlook": the one dated section H1, from the
+  // Outlook brief mak approved on 2026-11-05 (the Stats title is dated the
+  // same way since 11-04). The year is the outlook's, not the player's.
+  outlook: `${OUTLOOK_SEASON} Fantasy Outlook`,
   injury: "Injury Status",
   news: "News",
   bio: "Bio",
@@ -326,20 +329,24 @@ function rosteredPct(value: number): string {
 }
 
 interface BoardCell {
-  label: string;
+  /** The figure: "16.5", "QB17", "13%". */
   value: string;
+  /** The word after it, which is what identifies it: "PPG", "rostered". */
+  unit: string;
+  /** The spelled-out reading, for the tooltip and a screen reader. */
+  title: string;
   lead?: boolean;
 }
 
 /**
- * The navy panel: rate, rank, ownership, with the season they belong to.
+ * The fantasy trio of the strip: rate, rank, ownership.
  *
- * All three cells always print, with a dash where a figure does not exist -
- * the one place on this page that does, because the panel is a fixed frame a
- * reader learns to read across profiles, and a two-cell panel on one player
- * reads as a layout bug. Never 0.0 for a player who has not played.
+ * All three always print, with a dash where a figure does not exist - the
+ * one place on this page that does, because the trio is a fixed frame a
+ * reader learns to read across profiles, and a two-figure strip on one
+ * player reads as a layout bug. Never 0.0 for a player who has not played.
  */
-function headerBoard(data: PlayerPageData): { caption: string; cells: BoardCell[] } {
+function headerBoard(data: PlayerPageData): BoardCell[] {
   const { stats, format, player } = data;
   const played = Boolean(stats && stats.gamesPlayed > 0);
 
@@ -348,22 +355,28 @@ function headerBoard(data: PlayerPageData): { caption: string; cells: BoardCell[
   const rank =
     season?.posFinishPpg ?? data.seasonRank ?? season?.posFinishTotal ?? data.seasonRankTotal;
   const pos = player.position ?? "";
+  const ranked = played && pos && rank != null;
 
-  return {
-    // "2026 Season", centered above the board (mak, 2026-09-30); the "final"
-    // and "Through Week N" wording inside the board is gone.
-    caption: `${data.season} Season`,
-    cells: [
-      {
-        label: `${SCORING_SHORT[format]} PPG`,
-        value: played && stats ? num(stats.ppg) : DASH,
-        lead: true,
-      },
-      { label: "Pos rank", value: played && pos && rank != null ? `${pos}${rank}` : DASH },
-      // Sleeper's redraft pool - see scripts/player/buildRosterPct.mjs.
-      { label: "Rostered", value: data.rosterPct ? rosteredPct(data.rosterPct.owned) : DASH },
-    ],
-  };
+  return [
+    {
+      value: played && stats ? num(stats.ppg) : DASH,
+      unit: "PPG",
+      title: `${SCORING_SHORT[format]} fantasy points per game`,
+      lead: true,
+    },
+    // "QB17" says what it is; only the dash needs the word.
+    {
+      value: ranked ? `${pos}${rank}` : DASH,
+      unit: ranked ? "" : "rank",
+      title: "Position rank by fantasy points per game",
+    },
+    // Sleeper's redraft pool - see scripts/player/buildRosterPct.mjs.
+    {
+      value: data.rosterPct ? rosteredPct(data.rosterPct.owned) : DASH,
+      unit: "rostered",
+      title: "Share of redraft leagues where he is rostered",
+    },
+  ];
 }
 
 /** Redraft Command's own page, for the header's rest-of-season button. */
@@ -452,7 +465,7 @@ function injuryPill(
   );
 }
 
-/** "Nov 2, 2026" in the Eastern calendar, for the production line's stamp. */
+/** "Nov 2, 2026" in the Eastern calendar, for the strip's stamp. */
 function updatedLabel(ms: number): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
@@ -462,49 +475,73 @@ function updatedLabel(ms: number): string {
   }).format(new Date(ms));
 }
 
-/**
- * The season's counting line under the identity: "2026 season, through
- * Week 8", then REC, YDS, TD and Y/R for a receiver (season-line.ts has the
- * other positions). Nothing for a player with no logged game this season,
- * and nothing for a position the logs carry no line for.
- *
- * The stamp beside the caption is the day the season's game logs were last
- * written (data.statsUpdatedMs, the file's own write time) - a real date
- * from the data, never the clock. Left out when the data layer has none.
- */
-function renderProductionLine(data: PlayerPageData): string {
-  const played = playedEntries(data.gameLog ?? []);
-  if (played.length === 0) return "";
-  const totals = seasonTotals(played, (e) => getEntryPoints(e.stats, data.format));
-  const cells = heroCells(data.player.position, totals);
-  if (cells.length === 0) return "";
+/** Items of one dotted run: "16.5 PPG · QB17 · 13% rostered". */
+const DOT = "&nbsp;· ";
 
-  const current = data.season === (data.leagueSeason ?? data.season) && (data.leagueWeek ?? 0) > 0;
-  const caption = current ? `${data.season} season, through Week ${data.leagueWeek}` : `${data.season} season`;
-  const updated =
-    typeof data.statsUpdatedMs === "number" && Number.isFinite(data.statsUpdatedMs) && data.statsUpdatedMs > 0
-      ? ` <time class="scp-pline-upd" datetime="${escapeHtml(new Date(data.statsUpdatedMs).toISOString())}">` +
-        `${escapeHtml(`Updated ${updatedLabel(data.statsUpdatedMs)}`)}</time>`
-      : "";
-
+/** One figure and its word, the word carrying the full reading. */
+function stat(cell: BoardCell): string {
+  const unit = cell.unit
+    ? ` <abbr title="${escapeHtml(cell.title)}">${escapeHtml(cell.unit)}</abbr>`
+    : "";
   return (
-    `<div class="scp-pline-wrap">` +
-    `<p class="scp-pline-cap"><span>${escapeHtml(caption)}</span>${updated}</p>` +
-    `<dl class="scp-pline">` +
-    cells
-      .map(
-        (c) =>
-          `<div><dt><abbr title="${escapeHtml(c.title)}">${escapeHtml(c.label)}</abbr></dt> ` +
-          `<dd>${escapeHtml(c.value)}</dd></div>`,
-      )
-      .join(" ") +
-    `</dl></div>`
+    `<span class="scp-pstat${cell.lead ? " is-lead" : ""}"${cell.unit ? "" : ` title="${escapeHtml(cell.title)}"`}>` +
+    `<b>${escapeHtml(cell.value)}</b>${unit}</span>`
   );
 }
 
 /**
- * The profile header: photo well, identity, scoreboard, and the strip under
- * them with the next matchup and the two ways on.
+ * The production line and the fantasy board (mak, 2026-11-04, three passes):
+ *
+ *   42/65 cmp · 550 yds · 3 TD · 1 INT · thru Wk 3   <- a text line under the bio line
+ *
+ *                  2026 FANTASY SEASON
+ *            [ 16.5 PPG · QB17 · 13% rostered ]        <- the navy board, right column
+ *
+ * The counting line wears the bio line's design, directly under it, summed
+ * from the same game log the Stats tab sums (season-line.ts) so the line
+ * and the tables agree. A player with no logged game this season, or a
+ * position the logs carry no line for, gets no line. Its suffix replaces the
+ * old "through Week N / Updated" caption: "thru Wk N" in season, the
+ * season's year when the figures are a finished season's; the day the logs
+ * were last written (data.statsUpdatedMs, the file's own write time)
+ * survives as its tooltip.
+ *
+ * The board stays where it was, beside the identity, as one dotted run of
+ * the fantasy trio under a caption that says what it measures ("indicate it
+ * is for fantasy"): the caption scopes the trio, so it carries no suffix.
+ */
+function renderBoard(data: PlayerPageData): { line: string; board: string } {
+  const fan = headerBoard(data).map(stat);
+
+  const played = playedEntries(data.gameLog ?? []);
+  const totals = seasonTotals(played, (e) => getEntryPoints(e.stats, data.format));
+  const raw = heroCells(data.player.position, totals).map((c) =>
+    stat({ value: c.value, unit: c.label, title: c.title }),
+  );
+
+  const current = data.season === (data.leagueSeason ?? data.season) && (data.leagueWeek ?? 0) > 0;
+  const stamp =
+    typeof data.statsUpdatedMs === "number" && Number.isFinite(data.statsUpdatedMs) && data.statsUpdatedMs > 0
+      ? ` title="${escapeHtml(`Updated ${updatedLabel(data.statsUpdatedMs)}`)}"`
+      : "";
+  const thru =
+    `<span class="scp-pline-thru"${stamp}>` +
+    escapeHtml(current ? `thru Wk ${data.leagueWeek}` : `${data.season} season`) +
+    `</span>`;
+
+  return {
+    line: raw.length ? `<p class="scp-pline">${[...raw, thru].join(DOT)}</p>` : "",
+    board:
+      `<div class="scp-pboard-wrap">` +
+      `<p class="scp-pboard-cap">${escapeHtml(`${data.season} Fantasy Season`)}</p>` +
+      `<div class="scp-pboard"><p class="scp-pboard-fan">${fan.join(DOT)}</p></div>` +
+      `</div>`,
+  };
+}
+
+/**
+ * The profile header: photo well, identity, fantasy board, and the action
+ * strip under them with the next matchup and the two ways on.
  *
  * `tab` is the panel the page opens on. It picks the H1's second line and the
  * analytics tag on both buttons; the nav links carry the same two things for
@@ -554,23 +591,27 @@ export function renderHero(
   const status = data.designation?.injuryStatus ?? player.injury_status ?? "";
   if (status.trim()) tags.push(injuryPill(status, sectionHref(data, options, "injury")));
 
-  /* ---- the spec row ---- */
+  /* ---- the bio line ---- */
 
+  // One dotted line under the name, no labels (mak, 2026-11-04): "33 yrs ·
+  // 6'4", 235 · NC State · 11th season · 2016 R3 #91". Every value says what
+  // it is, so the labels went with the grid they sat in; the two that read
+  // least plainly keep their reading as a tooltip.
   const spec: Array<[string, string]> = [];
-  if (player.age) spec.push(["Age", String(player.age)]);
+  if (player.age) spec.push([`${player.age} yrs`, "Age"]);
   const height = formatHeight(player.height);
-  const build = [height, player.weight ? `${player.weight} lb` : ""].filter(Boolean).join(", ");
-  if (build) spec.push(["Height / weight", build]);
+  const build = [height, player.weight ? String(player.weight) : ""].filter(Boolean).join(", ");
+  if (build) spec.push([build, "Height, weight (lb)"]);
   // The college beside the measurements (the entity brief, 2026-11-03):
   // "where did he go to college" is a question the hero can answer in a
   // word. From the bio profile, which reads the draft record first and the
   // fact store second; a player with neither gets no cell.
   const college = data.bioProfile?.college ?? null;
-  if (college) spec.push(["College", college]);
+  if (college) spec.push([college, "College"]);
   if (player.years_exp !== null && player.years_exp !== undefined) {
     spec.push([
-      "Experience",
       player.years_exp === 0 ? "Rookie" : `${ordinal(player.years_exp + 1)} season`,
+      "Experience",
     ]);
   }
   // Only when the year, the round and the pick are all known. draft.json
@@ -578,40 +619,25 @@ export function renderHero(
   // is simply not recorded, so "Undrafted" would be a guess - see bio.ts.
   const draft = data.bioProfile.draft;
   if (draft && draft.year && draft.round && draft.pick) {
-    spec.push(["Drafted", `${draft.year} R${draft.round}, #${draft.pick}`]);
+    spec.push([
+      `${draft.year} R${draft.round} #${draft.pick}`,
+      `Drafted ${draft.year}, round ${draft.round}, pick ${draft.pick}`,
+    ]);
   }
   const specRow = spec.length
-    ? `<dl class="scp-pspec">` +
+    ? `<p class="scp-pspec">` +
       spec
-        .map(([dt, dd]) => `<div><dt>${escapeHtml(dt)}</dt> <dd>${escapeHtml(dd)}</dd></div>`)
-        .join(" ") +
-      `</dl>`
+        .map(([value, title]) => `<span class="scp-pspec-i" title="${escapeHtml(title)}">${escapeHtml(value)}</span>`)
+        .join(DOT) +
+      `</p>`
     : "";
 
-  /* ---- the production line ---- */
+  /* ---- the production line and the fantasy board ---- */
 
-  // His NFL numbers this season, under the identity and before the fantasy
-  // board (the entity brief's hierarchy: who he is, what he has done, then
-  // what it is worth in fantasy). Summed from the same game log the Stats
-  // tab sums, through season-line.ts, so the hero and the tables agree.
-  const line = renderProductionLine(data);
-
-  /* ---- the scoreboard ---- */
-
-  const board = headerBoard(data);
-  const scoreboard =
-    `<div class="scp-pboard-wrap">` +
-    `<p class="scp-pboard-cap">${escapeHtml(board.caption)}</p>` +
-    `<div class="scp-pboard">` +
-    `<dl class="scp-pboard-stats">` +
-    board.cells
-      .map(
-        (cell) =>
-          `<div${cell.lead ? ` class="is-lead"` : ""}>` +
-          `<dt>${escapeHtml(cell.label)}</dt> <dd>${escapeHtml(cell.value)}</dd></div>`,
-      )
-      .join(" ") +
-    `</dl></div></div>`;
+  // His NFL numbers this season as a second text line under the bio line;
+  // the fantasy trio in the navy board beside the identity (the entity
+  // brief's hierarchy: who he is, what he has done, then what it is worth).
+  const { line, board } = renderBoard(data);
 
   /* ---- the strip ---- */
 
@@ -705,7 +731,7 @@ export function renderHero(
     specRow +
     line +
     `</div>` +
-    scoreboard +
+    board +
     `</div>` +
     strip +
     `</header>`

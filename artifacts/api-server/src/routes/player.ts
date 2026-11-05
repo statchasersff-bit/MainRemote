@@ -108,7 +108,7 @@ function safeSlug(value: unknown): string {
  * unrecognized id there would silently fall through to the full page under a
  * URL that promised one section. Ids match the tab ids in player-render.ts.
  */
-const SECTIONS = new Set([
+export const PLAYER_SECTIONS = new Set([
   "overview",
   "stats",
   "game-log",
@@ -117,6 +117,7 @@ const SECTIONS = new Set([
   "news",
   "bio",
 ]);
+const SECTIONS = PLAYER_SECTIONS;
 
 /**
  * The public address of one section: `/player/<slug>/<section>/`.

@@ -7,19 +7,12 @@
  * makes a page that answers neither well. Everything here is a sum, a rate or a
  * record across seasons; nothing here knows what a week is.
  *
- * Two sources, joined:
- *
- *   - `player_production.json` reaches back ten seasons and carries the real
- *     counting line for each. It is the spine of the career table, and it is
- *     the ONLY place a career passing or receiving total exists - the game logs
- *     start in 2023.
- *   - The game logs cover the current season, which production does not have
- *     until the year is filed. So the current year is aggregated off the log
- *     and appended.
- *
- * Where they overlap, production wins: it is the filed snapshot, and preferring
- * it means a completed season's line does not change depending on which of two
- * derivations the page happened to use.
+ * One pipeline (2026-11-04): every season's row is summed from the weekly
+ * game logs (metrics.ts careerSeasonTotals), which reach back to 2009, so the
+ * table, the chart, the career rates and the read all count the same games
+ * and the same points. `player_production.json` used to win where the two
+ * overlapped; it now supplies only a season the logs do not have at all, and
+ * the positional finish, which is filed with it and is not in the logs.
  *
  * Nothing here projects. Every number is a sum of games that were played.
  */
@@ -40,6 +33,10 @@ export interface CareerStatRow {
   ppg: number;
   /** Positional finish by total points, when the season has one. */
   finish: number | null;
+  /** Weekly finishes inside the starter line, the weeks ranked, and his best week (from the logs). */
+  topWeeks?: number;
+  rankedWeeks?: number;
+  bestWeek?: number;
 }
 
 const EMPTY: ProductionTotals = {
@@ -50,6 +47,9 @@ const EMPTY: ProductionTotals = {
 
 function addTotals(a: ProductionTotals, b: ProductionTotals): ProductionTotals {
   return {
+    gs: (a.gs ?? 0) + (b.gs ?? 0),
+    sacks: (a.sacks ?? 0) + (b.sacks ?? 0),
+    fumLost: (a.fumLost ?? 0) + (b.fumLost ?? 0),
     passCmp: a.passCmp + b.passCmp,
     passAtt: a.passAtt + b.passAtt,
     passYd: a.passYd + b.passYd,
@@ -80,14 +80,21 @@ function fromCareerSeason(row: CareerSeasonStat): ProductionTotals {
     rec: row.receptions,
     recYd: row.rec_yd,
     recTd: row.rec_td,
+    gs: row.gs,
+    sacks: row.sacks,
+    fumLost: row.fum_lost,
   };
 }
 
 /**
  * The career table, newest season first.
  *
- * `currentSeason` is appended from the game log when production has not filed
- * it yet, which is every year until the season is over.
+ * Every season the logs have is summed from them (one pipeline with the
+ * chart and the rates). A finished season keeps the finish production filed
+ * for it, by total points - the one figure the logs cannot supply; the
+ * season in progress is ranked by rate, as the header ranks it. A season
+ * production has and the logs do not (none today: the logs reach 2009) is
+ * taken from production whole.
  */
 export function careerStatRows(
   production: ProductionSeason[],
@@ -95,9 +102,28 @@ export function careerStatRows(
   currentSeason: number,
 ): CareerStatRow[] {
   const rows = new Map<number, CareerStatRow>();
+  const filed = new Map(production.map((p) => [p.season, p]));
+
+  for (const entry of careerSeasons) {
+    if (entry.gp <= 0) continue;
+    const inProgress = entry.season >= currentSeason;
+    const season = filed.get(entry.season);
+    rows.set(entry.season, {
+      season: entry.season,
+      inProgress,
+      gamesPlayed: entry.gp,
+      totals: fromCareerSeason(entry),
+      points: entry.points,
+      ppg: entry.ppg,
+      finish: !inProgress && season?.posFinishTotal != null ? season.posFinishTotal : entry.posRank,
+      topWeeks: entry.top_weeks,
+      rankedWeeks: entry.ranked_weeks,
+      bestWeek: entry.best_week,
+    });
+  }
 
   for (const entry of production) {
-    if (entry.gamesPlayed <= 0) continue;
+    if (entry.gamesPlayed <= 0 || rows.has(entry.season)) continue;
     rows.set(entry.season, {
       season: entry.season,
       inProgress: false,
@@ -106,20 +132,6 @@ export function careerStatRows(
       points: entry.total,
       ppg: entry.ppg,
       finish: entry.posFinishTotal,
-    });
-  }
-
-  // The season in progress, and any completed season production has not filed.
-  for (const entry of careerSeasons) {
-    if (entry.gp <= 0 || rows.has(entry.season)) continue;
-    rows.set(entry.season, {
-      season: entry.season,
-      inProgress: entry.season >= currentSeason,
-      gamesPlayed: entry.gp,
-      totals: fromCareerSeason(entry),
-      points: entry.ppg * entry.gp,
-      ppg: entry.ppg,
-      finish: entry.posRank,
     });
   }
 

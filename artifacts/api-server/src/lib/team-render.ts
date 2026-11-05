@@ -181,6 +181,7 @@ export interface TeamRenderOptions {
 export const PUBLIC_SECTIONS = [
   "outlook",
   "usage",
+  "coaching",
   "stats",
   "schedule",
   "depth-chart",
@@ -228,7 +229,8 @@ export function sectionPath(
  */
 const SECTION_HEADINGS: Record<string, string> = {
   outlook: "Fantasy Football Outlook",
-  usage: "Usage & Opportunity Report",
+  usage: "Snap Counts & Player Usage",
+  coaching: "Offensive Coordinator & Scheme",
   stats: "Stats",
   schedule: "Schedule",
   "depth-chart": "Depth Chart",
@@ -269,6 +271,13 @@ export function teamHubHeading(teamName: string, season: number): string {
  */
 const UNDATED_SECTION_HEADINGS = new Set(["depth-chart", "schedule"]);
 
+/**
+ * Sections whose heading carries the season in parentheses: "New England
+ * Patriots Snap Counts & Player Usage (2026)", the H1 mak's NFL-first usage
+ * brief spelled out (2026-11-05). Mirrored in PHP.
+ */
+const PAREN_SEASON_HEADINGS = new Set(["usage", "coaching"]);
+
 export function teamSectionHeading(
   teamName: string,
   section: string,
@@ -276,6 +285,7 @@ export function teamSectionHeading(
 ): string | null {
   const phrase = SECTION_HEADINGS[section];
   if (phrase && UNDATED_SECTION_HEADINGS.has(section)) return `${teamName} ${phrase}`;
+  if (phrase && PAREN_SEASON_HEADINGS.has(section)) return `${teamName} ${phrase} (${season})`;
   return phrase ? `${teamName} ${phrase} ${season}` : null;
 }
 
@@ -2066,7 +2076,7 @@ function faqBlock(list: string, note = ""): string {
   if (!list) return "";
   return (
     `<div class="sct-block">` +
-    h2("Common questions") +
+    h2("Common Questions") +
     (note ? `<p class="sct-note">${escapeHtml(note)}</p>` : "") +
     list +
     `</div>`
@@ -3390,7 +3400,8 @@ function depthLinks(team: NflTeam, options: TeamRenderOptions): string {
     [sectionPath(prefix, team.slug, HUB_SECTION), "Team Overview"],
     [sectionPath(prefix, team.slug, "schedule"), "Schedule"],
     [sectionPath(prefix, team.slug, "stats"), "Stats"],
-    [sectionPath(prefix, team.slug, "usage"), "Usage Report"],
+    [sectionPath(prefix, team.slug, "usage"), "Snap Counts & Usage"],
+    [sectionPath(prefix, team.slug, "coaching"), "Coaching & Scheme"],
     [sectionPath(prefix, team.slug, "matchups"), "Matchups"],
     [sectionPath(prefix, team.slug, "news"), "News"],
   ];
@@ -4473,7 +4484,7 @@ function renderMoreLinks(team: NflTeam, options: TeamRenderOptions): string {
     [sectionPath(prefix, team.slug, HUB_SECTION) + query, `${team.fullName} team page`],
     [sectionPath(prefix, team.slug, "depth-chart") + query, "Depth chart"],
     [sectionPath(prefix, team.slug, "stats") + query, "Team stats"],
-    [sectionPath(prefix, team.slug, "usage") + query, "Usage report"],
+    [sectionPath(prefix, team.slug, "usage") + query, "Snap counts and usage"],
     [sectionPath(prefix, team.slug, "news") + query, "News and injuries"],
   ];
   const full = getTeamScheduleUrl(team);
@@ -4697,7 +4708,7 @@ function renderResources(
   const cards: Array<{ href: string | null; title: string; body: string }> = [
     { href: REDRAFT_COMMAND_URL, title: "Redraft Command", body: "Lineups, trades, waivers and projections for your league." },
     { href: DYNASTY_COMMAND_URL, title: "Dynasty Command", body: "Dynasty values, trades and league analysis." },
-    { href: sectionPath(prefix, team.slug, "usage"), title: `${team.nickname} Usage Report`, body: "Current role and opportunity." },
+    { href: sectionPath(prefix, team.slug, "usage"), title: `${team.nickname} Snap Counts & Usage`, body: "Who is on the field and who gets the ball." },
     { href: preview, title: `${team.nickname} Matchup Preview`, body: "This week's fantasy outlook." },
   ];
   return (
@@ -4850,16 +4861,15 @@ export function renderTeamPage(
       faq: usage.faq,
       tail: usage.faqHtml,
     },
-    // Between Usage and Stats, per the coaching spec. A hub-only panel: its
-    // tab is the hub's address plus #coaching, because a public URL of its
-    // own is a title/meta/sitemap surface that waits on mak's approval.
+    // Between Usage and Stats, per the coaching spec. Its own address since
+    // mak's coaching brief (2026-11-05): /coaching/ carries the Offensive
+    // Coordinator & Scheme page, and the hub links it like Usage.
     {
       id: "coaching",
       label: "Coaching",
       html: coaching.html,
       faq: coaching.faq,
       tail: coaching.faqHtml,
-      hash: true,
     },
     // Directly right of Outlook rather than behind the news archive: it now
     // opens with the Team Snapshot and expands it, so it is the whole team at a

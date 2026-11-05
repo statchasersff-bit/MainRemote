@@ -1437,8 +1437,9 @@ a.rbh-best-name:hover {
 }
 
 .rbh-faq-a {
-  margin: 7px 0 0 20px;
-  max-width: 72ch;
+  /* Full width (11-04, mak): no 72ch measure, no indent to the question's
+     text - the answers run the width of the page like everything above. */
+  margin: 7px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;

@@ -656,6 +656,17 @@ prints it, like the other three.
   and head metadata. `public/fpa.html` is the shell, `public/fpa.css` the
   stylesheet. The canonical always points at the bare path: six combinations of
   format and view are one page.
+- The schedule rail (`renderRail` in `fpa-render.ts`, mak's spec of
+  2026-11-04): six destination cards - the current view docked and pressed
+  in, four position cards each with its easiest three and a five-cell heat
+  strip from its board, and a search-shaped "Find a player" - a sticky
+  220px column beside the table at 1240px+ and a grid above it below that.
+  Every position cell is a link to the team's row on that position's
+  strength-of-schedule board (`/rb/#scsos-team-det`); OFF goes to the team
+  schedule. The teaser and the SOS answer sentence both read `rosEasiest()`
+  (`sos/sos-model.ts`) so they cannot disagree; `fpa-ssr.ts` folds the four
+  boards' versions into the fragment cache key. "Find a player" lands on the
+  SOS player board's finder (`#scsos-find`).
 - The FAQ at the bottom of `fpa-render.ts` is the one part of the page written
   for search rather than for the reader already looking at the table, and the
   only part with headings. It carries a **FAQPage** the same two ways the team

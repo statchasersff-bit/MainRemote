@@ -26,13 +26,13 @@ test("a player whose page is on last season still gets this season's outlook tit
     const season = Number(/data-season="(\d{4})"/.exec(html)?.[1]);
     // The take's heading names the outlook season; the page's own season
     // (data-season) can be an earlier one for a player with no snaps yet.
-    const take = /Rest-of-Season Outlook|(\d{4}) Outlook/.exec(html);
+    const take = /Rest-of-Season (?:Outlook|Projection)|(\d{4}) Outlook/.exec(html);
     if (!season || !take) continue;
     const title = (/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "").replace(/&amp;/g, "&");
-    // Evergreen since the entity brief (2026-11-03): the title names no
-    // year at all, so it cannot name the wrong one.
-    assert.match(title, /^.+ Fantasy Outlook(?:, Rankings & Projections| & Projections)?(?: \| StatChasers)?$/, `${player.slug}: ${title}`);
-    assert.doesNotMatch(title, /\b20\d{2}\b/, `${player.slug}: no year in the title`);
+    // Dated again since the Outlook brief (2026-11-05): the year is the
+    // outlook's (2026), never the page's earlier season.
+    assert.match(title, /^.+ Fantasy Outlook(?: 2026(?:: ROS Analysis|: Rankings & Projections)?)?(?: \| StatChasers)?$/, `${player.slug}: ${title}`);
+    assert.doesNotMatch(title, /\b(?!2026\b)20\d{2}\b/, `${player.slug}: no other year in the title`);
     checked = player.slug;
     break;
   }

@@ -1121,6 +1121,7 @@ function statchasers_team_pages_screen(): void {
 const STATCHASERS_TEAM_SECTIONS = array(
 	'outlook',
 	'usage',
+	'coaching',
 	'stats',
 	'schedule',
 	'depth-chart',
@@ -1302,18 +1303,34 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 			return array(
 				// Every title is a statchasers_fit_title() ladder: the fullest
 				// wording that fits sixty characters, then a shorter rung for
-				// the long names (mak approved the wording, 2026-10-08).
+				// the long names. The snap-count wording is mak's NFL-first
+				// usage brief (2026-11-05); Rank Math adds the brand.
 				'title'       => statchasers_fit_title(
 					array(
-						sprintf( '%s Target Share & Snap Counts %s: Usage Report', $name, $season ),
-						sprintf( '%s Target Share & Snap Counts %s', $name, $season ),
+						sprintf( '%s Snap Counts & Player Usage %s', $name, $season ),
+						sprintf( '%s Snap Counts & Player Usage %s', $nick, $season ),
 					)
 				),
 				'description' => sprintf(
-					'%1$s target share, snap share and red-zone touches for %2$s, updated every Tuesday: the %3$s target tree, backfield split, pass map and buy-low / sell-high signals.',
+					'Explore %2$s %1$s snap counts, target share, rushing usage, red-zone opportunities, and weekly player trends.',
 					$name,
-					$season,
-					$nick
+					$season
+				),
+			);
+
+		case 'coaching':
+			// mak's coaching brief (2026-11-05); mirrors sectionMeta() in the API.
+			return array(
+				'title'       => statchasers_fit_title(
+					array(
+						sprintf( '%s Offensive Coordinator & Scheme %s', $name, $season ),
+						sprintf( '%s Offensive Coordinator & Scheme %s', $nick, $season ),
+					)
+				),
+				'description' => sprintf(
+					'Explore the %2$s %1$s offense: who calls the plays, pass rate, formations, offensive tendencies, and coaching history.',
+					$name,
+					$season
 				),
 			);
 
@@ -1447,7 +1464,8 @@ function statchasers_team_heading( string $slug, string $section ): string {
 	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts, saying the same
 	// words. The Outlook is the hub, so it takes the hub's phrase below.
 	$phrases = array(
-		'usage'       => 'Usage & Opportunity Report',
+		'usage'       => 'Snap Counts & Player Usage',
+		'coaching'    => 'Offensive Coordinator & Scheme',
 		'stats'       => 'Stats',
 		'schedule'    => 'Schedule',
 		'depth-chart' => 'Depth Chart',
@@ -1465,6 +1483,13 @@ function statchasers_team_heading( string $slug, string $section ): string {
 	// season it is (2026-11-03).
 	if ( 'depth-chart' === $section || 'schedule' === $section ) {
 		return sprintf( '%s %s', $row[0], $phrase );
+	}
+
+	// The usage page's season sits in parentheses (PAREN_SEASON_HEADINGS in
+	// the API): "New England Patriots Snap Counts & Player Usage (2026)",
+	// the H1 of mak's NFL-first usage brief (2026-11-05).
+	if ( 'usage' === $section || 'coaching' === $section ) {
+		return sprintf( '%s %s (%s)', $row[0], $phrase, STATCHASERS_TEAM_SEASON );
 	}
 
 	return sprintf( '%s %s %s', $row[0], $phrase, STATCHASERS_TEAM_SEASON );
@@ -1691,6 +1716,7 @@ function statchasers_team_breadcrumbs( $crumbs ) {
 
 	$labels = array(
 		'usage'       => 'Usage',
+		'coaching'    => 'Coaching',
 		'stats'       => 'Stats',
 		'schedule'    => 'Schedule',
 		'depth-chart' => 'Depth Chart',

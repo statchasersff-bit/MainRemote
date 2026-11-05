@@ -355,8 +355,23 @@ describe("rendered (Brissett)", async () => {
     assert.equal(doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim(), "Jacoby Brissett Bio");
     assert.ok(h2s.includes("Career Timeline") && h2s.includes("Transactions"), h2s.join(" | "));
     const rail = [...bo.querySelectorAll(".scp-bo-st b")].map((b) => b.textContent);
-    assert.deepEqual(rail, ["400", "6,059", "1,283", "2,608", "224", "826", "4,018"]);
-    assert.match(bo.textContent, /15,418 yards and 80 touchdowns/);
+    // The Arizona stint is the season in progress: its yards grow weekly
+    // (4,018 when this was pinned, 5,085 after Week 8 of 2026), so it is a
+    // floor, not a figure.
+    assert.deepEqual(rail.slice(0, 6), ["400", "6,059", "1,283", "2,608", "224", "826"]);
+    assert.ok(Number(rail[6].replace(/,/g, "")) >= 5085, `the Arizona stint keeps growing: ${rail[6]}`);
+    // Every stop opens with its crest well; the club's SVG and the school's
+    // crest through the image route (mak, 2026-11-04).
+    const wells = [...bo.querySelectorAll(".scp-bo-stops > li .scp-bo-ev > .scp-bo-ev-crest:first-child")];
+    assert.equal(wells.length, bo.querySelectorAll(".scp-bo-stops > li").length, "a crest well on every stop");
+    assert.ok(wells.some((w) => w.querySelector("img[src^='/team-logos/'], img[src*='/team-logos/']")), "a club crest");
+    assert.ok(bo.querySelector(".scp-bo-stops > li.is-college .scp-bo-ev-crest img.scp-bo-ev-college"), "the college crest");
+    assert.equal(bo.querySelector(".scp-bo-ev-logo"), null, "the faded watermark is gone");
+    // The lead sentence's career line grows with the season too (15,418 and
+    // 80 when pinned; 16,485 and 86 after Week 8 of 2026): floors, not figures.
+    const career = /In \d+ regular-season games since 2016, he has thrown for ([\d,]+) yards and (\d+) touchdowns/.exec(bo.textContent);
+    assert.ok(career, "the career sentence");
+    assert.ok(Number(career[1].replace(/,/g, "")) >= 16485 && Number(career[2]) >= 86, career[0]);
     assert.ok(bo.querySelector('[data-cta="redraft-command-bio-sidebar"]'));
     assert.ok(bo.querySelector('[data-cta="redraft-command-bio-inline"]'));
     assert.match(bo.querySelector(".scp-bo-txlog").textContent, /Phillip Dorsett/);

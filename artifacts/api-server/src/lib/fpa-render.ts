@@ -39,8 +39,9 @@
 
 import { escapeHtml, escapeJsonLd } from "./render";
 import type { FpaRow, FpaTableData, FpaView } from "./fpa/fpa-data";
-import { FANTASY_POSITIONS, type ScoringFormat } from "./fpa/nflverse";
-import { fpaPageCopy, type FpaPageCopy } from "./fpa-seo";
+import { FANTASY_POSITIONS, type FantasyPosition, type ScoringFormat } from "./fpa/nflverse";
+import { fpaPageCopy, fpaScopeLabel, teamLabel, type FpaPageCopy } from "./fpa-seo";
+import { SOS_DEFAULT_PAGE_BASE, sosPagePath } from "./sos-render";
 
 /** Where the Related links point. Absolute: this markup is printed inside statchasers.com. */
 const SITE = "https://statchasers.com";
@@ -88,7 +89,40 @@ export interface FpaRenderOptions {
   endpoint?: string;
   /** Rendered for testability; the cache keys on the data, not on this. */
   now?: number;
+  /**
+   * Where the strength-of-schedule pages live - the rail's view links and
+   * every position cell point there. This app's own /strength-of-schedule by
+   * default, the WordPress page's path in the embed fragment; the position
+   * pages are `<base>/rb/` and so on, as sosPagePath() spells them.
+   */
+  sosBase?: string;
 }
+
+/** The team a card leads with: the easiest remaining schedule, as the board scores it. */
+export interface FpaRailTeam {
+  code: string;
+  fullName: string;
+  logo: string;
+  /** Average opponent aFPA over the remaining weeks. */
+  afpa: number;
+  /** Against the mean of every team on the board. */
+  delta: number;
+}
+
+/**
+ * What a position card previews: the easiest remaining schedule, in the dress
+ * the strength-of-schedule page's own cards wear - crest, code, figure, name,
+ * delta - from the SAME boards the linked pages render (fpa-ssr.ts reads
+ * them through rosEasiest, sos-model.ts). Null when there is nothing to show
+ * - no schedule, no weeks left, an archive season - and the cards are then
+ * title and note only.
+ */
+export interface FpaRail {
+  teaser: Record<FantasyPosition, { top: FpaRailTeam; easiest: { code: string; fullName: string }[] }> | null;
+}
+
+/** How many easiest defenses a card's label names. */
+export const TEASER_COUNT = 3;
 
 const DASH = "-";
 
@@ -264,58 +298,53 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
     group("Scoring", formats) +
     group("View", views) +
     `</div>` +
-    `<a class="scf-csv" href="${escapeHtml(
-      `${(options.csvBase ?? "/fpa").replace(/\/+$/, "")}` +
-        `/download.csv?format=${data.format}&view=${data.view}`,
-    )}" rel="nofollow" download>Download CSV</a>` +
-    `</div>`
-  );
-}
-
-/**
- * What the numbers currently are.
- *
- * Under the table since 2026-10-10 (mak's spec): the heading and the answer
- * sentence now say which weeks the figures cover, and the blend note follows
- * the table it qualifies, ahead of the legend and the FAQ.
- */
-function renderDataMode(data: FpaTableData): string {
-  return (
-    `<div class="scf-mode" data-preseason="${data.isPreseason ? "1" : "0"}">` +
-    // No week/format heading: the controls above already say which view is on,
-    // and the sentence below says what the numbers are. The label was repeating
-    // both.
-    `<p class="scf-mode-body">${escapeHtml(data.methodology)}</p>` +
-    (data.view === "adjusted"
-      ? `<p class="scf-mode-body">${escapeHtml(
-          "Adjusted figures subtract how much stronger or weaker than league " +
-            "average the offenses each defense faced have been, at that position. " +
-            "It is a model; the raw view is what actually happened.",
-        )}</p>`
-      : "") +
+    // The legend, where the Download CSV link used to be (mak, 2026-11-04):
+    // the key to the tints sits on the row that sets them, right-aligned.
+    // The CSV route (/fpa/download.csv) still serves; the page just no
+    // longer links it.
+    renderLegend() +
     `</div>`
   );
 }
 
 /* --------------------------------------------------------------- the table */
 
-function renderCell(entry: { fpa: number; rank: number }): string {
+/**
+ * One tinted cell. With a `link`, the figure is a link to that team's schedule
+ * against the position (mak's rail spec, 2026-11-04): the cells ARE the
+ * click-through, in place of a column of five text links per row. The tint,
+ * the figure and the rank are unchanged; the link's label says where it goes
+ * ("Detroit RB schedule") for a reader who cannot see which column this is.
+ */
+function renderCell(
+  entry: { fpa: number; rank: number },
+  link: { href: string; label: string } | null = null,
+): string {
   const tier = matchupTier(entry.rank);
+  const inner =
+    `<span class="scf-fpa">${escapeHtml(num(entry.fpa))}</span>` +
+    `<span class="scf-rank">${entry.rank}</span>`;
   return (
     // The title sits on the cell, not the rank: the rank is clipped out of
     // sight (fpa.css, .scf-rank), and a tooltip on a 1px box is no tooltip.
     `<td class="scf-cell" data-tier="${tier}" data-sort="${entry.fpa}" title="${escapeHtml(
       `${ordinal(entry.rank)} most points allowed - ${TIER_LABEL[tier]}`,
     )}">` +
-    `<span class="scf-fpa">${escapeHtml(num(entry.fpa))}</span>` +
-    `<span class="scf-rank">${entry.rank}</span>` +
+    (link
+      ? `<a class="scf-cell-link" href="${escapeHtml(link.href)}" aria-label="${escapeHtml(link.label)}" target="_top">${inner}</a>`
+      : inner) +
     `</td>`
   );
 }
 
-function renderRow(row: FpaRow, options: FpaRenderOptions): string {
+function renderRow(row: FpaRow, rows: FpaRow[], options: FpaRenderOptions): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
+  const sosBase = options.sosBase ?? SOS_DEFAULT_PAGE_BASE;
+  const team = row.team;
+  const scheduleHref = team ? `${prefix}${team.slug}/schedule/${query}` : null;
+  // "Detroit", or the full name where two clubs share a city (fpa-seo.ts).
+  const label = teamLabel(row, rows);
 
   // Crest, then the abbreviation with the full name under it. The abbreviation
   // is what a reader scanning 32 rows actually matches on - it is how the team
@@ -324,16 +353,22 @@ function renderRow(row: FpaRow, options: FpaRenderOptions): string {
   const identity =
     `<span class="scf-team-id">` +
     `<span class="scf-team-abbr">${escapeHtml(row.abbr)}</span>` +
-    `<span class="scf-team-name">${escapeHtml(row.name)}</span>` +
+    // Both spellings are in the markup and CSS shows one: the full name, or
+    // the nickname ("Panthers") once the rail beside the table has squeezed
+    // the column (mak, 2026-11-04). display:none, not clipping, so a screen
+    // reader never hears "Carolina Panthers Panthers".
+    `<span class="scf-team-name">` +
+    `<span class="scf-team-name-full">${escapeHtml(row.name)}</span>` +
+    (team ? `<span class="scf-team-name-short">${escapeHtml(team.nickname)}</span>` : "") +
+    `</span>` +
     `</span>`;
 
   // The team's schedule page rather than its hub (mak, 2026-10-10): a reader
   // looking at what a defense allows wants to see who it plays next.
-  const name = row.team
-    ? `<a class="scf-team-link" href="${escapeHtml(
-        `${prefix}${row.team.slug}/schedule/${query}`,
-      )}" target="_top">` +
-      `<img class="scf-team-logo" src="${escapeHtml(row.team.logo)}" alt=""` +
+  const name =
+    team && scheduleHref
+    ? `<a class="scf-team-link" href="${escapeHtml(scheduleHref)}" target="_top">` +
+      `<img class="scf-team-logo" src="${escapeHtml(team.logo)}" alt=""` +
       ` width="22" height="22" loading="lazy" decoding="async" />` +
       `${identity}</a>`
     : `<span class="scf-team-link is-plain">${identity}</span>`;
@@ -344,9 +379,33 @@ function renderRow(row: FpaRow, options: FpaRenderOptions): string {
     // now the abbreviation and the name run together, and sorting on
     // "CARCarolina Panthers" would work by accident rather than on purpose.
     `<th scope="row" class="scf-team" data-sort="${escapeHtml(row.abbr)}">${name}</th>` +
-    FANTASY_POSITIONS.map((p) => renderCell(row.byPos[p])).join("") +
-    renderCell({ fpa: row.offFpa, rank: row.offRank }) +
-    `<td class="scf-games" data-sort="${row.gamesPlayed}">${row.gamesPlayed}</td>` +
+    // Each position cell lands on the team's row of that position's
+    // strength-of-schedule board (`/rb/#scsos-team-det`): the page that
+    // shows who this defense plays next, against this position. A row the
+    // team table cannot resolve has no page to land on and stays plain.
+    FANTASY_POSITIONS.map((p) =>
+      renderCell(
+        row.byPos[p],
+        team
+          ? {
+              href: `${sosPagePath(sosBase, p.toLowerCase() as "qb" | "rb" | "wr" | "te")}#scsos-team-${team.abbreviation}`,
+              label: `${label} ${p} schedule`,
+            }
+          : null,
+      ),
+    ).join("") +
+    // OFF is the four summed, not a position, so it has no board of its own;
+    // it goes where the team cell goes, the team's full schedule.
+    renderCell(
+      { fpa: row.offFpa, rank: row.offRank },
+      scheduleHref ? { href: scheduleHref, label: `${label} schedule` } : null,
+    ) +
+    `<td class="scf-games" data-sort="${row.gamesPlayed}">${row.gamesPlayed}` +
+    // The row-end affordance: shown on hover (fpa.css), so the click-through
+    // is discoverable without a column of links. Decorative; the cells carry
+    // the labels.
+    `<span class="scf-row-go" aria-hidden="true"><svg viewBox="0 0 12 12" width="10" height="10"><path d="M2 6h8M6.5 2.5 10 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` +
+    `</td>` +
     `</tr>`
   );
 }
@@ -376,13 +435,17 @@ function renderTable(data: FpaTableData, options: FpaRenderOptions): string {
   return (
     `<div class="scf-scroll">` +
     `<table class="scf-table" data-scf-table>` +
-    `<caption class="scf-caption">${escapeHtml(
-      `Fantasy points allowed per game by all 32 NFL defenses, ` +
+    // The scope label leads the caption: this table is season-to-date, the
+    // rail's views are forward-looking, and the week range is what tells a
+    // reader moving between them which is which.
+    `<caption class="scf-caption"><span class="scf-scope">${escapeHtml(fpaScopeLabel(data))}.</span> ${escapeHtml(
+      `All 32 NFL defenses, ` +
         `${FORMAT_LABELS[data.format]} scoring, ${VIEW_NAMES[data.view]} view. ` +
-        `Rank 1 is the most points allowed, i.e. the softest matchup.`,
+        `Rank 1 is the most points allowed, i.e. the softest matchup. ` +
+        `Each cell opens that team's schedule against the position.`,
     )}</caption>` +
     `<thead>${head}</thead>` +
-    `<tbody>${data.rows.map((row) => renderRow(row, options)).join("")}</tbody>` +
+    `<tbody>${data.rows.map((row) => renderRow(row, data.rows, options)).join("")}</tbody>` +
     `</table></div>`
   );
 }
@@ -688,15 +751,12 @@ function renderFaqSchema(options: FpaRenderOptions): string {
 
 /* ------------------------------------------------- answer, seasons, related */
 
-/**
- * The one sentence a crawler can quote: the softest defense per position,
- * from the table's own ranks (fpa-seo.ts). Above the controls, so it is the
- * first thing under the heading. Swapped with the table when the format or
- * view changes, because its figures are that view's.
+/*
+ * The answer sentence ("Softest matchups through Week 8: Detroit allows the
+ * most...") is no longer printed above the controls (mak, 2026-11-04). It
+ * stays in the page copy (fpa-seo.ts) for the plugin's island and the
+ * description; only the on-page paragraph is gone.
  */
-function renderAnswer(copy: FpaPageCopy): string {
-  return copy.answer ? `<p class="scf-answer">${escapeHtml(copy.answer)}</p>` : "";
-}
 
 /**
  * "Updated Oct 8, through Week 5", under the heading. Standalone only: on a
@@ -752,29 +812,6 @@ function renderSeasons(data: FpaTableData, options: FpaRenderOptions): string {
 }
 
 /**
- * Related tools (mak, 2026-10-10): the position strength-of-schedule pages,
- * the projections and the start/sit tool. Under the table and the blend
- * note, above the FAQ; the same shape the SOS pages' Related block has.
- */
-function renderRelated(): string {
-  const links: { label: string; href: string }[] = [
-    ...(["qb", "rb", "wr", "te"] as const).map((pos) => ({
-      label: `${pos.toUpperCase()} Strength of Schedule`,
-      href: `${SITE}/nfl/fantasy-football-strength-of-schedule/${pos}/`,
-    })),
-    { label: "Fantasy Football Projections", href: `${SITE}/redraft-command/fantasy-football-projections` },
-    { label: "Who Should I Start?", href: `${SITE}/redraft-command/who-should-i-start` },
-  ];
-  return (
-    `<nav class="scf-related" aria-labelledby="scf-related-title">` +
-    `<h2 id="scf-related-title" class="scf-related-title">Related</h2>` +
-    `<ul class="scf-related-list">` +
-    links.map((l) => `<li><a href="${escapeHtml(l.href)}" target="_top">${escapeHtml(l.label)}</a></li>`).join("") +
-    `</ul></nav>`
-  );
-}
-
-/**
  * The page's words, as data, for the WordPress plugin: title, H1, description,
  * the Updated line and the date behind it, which season and kind this is, and
  * the archive seasons the sitemap should list. statchasers-fpa.php reads it
@@ -790,11 +827,191 @@ function renderMetaIsland(copy: FpaPageCopy, options: FpaRenderOptions): string 
   );
 }
 
+/* ------------------------------------------------------------------ rail */
+
+/** The four position cards, in order. */
+const CHIP_POSITIONS: readonly FantasyPosition[] = ["QB", "RB", "WR", "TE"];
+
+function signed(value: number): string {
+  const r = Math.round(value * 10) / 10;
+  return `${r > 0 ? "+" : ""}${r.toFixed(1)}`;
+}
+
+/**
+ * One card, in the strength-of-schedule page's card dress (sos-render.ts,
+ * renderCard): the faded crest bottom right, an uppercase title, a two-line
+ * note, then the team - crest, code, the figure with its unit, the full name
+ * and the delta against league average. `team` null gives a card of title
+ * and note alone (the start/sit tools, or a position with no board).
+ */
+function renderRailCard(opts: {
+  href: string;
+  title: string;
+  note: string;
+  team: FpaRailTeam | null;
+  unit: string;
+  pos?: FantasyPosition;
+  current?: boolean;
+  label?: string;
+  /** The call to action at the card's foot: "View QB schedules". None on the current view. */
+  cta?: string;
+}): string {
+  const t = opts.team;
+  return (
+    `<li class="scf-rail-item">` +
+    `<a class="scf-card${opts.current ? " is-current" : ""}" href="${escapeHtml(opts.href)}"` +
+    (opts.pos ? ` data-pos="${opts.pos}"` : "") +
+    (opts.label ? ` aria-label="${escapeHtml(opts.label)}"` : "") +
+    (opts.current ? ` aria-current="page" target="_top"` : ` target="_blank" rel="noopener"`) +
+    `>` +
+    (t ? `<img class="scf-card-mark" src="${escapeHtml(t.logo)}" alt="" aria-hidden="true" loading="lazy" decoding="async" />` : "") +
+    `<span class="scf-card-head">` +
+    `<span class="scf-card-title">${escapeHtml(opts.title)}</span>` +
+    `</span>` +
+    `<span class="scf-card-note">${escapeHtml(opts.note)}</span>` +
+    // The team block (mak, 2026-11-04): two columns, two rows. Left, the
+    // crest directly above the code; right, the figure directly above the
+    // delta. No full name - the crest and the code are the identity; the
+    // name is the code's title and in the label.
+    (t
+      ? `<span class="scf-card-body">` +
+        `<span class="scf-card-team">` +
+        `<img class="scf-card-img" src="${escapeHtml(t.logo)}" alt="" width="32" height="32" loading="lazy" decoding="async" />` +
+        `<span class="scf-card-name" title="${escapeHtml(t.fullName)}">${escapeHtml(t.code)}</span>` +
+        `</span>` +
+        `<span class="scf-card-figure">` +
+        `<span class="scf-card-value">${escapeHtml(num(t.afpa))}<small>${escapeHtml(opts.unit)}</small></span>` +
+        `<span class="scf-card-delta">${escapeHtml(signed(t.delta))} vs avg</span>` +
+        `</span></span>`
+      : "") +
+    // The call to action (mak, 2026-11-04): the card is the link, and this is
+    // what says so - a button-shaped row at the foot naming the destination.
+    (opts.cta
+      ? `<span class="scf-card-cta">${escapeHtml(opts.cta)}` +
+        `<svg class="scf-card-cta-arrow" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 6h8M6.5 2.5 10 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+        `</span>`
+      : "") +
+    `</a></li>`
+  );
+}
+
+/**
+ * The schedule rail (mak's spec, 2026-11-04; cards in the SOS page's dress
+ * from the same afternoon).
+ *
+ * A column of six cards to the right of the table at 1240px and up; a grid
+ * of the same cards above the table below that. Each card previews its
+ * destination the way the strength-of-schedule page's own cards do: the
+ * easiest remaining schedule for that position, with its figure and how far
+ * it sits from league average. The current view is docked at the top,
+ * pressed in and tagged, leading with the softest defense on this table;
+ * Find a player is shaped like the search box it opens.
+ *
+ * No headings. The fragment is printed under a WordPress H1 and keeps its
+ * outline to the FAQ (see renderFaq); the eyebrow is a paragraph styled as
+ * small caps, and the <nav> carries the name a heading would have.
+ */
+function renderRail(data: FpaTableData, options: FpaRenderOptions, rail: FpaRail): string {
+  const sosBase = options.sosBase ?? SOS_DEFAULT_PAGE_BASE;
+  const base = options.basePath ?? "/fpa";
+  const query = options.linkQuery ?? "";
+  const withQuery = (path: string): string =>
+    !query ? path : path.includes("?") ? `${path}&${query.replace(/^\?/, "")}` : `${path}${query}`;
+  const pos = (p: FantasyPosition) => sosPagePath(sosBase, p.toLowerCase() as "qb" | "rb" | "wr" | "te");
+  // The overview's player board, with the finder focused (client/sos.ts).
+  const finder = `${sosBase.replace(/\/+$/, "")}/?tab=player#scsos-find`;
+
+  // The current view leads with this table's softest defense overall (OFF
+  // rank 1), against the league mean of the same column.
+  const soft = data.rows.find((r) => r.offRank === 1 && r.team);
+  const offMean = data.rows.reduce((a, r) => a + r.offFpa, 0) / Math.max(1, data.rows.length);
+  const current = renderRailCard({
+    href: withQuery(base),
+    // "Most FPts allowed", no "Viewing" pill (mak, 2026-11-04): the pressed
+    // state and the gold edge are what mark it as the page being read.
+    title: "Most FPts allowed",
+    note: `${fpaScopeLabel(data)}. Softest defense overall.`,
+    team: soft?.team
+      ? { code: soft.team.code, fullName: soft.team.fullName, logo: soft.team.logo, afpa: soft.offFpa, delta: soft.offFpa - offMean }
+      : null,
+    unit: "FPA",
+    current: true,
+  });
+
+  const cards = CHIP_POSITIONS.map((p) => {
+    const preview = rail.teaser?.[p] ?? null;
+    const easiest = preview?.easiest ?? [];
+    return renderRailCard({
+      href: pos(p),
+      title: `Easiest ${p} Schedule`,
+      note: `Easiest rest-of-season ${p} schedule by opponent aFPA.`,
+      team: preview?.top ?? null,
+      unit: "aFPA",
+      pos: p,
+      cta: `View All ${p} Schedules`,
+      label:
+        `${p} schedules, rest of season.` +
+        (easiest.length ? ` Easiest: ${easiest.map((t) => t.fullName).join(", ")}.` : ""),
+    });
+  }).join("");
+
+  const search =
+    `<li class="scf-rail-item">` +
+    `<a class="scf-card is-search" href="${escapeHtml(finder)}" target="_blank" rel="noopener">` +
+    `<svg class="scf-card-glass" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
+    `<circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" /><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />` +
+    `</svg>` +
+    `<span class="scf-card-placeholder">Find a player's schedule</span>` +
+    `</a></li>`;
+
+  return (
+    `<div class="scf-aside">` +
+    // No eyebrow and no box around the cards (mak, 2026-11-04): the <nav>'s
+    // name is for assistive tech; on screen the cards stand on their own.
+    `<nav class="scf-rail${rail.teaser ? "" : " is-sparse"}" aria-label="Schedule views" data-scf-rail>` +
+    // The finder sits right under the current view, ahead of the four
+    // position cards (mak, 2026-11-04).
+    `<ul class="scf-rail-list">${current}${search}${cards}</ul>` +
+    `</nav>` +
+    renderStartSit(data) +
+    `</div>`
+  );
+}
+
+/**
+ * The start/sit group under the schedules (mak, 2026-11-04): for a reader
+ * who is here to set this week's lineup. One card, in a new tab: the
+ * head-to-head start/sit tool (the Projections card was dropped the same
+ * day). The week named is the one coming up - the table runs through Week
+ * N, so the lineup being set is Week N+1.
+ */
+function renderStartSit(data: FpaTableData): string {
+  const next =
+    data.kind === "live" && data.weekNumber !== null && data.weekNumber >= 1 && data.weekNumber < 17
+      ? `Week ${data.weekNumber + 1}`
+      : "This week";
+  return (
+    `<nav class="scf-rail scf-rail-startsit" aria-label="Start or sit" data-scf-startsit>` +
+    `<ul class="scf-rail-list">` +
+    renderRailCard({
+      href: `${SITE}/redraft-command/who-should-i-start`,
+      title: "Who Should I Start?",
+      note: `${next}: compare two players head to head.`,
+      team: null,
+      unit: "",
+      cta: "Compare players",
+    }) +
+    `</ul>` +
+    `</nav>`
+  );
+}
+
 /* --------------------------------------------------------- page assembly */
 
 export function renderFpaPage(
   data: FpaTableData,
   options: FpaRenderOptions = {},
+  rail: FpaRail = { teaser: null },
 ): string {
   const copy = fpaPageCopy(data);
   // The FAQ describes fantasy points allowed in general, and the current page
@@ -812,13 +1029,23 @@ export function renderFpaPage(
       : "") +
     `>` +
     (options.embed ? "" : renderUpdated(copy)) +
-    renderAnswer(copy) +
-    renderSeasons(data, options) +
+    // The archive list ("Archive: 2025 full season") is gone from the live
+    // page (mak, 2026-11-04); an archive page keeps its way back.
+    (data.kind === "archive" ? renderSeasons(data, options) : "") +
+    // The body: the rail and the sheet. Rail first in the markup, so that
+    // collapsed (under 1240px) it is the row above the table, and in a tab
+    // order it is reached before the 32 rows in either layout.
+    `<div class="scf-body">` +
+    renderRail(data, options, rail) +
+    `<div class="scf-main">` +
     renderControls(data, options) +
     renderTable(data, options) +
-    renderDataMode(data) +
-    renderLegend() +
-    renderRelated() +
+    // The blend note ("12% 2025 baseline and 88% 2026 data") is no longer
+    // printed under the table (mak, 2026-11-04).
+    `</div>` +
+    `</div>` +
+    // The Related links block (mak, 2026-10-10) was removed 2026-11-04: the
+    // rail's cards are the links now.
     (live ? renderFaq() : "") +
     `</div>` +
     // Outside the root div, like the other tools put it: the node describes the

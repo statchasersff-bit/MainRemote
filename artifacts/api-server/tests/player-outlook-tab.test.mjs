@@ -104,9 +104,10 @@ describe("in season", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent),
       [
-        "Jacoby Brissett Rest-of-Season Outlook",
-        "What Drives His Outlook",
+        "Jacoby Brissett Rest-of-Season Projection",
+        "What Drives Jacoby Brissett's Fantasy Value?",
         "What Could Change His Value",
+        "Jacoby Brissett Upcoming Matchups",
         "Jacoby Brissett Fantasy Outlook FAQ",
       ],
     );
@@ -186,6 +187,17 @@ describe("in season", () => {
     const prev = doc.querySelector("details.scp-ol-prev");
     assert.ok(prev && !prev.open);
     assert.match(prev.querySelector("summary").textContent, /^Read our preseason outlook \(June 2026\)$/);
+    // The brief (2026-11-05): history last. The archive is the final section of
+    // the body, after the schedule, and says which scoring its numbers use.
+    const sections = [...doc.querySelector(".scp-ol").querySelectorAll(":scope > section")];
+    assert.ok(sections[sections.length - 1].contains(prev), "the archive closes the body");
+    assert.match(prev.textContent, /as published in June; the figures above are PPR points per game/);
+  });
+
+  test("no generic risks: nobody 'could get hurt or benched' without evidence", () => {
+    const claims = [...doc.querySelectorAll(".scp-ol-ur .is-risk .scp-ol-claim")].map((c) => c.textContent);
+    assert.ok(!claims.includes("Health"), claims.join(" | "));
+    assert.ok(!claims.includes("Job security"), claims.join(" | "));
   });
 
   test("every upside and risk bullet is a claim with its evidence as subtext", () => {
@@ -241,5 +253,196 @@ describe("edge states", () => {
 
   test("a position the spec does not cover renders nothing", () => {
     assert.equal(ol.renderOutlookTab(state({ player: { ...state().player, position: "K" } })), "");
+  });
+});
+
+/* ------------------------------------------------- the forward rebuild, 2026-11-05 */
+
+const wrRecord = Object.values(data.loadFantasyOutlook2026()).find((r) => r.slug === "michael-wilson") ?? null;
+
+const wrGame = (week, pts, tgt) => ({
+  week, opp: "SEA", team: "ARI", game_status: "active",
+  stats: { pts_ppr: pts, rec_tgt: tgt, rec: Math.round(tgt * 0.6), rec_yd: tgt * 8, rec_td: 0 },
+});
+
+/** A usage row shaped like outlook-context.ts builds it, with Wilson's Week 8 numbers. */
+function usage(overrides = {}) {
+  const weekly = [18.9, 26.9, 34, 37.1, 15.2, 20.6, 18.2, 36.6].map((ts, i) => ({ week: i + 1, ts, cs: 0, tgt: 7, car: 0, teamTgt: 30, teamCar: 25, snap: 90, rz: 1 }));
+  const row = {
+    id: "00-0038559", name: "Michael Wilson", slug: "michael-wilson", sleeperId: "10232", pos: "WR", games: 8,
+    targets: 81, receptions: 45, carries: 3, targetShare: 25.9, airYardsShare: 39.6, wopr: 0.67, adot: 11.4, ezTargets: 15,
+    firstReadShare: 32.3, snapShare: 89, rzTouches: 17, gzCarries: 0, wopp: 165, woppPerGame: 20.6, hvt: 45,
+    lastSeasonWoppPerGame: null, situation: {}, longestRuns: [], designedRunRate: null, scrambleRate: null, sackRate: null,
+    dropbacks: 0, passAdot: null, xfpPerGame: 19.4, fpoePerGame: -5.8, fpPerGame: 13.6, yacPerAtt: null, weekly,
+    pct: {}, qualified: true, leagueRank: { metric: "target share", rank: 10 }, pool: 97,
+    ...overrides.row,
+  };
+  const trend = (key) => {
+    const vals = weekly.map((w) => w[key]);
+    const recent = vals.slice(-3), base = vals.slice(-6, -3);
+    const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+    const delta = Math.round((mean(recent) - mean(base)) * 10) / 10;
+    return { trail: recent, trailWeeks: [6, 7, 8], delta, baseWeek: 5, baseWeeks: [3, 4, 5], direction: Math.abs(delta) < 2 ? "flat" : delta > 0 ? "up" : "down", confirmed: false };
+  };
+  return {
+    season: 2026, throughWeek: 8, builtAt: "2026-11-04T12:00:00Z", teamCode: "ARI", row,
+    ts: trend("ts"), snap: trend("snap"),
+    ranks: { xfpPerGame: { rank: 5, of: 97 }, fpoePerGame: { rank: 97, of: 97 }, firstReadShare: { rank: 7, of: 97 }, targetShare: { rank: 10, of: 97 }, airYardsShare: { rank: 7, of: 97 }, snapShare: { rank: 4, of: 97 } },
+    leadsRz: true, rzCoLead: false, aheadOfHim: [],
+    ...overrides,
+  };
+}
+
+function wr(overrides = {}) {
+  const weeks = [10.6, 3.8, 25.9, 16.5, 7.3, 7.2, 10.6, 26.8].map((pts, i) => wrGame(i + 1, pts, [7, 7, 17, 13, 7, 7, 8, 15][i]));
+  return {
+    player: { id: "10232", slug: "michael-wilson", name: "Michael Wilson", position: "WR", injury_status: null },
+    team: ARI,
+    format: "ppr",
+    season: 2026,
+    leagueSeason: 2026,
+    leagueWeek: 8,
+    production: [{ season: 2026, posFinishPpg: 24 }],
+    seasonRank: 24,
+    logCareer: [
+      { season: 2026, weeks, finish: 24 },
+      { season: 2025, weeks: Array.from({ length: 17 }, (_, i) => wrGame(i + 1, 13, 8)), finish: 10 },
+    ],
+    gameLog: weeks,
+    // Three tough, one neutral: the brief's own example.
+    upcoming: [game(9, "SEA", "Seahawks", 32), game(10, "LAR", "Rams", 28, "home"), game(11, "KC", "Chiefs", 31), game(12, "WAS", "Commanders", 11, "home")],
+    upcomingSeason: [game(15, "NYJ", "Jets", 23, "home"), game(16, "NO", "Saints", 20), game(17, "LV", "Raiders", 10, "home")],
+    depth: { position: "WR", order: 1, next: { name: "Reggie Virgil", slug: null } },
+    // The season's leading passer, by attempts: not the man under center now.
+    teammates: [{ name: "Jacoby Brissett", slug: "jacoby-brissett", position: "QB" }],
+    startingQb: { name: "Gardner Minshew II", slug: "gardner-minshew-ii", attempts: 23, lastWeek: 8 },
+    usage: usage(),
+    rosRank: { rank: 23, position: "WR", updatedAt: "October 22, 2026", updatedAtIso: null },
+    fantasyOutlook2026: wrRecord,
+    bioProfile: { draft: { year: 2023, round: 3, pick: 94, team: ARI }, stints: [] },
+    designation: null,
+    statsUpdatedMs: Date.parse("2026-11-04T12:00:00Z"),
+    ...overrides,
+  };
+}
+
+describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
+  const doc = render(wr());
+  const text = doc.body.textContent;
+
+  test("the quarterback is the listed starter, and a change is said as a change", () => {
+    assert.doesNotMatch(text, /Brissett is his quarterback/);
+    assert.match(text, /Gardner Minshew II is now the Cardinals' listed starting quarterback/);
+    assert.ok([...doc.querySelectorAll(".scp-ol-tags .scp-ol-chip")].some((c) => c.textContent === "QB change"));
+    const risks = [...doc.querySelectorAll(".scp-ol-ur .is-risk .scp-ol-claim")].map((c) => c.textContent);
+    assert.ok(risks.includes("A new quarterback"), risks.join(" | "));
+    const qs = [...doc.querySelectorAll(".scp-ol-faq summary")].map((q) => q.textContent);
+    assert.ok(qs.includes("Who is Michael Wilson's quarterback?"));
+    // Suffixes drop from the surname: "Minshew", never "Minshew II's".
+    assert.doesNotMatch(text, /Minshew II's|under Minshew II/);
+  });
+
+  test("no quarterback change: the starter is named plainly", () => {
+    const same = render(wr({ teammates: [{ name: "Gardner Minshew II", slug: null, position: "QB" }] }));
+    assert.match(same.body.textContent, /Gardner Minshew II is his quarterback\./);
+    assert.ok(![...same.querySelectorAll(".scp-ol-tags .scp-ol-chip")].some((c) => c.textContent === "QB change"));
+  });
+
+  test("a schedule of three tough matchups is a risk, never an upside", () => {
+    const up = [...doc.querySelectorAll(".scp-ol-ur .is-up .scp-ol-claim")].map((c) => c.textContent);
+    const risks = [...doc.querySelectorAll(".scp-ol-ur .is-risk .scp-ol-claim")].map((c) => c.textContent);
+    assert.ok(!up.some((c) => /schedule|soft/i.test(c)), up.join(" | "));
+    assert.ok(risks.includes("Tough matchups"), risks.join(" | "));
+    // The way through: his volume, said beside the risk rather than as a contradiction.
+    assert.match(doc.querySelector(".scp-ol-ur .is-risk").textContent, /25\.9% target share is the way through them/);
+    assert.ok([...doc.querySelectorAll(".scp-ol-tags .scp-ol-chip")].some((c) => c.textContent === "Tough upcoming schedule"));
+  });
+
+  test("a soft stretch is an upside, never a risk; a split is neither", () => {
+    const soft = render(wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "DET", "Lions", 1, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 22)] }));
+    const softUp = [...soft.querySelectorAll(".scp-ol-ur .is-up .scp-ol-claim")].map((c) => c.textContent);
+    const softRisk = [...soft.querySelectorAll(".scp-ol-ur .is-risk .scp-ol-claim")].map((c) => c.textContent);
+    assert.ok(softUp.includes("A soft stretch"), softUp.join(" | "));
+    assert.ok(!softRisk.some((c) => /matchup/i.test(c)), softRisk.join(" | "));
+    const split = render(wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "SEA", "Seahawks", 32, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 18)] }));
+    const claims = [...split.querySelectorAll(".scp-ol-ur .scp-ol-claim")].map((c) => c.textContent);
+    assert.ok(!claims.some((c) => /matchup|soft/i.test(c)), claims.join(" | "));
+    assert.match(split.querySelector("#scp-ol-sch-h ~ .scp-ox-prose").textContent, /^A mixed stretch/);
+  });
+
+  test("Opportunity vs. Production leads with expected points against actual", () => {
+    const h2s = [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent);
+    assert.deepEqual(h2s, [
+      "Michael Wilson Rest-of-Season Projection",
+      "Opportunity vs. Production",
+      "What Drives Michael Wilson's Fantasy Value?",
+      "What Could Change His Value",
+      "Michael Wilson Upcoming Matchups",
+      "Michael Wilson Fantasy Outlook FAQ",
+    ]);
+    const tiles = [...doc.querySelectorAll(".scp-ol-tile")].map((t) => `${t.querySelector("dt").textContent}=${t.querySelector("dd").textContent}`);
+    assert.deepEqual(tiles.slice(0, 3), ["PPR points per game=13.6", "Expected points per game=19.4", "Points over expected=−5.8"]);
+    assert.ok(tiles.includes("First-read share=32.3%"));
+    const read = doc.querySelector("#scp-ol-opp-h ~ .scp-ox-prose").textContent;
+    assert.match(read, /averaging 19\.4 expected PPR points a game but producing 13\.6/);
+    assert.match(read, /does not guarantee improvement/);
+    // The read opens on the same numbers.
+    assert.match(doc.querySelector(".scp-ol-sec-read .scp-ox-prose").textContent, /averaging just 13\.6 PPR points against 19\.4 expected/);
+    assert.ok([...doc.querySelectorAll(".scp-ol-tags .scp-ol-chip")].some((c) => c.textContent === "Scoring under expected"));
+    assert.match(doc.querySelector(".scp-ol-more a").getAttribute("href"), /\/arizona-cardinals\/usage\/$/);
+  });
+
+  test("the drivers: target share, xFP, FPOE, first-read share, then air yards", () => {
+    const labels = [...doc.querySelectorAll(".scp-ol-drv h3")].map((h) => h.textContent);
+    assert.deepEqual(labels, ["Target share", "Expected points", "Points over expected", "First-read share", "Downfield role"]);
+    assert.ok(!labels.includes("Target volume"));
+    const fpoe = [...doc.querySelectorAll(".scp-ol-drv")].find((d) => d.querySelector("h3").textContent === "Points over expected");
+    assert.equal(fpoe.querySelector(".scp-ol-dverdict").textContent, "Under expected");
+    assert.match(doc.querySelector("#scp-ol-drv-h + .scp-ox-lede").textContent, /Each row names its field/);
+  });
+
+  test("what could change: catalysts with evidence, the gap first", () => {
+    const up = [...doc.querySelectorAll(".scp-ol-ur .is-up .scp-ol-claim")].map((c) => c.textContent);
+    assert.equal(up[0], "Room for the points to catch his role");
+    assert.match(doc.querySelector(".scp-ol-ur .is-up .scp-ol-evid").textContent, /19\.4 expected PPR points a game against 13\.6 scored/);
+    // With a catalyst present the strips are not restated as "upside".
+    assert.ok(!up.includes("Heavy target share"), up.join(" | "));
+  });
+
+  test("the hero: as-of line, tags, and what supports / threatens the value", () => {
+    // No "Updated {date}" (mak, 2026-11-05): the week alone.
+    assert.equal(doc.querySelector(".scp-ol-asof").textContent, "Through Week 8");
+    const tags = [...doc.querySelectorAll(".scp-ol-tags .scp-ol-chip")].map((c) => c.textContent);
+    assert.equal(tags[0], "High-volume starter");
+    const cells = [...doc.querySelectorAll(".scp-ol-st-cell")].map((c) => c.textContent);
+    assert.match(cells[0], /^What supports his valueHeavy target volume \(25\.9%, 10th of 97\)/);
+    assert.match(cells[1], /Three difficult matchups in his next four and uncertainty over how targets are distributed with Minshew starting\./);
+  });
+
+  test("Best fit reads the ROS board and says what it assumes", () => {
+    assert.deepEqual([...doc.querySelectorAll(".scp-ol-fit .scp-ol-chip")].map((c) => c.textContent), ["Weekly starter", "Flex play", "Weekly starter"]);
+    const note = doc.querySelector(".scp-ol-fitnote").textContent;
+    assert.match(note, /^Based on his StatChasers rest-of-season rank, WR23 \(updated October 22\)\. Assumes three receivers and a flex/);
+    // Off the board: the season rank, and the note says so.
+    const off = render(wr({ rosRank: null }));
+    assert.match(off.querySelector(".scp-ol-fitnote").textContent, /^Based on his PPR points-per-game rank this season, WR24\./);
+  });
+
+  test("the FAQ answers from the same model: buy low on the gap, the schedule's verdict, the quarterback", () => {
+    const faq = Object.fromEntries([...doc.querySelectorAll(".scp-ol-faq details")].map((d) => [d.querySelector("summary").textContent, d.textContent]));
+    assert.match(faq["Should I buy low or sell high on Michael Wilson?"], /buy-low candidate on the numbers: 19\.4 expected PPR points a game against 13\.6 scored/);
+    assert.match(faq["How difficult is Michael Wilson's remaining fantasy schedule?"], /^.*Difficult: of his next four games, zero come against a top-10 matchup/);
+    assert.match(faq["What is Michael Wilson's fantasy football upside?"], /19\.4 expected points a game/);
+    assert.doesNotMatch(faq["What is Michael Wilson's fantasy football upside?"], /top-10 matchup/);
+    assert.match(faq["Who is Michael Wilson's quarterback?"], /Gardner Minshew II is the Cardinals' listed starting quarterback now/);
+    assert.match(faq["Is Michael Wilson a good fantasy playoff option?"], /Jets .*Saints .*Raiders .*one of them is favorable/);
+  });
+
+  test("no usage row: the read falls back to the season line and the drivers, nothing invented", () => {
+    const bare = render(wr({ usage: null, rosRank: null }));
+    assert.equal(bare.querySelector("#scp-ol-opp-h"), null);
+    assert.match(bare.querySelector(".scp-ol-sec-read .scp-ox-prose").textContent, /^Through 8 games he's WR24 at 13\.6 PPR points per game/);
+    assert.doesNotMatch(bare.body.textContent, /expected PPR points/);
+    assert.ok(bare.querySelector(".scp-ol-ur"), "the triggers still render");
   });
 });

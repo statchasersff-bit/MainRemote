@@ -36,6 +36,8 @@ export interface UsageWeek {
   teamCar?: number | null;
   /** Offensive snap share that game, %. */
   snap: number | null;
+  /** The raw offensive snap count behind `snap` (files built from 2026-11-05). */
+  snapN?: number | null;
   /** Red-zone carries + targets that game. */
   rz: number | null;
 }
@@ -51,7 +53,20 @@ export interface UsagePlayer {
   games: number;
   targets: number;
   receptions: number;
+  /** Receiving yards on completions (files built from 2026-11-05). */
+  recYards?: number;
   carries: number;
+  /**
+   * Kneel-downs, which the official box score counts as rushing attempts
+   * and `carries` does not; their (negative) yards are in rushYards.
+   * Files built from 2026-11-05.
+   */
+  kneels?: number;
+  kneelYards?: number;
+  /** A passer's attempts, charted or not (files built from 2026-11-05). */
+  passAttempts?: number;
+  /** Season offensive snaps, the count behind snapShare (files built from 2026-11-05). */
+  snaps?: number;
   targetShare: number | null;
   airYardsShare: number | null;
   wopr: number | null;
@@ -105,6 +120,10 @@ export interface UsageTeam {
   targets: number;
   /** Team carries, scrambles included (absent in files built before 2026-11-02). */
   carries?: number;
+  /** Kneel-downs the box score counts as carries and `carries` leaves out (files built from 2026-11-05). */
+  kneels?: number;
+  /** The club's offensive snaps each game, by week (files built from 2026-11-05). */
+  snapsByWeek?: Record<string, number>;
   passerId: string | null;
   /** The passer's charted attempts - the pass map's denominator. */
   passerZoneAttempts?: number;
