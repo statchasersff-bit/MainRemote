@@ -90,7 +90,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.ok(cp && cpt && co, "the three blocks render");
     assert.equal(cp.nextElementSibling, cpt, "the tendencies dashboard follows the top block");
     assert.equal(cpt.nextElementSibling, co, "career and fantasy close the page");
-    for (const id of ["coaching-premium", "coaching-premium-tendencies"]) assert.equal(doc.querySelector(`#${id} .sct-cp-flag`), null, `${id}: no comparison flag, it is the design`);
+    assert.equal(panel.querySelector(".sct-cp-flag"), null, "no comparison flag anywhere: the premium designs are the page");
     assert.equal(cp.querySelector(".sct-cp-h2").textContent, "Offensive Coaching & Scheme");
     assert.equal(cp.querySelector(".sct-cp-dek").textContent, "Play-calling tendencies, offensive philosophy, formations, and coaching history.");
     assert.deepEqual([...cp.querySelectorAll(".sct-cp-h3")].map((h) => h.textContent), ["Play Calling", "Formations & Tempo"]);
@@ -99,13 +99,14 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     for (const sel of [".sct-co-head", ".sct-co-grid.is-overview", ".sct-co-tend", ".sct-co-form", ".sct-co-situational", ".sct-co-targets", ".sct-co-table", ".sct-co-panel", ".sct-co-card"]) {
       assert.equal(panel.querySelector(sel), null, `${sel} is gone`);
     }
-    // Career and fantasy remain, in order, inside .sct-co.
-    const order = [".sct-co-dossier", ".sct-co-fantasy"].map((sel) => co.querySelector(sel));
+    // The premium career block, the season table and fantasy remain, in order, inside .sct-co.
+    const order = ["#coaching-career-premium", ".sct-co-dossier", ".sct-co-fantasy"].map((sel) => co.querySelector(sel));
     order.forEach((el, i) => assert.ok(el, `component ${i} present`));
     const all = [...co.querySelectorAll("*")];
     const idx = order.map((el) => all.indexOf(el));
     assert.deepEqual([...idx].sort((a, b) => a - b), idx);
-    assert.deepEqual([...co.querySelectorAll(":scope > .sct-co-block > .sct-co-h3")].map((h) => h.textContent), ["Coaching Career & Historical Performance"]);
+    assert.deepEqual([...co.querySelectorAll(":scope > .sct-co-block > .sct-co-h3")].map((h) => h.textContent), []);
+    assert.equal(co.querySelector("#coaching-career-premium .sct-cpt-h3").textContent, "Coaching Career & Historical Performance");
     assert.doesNotMatch(panel.textContent, /Offensive Identity · Through Week/);
     assert.ok(co.querySelector(".sct-co-fantasy .sct-co-bottom"));
     assert.equal(co.querySelector(".sct-co-fantasy").hasAttribute("open"), false);
@@ -130,8 +131,8 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.equal(card.querySelector(".sct-cp-cont-label").textContent, "Coaching Continuity");
     assert.equal(card.querySelector(".sct-cp-cont-status").textContent, "High");
     assert.doesNotMatch(doc.querySelector("#coaching").textContent, /Tendency reliability/);
-    // The timeline lives in the career block.
-    assert.ok(doc.querySelectorAll(".sct-co-dossier .sct-co-path.is-career .sct-co-step").length >= 5);
+    // The timeline lives in the premium career block.
+    assert.ok(doc.querySelectorAll("#coaching-career-premium .sct-cc-stop").length >= 5);
     const pane = doc.querySelector("#coaching-premium .sct-cp-kpis");
     assert.deepEqual(
       [...pane.querySelectorAll(".sct-cp-kpi-label")].map((l) => l.textContent),
@@ -232,9 +233,10 @@ describe("career and fantasy", () => {
     const { doc } = await page("/team/buffalo-bills/coaching/");
     const block = doc.querySelector(".sct-co-dossier");
     assert.equal(block.querySelectorAll(".sct-co-dstop, .sct-co-idtile").length, 0);
-    const stops = [...block.querySelectorAll("svg.is-wide .sct-co-ch-stop")];
-    assert.equal(stops.length, coaching.teams.buf.dossier.length);
-    assert.ok(stops[stops.length - 1].classList.contains("is-current"));
+    // The chart is the premium block's: one point per season, the live season ringed in gold.
+    const svg = doc.querySelector("#coaching-career-premium .sct-cc-svg.is-wide");
+    assert.equal(svg.querySelectorAll(".sct-cc-seg").length, coaching.teams.buf.dossier.length);
+    assert.equal(svg.querySelectorAll(".sct-cc-pt.is-current").length, 1);
     const rows = [...block.querySelectorAll("table.sct-co-fptable tbody tr")];
     assert.ok(rows[rows.length - 1].classList.contains("is-current"));
     assert.equal(rows[rows.length - 1].querySelector(".sct-co-fnow").textContent, "In-season");
@@ -261,20 +263,14 @@ describe("signals and the career block", () => {
     assert.doesNotMatch(bl.textContent, /4th-down/);
   });
 
-  test("the career block: timeline, scoring chart and a season-by-season NFL table", async () => {
+  test("the career block is the season-by-season NFL table alone; heading, timeline and chart are the premium's", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const block = doc.querySelector(".sct-co-dossier");
-    assert.equal(block.querySelector(".sct-co-h3").textContent, "Coaching Career & Historical Performance");
-    assert.equal(block.querySelectorAll(".sct-co-path.is-career .sct-co-step").length, coaching.teams.ne.playCaller.careerPath.length);
-    const svg = block.querySelector("figure.sct-co-chart svg.is-wide");
-    const stops = [...svg.querySelectorAll(".sct-co-ch-stop")];
-    assert.equal(stops.length, coaching.teams.ne.dossier.length);
-    assert.ok(stops[0].querySelector(".sct-co-ch-dot.is-hollow"));
-    assert.equal(svg.querySelectorAll(".sct-co-ch-seg.is-hc").length, 4);
-    assert.ok(svg.querySelector(".sct-co-ch-avg"));
+    assert.equal(block.querySelector(".sct-co-h3"), null);
+    assert.equal(block.querySelector(".sct-co-path"), null);
+    assert.equal(block.querySelector("figure.sct-co-chart"), null);
+    assert.equal(block.previousElementSibling.id, "coaching-career-premium");
     const seasons = coaching.teams.ne.dossier.flatMap((r) => r.seasons);
-    assert.equal(svg.querySelectorAll(".sct-co-ch-pt").length, seasons.length);
-    assert.deepEqual([...svg.querySelectorAll(".sct-co-ch-code")].map((t) => t.textContent), ["NE", "DEN", "STL", "NE", "LV", "NE"]);
     // The table: every season on a stop, PPG and rank first, shares where tracked.
     assert.match(block.querySelector(".sct-co-fptitle").textContent, /^Season by Season Under McDaniels, 2005-26$/);
     const heads = [...block.querySelectorAll("table.sct-co-fptable thead th")].map((th) => th.textContent);
@@ -504,26 +500,32 @@ describe("the premium blocks draw each club's own data", () => {
   });
 });
 
-describe("premium career comparison (mak's brief, 2026-11-05)", () => {
-  test("renders under the complete original career block, before Fantasy Impact, from the same stops", async () => {
+describe("premium career block (mak's brief, 2026-11-05; the design since the same day)", () => {
+  test("leads the career section, with the season table and then Fantasy Impact under it, from the same stops", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const co = doc.querySelector("#coaching .sct-co");
-    const orig = co.querySelector(".sct-co-dossier");
+    const table = co.querySelector(".sct-co-dossier");
     const cc = co.querySelector("#coaching-career-premium.sct-cp.sct-cpt.sct-cc");
-    assert.ok(orig && cc, "both versions render");
-    assert.equal(orig.nextElementSibling, cc, "directly under the original career block");
-    assert.ok(cc.nextElementSibling.classList.contains("sct-co-fantasy"), "Fantasy Impact follows");
-    assert.equal(cc.querySelector(".sct-cp-flag").textContent, "New design · Comparison");
-    assert.equal(orig.querySelector("[class*='sct-cc']"), null, "the original carries none of the premium markup");
+    assert.ok(table && cc, "the premium block and the season table render");
+    assert.equal(cc.nextElementSibling, table, "the season table sits directly under it");
+    assert.ok(table.nextElementSibling.classList.contains("sct-co-fantasy"), "Fantasy Impact follows");
+    assert.equal(cc.querySelector(".sct-cp-flag"), null, "no comparison flag: it is the design");
     assert.equal(cc.querySelector(".sct-cpt-h3").textContent, "Coaching Career & Historical Performance");
     assert.equal(cc.querySelector(".sct-cpt-dek").textContent, "McDaniels' stops, and how the offenses he called have scored and distributed the ball.");
-    // The timeline: one row per career step, the same years, codes and roles as the original rows; the current stop is the one holding this season.
+    // The timeline: one row per career step, in the stored years; the current stop is the one holding this season.
     const rows = [...cc.querySelectorAll(".sct-cc-stop")];
-    const origRows = [...orig.querySelectorAll(".sct-co-step")];
-    assert.equal(rows.length, coaching.teams.ne.playCaller.careerPath.length);
-    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-years").textContent), origRows.map((r) => r.querySelector(".sct-co-step-years").textContent));
-    assert.deepEqual(rows.map((r) => [...r.querySelectorAll(".sct-cc-code")].map((c) => c.textContent).join(" / ")), origRows.map((r) => [...r.querySelectorAll(".sct-co-step-club")].map((c) => c.textContent).join(" / ")));
-    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-role").textContent.replace(" (current stop)", "")), origRows.map((r) => r.querySelector(".sct-co-step-role").textContent));
+    const path = coaching.teams.ne.playCaller.careerPath;
+    assert.equal(rows.length, path.length);
+    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-years").textContent), path.map((p) => p.years));
+    assert.deepEqual(rows.map((r) => [...r.querySelectorAll(".sct-cc-code")].map((c) => c.textContent).join(" / ")), ["NE", "DEN", "STL", "NE", "LV", "NE"]);
+    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-role").textContent.replace(" (current stop)", "")), [
+      "Assistant, then QB coach; OC & caller from 2006 under Belichick",
+      "HC",
+      "OC & caller",
+      "OC & caller · three Super Bowl wins",
+      "HC",
+      "OC under Vrabel; 2025 AP Assistant Coach of the Year",
+    ]);
     const current = rows.filter((r) => r.classList.contains("is-current"));
     assert.equal(current.length, 1);
     assert.equal(current[0].getAttribute("aria-current"), "step");

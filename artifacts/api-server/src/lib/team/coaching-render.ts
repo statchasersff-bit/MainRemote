@@ -1781,22 +1781,24 @@ function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string
   );
 }
 
+/**
+ * Since mak kept the premium career design (2026-11-05, "remove the older
+ * version") this block is the season-by-season table alone: the heading,
+ * dek, timeline and scoring chart live in coaching-career-premium.ts. The
+ * retired renderers stay callable (careerHeader, careerTimeline,
+ * careerChart) for a restore.
+ */
 function career(c: TeamCoaching): string {
   const stops = readStops(c);
-  const chart = stops.length >= 2 ? careerChart(c, stops) : "";
   const table = historyTable(c, stops, stopColors(stops));
-  const timeline = careerTimeline(c);
-  if (!chart && !table && !timeline) return "";
+  if (!table) return "";
+  return `<div class="sct-co-block sct-co-dossier">${table}</div>`;
+}
+
+/** The original career heading and dek (retired 2026-11-05). */
+function careerHeader(c: TeamCoaching): string {
   const possessive = /s$/.test(surnameOf(c)) ? `${surnameOf(c)}'` : `${surnameOf(c)}'s`;
-  return (
-    `<div class="sct-co-block sct-co-dossier">` +
-    h3("Coaching Career & Historical Performance") +
-    `<p class="sct-co-dsub">${e(`${possessive} stops, and how the offenses he called have scored and distributed the ball`)}</p>` +
-    timeline +
-    chart +
-    table +
-    `</div>`
-  );
+  return h3("Coaching Career & Historical Performance") + `<p class="sct-co-dsub">${e(`${possessive} stops, and how the offenses he called have scored and distributed the ball`)}</p>`;
 }
 
 /* ---------------------------------------------------------------- finishes */
@@ -2280,7 +2282,7 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
 }
 
 /** The original renderers mak retired on 2026-11-05, kept callable for a restore. */
-export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel };
+export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel, careerHeader, careerTimeline, careerChart };
 
 export function renderCoachingSection(
   coaching: TeamCoaching | null,
@@ -2301,12 +2303,10 @@ export function renderCoachingSection(
     renderCoachingPremium(coaching, team, view) +
     renderCoachingPremiumTendencies(coaching, team, view) +
     `<div class="sct-block sct-co">` +
-    // 6. Coaching Career & Historical Performance.
-    career(coaching) +
-    // The premium comparison of the career section (mak's brief,
-    // 2026-11-05): directly under the complete original, before Fantasy
-    // Impact. Not the default until mak approves.
+    // 6. Coaching Career & Historical Performance: the premium design
+    // (kept by mak, 2026-11-05) with the season-by-season table under it.
     renderCoachingCareerPremium(coaching) +
+    career(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +
     `</div>`;

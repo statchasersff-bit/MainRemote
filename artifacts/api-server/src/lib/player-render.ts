@@ -93,6 +93,7 @@ import {
   renderHero,
   type MatchupBand,
 } from "./player/header";
+import { HEADER_PREMIUM_COMPARE, renderPremiumHero } from "./player/header-premium";
 import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
@@ -2403,6 +2404,20 @@ function renderPositionPeers(
   );
 }
 
+/**
+ * The premium header comparison (mak's brief, 2026-11-05), directly under
+ * the existing header while the flag is on: the page's tabs for its preview
+ * strip, and the next fixture's matchup page for its strip's link.
+ */
+function premiumHero(data: PlayerPageData, options: PlayerRenderOptions, tab: string, sections: Section[]): string {
+  if (!HEADER_PREMIUM_COMPARE) return "";
+  const next = data.upcoming[0];
+  return renderPremiumHero(data, options, tab, {
+    nav: sections.map((s) => ({ id: s.id, label: s.label })),
+    matchupHref: next ? upcomingMatchupHref(data, options)(next.opponent) : null,
+  });
+}
+
 export function renderPlayerPage(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
@@ -2586,6 +2601,7 @@ export function renderPlayerPage(
       ` data-section="${escapeHtml(scoped.id)}">` +
       renderPlayerSearch(options) +
       renderHero(data, options, scoped.id) +
+      premiumHero(data, options, scoped.id, sections) +
       `<div class="scp-controls">` +
       renderNav(sections, data, options, scoped.id) +
       `</div>` +
@@ -2641,6 +2657,7 @@ export function renderPlayerPage(
     ` data-format="${escapeHtml(data.format)}">` +
     renderPlayerSearch(options) +
     renderHero(data, options, sections[0]?.id) +
+    premiumHero(data, options, sections[0]?.id ?? "overview", sections) +
     `<div class="scp-controls">` +
     renderNav(sections, data, options) +
     `</div>` +
