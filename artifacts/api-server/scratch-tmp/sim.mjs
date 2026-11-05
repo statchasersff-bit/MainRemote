@@ -8,7 +8,7 @@ const slug = process.argv[2] ?? "cleveland-browns";
 console.error("server up", origin); const t0=Date.now(); const res = await fetch(`${origin}/embed/team/${slug}?section=contracts`); console.error("fetched", res.status, Date.now()-t0, "ms");
 const errors = [];
 const vc = new VirtualConsole(); vc.on("jsdomError", (e) => errors.push(String(e)));
-const body = await res.text(); const dom = new JSDOM(`<!doctype html><html><body><div class="sct" data-sct-root>${body}</div></body></html>`, { runScripts: "outside-only", url: `${origin}/team/${slug}/`, pretendToBeVisual: true, virtualConsole: vc });
+const body = await res.text(); console.error("roots in fragment", (body.match(/data-sct-root/g)||[]).length); const dom = new JSDOM(`<!doctype html><html><body>${body}</body></html>`, { runScripts: "outside-only", url: `${origin}/team/${slug}/`, pretendToBeVisual: true, virtualConsole: vc });
 const w = dom.window; console.error("dom built"); w.eval(bundle); console.error("bundle run"); await new Promise(r => setTimeout(r, 80));
 const doc = w.document;
 const old = doc.querySelector(".sct-ct"), neu = doc.querySelector(".sct-ctp");
@@ -19,7 +19,7 @@ const tick = (b, id, sel) => { const p = b.querySelector(`[data-sct-ct-row][data
 const rows = [...neu.querySelectorAll("[data-sct-ct-row]")];
 const pos = rows.find(r => Number(r.dataset.preSave) > 0);
 const neg = rows.find(r => Number(r.dataset.preSave) < 0);
-const diffPP = rows.find(r => r.dataset.preSave !== r.dataset.postSave);
+const diffPP = rows.find(r => r !== neg && r !== pos && r.dataset.preSave !== r.dataset.postSave);
 console.log("js flags", old.dataset.sctCt, neu.dataset.sctCt, "timing attr", neu.dataset.timing);
 console.log("baseline old:", outs(old)); console.log("baseline new:", outs(neu));
 const step = (label) => { console.log(`${label}\n  old: ${outs(old)}\n  new: ${outs(neu)}  ${outs(old) === outs(neu) ? "MATCH" : "MISMATCH"}`); };
@@ -34,7 +34,7 @@ console.log("  still checked:", [pos, neg, diffPP].map(r => r.querySelector("[da
 for (const b of [old, neu]) click(b.querySelector('[data-sct-ct-timing="pre"]')); step("toggle Before June 1");
 console.log("  net cell sort key back:", diffPP.querySelector(".is-net").dataset.sort);
 // sort by APY while picked; selection must survive
-click(neu.querySelector('thead [data-sct-ct-sort="apy"]'));
+click(old.querySelector('thead [data-sct-ct-sort="apy"]')); console.log("old apy sort:", old.querySelector("thead th.is-apy").getAttribute("aria-sort")); click(neu.querySelector('thead [data-sct-ct-sort="apy"]'));
 console.log("sorted by apy:", neu.querySelector("thead th.is-apy").getAttribute("aria-sort"), "cap head sort:", neu.querySelector("thead th.is-cap").getAttribute("aria-sort"), "picked still:", [...neu.querySelectorAll("[data-sct-ct-row].is-picked")].length);
 step("after sort (totals unchanged)");
 // clear
@@ -49,4 +49,4 @@ click(rel.querySelector("[data-sct-ct-cut-tick]")); step("tap release row button
 // Independence: old block unaffected by new picks
 console.log("old independent:", outs(old));
 console.log("errors:", errors);
-await stop();
+await stop(); process.exit(0);
