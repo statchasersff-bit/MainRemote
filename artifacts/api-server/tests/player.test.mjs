@@ -906,7 +906,7 @@ describe("the game log tab", () => {
     const year = Number(other.textContent.trim());
     const pinned = await dom(`${other.getAttribute("href")}`);
     const gl = pinned.doc.querySelector("#game-log");
-    assert.match(gl.querySelector(".scp-h2").textContent, new RegExp(`Game Log ${year}$`), "the heading names the year");
+    assert.match(gl.querySelector(".scp-glp-title").textContent, new RegExp(`Game Log ${year}$`), "the heading names the year");
     assert.equal(gl.querySelectorAll("table.scp-glp-table").length, 1, "one log on the page");
     const ids = [...gl.querySelectorAll("tr.scp-detail")].map((r) => r.id);
     assert.ok(ids.length === 0 || ids.every((id) => id.startsWith(`gl-${year}-`)), `the rows are ${year}'s: ${ids.slice(0, 3)}`);
@@ -3097,7 +3097,7 @@ describe("player section URLs", () => {
   const PHRASES = {
     stats: / 2\d{3} Stats$/,
     injury: /^Is .+ injured\?$/,
-    "game-log": /^Game Log - /,
+    "game-log": /Game Log \d{4}$/,
     outlook: /Rest-of-Season Projection$/,
     news: /Season Timeline$/,
     bio: /Career Timeline$/,

@@ -97,6 +97,7 @@ import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { renderPremiumStats } from "./player/stats-premium";
+import { renderOutlookPremium } from "./player/outlook-premium";
 import { renderPremiumCareer } from "./player/career-premium";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
@@ -1458,8 +1459,9 @@ function renderGameLog(
   // the current season, the Upcoming Matchups (breakdown-premium.ts). The
   // old chips, summary strip, table, ladder, cards and fixtures table are
   // gone; their figures reach the new blocks through the deps below.
+  // The premium hero carries the tab's heading ("Garrett Wilson Game Log
+  // 2026", mak 2026-11-05); no separate panel heading above it.
   const body =
-    h2(`${data.player.name} Game Log ${data.logSeason}`) +
     renderGameLogPremium(data, premiumLogDeps(data, options)) +
     renderBreakdownPremium(data, breakdownPremiumDeps(data, options));
   return { body, foot: "", faq: renderGameLogFaq(data, options) };
@@ -1984,9 +1986,13 @@ export function renderPlayerPage(
   // already, so no player gains an Outlook URL from this.
   const existingOutlook = renderOutlook2026(data);
   const outlookSpec = existingOutlook.exists ? outlookTabParts(data, withFaq("outlook")) : null;
+  // The four closing sections (drivers, what could change, upcoming
+  // matchups, preseason archive) are the premium block (mak's brief,
+  // 2026-11-05; approved and the originals removed the same day), after
+  // the read and opportunity sections and before the FAQ.
   const outlookParts: TabParts | null = existingOutlook.exists
     ? {
-        body: existingOutlook.html + (outlookSpec?.body ?? ""),
+        body: existingOutlook.html + (outlookSpec?.body ?? "") + (outlookSpec ? renderOutlookPremium(data) : ""),
         foot: outlookSpec?.foot ?? "",
         faq: outlookSpec?.faq ?? "",
       }

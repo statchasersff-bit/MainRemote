@@ -255,7 +255,7 @@ body.sct-page.is-embed {
  * are the same weight and come later, still win over the base rule.
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
- * .sct-band-label, .sct-depth-pos, .sct-dcx-title, .sct-dcx-pos, .sct-dcx-more-title, .sct-ladder-title, .sct-mu-h3,
+ * .sct-band-label, .sct-depth-pos, .sct-dcx-pos, .sct-dcx-more-title, .sct-ladder-title, .sct-mu-h3,
  * .sct-news-title, .sct-outlook-name, .sct-faq-q, .sct-sbh-title, .sct-mu-story-title, .sct-rb-h2, .sct-rb-h3,
  * .sct-rb-redraft-title - every <h1>-<h4> the hub
  * prints. The list is the checklist: a heading class added below and left off
@@ -18161,27 +18161,9 @@ a.sct-ex-game:hover .sct-ex-line {
   --sct-dcx-out: #dc2626;
 }
 
-/* The stamp under the heading - season, then the refresh time the document
-   itself carries - and the one-paragraph summary of the listed starters. */
-:is(.sct, #sct-table-armour) .sct-dc-stamp {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  margin: -6px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-:is(.sct, #sct-table-armour) .sct-dc-stamp time {
-  color: var(--sc-ink);
-}
-
+/* The one-paragraph summary of the listed starters, directly under the heading. */
 :is(.sct, #sct-table-armour) .sct-dc-summary {
   margin: 8px 0 0;
-  max-width: 72ch;
   font-size: 0.95rem;
   line-height: 1.5;
   color: var(--sc-ink);
@@ -18255,23 +18237,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 12px;
 }
 
-/* The side's name, in the condensed italic a printed chart sets its sides in.
-   Armed with !important like every hub heading: Divi's panel takes font-size
-   and color from a bare <h3>. */
-.sct-dcx-title {
-  margin: 0;
-  padding: 0;
-  color: var(--sc-navy) !important;
-  font-family: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  font-size: 1.55rem !important;
-  font-style: italic;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-/* The formation chip and the unit grades share the title's row. */
+/* The formation chip and the unit grades open the card now that it has no title. */
 :is(.sct, #sct-table-armour) .sct-dcx-aside {
   display: flex;
   flex-wrap: wrap;
@@ -18298,10 +18264,6 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: -4px 0 12px;
 }
 
-.sct-dcx-title[data-view="fantasy"] { color: var(--sct-dcx-fantasy) !important; }
-.sct-dcx-title[data-view="offense"] { color: var(--sct-dcx-offense) !important; }
-.sct-dcx-title[data-view="defense"] { color: var(--sct-dcx-defense) !important; }
-.sct-dcx-title[data-view="special"] { color: var(--sct-dcx-special) !important; }
 
 /* Unit grades: "PASSING GAME  A" in a thin outlined pill, the letter in the
    tone of the rank it stands for. */
@@ -24690,7 +24652,6 @@ a.sct-srow-team:focus-visible {
  *   - .sct-ladder-title had a short bar in its left margin (see its own
  *     comment); the bar moves underneath, and keeps gold for the side that
  *     scores and navy for the side that stops.
- *   - .sct-dcx-title keeps its condensed italic face and just gains the bar.
  *   - .sct-dr-h4 only where it heads a draft class ("2025 Draft", in
  *     .sct-dr-season-head); the same class is a card sub-label elsewhere.
  *
@@ -24702,13 +24663,13 @@ a.sct-srow-team:focus-visible {
 /* `!important` on the two spacing properties: the per-tab rules above state
    `padding: 0` on these headings with a heavier selector (`.sct-us .sct-us-h3`
    and the like), and without the bar's room the rule draws through the text. */
-:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-dcx-title, .sct-ladder-title) {
+:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title) {
   position: relative;
   margin-bottom: 10px !important;
   padding-bottom: 10px !important;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-dcx-title, .sct-ladder-title)::after {
+:is(.sct, #sct-table-armour) :is(.sct-us-h3, .sct-band-label, .sct-dr-h3, .sct-dr-season-head .sct-dr-h4, .sct-ct-h3, .sct-ct-h4, .sct-ct-lg-h, .sct-mu-h3, .sct-ladder-title)::after {
   content: "";
   position: absolute;
   left: 0;
@@ -28140,5 +28101,1476 @@ a.sct-srow-team:focus-visible {
 
   :is(.sct, #sct-table-armour) .sct-cpt-head.is-seasons .sct-cpt-h3 {
     font-size: 1.3rem !important;
+  }
+}
+
+/* ------------------------------------------- coaching: compact Fantasy Impact */
+
+/*
+ * The Fantasy Impact section, compacted (mak's brief, 2026-11-05): the
+ * "What the signals mean" heading and cards became one row of chips under
+ * the section title, the finishes table is the focal point at 52px rows
+ * with two-line stop cells and 21px finish badges, the note is a footnote,
+ * and the bottom line is a strip (brand label left, a two-column grid of
+ * its four readings right). Appended at the END of the file: these rules
+ * follow and outrank the originals above by order or by specificity.
+ */
+:is(.sct, #sct-table-armour) .sct-co-fantasy-sum {
+  padding: 14px 0 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fantasy-body {
+  padding: 4px 0 0;
+}
+
+/* The signals row: one chip a signal. */
+:is(.sct, #sct-table-armour) .sct-co-freads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fread {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 40px;
+  margin: 0;
+  padding: 6px 12px 6px 10px;
+  border: 1px solid var(--sc-border);
+  border-top: 1px solid var(--sc-border);
+  border-left: 3px solid var(--sc-gold);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  box-shadow: 0 1px 2px rgba(11, 22, 52, 0.05);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fread-dir {
+  color: #1f7a4d;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fread-h {
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fread-move {
+  padding-left: 8px;
+  border-left: 1px solid var(--sc-border);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* The reading stays for a screen reader and as the chip's tooltip. */
+:is(.sct, #sct-table-armour) .sct-co-fread-b.sct-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The finishes table: the focal point, dense. */
+:is(.sct, #sct-table-armour) .sct-co-finblock {
+  margin-bottom: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-eyebrow {
+  margin: 0 0 6px;
+  padding: 0 0 7px;
+  font-size: 1.02rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-dsub {
+  margin: -2px 0 8px;
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-th {
+  padding: 8px 10px;
+  font-size: 0.64rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-td {
+  padding: 7px 10px;
+  vertical-align: middle;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fstop {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-cell-sub {
+  margin-top: 1px;
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fnow {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--sc-muted);
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fnow::before {
+  content: " · ";
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill {
+  padding: 0 7px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  line-height: 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-elite {
+  background: #dff1e6;
+  color: #1d5a37;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-strong {
+  background: #e8f3ee;
+  color: #2f6b47;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-mid {
+  background: #eef2f7;
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-low {
+  background: #f7eeee;
+  color: #8a4b4b;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes .is-fin .sct-co-fwho {
+  margin-top: 4px;
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finishes tr.is-current .sct-co-td {
+  background: #fcfaf3;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fnote {
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-more {
+  margin: 4px 0 0;
+}
+
+/* The bottom line as a strip: the brand label, then the readings two across. */
+:is(.sct, #sct-table-armour) .sct-co-bottom {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 4px 18px;
+  align-items: start;
+  padding: 8px 14px;
+  border: 1px solid #efe4c4;
+  border-left: 3px solid var(--sc-gold);
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(135deg, #fdf9ee 0%, #fbf3dc 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bl-title {
+  grid-row: 1 / 3;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) ul.sct-co-bl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 18px;
+}
+
+:is(.sct, #sct-table-armour) ul.sct-co-bl li {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px;
+  min-height: 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bl-k {
+  font-size: 0.6rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bl-k::after {
+  content: ":";
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bl-v {
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bottom .sct-co-more {
+  grid-column: 2;
+  margin: 2px 0 0;
+}
+
+@container coaching (max-width: 860px) {
+  :is(.sct, #sct-table-armour) .sct-co-freads {
+    display: flex;
+  }
+  :is(.sct, #sct-table-armour) .sct-co-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.sct, #sct-table-armour) .sct-co-bl-title {
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+  }
+  :is(.sct, #sct-table-armour) .sct-co-bottom .sct-co-more {
+    grid-column: 1;
+  }
+}
+
+@container coaching (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-co-freads {
+    display: flex;
+  }
+  :is(.sct, #sct-table-armour) .sct-co-fread {
+    flex-wrap: wrap;
+  }
+  :is(.sct, #sct-table-armour) ul.sct-co-bl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.sct, #sct-table-armour) ul.sct-co-bl li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+/* ===================================================================
+ * Team page: the premium comparison of the hero and the tab strip (mak's
+ * brief, 2026-11-05, the dark navy-and-gold design), rendered under both
+ * originals. Its own size container ("tp"); every rule is under .sct .sct-tp
+ * and nothing reaches the originals. The switcher inside it reuses the
+ * .sct-switch panel rules; only its summary pill is restyled here. */
+
+.sct .sct-tp {
+  --tp-navy-950: #07172f;
+  --tp-navy-900: #091e3d;
+  --tp-navy-850: #0b294f;
+  --tp-navy-800: #103966;
+  --tp-royal: #1155a2;
+  --tp-blue: #1763b5;
+  --tp-gold: #d4af37;
+  --tp-gold-bright: #f0c34e;
+  --tp-gold-deep: #b8901f;
+  --tp-text: #102344;
+  --tp-muted: #5f7492;
+  --tp-border: #cddaea;
+  container-type: inline-size;
+  container-name: tp;
+  margin: 28px 0 32px;
+  color: #fff;
+}
+
+.sct .sct-tp .sct-cp-flag {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fbf3d5;
+  color: #7a5c0e;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- the hero */
+.sct .sct-tp-hero {
+  position: relative;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(115deg, #081b37 0%, #103766 42%, #104f92 65%, #071d3c 100%);
+  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
+}
+
+/* The clip lives on the decor wrapper, never on the hero: an open switcher drops below it. */
+.sct .sct-tp-decor {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sct .sct-tp-bands {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(118deg, rgba(5, 18, 40, 0.55) 0 14%, transparent 14% 30%, rgba(17, 85, 162, 0.22) 30% 46%, transparent 46% 58%, rgba(23, 99, 181, 0.18) 58% 72%, transparent 72% 86%, rgba(5, 18, 40, 0.5) 86%),
+    radial-gradient(90% 120% at 100% 100%, rgba(5, 18, 40, 0.55) 0%, transparent 60%);
+}
+
+.sct .sct-tp-gold {
+  position: absolute;
+  width: 3px;
+  height: 160%;
+  background: linear-gradient(180deg, var(--tp-gold-bright) 0%, var(--tp-gold) 50%, var(--tp-gold-deep) 100%);
+  box-shadow: 12px 0 0 rgba(212, 175, 55, 0.55), 24px 0 0 rgba(212, 175, 55, 0.25), 0 0 14px rgba(240, 195, 78, 0.25);
+  transform: rotate(28deg);
+  opacity: 0.9;
+}
+
+.sct .sct-tp-gold.is-tl {
+  top: -40%;
+  left: 6px;
+}
+
+.sct .sct-tp-gold.is-br {
+  right: 44px;
+  bottom: -60%;
+}
+
+.sct .sct-tp-watermark {
+  position: absolute;
+  top: 50%;
+  right: -40px;
+  width: 360px;
+  height: 360px;
+  transform: translateY(-50%);
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.13;
+  filter: saturate(0.5) brightness(1.8);
+}
+
+.sct .sct-tp-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "badge text actions" "badge kpis kpis" "badge updated updated";
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 10px;
+  padding: 24px 28px 18px;
+}
+
+/* ---- the crest in its badge */
+.sct .sct-tp-badge {
+  grid-area: badge;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
+  border: 3px solid var(--tp-gold);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff 0%, #f4f7fc 55%, #dce7f3 100%);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 0 0 6px rgba(212, 175, 55, 0.25), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.sct .sct-tp-logo {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+}
+
+/* ---- the identity */
+.sct .sct-tp-text {
+  grid-area: text;
+  min-width: 0;
+}
+
+.sct .sct-tp-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  color: #d6e2f3;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tp-eyebrow-rule {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--tp-gold);
+}
+
+.sct .sct-tp-title {
+  margin: 0;
+  color: #fff;
+  font-size: 2.9rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.sct .sct-tp-sub {
+  margin: 6px 0 0;
+  color: #b9c9e0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* ---- the switcher, as a white pill */
+.sct .sct-tp-actions {
+  grid-area: actions;
+  align-self: start;
+  justify-self: end;
+}
+
+.sct .sct-tp .sct-switch-summary {
+  min-height: 42px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff 0%, #eef3fa 100%);
+  color: var(--tp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 #fff;
+}
+
+.sct .sct-tp .sct-switch-summary:hover,
+.sct .sct-tp .sct-switch-summary:focus-visible {
+  border-color: var(--tp-gold-bright);
+  box-shadow: 0 0 0 3px rgba(240, 195, 78, 0.28), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.sct .sct-tp .sct-switch-caret {
+  border-color: var(--tp-navy-950);
+}
+
+.sct .sct-tp .sct-switch-panel {
+  color: var(--tp-text);
+}
+
+/* ---- the four KPI cards */
+.sct .sct-tp-kpis {
+  grid-area: kpis;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-tp-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(210, 222, 238, 0.9);
+  border-bottom: 3px solid var(--tp-gold);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f5f8fd 68%, #e7eff9 100%);
+  color: var(--tp-text);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08), 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sct .sct-tp-kpi-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--tp-gold-deep);
+}
+
+.sct .sct-tp-kpi-icon svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.1;
+}
+
+.sct .sct-tp-kpi-div {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 36px;
+  background: #d2deee;
+}
+
+.sct .sct-tp-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sct .sct-tp-kpi-label {
+  color: var(--tp-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tp-kpi-value {
+  color: var(--tp-navy-950);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.sct .sct-tp-updated {
+  grid-area: updated;
+  margin: 0;
+  color: #b9c9e0;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+/* ---- the strip: dark, attached, icons, a gold open tab */
+.sct .sct-tp-nav {
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(180deg, #113966 0%, #091d3c 85%, #07172e 100%);
+  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
+  overflow: hidden;
+}
+
+.sct .sct-tp-nav-list {
+  display: flex;
+  align-items: stretch;
+  min-height: 62px;
+  margin: 0;
+  padding: 6px 8px 0;
+  list-style: none;
+}
+
+.sct .sct-tp-nav-list li {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.sct .sct-tp-nav-list li + li::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sct .sct-tp .sct-tp-tab {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 10px 12px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 12px 12px 5px 5px;
+  color: #eef3fa;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sct .sct-tp-tab-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.sct .sct-tp-tab-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sct .sct-tp .sct-tp-tab:hover,
+.sct .sct-tp .sct-tp-tab:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  outline: none;
+}
+
+.sct .sct-tp .sct-tp-tab:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--tp-gold-bright);
+}
+
+.sct .sct-tp .sct-tp-tab.is-active {
+  position: relative;
+  border-color: var(--tp-gold);
+  background: linear-gradient(180deg, #253c50 0%, #0b1b34 65%, #07152a 100%);
+  color: #f2c54f;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.12), 0 0 12px rgba(212, 175, 55, 0.16);
+}
+
+.sct .sct-tp .sct-tp-tab.is-active::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg, var(--tp-gold-deep), var(--tp-gold-bright), var(--tp-gold-deep));
+}
+
+/* ---- medium: 950-1299px */
+@container tp (max-width: 1299px) {
+  .sct .sct-tp-inner {
+    column-gap: 20px;
+    padding: 20px 22px 16px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 124px;
+    height: 124px;
+  }
+
+  .sct .sct-tp-logo {
+    width: 94px;
+    height: 94px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 2.35rem;
+  }
+
+  .sct .sct-tp-watermark {
+    width: 280px;
+    height: 280px;
+    opacity: 0.08;
+  }
+
+  .sct .sct-tp-kpi {
+    min-height: 70px;
+    padding: 10px 12px;
+  }
+
+  .sct .sct-tp-kpi-value {
+    font-size: 1.12rem;
+  }
+
+  .sct .sct-tp-nav-list {
+    min-height: 56px;
+  }
+
+  .sct .sct-tp .sct-tp-tab {
+    font-size: 0.82rem;
+    gap: 6px;
+  }
+
+  .sct .sct-tp-tab-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+/* ---- narrow: 650-949px. The selector drops under the name; the KPIs go two by two. */
+@container tp (max-width: 949px) {
+  .sct .sct-tp-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
+    row-gap: 12px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 104px;
+    height: 104px;
+    align-self: start;
+  }
+
+  .sct .sct-tp-logo {
+    width: 78px;
+    height: 78px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 2rem;
+  }
+
+  .sct .sct-tp-actions {
+    justify-self: start;
+  }
+
+  .sct .sct-tp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct .sct-tp-watermark {
+    width: 240px;
+    height: 240px;
+    right: -60px;
+  }
+
+  .sct .sct-tp-nav-list {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .sct .sct-tp-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sct .sct-tp-nav-list li {
+    flex: 0 0 auto;
+  }
+
+  .sct .sct-tp .sct-tp-tab {
+    padding: 10px 14px 12px;
+  }
+}
+
+/* ---- mobile: under 650px */
+@container tp (max-width: 649px) {
+  .sct .sct-tp-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
+    column-gap: 14px;
+    padding: 16px 16px 14px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 84px;
+    height: 84px;
+    border-width: 2.5px;
+  }
+
+  .sct .sct-tp-logo {
+    width: 62px;
+    height: 62px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 1.65rem;
+  }
+
+  .sct .sct-tp-sub {
+    font-size: 0.85rem;
+  }
+
+  .sct .sct-tp-eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .sct .sct-tp-gold.is-br {
+    display: none;
+  }
+
+  .sct .sct-tp-watermark {
+    width: 200px;
+    height: 200px;
+    opacity: 0.07;
+  }
+
+  .sct .sct-tp-kpi {
+    min-height: 62px;
+    gap: 10px;
+    padding: 9px 11px;
+  }
+
+  .sct .sct-tp-kpi-value {
+    font-size: 1.05rem;
+  }
+
+  .sct .sct-tp .sct-switch-summary {
+    max-width: 100%;
+  }
+
+  .sct .sct-tp-nav-list {
+    min-height: 52px;
+    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
+  }
+}
+
+/* ===================================================================
+ * Team page: Premium Design B of the hero and the tab strip (mak's brief,
+ * 2026-11-05, the BRIGHTER royal-blue hero with the LIGHT navigation bar),
+ * rendered under Design A. Its own size container ("tpb"); every rule is
+ * under .sct .sct-tpb and nothing reaches Design A (.sct-tp) or the
+ * originals. The switcher inside it reuses the .sct-switch panel rules;
+ * only its summary pill is restyled here.
+ *
+ * Geometry: the left logo panel and its gold divider are two clip-path
+ * polygons on the same slant, driven by --tpb-panel-w (the panel's width
+ * at the bottom) and --tpb-slant (how much farther right its top edge
+ * sits). The grid's first column is panel + slant, so the identity never
+ * meets the divider. */
+
+.sct .sct-tpb {
+  --tpb-navy-950: #071b37;
+  --tpb-navy-900: #092a53;
+  --tpb-navy-800: #0c3972;
+  --tpb-blue-700: #10539c;
+  --tpb-blue-600: #176ab5;
+  --tpb-gold: #d4af37;
+  --tpb-gold-bright: #f0c13b;
+  --tpb-gold-deep: #c39a21;
+  --tpb-text: #102344;
+  --tpb-text-secondary: #557396;
+  --tpb-card-border: #d3dfed;
+  --tpb-nav-border: #bfd1e8;
+  --tpb-panel-w: 200px;
+  --tpb-slant: 60px;
+  --tpb-radius: 20px;
+  container-type: inline-size;
+  container-name: tpb;
+  margin: 28px 0 32px;
+  color: #fff;
+}
+
+.sct .sct-tpb .sct-cp-flag {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e3eefc;
+  color: #0e4b93;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- the hero: its own rounded block, brighter through the middle */
+.sct .sct-tpb-hero {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--tpb-radius);
+  background: linear-gradient(110deg, #0a3268 0%, #125ba5 48%, #1769b3 65%, #092d60 100%);
+  box-shadow: 0 10px 28px rgba(7, 27, 55, 0.26);
+}
+
+/* The clip lives on the decor wrapper, never on the hero: an open switcher drops below it. */
+.sct .sct-tpb-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--tpb-radius);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sct .sct-tpb-bands {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(112deg, transparent 0 36%, rgba(255, 255, 255, 0.07) 36% 55%, transparent 55% 61%, rgba(9, 45, 96, 0.38) 61% 75%, transparent 75% 83%, rgba(7, 27, 55, 0.62) 83%),
+    radial-gradient(58% 95% at 54% 42%, rgba(70, 150, 230, 0.3) 0%, transparent 66%),
+    linear-gradient(0deg, rgba(7, 27, 55, 0.42) 0%, transparent 38%);
+}
+
+.sct .sct-tpb-watermark {
+  position: absolute;
+  top: 50%;
+  right: -36px;
+  width: 360px;
+  height: 360px;
+  transform: translateY(-50%);
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.12;
+  filter: saturate(0.35) brightness(1.75);
+}
+
+.sct .sct-tpb-logo-panel {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 2px, transparent 2px, transparent 22px),
+    linear-gradient(145deg, #1767a7 0%, #0e4d8d 65%, #0a346a 100%);
+  clip-path: polygon(0 0, calc(var(--tpb-panel-w) + var(--tpb-slant)) 0, var(--tpb-panel-w) 100%, 0 100%);
+}
+
+.sct .sct-tpb-divider {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--tpb-gold-bright) 0%, var(--tpb-gold) 55%, var(--tpb-gold-deep) 100%);
+  clip-path: polygon(
+    calc(var(--tpb-panel-w) + var(--tpb-slant)) 0,
+    calc(var(--tpb-panel-w) + var(--tpb-slant) + 6px) 0,
+    calc(var(--tpb-panel-w) + 6px) 100%,
+    var(--tpb-panel-w) 100%
+  );
+}
+
+.sct .sct-tpb-gold-edge {
+  position: absolute;
+  right: 54px;
+  bottom: -50%;
+  width: 2px;
+  height: 150%;
+  background: linear-gradient(180deg, transparent 0%, var(--tpb-gold) 45%, transparent 100%);
+  box-shadow: 14px 0 0 rgba(212, 175, 55, 0.3);
+  transform: rotate(24deg);
+  opacity: 0.6;
+}
+
+.sct .sct-tpb-topline {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--tpb-gold-bright) 0%, var(--tpb-gold) 38%, var(--team-primary, var(--tpb-blue-600)) 72%, rgba(255, 255, 255, 0.35) 100%);
+}
+
+.sct .sct-tpb-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: calc(var(--tpb-panel-w) + var(--tpb-slant)) minmax(0, 1fr) auto;
+  grid-template-areas: "badge identity actions" "badge stats stats" "badge updated updated";
+  align-items: center;
+  column-gap: 22px;
+  row-gap: 10px;
+  padding: 22px 26px 16px 0;
+}
+
+/* ---- the crest on a clean white circle, centered in the panel's lower (straight) width */
+.sct .sct-tpb-badge {
+  grid-area: badge;
+  align-self: center;
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tpb-panel-w);
+}
+
+.sct .sct-tpb-logo-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff 0%, #f4f7fb 70%, #e8eff7 100%);
+  box-shadow: 0 8px 22px rgba(0, 20, 50, 0.2), 0 2px 6px rgba(0, 20, 50, 0.12);
+}
+
+.sct .sct-tpb-logo {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+}
+
+/* ---- the identity */
+.sct .sct-tpb-identity {
+  grid-area: identity;
+  min-width: 0;
+}
+
+.sct .sct-tpb-eyebrow {
+  margin: 0 0 4px;
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tpb-title {
+  margin: 0;
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-shadow: 0 2px 8px rgba(0, 20, 50, 0.22);
+}
+
+.sct .sct-tpb-sub {
+  margin: 6px 0 0;
+  color: #cfe0f6;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ---- the switcher, as a clean white pill */
+.sct .sct-tpb-actions {
+  grid-area: actions;
+  align-self: start;
+  justify-self: end;
+}
+
+.sct .sct-tpb .sct-switch-summary {
+  min-height: 42px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid #d3e0ef;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff 0%, #f5f8fd 100%);
+  color: var(--tpb-text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 3px 8px rgba(6, 31, 69, 0.1);
+}
+
+.sct .sct-tpb .sct-switch-summary:hover,
+.sct .sct-tpb .sct-switch-summary:focus-visible {
+  border-color: #9fbbe0;
+  box-shadow: 0 0 0 3px rgba(23, 106, 181, 0.22), 0 3px 8px rgba(6, 31, 69, 0.1);
+}
+
+.sct .sct-tpb .sct-switch-caret {
+  border-color: var(--tpb-text);
+}
+
+.sct .sct-tpb .sct-switch-panel {
+  color: var(--tpb-text);
+}
+
+/* ---- the four KPI cards: white, gold icon, no gold bottom edge */
+.sct .sct-tpb-stats {
+  grid-area: stats;
+  display: grid;
+  /* auto, not 1fr: "2nd in AFC East" and a long coach's name take more of the row than "5-3" and "Week 11". */
+  grid-template-columns: repeat(4, minmax(min-content, auto));
+  gap: 14px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-tpb-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid #d4e0ee;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff 0%, #f7faff 65%, #ecf3fc 100%);
+  color: var(--tpb-text);
+  box-shadow: 0 3px 8px rgba(8, 36, 75, 0.1), 0 8px 18px rgba(8, 36, 75, 0.08);
+}
+
+.sct .sct-tpb-kpi-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--tpb-gold-deep);
+}
+
+.sct .sct-tpb-kpi-icon svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2;
+}
+
+.sct .sct-tpb-kpi-div {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 36px;
+  background: #d3dfed;
+}
+
+.sct .sct-tpb-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sct .sct-tpb-kpi-label {
+  color: var(--tpb-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tpb-kpi-value {
+  color: var(--tpb-navy-950);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  /* Word boundaries, hyphenated: a long coach's name wraps as "Brian / Schottenheimer", never mid-word
+     (the track starts from its min-content, so the longest word always has its room four-across). */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.sct .sct-tpb-updated {
+  grid-area: updated;
+  margin: 0;
+  color: #cfe0f6;
+  font-size: 0.76rem;
+}
+
+/* ---- the strip: a separate LIGHT block, text-first tabs, a navy open tab under a gold bar */
+.sct .sct-tpb-navigation {
+  margin-top: 12px;
+  border: 1px solid var(--tpb-nav-border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #edf4fd 100%);
+  box-shadow: 0 4px 10px rgba(10, 38, 77, 0.05), 0 10px 22px rgba(10, 38, 77, 0.07);
+  overflow: hidden;
+}
+
+.sct .sct-tpb-nav-list {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 62px;
+  margin: 0;
+  padding: 7px 8px;
+  list-style: none;
+}
+
+.sct .sct-tpb-nav-list li {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.sct .sct-tpb .sct-tpb-tab {
+  position: relative;
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 10px;
+  border-radius: 13px;
+  color: var(--tpb-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sct .sct-tpb .sct-tpb-tab:hover {
+  background: #e1ecfa;
+  color: var(--tpb-navy-900);
+}
+
+.sct .sct-tpb .sct-tpb-tab:focus-visible {
+  outline: 2px solid var(--tpb-blue-700);
+  outline-offset: -2px;
+}
+
+.sct .sct-tpb .sct-tpb-tab.is-active,
+.sct .sct-tpb .sct-tpb-tab.is-active:hover {
+  background: linear-gradient(180deg, #0e4b93 0%, #082e61 100%);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 3px 8px rgba(5, 31, 68, 0.15);
+}
+
+.sct .sct-tpb .sct-tpb-tab.is-active::after {
+  content: "";
+  position: absolute;
+  right: 13%;
+  bottom: 5px;
+  left: 13%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--tpb-gold-bright);
+}
+
+/* ---- medium: 950-1299px */
+@container tpb (max-width: 1299px) {
+  .sct .sct-tpb {
+    --tpb-panel-w: 170px;
+    --tpb-slant: 50px;
+  }
+
+  .sct .sct-tpb-inner {
+    column-gap: 18px;
+    row-gap: 8px;
+    padding: 16px 22px 12px 0;
+  }
+
+  .sct .sct-tpb-logo-circle {
+    width: 120px;
+    height: 120px;
+  }
+
+  .sct .sct-tpb-logo {
+    width: 92px;
+    height: 92px;
+  }
+
+  .sct .sct-tpb-title {
+    font-size: 2.4rem;
+  }
+
+  .sct .sct-tpb-eyebrow {
+    font-size: 0.78rem;
+  }
+
+  .sct .sct-tpb-watermark {
+    width: 280px;
+    height: 280px;
+    opacity: 0.1;
+  }
+
+  .sct .sct-tpb-stats {
+    gap: 12px;
+  }
+
+  .sct .sct-tpb-kpi {
+    min-height: 68px;
+    padding: 10px 12px;
+  }
+
+  .sct .sct-tpb-kpi-value {
+    font-size: 1.15rem;
+  }
+
+  .sct .sct-tpb-nav-list {
+    min-height: 56px;
+    padding: 6px 7px;
+  }
+
+  .sct .sct-tpb .sct-tpb-tab {
+    min-height: 44px;
+    font-size: 0.82rem;
+  }
+}
+
+/* ---- 950-1099px: four cards still across, on a slimmer panel and tighter cards */
+@container tpb (max-width: 1099px) {
+  .sct .sct-tpb {
+    --tpb-panel-w: 144px;
+    --tpb-slant: 42px;
+  }
+
+  .sct .sct-tpb-inner {
+    column-gap: 14px;
+  }
+
+  .sct .sct-tpb-logo-circle {
+    width: 110px;
+    height: 110px;
+  }
+
+  .sct .sct-tpb-logo {
+    width: 84px;
+    height: 84px;
+  }
+
+  .sct .sct-tpb-stats {
+    gap: 10px;
+  }
+
+  .sct .sct-tpb-kpi {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .sct .sct-tpb-kpi-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+
+  .sct .sct-tpb-kpi-value {
+    font-size: 1.05rem;
+  }
+}
+
+/* ---- narrow: 650-949px. The selector drops under the name; the KPIs go two by two; the strip scrolls. */
+@container tpb (max-width: 949px) {
+  .sct .sct-tpb {
+    --tpb-panel-w: 134px;
+    --tpb-slant: 40px;
+  }
+
+  .sct .sct-tpb-inner {
+    grid-template-columns: calc(var(--tpb-panel-w) + var(--tpb-slant)) minmax(0, 1fr);
+    grid-template-areas: "badge identity" "badge actions" "badge stats" "badge updated";
+    column-gap: 14px;
+    row-gap: 12px;
+    padding: 18px 18px 14px 0;
+  }
+
+  .sct .sct-tpb-badge {
+    align-self: start;
+    margin-top: 4px;
+  }
+
+  .sct .sct-tpb-logo-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sct .sct-tpb-logo {
+    width: 76px;
+    height: 76px;
+  }
+
+  .sct .sct-tpb-title {
+    font-size: 2rem;
+  }
+
+  .sct .sct-tpb-actions {
+    justify-self: start;
+  }
+
+  .sct .sct-tpb-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct .sct-tpb-kpi-value {
+    overflow-wrap: anywhere;
+  }
+
+  .sct .sct-tpb-watermark {
+    width: 240px;
+    height: 240px;
+    right: -60px;
+  }
+
+  .sct .sct-tpb-nav-list {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .sct .sct-tpb-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sct .sct-tpb-nav-list li {
+    flex: 0 0 auto;
+  }
+
+  .sct .sct-tpb .sct-tpb-tab {
+    padding: 0 14px;
+  }
+}
+
+/* ---- mobile: under 650px. The panel and divider go; the crest sits beside the name. */
+@container tpb (max-width: 649px) {
+  .sct .sct-tpb {
+    --tpb-panel-w: 0px;
+    --tpb-slant: 0px;
+    --tpb-radius: 16px;
+  }
+
+  .sct .sct-tpb-logo-panel,
+  .sct .sct-tpb-divider,
+  .sct .sct-tpb-gold-edge {
+    display: none;
+  }
+
+  .sct .sct-tpb-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "badge identity" "actions actions" "stats stats" "updated updated";
+    column-gap: 14px;
+    row-gap: 12px;
+    padding: 16px 16px 14px;
+  }
+
+  .sct .sct-tpb-badge {
+    width: auto;
+    margin-top: 0;
+    align-self: center;
+  }
+
+  .sct .sct-tpb-logo-circle {
+    width: 78px;
+    height: 78px;
+  }
+
+  .sct .sct-tpb-logo {
+    width: 58px;
+    height: 58px;
+  }
+
+  .sct .sct-tpb-eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .sct .sct-tpb-title {
+    font-size: 1.65rem;
+  }
+
+  .sct .sct-tpb-sub {
+    font-size: 0.85rem;
+  }
+
+  .sct .sct-tpb-watermark {
+    width: 200px;
+    height: 200px;
+    opacity: 0.09;
+  }
+
+  .sct .sct-tpb-stats {
+    gap: 10px;
+  }
+
+  .sct .sct-tpb-kpi {
+    min-height: 62px;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .sct .sct-tpb-kpi-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .sct .sct-tpb-kpi-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+  }
+
+  .sct .sct-tpb-kpi-value {
+    font-size: 1.02rem;
+  }
+
+  .sct .sct-tpb .sct-switch-summary {
+    max-width: 100%;
+  }
+
+  .sct .sct-tpb-nav-list {
+    min-height: 52px;
+    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
   }
 }

@@ -1941,9 +1941,12 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
       const pace = row.context.match(/^pace through (Week \d+)$/i);
       return (
         `<tr class="${row.current ? "is-current" : ""}">` +
+        // Two lines a stop (mak, 2026-11-05): club and season, then the
+        // role or timing with the in-season mark on the same line.
         `<th scope="row" class="sct-co-td is-stop"><span class="sct-co-fstop">${e(year ? `${club} · ${year}` : club)}</span>` +
-        `<span class="sct-co-cell-sub">${e(pace ? `Through ${pace[1]}` : row.context)}</span>` +
+        `<span class="sct-co-cell-sub">${e(pace ? `Through ${pace[1]}` : row.context)}` +
         (row.current ? `<span class="sct-co-fnow">In-season</span>` : "") +
+        `</span>` +
         `</th>` +
         row.cells
           .map((cell) => {
@@ -2323,11 +2326,16 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
       const row = c.tendencies.rows.find((r) => r.key === s.key);
       const v = row ? rowView(row, view) : null;
       const move = row && v ? `${row.prior} → ${v.current}` : "";
+      // One compact chip a signal (mak, 2026-11-05): the direction glyph,
+      // the heading, the two seasons' figures; the reading itself stays for
+      // a screen reader and as the chip's tooltip.
+      const dir = v?.delta == null || v.delta === 0 ? "" : v.delta > 0 ? "↑" : "↓";
       return (
-        `<li class="sct-co-fread">` +
+        `<li class="sct-co-fread" title="${e(s.body)}">` +
+        (dir ? `<span class="sct-co-fread-dir" aria-hidden="true">${dir}</span>` : "") +
         `<span class="sct-co-fread-h">${e(s.heading)}</span>` +
         (move ? `<span class="sct-co-fread-move">${e(`${priorYear} ${move.split(" → ")[0]} → ${season} ${move.split(" → ")[1]}`)}</span>` : "") +
-        `<span class="sct-co-fread-b">${e(s.body)}</span>` +
+        `<span class="sct-co-fread-b sct-visually-hidden">${e(s.body)}</span>` +
         `</li>`
       );
     })
@@ -2337,7 +2345,9 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
     `<summary class="sct-co-fantasy-sum"><span class="sct-co-h3 is-sum">Fantasy Impact</span>` +
     `<span class="sct-co-fantasy-hint">${e(`What the ${season} tendencies and ${surnameOf(c)}'s history mean for fantasy lineups`)}</span></summary>` +
     `<div class="sct-co-fantasy-body">` +
-    (reads ? `<p class="sct-co-eyebrow">What the signals mean</p><ul class="sct-co-freads">${reads}</ul>` : "") +
+    // No "What the signals mean" heading or cards (mak, 2026-11-05): one
+    // row of signal chips under the section title.
+    (reads ? `<ul class="sct-co-freads" aria-label="What the signals mean">${reads}</ul>` : "") +
     finishes(c, team) +
     rookieNote(c) +
     bottomLine(c, view) +
@@ -2347,7 +2357,7 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
 }
 
 /** The original renderers mak retired on 2026-11-05, kept callable for a restore. */
-export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel, careerHeader, careerTimeline, careerChart };
+export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel, careerHeader, careerTimeline, careerChart, career };
 
 export function renderCoachingSection(
   coaching: TeamCoaching | null,
@@ -2371,10 +2381,9 @@ export function renderCoachingSection(
     // 6. Coaching Career & Historical Performance: the premium design
     // (kept by mak, 2026-11-05) with the season-by-season table under it.
     renderCoachingCareerPremium(coaching) +
-    career(coaching) +
-    // The premium comparison of the season-by-season table (mak's brief,
-    // 2026-11-05): directly under the table, before Fantasy Impact. Not the
-    // default until mak approves.
+    // The season-by-season table IS the premium one since mak kept it
+    // (2026-11-05, "remove the old version"); career() (the original table
+    // block) is unmounted, not deleted.
     renderCoachingSeasonsPremium(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +

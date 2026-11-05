@@ -1381,7 +1381,9 @@ export function injuryTabParts(
     renderSection1(m, data) +
     (out ? plan : "") +
     renderGlance(m, data) +
-    renderMap(m) +
+    // "Where He's Been Hurt" (body map, injuries-by-body-part table and the
+    // risk profile) removed at mak's request, 2026-11-05. renderMap stays
+    // unmounted; the Durability Profile card carries its own figure.
     renderHistory(m) +
     (out ? "" : plan) +
     // Redraft Command's injury card, under everything the tab already had

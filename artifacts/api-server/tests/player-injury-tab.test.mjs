@@ -255,7 +255,7 @@ describe("rendered", () => {
       // Back by mak's refresh of 2026-10-09, with a Yes/No sentence under it.
       "Is Jacoby Brissett injured?",
       "Injury History at a Glance",
-      "Where He's Been Hurt",
+      // "Where He's Been Hurt" (body map + body-part table) removed 2026-11-05 (mak).
       "Jacoby Brissett Injury History",
       "If Brissett Misses Time",
       // Redraft Command's injury card, under everything above (mak, 2026-10-30).
@@ -274,19 +274,21 @@ describe("rendered", () => {
     assert.equal(doc.querySelector(".scp-in-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
   });
 
-  test("counts agree across tiles, table, timeline, map and FAQ", () => {
+  test("counts agree across tiles, timeline and FAQ", () => {
     const { doc } = render();
     const tiles = [...doc.querySelectorAll(".scp-in-gl")].map((t) => t.querySelector(".scp-in-glv").textContent);
     assert.deepEqual(tiles.slice(1, 3), ["11", "4"]);
-    const total = doc.querySelector(".scp-in-parts tr.is-tot");
-    assert.deepEqual([...total.querySelectorAll("td")].map((c) => c.textContent), ["4", "11"]);
+    // The body map, its body-part table and the risk profile left the tab
+    // 2026-11-05 (mak).
+    assert.equal(doc.querySelector(".scp-in-parts"), null);
+    assert.equal(doc.querySelector(".scp-in-bodymap"), null);
+    assert.equal(doc.querySelector(".scp-in-risk"), null);
     // Timeline: four injury entries plus the "Healthy" 2026 entry.
     const items = [...doc.querySelectorAll(".scp-in-tl > li")];
     assert.equal(items.length, 5);
     assert.match(items[0].textContent, /Healthy/);
     const chipGames = items.map((li) => Number((li.querySelector(".scp-in-chip.is-bad")?.textContent ?? "0").replace(/\D/g, "")));
     assert.equal(chipGames.reduce((a, b) => a + b, 0), 11);
-    assert.equal(doc.querySelectorAll(".scp-in-bodymap circle.scp-bm-hit, .scp-in-bodymap circle.scp-bm-thru").length, 4);
     // The state-aware Injury FAQ (faq-engine.ts, 2026-09-30): a healthy
     // player gets no "what injury" or "why isn't he playing".
     const faq = [...doc.querySelectorAll(".scp-in-faq details")];

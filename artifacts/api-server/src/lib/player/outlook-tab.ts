@@ -45,7 +45,8 @@ import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, teamInk } from "./header";
-import { outlookMeasures, tierOf, type DriverRow, type OutlookMeasures, type Tier } from "./outlook-tab-data";
+import { headshotImg } from "../headshot-html";
+import { outlookMeasures, tierOf, type AdvancedCell, type DriverRow, type OutlookMeasures, type Tier } from "./outlook-tab-data";
 import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
@@ -53,6 +54,38 @@ import { samePerson, type PlayerUsage, type RosRank, type StartingQb, type Usage
 import { baseWords, surname, type Trend } from "../team/usage";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
+
+/* ---- icons: the redesign's glyphs (mak's brief, 2026-11-05), inline so no
+   icon dependency; every one aria-hidden, the words beside it carry the
+   meaning. */
+const svg = (body: string): string =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+const ICON = {
+  bars: svg(`<path d="M5 20v-6M12 20V9M19 20V4"/>`),
+  check: svg(`<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>`),
+  alert: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>`),
+  calendar: svg(`<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>`),
+  triangle: svg(`<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>`),
+  target: svg(`<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`),
+  crosshair: svg(`<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>`),
+  layers: svg(`<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/>`),
+  trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3.5 3.5 0 0 0 8.5 11M16 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13v3.5"/><path d="M8.5 20h7M10 16.5h4v3.5h-4z"/>`),
+  eye: svg(`<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/>`),
+  down: svg(`<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>`),
+  up: svg(`<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>`),
+  steady: svg(`<path d="M4 12h16"/><path d="M15 8l4 4-4 4"/>`),
+  arrow: svg(`<path d="M5 12h14M13 6l6 6-6 6"/>`),
+  football: svg(`<path d="M5.2 18.8c-2.3-2.3-1.4-8.1 2.6-12.1s9.8-4.9 12.1-2.6 1.4 8.1-2.6 12.1-9.8 4.9-12.1 2.6z"/><path d="M9 15l6-6"/>`),
+};
+
+/** The glyph a status chip wears, by what it says and how it is colored. */
+function chipIcon(c: Chip): string {
+  const k = c.label.toLowerCase();
+  if (k.includes("schedule")) return ICON.calendar;
+  if (c.kind === "good") return ICON.check;
+  if (c.kind === "bad") return ICON.triangle;
+  return ICON.alert;
+}
 const MINUS = "−";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -523,7 +556,7 @@ function tags(m: Model, depth: PlayerPageData["depth"]): Chip[] {
   const role = roleTag(m, depth);
   if (role) out.push(role);
   if (m.injured) out.push({ label: m.injured.split(",")[0]!, kind: "bad" });
-  else if (m.questionable) out.push({ label: "Questionable", kind: "bad" });
+  else if (m.questionable) out.push({ label: "Questionable", kind: "mid" });
   if (m.qbChange) out.push({ label: "QB change", kind: "mid" });
   if (m.sched.verdict === "tough") out.push({ label: "Tough upcoming schedule", kind: "bad" });
   else if (m.sched.verdict === "soft") out.push({ label: "Soft upcoming schedule", kind: "good" });
@@ -551,14 +584,20 @@ function takeInner(m: Model, depth: PlayerPageData["depth"] = null): string {
   const chips = tags(m, depth);
   return (
     `<div class="scp-ol-take">` +
+    `<div class="scp-ol-head">` +
+    `<span class="scp-ol-head-icon" aria-hidden="true">${ICON.bars}</span>` +
+    `<div class="scp-ol-head-text">` +
     // "{Name} Rest-of-Season Projection" (the brief's H2 ladder, approved
     // 2026-11-05): the section carries his rest-of-season board rank and the
     // league-by-league call, which is the forward output the word promises.
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season projection`))}</h2>` +
-    (asOf ? `<p class="scp-ol-asof">${escapeHtml(asOf)}</p>` : "") +
+    // The short gold rule and the week, one line (the rule is empty, so the
+    // line's text is the week alone).
+    (asOf ? `<p class="scp-ol-asof"><span class="scp-ol-asof-rule" aria-hidden="true"></span>${escapeHtml(asOf)}</p>` : "") +
+    `</div></div>` +
     (chips.length
       ? `<div class="scp-ol-tags" role="list" aria-label="Outlook at a glance">` +
-        chips.map((c) => `<span class="scp-ol-chip is-${c.kind}" role="listitem">${escapeHtml(c.label)}</span>`).join("") +
+        chips.map((c) => `<span class="scp-ol-chip is-${c.kind}" role="listitem"><span class="scp-ol-chip-icon" aria-hidden="true">${chipIcon(c)}</span>${escapeHtml(c.label)}</span>`).join("") +
         `</div>`
       : "") +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
@@ -584,7 +623,7 @@ function renderFits(m: Model): string {
       ? `Based on his StatChasers rest-of-season rank, ${m.pos}${m.ros.rank}${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}.`
       : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.`;
   return (
-    `<div class="scp-ox-panel scp-ol-fitwrap"><h3>Best fit</h3>` +
+    `<div class="scp-ox-panel scp-ol-fitwrap"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.layers}</span>Best fit</h3>` +
     `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
     m.chips
       .map(
@@ -600,6 +639,34 @@ function renderFits(m: Model): string {
 }
 
 /* ---------------------------------------------- section 1: the written read */
+
+/**
+ * The featured panel's one-line takeaway over the read: the role tag's
+ * words and where production stands against expectation, both already
+ * judged by the model (roleTag, fpoeBand). Nothing new is claimed.
+ */
+function featHeadline(m: Model, depth: PlayerPageData["depth"]): string {
+  const role = roleTag(m, depth);
+  const band = fpoeBand(m);
+  // "High-volume starter" reads as a role word here; the other tags already do.
+  const lead = role
+    ? role.label
+        .toLowerCase()
+        .replace(/^high-volume starter$/, "high-volume role")
+        // Position words stay as they are written ("Top-8 opportunity QB").
+        .replace(/\b(qb|rb|wr|te)(\d?)\b/g, (_, p: string, d: string) => `${p.toUpperCase()}${d}`)
+    : "";
+  const prod =
+    band === "under"
+      ? "production below expectation"
+      : band === "over"
+        ? "production ahead of expectation"
+        : band === "near"
+          ? "production in line with expectation"
+          : "";
+  const parts = [lead, prod].filter(Boolean);
+  return parts.length ? `${cap(parts.join(", "))}.` : "";
+}
 
 /** The opportunity sentence: shares and ranks, then expected against actual. */
 function opportunityParagraph(m: Model): string | null {
@@ -804,7 +871,7 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
     const { supports, threatens } = supportsThreatens(m, data);
     if (supports.length || threatens.length) {
       const cell = (title: string, items: string[], kind: string, empty: string): string =>
-        `<div class="scp-ol-st-cell is-${kind}"><h3>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : empty)}</p></div>`;
+        `<div class="scp-ol-st-cell is-${kind}"><h3><span class="scp-ol-st-icon" aria-hidden="true">${kind === "up" ? ICON.bars : ICON.triangle}</span>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : empty)}</p></div>`;
       after =
         `<div class="scp-ol-st">` +
         cell(
@@ -821,13 +888,40 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
   }
 
   const rc =
-    `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
+    `<div class="scp-ox-panel is-rc"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.crosshair}</span>Redraft Command</h3>` +
     `<p>${escapeHtml(
       `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rest-of-season rank and trade value for your league's scoring, updated after every game.`,
     )}</p>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}</a>` +
+    `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}<span class="scp-ol-btn-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
     `</div>`;
   const fits = renderFits(m);
+
+  // The featured panel (mak's brief, 2026-11-05): his portrait on the club's
+  // color at the left, the one-line takeaway and the two paragraphs at the
+  // right. The preseason piece stays plain prose under its byline.
+  const headline = m.preseason ? "" : featHeadline(m, data.depth);
+  const portrait =
+    headshotImg({
+      src: data.player.headshotUrl,
+      id: data.player.id,
+      className: "scp-ol-feat-img",
+      alt: `${m.name} headshot`,
+      variants: ["f200", "f350"],
+      sizes: "(max-width: 560px) 100vw, 220px",
+      width: 350,
+      height: 254,
+      loading: "lazy",
+    }) ??
+    (data.team ? `<img class="scp-ol-feat-crest" src="${escapeHtml(data.team.logo)}" alt="" width="96" height="96" loading="lazy" decoding="async" />` : "");
+  const proseHtml = `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>`;
+  const feature = m.preseason
+    ? proseHtml
+    : `<div class="scp-ol-feat">` +
+      `<div class="scp-ol-feat-art" aria-hidden="true">${portrait}</div>` +
+      `<div class="scp-ol-feat-body">` +
+      (headline ? `<p class="scp-ol-feat-h">${escapeHtml(headline)}</p>` : "") +
+      proseHtml +
+      `</div></div>`;
 
   return (
     (m.preseason
@@ -837,7 +931,7 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
         : `<section class="scp-ox-sec scp-ol-sec-read" aria-label="${escapeHtml(`Our take after Week ${m.week}`)}">`) +
     `<div class="scp-ox-read">` +
     `<div>${m.preseason ? "" : lead}${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
-    `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>` +
+    feature +
     after +
     `</div>` +
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
@@ -852,10 +946,21 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
   const usage = m.usage;
   if (!row || !usage || !n(row.xfpPerGame) || !n(row.fpPerGame)) return "";
   const posWord = `${m.pos}s`;
-  const tile = (label: string, value: string, sub: string): string =>
-    `<div class="scp-ol-tile"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>${sub ? `<span class="scp-ol-tsub">${escapeHtml(sub)}</span>` : ""}</div>`;
+  const tileIcon = (label: string): string => {
+    const k = label.toLowerCase();
+    if (k.startsWith("ppr")) return ICON.trophy;
+    if (k.startsWith("expected")) return ICON.crosshair;
+    if (k.startsWith("points over")) return ICON.bars;
+    if (k.includes("first-read")) return ICON.eye;
+    if (k.includes("snap")) return ICON.layers;
+    if (k.includes("designed")) return ICON.football;
+    if (k.includes("dropbacks") || k.includes("weighted")) return ICON.bars;
+    return ICON.target;
+  };
+  const tile = (label: string, value: string, sub: string, lead = false): string =>
+    `<div class="scp-ol-tile${lead ? " is-lead" : ""}"><span class="scp-ol-ticon" aria-hidden="true">${tileIcon(label)}</span><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>${sub ? `<span class="scp-ol-tsub">${escapeHtml(sub)}</span>` : ""}</div>`;
   const tiles: string[] = [
-    tile("PPR points per game", one(row.fpPerGame), "actual"),
+    tile("PPR points per game", one(row.fpPerGame), "Actual", true),
     tile("Expected points per game", one(row.xfpPerGame), rankWords(uRank(m, "xfpPerGame"), m.pos) || "xFP"),
     tile("Points over expected", n(row.fpoePerGame) ? signed(row.fpoePerGame) : "-", "per game"),
   ];
@@ -883,41 +988,82 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
         ? `${m.last} is scoring ${signed(row.fpoePerGame!)} points a game over expected, efficiency that may not repeat; his ${one(row.xfpPerGame)} expected points a game is the opportunity underneath it.`
         : `${possessive(m.last)} production is running right at expected (${one(row.fpPerGame)} scored against ${one(row.xfpPerGame)} expected), so this is volume, not a hot streak.`;
 
+  // The takeaways (mak's brief, 2026-11-05): the same three readings the
+  // paragraphs carried, each a bold claim with its sentence, in one panel.
+  // Only readings the data supports are rows; nothing is added to fill three.
+  type Take = { kind: "ok" | "up" | "down" | "flat" | "warn"; claim: string; text: string };
+  const takes: Take[] = [
+    {
+      kind: band === "near" ? "ok" : band === "under" ? "warn" : "up",
+      claim:
+        band === "under"
+          ? "Production is running below expectation."
+          : band === "over"
+            ? "Production is running above expectation."
+            : "Production is running about at expectation.",
+      text: read,
+    },
+  ];
   // The last three games against the three before (usage.ts trend()).
-  const drift: string[] = [];
   const share = m.pos === "WR" || m.pos === "TE" ? "target share" : null;
   if (share) {
     const t = usage.ts;
     const recent = mean3(t);
     if (recent !== null && t.delta !== null && t.baseWeeks.length) {
-      drift.push(
-        Math.abs(t.delta) < 2
+      const steady = Math.abs(t.delta) < 2;
+      takes.push({
+        kind: steady ? "flat" : t.delta > 0 ? "up" : "down",
+        claim: steady ? "Recent target share is steady." : `Recent target share is ${t.delta > 0 ? "up" : "down"} vs. earlier in the season.`,
+        text: steady
           ? `His ${share} is steady: ${pct(recent)} over his last three games against ${pct(recent - t.delta)} in ${baseWords(t)}.`
           : `His ${share} over his last three games (${pct(recent)}) is ${t.delta > 0 ? "up" : "down"} ${one(Math.abs(t.delta))} points on ${baseWords(t)}${t.confirmed ? "" : ", though the latest game did not extend the move"}.`,
-      );
+      });
     }
   }
   const sn = usage.snap;
   const snapRecent = mean3(sn);
   if (snapRecent !== null && sn.delta !== null && Math.abs(sn.delta) >= 5 && sn.baseWeeks.length) {
-    drift.push(`His snap share is ${sn.delta > 0 ? "up" : "down"} ${Math.round(Math.abs(sn.delta))} points over the same window (${Math.round(snapRecent)}% of snaps).`);
+    const alsoWord = takes.length > 1 && takes[1]!.kind === (sn.delta > 0 ? "up" : "down") ? " also" : "";
+    takes.push({
+      kind: sn.delta > 0 ? "up" : "down",
+      claim: sn.delta > 0 ? `Snap share has${alsoWord} risen.` : `Snap share has${alsoWord} dipped.`,
+      text: `His snap share is ${sn.delta > 0 ? "up" : "down"} ${Math.round(Math.abs(sn.delta))} points over the same window (${Math.round(snapRecent)}% of snaps).`,
+    });
   }
+  const takeIcon: Record<Take["kind"], string> = { ok: ICON.check, up: ICON.up, down: ICON.down, flat: ICON.steady, warn: ICON.alert };
+  const takeaways =
+    `<div class="scp-ol-tk" role="list">` +
+    takes
+      .map(
+        (t) =>
+          `<div class="scp-ol-tk-row is-${t.kind}" role="listitem"><span class="scp-ol-tk-icon" aria-hidden="true">${takeIcon[t.kind]}</span>` +
+          `<p><strong>${escapeHtml(t.claim)}</strong> ${escapeHtml(t.text)}</p></div>`,
+      )
+      .join("") +
+    `</div>`;
 
   const teamPrefix = options.teamPathPrefix ?? "/team/";
   const q = options.linkQuery ?? "";
   const link = m.teamSlug
-    ? `<p class="scp-ol-more">${a(`${teamPrefix}${m.teamSlug}/usage/${q}`, `See the ${m.nickname ?? "team"} usage report`)}</p>`
+    ? `<p class="scp-ol-more"><a href="${escapeHtml(`${teamPrefix}${m.teamSlug}/usage/${q}`)}">${escapeHtml(`See the ${m.nickname ?? "team"} usage report`)}<span class="scp-ol-more-arrow" aria-hidden="true">${ICON.arrow}</span></a></p>`
     : "";
+  // One card: a navy title bar (the section's H2, same id and words), the
+  // explanation, the six tiles, the takeaways, the link.
   return (
-    open(
-      "scp-ol-opp-h",
-      "Opportunity vs. production",
+    `<section class="scp-ox-sec scp-ol-sec-opp" aria-labelledby="scp-ol-opp-h">` +
+    `<div class="scp-ol-bar">` +
+    `<span class="scp-ol-bar-icon" aria-hidden="true">${ICON.bars}</span>` +
+    `<h2 class="scp-ox-h2" id="scp-ol-opp-h">${escapeHtml(titleCase("Opportunity vs. production"))}</h2>` +
+    `<span class="scp-ol-bar-stripes" aria-hidden="true"></span>` +
+    `</div>` +
+    `<div class="scp-ol-opp-body">` +
+    `<p class="scp-ox-lede">${escapeHtml(
       `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. Ranks are among qualifying ${posWord} league-wide.`,
-    ) +
+    )}</p>` +
     `<dl class="scp-ol-opp">${tiles.join("")}</dl>` +
-    `<div class="scp-ox-prose"><p>${escapeHtml(read)}</p>${drift.length ? `<p>${escapeHtml(drift.join(" "))}</p>` : ""}</div>` +
+    takeaways +
     link +
-    `</section>`
+    `</div></section>`
   );
 }
 
@@ -975,36 +1121,24 @@ function driverRows(m: Model): DriverRow[] {
   return (order[m.pos] ?? []).map(by).filter((d): d is DriverRow => Boolean(d));
 }
 
-function renderDrivers(m: Model): string {
+/** The drivers section's model: its rows, the field they are ranked in, the advanced cells, and its words. */
+export interface DriversModel {
+  rows: DriverRow[];
+  season: number;
+  week: number | null;
+  minGames: number;
+  posWord: string;
+  advanced: AdvancedCell[];
+  title: string;
+  lede: string;
+}
+
+function driversModel(m: Model): DriversModel | null {
   const ms = m.measures;
   const rows = driverRows(m);
-  if (!rows.length) return "";
+  if (!rows.length) return null;
   const season = ms?.season ?? m.usage?.season ?? m.season;
   const week = ms?.week ?? m.usage?.throughWeek ?? null;
-  const posWord = `${m.pos}s`;
-  const strips = rows
-    .map((d) => {
-      const strip =
-        d.rank === null
-          ? `<p class="scp-ol-unranked">${escapeHtml(`Fewer than ${ms?.minGames ?? 6} games in ${season}, so not ranked.`)}</p>`
-          : `<div class="scp-ol-dots" role="img" aria-label="${escapeHtml(`${ordinal(d.rank)} of ${d.of} ${posWord}`)}" style="--scp-ol-cols:${d.of}">` +
-            Array.from({ length: d.of }, (_, i) => (i === d.rank! - 1 ? `<i class="is-me"></i>` : `<i></i>`)).join("") +
-            `</div>` +
-            `<div class="scp-ol-axis"><span>1st</span><span><b>${escapeHtml(`${ordinal(d.rank)} of ${d.of}`)}</b></span><span>${ordinal(d.of)}</span></div>`;
-      return (
-        `<div class="scp-ol-drv">` +
-        `<div><h3>${escapeHtml(d.label)}</h3>${d.word ? `<div class="scp-ol-dverdict is-${d.tier}">${escapeHtml(d.word)}</div>` : ""}</div>` +
-        `<div class="scp-ol-val"><strong>${escapeHtml(d.value)}</strong>${escapeHtml(d.unit)}</div>` +
-        `<div class="scp-ol-dotwrap">${strip}</div>` +
-        `</div>`
-      );
-    })
-    .join("");
-  const adv = ms?.advanced.length
-    ? `<dl class="scp-ol-adv" aria-label="${escapeHtml(`${ms.season} advanced profile`)}">` +
-      ms.advanced.map((c) => `<div><dt>${escapeHtml(c.label)}</dt><dd>${escapeHtml(c.value)}</dd></div>`).join("") +
-      `</dl>`
-    : "";
   const n1 = noun(m.pos);
   const min = ms?.minGames ?? 6;
   const games = `${word(min)} game${min === 1 ? "" : "s"}`;
@@ -1013,31 +1147,39 @@ function renderDrivers(m: Model): string {
   const mixed = rows.some((d) => d.of !== rows[0]!.of);
   const field = mixed || !ms?.field ? `the ${n1}s` : `the ${ms.field} ${n1}s`;
   const each = mixed ? ` Each row names its field.` : "";
-  return (
-    open(
-      "scp-ol-drv-h",
-      `What drives ${possessive(m.name)} fantasy value?`,
+  return {
+    rows,
+    season,
+    week,
+    minGames: min,
+    posWord: `${m.pos}s`,
+    advanced: ms?.advanced ?? [],
+    title: `What drives ${possessive(m.name)} fantasy value?`,
+    lede:
       week !== null
         ? `His ${season} rank through Week ${week} among ${field} who have played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`
         : `His ${season} rank among ${field} who played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`,
-    ) +
-    `<div class="scp-ol-drivers">${strips}</div>` +
-    adv +
-    `</section>`
-  );
+  };
 }
 
 /* ---------------------------------------------------- section 4: upside / risk */
 
-function renderTriggers(m: Model, data: PlayerPageData): string {
-  const up: string[] = [];
-  const risk: string[] = [];
-  // The claim is the line you read; the evidence sits under it as subtext
-  // (mak, 2026-10-01). Every item is a CHANGE with its evidence (the brief,
-  // 2026-11-05) - not the drivers restated, and never "could get hurt".
-  const b = (label: string, text: string): string =>
-    `<span class="scp-ol-claim">${escapeHtml(label.replace(/\.$/, ""))}</span>` +
-    `<span class="scp-ol-evid">${escapeHtml(text)}</span>`;
+/** One upside or risk: the claim you read, the evidence under it. */
+export interface TriggerItem {
+  claim: string;
+  evidence: string;
+}
+
+/**
+ * The upside and risk lists. The claim is the line you read; the evidence
+ * sits under it as subtext (mak, 2026-10-01). Every item is a CHANGE with
+ * its evidence (the brief, 2026-11-05) - not the drivers restated, and never
+ * "could get hurt". The original card and the premium both draw this.
+ */
+function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk: TriggerItem[] } {
+  const up: TriggerItem[] = [];
+  const risk: TriggerItem[] = [];
+  const b = (label: string, text: string): TriggerItem => ({ claim: label.replace(/\.$/, ""), evidence: text });
   const row = u(m);
   const usage = m.usage;
   const depth = data.depth;
@@ -1117,43 +1259,46 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
   if (risk.length < 3 && (m.pos === "WR" || m.pos === "TE") && k("dropPct") !== null && k("dropPct")! >= 6) {
     risk.push(b("Drops.", `A ${k("dropPct")!.toFixed(1)}% drop rate in ${m.measures?.season ?? m.season - 1}.`));
   }
+  return { up: up.slice(0, 3), risk: risk.slice(0, 3) };
+}
 
-  if (up.length === 0 && risk.length === 0) return "";
-  const card = (title: string, items: string[], kind: string): string =>
-    items.length
-      ? `<div class="scp-ol-card is-${kind}"><h3>${title}</h3><ul>${items.slice(0, 3).map((i) => `<li>${i}</li>`).join("")}</ul></div>`
-      : "";
-  return (
-    // No lede (mak, 2026-10-02).
-    open("scp-ol-ur-h", "What could change his value", "") +
-    `<div class="scp-ol-ur">${card("Upside", up, "up")}${card("Risk", risk, "risk")}</div>` +
-    `<div class="scp-ol-cta"><span>${escapeHtml(`Weighing ${m.last} against another ${noun(m.pos)} on your roster?`)}</span>` +
-    `<a href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-risk">Compare them in Redraft Command</a></div>` +
-    `</section>`
-  );
+/** The comparison line under the upside and risk cards. */
+function ctaText(m: Model): string {
+  return `Weighing ${m.last} against another ${noun(m.pos)} on your roster?`;
 }
 
 /* ------------------------------------------------------- section 5: schedule */
 
 const BAND_WORD = { soft: "Favorable", mid: "Neutral", tough: "Tough" } as const;
 
-function renderSchedule(m: Model): string {
+/** One of the next games as the schedule prints it. */
+export interface ScheduleCard {
+  g: UpcomingGame;
+  band: "soft" | "mid" | "tough";
+  kind: "good" | "mid" | "bad";
+  word: string;
+  /** "at KC". */
+  opp: string;
+  /** "31st vs WRs". */
+  rankText: string;
+}
+
+export interface ScheduleModel {
+  cards: ScheduleCard[];
+  verdict: string;
+  playoffs: string;
+  title: string;
+  lede: string;
+}
+
+function scheduleModel(m: Model): ScheduleModel | null {
   const s = m.sched;
-  if (!s.next.length) return "";
-  const cards = s.next
-    .map((g) => {
-      const band = matchupBand(g.matchup!.rank);
-      const kind = band === "soft" ? "good" : band === "tough" ? "bad" : "mid";
-      return (
-        `<li class="scp-ol-sgame is-${kind}">` +
-        `<span class="scp-ol-swk">Wk ${g.week}</span>` +
-        `<span class="scp-ol-sopp">${escapeHtml(`${g.homeAway === "away" ? "at" : "vs"} ${g.opponentCode}`)}</span>` +
-        `<span class="scp-ol-srank">${escapeHtml(`${ordinal(g.matchup!.rank)} vs ${m.pos}s`)}</span>` +
-        `<span class="scp-ol-chip is-${kind}">${BAND_WORD[band]}</span>` +
-        `</li>`
-      );
-    })
-    .join("");
+  if (!s.next.length) return null;
+  const cards: ScheduleCard[] = s.next.map((g) => {
+    const band = matchupBand(g.matchup!.rank);
+    const kind = band === "soft" ? "good" : band === "tough" ? "bad" : "mid";
+    return { g, band, kind, word: BAND_WORD[band], opp: `${g.homeAway === "away" ? "at" : "vs"} ${g.opponentCode}`, rankText: `${ordinal(g.matchup!.rank)} vs ${m.pos}s` };
+  });
   const verdict =
     s.verdict === "tough"
       ? `A difficult stretch: ${word(s.tough.length)} of the next ${word(s.next.length)} are bottom-10 matchups for ${m.pos}s${s.soft.length ? `, with ${word(s.soft.length)} top-10 matchup to break it up` : ""}.`
@@ -1171,33 +1316,70 @@ function renderSchedule(m: Model): string {
         return soft && !tough ? `${word(soft)} favorable, none tough` : tough && !soft ? `${word(tough)} tough, none favorable` : soft || tough ? `${word(soft)} favorable, ${word(tough)} tough` : "none favorable or tough";
       })()}.`
     : "";
-  return (
-    open("scp-ol-sch-h", `${m.name} upcoming matchups`, `His next ${word(s.next.length)} opponents, ranked by ${m.scoring} points allowed to ${m.pos}s this season: 1st allows the most, 32nd the fewest.`) +
-    `<ul class="scp-ol-schedule" aria-label="Next opponents">${cards}</ul>` +
-    `<div class="scp-ox-prose"><p>${escapeHtml(verdict)}</p>${playoffs ? `<p>${escapeHtml(playoffs)}</p>` : ""}</div>` +
-    `</section>`
-  );
+  return {
+    cards,
+    verdict,
+    playoffs,
+    title: `${m.name} upcoming matchups`,
+    lede: `His next ${word(s.next.length)} opponents, ranked by ${m.scoring} points allowed to ${m.pos}s this season: 1st allows the most, 32nd the fewest.`,
+  };
 }
 
 /* ----------------------------------------------------- the preseason archive */
 
 /** The June piece, collapsed, at the foot of the tab (the brief: history last). */
-function renderArchive(m: Model, data: PlayerPageData): string {
-  if (m.preseason) return "";
+export interface ArchiveModel {
+  summary: string;
+  stamp: string;
+  paras: string[];
+}
+
+function archiveModel(m: Model, data: PlayerPageData): ArchiveModel | null {
+  if (m.preseason) return null;
   const record = data.fantasyOutlook2026;
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const paras = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  if (!paras.length || !published) return "";
-  return (
-    `<section class="scp-ox-sec scp-ol-sec-prev" aria-label="Preseason outlook">` +
-    `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
-    `<div class="scp-ox-prose">` +
-    `<p class="scp-ol-stamp">${escapeHtml(
-      `Published ${published.text}. Kept for reference; the outlook above replaces it. Point totals in this piece are as published in June; the figures above are ${m.scoring} points per game.`,
-    )}</p>` +
-    paras.map((p) => `<p>${escapeHtml(p)}</p>`).join("") +
-    `</div></details></section>`
-  );
+  if (!paras.length || !published) return null;
+  return {
+    summary: `Read our preseason outlook (${published.month})`,
+    stamp: `Published ${published.text}. Kept for reference; the outlook above replaces it. Point totals in this piece are as published in June; the figures above are ${m.scoring} points per game.`,
+    paras,
+  };
+}
+
+/**
+ * The four sections' models for the premium comparison (mak's brief,
+ * 2026-11-05): drawn from the same model() the tab renders, so the two
+ * cannot disagree. Null when the tab itself would not render.
+ */
+export interface OutlookPremiumModel {
+  name: string;
+  last: string;
+  pos: string;
+  posNoun: string;
+  rc: string;
+  drivers: DriversModel | null;
+  triggers: { up: TriggerItem[]; risk: TriggerItem[] };
+  cta: string;
+  schedule: ScheduleModel | null;
+  archive: ArchiveModel | null;
+}
+
+export function outlookPremiumModel(data: PlayerPageData): OutlookPremiumModel | null {
+  const m = model(data);
+  if (!m) return null;
+  return {
+    name: m.name,
+    last: m.last,
+    pos: m.pos,
+    posNoun: noun(m.pos),
+    rc: m.rc,
+    drivers: driversModel(m),
+    triggers: triggerItems(m, data),
+    cta: ctaText(m),
+    schedule: scheduleModel(m),
+    archive: archiveModel(m, data),
+  };
 }
 
 /* ------------------------------------------------------------- section 6: FAQ */
@@ -1407,14 +1589,15 @@ export function outlookTabParts(
   // alone only when there is no read to carry it, or in the preseason.
   const lead = m.preseason ? "" : takeInner(m, data.depth);
   const read = renderRead(m, data, lead);
+  // Sections 3 to 6 (drivers, what could change, upcoming matchups, the
+  // preseason archive) are the premium block (outlook-premium.ts) since
+  // 2026-11-05, when mak approved it and had the originals removed; the
+  // page appends it right after this body (player-render.ts), fed by
+  // outlookPremiumModel() below from this same model.
   const main =
     (read && lead ? "" : renderTake(m, data.depth)) +
     read +
-    renderOpportunity(m, options) +
-    renderDrivers(m) +
-    renderTriggers(m, data) +
-    renderSchedule(m) +
-    renderArchive(m, data);
+    renderOpportunity(m, options);
   const faq = renderFaq(m, data, options);
   if (!main && !faq) return null;
   // No methodology footer (mak, 2026-10-02).
