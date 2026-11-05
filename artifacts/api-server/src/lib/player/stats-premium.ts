@@ -44,29 +44,28 @@ const svg = (body: string, size = 16): string =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 
 const ICON = {
-  games: svg(`<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/>`),
-  catch: svg(`<path d="M4 15c3-6 8-9 16-9"/><path d="M14 4l6 2-2 6"/>`),
-  yards: svg(`<path d="M4 18L20 6"/><path d="M4 10v8h8"/>`),
-  td: svg(`<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>`),
-  rate: svg(`<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>`),
-  bars: svg(`<path d="M5 20V10M12 20V4M19 20v-7"/>`),
+  // The reference's KPI set: calendar, target, layers, football, trophy.
+  calendar: svg(`<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M7 14h2M11 14h2M15 14h2M7 17.5h2M11 17.5h2"/>`),
+  target: svg(`<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`),
+  layers: svg(`<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/>`),
+  football: svg(`<path d="M5.2 18.8c-2.3-2.3-1.4-8.1 2.6-12.1s9.8-4.9 12.1-2.6 1.4 8.1-2.6 12.1-9.8 4.9-12.1 2.6z"/><path d="M9 15l6-6"/><path d="M10.2 11.3l1.2 1.2M12.4 9.1l1.2 1.2M11.3 13.5l1.2 1.2"/>`),
+  trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3.5 3.5 0 0 0 8.5 11M16 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13v3.5"/><path d="M8.5 20h7M10 16.5h4v3.5h-4z"/>`),
+  intercept: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>`),
+  bars: svg(`<path d="M6 20v-7M12 20V4M18 20v-10"/>`),
   bolt: svg(`<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>`),
-  target: svg(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>`),
-  layers: svg(`<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17l9 5 9-5"/>`),
-  style: svg(`<path d="M4 20c4-1 6-3 8-7s4-6 8-9"/><path d="M14 4h6v6"/>`),
+  route: svg(`<path d="M5 20V7a3 3 0 0 1 3-3h9"/><path d="M13 1l4 3-4 3"/><path d="M5 20h4"/>`),
   info: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>`, 14),
-  profile: svg(`<path d="M3 17l5-6 4 4 4-7 5 5"/>`),
-  impact: svg(`<path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V17h5v-1.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z"/><path d="M10 20h4"/>`),
 };
 
-/** The icon a KPI card wears, by its label. */
+/** The icon a KPI card wears, by its label (the reference's five, by kind). */
 function cellIcon(label: string): string {
   const k = label.toLowerCase();
-  if (k === "games") return ICON.games;
-  if (k.includes("td")) return ICON.td;
-  if (k.includes("%") || k.includes("catch") || k.includes("comp") || k.includes("/")) return ICON.rate;
-  if (k.includes("yard") || k.includes("yds")) return ICON.yards;
-  if (k.includes("rec") || k.includes("receiving") || k.includes("int")) return ICON.catch;
+  if (k === "games") return ICON.calendar;
+  if (k.includes("td")) return ICON.football;
+  if (k === "int" || k.includes("interception")) return ICON.intercept;
+  if (k.includes("%") || k.includes("catch") || k.includes("comp") || k.includes("/")) return ICON.trophy;
+  if (k.includes("yard") || k.includes("yds")) return ICON.layers;
+  if (k.includes("rec") || k.includes("receiving") || k.includes("target")) return ICON.target;
   return ICON.bars;
 }
 
@@ -108,16 +107,20 @@ function kpiCards(m: StatsPremiumModel): string {
     cells
       .map((c) => {
         const main = c.main
-          .map((s, i) => (i ? `<i class="scp-stp-kpi-dot"> · </i>` : "") + figure(s) + (s.unit ? ` <small>${escapeHtml(s.unit)}</small>` : ""))
+          // Each figure keeps its unit on its own line ("203 YDS" never splits).
+          .map((s, i) => (i ? `<i class="scp-stp-kpi-dot"> · </i>` : "") + `<span class="scp-stp-kpi-fig">${figure(s)}${s.unit ? ` <small>${escapeHtml(s.unit)}</small>` : ""}</span>`)
           .join("");
         const sub = c.sub.map((s) => `${figure(s)} ${escapeHtml(s.label)}`).join(" · ");
         return (
           `<li class="scp-stp-kpi">` +
           `<span class="scp-stp-kpi-icon" aria-hidden="true">${cellIcon(c.label)}</span>` +
           `<span class="scp-stp-kpi-label">${escapeHtml(c.label)}</span>` +
-          `<span class="scp-stp-kpi-value">${main}</span>` +
+          // Value and support on one wrapping line: a wide figure ("25 REC ·
+          // 203 YDS", "65.9%" with "135/205") drops its support under it
+          // rather than past the card's edge.
+          `<span class="scp-stp-kpi-line"><span class="scp-stp-kpi-value">${main}</span>` +
           (sub ? `<span class="scp-stp-kpi-sub">${sub}</span>` : "") +
-          `</li>`
+          `</span></li>`
         );
       })
       .join("") +
@@ -181,17 +184,19 @@ function metricCards(m: StatsPremiumModel): string {
       const ctx = of(3);
       const left = eff.length
         ? `<div class="scp-stp-card is-eff">` +
-          `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${ICON.bolt}</span>Efficiency</h4>` +
+          `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${ICON.target}</span>Efficiency</h4>` +
           `<ul class="scp-stp-rows">${eff.map((x) => metricRow(x, "eff")).join("")}</ul>` +
           `</div>`
         : "";
       const right =
         use.length || style.length || ctx.length
           ? `<div class="scp-stp-card is-use">` +
-            `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${ICON.target}</span>${use.length ? "Usage" : ""}${use.length && style.length ? " &amp; " : ""}${style.length ? "Style" : ""}${!use.length && !style.length ? "Context" : ""}</h4>` +
+            // "Usage" heads the panel; Style is its own labelled subsection below,
+            // so the title never reads "Usage & Style" (the reference).
+            `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${use.length ? ICON.bars : style.length ? ICON.route : ICON.info}</span>${use.length ? "Usage" : style.length ? "Style" : "Context"}</h4>` +
             (use.length ? `<ul class="scp-stp-rows">${use.map((x) => metricRow(x, "use")).join("")}</ul>` : "") +
             (style.length
-              ? `<h5 class="scp-stp-subhead"><span class="scp-stp-card-icon">${ICON.style}</span>Style</h5>` +
+              ? (use.length ? `<h5 class="scp-stp-subhead"><span class="scp-stp-card-icon">${ICON.route}</span>Style</h5>` : "") +
                 `<ul class="scp-stp-rows">${style.map((x) => metricRow(x, "style")).join("")}</ul>`
               : "") +
             (ctx.length
@@ -227,7 +232,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
   );
 
   const advHead = m.advanced
-    ? bar("scp-st-adv-h", m.pos === "QB" ? ICON.bolt : m.pos === "RB" ? ICON.yards : ICON.catch, `${m.name} ${titleCase(cats)} Stats`, m.advanced.summary)
+    ? bar("scp-st-adv-h", ICON.bars, `${m.name} ${titleCase(cats)} Stats`, m.advanced.summary)
     : "";
   const note = m.advanced
     ? `<p class="scp-stp-note"><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`Ranks: ${m.advanced.notes.join(" · ")}.`)}</p>`
@@ -254,7 +259,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
         .map(
           (p, i) =>
             `<div class="scp-stp-analysis-part">` +
-            `<h4 class="scp-stp-analysis-h"><span class="scp-stp-card-icon">${i === 0 && m.analysis.length > 1 ? ICON.profile : ICON.impact}</span>${escapeHtml(p.title)}</h4>` +
+            `<h4 class="scp-stp-analysis-h"><span class="scp-stp-card-icon">${i === 0 && m.analysis.length > 1 ? ICON.target : ICON.bars}</span>${escapeHtml(p.title)}</h4>` +
             `<p>${p.html}</p>` +
             (p.note ? `<p class="scp-stp-analysis-note">${escapeHtml(p.note)}</p>` : "") +
             `</div>`,

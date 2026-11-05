@@ -23099,7 +23099,7 @@ a.sct-srow-team:focus-visible {
  * under .sct-cp- and touches nothing of the original. */
 
 :is(.sct, #sct-table-armour) .sct-cp {
-  /* Above the original since mak's note: the dashed rule closes the block. */
+  /* The page's top block since mak kept the design (2026-11-05). */
   --cp-navy: #0b3a7a;
   --cp-navy-deep: #0d1b38;
   --cp-gold: #d4af37;
@@ -23117,9 +23117,8 @@ a.sct-srow-team:focus-visible {
   --cp-radius: 14px;
   container-type: inline-size;
   container-name: premium;
-  margin: 0 0 36px;
-  padding: 0 0 22px;
-  border-bottom: 2px dashed var(--cp-line);
+  margin: 0 0 26px;
+  padding: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-flag {
@@ -25516,5 +25515,1202 @@ a.sct-srow-team:focus-visible {
 
   :is(.sct, #sct-table-armour) .sct-us-prm-zone-row {
     grid-template-columns: minmax(0, 1fr) 44%;
+  }
+}
+
+/* ===================================================================
+ * Coaching: the premium comparison of Formations & Personnel,
+ * Situational Play Calling and Target & Backfield Tendencies (mak's
+ * brief, 2026-11-05), rendered under the complete original section.
+ * The block carries .sct-cp for its tokens and the `premium` container;
+ * every rule here is under .sct-cpt- and touches nothing of the original.
+ * Tiers by container width: wide (1100+), medium (800-1099), narrow
+ * (560-799), mobile (<560). */
+
+:is(.sct, #sct-table-armour) .sct-cp.sct-cpt {
+  --cpt-navy-950: #081a34;
+  --cpt-navy-900: #0d2343;
+  --cpt-navy-800: #153a65;
+  --cpt-gold: #d4af37;
+  --cpt-gold-strong: #b8860b;
+  --cpt-gold-light: #fff5dc;
+  --cpt-text: #102344;
+  --cpt-text-2: #506686;
+  --cpt-muted: #7285a0;
+  --cpt-surface-blue: #edf3fa;
+  --cpt-border: #cbd9e9;
+  --cpt-border-soft: #dee7f1;
+  --cpt-blue-bar: #5c89b8;
+  --cpt-blue-deep: #0b3a7a;
+  --cpt-card: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #edf4fb 100%);
+  --cpt-head: linear-gradient(110deg, #081a34 0%, #0c2c53 55%, #153e70 100%);
+  --cpt-shadow-panel: 0 3px 8px rgba(13, 35, 67, 0.05), 0 12px 24px rgba(13, 35, 67, 0.07);
+  --cpt-shadow-card: 0 2px 4px rgba(13, 35, 67, 0.035), 0 6px 14px rgba(13, 35, 67, 0.045);
+  margin: 0 0 30px;
+  padding: 0;
+  color: var(--cpt-text);
+}
+
+/* ---- sections and their navy headers */
+:is(.sct, #sct-table-armour) .sct-cpt-section {
+  margin: 0 0 18px;
+  border: 1px solid var(--cpt-border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--cpt-shadow-panel);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+  margin: 0;
+  padding: 10px 22px;
+  overflow: hidden;
+  background: var(--cpt-head);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-main {
+  min-height: 86px;
+  padding: 14px 24px;
+}
+
+/* Low-contrast diagonal geometry on the right half only, plus two slim gold accents at the edge. */
+:is(.sct, #sct-table-armour) .sct-cpt-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.035) 0 14px, transparent 14px 38px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: 26px;
+  width: 3px;
+  height: 160%;
+  background: var(--cpt-gold);
+  box-shadow: 14px 0 0 rgba(212, 175, 55, 0.55);
+  transform: rotate(22deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head-icon {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1.5px var(--cpt-gold);
+  color: var(--cpt-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-main .sct-cpt-head-icon {
+  width: 46px;
+  height: 46px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-main .sct-cpt-head-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head-rule {
+  position: relative;
+  flex: 0 0 3px;
+  width: 3px;
+  height: 44px;
+  border-radius: 2px;
+  background: var(--cpt-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head-text {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-h3 {
+  margin: 0;
+  padding: 0;
+  color: #fff !important;
+  font-size: 1.5rem !important;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-main .sct-cpt-h3 {
+  font-size: 1.75rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-dek {
+  margin: 5px 0 0;
+  color: #d9e1ee;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-art {
+  position: absolute;
+  top: 50%;
+  right: 56px;
+  width: 250px;
+  height: 86px;
+  transform: translateY(-50%);
+  color: #fff;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-body {
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafd 100%);
+}
+
+/* ---- formation split: one integrated row */
+:is(.sct, #sct-table-armour) .sct-cpt-split {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 60px;
+  margin: 0 0 14px;
+  padding: 10px 18px;
+  border: 1px solid var(--cpt-border);
+  border-radius: 13px;
+  background: var(--cpt-card);
+  box-shadow: var(--cpt-shadow-card), inset 0 1px 0 #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-stat {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-stat b {
+  --sc-font: var(--cp-display);
+  color: var(--cpt-navy-950);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-stat span {
+  color: var(--cpt-text-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-stat.is-under b {
+  color: var(--cpt-blue-bar);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-sep {
+  flex: 0 0 2px;
+  width: 2px;
+  height: 30px;
+  border-radius: 1px;
+  background: var(--cpt-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-bar {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 15px;
+  border-radius: 999px;
+  overflow: visible;
+  background: #d6e1ee;
+  box-shadow: inset 0 1px 2px rgba(13, 35, 67, 0.12);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #164a8a 0%, var(--cpt-blue-deep) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-avg {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--cpt-gold);
+  box-shadow: 0 0 0 1px #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-key {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--cpt-text-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-key b {
+  color: var(--cpt-navy-950);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-tick {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--cpt-gold);
+}
+
+/* ---- formation KPI cards: icon left, text beside */
+:is(.sct, #sct-table-armour) .sct-cpt-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 104px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--cpt-border);
+  border-radius: 13px;
+  background: var(--cpt-card);
+  box-shadow: var(--cpt-shadow-card), inset 0 1px 0 #fff;
+  transition: box-shadow 0.15s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi:hover,
+:is(.sct, #sct-table-armour) .sct-cpt-card:hover {
+  box-shadow: var(--cpt-shadow-panel), inset 0 1px 0 #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-icon,
+:is(.sct, #sct-table-armour) .sct-cpt-card-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f0dfa6;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fff8e1 0%, var(--cpt-gold-light) 100%);
+  color: var(--cpt-gold-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-label,
+:is(.sct, #sct-table-armour) .sct-cpt-metric-label {
+  color: var(--cpt-text-2);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-value {
+  --sc-font: var(--cp-display);
+  color: var(--cpt-navy-950);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-line {
+  color: var(--cpt-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- methodology notes */
+:is(.sct, #sct-table-armour) .sct-cpt-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: var(--cpt-text-2);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card .sct-cpt-note {
+  margin-top: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-note-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--cpt-blue-bar);
+}
+
+/* ---- two-up analytical cards */
+:is(.sct, #sct-table-armour) .sct-cpt-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--cpt-border);
+  border-radius: 13px;
+  background: var(--cpt-card);
+  box-shadow: var(--cpt-shadow-card), inset 0 1px 0 #fff;
+  transition: box-shadow 0.15s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--cpt-border-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card-icon {
+  width: 42px;
+  height: 42px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card-text {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-h4 {
+  margin: 0;
+  padding: 0;
+  color: var(--cpt-navy-950) !important;
+  font-size: 1.2rem !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-card-sub {
+  margin: 4px 0 0;
+  color: var(--cpt-text-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* ---- metric rows: label | bar | value + badge | sample */
+:is(.sct, #sct-table-armour) .sct-cpt-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 30%) minmax(0, 1fr) auto minmax(64px, auto);
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--cpt-border-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row-label {
+  min-width: 0;
+  color: var(--cpt-navy-950);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-track {
+  position: relative;
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: #e3eaf3;
+  box-shadow: inset 0 1px 2px rgba(13, 35, 67, 0.1);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #6f98c4 0%, var(--cpt-blue-bar) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-fill.is-gold {
+  background: linear-gradient(180deg, #e3c257 0%, var(--cpt-gold) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-mark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--cpt-navy-950);
+  box-shadow: 0 0 0 1px #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row-val {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row-val b {
+  color: var(--cpt-navy-950);
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row-avg {
+  color: var(--cpt-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-row-n {
+  color: var(--cpt-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-badge.is-base {
+  background: var(--cpt-surface-blue);
+  color: var(--cpt-text-2);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-badge.is-zero {
+  background: #eef1f5;
+  color: var(--cpt-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-badge.is-gold {
+  background: var(--cpt-gold-light);
+  color: #8a6508;
+  box-shadow: inset 0 0 0 1px #efd98f;
+}
+
+/* ---- takeaway inset */
+:is(.sct, #sct-table-armour) .sct-cpt-take {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: auto 0 0;
+  padding: 12px 14px;
+  border: 1px solid #efe1b4;
+  border-left: 3px solid var(--cpt-gold);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff8e4 0%, #fffdf6 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--cpt-gold-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-text {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-kicker {
+  display: block;
+  margin: 0 0 3px;
+  color: #8a6508;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-h {
+  margin: 0;
+  color: var(--cpt-navy-950);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-b {
+  margin: 4px 0 0;
+  color: var(--cpt-text-2);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+/* ---- red zone + fourth down metric cards */
+:is(.sct, #sct-table-armour) .sct-cpt-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--cpt-border-soft);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f6f9fd 0%, var(--cpt-surface-blue) 100%);
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric-value {
+  --sc-font: var(--cp-display);
+  color: var(--cpt-navy-950);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric.is-fourth .sct-cpt-metric-value {
+  font-size: 1.9rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric-change {
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--cpt-border-soft);
+  color: var(--cpt-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cpt-text-2);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-rank {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--cpt-gold-light);
+  color: #8a6508;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px #efd98f;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-caution {
+  color: var(--cpt-text);
+  font-style: italic;
+}
+
+/* ---- backfield chart: a true 0-100% plot */
+:is(.sct, #sct-table-armour) .sct-cpt-chart {
+  margin: 8px 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-chart-plot {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  height: 170px;
+  margin: 22px 0 0;
+  border-bottom: 2px solid var(--cpt-border);
+  background: repeating-linear-gradient(180deg, transparent 0 calc(25% - 1px), var(--cpt-border-soft) calc(25% - 1px) 25%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col-bar {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  max-width: 70%;
+  transform: translateX(-50%);
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #8fb3d9 0%, var(--cpt-blue-bar) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col.is-current .sct-cpt-col-bar {
+  background: linear-gradient(180deg, #e6c75e 0%, var(--cpt-gold) 70%, #c39a22 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col-val {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-bottom: 6px;
+  color: var(--cpt-navy-950);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-chart-labels {
+  display: flex;
+  justify-content: space-around;
+  margin: 8px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col-label {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--cpt-text-2);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col-label.is-current {
+  color: #8a6508;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi,
+  :is(.sct, #sct-table-armour) .sct-cpt-card {
+    transition: none;
+  }
+}
+
+/* ---- medium: 800-1099px. Two columns hold; the art and accents thin out. */
+@container premium (max-width: 1099px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-art {
+    right: 44px;
+    width: 190px;
+    opacity: 0.14;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-row {
+    grid-template-columns: minmax(84px, 24%) minmax(0, 1fr) auto minmax(56px, auto);
+    gap: 10px;
+  }
+}
+
+/* ---- narrow: 560-799px (the live column is ~720px). Cards stack; KPIs stay three across but tighten. */
+@container premium (max-width: 799px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-art {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head.is-main {
+    min-height: 78px;
+    padding: 12px 18px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head {
+    padding-right: 18px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head.is-main .sct-cpt-h3 {
+    font-size: 1.5rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-body {
+    padding: 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpis {
+    gap: 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi {
+    gap: 10px;
+    min-height: 92px;
+    padding: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi-value {
+    font-size: 1.8rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi-line {
+    font-size: 0.74rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-split {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-split-bar {
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-split-key {
+    order: 2;
+    margin-left: auto;
+  }
+}
+
+/* ---- mobile: under 560px. Everything stacks; the chart keeps its labels. */
+@container premium (max-width: 559px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-kpi {
+    min-height: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head::after {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head.is-main .sct-cpt-h3 {
+    font-size: 1.3rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-h3 {
+    font-size: 1.2rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head-rule {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-split-stat b {
+    font-size: 1.6rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-split-key {
+    flex-basis: 100%;
+    margin-left: 0;
+    order: 4;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label val" "bar bar" "n n";
+    row-gap: 4px;
+    min-height: 0;
+    padding: 8px 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-row-label {
+    grid-area: label;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-track {
+    grid-area: bar;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-row-val {
+    grid-area: val;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-row-n {
+    grid-area: n;
+    text-align: left;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-chart-plot {
+    height: 150px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-col-bar {
+    width: 28px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-col-label {
+    font-size: 0.68rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-h4 {
+    font-size: 1.08rem !important;
+  }
+}
+
+/* ===================================================================
+ * Coaching: one color system for the two premium blocks (mak,
+ * 2026-11-05, "make the color design consistent"). Colors and surfaces
+ * only, never layout, so the container tiers above keep their shape.
+ * The vocabulary:
+ *   navy gradient + right-half stripes + two gold edge accents = every
+ *     navy bar (page header, section bars, dashboard headers);
+ *   navy-deep = the primary series (shotgun, this season's table dot);
+ *   blue = the secondary series (under center, history bars, plain rows);
+ *   gold = highlight only (the gold row, the lean, the live season, rank
+ *     pills, takeaway accents, icons);
+ *   navy tick with a white halo = the NFL average, wherever it is drawn;
+ *   cream + gold left rule = every takeaway; pale-gold square + gold icon
+ *     = every card icon; one card surface, border and shadow. */
+
+:is(.sct, #sct-table-armour) .sct-cp {
+  --cp-navy-deep: #0d1b38;
+  --cp-blue: #5c89b8;
+  --cp-ink: #102344;
+  --cp-muted: #6b7a90;
+  --cp-line: #d3dce8;
+  --cp-line-soft: #e3e9f1;
+  --cp-gold-strong: #b8860b;
+  --cp-gold-text: #7a5c0e;
+  --cp-gold-ring: #efd98f;
+  --cp-gold-edge: #f0dfa6;
+  --cp-grad: linear-gradient(110deg, #081a34 0%, #0c2c53 55%, #153e70 100%);
+  --cp-stripe: repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.035) 0 14px, transparent 14px 38px);
+  --cp-card: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #edf4fb 100%);
+  --cp-cream: linear-gradient(135deg, #fff8e4 0%, #fffdf6 100%);
+  --cp-shadow: 0 2px 4px rgba(13, 35, 67, 0.035), 0 8px 18px rgba(13, 35, 67, 0.06);
+  --cp-radius: 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp.sct-cpt {
+  --cpt-navy-950: var(--cp-navy-deep);
+  --cpt-gold: var(--cp-gold);
+  --cpt-gold-strong: var(--cp-gold-strong);
+  --cpt-text: var(--cp-ink);
+  --cpt-muted: var(--cp-muted);
+  --cpt-border: var(--cp-line);
+  --cpt-border-soft: var(--cp-line-soft);
+  --cpt-blue-bar: var(--cp-blue);
+  --cpt-blue-deep: var(--cp-navy-deep);
+  --cpt-card: var(--cp-card);
+  --cpt-head: var(--cp-grad);
+  --cpt-shadow-panel: var(--cp-shadow);
+  --cpt-shadow-card: var(--cp-shadow);
+}
+
+/* ---- navy bars: the same stripes on the right half and the same gold edge accents */
+:is(.sct, #sct-table-armour) .sct-cp-head::before,
+:is(.sct, #sct-table-armour) .sct-cp-h3::before,
+:is(.sct, #sct-table-armour) .sct-cp-banner::before {
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-head::after,
+:is(.sct, #sct-table-armour) .sct-cp-h3::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: 26px;
+  width: 3px;
+  height: 160%;
+  background: var(--cp-gold);
+  box-shadow: 14px 0 0 rgba(212, 175, 55, 0.55);
+  transform: rotate(22deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-h3-icon,
+:is(.sct, #sct-table-armour) .sct-cp-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1.5px var(--cp-gold);
+  color: var(--cp-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-dek,
+:is(.sct, #sct-table-armour) .sct-cpt-dek {
+  color: #d9e1ee;
+}
+
+/* ---- one card surface */
+:is(.sct, #sct-table-armour) .sct-cp-section,
+:is(.sct, #sct-table-armour) .sct-cpt-section {
+  border: 1px solid var(--cp-line-soft);
+  border-radius: var(--cp-radius);
+  background: #fff;
+  box-shadow: var(--cp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-kpi,
+:is(.sct, #sct-table-armour) .sct-cp-form,
+:is(.sct, #sct-table-armour) .sct-cpt-kpi,
+:is(.sct, #sct-table-armour) .sct-cpt-card,
+:is(.sct, #sct-table-armour) .sct-cpt-split {
+  border: 1px solid var(--cp-line);
+  border-radius: 13px;
+  background: var(--cp-card);
+  box-shadow: var(--cp-shadow), inset 0 1px 0 #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-metric {
+  border: 1px solid var(--cp-line-soft);
+  background: linear-gradient(180deg, #f6f9fd 0%, #edf3fa 100%);
+}
+
+/* ---- one icon treatment on cards: gold glyph in a pale-gold square */
+:is(.sct, #sct-table-armour) .sct-cp-kpi-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cp-gold-edge);
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fff8e1 0%, #fff5dc 100%);
+  color: var(--cp-gold-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-kpi-icon,
+:is(.sct, #sct-table-armour) .sct-cpt-card-icon {
+  border-color: var(--cp-gold-edge);
+  color: var(--cp-gold-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-kpi-rule {
+  background: var(--cp-gold);
+}
+
+/* ---- one takeaway: cream, gold left rule, small gold kicker */
+:is(.sct, #sct-table-armour) .sct-cp-take,
+:is(.sct, #sct-table-armour) .sct-cpt-take {
+  border: 1px solid #efe1b4;
+  border-left: 3px solid var(--cp-gold);
+  border-radius: 10px;
+  background: var(--cp-cream);
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-take-kicker {
+  color: var(--cp-gold-text);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-take-icon,
+:is(.sct, #sct-table-armour) .sct-cpt-take-icon {
+  color: var(--cp-gold-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-take-kicker {
+  color: var(--cp-gold-text);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-take-h,
+:is(.sct, #sct-table-armour) .sct-cpt-take-h {
+  color: var(--cp-navy-deep);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-stat {
+  border: 1px solid var(--cp-gold-ring);
+  background: #fff;
+}
+
+/* ---- one gold pill */
+:is(.sct, #sct-table-armour) .sct-cp-kpi-pill,
+:is(.sct, #sct-table-armour) .sct-cp-rank,
+:is(.sct, #sct-table-armour) .sct-cpt-rank,
+:is(.sct, #sct-table-armour) .sct-cpt-badge.is-gold {
+  background: var(--cp-gold-soft);
+  color: var(--cp-gold-text);
+  box-shadow: inset 0 0 0 1px var(--cp-gold-ring);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-badge.is-base {
+  background: #edf3fa;
+  color: #506686;
+}
+
+/* ---- one meaning per series color */
+:is(.sct, #sct-table-armour) .sct-cp-donut-sg {
+  stroke: var(--cp-navy-deep);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-donut-under {
+  stroke: var(--cp-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-sw.is-sg {
+  background: var(--cp-navy-deep);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-sw.is-under {
+  background: var(--cp-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-sw.is-avg {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--cp-navy-deep);
+  box-shadow: 0 0 0 1px #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-fill {
+  background: linear-gradient(180deg, #16305e 0%, var(--cp-navy-deep) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-bar {
+  background: var(--cp-blue);
+  box-shadow: inset 0 1px 2px rgba(13, 35, 67, 0.18);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-split-stat.is-under b {
+  color: var(--cp-blue);
+}
+
+/* The NFL average: a navy tick with a white halo, on the split bar, the target rows and the table dumbbells alike. */
+:is(.sct, #sct-table-armour) .sct-cpt-split-avg,
+:is(.sct, #sct-table-armour) .sct-cpt-split-tick,
+:is(.sct, #sct-table-armour) .sct-cpt-mark,
+:is(.sct, #sct-table-armour) .sct-cp-db-avg {
+  background: var(--cp-navy-deep);
+  box-shadow: 0 0 0 1px #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-db-avg {
+  width: 3px;
+  border-radius: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-fill {
+  background: linear-gradient(180deg, #7aa1cb 0%, var(--cp-blue) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-col-bar {
+  background: linear-gradient(180deg, #8fb3d9 0%, var(--cp-blue) 100%);
+}
+
+/* ---- one footnote */
+:is(.sct, #sct-table-armour) .sct-cp-foot,
+:is(.sct, #sct-table-armour) .sct-cpt-note {
+  color: var(--cp-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-foot-icon,
+:is(.sct, #sct-table-armour) .sct-cpt-note-icon {
+  color: var(--cp-blue);
+}
+
+/* The medium tier hides the kicker's word (its icon stands in); keep that under the restyle above. */
+@container premium (max-width: 1099px) {
+  :is(.sct, #sct-table-armour) .sct-cp-take-kicker {
+    font-size: 0;
+  }
+}
+
+@container premium (max-width: 559px) {
+  :is(.sct, #sct-table-armour) .sct-cp-head::after,
+  :is(.sct, #sct-table-armour) .sct-cp-h3::after {
+    display: none;
   }
 }

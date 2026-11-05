@@ -39,6 +39,7 @@ import type { UsageView } from "./usage";
 import { signed } from "./usage-copy";
 import { coachingFaq } from "./coaching-faq";
 import { renderCoachingPremium } from "./coaching-premium";
+import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
@@ -2251,6 +2252,9 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
   );
 }
 
+/** The original renderers mak retired on 2026-11-05, kept callable for a restore. */
+export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel };
+
 export function renderCoachingSection(
   coaching: TeamCoaching | null,
   team: NflTeam,
@@ -2258,42 +2262,18 @@ export function renderCoachingSection(
 ): CoachingSection {
   if (!coaching) return { html: "", faqHtml: "", faq: [] };
   const html =
-    // The premium comparison version (mak, 2026-11-05) sits ABOVE the
-    // original since mak's later note; the original is untouched below it.
+    // mak kept the premium designs (2026-11-05, "keep the new designs"): the
+    // top block (header, coordinator profile, four KPIs, the Play Calling and
+    // Formations & Tempo tables) and the tendencies dashboard (Formations &
+    // Personnel, Situational Play Calling, Target & Backfield Tendencies) ARE
+    // the page now. The original header, identity block, tendency tables and
+    // sections 3-5 are unmounted, not deleted: header(), coachCard(),
+    // identityPane(), tendencies(), formations(), scoreState(),
+    // redZoneFourth(), distribution(), backfield() and personnel() still
+    // render from the same models if mak wants one back.
     renderCoachingPremium(coaching, team, view) +
+    renderCoachingPremiumTendencies(coaching, team, view) +
     `<div class="sct-block sct-co">` +
-    header() +
-    // 1 + 2. One block (mak's critique, 2026-11-05): the identity header,
-    // the card beside the four tiles, then the tendency tables with their
-    // callouts.
-    // No "{season} Offensive Identity · Through Week N" title above the
-    // block (mak, 2026-11-05): the page heading and dek introduce it.
-    `<div class="sct-co-block sct-co-identity-block">` +
-    `<div class="sct-co-grid is-overview">` +
-    coachCard(coaching, team) +
-    identityPane(coaching, team, view) +
-    `</div>` +
-    tendencies(coaching, team, view) +
-    `</div>` +
-    // 3. Formations & Personnel.
-    formations(coaching, team, view) +
-    // 4. Situational Play Calling.
-    `<div class="sct-co-block sct-co-situational">` +
-    h3("Situational Play Calling") +
-    `<div class="sct-co-panels">` +
-    scoreState(coaching) +
-    redZoneFourth(coaching, team, view) +
-    `</div>` +
-    `</div>` +
-    // 5. Target & Backfield Tendencies.
-    `<div class="sct-co-block sct-co-targets">` +
-    h3("Target & Backfield Tendencies") +
-    `<div class="sct-co-panels">` +
-    distribution(coaching) +
-    backfield(coaching, view) +
-    `</div>` +
-    personnel(coaching) +
-    `</div>` +
     // 6. Coaching Career & Historical Performance.
     career(coaching) +
     // 7. Fantasy Impact, collapsed.

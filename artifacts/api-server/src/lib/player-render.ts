@@ -106,6 +106,7 @@ import { renderBioTab } from "./player/bio-tab";
 import { renderNewsTabParts } from "./player/news-tab";
 import { renderGamelogStory } from "./player/gamelog-sections";
 import { renderGameLogPremium, type PremiumLogDeps } from "./player/gamelog-premium";
+import { renderBreakdownPremium, type BreakdownPremiumDeps } from "./player/breakdown-premium";
 import { renderFaqSection, selectFaq, tabHref } from "./player/faq-engine";
 import { gameLogPool, statsPool } from "./player/faq-pools";
 import { titleCase } from "./player/title-case";
@@ -1597,6 +1598,36 @@ function renderGameLogFaq(
  * like a week the player was inactive. The line under it sends a reader to
  * the Outlook tab, because a matchup rank is only as actionable as his role.
  */
+/** The matchup page for a fixture against `opponent`; null when the pair is unknown. */
+function upcomingMatchupHref(
+  data: PlayerPageData,
+  options: PlayerRenderOptions,
+): (opponent: NflTeam | null) => string | null {
+  const matchupPrefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
+  return (opponent) => {
+    const pair = canonicalizeMatchupPair(data.team, opponent);
+    return pair ? `${matchupPrefix}${pair.slug}/${options.linkQuery ?? ""}` : null;
+  };
+}
+
+/**
+ * The tab's own helpers, handed to the premium breakdown + matchups block
+ * so it links, dates and words every fixture exactly as the table above it.
+ */
+function breakdownPremiumDeps(data: PlayerPageData, options: PlayerRenderOptions): BreakdownPremiumDeps {
+  const href = upcomingMatchupHref(data, options);
+  const fpaHref = `${options.fpaPath ?? DEFAULT_FPA_PATH}${options.linkQuery ?? ""}`;
+  return {
+    matchupHref: (game) => href(game.opponent),
+    kickoff: kickoffLine,
+    ordinal,
+    bandRead: BAND_READ,
+    allowedLink: siteLink(fpaHref, "fantasy points allowed", "scp-caption-link"),
+    outlookHref: sectionHref(data, options, "outlook"),
+    teamName: data.team?.fullName ?? "this team",
+  };
+}
+
 function renderUpcoming(
   data: PlayerPageData,
   options: PlayerRenderOptions,
@@ -1605,11 +1636,7 @@ function renderUpcoming(
   if (games.length === 0) return "";
 
   const position = data.player.position;
-  const matchupPrefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
-  const matchupHref = (opponent: NflTeam | null): string | null => {
-    const pair = canonicalizeMatchupPair(data.team, opponent);
-    return pair ? `${matchupPrefix}${pair.slug}/${options.linkQuery ?? ""}` : null;
-  };
+  const matchupHref = upcomingMatchupHref(data, options);
 
   const rows = games
     .map((game, index) => {
@@ -1730,6 +1757,9 @@ function renderGameLog(
     renderWeeklyLog(data, options) +
     renderGamelogStory(data, { archive: !current }) +
     (current ? renderUpcoming(data, options) : "") +
+    // The premium Game-by-Game Breakdown + Upcoming Matchups, directly
+    // under the existing pair for comparison (mak's brief, 2026-11-05).
+    renderBreakdownPremium(data, breakdownPremiumDeps(data, options)) +
     // The premium redesign, under the whole existing tab for comparison
     // (mak's brief, 2026-11-05). Both stay until mak approves one.
     renderGameLogPremium(data, premiumLogDeps(data, options));
