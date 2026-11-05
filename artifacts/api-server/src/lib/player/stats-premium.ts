@@ -74,11 +74,11 @@ function cellIcon(label: string): string {
 
 /* ------------------------------------------------------------------ atoms */
 
-function bar(id: string, icon: string, title: string, sub: string, ctl = ""): string {
+function bar(id: string, icon: string, title: string, sub: string, ctl = "", hero = false): string {
   return (
-    `<header class="scp-stp-bar">` +
+    `<header class="scp-stp-bar${hero ? " is-hero" : ""}">` +
     `<span class="scp-stp-bar-rule" aria-hidden="true"></span>` +
-    `<span class="scp-stp-bar-icon" aria-hidden="true">${icon}</span>` +
+    (hero ? "" : `<span class="scp-stp-bar-icon" aria-hidden="true">${icon}</span>`) +
     `<div class="scp-stp-bar-text">` +
     `<h3 class="scp-stp-bar-title" id="${escapeHtml(id)}">${escapeHtml(title)}</h3>` +
     (sub ? `<p class="scp-stp-bar-sub">${sub}</p>` : "") +
@@ -213,6 +213,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
   if (!m) return "";
   const cats = m.advanced?.cats ?? (m.pos === "QB" ? "passing" : m.pos === "RB" ? "rushing" : "receiving");
 
+  // The hero band (the reference): title over the lede, no icon tile.
   const seasonHead = bar(
     "scp-stp-season-h",
     ICON.bars,
@@ -222,6 +223,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
       `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
       `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
       `</div>`,
+    true,
   );
 
   const advHead = m.advanced
