@@ -5,9 +5,9 @@
  * gold situation icons, and the three takeaways as analytical cards, the
  * lead back's workload featured in gold.
  *
- * Rendered DIRECTLY UNDER the current Situational Usage card, which is
- * untouched, so the two can be compared on one page. Every number is the
- * current card's own: the same backs (the first three with weighted
+ * Since 2026-11-05 ("remove the older version") this IS the Situational
+ * Usage section: the original card (backfield() in usage-render.ts) is
+ * unmounted. Every number is that card's own: the same backs (the first three with weighted
  * opportunities), situationShare() for each cell, rbSituationTotals for the
  * samples, backfieldTakeaways() for the cards; nothing is computed twice.
  * Styles are `.sct-us-sit-*` in team.css, on the `.sct-us-prm` tokens.
@@ -150,8 +150,8 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
     .join("");
 
   return (
-    `<section class="sct-us-prm sct-us-sit" data-sct-premium="situational" aria-labelledby="usage-prm-situational">` +
-    `<p class="sct-cp-flag">New design · Comparison</p>` +
+    // id="situational": the section's anchor, carried over from the retired card.
+    `<section class="sct-us-prm sct-us-sit" id="situational" data-sct-premium="situational" aria-labelledby="usage-prm-situational">` +
     `<header class="sct-us-prm-head is-sit">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${ICON_BARS}</span>` +
     `<span class="sct-us-sit-rule" aria-hidden="true"></span>` +

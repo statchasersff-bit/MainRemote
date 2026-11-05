@@ -1,8 +1,8 @@
 /**
- * The premium "WRs Like Garrett Wilson" comparison rail (mak's brief and
- * mockup attached_assets/comparison 1.png, 2026-11-05). Rendered UNDER the
- * existing peers rail wherever that rail is mounted - every tab carries it
- * above its FAQ - never in place of it: both stay until mak approves one.
+ * The premium "WRs Like Garrett Wilson" rail (mak's brief and mockup
+ * attached_assets/comparison 1.png, 2026-11-05; THE rail since the same
+ * day, when mak approved it and the original cards were removed). Every
+ * tab carries it above its FAQ, and the Overview too.
  *
  * Same neighborhood, same order, same ranks, same figure: data.peers is the
  * slice of the position's table the existing rail draws (player-data.ts
@@ -192,10 +192,12 @@ export function renderPeersPremium(
     .map((row) => renderCard(row, pos, unit, row.slug ? `${prefix}${row.slug}/${query}` : null))
     .join("");
 
+  // `scp-peers` first: the page's rail class, which the tab layout rules
+  // and the suite's ordering checks key on; `scp-pr-wrap` carries the
+  // block's own tokens and size container.
   return (
-    `<div class="scp-pr-wrap">` +
-    `<p class="scp-pr-flag"><b>New design</b><span>comparison</span></p>` +
-    `<section class="scp-pr" aria-labelledby="${id}">` +
+    `<section class="scp-peers scp-pr-wrap" aria-labelledby="${id}">` +
+    `<div class="scp-pr">` +
     `<header class="scp-pr-hero">` +
     `<span class="scp-pr-ico">${ICON.users}</span>` +
     `<span class="scp-pr-rule" aria-hidden="true"></span>` +
@@ -208,6 +210,6 @@ export function renderPeersPremium(
     `</header>` +
     `<div class="scp-pr-body">` +
     `<div class="scp-pr-strip" data-scp-peers data-count="${peers.rows.length}">${cards}</div>` +
-    `</div></section></div>`
+    `</div></div></section>`
   );
 }

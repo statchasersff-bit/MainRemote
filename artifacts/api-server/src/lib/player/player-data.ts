@@ -137,6 +137,7 @@ import type {
   DynastyData,
   FantasyOutlook2026,
   GameLogEntry,
+  GameLogStats,
   Player,
   PlayerBenchmarks,
   PlayerBio,
@@ -255,6 +256,30 @@ export interface PositionPeer {
   value: number;
   /** True for the player whose page this is. */
   isCurrent: boolean;
+  /** Games with a touch this season - the denominator of `perGame`. */
+  games: number;
+  /**
+   * Per-game box-score rates over those games, for the premium rail's
+   * three supporting metrics (mak's brief, 2026-11-05). Observed, from the
+   * same game logs the rank is built on - never a projection.
+   */
+  perGame: PeerPerGame;
+}
+
+export interface PeerPerGame {
+  passAtt: number;
+  passYds: number;
+  passTd: number;
+  carries: number;
+  rushYds: number;
+  rushTd: number;
+  targets: number;
+  rec: number;
+  recYds: number;
+  recTd: number;
+  fgm: number;
+  fga: number;
+  xpm: number;
 }
 
 export interface PositionPeers {
@@ -743,10 +768,14 @@ function positionalFinish(
 
   const ppgs: { id: string; value: number }[] = [];
   const totals: { id: string; value: number }[] = [];
+  // The played games per player, kept only when the rail is wanted: its
+  // cards print per-game rates from the same games the rank counts.
+  const playedById = new Map<string, GameLogEntry[]>();
   for (const [id, entries] of Object.entries(logs)) {
     if (playerById.get(id)?.position !== position) continue;
     const played = entries.filter((e) => hasParticipation(e.stats, position));
     if (played.length === 0) continue;
+    if (wantPeers) playedById.set(id, played);
     const total = played.reduce(
       (sum, e) => sum + fpts(e, format),
       0,
@@ -776,6 +805,30 @@ function positionalFinish(
     // near - the last name in the table, or one whose neighbors all lack a
     // page - gets no rail rather than a rail of himself.
     if (around.length > 0) {
+      const rates = (id: string): { games: number; perGame: PeerPerGame } => {
+        const played = playedById.get(id) ?? [];
+        const n = played.length;
+        const per = (key: keyof GameLogStats): number =>
+          n === 0 ? 0 : played.reduce((sum, e) => sum + (Number(e.stats[key]) || 0), 0) / n;
+        return {
+          games: n,
+          perGame: {
+            passAtt: per("pass_att"),
+            passYds: per("pass_yd"),
+            passTd: per("pass_td"),
+            carries: per("rush_att"),
+            rushYds: per("rush_yd"),
+            rushTd: per("rush_td"),
+            targets: per("rec_tgt"),
+            rec: per("rec"),
+            recYds: per("rec_yd"),
+            recTd: per("rec_td"),
+            fgm: per("fgm"),
+            fga: per("fga"),
+            xpm: per("xpm"),
+          },
+        };
+      };
       const rows: PositionPeer[] = around.map((row) => {
         const peer = playerById.get(row.id);
         return {
@@ -787,6 +840,7 @@ function positionalFinish(
           rank: row.rank,
           value: row.value,
           isCurrent: false,
+          ...rates(row.id),
         };
       });
       rows.push({
@@ -798,6 +852,7 @@ function positionalFinish(
         rank: index + 1,
         value: table[index]?.value ?? 0,
         isCurrent: true,
+        ...rates(player.id),
       });
       rows.sort((a, b) => a.rank - b.rank);
       peers = { position, season, format, measure, rows };

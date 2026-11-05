@@ -1,13 +1,27 @@
 /**
- * The player profile header: photo well, identity, navy strip, action strip.
+ * The player profile header: the premium design mak approved on 2026-11-05
+ * (built against attached_assets/player header reference.png, first as a
+ * comparison under the 2026-09-29 header, then made the header when mak said
+ * "remove the older design"). A team-colored portrait panel cut on a gold
+ * diagonal, the identity in a navy hero (position, club, status, the name as
+ * the page's heading, number and position, one bio line), the fantasy trio
+ * in a gold-edged panel, four season stat cards, a gold Redraft Command
+ * button with the start/sit question beside it, and the next matchup as a
+ * compact strip above the page's own tab bar.
  *
  * Its own module, like lib/matchup/scoreboard-hero.ts, for the same reason:
- * it is one self-contained component with a spec of its own (mak's, of
- * 2026-09-29), and keeping it off player-render.ts's import graph lets
- * tests/player-header.test.mjs render it against hand-built states without
- * loading the database the rest of the profile reads.
+ * it is one self-contained component, and keeping it off player-render.ts's
+ * import graph lets tests/player-header.test.mjs render it against
+ * hand-built states without loading the database the rest of the profile
+ * reads.
  *
- * Its styles are in player.css under "header", with their own tokens and face.
+ * Its styles are in player.css under "header", with their own tokens and
+ * face. The hooks other code keys on kept their names across the redesign:
+ * [data-scp-pwell] and .scp-pwell-img (client/player.ts marks a failed photo;
+ * the WordPress plugin keeps WP Rocket's lazy-load off that class),
+ * .scp-phead-h1 / .scp-phead-name / .scp-phead-kind (the client swaps the
+ * section word on a tab click), data-scp-cta on both buttons (the client
+ * re-tags them per tab).
  */
 
 import { escapeHtml } from "../render";
@@ -384,7 +398,9 @@ export const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /**
  * A plain person, for a player with no usable headshot: head and shoulders,
- * the same proportions as Sleeper's cutouts, so the well does not change shape.
+ * the same proportions as Sleeper's cutouts, so the panel does not change
+ * shape. Under the photo in the markup; client/player.ts marks the panel
+ * `is-missing` when the image fails, and a player with no source ships so.
  */
 const SILHOUETTE =
   `<svg class="scp-pwell-sil" viewBox="0 0 200 145" aria-hidden="true" focusable="false">` +
@@ -392,33 +408,53 @@ const SILHOUETTE =
   `<path d="M22 145c4-40 38-58 78-58s74 18 78 58z" />` +
   `</svg>`;
 
+/* ------------------------------------------------------------------ icons */
+
+const svg = (body: string): string =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+
+const ICON = {
+  columns: svg(`<path d="M5 20v-7M12 20V5M19 20v-10"/>`),
+  football: svg(`<path d="M5.2 18.8c-2.3-2.3-1.4-8.1 2.6-12.1s9.8-4.9 12.1-2.6 1.4 8.1-2.6 12.1-9.8 4.9-12.1 2.6z"/><path d="M9 15l6-6"/><path d="M10.2 11.3l1.2 1.2M12.4 9.1l1.2 1.2M11.3 13.5l1.2 1.2"/>`),
+  trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3.5 3.5 0 0 0 8.5 11M16 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13v3.5"/><path d="M8.5 20h7M10 16.5h4v3.5h-4z"/>`),
+  target: svg(`<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`),
+  intercept: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>`),
+  trend: svg(`<path d="M3 17l5-6 4 4 5-7 4 3"/><path d="M17 8h4v4"/>`),
+  arrow: svg(`<path d="M5 12h14M13 6l6 6-6 6"/>`),
+  question: svg(`<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/>`),
+  compass: svg(`<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>`),
+};
+
+/** The full word for the position tag's abbreviation. */
+const POSITION_WORD: Record<string, string> = {
+  QB: "Quarterback",
+  RB: "Running Back",
+  WR: "Wide Receiver",
+  TE: "Tight End",
+  K: "Kicker",
+  DEF: "Defense",
+};
+
+/* ------------------------------------------------------------- portrait */
+
 /**
- * The photo well: the club's color, cut on the diagonal, with the jersey
+ * The portrait panel: the club's color, cut on the diagonal, with the jersey
  * number drawn in outline behind the headshot.
  *
  * Sleeper's thumbnails are transparent cutouts cropped at the chest, so the
- * figure stands on the well's floor rather than in a frame. The silhouette is
- * always in the markup, under the photo: client/player.ts marks the well
- * `is-missing` when the image fails, and a player with no source at all ships
- * that way. Either way the well is the same size, because the image carries
- * its own width and height.
+ * figure stands on the panel's floor rather than in a frame, drawn a little
+ * wider than the panel so the face reads large. The f200 derivative is the
+ * src and the f350 original is in the srcset for the 300px slot. Still the
+ * LCP candidate, so eager and at high priority, both spelled out because WP
+ * Rocket's LazyLoad rewrote this tag on the live site (2026-10-08); Rocket
+ * leaves alone any <img> carrying loading="eager" or data-no-lazy, and the
+ * news plugin also names this class in Rocket's exclusion filter.
  */
-function renderPhotoWell(data: PlayerPageData): string {
+function renderPortrait(data: PlayerPageData): string {
   const { player } = data;
   const jersey = player.number
     ? `<span class="scp-pwell-num" aria-hidden="true">${escapeHtml(String(player.number))}</span>`
     : "";
-  // The full figure at its own 350x254 ratio, drawn 200px wide (160 on a
-  // tablet, 108 on a phone): the f200 derivative for 1x screens and the f350
-  // original size for 2x, versioned and WebP (headshot-html.ts). Still the LCP candidate, so
-  // eager and at high priority. Both of those are spelled out because WP
-  // Rocket's LazyLoad rewrote this tag on the live site (2026-10-08): it
-  // swapped the src for a blank SVG and parked the real URLs in data-lazy-*,
-  // which defeats the priority hint. Rocket leaves alone any <img> carrying
-  // loading="eager" or data-no-lazy, and so do the other lazy-load plugins
-  // that honor that attribute; the news plugin also names this class in
-  // Rocket's exclusion filter. A player known to have no photo ships the
-  // silhouette.
   const img =
     headshotImg({
       src: player.headshotUrl,
@@ -426,7 +462,7 @@ function renderPhotoWell(data: PlayerPageData): string {
       className: "scp-pwell-img",
       alt: `${player.name} headshot`,
       variants: ["f200", "f350"],
-      sizes: "(max-width: 640px) 108px, (max-width: 1020px) 160px, 200px",
+      sizes: "(max-width: 600px) 120px, 300px",
       width: 350,
       height: 254,
       loading: "eager",
@@ -435,6 +471,7 @@ function renderPhotoWell(data: PlayerPageData): string {
     }) ?? "";
   return (
     `<div class="scp-pwell${img ? "" : " is-missing"}" data-scp-pwell>` +
+    `<div class="scp-pwell-paint" aria-hidden="true"></div>` +
     jersey +
     SILHOUETTE +
     img +
@@ -442,110 +479,141 @@ function renderPhotoWell(data: PlayerPageData): string {
   );
 }
 
+/* --------------------------------------------------------------- status */
+
 /**
- * The designation pill: amber for questionable, red for anything worse.
- *
- * A link to the Injury tab when the player has one. A player can carry a
- * designation with no injury record behind it (a fresh listing, nothing
- * logged yet), and then there is no Injury page: the pill is the status
- * alone, not a link that 302s back to the page it is on.
+ * The designation pill: gold for questionable, red for anything worse, green
+ * for a probable. A link to the Injury tab when the player has one; a
+ * designation with no injury record behind it is the status alone, not a
+ * link that 302s back to the page it is on.
  */
-function injuryPill(
-  status: string,
-  href: string | null,
-): string {
+function injuryPill(status: string, href: string | null): string {
   const severity = designationSeverity(status);
   const key = status.trim().toLowerCase();
   const label = /^ir\b/.test(key) || key.includes("injured reserve") ? "IR" : status.trim();
-  const tone = severity === "out" || severity === "doubtful" ? "is-bad" : "is-mid";
+  const tone = severity === "out" || severity === "doubtful" ? "is-bad" : severity === "probable" ? "is-good" : "is-mid";
   if (!href) return `<span class="scp-ptag-inj ${tone}">${escapeHtml(label)}</span>`;
-  return (
-    `<a class="scp-ptag-inj ${tone}" href="${escapeHtml(href)}" target="_top">` +
-    `${escapeHtml(label)}</a>`
-  );
-}
-
-/** "Nov 2, 2026" in the Eastern calendar, for the strip's stamp. */
-function updatedLabel(ms: number): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(ms));
-}
-
-/** Items of one dotted run: "16.5 PPG · QB17 · 13% rostered". */
-const DOT = "&nbsp;· ";
-
-/** One figure and its word, the word carrying the full reading. */
-function stat(cell: BoardCell): string {
-  const unit = cell.unit
-    ? ` <abbr title="${escapeHtml(cell.title)}">${escapeHtml(cell.unit)}</abbr>`
-    : "";
-  return (
-    `<span class="scp-pstat${cell.lead ? " is-lead" : ""}"${cell.unit ? "" : ` title="${escapeHtml(cell.title)}"`}>` +
-    `<b>${escapeHtml(cell.value)}</b>${unit}</span>`
-  );
+  return `<a class="scp-ptag-inj ${tone}" href="${escapeHtml(href)}" target="_top">${escapeHtml(label)}</a>`;
 }
 
 /**
- * The production line and the fantasy board (mak, 2026-11-04, three passes):
- *
- *   42/65 cmp · 550 yds · 3 TD · 1 INT · thru Wk 3   <- a text line under the bio line
- *
- *                  2026 FANTASY SEASON
- *            [ 16.5 PPG · QB17 · 13% rostered ]        <- the navy board, right column
- *
- * The counting line wears the bio line's design, directly under it, summed
- * from the same game log the Stats tab sums (season-line.ts) so the line
- * and the tables agree. A player with no logged game this season, or a
- * position the logs carry no line for, gets no line. Its suffix replaces the
- * old "through Week N / Updated" caption: "thru Wk N" in season, the
- * season's year when the figures are a finished season's; the day the logs
- * were last written (data.statsUpdatedMs, the file's own write time)
- * survives as its tooltip.
- *
- * The board stays where it was, beside the identity, as one dotted run of
- * the fantasy trio under a caption that says what it measures ("indicate it
- * is for fantasy"): the caption scopes the trio, so it carries no suffix.
+ * The status pill: the injury designation when there is one, else the page's
+ * own roster status - "Active" only when the bio pipeline classed him
+ * active, "Free Agent" or "Former" when it classed him so; no
+ * classification, no pill. Never "Active" by default.
  */
-function renderBoard(data: PlayerPageData): { line: string; board: string } {
-  const fan = headerBoard(data).map(stat);
+function statusPill(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const status = data.designation?.injuryStatus ?? data.player.injury_status ?? "";
+  if (status.trim()) return injuryPill(status, sectionHref(data, options, "injury"));
+  const page = (data as { bioPage?: { status?: string } | null }).bioPage;
+  if (page?.status === "active") return `<span class="scp-ptag-status is-good">Active</span>`;
+  if (page?.status === "free-agent") return `<span class="scp-ptag-status is-none">Free Agent</span>`;
+  if (page?.status === "former") return `<span class="scp-ptag-status is-none">Former</span>`;
+  return "";
+}
 
+/* ----------------------------------------------------------- stat cards */
+
+/** The card's label and icon for one of season-line's cells, by position. */
+function cardFace(pos: string, label: string): { label: string; icon: string } {
+  const k = label.toLowerCase();
+  if (pos === "QB") {
+    if (k === "cmp") return { label: "CMP / ATT", icon: ICON.target };
+    if (k === "yds") return { label: "PASS YDS", icon: ICON.columns };
+    if (k === "td") return { label: "PASS TD", icon: ICON.trophy };
+    if (k === "int") return { label: "INT", icon: ICON.intercept };
+  }
+  if (pos === "RB") {
+    if (k === "car") return { label: "CARRIES", icon: ICON.football };
+    if (k === "yds") return { label: "RUSH YDS", icon: ICON.columns };
+    if (k === "td") return { label: "TOTAL TD", icon: ICON.trophy };
+    if (k === "rec") return { label: "REC", icon: ICON.target };
+  }
+  if (k === "rec") return { label: "REC", icon: ICON.football };
+  if (k === "yds") return { label: "REC YDS", icon: ICON.columns };
+  if (k === "td") return { label: "REC TD", icon: ICON.trophy };
+  if (k === "y/r") return { label: "YPR", icon: ICON.target };
+  return { label: label.toUpperCase(), icon: ICON.columns };
+}
+
+/** Yards first, as the reference orders them; the rest keep season-line's order. */
+function orderCells<T extends { label: string }>(cells: T[]): T[] {
+  return [...cells.filter((c) => c.label === "yds"), ...cells.filter((c) => c.label !== "yds")];
+}
+
+/**
+ * The four season stat cards: season-line's cells over the same game log the
+ * Stats tab sums, so the cards and the tables agree. A player with no logged
+ * game this season, or a position the logs carry no line for, gets none.
+ */
+function renderCards(data: PlayerPageData): string {
+  const pos = data.player.position ?? "";
   const played = playedEntries(data.gameLog ?? []);
   const totals = seasonTotals(played, (e) => getEntryPoints(e.stats, data.format));
-  const raw = heroCells(data.player.position, totals).map((c) =>
-    stat({ value: c.value, unit: c.label, title: c.title }),
+  const cells = orderCells(heroCells(pos, totals)).slice(0, 4);
+  if (cells.length === 0) return "";
+  return (
+    `<ul class="scp-pp-cards">` +
+    cells
+      .map((c) => {
+        const face = cardFace(pos, c.label);
+        return (
+          `<li class="scp-pp-card" title="${escapeHtml(c.title)}">` +
+          `<span class="scp-pp-card-icon" aria-hidden="true">${face.icon}</span>` +
+          // A two-figure value ("135/205") at a size that holds the card.
+          `<b class="scp-pp-card-v${c.value.length > 5 ? " is-long" : ""}">${escapeHtml(c.value)}</b>` +
+          `<span class="scp-pp-card-l">${escapeHtml(face.label)}</span>` +
+          `</li>`
+        );
+      })
+      .join("") +
+    `</ul>`
   );
+}
 
-  const current = data.season === (data.leagueSeason ?? data.season) && (data.leagueWeek ?? 0) > 0;
-  const stamp =
-    typeof data.statsUpdatedMs === "number" && Number.isFinite(data.statsUpdatedMs) && data.statsUpdatedMs > 0
-      ? ` title="${escapeHtml(`Updated ${updatedLabel(data.statsUpdatedMs)}`)}"`
-      : "";
-  const thru =
-    `<span class="scp-pline-thru"${stamp}>` +
-    escapeHtml(current ? `thru Wk ${data.leagueWeek}` : `${data.season} season`) +
-    `</span>`;
+/* ---------------------------------------------------------------- board */
 
-  return {
-    line: raw.length ? `<p class="scp-pline">${[...raw, thru].join(DOT)}</p>` : "",
-    board:
-      `<div class="scp-pboard-wrap">` +
-      `<p class="scp-pboard-cap">${escapeHtml(`${data.season} Fantasy Season`)}</p>` +
-      `<div class="scp-pboard"><p class="scp-pboard-fan">${fan.join(DOT)}</p></div>` +
-      `</div>`,
-  };
+/** The fantasy panel's labels, in the trio's order; the first names the scoring. */
+const BOARD_LABEL = ["FPPG", "POS RANK", "ROSTERED"];
+
+/**
+ * The fantasy trio under a caption that says what it measures: three cells,
+ * the rate in gold, each figure over its label, the label carrying the full
+ * reading. Dashes where a figure does not exist (never 0.0 for a player who
+ * has not played).
+ */
+function renderBoard(data: PlayerPageData): string {
+  return (
+    `<div class="scp-pboard-wrap">` +
+    `<p class="scp-pboard-cap">${escapeHtml(`${data.season} Fantasy Season`)}</p>` +
+    `<div class="scp-pboard">` +
+    headerBoard(data)
+      .map(
+        (c, i) =>
+          `<span class="scp-pstat${c.lead ? " is-lead" : ""}">` +
+          `<b>${escapeHtml(c.value)}</b>` +
+          `<abbr title="${escapeHtml(c.title)}">${escapeHtml(i === 0 ? `${BOARD_LABEL[0]} · ${SCORING_SHORT[data.format]}` : BOARD_LABEL[i] ?? c.unit)}</abbr>` +
+          `</span>`,
+      )
+      .join("") +
+    `</div></div>`
+  );
+}
+
+/* ------------------------------------------------------------------ hero */
+
+/** What the page composition hands the header beyond the data. */
+export interface HeroExtras {
+  /** The matchup page for the next fixture, when the pair has one. */
+  matchupHref?: string | null;
 }
 
 /**
- * The profile header: photo well, identity, fantasy board, and the action
- * strip under them with the next matchup and the two ways on.
+ * The profile header.
  *
- * `tab` is the panel the page opens on. It picks the H1's second line and the
- * analytics tag on both buttons; the nav links carry the same two things for
- * every other tab, so a click can update them without the server.
+ * `tab` is the panel the page opens on. It picks the heading's second line
+ * and the analytics tag on both buttons; the nav links carry the same two
+ * things for every other tab, so a click can update them without the server.
  *
  * Exported for tests/player-header.test.mjs, which renders it against
  * hand-built states (a bye, a free agent, the offseason) that the fixture
@@ -555,6 +623,7 @@ export function renderHero(
   data: PlayerPageData,
   options: PlayerRenderOptions,
   tab = "overview",
+  extras: HeroExtras = {},
 ): string {
   const { player, team } = data;
   // The page's H1: on the standalone page, and on the host once it has
@@ -563,18 +632,18 @@ export function renderHero(
   // fragment, keeps this an H2 - there the host's title is the H1, and the
   // plugin spells it the way this heading reads (statchasers_player_heading).
   const Heading = options.embed && !options.ownHeading ? "h2" : "h1";
-  const prefix = options.playerPathPrefix ?? "/player/";
   const teamPrefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
-  const tabUrl = (id: string): string => `${prefix}${player.slug}/${id}/${query}`;
   const kind = headerKind(data, tab);
+  const cta = ctaTab(tab);
+  const last = lastName(player.name);
+  const pos = player.position ?? "";
 
   /* ---- the tag row ---- */
 
+  const sep = ` <span class="scp-pp-sep" aria-hidden="true"></span> `;
   const tags: string[] = [];
-  if (player.position) {
-    tags.push(`<span class="scp-ptag-pos">${escapeHtml(player.position)}</span>`);
-  }
+  if (pos) tags.push(`<span class="scp-ptag-pos">${escapeHtml(pos)}</span>`);
   tags.push(
     team
       ? // The abbreviation is the narrow-phone spelling (<= 370px, player.css
@@ -585,154 +654,118 @@ export function renderHero(
           `<span class="scp-ptag-team-abbr" aria-hidden="true">${escapeHtml(team.code)}</span></a>`
       : `<span class="scp-ptag-team">Free agent</span>`,
   );
-  if (player.number) {
-    tags.push(`<span class="scp-ptag-num">#${escapeHtml(String(player.number))}</span>`);
-  }
-  const status = data.designation?.injuryStatus ?? player.injury_status ?? "";
-  if (status.trim()) tags.push(injuryPill(status, sectionHref(data, options, "injury")));
+  const status = statusPill(data, options);
+  const tagRow = `<div class="scp-ptags">${tags.join(" ")}${status ? sep + status : ""}</div>`;
 
-  /* ---- the bio line ---- */
+  /* ---- the heading, the number and position, the bio line ---- */
 
-  // One dotted line under the name, no labels (mak, 2026-11-04): "33 yrs ·
-  // 6'4", 235 · NC State · 11th season · 2016 R3 #91". Every value says what
-  // it is, so the labels went with the grid they sat in; the two that read
-  // least plainly keep their reading as a tooltip.
+  const heading =
+    `<${Heading} class="scp-phead-h1">` +
+    `<span class="scp-phead-name">${escapeHtml(player.name)}</span>` +
+    // The section's word after the name, as part of the heading: "George
+    // Pickens Stats". The profile has none, so its heading is the name
+    // alone - no empty span, so the H1's text IS the name.
+    (kind ? ` <span class="scp-phead-kind">${escapeHtml(kind)}</span>` : "") +
+    `</${Heading}>`;
+
+  const under: string[] = [];
+  if (player.number) under.push(`#${escapeHtml(String(player.number))}`);
+  if (pos) under.push(escapeHtml(POSITION_WORD[pos] ?? pos));
+  const underRow = under.length ? `<p class="scp-pp-under">${under.map((u) => `<span>${u}</span>`).join(sep)}</p>` : "";
+
+  // One line, no labels: every value says what it is; each keeps its
+  // reading as a tooltip. "Undrafted" is never printed: draft.json writes
+  // the same null row for an undrafted player as for one whose draft is
+  // simply not recorded (see bio.ts).
   const spec: Array<[string, string]> = [];
   if (player.age) spec.push([`${player.age} yrs`, "Age"]);
   const height = formatHeight(player.height);
-  const build = [height, player.weight ? String(player.weight) : ""].filter(Boolean).join(", ");
+  const build = [height, player.weight ? `${player.weight} lbs` : ""].filter(Boolean).join(", ");
   if (build) spec.push([build, "Height, weight (lb)"]);
-  // The college beside the measurements (the entity brief, 2026-11-03):
-  // "where did he go to college" is a question the hero can answer in a
-  // word. From the bio profile, which reads the draft record first and the
-  // fact store second; a player with neither gets no cell.
   const college = data.bioProfile?.college ?? null;
   if (college) spec.push([college, "College"]);
   if (player.years_exp !== null && player.years_exp !== undefined) {
-    spec.push([
-      player.years_exp === 0 ? "Rookie" : `${ordinal(player.years_exp + 1)} season`,
-      "Experience",
-    ]);
+    spec.push([player.years_exp === 0 ? "Rookie" : `${ordinal(player.years_exp + 1)} Season`, "Experience"]);
   }
-  // Only when the year, the round and the pick are all known. draft.json
-  // writes the same null row for an undrafted player as for one whose draft
-  // is simply not recorded, so "Undrafted" would be a guess - see bio.ts.
-  const draft = data.bioProfile.draft;
+  const draft = data.bioProfile?.draft;
   if (draft && draft.year && draft.round && draft.pick) {
-    spec.push([
-      `${draft.year} R${draft.round} #${draft.pick}`,
-      `Drafted ${draft.year}, round ${draft.round}, pick ${draft.pick}`,
-    ]);
+    spec.push([`${draft.year} R${draft.round}, P${draft.pick}`, `Drafted ${draft.year}, round ${draft.round}, pick ${draft.pick}`]);
   }
   const specRow = spec.length
     ? `<p class="scp-pspec">` +
-      spec
-        .map(([value, title]) => `<span class="scp-pspec-i" title="${escapeHtml(title)}">${escapeHtml(value)}</span>`)
-        .join(DOT) +
+      spec.map(([v, t]) => `<span class="scp-pspec-i" title="${escapeHtml(t)}">${escapeHtml(v)}</span>`).join(sep) +
       `</p>`
     : "";
 
-  /* ---- the production line and the fantasy board ---- */
+  const identity = `<div class="scp-pid">${tagRow}${heading}${underRow}${specRow}</div>`;
 
-  // His NFL numbers this season as a second text line under the bio line;
-  // the fantasy trio in the navy board beside the identity (the entity
-  // brief's hierarchy: who he is, what he has done, then what it is worth).
-  const { line, board } = renderBoard(data);
+  /* ---- the actions ---- */
 
-  /* ---- the strip ---- */
-
-  const cta = ctaTab(tab);
-  const last = lastName(player.name);
   const next = headerFixture(data);
+  const outlookHref = sectionHref(data, options, "outlook");
+  const redraft =
+    `<a class="scp-pbtn scp-pbtn--gold" href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
+    ` data-cta="redraft-command-header-${cta}" data-scp-cta="redraft-command-header">` +
+    `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.trend}</span>View in Redraft Command` +
+    `<span class="scp-pbtn-arrow" aria-hidden="true">${ICON.arrow}</span></a>`;
+  // Start/sit while there is a week to start him in; before Week 1, or once
+  // the schedule has run out, the question is the season rather than a week.
+  let second = "";
+  if (team && next && !seasonNotStarted(data)) {
+    const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(player.slug)}`;
+    second =
+      `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(href)}"` +
+      ` data-cta="startsit-header-${cta}" data-scp-cta="startsit-header">` +
+      `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.question}</span>${escapeHtml(`Should I start ${last}?`)}</a>`;
+  } else if (outlookHref) {
+    second =
+      `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(outlookHref)}" target="_top"` +
+      ` data-cta="outlook-header-${cta}" data-scp-cta="outlook-header">` +
+      `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.compass}</span>${escapeHtml(`${possessive(last)} ${OUTLOOK_SEASON} outlook`)}</a>`;
+  }
+  const actions = `<div class="scp-pp-actions">${redraft}${second}</div>`;
+
+  /* ---- the next matchup strip ---- */
+
   let strip = "";
-  if (team) {
-    let line = "";
-    if (next) {
-      const { game, bye } = next;
-      const opp = game.opponent?.nickname ?? game.opponentName;
-      const fixture = `Week ${game.week} ${game.homeAway === "away" ? "at" : "vs."} ${opp}`;
-      // The kickoff is one unbreakable run: beside the buttons in a narrow
-      // strip the line wraps, and "1:00 PM" on one line with "ET" alone on
-      // the next is the break it must not take.
-      const when = headerKickoff(game);
-      const whenHtml = when ? `, <span class="scp-pstrip-when">${escapeHtml(when)}</span>` : "";
-      const text = bye !== null
-        ? `<strong>${escapeHtml(`Week ${bye}: bye.`)}</strong>` +
-          escapeHtml(` Next game ${fixture}`) + whenHtml
-        : `<strong>${escapeHtml(fixture)}</strong>${whenHtml}`;
-      const band = game.matchup ? CHIP_WORD[matchupBand(game.matchup.rank)] : null;
-      const chip =
-        band && game.matchup
-          ? `<span class="scp-mchip ${band.cls}">${escapeHtml(
-              `${ordinal(game.matchup.rank)} vs. ${game.matchup.position}s, ${band.word}`,
-            )}</span>`
-          : "";
-      // Spaces between the flex items, which the layout ignores, so the line's
-      // text reads as words rather than "1:00 PM ET8th vs. QBs".
-      line = `<p class="scp-pstrip-mu"><span>${text}</span>${chip ? ` ${chip}` : ""}</p>`;
-    }
-
-    // Start/sit while there is a week to start him in; before Week 1, or once
-    // the schedule has run out, the question is the season rather than a week.
-    let primary = "";
-    // The Outlook tab's own URL, when the player has the tab: a written take
-    // alone is not enough if the tab would not render from it.
-    const outlookHref = sectionHref(data, options, "outlook");
-    if (next && !seasonNotStarted(data)) {
-      const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(player.slug)}`;
-      primary =
-        `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(href)}"` +
-        ` data-cta="startsit-header-${cta}" data-scp-cta="startsit-header">` +
-        `${escapeHtml(`Should I start ${last} in Week ${next.game.week}?`)}</a>`;
-    } else if (outlookHref) {
-      primary =
-        `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(outlookHref)}"` +
-        ` target="_top" data-cta="outlook-header-${cta}" data-scp-cta="outlook-header">` +
-        `${escapeHtml(`See ${possessive(last)} ${OUTLOOK_SEASON} outlook`)}</a>`;
-    }
-    const redraft =
-      `<a class="scp-pbtn scp-pbtn--line"` +
-      ` href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
-      ` data-cta="redraft-command-header-${cta}" data-scp-cta="redraft-command-header">` +
-      `ROS Value in Fantasy</a>`;
-
+  if (team && next) {
+    const { game, bye } = next;
+    const opp = game.opponent?.fullName ?? game.opponentName;
+    const fixture = `Week ${game.week} ${game.homeAway === "away" ? "at" : "vs."} ${opp}`;
+    const when = headerKickoff(game);
+    const band = game.matchup ? CHIP_WORD[matchupBand(game.matchup.rank)] : null;
+    const logo = game.opponent
+      ? `<img class="scp-pstrip-logo" src="${escapeHtml(game.opponent.logo)}" alt="" width="24" height="24" loading="lazy" decoding="async" />`
+      : "";
     strip =
       `<div class="scp-pstrip">` +
-      line +
-      `<div class="scp-pstrip-acts">${[primary, redraft].filter(Boolean).join(" ")}</div>` +
+      `<span class="scp-pstrip-cap">Next matchup</span>` +
+      `<span class="scp-pstrip-mu">${logo}<strong>${escapeHtml(bye !== null ? `Week ${bye}: bye. Then ${fixture}` : fixture)}</strong></span>` +
+      // One unbreakable run: "1:00 PM" on one line with "ET" alone on the
+      // next is the break it must not take.
+      (when ? `<span class="scp-pstrip-when">${escapeHtml(when)}</span>` : "") +
+      (band && game.matchup
+        ? `<span class="scp-mchip ${band.cls}">${escapeHtml(`${ordinal(game.matchup.rank)} vs. ${game.matchup.position}s, ${band.word}`)}</span>`
+        : "") +
+      (extras.matchupHref
+        ? `<a class="scp-pstrip-link" href="${escapeHtml(extras.matchupHref)}" target="_top">View matchup<span aria-hidden="true">${ICON.arrow}</span></a>`
+        : "") +
       `</div>`;
   }
 
   const ink = teamInk(team);
   return (
     `<header class="scp-phead" aria-label="Player summary"` +
-    styleAttr([ink && `--scp-team:${ink}`]) +
+    styleAttr([ink && `--scp-team:${ink}`, team && `--scp-team-2:${team.secondaryColor}`]) +
     `>` +
-    `<div class="scp-phead-main">` +
-    renderPhotoWell(data) +
-    `<div class="scp-pid">` +
-    `<div class="scp-ptags">${tags.join(" ")}</div>` +
-    `<${Heading} class="scp-phead-h1">` +
-    `<span class="scp-phead-name"${styleAttr([
-      `--scp-name-em:${nameEm(player.name)}`,
-      `--scp-word-em:${nameEm(longestWord(player.name))}`,
-    ])}>` +
-    player.name
-      .trim()
-      .split(/\s+/)
-      .map((word) => `<span class="scp-phead-word">${escapeHtml(word)}</span>`)
-      .join(" ") +
-    `</span>` +
-    // The section's word under the name, as part of the heading: "George
-    // Pickens Stats". The profile has none, so its heading is the name
-    // alone - no empty span, so the H1's text IS the name.
-    (kind ? ` <span class="scp-phead-kind">${escapeHtml(kind)}</span>` : "") +
-    `</${Heading}>` +
-    specRow +
-    line +
-    `</div>` +
-    board +
-    `</div>` +
+    `<section class="scp-phead-hero" aria-label="${escapeHtml(`${player.name} summary`)}">` +
+    renderPortrait(data) +
+    identity +
+    renderBoard(data) +
+    renderCards(data) +
+    actions +
+    `<span class="scp-phead-stripes" aria-hidden="true"></span>` +
+    `</section>` +
     strip +
     `</header>`
   );

@@ -1,18 +1,20 @@
 /**
- * The premium comparison version of the Stats tab's Fantasy Football Career
- * Stats section (mak's brief, 2026-11-05): a navy title bar, the
+ * The Stats tab's Fantasy Football Career Stats section (mak's briefs of
+ * 2026-11-05, approved the same day: "remove the old version"): a navy title
+ * bar that is the tab's "{Name} Fantasy Football Stats" H2, the
  * season-by-season fantasy points-per-game chart with a career-average line
- * and each season's finish, four career KPI cards, the career read with the
- * Redraft Command card beside it, and the career highs.
+ * and each season's finish, four career KPI cards, the career read ("What His
+ * Career Numbers Say", the tab's other H2 here) with the Redraft Command
+ * card beside it, and the career highs.
  *
- * Rendered UNDER the whole existing section (chart, rate tiles, read, the
- * Redraft Command panel and the career highs) while CAREER_PREMIUM_COMPARE
- * is on, behind a "New design - comparison" label, so both are on the page.
+ * It replaced the 09-29 section's chart, rate tiles, read, Redraft Command
+ * panel and career-highs strip, which stats-tab.ts no longer mounts.
  * Everything here is read from careerPremiumModel() in stats-tab.ts, which
- * builds it from the code paths the current section prints from: the same
- * per-game points, the same career average (career points over career games,
- * not an average of season averages), the same rate tiles with the same
- * definitions, the same paragraphs, the same highs.
+ * builds it from the code paths that section printed from: the same per-game
+ * points, the same career average (career points over career games, not an
+ * average of season averages), the same rate tiles with the same
+ * definitions, the same paragraphs, the same highs. The two H2s keep the
+ * ids the SEO ladder and the tests know (scp-st-arc-h, scp-st-read-h).
  *
  * No charting library: the bars are CSS heights on a linear scale that
  * starts at zero, the average line is a positioned rule, and every bar
@@ -25,10 +27,8 @@ import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { careerPremiumModel, type CareerSeasonBar } from "./stats-tab";
 
-/** Flip off to drop the comparison block without touching the current section. */
-export const CAREER_PREMIUM_COMPARE = true;
-
-const one = (v: number): string => v.toFixed(1);
+/** One decimal, a true minus sign for a negative (the house rule). */
+const one = (v: number): string => v.toFixed(1).replace(/^-/, "\u2212");
 
 /* ------------------------------------------------------------------ icons */
 
@@ -161,7 +161,8 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     `<span class="scp-cp-bar-icon" aria-hidden="true">${ICON.chart}</span>` +
     `<span class="scp-cp-bar-divider" aria-hidden="true"></span>` +
     `<div class="scp-cp-bar-text">` +
-    `<h3 class="scp-cp-bar-title">${escapeHtml(`${m.name} Fantasy Football Stats`)}</h3>` +
+    // The tab's H2 for this section, with the id the SEO ladder keys on.
+    `<h2 class="scp-ox-h2 scp-cp-bar-title" id="scp-st-arc-h">${escapeHtml(`${m.name} Fantasy Football Stats`)}</h2>` +
     `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>` +
     `</div>` +
     `<span class="scp-cp-bar-art" aria-hidden="true">${ICON.football}</span>` +
@@ -187,21 +188,21 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
   const read = m.paragraphs.length
     ? `<div class="scp-cp-read">` +
       `<div class="scp-cp-prose">` +
-      `<h4 class="scp-cp-h">What His Career Numbers Say</h4>` +
+      `<h2 class="scp-ox-h2 scp-cp-h" id="scp-st-read-h">What His Career Numbers Say</h2>` +
       m.paragraphs.map((p) => `<p>${p}</p>`).join("") +
       `</div>` +
       `<aside class="scp-cp-rc" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">` +
       `<span class="scp-cp-rc-icon" aria-hidden="true">${ICON.bolt}</span>` +
-      `<h4 class="scp-cp-rc-h">${escapeHtml(m.redraft.heading)}</h4>` +
+      `<h3 class="scp-cp-rc-h">${escapeHtml(m.redraft.heading)}</h3>` +
       `<p>${escapeHtml(m.redraft.body)}</p>` +
-      `<a class="scp-cp-rc-btn" href="${escapeHtml(m.redraft.href)}" data-cta="redraft-command-stats-premium">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
+      `<a class="scp-cp-rc-btn" href="${escapeHtml(m.redraft.href)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
       `</aside>` +
       `</div>`
     : "";
 
   const highs = m.highs.length
     ? `<div class="scp-cp-highs">` +
-      `<h4 class="scp-cp-h is-highs">Career Highs</h4>` +
+      `<h3 class="scp-cp-h is-highs">Career Highs</h3>` +
       `<ul class="scp-cp-high-list">` +
       m.highs
         .map(
@@ -218,8 +219,7 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     : "";
 
   return (
-    `<p class="scp-cp-label" aria-hidden="true">New design - comparison</p>` +
-    `<section class="scp-ox-sec scp-cp" aria-label="Premium fantasy football career stats (comparison)" data-scp-premium="career">` +
+    `<section class="scp-ox-sec scp-cp" aria-labelledby="scp-st-arc-h">` +
     head +
     `<div class="scp-cp-body">` +
     chart(m) +

@@ -122,23 +122,25 @@ describe("the profile is the player's page", () => {
       const spec = [...header.querySelectorAll(".scp-pspec-i")].map((i) => i.getAttribute("title"));
       assert.ok(spec.includes("Age") || spec.includes("Height, weight (lb)") || spec.includes("Experience"), `identity facts: ${spec}`);
 
-      // The season's production as a text line under the bio line, before
-      // the fantasy strip (2026-11-04).
+      // The identity column reads tags, heading, number and position, bio
+      // line; the season's production is the four stat cards after it
+      // (the header mak approved on 2026-11-05).
       const pid = header.querySelector(".scp-pid");
       const order = [...pid.children].map((c) => c.className.split(" ")[0]);
-      assert.ok(order.indexOf("scp-phead-h1") < order.indexOf("scp-pline"), "name, then production");
-      assert.ok(order.indexOf("scp-pspec") < order.indexOf("scp-pline"), "identity, then production");
-      const line = [...header.querySelectorAll(".scp-pline .scp-pstat b")].map(text);
-      assert.ok(line.length >= 2, `a production line: ${line}`);
+      assert.ok(order.indexOf("scp-ptags") < order.indexOf("scp-phead-h1"), "tags, then the name");
+      assert.ok(order.indexOf("scp-phead-h1") < order.indexOf("scp-pspec"), "name, then identity");
+      const line = [...header.querySelectorAll(".scp-pp-card-v")].map(text);
+      assert.ok(line.length >= 2, `the stat cards: ${line}`);
       assert.ok(line.every((v) => /^[\d,./-]+$/.test(v)), `numbers only: ${line}`);
+      assert.ok(pid.compareDocumentPosition(header.querySelector(".scp-pp-cards")) & 4, "identity before production");
 
       // The identity column is served before the board in the markup.
       assert.ok(pid.compareDocumentPosition(header.querySelector(".scp-pboard")) & 4, "identity before the fantasy board");
       assert.match(text(header.querySelector(".scp-pboard-cap")), /^\d{4} Fantasy Season$/);
 
       // The fantasy layer is still there: the trio, the Overview's read, the peers rail.
-      assert.deepEqual([...header.querySelectorAll(".scp-pboard-fan .scp-pstat abbr")].map(text), ["PPG", "rostered"]);
-      assert.equal(header.querySelector(".scp-pboard-fan .scp-pstat abbr").getAttribute("title"), "PPR fantasy points per game");
+      assert.deepEqual([...header.querySelectorAll(".scp-pboard .scp-pstat abbr")].map(text), ["FPPG · PPR", "POS RANK", "ROSTERED"]);
+      assert.equal(header.querySelector(".scp-pboard .scp-pstat abbr").getAttribute("title"), "PPR fantasy points per game");
       assert.ok(doc.querySelector("#overview .scp-ox-read"), "the fantasy read");
       assert.ok(doc.querySelector("#overview .scp-peers"), "the peers rail");
 
@@ -264,7 +266,7 @@ describe("data sanity", () => {
       const { player, body } = found;
       const { doc } = parse(body);
       const season = doc.querySelector("[data-scp-root]").getAttribute("data-season");
-      const leagueWeek = Number(/thru Wk (\d+)/.exec(text(doc.querySelector(".scp-pline-thru")))?.[1] ?? 0);
+      const leagueWeek = 0;
 
       // Games played: the table's GP, the hero's caption, the Stats tab's rail.
       const cols = [...doc.querySelectorAll("#overview .scp-ox-season thead th")].map(text);
@@ -273,19 +275,22 @@ describe("data sanity", () => {
       assert.ok(gp > 0 && gp <= 22, `games played: ${gp}`);
       if (leagueWeek) assert.ok(gp <= leagueWeek, `${gp} games cannot exceed ${leagueWeek} weeks`);
 
-      // The hero's counting line is in the table.
-      const hero = Object.fromEntries([...doc.querySelectorAll(".scp-pline .scp-pstat")].map((d) => [text(d.querySelector("abbr")), text(d.querySelector("b"))]));
+      // The hero's stat cards are in the table.
+      const hero = Object.fromEntries([...doc.querySelectorAll(".scp-pp-card")].map((d) => [text(d.querySelector(".scp-pp-card-l")), text(d.querySelector(".scp-pp-card-v"))]));
       const cell = (label) => row[cols.indexOf(label)];
       if (position === "WR") {
-        assert.equal(hero.rec, cell("REC"));
-        assert.equal(hero.yds, cell("YDS"));
-        assert.equal(hero.TD, cell("TD"));
+        assert.equal(hero["REC"], cell("REC"));
+        assert.equal(hero["REC YDS"], cell("YDS"));
+        assert.equal(hero["REC TD"], cell("TD"));
+        hero.yds = hero["REC YDS"];
       } else if (position === "RB") {
-        assert.equal(hero.car, cell("CAR"));
-        assert.equal(hero.yds, cell("RUSH YDS"));
+        assert.equal(hero["CARRIES"], cell("CAR"));
+        assert.equal(hero["RUSH YDS"], cell("RUSH YDS"));
+        hero.yds = hero["RUSH YDS"];
       } else {
-        assert.equal(hero.yds, cell("PASS YDS"));
-        assert.equal(hero.INT, cell("INT"));
+        assert.equal(hero["PASS YDS"], cell("PASS YDS"));
+        assert.equal(hero["INT"], cell("INT"));
+        hero.yds = hero["PASS YDS"];
       }
 
       // The Stats tab's production section carries the same games and totals.

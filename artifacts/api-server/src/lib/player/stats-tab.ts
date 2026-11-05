@@ -1543,14 +1543,17 @@ export function renderStatsTabParts(
   // the StatChasers Analysis module left this tab on 2026-11-05 (mak:
   // "remove the older version"): the premium block (stats-premium.ts), which
   // player-render mounts above these parts, carries all four from the same
-  // model (statsPremiumModel below). `inserts.careerTable` now reaches the
-  // tab only through that block.
+  // model (statsPremiumModel below). Later the same day the per-season
+  // chart, the career-rate tiles, the read with its Redraft Command panel
+  // and the career-highs strip went the same way (mak: "remove the old
+  // version"): the premium career block (career-premium.ts), which
+  // player-render mounts after these parts, carries them from
+  // careerPremiumModel() below. renderChart, renderCareerRates and
+  // renderRead stay in this file unmounted; the model reads their builders.
+  // Only the footer is still this function's.
   return {
-    top: wrap(renderChart(data, c) + renderCareerRates(data, c)),
-    // The spec's own season-by-season table was removed on 2026-09-30 as a
-    // second copy of the original content's; that original table is what
-    // `inserts.careerTable` carries back in, above the chart (2026-10-29).
-    rest: wrap(renderRead(data, c, options)),
+    top: "",
+    rest: "",
     // Apart so the page can stand it under the peers rail, directly above the
     // tab's FAQ (mak, 2026-09-30).
     foot: wrap(renderFooter(data)),
