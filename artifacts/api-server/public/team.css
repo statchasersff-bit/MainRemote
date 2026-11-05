@@ -110,7 +110,7 @@
 body.sct-page {
   margin: 0;
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-family: var(--sc-font);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -146,7 +146,7 @@ body.sct-page.is-embed {
      which reads as a rendering fault rather than as feedback. */
   -webkit-tap-highlight-color: rgba(11, 22, 52, 0.08);
   font-family: var(--sc-font);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   line-height: 1.55;
   text-align: left;
   /* Anchor targets clear the sticky nav rather than hiding behind it. */
@@ -425,7 +425,7 @@ body.sct-page.is-embed {
      than the white-alpha one it was on navy. */
   border: 1px solid var(--sc-border);
   background: var(--sc-surface);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -488,7 +488,7 @@ body.sct-page.is-embed {
   border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   box-shadow: 0 22px 60px rgba(6, 13, 33, 0.28);
 }
 
@@ -511,7 +511,7 @@ body.sct-page.is-embed {
   margin: 0 0 8px;
   padding-bottom: 6px;
   border-bottom: 2px solid var(--sc-gold);
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 0.8rem !important;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -543,7 +543,7 @@ body.sct-page.is-embed {
   min-height: 34px;
   padding: 5px 8px;
   border-radius: var(--sc-radius-xs);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.86rem;
   font-weight: 600;
   text-decoration: none;
@@ -554,7 +554,7 @@ body.sct-page.is-embed {
 
 .sct-switch-team:hover {
   background: var(--sc-surface-sink);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* A host coloring list links, outranked.
@@ -578,16 +578,16 @@ body.sct-page.is-embed {
  * this file is enqueued only on pages that mount the hub, so the blast radius
  * is the fragment itself. */
 .sct li > .sct-switch-team {
-  color: var(--sc-ink) !important;
+  color: var(--tp-ink, var(--sc-ink)) !important;
 }
 
 .sct li > .sct-switch-team:hover,
 .sct li > .sct-switch-team.is-current {
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .sct li > .sct-crosslink {
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .sct li > .sct-crosslink:hover {
@@ -601,7 +601,7 @@ body.sct-page.is-embed {
 
 .sct-switch-team.is-current {
   background: var(--tp-a-212-175-55-140, rgba(212, 175, 55, 0.14));
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -685,7 +685,7 @@ body.sct-page.is-embed {
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -760,7 +760,7 @@ body.sct-page.is-embed {
    how the eye finds the two numbers a standings table is read for. */
 .sct-index-num {
   --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 1.05rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -1051,7 +1051,7 @@ body.sct-page.is-embed {
   position: relative;
   margin: 0 0 6px;
   padding-bottom: 10px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem) !important;
   line-height: 1.2;
   font-weight: 800;
@@ -1141,7 +1141,7 @@ body.sct-page.is-embed {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.88rem;
   font-weight: 800;
   text-decoration: none;
@@ -1225,7 +1225,7 @@ body.sct-page.is-embed {
 
 .sct-metric-value {
   margin: 7px 0 0;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   /* Bigger than it was, in a shorter card. The number is the reading; the
      height came out of the gaps around it, not out of the figure itself. */
   font-size: clamp(2.25rem, 1.8rem + 1.3vw, 2.75rem);
@@ -1412,7 +1412,7 @@ body.sct-page.is-embed {
    them, because the size lives on the class rather than on the element. */
 .sct-faq-q {
   margin: 0;
-  color: var(--sc-ink) !important;
+  color: var(--tp-ink, var(--sc-ink)) !important;
   font-size: 0.92rem !important;
   font-weight: 800;
   line-height: 1.45;
@@ -1622,7 +1622,7 @@ ul.sct-faq-list li {
 }
 
 :is(.sct, #sct-table-armour) .sct-hist tbody th {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.95rem;
   font-weight: 800;
   line-height: 1.25;
@@ -1686,7 +1686,7 @@ ul.sct-faq-list li {
 
 :is(.sct, #sct-table-armour) .sct-hist-value {
   display: block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -1895,7 +1895,7 @@ ul.sct-faq-list li {
      words. Balanced wrapping splits "Christian McCaffrey" evenly instead of
      dropping a lone surname onto line two. */
   text-wrap: balance;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.98rem;
   line-height: 1.2;
   font-weight: 800;
@@ -1910,7 +1910,7 @@ ul.sct-faq-list li {
 }
 
 .sct-player:hover .sct-player-cta {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-player:hover .sct-arrow {
@@ -1997,7 +1997,7 @@ ul.sct-faq-list li {
 
 .sct-empty-title {
   margin: 0;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.98rem;
   font-weight: 800;
 }
@@ -2055,7 +2055,7 @@ ul.sct-faq-list li {
 }
 
 .sct-matchup-side.is-team .sct-matchup-code {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-matchup-name {
@@ -2069,7 +2069,7 @@ ul.sct-faq-list li {
 /* No canonical team behind the name, so there is no code above it and the name
    takes the code's weight instead of sitting under a blank. */
 .sct-matchup-name.is-lead {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.85rem;
   font-weight: 800;
 }
@@ -2085,7 +2085,7 @@ ul.sct-faq-list li {
   /* Above the matchup now, where the week used to be: the gap moves below.
      Centered over the two crests (mak, 2026-11-02). */
   margin: 0 0 4px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.85rem;
   font-weight: 800;
   text-align: center;
@@ -2133,7 +2133,7 @@ ul.sct-faq-list li {
   gap: 8px;
   margin: 0 0 10px;
   padding-bottom: 9px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 0.86rem !important;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -2228,7 +2228,7 @@ ul.sct-faq-list li {
 }
 
 .sct-depth-row:first-child .sct-depth-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -2278,7 +2278,7 @@ ul.sct-faq-list li {
 .sct-depth-name {
   min-width: 0;
   overflow: hidden;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.92rem;
   line-height: 1.25;
   font-weight: 700;
@@ -2510,7 +2510,7 @@ ul.sct-faq-list li {
    name back in front - and costs no height, because the two text lines together
    still measure less than the logo. */
 .sct-game-opp {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.22rem;
   line-height: 1.1;
   font-weight: 800;
@@ -2569,7 +2569,7 @@ ul.sct-faq-list li {
 .sct-badge[data-kind="intl"] {
   border-color: rgba(11, 22, 52, 0.25);
   background: rgba(11, 22, 52, 0.06);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-badge.is-tiny {
@@ -2720,7 +2720,7 @@ ul.sct-faq-list li {
 }
 
 .sct-resource-title {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: -0.015em;
@@ -2735,7 +2735,7 @@ ul.sct-faq-list li {
 .sct-resource-cta {
   margin-top: auto;
   padding-top: 12px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.79rem;
   font-weight: 800;
 }
@@ -3102,7 +3102,7 @@ ul.sct-faq-list li {
 
   .sct-switch-team:hover {
     background: transparent;
-    color: var(--sc-ink);
+    color: var(--tp-ink, var(--sc-ink));
   }
 
   /* Restated at the index row's own specificity: the reset above is a class
@@ -3123,11 +3123,11 @@ ul.sct-faq-list li {
      otherwise win on source order and strip the current team's highlight. */
   .sct-switch-team.is-current:hover {
     background: var(--tp-a-212-175-55-140, rgba(212, 175, 55, 0.14));
-    color: var(--sc-navy);
+    color: var(--tp-ink, var(--sc-navy));
   }
 
   .sct-textlink:hover {
-    color: var(--sc-navy);
+    color: var(--tp-ink, var(--sc-navy));
     border-bottom-color: rgba(11, 22, 52, 0.25);
   }
 
@@ -3218,7 +3218,7 @@ ul.sct-faq-list li {
   gap: 7px;
   font-weight: 700;
   font-size: 13px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   white-space: nowrap;
 }
 
@@ -3244,7 +3244,7 @@ ul.sct-faq-list li {
 /* The winner, not a ranking: the loser stays legible at full opacity, because
    a grayed-out team in a results list reads as data that failed to load. */
 .sct-mu-res-side.is-winner {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-res-side.is-winner .sct-mu-res-score {
@@ -3396,7 +3396,7 @@ ul.sct-faq-list li {
 .sct-mu-leader-name {
   font-size: 16px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   line-height: 1.2;
 }
 
@@ -3420,7 +3420,7 @@ ul.sct-faq-list li {
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-leader-unit {
@@ -3483,7 +3483,7 @@ ul.sct-faq-list li {
 }
 
 .sct-injury-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.15;
@@ -3540,7 +3540,7 @@ ul.sct-faq-list li {
 .sct-mu-injury .sct-injury-name {
   font-size: 15px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-injury .sct-injury-detail {
@@ -3574,7 +3574,7 @@ ul.sct-faq-list li {
   margin: 2px 0 0;
   font-size: 16px;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-tv {
@@ -3692,7 +3692,7 @@ ul.sct-faq-list li {
 :is(.sct, #sct-table-armour) .sct-mu-val {
   font-weight: 800;
   font-size: 17px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-variant-numeric: tabular-nums;
 }
 
@@ -3771,7 +3771,7 @@ ul.sct-faq-list li {
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-h2h-who {
@@ -3826,7 +3826,7 @@ ul.sct-faq-list li {
 }
 
 .sct-crosslink {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 700;
   font-size: 14px;
   text-decoration: none;
@@ -3890,7 +3890,7 @@ ul.sct-faq-list li {
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   background: var(--sc-surface);
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
@@ -4022,7 +4022,7 @@ ul.sct-faq-list li {
   padding: 2px 8px;
   border-radius: 4px;
   background: var(--sbh-gold);
-  color: var(--sbh-gold-ink);
+  color: var(--tp-ink, var(--sbh-gold-ink));
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -4116,7 +4116,7 @@ ul.sct-faq-list li {
   padding: 1px 7px;
   border-radius: 4px;
   background: var(--sbh-gold);
-  color: var(--sbh-gold-ink);
+  color: var(--tp-ink, var(--sbh-gold-ink));
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -4355,7 +4355,7 @@ ul.sct-faq-list li {
   line-height: 1.15;
   letter-spacing: -0.015em;
   text-wrap: balance;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .sct .sct-mu-story-dek {
@@ -4374,7 +4374,7 @@ ul.sct-faq-list li {
   margin: 0 0 14px;
   font-size: 16px;
   line-height: 1.65;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 .sct .sct-mu-story-body p:last-child {
@@ -4384,7 +4384,7 @@ ul.sct-faq-list li {
 /* Divi colors bare links through the content column's id, so the ink needs
    `!important` to stay ours. */
 .sct .sct-mu-story-body a {
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-weight: 700;
   text-decoration: underline;
   text-decoration-color: var(--sc-gold);
@@ -4433,7 +4433,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   grid-template-columns: minmax(0, 1fr) 290px;
   gap: 32px;
   align-items: start;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-main {
@@ -4472,7 +4472,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
 }
 
 /* `pretty`, not the hub's `balance`: balance splits a two-line headline into
@@ -4489,7 +4489,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   line-height: 1.2;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
 }
 
 .sct-rb .sct-rb-sub,
@@ -4511,7 +4511,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb .sct-mu-story-body p {
   font-size: 17px;
   line-height: 1.6;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb :is(a, summary):focus-visible {
@@ -4534,7 +4534,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 15px;
   font-weight: 500;
 }
@@ -4712,7 +4712,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb .sct-rb-takeaways .sct-rb-take-sub {
@@ -4745,7 +4745,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-ls {
   margin: 0 0 52px;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ls .sct-ls-row {
@@ -4786,7 +4786,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 20px;
   font-weight: 700;
   line-height: 1.15;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* The face (2026-11-02): a 44px round well in its own first column, the text
@@ -4849,7 +4849,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ls-unit {
@@ -4868,7 +4868,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 15px;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ls a:focus-visible {
@@ -4911,7 +4911,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border: 0;
   border-top: 1px solid var(--rb-line);
   background: transparent;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 15px;
   font-weight: 400;
   line-height: 1.45;
@@ -5012,11 +5012,11 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 :is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-score.is-ahead {
-  color: var(--ss-ink, var(--rb-ink));
+  color: var(--tp-ink, var(--ss-ink, var(--rb-ink)));
 }
 
 .sct .sct-ss-desc a {
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   font-weight: 600;
   text-decoration: none;
   border-bottom: 0;
@@ -5036,7 +5036,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 3px 7px;
   border-radius: 999px;
   background: var(--rb-gold);
-  color: var(--tp-c-13233a, #13233a);
+  color: var(--tp-ink, var(--tp-c-13233a, #13233a));
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
@@ -5150,7 +5150,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  color: var(--rb-at-ink, var(--rb-ink));
+  color: var(--tp-ink, var(--rb-at-ink, var(--rb-ink)));
 }
 
 .sct-rb-at-num[data-none] {
@@ -5195,11 +5195,11 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   background: var(--rb-card, #fff);
   font-size: 16px;
   line-height: 1.5;
-  color: var(--rb-ink, var(--tp-c-13233a, #13233a));
+  color: var(--tp-ink, var(--rb-ink, var(--tp-c-13233a, #13233a)));
 }
 
 .sct .sct-mu-rc-note a {
-  color: var(--rb-link, var(--tp-c-003594, #003594)) !important;
+  color: var(--tp-ink, var(--rb-link, var(--tp-c-003594, #003594))) !important;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -5235,14 +5235,14 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-h2h-lead {
   --sc-font: var(--rb-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-h2h-note::before,
@@ -5254,7 +5254,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb-h2h-run {
   font-weight: 600;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb .sct-rb-meetings {
@@ -5289,7 +5289,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
    out its three parts. */
 .sct-rb .sct-rb-mt-link {
   display: contents;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: none;
 }
 
@@ -5307,7 +5307,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb-mt-label b {
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-mt-match {
@@ -5322,7 +5322,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-rb-mt.is-upcoming .sct-rb-mt-match {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-mt-date {
@@ -5340,7 +5340,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb-chip {
@@ -5392,7 +5392,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border-left: 4px solid var(--rb-gold);
   border-radius: 10px;
   background: var(--rb-card);
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: none;
 }
 
@@ -5461,7 +5461,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-rb .sct-rb-qa a {
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   font-weight: 600;
   text-decoration: underline;
   text-decoration-color: var(--rb-gold);
@@ -5491,7 +5491,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   background: var(--rb-card);
   font-size: 15px;
   font-weight: 500;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: none;
 }
 
@@ -5570,7 +5570,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 11px 18px;
   border-radius: 8px;
   background: var(--rb-gold);
-  color: var(--rb-navy) !important;
+  color: var(--tp-ink, var(--rb-navy)) !important;
   font-size: 17px;
   font-weight: 700;
   text-decoration: none;
@@ -5681,7 +5681,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   letter-spacing: -0.01em;
   line-height: 1.25;
   text-transform: none;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
 }
 
 /* The section titles set as H3s wear the same look (mak, 2026-09-30); the
@@ -5696,7 +5696,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   letter-spacing: -0.01em;
   line-height: 1.25;
   text-transform: none;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
 }
 
 .sct-mu .sct-rb .sct-rb-h3:not(.sct-rb-aside .sct-rb-h3):first-child {
@@ -5795,7 +5795,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 :is(.sct, #sct-table-armour) .sct-mu-playerstats .sct-mu-ps-table td.sct-mu-fp {
   --sc-font: var(--rb-display);
   background: rgb(255 163 0 / 10%);
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 17px;
   font-weight: 800;
 }
@@ -5822,7 +5822,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct .sct-mu-ps-ss:hover,
 .sct .sct-mu-ps-ss:focus-visible {
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: underline;
 }
 
@@ -5840,7 +5840,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border-top: 0;
   border-radius: 0 0 8px 8px;
   background: var(--rb-card);
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -5889,7 +5889,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 10px 16px;
   border-radius: 8px;
   background: var(--rb-gold);
-  color: var(--rb-navy) !important;
+  color: var(--tp-ink, var(--rb-navy)) !important;
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
@@ -5960,13 +5960,13 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 :is(.sct, #sct-table-armour) .sct-fp-table.is-usage td.sct-fp-x {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-fp-table.is-usage td.sct-fp-use {
   font-weight: 700;
   white-space: nowrap;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* Shorter rows (mak, 2026-10-20): the cell padding is 35% of what the other
@@ -5998,7 +5998,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border: 1px solid var(--rb-line);
   border-radius: 999px;
   background: var(--rb-card);
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -6105,7 +6105,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border-left: 4px solid var(--rb-gold);
   border-radius: 10px;
   background: var(--rb-card);
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: none;
 }
 
@@ -6143,7 +6143,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 18px;
   font-weight: 600;
   line-height: 1.45;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct .sct-wp-legend {
@@ -6178,7 +6178,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-weight: 700;
   line-height: 1.3;
   white-space: nowrap;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   pointer-events: none;
 }
 
@@ -6236,7 +6236,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-rb .sct-wp-text a {
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
 }
 
 .sct-rb .sct-wp-move {
@@ -6293,7 +6293,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 20px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pc-compare td.sct-pc-v.is-away {
@@ -6317,7 +6317,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 17px;
   font-weight: 600;
   line-height: 1.45;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct .sct-pc-shares {
@@ -6357,7 +6357,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 14px;
   font-weight: 500;
   text-align: left;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -6484,14 +6484,14 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb .sct-wp-side .sct-wp-text {
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb .sct-wp-side .sct-wp-move {
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-rb .sct-wp-side .sct-wp-when {
@@ -6707,7 +6707,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb-dl dd {
   margin: 0;
   font-weight: 500;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* Game info and Before and after centered (mak, 2026-11-02), the way the
@@ -6820,7 +6820,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-jump .sct-jump-label {
   font-weight: 700;
   font-size: 14px;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-jump .sct-jump-list {
@@ -6843,7 +6843,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border: 1px solid var(--rb-line);
   border-radius: 999px;
   background: var(--rb-card);
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 14px;
   line-height: 1.3;
   text-decoration: none;
@@ -6898,7 +6898,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   margin: 0;
   font-size: 16px;
   line-height: 1.5;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* ---- highlights */
@@ -7080,7 +7080,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-pc-grid dd small {
@@ -7092,7 +7092,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb .sct-pc-shares {
   margin: 12px 0 0;
   font-size: 14px;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-pc-results {
@@ -7110,7 +7110,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border: 0;
   border-top: 1px solid var(--rb-line);
   background: transparent;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 15px;
   font-variant-numeric: tabular-nums;
   text-align: left;
@@ -7149,7 +7149,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb :is(.sct-pc-drives, .sct-fp-more) > summary {
   cursor: pointer;
   font-weight: 600;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   padding: 8px 0;
 }
 
@@ -7190,7 +7190,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 7px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   white-space: nowrap;
 }
 
@@ -7233,7 +7233,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   border: 0;
   border-top: 1px solid var(--rb-line);
   background: transparent;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   font-size: 14px;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -7391,7 +7391,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   font-size: 12px;
   font-weight: 600;
   vertical-align: 2px;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-fp-tag.is-hot {
@@ -7424,7 +7424,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-fp-trend-head b {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-fp-spark {
@@ -7528,7 +7528,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-ex-game {
   display: block;
   padding: 8px 0;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   text-decoration: none;
 }
 
@@ -7572,7 +7572,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct-ex-side.is-win {
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ex-side.is-other,
@@ -7618,7 +7618,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-family: var(--rb-display);
   font-size: 18px;
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ex-team-crest {
@@ -7636,7 +7636,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct-rb .sct-ex-hubs a {
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: underline;
   text-decoration-color: var(--rb-gold);
   text-decoration-thickness: 2px;
@@ -7670,7 +7670,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--rb-paper);
   font-size: 14px;
   font-weight: 600;
-  color: var(--rb-ink) !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
   text-decoration: none;
 }
 
@@ -7744,7 +7744,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-family: var(--rb-display);
   font-size: 17px;
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-ba-none {
@@ -7787,14 +7787,14 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: clamp(15px, 2.4vw, 17px);
   font-weight: 600;
   line-height: 1.45;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The better side of a row, marked on the figure rather than on the cell. The
    bars already show the split; this is for the reader scanning the numbers
    alone, and it has to survive a row where "better" means the smaller number. */
 :is(.sct, #sct-table-armour) .sct-mu-val.is-better {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-glance .sct-mu-val {
@@ -7802,7 +7802,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-glance .sct-mu-val.is-better {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -7940,7 +7940,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--rb-ink, var(--tp-c-13233a, #13233a));
+  color: var(--tp-ink, var(--rb-ink, var(--tp-c-13233a, #13233a)));
 }
 
 .sct-mu-scoring-option input:checked + span {
@@ -8174,7 +8174,7 @@ a.sct-ex-game:hover .sct-ex-line {
    table. One column at full strength keeps a five-column row scannable; five
    at full strength is a wall. */
 :is(.sct, #sct-table-armour) .sct-mu-ps-table td.is-key {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -8218,7 +8218,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-mu-ps-link {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   line-height: 1.25;
 }
 
@@ -8310,7 +8310,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-usage-logo {
@@ -8408,7 +8408,7 @@ a.sct-ex-game:hover .sct-ex-line {
   text-overflow: ellipsis;
   font-size: 13px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-usage-bar-meta {
@@ -8423,7 +8423,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .sct-mu-usage-track {
@@ -8603,7 +8603,7 @@ a.sct-ex-game:hover .sct-ex-line {
   --rb-navy: var(--tp-c-0f1e33, #0f1e33);
   --rb-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
   --rb-body: "Barlow", system-ui, sans-serif;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct.sct-mu:not(.is-embed):has(.sct-rb) {
@@ -8725,7 +8725,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct-mu-score .is-win,
 .sct-mu-score .is-tie {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-mu-score .is-loss {
@@ -8776,13 +8776,13 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-mu-tab:hover {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   background: none;
 }
 
 .sct .sct-mu-tab.is-active,
 .sct .sct-mu-tab[aria-selected="true"] {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   border-bottom-color: var(--rb-gold);
 }
 
@@ -9078,7 +9078,7 @@ a.sct-ex-game:hover .sct-ex-line {
   max-width: 66ch;
   font-size: 17px;
   line-height: 1.6;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-mu-story .sct-meant {
@@ -9123,7 +9123,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct-mu .sct-rb-dl dd a {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* Anything a hash can land on clears the sticky bar. */
@@ -9165,7 +9165,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: 8px;
   background: var(--rb-card);
   font-size: 16px;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-fp-table.is-allowed {
@@ -9244,7 +9244,7 @@ a.sct-ex-game:hover .sct-ex-line {
   min-width: 0;
   font-size: 15px;
   font-variant-numeric: tabular-nums;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-bet-cell.is-away {
@@ -9261,7 +9261,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-family: var(--rb-display);
   font-size: 16px;
   font-weight: 800;
-  color: var(--rb-team, var(--rb-ink));
+  color: var(--tp-ink, var(--rb-team, var(--rb-ink)));
 }
 
 .sct-bet-line-v {
@@ -9275,7 +9275,7 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct-bet-verdict {
   font-size: 13px;
   font-weight: 600;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-bet-verdict.is-yes span {
@@ -9299,7 +9299,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-family: var(--rb-display);
   font-size: 18px;
   font-weight: 800;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-bet-cell .sct-fp-diff {
@@ -9367,7 +9367,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct-bet .sct-bet-take a {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
   text-decoration: underline;
   text-decoration-color: var(--rb-gold);
   text-decoration-thickness: 2px;
@@ -9378,7 +9378,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 10px;
   font-size: 16px;
   line-height: 1.4;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-bet-trends-panel .sct-fp-wrap {
@@ -9440,7 +9440,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-top: 1px solid var(--rb-line);
   font-size: 14px;
   font-weight: 600;
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 .sct-bet-fine {
@@ -9485,7 +9485,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct-mu .sct-rb-note a {
-  color: var(--rb-ink);
+  color: var(--tp-ink, var(--rb-ink));
 }
 
 /* ---- Keep exploring */
@@ -9645,7 +9645,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-intro strong {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 /* The Target Tree, the Backfield Split and the pass map sit on the page, not
@@ -9661,7 +9661,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us .sct-us-h3 {
   margin: 0 0 2px;
   padding: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.15rem !important;
   font-weight: 800;
   line-height: 1.25;
@@ -9670,7 +9670,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us .sct-us-h4 {
   margin: 0 0 10px;
   padding: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 0.98rem !important;
   font-weight: 800;
 }
@@ -9695,7 +9695,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 12px 14px;
   border-radius: 10px;
   background: var(--sc-surface-soft);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.9rem;
 }
 
@@ -9764,7 +9764,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
   background: none;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-weight: 400;
   text-align: left;
   vertical-align: middle;
@@ -9856,7 +9856,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-board-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.86rem;
   font-weight: 800;
   line-height: 1.15;
@@ -10008,7 +10008,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.8rem;
 }
 
@@ -10143,7 +10143,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-takeaway strong {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* Run direction, below a dashed rule inside the backfield card. */
@@ -10257,7 +10257,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 9px 12px;
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-weight: 400;
   text-align: left;
   vertical-align: middle;
@@ -10294,7 +10294,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-band-name {
   display: inline-block;
   margin-right: 10px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -10365,7 +10365,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--sc-border);
   border-radius: 8px;
   background: var(--sc-surface);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1;
@@ -10397,7 +10397,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-name {
   display: block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -10488,7 +10488,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-leads {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-weight: 700;
 }
 
@@ -10591,7 +10591,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-pnote strong {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-us-key-help {
@@ -10621,7 +10621,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-key-sum:hover {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-us-legend {
@@ -10692,7 +10692,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-signal-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-us-signal-body {
@@ -10719,7 +10719,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-proof .sct-us-num {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 @container usage (max-width: 860px) {
@@ -10857,13 +10857,13 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-bridge {
   margin: 12px 0 0;
   padding: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.86rem;
   line-height: 1.5;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-bridge strong {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -10885,7 +10885,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-convert-lead {
   margin: 0 0 14px;
   padding: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -10910,7 +10910,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-product-title {
   margin: 0;
   padding: 0;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.05rem;
   font-weight: 800;
 }
@@ -10925,7 +10925,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) ul.sct-us-product-list {
   margin: 0 0 12px;
   padding: 0 0 0 16px;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.86rem;
   line-height: 1.6;
 }
@@ -10991,7 +10991,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-lead {
   margin-bottom: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   line-height: 1.55;
 }
 
@@ -11052,7 +11052,7 @@ a.sct-ex-game:hover .sct-ex-line {
   position: relative;
   margin: 0 0 10px;
   padding: 0 0 10px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.15rem !important;
   font-weight: 800;
   line-height: 1.25;
@@ -11073,7 +11073,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-h4 {
   margin: 0 0 6px;
   padding: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1rem !important;
   font-weight: 800;
   line-height: 1.3;
@@ -11104,7 +11104,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font: inherit;
   font-size: 0.85rem;
   font-weight: 700;
@@ -11139,7 +11139,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-right: 1px solid var(--sc-border);
   border-top: 4px solid var(--team-primary, var(--sc-navy));
   background: var(--sc-surface-soft);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-kicker {
@@ -11154,7 +11154,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-name {
   margin: 4px 0 0;
   padding: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.6rem !important;
   font-weight: 800;
   line-height: 1.1;
@@ -11268,7 +11268,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-step-years {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.9rem;
   font-weight: 800;
   white-space: nowrap;
@@ -11398,7 +11398,7 @@ a.sct-ex-game:hover .sct-ex-line {
   position: relative;
   margin: 0 0 10px;
   padding: 0 0 10px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.15rem !important;
   font-weight: 800;
   line-height: 1.25;
@@ -11428,7 +11428,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--sc-border);
   border-radius: 6px;
   background: var(--sc-surface);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -11502,7 +11502,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 10px;
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.88rem;
   font-weight: 400;
   text-align: left;
@@ -11543,11 +11543,11 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-table .sct-co-th.is-now {
   border-top: 2px solid var(--sc-navy);
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-table .sct-co-td.is-now {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.92rem;
   font-weight: 800;
 }
@@ -11680,7 +11680,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font: inherit;
   font-weight: inherit;
   text-align: left;
@@ -11697,7 +11697,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-tlabel.is-def:hover,
 :is(.sct, #sct-table-armour) .sct-co-tlabel.is-def:focus-visible {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   text-decoration-color: var(--sc-gold);
 }
 
@@ -11709,7 +11709,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-top: 3px solid var(--sc-gold);
   border-radius: var(--sc-radius-sm);
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
   text-align: left;
   white-space: normal;
@@ -11727,7 +11727,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 6px;
   margin: 0;
   padding: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 12px;
   font-weight: 800;
   line-height: 1.3;
@@ -11748,7 +11748,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-def-close:hover {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-def-body {
@@ -11776,7 +11776,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-td.is-now {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -11794,7 +11794,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-change.is-up {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-change.is-down {
@@ -11831,7 +11831,7 @@ a.sct-ex-game:hover .sct-ex-line {
   position: relative;
   margin: 0 0 10px;
   padding: 0 0 10px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.25;
@@ -11977,7 +11977,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-defval {
   --sc-font: var(--co-display);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-family: var(--co-display);
   font-size: 1.5rem;
   font-weight: 700;
@@ -12002,7 +12002,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-more-q {
   display: inline-block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.72rem;
   font-weight: 800;
   cursor: pointer;
@@ -12243,7 +12243,7 @@ a.sct-ex-game:hover .sct-ex-line {
   position: relative;
   margin: 0;
   padding: 0 0 10px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.25;
@@ -12268,7 +12268,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-fpstat-v {
   --sc-font: var(--co-display);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-family: var(--co-display);
   font-size: 1.35rem;
   font-weight: 700;
@@ -12297,7 +12297,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-fpyear {
   --sc-font: var(--co-display);
   display: block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-family: var(--co-display);
   font-size: 1.2rem;
   font-weight: 700;
@@ -12306,7 +12306,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-fpv {
   display: block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -12321,7 +12321,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-fptable .is-share .sct-co-fpv.is-lean,
 :is(.sct, #sct-table-armour) .sct-co-fptable .is-lb .sct-co-fpv.is-workhorse {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -12454,7 +12454,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-fpill.is-mid {
   background: var(--sc-surface-sink);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fpill.is-low {
@@ -12478,7 +12478,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-fstop {
   display: block;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -12694,7 +12694,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-take-line {
   margin: 3px 0 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.45;
@@ -12720,7 +12720,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-left: 3px solid var(--sc-gold);
   border-radius: 0 10px 10px 0;
   background: var(--tp-c-fdf8ec, #fdf8ec);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-bl-title {
@@ -12728,7 +12728,7 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -12768,7 +12768,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-bl-v {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -12931,7 +12931,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   display: flex;
   flex-direction: column;
   gap: 30px; /* was 43px; tightened ~30% 2026-10-23 (mak): one continuous dashboard */
@@ -12940,7 +12940,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv a {
-  color: var(--pv-link);
+  color: var(--tp-ink, var(--pv-link));
   text-decoration-color: var(--pv-gold);
   text-underline-offset: 3px;
 }
@@ -13241,7 +13241,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv .sct-h2 {
   margin: 0 0 6px;
   padding-bottom: 10px;
-  color: var(--pv-ink) !important;
+  color: var(--tp-ink, var(--pv-ink)) !important;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-h3 {
@@ -13311,7 +13311,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   line-height: 1.3;
   margin-bottom: 4px;
-  color: var(--pv-ink) !important;
+  color: var(--tp-ink, var(--pv-ink)) !important;
 }
 
 /* Compressed 2026-10-23 (mak): a three-sentence read, the meter right under
@@ -13416,11 +13416,11 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-row-name {
   font-weight: 800;
   font-size: 15px;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-row-name a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   text-decoration: none;
 }
 
@@ -13487,7 +13487,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -13495,7 +13495,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-top: 6px;
   font-size: 13.5px;
   line-height: 1.4;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -13528,7 +13528,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-top: 7px;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-warn .sct-pv-verdict {
@@ -13594,7 +13594,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--pv-soft);
   font-size: 14px !important;
   line-height: 1.2;
-  color: var(--pv-ink) !important;
+  color: var(--tp-ink, var(--pv-ink)) !important;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-teambar-logo {
@@ -13719,11 +13719,11 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 2px 0 0;
   font-size: 14.5px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-read dd a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   text-decoration: none;
 }
 
@@ -13754,7 +13754,7 @@ a.sct-ex-game:hover .sct-ex-line {
   vertical-align: top;
   border: 0;
   border-top: 1px solid var(--pv-line);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-weight: 400;
 }
 
@@ -13775,7 +13775,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-table tbody th a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-lev.is-up { background: color-mix(in srgb, #0f6b4f 14%, var(--pv-card)); color: var(--pv-green); }
@@ -13823,7 +13823,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-right: 2px;
   font-size: 16px;
   letter-spacing: 0;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-counts .is-up b { color: #0f6b4f; }
@@ -13849,7 +13849,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-sig-i b {
   font-size: 15px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -13863,7 +13863,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-def b {
   font-size: 16px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -13929,7 +13929,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-take p:not(.sct-pv-take-h) {
   font-size: 13.5px;
   line-height: 1.5;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-h3:has(+ .sct-pv-card-sub) {
@@ -13973,7 +13973,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-hl-v {
   font-size: 15px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-hl-s {
@@ -13983,7 +13983,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-hl-s a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cbar {
@@ -14109,11 +14109,11 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 4px 8px;
   font-size: 15px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-watch-top a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   text-decoration: none;
 }
 
@@ -14160,7 +14160,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-next p b {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-weight: 800;
 }
 
@@ -14169,7 +14169,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-watch-act {
   font-size: 12.5px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   text-decoration: none;
   border-bottom: 2px solid var(--pv-gold);
   white-space: nowrap;
@@ -14196,7 +14196,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 10px;
   font-size: 17px !important;
   font-weight: 800;
-  color: var(--pv-ink) !important;
+  color: var(--tp-ink, var(--pv-ink)) !important;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-foot-groups {
@@ -14236,7 +14236,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 9px 4px;
   border: 0;
   border-bottom: 1px solid var(--pv-line);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-weight: 400;
 }
 
@@ -14246,7 +14246,7 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pv-ink) !important;
+  color: var(--tp-ink, var(--pv-ink)) !important;
   border-bottom: 1px solid var(--pv-border);
 }
 
@@ -14270,7 +14270,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   margin: 0 6px;
 }
 
@@ -14401,7 +14401,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-stat-k {
@@ -14436,7 +14436,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--pv-border);
   border-radius: 10px;
   background: var(--pv-card);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   text-decoration: none;
 }
 
@@ -14444,7 +14444,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-pv-game-when { margin-bottom: 2px; font-size: 10.5px; font-weight: 700; color: var(--pv-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 :is(.sct, #sct-table-armour) .sct-pv-game-line { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; }
 /* Winner bold, loser muted (mak, 2026-10-05). */
-:is(.sct, #sct-table-armour) .sct-pv-game-line b { font-weight: 800; color: var(--pv-ink); }
+:is(.sct, #sct-table-armour) .sct-pv-game-line b { font-weight: 800; color: var(--tp-ink, var(--pv-ink)); }
 :is(.sct, #sct-table-armour) .sct-pv-game-line.is-loss { color: var(--pv-muted); font-weight: 500; }
 :is(.sct, #sct-table-armour) .sct-pv-game-line.is-loss b { font-weight: 500; color: var(--pv-muted); }
 :is(.sct, #sct-table-armour) .sct-pv-stat-n { font-size: 12px; line-height: 1.35; color: var(--pv-muted); }
@@ -14474,7 +14474,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 11px 16px;
   border-radius: 10px;
   background: var(--pv-gold);
-  color: var(--tp-c-0b1634, #0b1634) !important;
+  color: var(--tp-ink, var(--tp-c-0b1634, #0b1634)) !important;
   font-size: 14px;
   font-weight: 800;
   line-height: 1;
@@ -14489,7 +14489,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-qa { border-bottom: 1px solid var(--pv-line); }
-:is(.sct, #sct-table-armour) .sct-pv-qa summary { cursor: pointer; padding: 13px 0; font-weight: 800; font-size: 15px; color: var(--pv-ink); }
+:is(.sct, #sct-table-armour) .sct-pv-qa summary { cursor: pointer; padding: 13px 0; font-weight: 800; font-size: 15px; color: var(--tp-ink, var(--pv-ink)); }
 :is(.sct, #sct-table-armour) .sct-pv-qa p { padding: 0 0 14px; font-size: 14px; line-height: 1.6; color: var(--pv-muted-strong); }
 
 /* ---- 10. footer */
@@ -14506,7 +14506,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-foot-links a {
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -14716,7 +14716,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   background: var(--sc-surface);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.2;
@@ -14927,7 +14927,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 4px 4px;
   border: 0;
   border-bottom: 1px solid var(--pv-line);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-weight: 400;
   text-align: left;
   vertical-align: middle;
@@ -15029,14 +15029,14 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 14.5px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 :is(.sct, #sct-table-armour) .sct-mu-pr-name a {
-  color: var(--pv-link);
+  color: var(--tp-ink, var(--pv-link));
   text-decoration-color: var(--pv-gold);
   text-underline-offset: 3px;
 }
@@ -15071,7 +15071,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-mu-pr-pts b {
   font: 700 20px/1 var(--pv-display);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -15199,7 +15199,7 @@ a.sct-ex-game:hover .sct-ex-line {
   min-width: 0;
   font-size: 14px;
   font-weight: 800;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-lb-face {
@@ -15254,7 +15254,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 10.5px;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-lb-who a { color: var(--pv-ink); }
+:is(.sct, #sct-table-armour) .sct-pv-lb-who a { color: var(--tp-ink, var(--pv-ink)); }
 
 :is(.sct, #sct-table-armour) .sct-pv-lb-cell {
   min-width: 0;
@@ -15298,7 +15298,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-lb-lab small {
@@ -15314,7 +15314,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   white-space: nowrap;
 }
 
@@ -15360,7 +15360,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-group {
@@ -15402,7 +15402,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-cmp-v b {
   font: 800 17px/1 var(--pv-display);
-  color: var(--pv-ink);
+  color: var(--tp-ink, var(--pv-ink));
   font-variant-numeric: tabular-nums;
 }
 
@@ -15505,7 +15505,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 2px 8px;
   border-radius: 6px;
   background: rgba(11, 22, 52, 0.06);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -15624,20 +15624,20 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-kpi-value {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 2rem;
   line-height: 1.05;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-kpi-name {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.25;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-kpi-name .sct-player-link {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   text-decoration-color: var(--sc-border);
 }
 
@@ -15742,7 +15742,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
@@ -15861,13 +15861,13 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-trend-body {
   margin: 0;
   padding: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.88rem;
   line-height: 1.5;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The definitions read as sentences, one per line, not a wrapped key. */
@@ -15900,7 +15900,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us .sct-us-signal-name-h {
   margin: 0;
   padding: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.05rem !important;
   font-weight: 800;
   line-height: 1.25;
@@ -16000,7 +16000,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-kpi-value {
   --sc-font: var(--us-display, "Barlow Condensed", "Arial Narrow", sans-serif);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 1.7rem;
   font-weight: 700;
   line-height: 1.05;
@@ -16016,11 +16016,11 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-kpi-line.is-move {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-kpi-line.is-up {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-kpi-line.is-down {
@@ -16028,7 +16028,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-kpi-line.is-rank {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -16042,7 +16042,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-idpara {
   margin: 0;
   padding: 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -16111,7 +16111,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-left: 3px solid var(--sc-gold);
   border-radius: 0 8px 8px 0;
   background: var(--sc-surface-soft);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.86rem;
   line-height: 1.5;
 }
@@ -16162,7 +16162,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-split-key b {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -16296,7 +16296,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fread-h {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.92rem;
   font-weight: 800;
 }
@@ -16308,7 +16308,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-co-fread-b {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 0.8rem;
   line-height: 1.45;
 }
@@ -16585,7 +16585,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-icon {
   display: inline-flex;
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-icon svg {
@@ -16595,7 +16595,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-label {
   margin: 0;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -16605,7 +16605,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-value {
   --sc-font: var(--cp-display);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.8rem;
   font-weight: 700;
   line-height: 1;
@@ -16613,14 +16613,14 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-move {
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1.3;
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-move.is-up {
-  color: var(--cp-navy);
+  color: var(--tp-ink, var(--cp-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-kpi-move.is-down {
@@ -16635,7 +16635,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--tp-c-e8edf5, #e8edf5);
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.74rem;
   font-weight: 800;
 }
@@ -16716,7 +16716,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-bottom: 1px solid var(--tp-c-e9eef4, #e9eef4);
   background: none;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.94rem;
   text-align: left;
   vertical-align: middle;
@@ -16726,7 +16726,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 8px 12px;
   background: var(--cp-surface);
   border-bottom: 1.5px solid var(--cp-line);
-  color: var(--cp-ink) !important;
+  color: var(--tp-ink, var(--cp-ink)) !important;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -16752,7 +16752,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-table .is-metric .sct-co-tlabel {
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.95rem;
   font-weight: 800;
   text-decoration: none;
@@ -16773,7 +16773,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-table .is-now {
   background: var(--cp-gold-tint);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.02rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -16866,7 +16866,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* Direction, not judgment (mak's refinement note): navy up, slate down. */
 :is(.sct, #sct-table-armour) .sct-cp-change {
-  color: var(--cp-navy);
+  color: var(--tp-ink, var(--cp-navy));
   font-size: 0.94rem;
   font-weight: 800;
   white-space: nowrap;
@@ -16909,7 +16909,7 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.05rem;
   font-weight: 800;
 }
@@ -16921,7 +16921,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-take-h {
   margin: 0;
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.25;
@@ -16930,7 +16930,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cp-take-b {
   flex: 1 1 auto;
   margin: 0;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.88rem;
   line-height: 1.5;
 }
@@ -16956,14 +16956,14 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-stat-v {
   --sc-font: var(--cp-display);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.6rem;
   font-weight: 700;
   line-height: 1;
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-stat-l {
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.74rem;
   font-weight: 600;
 }
@@ -16976,7 +16976,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-form-title {
   margin: 0;
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.05rem;
   font-weight: 800;
 }
@@ -17026,7 +17026,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.86rem;
 }
 
@@ -17142,7 +17142,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   flex: 0 0 auto;
   margin-top: 2px;
-  color: var(--cp-navy);
+  color: var(--tp-ink, var(--cp-navy));
 }
 
 /* ---- tier 2 (under 1100px): profile full width over four KPIs; the
@@ -17606,7 +17606,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-radius: 999px;
   background: none;
-  color: var(--up-navy);
+  color: var(--tp-ink, var(--up-navy));
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
@@ -17627,7 +17627,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--up-line);
   border-radius: 999px;
   background: var(--up-surface);
-  color: var(--up-navy);
+  color: var(--tp-ink, var(--up-navy));
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
@@ -17667,7 +17667,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-bottom: 1px solid var(--tp-c-edf1f6, #edf1f6);
   background: none;
-  color: var(--up-ink);
+  color: var(--tp-ink, var(--up-ink));
   font-size: 0.82rem;
   line-height: 1.2;
   text-align: left;
@@ -17724,7 +17724,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-up-name {
-  color: var(--up-navy);
+  color: var(--tp-ink, var(--up-navy));
   font-size: 0.84rem;
   font-weight: 800;
   line-height: 1.15;
@@ -17788,7 +17788,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-up .sct-up-bar-val {
   --sc-font: var(--up-display);
   flex: 0 0 3.2ch;
-  color: var(--up-navy);
+  color: var(--tp-ink, var(--up-navy));
   font-size: 1rem;
   font-weight: 700;
   text-align: right;
@@ -17862,7 +17862,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   flex: 0 0 auto;
   margin-top: 1px;
-  color: var(--up-navy);
+  color: var(--tp-ink, var(--up-navy));
 }
 
 /* The boards share the narrower column: tighter name and bar columns so
@@ -17964,7 +17964,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-mu-h3 {
   margin-top: 24px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 1.15rem !important;
   font-weight: 800;
   line-height: 1.25;
@@ -18213,7 +18213,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-block;
   padding: 3px 8px;
   border-radius: 999px;
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   background: var(--tp-c-e9eef6, #e9eef6);
   box-shadow: inset 0 0 0 1px rgba(11, 22, 52, 0.06);
   font-size: 0.64rem;
@@ -18248,7 +18248,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   line-height: 1;
 }
 
@@ -18284,7 +18284,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-prm-line {
   margin: 0;
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   font-size: 0.86rem;
   font-weight: 600;
   line-height: 1.3;
@@ -18317,7 +18317,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-prm-bar > b {
   flex: 0 0 auto;
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   font-size: 0.8rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -18396,7 +18396,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-prm-meta svg {
-  color: var(--prm-navy-3);
+  color: var(--tp-ink, var(--prm-navy-3));
   opacity: 0.7;
 }
 
@@ -18465,7 +18465,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-prm-insight strong {
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   font-weight: 800;
 }
 
@@ -18522,7 +18522,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-prm-rail-tag b {
-  color: var(--prm-ink);
+  color: var(--tp-ink, var(--prm-ink));
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -18791,7 +18791,7 @@ a.sct-ex-game:hover .sct-ex-line {
   --cpt-shadow-card: 0 2px 4px rgba(13, 35, 67, 0.035), 0 6px 14px rgba(13, 35, 67, 0.045);
   margin: 0 0 30px;
   padding: 0;
-  color: var(--cpt-text);
+  color: var(--tp-ink, var(--cpt-text));
 }
 
 /* ---- sections and their navy headers */
@@ -18953,7 +18953,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cpt-split-stat b {
   --sc-font: var(--cp-display);
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 1.9rem;
   font-weight: 700;
   line-height: 1;
@@ -19024,7 +19024,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cpt-split-key b {
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -19103,7 +19103,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cpt-kpi-value {
   --sc-font: var(--cp-display);
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 2.1rem;
   font-weight: 700;
   line-height: 1;
@@ -19111,7 +19111,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cpt-kpi-line {
-  color: var(--cpt-text);
+  color: var(--tp-ink, var(--cpt-text));
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.3;
@@ -19187,7 +19187,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cpt-h4 {
   margin: 0;
   padding: 0;
-  color: var(--cpt-navy-950) !important;
+  color: var(--tp-ink, var(--cpt-navy-950)) !important;
   font-size: 1.2rem !important;
   font-weight: 800;
   line-height: 1.2;
@@ -19224,7 +19224,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cpt-row-label {
   min-width: 0;
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.25;
@@ -19271,7 +19271,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cpt-row-val b {
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 1rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -19362,7 +19362,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cpt-take-h {
   margin: 0;
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 0.95rem;
   font-weight: 800;
   line-height: 1.35;
@@ -19396,7 +19396,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cpt-metric-value {
   --sc-font: var(--cp-display);
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 2.1rem;
   font-weight: 700;
   line-height: 1;
@@ -19410,7 +19410,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cpt-metric-change {
   padding: 0 0 6px;
   border-bottom: 1px solid var(--cpt-border-soft);
-  color: var(--cpt-text);
+  color: var(--tp-ink, var(--cpt-text));
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.35;
@@ -19442,7 +19442,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cpt-caution {
-  color: var(--cpt-text);
+  color: var(--tp-ink, var(--cpt-text));
   font-style: italic;
 }
 
@@ -19489,7 +19489,7 @@ a.sct-ex-game:hover .sct-ex-line {
   left: 0;
   right: 0;
   margin-bottom: 6px;
-  color: var(--cpt-navy-950);
+  color: var(--tp-ink, var(--cpt-navy-950));
   font-size: 0.92rem;
   font-weight: 800;
   line-height: 1;
@@ -19848,7 +19848,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cp-take-h,
 :is(.sct, #sct-table-armour) .sct-cpt-take-h {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-stat {
@@ -20053,7 +20053,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 4px 12px;
   border-radius: 9px;
   background: var(--tp-c-dfe9f5, #dfe9f5);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.45rem;
   font-weight: 700;
   line-height: 1;
@@ -20087,7 +20087,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cc-code {
   --sc-font: var(--cp-display);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.3rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -20106,7 +20106,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cc-role {
   min-width: 0;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.35;
@@ -20349,7 +20349,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   flex: 0 0 auto;
   margin-top: 1px;
-  color: var(--cp-navy);
+  color: var(--tp-ink, var(--cp-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-cc-empty {
@@ -20596,7 +20596,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  color: var(--sit-ink);
+  color: var(--tp-ink, var(--sit-ink));
   font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -20653,7 +20653,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: 11px;
   background: linear-gradient(180deg, var(--tp-c-fff6d6, #fff6d6) 0%, var(--tp-c-fdeab3, #fdeab3) 100%);
   box-shadow: inset 0 1px 0 #fff;
-  color: var(--sit-ink);
+  color: var(--tp-ink, var(--sit-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-us-sit-icon b {
@@ -20675,7 +20675,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-sit-label {
-  color: var(--sit-ink);
+  color: var(--tp-ink, var(--sit-ink));
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1.2;
@@ -20696,7 +20696,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-sit-pct {
-  color: var(--sit-ink);
+  color: var(--tp-ink, var(--sit-ink));
   font-size: 1.55rem;
   font-weight: 800;
   line-height: 1;
@@ -20770,13 +20770,13 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us-sit-card.is-featured .sct-us-sit-card-icon {
   background: linear-gradient(180deg, var(--tp-c-f4c842, #f4c842) 0%, var(--prm-gold) 100%);
   border-color: var(--tp-c-c9a22c, #c9a22c);
-  color: var(--prm-navy);
+  color: var(--tp-ink, var(--prm-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-us-sit-card-title {
   margin: 0;
   padding: 0;
-  color: var(--sit-ink) !important;
+  color: var(--tp-ink, var(--sit-ink)) !important;
   font-size: 1.2rem !important;
   font-weight: 800;
   line-height: 1.2;
@@ -20785,7 +20785,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-us-sit-card-body {
   margin: 0;
-  color: var(--sit-ink);
+  color: var(--tp-ink, var(--sit-ink));
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -20961,7 +20961,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cs-chip-v {
   --sc-font: var(--cp-display);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 1.95rem;
   font-weight: 700;
   line-height: 1;
@@ -20969,7 +20969,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-chip-l {
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.88rem;
   font-weight: 500;
   line-height: 1.3;
@@ -21015,7 +21015,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 8px 10px;
   border-bottom: 1px solid var(--tp-c-cbd9eb, #cbd9eb);
   background: linear-gradient(110deg, var(--tp-c-edf4fc, #edf4fc) 0%, var(--tp-c-e4eef9, #e4eef9) 100%);
-  color: var(--cp-navy-deep) !important;
+  color: var(--tp-ink, var(--cp-navy-deep)) !important;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -21080,7 +21080,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-year {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.92rem;
   font-weight: 800;
 }
@@ -21098,7 +21098,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 1px 7px;
   border-radius: 999px;
   background: var(--tp-c-dbe8f8, #dbe8f8);
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -21127,7 +21127,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-code {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.86rem;
   font-weight: 800;
 }
@@ -21141,7 +21141,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cs-role {
   display: block;
-  color: var(--cp-ink);
+  color: var(--tp-ink, var(--cp-ink));
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -21160,7 +21160,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-ppg {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.98rem;
   font-weight: 800;
 }
@@ -21213,7 +21213,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-pct {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.88rem;
   font-weight: 700;
 }
@@ -21262,7 +21262,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cs-lb {
-  color: var(--cp-navy-deep);
+  color: var(--tp-ink, var(--cp-navy-deep));
   font-size: 0.95rem;
   font-weight: 800;
 }
@@ -21341,7 +21341,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   flex: 0 0 auto;
   margin-top: 1px;
-  color: var(--cp-navy);
+  color: var(--tp-ink, var(--cp-navy));
 }
 
 /* ---- narrower columns: the table keeps its geometry and scrolls */
@@ -21535,7 +21535,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-mid {
   background: var(--tp-c-eef2f7, #eef2f7);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 :is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-low {
@@ -21873,7 +21873,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--tp-c-d3e0ef, #d3e0ef);
   border-radius: 999px;
   background: linear-gradient(180deg, #fff 0%, var(--tp-c-f5f8fd, #f5f8fd) 100%);
-  color: var(--tpb-text);
+  color: var(--tp-ink, var(--tpb-text));
   font-size: 0.9rem;
   font-weight: 800;
   box-shadow: 0 3px 8px rgba(6, 31, 69, 0.1);
@@ -21890,7 +21890,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-tpb .sct-switch-panel {
-  color: var(--tpb-text);
+  color: var(--tp-ink, var(--tpb-text));
 }
 
 /* ---- the four KPI cards: white, gold icon, no gold bottom edge */
@@ -21915,7 +21915,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--tp-c-d4e0ee, #d4e0ee);
   border-radius: 13px;
   background: linear-gradient(145deg, #fff 0%, var(--tp-c-f7faff, #f7faff) 65%, var(--tp-c-ecf3fc, #ecf3fc) 100%);
-  color: var(--tpb-text);
+  color: var(--tp-ink, var(--tpb-text));
   box-shadow: 0 3px 8px rgba(8, 36, 75, 0.1), 0 8px 18px rgba(8, 36, 75, 0.08);
 }
 
@@ -21954,7 +21954,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-tpb-kpi-value {
-  color: var(--tpb-navy-950);
+  color: var(--tp-ink, var(--tpb-navy-950));
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.1;
@@ -22012,7 +22012,7 @@ a.sct-ex-game:hover .sct-ex-line {
   min-height: 48px;
   padding: 0 10px;
   border-radius: 13px;
-  color: var(--tpb-text);
+  color: var(--tp-ink, var(--tpb-text));
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
@@ -22021,7 +22021,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct .sct-tpb .sct-nav-link:hover {
   background: var(--tp-c-e1ecfa, #e1ecfa);
-  color: var(--tpb-navy-900);
+  color: var(--tp-ink, var(--tpb-navy-900));
 }
 
 .sct .sct-tpb .sct-nav-link:focus-visible {
@@ -22355,7 +22355,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: grid;
   gap: 16px;
   margin: 0;
-  color: var(--drp-text);
+  color: var(--tp-ink, var(--drp-text));
   font-family: var(--sc-font);
 }
 
@@ -22495,7 +22495,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 32px;
   border-bottom: 1px solid var(--drp-border);
   background: linear-gradient(180deg, var(--tp-c-f3f8fe, #f3f8fe) 0%, var(--tp-c-e9f1fa, #e9f1fa) 100%);
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -22514,7 +22514,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-drp-td {
   height: 40px;
   border-top: 1px solid var(--drp-border-light);
-  color: var(--drp-text);
+  color: var(--tp-ink, var(--drp-text));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-row:first-child .sct-drp-td {
@@ -22528,7 +22528,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
   font-weight: 800;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-table .is-player {
@@ -22563,7 +22563,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link,
 :is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link {
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-weight: 700;
   text-decoration: none;
   /* The chart's link rule draws a border under a name at rest; not here. */
@@ -22596,7 +22596,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-pos {
   display: block;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-weight: 800;
 }
 
@@ -22653,7 +22653,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 3px 8px;
   border-radius: 7px;
   background: var(--drp-surface-blue);
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -22684,7 +22684,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="cut"] {
   background: var(--tp-c-e6edf6, #e6edf6);
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="gone"] {
@@ -22717,7 +22717,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 8px 16px;
   background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-f4f8fd, #f4f8fd) 100%);
   border-bottom: 2px solid var(--drp-gold);
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-card-head.is-light .sct-drp-icon {
@@ -22738,13 +22738,13 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: baseline;
   gap: 4px 18px;
   margin: 0;
-  color: var(--drp-text);
+  color: var(--tp-ink, var(--drp-text));
   font-size: 0.82rem;
   font-weight: 600;
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-strip .sct-drp-num {
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 1.28rem;
   line-height: 1;
 }
@@ -22755,7 +22755,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-kicker {
   margin: 8px 0 0;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.76rem;
   font-weight: 700;
 }
@@ -22765,7 +22765,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 7px 12px;
   border-radius: 9px;
   background: var(--drp-gold-light);
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.84rem;
   font-weight: 800;
 }
@@ -22803,7 +22803,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-family: "Barlow", var(--sc-font);
   font-size: 0.86rem;
   font-weight: 800;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-lmarks {
@@ -22842,7 +22842,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -22858,7 +22858,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 0.95rem;
   font-weight: 800;
   text-align: right;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-legend {
@@ -22866,7 +22866,7 @@ a.sct-ex-game:hover .sct-ex-line {
   flex-wrap: wrap;
   gap: 4px 16px;
   margin: 10px 0 0;
-  color: var(--drp-text);
+  color: var(--tp-ink, var(--drp-text));
   font-size: 0.74rem;
   font-weight: 600;
 }
@@ -22895,7 +22895,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-shares-title {
   margin: 0 0 6px;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.86rem;
   font-weight: 800;
   text-align: center;
@@ -22919,7 +22919,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -22948,7 +22948,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-share-n {
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.86rem;
   text-align: right;
 }
@@ -22998,7 +22998,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-r1-year .sct-drp-num {
   font-size: 0.86rem;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-r1-name {
@@ -23014,7 +23014,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--drp-border);
   border-radius: 6px;
   background: #fff;
-  color: var(--drp-navy-900);
+  color: var(--tp-ink, var(--drp-navy-900));
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -23166,7 +23166,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: grid;
   gap: 14px;
   margin: 0;
-  color: var(--dpp-text);
+  color: var(--tp-ink, var(--dpp-text));
   font-family: var(--sc-font);
 }
 
@@ -23198,7 +23198,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--dpp-border);
   border-radius: 999px;
   background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-eef4fb, #eef4fb) 100%);
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-family: inherit;
   font-size: 0.86rem;
   font-weight: 700;
@@ -23304,7 +23304,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dpp-strip-label {
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -23386,7 +23386,7 @@ a.sct-ex-game:hover .sct-ex-line {
   min-height: 38px;
   border-bottom: 1px solid var(--dpp-border);
   background: linear-gradient(180deg, var(--tp-c-eef4fb, #eef4fb) 0%, var(--tp-c-e3ecf7, #e3ecf7) 100%);
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -23418,7 +23418,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--tp-c-c3d6ec, #c3d6ec);
   border-radius: 9px;
   background: linear-gradient(145deg, var(--tp-c-e6f0fb, #e6f0fb) 0%, var(--tp-c-d2e2f4, #d2e2f4) 100%);
-  color: var(--tp-c-102b53, #102b53) !important;
+  color: var(--tp-ink, var(--tp-c-102b53, #102b53)) !important;
   font-size: 1.02rem !important;
   font-weight: 800;
   line-height: 1;
@@ -23546,7 +23546,7 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.2;
@@ -23624,7 +23624,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 1px 6px;
   border-radius: 5px;
   background: var(--dpp-surface-blue);
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -23632,7 +23632,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-dpp-ppr {
-  color: var(--dpp-navy-900);
+  color: var(--tp-ink, var(--dpp-navy-900));
   font-family: "Barlow", var(--sc-font);
   font-size: 0.76rem;
   font-weight: 800;
@@ -23675,7 +23675,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--dpp-border);
   border-radius: 8px;
   background: var(--dpp-surface-blue);
-  color: var(--dpp-navy-900) !important;
+  color: var(--tp-ink, var(--dpp-navy-900)) !important;
   font-size: 0.74rem !important;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -23814,7 +23814,7 @@ a.sct-ex-game:hover .sct-ex-line {
   container-type: inline-size;
   container-name: sp;
   margin: 0 0 8px;
-  color: var(--sp-text);
+  color: var(--tp-ink, var(--sp-text));
   font-family: var(--sc-font-text, inherit);
 }
 
@@ -23999,7 +23999,7 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct .sct-sp-label {
   min-width: 0;
   overflow: hidden;
-  color: var(--sp-text);
+  color: var(--tp-ink, var(--sp-text));
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -24036,7 +24036,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-sp-value {
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 0.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -24051,7 +24051,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--sp-neutral-light);
-  color: var(--sp-text);
+  color: var(--tp-ink, var(--sp-text));
   font-size: 0.68rem;
   font-weight: 800;
   text-align: center;
@@ -24103,7 +24103,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-sp-panel-title {
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 0.98rem;
   font-weight: 800;
   line-height: 1.15;
@@ -24167,7 +24167,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-sp-mix-title {
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 0.95rem;
   font-weight: 800;
 }
@@ -24200,7 +24200,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-top: 5px !important;
   font-size: 0.78rem;
   font-weight: 800;
-  color: var(--sp-text);
+  color: var(--tp-ink, var(--sp-text));
 }
 
 .sct .sct-sp-mix-key::before {
@@ -24254,7 +24254,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0 8px;
   border-bottom: 1px solid var(--sp-border);
   background: linear-gradient(180deg, var(--tp-c-eef4fc, #eef4fc) 0%, var(--tp-c-e4edf9, #e4edf9) 100%);
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -24277,7 +24277,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 .sct .sct-sp-h-year {
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 1rem;
   font-weight: 800;
 }
@@ -24321,7 +24321,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct .sct-sp-h-value {
   display: block;
-  color: var(--sp-navy-950);
+  color: var(--tp-ink, var(--sp-navy-950));
   font-size: 0.9rem;
   font-weight: 800;
   line-height: 1.15;
@@ -24454,7 +24454,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 14px;
   /* 0, not 28px: every tab banner starts the same distance under the tab strip (mak, 2026-11-05 evening). */
   margin: 0;
-  color: var(--ctp-text);
+  color: var(--tp-ink, var(--ctp-text));
   font-family: var(--sc-font);
 }
 
@@ -24529,14 +24529,14 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-sim-head .sct-ctp-icon {
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-sim-title {
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--ctp-navy-900) !important;
+  color: var(--tp-ink, var(--ctp-navy-900)) !important;
   font-size: 1.2rem !important;
   font-weight: 800;
   line-height: 1.15;
@@ -24599,7 +24599,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-family: var(--sc-font);
   font-size: 0.8rem;
   font-weight: 700;
@@ -24629,7 +24629,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-metric dt {
   margin: 0;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -24639,7 +24639,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-metric dd {
   margin: 1px 0 0;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 1.15rem;
   line-height: 1.1;
 }
@@ -24659,7 +24659,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--ctp-border);
   border-radius: 8px;
   background: #fff;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-family: var(--sc-font);
   font-size: 0.74rem;
   font-weight: 700;
@@ -24785,7 +24785,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 36px;
   border-bottom: 1px solid var(--ctp-border);
   background: linear-gradient(180deg, var(--tp-c-f3f8fe, #f3f8fe) 0%, var(--tp-c-e9f1fa, #e9f1fa) 100%);
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   white-space: nowrap;
 }
 
@@ -24852,7 +24852,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 40px;
   border-top: 1px solid var(--ctp-border-light);
   background: var(--ctp-row-bg);
-  color: var(--ctp-text);
+  color: var(--tp-ink, var(--ctp-text));
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-row:first-child .sct-ctp-td {
@@ -24997,7 +24997,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-name,
 :is(.sct, #sct-table-armour) .sct-ctp .sct-player-link {
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
@@ -25050,7 +25050,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-pos {
   display: inline-block;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -25062,7 +25062,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   text-align: center;
 }
 
@@ -25178,7 +25178,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-dead {
   min-width: 58px;
-  color: var(--ctp-text);
+  color: var(--tp-ink, var(--ctp-text));
   font-weight: 600;
 }
 
@@ -25206,7 +25206,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--ctp-navy-900) !important;
+  color: var(--tp-ink, var(--ctp-navy-900)) !important;
   font-size: 1.15rem !important;
   font-weight: 800;
   line-height: 1.15;
@@ -25227,7 +25227,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-card-strip .sct-ctp-num {
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.92rem;
 }
 
@@ -25256,7 +25256,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-feature-label {
   grid-area: label;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.2;
@@ -25265,7 +25265,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-ctp-feature-value {
   grid-area: value;
   justify-self: end;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 1.5rem;
   line-height: 1.05;
 }
@@ -25331,7 +25331,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-crow-label {
   grid-area: label;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -25342,7 +25342,7 @@ a.sct-ex-game:hover .sct-ex-line {
   align-items: center;
   gap: 6px;
   align-self: center;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 1rem;
 }
 
@@ -25355,7 +25355,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-card-dek {
   margin: 9px 0 0;
-  color: var(--ctp-text);
+  color: var(--tp-ink, var(--ctp-text));
   font-size: 0.76rem;
   line-height: 1.35;
 }
@@ -25454,7 +25454,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-rel-line .sct-ctp-num {
   min-width: 48px;
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.86rem;
 }
 
@@ -25489,7 +25489,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-dead-name {
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
@@ -25526,7 +25526,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-dead-row .sct-ctp-num {
-  color: var(--ctp-navy-900);
+  color: var(--tp-ink, var(--ctp-navy-900));
   font-size: 0.92rem;
 }
 
@@ -25534,7 +25534,7 @@ a.sct-ex-game:hover .sct-ex-line {
    Worth note worthNote() prints (contracts-render.ts) still wear their
    old classes inside this block. */
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-name {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: -0.005em;
@@ -25552,7 +25552,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* A name without a profile page: ink, not link navy. */
 :is(.sct, #sct-table-armour) .sct-ctp span.sct-ct-name {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-how {
@@ -25566,13 +25566,13 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-how summary {
   cursor: pointer;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 600;
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-how-body p {
   margin: 8px 0 0;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   line-height: 1.5;
 }
 
@@ -25699,7 +25699,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 14px;
   /* 0, not 32px: every tab banner starts the same distance under the tab strip (mak, 2026-11-05 evening). */
   margin: 0;
-  color: var(--nwp-text);
+  color: var(--tp-ink, var(--nwp-text));
   font-family: var(--sc-font);
 }
 
@@ -25870,7 +25870,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--nwp-blue-light);
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-dot {
@@ -25887,7 +25887,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--nwp-navy-900) !important;
+  color: var(--tp-ink, var(--nwp-navy-900)) !important;
   font-size: 1.02rem !important;
   font-weight: 800;
   line-height: 1.3;
@@ -25937,7 +25937,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-nwp-player {
   position: relative;
   z-index: 2;
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-weight: 700;
   text-decoration: none;
   border-bottom: 0;
@@ -25952,7 +25952,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.84rem;
   font-weight: 800;
   text-decoration: none;
@@ -25982,7 +25982,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--nwp-border);
   border-radius: 11px;
   background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-eef4fb, #eef4fb) 100%);
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.84rem;
   font-weight: 800;
   list-style: none;
@@ -26092,7 +26092,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-nwp-none-title {
   margin: 0;
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-weight: 800;
 }
 
@@ -26227,7 +26227,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-injury-name {
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
@@ -26276,7 +26276,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 6px 10px;
   border-radius: 9px;
   background: var(--nwp-surface-blue);
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -26284,7 +26284,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-nwp-when .sct-nwp-icon {
   width: 16px;
   height: 16px;
-  color: var(--nwp-navy-800);
+  color: var(--tp-ink, var(--nwp-navy-800));
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-when-dot {
@@ -26313,7 +26313,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-matchup .sct-matchup-code {
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-family: "Barlow", var(--sc-font);
   font-size: 1.3rem;
   font-weight: 800;
@@ -26334,7 +26334,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 30px;
   border-radius: 50%;
   background: var(--nwp-blue-light);
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -26352,12 +26352,12 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-note-value {
-  color: var(--nwp-text);
+  color: var(--tp-ink, var(--nwp-text));
   white-space: nowrap;
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-note-value .sct-nwp-num {
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.9rem;
 }
 
@@ -26387,7 +26387,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--nwp-border);
   border-radius: 11px;
   background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-eef4fb, #eef4fb) 100%);
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.2;
@@ -26411,7 +26411,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-nwp-tile-arrow {
-  color: var(--nwp-navy-900);
+  color: var(--tp-ink, var(--nwp-navy-900));
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1;
@@ -26522,7 +26522,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: grid;
   gap: 14px;
   margin: 18px 0 0;
-  color: var(--cf-text);
+  color: var(--tp-ink, var(--cf-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -26584,7 +26584,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 !important;
   padding: 0 !important;
   border: 0;
-  color: var(--cf-navy-950) !important;
+  color: var(--tp-ink, var(--cf-navy-950)) !important;
   font-size: 1.55rem !important;
   font-weight: 800;
   line-height: 1.15;
@@ -26663,7 +26663,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cf-trend-h {
-  color: var(--cf-navy-950);
+  color: var(--tp-ink, var(--cf-navy-950));
   font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.2;
@@ -26674,7 +26674,7 @@ a.sct-ex-game:hover .sct-ex-line {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 2px 10px;
-  color: var(--cf-navy-700);
+  color: var(--tp-ink, var(--cf-navy-700));
   font-size: 0.88rem;
   font-weight: 700;
 }
@@ -26767,7 +26767,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 0;
   border-bottom: 1px solid var(--cf-border);
   background: linear-gradient(180deg, var(--tp-c-f3f8fe, #f3f8fe) 0%, var(--tp-c-e9f1fa, #e9f1fa) 100%);
-  color: var(--cf-navy-950) !important;
+  color: var(--tp-ink, var(--cf-navy-950)) !important;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -26844,7 +26844,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-cf-stop-club {
-  color: var(--cf-navy-950);
+  color: var(--tp-ink, var(--cf-navy-950));
   font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -26893,7 +26893,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cf-pill.is-mid {
   background: var(--cf-neutral-light);
-  color: var(--cf-navy-900);
+  color: var(--tp-ink, var(--cf-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-cf-pill.is-low {
@@ -26904,13 +26904,13 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cf-pill.is-current {
   border: 1px dashed #9fb3c8;
   background: rgba(255, 255, 255, 0.6);
-  color: var(--cf-navy-950);
+  color: var(--tp-ink, var(--cf-navy-950));
 }
 
 :is(.sct, #sct-table-armour) .sct-cf-who {
   display: block;
   margin-top: 3px;
-  color: var(--cf-navy-700);
+  color: var(--tp-ink, var(--cf-navy-700));
   font-size: 0.76rem;
   font-weight: 600;
 }
@@ -26935,7 +26935,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cf-note-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--cf-navy-700);
+  color: var(--tp-ink, var(--cf-navy-700));
 }
 
 :is(.sct, #sct-table-armour) .sct-cf-note-icon svg {
@@ -26957,7 +26957,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 8px;
   min-height: 40px;
   padding: 6px 14px;
-  color: var(--cf-navy-950);
+  color: var(--tp-ink, var(--cf-navy-950));
   font-size: 0.84rem;
   font-weight: 800;
   cursor: pointer;
@@ -26992,7 +26992,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-cf-how-a {
   margin: 0;
   padding: 0 14px 12px;
-  color: var(--cf-text);
+  color: var(--tp-ink, var(--cf-text));
   font-size: 0.84rem;
   line-height: 1.5;
 }
@@ -27042,7 +27042,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 !important;
   padding: 0 !important;
   border: 0;
-  color: var(--cf-navy-950) !important;
+  color: var(--tp-ink, var(--cf-navy-950)) !important;
   font-size: 0.98rem !important;
   font-weight: 900;
   line-height: 1.15;
@@ -27086,7 +27086,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-cf-bl-v {
   margin: 0;
-  color: var(--cf-navy-950);
+  color: var(--tp-ink, var(--cf-navy-950));
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.35;
@@ -27127,7 +27127,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--cf-navy-700);
+  color: var(--tp-ink, var(--cf-navy-700));
   font-size: 0.84rem;
   font-weight: 800;
   text-decoration: underline;
@@ -27160,7 +27160,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 10px 12px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.65);
-  color: var(--cf-text);
+  color: var(--tp-ink, var(--cf-text));
   font-size: 0.86rem;
   line-height: 1.5;
 }
@@ -27257,7 +27257,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 16px;
   /* 0, not 32px: every tab banner starts the same distance under the tab strip (mak, 2026-11-05 evening). */
   margin: 0;
-  color: var(--shp-text);
+  color: var(--tp-ink, var(--shp-text));
   font-family: var(--sc-font);
 }
 
@@ -27373,12 +27373,12 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-badge.is-gold {
   background: linear-gradient(135deg, var(--shp-gold-bright) 0%, var(--shp-gold) 100%);
-  color: var(--shp-navy-950);
+  color: var(--tp-ink, var(--shp-navy-950));
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-badge.is-blue {
   background: var(--shp-surface-blue);
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-badge.is-live {
@@ -27417,7 +27417,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-fx-name {
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.15;
@@ -27445,7 +27445,7 @@ a.sct-ex-game:hover .sct-ex-line {
   flex-wrap: wrap;
   gap: 5px 16px;
   margin: 0;
-  color: var(--shp-text);
+  color: var(--tp-ink, var(--shp-text));
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -27506,7 +27506,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-shp-button.is-light {
   background: #fff;
   border: 1px solid var(--shp-border);
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   box-shadow: none;
 }
 
@@ -27539,7 +27539,7 @@ a.sct-ex-game:hover .sct-ex-line {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 1.05rem;
   font-weight: 800;
 }
@@ -27594,7 +27594,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-variant-numeric: tabular-nums;
   font-size: 0.84rem;
   font-weight: 700;
-  color: var(--shp-text);
+  color: var(--tp-ink, var(--shp-text));
   white-space: nowrap;
 }
 
@@ -27618,7 +27618,7 @@ a.sct-ex-game:hover .sct-ex-line {
   width: 22px;
   padding-bottom: 1px;
   border-bottom: 2px solid var(--shp-gold);
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -27658,7 +27658,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-opp-name {
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
@@ -27670,7 +27670,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-week {
   display: inline-block;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-family: "Barlow", var(--sc-font);
   font-size: 0.84rem;
   font-weight: 800;
@@ -27803,7 +27803,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 34px;
   border-bottom: 1px solid var(--shp-border);
   background: linear-gradient(180deg, var(--tp-c-f3f8fe, #f3f8fe) 0%, var(--tp-c-e9f1fa, #e9f1fa) 100%);
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -27827,7 +27827,7 @@ a.sct-ex-game:hover .sct-ex-line {
   height: 41px;
   border-top: 1px solid var(--shp-border-light);
   background: var(--shp-row-bg);
-  color: var(--shp-text);
+  color: var(--tp-ink, var(--shp-text));
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-row:first-child .sct-shp-td {
@@ -27863,7 +27863,7 @@ a.sct-ex-game:hover .sct-ex-line {
   font-variant-numeric: tabular-nums;
   font-size: 0.86rem;
   font-weight: 700;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-table .is-result,
@@ -27890,7 +27890,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-view {
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.74rem;
   font-weight: 800;
   text-decoration: none;
@@ -28084,7 +28084,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-bars.is-light .sct-shp-bar-label {
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.74rem;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -28095,7 +28095,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-bars.is-light .sct-shp-bar-value {
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
 }
 
 /* ---- the rail: the light cards */
@@ -28114,7 +28114,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0 0 7px;
   border: 0;
   border-bottom: 2px solid var(--shp-gold);
-  color: var(--shp-navy-900) !important;
+  color: var(--tp-ink, var(--shp-navy-900)) !important;
   font-size: 0.78rem !important;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -28232,7 +28232,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-seg-label {
   margin: 0;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.74rem;
   font-weight: 800;
   white-space: nowrap;
@@ -28280,7 +28280,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-slate-name {
   min-width: 0;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
@@ -28340,7 +28340,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-conf-cell dd {
   margin: 0;
-  color: var(--shp-navy-900);
+  color: var(--tp-ink, var(--shp-navy-900));
   font-size: 1.5rem;
   line-height: 1;
 }
@@ -28430,7 +28430,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 16px;
   /* 0, not 22px: every tab banner starts the same distance under the tab strip (mak, 2026-11-05 evening). */
   margin: 0;
-  color: var(--tfo-text);
+  color: var(--tp-ink, var(--tfo-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -28467,7 +28467,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-tfo-lede {
   margin: 0;
   padding: 6px 8px 2px;
-  color: var(--tfo-text);
+  color: var(--tp-ink, var(--tfo-text));
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -28519,7 +28519,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-tfo-fact-value {
   margin: 2px 0 0;
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 0.92rem;
   font-weight: 800;
   line-height: 1.25;
@@ -28550,7 +28550,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 6px 0 14px !important;
   padding: 0 0 8px !important;
   border: 0;
-  color: var(--tfo-navy-950) !important;
+  color: var(--tp-ink, var(--tfo-navy-950)) !important;
   font-size: 1.5rem !important;
   font-weight: 800;
   line-height: 1.2;
@@ -28691,7 +28691,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 !important;
   padding: 0 !important;
   border: 0;
-  color: var(--tfo-navy-950) !important;
+  color: var(--tp-ink, var(--tfo-navy-950)) !important;
   font-size: 1.25rem !important;
   font-weight: 800;
   line-height: 1.15;
@@ -28736,7 +28736,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid var(--tfo-border);
   border-radius: 999px;
   background: var(--tfo-surface-blue);
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -28774,7 +28774,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-tfo-kpi-v {
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 1.08rem;
   font-weight: 800;
   line-height: 1.1;
@@ -28794,7 +28794,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-tfo-kpi.is-text .sct-tfo-kpi-l {
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 0.62rem;
   overflow-wrap: anywhere;
 }
@@ -28802,7 +28802,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-tfo-thesis {
   position: relative;
   margin: 2px 0 0;
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 0.98rem;
   font-weight: 800;
   line-height: 1.35;
@@ -28811,7 +28811,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-tfo-note {
   position: relative;
   margin: 0;
-  color: var(--tp-c-2b3f5e, #2b3f5e);
+  color: var(--tp-ink, var(--tp-c-2b3f5e, #2b3f5e));
   font-size: 0.86rem;
   line-height: 1.55;
 }
@@ -28844,7 +28844,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-tfo-bl-label {
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 0.84rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -28860,7 +28860,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-tfo-bl-text {
   margin: 0;
-  color: var(--tfo-navy-950);
+  color: var(--tp-ink, var(--tfo-navy-950));
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.45;
@@ -28962,12 +28962,14 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ==== team palette (generated by scripts/team-palette.mjs; do not edit) ==== */
-/* The hub root (team-render.ts) sets --team-primary/--team-secondary and,
-   unless opted out (TEAM_PALETTE_OPT_OUT), data-team-palette, --team-base
-   and --team-accent (teamPalette() in team-render.ts). */
+/* The root (team-render.ts) carries data-team-palette, --team-base,
+   --team-accent and --team-bright (team/palette.ts) for a team that is
+   not opted out (TEAM_PALETTE_OPT_OUT). */
 :is(.sct, #sct-table-armour)[data-team-palette] {
   --tp-primary: var(--team-base, var(--team-primary));
   --tp-accent: var(--team-accent, var(--team-secondary));
+  --tp-bright: var(--team-bright, var(--tp-primary));
+  --tp-ink: color-mix(in srgb, var(--tp-primary) 12%, #101827);
   --tp-a-11-22-52-550: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 79%, #000) 55%, transparent);
   --tp-a-11-35-69-920: color-mix(in srgb, var(--tp-primary) 92%, transparent);
   --tp-a-138-98-5-300: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 54%, #000) 30%, transparent);
@@ -28994,8 +28996,8 @@ a.sct-ex-game:hover .sct-ex-line {
   --tp-a-212-175-55-600: color-mix(in srgb, var(--tp-accent) 60%, transparent);
   --tp-a-212-175-55-700: color-mix(in srgb, var(--tp-accent) 70%, transparent);
   --tp-a-212-175-55-900: color-mix(in srgb, var(--tp-accent) 90%, transparent);
-  --tp-a-234-242-251-350: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 6%, #fff) 35%, transparent);
-  --tp-a-237-244-251-550: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 5%, #fff) 55%, transparent);
+  --tp-a-234-242-251-350: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 4.1%, #fff) 35%, transparent);
+  --tp-a-237-244-251-550: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 3.6%, #fff) 55%, transparent);
   --tp-a-240-193-59-120: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 87%, #fff) 12%, transparent);
   --tp-a-240-193-59-350: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 87%, #fff) 35%, transparent);
   --tp-a-5-12-24-720: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 36%, #000) 72%, transparent);
@@ -29005,242 +29007,242 @@ a.sct-ex-game:hover .sct-ex-line {
   --tp-a-7-26-53-900: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 75%, #000) 90%, transparent);
   --tp-a-7-27-55-420: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 78%, #000) 42%, transparent);
   --tp-a-7-27-55-620: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 78%, #000) 62%, transparent);
-  --tp-a-70-150-230-300: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 49%, #fff) 30%, transparent);
+  --tp-a-70-150-230-300: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 68.6%, #fff) 30%, transparent);
   --tp-a-80-60-10-45: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 34%, #000) 4.5%, transparent);
   --tp-a-80-60-10-50: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 34%, #000) 5%, transparent);
-  --tp-a-9-45-96-380: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 94%, #fff) 38%, transparent);
-  --tp-c-003594: color-mix(in srgb, var(--tp-primary) 84%, #fff);
+  --tp-a-9-45-96-380: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 20%, var(--tp-primary)) 38%, transparent);
+  --tp-c-003594: color-mix(in srgb, var(--tp-bright) 55%, var(--tp-primary));
   --tp-c-060d21: color-mix(in srgb, var(--tp-primary) 49%, #000);
   --tp-c-070d18: color-mix(in srgb, var(--tp-primary) 39%, #000);
   --tp-c-071a35: color-mix(in srgb, var(--tp-primary) 75%, #000);
   --tp-c-071b37: color-mix(in srgb, var(--tp-primary) 78%, #000);
   --tp-c-081a34: color-mix(in srgb, var(--tp-primary) 75%, #000);
   --tp-c-081e3d: color-mix(in srgb, var(--tp-primary) 86%, #000);
-  --tp-c-082e61: color-mix(in srgb, var(--tp-primary) 94%, #fff);
+  --tp-c-082e61: color-mix(in srgb, var(--tp-bright) 20%, var(--tp-primary));
   --tp-c-092448: var(--tp-primary);
-  --tp-c-092a53: color-mix(in srgb, var(--tp-primary) 97%, #fff);
-  --tp-c-092d60: color-mix(in srgb, var(--tp-primary) 94%, #fff);
-  --tp-c-0a3268: color-mix(in srgb, var(--tp-primary) 92%, #fff);
-  --tp-c-0a346a: color-mix(in srgb, var(--tp-primary) 92%, #fff);
+  --tp-c-092a53: color-mix(in srgb, var(--tp-bright) 10%, var(--tp-primary));
+  --tp-c-092d60: color-mix(in srgb, var(--tp-bright) 20%, var(--tp-primary));
+  --tp-c-0a3268: color-mix(in srgb, var(--tp-bright) 27%, var(--tp-primary));
+  --tp-c-0a346a: color-mix(in srgb, var(--tp-bright) 29%, var(--tp-primary));
   --tp-c-0b1220: color-mix(in srgb, var(--tp-primary) 54%, #000);
   --tp-c-0b1627: color-mix(in srgb, var(--tp-primary) 63%, #000);
   --tp-c-0b1634: color-mix(in srgb, var(--tp-primary) 79%, #000);
   --tp-c-0b2345: var(--tp-primary);
-  --tp-c-0b2b55: color-mix(in srgb, var(--tp-primary) 96%, #fff);
-  --tp-c-0b3a7a: color-mix(in srgb, var(--tp-primary) 88%, #fff);
-  --tp-c-0c2c53: color-mix(in srgb, var(--tp-primary) 97%, #fff);
-  --tp-c-0c3972: color-mix(in srgb, var(--tp-primary) 89%, #fff);
+  --tp-c-0b2b55: color-mix(in srgb, var(--tp-bright) 13%, var(--tp-primary));
+  --tp-c-0b3a7a: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
+  --tp-c-0c2c53: color-mix(in srgb, var(--tp-bright) 12%, var(--tp-primary));
+  --tp-c-0c3972: color-mix(in srgb, var(--tp-bright) 37%, var(--tp-primary));
   --tp-c-0d1b38: color-mix(in srgb, var(--tp-primary) 86%, #000);
   --tp-c-0d2343: var(--tp-primary);
-  --tp-c-0d2c57: color-mix(in srgb, var(--tp-primary) 95%, #fff);
-  --tp-c-0e4b93: color-mix(in srgb, var(--tp-primary) 81%, #fff);
-  --tp-c-0e4d8d: color-mix(in srgb, var(--tp-primary) 83%, #fff);
+  --tp-c-0d2c57: color-mix(in srgb, var(--tp-bright) 16%, var(--tp-primary));
+  --tp-c-0e4b93: color-mix(in srgb, var(--tp-bright) 65%, var(--tp-primary));
+  --tp-c-0e4d8d: color-mix(in srgb, var(--tp-bright) 60%, var(--tp-primary));
   --tp-c-0f172a: color-mix(in srgb, var(--tp-primary) 71%, #000);
   --tp-c-0f1e33: color-mix(in srgb, var(--tp-primary) 83%, #000);
-  --tp-c-0f2a5a: color-mix(in srgb, var(--tp-primary) 94%, #fff);
+  --tp-c-0f2a5a: color-mix(in srgb, var(--tp-bright) 20%, var(--tp-primary));
   --tp-c-101f45: var(--tp-primary);
   --tp-c-102344: var(--tp-primary);
-  --tp-c-102b53: color-mix(in srgb, var(--tp-primary) 96%, #fff);
-  --tp-c-103862: color-mix(in srgb, var(--tp-primary) 92%, #fff);
-  --tp-c-103b78: color-mix(in srgb, var(--tp-primary) 87%, #fff);
-  --tp-c-10447d: color-mix(in srgb, var(--tp-primary) 86%, #fff);
-  --tp-c-10539c: color-mix(in srgb, var(--tp-primary) 79%, #fff);
+  --tp-c-102b53: color-mix(in srgb, var(--tp-bright) 15%, var(--tp-primary));
+  --tp-c-103862: color-mix(in srgb, var(--tp-bright) 27%, var(--tp-primary));
+  --tp-c-103b78: color-mix(in srgb, var(--tp-bright) 45%, var(--tp-primary));
+  --tp-c-10447d: color-mix(in srgb, var(--tp-bright) 49%, var(--tp-primary));
+  --tp-c-10539c: color-mix(in srgb, var(--tp-bright) 74%, var(--tp-primary));
   --tp-c-12213a: var(--tp-primary);
-  --tp-c-12397a: color-mix(in srgb, var(--tp-primary) 86%, #fff);
-  --tp-c-123b69: color-mix(in srgb, var(--tp-primary) 90%, #fff);
-  --tp-c-123f78: color-mix(in srgb, var(--tp-primary) 87%, #fff);
-  --tp-c-125ba5: color-mix(in srgb, var(--tp-primary) 76%, #fff);
+  --tp-c-12397a: color-mix(in srgb, var(--tp-bright) 48%, var(--tp-primary));
+  --tp-c-123b69: color-mix(in srgb, var(--tp-bright) 35%, var(--tp-primary));
+  --tp-c-123f78: color-mix(in srgb, var(--tp-bright) 47%, var(--tp-primary));
+  --tp-c-125ba5: color-mix(in srgb, var(--tp-bright) 83%, var(--tp-primary));
   --tp-c-13233a: var(--tp-primary);
-  --tp-c-153a65: color-mix(in srgb, var(--tp-primary) 90%, #fff);
-  --tp-c-153e70: color-mix(in srgb, var(--tp-primary) 88%, #fff);
-  --tp-c-16254d: color-mix(in srgb, var(--tp-primary) 96%, #fff);
-  --tp-c-16305e: color-mix(in srgb, var(--tp-primary) 92%, #fff);
-  --tp-c-164a8a: color-mix(in srgb, var(--tp-primary) 81%, #fff);
-  --tp-c-1767a7: color-mix(in srgb, var(--tp-primary) 74%, #fff);
-  --tp-c-1769b3: color-mix(in srgb, var(--tp-primary) 72%, #fff);
-  --tp-c-176ab5: color-mix(in srgb, var(--tp-primary) 71%, #fff);
-  --tp-c-183d6a: color-mix(in srgb, var(--tp-primary) 88%, #fff);
-  --tp-c-1a4d8a: color-mix(in srgb, var(--tp-primary) 80%, #fff);
-  --tp-c-1d2c44: color-mix(in srgb, var(--tp-primary) 96%, #fff);
-  --tp-c-1d4e8c: color-mix(in srgb, var(--tp-primary) 79%, #fff);
-  --tp-c-1e3a5f: color-mix(in srgb, var(--tp-primary) 90%, #fff);
-  --tp-c-1f3161: color-mix(in srgb, var(--tp-primary) 89%, #fff);
-  --tp-c-244879: color-mix(in srgb, var(--tp-primary) 82%, #fff);
-  --tp-c-26364d: color-mix(in srgb, var(--tp-primary) 92%, #fff);
-  --tp-c-27619e: color-mix(in srgb, var(--tp-primary) 73%, #fff);
-  --tp-c-2764a8: color-mix(in srgb, var(--tp-primary) 70%, #fff);
-  --tp-c-285ba0: color-mix(in srgb, var(--tp-primary) 72%, #fff);
-  --tp-c-2865b8: color-mix(in srgb, var(--tp-primary) 67%, #fff);
-  --tp-c-2a4470: color-mix(in srgb, var(--tp-primary) 83%, #fff);
-  --tp-c-2b3f5e: color-mix(in srgb, var(--tp-primary) 87%, #fff);
+  --tp-c-153a65: color-mix(in srgb, var(--tp-bright) 34%, var(--tp-primary));
+  --tp-c-153e70: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
+  --tp-c-16254d: color-mix(in srgb, var(--tp-bright) 15%, var(--tp-primary));
+  --tp-c-16305e: color-mix(in srgb, var(--tp-bright) 29%, var(--tp-primary));
+  --tp-c-164a8a: color-mix(in srgb, var(--tp-bright) 65%, var(--tp-primary));
+  --tp-c-1767a7: color-mix(in srgb, var(--tp-bright) 89%, var(--tp-primary));
+  --tp-c-1769b3: color-mix(in srgb, var(--tp-bright) 98%, var(--tp-primary));
+  --tp-c-176ab5: var(--tp-bright);
+  --tp-c-183d6a: color-mix(in srgb, var(--tp-bright) 40%, var(--tp-primary));
+  --tp-c-1a4d8a: color-mix(in srgb, var(--tp-bright) 68%, var(--tp-primary));
+  --tp-c-1d2c44: color-mix(in srgb, var(--tp-bright) 14%, var(--tp-primary));
+  --tp-c-1d4e8c: color-mix(in srgb, var(--tp-bright) 72%, var(--tp-primary));
+  --tp-c-1e3a5f: color-mix(in srgb, var(--tp-bright) 36%, var(--tp-primary));
+  --tp-c-1f3161: color-mix(in srgb, var(--tp-bright) 39%, var(--tp-primary));
+  --tp-c-244879: color-mix(in srgb, var(--tp-bright) 62%, var(--tp-primary));
+  --tp-c-26364d: color-mix(in srgb, var(--tp-bright) 28%, var(--tp-primary));
+  --tp-c-27619e: color-mix(in srgb, var(--tp-bright) 94%, var(--tp-primary));
+  --tp-c-2764a8: color-mix(in srgb, var(--tp-bright) 99%, #fff);
+  --tp-c-285ba0: color-mix(in srgb, var(--tp-bright) 97%, var(--tp-primary));
+  --tp-c-2865b8: color-mix(in srgb, var(--tp-bright) 93.5%, #fff);
+  --tp-c-2a4470: color-mix(in srgb, var(--tp-bright) 60%, var(--tp-primary));
+  --tp-c-2b3f5e: color-mix(in srgb, var(--tp-bright) 46%, var(--tp-primary));
   --tp-c-33270d: color-mix(in srgb, var(--tp-accent) 24%, #000);
-  --tp-c-3469b0: color-mix(in srgb, var(--tp-primary) 66%, #fff);
-  --tp-c-3f5f85: color-mix(in srgb, var(--tp-primary) 73%, #fff);
-  --tp-c-3f6fb0: color-mix(in srgb, var(--tp-primary) 63%, #fff);
-  --tp-c-4f8bd0: color-mix(in srgb, var(--tp-primary) 52%, #fff);
-  --tp-c-5b7fb5: color-mix(in srgb, var(--tp-primary) 55%, #fff);
-  --tp-c-5b8ccb: color-mix(in srgb, var(--tp-primary) 50%, #fff);
-  --tp-c-5b8ed4: color-mix(in srgb, var(--tp-primary) 48%, #fff);
-  --tp-c-5c89b8: color-mix(in srgb, var(--tp-primary) 54%, #fff);
+  --tp-c-3469b0: color-mix(in srgb, var(--tp-bright) 92.2%, #fff);
+  --tp-c-3f5f85: color-mix(in srgb, var(--tp-bright) 94%, var(--tp-primary));
+  --tp-c-3f6fb0: color-mix(in srgb, var(--tp-bright) 88.6%, #fff);
+  --tp-c-4f8bd0: color-mix(in srgb, var(--tp-bright) 72.9%, #fff);
+  --tp-c-5b7fb5: color-mix(in srgb, var(--tp-bright) 77.8%, #fff);
+  --tp-c-5b8ccb: color-mix(in srgb, var(--tp-bright) 70.6%, #fff);
+  --tp-c-5b8ed4: color-mix(in srgb, var(--tp-bright) 67.6%, #fff);
+  --tp-c-5c89b8: color-mix(in srgb, var(--tp-bright) 76.5%, #fff);
   --tp-c-6b4a00: color-mix(in srgb, var(--tp-accent) 40%, #000);
-  --tp-c-6f98c4: color-mix(in srgb, var(--tp-primary) 47%, #fff);
+  --tp-c-6f98c4: color-mix(in srgb, var(--tp-bright) 66.3%, #fff);
   --tp-c-7a5a04: color-mix(in srgb, var(--tp-accent) 47%, #000);
   --tp-c-7a5c0e: color-mix(in srgb, var(--tp-accent) 51%, #000);
-  --tp-c-7aa1cb: color-mix(in srgb, var(--tp-primary) 43%, #fff);
-  --tp-c-7fb2e8: color-mix(in srgb, var(--tp-primary) 35%, #fff);
+  --tp-c-7aa1cb: color-mix(in srgb, var(--tp-bright) 60.5%, #fff);
+  --tp-c-7fb2e8: color-mix(in srgb, var(--tp-bright) 49.3%, #fff);
   --tp-c-8a6205: color-mix(in srgb, var(--tp-accent) 54%, #000);
   --tp-c-8a6500: color-mix(in srgb, var(--tp-accent) 52%, #000);
   --tp-c-8a6508: color-mix(in srgb, var(--tp-accent) 55%, #000);
-  --tp-c-8aa6cf: color-mix(in srgb, var(--tp-primary) 38%, #fff);
-  --tp-c-8fa9c8: color-mix(in srgb, var(--tp-primary) 39%, #fff);
-  --tp-c-8fb3d9: color-mix(in srgb, var(--tp-primary) 35%, #fff);
-  --tp-c-9fb4cc: color-mix(in srgb, var(--tp-primary) 34%, #fff);
-  --tp-c-9fb9d8: color-mix(in srgb, var(--tp-primary) 31%, #fff);
-  --tp-c-9fbbe0: color-mix(in srgb, var(--tp-primary) 30%, #fff);
-  --tp-c-9fc0ff: color-mix(in srgb, var(--tp-primary) 22%, #fff);
+  --tp-c-8aa6cf: color-mix(in srgb, var(--tp-bright) 53.9%, #fff);
+  --tp-c-8fa9c8: color-mix(in srgb, var(--tp-bright) 54.6%, #fff);
+  --tp-c-8fb3d9: color-mix(in srgb, var(--tp-bright) 49%, #fff);
+  --tp-c-9fb4cc: color-mix(in srgb, var(--tp-bright) 48%, #fff);
+  --tp-c-9fb9d8: color-mix(in srgb, var(--tp-bright) 44.1%, #fff);
+  --tp-c-9fbbe0: color-mix(in srgb, var(--tp-bright) 41.5%, #fff);
+  --tp-c-9fc0ff: color-mix(in srgb, var(--tp-bright) 31.4%, #fff);
   --tp-c-a87905: color-mix(in srgb, var(--tp-accent) 65%, #000);
-  --tp-c-a9bfde: color-mix(in srgb, var(--tp-primary) 28%, #fff);
-  --tp-c-a9c1da: color-mix(in srgb, var(--tp-primary) 29%, #fff);
-  --tp-c-b2c5de: color-mix(in srgb, var(--tp-primary) 26%, #fff);
-  --tp-c-b4c8df: color-mix(in srgb, var(--tp-primary) 25%, #fff);
+  --tp-c-a9bfde: color-mix(in srgb, var(--tp-bright) 38.9%, #fff);
+  --tp-c-a9c1da: color-mix(in srgb, var(--tp-bright) 40.2%, #fff);
+  --tp-c-b2c5de: color-mix(in srgb, var(--tp-bright) 35.9%, #fff);
+  --tp-c-b4c8df: color-mix(in srgb, var(--tp-bright) 35%, #fff);
   --tp-c-b8860b: color-mix(in srgb, var(--tp-accent) 73%, #000);
   --tp-c-b8901f: color-mix(in srgb, var(--tp-accent) 81%, #000);
-  --tp-c-b9cde5: color-mix(in srgb, var(--tp-primary) 22%, #fff);
-  --tp-c-bfd1e8: color-mix(in srgb, var(--tp-primary) 20%, #fff);
+  --tp-c-b9cde5: color-mix(in srgb, var(--tp-bright) 31.4%, #fff);
+  --tp-c-bfd1e8: color-mix(in srgb, var(--tp-bright) 28.4%, #fff);
   --tp-c-c39a21: color-mix(in srgb, var(--tp-accent) 85%, #000);
   --tp-c-c39a22: color-mix(in srgb, var(--tp-accent) 86%, #000);
-  --tp-c-c3d1e2: color-mix(in srgb, var(--tp-primary) 21%, #fff);
-  --tp-c-c3d6ec: color-mix(in srgb, var(--tp-primary) 18%, #fff);
-  --tp-c-c4d2e3: color-mix(in srgb, var(--tp-primary) 20%, #fff);
+  --tp-c-c3d1e2: color-mix(in srgb, var(--tp-bright) 29.1%, #fff);
+  --tp-c-c3d6ec: color-mix(in srgb, var(--tp-bright) 25.8%, #fff);
+  --tp-c-c4d2e3: color-mix(in srgb, var(--tp-bright) 28.4%, #fff);
   --tp-c-c98a00: color-mix(in srgb, var(--tp-accent) 75%, #000);
   --tp-c-c99a06: color-mix(in srgb, var(--tp-accent) 78%, #000);
   --tp-c-c9a22c: color-mix(in srgb, var(--tp-accent) 92%, #000);
-  --tp-c-c9d9ec: color-mix(in srgb, var(--tp-primary) 17%, #fff);
-  --tp-c-cbd9e9: color-mix(in srgb, var(--tp-primary) 17%, #fff);
-  --tp-c-cbd9eb: color-mix(in srgb, var(--tp-primary) 17%, #fff);
-  --tp-c-cbdbea: color-mix(in srgb, var(--tp-primary) 17%, #fff);
-  --tp-c-ccdaea: color-mix(in srgb, var(--tp-primary) 17%, #fff);
-  --tp-c-cfdcec: color-mix(in srgb, var(--tp-primary) 16%, #fff);
-  --tp-c-cfdded: color-mix(in srgb, var(--tp-primary) 15%, #fff);
-  --tp-c-cfe0f6: color-mix(in srgb, var(--tp-primary) 13%, #fff);
-  --tp-c-d2e2f4: color-mix(in srgb, var(--tp-primary) 13%, #fff);
+  --tp-c-c9d9ec: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-cbd9e9: color-mix(in srgb, var(--tp-bright) 12.1%, #fff);
+  --tp-c-cbd9eb: color-mix(in srgb, var(--tp-bright) 11.8%, #fff);
+  --tp-c-cbdbea: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-ccdaea: color-mix(in srgb, var(--tp-bright) 11.8%, #fff);
+  --tp-c-cfdcec: color-mix(in srgb, var(--tp-bright) 10.9%, #fff);
+  --tp-c-cfdded: color-mix(in srgb, var(--tp-bright) 10.8%, #fff);
+  --tp-c-cfe0f6: color-mix(in srgb, var(--tp-bright) 9.3%, #fff);
+  --tp-c-d2e2f4: color-mix(in srgb, var(--tp-bright) 9.2%, #fff);
   --tp-c-d39a16: color-mix(in srgb, var(--tp-accent) 87%, #000);
-  --tp-c-d3dce8: color-mix(in srgb, var(--tp-primary) 16%, #fff);
-  --tp-c-d3dfed: color-mix(in srgb, var(--tp-primary) 14%, #fff);
-  --tp-c-d3e0ef: color-mix(in srgb, var(--tp-primary) 14%, #fff);
+  --tp-c-d3dce8: color-mix(in srgb, var(--tp-bright) 10.9%, #fff);
+  --tp-c-d3dfed: color-mix(in srgb, var(--tp-bright) 10.1%, #fff);
+  --tp-c-d3e0ef: color-mix(in srgb, var(--tp-bright) 9.8%, #fff);
   --tp-c-d4a106: color-mix(in srgb, var(--tp-accent) 82%, #000);
   --tp-c-d4af37: var(--tp-accent);
-  --tp-c-d4e0ee: color-mix(in srgb, var(--tp-primary) 14%, #fff);
-  --tp-c-d5e2f4: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-d6e1ee: color-mix(in srgb, var(--tp-primary) 13%, #fff);
-  --tp-c-d8e2ed: color-mix(in srgb, var(--tp-primary) 13%, #fff);
-  --tp-c-d9e1ee: color-mix(in srgb, var(--tp-primary) 13%, #fff);
-  --tp-c-d9e5ff: color-mix(in srgb, var(--tp-primary) 9%, #fff);
-  --tp-c-dbe3ee: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-dbe4ef: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-dbe4f1: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-dbe5f0: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-dbe7f5: color-mix(in srgb, var(--tp-primary) 11%, #fff);
-  --tp-c-dbe8f8: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-dbeafe: color-mix(in srgb, var(--tp-primary) 9%, #fff);
-  --tp-c-dce5f0: color-mix(in srgb, var(--tp-primary) 12%, #fff);
-  --tp-c-dce9f8: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-dee7f1: color-mix(in srgb, var(--tp-primary) 11%, #fff);
-  --tp-c-dfe5ee: color-mix(in srgb, var(--tp-primary) 11%, #fff);
-  --tp-c-dfe8f3: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-dfe9f5: color-mix(in srgb, var(--tp-primary) 10%, #fff);
+  --tp-c-d4e0ee: color-mix(in srgb, var(--tp-bright) 9.8%, #fff);
+  --tp-c-d5e2f4: color-mix(in srgb, var(--tp-bright) 8.7%, #fff);
+  --tp-c-d6e1ee: color-mix(in srgb, var(--tp-bright) 9.5%, #fff);
+  --tp-c-d8e2ed: color-mix(in srgb, var(--tp-bright) 9.3%, #fff);
+  --tp-c-d9e1ee: color-mix(in srgb, var(--tp-bright) 9%, #fff);
+  --tp-c-d9e5ff: color-mix(in srgb, var(--tp-bright) 6.2%, #fff);
+  --tp-c-dbe3ee: color-mix(in srgb, var(--tp-bright) 8.7%, #fff);
+  --tp-c-dbe4ef: color-mix(in srgb, var(--tp-bright) 8.5%, #fff);
+  --tp-c-dbe4f1: color-mix(in srgb, var(--tp-bright) 8.2%, #fff);
+  --tp-c-dbe5f0: color-mix(in srgb, var(--tp-bright) 8.3%, #fff);
+  --tp-c-dbe7f5: color-mix(in srgb, var(--tp-bright) 7.5%, #fff);
+  --tp-c-dbe8f8: color-mix(in srgb, var(--tp-bright) 7%, #fff);
+  --tp-c-dbeafe: color-mix(in srgb, var(--tp-bright) 6%, #fff);
+  --tp-c-dce5f0: color-mix(in srgb, var(--tp-bright) 8.2%, #fff);
+  --tp-c-dce9f8: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
+  --tp-c-dee7f1: color-mix(in srgb, var(--tp-bright) 7.7%, #fff);
+  --tp-c-dfe5ee: color-mix(in srgb, var(--tp-bright) 8%, #fff);
+  --tp-c-dfe8f3: color-mix(in srgb, var(--tp-bright) 7.2%, #fff);
+  --tp-c-dfe9f5: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
   --tp-c-e0b840: color-mix(in srgb, var(--tp-accent) 91%, #fff);
-  --tp-c-e0e8f1: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e0e9f3: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e1e9f2: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e1e9f3: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e1ecfa: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e2eaf4: color-mix(in srgb, var(--tp-primary) 9%, #fff);
+  --tp-c-e0e8f1: color-mix(in srgb, var(--tp-bright) 7.4%, #fff);
+  --tp-c-e0e9f3: color-mix(in srgb, var(--tp-bright) 7%, #fff);
+  --tp-c-e1e9f2: color-mix(in srgb, var(--tp-bright) 7%, #fff);
+  --tp-c-e1e9f3: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
+  --tp-c-e1ecfa: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
+  --tp-c-e2eaf4: color-mix(in srgb, var(--tp-bright) 6.5%, #fff);
   --tp-c-e3c257: color-mix(in srgb, var(--tp-accent) 81%, #fff);
-  --tp-c-e3e9f1: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e3e9f2: color-mix(in srgb, var(--tp-primary) 10%, #fff);
-  --tp-c-e3eaf3: color-mix(in srgb, var(--tp-primary) 9%, #fff);
-  --tp-c-e3ecf7: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e3eefa: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e4edf9: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e4eef9: color-mix(in srgb, var(--tp-primary) 8%, #fff);
+  --tp-c-e3e9f1: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
+  --tp-c-e3e9f2: color-mix(in srgb, var(--tp-bright) 6.7%, #fff);
+  --tp-c-e3eaf3: color-mix(in srgb, var(--tp-bright) 6.5%, #fff);
+  --tp-c-e3ecf7: color-mix(in srgb, var(--tp-bright) 5.9%, #fff);
+  --tp-c-e3eefa: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e4edf9: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e4eef9: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
   --tp-c-e5bd46: color-mix(in srgb, var(--tp-accent) 87%, #fff);
   --tp-c-e6c75e: color-mix(in srgb, var(--tp-accent) 77%, #fff);
-  --tp-c-e6ecf5: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e6edf6: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e6eef8: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-e6f0fb: color-mix(in srgb, var(--tp-primary) 7%, #fff);
+  --tp-c-e6ecf5: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
+  --tp-c-e6edf6: color-mix(in srgb, var(--tp-bright) 5.6%, #fff);
+  --tp-c-e6eef8: color-mix(in srgb, var(--tp-bright) 5.2%, #fff);
+  --tp-c-e6f0fb: color-mix(in srgb, var(--tp-bright) 4.7%, #fff);
   --tp-c-e7c45b: color-mix(in srgb, var(--tp-accent) 77%, #fff);
-  --tp-c-e7f0fb: color-mix(in srgb, var(--tp-primary) 7%, #fff);
+  --tp-c-e7f0fb: color-mix(in srgb, var(--tp-bright) 4.6%, #fff);
   --tp-c-e8c75b: color-mix(in srgb, var(--tp-accent) 77%, #fff);
-  --tp-c-e8edf4: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e8edf5: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e8eef5: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e8eff7: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-e8f0fa: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-e8f1fb: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-e9eef4: color-mix(in srgb, var(--tp-primary) 8%, #fff);
-  --tp-c-e9eef6: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-e9eff6: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-e9f1fa: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-e9f1fb: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-eaf0f7: color-mix(in srgb, var(--tp-primary) 7%, #fff);
-  --tp-c-eaf2fb: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-ebf3fc: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-ecf3fc: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf1f6: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-edf3fa: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf3fb: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf4fb: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf4fc: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf4fd: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-edf5ff: color-mix(in srgb, var(--tp-primary) 4%, #fff);
-  --tp-c-eef2f7: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-eef2f8: color-mix(in srgb, var(--tp-primary) 6%, #fff);
-  --tp-c-eef3f9: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-eef4fb: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-eef4fc: color-mix(in srgb, var(--tp-primary) 5%, #fff);
+  --tp-c-e8edf4: color-mix(in srgb, var(--tp-bright) 5.6%, #fff);
+  --tp-c-e8edf5: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e8eef5: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e8eff7: color-mix(in srgb, var(--tp-bright) 5.1%, #fff);
+  --tp-c-e8f0fa: color-mix(in srgb, var(--tp-bright) 4.6%, #fff);
+  --tp-c-e8f1fb: color-mix(in srgb, var(--tp-bright) 4.4%, #fff);
+  --tp-c-e9eef4: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e9eef6: color-mix(in srgb, var(--tp-bright) 5.1%, #fff);
+  --tp-c-e9eff6: color-mix(in srgb, var(--tp-bright) 5.1%, #fff);
+  --tp-c-e9f1fa: color-mix(in srgb, var(--tp-bright) 4.4%, #fff);
+  --tp-c-e9f1fb: color-mix(in srgb, var(--tp-bright) 4.2%, #fff);
+  --tp-c-eaf0f7: color-mix(in srgb, var(--tp-bright) 4.7%, #fff);
+  --tp-c-eaf2fb: color-mix(in srgb, var(--tp-bright) 4.1%, #fff);
+  --tp-c-ebf3fc: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-ecf3fc: color-mix(in srgb, var(--tp-bright) 3.6%, #fff);
+  --tp-c-edf1f6: color-mix(in srgb, var(--tp-bright) 4.4%, #fff);
+  --tp-c-edf3fa: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-edf3fb: color-mix(in srgb, var(--tp-bright) 3.6%, #fff);
+  --tp-c-edf4fb: color-mix(in srgb, var(--tp-bright) 3.6%, #fff);
+  --tp-c-edf4fc: color-mix(in srgb, var(--tp-bright) 3.4%, #fff);
+  --tp-c-edf4fd: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
+  --tp-c-edf5ff: color-mix(in srgb, var(--tp-bright) 2.9%, #fff);
+  --tp-c-eef2f7: color-mix(in srgb, var(--tp-bright) 4.1%, #fff);
+  --tp-c-eef2f8: color-mix(in srgb, var(--tp-bright) 3.9%, #fff);
+  --tp-c-eef3f9: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-eef4fb: color-mix(in srgb, var(--tp-bright) 3.4%, #fff);
+  --tp-c-eef4fc: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
   --tp-c-efd98f: color-mix(in srgb, var(--tp-accent) 53%, #fff);
   --tp-c-efe1b4: color-mix(in srgb, var(--tp-accent) 37%, #fff);
   --tp-c-efe4c4: color-mix(in srgb, var(--tp-accent) 31%, #fff);
-  --tp-c-eff5fc: color-mix(in srgb, var(--tp-primary) 4%, #fff);
+  --tp-c-eff5fc: color-mix(in srgb, var(--tp-bright) 3.1%, #fff);
   --tp-c-f0bf35: color-mix(in srgb, var(--tp-accent) 89%, #fff);
   --tp-c-f0c13b: color-mix(in srgb, var(--tp-accent) 87%, #fff);
   --tp-c-f0c13c: color-mix(in srgb, var(--tp-accent) 86%, #fff);
   --tp-c-f0dfa6: color-mix(in srgb, var(--tp-accent) 43%, #fff);
-  --tp-c-f1f5f9: color-mix(in srgb, var(--tp-primary) 5%, #fff);
-  --tp-c-f1f6fd: color-mix(in srgb, var(--tp-primary) 4%, #fff);
+  --tp-c-f1f5f9: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
+  --tp-c-f1f6fd: color-mix(in srgb, var(--tp-bright) 2.6%, #fff);
   --tp-c-f2d36b: color-mix(in srgb, var(--tp-accent) 66%, #fff);
-  --tp-c-f2f7fd: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f3f6fb: color-mix(in srgb, var(--tp-primary) 4%, #fff);
-  --tp-c-f3f8fd: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f3f8fe: color-mix(in srgb, var(--tp-primary) 3%, #fff);
+  --tp-c-f2f7fd: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f3f6fb: color-mix(in srgb, var(--tp-bright) 2.6%, #fff);
+  --tp-c-f3f8fd: color-mix(in srgb, var(--tp-bright) 2.3%, #fff);
+  --tp-c-f3f8fe: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
   --tp-c-f4c842: color-mix(in srgb, var(--tp-accent) 82%, #fff);
-  --tp-c-f4f6fa: color-mix(in srgb, var(--tp-primary) 4%, #fff);
-  --tp-c-f4f7fb: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f4f8fd: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f5f7fa: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f5f8fc: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f5f8fd: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f5f9ff: color-mix(in srgb, var(--tp-primary) 2%, #fff);
+  --tp-c-f4f6fa: color-mix(in srgb, var(--tp-bright) 2.6%, #fff);
+  --tp-c-f4f7fb: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f4f8fd: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
+  --tp-c-f5f7fa: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f5f8fc: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
+  --tp-c-f5f8fd: color-mix(in srgb, var(--tp-bright) 2%, #fff);
+  --tp-c-f5f9ff: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
   --tp-c-f6e9bd: color-mix(in srgb, var(--tp-accent) 31%, #fff);
-  --tp-c-f6f8fb: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f6f8fc: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f6f9fd: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f7f9fc: color-mix(in srgb, var(--tp-primary) 3%, #fff);
-  --tp-c-f7f9fd: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-f7fafd: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-f7faff: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-f8fafd: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-f8fbff: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-f9fbfe: color-mix(in srgb, var(--tp-primary) 2%, #fff);
-  --tp-c-fafbfd: color-mix(in srgb, var(--tp-primary) 2%, #fff);
+  --tp-c-f6f8fb: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
+  --tp-c-f6f8fc: color-mix(in srgb, var(--tp-bright) 2%, #fff);
+  --tp-c-f6f9fd: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f7f9fc: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f7f9fd: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
+  --tp-c-f7fafd: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
+  --tp-c-f7faff: color-mix(in srgb, var(--tp-bright) 1.3%, #fff);
+  --tp-c-f8fafd: color-mix(in srgb, var(--tp-bright) 1.5%, #fff);
+  --tp-c-f8fbff: color-mix(in srgb, var(--tp-bright) 1.1%, #fff);
+  --tp-c-f9fbfe: color-mix(in srgb, var(--tp-bright) 1.1%, #fff);
+  --tp-c-fafbfd: color-mix(in srgb, var(--tp-bright) 1.1%, #fff);
   --tp-c-fbbf24: color-mix(in srgb, var(--tp-accent) 92%, #fff);
   --tp-c-fbf3d5: color-mix(in srgb, var(--tp-accent) 19%, #fff);
   --tp-c-fbf3dc: color-mix(in srgb, var(--tp-accent) 16%, #fff);
   --tp-c-fbf3dd: color-mix(in srgb, var(--tp-accent) 16%, #fff);
   --tp-c-fcfaf3: color-mix(in srgb, var(--tp-accent) 6%, #fff);
-  --tp-c-fcfdfe: color-mix(in srgb, var(--tp-primary) 1%, #fff);
+  --tp-c-fcfdfe: color-mix(in srgb, var(--tp-bright) 0.7%, #fff);
   --tp-c-fde68a: color-mix(in srgb, var(--tp-accent) 49%, #fff);
   --tp-c-fdeab3: color-mix(in srgb, var(--tp-accent) 32%, #fff);
   --tp-c-fdf1d6: color-mix(in srgb, var(--tp-accent) 18%, #fff);

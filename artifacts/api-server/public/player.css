@@ -36,12 +36,12 @@
 :where(.scp),
 :where(body.scp-page) {
   /* Brand */
-  --sc-navy: #0b1634;
-  --sc-navy-deep: #060d21;
-  --sc-ink: #0b1220;
-  --sc-gold: #d4af37;
-  --sc-gold-soft: #f2d36b;
-  --sc-gold-deep: #a87905;
+  --sc-navy: var(--tp-c-0b1634, #0b1634);
+  --sc-navy-deep: var(--tp-c-060d21, #060d21);
+  --sc-ink: var(--tp-c-0b1220, #0b1220);
+  --sc-gold: var(--tp-c-d4af37, #d4af37);
+  --sc-gold-soft: var(--tp-c-f2d36b, #f2d36b);
+  --sc-gold-deep: var(--tp-c-a87905, #a87905);
   /*
    * Gold for small text on a light surface.
    *
@@ -50,7 +50,7 @@
    * on the hero, 5.7:1 on white. Deliberately not #8a6205, which is the
    * moderate-risk status color and must not double as a brand accent.
    */
-  --sc-gold-ink: #856005;
+  --sc-gold-ink: var(--tp-c-856005, #856005);
 
   /* Neutrals */
   --sc-muted: #64748b;
@@ -58,8 +58,8 @@
   --sc-border: #e5e7eb;
   --sc-hairline: rgba(15, 23, 42, 0.08);
   --sc-surface: #ffffff;
-  --sc-surface-soft: #f7f9fc;
-  --sc-surface-sink: #f1f5f9;
+  --sc-surface-soft: var(--tp-c-f7f9fc, #f7f9fc);
+  --sc-surface-sink: var(--tp-c-f1f5f9, #f1f5f9);
   /*
    * Bar and meter tracks, one step below the sink.
    *
@@ -69,7 +69,7 @@
    * and effectively disappears; this keeps the empty half of a bar visible on
    * every surface the page actually uses.
    */
-  --sc-track: #e2e8f0;
+  --sc-track: var(--tp-c-e2e8f0, #e2e8f0);
 
   --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
   --sc-shadow-lift: 0 14px 38px rgba(15, 23, 42, 0.1);
@@ -92,14 +92,14 @@
    * hold. Every tier is also labeled in text, so the pale end never carries
    * meaning alone.
    */
-  --scp-tier-1: #0b3a7a;
-  --scp-tier-2: #2f63a8;
-  --scp-tier-3: #5a8cc4;
-  --scp-tier-4: #8fb3da;
+  --scp-tier-1: var(--tp-c-0b3a7a, #0b3a7a);
+  --scp-tier-2: var(--tp-c-2f63a8, #2f63a8);
+  --scp-tier-3: var(--tp-c-5a8cc4, #5a8cc4);
+  --scp-tier-4: var(--tp-c-8fb3da, #8fb3da);
 
   /* The two chart series. Validated as a pair: ΔE 23.7 under protanopia. */
-  --scp-series-points: #2f63a8;
-  --scp-series-average: #a87905;
+  --scp-series-points: var(--tp-c-2f63a8, #2f63a8);
+  --scp-series-average: var(--tp-c-a87905, #a87905);
 
   /*
    * The skill positions, wherever one is named beside a player.
@@ -114,12 +114,12 @@
    */
   --sc-pos-qb: #99323a;
   --sc-pos-rb: #0f6b4f;
-  --sc-pos-wr: #1d4e8c;
-  --sc-pos-te: #a87905;
+  --sc-pos-wr: var(--tp-c-1d4e8c, #1d4e8c);
+  --sc-pos-te: var(--tp-c-a87905, #a87905);
 
   /* Status, for the injury risk rows only - never reused as a series color. */
   --scp-risk-low: #0f6b4f;
-  --scp-risk-moderate: #8a6205;
+  --scp-risk-moderate: var(--tp-c-8a6205, #8a6205);
   --scp-risk-high: #99323a;
 
   --scp-nav-h: 56px;
@@ -136,7 +136,7 @@
 body.scp-page {
   margin: 0;
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-family: var(--sc-font);
   -webkit-font-smoothing: antialiased;
 }
@@ -146,7 +146,7 @@ body.scp-page {
   margin: 0 auto;
   padding: 0 var(--scp-gutter) 64px;
   font-family: var(--sc-font);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   line-height: 1.5;
 }
 
@@ -249,7 +249,7 @@ body.scp-page {
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   background: var(--sc-surface);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-family: inherit;
   /* 16px exactly, and not a relative size that could resolve below it: iOS
      zooms the page when a focused field's text is smaller than this, and a
@@ -317,7 +317,7 @@ body.scp-page {
   gap: 11px;
   padding: 7px 10px;
   border-radius: var(--sc-radius-xs);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   text-decoration: none;
 }
 
@@ -502,21 +502,21 @@ button.scp-search-opt {
 
 /* Shared with the Overview's lower sections (.scp-ox), below. */
 .scp :is(.scp-phead, .scp-ox) {
-  --scp-ph-ink: #0e1b2e;
+  --scp-ph-ink: var(--tp-c-0e1b2e, #0e1b2e);
   --scp-ph-ink-2: #34425a;
   --scp-ph-muted: #5b6778;
   --scp-ph-line: #dde2ea;
-  --scp-ph-gold: #e4b84c;
-  --scp-ph-gold-2: #e9c15c;
+  --scp-ph-gold: var(--tp-c-e4b84c, #e4b84c);
+  --scp-ph-gold-2: var(--tp-c-e9c15c, #e9c15c);
   --scp-ph-good: #1f7a4d;
   --scp-ph-good-soft: #e3f2ea;
-  --scp-ph-mid: #8a6d12;
-  --scp-ph-mid-soft: #fbf3dc;
+  --scp-ph-mid: var(--tp-c-8a6d12, #8a6d12);
+  --scp-ph-mid-soft: var(--tp-c-fbf3dc, #fbf3dc);
   --scp-ph-bad: #a23b2a;
   --scp-ph-bad-soft: #f8e6e2;
   --scp-ph-board-label: #9fb0c8;
-  --scp-ph-board-rule: #26395a;
-  --scp-ph-gold-soft: #fdf6e3;
+  --scp-ph-board-rule: var(--tp-c-26395a, #26395a);
+  --scp-ph-gold-soft: var(--tp-c-fdf6e3, #fdf6e3);
   --scp-ph-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --scp-team: var(--scp-ph-ink-2);
 }
@@ -528,7 +528,7 @@ button.scp-search-opt {
  */
 .scp .scp-ox {
   margin-top: 16px;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-family: var(--scp-ph-sans);
   font-size: 15px;
   font-weight: 400;
@@ -556,7 +556,7 @@ button.scp-search-opt {
   position: relative;
   margin: 0 0 18px;
   padding: 0 0 10px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 17px !important;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -597,7 +597,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ox :focus-visible {
-  outline: 3px solid #b8871f;
+  outline: 3px solid var(--tp-c-b8871f, #b8871f);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -653,7 +653,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ox-wk-opp {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 14px;
   font-weight: 800;
   font-stretch: 80%;
@@ -687,7 +687,7 @@ button.scp-search-opt {
 
 /* The best week keeps its gold, on the number now that there is no bar. */
 .scp .scp-ox-wk-pts.is-best {
-  color: #b8871f;
+  color: var(--tp-c-b8871f, #b8871f);
 }
 
 .scp .scp-ox-wk-dot {
@@ -716,8 +716,8 @@ button.scp-search-opt {
   text-transform: uppercase;
 }
 
-.scp .scp-ox-wk-res.is-w { color: var(--scp-ph-ink); }
-.scp .scp-ox-wk-res.is-l { color: var(--scp-ph-ink); }
+.scp .scp-ox-wk-res.is-w { color: var(--tp-ink, var(--scp-ph-ink)); }
+.scp .scp-ox-wk-res.is-l { color: var(--tp-ink, var(--scp-ph-ink)); }
 
 /*
  * Results and forecasts (mak, 2026-10-21).
@@ -739,11 +739,11 @@ button.scp-search-opt {
 }
 
 .scp .scp-ox-wk:not(.is-future):not(.is-bye) .scp-ox-wk-top {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 
 .scp .scp-ox-wk.is-future {
-  background: repeating-linear-gradient(135deg, #fafbfc 0 8px, #f1f4f8 8px 16px);
+  background: repeating-linear-gradient(135deg, #fafbfc 0 8px, var(--tp-c-f1f4f8, #f1f4f8) 8px 16px);
   border-top: 3px dashed var(--scp-ph-line);
   padding-top: 10px;
 }
@@ -765,17 +765,17 @@ button.scp-search-opt {
   outline-offset: -3px;
   border-top-color: var(--scp-ph-gold);
   border-top-style: solid;
-  background: linear-gradient(180deg, #fffbf0 0%, var(--scp-ph-gold-soft) 100%);
+  background: linear-gradient(180deg, var(--tp-c-fffbf0, #fffbf0) 0%, var(--scp-ph-gold-soft) 100%);
   /* An inner glow, not a drop shadow: the strip scrolls sideways on narrow
      screens, and a shadow outside the card would be clipped by that box. */
-  box-shadow: inset 0 0 0 1px rgba(184, 135, 31, 0.22), inset 0 -28px 36px -28px rgba(184, 135, 31, 0.28);
+  box-shadow: inset 0 0 0 1px var(--tp-a-184-135-31-220, rgba(184, 135, 31, 0.22)), inset 0 -28px 36px -28px var(--tp-a-184-135-31-280, rgba(184, 135, 31, 0.28));
   /* Room under the tag: the week line starts below it instead of against it. */
   padding-top: 20px;
 }
 
 .scp .scp-ox-wk.is-next .scp-ox-wk-top {
   font-style: normal;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 
 .scp .scp-ox-wk.is-next .scp-ox-wk-opp {
@@ -870,15 +870,15 @@ button.scp-search-opt {
 .scp .scp-ox-panel h3 {
   margin: 0 0 10px;
   padding: 0;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 16px;
   font-weight: 700;
   line-height: 1.25;
 }
 
 .scp .scp-ox-panel.is-rc {
-  border-color: #e7d39e;
-  background: linear-gradient(180deg, #fffcf3, #ffffff);
+  border-color: var(--tp-c-e7d39e, #e7d39e);
+  background: linear-gradient(180deg, var(--tp-c-fffcf3, #fffcf3), #ffffff);
 }
 
 .scp .scp-ox-panel.is-rc h3 {
@@ -912,7 +912,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ox .scp-ox-btn:hover {
-  background: #1c2f4b;
+  background: var(--tp-c-1c2f4b, #1c2f4b);
 }
 
 .scp .scp-ox-profile {
@@ -965,7 +965,7 @@ button.scp-search-opt {
 .scp .scp-ox-meter h3 {
   margin: 0;
   padding: 0;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
@@ -1047,7 +1047,7 @@ button.scp-search-opt {
 .scp .scp-ox-table td {
   padding: 11px 14px;
   border: 0;
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
   font-weight: 400;
   text-align: right;
   white-space: nowrap;
@@ -1110,7 +1110,7 @@ button.scp-search-opt {
 .scp .scp-ox-card h3 {
   margin: 0 0 8px;
   padding: 0;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
@@ -1294,7 +1294,7 @@ button.scp-search-opt {
  * darkened brand gold for text and rules.
  */
 .scp .scp-st {
-  --scp-st-gold: #b8871f;
+  --scp-st-gold: var(--tp-c-b8871f, #b8871f);
 }
 
 .scp .scp-st .scp-ox-sec {
@@ -1323,7 +1323,7 @@ button.scp-search-opt {
    Stats / Through Week 8": 17px, the 28px gold rule, a 13px muted lede. */
 .scp .scp-ox-h2.is-lead {
   padding: 0 0 10px;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 17px !important;
   font-stretch: 100%;
   letter-spacing: -0.01em;
@@ -1437,7 +1437,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-seg button:focus-visible {
-  outline: 3px solid #b8871f;
+  outline: 3px solid var(--tp-c-b8871f, #b8871f);
   outline-offset: 2px;
 }
 
@@ -1478,7 +1478,7 @@ button.scp-search-opt {
   align-items: baseline;
   column-gap: 7px;
   padding: 6px 12px 7px;
-  background: #f5f7fa;
+  background: var(--tp-c-f5f7fa, #f5f7fa);
   text-align: center;
 }
 
@@ -1502,7 +1502,7 @@ button.scp-search-opt {
 
 .scp .scp-st-cell dd.scp-st-cv {
   margin-top: 1px;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 19px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -1537,7 +1537,7 @@ button.scp-search-opt {
   margin: 0 0 18px;
   padding: 0 0 10px;
   border: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-family: var(--sc-font) !important;
   font-size: 17px !important;
   font-weight: 800;
@@ -1580,7 +1580,7 @@ button.scp-search-opt {
 
 .scp .scp-st-ladgroup {
   margin: 14px 0 8px;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 15px;
   font-weight: 800;
 }
@@ -1630,7 +1630,7 @@ button.scp-search-opt {
   position: relative;
   margin: 0;
   padding-left: 10px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -1725,12 +1725,12 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-stat-bar[data-tier="none"] .scp-st-stat-fill {
-  background: color-mix(in srgb, var(--scp-team, #0b1634) 60%, #fff);
+  background: color-mix(in srgb, var(--scp-team, var(--tp-c-0b1634, #0b1634)) 60%, #fff);
 }
 
 .scp .scp-st-stat-value {
   text-align: right;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 14px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -1789,7 +1789,7 @@ button.scp-search-opt {
 .scp .scp-st-read {
   margin-top: 14px;
   padding: 10px 16px 12px;
-  border: 1px solid #f0e2c0;
+  border: 1px solid var(--tp-c-f0e2c0, #f0e2c0);
   border-left: 3px solid var(--sc-gold);
   border-radius: 8px;
   background: #fff9ed;
@@ -1858,7 +1858,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-read strong {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 
 .scp .scp-st-src,
@@ -1983,7 +1983,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-col:is(.is-last, .is-now) b {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 14px;
 }
 
@@ -2009,7 +2009,7 @@ button.scp-search-opt {
 
 .scp .scp-st-x strong {
   display: block;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 12.5px;
 }
 
@@ -2047,7 +2047,7 @@ button.scp-search-opt {
 .scp .scp-st-table thead tr.scp-st-grp th {
   padding-bottom: 0;
   border-bottom: 0;
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
   text-align: center;
 }
 
@@ -2107,7 +2107,7 @@ button.scp-search-opt {
 .scp .scp-st-rate h3 {
   margin: 0;
   padding: 0;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2165,7 +2165,7 @@ button.scp-search-opt {
 
 .scp .scp-st-bests .scp-st-bl {
   margin-top: 4px;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2204,7 +2204,7 @@ button.scp-search-opt {
 
 .scp .scp-nw a:focus-visible,
 .scp .scp-nw button:focus-visible {
-  outline: 3px solid #b8871f;
+  outline: 3px solid var(--tp-c-b8871f, #b8871f);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -2254,9 +2254,9 @@ button.scp-search-opt {
 .scp .scp-nw .scp-nw-cat.is-game { background: var(--scp-ph-ink); color: #fff; }
 .scp .scp-nw .scp-nw-cat.is-injury { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
 .scp .scp-nw .scp-nw-cat.is-status { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
-.scp .scp-nw .scp-nw-cat.is-prac { background: #e6f0fa; color: #1f4e8c; }
+.scp .scp-nw .scp-nw-cat.is-prac { background: var(--tp-c-e6f0fa, #e6f0fa); color: var(--tp-c-1f4e8c, #1f4e8c); }
 .scp .scp-nw .scp-nw-cat.is-role { background: #efe6fa; color: #5b2d8f; }
-.scp .scp-nw .scp-nw-cat:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: #8a6414; }
+.scp .scp-nw .scp-nw-cat:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: var(--tp-c-8a6414, #8a6414); }
 
 /* The round 40px marker: his photo, the type's icon, or the club's crest. */
 .scp .scp-nw .scp-nw-marker {
@@ -2287,9 +2287,9 @@ button.scp-search-opt {
 
 .scp .scp-nw .scp-nw-marker.is-injury { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
 .scp .scp-nw .scp-nw-marker.is-status { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
-.scp .scp-nw .scp-nw-marker.is-prac { background: #e6f0fa; color: #1f4e8c; }
+.scp .scp-nw .scp-nw-marker.is-prac { background: var(--tp-c-e6f0fa, #e6f0fa); color: var(--tp-c-1f4e8c, #1f4e8c); }
 .scp .scp-nw .scp-nw-marker.is-role { background: #efe6fa; color: #5b2d8f; }
-.scp .scp-nw .scp-nw-marker:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: #8a6414; }
+.scp .scp-nw .scp-nw-marker:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: var(--tp-c-8a6414, #8a6414); }
 
 .scp .scp-nw img.scp-nw-face {
   display: block;
@@ -2495,7 +2495,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   text-decoration: none;
 }
 
@@ -2560,7 +2560,7 @@ button.scp-search-opt {
 .scp .scp-nw p.scp-nw-fpts {
   margin: 0;
   padding: 0;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 26px;
   font-weight: 800;
   font-stretch: 78%;
@@ -2689,7 +2689,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-nw .scp-nw-wklabel b {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 800;
 }
 
@@ -2906,7 +2906,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-nw a.scp-nw-h {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 600;
   line-height: 1.35;
   text-decoration: none;
@@ -3059,7 +3059,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-drv h3 {
   margin: 0;
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
   font-size: 15px !important;
   font-weight: 700;
   line-height: 1.3;
@@ -3092,7 +3092,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-val strong {
   display: block;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 18px;
   font-weight: 700;
   font-stretch: 80%;
@@ -3129,7 +3129,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ol .scp-ol-axis b {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 
 .scp .scp-ol .scp-ol-unranked {
@@ -3179,7 +3179,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-card h3 {
   margin: 0 0 4px;
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
   font-size: 17px !important;
   font-weight: 700;
 }
@@ -3212,7 +3212,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ol .scp-ol-when-b {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 13px;
   font-weight: 700;
 }
@@ -3295,7 +3295,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-claim {
   display: block;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 700;
 }
 
@@ -3368,7 +3368,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-ol .scp-ol-sopp {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-size: 18px;
   font-weight: 700;
   font-stretch: 80%;
@@ -3393,12 +3393,12 @@ button.scp-search-opt {
   margin-top: 16px;
   padding: 16px 20px;
   border-radius: 12px;
-  background: #f6ebcf;
+  background: var(--tp-c-f6ebcf, #f6ebcf);
   font-size: 15px;
 }
 
 .scp .scp-ol .scp-ol-cta a {
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
   font-weight: 700;
 }
 
@@ -3678,7 +3678,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-ptable tr.is-cur {
-  background: #f8fafc;
+  background: var(--tp-c-f8fafc, #f8fafc);
 }
 
 .scp .scp-in .scp-in-wk b {
@@ -3730,7 +3730,7 @@ button.scp-search-opt {
 
 .scp .scp-in .scp-pp.is-soon {
   background: var(--scp-ph-gold-soft);
-  color: #8a6414;
+  color: var(--tp-c-8a6414, #8a6414);
 }
 
 /* ---- at a glance
@@ -4055,7 +4055,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-play-w {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -4086,7 +4086,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-rep b {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 700;
 }
 
@@ -4144,7 +4144,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-cta a {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-weight: 700;
 }
 
@@ -4229,9 +4229,9 @@ button.scp-search-opt {
   min-height: var(--scp-nav-h);
   margin-top: 16px;
   padding: 6px;
-  border: 1px solid #d6e0ed;
+  border: 1px solid var(--tp-c-d6e0ed, #d6e0ed);
   border-radius: 12px;
-  background: linear-gradient(180deg, #f5f8fc, #eef3f9);
+  background: linear-gradient(180deg, var(--tp-c-f5f8fc, #f5f8fc), var(--tp-c-eef3f9, #eef3f9));
   box-shadow: 0 4px 14px rgba(14, 40, 83, 0.08);
 }
 
@@ -4280,7 +4280,7 @@ button.scp-search-opt {
 }
 
 .scp-nav-link:hover {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   background: rgba(11, 35, 69, 0.07);
 }
 
@@ -4292,14 +4292,14 @@ button.scp-search-opt {
 /* The open tab: deep navy, white words, a gold line along the bottom. */
 .scp-nav-link.is-active {
   color: #ffffff;
-  background: linear-gradient(180deg, #113366, #0b2345);
-  box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px rgba(11, 35, 69, 0.3);
+  background: linear-gradient(180deg, var(--tp-c-113366, #113366), var(--tp-c-0b2345, #0b2345));
+  box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px var(--tp-a-11-35-69-300, rgba(11, 35, 69, 0.3));
   font-weight: 700;
 }
 
 .scp-nav-link.is-active:hover {
   color: #ffffff;
-  background: linear-gradient(180deg, #113366, #0b2345);
+  background: linear-gradient(180deg, var(--tp-c-113366, #113366), var(--tp-c-0b2345, #0b2345));
 }
 
 /* Narrow: the tabs keep their size and the bar scrolls sideways. */
@@ -4348,8 +4348,8 @@ button.scp-search-opt {
   .scp:not([data-scp-tabs="js"]):has(#news:target) #news-tab,
   .scp:not([data-scp-tabs="js"]):has(#bio:target) #bio-tab {
     color: #ffffff;
-    background: linear-gradient(180deg, #113366, #0b2345);
-    box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px rgba(11, 35, 69, 0.3);
+    background: linear-gradient(180deg, var(--tp-c-113366, #113366), var(--tp-c-0b2345, #0b2345));
+    box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px var(--tp-a-11-35-69-300, rgba(11, 35, 69, 0.3));
     font-weight: 700;
   }
 }
@@ -4447,7 +4447,7 @@ button.scp-search-opt {
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.25;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 /* The gold rule is drawn by the heading, not by a sibling node, so it cannot
@@ -4473,7 +4473,7 @@ button.scp-search-opt {
   margin: 32px 0 14px;
   font-size: 16px !important;
   font-weight: 700;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .scp-section > .scp-h3:first-child {
@@ -4510,7 +4510,7 @@ button.scp-search-opt {
 /* An in-page anchor to another tab. Underlined in gold so it reads as a way
    through rather than as an external link, which these never are. */
 .scp-crosslink {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 700;
   text-decoration: none;
   border-bottom: 2px solid var(--sc-gold);
@@ -4556,7 +4556,7 @@ button.scp-search-opt {
 }
 
 .scp-caption-link:hover {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   border-bottom-color: var(--sc-gold-deep);
 }
 
@@ -4590,7 +4590,7 @@ button.scp-search-opt {
   font-size: 26px;
   font-weight: 800;
   line-height: 1.1;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-tile-note {
@@ -4641,7 +4641,7 @@ button.scp-search-opt {
   margin: 6px 0 0;
   font-size: 19px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-read-sub {
@@ -4786,7 +4786,7 @@ button.scp-search-opt {
   margin: 6px 0 0;
   font-size: 22px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-variant-numeric: tabular-nums;
 }
 
@@ -4840,7 +4840,7 @@ button.scp-search-opt {
 .scp .scp-table tfoot th {
   text-align: left;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table td:nth-child(2),
@@ -4984,7 +4984,7 @@ button.scp-search-opt {
 
 .scp-pts {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The opponent's crest ahead of its code in the game log (mak, 2026-10-29). */
@@ -5024,7 +5024,7 @@ button.scp-search-opt {
 
 /* The palest step cannot carry white text. */
 .scp-tier[data-tier="bust"] {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 .scp .scp-total th,
@@ -5032,7 +5032,7 @@ button.scp-search-opt {
   border-top: 2px solid var(--sc-border);
   border-bottom: none;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-sort {
@@ -5047,7 +5047,7 @@ button.scp-search-opt {
 }
 
 .scp-sort:hover {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table th[aria-sort="descending"] .scp-sort::after { content: " \2193"; }
@@ -5093,7 +5093,7 @@ button.scp-search-opt {
 
 .scp-finish-season {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-finish-rank {
@@ -5113,7 +5113,7 @@ button.scp-search-opt {
 .scp-finish-badge[data-tier="elite"] { background: var(--scp-tier-1); }
 .scp-finish-badge[data-tier="starter"] { background: var(--scp-tier-2); }
 .scp-finish-badge[data-tier="streaming"] { background: var(--scp-tier-3); }
-.scp-finish-badge[data-tier="depth"] { background: var(--scp-tier-4); color: var(--sc-ink); }
+.scp-finish-badge[data-tier="depth"] { background: var(--scp-tier-4); color: var(--tp-ink, var(--sc-ink)); }
 .scp-finish-badge[data-tier="poor"] { background: var(--sc-surface-sink); color: var(--sc-muted-strong); }
 
 .scp-finish-ppg,
@@ -5171,7 +5171,7 @@ button.scp-search-opt {
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.02em;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-verdict-id {
@@ -5214,7 +5214,7 @@ button.scp-search-opt {
   font-size: 17px;
   font-weight: 800;
   line-height: 1.2;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-chip[data-mod="lead"] {
@@ -5240,7 +5240,7 @@ button.scp-search-opt {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 /* Two paragraphs of one argument: spaced as prose, not as two blocks. */
@@ -5299,7 +5299,7 @@ button.scp-search-opt {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.015em;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-driver-detail {
@@ -5318,7 +5318,7 @@ button.scp-search-opt {
 }
 
 /* The ordinal ramp, not a traffic light. */
-.scp-driver[data-level="high"] .scp-driver-value { color: var(--scp-tier-1); }
+.scp-driver[data-level="high"] .scp-driver-value { color: var(--tp-ink, var(--scp-tier-1)); }
 .scp-driver[data-level="mid"] .scp-driver-value { color: var(--scp-tier-2); }
 .scp-driver[data-level="low"] .scp-driver-value { color: var(--sc-muted-strong); }
 
@@ -5347,7 +5347,7 @@ button.scp-search-opt {
 }
 
 .scp-range-end.is-ceiling {
-  color: var(--scp-tier-1);
+  color: var(--tp-ink, var(--scp-tier-1));
 }
 
 .scp-range-track {
@@ -5395,7 +5395,7 @@ button.scp-search-opt {
   white-space: nowrap;
   font-size: 12px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-range-notes {
@@ -5424,7 +5424,7 @@ button.scp-search-opt {
   margin: 4px 0 0;
   font-size: 16px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-range-why {
@@ -5458,7 +5458,7 @@ button.scp-search-opt {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The arrow is the only mark distinguishing the two columns, and it is a
@@ -5535,7 +5535,7 @@ button.scp-search-opt {
   font-size: 14.5px;
   font-weight: 700;
   line-height: 1.45;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* ---- the closing slab */
@@ -5583,7 +5583,7 @@ button.scp-search-opt {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-outlook-body {
@@ -5624,7 +5624,7 @@ button.scp-search-opt {
 
 .scp-season-opt:hover {
   background: var(--sc-surface-sink);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* Kept for the team pages' own switcher, which still marks a current tab. */
@@ -5650,7 +5650,7 @@ button.scp-search-opt {
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .scp-adv-grid {
@@ -5685,7 +5685,7 @@ button.scp-search-opt {
   margin: 6px 0 8px;
   font-size: 19px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-variant-numeric: tabular-nums;
 }
 
@@ -5735,7 +5735,7 @@ button.scp-search-opt {
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-grade-score {
@@ -5817,7 +5817,7 @@ button.scp-search-opt {
   font-size: 16px;
   font-weight: 800;
   text-align: right;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-avail[data-level="low"] .scp-avail-value { color: var(--scp-risk-low); }
@@ -5839,7 +5839,7 @@ button.scp-search-opt {
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   list-style: none;
 }
 
@@ -5896,7 +5896,7 @@ button.scp-search-opt {
   margin: 0;
   font-size: 16px !important;
   font-weight: 800;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 .scp-episode-year {
@@ -5996,7 +5996,7 @@ button.scp-search-opt {
   font-size: 15px !important;
   font-weight: 800;
   line-height: 1.45;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 /* The left indent lines the answer up with its question rather than with the
@@ -6063,7 +6063,7 @@ button.scp-search-opt {
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-status-dot {
@@ -6115,7 +6115,7 @@ button.scp-search-opt {
   font-size: 19px;
   font-weight: 800;
   line-height: 1.15;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-status-fact-sub {
@@ -6180,7 +6180,7 @@ button.scp-search-opt {
   margin: 10px 0 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 .scp-report-dot {
@@ -6255,7 +6255,7 @@ button.scp-search-opt {
 
 .scp-newscard:hover {
   transform: translateY(-2px);
-  border-color: rgba(212, 175, 55, 0.42);
+  border-color: var(--tp-a-212-175-55-420, rgba(212, 175, 55, 0.42));
   box-shadow: var(--sc-shadow-lift);
 }
 
@@ -6350,12 +6350,12 @@ button.scp-search-opt {
 }
 
 .scp-news-kicker {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-news-title {
   margin: 0;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
   font-size: 15px !important;
   line-height: 1.3;
   font-weight: 800;
@@ -6420,7 +6420,7 @@ button.scp-search-opt {
 }
 
 .scp-news-player {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-weight: 800;
 }
 
@@ -6432,7 +6432,7 @@ button.scp-search-opt {
 .scp-news-cta {
   margin: auto 0 0;
   padding-top: 14px;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 12px;
   font-weight: 800;
 }
@@ -6471,7 +6471,7 @@ button.scp-search-opt {
 .scp-news-more-link {
   font-size: 13px;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   text-decoration: none;
   border-bottom: 2px solid var(--sc-gold);
   padding-bottom: 1px;
@@ -6553,7 +6553,7 @@ button.scp-search-opt {
   margin: 10px 0 0;
   font-size: 14.5px;
   line-height: 1.55;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 /*
@@ -6607,7 +6607,7 @@ button.scp-search-opt {
   font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-prof-detail {
@@ -6626,7 +6626,7 @@ button.scp-search-opt {
  */
 .scp-prof-cell[data-level="high"] .scp-prof-value { color: var(--scp-risk-low); }
 .scp-prof-cell[data-level="low"] .scp-prof-value { color: var(--scp-risk-high); }
-.scp-prof-cell[data-level="mid"] .scp-prof-value { color: var(--sc-navy); }
+.scp-prof-cell[data-level="mid"] .scp-prof-value { color: var(--tp-ink, var(--sc-navy)); }
 
 /*
  * The strongest block on the tab, and the one that reads least like a stat.
@@ -6703,7 +6703,7 @@ button.scp-search-opt {
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.01em;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-dr-detail {
@@ -6714,7 +6714,7 @@ button.scp-search-opt {
 }
 
 /* The ordinal ramp, not a traffic light. */
-.scp-dr-row[data-level="high"] .scp-dr-value { color: var(--scp-tier-1); }
+.scp-dr-row[data-level="high"] .scp-dr-value { color: var(--tp-ink, var(--scp-tier-1)); }
 .scp-dr-row[data-level="mid"] .scp-dr-value { color: var(--scp-tier-2); }
 .scp-dr-row[data-level="low"] .scp-dr-value { color: var(--sc-muted-strong); }
 
@@ -6764,7 +6764,7 @@ button.scp-search-opt {
 .scp-styleline-value {
   font-size: 15px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The evidence under the reading, on the Stats tab's line. */
@@ -6813,7 +6813,7 @@ button.scp-search-opt {
   font-size: 17px !important;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 /* Under the text, like .scp-h2 above it - the two are the same device at two
@@ -6890,7 +6890,7 @@ button.scp-search-opt {
 .scp-bar-value {
   font-size: 15px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-variant-numeric: tabular-nums;
 }
 
@@ -7019,7 +7019,7 @@ button.scp-search-opt {
 .scp .scp-table--career tbody th[scope="row"] {
   font-size: 13.5px;
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The career line is a total, not another season: a navy rule above it, a
@@ -7042,7 +7042,7 @@ button.scp-search-opt {
 
 .scp .scp-table--career tbody tr.is-current th[scope="row"] {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   box-shadow: inset 3px 0 0 var(--sc-navy);
 }
 
@@ -7173,7 +7173,7 @@ button.scp-search-opt {
   background: var(--sc-surface);
   box-shadow: var(--sc-shadow);
   overflow: hidden;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   text-decoration: none;
   scroll-snap-align: center;
   transition:
@@ -7249,7 +7249,7 @@ a.scp-peer:focus-visible {
 
 .scp-peer.is-current .scp-peer-rank {
   background: var(--sc-gold);
-  color: var(--sc-navy-deep);
+  color: var(--tp-ink, var(--sc-navy-deep));
 }
 
 .scp-peer-here {
@@ -7259,7 +7259,7 @@ a.scp-peer:focus-visible {
   padding: 2px 6px;
   border-radius: 999px;
   background: var(--sc-gold);
-  color: var(--sc-navy-deep);
+  color: var(--tp-ink, var(--sc-navy-deep));
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -7283,7 +7283,7 @@ a.scp-peer:focus-visible {
   font-size: 13.5px;
   font-weight: 800;
   line-height: 1.25;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -7304,7 +7304,7 @@ a.scp-peer:focus-visible {
 
 .scp-peer-value b {
   margin-right: 3px;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0;
@@ -7437,7 +7437,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp-dir-chip:hover {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 .scp-dir-chip:focus-visible {
@@ -7517,7 +7517,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp-dir-note b {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -7587,16 +7587,16 @@ a.scp-peer:focus-visible {
      host theme's heading rule beats inheritance. Not enough on its own - see
      the armed copy in "host overrides" - but the component's own color
      belongs with the component. */
-  color: var(--sc-ink) !important;
+  color: var(--tp-ink, var(--sc-ink)) !important;
 }
 
 .scp-dir-club-link {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   text-decoration: none;
 }
 
 .scp-dir-club-link:hover {
-  color: var(--club, var(--sc-navy));
+  color: var(--tp-ink, var(--club, var(--sc-navy)));
   text-decoration: underline;
 }
 
@@ -7622,7 +7622,7 @@ a.scp-peer:focus-visible {
   padding-left: 8px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -7670,7 +7670,7 @@ a.scp-peer:focus-visible {
      is in (from the <li>, inherited) and the pointer (from the row itself,
      which therefore wins without needing to out-specify the band). */
   background: var(--row-fill, transparent);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
   text-decoration: none;
 }
 
@@ -7846,7 +7846,7 @@ a.scp-peer:focus-visible {
 
 .scp-dir-item[data-band="depth"] .scp-dir-rank {
   background: var(--scp-tier-4);
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 /* poor - a rank, but a rank nobody is starting. Off the ramp entirely: the
@@ -7887,7 +7887,7 @@ a.scp-peer:focus-visible {
 
 .scp-dir-row:hover .scp-dir-name,
 .scp-dir-row:focus-visible .scp-dir-name {
-  color: var(--sc-ink);
+  color: var(--tp-ink, var(--sc-ink));
 }
 
 .scp-dir-empty {
@@ -8006,7 +8006,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-table--log td.scp-pts {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 14px;
   font-weight: 800;
 }
@@ -8030,7 +8030,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-table--log td.scp-col-fin {
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table--log th.scp-col-pts,
@@ -8163,7 +8163,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-detail-facts {
@@ -8191,7 +8191,7 @@ a.scp-peer:focus-visible {
   margin: 3px 0 0;
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* ---- where the week's points came from ---- */
@@ -8236,7 +8236,7 @@ a.scp-peer:focus-visible {
   text-align: right;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* ---- the week-number toggle ---- */
@@ -8396,7 +8396,7 @@ a.scp-peer:focus-visible {
 .scp-stint-name {
   font-size: 15px;
   font-weight: 700;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* What kind of stop it was - the draft that started the career, or a return
@@ -8426,7 +8426,7 @@ a.scp-peer:focus-visible {
   flex: 0 0 auto;
   padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(212, 175, 55, 0.16);
+  background: var(--tp-a-212-175-55-160, rgba(212, 175, 55, 0.16));
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -8523,7 +8523,7 @@ a.scp-peer:focus-visible {
   border: 0;
   background: none;
   font: 700 12px/1.2 var(--scp-ph-sans);
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   cursor: pointer;
   transform: translateY(-50%);
   transition: opacity 0.15s ease;
@@ -8723,7 +8723,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-in .scp-in-dur-status b {
   font-weight: 700;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-variant-numeric: tabular-nums;
 }
 .scp .scp-in .scp-in-dur-status b.is-good {
@@ -8851,14 +8851,14 @@ a.scp-peer:focus-visible {
   padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--scp-ph-line) 50%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, #eef2f7 20%, #fff);
+  background: color-mix(in srgb, var(--tp-c-eef2f7, #eef2f7) 20%, #fff);
 }
 .scp .scp-in .scp-in-dt-v {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
   line-height: 1;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-variant-numeric: tabular-nums;
 }
 .scp .scp-in .scp-in-dt-k {
@@ -8882,7 +8882,7 @@ a.scp-peer:focus-visible {
   padding: 2px 10px;
   border: 1px solid color-mix(in srgb, var(--scp-ph-line) 70%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, #eef2f7 30%, #fff);
+  background: color-mix(in srgb, var(--tp-c-eef2f7, #eef2f7) 30%, #fff);
   font: inherit;
   font-size: 11px;
   font-weight: 600;
@@ -8892,7 +8892,7 @@ a.scp-peer:focus-visible {
   transition: box-shadow 0.15s ease;
 }
 .scp .scp-in .scp-in-rp:hover {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   filter: brightness(1.1);
 }
 .scp .scp-in .scp-in-rp b {
@@ -8902,12 +8902,12 @@ a.scp-peer:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 .scp .scp-in .scp-in-rp.is-on {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   border-color: var(--rp-stroke, var(--sc-gold));
   background: color-mix(in srgb, var(--rp-fill, var(--sc-gold)) 33%, transparent);
   box-shadow:
-    0 0 0 1px rgba(212, 175, 55, 0.8),
-    0 0 8px rgba(212, 175, 55, 0.35);
+    0 0 0 1px var(--tp-a-212-175-55-800, rgba(212, 175, 55, 0.8)),
+    0 0 8px var(--tp-a-212-175-55-350, rgba(212, 175, 55, 0.35));
 }
 .scp .scp-in .scp-in-rp:focus-visible {
   outline: 2px solid var(--sc-gold);
@@ -8924,7 +8924,7 @@ a.scp-peer:focus-visible {
   padding: 12px;
   border: 1px solid var(--scp-ph-line);
   border-radius: 8px;
-  background: color-mix(in srgb, #eef2f7 30%, #fff);
+  background: color-mix(in srgb, var(--tp-c-eef2f7, #eef2f7) 30%, #fff);
 }
 .scp .scp-in .scp-in-rd-head {
   display: flex;
@@ -8937,7 +8937,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-in .scp-in-rd-head b {
   font-weight: 700;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 .scp .scp-in .scp-in-rd-x {
   display: flex;
@@ -8957,8 +8957,8 @@ a.scp-peer:focus-visible {
   cursor: pointer;
 }
 .scp .scp-in .scp-in-rd-x:hover {
-  background: color-mix(in srgb, #eef2f7 60%, #fff);
-  color: var(--scp-ph-ink);
+  background: color-mix(in srgb, var(--tp-c-eef2f7, #eef2f7) 60%, #fff);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 .scp .scp-in .scp-in-rd-list {
   display: grid;
@@ -8983,12 +8983,12 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-in .scp-in-rd-when {
   font-weight: 700;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   font-variant-numeric: tabular-nums;
 }
 .scp .scp-in .scp-in-rd-inj {
   font-weight: 600;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 .scp .scp-in .scp-in-rd-tag {
   padding: 0 6px;
@@ -9209,7 +9209,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-table--next tbody th[scope="row"] {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table--next .scp-next-flag {
@@ -9232,7 +9232,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-table--next .scp-next-code {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table--next .scp-next-logo {
@@ -9255,7 +9255,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-table--next .scp-next-rank {
   font-weight: 800;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-table--next .scp-next-rank[data-band="soft"] { color: var(--sc-good, #1f7a4d); }
@@ -9368,7 +9368,7 @@ a.scp-peer:focus-visible {
   background: var(--sc-gold);
   font-size: 9.5px;
   letter-spacing: 0.1em;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /* The focal line: home/away marker, the opponent's code, then the crest. */
@@ -9406,7 +9406,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp-next-name {
@@ -9448,7 +9448,7 @@ a.scp-peer:focus-visible {
   font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   text-decoration: none;
   transition: color 120ms ease;
 }
@@ -9499,7 +9499,7 @@ a.scp-peer:focus-visible {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 /*
@@ -9975,16 +9975,16 @@ a.scp-peer:focus-visible {
 /* The header's links declare their own ink, and a theme's `#main-content a`
    or `.entry-content a` would otherwise repaint them. */
 .scp .scp-pbtn--gold {
-  color: #071a35 !important;
+  color: var(--tp-ink, var(--tp-c-071a35, #071a35)) !important;
 }
 
 .scp .scp-pbtn--white {
-  color: #102344 !important;
+  color: var(--tp-ink, var(--tp-c-102344, #102344)) !important;
 }
 
 .scp .scp-ptag-inj.is-mid,
 .scp .scp-ptag-status.is-mid {
-  color: #f1bf3c !important;
+  color: var(--tp-c-f1bf3c, #f1bf3c) !important;
 }
 
 .scp .scp-ptag-inj.is-bad,
@@ -10009,7 +10009,7 @@ a.scp-peer:focus-visible {
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a,
 .scp .scp-nw a.scp-nw-h,
 .scp .scp-nw .scp-nw-meta a {
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
 }
 
 /* Divi's id-scoped `#left-area ol` pads and spaces the timeline list, and its
@@ -10022,7 +10022,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 {
-  color: var(--scp-ph-ink) !important;
+  color: var(--tp-ink, var(--scp-ph-ink)) !important;
 }
 
 .scp .scp-ox .scp-ox-btn {
@@ -10075,11 +10075,11 @@ a.scp-peer:focus-visible {
  * plain `h2` rule reaches directly. */
 .scp .scp-dir-club-name,
 .scp .scp-dir-club-link {
-  color: var(--sc-ink) !important;
+  color: var(--tp-ink, var(--sc-ink)) !important;
 }
 
 .scp .scp-dir-club-link:hover {
-  color: var(--club, var(--sc-navy)) !important;
+  color: var(--tp-ink, var(--club, var(--sc-navy))) !important;
 }
 
 /* The navy header band's own ink, kept.
@@ -10152,7 +10152,7 @@ a.scp-peer:focus-visible {
    the same navy, so one rule restates all of them. */
 .scp .scp-table tbody th[scope="row"],
 .scp .scp-table tfoot th {
-  color: var(--sc-navy) !important;
+  color: var(--tp-ink, var(--sc-navy)) !important;
 }
 
 /* transactions: dressed with the premium bio block, see the end of this sheet */
@@ -10219,7 +10219,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   font-stretch: 78%;
   line-height: 1.1;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-gl-tile span {
@@ -10227,7 +10227,7 @@ a.scp-peer:focus-visible {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
 }
 
 .scp .scp-gl-tile small {
@@ -10260,7 +10260,7 @@ a.scp-peer:focus-visible {
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   background: var(--sc-surface);
-  color: var(--sc-navy);
+  color: var(--tp-ink, var(--sc-navy));
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -10319,7 +10319,7 @@ a.scp-peer:focus-visible {
 }
 /* "Avg QB17" closes the counts: where he usually lands, in ink. */
 .scp .scp-gl-sum .scp-gl-avgsum {
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 /*
  * Restyled 2026-10-22 to mak's notes: one band read as a performance
@@ -10353,7 +10353,7 @@ a.scp-peer:focus-visible {
   color: inherit;
 }
 .scp .scp-gl-tiers .is-k1 {
-  color: #8a6512;
+  color: var(--tp-c-8a6512, #8a6512);
 }
 /* The cutoff ranks at the seams and the axis ends (critique, 2026-10-29):
    small, in ink, on a white chip so they win any overlap with a tier name. */
@@ -10367,7 +10367,7 @@ a.scp-peer:focus-visible {
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 12px;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
   white-space: nowrap;
 }
 .scp .scp-gl-tiers .scp-gl-cut.is-lo {
@@ -10400,10 +10400,10 @@ a.scp-peer:focus-visible {
 /* A flat tint: the gradient read as a meaning the band does not have. */
 .scp .scp-gl-band.is-b1 {
   left: 0;
-  background: #ecc86e;
+  background: var(--tp-c-ecc86e, #ecc86e);
 }
 .scp .scp-gl-band.is-b2 {
-  background: #dbe2ec;
+  background: var(--tp-c-dbe2ec, #dbe2ec);
   border-radius: 0;
 }
 /* The tier cutoffs: a hairline through the band, a touch past both edges. */
@@ -10509,7 +10509,7 @@ a.scp-peer:focus-visible {
   font-size: 13px;
   font-weight: 800;
   font-stretch: 80%;
-  color: var(--scp-ph-ink);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 /* The weeks whose labels found no room, on their own line. */
 .scp .scp-gl-also {
@@ -10547,7 +10547,7 @@ a.scp-peer:focus-visible {
   border-left: 4px solid var(--scp-ph-line);
 }
 .scp .scp-gl-game.is-t12 {
-  border-left-color: #b8871f;
+  border-left-color: var(--tp-c-b8871f, #b8871f);
 }
 .scp .scp-gl-game.is-low {
   border-left-color: var(--scp-ph-bad);
@@ -10636,12 +10636,12 @@ a.scp-peer:focus-visible {
   color: var(--scp-ph-ink-2);
 }
 .scp .scp-gl-fbadge.is-t12 {
-  background: #b8871f;
+  background: var(--tp-c-b8871f, #b8871f);
   color: #fff;
 }
 .scp .scp-gl-fbadge.is-t24 {
-  background: #e6ecf5;
-  color: var(--scp-ph-ink);
+  background: var(--tp-c-e6ecf5, #e6ecf5);
+  color: var(--tp-ink, var(--scp-ph-ink));
 }
 .scp .scp-gl-fbadge.is-low {
   background: var(--scp-ph-bad-soft);
@@ -10844,22 +10844,22 @@ a.scp-peer:focus-visible {
  * (the title that vanished into the hero band).
  */
 .scp .scp-stp {
-  --sc-premium-navy-dark: #0b1c39;
-  --sc-premium-navy: #102b52;
-  --sc-premium-navy-mid: #173c68;
-  --sc-premium-gold: #d4af37;
-  --sc-premium-gold-bright: #edbf44;
-  --sc-premium-gold-deep: #b8901f;
-  --sc-premium-gold-ink: #8a6205;
-  --sc-premium-gold-soft: #fff3d4;
-  --sc-premium-text: #102344;
+  --sc-premium-navy-dark: var(--tp-c-0b1c39, #0b1c39);
+  --sc-premium-navy: var(--tp-c-102b52, #102b52);
+  --sc-premium-navy-mid: var(--tp-c-173c68, #173c68);
+  --sc-premium-gold: var(--tp-c-d4af37, #d4af37);
+  --sc-premium-gold-bright: var(--tp-c-edbf44, #edbf44);
+  --sc-premium-gold-deep: var(--tp-c-b8901f, #b8901f);
+  --sc-premium-gold-ink: var(--tp-c-8a6205, #8a6205);
+  --sc-premium-gold-soft: var(--tp-c-fff3d4, #fff3d4);
+  --sc-premium-text: var(--tp-c-102344, #102344);
   --sc-premium-muted: #546b8a;
   --sc-premium-surface: #ffffff;
-  --sc-premium-surface-light: #f5f8fc;
-  --sc-premium-surface-blue: #edf3fa;
-  --sc-premium-border: #ccd9e9;
-  --sc-premium-border-light: #e0e8f2;
-  --sc-premium-blue: #557eaf;
+  --sc-premium-surface-light: var(--tp-c-f5f8fc, #f5f8fc);
+  --sc-premium-surface-blue: var(--tp-c-edf3fa, #edf3fa);
+  --sc-premium-border: var(--tp-c-ccd9e9, #ccd9e9);
+  --sc-premium-border-light: var(--tp-c-e0e8f2, #e0e8f2);
+  --sc-premium-blue: var(--tp-c-557eaf, #557eaf);
   --sc-premium-green: #167b58;
   --sc-premium-red: #b3424d;
   --sc-premium-radius: 14px;
@@ -10878,7 +10878,7 @@ a.scp-peer:focus-visible {
   gap: 18px;
   margin: 8px 0 0;
   padding: 0 0 4px;
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
 }
 
 /* The host's section padding (.scp .scp-ox-sec: 48px, 34px under 680px),
@@ -10907,7 +10907,7 @@ a.scp-peer:focus-visible {
   color: #fff;
   background:
     radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
-    linear-gradient(115deg, var(--sc-premium-navy-dark) 0%, #12325a 62%, #0b254b 100%);
+    linear-gradient(115deg, var(--sc-premium-navy-dark) 0%, var(--tp-c-12325a, #12325a) 62%, var(--tp-c-0b254b, #0b254b) 100%);
   overflow: hidden;
 }
 
@@ -10927,9 +10927,9 @@ a.scp-peer:focus-visible {
   max-width: 440px;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 78%, rgba(237, 191, 68, 0.75) 78% 80.5%, transparent 80.5% 85%, rgba(237, 191, 68, 0.5) 85% 86.5%, transparent 86.5% 91%, rgba(237, 191, 68, 0.3) 91% 92%, transparent 92%),
+    linear-gradient(115deg, transparent 0 78%, var(--tp-a-237-191-68-750, rgba(237, 191, 68, 0.75)) 78% 80.5%, transparent 80.5% 85%, var(--tp-a-237-191-68-500, rgba(237, 191, 68, 0.5)) 85% 86.5%, transparent 86.5% 91%, var(--tp-a-237-191-68-300, rgba(237, 191, 68, 0.3)) 91% 92%, transparent 92%),
     linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.035) 30% 48%, transparent 48% 56%, rgba(255, 255, 255, 0.05) 56% 70%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(23, 60, 104, 0.55));
+    linear-gradient(90deg, transparent, var(--tp-a-23-60-104-550, rgba(23, 60, 104, 0.55)));
 }
 
 .scp .scp-stp-bar-icon {
@@ -10982,7 +10982,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-bar-sub {
   margin: 0;
-  color: #d6e2f3;
+  color: var(--tp-c-d6e2f3, #d6e2f3);
   font-size: 13.5px;
   font-weight: 500;
   line-height: 1.4;
@@ -11033,20 +11033,20 @@ a.scp-peer:focus-visible {
   border: 0;
   border-radius: 999px;
   background: none;
-  color: #e9eef6;
+  color: var(--tp-c-e9eef6, #e9eef6);
   font-size: 13.5px;
   font-weight: 700;
 }
 
 .scp .scp-stp .scp-stp-seg button[aria-pressed="true"] {
-  color: var(--sc-premium-navy-dark);
+  color: var(--tp-ink, var(--sc-premium-navy-dark));
   background: linear-gradient(180deg, var(--sc-premium-gold-bright), var(--sc-premium-gold));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .scp .scp-stp-body {
   padding: var(--sc-premium-padding) var(--sc-premium-padding) 18px;
-  background: linear-gradient(180deg, #f9fbfd 0%, var(--sc-premium-surface-light) 100%);
+  background: linear-gradient(180deg, var(--tp-c-f9fbfd, #f9fbfd) 0%, var(--sc-premium-surface-light) 100%);
 }
 
 /* ---- the KPI cards: five distinct cards, then three, then two */
@@ -11077,7 +11077,7 @@ a.scp-peer:focus-visible {
   padding: 16px 18px;
   border: 1px solid var(--sc-premium-border);
   border-radius: var(--sc-premium-radius);
-  background: linear-gradient(145deg, #ffffff 0%, #f7fafd 60%, var(--sc-premium-surface-blue) 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 60%, var(--sc-premium-surface-blue) 100%);
   box-shadow: var(--sc-premium-card-shadow);
 }
 
@@ -11091,7 +11091,7 @@ a.scp-peer:focus-visible {
   width: 32px;
   height: 32px;
   margin-top: 1px;
-  color: var(--sc-premium-navy);
+  color: var(--tp-ink, var(--sc-premium-navy));
 }
 
 .scp .scp-stp-kpi-icon svg {
@@ -11103,7 +11103,7 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-kpi-label {
   grid-area: label;
   align-self: end;
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.07em;
@@ -11126,7 +11126,7 @@ a.scp-peer:focus-visible {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0 8px;
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-family: var(--scp-ph-sans);
   font-size: 34px;
   font-weight: 800;
@@ -11160,7 +11160,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-kpi-sub {
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-size: 13.5px;
   font-weight: 600;
   line-height: 1.2;
@@ -11170,7 +11170,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-colhead {
   margin: 0 0 8px;
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-size: 13px;
   font-weight: 800;
 }
@@ -11198,7 +11198,7 @@ a.scp-peer:focus-visible {
   padding: 18px 20px 10px;
   border: 1px solid var(--sc-premium-border);
   border-radius: var(--sc-premium-radius);
-  background: linear-gradient(145deg, #ffffff 0%, #f7fafd 60%, var(--sc-premium-surface-blue) 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 60%, var(--sc-premium-surface-blue) 100%);
   box-shadow: var(--sc-premium-card-shadow);
 }
 
@@ -11214,7 +11214,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 6px !important;
   padding: 0;
   border: 0;
-  color: var(--sc-premium-text) !important;
+  color: var(--tp-ink, var(--sc-premium-text)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 19px !important;
   font-stretch: 100%;
@@ -11288,7 +11288,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-row-label {
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -11301,12 +11301,12 @@ a.scp-peer:focus-visible {
   height: 11px;
   overflow: hidden;
   border-radius: 999px;
-  background: #d9e1eb;
+  background: var(--tp-c-d9e1eb, #d9e1eb);
   box-shadow: inset 0 1px 2px rgba(16, 35, 68, 0.08);
 }
 
 .scp .scp-stp-bar-track.is-empty {
-  background: repeating-linear-gradient(90deg, #d9e1eb 0 6px, transparent 6px 10px);
+  background: repeating-linear-gradient(90deg, var(--tp-c-d9e1eb, #d9e1eb) 0 6px, transparent 6px 10px);
   box-shadow: none;
 }
 
@@ -11314,7 +11314,7 @@ a.scp-peer:focus-visible {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #4a6f9f, var(--sc-premium-blue));
+  background: linear-gradient(90deg, var(--tp-c-4a6f9f, #4a6f9f), var(--sc-premium-blue));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
@@ -11333,7 +11333,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-row-value {
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-family: var(--scp-ph-sans);
   font-size: 19px;
   font-weight: 800;
@@ -11349,8 +11349,8 @@ a.scp-peer:focus-visible {
   min-width: 90px;
   padding: 5px 10px;
   border-radius: 999px;
-  color: var(--sc-premium-text);
-  background: #e6ecf5;
+  color: var(--tp-ink, var(--sc-premium-text));
+  background: var(--tp-c-e6ecf5, #e6ecf5);
   box-shadow: inset 0 0 0 1px rgba(16, 35, 68, 0.1);
   font-size: 12px;
   font-weight: 700;
@@ -11398,7 +11398,7 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-note-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--sc-premium-navy);
+  color: var(--tp-ink, var(--sc-premium-navy));
 }
 
 /* ---- the career table: 13.5px type in 36px rows, the season column pinned */
@@ -11459,7 +11459,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(even) th,
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(even) td {
-  background: #f4f6fa;
+  background: var(--tp-c-f4f6fa, #f4f6fa);
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(odd) th,
@@ -11480,7 +11480,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tbody th {
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-weight: 800;
 }
 
@@ -11500,19 +11500,19 @@ a.scp-peer:focus-visible {
 
 /* The current season: cream row, gold season cell with a gold left edge. */
 .scp .scp-stp-tablewrap .scp-table--career tr.is-current td {
-  background: #fff8e6 !important;
+  background: var(--tp-c-fff8e6, #fff8e6) !important;
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tr.is-current th {
-  background: linear-gradient(180deg, #f3d36a, var(--sc-premium-gold)) !important;
+  background: linear-gradient(180deg, var(--tp-c-f3d36a, #f3d36a), var(--sc-premium-gold)) !important;
   box-shadow: inset 4px 0 0 var(--sc-premium-gold-deep);
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tfoot th,
 .scp .scp-stp-tablewrap .scp-table--career tfoot td {
-  color: var(--sc-premium-text);
-  background: #e3e9f2;
+  color: var(--tp-ink, var(--sc-premium-text));
+  background: var(--tp-c-e3e9f2, #e3e9f2);
   border-top: 2px solid var(--sc-premium-border);
   border-left: 1px solid var(--sc-premium-border);
   font-weight: 800;
@@ -11529,8 +11529,8 @@ a.scp-peer:focus-visible {
   grid-template-columns: 244px minmax(0, 1fr);
   border: 1.5px solid var(--sc-premium-gold);
   border-radius: var(--sc-premium-radius);
-  background: linear-gradient(90deg, #fff1cf 0%, #fff9ea 42%, #fff6df 100%);
-  box-shadow: 0 2px 4px rgba(12, 31, 64, 0.05), 0 10px 26px rgba(184, 144, 31, 0.18);
+  background: linear-gradient(90deg, var(--tp-c-fff1cf, #fff1cf) 0%, var(--tp-c-fff9ea, #fff9ea) 42%, var(--tp-c-fff6df, #fff6df) 100%);
+  box-shadow: 0 2px 4px rgba(12, 31, 64, 0.05), 0 10px 26px var(--tp-a-184-144-31-180, rgba(184, 144, 31, 0.18));
   overflow: hidden;
 }
 
@@ -11592,7 +11592,7 @@ a.scp-peer:focus-visible {
 
 /* A thin gold divider between the two insights. */
 .scp .scp-stp-analysis-part + .scp-stp-analysis-part {
-  border-left: 1px solid rgba(184, 144, 31, 0.55);
+  border-left: 1px solid var(--tp-a-184-144-31-550, rgba(184, 144, 31, 0.55));
 }
 
 .scp .scp-stp-analysis-h {
@@ -11635,7 +11635,7 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-analysis-part p {
   grid-area: body;
   margin: 0;
-  color: var(--sc-premium-text);
+  color: var(--tp-ink, var(--sc-premium-text));
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
@@ -11709,7 +11709,7 @@ a.scp-peer:focus-visible {
 
   .scp .scp-stp-analysis-part + .scp-stp-analysis-part {
     border-left: 0;
-    border-top: 1px solid rgba(184, 144, 31, 0.55);
+    border-top: 1px solid var(--tp-a-184-144-31-550, rgba(184, 144, 31, 0.55));
   }
 
   /* The table scrolls inside its panel; a fade says so at the right edge. */
@@ -11833,28 +11833,28 @@ a.scp-peer:focus-visible {
  * site), not the window. Tokens are the brief's.
  */
 .scp .scp-glp-wrap {
-  --glp-navy-950: #081a34;
-  --glp-navy-900: #0d2343;
-  --glp-navy-800: #12345e;
-  --glp-navy: #0b3a7a;
-  --glp-gold: #d4af37;
-  --glp-gold-bright: #edc34d;
-  --glp-gold-soft: #fff3d4;
-  --glp-gold-ink: #a07a14;
-  --glp-ink: #102344;
+  --glp-navy-950: var(--tp-c-081a34, #081a34);
+  --glp-navy-900: var(--tp-c-0d2343, #0d2343);
+  --glp-navy-800: var(--tp-c-12345e, #12345e);
+  --glp-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --glp-gold: var(--tp-c-d4af37, #d4af37);
+  --glp-gold-bright: var(--tp-c-edc34d, #edc34d);
+  --glp-gold-soft: var(--tp-c-fff3d4, #fff3d4);
+  --glp-gold-ink: var(--tp-c-a07a14, #a07a14);
+  --glp-ink: var(--tp-c-102344, #102344);
   --glp-text-2: #536b8d;
   --glp-muted: #7487a3;
   --glp-surface: #ffffff;
-  --glp-surface-soft: #f6f9fd;
-  --glp-surface-blue: #edf3fa;
-  --glp-line: #d4e0ef;
-  --glp-line-light: #e4ebf3;
+  --glp-surface-soft: var(--tp-c-f6f9fd, #f6f9fd);
+  --glp-surface-blue: var(--tp-c-edf3fa, #edf3fa);
+  --glp-line: var(--tp-c-d4e0ef, #d4e0ef);
+  --glp-line-light: var(--tp-c-e4ebf3, #e4ebf3);
   --glp-good: #0c824a;
   --glp-good-soft: #e8f8ef;
   --glp-bad: #a93642;
   --glp-bad-soft: #fcebf0;
-  --glp-blue: #2665b3;
-  --glp-blue-soft: #e8f1fc;
+  --glp-blue: var(--tp-c-2665b3, #2665b3);
+  --glp-blue-soft: var(--tp-c-e8f1fc, #e8f1fc);
   --glp-shadow:
     0 3px 8px rgba(13, 35, 67, 0.05),
     0 12px 26px rgba(13, 35, 67, 0.08);
@@ -11863,13 +11863,13 @@ a.scp-peer:focus-visible {
     0 6px 14px rgba(13, 35, 67, 0.06);
   --glp-bar:
     repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(112deg, #081a34 0%, #0e3158 55%, #0b2549 100%);
+    linear-gradient(112deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-0e3158, #0e3158) 55%, var(--tp-c-0b2549, #0b2549) 100%);
   container-type: inline-size;
   container-name: glp;
   margin: 34px 0 8px;
   font-family: var(--sc-font);
   font-variant-numeric: tabular-nums;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-wrap *,
 .scp .scp-glp-wrap *::before,
@@ -11907,7 +11907,7 @@ a.scp-peer:focus-visible {
 .scp .scp-glp {
   border: 1px solid var(--glp-line);
   border-radius: 20px;
-  background: linear-gradient(180deg, #eef3f9 0%, #e9f0f8 100%);
+  background: linear-gradient(180deg, var(--tp-c-eef3f9, #eef3f9) 0%, var(--tp-c-e9f0f8, #e9f0f8) 100%);
   box-shadow: var(--glp-shadow);
   overflow: hidden;
 }
@@ -12009,7 +12009,7 @@ a.scp-peer:focus-visible {
   width: 190px;
   height: 118px;
   transform: translateY(-56%) rotate(-12deg);
-  color: #9fb3d6;
+  color: var(--tp-c-9fb3d6, #9fb3d6);
   opacity: 0.32;
   pointer-events: none;
 }
@@ -12030,7 +12030,7 @@ a.scp-peer:focus-visible {
   padding: 14px 14px 10px;
   border: 1px solid var(--glp-line);
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 60%, #f4f8fc 100%);
+  background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-fbfcfe, #fbfcfe) 60%, var(--tp-c-f4f8fc, #f4f8fc) 100%);
   box-shadow: var(--glp-shadow);
 }
 
@@ -12061,20 +12061,20 @@ a.scp-peer:focus-visible {
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
   background: transparent;
   text-decoration: none;
   transition: background 0.12s ease;
 }
 .scp .scp-glp-seasons .scp-season-opt:hover {
   background: var(--glp-surface-blue);
-  color: var(--glp-navy);
+  color: var(--tp-ink, var(--glp-navy));
 }
 .scp .scp-glp-seasons .scp-season-opt.is-active {
   background: linear-gradient(135deg, var(--glp-navy-800) 0%, var(--glp-navy-950) 100%);
   color: var(--glp-gold-bright);
   font-weight: 800;
-  box-shadow: 0 2px 6px rgba(8, 26, 52, 0.35);
+  box-shadow: 0 2px 6px var(--tp-a-8-26-52-350, rgba(8, 26, 52, 0.35));
 }
 .scp .scp-glp-seasons .scp-season-opt:focus-visible {
   outline: 2px solid var(--glp-gold);
@@ -12095,7 +12095,7 @@ a.scp-peer:focus-visible {
   padding: 14px 20px;
   border: 1px solid var(--glp-line);
   border-radius: 14px;
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #f0f5fb 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-f0f5fb, #f0f5fb) 100%);
   box-shadow:
     inset 0 1px 0 #fff,
     var(--glp-shadow-sm);
@@ -12127,14 +12127,14 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.01em;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-kpi-l {
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-kpi-c {
   margin-top: 5px;
@@ -12160,7 +12160,7 @@ a.scp-peer:focus-visible {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 15px;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table th,
 .scp .scp-glp-table td {
@@ -12177,13 +12177,13 @@ a.scp-peer:focus-visible {
   position: relative;
   height: 44px;
   padding: 8px 12px;
-  background: linear-gradient(180deg, #11295a 0, var(--glp-navy-950) 100%);
+  background: linear-gradient(180deg, var(--tp-c-11295a, #11295a) 0, var(--glp-navy-950) 100%);
   color: #fff;
   font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 1px solid #1d3568;
+  border-bottom: 1px solid var(--tp-c-1d3568, #1d3568);
 }
 .scp .scp-glp-table thead th:first-child {
   text-align: left;
@@ -12230,11 +12230,11 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 16px;
   font-weight: 800;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table tbody tr.scp-glp-row:nth-child(even of .scp-glp-row) td,
 .scp .scp-glp-table tbody tr.scp-glp-row:nth-child(even of .scp-glp-row) th {
-  background: #fbfcfe;
+  background: var(--tp-c-fbfcfe, #fbfcfe);
 }
 .scp .scp-glp-table tbody tr.scp-glp-row:hover td,
 .scp .scp-glp-table tbody tr.scp-glp-row:hover th {
@@ -12291,14 +12291,14 @@ a.scp-peer:focus-visible {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
   text-align: center;
 }
 .scp .scp-glp-diff[data-band="soft"] > span {
   color: var(--glp-good);
 }
 .scp .scp-glp-diff[data-band="mid"] > span {
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-diff[data-band="tough"] > span {
   color: var(--glp-bad);
@@ -12315,7 +12315,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 18px;
   font-weight: 800;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 /* Finish pills: deep blue for a 1, medium blue for a 2 and a 3 (the 3 a
    shade lighter), pale blue-gray for a bust. The tier rule is weeklyTier()'s. */
@@ -12331,26 +12331,26 @@ a.scp-peer:focus-visible {
   line-height: 1.3;
   text-align: center;
   color: #fff;
-  background: linear-gradient(135deg, #0f3f82 0%, #0a2a5c 100%);
+  background: linear-gradient(135deg, var(--tp-c-0f3f82, #0f3f82) 0%, var(--tp-c-0a2a5c, #0a2a5c) 100%);
   box-shadow: 0 1px 2px rgba(8, 26, 52, 0.22);
 }
 .scp .scp-glp-pill[data-tier="pos2"] {
-  background: linear-gradient(135deg, #2f6fc0 0%, var(--glp-blue) 100%);
+  background: linear-gradient(135deg, var(--tp-c-2f6fc0, #2f6fc0) 0%, var(--glp-blue) 100%);
 }
 .scp .scp-glp-pill[data-tier="pos3"] {
-  background: linear-gradient(135deg, #5a8bd0 0%, #4a79bd 100%);
+  background: linear-gradient(135deg, var(--tp-c-5a8bd0, #5a8bd0) 0%, var(--tp-c-4a79bd, #4a79bd) 100%);
 }
 .scp .scp-glp-pill[data-tier="bust"] {
-  background: #dbe4ef;
-  color: #3b5f90;
+  background: var(--tp-c-dbe4ef, #dbe4ef);
+  color: var(--tp-c-3b5f90, #3b5f90);
   box-shadow: none;
 }
 /* The Avg row. */
 .scp .scp-glp-table tfoot th,
 .scp .scp-glp-table tfoot td {
   height: 44px;
-  background: linear-gradient(180deg, #e9eff6 0%, #e2eaf3 100%);
-  border-top: 2px solid #c9d6e6;
+  background: linear-gradient(180deg, var(--tp-c-e9eff6, #e9eff6) 0%, var(--tp-c-e2eaf3, #e2eaf3) 100%);
+  border-top: 2px solid var(--tp-c-c9d6e6, #c9d6e6);
   border-bottom: 0;
   font-weight: 800;
 }
@@ -12358,19 +12358,19 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 15px;
   font-weight: 800;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table tfoot .scp-glp-diff > span {
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table tfoot td.scp-glp-box {
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 /* The week-number expand button the client builds (wireExpandableLog). */
 .scp .scp-glp-table tbody th .scp-expand {
   gap: 9px;
   font-weight: 800;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table tbody th .scp-expand-icon {
   width: 7px;
@@ -12415,7 +12415,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 15px;
   font-weight: 800;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table .scp-detail-label {
   font-size: 11px;
@@ -12425,7 +12425,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-glp-table .scp-detail-value {
   font-weight: 700;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-table .scp-breakdown {
   padding-top: 10px;
@@ -12434,7 +12434,7 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-glp-table .scp-breakdown-pts {
   font-weight: 800;
-  color: var(--glp-navy);
+  color: var(--tp-ink, var(--glp-navy));
 }
 /* The opponent-rank note under the table. */
 .scp .scp-glp-note {
@@ -12452,7 +12452,7 @@ a.scp-peer:focus-visible {
   width: 16px;
   height: 16px;
   margin-top: 1px;
-  color: var(--glp-navy);
+  color: var(--tp-ink, var(--glp-navy));
 }
 .scp .scp-glp-empty {
   margin: 0;
@@ -12466,7 +12466,7 @@ a.scp-peer:focus-visible {
 .scp .scp-glp-finishes {
   border: 1px solid var(--glp-line);
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fafd 100%);
+  background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 100%);
   box-shadow: var(--glp-shadow);
   overflow: hidden;
 }
@@ -12545,7 +12545,7 @@ a.scp-peer:focus-visible {
   font-size: 38px;
   font-weight: 800;
   line-height: 1;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-fcard-l {
   grid-area: l;
@@ -12555,7 +12555,7 @@ a.scp-peer:focus-visible {
   letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 1.2;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-fcard-c {
   grid-area: c;
@@ -12589,11 +12589,11 @@ a.scp-peer:focus-visible {
   color: var(--glp-good);
 }
 .scp .scp-glp-fcard[data-tone="mid"] {
-  background: linear-gradient(145deg, #eef4fc 0%, #e1ebf8 100%);
-  border-color: #c9d8ee;
+  background: linear-gradient(145deg, var(--tp-c-eef4fc, #eef4fc) 0%, var(--tp-c-e1ebf8, #e1ebf8) 100%);
+  border-color: var(--tp-c-c9d8ee, #c9d8ee);
 }
 .scp .scp-glp-fcard[data-tone="mid"] .scp-glp-fcard-ico {
-  background: #d2e2f6;
+  background: var(--tp-c-d2e2f6, #d2e2f6);
   color: var(--glp-blue);
 }
 .scp .scp-glp-fcard[data-tone="low"] {
@@ -12657,7 +12657,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 22px;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
   white-space: nowrap;
 }
 .scp .scp-glp-cuts b.is-lo {
@@ -12684,10 +12684,10 @@ a.scp-peer:focus-visible {
 .scp .scp-glp-band.is-b1 {
   left: 0;
   border-radius: 999px 0 0 999px;
-  background: linear-gradient(180deg, #fbe7a8 0, #f0cf6a 100%);
+  background: linear-gradient(180deg, var(--tp-c-fbe7a8, #fbe7a8) 0, var(--tp-c-f0cf6a, #f0cf6a) 100%);
 }
 .scp .scp-glp-band.is-b2 {
-  background: linear-gradient(180deg, #dde6f1 0, #cdd9e8 100%);
+  background: linear-gradient(180deg, var(--tp-c-dde6f1, #dde6f1) 0, var(--tp-c-cdd9e8, #cdd9e8) 100%);
 }
 .scp .scp-glp-band.is-b3 {
   border-radius: 0 999px 999px 0;
@@ -12699,7 +12699,7 @@ a.scp-peer:focus-visible {
   bottom: -3px;
   width: 1px;
   margin-left: -0.5px;
-  background: rgba(13, 35, 67, 0.3);
+  background: var(--tp-a-13-35-67-300, rgba(13, 35, 67, 0.3));
   pointer-events: none;
 }
 .scp .scp-glp-pin {
@@ -12716,14 +12716,14 @@ a.scp-peer:focus-visible {
   box-shadow:
     0 0 0 2.5px #fff,
     0 0 0 3.5px rgba(13, 35, 67, 0.25),
-    0 2px 5px rgba(13, 35, 67, 0.3);
+    0 2px 5px var(--tp-a-13-35-67-300, rgba(13, 35, 67, 0.3));
 }
 .scp .scp-glp-pin.is-best i {
   background: var(--glp-navy-950);
   box-shadow:
     0 0 0 2.5px #fff,
     0 0 0 3.5px var(--glp-good),
-    0 2px 5px rgba(13, 35, 67, 0.3);
+    0 2px 5px var(--tp-a-13-35-67-300, rgba(13, 35, 67, 0.3));
 }
 /* The season average: an outlined diamond on a thin rule through the band. */
 .scp .scp-glp-avgmark {
@@ -12808,10 +12808,10 @@ a.scp-peer:focus-visible {
   font-size: 15.5px;
   font-weight: 800;
   line-height: 1.2;
-  color: var(--glp-ink);
+  color: var(--tp-ink, var(--glp-ink));
 }
 .scp .scp-glp-avgmark span strong {
-  color: var(--glp-navy);
+  color: var(--tp-ink, var(--glp-navy));
 }
 .scp .scp-glp-avgmark span .scp-glp-wk {
   display: block;
@@ -13115,23 +13115,23 @@ a.scp-peer:focus-visible {
  * progress hatched green.
  */
 .scp .scp-cp {
-  --cp-navy-950: #081a34;
-  --cp-navy-900: #0d2343;
-  --cp-navy-800: #12365e;
-  --cp-brand: #0b3a7a;
-  --cp-gold: #d4af37;
-  --cp-gold-bright: #e7ba38;
-  --cp-gold-deep: #b8901f;
-  --cp-gold-ink: #8a6205;
-  --cp-gold-light: #fff4db;
-  --cp-text: #102344;
+  --cp-navy-950: var(--tp-c-081a34, #081a34);
+  --cp-navy-900: var(--tp-c-0d2343, #0d2343);
+  --cp-navy-800: var(--tp-c-12365e, #12365e);
+  --cp-brand: var(--tp-c-0b3a7a, #0b3a7a);
+  --cp-gold: var(--tp-c-d4af37, #d4af37);
+  --cp-gold-bright: var(--tp-c-e7ba38, #e7ba38);
+  --cp-gold-deep: var(--tp-c-b8901f, #b8901f);
+  --cp-gold-ink: var(--tp-c-8a6205, #8a6205);
+  --cp-gold-light: var(--tp-c-fff4db, #fff4db);
+  --cp-text: var(--tp-c-102344, #102344);
   --cp-muted: #546d8d;
-  --cp-surface: #f6f9fd;
-  --cp-surface-blue: #edf4fb;
-  --cp-border: #cfdded;
-  --cp-border-light: #e1eaf3;
-  --cp-bar: #aabdd5;
-  --cp-bar-2: #c7d5e6;
+  --cp-surface: var(--tp-c-f6f9fd, #f6f9fd);
+  --cp-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --cp-border: var(--tp-c-cfdded, #cfdded);
+  --cp-border-light: var(--tp-c-e1eaf3, #e1eaf3);
+  --cp-bar: var(--tp-c-aabdd5, #aabdd5);
+  --cp-bar-2: var(--tp-c-c7d5e6, #c7d5e6);
   --cp-green: #08764c;
   --cp-green-deep: #075b3c;
   --cp-green-hatch: #6da78d;
@@ -13152,7 +13152,7 @@ a.scp-peer:focus-visible {
   border-radius: 18px;
   background: #fff;
   box-shadow: var(--cp-shadow);
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   overflow: hidden;
 }
 
@@ -13168,7 +13168,7 @@ a.scp-peer:focus-visible {
   color: #fff;
   background:
     radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
-    linear-gradient(110deg, var(--cp-navy-950) 0%, #0d315b 60%, #102a4e 100%);
+    linear-gradient(110deg, var(--cp-navy-950) 0%, var(--tp-c-0d315b, #0d315b) 60%, var(--tp-c-102a4e, #102a4e) 100%);
   overflow: hidden;
 }
 
@@ -13187,9 +13187,9 @@ a.scp-peer:focus-visible {
   max-width: 440px;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 86%, rgba(231, 186, 56, 0.75) 86% 88.5%, transparent 88.5% 93%, rgba(231, 186, 56, 0.45) 93% 94.5%, transparent 94.5%),
+    linear-gradient(115deg, transparent 0 86%, var(--tp-a-231-186-56-750, rgba(231, 186, 56, 0.75)) 86% 88.5%, transparent 88.5% 93%, var(--tp-a-231-186-56-450, rgba(231, 186, 56, 0.45)) 93% 94.5%, transparent 94.5%),
     linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.035) 30% 48%, transparent 48% 56%, rgba(255, 255, 255, 0.05) 56% 70%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(18, 54, 94, 0.55));
+    linear-gradient(90deg, transparent, var(--tp-a-18-54-94-550, rgba(18, 54, 94, 0.55)));
 }
 
 /* The football: a faint outline behind the right third of the band. */
@@ -13269,7 +13269,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-bar-sub {
   margin: 0;
-  color: #d6e2f3;
+  color: var(--tp-c-d6e2f3, #d6e2f3);
   font-size: 15px;
   font-weight: 500;
 }
@@ -13278,7 +13278,7 @@ a.scp-peer:focus-visible {
   display: grid;
   gap: 18px;
   padding: 18px 20px 20px;
-  background: linear-gradient(180deg, #f9fbfd 0%, var(--cp-surface) 100%);
+  background: linear-gradient(180deg, var(--tp-c-f9fbfd, #f9fbfd) 0%, var(--cp-surface) 100%);
 }
 
 /* ---- the chart: the centerpiece, a 250px plot on a zero-based scale */
@@ -13292,7 +13292,7 @@ a.scp-peer:focus-visible {
   padding: 22px 20px 14px;
   border: 1px solid var(--cp-border);
   border-radius: var(--cp-radius);
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--cp-card-shadow);
 }
 
@@ -13378,7 +13378,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-cp-col:focus-visible {
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 0 3px var(--tp-a-212-175-55-600, rgba(212, 175, 55, 0.6));
 }
 
 /* Earlier seasons: the soft blue-gray gradient, rounded tops, a little depth. */
@@ -13412,7 +13412,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-val {
   margin-bottom: 7px;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-family: var(--scp-ph-sans);
   font-size: 18px;
   font-weight: 800;
@@ -13427,7 +13427,7 @@ a.scp-peer:focus-visible {
   left: 0;
   right: 0;
   height: 0;
-  border-top: 2px dashed #5b7fb0;
+  border-top: 2px dashed var(--tp-c-5b7fb0, #5b7fb0);
   pointer-events: none;
   z-index: 1;
 }
@@ -13438,9 +13438,9 @@ a.scp-peer:focus-visible {
   bottom: 5px;
   padding: 3px 10px;
   border-radius: 999px;
-  color: var(--cp-brand);
+  color: var(--tp-ink, var(--cp-brand));
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: inset 0 0 0 1px rgba(91, 127, 176, 0.45);
+  box-shadow: inset 0 0 0 1px var(--tp-a-91-127-176-450, rgba(91, 127, 176, 0.45));
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -13467,7 +13467,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-cp-x strong {
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-size: 15px;
   font-weight: 800;
 }
@@ -13477,8 +13477,8 @@ a.scp-peer:focus-visible {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
-  color: var(--cp-brand);
-  background: linear-gradient(180deg, #eaf1fa, #d9e6f5);
+  color: var(--tp-ink, var(--cp-brand));
+  background: linear-gradient(180deg, var(--tp-c-eaf1fa, #eaf1fa), var(--tp-c-d9e6f5, #d9e6f5));
   box-shadow: inset 0 0 0 1px rgba(11, 58, 122, 0.18);
   font-size: 12.5px;
   font-weight: 800;
@@ -13501,7 +13501,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-cp-x.is-cur small {
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
 }
 
 .scp .scp-cp-legend {
@@ -13541,7 +13541,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-legend i.is-avg {
   height: 0;
-  border-top: 2px dashed #5b7fb0;
+  border-top: 2px dashed var(--tp-c-5b7fb0, #5b7fb0);
   border-radius: 0;
   background: none;
 }
@@ -13570,7 +13570,7 @@ a.scp-peer:focus-visible {
   padding: 14px 18px;
   border: 1px solid var(--cp-border);
   border-radius: 14px;
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--cp-card-shadow);
 }
 
@@ -13584,8 +13584,8 @@ a.scp-peer:focus-visible {
   height: 44px;
   border-radius: 12px;
   color: var(--cp-gold-ink);
-  background: linear-gradient(160deg, #fff8e3, var(--cp-gold-light));
-  box-shadow: inset 0 0 0 1px rgba(184, 144, 31, 0.35), 0 2px 6px rgba(184, 144, 31, 0.16);
+  background: linear-gradient(160deg, var(--tp-c-fff8e3, #fff8e3), var(--cp-gold-light));
+  box-shadow: inset 0 0 0 1px var(--tp-a-184-144-31-350, rgba(184, 144, 31, 0.35)), 0 2px 6px var(--tp-a-184-144-31-160, rgba(184, 144, 31, 0.16));
 }
 
 .scp .scp-cp-kpi-icon svg {
@@ -13596,7 +13596,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-kpi-value {
   grid-area: value;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-family: var(--scp-ph-sans);
   font-size: 32px;
   font-weight: 800;
@@ -13608,7 +13608,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-kpi-label {
   grid-area: label;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -13632,7 +13632,7 @@ a.scp-peer:focus-visible {
   padding: 22px 24px;
   border: 1px solid var(--cp-border);
   border-radius: var(--cp-radius);
-  background: linear-gradient(145deg, #ffffff 0%, #f7fafd 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 100%);
   box-shadow: var(--cp-card-shadow);
 }
 
@@ -13641,7 +13641,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 16px !important;
   padding: 0 0 12px;
   border: 0;
-  color: var(--cp-text) !important;
+  color: var(--tp-ink, var(--cp-text)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 26px !important;
   font-stretch: 100%;
@@ -13665,7 +13665,7 @@ a.scp-peer:focus-visible {
 .scp .scp-cp-prose p {
   margin: 0 0 12px;
   max-width: none;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-size: 15.5px;
   line-height: 1.6;
 }
@@ -13675,7 +13675,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-cp-prose a {
-  color: var(--cp-brand);
+  color: var(--tp-ink, var(--cp-brand));
   font-weight: 700;
   text-decoration: underline;
 }
@@ -13694,8 +13694,8 @@ a.scp-peer:focus-visible {
   padding: 20px 22px 22px;
   border: 1px solid var(--cp-gold);
   border-radius: 15px;
-  background: linear-gradient(145deg, #fffdf7 0%, #fff3d7 100%);
-  box-shadow: 0 4px 12px rgba(80, 59, 12, 0.06), 0 10px 24px rgba(184, 144, 31, 0.12);
+  background: linear-gradient(145deg, var(--tp-c-fffdf7, #fffdf7) 0%, var(--tp-c-fff3d7, #fff3d7) 100%);
+  box-shadow: 0 4px 12px var(--tp-a-80-59-12-60, rgba(80, 59, 12, 0.06)), 0 10px 24px var(--tp-a-184-144-31-120, rgba(184, 144, 31, 0.12));
 }
 
 .scp .scp-cp-rc-icon {
@@ -13706,8 +13706,8 @@ a.scp-peer:focus-visible {
   height: 40px;
   border-radius: 11px;
   color: var(--cp-gold-ink);
-  background: linear-gradient(160deg, #fff8e3, var(--cp-gold-light));
-  box-shadow: inset 0 0 0 1px rgba(184, 144, 31, 0.4), 0 2px 6px rgba(184, 144, 31, 0.18);
+  background: linear-gradient(160deg, var(--tp-c-fff8e3, #fff8e3), var(--cp-gold-light));
+  box-shadow: inset 0 0 0 1px var(--tp-a-184-144-31-400, rgba(184, 144, 31, 0.4)), 0 2px 6px var(--tp-a-184-144-31-180, rgba(184, 144, 31, 0.18));
 }
 
 .scp .scp-cp-rc-icon svg {
@@ -13720,7 +13720,7 @@ a.scp-peer:focus-visible {
   margin: 2px 0 0 !important;
   padding: 0;
   border: 0;
-  color: var(--cp-text) !important;
+  color: var(--tp-ink, var(--cp-text)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 21px !important;
   font-stretch: 100%;
@@ -13735,7 +13735,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-rc p {
   margin: 0;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-size: 14px;
   line-height: 1.55;
 }
@@ -13752,7 +13752,7 @@ a.scp-peer:focus-visible {
   border-radius: 10px;
   color: #fff !important;
   background: linear-gradient(180deg, var(--cp-navy-800), var(--cp-navy-950));
-  box-shadow: 0 3px 8px rgba(12, 31, 64, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 3px 8px var(--tp-a-12-31-64-300, rgba(12, 31, 64, 0.3)), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   font-size: 15px;
   font-weight: 800;
   text-align: center;
@@ -13763,12 +13763,12 @@ a.scp-peer:focus-visible {
 .scp .scp-cp-rc-btn:hover,
 .scp .scp-cp-rc-btn:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(12, 31, 64, 0.35);
+  box-shadow: 0 6px 14px var(--tp-a-12-31-64-350, rgba(12, 31, 64, 0.35));
   outline: none;
 }
 
 .scp .scp-cp-rc-btn:focus-visible {
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 0 3px var(--tp-a-212-175-55-700, rgba(212, 175, 55, 0.7));
 }
 
 .scp .scp-cp-rc-arrow {
@@ -13786,7 +13786,7 @@ a.scp-peer:focus-visible {
   padding: 20px 24px 22px;
   border: 1px solid var(--cp-border);
   border-radius: var(--cp-radius);
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--cp-card-shadow);
 }
 
@@ -13837,8 +13837,8 @@ a.scp-peer:focus-visible {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  color: var(--cp-brand);
-  background: linear-gradient(160deg, #f2f7fd, #e3edf8);
+  color: var(--tp-ink, var(--cp-brand));
+  background: linear-gradient(160deg, var(--tp-c-f2f7fd, #f2f7fd), var(--tp-c-e3edf8, #e3edf8));
   box-shadow: inset 0 0 0 1px rgba(11, 58, 122, 0.16);
 }
 
@@ -13850,7 +13850,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-high-v {
   grid-area: v;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-family: var(--scp-ph-sans);
   font-size: 30px;
   font-weight: 800;
@@ -13862,7 +13862,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-cp-high-l {
   grid-area: l;
-  color: var(--cp-text);
+  color: var(--tp-ink, var(--cp-text));
   font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -14072,33 +14072,33 @@ a.scp-peer:focus-visible {
  * Appended at the END of the file - never spliced in by line number.
  */
 .scp .scp-bkp-wrap {
-  --bkp-navy-950: #081a34;
-  --bkp-navy-900: #0d2343;
-  --bkp-navy-800: #12345e;
-  --bkp-brand: #0b3a7a;
-  --bkp-gold: #d4af37;
-  --bkp-gold-strong: #dcae19;
-  --bkp-gold-ink: #a07a14;
-  --bkp-gold-soft: #fff4d8;
-  --bkp-ink: #102344;
+  --bkp-navy-950: var(--tp-c-081a34, #081a34);
+  --bkp-navy-900: var(--tp-c-0d2343, #0d2343);
+  --bkp-navy-800: var(--tp-c-12345e, #12345e);
+  --bkp-brand: var(--tp-c-0b3a7a, #0b3a7a);
+  --bkp-gold: var(--tp-c-d4af37, #d4af37);
+  --bkp-gold-strong: var(--tp-c-dcae19, #dcae19);
+  --bkp-gold-ink: var(--tp-c-a07a14, #a07a14);
+  --bkp-gold-soft: var(--tp-c-fff4d8, #fff4d8);
+  --bkp-ink: var(--tp-c-102344, #102344);
   --bkp-muted: #58708e;
-  --bkp-surface: #f6f9fd;
-  --bkp-surface-blue: #edf4fb;
-  --bkp-line: #cbd9eb;
-  --bkp-line-light: #e1e8f2;
+  --bkp-surface: var(--tp-c-f6f9fd, #f6f9fd);
+  --bkp-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --bkp-line: var(--tp-c-cbd9eb, #cbd9eb);
+  --bkp-line-light: var(--tp-c-e1e8f2, #e1e8f2);
   --bkp-green: #087c45;
   --bkp-green-bg: #e7f7eb;
   --bkp-red: #a52932;
   --bkp-red-bg: #fce8e9;
-  --bkp-blue: #1858a4;
-  --bkp-blue-bg: #eaf2fb;
+  --bkp-blue: var(--tp-c-1858a4, #1858a4);
+  --bkp-blue-bg: var(--tp-c-eaf2fb, #eaf2fb);
   --bkp-shadow:
     0 3px 8px rgba(10, 32, 67, 0.05),
     0 12px 25px rgba(10, 32, 67, 0.08);
   --bkp-shadow-sm: 0 1px 3px rgba(12, 32, 64, 0.035);
   --bkp-bar:
     repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(110deg, #081a34 0%, #123861 60%, #0d2c52 100%);
+    linear-gradient(110deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-123861, #123861) 60%, var(--tp-c-0d2c52, #0d2c52) 100%);
   container-type: inline-size;
   container-name: bkp;
   display: grid;
@@ -14106,7 +14106,7 @@ a.scp-peer:focus-visible {
   margin: 34px 0 8px;
   font-family: var(--sc-font);
   font-variant-numeric: tabular-nums;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 /* Inside the Game Log frame (mak, 2026-11-05): a panel of the body like the
    finishes chart, spaced by the body's own gap. */
@@ -14149,7 +14149,7 @@ a.scp-peer:focus-visible {
 .scp .scp-bkp-sec {
   border: 1px solid var(--bkp-line);
   border-radius: 18px;
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #eef5fc 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eef5fc, #eef5fc) 100%);
   box-shadow: var(--bkp-shadow);
   overflow: hidden;
 }
@@ -14177,7 +14177,7 @@ a.scp-peer:focus-visible {
     transparent 0 44px,
     var(--bkp-gold) 44px 55px,
     transparent 55px 74px,
-    #edc34d 74px 82px,
+    var(--tp-c-edc34d, #edc34d) 74px 82px,
     transparent 82px 120px
   );
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 70%);
@@ -14225,7 +14225,7 @@ a.scp-peer:focus-visible {
   margin: 5px 0 0;
   font-size: 15px;
   line-height: 1.35;
-  color: #d6e2f3;
+  color: var(--tp-c-d6e2f3, #d6e2f3);
 }
 .scp .scp-bkp-body {
   padding: 14px 16px 16px;
@@ -14247,7 +14247,7 @@ a.scp-peer:focus-visible {
   background: #fff;
   font-size: 14px;
   font-weight: 700;
-  color: var(--bkp-brand);
+  color: var(--tp-ink, var(--bkp-brand));
 }
 .scp .scp-bkp-more > summary:focus-visible {
   outline: 2px solid var(--bkp-gold);
@@ -14265,9 +14265,9 @@ a.scp-peer:focus-visible {
   gap: 12px;
   min-height: 62px;
   padding: 7px 10px 7px 16px;
-  border: 1px solid #cad9eb;
+  border: 1px solid var(--tp-c-cad9eb, #cad9eb);
   border-radius: 12px;
-  background: linear-gradient(105deg, #ffffff 0%, #f8fbff 65%, #edf4fb 100%);
+  background: linear-gradient(105deg, #ffffff 0%, var(--tp-c-f8fbff, #f8fbff) 65%, var(--tp-c-edf4fb, #edf4fb) 100%);
   box-shadow: var(--bkp-shadow-sm);
 }
 /* The fantasy accent: the tier's color, never the game's result. */
@@ -14282,7 +14282,7 @@ a.scp-peer:focus-visible {
   background: var(--bkp-blue);
 }
 .scp .scp-bkp-row[data-tier="t12"]::before {
-  background: linear-gradient(180deg, #e8c45a 0, var(--bkp-gold-strong) 100%);
+  background: linear-gradient(180deg, var(--tp-c-e8c45a, #e8c45a) 0, var(--bkp-gold-strong) 100%);
 }
 .scp .scp-bkp-row[data-tier="low"]::before {
   background: #c0505a;
@@ -14296,8 +14296,8 @@ a.scp-peer:focus-visible {
   min-height: 48px;
   padding: 5px 8px;
   border-radius: 11px;
-  background: linear-gradient(180deg, #eef4fb 0%, #e3edf8 100%);
-  border: 1px solid #d9e5f2;
+  background: linear-gradient(180deg, var(--tp-c-eef4fb, #eef4fb) 0%, var(--tp-c-e3edf8, #e3edf8) 100%);
+  border: 1px solid var(--tp-c-d9e5f2, #d9e5f2);
   text-align: center;
   line-height: 1.2;
 }
@@ -14306,7 +14306,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
   white-space: nowrap;
 }
 .scp .scp-bkp-week small {
@@ -14330,7 +14330,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 19px;
   font-weight: 800;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-logo {
   display: inline-block;
@@ -14355,7 +14355,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.01em;
   background: var(--bkp-surface-blue);
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-res[data-wlt="W"] b {
   background: var(--bkp-green-bg);
@@ -14372,7 +14372,7 @@ a.scp-peer:focus-visible {
   gap: 12px;
   min-width: 0;
   padding-left: 14px;
-  border-left: 1px solid #c9d7e8;
+  border-left: 1px solid var(--tp-c-c9d7e8, #c9d7e8);
 }
 .scp .scp-bkp-perf-ico {
   display: inline-flex;
@@ -14404,13 +14404,13 @@ a.scp-peer:focus-visible {
   font-size: 18px;
   font-weight: 800;
   line-height: 1.2;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-line {
   margin: 3px 0 0;
   font-size: 14px;
   line-height: 1.35;
-  color: #3b5171;
+  color: var(--tp-c-3b5171, #3b5171);
 }
 .scp .scp-bkp-rnote {
   color: var(--bkp-muted);
@@ -14424,9 +14424,9 @@ a.scp-peer:focus-visible {
   gap: 10px;
   min-height: 50px;
   padding: 5px 12px 5px 14px;
-  border: 1px solid #efe1b6;
+  border: 1px solid var(--tp-c-efe1b6, #efe1b6);
   border-radius: 11px;
-  background: linear-gradient(100deg, #fff8e5 0%, #fff5d7 100%);
+  background: linear-gradient(100deg, var(--tp-c-fff8e5, #fff8e5) 0%, var(--tp-c-fff5d7, #fff5d7) 100%);
 }
 .scp .scp-bkp-fp-v {
   display: flex;
@@ -14438,7 +14438,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 27px;
   font-weight: 800;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-fp-v small {
   margin-top: 3px;
@@ -14466,13 +14466,13 @@ a.scp-peer:focus-visible {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  background: linear-gradient(135deg, #2f6fc0 0%, var(--bkp-blue) 100%);
+  background: linear-gradient(135deg, var(--tp-c-2f6fc0, #2f6fc0) 0%, var(--bkp-blue) 100%);
   color: #fff;
 }
 .scp .scp-bkp-fbadge[data-tier="t12"] {
-  background: linear-gradient(135deg, #e3b93a 0%, #c9980f 100%);
+  background: linear-gradient(135deg, var(--tp-c-e3b93a, #e3b93a) 0%, var(--tp-c-c9980f, #c9980f) 100%);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(120, 90, 10, 0.25);
+  box-shadow: 0 1px 2px var(--tp-a-120-90-10-250, rgba(120, 90, 10, 0.25));
 }
 .scp .scp-bkp-fbadge[data-tier="low"] {
   background: #fbe1e3;
@@ -14497,7 +14497,7 @@ a.scp-peer:focus-visible {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 15px;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-table th,
 .scp .scp-bkp-table td {
@@ -14507,12 +14507,12 @@ a.scp-peer:focus-visible {
   vertical-align: middle;
   border: 0;
   border-bottom: 1px solid var(--bkp-line-light);
-  background: #f8fafd;
+  background: var(--tp-c-f8fafd, #f8fafd);
 }
 .scp .scp-bkp-table thead th {
   height: 42px;
   padding: 6px 14px;
-  background: linear-gradient(180deg, #11295a 0, var(--bkp-navy-950) 100%);
+  background: linear-gradient(180deg, var(--tp-c-11295a, #11295a) 0, var(--bkp-navy-950) 100%);
   color: #fff;
   font-size: 12.5px;
   font-weight: 800;
@@ -14541,7 +14541,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-next {
   display: inline-block;
@@ -14566,7 +14566,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 19px;
   font-weight: 800;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-nx-team .scp-bkp-logo {
   width: 28px;
@@ -14599,7 +14599,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 20px;
   font-weight: 800;
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-nx-rank b[data-band="soft"] {
   color: var(--bkp-green);
@@ -14637,7 +14637,7 @@ a.scp-peer:focus-visible {
   font-size: 13px;
   font-weight: 800;
   background: var(--bkp-blue-bg);
-  color: var(--bkp-ink);
+  color: var(--tp-ink, var(--bkp-ink));
 }
 .scp .scp-bkp-pill[data-band="soft"] {
   background: #d9f1e1;
@@ -14654,9 +14654,9 @@ a.scp-peer:focus-visible {
   margin-left: 14px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--bkp-brand);
+  color: var(--tp-ink, var(--bkp-brand));
   text-decoration: underline;
-  text-decoration-color: rgba(11, 58, 122, 0.35);
+  text-decoration-color: var(--tp-a-11-58-122-350, rgba(11, 58, 122, 0.35));
   text-underline-offset: 3px;
 }
 .scp .scp-bkp-cta:hover {
@@ -14678,12 +14678,12 @@ a.scp-peer:focus-visible {
   gap: 9px;
   margin: 12px 0 0;
   padding: 10px 14px;
-  border: 1px solid #d3e1f1;
+  border: 1px solid var(--tp-c-d3e1f1, #d3e1f1);
   border-radius: 10px;
   background: var(--bkp-blue-bg);
   font-size: 13px;
   line-height: 1.5;
-  color: #3b5171;
+  color: var(--tp-c-3b5171, #3b5171);
 }
 .scp .scp-bkp-note > .scp-bkp-svg {
   flex: 0 0 auto;
@@ -14693,7 +14693,7 @@ a.scp-peer:focus-visible {
   color: var(--bkp-blue);
 }
 .scp .scp-bkp-note a {
-  color: var(--bkp-brand);
+  color: var(--tp-ink, var(--bkp-brand));
   font-weight: 600;
 }
 
@@ -14850,7 +14850,7 @@ a.scp-peer:focus-visible {
     gap: 4px 10px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--bkp-line-light);
-    background: #f8fafd;
+    background: var(--tp-c-f8fafd, #f8fafd);
   }
   .scp .scp-bkp-nx[data-band="tough"] {
     background: #fff3f3;
@@ -14917,19 +14917,19 @@ a.scp-peer:focus-visible {
  * .scp-pbtn); the rest of the block's classes are .scp-pp-*.
  */
 .scp .scp-phead {
-  --sc-navy-950: #071a35;
-  --sc-navy-900: #0c2547;
-  --sc-navy-800: #123d6a;
-  --sc-brand-navy: #0b3a7a;
-  --sc-gold: #d4af37;
-  --sc-gold-bright: #f1bf3c;
-  --sc-gold-light: #fff1ce;
+  --sc-navy-950: var(--tp-c-071a35, #071a35);
+  --sc-navy-900: var(--tp-c-0c2547, #0c2547);
+  --sc-navy-800: var(--tp-c-123d6a, #123d6a);
+  --sc-brand-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --sc-gold: var(--tp-c-d4af37, #d4af37);
+  --sc-gold-bright: var(--tp-c-f1bf3c, #f1bf3c);
+  --sc-gold-light: var(--tp-c-fff1ce, #fff1ce);
   --sc-white: #ffffff;
-  --sc-light: #f5f8fc;
-  --sc-border: #d3dfed;
-  --sc-text: #102344;
+  --sc-light: var(--tp-c-f5f8fc, #f5f8fc);
+  --sc-border: var(--tp-c-d3dfed, #d3dfed);
+  --sc-text: var(--tp-c-102344, #102344);
   --sc-muted: #6680a2;
-  --sc-hero-muted: #c3d2e6;
+  --sc-hero-muted: var(--tp-c-c3d2e6, #c3d2e6);
   --scp-team-2: #5b6778;
   --scp-pp-radius: 20px;
   --scp-pp-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
@@ -14940,7 +14940,7 @@ a.scp-peer:focus-visible {
   display: grid;
   gap: 12px;
   margin: 18px 0 8px;
-  color: var(--sc-text);
+  color: var(--tp-ink, var(--sc-text));
   scroll-margin-top: calc(var(--scp-nav-h) + var(--scp-nav-offset) + 16px);
   font-family: var(--scp-pp-sans);
   font-size: 14px;
@@ -14965,15 +14965,15 @@ a.scp-peer:focus-visible {
   row-gap: 14px;
   min-height: 290px;
   padding: 0 24px var(--pp-pad-b) 0;
-  border: 1px solid #0d2b50;
+  border: 1px solid var(--tp-c-0d2b50, #0d2b50);
   border-radius: var(--scp-pp-radius);
   background:
-    radial-gradient(90% 120% at 62% 30%, rgba(42, 100, 170, 0.35) 0%, transparent 60%),
+    radial-gradient(90% 120% at 62% 30%, var(--tp-a-42-100-170-350, rgba(42, 100, 170, 0.35)) 0%, transparent 60%),
     linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.045) 34% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.035) 58% 72%, transparent 72% 80%, rgba(255, 255, 255, 0.05) 80% 90%, transparent 90%),
-    linear-gradient(125deg, #081a34 0%, #123d6d 48%, #0b2c53 100%);
+    linear-gradient(125deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-123d6d, #123d6d) 48%, var(--tp-c-0b2c53, #0b2c53) 100%);
   box-shadow:
     0 2px 6px rgba(8, 28, 60, 0.12),
-    0 16px 36px -14px rgba(8, 28, 60, 0.45);
+    0 16px 36px -14px var(--tp-a-8-28-60-450, rgba(8, 28, 60, 0.45));
   color: #fff;
   overflow: hidden;
 }
@@ -14987,7 +14987,7 @@ a.scp-peer:focus-visible {
   width: 46%;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 86%, rgba(241, 191, 60, 0.9) 86% 88.4%, transparent 88.4% 91.6%, rgba(241, 191, 60, 0.65) 91.6% 93.4%, transparent 93.4% 96%, rgba(241, 191, 60, 0.35) 96% 97%, transparent 97%),
+    linear-gradient(115deg, transparent 0 86%, var(--tp-a-241-191-60-900, rgba(241, 191, 60, 0.9)) 86% 88.4%, transparent 88.4% 91.6%, var(--tp-a-241-191-60-650, rgba(241, 191, 60, 0.65)) 91.6% 93.4%, transparent 93.4% 96%, var(--tp-a-241-191-60-350, rgba(241, 191, 60, 0.35)) 96% 97%, transparent 97%),
     linear-gradient(118deg, transparent 0 20%, rgba(70, 130, 200, 0.14) 20% 44%, transparent 44% 52%, rgba(70, 130, 200, 0.1) 52% 70%, transparent 70%);
 }
 
@@ -15165,11 +15165,11 @@ a.scp-peer:focus-visible {
 .scp .scp-phead .scp-ptag-inj.is-good,
 .scp .scp-phead .scp-ptag-status.is-good { color: #2fd48a !important; background: rgba(23, 110, 66, 0.35); }
 .scp .scp-phead .scp-ptag-inj.is-mid,
-.scp .scp-phead .scp-ptag-status.is-mid { color: var(--sc-gold-bright) !important; border-color: var(--sc-gold); background: rgba(212, 175, 55, 0.16); }
+.scp .scp-phead .scp-ptag-status.is-mid { color: var(--sc-gold-bright) !important; border-color: var(--sc-gold); background: var(--tp-a-212-175-55-160, rgba(212, 175, 55, 0.16)); }
 .scp .scp-phead .scp-ptag-inj.is-bad,
 .scp .scp-phead .scp-ptag-status.is-bad { color: #ff8f82 !important; background: rgba(179, 50, 50, 0.3); }
 .scp .scp-phead .scp-ptag-inj.is-none,
-.scp .scp-phead .scp-ptag-status.is-none { color: #d7e2f1 !important; background: rgba(255, 255, 255, 0.1); }
+.scp .scp-phead .scp-ptag-status.is-none { color: var(--tp-c-d7e2f1, #d7e2f1) !important; background: rgba(255, 255, 255, 0.1); }
 
 .scp .scp-phead .scp-phead-h1 {
   margin: 2px 0 0 !important;
@@ -15275,7 +15275,7 @@ a.scp-peer:focus-visible {
   padding: 14px 6px 13px;
   border: 1.5px solid var(--sc-gold);
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(6, 22, 50, 0.75), rgba(3, 12, 30, 0.85));
+  background: linear-gradient(180deg, var(--tp-a-6-22-50-750, rgba(6, 22, 50, 0.75)), var(--tp-a-3-12-30-850, rgba(3, 12, 30, 0.85)));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
@@ -15311,7 +15311,7 @@ a.scp-peer:focus-visible {
   margin: 0;
   border: 0;
   text-decoration: none;
-  color: #cfdcee;
+  color: var(--tp-c-cfdcee, #cfdcee);
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -15347,11 +15347,11 @@ a.scp-peer:focus-visible {
   min-height: 82px;
   margin: 0;
   padding: 12px 12px 12px 14px;
-  border: 1px solid #cddbec;
+  border: 1px solid var(--tp-c-cddbec, #cddbec);
   border-radius: 13px;
-  background: linear-gradient(160deg, #ffffff 0%, #f3f7fc 55%, #e6eef8 100%);
+  background: linear-gradient(160deg, #ffffff 0%, var(--tp-c-f3f7fc, #f3f7fc) 55%, var(--tp-c-e6eef8, #e6eef8) 100%);
   box-shadow: inset 0 1px 0 #fff, 0 3px 7px rgba(8, 28, 60, 0.08), 0 10px 20px rgba(8, 28, 60, 0.1);
-  color: var(--sc-text);
+  color: var(--tp-ink, var(--sc-text));
 }
 
 .scp .scp-pp-card-icon {
@@ -15372,7 +15372,7 @@ a.scp-peer:focus-visible {
 .scp .scp-pp-card-v {
   grid-area: v;
   align-self: end;
-  color: var(--sc-text);
+  color: var(--tp-ink, var(--sc-text));
   font-size: 28px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -15427,16 +15427,16 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-phead a.scp-pbtn--gold {
-  color: var(--sc-navy-950) !important;
+  color: var(--tp-ink, var(--sc-navy-950)) !important;
   background: linear-gradient(180deg, var(--sc-gold-bright), var(--sc-gold));
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .scp .scp-phead a.scp-pbtn--white {
   min-height: 40px;
-  color: var(--sc-text) !important;
-  background: linear-gradient(180deg, #ffffff, #f3f7fc);
-  border: 1.5px solid #c9d8ea;
+  color: var(--tp-ink, var(--sc-text)) !important;
+  background: linear-gradient(180deg, #ffffff, var(--tp-c-f3f7fc, #f3f7fc));
+  border: 1.5px solid var(--tp-c-c9d8ea, #c9d8ea);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
 }
 
@@ -15447,7 +15447,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-phead a.scp-pbtn:focus-visible {
-  box-shadow: 0 0 0 3px rgba(241, 191, 60, 0.75);
+  box-shadow: 0 0 0 3px var(--tp-a-241-191-60-750, rgba(241, 191, 60, 0.75));
 }
 
 .scp .scp-pbtn-icon,
@@ -15472,12 +15472,12 @@ a.scp-peer:focus-visible {
   padding: 8px 18px 8px 16px;
   border: 1px solid var(--sc-border);
   border-radius: 14px;
-  background: linear-gradient(145deg, #ffffff 0%, #f6f9fd 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f6f9fd, #f6f9fd) 100%);
   box-shadow: inset 4px 0 0 var(--sc-gold), 0 2px 6px rgba(8, 28, 60, 0.05);
 }
 
 .scp .scp-pstrip-cap {
-  color: #8a6205;
+  color: var(--tp-c-8a6205, #8a6205);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -15488,7 +15488,7 @@ a.scp-peer:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--sc-text);
+  color: var(--tp-ink, var(--sc-text));
   font-size: 15px;
 }
 
@@ -15514,7 +15514,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-mchip.is-good { color: #1f7a4d; background: #e3f2ea; }
-.scp .scp-mchip.is-mid { color: #8a6d12; background: #fbf3dc; }
+.scp .scp-mchip.is-mid { color: var(--tp-c-8a6d12, #8a6d12); background: var(--tp-c-fbf3dc, #fbf3dc); }
 .scp .scp-mchip.is-bad { color: #a23b2a; background: #f8e6e2; }
 
 .scp .scp-phead a.scp-pstrip-link {
@@ -15522,7 +15522,7 @@ a.scp-peer:focus-visible {
   align-items: center;
   gap: 6px;
   margin-left: auto;
-  color: var(--sc-brand-navy) !important;
+  color: var(--tp-ink, var(--sc-brand-navy)) !important;
   font-size: 14px;
   font-weight: 800;
   text-decoration: none !important;
@@ -15827,21 +15827,21 @@ a.scp-peer:focus-visible {
  * Appended at the END of the file - never spliced in by line number.
  */
 .scp .scp-pr-wrap {
-  --pr-navy-950: #071a35;
-  --pr-navy-900: #0d2548;
-  --pr-navy-800: #123964;
-  --pr-brand: #0b3a7a;
-  --pr-gold: #d4af37;
-  --pr-gold-bright: #f2c230;
-  --pr-gold-ink: #e2ad13;
-  --pr-gold-light: #fff3d4;
-  --pr-ink: #102344;
+  --pr-navy-950: var(--tp-c-071a35, #071a35);
+  --pr-navy-900: var(--tp-c-0d2548, #0d2548);
+  --pr-navy-800: var(--tp-c-123964, #123964);
+  --pr-brand: var(--tp-c-0b3a7a, #0b3a7a);
+  --pr-gold: var(--tp-c-d4af37, #d4af37);
+  --pr-gold-bright: var(--tp-c-f2c230, #f2c230);
+  --pr-gold-ink: var(--tp-c-e2ad13, #e2ad13);
+  --pr-gold-light: var(--tp-c-fff3d4, #fff3d4);
+  --pr-ink: var(--tp-c-102344, #102344);
   --pr-muted: #607592;
-  --pr-surface-light: #f6f9fd;
-  --pr-surface-blue: #edf4fb;
-  --pr-line: #d1deec;
-  --pr-line-light: #e3eaf2;
-  --pr-blue: #2364a8;
+  --pr-surface-light: var(--tp-c-f6f9fd, #f6f9fd);
+  --pr-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --pr-line: var(--tp-c-d1deec, #d1deec);
+  --pr-line-light: var(--tp-c-e3eaf2, #e3eaf2);
+  --pr-blue: var(--tp-c-2364a8, #2364a8);
   --pr-shadow:
     0 3px 8px rgba(10, 30, 60, 0.04),
     0 10px 22px rgba(10, 30, 60, 0.07);
@@ -15850,7 +15850,7 @@ a.scp-peer:focus-visible {
     0 6px 14px rgba(10, 30, 60, 0.06);
   --pr-bar:
     repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(110deg, #071a35 0%, #123f70 62%, #082447 100%);
+    linear-gradient(110deg, var(--tp-c-071a35, #071a35) 0%, var(--tp-c-123f70, #123f70) 62%, var(--tp-c-082447, #082447) 100%);
   container-type: inline-size;
   container-name: pr;
   /* The rail's own place under a tab: clear of the last panel, set apart
@@ -15859,7 +15859,7 @@ a.scp-peer:focus-visible {
   padding-top: 24px;
   font-family: var(--sc-font);
   font-variant-numeric: tabular-nums;
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
 }
 .scp .scp-pr-wrap *,
 .scp .scp-pr-wrap *::before,
@@ -15874,7 +15874,7 @@ a.scp-peer:focus-visible {
 .scp .scp-pr {
   border: 1px solid var(--pr-line);
   border-radius: 16px;
-  background: linear-gradient(145deg, #ffffff 0%, #f9fbfe 55%, #edf4fb 100%);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-edf4fb, #edf4fb) 100%);
   box-shadow: var(--pr-shadow);
   overflow: hidden;
 }
@@ -15933,7 +15933,7 @@ a.scp-peer:focus-visible {
   margin: 3px 0 0;
   font-size: 11.5px;
   line-height: 1.3;
-  color: #d6e2f3;
+  color: var(--tp-c-d6e2f3, #d6e2f3);
 }
 .scp .scp-pr-ball {
   position: absolute;
@@ -15942,7 +15942,7 @@ a.scp-peer:focus-visible {
   width: 110px;
   height: 68px;
   transform: translateY(-50%) rotate(-12deg);
-  color: #9fb3d6;
+  color: var(--tp-c-9fb3d6, #9fb3d6);
   opacity: 0.3;
   pointer-events: none;
 }
@@ -15986,7 +15986,7 @@ a.scp-peer:focus-visible {
   height: 6px;
 }
 .scp .scp-pr-strip::-webkit-scrollbar-thumb {
-  background: #c9d6e6;
+  background: var(--tp-c-c9d6e6, #c9d6e6);
   border-radius: 999px;
 }
 .scp .scp-pr-card {
@@ -15996,11 +15996,11 @@ a.scp-peer:focus-visible {
   flex-direction: column;
   width: 150px;
   min-height: 0;
-  border: 1px solid #d3dfed;
+  border: 1px solid var(--tp-c-d3dfed, #d3dfed);
   border-radius: 13px;
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
+  background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-f9fbfe, #f9fbfe) 100%);
   box-shadow: var(--pr-card-shadow);
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
   text-decoration: none;
   scroll-snap-align: center;
   transition:
@@ -16010,7 +16010,7 @@ a.scp-peer:focus-visible {
 }
 .scp a.scp-pr-card:hover {
   transform: translateY(-2px);
-  border-color: #b9cbe3;
+  border-color: var(--tp-c-b9cbe3, #b9cbe3);
   box-shadow:
     0 4px 8px rgba(10, 30, 60, 0.07),
     0 10px 20px rgba(10, 30, 60, 0.1);
@@ -16029,7 +16029,7 @@ a.scp-peer:focus-visible {
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.65), transparent 70%),
-    color-mix(in srgb, var(--pr-team, #0b3a7a) 18%, #ffffff);
+    color-mix(in srgb, var(--pr-team, var(--tp-c-0b3a7a, #0b3a7a)) 18%, #ffffff);
 }
 .scp .scp-pr-img {
   display: block;
@@ -16050,7 +16050,7 @@ a.scp-peer:focus-visible {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  box-shadow: 0 1px 3px rgba(7, 26, 53, 0.3);
+  box-shadow: 0 1px 3px var(--tp-a-7-26-53-300, rgba(7, 26, 53, 0.3));
 }
 .scp .scp-pr-name {
   display: -webkit-box;
@@ -16063,7 +16063,7 @@ a.scp-peer:focus-visible {
   font-size: 13.5px;
   font-weight: 800;
   line-height: 1.15;
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
 }
 /* Club at the left, the figure at the right, one row. */
 .scp .scp-pr-main {
@@ -16088,7 +16088,7 @@ a.scp-peer:focus-visible {
 .scp .scp-pr-club b {
   font-size: 11.5px;
   font-weight: 800;
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
 }
 .scp .scp-pr-club b.is-fa {
   color: var(--pr-muted);
@@ -16105,7 +16105,7 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 21px;
   font-weight: 800;
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
 }
 .scp .scp-pr-value small {
   margin-top: 2px;
@@ -16122,7 +16122,7 @@ a.scp-peer:focus-visible {
   margin: 3px 6px 5px;
   padding: 4px 7px;
   border-radius: 9px;
-  background: linear-gradient(145deg, #f3f8ff 0%, #eaf3fd 100%);
+  background: linear-gradient(145deg, var(--tp-c-f3f8ff, #f3f8ff) 0%, var(--tp-c-eaf3fd, #eaf3fd) 100%);
 }
 .scp .scp-pr-metrics.is-none {
   justify-content: center;
@@ -16147,12 +16147,12 @@ a.scp-peer:focus-visible {
   font-family: var(--scp-ph-sans);
   font-size: 13.5px;
   font-weight: 800;
-  color: var(--pr-ink);
+  color: var(--tp-ink, var(--pr-ink));
 }
 .scp .scp-pr-metric > span {
   font-size: 10.5px;
   font-weight: 600;
-  color: #35598c;
+  color: var(--tp-c-35598c, #35598c);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -16161,29 +16161,29 @@ a.scp-peer:focus-visible {
 .scp .scp-pr-card.is-current {
   border: 2px solid var(--pr-gold-ink);
   box-shadow:
-    0 3px 8px rgba(153, 110, 12, 0.1),
-    0 10px 20px rgba(153, 110, 12, 0.1);
+    0 3px 8px var(--tp-a-153-110-12-100, rgba(153, 110, 12, 0.1)),
+    0 10px 20px var(--tp-a-153-110-12-100, rgba(153, 110, 12, 0.1));
 }
 .scp .scp-pr-card.is-current .scp-pr-photo {
   height: 94px;
   border-radius: 10px 10px 0 0;
   background:
     radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.7), transparent 70%),
-    color-mix(in srgb, var(--pr-team, #0b3a7a) 14%, #fffdf5);
+    color-mix(in srgb, var(--pr-team, var(--tp-c-0b3a7a, #0b3a7a)) 14%, var(--tp-c-fffdf5, #fffdf5));
 }
 .scp .scp-pr-card.is-current .scp-pr-rank {
   background: var(--pr-gold-bright);
-  color: var(--pr-navy-950);
+  color: var(--tp-ink, var(--pr-navy-950));
 }
 .scp .scp-pr-card.is-current .scp-pr-value {
   background: var(--pr-gold-light);
 }
 .scp .scp-pr-card.is-current .scp-pr-metrics {
   margin: 3px 5px 4px;
-  background: linear-gradient(145deg, #fff8e6 0%, #fff1c7 100%);
+  background: linear-gradient(145deg, var(--tp-c-fff8e6, #fff8e6) 0%, var(--tp-c-fff1c7, #fff1c7) 100%);
 }
 .scp .scp-pr-card.is-current .scp-pr-metric .scp-pr-svg {
-  color: var(--pr-brand);
+  color: var(--tp-ink, var(--pr-brand));
 }
 .scp .scp-pr-here {
   position: absolute;
@@ -16194,15 +16194,15 @@ a.scp-peer:focus-visible {
   height: 24px;
   padding: 0 11px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f6cf4c 0%, #e2ad13 100%);
-  color: var(--pr-navy-950);
+  background: linear-gradient(135deg, var(--tp-c-f6cf4c, #f6cf4c) 0%, var(--tp-c-e2ad13, #e2ad13) 100%);
+  color: var(--tp-ink, var(--pr-navy-950));
   font-size: 10.5px;
   font-weight: 800;
   line-height: 24px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: 0 2px 5px rgba(120, 90, 10, 0.3);
+  box-shadow: 0 2px 5px var(--tp-a-120-90-10-300, rgba(120, 90, 10, 0.3));
 }
 
 /* ---- seven across where seven fit (about 1070px and up) */
@@ -16275,14 +16275,14 @@ a.scp-peer:focus-visible {
  * .scp-ol's copies change here.
  */
 .scp .scp-ol {
-  --ol-navy: #0b3a7a;
-  --ol-navy-deep: #081e42;
-  --ol-gold: #d4af37;
-  --ol-gold-bright: #e8c250;
-  --ol-text: #101b34;
+  --ol-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --ol-navy-deep: var(--tp-c-081e42, #081e42);
+  --ol-gold: var(--tp-c-d4af37, #d4af37);
+  --ol-gold-bright: var(--tp-c-e8c250, #e8c250);
+  --ol-text: var(--tp-c-101b34, #101b34);
   --ol-muted: #52647f;
-  --ol-light: #f5f8fc;
-  --ol-border: #d6e0ed;
+  --ol-light: var(--tp-c-f5f8fc, #f5f8fc);
+  --ol-border: var(--tp-c-d6e0ed, #d6e0ed);
   --ol-good: #16834b;
   --ol-good-soft: #e6f5ec;
   --ol-mid: #a86a05;
@@ -16318,7 +16318,7 @@ a.scp-peer:focus-visible {
   align-items: center;
   gap: 10px;
   margin: 0 0 10px;
-  color: var(--ol-text);
+  color: var(--tp-ink, var(--ol-text));
   font-size: 20px;
   font-weight: 800;
 }
@@ -16338,10 +16338,10 @@ a.scp-peer:focus-visible {
 .scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc {
   position: relative;
   min-height: 186px;
-  border-color: #0a2b5c;
+  border-color: var(--tp-c-0a2b5c, #0a2b5c);
   background:
-    linear-gradient(115deg, transparent 0 84%, rgba(232, 194, 80, 0.85) 84% 87%, transparent 87% 91%, rgba(232, 194, 80, 0.55) 91% 93%, transparent 93%) top right / 200px 70px no-repeat,
-    linear-gradient(160deg, #0f3f82 0%, var(--ol-navy-deep) 100%);
+    linear-gradient(115deg, transparent 0 84%, var(--tp-a-232-194-80-850, rgba(232, 194, 80, 0.85)) 84% 87%, transparent 87% 91%, var(--tp-a-232-194-80-550, rgba(232, 194, 80, 0.55)) 91% 93%, transparent 93%) top right / 200px 70px no-repeat,
+    linear-gradient(160deg, var(--tp-c-0f3f82, #0f3f82) 0%, var(--ol-navy-deep) 100%);
   color: #fff;
   overflow: hidden;
 }
@@ -16367,7 +16367,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc p {
   margin: 0 0 14px;
-  color: #dbe5f3;
+  color: var(--tp-c-dbe5f3, #dbe5f3);
   font-size: 13.5px;
   line-height: 1.4;
 }
@@ -16377,10 +16377,10 @@ a.scp-peer:focus-visible {
   min-height: 42px;
   border-radius: 11px;
   background: linear-gradient(180deg, var(--ol-gold-bright), var(--ol-gold));
-  color: var(--ol-navy-deep) !important;
+  color: var(--tp-ink, var(--ol-navy-deep)) !important;
   font-size: 14px;
   font-weight: 800;
-  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 3px 10px var(--tp-a-212-175-55-350, rgba(212, 175, 55, 0.35));
   transition: transform 120ms ease, filter 120ms ease;
 }
 
@@ -16412,8 +16412,8 @@ a.scp-peer:focus-visible {
   min-height: 36px;
   padding: 6px 12px;
   border-radius: 10px;
-  background: #eef3f9;
-  color: var(--ol-text);
+  background: var(--tp-c-eef3f9, #eef3f9);
+  color: var(--tp-ink, var(--ol-text));
   font-size: 13.5px;
   font-weight: 700;
 }
@@ -16451,29 +16451,29 @@ a.scp-peer:focus-visible {
  * Every rule starts `.scp .scp-olp`, so nothing reaches the originals above.
  */
 .scp .scp-olp {
-  --olp-navy-dark: #0b1c39;
-  --olp-navy: #102b52;
-  --olp-gold: #d4af37;
-  --olp-gold-bright: #edbf44;
-  --olp-gold-deep: #b8901f;
-  --olp-gold-ink: #8a6205;
-  --olp-gold-soft: #fff3d4;
-  --olp-text: #102344;
+  --olp-navy-dark: var(--tp-c-0b1c39, #0b1c39);
+  --olp-navy: var(--tp-c-102b52, #102b52);
+  --olp-gold: var(--tp-c-d4af37, #d4af37);
+  --olp-gold-bright: var(--tp-c-edbf44, #edbf44);
+  --olp-gold-deep: var(--tp-c-b8901f, #b8901f);
+  --olp-gold-ink: var(--tp-c-8a6205, #8a6205);
+  --olp-gold-soft: var(--tp-c-fff3d4, #fff3d4);
+  --olp-text: var(--tp-c-102344, #102344);
   --olp-muted: #546b8a;
   --olp-surface: #fff;
-  --olp-surface-light: #f6f9fd;
-  --olp-surface-blue: #edf3fa;
-  --olp-border: #ccd9e9;
-  --olp-border-light: #e0e8f2;
+  --olp-surface-light: var(--tp-c-f6f9fd, #f6f9fd);
+  --olp-surface-blue: var(--tp-c-edf3fa, #edf3fa);
+  --olp-border: var(--tp-c-ccd9e9, #ccd9e9);
+  --olp-border-light: var(--tp-c-e0e8f2, #e0e8f2);
   --olp-green: #087a42;
   --olp-green-light: #e4f7e9;
   --olp-green-line: #c4e7d0;
   --olp-red: #b53d37;
   --olp-red-light: #fff0ef;
   --olp-red-line: #efcece;
-  --olp-yellow: #946500;
-  --olp-yellow-light: #fff1c9;
-  --olp-track: #dce5f2;
+  --olp-yellow: var(--tp-c-946500, #946500);
+  --olp-yellow-light: var(--tp-c-fff1c9, #fff1c9);
+  --olp-track: var(--tp-c-dce5f2, #dce5f2);
   --olp-radius: 14px;
   --olp-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
   container-type: inline-size;
@@ -16482,7 +16482,7 @@ a.scp-peer:focus-visible {
   gap: 16px;
   margin: 28px 0 0;
   padding: 0 0 4px;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -16492,7 +16492,7 @@ a.scp-peer:focus-visible {
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--olp-gold-soft);
-  color: #7a5c0e;
+  color: var(--tp-c-7a5c0e, #7a5c0e);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -16504,9 +16504,9 @@ a.scp-peer:focus-visible {
   min-width: 0;
   margin: 0;
   padding: 0;
-  border: 1px solid #d0deee;
+  border: 1px solid var(--tp-c-d0deee, #d0deee);
   border-radius: 16px;
-  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: 0 3px 8px rgba(12, 32, 64, 0.045), 0 10px 24px rgba(12, 32, 64, 0.065);
   overflow: hidden;
 }
@@ -16522,7 +16522,7 @@ a.scp-peer:focus-visible {
   color: #fff;
   background:
     radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
-    linear-gradient(110deg, #081a34 0%, #103b69 65%, #092448 100%);
+    linear-gradient(110deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-103b69, #103b69) 65%, var(--tp-c-092448, #092448) 100%);
   overflow: hidden;
 }
 
@@ -16545,9 +16545,9 @@ a.scp-peer:focus-visible {
   max-width: 440px;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 78%, rgba(237, 191, 68, 0.75) 78% 80.5%, transparent 80.5% 85%, rgba(237, 191, 68, 0.5) 85% 86.5%, transparent 86.5% 91%, rgba(237, 191, 68, 0.3) 91% 92%, transparent 92%),
+    linear-gradient(115deg, transparent 0 78%, var(--tp-a-237-191-68-750, rgba(237, 191, 68, 0.75)) 78% 80.5%, transparent 80.5% 85%, var(--tp-a-237-191-68-500, rgba(237, 191, 68, 0.5)) 85% 86.5%, transparent 86.5% 91%, var(--tp-a-237-191-68-300, rgba(237, 191, 68, 0.3)) 91% 92%, transparent 92%),
     linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.035) 30% 48%, transparent 48% 56%, rgba(255, 255, 255, 0.05) 56% 70%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(23, 60, 104, 0.55));
+    linear-gradient(90deg, transparent, var(--tp-a-23-60-104-550, rgba(23, 60, 104, 0.55)));
 }
 
 .scp .scp-olp-ball {
@@ -16619,7 +16619,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-bar-sub {
   margin: 0;
-  color: #d6e2f3;
+  color: var(--tp-c-d6e2f3, #d6e2f3);
   font-size: 12.5px;
   font-weight: 500;
   line-height: 1.4;
@@ -16632,9 +16632,9 @@ a.scp-peer:focus-visible {
 /* ---- the drivers matrix */
 .scp .scp-olp-matrix {
   padding: 2px 16px;
-  border: 1px solid #d2dfee;
+  border: 1px solid var(--tp-c-d2dfee, #d2dfee);
   border-radius: var(--olp-radius);
-  background: linear-gradient(145deg, #fff 0%, #f7faff 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f7faff, #f7faff) 100%);
 }
 
 .scp .scp-olp-drv {
@@ -16662,7 +16662,7 @@ a.scp-peer:focus-visible {
 .scp .scp-olp .scp-olp-h3 {
   margin: 0 !important;
   padding: 0;
-  color: var(--olp-text) !important;
+  color: var(--tp-ink, var(--olp-text)) !important;
   font-size: 15px !important;
   font-weight: 800;
   line-height: 1.2;
@@ -16701,7 +16701,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olp-drv-value strong {
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 19px;
   font-weight: 800;
   line-height: 1.1;
@@ -16726,7 +16726,7 @@ a.scp-peer:focus-visible {
   position: absolute;
   inset: 6px 0;
   border-radius: 3px;
-  background: repeating-linear-gradient(90deg, #b8c8dc 0 2px, transparent 2px 7px);
+  background: repeating-linear-gradient(90deg, var(--tp-c-b8c8dc, #b8c8dc) 0 2px, transparent 2px 7px);
   opacity: 0.85;
 }
 
@@ -16754,7 +16754,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olp-axis b {
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 12px;
   font-weight: 800;
 }
@@ -16771,9 +16771,9 @@ a.scp-peer:focus-visible {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 12px 0 0;
   padding: 0;
-  border: 1px solid #d2dfee;
+  border: 1px solid var(--tp-c-d2dfee, #d2dfee);
   border-radius: var(--olp-radius);
-  background: linear-gradient(145deg, #fff 0%, #f5f9fe 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f5f9fe, #f5f9fe) 100%);
   overflow: hidden;
 }
 
@@ -16794,7 +16794,7 @@ a.scp-peer:focus-visible {
 .scp .scp-olp-adv-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: #557eaf;
+  color: var(--tp-c-557eaf, #557eaf);
 }
 
 .scp .scp-olp-adv-icon .scp-olp-svg {
@@ -16811,7 +16811,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-adv dd {
   margin: 1px 0 0;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 19px;
   font-weight: 800;
   line-height: 1.1;
@@ -16917,7 +16917,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-claim {
   display: block;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 14px;
   font-weight: 800;
   line-height: 1.3;
@@ -16939,13 +16939,13 @@ a.scp-peer:focus-visible {
   gap: 14px;
   margin: 14px 0 0;
   padding: 8px 10px 8px 16px;
-  border: 1px solid #ead9a0;
+  border: 1px solid var(--tp-c-ead9a0, #ead9a0);
   border-radius: 12px;
-  background: linear-gradient(100deg, #fff1c9 0%, #fff8e6 100%);
+  background: linear-gradient(100deg, var(--tp-c-fff1c9, #fff1c9) 0%, var(--tp-c-fff8e6, #fff8e6) 100%);
 }
 
 .scp .scp-olp-cta-text {
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 14px;
   font-weight: 700;
 }
@@ -16963,7 +16963,7 @@ a.scp-peer:focus-visible {
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
-  box-shadow: 0 2px 6px rgba(8, 26, 52, 0.3);
+  box-shadow: 0 2px 6px var(--tp-a-8-26-52-300, rgba(8, 26, 52, 0.3));
 }
 
 .scp .scp-olp .scp-olp-cta-btn:hover,
@@ -17005,9 +17005,9 @@ a.scp-peer:focus-visible {
   margin: 0;
   padding: 12px 14px 12px;
   border: 1px solid var(--olp-border);
-  border-top: 4px solid #557eaf;
+  border-top: 4px solid var(--tp-c-557eaf, #557eaf);
   border-radius: 14px;
-  background: linear-gradient(145deg, #fff 0%, #f5f9fe 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f5f9fe, #f5f9fe) 100%);
   box-shadow: 0 2px 6px rgba(12, 32, 64, 0.05);
 }
 
@@ -17028,8 +17028,8 @@ a.scp-peer:focus-visible {
   justify-self: start;
   padding: 2px 9px;
   border-radius: 999px;
-  background: #e3ebf6;
-  color: var(--olp-text);
+  background: var(--tp-c-e3ebf6, #e3ebf6);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -17038,7 +17038,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-opp {
   grid-area: opp;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 18px;
   font-weight: 800;
   line-height: 1.15;
@@ -17087,7 +17087,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-read {
   margin: 0 0 6px;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -17099,7 +17099,7 @@ a.scp-peer:focus-visible {
 
 /* ---- the preseason archive */
 .scp .scp-olp-sec.is-archive {
-  background: #f6f8fc;
+  background: var(--tp-c-f6f8fc, #f6f8fc);
 }
 
 .scp .scp-olp-prev {
@@ -17112,7 +17112,7 @@ a.scp-peer:focus-visible {
   gap: 10px;
   min-height: 46px;
   padding: 10px 16px;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
@@ -17124,7 +17124,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olp-prev-sum:hover {
-  background: #eef3fa;
+  background: var(--tp-c-eef3fa, #eef3fa);
 }
 
 .scp .scp-olp-prev-sum:focus-visible {
@@ -17134,7 +17134,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-prev-chev {
   display: inline-flex;
-  color: var(--olp-text);
+  color: var(--tp-ink, var(--olp-text));
   transition: transform 0.15s ease;
 }
 
@@ -17154,7 +17154,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olp-prev-body p {
   margin: 10px 0 0;
-  color: #1f3350;
+  color: var(--tp-ink, var(--tp-c-1f3350, #1f3350));
   font-size: 13.5px;
   line-height: 1.6;
 }
@@ -17303,29 +17303,29 @@ a.scp-peer:focus-visible {
  * Every rule starts `.scp .scp-olr`, so nothing reaches the sections above.
  */
 .scp .scp-olr {
-  --olr-navy-950: #081a34;
-  --olr-navy-900: #0b2345;
-  --olr-navy-800: #103862;
-  --olr-navy: #0b3a7a;
-  --olr-gold: #d4af37;
-  --olr-gold-bright: #f0bf35;
-  --olr-gold-light: #fff3d7;
-  --olr-gold-ink: #7a5c0e;
-  --olr-text: #102344;
+  --olr-navy-950: var(--tp-c-081a34, #081a34);
+  --olr-navy-900: var(--tp-c-0b2345, #0b2345);
+  --olr-navy-800: var(--tp-c-103862, #103862);
+  --olr-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --olr-gold: var(--tp-c-d4af37, #d4af37);
+  --olr-gold-bright: var(--tp-c-f0bf35, #f0bf35);
+  --olr-gold-light: var(--tp-c-fff3d7, #fff3d7);
+  --olr-gold-ink: var(--tp-c-7a5c0e, #7a5c0e);
+  --olr-text: var(--tp-c-102344, #102344);
   --olr-muted: #586f8e;
   --olr-surface: #fff;
-  --olr-surface-light: #f7faff;
-  --olr-surface-blue: #edf4fb;
-  --olr-border: #cfddec;
-  --olr-border-light: #e0e8f2;
+  --olr-surface-light: var(--tp-c-f7faff, #f7faff);
+  --olr-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --olr-border: var(--tp-c-cfddec, #cfddec);
+  --olr-border-light: var(--tp-c-e0e8f2, #e0e8f2);
   --olr-green: #087a43;
   --olr-green-light: #e9f8ee;
   --olr-green-line: #bfe3cc;
   --olr-red: #be3036;
   --olr-red-light: #fff0f1;
   --olr-red-line: #efc9cc;
-  --olr-amber: #aa7800;
-  --olr-amber-light: #fff2cf;
+  --olr-amber: var(--tp-c-aa7800, #aa7800);
+  --olr-amber-light: var(--tp-c-fff2cf, #fff2cf);
   --olr-radius: 14px;
   --olr-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
   container-type: inline-size;
@@ -17334,7 +17334,7 @@ a.scp-peer:focus-visible {
   gap: 16px;
   margin: 28px 0 0;
   padding: 0;
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -17350,7 +17350,7 @@ a.scp-peer:focus-visible {
   padding: 0;
   border: 1px solid var(--olr-border);
   border-radius: 16px;
-  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--olr-shadow);
   overflow: hidden;
 }
@@ -17407,7 +17407,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olr-bar-sub {
   margin: 3px 0 0;
-  color: #c9d8ee;
+  color: var(--tp-c-c9d8ee, #c9d8ee);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -17496,7 +17496,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olr-tag.is-mid {
   background: var(--olr-amber-light);
-  border-color: #efd99a;
+  border-color: var(--tp-c-efd99a, #efd99a);
   color: var(--olr-amber);
 }
 
@@ -17510,9 +17510,9 @@ a.scp-peer:focus-visible {
 .scp .scp-olr-summary {
   position: relative;
   padding: 16px 18px 14px;
-  border: 1px solid #cbdbea;
+  border: 1px solid var(--tp-c-cbdbea, #cbdbea);
   border-radius: var(--olr-radius);
-  background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+  background: linear-gradient(135deg, #fff 0%, var(--tp-c-f0f6ff, #f0f6ff) 100%);
   box-shadow: 0 3px 8px rgba(10, 35, 70, 0.04);
 }
 
@@ -17532,7 +17532,7 @@ a.scp-peer:focus-visible {
   align-items: center;
   gap: 12px;
   margin: 0 0 12px;
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -17584,7 +17584,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olr-ob p {
   margin: 0;
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-size: 14px;
   line-height: 1.5;
 }
@@ -17593,7 +17593,7 @@ a.scp-peer:focus-visible {
 .scp .scp-olr-factor p strong,
 .scp .scp-olr-read-text strong {
   font-weight: 700;
-  color: var(--olr-navy);
+  color: var(--tp-ink, var(--olr-navy));
 }
 
 /* supports / threatens */
@@ -17648,7 +17648,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 6px !important;
   padding: 0;
   border: 0;
-  color: var(--olr-text) !important;
+  color: var(--tp-ink, var(--olr-text)) !important;
   font-size: 16px !important;
   font-weight: 800;
   line-height: 1.2;
@@ -17670,7 +17670,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olr-factor p {
   margin: 0;
-  color: #2a3d5c;
+  color: var(--tp-ink, var(--tp-c-2a3d5c, #2a3d5c));
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -17731,7 +17731,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-olr-rc p {
   margin: 0 0 14px;
-  color: #dbe6f6;
+  color: var(--tp-c-dbe6f6, #dbe6f6);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -17745,12 +17745,12 @@ a.scp-peer:focus-visible {
   padding: 0 16px;
   border-radius: 10px;
   background: linear-gradient(180deg, var(--olr-gold-bright), var(--olr-gold));
-  color: var(--olr-navy-950) !important;
+  color: var(--tp-ink, var(--olr-navy-950)) !important;
   font-size: 14px;
   font-weight: 800;
   text-align: center;
   text-decoration: none !important;
-  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 3px 10px var(--tp-a-212-175-55-350, rgba(212, 175, 55, 0.35));
 }
 
 .scp .scp-olr .scp-olr-btn:hover {
@@ -17784,7 +17784,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 10px !important;
   padding: 0;
   border: 0;
-  color: var(--olr-text) !important;
+  color: var(--tp-ink, var(--olr-text)) !important;
   font-size: 18px !important;
   font-weight: 800;
   line-height: 1.2;
@@ -17814,7 +17814,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olr-fit-league {
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-size: 13px;
   font-weight: 700;
 }
@@ -17876,13 +17876,13 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olr-group.is-prod {
-  border-color: #ecd9a4;
-  background: linear-gradient(160deg, #fffdf6 0%, #fff7e3 100%);
+  border-color: var(--tp-c-ecd9a4, #ecd9a4);
+  background: linear-gradient(160deg, var(--tp-c-fffdf6, #fffdf6) 0%, var(--tp-c-fff7e3, #fff7e3) 100%);
 }
 
 .scp .scp-olr-group.is-opp {
-  border-color: #c5d8ee;
-  background: linear-gradient(160deg, #f9fbfe 0%, var(--olr-surface-blue) 100%);
+  border-color: var(--tp-c-c5d8ee, #c5d8ee);
+  background: linear-gradient(160deg, var(--tp-c-f9fbfe, #f9fbfe) 0%, var(--olr-surface-blue) 100%);
 }
 
 .scp .scp-olr-group-label {
@@ -17902,13 +17902,13 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olr-group.is-prod .scp-olr-group-label {
-  background: linear-gradient(180deg, #fff1cc, #f6dd9a);
-  color: #6a4d05;
+  background: linear-gradient(180deg, var(--tp-c-fff1cc, #fff1cc), var(--tp-c-f6dd9a, #f6dd9a));
+  color: var(--tp-c-6a4d05, #6a4d05);
 }
 
 .scp .scp-olr-group.is-opp .scp-olr-group-label {
-  background: linear-gradient(180deg, #e3eefb, #cfe0f5);
-  color: var(--olr-navy-900);
+  background: linear-gradient(180deg, var(--tp-c-e3eefb, #e3eefb), var(--tp-c-cfe0f5, #cfe0f5));
+  color: var(--tp-ink, var(--olr-navy-900));
 }
 
 .scp .scp-olr-kpis {
@@ -17927,14 +17927,14 @@ a.scp-peer:focus-visible {
   padding: 12px 12px 11px;
   border: 1px solid var(--olr-border);
   border-radius: 12px;
-  background: linear-gradient(170deg, #fff 0%, #f3f7fd 100%);
+  background: linear-gradient(170deg, #fff 0%, var(--tp-c-f3f7fd, #f3f7fd) 100%);
   box-shadow: 0 2px 6px rgba(10, 35, 70, 0.05);
 }
 
 .scp .scp-olr-kpi.is-lead {
   border-color: var(--olr-gold);
-  background: linear-gradient(170deg, #fffdf7 0%, var(--olr-gold-light) 100%);
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.22);
+  background: linear-gradient(170deg, var(--tp-c-fffdf7, #fffdf7) 0%, var(--olr-gold-light) 100%);
+  box-shadow: 0 2px 8px var(--tp-a-212-175-55-220, rgba(212, 175, 55, 0.22));
 }
 
 .scp .scp-olr-kpi-icon {
@@ -17944,7 +17944,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olr-kpi.is-lead .scp-olr-kpi-icon {
-  color: #b8901f;
+  color: var(--tp-c-b8901f, #b8901f);
 }
 
 .scp .scp-olr-kpi dt {
@@ -17960,7 +17960,7 @@ a.scp-peer:focus-visible {
 .scp .scp-olr-kpi dd {
   align-self: end;
   margin: 0;
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-size: 30px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -17968,7 +17968,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-olr-kpi.is-lead dd {
-  color: var(--olr-navy-900);
+  color: var(--tp-ink, var(--olr-navy-900));
   font-size: 32px;
 }
 
@@ -18035,7 +18035,7 @@ a.scp-peer:focus-visible {
   position: relative;
   flex: 0 0 auto;
   padding-right: 12px;
-  color: var(--olr-text);
+  color: var(--tp-ink, var(--olr-text));
   font-size: 14px;
   font-weight: 800;
 }
@@ -18053,7 +18053,7 @@ a.scp-peer:focus-visible {
 .scp .scp-olr-read-text {
   flex: 1 1 320px;
   min-width: 0;
-  color: #2a3d5c;
+  color: var(--tp-ink, var(--tp-c-2a3d5c, #2a3d5c));
 }
 
 /* the usage-report link */
@@ -18065,7 +18065,7 @@ a.scp-peer:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--olr-navy) !important;
+  color: var(--tp-ink, var(--olr-navy)) !important;
   font-size: 14px;
   font-weight: 800;
   text-decoration: none !important;
@@ -18192,27 +18192,27 @@ a.scp-peer:focus-visible {
  * rule starts `.scp .scp-inp`.
  */
 .scp .scp-inp {
-  --inp-navy-950: #071a35;
-  --inp-navy-900: #0b2345;
-  --inp-navy-800: #103862;
-  --inp-navy: #0b3a7a;
-  --inp-gold: #d4af37;
-  --inp-gold-bright: #f0c13b;
-  --inp-gold-light: #fff3d8;
-  --inp-gold-ink: #7a5c0e;
-  --inp-text: #102344;
+  --inp-navy-950: var(--tp-c-071a35, #071a35);
+  --inp-navy-900: var(--tp-c-0b2345, #0b2345);
+  --inp-navy-800: var(--tp-c-103862, #103862);
+  --inp-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --inp-gold: var(--tp-c-d4af37, #d4af37);
+  --inp-gold-bright: var(--tp-c-f0c13b, #f0c13b);
+  --inp-gold-light: var(--tp-c-fff3d8, #fff3d8);
+  --inp-gold-ink: var(--tp-c-7a5c0e, #7a5c0e);
+  --inp-text: var(--tp-c-102344, #102344);
   --inp-muted: #5b7290;
   --inp-surface: #fff;
-  --inp-surface-light: #f8fbff;
-  --inp-surface-blue: #edf4fb;
-  --inp-border: #cbdbea;
-  --inp-border-light: #e1e9f3;
+  --inp-surface-light: var(--tp-c-f8fbff, #f8fbff);
+  --inp-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --inp-border: var(--tp-c-cbdbea, #cbdbea);
+  --inp-border-light: var(--tp-c-e1e9f3, #e1e9f3);
   --inp-green: #087a42;
   --inp-green-light: #e6f6ea;
   --inp-green-line: #bfe3cc;
   --inp-amber: #a97108;
-  --inp-amber-light: #fff2d1;
-  --inp-amber-line: #ecd48f;
+  --inp-amber-light: var(--tp-c-fff2d1, #fff2d1);
+  --inp-amber-line: var(--tp-c-ecd48f, #ecd48f);
   --inp-red: #b83238;
   --inp-red-light: #fce9eb;
   --inp-red-line: #efc9cc;
@@ -18220,7 +18220,7 @@ a.scp-peer:focus-visible {
   --inp-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
   --inp-bar:
     repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(110deg, #071a35 0%, #103f74 65%, #092448 100%);
+    linear-gradient(110deg, var(--tp-c-071a35, #071a35) 0%, var(--tp-c-103f74, #103f74) 65%, var(--tp-c-092448, #092448) 100%);
   --s: 1;
   container-type: inline-size;
   container-name: inp;
@@ -18228,7 +18228,7 @@ a.scp-peer:focus-visible {
   gap: 14px;
   margin: 0;
   padding: 0;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -18313,7 +18313,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-sub {
   margin: 4px 0 0;
-  color: #c9d8ee;
+  color: var(--tp-c-c9d8ee, #c9d8ee);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -18345,7 +18345,7 @@ a.scp-peer:focus-visible {
   padding: 10px 14px;
   border: 1px solid var(--inp-amber-line);
   border-radius: 14px;
-  background: linear-gradient(135deg, #fffaec 0%, var(--inp-amber-light) 100%);
+  background: linear-gradient(135deg, var(--tp-c-fffaec, #fffaec) 0%, var(--inp-amber-light) 100%);
   box-shadow: var(--inp-shadow);
 }
 
@@ -18367,12 +18367,12 @@ a.scp-peer:focus-visible {
   height: 14px;
   border-radius: 50%;
   background: var(--inp-gold-bright);
-  box-shadow: 0 0 0 3px rgba(240, 193, 59, 0.3);
+  box-shadow: 0 0 0 3px var(--tp-a-240-193-59-300, rgba(240, 193, 59, 0.3));
 }
 
 .scp .scp-inp-now-text {
   margin: 0;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13px;
   line-height: 1.45;
 }
@@ -18454,7 +18454,7 @@ a.scp-peer:focus-visible {
 .scp .scp-inp-kpi-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 26px;
 }
 
@@ -18467,7 +18467,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-kpi-v {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -18502,7 +18502,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-picon {
   display: inline-flex;
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 22px;
 }
 
@@ -18510,7 +18510,7 @@ a.scp-peer:focus-visible {
   margin: 0 !important;
   padding: 0;
   border: 0;
-  color: var(--inp-text) !important;
+  color: var(--tp-ink, var(--inp-text)) !important;
   font-size: 16px !important;
   font-weight: 800;
   text-transform: none;
@@ -18520,7 +18520,7 @@ a.scp-peer:focus-visible {
 .scp .scp-inp-pbody {
   flex: 1 1 320px;
   min-width: 0;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13px;
 }
 
@@ -18556,7 +18556,7 @@ a.scp-peer:focus-visible {
   padding: 1px 8px;
   border-radius: 999px;
   background: var(--inp-surface-blue);
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 11.5px;
   font-weight: 700;
 }
@@ -18607,7 +18607,7 @@ a.scp-peer:focus-visible {
   font-size: 11.5px;
   font-weight: 800;
   background: var(--inp-surface-blue);
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
 }
 
 .scp .scp-inp-pg.is-lim {
@@ -18631,7 +18631,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-pmore summary {
   cursor: pointer;
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 12px;
   font-weight: 700;
 }
@@ -18655,7 +18655,7 @@ a.scp-peer:focus-visible {
   padding: 0;
   border: 1px solid var(--inp-border);
   border-radius: 16px;
-  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--inp-shadow);
   overflow: hidden;
 }
@@ -18701,7 +18701,7 @@ a.scp-peer:focus-visible {
   position: relative;
   z-index: 1;
   margin: 0 70px 0 auto;
-  color: #c9d8ee;
+  color: var(--tp-c-c9d8ee, #c9d8ee);
   font-size: 12.5px;
   text-align: right;
 }
@@ -18745,7 +18745,7 @@ a.scp-peer:focus-visible {
   padding: 0 0 6px;
   border: 0;
   border-bottom: 1px solid var(--inp-border-light);
-  color: var(--inp-text) !important;
+  color: var(--tp-ink, var(--inp-text)) !important;
   font-size: 12px !important;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -18798,7 +18798,7 @@ a.scp-peer:focus-visible {
   border: 1px solid var(--inp-border);
   border-radius: 8px;
   background: #fff;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font: inherit;
   font-size: 12px;
   font-weight: 800;
@@ -18839,7 +18839,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-sel-v {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 16px;
   font-weight: 800;
   line-height: 1.2;
@@ -18868,7 +18868,7 @@ a.scp-peer:focus-visible {
   border: 1px solid var(--inp-border);
   border-radius: 8px;
   background: #fff;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 12px;
   font-weight: 800;
   list-style: none;
@@ -18907,7 +18907,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
 }
 
 .scp .scp-inp .scp-in-av-row {
@@ -18915,7 +18915,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp .scp-in-av-year {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-weight: 700;
 }
 
@@ -18933,7 +18933,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp .scp-in-av-legend {
   margin-top: 6px;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 11.5px;
 }
 
@@ -18963,12 +18963,12 @@ a.scp-peer:focus-visible {
 .scp .scp-inp-dt-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 19px;
 }
 
 .scp .scp-inp-dt-v {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 21px;
   font-weight: 800;
   line-height: 1.05;
@@ -19000,10 +19000,10 @@ a.scp-peer:focus-visible {
 .scp .scp-inp .scp-in-rp {
   min-height: 30px;
   padding: 0 13px;
-  border: 1px solid #c5d8ee;
+  border: 1px solid var(--tp-c-c5d8ee, #c5d8ee);
   border-radius: 999px;
   background: var(--inp-surface-blue);
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 12.5px;
   font-weight: 700;
   line-height: 1.2;
@@ -19016,9 +19016,9 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp .scp-in-rp.is-on {
   border-color: var(--inp-gold);
-  background: linear-gradient(180deg, #fff1c9, #f3d98a);
-  color: var(--inp-text);
-  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+  background: linear-gradient(180deg, var(--tp-c-fff1c9, #fff1c9), var(--tp-c-f3d98a, #f3d98a));
+  color: var(--tp-ink, var(--inp-text));
+  box-shadow: 0 2px 6px var(--tp-a-212-175-55-300, rgba(212, 175, 55, 0.3));
 }
 
 .scp .scp-inp .scp-in-rp:focus-visible,
@@ -19032,14 +19032,14 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp .scp-in-rd {
   padding: 12px 14px;
-  border: 1px solid #c5d8ee;
+  border: 1px solid var(--tp-c-c5d8ee, #c5d8ee);
   border-radius: 12px;
   background: linear-gradient(135deg, #fff 0%, var(--inp-surface-blue) 100%);
 }
 
 .scp .scp-inp .scp-in-rd-head {
   margin-bottom: 8px;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 14px;
 }
 
@@ -19059,7 +19059,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp .scp-in-rd p {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 12.5px;
   line-height: 1.45;
 }
@@ -19069,7 +19069,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp .scp-in-fl b {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
 }
 
 .scp .scp-inp .scp-in-fl span {
@@ -19116,7 +19116,7 @@ a.scp-peer:focus-visible {
   height: 14px;
   border: 1px solid #b9c7d8;
   border-radius: 7px;
-  background: #dde5ef;
+  background: var(--tp-c-dde5ef, #dde5ef);
   overflow: hidden;
 }
 
@@ -19164,7 +19164,7 @@ a.scp-peer:focus-visible {
   max-width: 380px;
   width: 100%;
   margin: 0 auto;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13px;
 }
 
@@ -19214,7 +19214,7 @@ a.scp-peer:focus-visible {
   bottom: 10px;
   left: 61px;
   width: 2px;
-  background: #d4e0ef;
+  background: var(--tp-c-d4e0ef, #d4e0ef);
 }
 
 .scp .scp-inp-tl-item {
@@ -19228,7 +19228,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-yr {
   padding-top: 8px;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -19274,7 +19274,7 @@ a.scp-peer:focus-visible {
   margin: 0 !important;
   padding: 0;
   border: 0;
-  color: var(--inp-text) !important;
+  color: var(--tp-ink, var(--inp-text)) !important;
   font-size: 15px !important;
   font-weight: 800;
   text-transform: none;
@@ -19319,7 +19319,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-ev-note {
   margin: 4px 0 0;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13px;
   line-height: 1.45;
 }
@@ -19334,7 +19334,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-play b {
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -19360,10 +19360,10 @@ a.scp-peer:focus-visible {
   align-items: center;
   gap: 4px;
   padding: 2px 9px;
-  border: 1px solid #c5d8ee;
+  border: 1px solid var(--tp-c-c5d8ee, #c5d8ee);
   border-radius: 999px;
   background: var(--inp-surface-blue);
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 10.5px;
   font-weight: 600;
   white-space: nowrap;
@@ -19391,7 +19391,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-more summary {
   cursor: pointer;
-  color: var(--inp-navy);
+  color: var(--tp-ink, var(--inp-navy));
   font-size: 13px;
   font-weight: 800;
 }
@@ -19421,7 +19421,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 6px !important;
   padding: 0;
   border: 0;
-  color: var(--inp-text) !important;
+  color: var(--tp-ink, var(--inp-text)) !important;
   font-size: 16px !important;
   font-weight: 800;
   line-height: 1.2;
@@ -19436,13 +19436,13 @@ a.scp-peer:focus-visible {
 
 .scp .scp-inp-plan-card p {
   margin: 0;
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13.5px;
   line-height: 1.5;
 }
 
 .scp .scp-inp .scp-inp-plan-card a {
-  color: var(--inp-navy) !important;
+  color: var(--tp-ink, var(--inp-navy)) !important;
   font-weight: 700;
   text-decoration: underline !important;
   text-decoration-color: var(--inp-gold);
@@ -19463,7 +19463,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-plan-card {
-  border-color: #c5d8ee;
+  border-color: var(--tp-c-c5d8ee, #c5d8ee);
 }
 
 .scp .scp-inp-sec.is-urgent .scp-inp-plan-card.is-next {
@@ -19477,9 +19477,9 @@ a.scp-peer:focus-visible {
   gap: 8px 12px;
   min-height: 44px;
   padding: 8px 14px;
-  border: 1px solid #e6cc7a;
+  border: 1px solid var(--tp-c-e6cc7a, #e6cc7a);
   border-radius: 10px;
-  background: linear-gradient(90deg, #fff8e3 0%, #fdefc4 100%);
+  background: linear-gradient(90deg, var(--tp-c-fff8e3, #fff8e3) 0%, var(--tp-c-fdefc4, #fdefc4) 100%);
 }
 
 .scp .scp-inp-cta-icon {
@@ -19489,7 +19489,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-cta-text {
-  color: var(--inp-text);
+  color: var(--tp-ink, var(--inp-text));
   font-size: 13.5px;
   font-weight: 800;
 }
@@ -19499,7 +19499,7 @@ a.scp-peer:focus-visible {
   align-items: center;
   gap: 6px;
   margin-left: auto;
-  color: var(--inp-navy) !important;
+  color: var(--tp-ink, var(--inp-navy)) !important;
   font-size: 13.5px;
   font-weight: 800;
   text-decoration: underline !important;
@@ -19683,32 +19683,32 @@ a.scp-peer:focus-visible {
  * Every rule starts `.scp .scp-bop`.
  * =================================================================== */
 .scp .scp-bop {
-  --bop-navy-950: #071a35;
-  --bop-navy: #0b3a7a;
-  --bop-gold: #d4af37;
-  --bop-gold-bright: #f0c13b;
-  --bop-gold-light: #fff3d8;
-  --bop-gold-ink: #7a5c0e;
-  --bop-text: #102344;
+  --bop-navy-950: var(--tp-c-071a35, #071a35);
+  --bop-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --bop-gold: var(--tp-c-d4af37, #d4af37);
+  --bop-gold-bright: var(--tp-c-f0c13b, #f0c13b);
+  --bop-gold-light: var(--tp-c-fff3d8, #fff3d8);
+  --bop-gold-ink: var(--tp-c-7a5c0e, #7a5c0e);
+  --bop-text: var(--tp-c-102344, #102344);
   --bop-muted: #5b7290;
   --bop-surface: #fff;
-  --bop-surface-light: #f8fbff;
-  --bop-surface-blue: #edf4fb;
-  --bop-border: #cbdbea;
-  --bop-border-light: #e1e9f3;
+  --bop-surface-light: var(--tp-c-f8fbff, #f8fbff);
+  --bop-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --bop-border: var(--tp-c-cbdbea, #cbdbea);
+  --bop-border-light: var(--tp-c-e1e9f3, #e1e9f3);
   --bop-green: #1f7a3a;
   --bop-green-light: #e6f6ea;
   --bop-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
   --bop-bar:
     repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(110deg, #071a35 0%, #103f74 65%, #092448 100%);
+    linear-gradient(110deg, var(--tp-c-071a35, #071a35) 0%, var(--tp-c-103f74, #103f74) 65%, var(--tp-c-092448, #092448) 100%);
   container-type: inline-size;
   container-name: bop;
   display: grid;
   gap: 16px;
   margin: 28px 0 0;
   padding: 0;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-variant-numeric: tabular-nums;
 }
 
@@ -19814,7 +19814,7 @@ a.scp-peer:focus-visible {
   align-items: baseline;
   gap: 0 9px;
   margin: 5px 0 0;
-  color: #e3ecfa;
+  color: var(--tp-c-e3ecfa, #e3ecfa);
   font-size: 16.5px;
   font-weight: 600;
   line-height: 1.3;
@@ -19863,7 +19863,7 @@ a.scp-peer:focus-visible {
 .scp .scp-bop-fact-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--bop-navy);
+  color: var(--tp-ink, var(--bop-navy));
   font-size: 26px;
 }
 
@@ -19873,7 +19873,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-facts dt {
   margin: 0;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 11.5px;
   font-weight: 700;
   line-height: 1.2;
@@ -19881,7 +19881,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-facts dd {
   margin: 3px 0 0;
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-family: var(--scp-ph-sans);
   font-size: 18px;
   font-weight: 800;
@@ -19901,7 +19901,7 @@ a.scp-peer:focus-visible {
 .scp .scp-bop-sec.is-stops {
   border: 1px solid var(--bop-border);
   border-radius: 14px;
-  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
   box-shadow: var(--bop-shadow);
   overflow: hidden;
 }
@@ -19912,7 +19912,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 12px !important;
   padding: 0 0 8px !important;
   border: 0;
-  color: var(--bop-navy-950) !important;
+  color: var(--tp-ink, var(--bop-navy-950)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 21px !important;
   font-weight: 800;
@@ -19938,7 +19938,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-prose p {
   margin: 0 0 8px;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 15px;
   line-height: 1.55;
 }
@@ -20056,7 +20056,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bop-seg-big {
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-family: var(--scp-ph-sans);
   font-size: 23px;
   font-weight: 800;
@@ -20111,7 +20111,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-axis-years {
   display: grid;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
@@ -20214,7 +20214,7 @@ a.scp-peer:focus-visible {
   margin: 0 !important;
   padding: 0 !important;
   border: 0;
-  color: var(--bop-navy-950) !important;
+  color: var(--tp-ink, var(--bop-navy-950)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 19px !important;
   font-weight: 800;
@@ -20243,7 +20243,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-card-p {
   margin: 0 0 0 56px;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 14.5px;
   line-height: 1.5;
 }
@@ -20264,8 +20264,8 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bop-card-side.is-rc {
-  border-color: #e9d492;
-  background: linear-gradient(180deg, #fffaea 0%, #fff3d1 100%);
+  border-color: var(--tp-c-e9d492, #e9d492);
+  background: linear-gradient(180deg, var(--tp-c-fffaea, #fffaea) 0%, var(--tp-c-fff3d1, #fff3d1) 100%);
 }
 
 .scp .scp-bop .scp-bop-side-h {
@@ -20275,7 +20275,7 @@ a.scp-peer:focus-visible {
   margin: 0 0 8px !important;
   padding: 0 !important;
   border: 0;
-  color: var(--bop-navy-950) !important;
+  color: var(--tp-ink, var(--bop-navy-950)) !important;
   font-family: var(--scp-ph-sans);
   font-size: 18px !important;
   font-weight: 800;
@@ -20316,14 +20316,14 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-dl dt {
   margin: 0;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 13.5px;
   font-weight: 500;
 }
 
 .scp .scp-bop-dl dd {
   margin: 0;
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-size: 13.5px;
   font-weight: 800;
   text-align: right;
@@ -20331,7 +20331,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bop-dl dd a {
-  color: var(--bop-navy);
+  color: var(--tp-ink, var(--bop-navy));
   text-decoration: none;
 }
 
@@ -20342,7 +20342,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-bop-rc-p {
   margin: 0 0 10px;
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 13.5px;
   line-height: 1.45;
 }
@@ -20664,7 +20664,7 @@ a.scp-peer:focus-visible {
     padding: 13px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    background: linear-gradient(125deg, #0b2345 0%, #103862 65%, #071a35 100%);
+    background: linear-gradient(125deg, var(--tp-c-0b2345, #0b2345) 0%, var(--tp-c-103862, #103862) 65%, var(--tp-c-071a35, #071a35) 100%);
     box-shadow: 0 4px 12px rgba(7, 26, 53, 0.16);
   }
 
@@ -20700,7 +20700,7 @@ a.scp-peer:focus-visible {
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 9px;
     background:
-      linear-gradient(160deg, color-mix(in srgb, var(--scp-team, #123d6a) 38%, #0b2345), #071a35);
+      linear-gradient(160deg, color-mix(in srgb, var(--scp-team, var(--tp-c-123d6a, #123d6a)) 38%, var(--tp-c-0b2345, #0b2345)), var(--tp-c-071a35, #071a35));
   }
 
   .scp .scp-pm-logo {
@@ -20744,7 +20744,7 @@ a.scp-peer:focus-visible {
 
   .scp .scp-pm-dot {
     margin: 0 5px;
-    color: rgba(215, 229, 247, 0.55);
+    color: var(--tp-a-215-229-247-550, rgba(215, 229, 247, 0.55));
   }
 
   .scp .scp-pm-status {
@@ -20772,8 +20772,8 @@ a.scp-peer:focus-visible {
     margin: 0;
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 12px;
-    background: linear-gradient(160deg, #123d6a, #0b2345);
-    box-shadow: inset 0 0 0 1px rgba(7, 26, 53, 0.5);
+    background: linear-gradient(160deg, var(--tp-c-123d6a, #123d6a), var(--tp-c-0b2345, #0b2345));
+    box-shadow: inset 0 0 0 1px var(--tp-a-7-26-53-500, rgba(7, 26, 53, 0.5));
   }
 
   .scp .scp-pwell-paint {
@@ -20781,7 +20781,7 @@ a.scp-peer:focus-visible {
     clip-path: none;
     background:
       radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.1), transparent 60%),
-      linear-gradient(160deg, color-mix(in srgb, var(--scp-team, #123d6a) 22%, #123d6a), #0b2345);
+      linear-gradient(160deg, color-mix(in srgb, var(--scp-team, var(--tp-c-123d6a, #123d6a)) 22%, var(--tp-c-123d6a, #123d6a)), var(--tp-c-0b2345, #0b2345));
   }
 
   .scp .scp-pwell-img {
@@ -20828,13 +20828,13 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-pm-meta-1 {
-    color: #d7e5f7;
+    color: var(--tp-c-d7e5f7, #d7e5f7);
     font-size: 12.5px;
     font-weight: 500;
   }
 
   .scp .scp-pm-meta-2 {
-    color: #a7bfdc;
+    color: var(--tp-c-a7bfdc, #a7bfdc);
     font-size: 11px;
     font-weight: 500;
   }
@@ -20847,7 +20847,7 @@ a.scp-peer:focus-visible {
     padding: 10px 12px 11px;
     border: 1px solid var(--sc-gold);
     border-radius: 11px;
-    background: linear-gradient(145deg, #071a35 0%, #09274c 100%);
+    background: linear-gradient(145deg, var(--tp-c-071a35, #071a35) 0%, var(--tp-c-09274c, #09274c) 100%);
   }
 
   .scp .scp-pboard-cap {
@@ -20873,7 +20873,7 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-pstat + .scp-pstat {
-    border-left: 1px solid #355679;
+    border-left: 1px solid var(--tp-c-355679, #355679);
   }
 
   .scp .scp-pstat b,
@@ -20883,7 +20883,7 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-pstat abbr {
-    color: #a7bfdc;
+    color: var(--tp-c-a7bfdc, #a7bfdc);
     font-size: 9.5px;
     letter-spacing: 0.08em;
     white-space: normal;
@@ -20991,10 +20991,10 @@ a.scp-peer:focus-visible {
    move keeps one tone on its chip, its rail node and its summary count. */
 .scp .scp-bop.scp-bo-txsec {
   margin-top: 16px;
-  --tx-trade: #0b3a7a;
-  --tx-trade-soft: #e3ecf8;
-  --tx-draft: #8a6408;
-  --tx-draft-soft: #fbf1d3;
+  --tx-trade: var(--tp-c-0b3a7a, #0b3a7a);
+  --tx-trade-soft: var(--tp-c-e3ecf8, #e3ecf8);
+  --tx-draft: var(--tp-c-8a6408, #8a6408);
+  --tx-draft-soft: var(--tp-c-fbf1d3, #fbf1d3);
   --tx-sign: #1f7a3a;
   --tx-sign-soft: #e6f6ea;
   --tx-deal: #5b3fa0;
@@ -21041,7 +21041,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bo-txsum-total b {
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-size: 22px;
   font-weight: 800;
 }
@@ -21050,7 +21050,7 @@ a.scp-peer:focus-visible {
   margin-left: 6px;
   padding-left: 12px;
   border-left: 1px solid var(--bop-border);
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-size: 13px;
   font-weight: 700;
 }
@@ -21073,7 +21073,7 @@ a.scp-peer:focus-visible {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--t) 22%, transparent);
   background: var(--ts);
-  color: var(--t);
+  color: var(--tp-ink, var(--t));
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -21168,12 +21168,12 @@ a.scp-peer:focus-visible {
   border: 1px solid var(--bop-border-light);
   border-left: 3px solid var(--t);
   border-radius: 10px;
-  background: linear-gradient(180deg, #fff 0%, var(--bop-surface-light, #f8fbff) 100%);
+  background: linear-gradient(180deg, #fff 0%, var(--bop-surface-light, var(--tp-c-f8fbff, #f8fbff)) 100%);
   box-shadow: 0 1px 2px rgba(10, 30, 60, 0.04), 0 3px 10px rgba(10, 30, 60, 0.04);
 }
 
 .scp .scp-bo-txcard time {
-  color: var(--bop-navy-950);
+  color: var(--tp-ink, var(--bop-navy-950));
   font-size: 14px;
   font-weight: 800;
   white-space: nowrap;
@@ -21185,7 +21185,7 @@ a.scp-peer:focus-visible {
   padding: 3px 10px;
   border-radius: 6px;
   background: var(--ts);
-  color: var(--t);
+  color: var(--tp-ink, var(--t));
   font-size: 12px;
   font-weight: 800;
   line-height: 1.25;
@@ -21193,7 +21193,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-bo-txtext {
-  color: var(--bop-text);
+  color: var(--tp-ink, var(--bop-text));
   font-size: 14px;
   font-weight: 500;
   line-height: 1.45;
@@ -21352,5 +21352,338 @@ a.scp-peer:focus-visible {
   .scp .scp-bkp-rule,
   .scp .scp-pr-rule {
     display: none;
+  }
+}
+
+/* ==== team palette (generated by scripts/team-palette.mjs; do not edit) ==== */
+/* The root (player-render.ts) carries data-team-palette, --team-base,
+   --team-accent and --team-bright (team/palette.ts) for a team that is
+   not opted out (TEAM_PALETTE_OPT_OUT). */
+.scp[data-team-palette] {
+  --tp-primary: var(--team-base, var(--team-primary));
+  --tp-accent: var(--team-accent, var(--team-secondary));
+  --tp-bright: var(--team-bright, var(--tp-primary));
+  --tp-ink: color-mix(in srgb, var(--tp-primary) 12%, #101827);
+  --tp-a-11-35-69-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
+  --tp-a-11-58-122-350: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary)) 35%, transparent);
+  --tp-a-12-31-64-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
+  --tp-a-12-31-64-350: color-mix(in srgb, var(--tp-primary) 35%, transparent);
+  --tp-a-120-90-10-250: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 49%, #000) 25%, transparent);
+  --tp-a-120-90-10-300: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 49%, #000) 30%, transparent);
+  --tp-a-13-35-67-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
+  --tp-a-153-110-12-100: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 62%, #000) 10%, transparent);
+  --tp-a-18-54-94-550: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 26%, var(--tp-primary)) 55%, transparent);
+  --tp-a-184-135-31-220: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 22%, transparent);
+  --tp-a-184-135-31-280: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 28%, transparent);
+  --tp-a-184-144-31-120: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 12%, transparent);
+  --tp-a-184-144-31-160: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 16%, transparent);
+  --tp-a-184-144-31-180: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 18%, transparent);
+  --tp-a-184-144-31-350: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 35%, transparent);
+  --tp-a-184-144-31-400: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 40%, transparent);
+  --tp-a-184-144-31-550: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 55%, transparent);
+  --tp-a-212-175-55-160: color-mix(in srgb, var(--tp-accent) 16%, transparent);
+  --tp-a-212-175-55-220: color-mix(in srgb, var(--tp-accent) 22%, transparent);
+  --tp-a-212-175-55-300: color-mix(in srgb, var(--tp-accent) 30%, transparent);
+  --tp-a-212-175-55-350: color-mix(in srgb, var(--tp-accent) 35%, transparent);
+  --tp-a-212-175-55-420: color-mix(in srgb, var(--tp-accent) 42%, transparent);
+  --tp-a-212-175-55-600: color-mix(in srgb, var(--tp-accent) 60%, transparent);
+  --tp-a-212-175-55-700: color-mix(in srgb, var(--tp-accent) 70%, transparent);
+  --tp-a-212-175-55-800: color-mix(in srgb, var(--tp-accent) 80%, transparent);
+  --tp-a-215-229-247-550: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 7.8%, #fff) 55%, transparent);
+  --tp-a-23-60-104-550: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 38%, var(--tp-primary)) 55%, transparent);
+  --tp-a-231-186-56-450: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 92%, #fff) 45%, transparent);
+  --tp-a-231-186-56-750: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 92%, #fff) 75%, transparent);
+  --tp-a-232-194-80-550: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #fff) 55%, transparent);
+  --tp-a-232-194-80-850: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #fff) 85%, transparent);
+  --tp-a-237-191-68-300: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 84%, #fff) 30%, transparent);
+  --tp-a-237-191-68-500: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 84%, #fff) 50%, transparent);
+  --tp-a-237-191-68-750: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 84%, #fff) 75%, transparent);
+  --tp-a-240-193-59-300: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 87%, #fff) 30%, transparent);
+  --tp-a-241-191-60-350: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 86%, #fff) 35%, transparent);
+  --tp-a-241-191-60-650: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 86%, #fff) 65%, transparent);
+  --tp-a-241-191-60-750: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 86%, #fff) 75%, transparent);
+  --tp-a-241-191-60-900: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 86%, #fff) 90%, transparent);
+  --tp-a-3-12-30-850: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 41%, #000) 85%, transparent);
+  --tp-a-42-100-170-350: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 97.4%, #fff) 35%, transparent);
+  --tp-a-6-22-50-750: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 70%, #000) 75%, transparent);
+  --tp-a-7-26-53-300: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 75%, #000) 30%, transparent);
+  --tp-a-7-26-53-500: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 75%, #000) 50%, transparent);
+  --tp-a-8-26-52-300: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 75%, #000) 30%, transparent);
+  --tp-a-8-26-52-350: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 75%, #000) 35%, transparent);
+  --tp-a-8-28-60-450: color-mix(in srgb, color-mix(in srgb, var(--tp-primary) 85%, #000) 45%, transparent);
+  --tp-a-80-59-12-60: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 34%, #000) 6%, transparent);
+  --tp-a-91-127-176-450: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 79.4%, #fff) 45%, transparent);
+  --tp-c-060d21: color-mix(in srgb, var(--tp-primary) 49%, #000);
+  --tp-c-071a35: color-mix(in srgb, var(--tp-primary) 75%, #000);
+  --tp-c-081a34: color-mix(in srgb, var(--tp-primary) 75%, #000);
+  --tp-c-081e42: var(--tp-primary);
+  --tp-c-082447: var(--tp-primary);
+  --tp-c-092448: var(--tp-primary);
+  --tp-c-09274c: var(--tp-primary);
+  --tp-c-0a2a5c: color-mix(in srgb, var(--tp-bright) 18%, var(--tp-primary));
+  --tp-c-0a2b5c: color-mix(in srgb, var(--tp-bright) 18%, var(--tp-primary));
+  --tp-c-0b1220: color-mix(in srgb, var(--tp-primary) 54%, #000);
+  --tp-c-0b1634: color-mix(in srgb, var(--tp-primary) 79%, #000);
+  --tp-c-0b1c39: color-mix(in srgb, var(--tp-primary) 85%, #000);
+  --tp-c-0b2345: var(--tp-primary);
+  --tp-c-0b2549: var(--tp-primary);
+  --tp-c-0b254b: var(--tp-primary);
+  --tp-c-0b2c53: color-mix(in srgb, var(--tp-bright) 11%, var(--tp-primary));
+  --tp-c-0b3a7a: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
+  --tp-c-0c2547: var(--tp-primary);
+  --tp-c-0d2343: var(--tp-primary);
+  --tp-c-0d2548: var(--tp-primary);
+  --tp-c-0d2b50: color-mix(in srgb, var(--tp-bright) 10%, var(--tp-primary));
+  --tp-c-0d2c52: color-mix(in srgb, var(--tp-bright) 12%, var(--tp-primary));
+  --tp-c-0d315b: color-mix(in srgb, var(--tp-bright) 19%, var(--tp-primary));
+  --tp-c-0e1b2e: color-mix(in srgb, var(--tp-primary) 75%, #000);
+  --tp-c-0e3158: color-mix(in srgb, var(--tp-bright) 18%, var(--tp-primary));
+  --tp-c-0f3f82: color-mix(in srgb, var(--tp-bright) 52%, var(--tp-primary));
+  --tp-c-101b34: color-mix(in srgb, var(--tp-primary) 85%, #000);
+  --tp-c-102344: var(--tp-primary);
+  --tp-c-102a4e: color-mix(in srgb, var(--tp-bright) 11%, var(--tp-primary));
+  --tp-c-102b52: color-mix(in srgb, var(--tp-bright) 15%, var(--tp-primary));
+  --tp-c-103862: color-mix(in srgb, var(--tp-bright) 27%, var(--tp-primary));
+  --tp-c-103b69: color-mix(in srgb, var(--tp-bright) 33%, var(--tp-primary));
+  --tp-c-103f74: color-mix(in srgb, var(--tp-bright) 42%, var(--tp-primary));
+  --tp-c-11295a: color-mix(in srgb, var(--tp-bright) 22%, var(--tp-primary));
+  --tp-c-113366: color-mix(in srgb, var(--tp-bright) 31%, var(--tp-primary));
+  --tp-c-12325a: color-mix(in srgb, var(--tp-bright) 23%, var(--tp-primary));
+  --tp-c-12345e: color-mix(in srgb, var(--tp-bright) 26%, var(--tp-primary));
+  --tp-c-12365e: color-mix(in srgb, var(--tp-bright) 26%, var(--tp-primary));
+  --tp-c-123861: color-mix(in srgb, var(--tp-bright) 28%, var(--tp-primary));
+  --tp-c-123964: color-mix(in srgb, var(--tp-bright) 31%, var(--tp-primary));
+  --tp-c-123d6a: color-mix(in srgb, var(--tp-bright) 35%, var(--tp-primary));
+  --tp-c-123d6d: color-mix(in srgb, var(--tp-bright) 38%, var(--tp-primary));
+  --tp-c-123f70: color-mix(in srgb, var(--tp-bright) 40%, var(--tp-primary));
+  --tp-c-173c68: color-mix(in srgb, var(--tp-bright) 38%, var(--tp-primary));
+  --tp-c-1858a4: color-mix(in srgb, var(--tp-bright) 87%, var(--tp-primary));
+  --tp-c-1c2f4b: color-mix(in srgb, var(--tp-bright) 19%, var(--tp-primary));
+  --tp-c-1d3568: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
+  --tp-c-1d4e8c: color-mix(in srgb, var(--tp-bright) 72%, var(--tp-primary));
+  --tp-c-1f3350: color-mix(in srgb, var(--tp-bright) 25%, var(--tp-primary));
+  --tp-c-1f4e8c: color-mix(in srgb, var(--tp-bright) 73%, var(--tp-primary));
+  --tp-c-2364a8: color-mix(in srgb, var(--tp-bright) 99%, var(--tp-primary));
+  --tp-c-26395a: color-mix(in srgb, var(--tp-bright) 39%, var(--tp-primary));
+  --tp-c-2665b3: color-mix(in srgb, var(--tp-bright) 95.8%, #fff);
+  --tp-c-2a3d5c: color-mix(in srgb, var(--tp-bright) 44%, var(--tp-primary));
+  --tp-c-2f63a8: color-mix(in srgb, var(--tp-bright) 96.4%, #fff);
+  --tp-c-2f6fc0: color-mix(in srgb, var(--tp-bright) 88.6%, #fff);
+  --tp-c-355679: color-mix(in srgb, var(--tp-bright) 76%, var(--tp-primary));
+  --tp-c-35598c: color-mix(in srgb, var(--tp-bright) 91%, var(--tp-primary));
+  --tp-c-3b5171: color-mix(in srgb, var(--tp-bright) 74%, var(--tp-primary));
+  --tp-c-3b5f90: color-mix(in srgb, var(--tp-bright) 99%, var(--tp-primary));
+  --tp-c-4a6f9f: color-mix(in srgb, var(--tp-bright) 90.5%, #fff);
+  --tp-c-4a79bd: color-mix(in srgb, var(--tp-bright) 80.7%, #fff);
+  --tp-c-557eaf: color-mix(in srgb, var(--tp-bright) 81.7%, #fff);
+  --tp-c-5a8bd0: color-mix(in srgb, var(--tp-bright) 69.3%, #fff);
+  --tp-c-5a8cc4: color-mix(in srgb, var(--tp-bright) 73.2%, #fff);
+  --tp-c-5b7fb0: color-mix(in srgb, var(--tp-bright) 79.4%, #fff);
+  --tp-c-6a4d05: color-mix(in srgb, var(--tp-accent) 42%, #000);
+  --tp-c-7a5c0e: color-mix(in srgb, var(--tp-accent) 51%, #000);
+  --tp-c-856005: color-mix(in srgb, var(--tp-accent) 52%, #000);
+  --tp-c-8a6205: color-mix(in srgb, var(--tp-accent) 54%, #000);
+  --tp-c-8a6408: color-mix(in srgb, var(--tp-accent) 55%, #000);
+  --tp-c-8a6414: color-mix(in srgb, var(--tp-accent) 59%, #000);
+  --tp-c-8a6512: color-mix(in srgb, var(--tp-accent) 58%, #000);
+  --tp-c-8a6d12: color-mix(in srgb, var(--tp-accent) 58%, #000);
+  --tp-c-8fb3da: color-mix(in srgb, var(--tp-bright) 48.7%, #fff);
+  --tp-c-946500: color-mix(in srgb, var(--tp-accent) 55%, #000);
+  --tp-c-9fb3d6: color-mix(in srgb, var(--tp-bright) 44.8%, #fff);
+  --tp-c-a07a14: color-mix(in srgb, var(--tp-accent) 67%, #000);
+  --tp-c-a7bfdc: color-mix(in srgb, var(--tp-bright) 40.2%, #fff);
+  --tp-c-a87905: color-mix(in srgb, var(--tp-accent) 65%, #000);
+  --tp-c-aa7800: color-mix(in srgb, var(--tp-accent) 64%, #000);
+  --tp-c-aabdd5: color-mix(in srgb, var(--tp-bright) 41.5%, #fff);
+  --tp-c-b8871f: color-mix(in srgb, var(--tp-accent) 81%, #000);
+  --tp-c-b8901f: color-mix(in srgb, var(--tp-accent) 81%, #000);
+  --tp-c-b8c8dc: color-mix(in srgb, var(--tp-bright) 34.6%, #fff);
+  --tp-c-b9cbe3: color-mix(in srgb, var(--tp-bright) 32%, #fff);
+  --tp-c-c3d2e6: color-mix(in srgb, var(--tp-bright) 27.8%, #fff);
+  --tp-c-c5d8ee: color-mix(in srgb, var(--tp-bright) 12.3%, #fff);
+  --tp-c-c7d5e6: color-mix(in srgb, var(--tp-bright) 26.5%, #fff);
+  --tp-c-c9980f: color-mix(in srgb, var(--tp-accent) 81%, #000);
+  --tp-c-c9d6e6: color-mix(in srgb, var(--tp-bright) 25.8%, #fff);
+  --tp-c-c9d7e8: color-mix(in srgb, var(--tp-bright) 25.2%, #fff);
+  --tp-c-c9d8ea: color-mix(in srgb, var(--tp-bright) 12.3%, #fff);
+  --tp-c-c9d8ee: color-mix(in srgb, var(--tp-bright) 11.6%, #fff);
+  --tp-c-cad9eb: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-cbd9eb: color-mix(in srgb, var(--tp-bright) 11.8%, #fff);
+  --tp-c-cbdbea: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-ccd9e9: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-cdd9e8: color-mix(in srgb, var(--tp-bright) 11.9%, #fff);
+  --tp-c-cddbec: color-mix(in srgb, var(--tp-bright) 11.3%, #fff);
+  --tp-c-cfdcee: color-mix(in srgb, var(--tp-bright) 10.6%, #fff);
+  --tp-c-cfddec: color-mix(in srgb, var(--tp-bright) 10.9%, #fff);
+  --tp-c-cfdded: color-mix(in srgb, var(--tp-bright) 10.8%, #fff);
+  --tp-c-cfe0f5: color-mix(in srgb, var(--tp-bright) 9.5%, #fff);
+  --tp-c-d0deee: color-mix(in srgb, var(--tp-bright) 10.5%, #fff);
+  --tp-c-d1deec: color-mix(in srgb, var(--tp-bright) 10.6%, #fff);
+  --tp-c-d2dfee: color-mix(in srgb, var(--tp-bright) 10.1%, #fff);
+  --tp-c-d2e2f6: color-mix(in srgb, var(--tp-bright) 8.8%, #fff);
+  --tp-c-d3dfed: color-mix(in srgb, var(--tp-bright) 10.1%, #fff);
+  --tp-c-d3e1f1: color-mix(in srgb, var(--tp-bright) 9.5%, #fff);
+  --tp-c-d4af37: var(--tp-accent);
+  --tp-c-d4e0ef: color-mix(in srgb, var(--tp-bright) 9.6%, #fff);
+  --tp-c-d6e0ed: color-mix(in srgb, var(--tp-bright) 9.6%, #fff);
+  --tp-c-d6e2f3: color-mix(in srgb, var(--tp-bright) 8.7%, #fff);
+  --tp-c-d7e2f1: color-mix(in srgb, var(--tp-bright) 8.8%, #fff);
+  --tp-c-d7e5f7: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-d9e1eb: color-mix(in srgb, var(--tp-bright) 9.5%, #fff);
+  --tp-c-d9e5f2: color-mix(in srgb, var(--tp-bright) 8.3%, #fff);
+  --tp-c-d9e6f5: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-dbe2ec: color-mix(in srgb, var(--tp-bright) 9%, #fff);
+  --tp-c-dbe4ef: color-mix(in srgb, var(--tp-bright) 8.5%, #fff);
+  --tp-c-dbe5f3: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-dbe6f6: color-mix(in srgb, var(--tp-bright) 7.4%, #fff);
+  --tp-c-dcae19: color-mix(in srgb, var(--tp-accent) 92%, #000);
+  --tp-c-dce5f2: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-dde5ef: color-mix(in srgb, var(--tp-bright) 8.2%, #fff);
+  --tp-c-dde6f1: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-e0e8f2: color-mix(in srgb, var(--tp-bright) 7.2%, #fff);
+  --tp-c-e1e8f2: color-mix(in srgb, var(--tp-bright) 7%, #fff);
+  --tp-c-e1e9f3: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
+  --tp-c-e1eaf3: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
+  --tp-c-e1ebf8: color-mix(in srgb, var(--tp-bright) 6%, #fff);
+  --tp-c-e2ad13: color-mix(in srgb, var(--tp-accent) 92%, #000);
+  --tp-c-e2e8f0: color-mix(in srgb, var(--tp-bright) 7.2%, #fff);
+  --tp-c-e2eaf3: color-mix(in srgb, var(--tp-bright) 6.7%, #fff);
+  --tp-c-e3b93a: color-mix(in srgb, var(--tp-accent) 93%, #fff);
+  --tp-c-e3e9f2: color-mix(in srgb, var(--tp-bright) 6.7%, #fff);
+  --tp-c-e3eaf2: color-mix(in srgb, var(--tp-bright) 6.7%, #fff);
+  --tp-c-e3ebf6: color-mix(in srgb, var(--tp-bright) 6%, #fff);
+  --tp-c-e3ecf8: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
+  --tp-c-e3ecfa: color-mix(in srgb, var(--tp-bright) 5.4%, #fff);
+  --tp-c-e3edf8: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
+  --tp-c-e3eefb: color-mix(in srgb, var(--tp-bright) 5.2%, #fff);
+  --tp-c-e4b84c: color-mix(in srgb, var(--tp-accent) 85%, #fff);
+  --tp-c-e4ebf3: color-mix(in srgb, var(--tp-bright) 6.4%, #fff);
+  --tp-c-e6cc7a: color-mix(in srgb, var(--tp-accent) 65%, #fff);
+  --tp-c-e6ecf5: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
+  --tp-c-e6eef8: color-mix(in srgb, var(--tp-bright) 5.2%, #fff);
+  --tp-c-e6f0fa: color-mix(in srgb, var(--tp-bright) 4.9%, #fff);
+  --tp-c-e7ba38: color-mix(in srgb, var(--tp-accent) 92%, #fff);
+  --tp-c-e7d39e: color-mix(in srgb, var(--tp-accent) 50%, #fff);
+  --tp-c-e8c250: color-mix(in srgb, var(--tp-accent) 81%, #fff);
+  --tp-c-e8c45a: color-mix(in srgb, var(--tp-accent) 77%, #fff);
+  --tp-c-e8f1fc: color-mix(in srgb, var(--tp-bright) 4.2%, #fff);
+  --tp-c-e9c15c: color-mix(in srgb, var(--tp-accent) 76%, #fff);
+  --tp-c-e9d492: color-mix(in srgb, var(--tp-accent) 54%, #fff);
+  --tp-c-e9eef6: color-mix(in srgb, var(--tp-bright) 5.1%, #fff);
+  --tp-c-e9eff6: color-mix(in srgb, var(--tp-bright) 5.1%, #fff);
+  --tp-c-e9f0f8: color-mix(in srgb, var(--tp-bright) 4.7%, #fff);
+  --tp-c-ead9a0: color-mix(in srgb, var(--tp-accent) 48%, #fff);
+  --tp-c-eaf1fa: color-mix(in srgb, var(--tp-bright) 4.2%, #fff);
+  --tp-c-eaf2fb: color-mix(in srgb, var(--tp-bright) 4.1%, #fff);
+  --tp-c-eaf3fd: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-ecc86e: color-mix(in srgb, var(--tp-accent) 67%, #fff);
+  --tp-c-ecd48f: color-mix(in srgb, var(--tp-accent) 54%, #fff);
+  --tp-c-ecd9a4: color-mix(in srgb, var(--tp-accent) 45%, #fff);
+  --tp-c-edbf44: color-mix(in srgb, var(--tp-accent) 84%, #fff);
+  --tp-c-edc34d: color-mix(in srgb, var(--tp-accent) 81%, #fff);
+  --tp-c-edf3fa: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-edf4fb: color-mix(in srgb, var(--tp-bright) 3.6%, #fff);
+  --tp-c-eef2f7: color-mix(in srgb, var(--tp-bright) 4.1%, #fff);
+  --tp-c-eef3f9: color-mix(in srgb, var(--tp-bright) 3.8%, #fff);
+  --tp-c-eef3fa: color-mix(in srgb, var(--tp-bright) 3.6%, #fff);
+  --tp-c-eef4fb: color-mix(in srgb, var(--tp-bright) 3.4%, #fff);
+  --tp-c-eef4fc: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
+  --tp-c-eef5fc: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
+  --tp-c-efd99a: color-mix(in srgb, var(--tp-accent) 48%, #fff);
+  --tp-c-efe1b6: color-mix(in srgb, var(--tp-accent) 37%, #fff);
+  --tp-c-eff5fc: color-mix(in srgb, var(--tp-bright) 3.1%, #fff);
+  --tp-c-f0bf35: color-mix(in srgb, var(--tp-accent) 89%, #fff);
+  --tp-c-f0c13b: color-mix(in srgb, var(--tp-accent) 87%, #fff);
+  --tp-c-f0cf6a: color-mix(in srgb, var(--tp-accent) 67%, #fff);
+  --tp-c-f0e2c0: color-mix(in srgb, var(--tp-accent) 32%, #fff);
+  --tp-c-f0f5fb: color-mix(in srgb, var(--tp-bright) 3.1%, #fff);
+  --tp-c-f0f6ff: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f1bf3c: color-mix(in srgb, var(--tp-accent) 86%, #fff);
+  --tp-c-f1f4f8: color-mix(in srgb, var(--tp-bright) 3.4%, #fff);
+  --tp-c-f1f5f9: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
+  --tp-c-f2c230: color-mix(in srgb, var(--tp-accent) 91%, #fff);
+  --tp-c-f2d36b: color-mix(in srgb, var(--tp-accent) 66%, #fff);
+  --tp-c-f2f7fd: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f3d36a: color-mix(in srgb, var(--tp-accent) 66%, #fff);
+  --tp-c-f3d98a: color-mix(in srgb, var(--tp-accent) 53%, #fff);
+  --tp-c-f3f7fc: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f3f7fd: color-mix(in srgb, var(--tp-bright) 2.3%, #fff);
+  --tp-c-f3f8ff: color-mix(in srgb, var(--tp-bright) 2%, #fff);
+  --tp-c-f4f6fa: color-mix(in srgb, var(--tp-bright) 2.6%, #fff);
+  --tp-c-f4f8fc: color-mix(in srgb, var(--tp-bright) 2.3%, #fff);
+  --tp-c-f5f7fa: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
+  --tp-c-f5f8fc: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
+  --tp-c-f5f9fe: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f6cf4c: color-mix(in srgb, var(--tp-accent) 77%, #fff);
+  --tp-c-f6dd9a: color-mix(in srgb, var(--tp-accent) 45%, #fff);
+  --tp-c-f6ebcf: color-mix(in srgb, var(--tp-accent) 23%, #fff);
+  --tp-c-f6f8fc: color-mix(in srgb, var(--tp-bright) 2%, #fff);
+  --tp-c-f6f9fd: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f7f9fc: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f7fafd: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
+  --tp-c-f7faff: color-mix(in srgb, var(--tp-bright) 1.3%, #fff);
+  --tp-c-f8fafc: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
+  --tp-c-f8fafd: color-mix(in srgb, var(--tp-bright) 1.5%, #fff);
+  --tp-c-f8fbff: color-mix(in srgb, var(--tp-bright) 1.1%, #fff);
+  --tp-c-f9fbfd: color-mix(in srgb, var(--tp-bright) 1.3%, #fff);
+  --tp-c-f9fbfe: color-mix(in srgb, var(--tp-bright) 1.1%, #fff);
+  --tp-c-fbe7a8: color-mix(in srgb, var(--tp-accent) 37%, #fff);
+  --tp-c-fbf1d3: color-mix(in srgb, var(--tp-accent) 20%, #fff);
+  --tp-c-fbf3dc: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fbfcfe: color-mix(in srgb, var(--tp-bright) 0.8%, #fff);
+  --tp-c-fdefc4: color-mix(in srgb, var(--tp-accent) 25%, #fff);
+  --tp-c-fdf6e3: color-mix(in srgb, var(--tp-accent) 12%, #fff);
+  --tp-c-fff1c7: color-mix(in srgb, var(--tp-accent) 23%, #fff);
+  --tp-c-fff1c9: color-mix(in srgb, var(--tp-accent) 22%, #fff);
+  --tp-c-fff1cc: color-mix(in srgb, var(--tp-accent) 21%, #fff);
+  --tp-c-fff1ce: color-mix(in srgb, var(--tp-accent) 20%, #fff);
+  --tp-c-fff1cf: color-mix(in srgb, var(--tp-accent) 20%, #fff);
+  --tp-c-fff2cf: color-mix(in srgb, var(--tp-accent) 20%, #fff);
+  --tp-c-fff2d1: color-mix(in srgb, var(--tp-accent) 19%, #fff);
+  --tp-c-fff3d1: color-mix(in srgb, var(--tp-accent) 19%, #fff);
+  --tp-c-fff3d4: color-mix(in srgb, var(--tp-accent) 18%, #fff);
+  --tp-c-fff3d7: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fff3d8: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fff4d8: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fff4db: color-mix(in srgb, var(--tp-accent) 15%, #fff);
+  --tp-c-fff5d7: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fff6df: color-mix(in srgb, var(--tp-accent) 13%, #fff);
+  --tp-c-fff7e3: color-mix(in srgb, var(--tp-accent) 12%, #fff);
+  --tp-c-fff8e3: color-mix(in srgb, var(--tp-accent) 12%, #fff);
+  --tp-c-fff8e5: color-mix(in srgb, var(--tp-accent) 11%, #fff);
+  --tp-c-fff8e6: color-mix(in srgb, var(--tp-accent) 10%, #fff);
+  --tp-c-fff9ea: color-mix(in srgb, var(--tp-accent) 9%, #fff);
+  --tp-c-fffaea: color-mix(in srgb, var(--tp-accent) 9%, #fff);
+  --tp-c-fffaec: color-mix(in srgb, var(--tp-accent) 8%, #fff);
+  --tp-c-fffbf0: color-mix(in srgb, var(--tp-accent) 6%, #fff);
+  --tp-c-fffcf3: color-mix(in srgb, var(--tp-accent) 5%, #fff);
+  --tp-c-fffdf5: color-mix(in srgb, var(--tp-accent) 4%, #fff);
+  --tp-c-fffdf6: color-mix(in srgb, var(--tp-accent) 4%, #fff);
+  --tp-c-fffdf7: color-mix(in srgb, var(--tp-accent) 3%, #fff);
+}
+/* ==== end team palette ==== */
+
+/*
+ * mak, 2026-11-05: on screens of 560px and under the section tabs (Overview,
+ * Stats, Game Log, Outlook, Injury, News, Bio) wrap onto as many rows as they
+ * need instead of scrolling sideways in a rail. Each row's tabs share its
+ * width, so the rows fill edge to edge.
+ */
+@media (max-width: 560px) {
+  .scp-nav {
+    overflow-x: visible;
+  }
+
+  .scp-nav-list {
+    flex-wrap: wrap;
+  }
+
+  .scp-nav-list > li {
+    flex: 1 1 auto;
+  }
+
+  .scp-nav-link {
+    min-height: 38px;
+    padding: 7px 12px;
   }
 }

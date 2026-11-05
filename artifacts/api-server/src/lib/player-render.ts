@@ -49,6 +49,7 @@ import { easternParts } from "./news-card";
 // here - only a comment mentions it - so this does not close a cycle.
 import { playerPageMeta } from "./player-seo";
 import { getTeamByAbbreviation, type NflTeam } from "./team/teams";
+import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import {
   finishBadge,
   fpts,
@@ -266,6 +267,15 @@ const ARROW = `<span class="scp-arrow" aria-hidden="true">&rarr;</span>`;
 function styleAttr(parts: Array<string | null | false>): string {
   const kept = parts.filter((p): p is string => typeof p === "string" && p !== "");
   return kept.length ? ` style="${escapeHtml(kept.join(";"))}"` : "";
+}
+
+/**
+ * The player page wears the current team's colors (mak, 2026-11-05: "do this
+ * for the player pages too"): the same palette as the team hub, from
+ * team/palette.ts. A free agent keeps the house navy and gold.
+ */
+function paletteAttrs(team: NflTeam | null | undefined): string {
+  return teamPaletteAttr(team) + styleAttr(teamPaletteVars(team));
 }
 
 /** A section heading with the compact gold rule beneath it. */
@@ -2110,7 +2120,7 @@ export function renderPlayerPage(
     // exists in the dictionary and has no recorded football. The hero alone is
     // the honest page: who they are, and nothing claimed beyond it.
     return (
-      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1">` +
+      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"${paletteAttrs(data.team)}>` +
       renderPlayerSearch(options) +
       renderHero(data, options) +
       `<div class="scp-section is-default is-active"><p class="scp-empty">${escapeHtml(
@@ -2166,7 +2176,7 @@ export function renderPlayerPage(
         ? ""
         : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
       ` data-format="${escapeHtml(data.format)}"` +
-      ` data-section="${escapeHtml(scoped.id)}">` +
+      ` data-section="${escapeHtml(scoped.id)}"${paletteAttrs(data.team)}>` +
       renderPlayerSearch(options) +
       renderHero(data, options, scoped.id, heroExtras(data, options)) +
       `<div class="scp-controls">` +
@@ -2221,7 +2231,7 @@ export function renderPlayerPage(
     (data.logSeason === data.season
       ? ""
       : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
-    ` data-format="${escapeHtml(data.format)}">` +
+    ` data-format="${escapeHtml(data.format)}"${paletteAttrs(data.team)}>` +
     renderPlayerSearch(options) +
     renderHero(data, options, sections[0]?.id, heroExtras(data, options)) +
     `<div class="scp-controls">` +
