@@ -4,7 +4,9 @@
  * What scripts/warm-live.mjs does and why is in that file. This is its
  * wiring: production only (SC_LIVE_WARM overrides), a wait for the boot chain
  * to clear the VM, and THE GUARD shared with the edge pre-fetch - nothing is
- * crawled until the public origin's /embed/assets.json reports this build.
+ * crawled until the public origin's /embed/assets.json reports this build -
+ * and then a second one: WordPress itself must print this build's ?ver= on a
+ * fresh render (its version cache is 15 minutes; see live-warm-core.ts).
  * The proxy switches to a new VM some minutes after it boots; a crawl before
  * that would fill WordPress's page cache with the previous build's markup and
  * hide the publish until the cache expired.
@@ -69,6 +71,25 @@ async function originVersion(origin: string): Promise<string | null> {
   }
 }
 
+/** A page every deploy re-renders: one team hub, cache-busted so the edge does not answer. */
+const SITE_PROBE = "https://statchasers.com/nfl/teams/kansas-city-chiefs/";
+const SITE_UA = "Mozilla/5.0 (X11; Linux x86_64) Chrome/120 StatChasers-WarmLive/1 (+https://statchasers.com)";
+
+/** The ?ver= WordPress prints on a fresh render of the probe page, or null. */
+async function siteVersion(): Promise<string | null> {
+  try {
+    const res = await fetch(`${SITE_PROBE}?sc-warm-probe=${Date.now()}`, {
+      headers: { "user-agent": SITE_UA, "cache-control": "no-cache" },
+      signal: AbortSignal.timeout(VERSION_TIMEOUT_MS),
+    });
+    if (res.status !== 200) return null;
+    const html = await res.text();
+    return /\/team\.css\?ver=([a-z0-9]+)/i.exec(html)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function runScript(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!SCRIPTS_DIR) {
@@ -97,6 +118,7 @@ export function startLiveWarm(): Promise<string | null> {
   return runLiveWarm({
     version: assetVersion(),
     originVersion: () => originVersion(origin),
+    siteVersion,
     run: runScript,
     sleep,
     note,

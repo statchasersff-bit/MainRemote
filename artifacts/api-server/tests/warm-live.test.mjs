@@ -121,3 +121,33 @@ describe("runLiveWarm", () => {
     assert.equal(out, null);
   });
 });
+
+describe("runLiveWarm waits for WordPress to print this build (2026-11-05)", () => {
+  const fake = (over) => ({
+    version: "new123",
+    originVersion: async () => "new123",
+    run: async () => "warm-live complete: 1 pages",
+    sleep: async () => {},
+    note: () => {},
+    startDelayMs: 0,
+    retryDelayMs: 0,
+    ...over,
+  });
+  test("crawls only once a fresh render prints the new ?ver=", async () => {
+    const seen = ["old999", "old999", "new123"];
+    let ran = 0;
+    const out = await lib.runLiveWarm(fake({ siteVersion: async () => seen.shift(), run: async () => { ran += 1; return "warm-live complete: 1 pages"; } }));
+    assert.equal(ran, 1);
+    assert.match(out, /warm-live complete/);
+    assert.equal(seen.length, 0, "it kept checking until the new version showed");
+  });
+  test("skips the crawl when WordPress never prints the new ?ver=", async () => {
+    let ran = 0;
+    const notes = [];
+    const out = await lib.runLiveWarm(fake({ siteVersion: async () => "old999", siteAttempts: 3, note: (l) => notes.push(l), run: async () => { ran += 1; return ""; } }));
+    assert.equal(out, null);
+    assert.equal(ran, 0, "no page is warmed with the old stylesheet");
+    assert.ok(notes.some((l) => /WordPress still prints old999/.test(l)));
+  });
+});
+
