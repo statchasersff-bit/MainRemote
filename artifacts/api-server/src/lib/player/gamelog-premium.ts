@@ -478,7 +478,7 @@ export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps)
     `<span class="scp-glp-ico">${ICON.calendar}</span>` +
     `<span class="scp-glp-rule" aria-hidden="true"></span>` +
     `<div class="scp-glp-hero-t">` +
-    `<h2 class="scp-glp-title" id="${titleId}">${escapeHtml(`Game Log - ${data.player.name}`)}</h2>` +
+    `<h2 class="scp-glp-title" id="${titleId}">${escapeHtml(`${data.player.name} Game Log ${data.logSeason}`)}</h2>` +
     `<p class="scp-glp-sub">${escapeHtml(
       `Week-by-week performance, usage, and fantasy production for the ${data.logSeason} season.`,
     )}</p>` +

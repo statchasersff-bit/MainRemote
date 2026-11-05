@@ -8,7 +8,8 @@
  * with their league delta and a 0-100 bar, the lead back's share, a band
  * for the years he was not calling, and the live season marked.
  *
- * Rendered DIRECTLY UNDER the current table, which is untouched. Every
+ * Since 2026-11-05 ("remove the old version") this IS the season table:
+ * the original (career() in coaching-render.ts) is unmounted. Every
  * number is the table's own model (historyModel in coaching-render.ts) and
  * the same stop colors; nothing is computed twice. Styles `.sct-cs-*` in
  * team.css on the premium tokens.
@@ -98,7 +99,6 @@ export function renderCoachingSeasonsPremium(c: TeamCoaching): string {
 
   return (
     `<div class="sct-block sct-cp sct-cpt sct-cs" id="coaching-seasons-premium" data-sct-premium="coaching-seasons">` +
-    `<p class="sct-cp-flag">New design · Comparison</p>` +
     `<section class="sct-cpt-section is-seasons" aria-labelledby="sct-cs-title">` +
     `<header class="sct-cpt-head is-main is-seasons">` +
     `<span class="sct-cpt-head-icon">${CALENDAR}</span>` +

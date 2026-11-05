@@ -59,6 +59,8 @@ import { faqEntries, renderFaqBlock } from "./team/faq-block";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
+import { renderPremiumTeamHeader } from "./team/team-header-premium";
+import { renderPremiumTeamHeaderB } from "./team/team-header-premium-b";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
@@ -387,7 +389,7 @@ function shortStanding(standing: string): string | undefined {
  * Adding a rung means a name here, a rule in team.css, and its place in
  * FACT_STAGES in client/team.ts. Nothing else reads these.
  */
-interface HeroFact {
+export interface HeroFact {
   label: string;
   value: string;
   /** The same fact, shorter. Without one the chip never changes. */
@@ -409,7 +411,8 @@ interface HeroFact {
   drop?: boolean;
 }
 
-function heroFacts(data: TeamPageData): string {
+/** The hero's facts in order: record, standing, head coach, bye; each only when the data has it. */
+export function heroFactList(data: TeamPageData): HeroFact[] {
   const facts: HeroFact[] = [];
 
   // The "Division · AFC East" chip went 2026-11-03 (mak: "remove this
@@ -445,6 +448,11 @@ function heroFacts(data: TeamPageData): string {
     });
   }
 
+  return facts;
+}
+
+function heroFacts(data: TeamPageData): string {
+  const facts = heroFactList(data);
   if (facts.length === 0) return "";
 
   // Both spellings ship, and one of them is `display: none` - so exactly one is
@@ -481,7 +489,8 @@ function heroFacts(data: TeamPageData): string {
   );
 }
 
-function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
+/** `premium`: the class a premium comparison copy carries instead of data-sct-switch (A: sct-tp-switch, B: sct-tpb-switch). */
+export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium: false | string = false): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
 
@@ -527,7 +536,9 @@ function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
   // <a href> - so the switcher is also 31 crawlable internal links rather than
   // a dead end. The client bundle only adds outside-click and Escape.
   return (
-    `<details class="sct-switch" data-sct-switch>` +
+    // The premium header's copy carries no data-sct-switch: the bundle wires
+    // the first one only, and both work without it (a <details>).
+    `<details class="sct-switch${premium ? ` ${premium}` : ""}"${premium ? "" : " data-sct-switch"}>` +
     `<summary class="sct-switch-summary">` +
     // Lazy even though it is above the fold: a lazy image inside the viewport
     // is still fetched straight away, just at a lower priority than the hero
@@ -650,6 +661,29 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
   );
 }
 
+/**
+ * The premium comparisons of the hero and the strip (mak's briefs, 2026-11-05):
+ * Design A (dark navy) then Design B (bright blue, light strip), under both
+ * originals, labeled, on the same facts, switcher links and tab addresses.
+ * Neither is the default until mak picks one.
+ */
+function premiumHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Section[], activeId?: string): string {
+  const input = (switcher: string) => ({
+    team: data.team,
+    season: data.state.season,
+    facts: heroFactList(data).map((f) => ({ label: f.label, value: f.value })),
+    updatedMs: data.newsUpdatedAtMs,
+    switcher,
+    tabs: navItems(tabs, data.team, data.state.season, options, activeId),
+  });
+  // A (dark navy, integrated strip) then B (bright blue, light strip), each on
+  // its own copy of the switcher so the bundle wires only the original.
+  return (
+    renderPremiumTeamHeader(input(teamSwitcher(data.team, options, "sct-tp-switch"))) +
+    renderPremiumTeamHeaderB(input(teamSwitcher(data.team, options, "sct-tpb-switch")))
+  );
+}
+
 /* ------------------------------------------------------------- section nav */
 
 interface Section {
@@ -747,20 +781,28 @@ interface TailSink {
  * bundle may not load is worse for a screen-reader user than the plain list of
  * links the server sends, which behaves exactly as announced.
  */
-function renderNav(
+/** One tab of the strip: its address, words and whether it is the open one. */
+export interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  active: boolean;
+  heading: string;
+  lead: string;
+  title: string;
+}
+
+export function navItems(
   sections: Section[],
   team: NflTeam,
   season: number,
   options: TeamRenderOptions,
   activeId?: string,
-): string {
-  if (sections.length < 2) return "";
-
+): NavItem[] {
+  if (sections.length < 2) return [];
   const prefix = options.teamPathPrefix ?? "/team/";
   const active = activeId ?? sections[0]?.id;
-
-  const items = sections
-    .map((section) => {
+  return sections.map((section) => {
       // The Outlook is the hub: its address is the hub's (sectionPath) and its
       // heading is the hub's. `/outlook/` only 301s back here. A hash tab is a
       // hub-only panel, so its address, heading and title are the hub's too -
@@ -782,18 +824,31 @@ function renderNav(
       const href = hashTab
         ? `${sectionPath(prefix, team.slug, HUB_SECTION)}#${section.id}`
         : sectionPath(prefix, team.slug, section.id);
+      return { id: section.id, label: section.label, href, active: section.id === active, heading, lead, title };
+    });
+}
 
-      return (
-        `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
-        ` id="${escapeHtml(section.id)}-tab"` +
-        ` href="${escapeHtml(href)}"` +
-        ` data-sct-panel-id="${escapeHtml(section.id)}"` +
-        ` data-sct-heading="${escapeHtml(heading)}"` +
-        ` data-sct-lead="${escapeHtml(lead)}"` +
-        ` data-sc-title="${escapeHtml(title)}"` +
-        `>${escapeHtml(section.label)}</a></li>`
-      );
-    })
+function renderNav(
+  sections: Section[],
+  team: NflTeam,
+  season: number,
+  options: TeamRenderOptions,
+  activeId?: string,
+): string {
+  const list = navItems(sections, team, season, options, activeId);
+  if (!list.length) return "";
+  const items = list
+    .map(
+      (t) =>
+        `<li><a class="sct-nav-link${t.active ? " is-active" : ""}"` +
+        ` id="${escapeHtml(t.id)}-tab"` +
+        ` href="${escapeHtml(t.href)}"` +
+        ` data-sct-panel-id="${escapeHtml(t.id)}"` +
+        ` data-sct-heading="${escapeHtml(t.heading)}"` +
+        ` data-sct-lead="${escapeHtml(t.lead)}"` +
+        ` data-sc-title="${escapeHtml(t.title)}"` +
+        `>${escapeHtml(t.label)}</a></li>`,
+    )
     .join("");
 
   return (
@@ -3225,24 +3280,6 @@ function depthFaqInput(charts: TeamDepthCharts): {
   return { offense, folded: offenseSide?.folded ?? true, fantasy: fantasyRows, fantasyInjuries };
 }
 
-/**
- * The stamp under the heading: the season and when the chart was last
- * refreshed. The time is the document's own fetchedAt - the plugin's refresh
- * run - never the render or request time, so a stale chart reads as stale.
- */
-function depthStamp(charts: TeamDepthCharts): string {
-  const ms = Date.parse(charts.fetchedAt);
-  if (!Number.isFinite(ms)) return "";
-  const parts = easternParts(ms);
-  return (
-    `<p class="sct-dc-stamp">` +
-    `<span>${escapeHtml(`${charts.season} NFL season`)}</span>` +
-    `<span class="sct-dot" aria-hidden="true"></span>` +
-    `<span>Updated <time datetime="${escapeHtml(new Date(ms).toISOString())}">` +
-    `${escapeHtml(`${parts.month} ${parts.day}, ${parts.year}, ${parts.time}`)}</time></span>` +
-    `</p>`
-  );
-}
 
 /**
  * One compact paragraph naming the listed starters at the three fantasy
@@ -3314,11 +3351,10 @@ function depthFootballCard(data: TeamPageData, side: FootballSide): string {
   );
   const aside = depthFormation(side) + depthGrades(data, side.key);
   return (
-    `<section class="sct-dcx" data-sct-dc-panel="${side.key}">` +
-    `<div class="sct-dcx-head">` +
-    `<h3 class="sct-dcx-title" data-view="${side.key}">${escapeHtml(`${team.fullName} ${side.label} Depth Chart`)}</h3>` +
-    (aside ? `<div class="sct-dcx-aside">${aside}</div>` : "") +
-    `</div>` +
+    // No card title: the page heading and the pressed view button already
+    // name the side, so the card opens on the formation chip and grades.
+    `<section class="sct-dcx" data-sct-dc-panel="${side.key}" aria-label="${escapeHtml(`${team.fullName} ${side.label} Depth Chart`)}">` +
+    (aside ? `<div class="sct-dcx-head"><div class="sct-dcx-aside">${aside}</div></div>` : "") +
     // An older document has no slots: the rows are the folded position
     // groups, and the card says so rather than letting one WR row read as
     // one starting receiver.
@@ -3377,10 +3413,7 @@ function depthFantasyCard(data: TeamPageData, view: DepthView): string {
     })
     .join("");
   return (
-    `<section class="sct-dcx" data-sct-dc-panel="fantasy">` +
-    `<div class="sct-dcx-head">` +
-    `<h3 class="sct-dcx-title" data-view="fantasy">${escapeHtml(`${team.fullName} Fantasy Depth Chart`)}</h3>` +
-    `</div>` +
+    `<section class="sct-dcx" data-sct-dc-panel="fantasy" aria-label="${escapeHtml(`${team.fullName} Fantasy Depth Chart`)}">` +
     `<p class="sct-note sct-dcx-fan-note">StatChasers' fantasy hierarchy at each skill position. ` +
     `WR1, WR2 and WR3 rank players by fantasy value, so the order can differ from the starting slots on the team depth chart.</p>` +
     groups +
@@ -3486,7 +3519,6 @@ function renderDepthChart(
 
   return (
     h2(`${team.fullName} Depth Chart`) +
-    depthStamp(depthCharts) +
     depthSummary(team, football) +
     `<div class="sct-dc" data-sct-dc>${switcher}${panels.map((panel) => panel.html).join("")}</div>`
   );
@@ -4953,6 +4985,7 @@ export function renderTeamPage(
       `<div ${rootAttrs} data-section="${escapeHtml(scoped.id)}"${rootStyle}>` +
       renderHero(data, options) +
       renderNav(tabs, team, data.state.season, options, scoped.id) +
+      premiumHeader(data, options, tabs, scoped.id) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
       (options.ownHeading
@@ -5006,6 +5039,7 @@ export function renderTeamPage(
     `<div ${rootAttrs}${rootStyle}>` +
     renderHero(data, options) +
     renderNav(tabs, team, data.state.season, options) +
+    premiumHeader(data, options, tabs) +
     body +
     renderTails(panels) +
     // After the sections, because it describes them: `faq` is only complete

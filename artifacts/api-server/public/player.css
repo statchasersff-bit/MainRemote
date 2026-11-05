@@ -122,7 +122,7 @@
   --scp-risk-moderate: #8a6205;
   --scp-risk-high: #99323a;
 
-  --scp-nav-h: 52px;
+  --scp-nav-h: 56px;
   --scp-nav-offset: 0px;
   --scp-gutter: 24px;
 
@@ -4508,6 +4508,16 @@ button.scp-search-opt {
 
 /* ------------------------------------------------------- controls and nav */
 
+/*
+ * The tab bar: a full-width segmented navigation (mak, 2026-11-05) - a pale
+ * blue-gray container with a border, rounded corners and a soft shadow, the
+ * seven tabs spread evenly across it, the open one on deep navy with white
+ * text and a gold accent along its bottom. 56px tall, 42px tabs, 13.5px
+ * semibold. Sticky, as it has been: it holds at the top of the viewport (or
+ * under a host's own fixed header, via --scp-nav-offset) once the reader
+ * scrolls past the profile header, so a long Game Log is one click from
+ * Outlook. Opaque, so the rows scrolling under it are hidden.
+ */
 .scp-controls {
   position: sticky;
   top: var(--scp-nav-offset);
@@ -4517,14 +4527,14 @@ button.scp-search-opt {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-top: 20px;
-  padding: 6px 0;
-  /* Opaque, and the same white as the page: this bar's job is to hide the rows
-     scrolling under it, so any tint here would read as a band across the page.
-     Embedded it stays white too - a sticky bar has to be opaque whatever the
-     host's own background is, which is what the old is-embed override did. */
-  background: var(--sc-surface);
-  border-bottom: 1px solid var(--sc-border);
+  box-sizing: border-box;
+  min-height: var(--scp-nav-h);
+  margin-top: 16px;
+  padding: 6px;
+  border: 1px solid #d6e0ed;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f5f8fc, #eef3f9);
+  box-shadow: 0 4px 14px rgba(14, 40, 83, 0.08);
 }
 
 .scp-nav {
@@ -4546,24 +4556,63 @@ button.scp-search-opt {
   list-style: none;
 }
 
+/* Every tab takes an equal share of the bar. */
+.scp-nav-list > li {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .scp-nav-link {
-  display: block;
-  padding: 12px 14px;
-  border-bottom: 2px solid transparent;
-  color: var(--sc-muted-strong);
-  font-size: 14px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  color: #34425a;
+  font-size: 13.5px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   text-decoration: none;
   white-space: nowrap;
+  overflow: hidden;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .scp-nav-link:hover {
-  color: var(--sc-ink);
+  color: var(--sc-navy);
+  background: rgba(11, 35, 69, 0.07);
 }
 
+.scp-nav-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+}
+
+/* The open tab: deep navy, white words, a gold line along the bottom. */
 .scp-nav-link.is-active {
-  color: var(--sc-navy);
-  border-bottom-color: var(--sc-gold);
+  color: #ffffff;
+  background: linear-gradient(180deg, #113366, #0b2345);
+  box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px rgba(11, 35, 69, 0.3);
+  font-weight: 700;
+}
+
+.scp-nav-link.is-active:hover {
+  color: #ffffff;
+  background: linear-gradient(180deg, #113366, #0b2345);
+}
+
+/* Narrow: the tabs keep their size and the bar scrolls sideways. */
+@media (max-width: 700px) {
+  .scp-nav-list > li {
+    flex: 0 0 auto;
+  }
+
+  .scp-nav-link {
+    padding: 8px 16px;
+  }
 }
 
 /*
@@ -4587,8 +4636,10 @@ button.scp-search-opt {
 @supports selector(:has(*)) {
   .scp:not([data-scp-tabs="js"]):has([data-scp-panel]:target)
     .scp-nav-link.is-active {
-    color: var(--sc-muted-strong);
-    border-bottom-color: transparent;
+    color: #34425a;
+    background: none;
+    box-shadow: none;
+    font-weight: 600;
   }
 
   .scp:not([data-scp-tabs="js"]):has(#overview:target) #overview-tab,
@@ -4598,8 +4649,10 @@ button.scp-search-opt {
   .scp:not([data-scp-tabs="js"]):has(#injury:target) #injury-tab,
   .scp:not([data-scp-tabs="js"]):has(#news:target) #news-tab,
   .scp:not([data-scp-tabs="js"]):has(#bio:target) #bio-tab {
-    color: var(--sc-navy);
-    border-bottom-color: var(--sc-gold);
+    color: #ffffff;
+    background: linear-gradient(180deg, #113366, #0b2345);
+    box-shadow: inset 0 -3px 0 var(--sc-gold), 0 2px 6px rgba(11, 35, 69, 0.3);
+    font-weight: 700;
   }
 }
 
@@ -15509,8 +15562,18 @@ a.scp-peer:focus-visible {
 .scp .scp-bkp-nx-rank.is-none span {
   font-weight: 600;
 }
+/* The band's pill at the left of the cell, the matchup link flush right. */
 .scp .scp-bkp-nx-read {
   white-space: nowrap;
+}
+.scp .scp-bkp-nx-read {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.scp .scp-bkp-nx-read .scp-bkp-cta {
+  margin-left: auto;
 }
 .scp .scp-bkp-pill {
   display: inline-flex;
@@ -15769,17 +15832,16 @@ a.scp-peer:focus-visible {
     grid-area: rank;
     justify-self: end;
   }
-  .scp .scp-bkp-nx-read {
+  /* Outranks the stacked cell's display: block above. */
+  .scp .scp-bkp-table td.scp-bkp-nx-read {
     grid-area: read;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
     gap: 6px 12px;
     margin-top: 2px;
     white-space: normal;
-  }
-  .scp .scp-bkp-cta {
-    margin-left: 0;
   }
 }
 
@@ -15842,19 +15904,22 @@ a.scp-peer:focus-visible {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(220px, 20%) minmax(0, 1fr) minmax(300px, 26%);
+  grid-template-columns: minmax(220px, 20%) minmax(0, 1fr) minmax(300px, 27%);
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
     "well id fan"
     "well cards acts";
-  column-gap: 26px;
-  row-gap: 18px;
-  min-height: 310px;
-  padding: 0 28px 24px 0;
+  --pp-pad-b: 18px;
+  column-gap: 24px;
+  row-gap: 14px;
+  min-height: 290px;
+  padding: 0 24px var(--pp-pad-b) 0;
   border: 1px solid #0d2b50;
   border-radius: var(--scp-pp-radius);
   background:
-    linear-gradient(115deg, #081a34 0%, #123b67 60%, #0a2447 100%);
+    radial-gradient(90% 120% at 62% 30%, rgba(42, 100, 170, 0.35) 0%, transparent 60%),
+    linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.045) 34% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.035) 58% 72%, transparent 72% 80%, rgba(255, 255, 255, 0.05) 80% 90%, transparent 90%),
+    linear-gradient(125deg, #081a34 0%, #123d6d 48%, #0b2c53 100%);
   box-shadow:
     0 2px 6px rgba(8, 28, 60, 0.12),
     0 16px 36px -14px rgba(8, 28, 60, 0.45);
@@ -15868,11 +15933,11 @@ a.scp-peer:focus-visible {
   position: absolute;
   inset: 0 0 0 auto;
   z-index: 0;
-  width: 48%;
+  width: 46%;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 88%, rgba(241, 191, 60, 0.85) 88% 90.2%, transparent 90.2% 93.5%, rgba(241, 191, 60, 0.6) 93.5% 95.2%, transparent 95.2%),
-    linear-gradient(115deg, transparent 0 28%, rgba(255, 255, 255, 0.035) 28% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.05) 58% 76%, transparent 76%);
+    linear-gradient(115deg, transparent 0 86%, rgba(241, 191, 60, 0.9) 86% 88.4%, transparent 88.4% 91.6%, rgba(241, 191, 60, 0.65) 91.6% 93.4%, transparent 93.4% 96%, rgba(241, 191, 60, 0.35) 96% 97%, transparent 97%),
+    linear-gradient(118deg, transparent 0 20%, rgba(70, 130, 200, 0.14) 20% 44%, transparent 44% 52%, rgba(70, 130, 200, 0.1) 52% 70%, transparent 70%);
 }
 
 .scp .scp-phead-hero > * {
@@ -15880,12 +15945,24 @@ a.scp-peer:focus-visible {
   z-index: 1;
 }
 
+/* The stripes are decoration, out of the grid's flow: as a grid item they
+   took an empty third row under the portrait (a blank band, mak 2026-11-05). */
+.scp .scp-phead-hero > .scp-phead-stripes {
+  position: absolute;
+  inset: 0 0 auto auto;
+  z-index: 0;
+  height: 150px;
+}
+
 /* ---- the portrait panel: club color, cut on a gold diagonal */
 
+/* The panel runs to the hero's bottom edge, through the bottom padding, so
+   the figure stands on the edge the way the reference draws it. */
 .scp .scp-pwell {
   grid-area: well;
   position: relative;
   min-height: 100%;
+  margin-bottom: calc(-1 * var(--pp-pad-b));
   overflow: hidden;
 }
 
@@ -15895,32 +15972,32 @@ a.scp-peer:focus-visible {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, var(--sc-gold-bright), var(--sc-gold));
-  clip-path: polygon(0 0, 100% 0, calc(100% - 44px) 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 64px) 100%, 0 100%);
 }
 
 .scp .scp-pwell-paint {
   position: absolute;
-  inset: 0 8px 0 0;
+  inset: 0 7px 0 0;
   background:
     radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.14), transparent 55%),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 28px),
     linear-gradient(135deg, var(--scp-team), color-mix(in srgb, var(--scp-team) 78%, #000000));
-  clip-path: polygon(0 0, 100% 0, calc(100% - 44px) 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 64px) 100%, 0 100%);
 }
 
 /* The jersey number: outline only, behind the figure, clipped by the panel. */
 .scp .scp-pwell-num {
   position: absolute;
   top: 2%;
-  right: 12%;
+  right: 16%;
   z-index: 1;
   color: transparent;
   font-family: var(--scp-pp-sans);
-  font-size: 190px;
+  font-size: 170px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.04em;
-  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.23);
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.17);
   pointer-events: none;
   user-select: none;
 }
@@ -15932,10 +16009,10 @@ a.scp-peer:focus-visible {
 .scp .scp-pwell-img {
   position: absolute;
   bottom: 0;
-  left: -10%;
+  left: -34%;
   z-index: 2;
   display: block;
-  width: 125%;
+  width: 164%;
   max-width: none;
   height: auto;
   object-fit: contain;
@@ -15964,9 +16041,9 @@ a.scp-peer:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding-top: 28px;
+  padding-top: 22px;
 }
 
 .scp .scp-ptags {
@@ -15980,15 +16057,15 @@ a.scp-peer:focus-visible {
 .scp .scp-ptag-pos {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 4px 16px;
+  min-height: 32px;
+  padding: 4px 18px;
   border-radius: 999px;
-  background: var(--scp-team);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scp-team) 85%, #fff), var(--scp-team));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.3);
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .scp .scp-phead a.scp-ptag-team,
@@ -16024,13 +16101,14 @@ a.scp-peer:focus-visible {
 .scp .scp-phead .scp-ptag-status {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 4px 16px;
+  min-height: 32px;
+  padding: 4px 18px;
   border-radius: 999px;
   border: 1.5px solid currentColor;
   font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   text-decoration: none !important;
   text-transform: uppercase;
 }
@@ -16038,7 +16116,7 @@ a.scp-peer:focus-visible {
 .scp .scp-phead .scp-ptag-inj.is-good,
 .scp .scp-phead .scp-ptag-status.is-good { color: #2fd48a !important; background: rgba(23, 110, 66, 0.35); }
 .scp .scp-phead .scp-ptag-inj.is-mid,
-.scp .scp-phead .scp-ptag-status.is-mid { color: var(--sc-gold-bright) !important; background: rgba(212, 175, 55, 0.18); }
+.scp .scp-phead .scp-ptag-status.is-mid { color: var(--sc-gold-bright) !important; border-color: var(--sc-gold); background: rgba(212, 175, 55, 0.16); }
 .scp .scp-phead .scp-ptag-inj.is-bad,
 .scp .scp-phead .scp-ptag-status.is-bad { color: #ff8f82 !important; background: rgba(179, 50, 50, 0.3); }
 .scp .scp-phead .scp-ptag-inj.is-none,
@@ -16054,7 +16132,7 @@ a.scp-peer:focus-visible {
   font-stretch: 100%;
   font-weight: 800;
   letter-spacing: -0.025em;
-  line-height: 1.02;
+  line-height: 1;
   text-transform: none;
   overflow-wrap: anywhere;
 }
@@ -16063,14 +16141,19 @@ a.scp-peer:focus-visible {
   display: none;
 }
 
-/* The section's word after the name, part of the heading, quieter. */
+/* The section's word after the name ("Stats") stays in the H1 for crawlers
+   and screen readers but is not shown (mak, 2026-11-05: the open tab already
+   says which page this is). */
 .scp .scp-phead .scp-phead-kind {
-  margin-left: 0.2em;
-  color: var(--sc-hero-muted);
-  font-size: 0.42em;
-  font-weight: 600;
-  letter-spacing: 0;
-  vertical-align: 0.28em;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
@@ -16094,7 +16177,7 @@ a.scp-peer:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 0 14px;
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   color: var(--sc-hero-muted);
   font-size: 19px;
   font-weight: 500;
@@ -16122,8 +16205,8 @@ a.scp-peer:focus-visible {
   justify-self: end;
   align-self: start;
   width: 100%;
-  max-width: 440px;
-  padding-top: 30px;
+  max-width: 470px;
+  padding-top: 28px;
 }
 
 .scp .scp-pboard-cap {
@@ -16140,11 +16223,11 @@ a.scp-peer:focus-visible {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
-  padding: 14px 6px;
+  padding: 14px 6px 13px;
   border: 1.5px solid var(--sc-gold);
   border-radius: 16px;
-  background: rgba(4, 16, 38, 0.55);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 6px 18px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(180deg, rgba(6, 22, 50, 0.75), rgba(3, 12, 30, 0.85));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
 .scp .scp-pstat {
@@ -16164,7 +16247,7 @@ a.scp-peer:focus-visible {
 .scp .scp-pstat b {
   margin: 0;
   color: #fff;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -16179,7 +16262,7 @@ a.scp-peer:focus-visible {
   margin: 0;
   border: 0;
   text-decoration: none;
-  color: var(--sc-hero-muted);
+  color: #cfdcee;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -16217,10 +16300,10 @@ a.scp-peer:focus-visible {
   min-height: 82px;
   margin: 0;
   padding: 12px 12px 12px 14px;
-  border: 1px solid #d2dfed;
+  border: 1px solid #cddbec;
   border-radius: 13px;
-  background: linear-gradient(145deg, #ffffff 0%, #f6f9fd 65%, #eaf2fa 100%);
-  box-shadow: 0 3px 7px rgba(8, 28, 60, 0.06), 0 10px 20px rgba(8, 28, 60, 0.08);
+  background: linear-gradient(160deg, #ffffff 0%, #f3f7fc 55%, #e6eef8 100%);
+  box-shadow: inset 0 1px 0 #fff, 0 3px 7px rgba(8, 28, 60, 0.08), 0 10px 20px rgba(8, 28, 60, 0.1);
   color: var(--sc-text);
 }
 
@@ -16229,14 +16312,14 @@ a.scp-peer:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   color: var(--sc-gold);
 }
 
 .scp .scp-pp-card-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 .scp .scp-pp-card-v {
@@ -16271,19 +16354,22 @@ a.scp-peer:focus-visible {
 .scp .scp-pp-actions {
   grid-area: acts;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: stretch;
+  justify-self: end;
   align-self: end;
-  gap: 12px;
+  width: 100%;
+  max-width: 470px;
+  gap: 8px;
 }
 
 .scp .scp-phead a.scp-pbtn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 10px 20px;
+  min-height: 44px;
+  padding: 8px 20px;
   border-radius: 12px;
   font-size: 15px;
   font-weight: 800;
@@ -16296,12 +16382,13 @@ a.scp-peer:focus-visible {
 .scp .scp-phead a.scp-pbtn--gold {
   color: var(--sc-navy-950) !important;
   background: linear-gradient(180deg, var(--sc-gold-bright), var(--sc-gold));
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .scp .scp-phead a.scp-pbtn--white {
+  min-height: 40px;
   color: var(--sc-text) !important;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff, #f3f7fc);
   border: 1.5px solid #c9d8ea;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
 }
@@ -16415,27 +16502,73 @@ a.scp-peer:focus-visible {
 /* Medium: a narrower portrait and right column, the cards two by two. */
 @container pp (max-width: 1100px) {
   .scp .scp-phead-hero {
-    grid-template-columns: minmax(190px, 20%) minmax(0, 1fr) minmax(280px, 28%);
-    column-gap: 20px;
-    padding-right: 22px;
+    grid-template-columns: minmax(196px, 21%) minmax(0, 1fr) minmax(250px, 27%);
+    column-gap: 18px;
+    padding-right: 20px;
   }
 
+  /* The four cards hold one row, compact. */
   .scp .scp-pp-cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .scp .scp-pp-card {
+    min-height: 68px;
+    padding: 9px 10px 9px 12px;
+    column-gap: 9px;
+  }
+
+  .scp .scp-pid {
+    gap: 7px;
+    padding-top: 20px;
+  }
+
+  .scp .scp-pp-under {
+    font-size: 17px;
+  }
+
+  .scp .scp-pspec {
+    font-size: 13.5px;
+  }
+
+  .scp .scp-pp-card-icon,
+  .scp .scp-pp-card-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .scp .scp-pp-card-v {
+    font-size: 24px;
+  }
+
+  .scp .scp-pp-card-v.is-long {
+    font-size: 19px;
+  }
+
+  .scp .scp-pp-card-l {
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
   }
 
   .scp .scp-pwell-num {
-    font-size: 150px;
+    font-size: 140px;
+  }
+
+  .scp .scp-pwell-img {
+    left: -30%;
+    width: 156%;
   }
 
   .scp .scp-pstat b {
     font-size: 27px;
   }
 
-  .scp .scp-pp-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .scp .scp-pstat abbr {
+    font-size: 10.5px;
+  }
+
+  .scp .scp-phead .scp-phead-h1 {
+    font-size: clamp(34px, 4.6cqw, 46px) !important;
   }
 }
 
@@ -16452,6 +16585,11 @@ a.scp-peer:focus-visible {
       "acts acts";
     row-gap: 16px;
     padding: 0 20px 20px 0;
+  }
+
+  /* The cards sit under the panel here, so it stops at its own rows. */
+  .scp .scp-pwell {
+    margin-bottom: 0;
   }
 
   .scp .scp-pid {
@@ -16476,6 +16614,7 @@ a.scp-peer:focus-visible {
   .scp .scp-pp-actions {
     flex-direction: row;
     justify-content: flex-start;
+    justify-self: stretch;
     margin-left: 20px;
   }
 
@@ -16490,8 +16629,12 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-pwell-img {
-    left: -8%;
-    width: 118%;
+    left: -22%;
+    width: 140%;
+  }
+
+  .scp .scp-pp-actions {
+    max-width: none;
   }
 
   .scp .scp-phead-stripes {
@@ -16539,16 +16682,6 @@ a.scp-peer:focus-visible {
     font-size: clamp(26px, 8cqw, 32px) !important;
   }
 
-  /* The section's word after the name, part of the heading, quieter. */
-.scp .scp-phead .scp-phead-kind {
-  margin-left: 0.2em;
-  color: var(--sc-hero-muted);
-  font-size: 0.42em;
-  font-weight: 600;
-  letter-spacing: 0;
-  vertical-align: 0.28em;
-  white-space: nowrap;
-}
 
 /* The narrow-phone spelling of the club (<= 370px): the code for the name. */
 .scp .scp-ptag-team-abbr {
@@ -16585,8 +16718,8 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-pwell-img {
-    left: -6%;
-    width: 112%;
+    left: -14%;
+    width: 128%;
   }
 
   .scp .scp-pboard-wrap,
@@ -17087,5 +17220,1606 @@ a.scp-peer:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .scp .scp-pr-card {
     transition: none;
+  }
+}
+
+/* ---------------------------------- outlook: projection + opportunity redesign */
+
+/*
+ * The Outlook tab's first two sections redesigned in place (mak's brief,
+ * 2026-11-05, written against a mockup not on disk; lib/player/outlook-tab.ts):
+ * Rest-of-Season Projection as one white card (icon badge + heading + gold
+ * rule, glyph chips, the featured panel with his portrait on the club's
+ * color, the supports / threatens cards) beside a navy Redraft Command card
+ * and a white Best fit card; then Opportunity vs. Production as one card
+ * with a navy title bar, six icon tiles (the first gold-edged), one takeaway
+ * panel and the usage-report link. Later in the file than the "outlook tab"
+ * block, same selector weight, so these win. The tab is its own size
+ * container ("ol"): two columns ≥1024, the sidebar's two cards side by side
+ * 561-1023, one column under 561. The shared .scp-ox-read / .scp-ox-panel /
+ * .scp-ox-btn rules stay as they are for the Overview and Bio tabs; only
+ * .scp-ol's copies change here.
+ */
+.scp .scp-ol {
+  --ol-navy: #0b3a7a;
+  --ol-navy-deep: #081e42;
+  --ol-gold: #d4af37;
+  --ol-gold-bright: #e8c250;
+  --ol-text: #101b34;
+  --ol-muted: #52647f;
+  --ol-light: #f5f8fc;
+  --ol-border: #d6e0ed;
+  --ol-good: #16834b;
+  --ol-good-soft: #e6f5ec;
+  --ol-mid: #a86a05;
+  --ol-mid-soft: #fdf1dc;
+  --ol-bad: #c42f2f;
+  --ol-bad-soft: #fbe7e7;
+  --ol-shadow: 0 4px 16px rgba(14, 40, 83, 0.07);
+  container-type: inline-size;
+  container-name: ol;
+}
+
+/* ---- Section A: the two columns */
+
+.scp .scp-ol .scp-ol-sec-read .scp-ox-read {
+  grid-template-columns: minmax(0, 68fr) minmax(300px, 32fr);
+  gap: 20px;
+}
+
+/* The prose column is the main card. */
+.scp .scp-ol .scp-ol-sec-read .scp-ox-read > div:first-child {
+  min-width: 0;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--ol-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--ol-shadow);
+}
+
+.scp .scp-ol .scp-ol-sec-read .scp-ol-take {
+  margin-bottom: 14px;
+}
+
+.scp .scp-ol .scp-ol-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.scp .scp-ol .scp-ol-head-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  color: var(--ol-gold);
+  background: linear-gradient(160deg, #123f80, var(--ol-navy-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 3px 8px rgba(8, 30, 66, 0.25);
+}
+
+.scp .scp-ol .scp-ol-head-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2.4;
+}
+
+.scp .scp-ol .scp-ol-head-text {
+  min-width: 0;
+}
+
+.scp .scp-ol .scp-ol-take .scp-ox-h2 {
+  margin: 0 !important;
+  padding: 0;
+  color: var(--ol-text) !important;
+  font-size: 31px !important;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  text-transform: none;
+}
+
+.scp .scp-ol .scp-ol-take .scp-ox-h2::after {
+  display: none;
+}
+
+.scp .scp-ol .scp-ol-asof {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 0;
+  color: var(--ol-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.scp .scp-ol .scp-ol-asof-rule {
+  display: inline-block;
+  width: 50px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ol-gold-bright), var(--ol-gold));
+}
+
+/* The status chips: a glyph and bold words, 36px tall. */
+.scp .scp-ol .scp-ol-tags {
+  gap: 10px 14px;
+  margin: 14px 0 0;
+}
+
+.scp .scp-ol .scp-ol-tags .scp-ol-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-chip-icon {
+  display: inline-flex;
+}
+
+.scp .scp-ol .scp-ol-chip-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
+}
+
+.scp .scp-ol .scp-ol-tags .scp-ol-chip.is-good { color: var(--ol-good); background: var(--ol-good-soft); }
+.scp .scp-ol .scp-ol-tags .scp-ol-chip.is-mid { color: var(--ol-mid); background: var(--ol-mid-soft); }
+.scp .scp-ol .scp-ol-tags .scp-ol-chip.is-bad { color: var(--ol-bad); background: var(--ol-bad-soft); }
+
+/* ---- the featured panel: portrait on the club's color, the takeaway and the read */
+
+.scp .scp-ol .scp-ol-feat {
+  display: grid;
+  grid-template-columns: 30% minmax(0, 1fr);
+  min-height: 190px;
+  margin: 0 0 16px;
+  border: 1px solid var(--ol-border);
+  border-radius: 15px;
+  background: linear-gradient(145deg, #f7faff 0%, #edf3fb 100%);
+  overflow: hidden;
+}
+
+.scp .scp-ol .scp-ol-feat-art {
+  position: relative;
+  min-height: 190px;
+  border-right: 1px solid rgba(14, 40, 83, 0.14);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.16), transparent 55%),
+    linear-gradient(135deg, var(--scp-team), color-mix(in srgb, var(--scp-team) 78%, #000));
+  overflow: hidden;
+}
+
+.scp .scp-ol .scp-ol-feat-img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 92%;
+  max-width: 260px;
+  height: auto;
+  transform: translateX(-50%);
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+}
+
+.scp .scp-ol .scp-ol-feat-crest {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translate(-50%, -50%);
+  opacity: 0.9;
+}
+
+.scp .scp-ol .scp-ol-feat-body {
+  min-width: 0;
+  padding: 20px 22px;
+}
+
+.scp .scp-ol .scp-ol-feat-h {
+  margin: 0 0 10px;
+  color: var(--ol-text);
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.scp .scp-ol .scp-ol-feat .scp-ox-prose {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #223150;
+}
+
+.scp .scp-ol .scp-ol-feat .scp-ox-prose p {
+  margin: 0 0 9px;
+}
+
+.scp .scp-ol .scp-ol-feat .scp-ox-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- the supports / threatens cards */
+
+.scp .scp-ol .scp-ol-st {
+  gap: 16px;
+  margin-top: 0;
+}
+
+.scp .scp-ol .scp-ol-st-cell {
+  min-height: 115px;
+  padding: 15px 16px;
+  border: 1px solid var(--ol-border);
+  border-left-width: 3px;
+  border-radius: 13px;
+}
+
+.scp .scp-ol .scp-ol-st-cell.is-up {
+  border-left-color: var(--ol-good);
+  background: linear-gradient(180deg, #fbfefc, #f1f9f4);
+}
+
+.scp .scp-ol .scp-ol-st-cell.is-risk {
+  border-left-color: var(--ol-bad);
+  background: linear-gradient(180deg, #fffafa, #fdf0f0);
+}
+
+.scp .scp-ol .scp-ol-st-cell h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 6px;
+  font-size: 17px !important;
+  font-weight: 750;
+}
+
+.scp .scp-ol .scp-ol-st-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.scp .scp-ol .scp-ol-st-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.2;
+}
+
+.scp .scp-ol .scp-ol-st-cell.is-up .scp-ol-st-icon { color: var(--ol-good); }
+.scp .scp-ol .scp-ol-st-cell.is-risk .scp-ol-st-icon { color: var(--ol-bad); }
+
+.scp .scp-ol .scp-ol-st-cell p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---- the sidebar: Redraft Command in navy, Best fit in white */
+
+.scp .scp-ol .scp-ox-aside {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel + .scp-ox-panel {
+  margin-top: 0;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel {
+  padding: 19px 20px;
+  border-radius: 15px;
+  border: 1px solid var(--ol-border);
+  box-shadow: var(--ol-shadow);
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel > h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: var(--ol-text);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.scp .scp-ol .scp-ol-panel-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--ol-gold);
+}
+
+.scp .scp-ol .scp-ol-panel-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc {
+  position: relative;
+  min-height: 186px;
+  border-color: #0a2b5c;
+  background:
+    linear-gradient(115deg, transparent 0 84%, rgba(232, 194, 80, 0.85) 84% 87%, transparent 87% 91%, rgba(232, 194, 80, 0.55) 91% 93%, transparent 93%) top right / 200px 70px no-repeat,
+    linear-gradient(160deg, #0f3f82 0%, var(--ol-navy-deep) 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc > h3 {
+  position: relative;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  color: #fff;
+  font-size: 21px;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc > h3::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ol-gold);
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc p {
+  margin: 0 0 14px;
+  color: #dbe5f3;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc .scp-ox-btn {
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 11px;
+  background: linear-gradient(180deg, var(--ol-gold-bright), var(--ol-gold));
+  color: var(--ol-navy-deep) !important;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc .scp-ox-btn:hover,
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc .scp-ox-btn:focus-visible {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.scp .scp-ol .scp-ox-aside .scp-ox-panel.is-rc .scp-ox-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.scp .scp-ol .scp-ol-btn-arrow {
+  display: inline-flex;
+}
+
+.scp .scp-ol .scp-ol-btn-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.scp .scp-ol .scp-ol-fits {
+  gap: 5px;
+}
+
+.scp .scp-ol .scp-ol-fit {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #eef3f9;
+  color: var(--ol-text);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-fit .scp-ol-chip {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-fit .scp-ol-chip.is-good { color: var(--ol-good); background: var(--ol-good-soft); }
+.scp .scp-ol .scp-ol-fit .scp-ol-chip.is-mid { color: var(--ol-mid); background: var(--ol-mid-soft); }
+.scp .scp-ol .scp-ol-fit .scp-ol-chip.is-bad { color: var(--ol-bad); background: var(--ol-bad-soft); }
+
+.scp .scp-ol .scp-ol-fitnote {
+  margin-top: 12px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* ---- Section B: Opportunity vs. Production */
+
+.scp .scp-ol .scp-ol-sec-opp {
+  padding-top: 20px;
+}
+
+/* One card: the navy bar is its top. */
+.scp .scp-ol .scp-ol-sec-opp {
+  border: 1px solid var(--ol-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--ol-shadow);
+  overflow: hidden;
+  margin-top: 20px;
+  padding: 0;
+}
+
+.scp .scp-ol .scp-ol-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 20px;
+  color: #fff;
+  background: linear-gradient(115deg, var(--ol-navy-deep) 0%, #0f3b76 60%, #0b2d5c 100%);
+  overflow: hidden;
+}
+
+.scp .scp-ol .scp-ol-bar-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--ol-gold);
+}
+
+.scp .scp-ol .scp-ol-bar-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2.4;
+}
+
+.scp .scp-ol .scp-ol-bar .scp-ox-h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0 !important;
+  padding: 0;
+  color: #fff !important;
+  font-size: 26px !important;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.scp .scp-ol .scp-ol-bar .scp-ox-h2::after {
+  display: none;
+}
+
+.scp .scp-ol .scp-ol-bar-stripes {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 160px;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 0 60%, rgba(232, 194, 80, 0.85) 60% 63%, transparent 63% 68%, rgba(232, 194, 80, 0.5) 68% 70%, transparent 70%);
+}
+
+.scp .scp-ol .scp-ol-opp-body {
+  padding: 10px 16px 18px;
+}
+
+.scp .scp-ol .scp-ol-opp-body .scp-ox-lede {
+  margin: 0 6px 14px;
+  color: var(--ol-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* Six tiles, each its own card; the first gold-edged. */
+.scp .scp-ol .scp-ol-opp {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 11px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+}
+
+.scp .scp-ol .scp-ol-tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 138px;
+  padding: 12px 14px 12px;
+  border: 1px solid var(--ol-border) !important;
+  border-radius: 12px;
+  background: linear-gradient(170deg, #ffffff, #f6f9fd);
+}
+
+.scp .scp-ol .scp-ol-tile.is-lead {
+  border-color: var(--ol-gold) !important;
+  background: linear-gradient(170deg, #fffdf6, #fff6dc);
+}
+
+.scp .scp-ol .scp-ol-ticon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 6px;
+  color: var(--ol-gold);
+}
+
+.scp .scp-ol .scp-ol-ticon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2;
+}
+
+.scp .scp-ol .scp-ol-tile dt {
+  min-height: 2.4em;
+  color: var(--ol-text);
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.scp .scp-ol .scp-ol-tile dd {
+  margin: 4px 0 0;
+  color: var(--ol-text);
+  font-size: 42px;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.scp .scp-ol .scp-ol-tsub {
+  margin-top: 2px;
+  color: #3f5478;
+  font-size: 12.5px;
+}
+
+/* The takeaways: one panel, three rows, thin rules between. */
+.scp .scp-ol .scp-ol-tk {
+  margin-top: 16px;
+  padding: 4px 14px;
+  border: 1px solid var(--ol-border);
+  border-radius: 13px;
+  background: #fafcfe;
+}
+
+.scp .scp-ol .scp-ol-tk-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+  padding: 11px 0;
+  border-top: 1px solid var(--ol-border);
+}
+
+.scp .scp-ol .scp-ol-tk-row:first-child {
+  border-top: 0;
+}
+
+.scp .scp-ol .scp-ol-tk-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.scp .scp-ol .scp-ol-tk-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.3;
+}
+
+.scp .scp-ol .scp-ol-tk-row.is-ok .scp-ol-tk-icon { color: var(--ol-good); background: var(--ol-good-soft); }
+.scp .scp-ol .scp-ol-tk-row.is-up .scp-ol-tk-icon { color: var(--ol-good); background: var(--ol-good-soft); }
+.scp .scp-ol .scp-ol-tk-row.is-down .scp-ol-tk-icon,
+.scp .scp-ol .scp-ol-tk-row.is-warn .scp-ol-tk-icon { color: var(--ol-mid); background: var(--ol-mid-soft); }
+.scp .scp-ol .scp-ol-tk-row.is-flat .scp-ol-tk-icon { color: var(--ol-muted); background: #eef2f7; }
+
+.scp .scp-ol .scp-ol-tk-row p {
+  margin: 0;
+  padding-top: 4px;
+  color: #223150;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.scp .scp-ol .scp-ol-tk-row p strong {
+  color: var(--ol-text);
+  font-weight: 750;
+}
+
+.scp .scp-ol .scp-ol-more {
+  margin: 14px 6px 0;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-more a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ol-text) !important;
+  text-decoration: none !important;
+  box-shadow: inset 0 -2px 0 var(--ol-gold);
+}
+
+.scp .scp-ol .scp-ol-more-arrow {
+  display: inline-flex;
+}
+
+.scp .scp-ol .scp-ol-more-arrow svg {
+  width: 15px;
+  height: 15px;
+  color: var(--ol-gold);
+}
+
+/* ---- responsive, on the tab's own width */
+
+/* Small desktop: the two columns hold; the tiles go three by two. */
+@container ol (max-width: 1150px) {
+  .scp .scp-ol .scp-ol-opp {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .scp .scp-ol .scp-ol-take .scp-ox-h2 {
+    font-size: 27px !important;
+  }
+}
+
+/* Tablet: the main card and the sidebar stack; the sidebar's two cards sit side by side. */
+@container ol (max-width: 1023px) {
+  .scp .scp-ol .scp-ol-sec-read .scp-ox-read {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-ol .scp-ox-aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .scp .scp-ol .scp-ol-feat {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+
+@container ol (max-width: 820px) {
+  .scp .scp-ol .scp-ol-feat {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .scp .scp-ol .scp-ol-st {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phone: one column everywhere; the portrait becomes a band over the read. */
+@container ol (max-width: 560px) {
+  .scp .scp-ol .scp-ol-sec-read .scp-ox-read > div:first-child {
+    padding: 16px 14px 16px;
+  }
+
+  .scp .scp-ol .scp-ol-head {
+    gap: 12px;
+  }
+
+  .scp .scp-ol .scp-ol-head-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .scp .scp-ol .scp-ol-head-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .scp .scp-ol .scp-ol-take .scp-ox-h2 {
+    font-size: 23px !important;
+  }
+
+  .scp .scp-ol .scp-ol-feat {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .scp .scp-ol .scp-ol-feat-art {
+    min-height: 150px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(14, 40, 83, 0.14);
+  }
+
+  .scp .scp-ol .scp-ol-feat-img {
+    max-width: 200px;
+  }
+
+  .scp .scp-ol .scp-ol-feat-body {
+    padding: 16px;
+  }
+
+  .scp .scp-ol .scp-ox-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-ol .scp-ol-bar .scp-ox-h2 {
+    font-size: 21px !important;
+  }
+
+  .scp .scp-ol .scp-ol-opp {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .scp .scp-ol .scp-ol-tile {
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .scp .scp-ol .scp-ol-tile dd {
+    font-size: 31px;
+  }
+
+  .scp .scp-ol .scp-ol-opp-body {
+    padding: 10px 12px 16px;
+  }
+}
+
+/* ------------------------------------------- outlook: premium comparison */
+
+/*
+ * The Outlook tab's four closing sections (lib/player/outlook-premium.ts;
+ * mak's brief of 2026-11-05, matched to attached_assets/garret1.png). Its
+ * own size container ("olp"): the matrix rows go two-level and the grids
+ * stack as the block narrows, instead of shrinking the desktop arrangement.
+ * Every rule starts `.scp .scp-olp`, so nothing reaches the originals above.
+ */
+.scp .scp-olp {
+  --olp-navy-dark: #0b1c39;
+  --olp-navy: #102b52;
+  --olp-gold: #d4af37;
+  --olp-gold-bright: #edbf44;
+  --olp-gold-deep: #b8901f;
+  --olp-gold-ink: #8a6205;
+  --olp-gold-soft: #fff3d4;
+  --olp-text: #102344;
+  --olp-muted: #546b8a;
+  --olp-surface: #fff;
+  --olp-surface-light: #f6f9fd;
+  --olp-surface-blue: #edf3fa;
+  --olp-border: #ccd9e9;
+  --olp-border-light: #e0e8f2;
+  --olp-green: #087a42;
+  --olp-green-light: #e4f7e9;
+  --olp-green-line: #c4e7d0;
+  --olp-red: #b53d37;
+  --olp-red-light: #fff0ef;
+  --olp-red-line: #efcece;
+  --olp-yellow: #946500;
+  --olp-yellow-light: #fff1c9;
+  --olp-track: #dce5f2;
+  --olp-radius: 14px;
+  --olp-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  container-type: inline-size;
+  container-name: olp;
+  display: grid;
+  gap: 16px;
+  margin: 28px 0 0;
+  padding: 0 0 4px;
+  color: var(--olp-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-olp-flag {
+  display: inline-block;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--olp-gold-soft);
+  color: #7a5c0e;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  justify-self: start;
+}
+
+.scp .scp-olp-sec {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d0deee;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  box-shadow: 0 3px 8px rgba(12, 32, 64, 0.045), 0 10px 24px rgba(12, 32, 64, 0.065);
+  overflow: hidden;
+}
+
+/* ---- the navy bars */
+.scp .scp-olp-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+  padding: 10px 22px 10px 24px;
+  color: #fff;
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
+    linear-gradient(110deg, #081a34 0%, #103b69 65%, #092448 100%);
+  overflow: hidden;
+}
+
+.scp .scp-olp-bar.is-hero {
+  min-height: 72px;
+  padding: 12px 22px 12px 24px;
+}
+
+.scp .scp-olp-bar-rule {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--olp-gold-bright), var(--olp-gold-deep));
+}
+
+.scp .scp-olp-bar-stripes {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 40%;
+  max-width: 440px;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 78%, rgba(237, 191, 68, 0.75) 78% 80.5%, transparent 80.5% 85%, rgba(237, 191, 68, 0.5) 85% 86.5%, transparent 86.5% 91%, rgba(237, 191, 68, 0.3) 91% 92%, transparent 92%),
+    linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.035) 30% 48%, transparent 48% 56%, rgba(255, 255, 255, 0.05) 56% 70%, transparent 70%),
+    linear-gradient(90deg, transparent, rgba(23, 60, 104, 0.55));
+}
+
+.scp .scp-olp-ball {
+  position: absolute;
+  top: 50%;
+  right: 110px;
+  width: 96px;
+  height: 64px;
+  transform: translateY(-50%) rotate(-12deg);
+  color: #fff;
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.scp .scp-olp-bar-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  color: var(--olp-gold);
+}
+
+.scp .scp-olp-bar-icon .scp-olp-svg {
+  width: 30px;
+  height: 30px;
+  stroke-width: 2.2;
+}
+
+.scp .scp-olp-bar-divider {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 3px;
+  width: 3px;
+  height: 34px;
+  border-radius: 2px;
+  background: var(--olp-gold);
+}
+
+.scp .scp-olp-bar-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-right: 120px;
+}
+
+.scp .scp-olp-bar .scp-olp-bar-title {
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  color: #fff !important;
+  font-size: 24px !important;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.scp .scp-olp-bar .scp-olp-bar-title::after {
+  display: none;
+}
+
+.scp .scp-olp-bar-sub {
+  margin: 0;
+  color: #d6e2f3;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.scp .scp-olp-body {
+  padding: 14px 16px 16px;
+}
+
+/* ---- the drivers matrix */
+.scp .scp-olp-matrix {
+  padding: 2px 16px;
+  border: 1px solid #d2dfee;
+  border-radius: var(--olp-radius);
+  background: linear-gradient(145deg, #fff 0%, #f7faff 100%);
+}
+
+.scp .scp-olp-drv {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.9fr) minmax(110px, 0.7fr) minmax(0, 3.2fr);
+  align-items: center;
+  column-gap: 16px;
+  min-height: 58px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--olp-border-light);
+}
+
+.scp .scp-olp-drv:last-child {
+  border-bottom: 0;
+}
+
+.scp .scp-olp-drv-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.scp .scp-olp .scp-olp-h3 {
+  margin: 0 !important;
+  padding: 0;
+  color: var(--olp-text) !important;
+  font-size: 15px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-olp-tier {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.scp .scp-olp-tier.is-good {
+  background: #e1f5e5;
+  color: #08743d;
+}
+
+.scp .scp-olp-tier.is-mid {
+  background: var(--olp-yellow-light);
+  color: var(--olp-yellow);
+}
+
+.scp .scp-olp-tier.is-bad {
+  background: var(--olp-red-light);
+  color: var(--olp-red);
+}
+
+.scp .scp-olp-drv-value {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.scp .scp-olp-drv-value strong {
+  color: var(--olp-text);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.scp .scp-olp-drv-value span {
+  color: var(--olp-muted);
+  font-size: 11.5px;
+}
+
+.scp .scp-olp-drv-rail {
+  min-width: 0;
+}
+
+/* The rail: evenly spaced ticks (one per rank position, drawn as a pattern) and his marker at the true ordinal. */
+.scp .scp-olp-rail {
+  position: relative;
+  height: 22px;
+}
+
+.scp .scp-olp-ticks {
+  position: absolute;
+  inset: 6px 0;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #b8c8dc 0 2px, transparent 2px 7px);
+  opacity: 0.85;
+}
+
+.scp .scp-olp-me {
+  position: absolute;
+  top: 0;
+  width: 11px;
+  height: 22px;
+  box-sizing: border-box;
+  margin-left: -5.5px;
+  border: 2px solid var(--olp-green);
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(8, 122, 66, 0.14), 0 1px 3px rgba(12, 32, 64, 0.2);
+}
+
+.scp .scp-olp-axis {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 3px 0 0;
+  color: var(--olp-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.scp .scp-olp-axis b {
+  color: var(--olp-text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scp .scp-olp-unranked {
+  margin: 0;
+  color: var(--olp-muted);
+  font-size: 12px;
+}
+
+/* ---- the four advanced cells as one strip */
+.scp .scp-olp-adv {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 12px 0 0;
+  padding: 0;
+  border: 1px solid #d2dfee;
+  border-radius: var(--olp-radius);
+  background: linear-gradient(145deg, #fff 0%, #f5f9fe 100%);
+  overflow: hidden;
+}
+
+.scp .scp-olp-adv-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  margin: 0;
+  padding: 10px 14px;
+  border-right: 1px solid var(--olp-border-light);
+}
+
+.scp .scp-olp-adv-cell:last-child {
+  border-right: 0;
+}
+
+.scp .scp-olp-adv-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: #557eaf;
+}
+
+.scp .scp-olp-adv-icon .scp-olp-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.scp .scp-olp-adv dt {
+  margin: 0;
+  color: var(--olp-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.scp .scp-olp-adv dd {
+  margin: 1px 0 0;
+  color: var(--olp-text);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+/* ---- upside and risk */
+.scp .scp-olp-factors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.scp .scp-olp-card {
+  min-width: 0;
+  padding: 14px 16px 10px;
+  border-radius: var(--olp-radius);
+  box-shadow: 0 2px 6px rgba(12, 32, 64, 0.04);
+}
+
+.scp .scp-olp-card.is-up {
+  border: 1px solid var(--olp-green-line);
+  border-top: 3px solid #1a9a55;
+  background: linear-gradient(145deg, #f1fbf5 0%, #fff 75%);
+}
+
+.scp .scp-olp-card.is-risk {
+  border: 1px solid var(--olp-red-line);
+  border-top: 3px solid #d2534c;
+  background: linear-gradient(145deg, #fff4f4 0%, #fff 75%);
+}
+
+.scp .scp-olp .scp-olp-card-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px !important;
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgba(12, 32, 64, 0.08);
+  font-size: 20px !important;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: none;
+}
+
+.scp .scp-olp-card.is-up .scp-olp-card-h {
+  color: var(--olp-green) !important;
+}
+
+.scp .scp-olp-card.is-risk .scp-olp-card-h {
+  color: var(--olp-red) !important;
+}
+
+.scp .scp-olp-card-icon {
+  display: inline-flex;
+}
+
+.scp .scp-olp-card-icon .scp-olp-svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.4;
+}
+
+.scp .scp-olp-items {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-olp-items li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(12, 32, 64, 0.07);
+}
+
+.scp .scp-olp-items li:last-child {
+  border-bottom: 0;
+}
+
+.scp .scp-olp-item-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.scp .scp-olp-item-icon .scp-olp-svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.6;
+}
+
+.scp .scp-olp-card.is-up .scp-olp-item-icon {
+  color: var(--olp-green);
+}
+
+.scp .scp-olp-card.is-risk .scp-olp-item-icon {
+  color: var(--olp-red);
+}
+
+.scp .scp-olp-claim {
+  display: block;
+  color: var(--olp-text);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.scp .scp-olp-evid {
+  display: block;
+  margin-top: 2px;
+  color: #3f556f;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* The Redraft Command strip */
+.scp .scp-olp-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 14px 0 0;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid #ead9a0;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #fff1c9 0%, #fff8e6 100%);
+}
+
+.scp .scp-olp-cta-text {
+  color: var(--olp-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.scp .scp-olp .scp-olp-cta-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 9px;
+  background: var(--olp-navy-dark);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(8, 26, 52, 0.3);
+}
+
+.scp .scp-olp .scp-olp-cta-btn:hover,
+.scp .scp-olp .scp-olp-cta-btn:focus-visible {
+  background: var(--olp-navy);
+  outline: 2px solid var(--olp-gold);
+  outline-offset: 2px;
+}
+
+.scp .scp-olp-cta-arrow {
+  display: inline-flex;
+  color: var(--olp-gold);
+}
+
+.scp .scp-olp-cta-arrow .scp-olp-svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.6;
+}
+
+/* ---- the matchup cards */
+.scp .scp-olp-games {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-olp-game {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "wk crest" "opp crest" "rank crest" "chip chip";
+  row-gap: 4px;
+  min-height: 124px;
+  margin: 0;
+  padding: 12px 14px 12px;
+  border: 1px solid var(--olp-border);
+  border-top: 4px solid #557eaf;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff 0%, #f5f9fe 100%);
+  box-shadow: 0 2px 6px rgba(12, 32, 64, 0.05);
+}
+
+.scp .scp-olp-game.is-good {
+  border-top-color: #2aa964;
+}
+
+.scp .scp-olp-game.is-bad {
+  border-top-color: #d6514b;
+}
+
+.scp .scp-olp-game.is-mid {
+  border-top-color: var(--olp-gold);
+}
+
+.scp .scp-olp-wk {
+  grid-area: wk;
+  justify-self: start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e3ebf6;
+  color: var(--olp-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scp .scp-olp-opp {
+  grid-area: opp;
+  color: var(--olp-text);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.scp .scp-olp-rank {
+  grid-area: rank;
+  color: #3f556f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.scp .scp-olp-crest {
+  grid-area: crest;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  margin-left: 8px;
+  object-fit: contain;
+}
+
+.scp .scp-olp-chip {
+  grid-area: chip;
+  justify-self: start;
+  margin-top: 4px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scp .scp-olp-chip.is-good {
+  background: var(--olp-green-light);
+  color: var(--olp-green);
+}
+
+.scp .scp-olp-chip.is-bad {
+  background: var(--olp-red-light);
+  color: var(--olp-red);
+}
+
+.scp .scp-olp-chip.is-mid {
+  background: var(--olp-yellow-light);
+  color: var(--olp-yellow);
+}
+
+.scp .scp-olp-read {
+  margin: 0 0 6px;
+  color: var(--olp-text);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.scp .scp-olp-read.is-playoffs {
+  color: #3f556f;
+  font-size: 13px;
+}
+
+/* ---- the preseason archive */
+.scp .scp-olp-sec.is-archive {
+  background: #f6f8fc;
+}
+
+.scp .scp-olp-prev {
+  margin: 0;
+}
+
+.scp .scp-olp-prev-sum {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--olp-text);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scp .scp-olp-prev-sum::-webkit-details-marker {
+  display: none;
+}
+
+.scp .scp-olp-prev-sum:hover {
+  background: #eef3fa;
+}
+
+.scp .scp-olp-prev-sum:focus-visible {
+  outline: 2px solid var(--olp-gold);
+  outline-offset: -2px;
+}
+
+.scp .scp-olp-prev-chev {
+  display: inline-flex;
+  color: var(--olp-text);
+  transition: transform 0.15s ease;
+}
+
+.scp .scp-olp-prev-chev .scp-olp-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scp .scp-olp-prev[open] .scp-olp-prev-chev {
+  transform: rotate(180deg);
+}
+
+.scp .scp-olp-prev-body {
+  padding: 2px 18px 16px;
+  border-top: 1px solid var(--olp-border-light);
+}
+
+.scp .scp-olp-prev-body p {
+  margin: 10px 0 0;
+  color: #1f3350;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.scp .scp-olp-stamp {
+  color: var(--olp-muted) !important;
+  font-size: 12.5px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scp .scp-olp-prev-chev {
+    transition: none;
+  }
+}
+
+/* ---- narrower blocks: the rows go two-level, the grids stack */
+@container olp (max-width: 849px) {
+  .scp .scp-olp-drv {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label value" "rail rail";
+    row-gap: 6px;
+    min-height: 0;
+    padding: 10px 0;
+  }
+
+  .scp .scp-olp-drv-label {
+    grid-area: label;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .scp .scp-olp-drv-value {
+    grid-area: value;
+    align-items: flex-end;
+  }
+
+  .scp .scp-olp-drv-rail {
+    grid-area: rail;
+  }
+
+  .scp .scp-olp-adv {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-olp-adv-cell:nth-child(2) {
+    border-right: 0;
+  }
+
+  .scp .scp-olp-adv-cell:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--olp-border-light);
+  }
+
+  .scp .scp-olp-factors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olp-games {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-olp-ball {
+    right: 70px;
+    opacity: 0.1;
+  }
+
+  .scp .scp-olp-bar-text {
+    padding-right: 60px;
+  }
+
+  .scp .scp-olp-bar .scp-olp-bar-title {
+    font-size: 20px !important;
+  }
+}
+
+@container olp (max-width: 600px) {
+  .scp .scp-olp-body {
+    padding: 12px;
+  }
+
+  .scp .scp-olp-matrix {
+    padding: 2px 12px;
+  }
+
+  .scp .scp-olp-drv-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .scp .scp-olp-cta {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .scp .scp-olp .scp-olp-cta-btn {
+    justify-content: center;
+  }
+
+  .scp .scp-olp-ball,
+  .scp .scp-olp-bar-stripes {
+    display: none;
+  }
+
+  .scp .scp-olp-bar-text {
+    padding-right: 0;
+  }
+
+  .scp .scp-olp-bar .scp-olp-bar-title {
+    font-size: 18px !important;
+  }
+
+  .scp .scp-olp-game {
+    min-height: 0;
+  }
+}
+
+@container olp (max-width: 420px) {
+  .scp .scp-olp-games {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olp-adv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olp-adv-cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--olp-border-light);
+  }
+
+  .scp .scp-olp-adv-cell:last-child {
+    border-bottom: 0;
   }
 }

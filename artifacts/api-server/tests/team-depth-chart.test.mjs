@@ -76,18 +76,18 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
       assert.equal(headings[0], h1s[0], `the H1 is the first heading, not ${text(headings[0])}`);
       assert.equal(doc.querySelector(".sct-hero .sct-title").tagName, "P");
 
-      // The stamp is the document's refresh time, not now.
-      const snapshot = JSON.parse(fs.readFileSync(SNAPSHOT, "utf8"));
-      const stamp = doc.querySelector("#depth-chart .sct-dc-stamp time");
-      assert.equal(stamp.getAttribute("datetime"), new Date(snapshot.fetchedAt).toISOString());
-      assert.ok(Date.parse(stamp.getAttribute("datetime")) < Date.now() - 60_000, "a real past timestamp");
+      // No season / refresh stamp under the heading (mak, 2026-11-05).
+      assert.equal(doc.querySelector("#depth-chart .sct-dc-stamp"), null);
 
       // Offense, defense, special teams, then fantasy; Offense pressed.
       const panels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel);
       assert.deepEqual(panels, ["offense", "defense", "special", "fantasy"]);
       assert.equal(doc.querySelector('[data-sct-dc-view="offense"]').getAttribute("aria-pressed"), "true");
-      const titles = [...doc.querySelectorAll("#depth-chart .sct-dcx-title")].map(text);
-      assert.deepEqual(titles, [
+      // No visible card title (the H1 and the pressed view already name the
+      // side); each card is labelled for assistive tech only.
+      assert.equal(doc.querySelectorAll("#depth-chart .sct-dcx-title").length, 0);
+      const labels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")].map((p) => p.getAttribute("aria-label"));
+      assert.deepEqual(labels, [
         `${name} Offense Depth Chart`,
         `${name} Defense Depth Chart`,
         `${name} Special Teams Depth Chart`,
