@@ -437,15 +437,17 @@ describe("FAQ", () => {
 });
 
 describe("premium comparison version (mak, 2026-11-05)", () => {
-  test("renders under the whole original section, labeled, with the same numbers", async () => {
+  test("renders above the whole original section, labeled, with the same numbers", async () => {
     for (const slug of ["new-england-patriots", "buffalo-bills"]) {
       const { doc } = await page(`/team/${slug}/coaching/`);
       const panel = doc.querySelector("#coaching");
       const co = panel.querySelector(".sct-co");
       const cp = panel.querySelector("#coaching-premium.sct-cp");
+      // The page's H1 promotion still lands on the original's heading, not the premium's.
+      assert.ok(!cp.querySelector("h1"), "no H1 inside the premium block");
       assert.ok(co && cp, `${slug}: both versions render`);
-      // Directly after the entire original block, inside the same panel.
-      assert.equal(co.nextElementSibling, cp, `${slug}: the premium block follows the original`);
+      // Directly ABOVE the entire original block, inside the same panel (mak, 2026-11-05 later).
+      assert.equal(cp.nextElementSibling, co, `${slug}: the premium block precedes the original`);
       assert.equal(cp.querySelector(".sct-cp-flag").textContent, "New design · Comparison");
       // The original is untouched: nothing of the premium markup inside it.
       assert.equal(co.querySelector("[class*='sct-cp']"), null);

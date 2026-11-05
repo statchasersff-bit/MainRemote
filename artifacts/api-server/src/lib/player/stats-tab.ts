@@ -962,6 +962,74 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   );
 }
 
+/* --------------------------------------- the premium career comparison */
+
+/** One season of the chart. */
+export interface CareerSeasonBar {
+  season: number;
+  clubs: string[];
+  /** The club is his current one. */
+  current: boolean;
+  gp: number;
+  pts: number;
+  ppg: number;
+  /** His season finish at the position (1 = best), as the table ranks it; null when unranked. */
+  finish: number | null;
+  inProgress: boolean;
+}
+
+/**
+ * Everything the premium Fantasy Football Career Stats block
+ * (career-premium.ts) prints, from the same code paths the current section
+ * prints it from: the chart's seasons and career average, the rate tiles,
+ * the read's paragraphs, the Redraft Command card and the career highs.
+ * Null when the tab has no NFL season.
+ */
+export interface CareerPremiumModel {
+  name: string;
+  last: string;
+  pos: string;
+  scoring: string;
+  seasons: CareerSeasonBar[];
+  careerPpg: number;
+  careerGames: number;
+  rates: RateTile[];
+  paragraphs: string[];
+  redraft: RedraftCard;
+  highs: HighItem[];
+}
+
+export function careerPremiumModel(data: PlayerPageData, options: PlayerRenderOptions = {}): CareerPremiumModel | null {
+  const c = career(data);
+  if (!["QB", "RB", "WR", "TE"].includes(c.pos) || c.rows.length === 0 || c.total.gp === 0) return null;
+  const current = data.team?.code ?? "";
+  const seasons: CareerSeasonBar[] = [...c.rows]
+    .sort((x, y) => x.season - y.season)
+    .map((r) => ({
+      season: r.season,
+      clubs: r.clubs,
+      current: Boolean(current) && r.clubs.includes(current),
+      gp: r.line.gp,
+      pts: r.line.pts,
+      ppg: r.line.gp ? r.line.pts / r.line.gp : 0,
+      finish: r.finish ?? null,
+      inProgress: r.inProgress,
+    }));
+  return {
+    name: data.player.name,
+    last: lastName(data.player.name),
+    pos: c.pos,
+    scoring: SCORING_SHORT[data.format] ?? "PPR",
+    seasons,
+    careerPpg: c.total.pts / c.total.gp,
+    careerGames: c.total.gp,
+    rates: careerRateTiles(data, c),
+    paragraphs: readParagraphs(data, c, options),
+    redraft: redraftCard(data),
+    highs: careerHighItems(c),
+  };
+}
+
 /* ------------------------------------------------ the premium comparison */
 
 /**
@@ -1081,9 +1149,10 @@ function stdev(values: number[]): number {
   return Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length);
 }
 
-function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string {
+/** The read's paragraphs, as HTML (links and escaped text), in order. Empty when there is nothing to read. */
+function readParagraphs(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string[] {
   const { pos, rows, total } = c;
-  if (rows.length === 0 || total.gp === 0) return "";
+  if (rows.length === 0 || total.gp === 0) return [];
   const name = data.player.name;
   const last = lastName(name);
   const redraft = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
@@ -1169,11 +1238,36 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
       a(redraft, `see ${possessive(last)} rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
       ".",
   );
+  return paragraphs;
+}
 
+/** The Redraft Command card beside the read: its words and the player's own link. */
+export interface RedraftCard {
+  heading: string;
+  body: string;
+  href: string;
+  cta: string;
+}
+
+function redraftCard(data: PlayerPageData): RedraftCard {
+  const last = lastName(data.player.name);
+  return {
+    heading: "Redraft Command",
+    body: `Career stats tell you who he's been. Redraft Command projects what he's worth from here: rest-of-season rank, trade value and waiver priority for your league settings.`,
+    href: `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`,
+    cta: `Open ${last} in Redraft Command`,
+  };
+}
+
+function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string {
+  const paragraphs = readParagraphs(data, c, options);
+  if (paragraphs.length === 0) return "";
+  const last = lastName(data.player.name);
+  const card = redraftCard(data);
   const rc =
-    `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
-    `<p>${escapeHtml(`Career stats tell you who he's been. Redraft Command projects what he's worth from here: rest-of-season rank, trade value and waiver priority for your league settings.`)}</p>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(redraft)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(`Open ${last} in Redraft Command`)}</a>` +
+    `<div class="scp-ox-panel is-rc"><h3>${escapeHtml(card.heading)}</h3>` +
+    `<p>${escapeHtml(card.body)}</p>` +
+    `<a class="scp-ox-btn" href="${escapeHtml(card.href)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(card.cta)}</a>` +
     `</div>`;
 
   /* ---- career highs ---- */
@@ -1198,9 +1292,17 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
  * mak had them take the place of the season snapshot strip (Fantasy PPG /
  * finish / two per-game rates) under the career chart.
  */
-function renderCareerRates(data: PlayerPageData, c: Career): string {
+/** One career-rate tile: the figure, its title, the caption under it, and what the figure is, for a tooltip. */
+export interface RateTile {
+  value: string;
+  title: string;
+  caption: string;
+  tip: string;
+}
+
+function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
   const { pos, rows, total } = c;
-  if (rows.length === 0 || total.gp === 0) return "";
+  if (rows.length === 0 || total.gp === 0) return [];
   const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
   const n = rows.length;
   const first = Math.min(...rows.map((r) => r.season));
@@ -1217,25 +1319,52 @@ function renderCareerRates(data: PlayerPageData, c: Career): string {
   const n12 = topN(pos);
   const top = ranked.filter((e) => e.pos_rank! <= n12).length;
   const sd = stdev(allWeeks.map(c.pts));
-  const tiles: string[] = [
+  const tiles: RateTile[] = [
     // Short captions (mak, 2026-10-22): the strip is a footer to the chart.
     // The scoring is named (2026-11-04: "identify the scoring system used").
-    rate(one(ppg(total)), "Career PPG", `${plural(total.gp, "game")}, ${plural(n, "season")} · ${SCORING_SHORT[data.format]}`),
+    {
+      value: one(ppg(total)),
+      title: "Career PPG",
+      caption: `${plural(total.gp, "game")}, ${plural(n, "season")} · ${SCORING_SHORT[data.format]}`,
+      tip: `Fantasy points per game across his career, in ${SCORING_WORDS[data.format]} scoring: total points divided by games played.`,
+    },
   ];
   // "Appearance rate", not availability (2026-11-04): a healthy backup who
   // did not dress for a game was available for it.
-  if (games > 0) tiles.push(rate(`${Math.min(100, Math.round((total.gp / games) * 100))}%`, "Appearance rate", "Share of team games appeared in"));
+  if (games > 0) {
+    tiles.push({
+      value: `${Math.min(100, Math.round((total.gp / games) * 100))}%`,
+      title: "Appearance rate",
+      caption: "Share of team games appeared in",
+      tip: `Games he appeared in (${total.gp}) as a share of his clubs' games over those seasons (${games}).`,
+    });
+  }
   // Weekly finishes, with the count beside the share, so "22% top-12 weeks"
   // cannot be read against "no top-12 season finish" below.
   if (ranked.length) {
-    tiles.push(rate(`${Math.round((top / ranked.length) * 100)}%`, `Top-${n12} weeks`, `${top} of ${plural(ranked.length, "week")} inside the weekly top ${n12}`));
+    tiles.push({
+      value: `${Math.round((top / ranked.length) * 100)}%`,
+      title: `Top-${n12} weeks`,
+      caption: `${top} of ${plural(ranked.length, "week")} inside the weekly top ${n12}`,
+      tip: `Weeks he finished inside the top ${n12} at ${pos}, as a share of his ranked weeks: a weekly finish, not a season finish.`,
+    });
   }
   if (n > 1 && allWeeks.length > 1) {
     const w = swingWord(pos, sd);
-    tiles.push(rate(one(sd), "Weekly swing", `${w[0]!.toUpperCase()}${w.slice(1)} week-to-week`));
+    tiles.push({
+      value: one(sd),
+      title: "Weekly swing",
+      caption: `${w[0]!.toUpperCase()}${w.slice(1)} week-to-week`,
+      tip: "The standard deviation of his weekly fantasy points across his career, in points.",
+    });
   }
+  return tiles;
+}
 
-  return `<section class="scp-ox-sec scp-st-sec-rates" aria-label="Career rates"><div class="scp-st-rates">${tiles.join("")}</div></section>`;
+function renderCareerRates(data: PlayerPageData, c: Career): string {
+  const tiles = careerRateTiles(data, c);
+  if (tiles.length === 0) return "";
+  return `<section class="scp-ox-sec scp-st-sec-rates" aria-label="Career rates"><div class="scp-st-rates">${tiles.map((t) => rate(t.value, t.title, t.caption)).join("")}</div></section>`;
 }
 
 function rate(value: string, title: string, caption: string): string {
@@ -1246,13 +1375,20 @@ function rate(value: string, title: string, caption: string): string {
  * Career highs as one strip (mak, 2026-09-30): the figure, a short label, and
  * the season it came in under it.
  */
-function careerHighs(c: Career): string {
+/** One career high: the figure, its label, the season (or span) under it. */
+export interface HighItem {
+  v: string;
+  label: string;
+  sub: string;
+}
+
+function careerHighItems(c: Career): HighItem[] {
   const { pos, rows, total } = c;
   const done = rows.filter((r) => r.line.gp > 0);
-  if (done.length === 0) return "";
+  if (done.length === 0) return [];
   const top = (of: (t: Line) => number): SeasonRow =>
     done.reduce((x, y) => (of(y.line) > of(x.line) ? y : x));
-  const items: Array<{ v: string; label: string; sub: string }> = [];
+  const items: HighItem[] = [];
   const push = (of: (t: Line) => number, label: string): void => {
     const r = top(of);
     if (of(r.line) > 0) items.push({ v: whole(of(r.line)), label, sub: String(r.season) });
@@ -1278,6 +1414,12 @@ function careerHighs(c: Career): string {
   if (pos === "QB") items.push({ v: whole(total.passYd), label: "Career pass yds", sub: span });
   else if (pos === "RB") items.push({ v: whole(total.rushYd + total.recYd), label: "Career scrimmage yds", sub: span });
   else items.push({ v: whole(total.recYd), label: "Career rec yds", sub: span });
+  return items;
+}
+
+function careerHighs(c: Career): string {
+  const items = careerHighItems(c);
+  if (items.length === 0) return "";
   return (
     `<h3 class="scp-st-bests-h">Career highs</h3>` +
     `<ul class="scp-st-bests">` +
@@ -1397,33 +1539,14 @@ export function renderStatsTabParts(
     if (!collegeCard(data.college, c.pos)) return none;
     return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos) + renderAnalysis(data, c)), rest: "", foot: "" };
   }
-  // The column switch on the heading's row (2026-11-04): NFL stats or
-  // fantasy stats, so the sheet is never sixteen columns wide at once. Both
-  // sets are in the served table; the switch only hides one.
-  const careerTable = inserts.careerTable
-    ? sectionOpen(
-        "scp-st-career-h",
-        `${data.player.name} career stats by season`,
-        "",
-        `<div class="scp-st-headctl">` +
-          `<div class="scp-st-seg" role="group" aria-label="Show columns" data-scp-view-seg>` +
-          `<button type="button" data-view="nfl" aria-pressed="true">NFL stats</button>` +
-          `<button type="button" data-view="fantasy" aria-pressed="false">Fantasy</button>` +
-          `</div></div>`,
-      ) +
-      inserts.careerTable +
-      `</section>`
-    : "";
+  // The production rail, the advanced ladders, the career-table section and
+  // the StatChasers Analysis module left this tab on 2026-11-05 (mak:
+  // "remove the older version"): the premium block (stats-premium.ts), which
+  // player-render mounts above these parts, carries all four from the same
+  // model (statsPremiumModel below). `inserts.careerTable` now reaches the
+  // tab only through that block.
   return {
-    top: wrap(
-      renderProduction(data, c, options) +
-        renderAdvanced(data, c) +
-        careerTable +
-        // The analysis reads under the career table (mak, 2026-11-05).
-        renderAnalysis(data, c) +
-        renderChart(data, c) +
-        renderCareerRates(data, c),
-    ),
+    top: wrap(renderChart(data, c) + renderCareerRates(data, c)),
     // The spec's own season-by-season table was removed on 2026-09-30 as a
     // second copy of the original content's; that original table is what
     // `inserts.careerTable` carries back in, above the chart (2026-10-29).

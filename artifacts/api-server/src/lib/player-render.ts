@@ -97,7 +97,8 @@ import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
-import { renderPremiumStats, STATS_PREMIUM_COMPARE } from "./player/stats-premium";
+import { renderPremiumStats } from "./player/stats-premium";
+import { CAREER_PREMIUM_COMPARE, renderPremiumCareer } from "./player/career-premium";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
 import { injuryTabParts } from "./player/injury-tab";
@@ -2051,10 +2052,15 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
   // is the whole tab.
   const careerTable = renderCareerStats(data, "", { bare: true });
   const spec = renderStatsTabParts(data, options, { careerTable });
-  // The premium comparison version (mak's brief, 2026-11-05) stands under
-  // the whole existing Stats section while the flag is on; the same career
-  // table markup goes into it, so the two copies cannot disagree.
-  const premium = STATS_PREMIUM_COMPARE ? renderPremiumStats(data, { careerTable }) : "";
+  // The premium version (mak's briefs of 2026-11-05) heads the tab: the
+  // season line, the metric panels, the career table and the analysis. The
+  // old sections it replaced were removed the same day at mak's request.
+  const premium = renderPremiumStats(data, { careerTable });
+  // The premium Fantasy Football Career Stats comparison (mak's brief,
+  // 2026-11-05) stands under the whole existing section - chart, rate tiles,
+  // the read with its Redraft Command panel and the career highs - while
+  // the flag is on.
+  const careerPremium = CAREER_PREMIUM_COMPARE ? renderPremiumCareer(data, options) : "";
 
   if (!spec.top && !spec.rest) return null;
 
@@ -2077,10 +2083,10 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
   // only when the spec's production section is missing (a rookie's college
   // tab, a kicker): mak dropped it, and "{Name} {season} stats" right under
   // it now heads the tab under the hero's H1.
-  const heading = spec.top.includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
+  const heading = (premium + spec.top).includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
 
   return {
-    body: heading + spec.top + spec.rest + premium,
+    body: heading + premium + spec.top + spec.rest + careerPremium,
     foot: spec.foot,
     faq,
   };

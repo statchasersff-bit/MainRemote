@@ -6,11 +6,12 @@
  * icons, a KPI row, two metric cards with aligned bars and rank pills, a
  * restyled career table, and a branded analysis panel.
  *
- * Rendered UNDER the whole existing Stats section while
- * STATS_PREMIUM_COMPARE is on (player-render.ts mounts it), so both are on
- * the page for comparison. Everything here is read from statsPremiumModel()
- * in stats-tab.ts, which builds it from the code paths the current sections
- * print from: no second data pass, no figure of its own.
+ * Since mak approved it (2026-11-05, "remove the older version") this IS the
+ * head of the Stats tab: player-render.ts mounts it above the chart, the
+ * career rates and the career read, and the old production, ladder, career
+ * table and analysis sections are gone from stats-tab.ts. Everything here is
+ * read from statsPremiumModel() in stats-tab.ts, which builds it from the
+ * same code paths those sections printed from.
  *
  * The toggles reuse the page's own handlers: the Season totals / Per game
  * switch is a [data-scp-seg] whose section is this block, and the client
@@ -34,9 +35,6 @@ import {
   type Cell,
   type StatsPremiumModel,
 } from "./stats-tab";
-
-/** Flip off to drop the comparison block without touching the current tab. */
-export const STATS_PREMIUM_COMPARE = true;
 
 const DASH = "-";
 
@@ -80,7 +78,9 @@ function bar(id: string, icon: string, title: string, sub: string, ctl = "", her
     `<span class="scp-stp-bar-rule" aria-hidden="true"></span>` +
     (hero ? "" : `<span class="scp-stp-bar-icon" aria-hidden="true">${icon}</span>`) +
     `<div class="scp-stp-bar-text">` +
-    `<h3 class="scp-stp-bar-title" id="${escapeHtml(id)}">${escapeHtml(title)}</h3>` +
+    // The tab's H2s, with the ids the SEO ladder and the H1 promotion key on
+    // (scp-st-prod-h is the lead heading; player-render promotes it).
+    `<h2 class="scp-ox-h2 scp-stp-bar-title${hero ? " is-lead" : ""}" id="${escapeHtml(id)}">${escapeHtml(title)}</h2>` +
     (sub ? `<p class="scp-stp-bar-sub">${sub}</p>` : "") +
     `</div>` +
     (ctl ? `<div class="scp-stp-bar-ctl">${ctl}</div>` : "") +
@@ -215,7 +215,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
 
   // The hero band (the reference): title over the lede, no icon tile.
   const seasonHead = bar(
-    "scp-stp-season-h",
+    "scp-st-prod-h",
     ICON.bars,
     `${m.name} ${m.season} Stats`,
     m.lede,
@@ -227,7 +227,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
   );
 
   const advHead = m.advanced
-    ? bar("scp-stp-adv-h", m.pos === "QB" ? ICON.bolt : m.pos === "RB" ? ICON.yards : ICON.catch, `${m.name} ${titleCase(cats)} Stats`, m.advanced.summary)
+    ? bar("scp-st-adv-h", m.pos === "QB" ? ICON.bolt : m.pos === "RB" ? ICON.yards : ICON.catch, `${m.name} ${titleCase(cats)} Stats`, m.advanced.summary)
     : "";
   const note = m.advanced
     ? `<p class="scp-stp-note"><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`Ranks: ${m.advanced.notes.join(" · ")}.`)}</p>`
@@ -235,7 +235,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
 
   const careerHead = m.careerTable
     ? bar(
-        "scp-stp-career-h",
+        "scp-st-career-h",
         ICON.layers,
         `${m.name} Career Stats by Season`,
         "",
@@ -263,17 +263,19 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
       `</div></div>`
     : "";
 
+  // The Stats tab's head since 2026-11-05 (mak approved the premium version
+  // and had the old sections removed): one wrapper, three sections, the
+  // analysis panel.
   return (
-    `<p class="scp-stp-label" aria-hidden="true">New design - comparison</p>` +
-    `<section class="scp-ox-sec scp-stp" aria-label="Premium stats (comparison)" data-scp-premium="stats">` +
-    `<section class="scp-stp-sec" aria-labelledby="scp-stp-season-h">${seasonHead}<div class="scp-stp-body">${kpiCards(m)}</div></section>` +
+    `<div class="scp-stp" data-scp-premium="stats">` +
+    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${seasonHead}<div class="scp-stp-body">${kpiCards(m)}</div></section>` +
     (m.advanced
-      ? `<section class="scp-stp-sec" aria-labelledby="scp-stp-adv-h">${advHead}<div class="scp-stp-body">${metricCards(m)}${note}</div></section>`
+      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-adv-h">${advHead}<div class="scp-stp-body">${metricCards(m)}${note}</div></section>`
       : "") +
     (m.careerTable
-      ? `<section class="scp-stp-sec" aria-labelledby="scp-stp-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div></section>`
+      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div></section>`
       : "") +
     analysis +
-    `</section>`
+    `</div>`
   );
 }
