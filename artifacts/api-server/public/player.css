@@ -21431,7 +21431,9 @@ a.scp-peer:focus-visible {
   line-height: 1.45;
 }
 
-.scp .scp-bop-btn {
+/* The `a.` and the `.scp-ox` are specificity: the tab wrap's team-ink link
+   rule (.scp .scp-ox a, !important) must lose to the white text here. */
+.scp .scp-ox a.scp-bop-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -21440,8 +21442,6 @@ a.scp-peer:focus-visible {
   padding: 9px 12px;
   border-radius: 8px;
   background: var(--bop-navy-950);
-  /* !important: the tab wrap's team-ink link rule (.scp .scp-ox a) is
-     !important too, and painted this navy on navy. */
   color: #fff !important;
   font-size: 13px;
   text-align: center;
@@ -21450,8 +21450,8 @@ a.scp-peer:focus-visible {
   transition: background 0.15s ease;
 }
 
-.scp .scp-bop-btn:hover,
-.scp .scp-bop-btn:focus-visible {
+.scp .scp-ox a.scp-bop-btn:hover,
+.scp .scp-ox a.scp-bop-btn:focus-visible {
   background: var(--bop-navy);
 }
 
