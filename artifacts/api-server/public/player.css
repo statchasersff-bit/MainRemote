@@ -15062,6 +15062,12 @@ a.scp-peer:focus-visible {
   font-variant-numeric: tabular-nums;
   color: var(--bkp-ink);
 }
+/* Inside the Game Log frame (mak, 2026-11-05): a panel of the body like the
+   finishes chart, spaced by the body's own gap. */
+.scp .scp-glp-body > .scp-bkp-wrap {
+  min-width: 0;
+  margin: 0;
+}
 .scp .scp-bkp-wrap *,
 .scp .scp-bkp-wrap *::before,
 .scp .scp-bkp-wrap *::after {
@@ -15436,6 +15442,7 @@ a.scp-peer:focus-visible {
   overflow: hidden;
 }
 .scp .scp-bkp-scroll {
+  position: relative; /* the cells' sr-only spans position against the scroller, not the page (2026-11-05) */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }

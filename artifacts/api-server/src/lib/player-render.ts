@@ -1462,9 +1462,9 @@ function renderGameLog(
   // gone; their figures reach the new blocks through the deps below.
   // The premium hero carries the tab's heading ("Garrett Wilson Game Log
   // 2026", mak 2026-11-05); no separate panel heading above it.
-  const body =
-    renderGameLogPremium(data, premiumLogDeps(data, options)) +
-    renderBreakdownPremium(data, breakdownPremiumDeps(data, options));
+  // The breakdown and the matchups print INSIDE the Game Log frame, under
+  // the finishes panel (mak, 2026-11-05: "should be inside of the container").
+  const body = renderGameLogPremium(data, premiumLogDeps(data, options), renderBreakdownPremium(data, breakdownPremiumDeps(data, options)));
   return { body, foot: "", faq: renderGameLogFaq(data, options) };
 }
 

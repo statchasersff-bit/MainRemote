@@ -1380,16 +1380,18 @@ export function injuryTabParts(
   const body =
     renderSection1(m, data) +
     (out ? plan : "") +
-    renderGlance(m, data) +
+    // Redraft Command's injury card (mak, 2026-10-30), moved ABOVE "Injury
+    // History at a Glance" at mak's request, 2026-11-05. Empty for a player
+    // outside the durability set.
+    renderDurabilitySection(data, options) +
+    // "Injury History at a Glance" (grade, games missed, injuries, longest
+    // absence) removed at mak's request, 2026-11-05; renderGlance stays
+    // unmounted. The Durability Profile carries the grade and the counts.
     // "Where He's Been Hurt" (body map, injuries-by-body-part table and the
     // risk profile) removed at mak's request, 2026-11-05. renderMap stays
     // unmounted; the Durability Profile card carries its own figure.
     renderHistory(m) +
-    (out ? "" : plan) +
-    // Redraft Command's injury card, under everything the tab already had
-    // (mak, 2026-10-30: "don't remove anything from ours, just put it under
-    // what we have"). Empty for a player outside the durability set.
-    renderDurabilitySection(data, options);
+    (out ? "" : plan);
   const faqItems = selectFaq(injuryPool(m, data, options));
 
   // No methodology footer since 2026-10-22 (mak): the status strip carries

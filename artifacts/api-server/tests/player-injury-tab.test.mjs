@@ -254,12 +254,12 @@ describe("rendered", () => {
     assert.deepEqual(h2, [
       // Back by mak's refresh of 2026-10-09, with a Yes/No sentence under it.
       "Is Jacoby Brissett injured?",
-      "Injury History at a Glance",
-      // "Where He's Been Hurt" (body map + body-part table) removed 2026-11-05 (mak).
+      // Redraft Command's injury card, moved above the glance (mak, 2026-11-05).
+      "Durability Profile",
+      // "Injury History at a Glance" and "Where He's Been Hurt" (body map +
+      // body-part table) removed 2026-11-05 (mak).
       "Jacoby Brissett Injury History",
       "If Brissett Misses Time",
-      // Redraft Command's injury card, under everything above (mak, 2026-10-30).
-      "Durability Profile",
       "Jacoby Brissett Injury FAQ",
     ]);
     // The methodology footer left the tab 2026-10-22 (mak).
@@ -274,12 +274,12 @@ describe("rendered", () => {
     assert.equal(doc.querySelector(".scp-in-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
   });
 
-  test("counts agree across tiles, timeline and FAQ", () => {
+  test("counts agree across timeline and FAQ", () => {
     const { doc } = render();
-    const tiles = [...doc.querySelectorAll(".scp-in-gl")].map((t) => t.querySelector(".scp-in-glv").textContent);
-    assert.deepEqual(tiles.slice(1, 3), ["11", "4"]);
-    // The body map, its body-part table and the risk profile left the tab
-    // 2026-11-05 (mak).
+    // The glance tiles, the body map, its body-part table and the risk
+    // profile all left the tab 2026-11-05 (mak).
+    assert.equal(doc.querySelector(".scp-in-gl"), null);
+    assert.equal(doc.querySelector(".scp-in-glance"), null);
     assert.equal(doc.querySelector(".scp-in-parts"), null);
     assert.equal(doc.querySelector(".scp-in-bodymap"), null);
     assert.equal(doc.querySelector(".scp-in-risk"), null);
@@ -348,7 +348,6 @@ describe("rendered", () => {
     const many = Array.from({ length: 16 }, (_, i) => ({ season: 2010 + i, week: 5, type: i % 2 ? "Ankle" : "Knee", bodyPart: "", side: "right", gamesMissed: 1 }));
     const { doc } = render({ injury: { history: { grade: "C", score: 70, nfl: many, college: [] }, seasonMissed: 0, lastPlayedWeek: 3 } });
     assert.match(doc.querySelector(".scp-in-more summary").textContent, /Show all 16 injuries/);
-    assert.ok(doc.querySelector(".scp-in-gl.is-mid"));
   });
 
   test("the tab itself feeds no sink: the page pushes its FAQ (renderInjury)", () => {

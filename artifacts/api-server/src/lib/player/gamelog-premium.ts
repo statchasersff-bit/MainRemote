@@ -465,9 +465,11 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
 
 /**
  * The whole block: hero, season chips, KPI cards, the table with its note,
- * and the finishes panel.
+ * the finishes panel, and `tail` (the Game-by-Game Breakdown and Upcoming
+ * Matchups, breakdown-premium.ts) INSIDE the same frame, under the finishes
+ * panel, at mak's request (2026-11-05).
  */
-export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps): string {
+export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps, tail = ""): string {
   const archive = data.logSeason !== data.season;
   const titleId = `glp-title-${data.logSeason}`;
   return (
@@ -493,6 +495,7 @@ export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps)
     renderTable(data, deps) +
     `</div>` +
     renderFinishes(data, archive) +
+    tail +
     `</div></section></div>`
   );
 }

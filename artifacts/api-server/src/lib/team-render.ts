@@ -51,6 +51,7 @@ import { getTeamCoaching } from "./team/coaching";
 import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
 import { getDraftView } from "./team/draft";
 import { renderDraftSection } from "./team/draft-render";
+import { renderDepthPremium } from "./team/depth-premium";
 import { getContractsView } from "./team/contracts";
 import { renderContractsSection } from "./team/contracts-render";
 import { contractsFaq } from "./team/contracts-faq";
@@ -62,6 +63,7 @@ import { renderUsageSection } from "./team/usage-render";
 import { renderTeamHeader } from "./team/team-header";
 import { renderPremiumTeamHeader } from "./team/team-header-premium";
 import { statsFaq } from "./team/stats-faq";
+import { renderStatsPremium } from "./team/stats-premium";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
   nameKey,
@@ -1461,6 +1463,38 @@ function renderTeamStats(
   // which is the question almost everyone arrives with; the history answers
   // "and is that new", which only makes sense once the first is answered.
   if (history) blocks.push(history);
+
+  // The premium comparison of the whole tab (mak's brief, 2026-11-05), under
+  // everything above, labeled, on the same rows, bars and tiers. Not the
+  // default until mak approves.
+  blocks.push(
+    renderStatsPremium({
+      team: data.team,
+      season: stats.season,
+      liveWeek: liveWeek ?? null,
+      effWeek: eff ? effWeek || null : (liveWeek ?? null),
+      production: {
+        offense: pickRows(stats.offense, prefixed("off", PRODUCTION_KEYS)),
+        defense: pickRows(stats.defense, prefixed("def", PRODUCTION_KEYS)),
+      },
+      efficiency: {
+        offense: eff ? efficiencyRows(eff, "offense") : pickRows(stats.offense, prefixed("off", RATE_KEYS)),
+        defense: eff ? efficiencyRows(eff, "defense") : pickRows(stats.defense, prefixed("def", RATE_KEYS)),
+      },
+      passRush: {
+        offense: eff ? passRushRows(eff, "offense") : pickRows(stats.situational, ["sacks-allowed"]),
+        defense: eff ? passRushRows(eff, "defense") : pickRows(stats.situational, ["sacks-made"]),
+      },
+      possession: pickRows(stats.situational, POSSESSION_KEYS),
+      pace: pickRows(stats.volume, PACE_KEYS),
+      balance: stats.balance,
+      balanceFaced: stats.balanceFaced,
+      history: stats.history,
+      tier: statTier,
+      fill: rankFill,
+      historyTier,
+    }),
+  );
 
   // Below the tools block, for the same reason the outlook's questions are:
   // they are this tab re-cut into the forms people search for, which reads as
@@ -2996,31 +3030,43 @@ function letterGrade(pct: number): string {
  * graded by hand: the tooltip names the rank the letter stands for. Empty for
  * the Fantasy and Special Teams views, which the doc has no rates for.
  */
-function depthGrades(data: TeamPageData, view: DepthView["key"]): string {
+export interface DepthGradeUnit {
+  label: string;
+  grade: string;
+  tone: "good" | "mid" | "poor";
+  detail: string;
+}
+
+export function depthGradeUnits(data: TeamPageData, view: DepthView["key"]): DepthGradeUnit[] {
   const doc = getEfficiencyDoc(data.state.statsSeason);
   const eff = doc?.teams[data.team.abbreviation];
-  if (!doc || !eff) return "";
+  if (!doc || !eff) return [];
   const side = view === "offense" ? eff.offense : view === "defense" ? eff.defense : null;
-  if (!side) return "";
+  if (!side) return [];
   const units: Array<[string, string, EfficiencyMetric | null | undefined]> = [
     [view === "offense" ? "Passing game" : "Pass defense", "EPA per dropback", side.epaDropback],
     [view === "offense" ? "Rushing attack" : "Run defense", "EPA per rush", side.epaRush],
   ];
   const through = doc.throughWeek ? ` through Week ${doc.throughWeek}` : "";
-  const pills = units
+  return units
     .filter((unit): unit is [string, string, EfficiencyMetric] => !!unit[2])
-    .map(([label, metric, m]) => {
-      const grade = letterGrade(m.pct);
-      const tone = m.pct >= 68 ? "good" : m.pct < 29 ? "poor" : "mid";
-      const detail = `${metric}: ${m.tied ? "T-" : ""}${ordinal(m.rank)} in the NFL${through}`;
-      return (
-        `<span class="sct-dcx-grade" data-tone="${tone}" title="${escapeHtml(detail)}">` +
-        `<span class="sct-dcx-grade-label">${escapeHtml(label)}</span>` +
-        `<span class="sct-dcx-grade-mark">${escapeHtml(grade)}</span>` +
-        `<span class="sct-visually-hidden">, ${escapeHtml(detail)}</span>` +
-        `</span>`
-      );
-    });
+    .map(([label, metric, m]) => ({
+      label,
+      grade: letterGrade(m.pct),
+      tone: m.pct >= 68 ? "good" : m.pct < 29 ? "poor" : "mid",
+      detail: `${metric}: ${m.tied ? "T-" : ""}${ordinal(m.rank)} in the NFL${through}`,
+    }));
+}
+
+function depthGrades(data: TeamPageData, view: DepthView["key"]): string {
+  const pills = depthGradeUnits(data, view).map(
+    ({ label, grade, tone, detail }) =>
+      `<span class="sct-dcx-grade" data-tone="${tone}" title="${escapeHtml(detail)}">` +
+      `<span class="sct-dcx-grade-label">${escapeHtml(label)}</span>` +
+      `<span class="sct-dcx-grade-mark">${escapeHtml(grade)}</span>` +
+      `<span class="sct-visually-hidden">, ${escapeHtml(detail)}</span>` +
+      `</span>`,
+  );
   return pills.length ? `<div class="sct-dcx-grades">${pills.join("")}</div>` : "";
 }
 
@@ -3077,7 +3123,7 @@ function depthFaqInput(charts: TeamDepthCharts): {
  * slot the chart does not list is left out of the sentence rather than
  * guessed; with none of them the paragraph is the second sentence alone.
  */
-function depthSummary(team: NflTeam, football: FootballSide[]): string {
+function depthSummaryParts(team: NflTeam, football: FootballSide[]): { lead: string; tail: string } {
   const offense = football.find((side) => side.key === "offense");
   const starter = (pos: string): string | null =>
     offense?.slots.find((slot) => slot.pos === pos)?.rows[0]?.name ?? null;
@@ -3104,6 +3150,11 @@ function depthSummary(team: NflTeam, football: FootballSide[]): string {
   const tail =
     `View ${team.city}'s current offense, defense and special teams depth chart ` +
     `plus StatChasers' fantasy skill-position hierarchy.`;
+  return { lead, tail };
+}
+
+function depthSummary(team: NflTeam, football: FootballSide[]): string {
+  const { lead, tail } = depthSummaryParts(team, football);
   return `<p class="sct-dc-summary">${escapeHtml(lead ? `${lead} ${tail}` : tail)}</p>`;
 }
 
@@ -3112,17 +3163,19 @@ function depthSummary(team: NflTeam, football: FootballSide[]): string {
  * "3WR 1TE" and "Base 3-4 D". Only what the source says; nothing is inferred
  * from the roster.
  */
-function depthFormation(side: FootballSide): string {
-  if (!side.formation || side.key === "special") return "";
-  let text: string;
+function depthFormationText(side: FootballSide): string | null {
+  if (!side.formation || side.key === "special") return null;
   if (side.key === "offense") {
     const groups = [...side.formation.matchAll(/(\d)\s*(WR|TE|RB|FB)/gi)].map((m) => `${m[1]} ${m[2]!.toUpperCase()}`);
-    text = groups.length ? `Base offense: ${groups.join(", ")}` : `Base offense: ${side.formation}`;
-  } else {
-    const front = side.formation.match(/\d-\d(?:-\d)?/);
-    text = front ? `Base defense: ${front[0]}` : `Base defense: ${side.formation}`;
+    return groups.length ? `Base offense: ${groups.join(", ")}` : `Base offense: ${side.formation}`;
   }
-  return `<span class="sct-dcx-formation">${escapeHtml(text)}</span>`;
+  const front = side.formation.match(/\d-\d(?:-\d)?/);
+  return front ? `Base defense: ${front[0]}` : `Base defense: ${side.formation}`;
+}
+
+function depthFormation(side: FootballSide): string {
+  const text = depthFormationText(side);
+  return text ? `<span class="sct-dcx-formation">${escapeHtml(text)}</span>` : "";
 }
 
 /**
@@ -3307,10 +3360,34 @@ function renderDepthChart(
       .join("") +
     `</div>`;
 
+  // The premium comparison (mak's brief, 2026-11-05) under the whole
+  // original; the original stays the design until mak approves it. Both
+  // read the same charts; the premium block's view buttons are a second
+  // [data-sct-dc] block, wired by the same client loop.
+  const usage = getUsageDoc(data.state.statsSeason);
+  const ranks = usage ? pprPositionRanks(usage) : null;
+  const premium = renderDepthPremium(data, {
+    football,
+    fantasy,
+    summary: depthSummaryParts(team, football),
+    formation: depthFormationText,
+    grades: (view) => depthGradeUnits(data, view),
+    experience: (name) => depthExperience(team, name),
+    name: depthName,
+    movement: depthMovement,
+    badge: (row) => injuryBadge(row, "sct-dpp-tag"),
+    sidelined: (row) => isOutDesignation(row.injuryStatus),
+    pprRank: (pos, row) => {
+      const ppr = pprFor(pos, ranks);
+      return ppr ? ppr.ranks.rankOf(/^\d+$/.test(row.id ?? "") ? row.id : null, team.abbreviation, row.name) : null;
+    },
+  });
+
   return (
     h2(`${team.fullName} Depth Chart`) +
     depthSummary(team, football) +
-    `<div class="sct-dc" data-sct-dc>${switcher}${panels.map((panel) => panel.html).join("")}</div>`
+    `<div class="sct-dc" data-sct-dc>${switcher}${panels.map((panel) => panel.html).join("")}</div>` +
+    premium
   );
 }
 
