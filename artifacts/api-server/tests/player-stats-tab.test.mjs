@@ -221,20 +221,9 @@ describe("stats tab", () => {
     // Every metric's definition is its label's tooltip (2026-11-04).
     assert.match(epa.querySelector(".scp-stp-row-label").getAttribute("title"), /^Expected points added per play/);
     assert.match(rowOf("Completion rate").querySelector(".scp-stp-row-label").getAttribute("title"), /completions divided by pass attempts/);
-    // The StatChasers Analysis panel: the profile, then the fantasy impact.
-    const parts = [...doc.querySelectorAll(".scp-stp-analysis-part")];
-    assert.deepEqual(parts.map((p) => text(p.querySelector("h4"))), ["Passing profile", "Fantasy impact"]);
-    const paras = parts.map((p) => text(p.querySelector("p")));
-    assert.match(paras[0], /^Brissett .+\.$/);
-    // Three games is a small sample (2026-11-04): what he did, the TD share,
-    // and that the trends are not established - never a "floor" off three games.
-    assert.equal(
-      paras[1],
-      "Brissett threw for 600 yards and three touchdowns on 90 attempts across his first three appearances of 2026. " +
-        "Touchdown passes generated 24% of his fantasy points. With only 3 games played, his season-long efficiency and workload trends are not yet established.",
-    );
-    assert.equal(text(doc.querySelector(".scp-stp-analysis-note")), "Small sample · 3 games · 90 attempts");
-    assert.equal(text(doc.querySelector(".scp-stp-brand-text")), "StatChasers Analysis");
+    // Three games is a small sample: no trends to read, so no StatChasers
+    // Analysis panel at all (mak, 2026-11-05) - not even the profile.
+    assert.equal(doc.querySelector(".scp-stp-analysis"), null);
     // The section bar: the name H2, then the one-line read.
     assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-stp-bar-sub")), /volume · \S+ efficiency$|efficiency$/);
   });

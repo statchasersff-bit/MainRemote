@@ -718,6 +718,10 @@ function fantasyParts(data: PlayerPageData, c: Career, cards: AdvCard[]): Analys
   const good = pick(ranked.filter((m) => m.standing === "good"), 0);
   const bad = pick(ranked.filter((m) => m.standing === "bad").reverse(), 1);
   const row = c.focus;
+  // A small sample has no trends to read, so no analysis at all (mak,
+  // 2026-11-05): the panel is not printed rather than saying "not yet
+  // established" over one game.
+  if (row && row.line.gp && sampleOf(pos, row.line) === "small") return [];
   const parts: AnalysisPart[] = [];
   if (good.length || bad.length) {
     const sentence = good.length
@@ -752,23 +756,10 @@ function sampleOf(pos: string, t: Line): Sample {
   return isStarterSeason(pos, t) ? "starter" : "reserve";
 }
 
-/** What he did, as a box score reads it: "threw for 188 yards and three touchdowns on 23 attempts". */
-function boxLine(pos: string, t: Line): string {
-  if (pos === "QB") {
-    return `threw for ${whole(t.passYd)} yards and ${word(t.passTd)} touchdown${t.passTd === 1 ? "" : "s"} on ${whole(t.att)} attempts`;
-  }
-  if (pos === "RB") {
-    const td = t.rushTd + t.recTd;
-    return `ran ${whole(t.rushAtt)} times for ${whole(t.rushYd)} yards and caught ${whole(t.rec)} of ${whole(t.tgt)} targets, with ${word(td)} touchdown${td === 1 ? "" : "s"}`;
-  }
-  return `caught ${whole(t.rec)} of ${whole(t.tgt)} targets for ${whole(t.recYd)} yards and ${word(t.recTd)} touchdown${t.recTd === 1 ? "" : "s"}`;
-}
-
 /**
  * The "Fantasy impact" paragraph, by sample size.
  *
- *   small    what he did, the touchdown share, and that the trends are not
- *            established yet - never a floor read off one game;
+ *   small    no analysis at all (2026-11-05): nothing printed, see the caller;
  *   starter  the old read: his volume is his floor, efficiency the rest;
  *   reserve  appearances against starts, and that playing time, not
  *            efficiency, decides his value.
@@ -782,29 +773,12 @@ function fantasyImpact(last: string, pos: string, row: SeasonRow, c: Career): An
   const when = now ? "this season" : `in ${row.season}`;
   const stale = c.leagueWeek > 0 && row.season < c.leagueSeason;
   const lead = stale ? `${last} has not played in ${c.leagueSeason}; these are his ${row.season} numbers. ` : "";
-  const touches = pos === "QB" ? t.att : pos === "RB" ? t.rushAtt + t.tgt : t.tgt;
-  const unit = pos === "QB" ? "attempt" : pos === "RB" ? "touch" : "target";
   const volume =
     pos === "QB" ? `${one(t.att / t.gp)} pass attempts and ${one(t.rushAtt / t.gp)} carries a game`
       : pos === "RB" ? `${one(t.rushAtt / t.gp)} carries and ${one(t.tgt / t.gp)} targets a game`
         : `${one(t.tgt / t.gp)} targets a game`;
   const band = sampleOf(pos, t);
 
-  if (band === "small") {
-    const share = t.pts > 0 ? Math.round((tdPoints(t) / t.pts) * 100) : 0;
-    const span = t.gp === 1
-      ? `in his ${now ? "first " : ""}appearance ${now ? `of ${row.season}` : `in ${row.season}`}`
-      : `across his ${now ? "first " : ""}${word(t.gp)} appearances ${now ? `of ${row.season}` : `in ${row.season}`}`;
-    const tdWord = pos === "QB" ? "Touchdown passes" : "Touchdowns";
-    const shareLine = share > 0 ? `${tdWord} generated ${share}% of his fantasy points.` : "None of his fantasy points came from touchdowns.";
-    return scaPart(
-      "Fantasy impact",
-      escapeHtml(
-        `${lead}${last} ${boxLine(pos, t)} ${span}. ${shareLine} With only ${plural(t.gp, "game")} played, his season-long efficiency and workload trends are not yet established.`,
-      ),
-      `Small sample · ${plural(t.gp, "game")} · ${plural(touches, unit)}`,
-    );
-  }
   if (band === "starter") {
     return scaPart(
       "Fantasy impact",
