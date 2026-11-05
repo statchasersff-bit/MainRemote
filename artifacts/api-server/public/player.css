@@ -15047,17 +15047,19 @@ a.scp-peer:focus-visible {
   font-weight: 600;
 }
 
+.scp .scp-cp-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 .scp .scp-cp-legend i {
   display: inline-block;
   width: 14px;
   height: 10px;
-  margin-left: 8px;
   border-radius: 3px;
   background: linear-gradient(180deg, var(--cp-bar), var(--cp-bar-2));
-}
-
-.scp .scp-cp-legend i:first-child {
-  margin-left: 0;
 }
 
 .scp .scp-cp-legend i.is-last {
@@ -15488,7 +15490,8 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-cp-chart {
-    padding: 16px 10px 12px;
+    grid-template-columns: 26px minmax(0, 1fr);
+    padding: 16px 8px 12px;
     column-gap: 6px;
   }
 
@@ -15510,7 +15513,12 @@ a.scp-peer:focus-visible {
 
   .scp .scp-cp-plot,
   .scp .scp-cp-xs {
-    min-width: calc(var(--scp-cp-n) * 60px);
+    min-width: calc(var(--scp-cp-n) * 56px);
+  }
+
+  .scp .scp-cp-fin {
+    padding: 3px 9px;
+    font-size: 11.5px;
   }
 
   .scp .scp-cp-col {
