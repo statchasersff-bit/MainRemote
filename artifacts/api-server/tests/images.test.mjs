@@ -506,7 +506,7 @@ describe("team hub and player pages", () => {
     assert.ok(html.length > 1000, "a rendered hub");
     assert.equal(/sleepercdn\.com/.test(html), false, "no Sleeper URL in the team hub");
     const doc = new JSDOM(html).window.document;
-    const hero = doc.querySelector("img.sct-hero-logo");
+    const hero = doc.querySelector("img.sct-tpb-logo");
     assert.ok(hero, "hero crest");
     assert.match(hero.getAttribute("src"), /^https:\/\/news\.statchasers\.com\/team-logos\/phi-[0-9a-f]{8}\.svg$/);
     // Depth rows can carry an ESPN portrait when the depth chart names a

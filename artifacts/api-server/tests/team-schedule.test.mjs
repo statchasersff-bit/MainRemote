@@ -321,7 +321,7 @@ describe("the Schedule page", () => {
     const h1s = [...page.body.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((m) => m[1]);
     assert.deepEqual(h1s, ["Indianapolis Colts Schedule"]);
     // The club's name in the hero is a <p> in this mode: nothing outranks the H1.
-    assert.ok(page.body.indexOf('<p class="sct-title">Indianapolis Colts</p>') < page.body.indexOf("<h1"), "the hero does not carry a heading ahead of the H1");
+    assert.ok(page.body.indexOf('<p class="sct-tpb-title">Indianapolis Colts</p>') < page.body.indexOf("<h1"), "the hero does not carry a heading ahead of the H1");
     assert.ok(!/<h2[^>]*>Indianapolis Colts<\/h2>/.test(page.body));
   });
 

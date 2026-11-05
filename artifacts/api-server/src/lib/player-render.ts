@@ -98,6 +98,7 @@ import { sectionHref } from "./player/sections";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { renderPremiumStats } from "./player/stats-premium";
 import { renderOutlookPremium } from "./player/outlook-premium";
+import { renderOutlookProjectionPremium } from "./player/outlook-projection-premium";
 import { renderPremiumCareer } from "./player/career-premium";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
@@ -1992,7 +1993,17 @@ export function renderPlayerPage(
   // the read and opportunity sections and before the FAQ.
   const outlookParts: TabParts | null = existingOutlook.exists
     ? {
-        body: existingOutlook.html + (outlookSpec?.body ?? "") + (outlookSpec ? renderOutlookPremium(data) : ""),
+        // The premium comparison of the first two sections (mak's brief,
+        // 2026-11-05, no portrait) sits under the tab's own two sections and
+        // above the closing sections; a comparison only until mak approves.
+        body:
+          existingOutlook.html +
+          (outlookSpec?.body ?? "") +
+          // Plain `options` on purpose: a second withFaq("outlook") would
+          // replace the section's FAQ sink and drop its schema; this block
+          // asks no questions, it only needs the link prefixes.
+          (outlookSpec ? renderOutlookProjectionPremium(data, options) : "") +
+          (outlookSpec ? renderOutlookPremium(data) : ""),
         foot: outlookSpec?.foot ?? "",
         faq: outlookSpec?.faq ?? "",
       }

@@ -18823,3 +18823,903 @@ a.scp-peer:focus-visible {
     border-bottom: 0;
   }
 }
+
+/* ------------------------- outlook: projection + opportunity premium comparison */
+
+/*
+ * The premium comparison of the Outlook tab's first two sections
+ * (lib/player/outlook-projection-premium.ts; mak's brief of 2026-11-05, the
+ * no-portrait version). Rendered under the tab's own sections and above the
+ * premium closing sections, labelled "New design - comparison". Its own size
+ * container ("olr"): the sidebar drops under the summary below 900, the two
+ * KPI groups stack below 850, the factor cards and the sidebar cards stack
+ * below 560, and the type never shrinks to keep the desktop arrangement.
+ * Every rule starts `.scp .scp-olr`, so nothing reaches the sections above.
+ */
+.scp .scp-olr {
+  --olr-navy-950: #081a34;
+  --olr-navy-900: #0b2345;
+  --olr-navy-800: #103862;
+  --olr-navy: #0b3a7a;
+  --olr-gold: #d4af37;
+  --olr-gold-bright: #f0bf35;
+  --olr-gold-light: #fff3d7;
+  --olr-gold-ink: #7a5c0e;
+  --olr-text: #102344;
+  --olr-muted: #586f8e;
+  --olr-surface: #fff;
+  --olr-surface-light: #f7faff;
+  --olr-surface-blue: #edf4fb;
+  --olr-border: #cfddec;
+  --olr-border-light: #e0e8f2;
+  --olr-green: #087a43;
+  --olr-green-light: #e9f8ee;
+  --olr-green-line: #bfe3cc;
+  --olr-red: #be3036;
+  --olr-red-light: #fff0f1;
+  --olr-red-line: #efc9cc;
+  --olr-amber: #aa7800;
+  --olr-amber-light: #fff2cf;
+  --olr-radius: 14px;
+  --olr-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  container-type: inline-size;
+  container-name: olr;
+  display: grid;
+  gap: 16px;
+  margin: 28px 0 0;
+  padding: 0;
+  color: var(--olr-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-olr-svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.scp .scp-olr-flag {
+  display: inline-block;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--olr-gold-light);
+  color: var(--olr-gold-ink);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  justify-self: start;
+}
+
+.scp .scp-olr-sec {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--olr-border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  box-shadow: var(--olr-shadow);
+  overflow: hidden;
+}
+
+/* ---- the navy bars (60-72px; an analytical module, not the page header) */
+.scp .scp-olr-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 10px 22px;
+  color: #fff;
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
+    linear-gradient(110deg, var(--olr-navy-950) 0%, var(--olr-navy-800) 65%, var(--olr-navy-900) 100%);
+  overflow: hidden;
+}
+
+.scp .scp-olr-bar-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--olr-gold-bright);
+  font-size: 30px;
+}
+
+.scp .scp-olr-bar-icon .scp-olr-svg {
+  stroke-width: 2.4;
+}
+
+.scp .scp-olr-bar-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-right: 120px;
+}
+
+.scp .scp-olr .scp-olr-bar-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-size: 25px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.scp .scp-olr .scp-olr-bar-title::after,
+.scp .scp-olr .scp-olr-bar-title::before {
+  display: none;
+}
+
+.scp .scp-olr-bar-sub {
+  margin: 3px 0 0;
+  color: #c9d8ee;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* The faint geometric pattern and the two gold diagonals at the right. */
+.scp .scp-olr-bar-grid {
+  position: absolute;
+  top: 0;
+  right: 70px;
+  bottom: 0;
+  width: 180px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 14px 14px;
+  mask-image: linear-gradient(90deg, transparent, #000 40%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%);
+  pointer-events: none;
+}
+
+.scp .scp-olr-bar-stripes {
+  position: absolute;
+  top: -20px;
+  right: 18px;
+  bottom: -20px;
+  width: 40px;
+  background:
+    linear-gradient(115deg, transparent 0 38%, var(--olr-gold) 38% 52%, transparent 52% 64%, var(--olr-gold-bright) 64% 78%, transparent 78%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.scp .scp-olr-body {
+  padding: 16px 18px 18px;
+}
+
+/* ---- Section A: summary at the left, the sidebar at the right */
+.scp .scp-olr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.scp .scp-olr-main,
+.scp .scp-olr-side {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* the status badges */
+.scp .scp-olr-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-olr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.scp .scp-olr-tag-icon {
+  display: inline-flex;
+  font-size: 16px;
+}
+
+.scp .scp-olr-tag.is-good {
+  background: var(--olr-green-light);
+  border-color: var(--olr-green-line);
+  color: var(--olr-green);
+}
+
+.scp .scp-olr-tag.is-mid {
+  background: var(--olr-amber-light);
+  border-color: #efd99a;
+  color: var(--olr-amber);
+}
+
+.scp .scp-olr-tag.is-bad {
+  background: var(--olr-red-light);
+  border-color: var(--olr-red-line);
+  color: var(--olr-red);
+}
+
+/* the written summary: the takeaway, then the observations */
+.scp .scp-olr-summary {
+  position: relative;
+  padding: 16px 18px 14px;
+  border: 1px solid #cbdbea;
+  border-radius: var(--olr-radius);
+  background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+  box-shadow: 0 3px 8px rgba(10, 35, 70, 0.04);
+}
+
+.scp .scp-olr-summary::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, var(--olr-gold-bright), var(--olr-gold));
+}
+
+.scp .scp-olr-thesis {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  color: var(--olr-text);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.scp .scp-olr-thesis-rule {
+  flex: 0 0 auto;
+  width: 4px;
+  height: 44px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--olr-gold-bright), var(--olr-gold));
+}
+
+.scp .scp-olr-obs {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-olr-ob {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-olr-ob-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--olr-gold-light);
+  color: var(--olr-gold-ink);
+  font-size: 14px;
+}
+
+.scp .scp-olr-ob.is-alert .scp-olr-ob-icon {
+  background: var(--olr-red-light);
+  color: var(--olr-red);
+}
+
+.scp .scp-olr-ob p {
+  margin: 0;
+  color: var(--olr-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.scp .scp-olr-ob p strong,
+.scp .scp-olr-factor p strong,
+.scp .scp-olr-read-text strong {
+  font-weight: 700;
+  color: var(--olr-navy);
+}
+
+/* supports / threatens */
+.scp .scp-olr-factors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.scp .scp-olr-factor {
+  position: relative;
+  min-width: 0;
+  padding: 12px 14px 13px 16px;
+  border: 1px solid var(--olr-border-light);
+  border-radius: 12px;
+  background: var(--olr-surface);
+  box-shadow: 0 2px 6px rgba(10, 35, 70, 0.04);
+}
+
+.scp .scp-olr-factor::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+}
+
+.scp .scp-olr-factor.is-up {
+  border-color: var(--olr-green-line);
+  background: linear-gradient(135deg, #fff 0%, var(--olr-green-light) 100%);
+}
+
+.scp .scp-olr-factor.is-up::before {
+  background: var(--olr-green);
+}
+
+.scp .scp-olr-factor.is-risk {
+  border-color: var(--olr-red-line);
+  background: linear-gradient(135deg, #fff 0%, var(--olr-red-light) 100%);
+}
+
+.scp .scp-olr-factor.is-risk::before {
+  background: var(--olr-red);
+}
+
+.scp .scp-olr .scp-olr-factor-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px !important;
+  padding: 0;
+  border: 0;
+  color: var(--olr-text) !important;
+  font-size: 16px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-olr-factor-icon {
+  display: inline-flex;
+  font-size: 21px;
+}
+
+.scp .scp-olr-factor.is-up .scp-olr-factor-icon {
+  color: var(--olr-green);
+}
+
+.scp .scp-olr-factor.is-risk .scp-olr-factor-icon {
+  color: var(--olr-red);
+}
+
+.scp .scp-olr-factor p {
+  margin: 0;
+  color: #2a3d5c;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* the Redraft Command card */
+.scp .scp-olr-rc {
+  position: relative;
+  padding: 16px 18px 18px;
+  border-radius: var(--olr-radius);
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.07) 0%, transparent 55%),
+    linear-gradient(160deg, var(--olr-navy-800) 0%, var(--olr-navy-950) 100%);
+  box-shadow: 0 6px 18px rgba(8, 26, 52, 0.22);
+  overflow: hidden;
+}
+
+.scp .scp-olr-rc::after {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: -6px;
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, transparent 0 42%, var(--olr-gold) 42% 54%, transparent 54% 66%, var(--olr-gold-bright) 66% 78%, transparent 78%);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.scp .scp-olr .scp-olr-rc-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  color: #fff !important;
+  font-size: 20px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-olr-rc-icon {
+  display: inline-flex;
+  color: var(--olr-gold-bright);
+  font-size: 22px;
+}
+
+.scp .scp-olr-rc-rule {
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin: 10px 0 10px;
+  border-radius: 2px;
+  background: var(--olr-gold);
+}
+
+.scp .scp-olr-rc p {
+  margin: 0 0 14px;
+  color: #dbe6f6;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.scp .scp-olr .scp-olr-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--olr-gold-bright), var(--olr-gold));
+  color: var(--olr-navy-950) !important;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none !important;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+}
+
+.scp .scp-olr .scp-olr-btn:hover {
+  filter: brightness(1.05);
+}
+
+.scp .scp-olr .scp-olr-btn:focus-visible,
+.scp .scp-olr .scp-olr-more a:focus-visible {
+  outline: 3px solid var(--olr-gold-bright);
+  outline-offset: 2px;
+}
+
+.scp .scp-olr-btn-arrow {
+  display: inline-flex;
+  font-size: 16px;
+}
+
+/* the Best fit panel */
+.scp .scp-olr-fit {
+  padding: 14px 16px 14px;
+  border: 1px solid var(--olr-border);
+  border-radius: var(--olr-radius);
+  background: linear-gradient(160deg, #fff 0%, var(--olr-surface-light) 100%);
+  box-shadow: 0 2px 6px rgba(10, 35, 70, 0.05);
+}
+
+.scp .scp-olr .scp-olr-fit-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px !important;
+  padding: 0;
+  border: 0;
+  color: var(--olr-text) !important;
+  font-size: 18px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-olr-fit-icon {
+  display: inline-flex;
+  color: var(--olr-gold);
+  font-size: 21px;
+}
+
+.scp .scp-olr-fit-rows {
+  display: grid;
+  gap: 6px;
+}
+
+.scp .scp-olr-fit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 30px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: var(--olr-surface-blue);
+}
+
+.scp .scp-olr-fit-league {
+  color: var(--olr-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scp .scp-olr-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.scp .scp-olr-pill.is-good {
+  background: var(--olr-green-light);
+  color: var(--olr-green);
+}
+
+.scp .scp-olr-pill.is-mid {
+  background: var(--olr-amber-light);
+  color: var(--olr-amber);
+}
+
+.scp .scp-olr-pill.is-bad {
+  background: var(--olr-red-light);
+  color: var(--olr-red);
+}
+
+.scp .scp-olr-fit-note {
+  margin: 10px 0 0;
+  color: var(--olr-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+/* ---- Section B: opportunity vs. production */
+.scp .scp-olr-lede {
+  margin: 0 0 14px;
+  color: var(--olr-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.scp .scp-olr-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 14px;
+}
+
+.scp .scp-olr-group {
+  position: relative;
+  min-width: 0;
+  padding: 22px 12px 12px;
+  border: 1px solid;
+  border-radius: var(--olr-radius);
+}
+
+.scp .scp-olr-group.is-prod {
+  border-color: #ecd9a4;
+  background: linear-gradient(160deg, #fffdf6 0%, #fff7e3 100%);
+}
+
+.scp .scp-olr-group.is-opp {
+  border-color: #c5d8ee;
+  background: linear-gradient(160deg, #f9fbfe 0%, var(--olr-surface-blue) 100%);
+}
+
+.scp .scp-olr-group-label {
+  position: absolute;
+  top: -13px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  height: 27px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(10, 35, 70, 0.08);
+}
+
+.scp .scp-olr-group.is-prod .scp-olr-group-label {
+  background: linear-gradient(180deg, #fff1cc, #f6dd9a);
+  color: #6a4d05;
+}
+
+.scp .scp-olr-group.is-opp .scp-olr-group-label {
+  background: linear-gradient(180deg, #e3eefb, #cfe0f5);
+  color: var(--olr-navy-900);
+}
+
+.scp .scp-olr-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.scp .scp-olr-kpi {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  min-width: 0;
+  min-height: 112px;
+  padding: 12px 12px 11px;
+  border: 1px solid var(--olr-border);
+  border-radius: 12px;
+  background: linear-gradient(170deg, #fff 0%, #f3f7fd 100%);
+  box-shadow: 0 2px 6px rgba(10, 35, 70, 0.05);
+}
+
+.scp .scp-olr-kpi.is-lead {
+  border-color: var(--olr-gold);
+  background: linear-gradient(170deg, #fffdf7 0%, var(--olr-gold-light) 100%);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.22);
+}
+
+.scp .scp-olr-kpi-icon {
+  display: inline-flex;
+  color: var(--olr-gold);
+  font-size: 18px;
+}
+
+.scp .scp-olr-kpi.is-lead .scp-olr-kpi-icon {
+  color: #b8901f;
+}
+
+.scp .scp-olr-kpi dt {
+  margin: 6px 0 2px;
+  color: var(--olr-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.scp .scp-olr-kpi dd {
+  align-self: end;
+  margin: 0;
+  color: var(--olr-text);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.scp .scp-olr-kpi.is-lead dd {
+  color: var(--olr-navy-900);
+  font-size: 32px;
+}
+
+.scp .scp-olr-kpi-sub {
+  margin-top: 4px;
+  color: var(--olr-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* the takeaway rows: one panel, thin dividers */
+.scp .scp-olr-reads {
+  display: grid;
+  margin: 0 0 12px;
+  border: 1px solid var(--olr-border-light);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--olr-surface-light) 100%);
+}
+
+.scp .scp-olr-read {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.scp .scp-olr-read + .scp-olr-read {
+  border-top: 1px solid var(--olr-border-light);
+}
+
+.scp .scp-olr-read-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  font-size: 19px;
+}
+
+.scp .scp-olr-read.is-ok .scp-olr-read-icon,
+.scp .scp-olr-read.is-up .scp-olr-read-icon {
+  color: var(--olr-green);
+}
+
+.scp .scp-olr-read.is-down .scp-olr-read-icon,
+.scp .scp-olr-read.is-warn .scp-olr-read-icon {
+  color: var(--olr-amber);
+}
+
+.scp .scp-olr-read.is-flat .scp-olr-read-icon {
+  color: var(--olr-muted);
+}
+
+.scp .scp-olr-read p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.scp .scp-olr-read-claim {
+  position: relative;
+  flex: 0 0 auto;
+  padding-right: 12px;
+  color: var(--olr-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.scp .scp-olr-read-claim::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 0;
+  bottom: 3px;
+  width: 1px;
+  background: var(--olr-border);
+}
+
+.scp .scp-olr-read-text {
+  flex: 1 1 320px;
+  min-width: 0;
+  color: #2a3d5c;
+}
+
+/* the usage-report link */
+.scp .scp-olr-more {
+  margin: 0;
+}
+
+.scp .scp-olr .scp-olr-more a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--olr-navy) !important;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none !important;
+  background-image: linear-gradient(90deg, var(--olr-gold), var(--olr-gold));
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+}
+
+.scp .scp-olr-more-arrow {
+  display: inline-flex;
+  color: var(--olr-gold-ink);
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scp .scp-olr .scp-olr-btn:hover {
+    filter: none;
+  }
+}
+
+/* ---- narrower blocks: reflow, never miniaturize */
+@container olr (max-width: 900px) {
+  .scp .scp-olr-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olr-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .scp .scp-olr-bar-text {
+    padding-right: 80px;
+  }
+
+  .scp .scp-olr-bar-grid {
+    width: 120px;
+  }
+}
+
+@container olr (max-width: 850px) {
+  .scp .scp-olr-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olr-groups {
+    gap: 22px;
+  }
+}
+
+@container olr (max-width: 700px) {
+  .scp .scp-olr .scp-olr-bar-title {
+    font-size: 22px !important;
+  }
+
+  .scp .scp-olr-body {
+    padding: 14px;
+  }
+}
+
+@container olr (max-width: 560px) {
+  .scp .scp-olr-factors,
+  .scp .scp-olr-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-olr-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-olr-bar-grid,
+  .scp .scp-olr-bar-stripes {
+    display: none;
+  }
+
+  .scp .scp-olr-bar-text {
+    padding-right: 0;
+  }
+
+  .scp .scp-olr .scp-olr-bar-title {
+    font-size: 20px !important;
+  }
+
+  .scp .scp-olr-thesis {
+    font-size: 19px;
+  }
+
+  .scp .scp-olr-read p {
+    display: block;
+  }
+
+  .scp .scp-olr-read-claim {
+    display: block;
+    padding-right: 0;
+    margin-bottom: 2px;
+  }
+
+  .scp .scp-olr-read-claim::after {
+    display: none;
+  }
+}
+
+@container olr (max-width: 380px) {
+  .scp .scp-olr-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

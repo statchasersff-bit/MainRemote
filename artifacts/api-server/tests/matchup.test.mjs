@@ -1417,8 +1417,10 @@ describe("sortable stat tables", () => {
 /*
  * The hero is ONE block, not two columns.
  *
- * `.sct-hero-text` is the team hub hero's named grid area - `grid-area: text`,
- * which is only meaningful inside `.sct-hero-inner`'s `grid-template-areas`.
+ * `.sct-tpb-identity` is the team hub hero's named grid area - `grid-area:
+ * identity`, which is only meaningful inside `.sct-tpb-inner`'s
+ * `grid-template-areas` (it was `.sct-hero-text` / `.sct-hero-inner` until
+ * the header was rebuilt on 2026-11-05).
  * The matchup hero borrowed the class for the `min-width: 0` on it and brought
  * the placement along: a grid-area name that matches no line resolves against
  * the IMPLICIT grid rather than being ignored, so the title was pushed into a
@@ -1427,7 +1429,7 @@ describe("sortable stat tables", () => {
  * bottom of the right-hand one.
  *
  * Asserted against the STYLESHEET rather than against a list of class names
- * here: the rule is "nothing outside `.sct-hero-inner` may carry a class that
+ * here: the rule is "nothing outside `.sct-tpb-inner` may carry a class that
  * team.css gives a named grid-area", and the set of such classes is something
  * only team.css knows.
  */
@@ -1436,8 +1438,10 @@ describe("the matchup hero is one block", () => {
     const res = await get("/team.css");
     assert.equal(res.status, 200, "team.css should be served");
     const named = new Set();
+    // The header's rules are scoped under `.sct`; the hero's named areas are
+    // `.sct .sct-tpb-identity` and friends.
     for (const [, cls, body] of res.body.matchAll(
-      /^\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}/gm,
+      /^(?:\.sct )?\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}/gm,
     )) {
       // A named area, not `grid-area: 1 / 2` and not `auto`.
       if (/grid-area:\s*[a-zA-Z][a-zA-Z0-9_-]*\s*;/.test(body)) named.add(cls);
@@ -1464,7 +1468,7 @@ describe("the matchup hero is one block", () => {
       assert.ok(hero, "the hero renders");
 
       const offenders = [...hero.querySelectorAll("*")]
-        .filter((el) => !el.closest(".sct-hero-inner"))
+        .filter((el) => !el.closest(".sct-tpb-inner"))
         .flatMap((el) =>
           [...el.classList].filter((c) => named.has(c)).map((c) => `${c}`),
         );

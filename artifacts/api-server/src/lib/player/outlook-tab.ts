@@ -140,7 +140,7 @@ function listWords(parts: string[]): string {
 
 /* ------------------------------------------------------------------ model */
 
-type Chip = { label: string; kind: "good" | "mid" | "bad" };
+export type Chip = { label: string; kind: "good" | "mid" | "bad" };
 
 const STARTER: Chip = { label: "Weekly starter", kind: "good" };
 const STREAM: Chip = { label: "Streamer", kind: "mid" };
@@ -615,27 +615,56 @@ function renderTake(m: Model, depth: PlayerPageData["depth"] = null): string {
  * The Best fit panel: the league-by-league call, judged on the ROS board's
  * rank when he is on it, with the lineup assumptions written under it.
  */
-function renderFits(m: Model): string {
-  if (!m.chips || !m.fit) return "";
+/** The Best fit panel's facts: the league rows, their chips, and the assumptions line. */
+export interface FitsModel {
+  leagues: [string, string, string];
+  chips: [Chip, Chip, Chip];
+  note: string;
+}
+
+function fitsModel(m: Model): FitsModel | null {
+  if (!m.chips || !m.fit) return null;
   const leagues = LEAGUES[m.pos]!;
   const basis =
     m.fit.source === "ros" && m.ros
       ? `Based on his StatChasers rest-of-season rank, ${m.pos}${m.ros.rank}${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}.`
       : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.`;
+  return { leagues, chips: m.chips, note: `${basis} ${FIT_ASSUMES[m.pos] ?? ""}`.trim() };
+}
+
+function renderFits(m: Model): string {
+  const fm = fitsModel(m);
+  if (!fm) return "";
   return (
     `<div class="scp-ox-panel scp-ol-fitwrap"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.layers}</span>Best fit</h3>` +
     `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
-    m.chips
+    fm.chips
       .map(
         (chip, i) =>
-          `<div class="scp-ol-fit" role="listitem"><span>${escapeHtml(leagues[i]!)}</span>` +
+          `<div class="scp-ol-fit" role="listitem"><span>${escapeHtml(fm.leagues[i]!)}</span>` +
           `<span class="scp-ol-chip is-${chip.kind}">${escapeHtml(chip.label)}</span></div>`,
       )
       .join("") +
     `</div>` +
-    `<p class="scp-ol-fitnote">${escapeHtml(`${basis} ${FIT_ASSUMES[m.pos] ?? ""}`.trim())}</p>` +
+    `<p class="scp-ol-fitnote">${escapeHtml(fm.note)}</p>` +
     `</div>`
   );
+}
+
+/** The Redraft Command card's sentence, the same on the tab and in the premium block. */
+function rcCopy(m: Model): string {
+  return `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rest-of-season rank and trade value for your league's scoring, updated after every game.`;
+}
+
+/** What the supports / threatens cells say when the data gives them nothing. */
+function emptyWords(m: Model, data: PlayerPageData): { supports: string; threatens: string } {
+  return {
+    supports:
+      data.depth && data.depth.order > 1 && !m.injured
+        ? "His season-to-date usage was a starter's, but the depth chart no longer lists him first."
+        : "Nothing in the usage data stands out yet.",
+    threatens: "No material threat in the data right now: his role, his quarterback and his next four matchups are steady.",
+  };
 }
 
 /* ---------------------------------------------- section 1: the written read */
@@ -870,28 +899,20 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
     if (prose.length === 0) return "";
     const { supports, threatens } = supportsThreatens(m, data);
     if (supports.length || threatens.length) {
-      const cell = (title: string, items: string[], kind: string, empty: string): string =>
-        `<div class="scp-ol-st-cell is-${kind}"><h3><span class="scp-ol-st-icon" aria-hidden="true">${kind === "up" ? ICON.bars : ICON.triangle}</span>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : empty)}</p></div>`;
+      const empty = emptyWords(m, data);
+      const cell = (title: string, items: string[], kind: string, emptyText: string): string =>
+        `<div class="scp-ol-st-cell is-${kind}"><h3><span class="scp-ol-st-icon" aria-hidden="true">${kind === "up" ? ICON.bars : ICON.triangle}</span>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : emptyText)}</p></div>`;
       after =
         `<div class="scp-ol-st">` +
-        cell(
-          "What supports his value",
-          supports,
-          "up",
-          data.depth && data.depth.order > 1 && !m.injured
-            ? "His season-to-date usage was a starter's, but the depth chart no longer lists him first."
-            : "Nothing in the usage data stands out yet.",
-        ) +
-        cell("What threatens his value", threatens, "risk", "No material threat in the data right now: his role, his quarterback and his next four matchups are steady.") +
+        cell("What supports his value", supports, "up", empty.supports) +
+        cell("What threatens his value", threatens, "risk", empty.threatens) +
         `</div>`;
     }
   }
 
   const rc =
     `<div class="scp-ox-panel is-rc"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.crosshair}</span>Redraft Command</h3>` +
-    `<p>${escapeHtml(
-      `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rest-of-season rank and trade value for your league's scoring, updated after every game.`,
-    )}</p>` +
+    `<p>${escapeHtml(rcCopy(m))}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}<span class="scp-ol-btn-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
     `</div>`;
   const fits = renderFits(m);
@@ -941,25 +962,40 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
 
 /* ------------------------------------- section 2: opportunity vs. production */
 
-function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
+/** One of the six Opportunity vs. Production tiles. */
+export interface OpportunityTile {
+  label: string;
+  value: string;
+  sub: string;
+  lead: boolean;
+}
+
+/** One takeaway row: the bold claim and its sentence. */
+export interface OpportunityTake {
+  kind: "ok" | "up" | "down" | "flat" | "warn";
+  claim: string;
+  text: string;
+}
+
+export interface OpportunityModel {
+  lede: string;
+  tiles: OpportunityTile[];
+  takes: OpportunityTake[];
+  link: { href: string; text: string } | null;
+}
+
+/**
+ * The Opportunity vs. Production facts: the explanation line, the six
+ * tiles, the takeaway rows and the usage-report link. The tab's section and
+ * the premium block both print from this, so they cannot disagree.
+ */
+function opportunityModel(m: Model, options: PlayerRenderOptions): OpportunityModel | null {
   const row = u(m);
   const usage = m.usage;
-  if (!row || !usage || !n(row.xfpPerGame) || !n(row.fpPerGame)) return "";
+  if (!row || !usage || !n(row.xfpPerGame) || !n(row.fpPerGame)) return null;
   const posWord = `${m.pos}s`;
-  const tileIcon = (label: string): string => {
-    const k = label.toLowerCase();
-    if (k.startsWith("ppr")) return ICON.trophy;
-    if (k.startsWith("expected")) return ICON.crosshair;
-    if (k.startsWith("points over")) return ICON.bars;
-    if (k.includes("first-read")) return ICON.eye;
-    if (k.includes("snap")) return ICON.layers;
-    if (k.includes("designed")) return ICON.football;
-    if (k.includes("dropbacks") || k.includes("weighted")) return ICON.bars;
-    return ICON.target;
-  };
-  const tile = (label: string, value: string, sub: string, lead = false): string =>
-    `<div class="scp-ol-tile${lead ? " is-lead" : ""}"><span class="scp-ol-ticon" aria-hidden="true">${tileIcon(label)}</span><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>${sub ? `<span class="scp-ol-tsub">${escapeHtml(sub)}</span>` : ""}</div>`;
-  const tiles: string[] = [
+  const tile = (label: string, value: string, sub: string, lead = false): OpportunityTile => ({ label, value, sub, lead });
+  const tiles: OpportunityTile[] = [
     tile("PPR points per game", one(row.fpPerGame), "Actual", true),
     tile("Expected points per game", one(row.xfpPerGame), rankWords(uRank(m, "xfpPerGame"), m.pos) || "xFP"),
     tile("Points over expected", n(row.fpoePerGame) ? signed(row.fpoePerGame) : "-", "per game"),
@@ -991,8 +1027,7 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
   // The takeaways (mak's brief, 2026-11-05): the same three readings the
   // paragraphs carried, each a bold claim with its sentence, in one panel.
   // Only readings the data supports are rows; nothing is added to fill three.
-  type Take = { kind: "ok" | "up" | "down" | "flat" | "warn"; claim: string; text: string };
-  const takes: Take[] = [
+  const takes: OpportunityTake[] = [
     {
       kind: band === "near" ? "ok" : band === "under" ? "warn" : "up",
       claim:
@@ -1030,10 +1065,36 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
       text: `His snap share is ${sn.delta > 0 ? "up" : "down"} ${Math.round(Math.abs(sn.delta))} points over the same window (${Math.round(snapRecent)}% of snaps).`,
     });
   }
-  const takeIcon: Record<Take["kind"], string> = { ok: ICON.check, up: ICON.up, down: ICON.down, flat: ICON.steady, warn: ICON.alert };
+
+  const teamPrefix = options.teamPathPrefix ?? "/team/";
+  const q = options.linkQuery ?? "";
+  const link = m.teamSlug ? { href: `${teamPrefix}${m.teamSlug}/usage/${q}`, text: `See the ${m.nickname ?? "team"} usage report` } : null;
+  const lede = `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. Ranks are among qualifying ${posWord} league-wide.`;
+  return { lede, tiles, takes, link };
+}
+
+function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
+  const om = opportunityModel(m, options);
+  if (!om) return "";
+  const tileIcon = (label: string): string => {
+    const k = label.toLowerCase();
+    if (k.startsWith("ppr")) return ICON.trophy;
+    if (k.startsWith("expected")) return ICON.crosshair;
+    if (k.startsWith("points over")) return ICON.bars;
+    if (k.includes("first-read")) return ICON.eye;
+    if (k.includes("snap")) return ICON.layers;
+    if (k.includes("designed")) return ICON.football;
+    if (k.includes("dropbacks") || k.includes("weighted")) return ICON.bars;
+    return ICON.target;
+  };
+  const tiles = om.tiles.map(
+    (t) =>
+      `<div class="scp-ol-tile${t.lead ? " is-lead" : ""}"><span class="scp-ol-ticon" aria-hidden="true">${tileIcon(t.label)}</span><dt>${escapeHtml(t.label)}</dt><dd>${escapeHtml(t.value)}</dd>${t.sub ? `<span class="scp-ol-tsub">${escapeHtml(t.sub)}</span>` : ""}</div>`,
+  );
+  const takeIcon: Record<OpportunityTake["kind"], string> = { ok: ICON.check, up: ICON.up, down: ICON.down, flat: ICON.steady, warn: ICON.alert };
   const takeaways =
     `<div class="scp-ol-tk" role="list">` +
-    takes
+    om.takes
       .map(
         (t) =>
           `<div class="scp-ol-tk-row is-${t.kind}" role="listitem"><span class="scp-ol-tk-icon" aria-hidden="true">${takeIcon[t.kind]}</span>` +
@@ -1041,11 +1102,8 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
       )
       .join("") +
     `</div>`;
-
-  const teamPrefix = options.teamPathPrefix ?? "/team/";
-  const q = options.linkQuery ?? "";
-  const link = m.teamSlug
-    ? `<p class="scp-ol-more"><a href="${escapeHtml(`${teamPrefix}${m.teamSlug}/usage/${q}`)}">${escapeHtml(`See the ${m.nickname ?? "team"} usage report`)}<span class="scp-ol-more-arrow" aria-hidden="true">${ICON.arrow}</span></a></p>`
+  const link = om.link
+    ? `<p class="scp-ol-more"><a href="${escapeHtml(om.link.href)}">${escapeHtml(om.link.text)}<span class="scp-ol-more-arrow" aria-hidden="true">${ICON.arrow}</span></a></p>`
     : "";
   // One card: a navy title bar (the section's H2, same id and words), the
   // explanation, the six tiles, the takeaways, the link.
@@ -1057,14 +1115,67 @@ function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
     `<span class="scp-ol-bar-stripes" aria-hidden="true"></span>` +
     `</div>` +
     `<div class="scp-ol-opp-body">` +
-    `<p class="scp-ox-lede">${escapeHtml(
-      `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. Ranks are among qualifying ${posWord} league-wide.`,
-    )}</p>` +
+    `<p class="scp-ox-lede">${escapeHtml(om.lede)}</p>` +
     `<dl class="scp-ol-opp">${tiles.join("")}</dl>` +
     takeaways +
     link +
     `</div></section>`
   );
+}
+
+/* ------------------------- the projection + opportunity premium block's model */
+
+/**
+ * What the premium comparison of the first two sections prints from (mak's
+ * brief, 2026-11-05, lib/player/outlook-projection-premium.ts): the same
+ * heading words, chips, headline, paragraphs, supports / threatens, sidebar
+ * copy, Best fit rows and Opportunity facts the tab's own sections use, so
+ * the two versions cannot disagree. In season only; null before Week 1.
+ */
+export interface OutlookProjectionModel {
+  name: string;
+  last: string;
+  pos: string;
+  heading: string;
+  asOf: string;
+  chips: Chip[];
+  injured: string | null;
+  headline: string;
+  paragraphs: string[];
+  supports: string[];
+  threatens: string[];
+  supportsEmpty: string;
+  threatensEmpty: string;
+  rc: { href: string; copy: string; cta: string };
+  fits: FitsModel | null;
+  opportunity: OpportunityModel | null;
+}
+
+export function outlookProjectionModel(data: PlayerPageData, options: PlayerRenderOptions = {}): OutlookProjectionModel | null {
+  const m = model(data);
+  if (!m || m.preseason || !tierLine(m) || !m.chips) return null;
+  const paras = paragraphs(m, data);
+  if (!paras.length) return null;
+  const { supports, threatens } = supportsThreatens(m, data);
+  const empty = emptyWords(m, data);
+  return {
+    name: m.name,
+    last: m.last,
+    pos: m.pos,
+    heading: titleCase(`${m.name} rest-of-season projection`),
+    asOf: m.week >= 1 ? `Through Week ${m.week}` : "",
+    chips: tags(m, data.depth),
+    injured: m.injured,
+    headline: featHeadline(m, data.depth),
+    paragraphs: paras,
+    supports,
+    threatens,
+    supportsEmpty: empty.supports,
+    threatensEmpty: empty.threatens,
+    rc: { href: m.rc, copy: rcCopy(m), cta: `Open ${m.last} in Redraft Command` },
+    fits: fitsModel(m),
+    opportunity: opportunityModel(m, options),
+  };
 }
 
 /* --------------------------------------------------------- section 3: drivers */

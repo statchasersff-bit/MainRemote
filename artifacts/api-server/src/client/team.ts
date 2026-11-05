@@ -1450,112 +1450,6 @@ function wireFrameHeight(root: HTMLElement): void {
   }
 }
 
-/* ------------------------------------------------------------- hero facts */
-
-/**
- * Shorten the hero's fact chips, a rung at a time, rather than let them wrap.
- *
- * Five chips need between 555px (Washington) and 617px (Minnesota) on one
- * line - the spread is the coach's name, mostly - and under that the Bye chip
- * drops to a row of its own with the rest of the line left empty. Two of the
- * chips carry a shorter spelling of themselves for that, and they are spent in
- * the order a reader can most afford:
- *
- *   short - "2nd in AFC East" → "2nd", about 60px. The division it drops is
- *           the chip two to its left, so nothing leaves the row.
- *   tight - "Week 11" → "W11", about 35px, under a label that reads BYE.
- *   drop  - the Bye chip off the row entirely, which is the whole of it.
- *
- * The row stops at the first rung that fits, so most widths spend nothing and
- * a narrow one spends only what it has to.
- *
- * The last rung is a chip rather than a spelling because by then there is no
- * spelling left: "W11" is the shortest true form of the fact, and a row that
- * still does not fit it has only the two endings. One is what this did before
- * - the chip alone on a second line, one short word with an empty line beside
- * it, which mak asked to stop seeing. The other is no chip, and it is the
- * cheaper of the two here: the bye is the one fact in this row the hub also
- * states in full a tab away, on the Schedule tab's season table and in the
- * summary beside it. The chip comes back the moment the room does, because
- * every rung is re-decided from the full forms on each resize.
- *
- * Measured rather than written as breakpoints because the width where five
- * chips stop fitting is a different width for all 32 clubs - the same reason
- * the switcher beside them wraps on its content (see .sct-hero-head in
- * team.css). A single number would take the division off half the league while
- * it still fits, and leave the other half wrapping before it was spent.
- *
- * Each rung is decided from the state above it, starting at the full forms: the
- * attribute comes off, the row is measured, and a rung is spent only if it is
- * still wrapping. Measuring in the short form would answer a different
- * question - "does the short form fit", which stays true long after the full
- * one stopped fitting - and the row would never climb back.
- */
-/**
- * The rungs, in the order they are spent.
- *
- * The first two are `data-sct-spend` on a chip that has two spellings; the
- * last is `data-sct-drop` on the one chip that may leave. Both are read by
- * team.css off `data-sct-facts-form`, which is the list of rungs spent.
- */
-const FACT_STAGES = ["short", "tight", "drop"];
-function wireFacts(root: HTMLElement): void {
-  const facts = root.querySelector<HTMLElement>("[data-sct-facts]");
-  if (!facts) return;
-  const chips = Array.from(facts.children) as HTMLElement[];
-  if (chips.length < 2) return;
-  // The box whose width is the row's available width. It is `flex: 1 0 100%`,
-  // so the swap below cannot change it - which is what makes it safe to watch.
-  const column = facts.parentElement;
-  if (!column) return;
-
-  const wrapped = (): boolean => {
-    const top = chips[0]!.offsetTop;
-    return chips.some((chip) => chip.offsetTop > top);
-  };
-
-  let lastWidth = -1;
-  const fit = (): void => {
-    const width = Math.round(column.getBoundingClientRect().width);
-    // Height changes are this function's own doing; only a width change can
-    // change its answer, and ignoring the rest is what stops the observer
-    // below from feeding itself.
-    if (width === lastWidth) return;
-    lastWidth = width;
-
-    facts.removeAttribute("data-sct-facts-form");
-    // Below 720px the chips are a two-column grid where every chip after the
-    // first two is legitimately on another row, so "did it wrap" means nothing
-    // and the full spellings fit their columns anyway.
-    if (getComputedStyle(facts).display !== "flex") return;
-
-    const spent: string[] = [];
-    for (const stage of FACT_STAGES) {
-      if (!wrapped()) break;
-      spent.push(stage);
-      // Applied before the next pass measures, so each rung is judged on what
-      // the one above it actually bought.
-      facts.setAttribute("data-sct-facts-form", spent.join(" "));
-    }
-  };
-
-  fit();
-  // `typeof`, not `"ResizeObserver" in window`: the `in` form narrows `window`
-  // itself, and the else branch then has no `window` left to listen on.
-  if (typeof ResizeObserver === "function") {
-    new ResizeObserver(() => fit()).observe(column);
-  } else {
-    window.addEventListener("resize", fit);
-  }
-  // Web fonts land after this runs and change every one of these widths.
-  if (document.fonts?.ready) {
-    void document.fonts.ready.then(() => {
-      lastWidth = -1;
-      fit();
-    });
-  }
-}
-
 /* -------------------------------------------------------- hero standfirst */
 
 /**
@@ -1593,8 +1487,8 @@ function wireFacts(root: HTMLElement): void {
  *     is the page's to decide.
  */
 function wireHeroLead(root: HTMLElement): void {
-  const lead = root.querySelector<HTMLElement>(".sct-hero [data-sct-lead]");
-  const hero = root.querySelector<HTMLElement>(".sct-hero-inner");
+  const lead = root.querySelector<HTMLElement>(".sct-tpb [data-sct-lead]");
+  const hero = root.querySelector<HTMLElement>(".sct-tpb-inner");
   if (!lead || !hero) return;
 
   const wrapped = (): boolean => {
@@ -1660,7 +1554,6 @@ function boot(): void {
     wireTabs(root);
     wireMatchupTabs(root);
     wireSwitcher(root);
-    wireFacts(root);
     wireHeroLead(root);
     wireTimestamps(root);
     wireSortableTables(root);

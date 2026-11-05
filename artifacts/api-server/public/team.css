@@ -87,7 +87,7 @@
   --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Height of the sticky section nav, so anchors don't land underneath it. */
-  --sct-nav-h: 56px;
+  --sct-nav-h: 60px;
 
   /* Where the sticky nav parks. Zero here; a host page with its own sticky
      header sets this to that header's height so the two do not overlap:
@@ -379,9 +379,6 @@ body.sct-page.is-embed {
   max-width: none;
 }
 
-.sct.is-embed .sct-hero {
-  margin-top: 0;
-}
 
 .sct-visually-hidden {
   position: absolute;
@@ -402,435 +399,6 @@ body.sct-page.is-embed {
   transition: transform 160ms ease;
 }
 
-/* ------------------------------------------------------------------- hero */
-
-/* The hero is a light card, in the same vocabulary as the player page's
-   (.scp-hero in player.css): the soft-to-sunk gradient, an outline rather than
-   a shadow, the team's colors entering as a hairline along the top edge, an
-   aura behind the crest and an almost invisible watermark. The page is one
-   light surface from the hero down.
-
-   It used to be the page's single dark panel - StatChasers navy, white text.
-   The navy made the top of the page shout, and it made the hub the only tool
-   on the site whose header did: the player page, which is the page most
-   visitors arrive on next, has read this way for a while. This is the team
-   hub joining it rather than a new idea.
-
-   What the change costs, and where that cost is paid: every piece of text in
-   here used to be white or a white at some opacity, which is a contrast ratio
-   that comes free. On a light ground each one has to be chosen - see the
-   colors on .sct-eyebrow, .sct-fact-label and .sct-hero-updated, all of which
-   are darker than the white-alpha they replaced rather than the same gray at a
-   different lightness.
-
-   Note the absence of `overflow: hidden`; the clip lives one level in, on
-   .sct-hero-decor, so that the team switcher's panel is not clipped with it. */
-.sct-hero {
-  position: relative;
-  isolation: isolate;
-  margin: 24px 0 0;
-  /* 18px, not 28px. The hero is the tallest thing above the fold and every
-     pixel of it pushes the tab strip and the first panel down; the block
-     padding was the cheapest quarter of its height to give back. Inline
-     padding is untouched - the crest and the name still need their margin
-     from the rounded corner. */
-  padding: 18px 32px;
-  border-radius: var(--sc-radius);
-  /* An outline, not a drop shadow. The hero sits at the top of the page with
-     nothing above it to cast onto, and on a WordPress page it sits directly
-     under the host's heading - a shadow there reads as a second card the theme
-     did not draw. The player hero is bordered for the same reason. */
-  border: 1px solid var(--sc-border);
-  background: linear-gradient(
-    180deg,
-    var(--sc-surface-soft) 0%,
-    var(--sc-surface-sink) 100%
-  );
-  color: var(--sc-ink);
-}
-
-/* Everything decorative on the hero lives in this layer, and this layer is what
-   clips - not the hero.
-
-   The hero used to carry the `overflow: hidden` that keeps the aura and the
-   watermark inside its rounded corners. That also clipped the team switcher's
-   panel: an absolutely positioned dropdown inside an overflow-hidden ancestor
-   is cut at that ancestor's edge, and this panel opens *below* its summary, so
-   most of it was being thrown away - on a phone, nearly all of it. Moving the
-   clip one level in keeps the decorations contained and lets the panel out. */
-.sct-hero-decor {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-/* The single hairline of team color on the whole page, running the width of
-   the hero and fading into gold. */
-.sct-hero-decor::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--team-primary, var(--sc-gold)) 0%,
-    var(--team-secondary, var(--sc-gold-soft)) 45%,
-    var(--sc-gold) 100%
-  );
-}
-
-/* Team-colored aura behind the crest. Low opacity and heavily blurred: it
-   should be felt rather than seen, and it must never fight the text.
-
-   Much fainter than it was on navy, and blurred harder. A wash that read as a
-   glow against a dark ground reads as a stain against a near-white one, and
-   the colors it is painted in are not ours to moderate - several clubs are
-   pure black or a saturated red. At this weight the strongest of the 32 is a
-   tint under the crest and the quietest is still visible. */
-.sct-hero-aura {
-  position: absolute;
-  top: -60px;
-  left: -40px;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--team-primary, #1e3a6b) 0%,
-    rgba(255, 255, 255, 0) 68%
-  );
-  opacity: 0.14;
-  filter: blur(16px);
-  pointer-events: none;
-}
-
-/* Oversized crest on the far right, at the opacity of a watermark. It sits
-   inside the right edge rather than bleeding past it - a mark cropped by the
-   hero reads as a mistake at this opacity, where a whole one reads as a
-   watermark.
-
-   On its weight, and why that is not normalized across the league: a mark
-   drawn in the club's own colors lands differently on every one of the 32
-   pages, and on a light ground the spread is visible - the Bills' blue
-   buffalo is a whisper where the Raiders' black shield is a picture. On navy
-   it was the same problem upside down, with the dark marks disappearing, and
-   it was never worth solving.
-
-   The obvious fix does not work. Masking - the crest supplies the shape, this
-   file supplies one ink - is right in principle and cannot be done here: a
-   mask image must be CORS-clean, these crests come from a CDN that sends no
-   CORS headers, and a mask that fails to load does not fall back, it paints
-   NOTHING. The hero loses its watermark on all 32 teams while the CSS goes on
-   looking correct. If it ever has to be one ink, the crests have to be served
-   from this origin first.
-
-   So the weight is tuned for the heaviest mark rather than the average one:
-   4%, a shade under the 4.5–5% the rest of the site's watermarks carry, which
-   is where a black crest stops competing with the switcher above it. */
-.sct-hero-watermark {
-  position: absolute;
-  top: 50%;
-  right: 24px;
-  width: 300px;
-  height: 300px;
-  transform: translateY(-50%);
-  background-image: var(--team-logo);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  opacity: 0.04;
-  pointer-events: none;
-}
-
-/* Two columns: the crest, and everything else. The crest is the only thing
- * here with a fixed size and a fixed place, so it is the only thing the grid
- * needs to hold; the three blocks beside it break against each other, which is
- * a flex row's job and not a grid's.
- */
-.sct-hero-inner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: "crest head";
-  align-items: center;
-  column-gap: 24px;
-}
-
-/* The name, the switcher and the chips, in one row that wraps on its content.
- *
- * Three things share this box and only two of them can ever sit side by side:
- * the name and the switcher on the first line, the chips on a line of their
- * own underneath, running from the name's left edge to the hero's right.
- *
- * The chips used to be the tail of the name block, which meant they were
- * bounded by the switcher's column - about 220px of width they were paying for
- * and could not use, because the switcher is a 50px button pinned to the top of
- * a hero three times that tall. Five chips need roughly 620px, so the Bye chip
- * wrapped to a second line at about 1000px with that whole 220px sitting empty
- * directly beneath the button. `flex: 1 0 100%` is what gives them the whole
- * width instead, and `order` is what puts them under the switcher while
- * leaving them BEFORE it in the markup - see the comment in renderHero().
- * Nothing in the hero but the switcher takes focus, so painting one block out
- * of document order costs no tab order.
- *
- * ## Why the switcher drops on its own terms and not at a breakpoint
- *
- * This row used to restack at 900px, and 900 is a number that fits no team.
- * The switcher is a pill as wide as the club's name, so what it leaves for the
- * title is different on all 32: at 900px "Philadelphia Eagles" still had 100px
- * of slack while "Washington Commanders" had been wrapping to two lines since
- * about 950. One media query cannot be right for both, and tuned for the
- * longest name it takes the switcher off the row for the other 31 teams while
- * the row is half empty - which is what this replaces.
- *
- * A flex line breaks when its items stop fitting, and `min-width: auto` on a
- * flex item means "no narrower than your own content". So the title's own
- * width IS the breakpoint: it is `white-space: nowrap` (below), which makes
- * the name block's minimum the name at full length, and the switcher drops to
- * the next line at the exact width where it would otherwise start squeezing
- * the title - around 950px for Washington, around 800px for Philadelphia, and
- * wherever it falls for the other thirty.
- *
- * row-gap is the 9px the chips used to carry as their own margin, moved here
- * so it is one number for both the gap under the name and the gap above a
- * switcher that has wrapped.
- */
-.sct-hero-head {
-  grid-area: head;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  column-gap: 24px;
-  row-gap: 9px;
-  min-width: 0;
-}
-
-/* No `min-width: 0` here, and that is the whole mechanism: it is the automatic
- * minimum - the block's own content - that stops the switcher squeezing the
- * title and pushes it to the next line instead. */
-.sct-hero-text {
-  grid-area: text;
-  flex: 1 1 auto;
-}
-
-.sct-hero-meta {
-  grid-area: meta;
-  /* Painted after the switcher, though it comes before it in the markup. */
-  order: 1;
-  /* A line of its own, always: `100%` is wider than anything can share with. */
-  flex: 1 0 100%;
-  align-self: start;
-  min-width: 0;
-}
-
-/* A white disc under the crest. It survived the hero going light, and it is
-   not decoration: the plate is a hair brighter than the gradient behind it, so
-   every one of the 32 marks - several of which are black, several near-white -
-   is read against the same ground rather than against whatever the card's
-   gradient is doing at that point. It doubles as the object the aura sits
-   behind. */
-.sct-hero-crest {
-  grid-area: crest;
-  display: grid;
-  place-items: center;
-  /* Scaled with the hero. At 112px in an 18px-padded box the plate was
-     taller than the text column beside it and became the thing setting the
-     height, which is the opposite of what it is for. */
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #fff 0%, #f4f7fb 100%);
-  box-shadow:
-    0 0 0 1px var(--sc-hairline),
-    0 8px 22px rgba(15, 23, 42, 0.1);
-}
-
-.sct-hero-logo {
-  display: block;
-  width: 66px;
-  height: 66px;
-  object-fit: contain;
-}
-
-/* The five stacked elements below carry the rest of the reduction, in the
-   gaps between them and in their own leading rather than in their type sizes.
-   Line height is set explicitly on each: they inherit 1.55 from .sct, which is
-   a reading measure and far too loose for a single line of 11px caps. */
-/* Not gold. The eyebrow was --sc-gold-soft on navy, and its light counterpart
-   would be --sc-gold-deep - which is 3.9:1 on this gradient and therefore
-   under AA for 11px text. The gold stays on the page as the hairline above it,
-   where nobody has to read it. */
-.sct-eyebrow {
-  margin: 0 0 4px;
-  line-height: 1.3;
-  color: var(--sc-muted-strong);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.sct-title {
-  margin: 0;
-  /* Strong without becoming a billboard. */
-  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.05rem) !important;
-  line-height: 1.08;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: var(--sc-navy) !important;
-}
-
-/* What makes .sct-hero-head break on the name's length rather than at a width:
- * a name that cannot wrap is a name the flex row must fit whole or move the
- * switcher off. Scoped to the block, not to `.sct-title`, because that class is
- * also the matchup strip's heading - "Tampa Bay Buccaneers vs Jacksonville
- * Jaguars" is a sentence and has to wrap. Lifted in the stacked hero below
- * 720px, where the switcher already has a row of its own. */
-.sct-hero-text .sct-title {
-  white-space: nowrap;
-}
-
-.sct-subtitle {
-  margin: 4px 0 0;
-  line-height: 1.4;
-  color: var(--sc-muted);
-  font-size: 0.92rem;
-  font-weight: 500;
-}
-
-/* The standfirst, when it would take a second line.
- *
- * Set by client/team.ts after measuring - see wireHeroLead() there for why a
- * media query cannot answer this: the line is the club's own name plus four
- * words, so it wraps at 470px for Washington and at 360px for Buffalo, and a
- * single number would take it off a third of the league while it still fits.
- *
- * What it costs is nothing a reader had: the line repeats the <h1> above it and
- * the eyebrow above that, which is why it is the part of the hero that goes
- * rather than the part that wraps. It stays in the document at every width -
- * this hides it, it never removes it - so the sentence is in the HTML a crawler
- * reads either way.
- *
- * Two attributes on one name: `data-sct-lead` with no value is the hook the
- * server prints and the bundle looks for, and "off" is the state. That is why
- * this matches the value rather than the attribute. */
-.sct-subtitle[data-sct-lead="off"] {
-  display: none;
-}
-
-.sct-facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  /* The 9px above the chips is .sct-hero-head's row-gap now, so that the gap
-     above a wrapped switcher is the same measure and not a second number. */
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Two spellings of a fact, one of which is always off.
- *
- * The chips row gives things up in a fixed order rather than wrapping, because
- * a wrapped Bye chip is a second row for one short word with the rest of the
- * line left empty. `data-sct-spend` on a chip is the rung at which its short
- * form takes over, and `data-sct-facts-form` on the row lists the rungs spent
- * so far - so `~=` reads "has this rung been spent", and each chip's rule is
- * independent of the ones above and below it:
- *
- *   short - "2nd in AFC East" → "2nd". The division is the chip two to its
- *           left, so this costs a reader nothing and buys about 60px.
- *   tight - "Week 11" → "W11", under a label that still reads BYE. Worth
- *           about 35px, and the last thing here that can go: what is left is
- *           five facts in the fewest characters that still say them.
- *
- * `display: none` rather than clipping, so exactly one spelling is in the
- * accessibility tree and a fact is announced once.
- *
- * The form is set by client/team.ts, which measures rather than guesses: the
- * row needs 555px for Washington and 617px for Minnesota, a spread as wide as
- * the first rung's saving, so a width written here would spend the division on
- * half the league while it still fits. Nothing sets the attribute without
- * script, and the full forms are what ship.
- */
-.sct-swap--short {
-  display: none;
-}
-
-[data-sct-facts-form~="short"] [data-sct-spend="short"] .sct-swap--full,
-[data-sct-facts-form~="tight"] [data-sct-spend="tight"] .sct-swap--full {
-  display: none;
-}
-
-[data-sct-facts-form~="short"] [data-sct-spend="short"] .sct-swap--short,
-[data-sct-facts-form~="tight"] [data-sct-spend="tight"] .sct-swap--short {
-  display: inline;
-}
-
-/* The rung under both of those, which is not a spelling.
- *
- * "W11" is the shortest true form of the bye, so a row that still will not fit
- * it has two endings available and no third: the chip alone on a second line
- * with the rest of that line empty, or no chip. The second is the one to take.
- * A wrapped Bye reads as a layout that failed rather than as a fact, and the
- * bye is the one fact in this row the hub also states in full a tab away - the
- * Schedule tab prints it as a row of the season table and again in the summary
- * beside it - so what goes here is a shortcut, not the information.
- *
- * `data-sct-drop` rather than the bye's class, because which fact may go is a
- * decision about the facts and it is taken in heroFacts(); this rule only
- * carries it out. Spent by client/team.ts as the last rung of the ladder, and
- * given back on the next resize that fits, because every rung is re-decided
- * from the full forms. */
-[data-sct-facts-form~="drop"] [data-sct-drop] {
-  display: none;
-}
-
-.sct-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 5px 14px;
-  border-radius: 10px;
-  /* White on the gradient rather than a tint of it: the chips are the only
-     things in the hero being compared with each other, and they need an edge
-     and a floor of their own to read as five of one object. Same construction
-     as the player hero's season strip. */
-  background: var(--sc-surface);
-  border: 1px solid var(--sc-border);
-}
-
-.sct-fact-label {
-  line-height: 1.3;
-  color: var(--sc-muted);
-  font-size: 0.63rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sct-fact-value {
-  line-height: 1.3;
-  color: var(--sc-navy);
-  font-size: 0.94rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.sct-hero-updated {
-  margin: 7px 0 0;
-  line-height: 1.3;
-  color: var(--sc-muted);
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-.sct-hero-actions {
-  grid-area: actions;
-  align-self: start;
-}
 
 /* --------------------------------------------------------- team switcher */
 
@@ -920,14 +488,6 @@ body.sct-page.is-embed {
   box-shadow: 0 22px 60px rgba(6, 13, 33, 0.28);
 }
 
-/* The open panel has to clear the sticky section nav, and it cannot do that on
-   its own: the hero is a stacking context (isolation: isolate), so whatever
-   z-index the panel carries, the hero as a whole still sits at level 0 beside a
-   nav at 30. Lifting the hero - and only while the panel is open - is what
-   actually puts the panel on top. */
-.sct-hero:has(.sct-switch[open]) {
-  z-index: 50;
-}
 
 .sct-switch-heading {
   margin: 0 0 12px;
@@ -1291,75 +851,6 @@ body.sct-page.is-embed {
   margin-top: 0;
 }
 
-/* -------------------------------------------------------- section nav bar */
-
-.sct-nav {
-  position: sticky;
-  top: var(--sct-nav-offset, 0px);
-  z-index: 30;
-  /* Cancels the page gutter and puts it straight back as padding, so the bar's
-     frosted background and hairline reach the shell's edge while the links stay
-     aligned with the content beneath them. Without this the gutters are bare
-     and the page is visible sliding through them, either side of a bar that is
-     supposed to be opaque. */
-  margin: 0 calc(var(--sct-gutter, 0px) * -1) 8px;
-  padding: 0 var(--sct-gutter, 0px);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: saturate(180%) blur(8px);
-  border-bottom: 1px solid var(--sc-border);
-}
-
-.sct-nav-list {
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  /* Proximity, not mandatory: a flick that lands mid-list should tidy up to a
-     link edge, but dragging one link at a time is not what a five-item row
-     wants. */
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 4px;
-}
-
-.sct-nav-list::-webkit-scrollbar {
-  display: none;
-}
-
-.sct-nav-link {
-  display: inline-flex;
-  align-items: center;
-  scroll-snap-align: start;
-  height: var(--sct-nav-h);
-  padding: 0 14px;
-  border-bottom: 2px solid transparent;
-  color: var(--sc-muted-strong);
-  font-size: 0.85rem;
-  font-weight: 700;
-  white-space: nowrap;
-  text-decoration: none;
-  transition:
-    color 160ms ease,
-    border-color 160ms ease;
-}
-
-.sct-nav-link:hover {
-  color: var(--sc-navy);
-}
-
-.sct-nav-link:focus-visible {
-  outline: 2px solid var(--sc-gold);
-  outline-offset: -4px;
-}
-
-.sct-nav-link.is-active {
-  color: var(--sc-navy);
-  border-bottom-color: var(--sc-gold);
-}
 
 /* -------------------------------------------------------------- sections */
 
@@ -1374,7 +865,7 @@ body.sct-page.is-embed {
    a fragment printed into a WordPress page that scrolls something else. Without
    it every nav link lands its section underneath the sticky bar. */
 .sct-section,
-.sct-hero {
+.sct-tpb-hero {
   scroll-margin-top: calc(var(--sct-nav-h) + var(--sct-nav-offset) + 16px);
 }
 
@@ -5892,7 +5383,7 @@ ul.sct-faq-list li {
   :where(.sct),
   :where(body.sct-page) {
     /* 56px of permanently parked chrome is a tenth of a phone screen. */
-    --sct-nav-h: 48px;
+    --sct-nav-h: 60px;
   }
 
   .sct {
@@ -5907,185 +5398,6 @@ ul.sct-faq-list li {
     --sct-gutter: 0px;
   }
 
-  /* A row that scrolls with no visible edge reads as a row that ends. The fade
-     is the only thing telling a reader there are sections to the right. */
-  .sct-nav-list {
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      #000 calc(100% - 22px),
-      transparent
-    );
-    mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
-  }
-
-  .sct-hero {
-    margin-top: 14px;
-    /* Kept below the desktop block padding, which is now 18px. */
-    padding: 16px 18px;
-  }
-
-  /* The crest stays BESIDE the name here, as it does on a desktop.
-   *
-   * It used to take a row of its own above the name - a 72px disc, then the
-   * eyebrow, then the title, then the standfirst, four things down the screen
-   * where the first of them is the one that says least. mak asked for the mark
-   * and the name back on one line, and it is the right ask twice over: the
-   * crest and the name are one statement of whose page this is, and on a phone
-   * the row it was spending is the scarcest thing the hero has.
-   *
-   * Only the top row pairs up. The chips and the switcher keep their own full
-   * rows underneath, because both are wider than what is left of a 360px
-   * screen once the crest has taken its 64: five chips in two columns, and a
-   * switcher that is as wide as the club's name. */
-  .sct-hero-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      "crest text"
-      "meta meta"
-      "actions actions";
-    column-gap: 14px;
-    row-gap: 14px;
-  }
-
-  /* Two columns, but only for the first row: the wrapper steps out and hands
-     its three children back to the grid, which places them by the areas above
-     - name beside the crest, then chips, then the switcher, as they read.
-     `display: contents` rather than a second copy of the stack, so the order
-     lives in one place. */
-  .sct-hero-head {
-    display: contents;
-  }
-
-  /* .sct-hero-head's mechanism, and wrong once the switcher has a row of its
-     own: the automatic minimum would let a long name set the hero's width on a
-     phone, and the name has the full column to wrap into. The nowrap that goes
-     with it is lifted on .sct-title below. */
-  .sct-hero-text {
-    min-width: 0;
-  }
-
-  /* Smaller than the desktop crest, and smaller than it was when it stood
-     above the name: beside the title it is no longer vertical cost, it is
-     horizontal cost, and every pixel of it comes off the line the name has to
-     wrap inside. 64px is about two lines of the title, which is what the
-     longest names take at this width - so the disc reads as the same height as
-     the block beside it rather than as a bullet next to it. */
-  .sct-hero-crest {
-    width: 64px;
-    height: 64px;
-  }
-
-  .sct-hero-logo {
-    width: 44px;
-    height: 44px;
-  }
-
-  /* The bottom-right corner, and bigger than the desktop mark rather than
-     smaller.
-     *
-     * The desktop watermark is centered on the right edge because that is the
-     * half of a 1100px hero with nothing in it. Stacked, there is no such
-     * half: the chips and the switcher are opaque white cards that fill the
-     * width, so a 240px mark centered behind them showed through the gaps
-     * between cards and nowhere else - which is what mak is describing when
-     * the mark reads as too small to see. It was also anchored by
-     * `translateY(-50%)`, so `bottom` could not be used without canceling
-     * the transform first.
-     *
-     * The corner is the one part of a stacked hero that is reliably not a
-     * card: the gutter under the switcher and outside its rounded end. So the
-     * mark is hung there, big enough that what shows in the corner is a
-     * recognizable part of the crest rather than a sliver of one, and bled
-     * past both edges so the crop reads as a mark running off the card
-     * instead of a small logo placed badly.
-     *
-     * 7% rather than the desktop 4%: at 4% what survives here is the part of
-     * the mark NOT behind a card, which is the thinnest part of it. Nothing
-     * legible sits over this corner - the cards above it are opaque, so their
-     * text is unaffected whatever this does - and the ceiling is the club's
-     * own gradient behind it rather than any contrast requirement. */
-  .sct-hero-watermark {
-    top: auto;
-    /* The offsets are mak's, set by eye on the rendered page over two passes:
-       60px further down and 35px further left than the first attempt, which
-       hung the middle of the crest in the corner. What shows now is its
-       shoulder, and the right edge sits flush with the hero's rather than
-       bleeding past it - the mark runs off the BOTTOM only. */
-    bottom: -89px;
-    right: -1px;
-    width: 300px;
-    height: 300px;
-    /* The desktop rule's vertical centering, canceled: it belongs to `top:
-       50%` and would lift this by half its own height. */
-    transform: none;
-    opacity: 0.07;
-  }
-
-  /* Team names are two and three words; balanced wrapping keeps "New England
-     Patriots" from breaking to a lone trailing word. */
-  .sct-title {
-    text-wrap: balance;
-  }
-
-  /* And here it CAN wrap: the switcher this name holds off above 720px is
-     already on a row of its own in this stack. Two classes, matching the rule
-     that set the nowrap - one class cannot undo it whatever the order. */
-  .sct-hero-text .sct-title {
-    white-space: normal;
-  }
-
-  /* Flex-wrapped chips leave a ragged last row and a different shape on every
-     team. Two fixed columns line the labels up and stop a long "Head Coach"
-     from being three times the width of "Bye". */
-  .sct-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    /* The chips are their own row in the stack now, so the gap above them is
-       the grid's. */
-    margin-top: 0;
-  }
-
-  .sct-fact {
-    min-width: 0;
-  }
-
-  /* The bye, when it would be the stranded cell.
-   *
-   * Two columns and five chips leaves the fifth alone on a row of its own with
-   * an empty cell beside it, which is the same thing the ladder above spends
-   * its last rung to avoid on the flex row - and here no measuring can help,
-   * because it is not a matter of the width: the grid puts it there at every
-   * width in this block. So the stylesheet takes it off, and the bundle is not
-   * involved at all (it returns as soon as it sees this display).
-   *
-   * `:nth-child(odd):last-child` is the whole condition, and it is the real
-   * one rather than "is it the bye": a last chip in an odd position is the one
-   * that has nothing beside it. The bye is last whenever it is present, so
-   * with five chips this fires and with four - a club out of season, no record
-   * and no standing - it does not, because then the bye shares its row and
-   * there is nothing wrong with it. */
-  .sct-fact[data-sct-drop]:nth-child(odd):last-child {
-    display: none;
-  }
-
-  .sct-fact-value {
-    overflow-wrap: anywhere;
-  }
-
-  /* Centered, because the thing above it is no longer a row.
-   *
-   * On a desktop the chips are a left-aligned flex row and the timestamp is
-   * the line under its left end, which is where the row starts and where the
-   * eye comes back to. Stacked, the chips are a 2x2 grid that fills the width
-   * and has no left end in that sense - it has two columns and a center - so a
-   * line hanging off the left of it reads as a stray caption rather than as
-   * the grid's own footnote. mak's call, and it is the same reasoning as the
-   * grid above it: what is symmetrical gets a symmetrical label. */
-  .sct-hero-updated {
-    margin-top: 12px;
-    text-align: center;
-  }
 
   .sct-switch-summary {
     width: 100%;
@@ -6149,23 +5461,6 @@ ul.sct-faq-list li {
     gap: 16px 12px;
   }
 
-  /* Tapping off the sheet closes it: the click lands on the hero, which is
-     outside the <details>, which is exactly what the bundle's outside-click
-     handler is watching for.
-
-     Hung off the hero rather than off .sct-switch for that reason - a
-     pseudo-element's clicks are reported against its originating element, so a
-     dimmer drawn by the switcher would register as a click *inside* the
-     switcher and the sheet would refuse to close. */
-  .sct-hero:has(.sct-switch[open])::after {
-    content: "";
-    position: fixed;
-    z-index: 39;
-    inset: 0;
-    background: rgba(6, 13, 33, 0.45);
-    /* Dragging the dimmer must not scroll the page underneath it. */
-    touch-action: none;
-  }
 
   .sct-section {
     padding-top: 32px;
@@ -6345,25 +5640,6 @@ ul.sct-faq-list li {
   }
 }
 
-/* A block of its own, between the two it sits between, so the descending order
-   of this file's breakpoints still reads down the page. */
-@media (max-width: 450px) {
-  /* No watermark at all.
-   *
-   * A 300px mark in a hero about 358px wide is not a watermark any more, it is
-   * a picture the hero's own content is printed over: at this width there is
-   * no part of the card the mark is not behind, so what shows is whatever the
-   * gaps between the chips happen to expose - a shape in pieces rather than a
-   * crest. mak's call, and the club is not lost with it: the crest beside the
-   * name is on the same row, full strength, and the switcher below carries it
-   * a third time.
-   *
-   * `display: none` rather than a zero opacity: there is nothing to animate
-   * back and no state to keep, so the box goes too. */
-  .sct-hero-watermark {
-    display: none;
-  }
-}
 
 /* Two standings cards stop fitting here: a card is about 330px by this point,
    and a nickname beside a crest, a place and five record tracks wants more
@@ -6418,24 +5694,7 @@ ul.sct-faq-list li {
 }
 
 @media (max-width: 420px) {
-  .sct-fact {
-    padding: 6px 11px;
-  }
 
-  /* One more step down, for the same reason as the step above: this is the
-     width where "New England Patriots" and "Jacksonville Jaguars" are deciding
-     how many lines the title takes, and the crest is what they are deciding it
-     against. 56px still reads as the club's mark; a third line of the name
-     does not read as anything. */
-  .sct-hero-crest {
-    width: 56px;
-    height: 56px;
-  }
-
-  .sct-hero-logo {
-    width: 38px;
-    height: 38px;
-  }
 
   .sct-depth {
     grid-template-columns: minmax(0, 1fr);
@@ -6567,13 +5826,6 @@ ul.sct-faq-list li {
     border-bottom-color: rgba(11, 22, 52, 0.2);
   }
 
-  .sct-nav-link:hover {
-    color: var(--sc-muted-strong);
-  }
-
-  .sct-nav-link.is-active {
-    color: var(--sc-navy);
-  }
 
   /* What replaces hover on a touch screen. A press is real feedback at the
      moment of the tap and gone the instant it ends, which is the whole reason
@@ -6604,9 +5856,7 @@ ul.sct-faq-list li {
     min-height: 44px;
   }
 
-  .sct-nav-link {
-    padding: 0 16px;
-  }
+
 }
 
 /* ------------------------------------------------------- reduced motion */
@@ -6637,21 +5887,6 @@ ul.sct-faq-list li {
   }
 }
 
-/* --------------------------------------------------------------- print */
-
-@media print {
-  .sct-nav,
-  .sct-hero-actions {
-    display: none;
-  }
-
-  /* The hero's gradient is the only thing here a printer would spend ink on
-     for nothing - the text on it is already dark. This used to also have to
-     undo white type on navy; it does not any more. */
-  .sct-hero {
-    background: none;
-  }
-}
 
 /* ------------------------------------------------------------- matchups */
 
@@ -28372,561 +27607,17 @@ a.sct-srow-team:focus-visible {
   }
 }
 
-/* ===================================================================
- * Team page: the premium comparison of the hero and the tab strip (mak's
- * brief, 2026-11-05, the dark navy-and-gold design), rendered under both
- * originals. Its own size container ("tp"); every rule is under .sct .sct-tp
- * and nothing reaches the originals. The switcher inside it reuses the
- * .sct-switch panel rules; only its summary pill is restyled here. */
-
-.sct .sct-tp {
-  --tp-navy-950: #07172f;
-  --tp-navy-900: #091e3d;
-  --tp-navy-850: #0b294f;
-  --tp-navy-800: #103966;
-  --tp-royal: #1155a2;
-  --tp-blue: #1763b5;
-  --tp-gold: #d4af37;
-  --tp-gold-bright: #f0c34e;
-  --tp-gold-deep: #b8901f;
-  --tp-text: #102344;
-  --tp-muted: #5f7492;
-  --tp-border: #cddaea;
-  container-type: inline-size;
-  container-name: tp;
-  margin: 28px 0 32px;
-  color: #fff;
-}
-
-.sct .sct-tp .sct-cp-flag {
-  display: inline-block;
-  margin: 0 0 10px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #fbf3d5;
-  color: #7a5c0e;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* ---- the hero */
-.sct .sct-tp-hero {
-  position: relative;
-  border-radius: 18px 18px 0 0;
-  background: linear-gradient(115deg, #081b37 0%, #103766 42%, #104f92 65%, #071d3c 100%);
-  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
-}
-
-/* The clip lives on the decor wrapper, never on the hero: an open switcher drops below it. */
-.sct .sct-tp-decor {
-  position: absolute;
-  inset: 0;
-  border-radius: 18px 18px 0 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sct .sct-tp-bands {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(118deg, rgba(5, 18, 40, 0.55) 0 14%, transparent 14% 30%, rgba(17, 85, 162, 0.22) 30% 46%, transparent 46% 58%, rgba(23, 99, 181, 0.18) 58% 72%, transparent 72% 86%, rgba(5, 18, 40, 0.5) 86%),
-    radial-gradient(90% 120% at 100% 100%, rgba(5, 18, 40, 0.55) 0%, transparent 60%);
-}
-
-.sct .sct-tp-gold {
-  position: absolute;
-  width: 3px;
-  height: 160%;
-  background: linear-gradient(180deg, var(--tp-gold-bright) 0%, var(--tp-gold) 50%, var(--tp-gold-deep) 100%);
-  box-shadow: 12px 0 0 rgba(212, 175, 55, 0.55), 24px 0 0 rgba(212, 175, 55, 0.25), 0 0 14px rgba(240, 195, 78, 0.25);
-  transform: rotate(28deg);
-  opacity: 0.9;
-}
-
-.sct .sct-tp-gold.is-tl {
-  top: -40%;
-  left: 6px;
-}
-
-.sct .sct-tp-gold.is-br {
-  right: 44px;
-  bottom: -60%;
-}
-
-.sct .sct-tp-watermark {
-  position: absolute;
-  top: 50%;
-  right: -40px;
-  width: 360px;
-  height: 360px;
-  transform: translateY(-50%);
-  background-image: var(--team-logo);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  opacity: 0.13;
-  filter: saturate(0.5) brightness(1.8);
-}
-
-.sct .sct-tp-inner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "badge text actions" "badge kpis kpis" "badge updated updated";
-  align-items: center;
-  column-gap: 24px;
-  row-gap: 10px;
-  padding: 24px 28px 18px;
-}
-
-/* ---- the crest in its badge */
-.sct .sct-tp-badge {
-  grid-area: badge;
-  align-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 148px;
-  height: 148px;
-  border: 3px solid var(--tp-gold);
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 25%, #fff 0%, #f4f7fc 55%, #dce7f3 100%);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 0 0 6px rgba(212, 175, 55, 0.25), 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.sct .sct-tp-logo {
-  width: 112px;
-  height: 112px;
-  object-fit: contain;
-}
-
-/* ---- the identity */
-.sct .sct-tp-text {
-  grid-area: text;
-  min-width: 0;
-}
-
-.sct .sct-tp-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 4px;
-  color: #d6e2f3;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sct .sct-tp-eyebrow-rule {
-  width: 18px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--tp-gold);
-}
-
-.sct .sct-tp-title {
-  margin: 0;
-  color: #fff;
-  font-size: 2.9rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.sct .sct-tp-sub {
-  margin: 6px 0 0;
-  color: #b9c9e0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-/* ---- the switcher, as a white pill */
-.sct .sct-tp-actions {
-  grid-area: actions;
-  align-self: start;
-  justify-self: end;
-}
-
-.sct .sct-tp .sct-switch-summary {
-  min-height: 42px;
-  padding: 6px 14px 6px 10px;
-  border: 1px solid rgba(212, 175, 55, 0.7);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff 0%, #eef3fa 100%);
-  color: var(--tp-navy-950);
-  font-size: 0.9rem;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 #fff;
-}
-
-.sct .sct-tp .sct-switch-summary:hover,
-.sct .sct-tp .sct-switch-summary:focus-visible {
-  border-color: var(--tp-gold-bright);
-  box-shadow: 0 0 0 3px rgba(240, 195, 78, 0.28), 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.sct .sct-tp .sct-switch-caret {
-  border-color: var(--tp-navy-950);
-}
-
-.sct .sct-tp .sct-switch-panel {
-  color: var(--tp-text);
-}
-
-/* ---- the four KPI cards */
-.sct .sct-tp-kpis {
-  grid-area: kpis;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct .sct-tp-kpi {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 78px;
-  margin: 0;
-  padding: 12px 16px;
-  border: 1px solid rgba(210, 222, 238, 0.9);
-  border-bottom: 3px solid var(--tp-gold);
-  border-radius: 12px;
-  background: linear-gradient(145deg, #fff 0%, #f5f8fd 68%, #e7eff9 100%);
-  color: var(--tp-text);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08), 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.sct .sct-tp-kpi-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-  color: var(--tp-gold-deep);
-}
-
-.sct .sct-tp-kpi-icon svg {
-  width: 26px;
-  height: 26px;
-  stroke-width: 2.1;
-}
-
-.sct .sct-tp-kpi-div {
-  flex: 0 0 1px;
-  width: 1px;
-  height: 36px;
-  background: #d2deee;
-}
-
-.sct .sct-tp-kpi-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sct .sct-tp-kpi-label {
-  color: var(--tp-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sct .sct-tp-kpi-value {
-  color: var(--tp-navy-950);
-  font-size: 1.3rem;
-  font-weight: 800;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-
-.sct .sct-tp-updated {
-  grid-area: updated;
-  margin: 0;
-  color: #b9c9e0;
-  font-size: 0.78rem;
-  font-style: italic;
-}
-
-/* ---- the strip: dark, attached, icons, a gold open tab */
-.sct .sct-tp-nav {
-  border-top: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 0 0 18px 18px;
-  background: linear-gradient(180deg, #113966 0%, #091d3c 85%, #07172e 100%);
-  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
-  overflow: hidden;
-}
-
-.sct .sct-tp-nav-list {
-  display: flex;
-  align-items: stretch;
-  min-height: 62px;
-  margin: 0;
-  padding: 6px 8px 0;
-  list-style: none;
-}
-
-.sct .sct-tp-nav-list li {
-  position: relative;
-  display: flex;
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
-}
-
-.sct .sct-tp-nav-list li + li::before {
-  content: "";
-  position: absolute;
-  top: 16px;
-  bottom: 16px;
-  left: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.sct .sct-tp .sct-tp-tab {
-  display: inline-flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 10px 10px 12px;
-  border: 1px solid transparent;
-  border-bottom: 0;
-  border-radius: 12px 12px 5px 5px;
-  color: #eef3fa;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.sct .sct-tp-tab-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-}
-
-.sct .sct-tp-tab-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.sct .sct-tp .sct-tp-tab:hover,
-.sct .sct-tp .sct-tp-tab:focus-visible {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  outline: none;
-}
-
-.sct .sct-tp .sct-tp-tab:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--tp-gold-bright);
-}
-
-.sct .sct-tp .sct-tp-tab.is-active {
-  position: relative;
-  border-color: var(--tp-gold);
-  background: linear-gradient(180deg, #253c50 0%, #0b1b34 65%, #07152a 100%);
-  color: #f2c54f;
-  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.12), 0 0 12px rgba(212, 175, 55, 0.16);
-}
-
-.sct .sct-tp .sct-tp-tab.is-active::after {
-  content: "";
-  position: absolute;
-  right: 10px;
-  bottom: 0;
-  left: 10px;
-  height: 3px;
-  border-radius: 2px 2px 0 0;
-  background: linear-gradient(90deg, var(--tp-gold-deep), var(--tp-gold-bright), var(--tp-gold-deep));
-}
-
-/* ---- medium: 950-1299px */
-@container tp (max-width: 1299px) {
-  .sct .sct-tp-inner {
-    column-gap: 20px;
-    padding: 20px 22px 16px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 124px;
-    height: 124px;
-  }
-
-  .sct .sct-tp-logo {
-    width: 94px;
-    height: 94px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 2.35rem;
-  }
-
-  .sct .sct-tp-watermark {
-    width: 280px;
-    height: 280px;
-    opacity: 0.08;
-  }
-
-  .sct .sct-tp-kpi {
-    min-height: 70px;
-    padding: 10px 12px;
-  }
-
-  .sct .sct-tp-kpi-value {
-    font-size: 1.12rem;
-  }
-
-  .sct .sct-tp-nav-list {
-    min-height: 56px;
-  }
-
-  .sct .sct-tp .sct-tp-tab {
-    font-size: 0.82rem;
-    gap: 6px;
-  }
-
-  .sct .sct-tp-tab-icon svg {
-    width: 17px;
-    height: 17px;
-  }
-}
-
-/* ---- narrow: 650-949px. The selector drops under the name; the KPIs go two by two. */
-@container tp (max-width: 949px) {
-  .sct .sct-tp-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
-    row-gap: 12px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 104px;
-    height: 104px;
-    align-self: start;
-  }
-
-  .sct .sct-tp-logo {
-    width: 78px;
-    height: 78px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 2rem;
-  }
-
-  .sct .sct-tp-actions {
-    justify-self: start;
-  }
-
-  .sct .sct-tp-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sct .sct-tp-watermark {
-    width: 240px;
-    height: 240px;
-    right: -60px;
-  }
-
-  .sct .sct-tp-nav-list {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-  }
-
-  .sct .sct-tp-nav-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sct .sct-tp-nav-list li {
-    flex: 0 0 auto;
-  }
-
-  .sct .sct-tp .sct-tp-tab {
-    padding: 10px 14px 12px;
-  }
-}
-
-/* ---- mobile: under 650px */
-@container tp (max-width: 649px) {
-  .sct .sct-tp-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
-    column-gap: 14px;
-    padding: 16px 16px 14px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 84px;
-    height: 84px;
-    border-width: 2.5px;
-  }
-
-  .sct .sct-tp-logo {
-    width: 62px;
-    height: 62px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 1.65rem;
-  }
-
-  .sct .sct-tp-sub {
-    font-size: 0.85rem;
-  }
-
-  .sct .sct-tp-eyebrow {
-    font-size: 0.72rem;
-  }
-
-  .sct .sct-tp-gold.is-br {
-    display: none;
-  }
-
-  .sct .sct-tp-watermark {
-    width: 200px;
-    height: 200px;
-    opacity: 0.07;
-  }
-
-  .sct .sct-tp-kpi {
-    min-height: 62px;
-    gap: 10px;
-    padding: 9px 11px;
-  }
-
-  .sct .sct-tp-kpi-value {
-    font-size: 1.05rem;
-  }
-
-  .sct .sct-tp .sct-switch-summary {
-    max-width: 100%;
-  }
-
-  .sct .sct-tp-nav-list {
-    min-height: 52px;
-    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
-    mask-image: linear-gradient(90deg, #000 92%, transparent);
-  }
-}
 
 /* ===================================================================
- * Team page: Premium Design B of the hero and the tab strip (mak's brief,
- * 2026-11-05, the BRIGHTER royal-blue hero with the LIGHT navigation bar),
- * rendered under Design A. Its own size container ("tpb"); every rule is
- * under .sct .sct-tpb and nothing reaches Design A (.sct-tp) or the
- * originals. The switcher inside it reuses the .sct-switch panel rules;
- * only its summary pill is restyled here.
+ * Team page: the header - the hero and the tab strip (team/team-header.ts).
+ * mak's pick of 2026-11-05 from two premium comparisons: "Design B", the
+ * bright royal-blue hero with the light, separate navigation bar; the
+ * original header and the dark "Design A" came out the same day, which is
+ * why the prefix is still "tpb". Its own size container ("tpb"); every rule
+ * is under .sct .sct-tpb. The switcher inside it reuses the .sct-switch
+ * panel rules; only its summary pill is restyled here. The strip keeps the
+ * bundle's .sct-nav-list / .sct-nav-link hooks and is sticky like the strip
+ * it replaced (the host sets --sct-nav-offset under its own fixed header).
  *
  * Geometry: the left logo panel and its gold divider are two clip-path
  * polygons on the same slant, driven by --tpb-panel-w (the panel's width
@@ -28952,21 +27643,8 @@ a.sct-srow-team:focus-visible {
   --tpb-radius: 20px;
   container-type: inline-size;
   container-name: tpb;
-  margin: 28px 0 32px;
+  margin: 0 0 24px;
   color: #fff;
-}
-
-.sct .sct-tpb .sct-cp-flag {
-  display: inline-block;
-  margin: 0 0 10px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #e3eefc;
-  color: #0e4b93;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 /* ---- the hero: its own rounded block, brighter through the middle */
@@ -29112,8 +27790,10 @@ a.sct-srow-team:focus-visible {
 
 .sct .sct-tpb-title {
   margin: 0;
+  padding: 0;
   color: #fff;
-  font-size: 3rem;
+  font-family: inherit;
+  font-size: 3rem !important;
   font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -29125,6 +27805,11 @@ a.sct-srow-team:focus-visible {
   color: #cfe0f6;
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+/* Dropped only when client/team.ts measured it wrapping; the bare hook hides nothing. */
+.sct .sct-tpb-sub[data-sct-lead="off"] {
+  display: none;
 }
 
 /* ---- the switcher, as a clean white pill */
@@ -29241,6 +27926,9 @@ a.sct-srow-team:focus-visible {
 
 /* ---- the strip: a separate LIGHT block, text-first tabs, a navy open tab under a gold bar */
 .sct .sct-tpb-navigation {
+  position: sticky;
+  top: var(--sct-nav-offset, 0px);
+  z-index: 30;
   margin-top: 12px;
   border: 1px solid var(--tpb-nav-border);
   border-radius: 16px;
@@ -29249,7 +27937,7 @@ a.sct-srow-team:focus-visible {
   overflow: hidden;
 }
 
-.sct .sct-tpb-nav-list {
+.sct .sct-tpb .sct-nav-list {
   display: flex;
   align-items: stretch;
   gap: 4px;
@@ -29259,14 +27947,14 @@ a.sct-srow-team:focus-visible {
   list-style: none;
 }
 
-.sct .sct-tpb-nav-list li {
+.sct .sct-tpb .sct-nav-list li {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
   margin: 0;
 }
 
-.sct .sct-tpb .sct-tpb-tab {
+.sct .sct-tpb .sct-nav-link {
   position: relative;
   display: inline-flex;
   flex: 1 1 auto;
@@ -29283,25 +27971,25 @@ a.sct-srow-team:focus-visible {
   white-space: nowrap;
 }
 
-.sct .sct-tpb .sct-tpb-tab:hover {
+.sct .sct-tpb .sct-nav-link:hover {
   background: #e1ecfa;
   color: var(--tpb-navy-900);
 }
 
-.sct .sct-tpb .sct-tpb-tab:focus-visible {
+.sct .sct-tpb .sct-nav-link:focus-visible {
   outline: 2px solid var(--tpb-blue-700);
   outline-offset: -2px;
 }
 
-.sct .sct-tpb .sct-tpb-tab.is-active,
-.sct .sct-tpb .sct-tpb-tab.is-active:hover {
+.sct .sct-tpb .sct-nav-link.is-active,
+.sct .sct-tpb .sct-nav-link.is-active:hover {
   background: linear-gradient(180deg, #0e4b93 0%, #082e61 100%);
   color: #fff;
   font-weight: 800;
   box-shadow: 0 3px 8px rgba(5, 31, 68, 0.15);
 }
 
-.sct .sct-tpb .sct-tpb-tab.is-active::after {
+.sct .sct-tpb .sct-nav-link.is-active::after {
   content: "";
   position: absolute;
   right: 13%;
@@ -29336,7 +28024,7 @@ a.sct-srow-team:focus-visible {
   }
 
   .sct .sct-tpb-title {
-    font-size: 2.4rem;
+    font-size: 2.4rem !important;
   }
 
   .sct .sct-tpb-eyebrow {
@@ -29362,12 +28050,12 @@ a.sct-srow-team:focus-visible {
     font-size: 1.15rem;
   }
 
-  .sct .sct-tpb-nav-list {
+  .sct .sct-tpb .sct-nav-list {
     min-height: 56px;
     padding: 6px 7px;
   }
 
-  .sct .sct-tpb .sct-tpb-tab {
+  .sct .sct-tpb .sct-nav-link {
     min-height: 44px;
     font-size: 0.82rem;
   }
@@ -29444,7 +28132,7 @@ a.sct-srow-team:focus-visible {
   }
 
   .sct .sct-tpb-title {
-    font-size: 2rem;
+    font-size: 2rem !important;
   }
 
   .sct .sct-tpb-actions {
@@ -29465,21 +28153,21 @@ a.sct-srow-team:focus-visible {
     right: -60px;
   }
 
-  .sct .sct-tpb-nav-list {
+  .sct .sct-tpb .sct-nav-list {
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
 
-  .sct .sct-tpb-nav-list::-webkit-scrollbar {
+  .sct .sct-tpb .sct-nav-list::-webkit-scrollbar {
     display: none;
   }
 
-  .sct .sct-tpb-nav-list li {
+  .sct .sct-tpb .sct-nav-list li {
     flex: 0 0 auto;
   }
 
-  .sct .sct-tpb .sct-tpb-tab {
+  .sct .sct-tpb .sct-nav-link {
     padding: 0 14px;
   }
 }
@@ -29527,7 +28215,7 @@ a.sct-srow-team:focus-visible {
   }
 
   .sct .sct-tpb-title {
-    font-size: 1.65rem;
+    font-size: 1.65rem !important;
   }
 
   .sct .sct-tpb-sub {
@@ -29568,9 +28256,900 @@ a.sct-srow-team:focus-visible {
     max-width: 100%;
   }
 
-  .sct .sct-tpb-nav-list {
+  .sct .sct-tpb .sct-nav-list {
     min-height: 52px;
     -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
     mask-image: linear-gradient(90deg, #000 92%, transparent);
+  }
+}
+
+@media print {
+  .sct .sct-tpb-navigation,
+  .sct .sct-tpb-actions {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   Draft Picks & History: the premium comparison (mak's brief, 2026-11-05,
+   attached_assets/draftref.png). Rendered under the original Draft tab by
+   draft-premium.ts until mak approves it as the design. Scoped to .sct-drp;
+   a container so the column, not the window, decides the layout.
+   ========================================================================= */
+
+:is(.sct, #sct-table-armour) .sct-drp {
+  --drp-navy-950: #071a35;
+  --drp-navy-900: #0b2345;
+  --drp-navy-800: #103862;
+  --drp-navy-700: #1a4d8a;
+  --drp-gold: #d4af37;
+  --drp-gold-bright: #f0bf35;
+  --drp-gold-light: #fff3d6;
+  --drp-text: #102344;
+  --drp-muted: #5b7290;
+  --drp-surface: #ffffff;
+  --drp-surface-light: #f7faff;
+  --drp-surface-blue: #edf4fb;
+  --drp-border: #cfdded;
+  --drp-border-light: #e1e9f3;
+  --drp-green: #087a42;
+  --drp-green-light: #e6f6e9;
+  --drp-red: #b93236;
+  --drp-red-light: #fceced;
+  --drp-blue: #27619e;
+  --drp-blue-light: #e7f0fb;
+  --drp-amber: #8a5a00;
+  --drp-amber-light: #fdf1d6;
+  --drp-shadow: 0 3px 8px rgba(10, 32, 65, 0.05), 0 10px 22px rgba(10, 32, 65, 0.055);
+  --drp-radius: 15px;
+  --drp-head: linear-gradient(110deg, var(--drp-navy-950) 0%, var(--drp-navy-800) 70%, var(--drp-navy-900) 100%);
+  container-type: inline-size;
+  display: grid;
+  gap: 16px;
+  margin: 28px 0 0;
+  color: var(--drp-text);
+  font-family: var(--sc-font);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-flag {
+  display: inline-block;
+  justify-self: start;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--drp-gold-light);
+  color: var(--sc-gold-deep);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-num {
+  font-family: "Barlow", var(--sc-font);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* ---- the banner */
+
+:is(.sct, #sct-table-armour) .sct-drp-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 92px;
+  padding: 14px 26px;
+  overflow: hidden;
+  border-radius: var(--drp-radius);
+  background: linear-gradient(110deg, #071a35 0%, #103d70 65%, #092448 100%);
+  color: #fff;
+  box-shadow: var(--drp-shadow);
+}
+
+/* The diagonal geometry at the right, under the stripes. */
+:is(.sct, #sct-table-armour) .sct-drp-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 46%;
+  background:
+    linear-gradient(112deg, transparent 0 46%, rgba(255, 255, 255, 0.045) 46% 62%, transparent 62% 74%, rgba(255, 255, 255, 0.035) 74% 100%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-stripes {
+  position: absolute;
+  top: -8px;
+  right: 34px;
+  width: 44px;
+  height: 56px;
+  background:
+    linear-gradient(118deg, transparent 0 40%, var(--drp-gold-bright) 40% 52%, transparent 52% 70%, var(--drp-gold) 70% 82%, transparent 82%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-logo {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-hero-rule {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 58px;
+  border-radius: 2px;
+  background: var(--drp-gold);
+  transform: skewX(-12deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-hero-copy {
+  position: relative;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-title {
+  margin: 0;
+  padding: 0;
+  color: #fff !important;
+  font-size: 1.95rem !important;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-sub {
+  margin: 5px 0 0;
+  max-width: 68ch;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* ---- the two columns */
+
+:is(.sct, #sct-table-armour) .sct-drp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(295px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-layout.is-rail-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-main,
+:is(.sct, #sct-table-armour) .sct-drp-rail {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- navy heads shared by the year cards and the rail cards */
+
+:is(.sct, #sct-table-armour) .sct-drp-year-head,
+:is(.sct, #sct-table-armour) .sct-drp-card-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 18px;
+  overflow: hidden;
+  background: var(--drp-head);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-year-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  color: var(--drp-gold-bright);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-h3 {
+  margin: 0;
+  padding: 0;
+  color: inherit !important;
+  font-size: 1.32rem !important;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-year-sum {
+  margin-left: auto;
+  padding-right: 34px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The gold diagonal at a navy head's right edge. */
+:is(.sct, #sct-table-armour) .sct-drp-slash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background:
+    linear-gradient(118deg, transparent 0 38%, var(--drp-gold) 38% 52%, transparent 52% 64%, var(--drp-gold-bright) 64% 76%, transparent 76%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---- year cards */
+
+:is(.sct, #sct-table-armour) .sct-drp-year {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #ccdaea;
+  border-radius: var(--drp-radius);
+  background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: var(--drp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-scroll:focus-visible {
+  outline: 2px solid var(--drp-gold);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table {
+  width: 100%;
+  min-width: 560px;
+  margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table :where(th, td) {
+  padding: 0 10px;
+  border: 0;
+  text-align: left;
+  vertical-align: middle;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-th {
+  height: 32px;
+  border-bottom: 1px solid var(--drp-border);
+  background: linear-gradient(180deg, #f3f8fe 0%, #e9f1fa 100%);
+  color: var(--drp-navy-900);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-row:nth-child(odd) {
+  background: #ffffff;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-row:nth-child(even) {
+  background: #f7faff;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-td {
+  height: 40px;
+  border-top: 1px solid var(--drp-border-light);
+  color: var(--drp-text);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-row:first-child .sct-drp-td {
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .is-num {
+  width: 1%;
+  min-width: 44px;
+  font-family: "Barlow", var(--sc-font);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .is-player {
+  width: 32%;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-face {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid var(--drp-border);
+  background: var(--drp-surface-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-face-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link,
+:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link {
+  color: var(--drp-navy-900);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:hover,
+:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:focus-visible,
+:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link:focus-visible {
+  outline: 2px solid var(--drp-gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .is-pos {
+  width: 1%;
+  min-width: 56px;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-pos {
+  display: block;
+  color: var(--drp-navy-900);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-dr-slot {
+  display: block;
+  margin: 1px 0 0;
+  color: var(--drp-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-college {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-crest {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-crest-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-college-name {
+  color: #2a4470;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table .is-status {
+  width: 1%;
+  min-width: 112px;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--drp-surface-blue);
+  color: var(--drp-navy-900);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="ok"] {
+  background: var(--drp-green-light);
+  color: var(--drp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="ps"] {
+  background: var(--drp-blue-light);
+  color: var(--drp-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="hurt"] {
+  background: var(--drp-red-light);
+  color: var(--drp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="amber"] {
+  background: var(--drp-amber-light);
+  color: var(--drp-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="cut"] {
+  background: #e6edf6;
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-badge[data-tone="gone"] {
+  background: #eef1f5;
+  color: #526581;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-status-sub,
+:is(.sct, #sct-table-armour) .sct-drp-none {
+  color: var(--drp-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---- rail cards */
+
+:is(.sct, #sct-table-armour) .sct-drp-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #ccdaea;
+  border-radius: var(--drp-radius);
+  background: var(--drp-surface);
+  box-shadow: var(--drp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-head.is-light {
+  min-height: 44px;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8fd 100%);
+  border-bottom: 2px solid var(--drp-gold);
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-head.is-light .sct-drp-icon {
+  color: var(--drp-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-body {
+  padding: 12px 16px 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-body.is-flush {
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin: 0;
+  color: var(--drp-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-strip .sct-drp-num {
+  color: var(--drp-navy-900);
+  font-size: 1.28rem;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-strip.is-compact .sct-drp-num {
+  font-size: 1.05rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-kicker {
+  margin: 8px 0 0;
+  color: var(--drp-navy-900);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-takeaway {
+  margin: 8px 0 0;
+  padding: 7px 12px;
+  border-radius: 9px;
+  background: var(--drp-gold-light);
+  color: var(--drp-navy-900);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+/* The ledger: R1..R7, markers, the count held. */
+:is(.sct, #sct-table-armour) .sct-drp-ledger {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--drp-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lrow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+  min-height: 31px;
+  padding: 3px 10px;
+  border-top: 1px solid var(--drp-border-light);
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lrow:first-child {
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lrow.is-empty {
+  background: var(--drp-surface-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lrd {
+  font-family: "Barlow", var(--sc-font);
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lmarks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--drp-navy-900);
+  box-sizing: border-box;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-dot.is-from {
+  background: var(--drp-gold-bright);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-dot.is-sent {
+  background: transparent;
+  border: 2px solid var(--drp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-dot-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--drp-navy-900);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-dot-crest {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-lcount {
+  font-family: "Barlow", var(--sc-font);
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-align: right;
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 10px 0 0;
+  color: var(--drp-text);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-foot {
+  margin: 10px 0 0;
+  color: var(--drp-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+/* The position mix. */
+:is(.sct, #sct-table-armour) .sct-drp-shares {
+  margin: 10px 0 0;
+  padding: 10px 12px 8px;
+  border: 1px solid var(--drp-border);
+  border-radius: 10px;
+  background: var(--drp-surface-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-shares-title {
+  margin: 0 0 6px;
+  color: var(--drp-navy-900);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 30px 38px;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--drp-navy-900);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--drp-gold-bright);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-bar {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dfe8f3;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-n {
+  color: var(--drp-navy-900);
+  font-size: 0.86rem;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-pct {
+  color: var(--drp-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-share-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--drp-muted);
+  font-size: 0.7rem;
+}
+
+/* Round 1 list. */
+:is(.sct, #sct-table-armour) .sct-drp-r1-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1 {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 14px;
+  border-top: 1px solid var(--drp-border-light);
+  background: var(--drp-surface-light);
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1:nth-child(even) {
+  background: #ffffff;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1:first-child {
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1-year .sct-drp-num {
+  font-size: 0.86rem;
+  color: var(--drp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1-pos {
+  padding: 1px 7px;
+  border: 1px solid var(--drp-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--drp-navy-900);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1-pick {
+  color: var(--drp-blue);
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-r1-none {
+  margin: 0;
+  padding: 12px 14px;
+  color: var(--drp-muted);
+  font-size: 0.8rem;
+}
+
+/* The method note. */
+:is(.sct, #sct-table-armour) .sct-drp-method {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--drp-border);
+  border-radius: 12px;
+  background: var(--drp-surface-blue);
+  color: #2a4470;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-method .sct-drp-icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--drp-blue);
+}
+
+/* ---- the column decides: one column under 1050px, the next draft's
+   picks first, then the tables, then the rest of the rail. */
+@container (max-width: 1050px) {
+  :is(.sct, #sct-table-armour) .sct-drp-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-rail {
+    display: contents;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital { order: 1; }
+  :is(.sct, #sct-table-armour) .sct-drp-main { order: 2; }
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history { order: 3; }
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-r1 { order: 4; }
+  :is(.sct, #sct-table-armour) .sct-drp-method { order: 5; }
+
+  :is(.sct, #sct-table-armour) .sct-drp-share {
+    grid-template-columns: 64px minmax(0, 1fr) 34px 44px;
+  }
+}
+
+@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-drp-hero {
+    gap: 12px;
+    min-height: 0;
+    padding: 12px 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-title {
+    font-size: 1.4rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-sub {
+    font-size: 0.74rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-stripes {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year-head,
+  :is(.sct, #sct-table-armour) .sct-drp-card-head {
+    padding: 8px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year-sum {
+    padding-right: 28px;
+    font-size: 0.72rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-h3 {
+    font-size: 1.12rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-table {
+    min-width: 540px;
   }
 }
