@@ -27,6 +27,7 @@ import {
 } from "../lib/news-known";
 import { invalidateFpaTableCache } from "../lib/fpa/fpa-data";
 import { fetchClubNews } from "../lib/club-news";
+import { fetchRotowireNews } from "../lib/rotowire-news";
 import type { RawNewsItem } from "../lib/news-item";
 import { TEAMS } from "../lib/team/teams";
 import { fpaSnapshotState } from "../lib/fpa/fpa-data";
@@ -187,6 +188,13 @@ function makeFallbackId(item: {
  */
 export const WIRE_INTERVAL_MS = 20 * 60 * 1000;
 export const CLUB_INTERVAL_MS = 60 * 60 * 1000;
+/**
+ * The RotoWire sweep (2026-11-05): the wire read at its source. Ten minutes,
+ * because a team page holds 25 notes and a busy Sunday can push that many
+ * through one club's page in an afternoon. Thirty-two pages a sweep, so
+ * under five thousand requests a day plus one per new note for its time.
+ */
+export const ROTOWIRE_INTERVAL_MS = 10 * 60 * 1000;
 
 /**
  * When an ingest is considered *unhealthy* - see GET /api/ingest/health.
@@ -322,6 +330,18 @@ export function evaluateIngestHealth(args: {
 export function wireIngestEnabled(): boolean {
   if (process.env["NODE_ENV"] !== "development") return true;
   return ["1", "true", "on"].includes((process.env["SC_DEV_INGEST"] ?? "").trim().toLowerCase());
+}
+
+/**
+ * Whether the timer's wire source is the RotoWire sweep (the default since
+ * 2026-11-05) or the Dynasty Command relay alone.
+ *
+ * SC_ROTOWIRE_SWEEP=0 keeps the relay as the only source. The test harness
+ * sets it (tests/helpers/server.mjs): a server booted under test must read
+ * the mock feed it was pointed at, never the real rotowire.com.
+ */
+export function rotowireSweepEnabled(): boolean {
+  return !["0", "false", "off"].includes((process.env["SC_ROTOWIRE_SWEEP"] ?? "").trim().toLowerCase());
 }
 
 export interface IngestResult {
@@ -518,6 +538,107 @@ const clubState: ClubIngestState = {
 
 export function clubIngestStatus(): ClubIngestState {
   return { ...clubState };
+}
+
+/** The provider label on a row the RotoWire sweep stored. The link on every such row is RotoWire's own page. */
+export const ROTOWIRE_PROVIDER = "RotoWire";
+
+/**
+ * How many of the 32 team pages have to answer before a sweep counts.
+ *
+ * Same reasoning as CLUB_MIN_OK: one page failing to parse is a bad minute,
+ * but below this the sweep has stopped reaching RotoWire at all, and that is a
+ * failure to report - and the cue for the timer to fall back to the relay.
+ */
+const ROTOWIRE_MIN_OK = 8;
+
+/** Outcome of the last RotoWire sweep, reported beside the wire's and the clubs' on /api/status. */
+interface RotowireIngestState {
+  lastAttemptMs: number | null;
+  lastSuccessMs: number | null;
+  lastResult: IngestResult | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+  /** Team pages that answered on the last sweep, out of 32. */
+  pagesOk: number | null;
+  /** Team pages that could not be read, by code. */
+  pagesFailed: string[];
+  /** Where the notes' times came from on the last sweep. */
+  times: { fromMemory: number; fromPage: number; dated: number } | null;
+}
+
+const rotowireState: RotowireIngestState = {
+  lastAttemptMs: null,
+  lastSuccessMs: null,
+  lastResult: null,
+  lastError: null,
+  consecutiveFailures: 0,
+  pagesOk: null,
+  pagesFailed: [],
+  times: null,
+};
+
+export function rotowireIngestStatus(): RotowireIngestState {
+  return { ...rotowireState };
+}
+
+/**
+ * Sweep RotoWire's 32 team pages and store what they carry, in the wire lane.
+ *
+ * The timer's wire source since 2026-11-05 (index.ts), with runIngest() - the
+ * Dynasty Command relay - kept as its fallback and as the push route. Rows
+ * land under the ids and titles the relay used, so the two never duplicate a
+ * story; a row the relay stored first is updated to carry RotoWire's label
+ * and its headline link the first time the sweep sees it.
+ */
+export async function runRotowireIngest(): Promise<IngestResult> {
+  rotowireState.lastAttemptMs = Date.now();
+
+  try {
+    const sweep = await fetchRotowireNews();
+
+    if (sweep.ok < ROTOWIRE_MIN_OK) {
+      throw new Error(
+        `only ${sweep.ok} of ${sweep.ok + sweep.failed.length} RotoWire team pages answered` +
+          (sweep.failed[0] ? ` - e.g. ${sweep.failed[0].team}: ${sweep.failed[0].error}` : ""),
+      );
+    }
+
+    const result = await storeItems(sweep.items, ROTOWIRE_PROVIDER, WIRE_SOURCE_TYPE);
+
+    rotowireState.lastSuccessMs = Date.now();
+    rotowireState.lastResult = result;
+    rotowireState.lastError = null;
+    rotowireState.consecutiveFailures = 0;
+    rotowireState.pagesOk = sweep.ok;
+    rotowireState.pagesFailed = sweep.failed.map((f) => f.team);
+    rotowireState.times = { fromMemory: sweep.fromMemory, fromPage: sweep.fromPage, dated: sweep.dated };
+
+    // The wire's own health (GET /api/ingest/health) is judged on
+    // ingestState: a successful sweep is a successful wire read.
+    ingestState.lastSuccessMs = rotowireState.lastSuccessMs;
+    ingestState.lastResult = result;
+    ingestState.lastError = null;
+    ingestState.consecutiveFailures = 0;
+    ingestState.lastSource = "rotowire.com";
+
+    logger.info(
+      {
+        ...result,
+        pagesOk: sweep.ok,
+        pagesFailed: sweep.failed.length,
+        times: rotowireState.times,
+        tooOld: sweep.tooOld,
+      },
+      "RotoWire sweep complete",
+    );
+    void afterIngest(result.inserted);
+    return result;
+  } catch (err) {
+    rotowireState.lastError = err instanceof Error ? err.message : String(err);
+    rotowireState.consecutiveFailures++;
+    throw err;
+  }
 }
 
 /**
@@ -1036,6 +1157,26 @@ router.post("/ingest/clubs", async (req, res) => {
   }
 });
 
+/** POST /api/ingest/rotowire - sweep RotoWire's team pages now. Guarded like the others. */
+router.post("/ingest/rotowire", async (req, res) => {
+  if (!requireIngestSecret(req, res)) return;
+
+  try {
+    const result = await runRotowireIngest();
+    const sweep = rotowireIngestStatus();
+    res.json({
+      ok: true,
+      ...result,
+      pagesOk: sweep.pagesOk,
+      pagesFailed: sweep.pagesFailed,
+      times: sweep.times,
+    });
+  } catch (err) {
+    req.log.error({ err }, "RotoWire sweep failed");
+    res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 /**
  * GET /api/status - is this instance actually keeping the archive moving?
  *
@@ -1072,6 +1213,7 @@ router.get("/status", (_req, res) => {
   void (async () => {
     const ingest = ingestStatus();
     const clubs = clubIngestStatus();
+    const rotowire = rotowireIngestStatus();
     const fpa = fpaRefreshStatus();
     const nowMs = Date.now();
 
@@ -1115,12 +1257,33 @@ router.get("/status", (_req, res) => {
           lastResult: ingest.lastResult,
           lastError: ingest.lastError,
           consecutiveFailures: ingest.consecutiveFailures,
-          intervalMs: WIRE_INTERVAL_MS,
+          // The wire's timer cadence: the sweep's, unless the relay is the only source.
+          intervalMs: rotowireSweepEnabled() ? ROTOWIRE_INTERVAL_MS : WIRE_INTERVAL_MS,
         },
         // The second provider, reported separately for the reason
         // ClubIngestState gives: these two fail independently, and a single
         // verdict covering both would call the ingest healthy while the half
         // that feeds the team pages was dead.
+        // The wire read at its source. `ingest` above still reflects it (a
+        // sweep is a wire success), but this says how the sweep itself went:
+        // how many team pages answered and where the notes' times came from.
+        rotowire: {
+          lastAttempt: iso(rotowire.lastAttemptMs),
+          lastSuccess: iso(rotowire.lastSuccessMs),
+          secondsSinceLastSuccess:
+            rotowire.lastSuccessMs === null
+              ? null
+              : Math.round((nowMs - rotowire.lastSuccessMs) / 1000),
+          lastResult: rotowire.lastResult,
+          lastError: rotowire.lastError,
+          consecutiveFailures: rotowire.consecutiveFailures,
+          pagesOk: rotowire.pagesOk,
+          pagesFailed: rotowire.pagesFailed,
+          times: rotowire.times,
+          intervalMs: ROTOWIRE_INTERVAL_MS,
+          // False means the relay is the timer's only source (SC_ROTOWIRE_SWEEP=0).
+          enabled: rotowireSweepEnabled(),
+        },
         clubs: {
           lastAttempt: iso(clubs.lastAttemptMs),
           lastSuccess: iso(clubs.lastSuccessMs),

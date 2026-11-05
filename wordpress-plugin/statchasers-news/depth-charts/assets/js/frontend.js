@@ -1,8 +1,9 @@
 /* StatChasers Depth Charts - front-end renderer.
-   Reads the locally cached JSON (data-endpoint) and renders the depth-chart UI:
-   Fantasy / Offense / Defense / Special Teams tabs, search, team + position
-   filters, and a responsive grid that packs more teams per row as columns shrink.
-   Renders only from the cached file in /uploads; no external calls. */
+   Reads the locally cached JSON (data-endpoint) and renders the league-wide
+   depth-chart browser: Fantasy / Offense / Defense / Special Teams views,
+   search, team + position filters, and one card per team with a column per
+   position group. Renders only from the cached file in /uploads; no external
+   calls. */
 (function () {
 	"use strict";
 
@@ -56,7 +57,6 @@
 		}
 	};
 	var TAB_ORDER = ["fantasy", "offense", "defense", "special"];
-	var COLUMN_WIDTH_REM = 11;
 
 	// Color-coded position abbreviations in the search dropdown. Keyed by the base
 	// position code (col.short || col.label || col.key); unlisted positions render
@@ -360,7 +360,7 @@
 		SUS: { label: "SUS", cls: "scdc-badge-out" }
 	};
 
-	// ---- Search suggestions (shared by the original and premium toolbars) ----
+	// ---- Search suggestions ----
 
 	// Index headshots by normalized name across *every* position (built once per
 	// loaded dataset), so a tab whose source lacks headshots (e.g. Fantasy's
@@ -618,145 +618,6 @@
 		URL.revokeObjectURL(url);
 	}
 
-	// "Josh Sweat" -> "J. Sweat". Keeps everything after the first name intact
-	// so suffixes/compound surnames survive (e.g. "Amon-Ra St. Brown").
-	function abbreviateName(name) {
-		var firstSpace = name.indexOf(" ");
-		if (firstSpace <= 0) return name;
-		return name.charAt(0) + ". " + name.slice(firstSpace + 1);
-	}
-
-	function playerRow(player) {
-		var children = [];
-
-		if (player.movement === "up") {
-			children.push(el("span", { class: "scdc-move scdc-move-up", text: "▲", title: "Moved up" }));
-		} else if (player.movement === "down") {
-			children.push(el("span", { class: "scdc-move scdc-move-down", text: "▼", title: "Moved down" }));
-		}
-
-		// Zero-padded depth rank ("01", "02") for a calm, aligned tabular column.
-		var rankText = String(player.rank);
-		if (rankText.length < 2) rankText = "0" + rankText;
-		children.push(el("span", { class: "scdc-rank", text: rankText }));
-		// Full name by default; CSS swaps to the abbreviated form when the
-		// column is squeezed to its narrowest (scrolling) width.
-		children.push(el("span", { class: "scdc-name scdc-name-full", text: player.name }));
-		children.push(el("span", { class: "scdc-name scdc-name-abbr", text: abbreviateName(player.name) }));
-
-		var badges = [];
-		if (player.movement === "new") {
-			badges.push(el("span", { class: "scdc-badge scdc-badge-new", text: "NEW" }));
-		}
-		if (player.status) {
-			var known = STATUS_BADGE[String(player.status).toUpperCase()];
-			if (known) {
-				badges.push(el("span", { class: "scdc-badge " + known.cls, text: known.label }));
-			} else {
-				badges.push(el("span", { class: "scdc-badge scdc-badge-out", text: player.status }));
-			}
-		}
-		if (badges.length) {
-			children.push(el("span", { class: "scdc-badges" }, badges));
-		}
-
-		return el("div", { class: "scdc-player" }, children);
-	}
-
-	function positionColumn(label, players, short) {
-		var body;
-		if (!players.length) {
-			body = el("div", { class: "scdc-col-body" }, [el("div", { class: "scdc-col-empty", text: "-" })]);
-		} else {
-			body = el("div", { class: "scdc-col-body" }, players.map(playerRow));
-		}
-		// Editorial header: an uppercase eyebrow (full label by default; CSS swaps
-		// to the compact form e.g. "QB" once the column is squeezed) plus a quiet
-		// count badge, then a hairline rule with a short gold micro-accent.
-		var headChildren = [
-			el("span", { class: "scdc-colhead-text" }, [
-				el("span", { class: "scdc-colhead-full", text: label }),
-				el("span", { class: "scdc-colhead-abbr", text: short || label })
-			])
-		];
-		if (players.length) {
-			headChildren.push(el("span", { class: "scdc-col-count", text: String(players.length) }));
-		}
-		var head = el("div", { class: "scdc-col-head" }, headChildren);
-		var rule = el("div", { class: "scdc-col-rule" });
-		return el("div", { class: "scdc-col" }, [head, rule, body]);
-	}
-
-	// Watches a card's horizontally-scrollable column strip and toggles --sc-fit
-	// on it: 1 while everything fits, 0.8 once the columns overflow and would
-	// otherwise need horizontal scrolling (shrinking column widths + padding
-	// ~20%). Hysteresis on the restore side keeps the shrink - which itself
-	// reduces scrollWidth - from oscillating the state.
-	function attachFit(colsEl, innerEl) {
-		if (typeof ResizeObserver === "undefined") return;
-		var fit = 1;
-		function measure() {
-			var overflow = colsEl.scrollWidth - colsEl.clientWidth;
-			var next = fit === 1 ? (overflow > 0 ? 0.8 : 1) : (overflow > -24 ? 0.8 : 1);
-			if (next !== fit) {
-				fit = next;
-				colsEl.style.setProperty("--sc-fit", String(fit));
-			}
-		}
-		var ro = new ResizeObserver(measure);
-		ro.observe(colsEl);
-		ro.observe(innerEl);
-	}
-
-	function teamCard(team, columns, template) {
-		var logo;
-		if (team.team.logo) {
-			logo = el("img", imgProps({ src: team.team.logo, alt: team.team.name + " logo", width: "40", height: "40", loading: "lazy" }));
-		} else {
-			logo = el("span", { text: team.team.abbr });
-		}
-
-		var inner = el(
-			"div",
-			{ class: "scdc-cols-inner" },
-			columns.map(function (col) {
-				return positionColumn(col.label, getPlayers(team, col.key), col.short);
-			})
-		);
-		// Per-position auto-fit widths (computed once from all teams). Uniform on
-		// wide screens, narrowing each position to its own width as space runs out.
-		inner.style.gridTemplateColumns = template;
-
-		// Small summary strip, e.g. "3 QB · 6 RB · 4 WR · 2 TE · 1 K".
-		var summary = columns
-			.map(function (col) {
-				return { label: col.short || col.label, n: getPlayers(team, col.key).length };
-			})
-			.filter(function (x) { return x.n > 0; })
-			.map(function (x) { return x.n + " " + x.label; })
-			.join(" · ");
-
-		var cols = el("div", { class: "scdc-cols" }, [inner]);
-		attachFit(cols, inner);
-
-		return el("div", { class: "scdc-team-card" }, [
-			el("div", { class: "scdc-team-head" }, [
-				el("div", { class: "scdc-logo" }, [logo]),
-				el("div", { class: "scdc-team-title" }, [
-					el("span", { class: "scdc-team-name", text: team.team.name }),
-					summary ? el("div", { class: "scdc-team-summary", text: summary }) : null
-				])
-			]),
-			cols
-		]);
-	}
-
-	function cardMinWidth(colCount) {
-		// + team-surface horizontal padding (~1.15rem each side).
-		var rem = colCount * COLUMN_WIDTH_REM + (colCount - 1) * 0.5 + 2.3;
-		return "min(100%, " + rem.toFixed(2) + "rem)";
-	}
-
 	// ESPN's files are a 350x254 PNG per headshot and a 500px PNG per crest,
 	// for boxes of 20 to 40 pixels. When the page names the StatChasers app's
 	// public origin (data-image-origin), every image is pointed at the app's
@@ -807,46 +668,6 @@
 			slugToAbbr[slug] = abbr;
 		});
 
-		var state = { search: "", team: "ALL", position: "ALL", tab: "fantasy" };
-
-		// Per-position "auto-fit" width (rem): wide enough for that position's
-		// longest (abbreviated) name across every team, so a given position is the
-		// SAME width in all teams. Cached per position key.
-		var fitCache = {};
-		function positionFitRem(colKey, shortLabel) {
-			if (fitCache[colKey] != null) return fitCache[colKey];
-			var maxChars = (shortLabel || "").length;
-			teams.forEach(function (t) {
-				getPlayers(t, colKey).forEach(function (p) {
-					var len = abbreviateName(p.name).length;
-					if (len > maxChars) maxChars = len;
-				});
-			});
-			// ~0.4rem/char at the tight 0.7rem font, plus gutters; clamped so no
-			// column is absurdly narrow or wider than the uniform 6rem max.
-			var rem = Math.min(6, Math.max(3.5, Math.round((maxChars * 0.4 + 1) * 100) / 100));
-			fitCache[colKey] = rem;
-			return rem;
-		}
-		// Per-column grid template for the currently displayed columns: uniform
-		// 6rem min on wide screens (grows via 1fr), tightening toward each
-		// position's own fit as the viewport shrinks. Same vw term for all so they
-		// narrow together; the per-column min is what differentiates.
-		function columnTemplate(columns) {
-			return columns
-				.map(function (col) {
-					// Each track's min is scaled by --sc-fit (set per card by
-					// attachFit): 1 normally, 0.8 when the columns overflow - shrinking
-					// columns (and their padding) up to 20% to pack more onto the screen.
-					return (
-						"minmax(calc(clamp(" +
-						positionFitRem(col.key, col.short || col.label) +
-						"rem, calc(0.6rem + 9.6vw), 6rem) * var(--sc-fit, 1)), 1fr)"
-					);
-				})
-				.join(" ");
-		}
-
 		// ---- Fragment state ---------------------------------------------------
 		// The page has one address. The view/team/position filters are kept in
 		// the URL fragment (#fantasy/buffalo-bills/rb), so a filtered view can
@@ -858,18 +679,18 @@
 			if (abbr === "ALL") return "all-teams";
 			return abbrToSlug[abbr] || "all-teams";
 		}
-		function positionSlugFor(pos) {
+		function positionSlugFor(tab, pos) {
 			if (pos === "ALL") return "";
-			var cols = TABS[state.tab].columns;
+			var cols = TABS[tab].columns;
 			for (var i = 0; i < cols.length; i++) {
 				if (cols[i].key === pos) return cols[i].slug;
 			}
 			return "";
 		}
-		function buildHash() {
+		function buildHash(state) {
 			var view = VIEW_TO_SLUG[state.tab];
 			var teamSlug = teamSlugFor(state.team);
-			var ps = positionSlugFor(state.position);
+			var ps = positionSlugFor(state.tab, state.position);
 			// The default state is the bare address, no fragment at all.
 			if (view === "fantasy" && teamSlug === "all-teams" && !ps) return "";
 			var hash = "#" + view;
@@ -878,8 +699,8 @@
 			if (ps) hash += "/" + ps;
 			return hash;
 		}
-		function buildUrl() {
-			return window.location.pathname + window.location.search + buildHash();
+		function buildUrl(state) {
+			return window.location.pathname + window.location.search + buildHash(state);
 		}
 		function currentUrl() {
 			return window.location.pathname + window.location.search + window.location.hash;
@@ -911,291 +732,29 @@
 
 		root.innerHTML = "";
 
-		// ---- Controls ----
-		var controls = el("div", { class: "scdc-controls" });
-
-		var search = el("input", {
-			type: "text",
-			class: "scdc-input",
-			placeholder: "Search team or player...",
-			autocomplete: "off",
-			role: "combobox",
-			"aria-expanded": "false",
-			"aria-autocomplete": "list"
-		});
-		// Autocomplete dropdown: teams + players for the active tab, alphabetical.
-		var suggestBox = el("div", { class: "scdc-suggest", role: "listbox" });
-		var searchWrap = el("div", { class: "scdc-search-wrap" }, [search, suggestBox]);
-
-		// Autocomplete rows for the active tab, rebuilt when the tab changes.
-		var suggestItems = null;
-		var suggestTab = null;
-		var suggest = attachSuggest(search, suggestBox, {
-			items: function () {
-				if (suggestTab !== state.tab) {
-					suggestItems = buildSuggestionItems(teams, TABS[state.tab].columns);
-					suggestTab = state.tab;
-				}
-				return suggestItems;
-			},
-			onInput: function (value) {
-				state.search = value;
-				draw();
-			},
-			onSelect: function (label) {
-				state.search = label;
-				draw();
+		var browser = renderBrowser(root, {
+			teams: teams,
+			initial: resolveSlugs(parseHash()),
+			// A view, team or position change records the new state in the
+			// fragment (a new history entry); typing in the search box does not.
+			onChange: function (state) {
+				var url = buildUrl(state);
+				if (url !== currentUrl()) window.history.pushState(null, "", url);
 			}
 		});
-
-		var posSelect = customSelect({
-			label: "Filter by position",
-			onChange: function (v) {
-				state.position = v;
-				commit("push");
-			}
-		});
-		var teamSelect = customSelect({
-			label: "Filter by team",
-			onChange: function (v) {
-				state.team = v;
-				commit("push");
-			}
-		});
-
-		// Team rows carry the franchise logo, exactly like the search dropdown.
-		teamSelect.setOptions(
-			[{ value: "ALL", label: "All teams" }].concat(
-				teams.map(function (t) {
-					return {
-						value: t.team.abbr,
-						label: t.team.name + " (" + t.team.abbr + ")",
-						logo: t.team.logo,
-						abbr: t.team.logo ? null : t.team.abbr
-					};
-				})
-			)
-		);
-		teamSelect.setValue("ALL");
-
-		// Export - secondary action, softened so it doesn't compete with the
-		// view switch. Exports exactly what's on screen (visible teams ×
-		// displayed columns) as an Excel-friendly CSV.
-		var downloadBtn = el("button", { type: "button", class: "scdc-download" });
-		downloadBtn.innerHTML =
-			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
-		downloadBtn.appendChild(document.createTextNode("Export"));
-		downloadBtn.addEventListener("click", handleDownload);
-
-		// Row 1: search (grows) + Export beside it. Row 2: the two filters share
-		// a row. Keeps the toolbar to two tidy rows instead of auto-stacking.
-		var searchRow = el("div", { class: "scdc-controls-row scdc-controls-row-primary" }, [
-			el("div", { class: "scdc-field scdc-field-search" }, [searchWrap]),
-			el("div", { class: "scdc-field scdc-field-download" }, [downloadBtn])
-		]);
-		var filterRow = el("div", { class: "scdc-controls-row scdc-controls-row-filters" }, [
-			el("div", { class: "scdc-field scdc-field-pos" }, [posSelect.el]),
-			el("div", { class: "scdc-field scdc-field-team" }, [teamSelect.el])
-		]);
-
-		var tabsEl = el("div", { class: "scdc-tabs" });
-		TAB_ORDER.forEach(function (key) {
-			var btn = el("button", { type: "button", class: "scdc-tab", text: TABS[key].label });
-			btn.addEventListener("click", function () {
-				state.tab = key;
-				state.position = "ALL"; // positions differ per tab
-				// Clear the search: its term is scoped to the tab's columns, so a
-				// carried-over query could otherwise leave the new tab looking empty.
-				state.search = "";
-				search.value = "";
-				suggest.close();
-				commit("push");
-			});
-			btn._key = key;
-			tabsEl.appendChild(btn);
-		});
-
-		// View switch spans the toolbar width; quiet results count at the far
-		// right (populated in draw()).
-		var contextEl = el("span", { class: "scdc-context" });
-		var viewRow = el("div", { class: "scdc-view scdc-header" }, [tabsEl, contextEl]);
-
-		// View switch first, as a top header band; then the toolbar rows.
-		controls.appendChild(viewRow);
-		controls.appendChild(searchRow);
-		controls.appendChild(filterRow);
-
-		// Soft informational note, shown only while the Fantasy view is active
-		// (toggled in draw()).
-		var fantasyNote = el("div", { class: "scdc-fantasy-note" });
-		fantasyNote.innerHTML =
-			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-		fantasyNote.appendChild(
-			document.createTextNode(
-				"Fantasy view prioritizes fantasy value and may differ from official team depth charts."
-			)
-		);
-		controls.appendChild(fantasyNote);
-		root.appendChild(controls);
-
-		var body = el("div", {});
-		root.appendChild(body);
-
-		function syncTabs() {
-			Array.prototype.forEach.call(tabsEl.children, function (btn) {
-				if (btn._key === state.tab) {
-					btn.className = "scdc-tab is-active";
-				} else {
-					btn.className = "scdc-tab";
-				}
-			});
-		}
-
-		function syncPosOptions() {
-			var opts = [{ value: "ALL", label: "All positions" }];
-			TABS[state.tab].columns.forEach(function (col) {
-				var code = col.short || col.label || col.key;
-				opts.push({
-					value: col.key,
-					label: col.label,
-					badge: code,
-					badgeColor: POSITION_COLOR[code] || "#64748b"
-				});
-			});
-			posSelect.setOptions(opts);
-			posSelect.setValue(state.position);
-		}
-
-		// Columns currently displayed (active tab, narrowed by the position filter).
-		function currentColumns() {
-			var tabColumns = TABS[state.tab].columns;
-			return state.position === "ALL"
-				? tabColumns
-				: tabColumns.filter(function (c) {
-						return c.key === state.position;
-				  });
-		}
-
-		// Teams currently visible (team filter + search). Search is scoped to the
-		// active tab's columns so only teams with a *visible* match are kept.
-		function currentVisible() {
-			var cols = TABS[state.tab].columns;
-			return teams.filter(function (t) {
-				if (state.team !== "ALL" && t.team.abbr !== state.team) return false;
-				return teamMatchesSearch(t, state.search, cols);
-			});
-		}
-
-		function draw() {
-			var columns = currentColumns();
-			var visible = currentVisible();
-
-			if (fantasyNote) fantasyNote.style.display = state.tab === "fantasy" ? "" : "none";
-			if (downloadBtn) downloadBtn.disabled = !visible.length;
-
-			// Quiet results count (secondary context, muted text). Shown in the
-			// header on wider screens; on mobile it's hidden there and rendered
-			// directly above the first team card instead (see below).
-			var contextText = "";
-			var count = 0;
-			visible.forEach(function (t) {
-				columns.forEach(function (col) {
-					count += getPlayers(t, col.key).length;
-				});
-			});
-			contextText = "Showing " + count + " players";
-			if (state.position !== "ALL") {
-				var posLabel = state.position;
-				TABS[state.tab].columns.forEach(function (c) {
-					if (c.key === state.position) posLabel = c.label;
-				});
-				contextText += " · " + posLabel;
-			}
-			if (state.team !== "ALL") {
-				contextText += " · " + state.team;
-			}
-			if (contextEl) contextEl.textContent = contextText;
-
-			body.innerHTML = "";
-
-			if (!visible.length) {
-				body.appendChild(
-					el("div", { class: "scdc-empty" }, [el("p", { text: "No teams found. Try adjusting your search or filters." })])
-				);
-				return;
-			}
-
-			var template = columnTemplate(columns);
-			var grid = el(
-				"div",
-				{ class: "scdc-grid" },
-				visible.map(function (t) {
-					return teamCard(t, columns, template);
-				})
-			);
-			grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(" + cardMinWidth(columns.length) + ", 1fr))";
-
-			// Mobile-only results count, directly above the first team card.
-			body.appendChild(el("div", { class: "scdc-context-mobile", text: contextText }));
-			body.appendChild(grid);
-		}
-
-		// Exports exactly what's on screen (visible teams × displayed columns).
-		function handleDownload() {
-			exportCsv(currentVisible(), currentColumns(), state.tab);
-		}
-
-		// Re-sync the controls to `state`, redraw, and optionally update the URL.
-		// mode: "push" (user action), "replace" (canonicalize), or "" (no URL change).
-		function commit(mode) {
-			syncTabs();
-			syncPosOptions();
-			teamSelect.setValue(state.team);
-			draw();
-			if (mode === "push" || mode === "replace") {
-				var url = buildUrl();
-				if (mode === "replace") {
-					window.history.replaceState(null, "", url);
-				} else if (url !== currentUrl()) {
-					window.history.pushState(null, "", url);
-				}
-			}
-		}
-
-		// Apply a resolved state (from URL/attrs) without recording new history.
-		function applyResolved(resolved) {
-			state.tab = resolved.tab;
-			state.team = resolved.team;
-			state.position = resolved.position;
-		}
-
-		// ---- Initialize from the fragment ----
-		var initial = resolveSlugs(parseHash());
-		applyResolved(initial);
-		commit("");
-
-		// NEW DESIGN - COMPARISON: the premium browser, under the complete
-		// original, drawing the same loaded teams (no second fetch). It keeps
-		// its own filter state and never writes the URL fragment, so the two
-		// cannot fight over history while they are compared side by side.
-		renderPremium(root, { teams: teams, initial: initial });
 
 		// Back/forward (and a hand-edited fragment): re-read it, no new history entry.
 		window.addEventListener("popstate", function () {
-			applyResolved(resolveSlugs(parseHash()));
-			commit("");
+			browser.apply(resolveSlugs(parseHash()));
 		});
 	}
 
 	// =====================================================================
-	// NEW DESIGN - COMPARISON: the premium league-wide browser.
-	//
-	// Mounted under the complete original by render(), from the same loaded,
-	// sorted and imagery-optimized `teams` array (no second fetch and no second
-	// ranking pass). Same TABS, same getPlayers, same search semantics
-	// (teamMatchesSearch), same count rule (visible teams x displayed columns),
-	// same CSV (exportCsv). Its own filter state; it does not touch the URL
-	// fragment while the two designs are compared.
+	// The league-wide browser (.scdc-prm): view tabs + count, one toolbar
+	// (search, position, team, export), the Fantasy notice, then one card per
+	// visible team. Mounted by render() from the loaded, sorted and
+	// imagery-optimized `teams` array. Owns the filter state; render() owns
+	// the URL fragment and is told about every change through `onChange`.
 	// =====================================================================
 
 	var PRM_ICON = {
@@ -1221,7 +780,7 @@
 		down: '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5.8 1.5h8.4Z" fill="currentColor"></path></svg>'
 	};
 
-	// Premium position headings: the Fantasy tab's are spelled out already;
+	// Position headings: the Fantasy tab's are spelled out already;
 	// the other tabs' single-code labels get their full names here.
 	var PRM_HEADING = {
 		QB: "Quarterbacks", RB: "Running Backs", WR: "Wide Receivers", TE: "Tight Ends",
@@ -1318,7 +877,7 @@
 		return card;
 	}
 
-	function renderPremium(root, shared) {
+	function renderBrowser(root, shared) {
 		var teams = shared.teams;
 		var state = {
 			tab: shared.initial.tab,
@@ -1327,10 +886,7 @@
 			search: ""
 		};
 
-		var wrap = el("section", { class: "scdc-prm-compare", "aria-label": "New design - comparison" });
-		wrap.appendChild(el("div", { class: "scdc-prm-divider" }, [el("span", { text: "NEW DESIGN - COMPARISON" })]));
 		var prm = el("div", { class: "scdc-prm" });
-		wrap.appendChild(prm);
 
 		// ---- Navigation + count ----
 		var tabsEl = el("div", { class: "scdc-prm-tabs", role: "group", "aria-label": "Depth chart view" });
@@ -1346,7 +902,7 @@
 				state.search = "";
 				search.value = "";
 				suggest.close();
-				commit();
+				commit("push");
 			});
 			tabButtons[key] = btn;
 			tabsEl.appendChild(btn);
@@ -1396,7 +952,7 @@
 			icon: PRM_ICON.layers,
 			onChange: function (v) {
 				state.position = v;
-				commit();
+				commit("push");
 			}
 		});
 		var teamSelect = customSelect({
@@ -1405,7 +961,7 @@
 			icon: PRM_ICON.helmet,
 			onChange: function (v) {
 				state.team = v;
-				commit();
+				commit("push");
 			}
 		});
 		teamSelect.setOptions(
@@ -1451,7 +1007,7 @@
 
 		var body = el("div", { class: "scdc-prm-body" });
 		prm.appendChild(body);
-		root.appendChild(wrap);
+		root.appendChild(prm);
 
 		// ---- State -> view ----
 		function syncTabs() {
@@ -1498,7 +1054,7 @@
 			state.team = "ALL";
 			state.position = "ALL";
 			search.value = "";
-			commit();
+			commit("push");
 		}
 
 		function draw() {
@@ -1547,14 +1103,29 @@
 			body.appendChild(grid);
 		}
 
-		function commit() {
+		// Re-sync the controls to `state` and redraw. mode "push" (a user
+		// action) also hands the new state to render() for the URL fragment.
+		function commit(mode) {
 			syncTabs();
 			syncPosOptions();
 			teamSelect.setValue(state.team);
 			draw();
+			if (mode === "push" && shared.onChange) {
+				shared.onChange({ tab: state.tab, team: state.team, position: state.position });
+			}
 		}
 
-		commit();
+		// Apply a state resolved from the fragment (back/forward) without
+		// recording new history.
+		function apply(resolved) {
+			state.tab = resolved.tab;
+			state.team = resolved.team;
+			state.position = resolved.position;
+			commit("");
+		}
+
+		commit("");
+		return { el: prm, apply: apply };
 	}
 
 	function init(root) {

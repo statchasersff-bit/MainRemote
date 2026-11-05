@@ -22,15 +22,11 @@
 import {
   escapeHtml,
   escapeJsonLd,
-  itemTimestamp,
-  safeUrl,
   searchKey,
   type NewsItem,
 } from "./render";
 import {
   easternParts,
-  newsStamp as sharedNewsStamp,
-  splitHeadline,
 } from "./news-card";
 import type { NflTeam } from "./team/teams";
 import { TEAM_GROUPS } from "./team/teams";
@@ -42,9 +38,6 @@ import {
 import { markFrame, networkMarkFor } from "./team/network-marks";
 import {
   getTeamOutlook,
-  type OutlookFact,
-  type OutlookGroup,
-  type OutlookPlayer,
 } from "./team/outlook";
 import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
 import { getTeamCoaching } from "./team/coaching";
@@ -54,12 +47,15 @@ import { renderDraftSection } from "./team/draft-render";
 import { renderDepthPremium } from "./team/depth-premium";
 import { getContractsView } from "./team/contracts";
 import { renderContractsSection } from "./team/contracts-render";
+import { renderNewsPremium } from "./team/news-premium";
+import { renderSchedulePremium } from "./team/schedule-premium";
 import { contractsFaq } from "./team/contracts-faq";
 import { draftFaq } from "./team/draft-faq";
 import { faqEntries, renderFaqBlock } from "./team/faq-block";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
+import { renderOutlookPremium } from "./team/outlook-premium";
 import { renderTeamHeader } from "./team/team-header";
 import { statsFaq } from "./team/stats-faq";
 import { renderStatsPremium } from "./team/stats-premium";
@@ -88,9 +84,7 @@ import type {
   TeamStats,
 } from "./team/stats";
 import { ordinal } from "./team/stats";
-import { TEAM_NEWS_VISIBLE } from "./team/team-data";
 import { headshotImg } from "./headshot-html";
-import { CLUB_BAND_VARIANTS } from "./image-urls";
 import {
   isOutDesignation,
   nameKeysForTeam,
@@ -331,6 +325,86 @@ export function h2(text: string, extraClass = ""): string {
  * words rather than the panel's: the hub's is teamHubHeading() and a section's
  * is teamSectionHeading(), the same strings the strip hands the host's H1.
  */
+/**
+ * The hub wears the team's own colors instead of the house navy and gold
+ * (mak, 2026-11-05: "use the TEAM'S colors"; New England first, then "do the
+ * rest of the teams"). The root gets `data-team-palette` plus `--team-base`
+ * and `--team-accent`, and the generated block at the end of team.css
+ * (scripts/team-palette.mjs) maps every navy shade to the base and every gold
+ * shade to the accent. A team listed here keeps the house colors.
+ */
+export const TEAM_PALETTE_OPT_OUT: ReadonlySet<string> = new Set<string>();
+
+export function usesTeamPalette(abbreviation: string): boolean {
+  return !TEAM_PALETTE_OPT_OUT.has(abbreviation.toLowerCase());
+}
+
+type Rgb = [number, number, number];
+const hexRgb = (hex: string): Rgb => [0, 2, 4].map((i) => parseInt(hex.slice(1 + i, 3 + i), 16)) as Rgb;
+const rgbHex = (c: Rgb): string => "#" + c.map((x) => Math.round(Math.max(0, Math.min(255, x))).toString(16).padStart(2, "0")).join("");
+const mixRgb = (c: Rgb, to: Rgb, w: number): Rgb => c.map((x, i) => x + (to[i]! - x) * w) as Rgb;
+
+function luminance(hex: string): number {
+  const [r, g, b] = hexRgb(hex).map((x) => {
+    const c = x / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+function contrast(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x! + 0.05) / (y! + 0.05);
+}
+
+/** `hex` stepped toward `to` until `ok` holds (or all the way). */
+function shift(hex: string, to: Rgb, ok: (h: string) => boolean): string {
+  for (let w = 0; w <= 1.0001; w += 0.04) {
+    const h = rgbHex(mixRgb(hexRgb(hex), to, w));
+    if (ok(h)) return h;
+  }
+  return rgbHex(to);
+}
+
+/**
+ * The two palette colors from the team's primary and secondary.
+ *
+ * base: the dark color under the heroes' and panel heads' white text, where
+ * the house navy sat. The darker of the two team colors, darkened only until
+ * white reads on it at 7:1 (the navy is ~15:1). So the Bengals and Broncos
+ * draw black and navy with orange accents, and a bright-red Chiefs primary
+ * deepens.
+ *
+ * If the accent falls short of 4.5:1 on the base, the base deepens first
+ * (to the navy's depth at most), then the accent lifts for the rest.
+ *
+ * accent: the other color, where the gold sat. Gold did two jobs: kicker text
+ * on the dark base and rules/icons on white. So the accent is lifted toward
+ * white until it reads at 4.5:1 on the base (the Patriots' red), and darkened
+ * until it shows at 1.8:1 on white (the Colts' white, the Rams' yellow).
+ */
+export function teamPalette(primary: string, secondary: string): { base: string; accent: string } {
+  const valid = (h: string) => /^#[0-9a-f]{6}$/i.test(h);
+  if (!valid(primary)) return { base: "#0b2345", accent: "#d4af37" };
+  const [dark, light] =
+    valid(secondary) && luminance(secondary) < luminance(primary) && contrast(secondary, "#ffffff") >= 7
+      ? [secondary, primary]
+      : [primary, valid(secondary) ? secondary : "#d4af37"];
+  let base = shift(dark, [0, 0, 0], (h) => contrast(h, "#ffffff") >= 7);
+  let accent = light;
+  if (contrast(accent, "#ffffff") < 1.8) accent = shift(accent, [0, 0, 0], (h) => contrast(h, "#ffffff") >= 1.8);
+  // Short of 4.5 on the base: deepen the base first, no further than the house
+  // navy's depth (~14:1 with white), so the accent keeps its true color (the
+  // Dolphins' orange, the Buccaneers' pewter-orange); lift the accent only for
+  // what is still missing.
+  if (contrast(accent, base) < 4.5) {
+    const deeper = shift(base, [0, 0, 0], (h) => contrast(accent, h) >= 4.5 || contrast(h, "#ffffff") >= 14);
+    if (contrast(deeper, "#ffffff") <= 14.5) base = deeper;
+  }
+  if (contrast(accent, base) < 4.5) accent = shift(accent, [255, 255, 255], (h) => contrast(h, base) >= 4.5);
+  return { base, accent };
+}
+
 function promoteHeading(html: string, text?: string): string {
   return html.replace(
     /<h2 class="(sct-h2[^"]*)">([\s\S]*?)<\/h2>/,
@@ -347,7 +421,7 @@ function promoteHeading(html: string, text?: string): string {
  * frame* - a full site rendered in a 900px box. Breaking out is the correct
  * behavior in the frame and a no-op when the markup is mounted directly.
  */
-function siteLink(
+export function siteLink(
   href: string | null,
   label: string,
   className: string,
@@ -896,7 +970,7 @@ function renderTeamStats(
   const page = renderStatsPremium({
     team: data.team,
     season: stats.season,
-    heading: h2(`${data.team.nickname} Team Stats ${stats.season}`, "sct-sp-title"),
+    heading: h2(`${data.team.nickname} Team Stats ${stats.season}`, "sct-up-h2 sct-sp-title"),
     note: seasonNote,
     liveWeek: liveWeek ?? null,
     effWeek: eff ? effWeek || null : (liveWeek ?? null),
@@ -1019,9 +1093,9 @@ const SHORT_INJURY_STATUS: Record<string, string> = {
  * outlook cards need this badge too and an outlook names a player, not a
  * depth-chart slot - these two functions only ever read the two fields.
  */
-type Designated = Pick<RosterPlayer, "injuryStatus" | "injuryBodyPart">;
+export type Designated = Pick<RosterPlayer, "injuryStatus" | "injuryBodyPart">;
 
-function injuryBadge(player: Designated, extraClass = ""): string {
+export function injuryBadge(player: Designated, extraClass = ""): string {
   if (!player.injuryStatus) return "";
   const short =
     SHORT_INJURY_STATUS[player.injuryStatus.toLowerCase()] ?? player.injuryStatus;
@@ -1106,178 +1180,6 @@ function briefName(name: string): string | null {
 }
 
 /* ---------------------------------------------------------------- outlook */
-
-/**
- * One "what changed" fact: an offseason arrival, the play caller, last season's
- * scoring rate.
- *
- * A <div> pair inside a <dl> rather than a card, because these are the page's
- * cheapest facts and dressing them as tiles would put them at the same weight
- * as the snapshot's ranks directly above. They are context for the take below,
- * not findings of their own.
- *
- * The rank rides on the value rather than getting a line of its own. It is the
- * same relationship the snapshot card draws between a figure and its ordinal -
- * the reading, then what the reading is worth - and giving it a third line here
- * would make a six-item strip twice as tall for a two-character word.
- */
-function outlookFact(fact: OutlookFact): string {
-  const rank = fact.rank
-    ? ` <span class="sct-outlook-fact-rank">${escapeHtml(fact.rank)}` +
-      `<span class="sct-visually-hidden"> in the NFL</span></span>`
-    : "";
-  return (
-    `<div class="sct-outlook-fact">` +
-    `<dt class="sct-outlook-fact-label">${escapeHtml(fact.label)}</dt>` +
-    `<dd class="sct-outlook-fact-value">${escapeHtml(fact.value)}${rank}</dd>` +
-    `</div>`
-  );
-}
-
-/**
- * The compact evidence row under a player's thesis.
- *
- * A list, not a sentence: three facts separated by dots are read by jumping
- * between them, and that is the whole job of this row - it is what a reader
- * checks the claim above against before deciding whether the paragraph below
- * is worth their time.
- *
- * Renders nothing on an empty array rather than an empty rule, because a
- * player who arrived this offseason genuinely has no line to quote here and a
- * bar of dots with nothing between them would be worse than the gap.
- */
-function outlookStats(stats: string[]): string {
-  if (stats.length === 0) return "";
-  return (
-    `<ul class="sct-outlook-stats">` +
-    stats
-      .map((stat) => `<li class="sct-outlook-stat">${escapeHtml(stat)}</li>`)
-      .join("") +
-    `</ul>`
-  );
-}
-
-/**
- * One player's card: a face, the call, the evidence, the case.
- *
- * The same card every other player on this page gets - the .sct-player shell,
- * the depth chart's round team-tinted headshot well, and the position chip both
- * of them already use. The take is what is different about this block; the card
- * it arrives in should not be.
- *
- * The card reads top to bottom in decreasing commitment, which is what lets a
- * reader stop at any point and still have taken something away: the tier is the
- * answer, the thesis is the answer in a sentence, the stat row is what the
- * sentence rests on, and the paragraph is for the reader who has decided this
- * player matters to them. It used to be a name and then four sentences, which
- * asked for all of that attention or none of it.
- *
- * `data-pos` is on the card as well as the chip so the stylesheet can put the
- * position's color on the card's edge - see the inset accent in team.css.
- *
- * `live` is whatever the roster could match by name, and null is an ordinary
- * outcome: an outlook can name a rookie Sleeper has not indexed yet. The well is
- * drawn either way and simply stays a tinted disc, which is the same degradation
- * the depth chart takes when the CDN has no thumbnail; an unmatched name simply
- * carries no designation, exactly as it did before there was one to carry.
- */
-function outlookPlayerCard(
-  player: OutlookPlayer,
-  live: RosterPlayer | null,
-): string {
-  const position = player.position.toUpperCase();
-  const headshot = live?.headshot ?? null;
-
-  // Decorative, so the alt is empty: the name is on the same row, and
-  // announcing the face as well would read the player out twice.
-  // The 160px square derivative covers the 64px well at 2x (headshot-html.ts).
-  const photo =
-    headshotImg({
-      src: headshot,
-      className: "sct-outlook-photo",
-      alt: "",
-      variants: ["160"],
-      width: 64,
-      height: 64,
-      loading: "lazy",
-    }) ?? "";
-
-  // The name carries the link and a stretched ::after makes the whole card
-  // clickable - the news card's device rather than the cornerstone's bare
-  // overlay, because that one lays a box over the card's whole text and these
-  // cards carry a paragraph a reader may well want to select.
-  const href = getPlayerProfileUrl(player.name);
-  const name = href
-    ? `<a class="sct-outlook-link" href="${escapeHtml(href)}" target="_top">` +
-      `${escapeHtml(player.name)}</a>`
-    : escapeHtml(player.name);
-
-  // Text beside the chip rather than a pill of its own. A second lozenge on
-  // this line is what the market-rank and verdict chips were, and the reason
-  // they went; the classification is a continuation of "QB", not a badge
-  // competing with it.
-  const tier = player.tier
-    ? `<span class="sct-dot" aria-hidden="true"></span>` +
-      `<span class="sct-outlook-tier">${escapeHtml(player.tier)}</span>`
-    : "";
-
-  // After the tier, not before it: the chip and the classification are what the
-  // card is about, and the designation is the thing that has happened to it.
-  const designation = live ? injuryBadge(live) : "";
-
-  return (
-    `<li class="sct-outlook-player" data-pos="${escapeHtml(position)}">` +
-    `<div class="sct-outlook-head">` +
-    `<span class="sct-outlook-well">${photo}</span>` +
-    `<div class="sct-outlook-who">` +
-    `<h4 class="sct-outlook-name">${name}</h4>` +
-    `<p class="sct-outlook-meta">` +
-    slotChip(position, true) +
-    tier +
-    designation +
-    `</p>` +
-    `</div>` +
-    `</div>` +
-    (player.thesis
-      ? `<p class="sct-outlook-thesis">${escapeHtml(player.thesis)}</p>`
-      : "") +
-    outlookStats(player.stats) +
-    `<p class="sct-outlook-note">${escapeHtml(player.note)}</p>` +
-    `</li>`
-  );
-}
-
-/**
- * One band of players under its own heading.
- *
- * The heading is the take: "Core fantasy pieces" is an assertion about which
- * four of the seven decide a draft, and it is the reason this section is a
- * curated list rather than a roster dump. It is an <h3> under the section's
- * <h2>, which is what puts the player names at <h4> - the outline follows the
- * page rather than the other way round.
- *
- * Every card in every band carries the team crest as a watermark - the page's
- * existing device (.sct-news-body::before), not a new one. It briefly ran on
- * the core band alone as that band's emphasis; with it on all of them the
- * heading is what tells the bands apart.
- */
-function outlookGroup(
-  group: OutlookGroup,
-  live: Map<string, RosterPlayer>,
-): string {
-  if (group.players.length === 0) return "";
-  const cards = group.players
-    .map((player) =>
-      outlookPlayerCard(player, live.get(searchKey(player.name)) ?? null),
-    )
-    .join("");
-  return (
-    `<div class="sct-band">` +
-    `<h3 class="sct-band-label">${escapeHtml(group.label)}</h3>` +
-    `<ul class="sct-outlook-players">${cards}</ul>` +
-    `</div>`
-  );
-}
 
 /**
  * The live roster entry for a name the outlook mentions.
@@ -1493,8 +1395,7 @@ function renderOutlook(
   if (!outlook) return "";
 
   const live = outlookRoster(data);
-  const groups = outlook.groups.map((group) => outlookGroup(group, live)).join("");
-  if (!groups) return "";
+  if (!outlook.groups.some((group) => group.players.length > 0)) return "";
 
   // An outlook written for a season the calendar has passed is dropped rather
   // than dated. "A.J. Brown arrives" is true for one offseason and misleading
@@ -1504,33 +1405,6 @@ function renderOutlook(
   // them.
   if (outlook.season < data.state.season) return "";
 
-  const facts = outlook.facts.length
-    ? `<dl class="sct-outlook-facts">${outlook.facts.map(outlookFact).join("")}</dl>`
-    : "";
-
-  const meta = [
-    // "Preseason outlook" stops being true the moment Week 1 kicks off, and
-    // these takes are not rewritten in-season - so once the season is under way
-    // the label says when the take was written rather than implying it is
-    // current. Same honesty rule as the record in the hero: see team/nfl-state.
-    data.state.regularSeasonUnderway
-      ? "Written before Week 1"
-      : "Preseason outlook",
-    ...(outlook.updated ? [`Updated ${outlook.updated}`] : []),
-  ]
-    .map(
-      (part) =>
-        `<span class="sct-outlook-meta-item">${escapeHtml(part)}</span>`,
-    )
-    .join(`<span class="sct-dot" aria-hidden="true"></span>`);
-
-  const bottomLine = outlook.bottomLine
-    ? `<p class="sct-outlook-bottom">` +
-      `<span class="sct-outlook-bottom-label">Bottom line</span>` +
-      escapeHtml(outlook.bottomLine) +
-      `</p>`
-    : "";
-
   // Below the tools block rather than under the bottom line. The closing take
   // is the end of the argument this section makes, and the FAQ is that argument
   // re-cut into the forms people search for - it reads as an appendix either
@@ -1539,18 +1413,10 @@ function renderOutlook(
   // outlook must not leave questions about one on the page.
   tail.html = faqBlock(faqList(outlookFaq(data.team, outlook), faq, "h3"));
 
-  return (
-    `<div class="sct-block">` +
-    // Printed on a section page too - the hero is the club's name alone and
-    // this is what names the panel. See teamHeader().
-    h2(`${outlook.season} Fantasy Outlook`) +
-    `<p class="sct-outlook-stamp">${meta}</p>` +
-    `<p class="sct-outlook-lede">${escapeHtml(outlook.summary)}</p>` +
-    facts +
-    groups +
-    bottomLine +
-    `</div>`
-  );
+  // The tab (mak's brief, 2026-11-05; approved and the old block removed the
+  // same day): team/outlook-premium.ts, on the same outlook and the same live
+  // roster match. Its header carries the panel's H2.
+  return renderOutlookPremium(data.team, outlook, live, data.state.regularSeasonUnderway);
 }
 
 /**
@@ -1626,191 +1492,6 @@ function renderCornerstones(data: TeamPageData): string {
   );
 }
 
-/* ------------------------------------------------------------------- news */
-
-/** The card's stamp line - the shared one, under this page's class prefix. */
-function newsStamp(item: NewsItem): string {
-  return sharedNewsStamp(item, itemTimestamp(item), "sct");
-}
-
-function renderNewsCard(
-  item: NewsItem,
-  team: NflTeam,
-  featured: boolean,
-): string {
-  const link = safeUrl(item.link);
-  const image = safeUrl(item.image);
-  const name = (item.playerName ?? "").trim();
-  const headline = escapeHtml(splitHeadline(item));
-
-  // 16:9 on the attributes, matching the band the CSS cuts. These are the
-  // browser's before-load aspect hint, not a size - the well's own
-  // aspect-ratio governs once the stylesheet is in - and the square they used
-  // to declare was a headshot's shape, from before the clubs' landscape art
-  // was the common case.
-  // A Sleeper headshot comes as its one 16:9 band derivative; a club's
-  // landscape art as the bands at the widths the wells are drawn, with the
-  // browser choosing by the well's width (headshot-html.ts drops the
-  // variants a source does not produce, so one list serves both).
-  const media =
-    (image
-      ? headshotImg({
-          src: image,
-          className: "sct-news-photo",
-          alt: name,
-          variants: ["b350", ...CLUB_BAND_VARIANTS],
-          sizes: featured ? "(max-width: 700px) 100vw, 640px" : "(max-width: 700px) 100vw, 480px",
-          width: featured ? 640 : 480,
-          height: featured ? 360 : 270,
-          loading: "lazy",
-        })
-      : null) ??
-    // No image: the well keeps its team tint and shows nothing else. A
-    // stand-in mark would be one more thing to load for no information.
-    `<span class="sct-news-photo-empty" aria-hidden="true"></span>`;
-
-  const byline =
-    name || team.fullName
-      ? `<p class="sct-news-byline">` +
-        (name ? playerName(name, "sct-news-player") : "") +
-        `<span class="sct-news-team">${escapeHtml(team.fullName)}</span>` +
-        `</p>`
-      : "";
-
-  const heading = link
-    ? `<h3 class="sct-news-title"><a class="sct-news-link" href="${escapeHtml(link)}"` +
-      ` target="_blank" rel="noopener noreferrer">${headline}</a></h3>`
-    : `<h3 class="sct-news-title">${headline}</h3>`;
-
-  return (
-    `<article class="sct-news${featured ? " is-featured" : ""}">` +
-    `<div class="sct-news-well">${media}</div>` +
-    `<div class="sct-news-body">` +
-    newsStamp(item) +
-    heading +
-    byline +
-    (link
-      ? `<p class="sct-news-cta"><span class="sct-news-more">Read report ${ARROW}</span></p>`
-      : "") +
-    `</div>` +
-    `</article>`
-  );
-}
-
-function renderNewsList(
-  items: NewsItem[],
-  team: NflTeam,
-  startIndex: number,
-): string {
-  if (items.length === 0) return "";
-  return (
-    `<ol class="sct-news-list" start="${startIndex + 1}">` +
-    items
-      .map(
-        (item, i) =>
-          `<li class="sct-news-item">` +
-          renderNewsCard(item, team, startIndex === 0 && i === 0) +
-          `</li>`,
-      )
-      .join("") +
-    `</ol>`
-  );
-}
-
-function renderNewsColumn(data: TeamPageData): string {
-  const { team, news } = data;
-
-  if (news.length === 0) {
-    return (
-      h2(`Latest ${team.nickname} News`) +
-      `<div class="sct-empty">` +
-      `<p class="sct-empty-title">${escapeHtml(`No recent ${team.nickname} updates.`)}</p>` +
-      `<p class="sct-empty-body">We'll surface new reports here as they arrive.</p>` +
-      `</div>`
-    );
-  }
-
-  const visible = news.slice(0, TEAM_NEWS_VISIBLE);
-  const rest = news.slice(TEAM_NEWS_VISIBLE);
-
-  // The remainder is a <details>, not a fetch: every story is already in this
-  // response, so "view more" is a disclosure rather than a request. It also
-  // means a reader with no JavaScript can still open it.
-  const more = rest.length
-    ? `<details class="sct-more">` +
-      `<summary class="sct-more-summary">` +
-      `<span>${escapeHtml(`View ${rest.length} more ${team.nickname} ${rest.length === 1 ? "story" : "stories"}`)}</span>` +
-      `</summary>` +
-      renderNewsList(rest, team, TEAM_NEWS_VISIBLE) +
-      `</details>`
-    : "";
-
-  return (
-    h2(`Latest ${team.nickname} News`) +
-    renderNewsList(visible, team, 0) +
-    more
-  );
-}
-
-/* ---------------------------------------------------------- injury watch */
-
-function renderInjuryPanel(data: TeamPageData): string {
-  const rows = data.injuries;
-
-  // No roster snapshot at all: say nothing rather than claim a clean bill of
-  // health we have not checked.
-  if (!data.roster) return "";
-
-  const body = rows.length
-    ? `<ul class="sct-injuries">` +
-      rows
-        .map(
-          (player) =>
-            `<li class="sct-injury">` +
-            // A face instead of the slot chip (mak, 2026-10-22). Decorative:
-            // the name is on the same row. The 160px square derivative covers
-            // the 36px well at 2x and then some; no photo keeps the bare well
-            // so the columns stay aligned.
-            `<span class="sct-injury-well" aria-hidden="true">` +
-            (headshotImg({
-              src: player.headshot,
-              className: "sct-injury-photo",
-              alt: "",
-              variants: ["160"],
-              width: 36,
-              height: 36,
-              loading: "lazy",
-            }) ?? "") +
-            `</span>` +
-            playerName(player.name, "sct-injury-name") +
-            `<span class="sct-injury-status"` +
-            ` data-severity="${injurySeverity(player.injuryStatus)}">` +
-            `${escapeHtml(player.injuryStatus ?? "")}</span>` +
-            // Body part and practice status share the line under the name. Two
-            // stacked lines of gray footnote made a two-player card as tall as
-            // the news column beside it, and the pair reads as one qualifier.
-            ((player.injuryBodyPart ? 1 : 0) + (player.practice ? 1 : 0)
-              ? `<span class="sct-injury-detail">` +
-                [player.injuryBodyPart, player.practice]
-                  .filter(Boolean)
-                  .map((part) => escapeHtml(String(part)))
-                  .join(` <span class="sct-injury-dot">·</span> `) +
-                `</span>`
-              : "") +
-            `</li>`,
-        )
-        .join("") +
-      `</ul>`
-    : `<p class="sct-panel-empty">${escapeHtml(`No ${data.team.nickname} skill-position players carry an injury designation right now.`)}</p>`;
-
-  return (
-    `<section class="sct-panel">` +
-    `<h2 class="sct-panel-title">Injury Watch</h2>` +
-    body +
-    `</section>`
-  );
-}
-
 /* ------------------------------------------------------------- next game */
 
 /**
@@ -1851,7 +1532,7 @@ export function gameShortDate(game: ScheduleGame): string {
 }
 
 /** "Sun, Nov 8" - the short date with its weekday, for the boards. */
-function gameShortDay(game: ScheduleGame): string {
+export function gameShortDay(game: ScheduleGame): string {
   if (game.kickoffMs === null || !game.dateConfirmed) return "TBD";
   const parts = easternParts(game.kickoffMs);
   return `${parts.weekday}, ${parts.month} ${parts.day}`;
@@ -1895,85 +1576,11 @@ export function matchupSide(
  * at this moment. "Today" is only ever said on the day; it is computed per
  * render and gone the next morning.
  */
-function nextGameLabel(game: ScheduleGame, now: number): string {
+export function nextGameLabel(game: ScheduleGame, now: number): string {
   if (game.status === "live") return "Live Now";
   if (game.status === "postponed") return "Postponed";
   if (isOnDate(game, easternDate(now))) return "Today's Game";
   return "Next Game";
-}
-
-function renderNextGamePanel(data: TeamPageData, now: number): string {
-  const next = nextGame(data.schedule, now);
-  if (!next) return "";
-  const when = gameDateLine(next);
-  const neutral = next.site === "neutral";
-  const away = next.site === "away";
-
-  // Away side first, home side second - the order every scoreboard uses, so the
-  // card says who is traveling without a word for it. A neutral-site game has
-  // no host to put second, so it reads "vs" and keeps this team on the left.
-  const left = away || neutral ? data.team : next.opponent;
-  const right = away || neutral ? next.opponent : data.team;
-  const leftIsTeam = away || neutral;
-
-  const matchup =
-    // Hidden wholesale from assistive tech, with the sentence below carrying
-    // the fact instead. Read out, the three crests and two codes are "NE
-    // Patriots at SEA Seahawks" - every name twice and two airport codes.
-    `<div class="sct-matchup" aria-hidden="true">` +
-    matchupSide(
-      left,
-      leftIsTeam ? data.team.nickname : next.opponentName,
-      leftIsTeam,
-    ) +
-    `<span class="sct-matchup-at" aria-hidden="true">` +
-    `${neutral ? "vs" : "@"}</span>` +
-    matchupSide(
-      right,
-      leftIsTeam ? next.opponentName : data.team.nickname,
-      !leftIsTeam,
-    ) +
-    `</div>` +
-    // The visual matchup is three logos and two codes, which a screen reader
-    // would read as an alphabet. This is the same fact as a sentence.
-    `<p class="sct-visually-hidden">${escapeHtml(
-      `${data.team.nickname} ${neutral ? "vs" : away ? "at" : "host"} ` +
-        `${next.opponent?.nickname ?? next.opponentName}${neutral ? " at a neutral site" : ""}`,
-    )}</p>`;
-
-  // One line of context, and only when it is about the fixture actually shown -
-  // see TeamPageData.nextOpponentDefense on why the two can disagree. Points
-  // allowed per game with its rank, because it is the one defensive number that
-  // needs no explanation and it is the number a manager is asking about.
-  const defense = data.nextOpponentDefense;
-  const context =
-    defense &&
-    next.opponent &&
-    defense.abbreviation === next.opponent.abbreviation &&
-    defense.rankLabel
-      ? `<p class="sct-matchup-note">` +
-        `<span class="sct-matchup-note-team">${escapeHtml(next.opponent.nickname)} defense</span>` +
-        `<span class="sct-matchup-note-value">${escapeHtml(defense.rankLabel)}` +
-        `<span class="sct-matchup-note-unit"> · ${escapeHtml(defense.value)} pts/g</span>` +
-        `</span></p>`
-      : "";
-
-  return (
-    `<section class="sct-panel">` +
-    // Rearranged at mak's request (2026-10-22): the week sits on the title's
-    // row, hard right; the date and time take the line the week used to hold,
-    // above the matchup; the venue line is gone.
-    `<h2 class="sct-panel-title">${escapeHtml(nextGameLabel(next, now))}` +
-    `<span class="sct-nextgame-week">${escapeHtml(next.weekLabel)}</span>` +
-    `</h2>` +
-    `<p class="sct-nextgame-when">${escapeHtml(when.date)}` +
-    (when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : "") +
-    (next.network ? `<span class="sct-nextgame-time"> · ${escapeHtml(next.network)}</span>` : "") +
-    `</p>` +
-    matchup +
-    context +
-    `</section>`
-  );
 }
 
 /* --------------------------------------------------------------- matchups */
@@ -1987,7 +1594,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
  * target, a sandboxed preview frame blocks the navigation outright and the link
  * does nothing at all.
  */
-function matchupHref(
+export function matchupHref(
   team: NflTeam,
   opponent: NflTeam | null,
   options: TeamRenderOptions,
@@ -2009,7 +1616,7 @@ function matchupHref(
  * schedule-render.ts asks it, so neither side keeps its own copy of it. The
  * hub's schedule is the season in progress, so its season is the current one.
  */
-function gameMatchupHref(
+export function gameMatchupHref(
   team: NflTeam,
   game: ScheduleGame,
   schedule: TeamSchedule,
@@ -2176,7 +1783,7 @@ function renderMatchups(
 
 /* ------------------------------------------------------------ quick links */
 
-interface ResourceCard {
+export interface ResourceCard {
   /**
    * One spelling, used by both the cards and the Quick Links rail.
    *
@@ -2191,7 +1798,7 @@ interface ResourceCard {
   href: string;
 }
 
-function resourceCards(team: NflTeam): ResourceCard[] {
+export function resourceCards(team: NflTeam): ResourceCard[] {
   const candidates: Array<[string | null, string, string]> = [
     // First: it is the way out of the hub and into the rest of the site, which
     // is what the block is for.
@@ -2219,34 +1826,6 @@ function resourceCards(team: NflTeam): ResourceCard[] {
   return candidates
     .filter((entry): entry is [string, string, string] => !!entry[0])
     .map(([href, title, body]) => ({ href, title, body }));
-}
-
-function renderQuickLinksPanel(team: NflTeam): string {
-  // The whole set, not a truncation. Since the page's bottom block became
-  // "Use this research" (products and next pages, mak 2026-10-05), this News
-  // rail is the hub's only route to these tools, so dropping a row here would
-  // leave that tool unreachable.
-  const cards = resourceCards(team);
-  if (cards.length === 0) return "";
-  return (
-    `<section class="sct-panel">` +
-    `<h2 class="sct-panel-title">Quick Links</h2>` +
-    `<ul class="sct-quicklinks">` +
-    cards
-      .map(
-        (card) =>
-          `<li class="sct-quicklink-item">` +
-          siteLink(
-            card.href,
-            `<span class="sct-quicklink-text">${escapeHtml(card.title)}</span>${ARROW}`,
-            "sct-quicklink",
-          ) +
-          `</li>`,
-      )
-      .join("") +
-    `</ul>` +
-    `</section>`
-  );
 }
 
 /* ------------------------------------------------------------ depth chart */
@@ -2598,32 +2177,6 @@ function renderDepthChart(
 /* --------------------------------------------------------------- schedule */
 
 /**
- * "Texans" for a full name too long for the schedule table's opponent column,
- * or null for one that fits.
- *
- * The same trade briefName() makes for a player: the column is fluid and the
- * name is what ellipses when it narrows, so a spelling that fits beats the
- * first seven letters of one that does not.
- *
- * The fallback is one step in rather than two. The column prints the full name
- * now - "Houston Texans", as the standalone tool's lens does - so the shorter
- * spelling is the nickname, which is what this table printed until it took the
- * lens's dress. The abbreviation is only reached for a name whose nickname is
- * no shorter than the name itself, which is the unresolved-opponent case.
- *
- * Null when the opponent is not a known team: both the nickname and the code
- * come from the team record, and a fixture against a name we cannot resolve has
- * neither to use.
- */
-function briefTeamName(opponent: NflTeam | null, shown: string): string | null {
-  if (!opponent) return null;
-  const nickname = opponent.nickname.trim();
-  if (nickname && nickname.length < shown.length) return nickname;
-  const code = opponent.code.trim();
-  return code && code.length < shown.length ? code : null;
-}
-
-/**
  * The broadcaster's name, at the width a badge in a table column has.
  *
  * This is the fallback's fallback now: every network the NFL schedule names has
@@ -2771,7 +2324,7 @@ export function gameStatusCell(game: ScheduleGame): string {
 }
 
 /** "vs" for a home or neutral game, "at" for a road game. */
-function sideWord(game: ScheduleGame): "vs" | "at" {
+export function sideWord(game: ScheduleGame): "vs" | "at" {
   return game.site === "away" ? "at" : "vs";
 }
 
@@ -2781,7 +2334,7 @@ function sideWord(game: ScheduleGame): "vs" | "at" {
  * The same prefix the switcher and the tab strip use, so on a WordPress mount
  * the row links to statchasers.com's team page rather than this origin's.
  */
-function teamHubHref(opponent: NflTeam | null, options: TeamRenderOptions): string | null {
+export function teamHubHref(opponent: NflTeam | null, options: TeamRenderOptions): string | null {
   if (!opponent) return null;
   const prefix = options.teamPathPrefix ?? "/team/";
   return sectionPath(prefix, opponent.slug, HUB_SECTION) + (options.linkQuery ?? "");
@@ -2917,276 +2470,6 @@ function renderLastGameCard(
   );
 }
 
-/* ---------------------------------------------------------------- boards */
-
-type BoardKind = "results" | "remaining";
-
-/**
- * The cells of one game, in the column order of its board.
- *
- * Results: Wk · Opponent · Date · Result · Record · recap link.
- * Remaining: Wk · Opponent · Date · Time · TV · Venue · matchup link.
- *
- * Both boards start the same way - the week and the opponent are what a row
- * is found by - and part where the facts part: a played game has a score and
- * a record after it, a game to come has a window, a network and a venue. The
- * week cell carries the round's name for a postseason game ("Wild Card")
- * because a week number means nothing there.
- */
-function scheduleRow(
-  kind: BoardKind,
-  team: NflTeam,
-  game: ScheduleGame,
-  schedule: TeamSchedule,
-  options: TeamRenderOptions,
-  now: number,
-  record: string | null,
-): string {
-  const shown = game.opponent?.fullName ?? game.opponentName;
-  const brief = briefTeamName(game.opponent, shown);
-  // Three spellings, narrowest last: "Seattle Seahawks", "Seahawks", "SEA".
-  // The code is the third tier (mak, 2026-10-20): it is what keeps the row
-  // on one line down to 400px of board instead of stacking at 900px of
-  // window with most of the table still empty.
-  const code = brief && game.opponent ? game.opponent.code.trim() : "";
-  const nameInner = brief
-    ? `<span class="sct-srow-name-long">${escapeHtml(shown)}</span>` +
-      `<span class="sct-srow-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>` +
-      (code && code !== brief
-        ? `<span class="sct-srow-name-code" aria-hidden="true">${escapeHtml(code)}</span>`
-        : "")
-    : escapeHtml(shown);
-  // The opponent's name is a link to its hub (mak's brief, 2026-11-03): a
-  // schedule is a list of 17 other clubs, and every one of them has a page.
-  const hub = teamHubHref(game.opponent, options);
-  const nameCell = hub
-    ? `<a class="sct-srow-name sct-srow-team" href="${escapeHtml(hub)}">${nameInner}</a>`
-    : `<span class="sct-srow-name">${nameInner}</span>`;
-
-  const weekCell =
-    game.seasonType === "post"
-      ? `<span class="sct-srow-week is-round">${escapeHtml(game.weekLabel)}</span>`
-      : `<span class="sct-srow-week">${escapeHtml(`W${game.week}`)}</span>`;
-
-  // "vs" and "at" set in the muted weight the name is not, so the eye lands
-  // on the opponent and the preposition is read second. A neutral site keeps
-  // "vs" and carries its own mark: it is not a home game and the counts in
-  // the rail do not call it one.
-  const side =
-    `<span class="sct-srow-ha" data-kind="${game.site}"` +
-    (game.site === "neutral" ? ` title="Neutral site"` : "") +
-    `>${sideWord(game)}</span>`;
-
-  const opponentCell =
-    `<span class="sct-srow-opp">` +
-    side +
-    (game.opponent
-      ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
-        ` width="22" height="22" loading="lazy" decoding="async" />`
-      : "") +
-    nameCell +
-    // After the name, so a screen reader hears "vs Washington Commanders,
-    // neutral site" rather than the site before the opponent.
-    (game.site === "neutral" ? `<span class="sct-visually-hidden">, neutral site</span>` : "") +
-    `</span>`;
-
-  const dateCell =
-    `<span class="sct-srow-when"${game.dateConfirmed ? "" : ` title="Date and time to be announced by the NFL"`}>` +
-    `${escapeHtml(gameShortDate(game))}</span>`;
-
-  const href = gameMatchupHref(team, game, schedule, options, now);
-  const linkCell = href
-    ? `<a class="sct-textlink sct-srow-view" href="${escapeHtml(href)}">` +
-      `<span class="sct-srow-view-label">${game.status === "final" ? "View recap" : "View matchup"}</span> ${ARROW}</a>`
-    : `<span class="sct-srow-view"></span>`;
-
-  if (kind === "results") {
-    return (
-      `<li class="sct-srow" data-site="${game.site}">` +
-      weekCell +
-      opponentCell +
-      dateCell +
-      gameStatusCell(game) +
-      `<span class="sct-srow-record">${escapeHtml(record ?? "")}</span>` +
-      linkCell +
-      `</li>`
-    );
-  }
-
-  const venue = [
-    game.venue ?? "",
-    game.site === "neutral" ? (game.venueCity ?? "Neutral site") : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    `<li class="sct-srow" data-site="${game.site}">` +
-    weekCell +
-    opponentCell +
-    dateCell +
-    gameStatusCell(game) +
-    (game.network
-      ? networkHtml(game.network, "sct-srow-tv")
-      : // Kept, and empty: the league has not assigned a network to a game it
-        // has not put in a window, and dropping the cell would shift every
-        // column to its right on exactly those rows.
-        `<span class="sct-srow-tv"><span class="sct-srow-tbd">TBD</span></span>`) +
-    `<span class="sct-srow-venue">${escapeHtml(venue)}</span>` +
-    linkCell +
-    `</li>`
-  );
-}
-
-function byeRow(week: number): string {
-  return (
-    `<li class="sct-srow is-bye">` +
-    `<span class="sct-srow-week">${escapeHtml(`W${week}`)}</span>` +
-    // One cell across the rest of the row. The bye is the only row with
-    // nothing to say in the other columns, and filling them with empty spans
-    // drew column rules through the one row that is not a fixture.
-    `<span class="sct-srow-bye">Bye week</span>` +
-    `</li>`
-  );
-}
-
-/**
- * One board: a head row and its games, in one grid so a column label sits
- * over the column it names at every width. `data-board` is what team.css
- * picks the column template by.
- */
-function renderBoard(kind: BoardKind, rows: string[]): string {
-  const head =
-    kind === "results"
-      ? `<span>Wk</span><span>Opponent</span><span>Date</span><span>Result</span><span>Record</span><span></span>`
-      : `<span>Wk</span><span>Opponent</span><span>Date</span><span>Time</span><span>TV</span><span>Venue</span><span></span>`;
-  return (
-    `<div class="sct-sboard" data-board="${kind}">` +
-    `<div class="sct-slist-head" aria-hidden="true">${head}</div>` +
-    `<ol class="sct-slist">${rows.join("")}</ol>` +
-    `</div>`
-  );
-}
-
-/**
- * The two boards the season splits into, with the bye slotted into whichever
- * half its week falls in.
- *
- * One list, one pass (splitSchedule), two groups: a game is in exactly one of
- * them, and the record column is the record AFTER each result, counted in
- * schedule order so a reader can run a finger down it.
- */
-function renderSeasonBoards(
-  data: TeamPageData,
-  options: TeamRenderOptions,
-  now: number,
-): string {
-  const { team, schedule } = data;
-  if (!schedule) return "";
-  const { results, remaining } = splitSchedule(schedule);
-  const bye = schedule.byeWeek;
-  const lastPlayedWeek = results.length ? (results[results.length - 1] as ScheduleGame).week : 0;
-
-  const resultRows = results.map((game) =>
-    scheduleRow("results", team, game, schedule, options, now, recordThrough(schedule.games, game).text),
-  );
-  const remainingRows = remaining.map((game) =>
-    scheduleRow("remaining", team, game, schedule, options, now, null),
-  );
-
-  // The bye goes where its week falls: among the results once the team has
-  // played past it, otherwise ahead with the games still to come.
-  if (bye) {
-    const row = byeRow(bye);
-    if (bye < lastPlayedWeek) {
-      const at = results.findIndex((game) => game.week > bye);
-      resultRows.splice(at === -1 ? resultRows.length : at, 0, row);
-    } else {
-      const at = remaining.findIndex((game) => game.week > bye);
-      remainingRows.splice(at === -1 ? remainingRows.length : at, 0, row);
-    }
-  }
-
-  const resultsRange = results.length
-    ? results.length === 1
-      ? `Week ${(results[0] as ScheduleGame).week}`
-      : `Weeks ${(results[0] as ScheduleGame).week}–${(results[results.length - 1] as ScheduleGame).week}`
-    : "";
-  const remainingRange = remaining.length
-    ? remaining.length === 1
-      ? `Week ${(remaining[0] as ScheduleGame).week}`
-      : `Weeks ${(remaining[0] as ScheduleGame).week}–${(remaining[remaining.length - 1] as ScheduleGame).week}`
-    : "";
-
-  const resultsBlock =
-    `<div class="sct-sched-block" id="results">` +
-    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Results`)}` +
-    (resultsRange ? `<span class="sct-sched-range">${escapeHtml(resultsRange)}</span>` : "") +
-    `</h2>` +
-    (resultRows.length
-      ? renderBoard("results", resultRows)
-      : `<p class="sct-note">No ${schedule.season} games have been played yet.</p>`) +
-    `</div>`;
-
-  const remainingBlock =
-    `<div class="sct-sched-block" id="remaining-schedule">` +
-    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Remaining Schedule`)}` +
-    (remainingRange ? `<span class="sct-sched-range">${escapeHtml(remainingRange)}</span>` : "") +
-    `</h2>` +
-    (remainingRows.length
-      ? renderBoard("remaining", remainingRows)
-      : `<p class="sct-note">The ${schedule.season} regular season is complete.</p>`) +
-    `</div>`;
-
-  // Results first while the season is on; once it is over there is nothing
-  // remaining and the results are the whole page. Before it starts the
-  // remaining board is the schedule and the empty results block waits below.
-  return results.length ? resultsBlock + remainingBlock : remainingBlock + resultsBlock;
-}
-
-/**
- * The postseason, only for a club that has one.
- *
- * The same rows as the season boards - a played round carries its result and
- * a round to come its window - under the round's name in the week column. An
- * empty postseason renders nothing: no club gets a playoff heading it has
- * not earned.
- */
-function renderPostseasonBoard(
-  data: TeamPageData,
-  options: TeamRenderOptions,
-  now: number,
-): string {
-  const { team, postseason } = data;
-  if (!postseason || postseason.games.length === 0) return "";
-  const { results, remaining } = splitSchedule(postseason);
-  const blocks: string[] = [];
-  if (results.length) {
-    blocks.push(
-      renderBoard(
-        "results",
-        results.map((game) =>
-          scheduleRow("results", team, game, postseason, options, now, recordThrough(postseason.games, game).text),
-        ),
-      ),
-    );
-  }
-  if (remaining.length) {
-    blocks.push(
-      renderBoard(
-        "remaining",
-        remaining.map((game) => scheduleRow("remaining", team, game, postseason, options, now, null)),
-      ),
-    );
-  }
-  return (
-    `<div class="sct-sched-block" id="postseason-schedule">` +
-    `<h2 class="sct-h2 is-sub">${escapeHtml(`${team.fullName} Postseason Schedule`)}</h2>` +
-    blocks.join("") +
-    `</div>`
-  );
-}
-
 /* --------------------------------------------------------- next and last */
 
 /**
@@ -3229,348 +2512,6 @@ function scheduleContext(data: TeamPageData): string {
   const stamp = updatedStamp(schedule.updatedAtMs);
   if (stamp) parts.push(stamp);
   return `<p class="sct-sched-context">${parts.join(`<span class="sct-sched-dot" aria-hidden="true">·</span>`)}</p>`;
-}
-
-/**
- * The next game and the last result, as one compact module above the boards.
- *
- * Opponent, site, date, kickoff, network, venue and the matchup link - the
- * seven things a "next game" search is for - and beside them the last
- * result with the record after it and the recap link. NFL.com's own team
- * page makes exactly this pair, and it is the right size: one block, two
- * cells, nothing that the boards below do not also hold.
- *
- * The label moves with the game: Upcoming -> Today's Game -> Live Now ->
- * (final lands, the game moves to the Last cell) -> the next one. "Today"
- * is said only on the day.
- */
-function renderNextGameModule(
-  data: TeamPageData,
-  options: TeamRenderOptions,
-  now: number,
-): string {
-  const { team, schedule } = data;
-  if (!schedule) return "";
-  const next = nextGame(schedule, now);
-  const last = lastResult(schedule);
-  if (!next && !last) return "";
-
-  const fixtureSide = (club: NflTeam | null, name: string, isTeam: boolean): string =>
-    (club
-      ? `<img class="sct-ng-logo" src="${escapeHtml(club.logo)}" alt="" width="28" height="28" loading="lazy" decoding="async" />`
-      : "") +
-    (club && !isTeam
-      ? (() => {
-          const href = teamHubHref(club, options);
-          return href
-            ? `<a class="sct-ng-team" href="${escapeHtml(href)}">${escapeHtml(name)}</a>`
-            : `<span class="sct-ng-team">${escapeHtml(name)}</span>`;
-        })()
-      : `<span class="sct-ng-team is-team">${escapeHtml(name)}</span>`);
-
-  let nextCell = "";
-  if (next) {
-    const when = gameDateLine(next);
-    const opponentName = next.opponent?.fullName ?? next.opponentName;
-    // Away at home, as a scoreboard reads; a neutral site puts this team
-    // first and says "vs".
-    const fixture =
-      next.site === "home"
-        ? fixtureSide(next.opponent, opponentName, false) +
-          `<span class="sct-ng-at">at</span>` +
-          fixtureSide(team, team.fullName, true)
-        : next.site === "away"
-          ? fixtureSide(team, team.fullName, true) +
-            `<span class="sct-ng-at">at</span>` +
-            fixtureSide(next.opponent, opponentName, false)
-          : fixtureSide(team, team.fullName, true) +
-            `<span class="sct-ng-at">vs</span>` +
-            fixtureSide(next.opponent, opponentName, false);
-    const detail =
-      next.status === "live" && next.statusDetail
-        ? `<span class="sct-ng-live">${escapeHtml(next.statusDetail)}</span>`
-        : "";
-    const whenParts = [
-      escapeHtml(when.date),
-      when.time ? escapeHtml(when.time) : "",
-      next.network ? networkHtml(next.network, "sct-ng-tv") : next.status === "scheduled" ? `<span class="sct-ng-tbd">TV TBD</span>` : "",
-    ].filter(Boolean);
-    const venueParts = [
-      next.venue ? escapeHtml(next.venue) : "",
-      next.site === "neutral"
-        ? escapeHtml(next.venueCity ? `${next.venueCity} · Neutral site` : "Neutral site")
-        : next.international && next.venueCity
-          ? escapeHtml(next.venueCity)
-          : "",
-    ].filter(Boolean);
-    const href = gameMatchupHref(team, next, schedule, options, now);
-    nextCell =
-      `<div class="sct-ng-cell" data-kind="next">` +
-      `<p class="sct-ng-label">${escapeHtml(nextGameLabel(next, now))}` +
-      `<span class="sct-ng-week">${escapeHtml(next.weekLabel)}</span>${detail}</p>` +
-      `<p class="sct-ng-fixture">${fixture}</p>` +
-      `<p class="sct-ng-when">${whenParts.join(`<span class="sct-sched-dot" aria-hidden="true">·</span>`)}</p>` +
-      (venueParts.length ? `<p class="sct-ng-venue">${venueParts.join(" · ")}</p>` : "") +
-      (href
-        ? `<p class="sct-ng-cta"><a class="sct-textlink" href="${escapeHtml(href)}">View matchup ${ARROW}</a></p>`
-        : "") +
-      `</div>`;
-  }
-
-  let lastCell = "";
-  if (last?.result) {
-    const record = recordThrough(schedule.games, last).text;
-    const opponentName = last.opponent?.nickname ?? last.opponentName;
-    const href = gameMatchupHref(team, last, schedule, options, now);
-    lastCell =
-      `<div class="sct-ng-cell" data-kind="last">` +
-      `<p class="sct-ng-label">Last Game<span class="sct-ng-week">${escapeHtml(last.weekLabel)}</span></p>` +
-      `<p class="sct-ng-score">${gameStatusCell(last)}` +
-      `<span class="sct-ng-opp">${sideWord(last)} ` +
-      (last.opponent
-        ? `<img class="sct-ng-logo is-small" src="${escapeHtml(last.opponent.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />`
-        : "") +
-      `${escapeHtml(opponentName)}</span></p>` +
-      `<p class="sct-ng-when">${escapeHtml(gameShortDay(last))}` +
-      `<span class="sct-sched-dot" aria-hidden="true">·</span>` +
-      `<span>${escapeHtml(`Record ${record}`)}</span></p>` +
-      (href
-        ? `<p class="sct-ng-cta"><a class="sct-textlink" href="${escapeHtml(href)}">View recap ${ARROW}</a></p>`
-        : "") +
-      `</div>`;
-  }
-
-  return (
-    `<section class="sct-nextgame-module${nextCell && lastCell ? "" : " is-single"}" aria-label="${escapeHtml(
-      `${team.nickname} next game and last result`,
-    )}">` +
-    nextCell +
-    lastCell +
-    `</section>`
-  );
-}
-
-/* ----------------------------------------------------------- season shape */
-
-/**
- * What the eighteen weeks beside this add up to.
- *
- * The four cards the standalone NFL schedule tool puts in its team lens
- * sidebar, brought onto the hub's Schedule tab in the same rail: the season in
- * figures with the home/road/neutral split, the path through it, the division
- * slate, and where the rest of the opponents come from. Everything is
- * arithmetic on the rows to the left - team/season-shape.ts does the counting
- * and states what it refuses to infer.
- *
- * House components, not the source's: `.sct-mix` is the card, `.sct-mix-label`
- * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the
- * ladder's geometry.
- */
-function renderSeasonShape(
-  data: TeamPageData,
-  options: TeamRenderOptions,
-  now: number,
-): string {
-  const { team, schedule } = data;
-  if (!schedule) return "";
-  const shape = seasonShape(schedule, team);
-  if (!shape) return "";
-
-  const figures: Array<[string, string]> = [
-    ["Games", String(shape.total)],
-    ["Home", String(shape.home)],
-    ["Away", String(shape.away)],
-    // Only when there is one: a "Neutral 0" cell on thirty clubs' pages is a
-    // figure about nothing. When there is one it is the figure that stops
-    // the home and away counts adding up to a lie.
-    ...(shape.neutral ? ([["Neutral", String(shape.neutral)]] as Array<[string, string]>) : []),
-    ["Division", String(shape.division)],
-    ["Remaining", String(shape.remaining)],
-    // "TBD", not a guess: schedule.ts returns null for a bye it cannot
-    // establish, and a wrong bye is the one number on this card a fantasy
-    // manager would act on.
-    ["Bye week", shape.bye ? `W${shape.bye}` : "TBD"],
-  ];
-
-  // Home against road (against neutral), on the ladder's track.
-  const kinds = (["home", "away", ...(shape.neutral ? ["neutral"] : [])] as const);
-  const splitMax = Math.max(shape.home, shape.away, shape.neutral, 1);
-  const split = kinds
-    .map((kind) => {
-      const value = kind === "home" ? shape.home : kind === "away" ? shape.away : shape.neutral;
-      const label = kind === "home" ? "Home" : kind === "away" ? "Away" : "Neutral";
-      return (
-        `<div class="sct-shape-bar" data-kind="${kind}">` +
-        `<dt class="sct-shape-bar-label">${label}</dt>` +
-        `<dd class="sct-shape-bar-body">` +
-        `<span class="sct-shape-bar-track" aria-hidden="true">` +
-        `<span class="sct-shape-bar-fill" style="${escapeHtml(
-          `width:${Math.round((value / splitMax) * 100)}%`,
-        )}"></span>` +
-        `</span>` +
-        `<span class="sct-shape-bar-value">${value}</span>` +
-        `</dd>` +
-        `</div>`
-      );
-    })
-    .join("");
-
-  const snapshotCard =
-    `<div class="sct-mix" data-kind="snapshot">` +
-    `<p class="sct-mix-label">${escapeHtml(`${shape.season} season snapshot`)}</p>` +
-    `<dl class="sct-snap">` +
-    figures
-      .map(
-        ([label, value]) =>
-          `<div class="sct-snap-cell">` +
-          `<dt class="sct-snap-label">${escapeHtml(label)}</dt>` +
-          `<dd class="sct-snap-value">${escapeHtml(value)}</dd>` +
-          `</div>`,
-      )
-      .join("") +
-    `</dl>` +
-    `<dl class="sct-shape-bars sct-snap-bars">${split}</dl>` +
-    `</div>`;
-
-  // Eighteen weeks as eighteen blocks: filled for home, hollow for away,
-  // half-filled for a neutral site, dashed for the bye. Never color alone -
-  // every block carries its week and its opponent in a title and in a hidden
-  // label.
-  const strip =
-    `<ol class="sct-path">` +
-    shape.marks
-      .map(
-        (mark) =>
-          `<li class="sct-path-week" data-kind="${mark.kind}"` +
-          ` title="${escapeHtml(`Week ${mark.week} · ${mark.label}`)}">` +
-          `<span class="sct-visually-hidden">${escapeHtml(
-            `Week ${mark.week}: ${mark.label}`,
-          )}</span>` +
-          `</li>`,
-      )
-      .join("") +
-    `</ol>`;
-
-  const segments =
-    `<div class="sct-segs">` +
-    shape.segments
-      .map(
-        (segment) =>
-          `<div class="sct-seg">` +
-          `<span class="sct-seg-label">${escapeHtml(
-            `Weeks ${segment.from}–${segment.to}`,
-          )}</span>` +
-          `<span class="sct-seg-detail">${escapeHtml(segment.detail)}</span>` +
-          `</div>`,
-      )
-      .join("") +
-    `</div>`;
-
-  const pathCard =
-    `<div class="sct-mix" data-kind="path">` +
-    `<p class="sct-mix-label">Season path</p>` +
-    strip +
-    `<p class="sct-mix-legend" aria-hidden="true">` +
-    `<span class="sct-mix-key" data-kind="home">Home</span>` +
-    `<span class="sct-mix-key" data-kind="away">Away</span>` +
-    (shape.neutral ? `<span class="sct-mix-key" data-kind="neutral">Neutral</span>` : "") +
-    `<span class="sct-mix-key" data-kind="bye">Bye</span>` +
-    `</p>` +
-    segments +
-    `</div>`;
-
-  // The division slate, each meeting with its result or its date (mak's
-  // brief, 2026-11-03), read from the same row the board prints.
-  const slateRows = shape.slate
-    .map((game) => {
-      const fixture = schedule.games.find(
-        (g) => g.seasonType === "regular" && g.week === game.week && g.opponent === game.opponent,
-      );
-      const href = fixture
-        ? gameMatchupHref(team, fixture, schedule, options, now)
-        : matchupHref(team, game.opponent, options);
-      const name = href
-        ? `<a class="sct-slate-link" href="${escapeHtml(href)}">${escapeHtml(game.name)}</a>`
-        : escapeHtml(game.name);
-      const status = fixture
-        ? fixture.result
-          ? gameStatusCell(fixture)
-          : `<span class="sct-slate-when">${escapeHtml(gameShortDate(fixture))}</span>`
-        : "";
-      return (
-        `<li class="sct-slate-row">` +
-        `<span class="sct-slate-week">${escapeHtml(`W${game.week}`)}</span>` +
-        (game.opponent
-          ? `<img class="sct-slate-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
-            ` width="20" height="20" loading="lazy" decoding="async" />`
-          : `<span class="sct-slate-logo"></span>`) +
-        `<span class="sct-slate-name">${game.site === "away" ? "at " : "vs "}${name}</span>` +
-        `<span class="sct-slate-status">${status}</span>` +
-        `</li>`
-      );
-    })
-    .join("");
-
-  const slateCard =
-    `<div class="sct-mix" data-kind="slate">` +
-    `<p class="sct-mix-label">${escapeHtml(`${team.division} schedule`)}</p>` +
-    (shape.slate.length
-      ? `<ul class="sct-slate">${slateRows}</ul>` +
-        `<p class="sct-mix-caption">${escapeHtml(
-          `${shape.slateHome} home · ${shape.slateAway} away` +
-            (shape.slate.length - shape.slateHome - shape.slateAway
-              ? ` · ${shape.slate.length - shape.slateHome - shape.slateAway} neutral`
-              : ""),
-        )}</p>`
-      : `<p class="sct-mix-caption">No division games scheduled.</p>`) +
-    `</div>`;
-
-  const max = shape.divisions[0]?.count ?? 1;
-  const bars = shape.divisions
-    .map(
-      (entry) =>
-        `<div class="sct-shape-bar">` +
-        `<dt class="sct-shape-bar-label">${escapeHtml(entry.division)}</dt>` +
-        `<dd class="sct-shape-bar-body">` +
-        `<span class="sct-shape-bar-track" aria-hidden="true">` +
-        `<span class="sct-shape-bar-fill" style="${escapeHtml(
-          `width:${Math.round((entry.count / max) * 100)}%`,
-        )}"></span>` +
-        `</span>` +
-        `<span class="sct-shape-bar-value">${entry.count}</span>` +
-        `</dd>` +
-        `</div>`,
-    )
-    .join("");
-
-  const opponentCard =
-    `<div class="sct-mix" data-kind="opponents">` +
-    `<p class="sct-mix-label">${escapeHtml(`Who ${team.city} plays`)}</p>` +
-    (shape.divisions.length
-      ? `<dl class="sct-shape-bars">${bars}</dl>` +
-        `<dl class="sct-shape-conf">` +
-        shape.conferences
-          .map(
-            ([conference, count]) =>
-              `<div class="sct-shape-conf-cell">` +
-              `<dt>${escapeHtml(conference)}</dt><dd>${count}</dd>` +
-              `</div>`,
-          )
-          .join("") +
-        `</dl>`
-      : `<p class="sct-mix-caption">No opponents scheduled.</p>`) +
-    `</div>`;
-
-  return (
-    `<aside class="sct-shape" aria-label="${escapeHtml(
-      `${shape.season} ${team.nickname} season shape`,
-    )}">` +
-    snapshotCard +
-    pathCard +
-    slateCard +
-    opponentCard +
-    `</aside>`
-  );
 }
 
 /**
@@ -3667,10 +2608,11 @@ function renderSchedulePreview(
  * The Schedule page, or the hub's preview of it.
  *
  * "full" is the page at /<slug>/schedule/, in the order a schedule search
- * wants it: the heading and its context line, the next game, the results
- * board, the remaining board, the postseason if there is one, then the rail
- * of season figures, the pair index and the club's other pages. The questions
- * render as the section's tail. "preview" is what the hub carries instead.
+ * wants it: the premium dashboard (team/schedule-premium.ts: the heading and
+ * its context line, the next and last game, the results board, the remaining
+ * board, the postseason if there is one, the rail of season figures), then
+ * the pair index and the club's other pages. The questions render as the
+ * section's tail. "preview" is what the hub carries instead.
  */
 function renderSchedule(
   data: TeamPageData,
@@ -3694,19 +2636,6 @@ function renderSchedule(
 
   if (mode === "preview") return renderSchedulePreview(data, options, now);
 
-  // The boards and the four summary cards side by side, as the standalone
-  // tool's team lens lays them out: the fixtures in the fluid column, a 300px
-  // rail of cards. The cards fall under the boards as a band once the rail
-  // stops paying for itself - see team.css.
-  const shape = renderSeasonShape(data, options, now);
-  const boards = renderSeasonBoards(data, options, now) + renderPostseasonBoard(data, options, now);
-  const board = shape
-    ? `<div class="sct-sched-grid">` +
-      `<div class="sct-sched-main">${boards}</div>` +
-      shape +
-      `</div>`
-    : boards;
-
   // Below the tools block with the other tabs' questions, and assigned after
   // the early return above: a team whose fixtures did not load carries no
   // questions about them.
@@ -3720,11 +2649,13 @@ function renderSchedule(
   ];
 
   return (
-    h2(`${team.fullName} Schedule`) +
-    scheduleContext(data) +
+    // The premium dashboard (mak's brief, 2026-11-05; the page since the
+    // same day, "delete the old schedule version"): its identity header
+    // carries the page's heading, then the next and last game, the two
+    // boards, the postseason and the rail. The network marks reference the
+    // defs printed first.
     networkDefs(networks) +
-    renderNextGameModule(data, options, now) +
-    board +
+    renderSchedulePremium(data, options, now) +
     // Every opponent, not just this season's: see renderSeriesIndex().
     renderSeriesIndex(team, options) +
     renderMoreLinks(team, options)
@@ -3895,23 +2826,11 @@ export function renderTeamPage(
   // there, per the coaching spec. Empty for HIGH and MEDIUM.
   const caveat = coachingCaveat(teamCoaching);
 
-  const sidebar =
-    renderInjuryPanel(data) +
-    renderNextGamePanel(data, now) +
-    renderQuickLinksPanel(team);
-
-  // A team with almost no archived news leaves a one-card column beside a
-  // three-panel rail, which is several hundred pixels of dead space rather than
-  // a layout. Below three stories the rail moves underneath and spreads out.
-  // The archive is genuinely thin for some teams, so this is the normal case
-  // for them, not an edge case.
-  const stacked = data.news.length < 3;
-
-  const newsSection =
-    `<div class="sct-news-grid${stacked ? " is-stacked" : ""}">` +
-    `<div class="sct-news-main">${renderNewsColumn(data)}</div>` +
-    (sidebar ? `<aside class="sct-sidebar">${sidebar}</aside>` : "") +
-    `</div>`;
+  // The News tab (mak's brief, 2026-11-05, attached_assets/news2.png;
+  // approved and the old column, rail and card renderers removed the same
+  // day): team/news-premium.ts, every story in feed order with the rail of
+  // Injury Watch, Next Game and Quick Links beside it.
+  const newsSection = renderNewsPremium(data, now);
 
   // The Stats tab carries its own heading in its banner (team/stats-premium.ts);
   // the snapshot heading stands in alone when the season statistics fail but
@@ -4012,12 +2931,16 @@ export function renderTeamPage(
   const rootStyle = styleAttr([
     `--team-primary:${team.primaryColor}`,
     `--team-secondary:${team.secondaryColor}`,
+    ...(usesTeamPalette(team.abbreviation)
+      ? ((p) => [`--team-base:${p.base}`, `--team-accent:${p.accent}`])(teamPalette(team.primaryColor, team.secondaryColor))
+      : []),
     `--team-logo:url('${team.logo}')`,
   ]);
 
   const rootAttrs =
     `class="sct${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
     ` data-team="${escapeHtml(team.abbreviation)}"` +
+    (usesTeamPalette(team.abbreviation) ? ` data-team-palette` : "") +
     ` data-season="${escapeHtml(String(data.state.season))}"`;
 
   /**

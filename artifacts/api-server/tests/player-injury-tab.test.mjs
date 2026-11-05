@@ -337,7 +337,7 @@ describe("rendered", () => {
     assert.match(doc.querySelectorAll(".scp-in-faq details")[1].textContent, /game-time decision/);
   });
 
-  test("out: red, the plan section flagged urgent, the sidebar copy follows the designation", () => {
+  test("out: red, the plan section flagged urgent, no Fantasy Impact / Redraft Command sidebar", () => {
     const { doc } = render({ designation: { injuryStatus: "Out", injuryBodyPart: "Ankle" } });
     assert.ok(doc.querySelector(".scp-inp-now.is-bad"));
     assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Out");
@@ -345,14 +345,16 @@ describe("rendered", () => {
     assert.equal(h2[0], "Jacoby Brissett Injury Status and History");
     assert.equal(h2[3], "If Brissett Misses Time");
     assert.ok(doc.querySelector(".scp-inp-sec.is-plan.is-urgent"));
-    assert.match(doc.querySelector(".scp-inp-rc p").textContent, /^Out this week: see how Redraft Command weighs that/);
+    assert.equal(doc.querySelector(".scp-inp-side"), null);
+    assert.equal(doc.querySelector(".scp-inp-rc"), null);
+    assert.ok(!/Fantasy Impact/.test(doc.querySelector(".scp-inp-sec.is-hist").textContent));
     assert.equal(doc.querySelector(".scp-in-answer"), null);
   });
 
   test("a backup gets no 'if he misses time'; CTAs carry the spec's data-cta values", () => {
     const { doc, html } = render({ depth: { position: "QB", order: 2, next: null } });
     assert.ok(![...doc.querySelectorAll("h2")].some((h) => /misses time/.test(h.textContent)));
-    assert.match(html, /data-cta="redraft-command-injury-sidebar"/);
+    assert.doesNotMatch(html, /data-cta="redraft-command-injury-sidebar"/);
     assert.match(html, /data-cta="startsit-injury-faq"/);
     const starter = render().html;
     assert.match(starter, /data-cta="redraft-command-injury-backup"/);
@@ -459,6 +461,60 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     assert.deepEqual([...card.querySelectorAll(".scp-inp-dt-k")].map((k) => k.textContent.replace(/ \(.*\)$/, "")), ["Major Injuries", "Soft-Tissue Events", "Games Missed", "Missed / Season"]);
   });
 
+  test("the reviewer's layout (2026-11-05): tiles on top, the matrix newest first in two columns from seven seasons, one selected-location box, the record folded past two events", () => {
+    const { doc } = render();
+    const card = doc.querySelector("[data-scp-durability]");
+    const body = card.querySelector(".scp-inp-dur");
+    assert.ok(body.firstElementChild.classList.contains("scp-inp-tiles"), "the four tiles lead");
+    assert.ok(body.children[1].classList.contains("scp-inp-dur-grid"), "then the matrix beside the map");
+    assert.ok(body.children[2].classList.contains("scp-inp-regions"), "then the regions across the width");
+    assert.deepEqual([...card.querySelectorAll("h3.scp-inp-dur-h")].map((h) => h.firstChild.textContent), ["Season-by-Season Availability", "Injury Location Map", "Injury Regions"]);
+    // Newest first, data-rank 0 at the top; the fold marks rows past the five most recent.
+    const years = [...card.querySelectorAll(".scp-in-av-row .scp-in-av-year")].map((y) => Number(y.textContent));
+    const rows = [...card.querySelectorAll(".scp-in-av-row")];
+    const grid = card.querySelector("[data-scp-avail]");
+    if (card.querySelector(".scp-in-av-cols")) {
+      assert.ok(years.length >= dur.AVAIL_TWO_COLUMNS_FROM, "two columns only from seven seasons");
+      const cols = [...card.querySelectorAll(".scp-in-av-col")];
+      assert.deepEqual(cols.map((c) => c.dataset.group), ["recent", "earlier"]);
+      const recent = [...cols[0].querySelectorAll(".scp-in-av-row .scp-in-av-year")].map((y) => Number(y.textContent));
+      const earlier = [...cols[1].querySelectorAll(".scp-in-av-row .scp-in-av-year")].map((y) => Number(y.textContent));
+      assert.ok(Math.min(...recent) > Math.max(...earlier), "recent seasons left, earlier right");
+      assert.ok(recent.length - earlier.length <= 1 && recent.length >= earlier.length, "balanced, the extra row on the recent side");
+    } else {
+      assert.ok(years.length < dur.AVAIL_TWO_COLUMNS_FROM, "one column under seven seasons");
+    }
+    assert.deepEqual(years, [...years].sort((a, b) => b - a), "newest season first");
+    assert.equal(rows[0].dataset.rank, "0");
+    const beyond = rows.filter((r) => r.classList.contains("is-beyond"));
+    assert.equal(beyond.length, Math.max(0, years.length - 5), "the five most recent rows stay open on a phone");
+    assert.equal(!!card.querySelector("[data-scp-avail-more]"), years.length > 5, "the fold button only when there is something to fold");
+    assert.equal(grid.classList.contains("is-folded"), years.length > 5);
+    // The map: one selected-location box visible, one leader line and one callout marked on.
+    const boxes = [...card.querySelectorAll("[data-region-panel]")];
+    assert.ok(boxes.length >= 1);
+    const shown = boxes.filter((b) => !b.hidden);
+    assert.equal(shown.length, 1);
+    assert.equal(shown[0].dataset.regionPanel, card.querySelector(".scp-in-rp.is-on").dataset.region);
+    assert.match(shown[0].textContent, /\d+ occurrences? · \d+ games? missed/);
+    assert.equal(card.querySelectorAll(".scp-in-fl-lines line.is-on").length, 1);
+    for (const line of card.querySelectorAll(".scp-in-fl-lines line")) assert.ok(line.getAttribute("data-region"));
+    // The record: at most two events open, the rest behind "View all N injury events".
+    for (const rd of card.querySelectorAll("[data-region-detail]")) {
+      const open = rd.querySelector(":scope > .scp-in-rd-list").children.length;
+      assert.ok(open <= dur.RECORD_OPEN_EVENTS);
+      const more = rd.querySelector(".scp-in-rd-more");
+      const total = Number(/· (\d+) Occurrence/.exec(rd.querySelector(".scp-in-rd-head").textContent)[1]);
+      if (total > dur.RECORD_OPEN_EVENTS) {
+        assert.ok(more, "folded");
+        assert.equal(more.querySelector("summary").textContent, `View all ${total} injury events`);
+        assert.equal(open + more.querySelectorAll("li").length, total, "every event kept");
+      } else {
+        assert.equal(more, null);
+      }
+    }
+  });
+
   test("a player outside the durability set gets no card", () => {
     const { doc } = render({ player: { id: "999999999", slug: "nobody", name: "No Body", position: "QB", years_exp: 1 } });
     assert.equal(doc.querySelector("[data-scp-durability]"), null);
@@ -490,9 +546,8 @@ describe("the premium dashboard (mak's brief, 2026-11-05; the tab's own design s
     // History: the healthy row, then one card per event with its badge and report chips.
     assert.ok(prm.querySelector(".scp-inp-ev.is-now"));
     assert.deepEqual([...prm.querySelectorAll(".scp-inp-ev:not(.is-now) .scp-inp-badge")].map(text), ["Played through", "2 games", "1 game", "8 games"]);
-    // Sidebar and plan: the tab's links and data-cta names.
-    assert.equal(prm.querySelector(".scp-inp-btn").getAttribute("data-cta"), "redraft-command-injury-sidebar");
-    assert.match(prm.querySelector(".scp-inp-btn").getAttribute("href"), /redraft-command\/\?player=jacoby-brissett$/);
+    // No sidebar (removed 2026-11-05); the plan keeps the tab's link and data-cta name.
+    assert.equal(prm.querySelector(".scp-inp-side"), null);
     assert.equal(prm.querySelector(".scp-inp-cta-link").getAttribute("data-cta"), "redraft-command-injury-backup");
     assert.equal(prm.querySelectorAll(".scp-inp-plan-card").length, 2);
     assert.doesNotMatch(prm.textContent, /—/);

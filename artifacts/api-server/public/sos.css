@@ -1119,13 +1119,13 @@ body.scsos-page {
 
 /* The position list in one answer: the Divi host zeroes list padding and
    strips bullets on bare lists, so both are set here. */
-.scsos .scsos-faq-a ul.scsos-faq-list-items {
+:is(.scsos, #scsos-armour) .scsos-faq-a ul.scsos-faq-list-items {
   margin: 0 0 8px;
   padding: 0 0 0 20px;
   list-style: disc;
 }
 
-.scsos .scsos-faq-a ul.scsos-faq-list-items li {
+:is(.scsos, #scsos-armour) .scsos-faq-a ul.scsos-faq-list-items li {
   margin: 0 0 2px;
   padding: 0;
   line-height: 1.6;
@@ -1314,4 +1314,1147 @@ body.scsos-page {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ------------------------------------------- premium redesign (comparison) */
+
+/* The premium board (src/lib/sos-premium.ts), rendered under the original
+   while mak compares the two (brief of 2026-11-05). Its own tokens, named
+   for the brief's palette; its own container, so its tiers answer the
+   column it has, not the window. Every rule naming its table, a list or a
+   link carries the id-weight prefix for the Divi reasons at the top of this
+   sheet. The five tier colors are the sheet's own (the legend and the cells
+   share them with the original board), on an inner span so the cell's
+   padding is the gutter between tiles. */
+
+.scsos-pm {
+  --pm-navy-950: #071a35;
+  --pm-navy-900: #0b2345;
+  --pm-navy-800: #103862;
+  --pm-navy: #0b3a7a;
+  --pm-gold: #d4af37;
+  --pm-gold-bright: #f0c13b;
+  --pm-gold-light: #fff3d8;
+  --pm-text: #102344;
+  --pm-text-2: #586f8e;
+  --pm-white: #ffffff;
+  --pm-light: #f8fbff;
+  --pm-blue: #edf4fb;
+  --pm-border: #cbdbea;
+  --pm-border-light: #e1e9f3;
+  --pm-green: #159b5d;
+  --pm-red: #d64d49;
+  --pm-seg: linear-gradient(180deg, #103862 0%, #0b2345 100%);
+  --pm-head: linear-gradient(180deg, #103862 0%, #071a35 100%);
+  --pm-shadow: 0 1px 2px rgba(8, 35, 70, 0.06);
+  --pm-first-w: 164px;
+  --pm-team-w: 70px;
+  --pm-wk-w: 66px;
+  --pm-cell-h: 40px;
+
+  position: relative;
+  margin-top: 36px;
+  padding-top: 26px;
+  border-top: 1px solid var(--pm-border-light);
+  color: var(--pm-text);
+  container-type: inline-size;
+  container-name: scsospm;
+}
+
+/* The team board's identity column is a crest and a code: narrower. */
+.scsos-pm.is-team-board {
+  --pm-first-w: 112px;
+}
+
+.scsos .scsos-pm-flag {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--pm-gold-light);
+  color: #7a5c0e;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scsos .scsos-pm p {
+  margin: 0;
+}
+
+/* ---- the control bar */
+
+.scsos-pm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 18px;
+  margin: 0 0 18px;
+}
+
+.scsos-pm-seg {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--pm-border);
+  border-radius: 13px;
+  background: var(--pm-light);
+  box-shadow: var(--pm-shadow);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 6px 22px;
+  border-radius: 10px;
+  color: var(--pm-text);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-tab.is-active {
+  background: var(--pm-seg);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(7, 26, 53, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-tab:not(.is-active):hover {
+  background: var(--pm-blue);
+  color: var(--pm-navy);
+}
+
+.scsos-pm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 18px;
+}
+
+.scsos-pm-control {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.scsos-pm-label {
+  color: var(--pm-text-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.scsos-pm-opts {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--pm-border-light);
+  border-radius: 999px;
+  background: var(--pm-blue);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-opt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  color: #3a4f6e;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-opt.is-active {
+  background: var(--pm-seg);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(7, 26, 53, 0.25);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-opt:not(.is-active):hover {
+  color: var(--pm-navy);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Playoffs is a scope beside the four positions, set off by a hairline. */
+:is(.scsos, #scsos-armour) a.scsos-pm-opt.is-scope {
+  margin-left: 5px;
+  position: relative;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-opt.is-scope::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: var(--pm-border);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 17px;
+  border: 1px solid var(--pm-border);
+  border-radius: 11px;
+  background: linear-gradient(180deg, #ffffff 0%, #f6faff 100%);
+  color: var(--pm-text);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--pm-shadow);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-export svg {
+  color: var(--pm-navy);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-export:hover {
+  border-color: var(--pm-gold);
+  color: var(--pm-navy);
+}
+
+/* ---- the four summary cards */
+
+.scsos-pm-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin: 0 0 16px;
+}
+
+.scsos-pm-card {
+  --summary-accent: var(--pm-green);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+  min-width: 0;
+  padding: 13px 16px 14px 17px;
+  overflow: hidden;
+  border: 1px solid #d1deec;
+  border-left: 5px solid var(--summary-accent);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f6faff 100%);
+  box-shadow: 0 4px 10px rgba(8, 35, 70, 0.05), 0 10px 22px rgba(8, 35, 70, 0.04);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.scsos-pm-card.is-bad {
+  --summary-accent: var(--pm-red);
+}
+
+.scsos-pm-card[role="button"] {
+  cursor: pointer;
+}
+
+.scsos-pm-card[role="button"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(8, 35, 70, 0.08), 0 16px 30px rgba(8, 35, 70, 0.08);
+}
+
+.scsos-pm-card[role="button"]:focus-visible {
+  outline: 2px solid var(--pm-gold);
+  outline-offset: 2px;
+}
+
+/* The faint crest, right of the figure. */
+.scsos .scsos-pm-card-mark {
+  position: absolute;
+  right: -18px;
+  bottom: -22px;
+  width: 124px;
+  height: 124px;
+  max-width: none;
+  object-fit: contain;
+  opacity: 0.055;
+  pointer-events: none;
+}
+
+.scsos .scsos-pm-card-title {
+  position: relative;
+  overflow: hidden;
+  color: var(--summary-accent);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Two lines reserved, so every card's figures sit on one baseline. */
+.scsos .scsos-pm-card-note {
+  position: relative;
+  display: -webkit-box;
+  min-height: 2.6em;
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: var(--pm-text-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.scsos-pm-card-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.scsos-pm-card-who {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.scsos .scsos-pm-card-img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  max-width: none;
+  object-fit: contain;
+}
+
+.scsos .scsos-pm-card-img.is-headshot {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--pm-border);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: var(--pm-blue);
+}
+
+.scsos-pm-card-id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-card-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--pm-text);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-card-name:hover {
+  color: var(--pm-navy);
+  text-decoration: underline;
+}
+
+.scsos-pm-card-sub {
+  overflow: hidden;
+  color: var(--pm-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The figure: a soft pill at the right, the number large, the delta under. */
+.scsos-pm-card-stat {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 7px 12px 6px;
+  border-radius: 14px;
+  background: rgba(237, 244, 251, 0.85);
+}
+
+.scsos-pm-card-value {
+  color: var(--pm-text);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scsos-pm-card-value small {
+  margin-left: 4px;
+  color: var(--pm-text-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.scsos-pm-card-delta {
+  color: var(--pm-text-2);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scsos-pm-card-delta.is-up {
+  color: var(--pm-green);
+}
+
+.scsos-pm-card-delta.is-down {
+  color: var(--pm-red);
+}
+
+/* Full names by default; "F. Last" once a name would be cut (the bundle's
+   measure, on the cards row and on the grid, as the original's). */
+.scsos-pm-cards.is-short .scsos-pname-full,
+.scsos-pm.is-compact .scsos-pm-player .scsos-pname-full {
+  display: none;
+}
+
+.scsos-pm-cards.is-short .scsos-pname-short,
+.scsos-pm.is-compact .scsos-pm-player .scsos-pname-short {
+  display: inline;
+}
+
+/* ---- how to read this board */
+
+.scsos-pm-read {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  min-height: 40px;
+  margin: 0 0 12px;
+  padding: 6px 0 8px;
+  border-bottom: 1px solid var(--pm-border-light);
+}
+
+.scsos .scsos-pm-read-text {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--pm-text-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.scsos-pm-read-text svg {
+  flex: none;
+  color: var(--pm-navy);
+}
+
+.scsos-pm-read-text strong {
+  color: var(--pm-text);
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-afpa-link {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--pm-navy);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: inset 0 -2px 0 var(--pm-gold);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-afpa-link:hover {
+  color: var(--sc-gold-deep);
+}
+
+.scsos-pm-arrow {
+  flex: none;
+  color: var(--pm-gold);
+}
+
+/* ---- legend, blend badge, finder */
+
+.scsos-pm-legend-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 14px;
+}
+
+.scsos-pm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  min-width: 0;
+}
+
+.scsos-pm-legend-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.scsos-pm-legend-title {
+  color: var(--pm-text-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scsos-pm-info {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--pm-border);
+  border-radius: 50%;
+  background: var(--pm-white);
+  color: var(--pm-navy);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.scsos-pm-info:hover {
+  border-color: var(--pm-gold);
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pm-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.3;
+  list-style: none;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pm-swatches li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: var(--pm-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  list-style: none;
+}
+
+.scsos-pm-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.scsos-pm-swatch.is-bye {
+  background: var(--pm-light);
+  border: 1px dashed var(--pm-border);
+}
+
+.scsos-pm-baseline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 15px;
+  border: 1px solid #e3c766;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8e3 0%, #fbeec3 100%);
+  color: #7a5700;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: var(--pm-shadow);
+  cursor: pointer;
+}
+
+.scsos-pm-baseline-pill:hover {
+  background: linear-gradient(180deg, #fff3d0 0%, #f8e5ab 100%);
+}
+
+.scsos-pm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pm-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+}
+
+/* The finder: the field in the row's third column, its status under the
+   whole row. `display: contents` only once the bundle has shown it, so the
+   hidden attribute still hides it without script. */
+.scsos-pm-find:not([hidden]) {
+  display: contents;
+}
+
+.scsos-pm-find-field {
+  position: relative;
+  display: block;
+  width: 300px;
+  max-width: 100%;
+}
+
+.scsos-pm-find-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  color: var(--pm-navy);
+  pointer-events: none;
+}
+
+:is(.scsos, #scsos-armour) input.scsos-pm-find-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 8px 14px 8px 38px;
+  border: 1px solid var(--pm-border);
+  border-radius: 11px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  color: var(--pm-text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.3;
+  box-shadow: var(--pm-shadow);
+}
+
+:is(.scsos, #scsos-armour) input.scsos-pm-find-input::placeholder {
+  color: var(--pm-text-2);
+}
+
+:is(.scsos, #scsos-armour) input.scsos-pm-find-input:focus {
+  outline: none;
+  border-color: var(--pm-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+}
+
+.scsos .scsos-pm-find-status {
+  grid-column: 1 / -1;
+  min-height: 0;
+  color: var(--pm-text-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.scsos .scsos-pm-find-status:empty {
+  display: none;
+}
+
+/* Nobody found: a compact empty state rather than a blank grid. */
+.scsos-pm-find.is-empty .scsos-pm-find-status {
+  padding: 9px 12px;
+  border: 1px dashed var(--pm-border);
+  border-radius: 10px;
+  background: var(--pm-light);
+  color: var(--pm-text);
+}
+
+:is(.scsos, #scsos-armour) button.scsos-pm-find-pick {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pm-navy);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+:is(.scsos, #scsos-armour) button.scsos-pm-find-pick:hover {
+  color: var(--sc-gold-deep);
+}
+
+/* ---- the heatmap shell */
+
+.scsos-pm-shell {
+  position: relative;
+  padding: 11px;
+  border: 1px solid #d1deec;
+  border-radius: 17px;
+  background: var(--pm-white);
+  box-shadow: 0 4px 12px rgba(8, 35, 70, 0.05), 0 12px 24px rgba(8, 35, 70, 0.05);
+}
+
+/* A hint that the grid goes on: the right edge fades where it scrolls. */
+.scsos-pm-shell::after {
+  content: "";
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  bottom: 11px;
+  width: 36px;
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 100%);
+  pointer-events: none;
+}
+
+.scsos-pm-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(.scsos, #scsos-armour) table.scsos-pm-table {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--pm-white);
+  color: var(--pm-text);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table th,
+:is(.scsos, #scsos-armour) .scsos-pm-table td {
+  border: 0;
+  vertical-align: middle;
+}
+
+/* The header: one navy band, hairline separators, rounded ends. */
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th {
+  height: 50px;
+  padding: 6px 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--pm-head);
+  color: #fff !important;
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th:first-child {
+  border-radius: 9px 0 0 9px;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th:last-child {
+  border-right: 0;
+  border-radius: 0 9px 9px 0;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-first {
+  text-align: left;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-week {
+  min-width: var(--pm-wk-w);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-sorted {
+  background: linear-gradient(180deg, #b8891a 0%, #8f6a0a 100%);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th .scsos-sort {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th .scsos-sort:hover {
+  color: var(--pm-gold-bright);
+}
+
+/* The identity columns stay while the weeks scroll: Player (or Team) at the
+   left edge, the player's Team beside it. Opaque, above the tiles. */
+:is(.scsos, #scsos-armour) .scsos-pm-table th.is-first,
+:is(.scsos, #scsos-armour) .scsos-pm-table th.scsos-pm-first {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: var(--pm-first-w);
+  min-width: var(--pm-first-w);
+  max-width: var(--pm-first-w);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-first,
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-teamcol {
+  z-index: 3;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-teamcol,
+:is(.scsos, #scsos-armour) .scsos-pm-table td.scsos-pm-teamcell {
+  position: sticky;
+  left: var(--pm-first-w);
+  z-index: 2;
+  width: var(--pm-team-w);
+  min-width: var(--pm-team-w);
+  box-shadow: 1px 0 0 var(--pm-border-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody th.scsos-pm-first {
+  padding: 4px 10px;
+  background: var(--pm-white);
+  /* Stated: `#left-area table th` grays every th it can reach. */
+  color: var(--pm-text);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody th.scsos-pm-first.is-team {
+  box-shadow: 1px 0 0 var(--pm-border-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody td {
+  height: 44px;
+  padding: 2px;
+  background: var(--pm-white);
+  border-bottom: 1px solid var(--pm-border-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody th.scsos-pm-first {
+  border-bottom: 1px solid var(--pm-border-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:nth-child(even) > td,
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:nth-child(even) > th.scsos-pm-first {
+  background: var(--pm-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:last-child > td,
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:last-child > th.scsos-pm-first {
+  border-bottom: 0;
+}
+
+/* Hover lights the identity cells and the rank cells; the tiles keep their colors. */
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:hover > th.scsos-pm-first,
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:hover > td.scsos-pm-teamcell,
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr:hover > td.scsos-pm-rank {
+  background: var(--pm-blue);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr.is-focus > td,
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr.is-focus > th.scsos-pm-first {
+  box-shadow: inset 0 2px 0 var(--pm-gold), inset 0 -2px 0 var(--pm-gold);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr.is-focus > th.scsos-pm-first {
+  background: var(--pm-gold-light);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody tr[hidden] {
+  display: none;
+}
+
+/* The player's name: one line, cut with an ellipsis, the full name in the title. */
+:is(.scsos, #scsos-armour) .scsos-pm-player {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--pm-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-player:hover,
+:is(.scsos, #scsos-armour) a.scsos-pm-player:focus-visible {
+  color: var(--pm-navy);
+  text-decoration: underline;
+}
+
+/* The team board's first column: crest and code, linked to the schedule page. */
+:is(.scsos, #scsos-armour) .scsos-pm-teamlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--pm-text);
+  text-decoration: none;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-pm-teamlink:hover .scsos-pm-code,
+:is(.scsos, #scsos-armour) a.scsos-pm-teamlink:focus-visible .scsos-pm-code {
+  text-decoration: underline;
+}
+
+.scsos .scsos-pm-crest {
+  width: 22px;
+  height: 22px;
+  max-width: none;
+  object-fit: contain;
+}
+
+.scsos-pm-code {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* The team badge beside a player. */
+.scsos-pm-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 27px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: var(--pm-blue);
+  color: var(--pm-text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-rank {
+  min-width: 54px;
+  padding: 2px 6px;
+  border-right: 1px solid var(--pm-border-light);
+  color: var(--pm-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-rank.is-muted {
+  color: var(--pm-text-2);
+}
+
+:is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-wk {
+  min-width: var(--pm-wk-w);
+}
+
+/* The tile inside a weekly cell: the tier's wash and ink (the shared
+   [data-bucket] rules above), rounded, two lines centered. */
+.scsos-pm-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  height: var(--pm-cell-h);
+  padding: 3px 4px;
+  border-radius: 5px;
+  font-weight: 800;
+}
+
+.scsos-pm-cell.is-bye {
+  border: 1px dashed var(--pm-border);
+  background: var(--pm-light);
+  color: var(--pm-text-2);
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.scsos-pm-opp {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.scsos-pm-afpa {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  opacity: 0.9;
+}
+
+.scsos-pm-afpa-only {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scsos .scsos-pm-empty {
+  margin: 0;
+  padding: 24px;
+  color: var(--pm-text-2);
+  text-align: center;
+}
+
+/* ---- the tiers, by the column the block has */
+
+@container scsospm (max-width: 1100px) {
+  .scsos-pm-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@container scsospm (max-width: 940px) {
+  .scsos-pm-legend-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .scsos-pm-find-field {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@container scsospm (max-width: 700px) {
+  .scsos-pm {
+    --pm-first-w: 128px;
+    --pm-wk-w: 62px;
+  }
+
+  .scsos-pm-bar {
+    align-items: stretch;
+  }
+
+  .scsos-pm-seg {
+    width: 100%;
+  }
+
+  .scsos-pm-filters {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .scsos-pm-read {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :is(.scsos, #scsos-armour) a.scsos-pm-afpa-link {
+    margin-left: 27px;
+  }
+
+  /* One sticky column: the team column scrolls with the weeks. */
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-teamcol,
+  :is(.scsos, #scsos-armour) .scsos-pm-table td.scsos-pm-teamcell {
+    position: static;
+    box-shadow: none;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table tbody th.scsos-pm-first {
+    box-shadow: 1px 0 0 var(--pm-border-light);
+  }
+
+  .scsos-pm-shell {
+    padding: 7px;
+  }
+
+  .scsos-pm-shell::after {
+    top: 7px;
+    right: 7px;
+    bottom: 7px;
+  }
+}
+
+@container scsospm (max-width: 520px) {
+  .scsos-pm-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scsos-pm-legend-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scsos-pm-baseline {
+    justify-self: start;
+  }
+
+  .scsos-pm-control {
+    width: 100%;
+  }
+
+  .scsos-pm-opts {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  :is(.scsos, #scsos-armour) a.scsos-pm-opt {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 5px 8px;
+  }
+
+  :is(.scsos, #scsos-armour) a.scsos-pm-export {
+    width: 100%;
+    justify-content: center;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-card-name {
+    font-size: 18px;
+  }
+
+  .scsos-pm-card-value {
+    font-size: 22px;
+  }
+}
+
+@container scsospm (max-width: 380px) {
+  .scsos-pm {
+    --pm-first-w: 112px;
+    --pm-wk-w: 58px;
+  }
+
+  :is(.scsos, #scsos-armour) a.scsos-pm-tab {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .scsos-pm-card {
+    padding: 12px 12px 12px 14px;
+  }
+
+  .scsos-pm-card-stat {
+    padding: 6px 9px 5px;
+  }
 }

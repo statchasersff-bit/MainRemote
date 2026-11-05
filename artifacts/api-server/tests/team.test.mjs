@@ -407,8 +407,8 @@ describe("embedded mode", () => {
     // there.
     // The injury list is the News tab's rail, which prints at /news/ now.
     const { doc } = await dom("/team/new-england-patriots/news/");
-    const unlinked = [...doc.querySelectorAll("span.sct-injury-name")];
-    const linked = [...doc.querySelectorAll("a.sct-injury-name")];
+    const unlinked = [...doc.querySelectorAll("span.sct-nwp-injury-name")];
+    const linked = [...doc.querySelectorAll("a.sct-nwp-injury-name")];
     assert.ok(
       unlinked.length + linked.length > 0,
       "this test needs an injury list to be meaningful",
@@ -450,26 +450,27 @@ describe("embedded mode", () => {
     // strip on the condition that Schedule carries the links it existed for, so
     // that is what this asserts: every row that names a resolvable opponent
     // offers the pair page, and the upcoming cards do too.
-    const rows = [...doc.querySelectorAll("#schedule .sct-srow:not(.is-bye)")];
+    const rows = [...doc.querySelectorAll("#schedule .sct-shp-row:not(.is-bye)")];
     assert.ok(rows.length > 0, "the schedule rendered rows");
     for (const row of rows) {
-      const cell = row.querySelector(".sct-srow-view");
+      const cell = row.querySelector(".is-view");
       assert.ok(cell, "every row carries the cell, so the grid keeps its shape");
       // An opponent with no canonical pair leaves the cell empty rather than
       // dropping it; anything else is a link.
-      if (cell.tagName === "A") {
-        assert.match(cell.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
+      const link = cell.querySelector("a.sct-shp-view");
+      if (link) {
+        assert.match(link.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
         // "View recap" once the game is final (mak, 2026-10-22), "View
         // matchup" ahead of it.
-        const played = !!row.querySelector(".sct-result");
+        const played = !!row.querySelector(".sct-shp-result");
         assert.equal(
-          cell.textContent.trim().startsWith(played ? "View recap" : "View matchup"),
+          link.textContent.trim().startsWith(played ? "View recap" : "View matchup"),
           true,
-          `row ${row.textContent.trim().slice(0, 30)}: ${cell.textContent.trim()}`,
+          `row ${row.textContent.trim().slice(0, 30)}: ${link.textContent.trim()}`,
         );
       }
     }
-    const linked = rows.filter((r) => r.querySelector("a.sct-srow-view"));
+    const linked = rows.filter((r) => r.querySelector("a.sct-shp-view"));
     assert.ok(linked.length > 0, "at least some rows link to a pair page");
 
     // The hub's preview cards offer the same links.
@@ -485,111 +486,73 @@ describe("embedded mode", () => {
 
   test("the season shape rail only ever counts the rows beside it", async () => {
     const { doc } = await dom("/team/new-england-patriots/schedule/");
-    const rows = [...doc.querySelectorAll("#schedule .sct-srow:not(.is-bye)")];
-    const shape = doc.querySelector("#schedule .sct-shape");
+    const rows = [...doc.querySelectorAll("#schedule .sct-shp-row:not(.is-bye)")];
+    const shape = doc.querySelector("#schedule .sct-shp-rail");
     if (rows.length === 0) {
       assert.equal(shape, null, "no fixtures, nothing to draw a shape from");
       return;
     }
     assert.ok(shape, "the schedule rendered rows, so the rail rendered");
-
     // Every figure in the rail is arithmetic on the table beside it - that is
     // the whole claim the cards make, and the one a future change to either
     // side could break silently.
     const figures = new Map(
-      [...shape.querySelectorAll(".sct-snap-cell")].map((cell) => [
-        cell.querySelector(".sct-snap-label").textContent.trim(),
-        cell.querySelector(".sct-snap-value").textContent.trim(),
+      [...shape.querySelectorAll(".sct-shp-snap-cell")].map((cell) => [
+        cell.querySelector(".sct-shp-snap-label").textContent.trim(),
+        cell.querySelector(".sct-shp-snap-value").textContent.trim(),
       ]),
     );
-    const home = rows.filter((row) =>
-      row.querySelector('.sct-srow-ha[data-kind="home"]'),
-    ).length;
-    const neutral = rows.filter((row) =>
-      row.querySelector('.sct-srow-ha[data-kind="neutral"]'),
-    ).length;
-
+    const home = rows.filter((row) => row.querySelector('.sct-shp-site[data-kind="home"]')).length;
+    const neutral = rows.filter((row) => row.querySelector('.sct-shp-site[data-kind="neutral"]')).length;
     assert.equal(figures.get("Games"), String(rows.length));
     assert.equal(figures.get("Home"), String(home));
     assert.equal(figures.get("Away"), String(rows.length - home - neutral));
     assert.equal(figures.get("Neutral") ?? "0", String(neutral));
-
     // The strip is the same season again: one cell per home and away row, and
     // a bye cell only where the table gave the bye a row of its own.
-    const kinds = [...shape.querySelectorAll(".sct-path-week")].map((cell) =>
-      cell.getAttribute("data-kind"),
-    );
-    const byeRow = doc.querySelector("#schedule .sct-srow.is-bye");
+    const kinds = [...shape.querySelectorAll(".sct-shp-path-week")].map((cell) => cell.getAttribute("data-kind"));
+    const byeRow = doc.querySelector("#schedule .sct-shp-row.is-bye");
     assert.equal(kinds.filter((kind) => kind === "home").length, home);
-    assert.equal(
-      kinds.filter((kind) => kind === "away").length,
-      rows.length - home - neutral,
-    );
+    assert.equal(kinds.filter((kind) => kind === "away").length, rows.length - home - neutral);
     assert.equal(kinds.filter((kind) => kind === "neutral").length, neutral);
     assert.equal(kinds.filter((kind) => kind === "bye").length, byeRow ? 1 : 0);
     assert.equal(
-      figures.get("Bye week"),
-      byeRow
-        ? byeRow.querySelector(".sct-srow-week").textContent.trim()
-        : "TBD",
+      shape.querySelector(".sct-shp-snap-bye-week").textContent.trim(),
+      byeRow ? byeRow.querySelector(".sct-shp-week").textContent.trim() : "TBD",
     );
-
-    // The rows carry no DIV pill any more - the slate card IS where the table
-    // says which games are divisional, so what is checkable is that it agrees
-    // with the table about them: every meeting it lists is a week the table
-    // prints, the Division figure is that many, and the home/away split adds
-    // back up to it.
-    const weeks = new Set(
-      rows.map((row) => row.querySelector(".sct-srow-week").textContent.trim()),
-    );
-    const slate = [...shape.querySelectorAll(".sct-slate-row")];
+    // The slate card IS where the table says which games are divisional, so
+    // what is checkable is that it agrees with the table about them: every
+    // meeting it lists is a week the table prints, the Division figure is
+    // that many, and the home/away split adds back up to it.
+    const weeks = new Set(rows.map((row) => row.querySelector(".sct-shp-week").textContent.trim()));
+    const slate = [...shape.querySelectorAll(".sct-shp-slate-row")];
     assert.equal(figures.get("Division"), String(slate.length));
     for (const game of slate) {
-      const week = game.querySelector(".sct-slate-week").textContent.trim();
+      const week = game.querySelector(".sct-shp-week").textContent.trim();
       assert.ok(week, "a slate row names its week");
-      assert.ok(
-        weeks.has(week),
-        `the slate puts a division game in ${week}, which the table does not`,
-      );
+      assert.ok(weeks.has(week), `the slate puts a division game in ${week}, which the table does not`);
     }
     if (slate.length) {
-      const caption = shape
-        .querySelector('[data-kind="slate"] .sct-mix-caption')
-        .textContent.trim();
-      const [slateHome, slateAway] = caption
-        .match(/(\d+) home · (\d+) away/)
-        .slice(1)
-        .map(Number);
-      assert.equal(slateHome + slateAway, slate.length);
+      const caption = shape.querySelector(".is-slate .sct-shp-caption").textContent.trim();
+      const [slateHome, slateAway] = caption.match(/(\d+) home · (\d+) away/).slice(1).map(Number);
+      const slateNeutral = Number(caption.match(/(\d+) neutral/)?.[1] ?? 0);
+      assert.equal(slateHome + slateAway + slateNeutral, slate.length);
     }
-
     // Every opponent is filed under exactly one division and one conference,
     // so both tallies have to come back to the number of games played.
-    const sum = (selector) =>
-      [...shape.querySelectorAll(selector)].reduce(
-        (total, node) => total + Number(node.textContent.trim()),
-        0,
-      );
-    const unresolved = rows.filter(
-      (row) => !row.querySelector(".sct-srow-logo"),
-    ).length;
+    const sum = (selector) => [...shape.querySelectorAll(selector)].reduce((total, node) => total + Number(node.textContent.trim()), 0);
+    const unresolved = rows.filter((row) => row.querySelector(".sct-shp-opp-logo.is-empty")).length;
     // Scoped to the opponent card. The snapshot card draws its home/road split
     // on the same bars, and an unscoped sum counts the season twice.
-    assert.equal(
-      sum('[data-kind="opponents"] .sct-shape-bar-value'),
-      rows.length - unresolved,
-    );
-    assert.equal(sum(".sct-shape-conf-cell dd"), rows.length - unresolved);
-
+    assert.equal(sum(".is-opponents .sct-shp-bar-value"), rows.length - unresolved);
+    assert.equal(sum(".sct-shp-conf-cell dd"), rows.length - unresolved);
     // And the split bars are the two figures above them drawn, not a third
     // count of the same season.
     assert.deepEqual(
-      [...shape.querySelectorAll(".sct-snap-bars .sct-shape-bar")].map(
-        (bar) => [
-          bar.querySelector(".sct-shape-bar-label").textContent.trim(),
-          bar.querySelector(".sct-shape-bar-value").textContent.trim(),
-        ],
-      ),
+      [...shape.querySelectorAll(".sct-shp-snap .sct-shp-bar")].map((bar) => [
+        bar.querySelector(".sct-shp-bar-label").textContent.trim(),
+        bar.querySelector(".sct-shp-bar-value").textContent.trim(),
+      ]),
       [
         ["Home", figures.get("Home")],
         ["Away", figures.get("Away")],
@@ -599,7 +562,6 @@ describe("embedded mode", () => {
       ],
     );
   });
-
   test("the schedule FAQ answers from the rows above it", async () => {
     const { doc } = await dom("/team/new-england-patriots/schedule/");
     const entries = faqEntries(doc, tailOf("schedule"));
@@ -615,7 +577,7 @@ describe("embedded mode", () => {
     // answer cannot put a game in a week the schedule above does not. The bye
     // row counts - it is a week in the table with no fixture against it.
     const weeks = new Set(
-      [...doc.querySelectorAll("#schedule .sct-srow-week")].map((n) =>
+      [...doc.querySelectorAll("#schedule .sct-shp-table .sct-shp-week")].map((n) =>
         n.textContent.trim().replace(/^W/, ""),
       ),
     );
@@ -631,7 +593,7 @@ describe("embedded mode", () => {
 
     // The bye is the answer most likely to be quoted at a fantasy deadline, so
     // it has to be the week the table gives it, not a week ESPN's gaps implied.
-    const byeRow = doc.querySelector("#schedule .sct-srow.is-bye .sct-srow-week");
+    const byeRow = doc.querySelector("#schedule .sct-shp-row.is-bye .sct-shp-week");
     if (byeRow) {
       const week = byeRow.textContent.trim().replace(/^W/, "");
       const bye = entries.find((e) => /bye week/i.test(e.question));
@@ -646,15 +608,15 @@ describe("embedded mode", () => {
     // lib/team/schedule-faq.ts. Once the season is over the cards fall back to
     // its tail and the question is not asked at all, which is why this pairs
     // the card with the answer rather than asserting the answer exists.
-    const card = doc.querySelector('#schedule .sct-ng-cell[data-kind="next"]');
+    const card = doc.querySelector("#schedule .sct-shp-card.is-next:not(.is-empty)");
     const next = entries.find((e) => /play next\?$/.test(e.question));
     if (card && next) {
-      const week = card.querySelector(".sct-ng-week").textContent.trim();
+      const week = card.querySelector(".sct-shp-badge-week").textContent.trim();
       assert.ok(
         next.answer.includes(week),
         `the next-game answer is not about ${week}: ${next.answer}`,
       );
-      const opponent = [...card.querySelectorAll(".sct-ng-team")]
+      const opponent = [...card.querySelectorAll(".sct-shp-fx-name")]
         .map((n) => n.textContent.trim())
         .find((name) => name !== "New England Patriots");
       assert.ok(
@@ -678,49 +640,6 @@ describe("embedded mode", () => {
     assert.equal(page.status, 200, "the section page still renders");
   });
 
-  test("every opponent carries a shorter spelling, and only to the eye", async () => {
-    const { doc } = await dom("/team/new-england-patriots/schedule/");
-    const cells = [...doc.querySelectorAll("#schedule .sct-srow-name")];
-    assert.ok(cells.length > 0, "the schedule rendered opponent names");
-
-    let paired = 0;
-    for (const cell of cells) {
-      const long = cell.querySelector(".sct-srow-name-long");
-      const brief = cell.querySelector(".sct-srow-name-brief");
-      if (!brief) {
-        // Only an opponent this server could not resolve to a team, which has
-        // no nickname and no code to fall back to. One text node, not half a
-        // pair of spans.
-        assert.equal(long, null, `${cell.textContent}: half a pair`);
-        assert.equal(
-          cell.closest(".sct-srow").querySelector(".sct-srow-logo"),
-          null,
-          `${cell.textContent}: a known team with no shorter spelling`,
-        );
-        continue;
-      }
-      paired += 1;
-      assert.ok(long, "the full name is carried alongside the nickname");
-      // The nickname is decorative: the row's accessible name stays the full
-      // one, so a screen reader never reads "Chargers" as the team.
-      assert.equal(brief.getAttribute("aria-hidden"), "true");
-      assert.equal(long.hasAttribute("aria-hidden"), false);
-      assert.ok(
-        brief.textContent.trim().length < long.textContent.trim().length,
-        "a shorter spelling that is not shorter is not worth having",
-      );
-      assert.ok(
-        long.textContent.trim().endsWith(brief.textContent.trim()),
-        `${brief.textContent} is not the tail of ${long.textContent}`,
-      );
-    }
-    assert.ok(paired > 0, "this test needs a resolvable opponent");
-  });
-
-  /** A depth row's name: the full spelling, where a brief one rides alongside. */
-  const rowName = (row) =>
-    (row.querySelector(".sct-depth-name-long") ?? row.querySelector(".sct-depth-name")).textContent.trim();
-
   test("the Depth Chart tab is the football chart first, the fantasy chart last", async () => {
     const { doc } = await dom("/team/new-england-patriots/depth-chart/");
     const snapshot = JSON.parse(
@@ -737,9 +656,9 @@ describe("embedded mode", () => {
     assert.ok(panel.querySelector(".sct-dpp[data-sct-depth-premium]"), "the premium block is the tab");
     assert.equal(panel.querySelector(".sct-dc[data-sct-dc], .sct-dcx, .sct-dpp-flag"), null, "the old chart and the comparison flag are gone");
     assert.equal(panel.querySelector(".sct-dpp-hero .sct-h2").textContent.trim(), "New England Patriots Depth Chart");
-    assert.ok(panel.querySelector(".sct-dpp-hero img.sct-dpp-logo"), "the banner carries the club's logo");
+    assert.ok(panel.querySelector(".sct-dpp-hero svg.sct-up-art"), "the banner carries the shared play-art");
     assert.equal(panel.querySelector(".sct-dc-stamp"), null, "no season / updated stamp (mak, 2026-11-05)");
-    const summary = panel.querySelector(".sct-dpp-sub").textContent;
+    const summary = panel.querySelector(".sct-dpp-hero .sct-up-dek").textContent;
     assert.match(summary, /^The New England Patriots depth chart has .+ starting at quarterback/);
     const qbSlot = ne.slots.find((slot) => slot.key === "qb");
     assert.ok(summary.includes(qbSlot.players[0].name), "the summary names the listed QB1");
@@ -1158,7 +1077,7 @@ describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders
     const h1s = [...page.body.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((m) => m[1]);
     // The page's own phrase (teamSectionHeading), in the banner's heading slot.
     assert.deepEqual(h1s, ["New England Patriots Stats 2026"]);
-    assert.match(page.body, /<header class="sct-sp-hero">[\s\S]*?<h1 class="sct-h2 sct-sp-title">New England Patriots Stats 2026<\/h1>/, "promoted in place, inside the banner");
+    assert.match(page.body, /<header class="sct-up-head sct-sp-hero">[\s\S]*?<h1 class="sct-h2 sct-up-h2 sct-sp-title">New England Patriots Stats 2026<\/h1>/, "promoted in place, inside the banner");
     assert.ok(!/<h2[^>]*>Patriots Team Stats 2026<\/h2>/.test(page.body), "and the tab's own heading is not printed a second time");
   });
 });
@@ -1401,7 +1320,7 @@ describe("tab FAQs", () => {
     // render an empty block with a heading over it.
     for (const slug of ["buffalo-bills", "cincinnati-bengals", "baltimore-ravens"]) {
       const { doc } = await dom(`/team/${slug}`);
-      const hasOutlook = !!doc.querySelector("#outlook .sct-outlook-player");
+      const hasOutlook = !!doc.querySelector("#outlook .sct-tfo-card");
       const entries = faqEntries(doc, tailOf("outlook"));
       if (hasOutlook) {
         assert.ok(entries.length > 0, `${slug} has an outlook but no FAQ`);
@@ -1453,8 +1372,8 @@ describe("honest empty states", () => {
     // Whichever team it is today, the empty state and a populated list are
     // mutually exclusive and one of them must be present.
     const { doc } = await dom("/team/carolina-panthers/news/");
-    const hasCards = doc.querySelectorAll(".sct-news").length > 0;
-    const hasEmpty = doc.querySelectorAll(".sct-empty").length > 0;
+    const hasCards = doc.querySelectorAll(".sct-nwp-card").length > 0;
+    const hasEmpty = doc.querySelectorAll(".sct-nwp-none").length > 0;
     assert.ok(hasCards || hasEmpty, "news section is never simply blank");
   });
 });
@@ -1483,115 +1402,6 @@ describe("mobile layout", () => {
 
 
 
-
-  /**
-   * The standfirst goes rather than taking a second line.
-   *
-   * "<Club> fantasy football hub" is the club's own name plus four words, so
-   * the width where it stops fitting on one line is a different width for all
-   * 32: measured at 470px for Washington and 360px for Buffalo. A media query
-   * would take it off a third of the league while it still fits, which is the
-   * same argument the chips ladder makes, so the bundle measures it - and what
-   * it measures is a Range over the contents, because getClientRects() on a
-   * block <p> returns one rect whatever is inside it.
-   *
-   * The line is never removed from the DOCUMENT. That is the half this test
-   * can assert directly: the server prints it at every width, with a hook and
-   * no value, so what a crawler reads does not depend on a viewport.
-   */
-  test("the hero standfirst ships with a hook and is only ever hidden", async () => {
-    const { doc } = await dom("/team/washington-commanders");
-
-    const lead = doc.querySelector(".sct-tpb .sct-tpb-sub");
-    assert.ok(lead, "the standfirst is server-rendered");
-    assert.equal(
-      lead.textContent,
-      "Washington Commanders fantasy football hub",
-      "and it says what it always said",
-    );
-    assert.ok(lead.hasAttribute("data-sct-lead"), "with the bundle's hook on it");
-    assert.equal(
-      lead.getAttribute("data-sct-lead"),
-      "",
-      "and no state: nothing is dropped until something has measured it",
-    );
-
-    const css = (await get("/team.css")).body;
-    assert.match(
-      css,
-      /\.sct \.sct-tpb-sub\[data-sct-lead="off"\] \{\s*display:\s*none/,
-      "the stylesheet hides the dropped state, and only that state",
-    );
-    // The hook alone must not hide anything, or the line would be off for
-    // every reader with JavaScript disabled - which is the one case where
-    // nothing can ever measure it and the full line is what ships.
-    assert.ok(
-      !/\.sct-tpb-sub\[data-sct-lead\] \{[^}]*display:\s*none/.test(css),
-      "the bare hook must not hide it",
-    );
-    // And no width may do it either: this is measured, not a breakpoint.
-    for (const [, block] of css.matchAll(/@(?:media|container)[^{]*max-width[^{]*\{([\s\S]*?)\n\}/g)) {
-      assert.ok(
-        !/\.sct-tpb-sub[^{]*\{[^}]*display:\s*none/.test(block),
-        "no media or container query may hide the standfirst",
-      );
-    }
-
-    const bundle = await get("/dist/statchasers-team.js");
-    assert.equal(bundle.status, 200);
-    assert.ok(
-      bundle.body.includes("data-sct-lead"),
-      "the bundle is what sets the state",
-    );
-    assert.ok(
-      bundle.body.includes("selectNodeContents"),
-      "and it counts line boxes with a range, not the block's own rect",
-    );
-  });
-
-
-
-  /**
-   * Anchor targets. `scroll-padding-top` on .sct does nothing - scroll padding
-   * applies to the scroll container and .sct is not one - so every section the
-   * nav links to needs its own `scroll-margin-top`, or each link lands its
-   * heading underneath the sticky bar. Worst on a phone, where the bar is a
-   * larger share of the screen.
-   */
-  /**
-   * A container query carries no specificity of its own, so a base rule further
-   * down the file beats the query that was meant to override it. That is how
-   * the team name vanished from the schedule rows in the squeeze band: the
-   * full spelling was hidden there and the shorter one, held back by a
-   * `display: none` written later in the file, never took its place.
-   */
-  test("the schedule row always shows a team name at every width", async () => {
-    const css = await get("/team.css");
-    assert.equal(css.status, 200);
-
-    const base = css.body.indexOf(".sct-srow-name-brief {");
-    const query = css.body.indexOf("@container (max-width: 700px)");
-    assert.ok(base > 0, "the shorter spelling has a base rule");
-    assert.ok(query > 0, "the squeeze band has a container query");
-    assert.ok(
-      base < query,
-      "the base rule must precede the query that flips it, or neither name shows",
-    );
-
-    // And inside the band, exactly one of the pair is taken out of flow.
-    const block = css.body.slice(query, css.body.indexOf("\n}", query));
-    assert.match(block, /\.sct-srow-name-long\s*\{[^}]*position:\s*absolute/);
-    assert.match(block, /\.sct-srow-name-brief\s*\{[^}]*display:\s*inline/);
-
-    // The query is only answerable if something declares itself the container.
-    // Without this the rule never fires at any width and the long name just
-    // stays, ellipsed - which is the failure it exists to prevent.
-    assert.match(
-      css.body,
-      /\.sct-sboard\s*\{[^}]*container-type:\s*inline-size/,
-      "the board must be the container the row measures itself against",
-    );
-  });
 
   test("sections clear the sticky nav when linked to", async () => {
     const css = await get("/team.css");
@@ -2064,7 +1874,10 @@ describe("team.css survives a host theme", () => {
       /:where\(\.sct\),\s*\n\s*:where\(body\.sct-page\)\s*\{/,
       "the token block is scoped to the fragment root",
     );
-    assert.match(sheet, /--sc-navy:\s*#0b1634/, "brand navy is still ours");
+    // Wrapped as var(--tp-c-…, #0b1634) since 2026-11-05: the team palette
+    // (scripts/team-palette.mjs) can swap it on a flagged hub; the fallback
+    // is the house navy everywhere else.
+    assert.match(sheet, /--sc-navy:\s*(?:var\(--tp-c-0b1634,\s*)?#0b1634/, "brand navy is still ours");
   });
 
   test("typography and list markers are armoured", async () => {
@@ -2115,7 +1928,11 @@ describe("team.css survives a host theme", () => {
     // h2() prints this one through a helper rather than inline.
     classes.add("sct-h2");
 
-    assert.ok(classes.size >= 8, `found only ${classes.size} heading classes`);
+    // Four since 2026-11-05: the News tab's headings moved to team/news-premium.ts,
+    // the other tabs' to their own team/*-premium.ts files, and the Schedule
+    // page's (its board and rail headings) to team/schedule-premium.ts, where
+    // they are armed by `:is(.sct, #sct-table-armour)` rules of their own.
+    assert.ok(classes.size >= 4, `found only ${classes.size} heading classes`);
 
     const unarmed = [...classes].filter((cls) => {
       // Anchored to the start of a line so that a DESCENDANT rule - ".sct-hero-text
@@ -2253,12 +2070,12 @@ describe("team.css survives a host theme", () => {
 
     // Same bar as .sct-h2::after. The token is out of reach outside .sct, so
     // the color is written out - keep it equal to --sc-gold.
-    const gold = sheet.match(/--sc-gold:\s*(#[0-9a-f]{6})/i);
+    const gold = sheet.match(/--sc-gold:\s*(?:var\(--tp-c-[0-9a-f]+,\s*)?(#[0-9a-f]{6})/i);
     assert.ok(gold, "--sc-gold is defined");
     assert.match(
       sheet,
       new RegExp(
-        "#left-area \\.entry-title\\.main_title::after \\{[^}]*width:\\s*44px[^}]*height:\\s*3px[^}]*background:\\s*" + gold[1],
+        "#left-area \\.entry-title\\.main_title::after \\{[^}]*width:\\s*44px[^}]*height:\\s*3px[^}]*background:\\s*(?:var\\(--tp-c-[0-9a-f]+,\\s*)?" + gold[1],
         "i",
       ),
       "the H1 bar is 44x3 in --sc-gold",
@@ -2722,7 +2539,18 @@ describe("team section URLs", () => {
     const draft = doc.querySelector('.sct-nav-link[data-sct-panel-id="draft"]');
     assert.ok(draft, "the Draft tab is there");
 
-    draft.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    // The host theme (Divi) binds a smooth-scroll handler to every same-page
+    // anchor and the document, which scrolled the window to the panel on every
+    // hub-only tab click (mak, 2026-11-05). The bundle takes the click in the
+    // capture phase at the root and stops it there, so a handler on the link
+    // or on the document never runs.
+    let themeSawIt = 0;
+    draft.addEventListener("click", () => { themeSawIt += 1; });
+    doc.addEventListener("click", () => { themeSawIt += 1; });
+    const click = new window.MouseEvent("click", { bubbles: true, cancelable: true });
+    draft.dispatchEvent(click);
+    assert.equal(themeSawIt, 0, "the click never reached the link's or the document's own handlers");
+    assert.equal(click.defaultPrevented, true, "the browser's own jump to #draft is cancelled too");
 
     assert.equal(
       window.location.pathname + window.location.hash,
@@ -3017,8 +2845,8 @@ describe("draft tab", () => {
     assert.equal(panel.querySelector(".sct-dr, [data-sct-dr-panel], .sct-drp-flag"), null, "the old layout and the flag are gone");
     assert.equal(panel.querySelectorAll("[data-sct-dc-view], [data-sct-dc]").length, 0, "no view switch");
     assert.equal(premium.querySelector(".sct-drp-hero h2.sct-h2.sct-drp-title").textContent, "Patriots Draft Picks & History");
-    assert.match(premium.querySelector(".sct-drp-sub").textContent, /^Every pick the Patriots hold in the \d{4} NFL Draft, round by round, then the club's last 5 draft classes/);
-    assert.ok(premium.querySelector(".sct-drp-hero img.sct-drp-logo"), "the banner carries the club's logo");
+    assert.match(premium.querySelector(".sct-drp-hero .sct-up-dek").textContent, /^Every pick the Patriots hold in the \d{4} NFL Draft, round by round, then the club's last 5 draft classes/);
+    assert.ok(premium.querySelector(".sct-drp-hero svg.sct-up-art"), "the banner carries the shared play-art");
     assert.equal(premium.querySelectorAll("h1").length, 0, "no H1 in a hub panel");
     assert.deepEqual(
       [...premium.querySelectorAll(".sct-drp-rail > *")].map((el) => el.className.replace(/\s+/g, " ")),
@@ -3159,87 +2987,264 @@ describe("draft tab", () => {
 
 });
 
+describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail removed the same day)", () => {
+  test("the feed in order, the first story featured, the rest folded at ten, the rail beside it", async () => {
+    const { doc } = await dom("/team/new-england-patriots/news/");
+    const panel = doc.getElementById("news");
+    const neu = panel.querySelector(".sct-nwp");
+    assert.ok(neu, "the block renders");
+    assert.equal(panel.querySelector(".sct-news-grid"), null, "the old column is gone");
+    assert.equal(panel.querySelector(".sct-cp-flag"), null, "no comparison flag");
+    // The tab's one H2, in the block's heading; rail heads are H3s, card titles H4s.
+    const h2s = [...panel.querySelectorAll("h2")];
+    assert.equal(h2s.length, 1);
+    assert.equal(h2s[0].textContent, "Latest Patriots News");
+    assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-nwp-h2") && h2s[0].classList.contains("sct-up-h2"));
+    // The shared premium tab header (the Coaching tab's design, mak 2026-11-05 evening), across the block.
+    const head = neu.querySelector(":scope > header.sct-up-head.sct-nwp-hero");
+    assert.ok(head && head.contains(h2s[0]), "the heading sits in the shared banner");
+    assert.ok(head.querySelector(".sct-up-head-icon svg") && head.querySelector("svg.sct-up-art"));
+    assert.equal(head.querySelector(".sct-up-dek").textContent, "The latest Patriots reports and updates, newest first.");
+    assert.equal(neu.querySelector(".sct-nwp-heading"), null);
+    assert.equal(panel.querySelectorAll("h3").length, panel.querySelectorAll(".sct-nwp-h3").length);
+    const ids = [...panel.querySelectorAll("[id]")].map((el) => el.id);
+    assert.equal(new Set(ids).size, ids.length, "ids are unique");
+    // Every story, newest first, each a linked headline with the feed's own image and stamp.
+    const cards = [...neu.querySelectorAll("article.sct-nwp-card")];
+    assert.ok(cards.length > 3, "the club has stories");
+    assert.ok(cards[0].classList.contains("is-featured"));
+    assert.equal(neu.querySelectorAll(".sct-nwp-card.is-featured").length, 1);
+    for (const [i, card] of cards.entries()) {
+      const link = card.querySelector("h4.sct-nwp-title a.sct-nwp-link");
+      assert.ok(link, `card ${i} links its headline`);
+      assert.match(link.getAttribute("href"), /^https?:\/\//);
+      assert.equal(link.getAttribute("target"), "_blank");
+      assert.equal(link.getAttribute("rel"), "noopener noreferrer");
+      const img = card.querySelector("img.sct-nwp-photo");
+      if (img) {
+        assert.match(img.getAttribute("src"), /\/news-image\//, `card ${i} prints the on-origin derivative`);
+        assert.ok(img.getAttribute("width") && img.getAttribute("height"), "dimensions reserved");
+        assert.equal(img.getAttribute("loading"), "lazy");
+      } else {
+        assert.ok(card.querySelector(".sct-nwp-photo-empty"), `card ${i} keeps the empty well`);
+      }
+      assert.ok(card.querySelector("time[data-ts]") || card.querySelector(".sct-nwp-news-kicker"), `card ${i} carries a stamp`);
+      assert.ok(card.querySelector(".sct-nwp-news-kicker"), `card ${i} carries its category`);
+      assert.ok(card.querySelector(".sct-nwp-source"), `card ${i} names its publisher`);
+      assert.ok(card.querySelector(".sct-nwp-corner[aria-hidden]"), "the corner mark is an element");
+      assert.equal(card.querySelectorAll(".sct-nwp-more").length, 1, "one Read report link");
+    }
+    // The fold, at TEAM_NEWS_VISIBLE, with the rest in a disclosure.
+    const open = neu.querySelectorAll(":scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-card, :scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-grid > .sct-nwp-card").length;
+    assert.equal(open, Math.min(10, cards.length));
+    if (cards.length > 10) {
+      const more = neu.querySelector("details.sct-nwp-more");
+      assert.ok(more, "the rest behind a disclosure");
+      assert.equal(more.querySelectorAll(".sct-nwp-card").length, cards.length - 10);
+      assert.match(more.querySelector("summary").textContent, /^View \d+ more Patriots stor(y|ies)$/);
+    }
+    // Overlays never sit on club art; the watermark is the crest, decorative.
+    for (const card of cards) {
+      if (card.querySelector(".sct-nwp-ribbon")) assert.ok(card.querySelector(".sct-nwp-ribbon-text").textContent.length > 0);
+    }
+    assert.equal(neu.querySelector(".sct-nwp-card.is-featured .sct-nwp-ribbon"), null);
+    assert.equal(neu.querySelector(".sct-nwp-watermark")?.getAttribute("aria-hidden"), "true");
+    assert.doesNotMatch(neu.innerHTML.replace(/<h4[^>]*>.*?<\/h4>/gs, ""), /\u2014/);
+    // The rail: Injury Watch (or its honest empty line), Next Game, the four Quick Links.
+    for (const h of ["Injury Watch", "Quick Links"]) {
+      assert.ok([...neu.querySelectorAll(".sct-nwp-h3")].some((el) => el.textContent === h), h);
+    }
+    const injuries = neu.querySelectorAll(".sct-nwp-injury");
+    if (injuries.length === 0) assert.ok(neu.querySelector(".is-injuries .sct-nwp-empty"), "no designations says so");
+    for (const row of injuries) {
+      assert.ok(row.querySelector(".sct-nwp-injury-name"));
+      assert.match(row.querySelector(".sct-nwp-status").dataset.severity, /^(out|doubtful|questionable|probable)$/);
+      assert.ok(row.querySelector(".sct-nwp-status").textContent.length > 0, "the designation is text, not just a color");
+    }
+    const next = neu.querySelector(".is-next");
+    if (next) {
+      assert.match(next.querySelector(".sct-nwp-h3").textContent, /^(Next Game|Today's Game|Live Now|Postponed)$/);
+      assert.match(next.querySelector(".sct-nwp-week").textContent, /^Week \d+|^Wild Card|^Divisional|^Conference|^Super Bowl/);
+      assert.ok(next.querySelector(".sct-nwp-when"));
+      assert.equal(next.querySelectorAll(".sct-nwp-matchup .sct-matchup-logo").length, 2);
+      assert.ok(next.querySelector(".sct-visually-hidden"), "the matchup is read as a sentence");
+    }
+    const tiles = [...neu.querySelectorAll("a.sct-nwp-tile")];
+    assert.equal(tiles.length, 4);
+    for (const a of tiles) {
+      assert.match(a.getAttribute("href"), /^https?:\/\//);
+      assert.equal(a.getAttribute("target"), "_top");
+    }
+  });
+});
+
+describe("team colors (mak, 2026-11-05: the hub wears the team's palette)", () => {
+  const lum = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  };
+  // The hardest pairs: a black secondary, a white one, a light primary.
+  for (const slug of ["new-england-patriots", "cincinnati-bengals", "indianapolis-colts", "miami-dolphins"]) {
+    test(`${slug}: palette on, white reads on the base, the accent reads on the base and shows on white`, async () => {
+      const { doc } = await dom(`/team/${slug}`);
+      const root = doc.querySelector("[data-sct-root]");
+      assert.ok(root.hasAttribute("data-team-palette"));
+      const style = root.getAttribute("style");
+      const base = style.match(/--team-base:(#[0-9a-f]{6})/i)?.[1];
+      const accent = style.match(/--team-accent:(#[0-9a-f]{6})/i)?.[1];
+      assert.ok(base && accent, "base and accent are set");
+      assert.ok(ratio(base, "#ffffff") >= 7, `white on ${base}`);
+      assert.ok(ratio(accent, base) >= 4.5, `${accent} on ${base}`);
+      assert.ok(ratio(accent, "#ffffff") >= 1.8, `${accent} on white`);
+    });
+  }
+});
+
+describe("the Fantasy Outlook tab (mak's brief, 2026-11-05; the old block removed the same day)", () => {
+  test("the premium block is the tab: its header carries the panel's H2, the outlook's words, groups and cards", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("outlook");
+    const neu = panel.querySelector("#outlook-premium.sct-tfo");
+    assert.ok(neu, "the block renders");
+    assert.equal(panel.querySelector(".sct-outlook-stamp, .sct-outlook-player, .sct-outlook-facts"), null, "the old block is gone");
+    assert.equal(neu.querySelector(".sct-cp-flag"), null, "no comparison flag");
+    const h2s = [...panel.querySelectorAll("h2")];
+    assert.equal(h2s.length, 1, "one panel heading");
+    assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-tfo-title"));
+    assert.match(h2s[0].textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/);
+    // mak, 2026-11-05 PM: the Outlook wears the shared premium tab header
+    // (the Coaching page's), the stamp as its dek line.
+    const head = neu.querySelector("header.sct-up-head.sct-tfo-head");
+    assert.ok(head, "the shared premium header");
+    assert.ok(head.querySelector(".sct-up-head-icon svg"), "the gold-ringed glyph");
+    assert.ok(head.contains(h2s[0]) && h2s[0].classList.contains("sct-up-h2"), "the title is the header's");
+    assert.ok(head.querySelector("p.sct-up-dek.sct-tfo-stamp"), "the stamp is the dek");
+    assert.equal(neu.querySelector(".sct-tfo-crest, .sct-tfo-logo"), null, "the light logo header is gone");
+    assert.match(neu.querySelector(".sct-tfo-stamp").textContent, /NFL Season/);
+    assert.match(neu.querySelector(".sct-tfo-stamp").textContent, /Written before Week 1|Preseason outlook/);
+    assert.ok(neu.querySelector(".sct-tfo-lede").textContent.length > 40, "the summary");
+    const frame = neu.querySelector(".sct-tfo-overview");
+    assert.ok(frame && frame.querySelector(".sct-tfo-lede") && frame.querySelector(".sct-tfo-strip"), "summary and strip share one frame under the header");
+    assert.ok(neu.querySelector(".sct-tfo-bl-text").textContent.length > 20, "the bottom line");
+    const cells = [...neu.querySelectorAll(".sct-tfo-fact")];
+    assert.ok(cells.length >= 3, "the context strip");
+    for (const c of cells) {
+      assert.ok(c.querySelector(".sct-tfo-fact-label").textContent.length > 0);
+      assert.ok(c.querySelector(".sct-tfo-fact-value").textContent.length > 0);
+      assert.ok(c.querySelector(".sct-tfo-fact-icon svg"));
+    }
+    // mak, 2026-11-05 PM: an injury tag sits on the top-right of the headshot.
+    const tagged = [...neu.querySelectorAll(".sct-tfo-card .sct-injury-badge")];
+    for (const b of tagged) {
+      assert.ok(b.classList.contains("is-pinned") && b.parentElement.classList.contains("sct-tfo-face"), "the tag is pinned on the face");
+      assert.ok(b.parentElement.querySelector(".sct-tfo-well"), "beside the well");
+    }
+    assert.equal(neu.querySelector(".sct-tfo-badges .sct-injury-badge"), null, "not in the badge row");
+    const groups = [...neu.querySelectorAll(".sct-tfo-group")];
+    assert.ok(groups.length >= 1);
+    for (const g of groups) {
+      assert.ok(g.querySelector("h3.sct-tfo-h3").textContent.length > 0);
+      const cards = [...g.querySelectorAll(".sct-tfo-card")];
+      assert.ok(cards.length >= 1);
+      for (const n of cards) {
+        assert.match(n.dataset.pos, /^(QB|RB|WR|TE|K|DST)$/);
+        assert.ok(n.querySelector("h4.sct-tfo-name").textContent.length > 0);
+        assert.ok(n.querySelector(".sct-slot"));
+        assert.ok(n.querySelector(".sct-tfo-note").textContent.length > 0);
+        assert.ok(n.querySelector("img.sct-tfo-wm[aria-hidden='true']"), "a crest watermark, hidden from readers");
+        const photo = n.querySelector(".sct-tfo-photo");
+        if (photo) assert.match(photo.getAttribute("src"), /\/news-image\//);
+      }
+    }
+    assert.equal(panel.querySelectorAll("h3").length, groups.length, "H3s are the groups");
+    assert.ok(faqEntries(doc, tailOf("outlook")).length > 0, "the Outlook FAQ still renders");
+    assert.doesNotMatch(neu.innerHTML, /\u2014/);
+    const ids = [...doc.querySelectorAll("[id]")].map((el) => el.id);
+    assert.equal(new Set(ids).size, ids.length, "ids are unique");
+  });
+});
+
 describe("contracts tab", () => {
-  test("the premium comparison sits under the whole original on the same figures (mak's brief, 2026-11-05)", async () => {
+  const snapshotOf = (abbr) => JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8")).teams[abbr];
+
+  test("the premium block is the tab (mak's brief, 2026-11-05, approved the same day): one banner heading, the scenario strip, the sheet and the four cards", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const panel = doc.getElementById("contracts");
-    const old = panel.querySelector(".sct-ct");
     const neu = panel.querySelector(".sct-ctp");
-    assert.ok(old && neu, "both blocks render");
-    assert.ok(old.compareDocumentPosition(neu) & 4, "the comparison follows the original");
-    assert.equal(neu.previousElementSibling, old, "directly under the original block");
-    assert.equal(neu.querySelector(".sct-cp-flag")?.textContent, "New Design · Comparison");
-    // No second heading of the tab's words, no duplicate ids, no em dash.
-    assert.equal(panel.querySelectorAll("h2").length, 1);
-    assert.equal(neu.querySelector(".sct-ctp-title").tagName, "P");
-    assert.equal(neu.querySelector(".sct-ctp-title").textContent, "Patriots Contracts & Salary Cap");
+    assert.ok(neu, "the block renders");
+    assert.equal(panel.querySelector(".sct-ct"), null, "the old workspace is gone");
+    assert.equal(neu.querySelector(".sct-cp-flag"), null, "no comparison flag");
+    // The banner's heading is the tab's one H2; no duplicate ids, no em dash.
+    const h2s = [...panel.querySelectorAll("h2")];
+    assert.equal(h2s.length, 1);
+    assert.ok(h2s[0].classList.contains("sct-ctp-title") && h2s[0].classList.contains("sct-h2"));
+    assert.equal(h2s[0].textContent, "Patriots Contracts & Salary Cap");
     const ids = [...panel.querySelectorAll("[id]")].map((el) => el.id);
-    assert.equal(new Set(ids).size, ids.length, "ids are unique across both blocks");
-    assert.doesNotMatch(neu.innerHTML, /\u2014/);
-    // Its own cut scenario on the bundle's hooks, baseline = cap space.
-    assert.ok(neu.hasAttribute("data-sct-ct"), "a [data-sct-ct] root of its own");
-    assert.equal(neu.getAttribute("data-cap-space"), old.getAttribute("data-cap-space"));
-    assert.ok(neu.querySelector("[data-sct-ct-scen]"));
-    assert.equal(neu.querySelector('[data-sct-ct-out="after"]').textContent, old.querySelector('[data-sct-ct-out="after"]').textContent);
-    assert.equal(neu.querySelector("[data-sct-ct-try]")?.dataset.sctCtTry, old.querySelector("[data-sct-ct-try]")?.dataset.sctCtTry);
+    assert.equal(new Set(ids).size, ids.length, "ids are unique");
+    assert.doesNotMatch(neu.innerHTML, /—/);
+    // The cut scenario on the bundle's hooks, baseline = cap space.
+    const snapshot = snapshotOf("ne");
+    assert.ok(neu.hasAttribute("data-sct-ct"), "the [data-sct-ct] root");
+    assert.equal(neu.getAttribute("data-cap-space"), String(snapshot.capSpace));
+    assert.ok(neu.querySelector("[data-sct-ct-scen]"), "the scenario strip");
     assert.equal(neu.querySelectorAll("[data-sct-ct-timing]").length, 2);
-    // The dead-money ledger is not a scenario output here.
-    assert.equal(neu.querySelector('[data-sct-ct-out="dead"]'), null);
-    // Every contract, in the original's order, with the same release figures.
-    const oldRows = [...old.querySelectorAll(".sct-ct-table tbody tr")];
-    const newRows = [...neu.querySelectorAll(".sct-ctp-table tbody tr")];
-    assert.equal(newRows.length, oldRows.length);
-    oldRows.forEach((o, i) => {
-      const n = newRows[i];
-      for (const k of ["sctCtId", "preSave", "preDead", "postSave", "postDead"]) assert.equal(n.dataset[k], o.dataset[k], `${k} row ${i}`);
-      assert.equal(n.querySelector(".sct-ct-name").textContent, o.querySelector(".sct-ct-name").textContent);
-      assert.equal(n.querySelector(".is-cap").textContent, o.querySelector(".is-cap").textContent);
-      assert.ok(n.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
-      // Both timings printed, pre first; the sort key opens on the pre figure.
-      const net = n.querySelector(".is-net");
-      assert.equal(net.dataset.sort, o.dataset.preSave);
-      assert.equal(net.querySelector(".is-pre").textContent.replace("*", ""), o.querySelector(".is-save-col .sct-ct-fig").textContent.replace("*", ""));
-      assert.ok(net.querySelector(".is-post"));
+    assert.match(neu.querySelector('[data-sct-ct-out="after"]').textContent, /^-?\$-?\d/);
+    assert.ok(neu.querySelector("[data-sct-ct-try]"), "a Try button on the first release candidate");
+    assert.equal(neu.querySelector('[data-sct-ct-out="dead"]'), null, "the dead-money card is not a scenario output");
+    // Every row: the release figures for both timings, a pick box, pre first.
+    const rows = [...neu.querySelectorAll(".sct-ctp-table tbody tr")];
+    assert.ok(rows.length > 10, "the club has more than ten contracts");
+    for (const r of rows) {
+      for (const k of ["data-pre-save", "data-pre-dead", "data-post-save", "data-post-dead"]) {
+        assert.match(r.getAttribute(k) ?? "", /^-?\d+(\.\d+)?$/, `${k} on every row`);
+      }
+      assert.ok(r.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
+      const net = r.querySelector(".is-net");
+      assert.equal(net.dataset.sort, r.dataset.preSave);
+      assert.ok(net.querySelector(".is-pre") && net.querySelector(".is-post"), "both timings printed");
       assert.match(net.dataset.preTone, /^(save|cost|zero)$/);
-    });
-    assert.equal(neu.querySelector("thead th.is-cap").getAttribute("aria-sort"), "descending");
+      assert.match(r.querySelector(".is-cap").dataset.sort, /^\d+(\.\d+)?$/);
+      assert.match(r.querySelector(".is-player").dataset.sort, /^[^,]+, /);
+    }
+    // Sortable heads, cap hit sorted first.
     assert.deepEqual(
       [...neu.querySelectorAll("thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort),
-      [...old.querySelectorAll("thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort),
+      ["player", "pos", "cap", "apy", "worth", "gtd", "signed", "save", "dead"],
     );
+    assert.equal(neu.querySelector("thead th.is-cap").getAttribute("aria-sort"), "descending");
     assert.ok(neu.querySelector("[data-sct-ct-table]"), "the sort hook the bundle looks for");
-    // Worth tags carry the model's words, headshots the roster's photos.
-    const tags = [...neu.querySelectorAll(".sct-ctp-tag")].map((t) => t.textContent);
-    assert.deepEqual(tags, [...old.querySelectorAll(".sct-ct-tag")].map((t) => t.textContent));
-    assert.equal(neu.querySelectorAll(".sct-ctp-face-img").length, old.querySelectorAll(".sct-ct-face-img").length);
-    // The four cards, with the original ledger's figures.
+    // The four cards.
     for (const h of ["Cap Position", "Flexibility", "Where a Release Frees Cap", "2026 Dead Money"]) {
       assert.ok([...neu.querySelectorAll(".sct-ctp-card-h")].some((el) => el.textContent === h), h);
     }
     const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
-    const oldValues = [...old.querySelectorAll(".sct-ct-ledger .sct-ct-lg-value .sct-ct-num")].map(text);
-    const newValues = [
-      ...[...neu.querySelectorAll(".is-position .sct-ctp-feature-value, .is-position .sct-ctp-crow-value > .sct-ctp-num")].map(text),
-      ...[...neu.querySelectorAll(".is-flex .sct-ctp-feature-value, .is-flex .sct-ctp-crow-value > .sct-ctp-num")].map(text),
-    ];
-    assert.deepEqual(newValues, oldValues, "Cap Position and Flexibility figures");
-    assert.equal(text(neu.querySelector(".is-dead .sct-ctp-feature-value")), text(old.querySelector('.sct-ct-dead [data-sct-ct-out="dead"]')));
-    assert.equal(neu.querySelectorAll(".sct-ctp-dead-row").length, old.querySelectorAll(".sct-ct-dead-row").length);
-    assert.deepEqual(
-      [...neu.querySelectorAll(".sct-ctp-rel")].map((r) => r.dataset.sctCtCut),
-      [...old.querySelectorAll(".sct-ct-cut")].map((r) => r.dataset.sctCtCut),
-    );
+    assert.match(text(neu.querySelector(".is-position .sct-ctp-feature-value")), /^-?\$-?\d+(\.\d)?[MK]$|^\$0$/);
+    assert.match(text(neu.querySelector(".is-position .sct-ctp-feature-rank")), /^\d+(st|nd|rd|th)/);
+    assert.deepEqual([...neu.querySelectorAll(".is-flex .sct-ctp-crow-label")].map(text), ["Locked in", "Value gap"]);
+    assert.equal(neu.querySelectorAll(".sct-ctp-dead-row").length, snapshot.dead.length);
+    for (const r of neu.querySelectorAll(".sct-ctp-dead-row")) {
+      assert.ok(r.querySelector(".sct-ctp-dead-club img, .sct-ctp-dead-fa"), `crest or FA on ${r.textContent}`);
+    }
+    const rels = neu.querySelectorAll(".sct-ctp-rel");
+    assert.ok(rels.length >= 1 && rels.length <= 6, "one to six release candidates");
     assert.match(neu.querySelector(".is-release .sct-ctp-card-dek").textContent, /^Releases before June 1/);
+    assert.match(neu.querySelector(".sct-ct-how")?.textContent ?? "", /Overpaid/, "the Worth note");
   });
 
-  test("with the bundle, the comparison's scenario matches the original's and follows the June 1 toggle", async () => {
+  test("with the bundle, the scenario sums the picks and follows the June 1 toggle", async () => {
     const { doc, window, errors } = await hydrated("/team/new-england-patriots/");
-    const old = doc.querySelector(".sct-ct");
     const neu = doc.querySelector(".sct-ctp");
     assert.equal(neu.dataset.sctCt, "js");
-    const outs = (b) => ["count", "freed", "added", "after"].map((k) => b.querySelector(`[data-sct-ct-out="${k}"]`).textContent);
-    const tick = (b, id) => {
-      const pick = b.querySelector(`[data-sct-ct-row][data-sct-ct-id="${id}"] [data-sct-ct-pick]`);
+    const outs = () => ["count", "freed", "added", "after"].map((k) => neu.querySelector(`[data-sct-ct-out="${k}"]`).textContent);
+    const tick = (id) => {
+      const pick = neu.querySelector(`[data-sct-ct-row][data-sct-ct-id="${id}"] [data-sct-ct-pick]`);
       pick.checked = !pick.checked;
       pick.dispatchEvent(new window.Event("change", { bubbles: true }));
     };
@@ -3247,37 +3252,36 @@ describe("contracts tab", () => {
     const pos = rows.find((r) => Number(r.dataset.preSave) > 0);
     const neg = rows.find((r) => Number(r.dataset.preSave) < 0);
     const moved = rows.find((r) => r !== pos && r !== neg && r.dataset.preSave !== r.dataset.postSave);
-    for (const r of [pos, neg, moved]) {
-      tick(old, r.dataset.sctCtId);
-      tick(neu, r.dataset.sctCtId);
-      assert.deepEqual(outs(neu), outs(old));
-    }
-    assert.equal(outs(neu)[0], "3");
+    const baseline = outs()[3];
+    for (const r of [pos, neg, moved]) tick(r.dataset.sctCtId);
+    assert.equal(outs()[0], "3");
+    assert.notEqual(outs()[3], baseline, "cap space after moves with the picks");
     assert.ok(pos.classList.contains("is-picked"));
     assert.equal(neu.querySelector(`[data-sct-ct-cut="${pos.dataset.sctCtId}"]`)?.classList.contains("is-picked") ?? true, true);
     // The toggle: totals follow, and the sheet's Net if cut sort key moves to the post figure.
-    for (const b of [old, neu]) b.querySelector('[data-sct-ct-timing="post"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    assert.deepEqual(outs(neu), outs(old));
+    const pre = outs();
+    neu.querySelector('[data-sct-ct-timing="post"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(neu.dataset.timing, "post");
+    assert.notDeepEqual(outs(), pre, "the post-June-1 totals differ for a moved deal");
     assert.equal(moved.querySelector(".is-net").dataset.sort, moved.dataset.postSave);
     assert.equal(moved.querySelector(".is-dead").dataset.sort, moved.dataset.postDead);
     assert.equal(neu.querySelector("[data-sct-ct-timing-word]").textContent, "after June 1");
     assert.ok(moved.querySelector("[data-sct-ct-pick]").checked, "picks survive the toggle");
-    for (const b of [old, neu]) b.querySelector('[data-sct-ct-timing="pre"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    neu.querySelector('[data-sct-ct-timing="pre"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(moved.querySelector(".is-net").dataset.sort, moved.dataset.preSave);
-    // Sorting keeps the picks; clearing restores the baseline; the two blocks are independent.
+    assert.deepEqual(outs(), pre);
+    // Sorting keeps the picks; clearing restores the baseline.
     neu.querySelector('thead [data-sct-ct-sort="apy"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(neu.querySelector("thead th.is-apy").getAttribute("aria-sort"), "descending");
     assert.equal(neu.querySelectorAll("[data-sct-ct-row].is-picked").length, 3);
     neu.querySelector("[data-sct-ct-reset]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    assert.deepEqual(outs(neu), ["0", "$0", "$0", neu.querySelector('[data-sct-ct-out="after"]').textContent]);
-    assert.equal(outs(old)[0], "3", "the original keeps its own picks");
+    assert.deepEqual(outs(), ["0", "$0", "$0", baseline]);
     assert.deepEqual(errors, []);
   });
 
   test("with the bundle, a head press sorts the sheet and a second press flips it (mak, 2026-11-02)", async () => {
     const { doc, window, errors } = await hydrated("/team/new-england-patriots/");
-    const table = doc.querySelector(".sct-ct-table");
+    const table = doc.querySelector(".sct-ctp-table");
     const apy = table.querySelector("thead th.is-apy");
     const nums = () =>
       [...table.querySelectorAll("tbody tr")].map((tr) => tr.querySelector(".is-apy").dataset.sort).filter((v) => v !== "");
@@ -3320,9 +3324,9 @@ describe("contracts tab", () => {
     const capSpace = Number(panel.querySelector("[data-cap-space]").dataset.capSpace);
     const a1 = faq.querySelectorAll(".sct-faq-item")[0].querySelector(".sct-faq-a").textContent;
     assert.ok(a1.includes(`$${capSpace.toFixed(1)} million`), a1);
-    const topName = panel.querySelector(".sct-ct-table tbody tr .is-player").textContent.trim();
+    const topName = panel.querySelector(".sct-ctp-table tbody tr .is-player .sct-ct-name").textContent.trim();
     const a2 = [...faq.querySelectorAll(".sct-faq-item")].find((d) => /biggest salary cap hit/.test(d.textContent)).querySelector(".sct-faq-a").textContent;
-    assert.ok(a2.startsWith(topName.split(/\s{2,}|\n/)[0].trim().split(" ").slice(0, 2).join(" ")), `${a2} starts with ${topName}`);
+    assert.ok(a2.startsWith(topName.split(" ").slice(0, 2).join(" ")), `${a2} starts with ${topName}`);
     // In the page's FAQPage too (mak approved 2026-11-02), with the answer the page shows.
     const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
     assert.ok(ld.includes("How much salary cap space do the Patriots have in 2026?"));
@@ -3335,7 +3339,6 @@ describe("contracts tab", () => {
     assert.ok(panel, "the Contracts panel is in the hub");
     const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
     assert.equal(ids[ids.indexOf("draft") + 1], "contracts", "Contracts sits next to Draft");
-
     const file = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "contracts_2026.json"), "utf8"),
     );
@@ -3343,120 +3346,44 @@ describe("contracts tab", () => {
     // Every register row with a cap number, plus everyone the cap page has
     // on the club that the register lacks a cap row for (the draft class,
     // the practice squad), paired with the page's cap number (2026-10-23).
-    const snapshotFile = JSON.parse(
-      fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
-    );
+    const snapshot = snapshotOf("ne");
     const onSheet = new Set(ne.players.map((p) => p.otcId));
-    const paired = Object.entries(snapshotFile.teams.ne.players).filter(
-      ([id, p]) => !onSheet.has(Number(id)) && p.capNumber > 0,
-    );
+    const paired = Object.entries(snapshot.players).filter(([id, p]) => !onSheet.has(Number(id)) && p.capNumber > 0);
     const expectedRows = ne.players.length + paired.length;
-    const rows = [...panel.querySelectorAll(".sct-ct-table tbody tr")];
+    const rows = [...panel.querySelectorAll(".sct-ctp-table tbody tr")];
     assert.equal(rows.length, expectedRows, "every contract with a cap number is a row");
     assert.ok(paired.length > 0, "the cap page adds rows the register has no cap row for");
     assert.equal(rows[0].querySelector(".sct-ct-name")?.textContent, ne.players[0].name, "largest cap number first");
     const caps = rows.map((r) => r.querySelector(".is-cap").textContent);
     assert.match(caps[0], /^\$\d+(\.\d)?M$/, "cap numbers print as money");
-
     // Every row is open (mak, 2026-10-30: "show full table"): no fold mark,
     // no Show-all button, the count in the head above the sheet.
-    assert.ok(rows.length > 10, "the club has more than ten contracts");
     assert.equal(panel.querySelector("tr.is-more"), null, "no row is folded");
     assert.equal(panel.querySelector("[data-sct-ct-more]"), null, "no Show all button");
-    assert.match(panel.querySelector(".sct-ct-season-sum")?.textContent ?? "", new RegExp(`^${expectedRows} contracts`));
-
+    assert.match(panel.querySelector(".sct-ctp-head-sum")?.textContent ?? "", new RegExp(`^${expectedRows} contracts`));
     // One row per player: the register's duplicate active deals are folded.
     const names = rows.map((r) => r.querySelector(".sct-ct-name").textContent);
     assert.equal(new Set(names).size, names.length, "no player is listed twice");
-
-    // The cap ledger (2026-10-29): three groups, eight rows, the first the
-    // club's cap space with its league rank, read from the cap snapshot.
-    const snapshot = JSON.parse(
-      fs.readFileSync(path.join(APP_DIR, "data", "team", "cap_snapshot_2026.json"), "utf8"),
-    );
-    // Two groups since 2026-11-02: Dead Money has its own card at the foot of the rail.
-    assert.equal(panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg").length, 2, "two groups");
-    const tiles = [...panel.querySelectorAll(".sct-ct-ledger .sct-ct-lg-row")];
-    assert.equal(tiles.length, 6, "six rows");
-    assert.deepEqual(
-      tiles.slice(3).map((l) => l.querySelector(".sct-ct-lg-label").textContent),
-      ["Cut savings", "Locked in", "Value gap"],
-      "Flexibility: cut savings, then the sunk counterpart, then the value gap",
-    );
-    assert.match(tiles[0].textContent, /cap space/i);
-    assert.match(tiles[0].textContent, /\$\d+(\.\d)?M/);
-    assert.match(tiles[0].querySelector(".sct-ct-rank")?.textContent ?? "", /^\d+(st|nd|rd|th)/);
-    assert.ok(tiles[0].classList.contains("is-lead"), "cap space leads its group");
-    assert.equal(panel.querySelectorAll(".sct-ct-ledger .is-lead").length, 2, "one lead per group");
-    // The Dead Money card: its three figures over the list, the lead one live.
-    const dead = panel.querySelector(".sct-ct-dead");
-    assert.equal(dead.querySelector(".sct-ct-lg-h").textContent, "2026 Dead Money");
-    assert.match(dead.querySelector(".sct-ct-strip").textContent, /players? carried$/);
-    assert.deepEqual(
-      [...dead.querySelectorAll(".sct-ct-lg-label")].map((l) => l.textContent),
-      ["On the books"],
-    );
-    assert.ok(dead.querySelector('.sct-ct-lg-row.is-lead [data-sct-ct-out="dead"]'));
-    // The lead row reconciles the page's total with the names below it.
-    const itemized = snapshot.teams.ne.dead.reduce((n, d) => n + d.amount, 0);
-    const lead = dead.querySelector(".sct-ct-lg-row.is-lead .sct-ct-lg-sub")?.textContent ?? "";
-    if (Math.abs(snapshot.teams.ne.deadTotal - itemized) >= 0.05) {
-      assert.match(lead, new RegExp(`across the ${snapshot.teams.ne.dead.length} names below; \\$[\\d.]+[MK] more`));
-    }
-    assert.ok(dead.querySelector(".sct-ct-dead-list"), "the list sits in the same card");
-    // Sortable heads (2026-11-02): a button per column, cap hit sorted first.
-    const sorts = [...panel.querySelectorAll(".sct-ct-table thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort);
-    assert.deepEqual(sorts, ["player", "pos", "cap", "apy", "worth", "gtd", "signed", "save", "dead"]);
-    assert.equal(panel.querySelector(".sct-ct-table thead th.is-cap").getAttribute("aria-sort"), "descending");
-    for (const r of rows) {
-      assert.match(r.querySelector(".is-cap").dataset.sort, /^\d+(\.\d+)?$/);
-      assert.match(r.querySelector(".is-player").dataset.sort, /^[^,]+, /);
-    }
-    assert.ok(panel.querySelector('[data-sct-ct-out="space"]'), "the scenario still writes cap space");
-    assert.ok(panel.querySelector('[data-sct-ct-out="dead"]'), "the scenario still writes dead money");
-    assert.equal(panel.querySelector(".sct-ct-lg-kicker"), null, "the kicker line went 2026-11-02");
-    assert.equal(panel.querySelector("[data-sct-ct]").getAttribute("data-cap-space"), String(snapshot.teams.ne.capSpace));
-
-    // Every row carries the release figures the scenario sums, before and
-    // after June 1, and a pick box; the bar is in the HTML for the bundle.
-    for (const r of rows) {
-      for (const k of ["data-pre-save", "data-pre-dead", "data-post-save", "data-post-dead"]) {
-        assert.match(r.getAttribute(k) ?? "", /^-?\d+(\.\d+)?$/, `${k} on every row`);
-      }
-      assert.ok(r.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
-    }
-    assert.ok(panel.querySelector("[data-sct-ct-scen]"), "the scenario bar is rendered");
-    // The original's pair; the premium comparison under it carries its own.
-    assert.equal(panel.querySelectorAll(".sct-ct [data-sct-ct-timing]").length, 2);
-
+    assert.equal(panel.querySelector("[data-sct-ct]").getAttribute("data-cap-space"), String(snapshot.capSpace));
     // Worth: priced rows carry a figure, tagged rows a pill, and the note
     // explaining the model is on the page.
     const worth = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "worth_2026.json"), "utf8"),
     );
     const priced = ne.players.filter((p) => worth.players[String(p.otcId)]);
-    assert.equal(panel.querySelectorAll(".sct-ct-td.is-worth").length, priced.length, "every priced row shows Worth");
+    assert.equal(panel.querySelectorAll(".sct-ctp-td.is-worth:not(.is-none)").length, priced.length, "every priced row shows Worth");
     const tagged = priced.filter((p) => worth.players[String(p.otcId)].tag);
-    assert.equal(panel.querySelectorAll(".sct-ct-tag").length, tagged.length, "every tagged row wears its pill");
+    assert.equal(panel.querySelectorAll(".sct-ctp-tag").length, tagged.length, "every tagged row wears its pill");
     assert.match(panel.querySelector(".sct-ct-how")?.textContent ?? "", /Overpaid/);
-
-    // The dead-money block lists what the snapshot has, largest first.
-    const deadRows = [...panel.querySelectorAll(".sct-ct-dead-row")];
-    assert.equal(deadRows.length, snapshot.teams.ne.dead.length);
-    if (deadRows.length) assert.match(deadRows[0].textContent, new RegExp(snapshot.teams.ne.dead[0].name.split(" ")[0]));
-    // ...and closes the rail, under the cap ledger and the release panel
-    // (mak, 2026-10-30).
-    // Every row names the current club: a crest linked to its hub, or "FA".
-    for (const r of deadRows) {
-      assert.ok(r.querySelector(".sct-ct-dead-club img, .sct-ct-dead-fa"), `crest or FA on ${r.textContent}`);
-    }
-    const railKids = [...(panel.querySelector(".sct-ct-rail")?.children ?? [])].map((el) => el.className);
-    assert.deepEqual(railKids, ["sct-ct-ledger", "sct-ct-cuts", "sct-ct-dead"], "rail order: ledger, releases, dead money");
-
-    // The release rail says it is a reading, not a call; at most six names.
-    const cuts = panel.querySelectorAll(".sct-ct-cut");
-    assert.ok(cuts.length >= 1 && cuts.length <= 6, "cut rail has one to six names");
-    assert.match(panel.querySelector(".sct-ct-cuts .sct-ct-dek")?.textContent ?? "", /not a prediction/i);
+    // The dead-money card lists what the snapshot has, largest first.
+    const deadRows = [...panel.querySelectorAll(".sct-ctp-dead-row")];
+    assert.equal(deadRows.length, snapshot.dead.length);
+    if (deadRows.length) assert.match(deadRows[0].textContent, new RegExp(snapshot.dead[0].name.split(" ")[0]));
+    // The rail's order: cap position, flexibility, releases, dead money.
+    const railKids = [...(panel.querySelector(".sct-ctp-rail")?.children ?? [])].map((el) => el.className);
+    assert.deepEqual(railKids, ["sct-ctp-card is-position", "sct-ctp-card is-flex", "sct-ctp-card is-release", "sct-ctp-card is-dead"]);
+    // The release card says it is a reading, not a call.
+    assert.match(panel.querySelector(".is-release")?.textContent ?? "", /not a prediction/i);
 
     // No outside source is named in the page.
     assert.doesNotMatch(panel.innerHTML, /nflverse|over ?the ?cap|spotrac|pro-football-reference/i);

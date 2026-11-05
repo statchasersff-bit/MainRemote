@@ -16,6 +16,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { premiumTabHead } from "./premium-head";
 import {
   GROUPS,
   IDENTITY_KEYS,
@@ -63,7 +64,6 @@ const ICON: Record<string, string> = {
   /** The decorative wave under a KPI (a divider, not data). */
   wave: `<svg viewBox="0 0 100 18" width="100%" height="18" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12c12-8 22 2 34-2s22-10 34-4 20 6 32 2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
   /** The faint play diagram on the header's right. */
-  art: `<svg viewBox="0 0 300 100" width="300" height="100" aria-hidden="true" class="sct-cp-art"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 80c40-50 80-50 110-20"/><path d="M118 52l12 8-14 6"/><path d="M160 85c30-40 70-30 100-60"/><path d="M252 20l8 5-10 6"/><circle cx="60" cy="30" r="8"/><circle cx="110" cy="70" r="8"/><circle cx="220" cy="60" r="8"/><path d="M170 20l12 12M182 20l-12 12M230 10l12 12M242 10l-12 12M280 70l12 12M292 70l-12 12"/></g></svg>`,
 };
 
 const KPI_ICON: Record<string, string> = { passRate: "pass", rzPassRate: "target", motionRate: "motion", pace: "clock" };
@@ -316,12 +316,12 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   void cityOf;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
-    `<div class="sct-cp-head">` +
-    `<span class="sct-cp-head-icon">${ICON["diagram"]}</span>` +
-    `<div class="sct-cp-head-text"><h2 class="sct-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>` +
-    `<p class="sct-cp-dek">Play-calling tendencies, offensive philosophy, formations, and coaching history.</p></div>` +
-    ICON["art"] +
-    `</div>` +
+    premiumTabHead({
+      hook: "sct-cp-head",
+      icon: "coaching",
+      heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
+      dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
+    }) +
     `<div class="sct-cp-overview">${profileCard(c, team)}${kpiCards(c, view)}</div>` +
     (calling.length
       ? section("Play Calling", ICON["play"]!, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)

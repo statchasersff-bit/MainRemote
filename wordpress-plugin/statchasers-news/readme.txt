@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.50
+Stable tag: 1.10.51
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.51 =
+* NFL Depth Charts (depth-charts 1.7.4): the league-wide browser mak reviewed on 2026-11-05 is now the tool. One toolbar (search, position, team, Export) under the four view tabs and the count, the Fantasy notice, then one white card per team with a column per position group; it answers to the width of the column it sits in, not the window. The earlier layout - two toolbar rows, the gold tab strip, the auto-fit team grid - is removed along with the "NEW DESIGN - COMPARISON" divider and the "View new design" button. The view, team and position filters still live in the URL fragment (#fantasy/buffalo-bills/rb) with back/forward, the default view is still the bare address, and the CSV export is unchanged.
 
 = 1.10.48 =
 * Team usage pages are NFL-first (mak's usage brief, 2026-11-05). The section is "Snap Counts & Player Usage": H1 "{Team} Snap Counts & Player Usage ({Year})", title "{Team} Snap Counts & Player Usage {Year}" and the description "Explore {Year} {Team} snap counts, target share, rushing usage, red-zone opportunities, and weekly player trends." The API page now opens with a football summary and four KPI cards, a Snap Counts & Playing Time table (season, last three, or any single week, with a position filter), Target and Rushing Distribution boards with receptions, yards and YPC, Situational Usage with the sample behind every share, Rushing Direction, Passing Distribution with its charted-attempt coverage, a factual Notable Usage Changes list in place of the Buy Low card, a "How these numbers are counted" block (carries exclude kneel-downs, which the official box score counts; targets exclude throwaways), and one Advanced & Fantasy Analysis section at the foot holding the tiered table, signals, handcuff and tool links. The FAQ is rewritten around NFL usage questions with the fantasy questions last. Usage URLs, canonicals and robots are unchanged.

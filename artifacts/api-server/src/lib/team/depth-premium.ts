@@ -15,6 +15,7 @@
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
+import { premiumTabHead } from "./premium-head";
 import type { DepthGradeUnit } from "../team-render";
 import type { TeamPageData } from "./team-data";
 import type { DepthRow, DepthView, FootballSide, FootballSlot } from "./depth-charts";
@@ -65,20 +66,14 @@ const ICON = {
 
 function banner(data: TeamPageData, h: DepthPremiumHelpers): string {
   const { team } = data;
-  const logo = team.logo
-    ? `<img class="sct-dpp-logo" src="${e(team.logo)}" alt="" width="64" height="64" loading="lazy" decoding="async">`
-    : "";
   return (
-    `<header class="sct-dpp-hero">` +
-    logo +
-    `<span class="sct-dpp-hero-rule" aria-hidden="true"></span>` +
-    `<div class="sct-dpp-hero-copy">` +
     // .sct-h2: the section page promotes the first such heading to its H1.
-    `<h2 class="sct-h2 sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>` +
-    `<p class="sct-dpp-sub">${e(h.summary.lead || h.summary.tail)}</p>` +
-    `</div>` +
-    `<span class="sct-dpp-stripes" aria-hidden="true"></span>` +
-    `</header>`
+    premiumTabHead({
+      hook: "sct-dpp-hero",
+      icon: "depth",
+      heading: `<h2 class="sct-h2 sct-up-h2 sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>`,
+      dek: h.summary.lead || h.summary.tail,
+    })
   );
 }
 

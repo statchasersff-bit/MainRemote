@@ -24,6 +24,7 @@
  */
 
 import { escapeHtml as e } from "../render";
+import { premiumTabHead } from "./premium-head";
 import type { NflTeam } from "./teams";
 import type { HistorySeason, PlayBalance, StatRow } from "./stats";
 
@@ -259,15 +260,12 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
 
   return (
     `<div class="sct-sp">` +
-    `<header class="sct-sp-hero">` +
-    `<span class="sct-sp-hero-decor" aria-hidden="true"><span class="sct-sp-hero-bands"></span><span class="sct-sp-hero-gold"></span></span>` +
-    `<img class="sct-sp-hero-logo" src="${e(team.logo)}" alt="" width="64" height="64" loading="lazy" decoding="async">` +
-    `<span class="sct-sp-hero-rule" aria-hidden="true"></span>` +
-    `<div class="sct-sp-hero-text">` +
-    heading +
-    `<p class="sct-sp-sub">${e(`Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`)}</p>` +
-    `</div>` +
-    `</header>` +
+    premiumTabHead({
+      hook: "sct-sp-hero",
+      icon: "stats",
+      heading,
+      dek: `Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`,
+    }) +
     (note ? `<p class="sct-note sct-sp-note">${e(note)}</p>` : "") +
     sections.join("") +
     `</div>`

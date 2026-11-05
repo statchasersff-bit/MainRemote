@@ -25,6 +25,57 @@ import { wireFrameHeight } from "./enhance";
 
 const ROOT_SELECTOR = "[data-scsos-root]";
 
+/**
+ * Two boards per view while the premium redesign is compared with the
+ * original (lib/sos-premium.ts): the original's parts are found from the
+ * root, the premium's from its own `.scsos-pm` section. Each wiring function
+ * takes a scope and the class names that board uses, and runs once per board.
+ */
+interface BoardNames {
+  /** The cards a click sorts and jumps the table by. */
+  card: string;
+  /** The scroll box and the compact-names flag carrier. */
+  scroll: string;
+  /** The cards row and the names in it, for the "F. Last" switch. */
+  cards: string;
+  cardName: string;
+  /** The player (or team) name cell's class, which the compact switch keys on. */
+  nameCell: string;
+  /** The row attribute the cards and the finder address: `data-row`, or the premium's `data-pm-row`. */
+  rowAttr: string;
+  /** The finder box, its input and its status line. */
+  find: string;
+  findInput: string;
+  findStatus: string;
+  findPick: string;
+}
+
+const ORIGINAL: BoardNames = {
+  card: ".scsos-card[data-row]",
+  scroll: ".scsos-scroll",
+  cards: ".scsos-cards",
+  cardName: ".scsos-card-name",
+  nameCell: "th.scsos-first",
+  rowAttr: "data-row",
+  find: "[data-scsos-find]",
+  findInput: ".scsos-find-input",
+  findStatus: ".scsos-find-status",
+  findPick: "scsos-find-pick",
+};
+
+const PREMIUM: BoardNames = {
+  card: ".scsos-pm-card[data-row]",
+  scroll: ".scsos-pm-scroll",
+  cards: ".scsos-pm-cards",
+  cardName: ".scsos-pm-card-name",
+  nameCell: "th.scsos-pm-first",
+  rowAttr: "data-pm-row",
+  find: "[data-scsos-pm-find]",
+  findInput: ".scsos-pm-find-input",
+  findStatus: ".scsos-pm-find-status",
+  findPick: "scsos-pm-find-pick",
+};
+
 /* ----------------------------------------------------------------- sorting */
 
 type Dir = "asc" | "desc";
@@ -109,14 +160,14 @@ function wireSort(root: HTMLElement): (key: string, dir: Dir) => void {
 
 /* ------------------------------------------------------------------- cards */
 
-function wireCards(root: HTMLElement, sortBy: (key: string, dir: Dir) => void): void {
+function wireCards(root: HTMLElement, sortBy: (key: string, dir: Dir) => void, names: BoardNames): void {
   let clear: number | undefined;
-  for (const card of Array.from(root.querySelectorAll<HTMLElement>(".scsos-card[data-row]"))) {
+  for (const card of Array.from(root.querySelectorAll<HTMLElement>(names.card))) {
     card.setAttribute("role", "button");
     card.tabIndex = 0;
     const go = () => {
       sortBy(card.dataset["sortKey"] ?? "ovr", (card.dataset["dir"] as Dir) ?? "asc");
-      const row = root.querySelector<HTMLElement>(`tr[data-row="${card.dataset["row"]}"]`);
+      const row = root.querySelector<HTMLElement>(`tr[${names.rowAttr}="${card.dataset["row"]}"]`);
       if (!row) return;
       root.querySelectorAll(".is-focus").forEach((el) => el.classList.remove("is-focus"));
       row.classList.add("is-focus");
@@ -149,8 +200,8 @@ function wireCards(root: HTMLElement, sortBy: (key: string, dir: Dir) => void): 
  * needed is available again. Measured against the width with full names, so
  * the switch cannot flicker at the boundary.
  */
-function wireCompactNames(root: HTMLElement): void {
-  const scroll = root.querySelector<HTMLElement>(".scsos-scroll");
+function wireCompactNames(root: HTMLElement, names: BoardNames): void {
+  const scroll = root.querySelector<HTMLElement>(names.scroll);
   const table = scroll?.querySelector<HTMLTableElement>("table[data-kind='player']");
   if (!scroll || !table || typeof ResizeObserver === "undefined") return;
 
@@ -174,15 +225,15 @@ function wireCompactNames(root: HTMLElement): void {
  * did: the moment one full name would be cut off, every card switches to
  * "F. Last", so the row stays uniform.
  */
-function wireCardNames(root: HTMLElement): void {
-  const cards = root.querySelector<HTMLElement>(".scsos-cards");
-  const names = Array.from(root.querySelectorAll<HTMLElement>(".scsos-card-name"));
-  if (!cards || !names.some((n) => n.querySelector(".scsos-pname-full")) || typeof ResizeObserver === "undefined") {
+function wireCardNames(root: HTMLElement, names: BoardNames): void {
+  const cards = root.querySelector<HTMLElement>(names.cards);
+  const labels = Array.from(cards?.querySelectorAll<HTMLElement>(names.cardName) ?? []);
+  if (!cards || !labels.some((n) => n.querySelector(".scsos-pname-full")) || typeof ResizeObserver === "undefined") {
     return;
   }
   const measure = () => {
     cards.classList.remove("is-short");
-    const cut = names.some((n) => n.scrollWidth > n.clientWidth + 1);
+    const cut = labels.some((n) => n.scrollWidth > n.clientWidth + 1);
     cards.classList.toggle("is-short", cut);
   };
   measure();
@@ -297,7 +348,9 @@ function wireViews(root: HTMLElement): void {
     if (mouse.defaultPrevented) return;
     // A modified click is a reader asking for that URL in another tab.
     if (mouse.button !== 0 || mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey) return;
-    const link = (event.target as Element).closest<HTMLAnchorElement>("a.scsos-tab, a.scsos-opt");
+    const link = (event.target as Element).closest<HTMLAnchorElement>(
+      "a.scsos-tab, a.scsos-opt, a.scsos-pm-tab, a.scsos-pm-opt",
+    );
     if (!link || !root.contains(link)) return;
     // A position link is a page of its own: an ordinary navigation.
     if (link.classList.contains("is-page")) return;
@@ -380,16 +433,22 @@ const SUGGEST = 3;
  * buttons, and picking one types it. Nothing is fetched and nothing is written
  * to the address - the board is already on the page.
  */
-function wireFind(root: HTMLElement): void {
-  const box = root.querySelector<HTMLElement>("[data-scsos-find]");
-  const input = box?.querySelector<HTMLInputElement>(".scsos-find-input");
-  const status = box?.querySelector<HTMLElement>(".scsos-find-status");
-  const body = root.querySelector<HTMLElement>('table[data-kind="player"] tbody');
+function wireFind(root: HTMLElement, names: BoardNames): void {
+  const box = root.querySelector<HTMLElement>(names.find);
+  const input = box?.querySelector<HTMLInputElement>(names.findInput);
+  const status = box?.querySelector<HTMLElement>(names.findStatus);
+  // The original's finder is the player board's only; the premium's serves
+  // both boards (a team is found by its name or code, `data-find`).
+  const body = root.querySelector<HTMLElement>(
+    names === ORIGINAL ? 'table[data-kind="player"] tbody' : "table[data-scsos-table] tbody",
+  );
   if (!box || !input || !status || !body) return;
+  const noun = box.dataset["noun"] ?? root.dataset["pos"]?.toUpperCase() ?? "player";
 
-  const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>('tr[data-row^="player-"]')).map((row) => {
-    const name = row.querySelector<HTMLElement>("th.scsos-first")?.getAttribute("data-sort") ?? row.textContent ?? "";
-    const folded = foldName(name);
+  const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>(`tr[${names.rowAttr}]`)).map((row) => {
+    const cell = row.querySelector<HTMLElement>(names.nameCell);
+    const name = cell?.getAttribute("data-sort") ?? row.textContent ?? "";
+    const folded = foldName(cell?.getAttribute("data-find") ?? name);
     return { row, name, folded, grams: bigrams(folded) };
   });
   if (!rows.length) return;
@@ -404,9 +463,10 @@ function wireFind(root: HTMLElement): void {
       if (hit) shown += 1;
     }
     status.replaceChildren();
+    box.classList.toggle("is-empty", words.length > 0 && shown === 0);
     if (!words.length) return;
     if (shown > 0) {
-      status.textContent = `${shown} of ${rows.length} players`;
+      status.textContent = `${shown} of ${rows.length} ${noun === "team" ? "teams" : "players"}`;
       return;
     }
     // Nearest names, by shared letter pairs; three of them, never none.
@@ -415,11 +475,11 @@ function wireFind(root: HTMLElement): void {
       .map((r) => ({ r, score: nearness(q, r.grams) }))
       .sort((a, b) => b.score - a.score || a.r.name.localeCompare(b.r.name))
       .slice(0, SUGGEST);
-    status.append(`No ${root.dataset["pos"]?.toUpperCase() ?? "player"} named "${raw.trim()}". Closest: `);
+    status.append(`No ${noun} named "${raw.trim()}". Closest: `);
     nearest.forEach(({ r }, i) => {
       const pick = document.createElement("button");
       pick.type = "button";
-      pick.className = "scsos-find-pick";
+      pick.className = names.findPick;
       pick.textContent = r.name;
       pick.addEventListener("click", () => {
         input.value = r.name;
@@ -461,12 +521,21 @@ function focusHashRow(root: HTMLElement): void {
 
 /* -------------------------------------------------------------------- boot */
 
+function enhanceBoard(scope: HTMLElement, names: BoardNames): void {
+  const sortBy = wireSort(scope);
+  wireCards(scope, sortBy, names);
+  wireCompactNames(scope, names);
+  wireCardNames(scope, names);
+  wireFind(scope, names);
+}
+
 function enhanceView(root: HTMLElement): void {
-  const sortBy = wireSort(root);
-  wireCards(root, sortBy);
-  wireCompactNames(root);
-  wireCardNames(root);
-  wireFind(root);
+  // The original board first: its table is the first in the root, so every
+  // querySelector from the root lands on it. The premium block, when it is
+  // on the page, is wired from its own section.
+  enhanceBoard(root, ORIGINAL);
+  const premium = root.querySelector<HTMLElement>(".scsos-pm");
+  if (premium) enhanceBoard(premium, PREMIUM);
   wireFrameHeight(root);
 }
 

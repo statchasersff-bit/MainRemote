@@ -253,8 +253,24 @@ function wireTabs(root: HTMLElement): void {
   select(active, false);
   root.dataset["sctTabs"] = "js";
 
-  for (const { id, link } of tabs) {
-    link.addEventListener("click", (event) => {
+  // One listener on the root, in the CAPTURE phase, rather than one per link.
+  // The host theme (Divi) binds its own click handler to every same-page
+  // anchor - `a[href*="#"]` whose path is the page's - and animates the
+  // window to the element the hash names. The hub-only tabs (#draft,
+  // #contracts, #coaching, #schedule) are exactly that, so with a handler on
+  // the link itself the panel switched AND the page scrolled to it (mak,
+  // 2026-11-05: "it aligns my screen to the page"). A capture listener on an
+  // ancestor runs before any listener on the link, whatever order they were
+  // bound in, and stopping propagation there means the click never reaches
+  // the theme's handler. The tab switches in place and the window stays
+  // where the reader left it.
+  root.addEventListener(
+    "click",
+    (event) => {
+      const target = event.target as Element | null;
+      const link = target?.closest<HTMLAnchorElement>("a.sct-nav-link") ?? null;
+      const tab = link ? tabs.find((t) => t.link === link) : undefined;
+      if (!link || !tab) return;
       // Let the browser handle anything that is not a plain left click - a
       // middle click or ctrl-click on these links opens the hub at that tab,
       // which is a genuinely useful thing to be able to do.
@@ -264,16 +280,18 @@ function wireTabs(root: HTMLElement): void {
         return;
       }
       event.preventDefault();
-      active = id;
-      select(id, true);
+      event.stopPropagation();
+      active = tab.id;
+      select(tab.id, true);
       setHeading(
         link.dataset["sctHeading"] ?? "",
         link.dataset["sctLead"] ?? "",
         link.dataset["scTitle"] ?? "",
       );
       writeUrl(tabUrl(link), "push");
-    });
-  }
+    },
+    true,
+  );
 
   // A hash arriving from outside - an in-page link, an edit to the address bar,
   // or the back button after some other navigation wrote one.

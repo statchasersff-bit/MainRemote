@@ -2,9 +2,12 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import {
   CLUB_INTERVAL_MS,
+  ROTOWIRE_INTERVAL_MS,
   WIRE_INTERVAL_MS,
+  rotowireSweepEnabled,
   runClubIngest,
   runIngest,
+  runRotowireIngest,
   wireIngestEnabled,
 } from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
@@ -95,30 +98,44 @@ app.listen(port, (err) => {
     ? restored.then(() => warmRenders(port))
     : Promise.resolve();
 
-  // The wire: on startup, then every WIRE_INTERVAL_MS (twenty minutes). Not
+  // The wire: on startup, then every ROTOWIRE_INTERVAL_MS (ten minutes). Not
   // in the development workspace unless asked for - see wireIngestEnabled().
-  // The startup run waits for the restore so that a feed which has not moved
-  // since the last process is recognized from memory rather than looked up.
-  if (wireIngestEnabled()) {
-    void restored.then(() =>
-      runIngest()
-        .then((result) => {
-          logger.info(result, "Startup ingest complete");
-        })
-        .catch((err) => {
-          logger.error({ err }, "Startup ingest failed");
-        }),
-    );
+  // The startup run waits for the restore so that a note the archive already
+  // holds is recognized from memory rather than looked up (and keeps the time
+  // it has - see lib/rotowire-news.ts).
+  //
+  // Since 2026-11-05 the sweep of RotoWire's team pages is the wire, and the
+  // Dynasty Command relay (runIngest) is its fallback: only when the sweep
+  // itself fails - RotoWire unreachable, the page template changed - is the
+  // relay read, so the archive keeps moving on the relay's thinner feed
+  // rather than stopping. WIRE_INTERVAL_MS no longer drives a timer.
+  const relayRead = (label: string) =>
+    runIngest()
+      .then((result) => {
+        logger.info(result, `${label} ingest complete`);
+      })
+      .catch((err) => {
+        logger.error({ err }, `${label} ingest failed`);
+      });
 
-    setInterval(() => {
-      runIngest()
-        .then((result) => {
-          logger.info(result, "Scheduled ingest complete");
-        })
-        .catch((err) => {
-          logger.error({ err }, "Scheduled ingest failed");
-        });
-    }, WIRE_INTERVAL_MS);
+  const sweepRead = (label: string) => {
+    runRotowireIngest()
+      .then((result) => {
+        logger.info(result, `${label} RotoWire sweep complete`);
+      })
+      .catch((err) => {
+        logger.error({ err }, `${label} RotoWire sweep failed; reading the relay instead`);
+        return relayRead(label);
+      });
+  };
+
+  // SC_ROTOWIRE_SWEEP=0: the relay alone, at its own cadence, as before.
+  const sweeping = rotowireSweepEnabled();
+  const wireRead = sweeping ? sweepRead : relayRead;
+
+  if (wireIngestEnabled()) {
+    void restored.then(() => wireRead("Startup"));
+    setInterval(() => wireRead("Scheduled"), sweeping ? ROTOWIRE_INTERVAL_MS : WIRE_INTERVAL_MS);
   }
 
   // The 32 club feeds, on their own slower cadence.

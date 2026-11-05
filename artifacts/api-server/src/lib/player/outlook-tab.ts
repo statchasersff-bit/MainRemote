@@ -45,7 +45,6 @@ import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, teamInk } from "./header";
-import { headshotImg } from "../headshot-html";
 import { outlookMeasures, tierOf, type AdvancedCell, type DriverRow, type OutlookMeasures, type Tier } from "./outlook-tab-data";
 import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
@@ -78,14 +77,6 @@ const ICON = {
   football: svg(`<path d="M5.2 18.8c-2.3-2.3-1.4-8.1 2.6-12.1s9.8-4.9 12.1-2.6 1.4 8.1-2.6 12.1-9.8 4.9-12.1 2.6z"/><path d="M9 15l6-6"/>`),
 };
 
-/** The glyph a status chip wears, by what it says and how it is colored. */
-function chipIcon(c: Chip): string {
-  const k = c.label.toLowerCase();
-  if (k.includes("schedule")) return ICON.calendar;
-  if (c.kind === "good") return ICON.check;
-  if (c.kind === "bad") return ICON.triangle;
-  return ICON.alert;
-}
 const MINUS = "−";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -569,47 +560,9 @@ function tags(m: Model, depth: PlayerPageData["depth"]): Chip[] {
 
 /* ------------------------------------------------------ section 1: the take */
 
-/**
- * The hero: the lead heading (its words are the H1 in tool mode - unchanged),
- * the as-of line, the tags, and when he is out the injured line. Printed at
- * the top of the read grid's prose column in season (mak, 2026-10-29) so the
- * sidebar starts on the heading's row.
- */
-function takeInner(m: Model, depth: PlayerPageData["depth"] = null): string {
-  const tier = tierLine(m);
-  if (!tier || !m.chips) return "";
-  // No "Updated {date}" line (mak, 2026-11-05, keeping the 10-02 byline cut);
-  // the week the read runs through is the one fact the line keeps.
-  const asOf = m.week >= 1 ? `Through Week ${m.week}` : "";
-  const chips = tags(m, depth);
-  return (
-    `<div class="scp-ol-take">` +
-    `<div class="scp-ol-head">` +
-    `<span class="scp-ol-head-icon" aria-hidden="true">${ICON.bars}</span>` +
-    `<div class="scp-ol-head-text">` +
-    // "{Name} Rest-of-Season Projection" (the brief's H2 ladder, approved
-    // 2026-11-05): the section carries his rest-of-season board rank and the
-    // league-by-league call, which is the forward output the word promises.
-    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season projection`))}</h2>` +
-    // The short gold rule and the week, one line (the rule is empty, so the
-    // line's text is the week alone).
-    (asOf ? `<p class="scp-ol-asof"><span class="scp-ol-asof-rule" aria-hidden="true"></span>${escapeHtml(asOf)}</p>` : "") +
-    `</div></div>` +
-    (chips.length
-      ? `<div class="scp-ol-tags" role="list" aria-label="Outlook at a glance">` +
-        chips.map((c) => `<span class="scp-ol-chip is-${c.kind}" role="listitem"><span class="scp-ol-chip-icon" aria-hidden="true">${chipIcon(c)}</span>${escapeHtml(c.label)}</span>`).join("") +
-        `</div>`
-      : "") +
-    (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
-    `</div>`
-  );
-}
-
-function renderTake(m: Model, depth: PlayerPageData["depth"] = null): string {
-  const inner = takeInner(m, depth);
-  if (!inner) return "";
-  return `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h">${inner}</section>`;
-}
+// In season the hero, the read and its sidebar are the premium block
+// (outlook-projection-premium.ts, printed by the page right after this body)
+// since 2026-11-05, when mak approved it and had the originals removed.
 
 /**
  * The Best fit panel: the league-by-league call, judged on the ROS board's
@@ -878,37 +831,19 @@ function supportsThreatens(m: Model, data: PlayerPageData): { supports: string[]
 }
 
 /**
- * The read and its sidebar. `lead` is the hero (takeInner) to print at the
- * top of the prose column in season, which puts the sidebar on the heading's
- * row; the section is then the take's own and is labelled by its heading.
+ * The preseason piece: the staff's outlook under its byline, with the
+ * Redraft Command panel and the Best fit panel beside it. In season the
+ * projection is the premium block (outlook-projection-premium.ts), which
+ * prints from outlookProjectionModel() below.
  */
-function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
+function renderRead(m: Model, data: PlayerPageData): string {
+  if (!m.preseason) return "";
   const record = data.fantasyOutlook2026;
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (preseasonParas.length === 0) return "";
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
-
-  let prose: string[];
-  let byline = "";
-  let after = "";
-  if (m.preseason) {
-    if (preseasonParas.length === 0) return "";
-    prose = preseasonParas.map((p) => escapeHtml(p));
-    byline = `By the StatChasers staff.${published ? ` Published <time datetime="${published.iso}">${published.text}</time>.` : ""}`;
-  } else {
-    prose = paragraphs(m, data).map((p) => escapeHtml(p));
-    if (prose.length === 0) return "";
-    const { supports, threatens } = supportsThreatens(m, data);
-    if (supports.length || threatens.length) {
-      const empty = emptyWords(m, data);
-      const cell = (title: string, items: string[], kind: string, emptyText: string): string =>
-        `<div class="scp-ol-st-cell is-${kind}"><h3><span class="scp-ol-st-icon" aria-hidden="true">${kind === "up" ? ICON.bars : ICON.triangle}</span>${title}</h3><p>${escapeHtml(items.length ? `${cap(listWords(items))}.` : emptyText)}</p></div>`;
-      after =
-        `<div class="scp-ol-st">` +
-        cell("What supports his value", supports, "up", empty.supports) +
-        cell("What threatens his value", threatens, "risk", empty.threatens) +
-        `</div>`;
-    }
-  }
+  const prose = preseasonParas.map((p) => escapeHtml(p));
+  const byline = `By the StatChasers staff.${published ? ` Published <time datetime="${published.iso}">${published.text}</time>.` : ""}`;
 
   const rc =
     `<div class="scp-ox-panel is-rc"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.crosshair}</span>Redraft Command</h3>` +
@@ -917,44 +852,10 @@ function renderRead(m: Model, data: PlayerPageData, lead = ""): string {
     `</div>`;
   const fits = renderFits(m);
 
-  // The featured panel (mak's brief, 2026-11-05): his portrait on the club's
-  // color at the left, the one-line takeaway and the two paragraphs at the
-  // right. The preseason piece stays plain prose under its byline.
-  const headline = m.preseason ? "" : featHeadline(m, data.depth);
-  const portrait =
-    headshotImg({
-      src: data.player.headshotUrl,
-      id: data.player.id,
-      className: "scp-ol-feat-img",
-      alt: `${m.name} headshot`,
-      variants: ["f200", "f350"],
-      sizes: "(max-width: 560px) 100vw, 220px",
-      width: 350,
-      height: 254,
-      loading: "lazy",
-    }) ??
-    (data.team ? `<img class="scp-ol-feat-crest" src="${escapeHtml(data.team.logo)}" alt="" width="96" height="96" loading="lazy" decoding="async" />` : "");
-  const proseHtml = `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>`;
-  const feature = m.preseason
-    ? proseHtml
-    : `<div class="scp-ol-feat">` +
-      `<div class="scp-ol-feat-art" aria-hidden="true">${portrait}</div>` +
-      `<div class="scp-ol-feat-body">` +
-      (headline ? `<p class="scp-ol-feat-h">${escapeHtml(headline)}</p>` : "") +
-      proseHtml +
-      `</div></div>`;
-
   return (
-    (m.preseason
-      ? open("scp-ol-read-h", `Our ${m.season} preseason outlook`, "")
-      : lead
-        ? `<section class="scp-ox-sec scp-ol-sec-take scp-ol-sec-read" aria-labelledby="scp-ol-take-h">`
-        : `<section class="scp-ox-sec scp-ol-sec-read" aria-label="${escapeHtml(`Our take after Week ${m.week}`)}">`) +
+    open("scp-ol-read-h", `Our ${m.season} preseason outlook`, "") +
     `<div class="scp-ox-read">` +
-    `<div>${m.preseason ? "" : lead}${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
-    feature +
-    after +
-    `</div>` +
+    `<div><p class="scp-st-byline">${byline}</p><div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div></div>` +
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
     `</div></section>`
   );
@@ -1073,55 +974,8 @@ function opportunityModel(m: Model, options: PlayerRenderOptions): OpportunityMo
   return { lede, tiles, takes, link };
 }
 
-function renderOpportunity(m: Model, options: PlayerRenderOptions): string {
-  const om = opportunityModel(m, options);
-  if (!om) return "";
-  const tileIcon = (label: string): string => {
-    const k = label.toLowerCase();
-    if (k.startsWith("ppr")) return ICON.trophy;
-    if (k.startsWith("expected")) return ICON.crosshair;
-    if (k.startsWith("points over")) return ICON.bars;
-    if (k.includes("first-read")) return ICON.eye;
-    if (k.includes("snap")) return ICON.layers;
-    if (k.includes("designed")) return ICON.football;
-    if (k.includes("dropbacks") || k.includes("weighted")) return ICON.bars;
-    return ICON.target;
-  };
-  const tiles = om.tiles.map(
-    (t) =>
-      `<div class="scp-ol-tile${t.lead ? " is-lead" : ""}"><span class="scp-ol-ticon" aria-hidden="true">${tileIcon(t.label)}</span><dt>${escapeHtml(t.label)}</dt><dd>${escapeHtml(t.value)}</dd>${t.sub ? `<span class="scp-ol-tsub">${escapeHtml(t.sub)}</span>` : ""}</div>`,
-  );
-  const takeIcon: Record<OpportunityTake["kind"], string> = { ok: ICON.check, up: ICON.up, down: ICON.down, flat: ICON.steady, warn: ICON.alert };
-  const takeaways =
-    `<div class="scp-ol-tk" role="list">` +
-    om.takes
-      .map(
-        (t) =>
-          `<div class="scp-ol-tk-row is-${t.kind}" role="listitem"><span class="scp-ol-tk-icon" aria-hidden="true">${takeIcon[t.kind]}</span>` +
-          `<p><strong>${escapeHtml(t.claim)}</strong> ${escapeHtml(t.text)}</p></div>`,
-      )
-      .join("") +
-    `</div>`;
-  const link = om.link
-    ? `<p class="scp-ol-more"><a href="${escapeHtml(om.link.href)}">${escapeHtml(om.link.text)}<span class="scp-ol-more-arrow" aria-hidden="true">${ICON.arrow}</span></a></p>`
-    : "";
-  // One card: a navy title bar (the section's H2, same id and words), the
-  // explanation, the six tiles, the takeaways, the link.
-  return (
-    `<section class="scp-ox-sec scp-ol-sec-opp" aria-labelledby="scp-ol-opp-h">` +
-    `<div class="scp-ol-bar">` +
-    `<span class="scp-ol-bar-icon" aria-hidden="true">${ICON.bars}</span>` +
-    `<h2 class="scp-ox-h2" id="scp-ol-opp-h">${escapeHtml(titleCase("Opportunity vs. production"))}</h2>` +
-    `<span class="scp-ol-bar-stripes" aria-hidden="true"></span>` +
-    `</div>` +
-    `<div class="scp-ol-opp-body">` +
-    `<p class="scp-ox-lede">${escapeHtml(om.lede)}</p>` +
-    `<dl class="scp-ol-opp">${tiles.join("")}</dl>` +
-    takeaways +
-    link +
-    `</div></section>`
-  );
-}
+// Opportunity vs. Production is the premium block's section B since
+// 2026-11-05 (outlook-projection-premium.ts), fed by opportunityModel() above.
 
 /* ------------------------- the projection + opportunity premium block's model */
 
@@ -1696,19 +1550,14 @@ export function outlookTabParts(
 ): { body: string; foot: string; faq: string } | null {
   const m = model(data);
   if (!m) return null;
-  // In season the hero rides inside the read grid (takeInner); it stands
-  // alone only when there is no read to carry it, or in the preseason.
-  const lead = m.preseason ? "" : takeInner(m, data.depth);
-  const read = renderRead(m, data, lead);
-  // Sections 3 to 6 (drivers, what could change, upcoming matchups, the
-  // preseason archive) are the premium block (outlook-premium.ts) since
-  // 2026-11-05, when mak approved it and had the originals removed; the
-  // page appends it right after this body (player-render.ts), fed by
-  // outlookPremiumModel() below from this same model.
-  const main =
-    (read && lead ? "" : renderTake(m, data.depth)) +
-    read +
-    renderOpportunity(m, options);
+  // In season the first two sections (the projection with its sidebar, and
+  // Opportunity vs. Production) are the premium block,
+  // outlook-projection-premium.ts, which the page prints right after this
+  // body (player-render.ts) from outlookProjectionModel() below; sections 3
+  // to 6 are outlook-premium.ts the same way. mak approved both on
+  // 2026-11-05 and had the originals removed. The preseason piece still
+  // renders here.
+  const main = renderRead(m, data);
   const faq = renderFaq(m, data, options);
   if (!main && !faq) return null;
   // No methodology footer (mak, 2026-10-02).

@@ -46,6 +46,8 @@ export async function startServer(env = {}, options = {}) {
       // and "last updated" assertions flap for reasons that aren't bugs. The
       // tests read the data already in the database.
       DYNASTY_NEWS_API_URL: "",
+      // The relay alone, never a sweep of the real rotowire.com from a test.
+      SC_ROTOWIRE_SWEEP: "0",
       // Open unless a test locks it (tests/embed-key.test.mjs). A key set as a
       // Replit secret reaches this shell too, and would 403 every other suite.
       SC_EMBED_KEY: "",

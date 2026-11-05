@@ -1,4 +1,9 @@
 /**
+ * SINCE 2026-11-05 PM THIS IS THE TAB'S FIRST TWO SECTIONS: mak approved the
+ * comparison ("remove this older version") and the original read, portrait,
+ * sidebar and tiles came out of outlook-tab.ts. The titles are the approved
+ * H2 ladder's, with the ids the originals carried.
+ *
  * The premium comparison of the Outlook tab's first two sections (mak's brief
  * "Exact Premium Rest-of-Season Projection & Opportunity vs. Production
  * Redesign", 2026-11-05): a compact navy Rest-of-Season Projection bar, the
@@ -93,11 +98,12 @@ export function emphasize(text: string): string {
 }
 
 /** A navy title bar: gold icon, the title, an optional sub-line, the pattern and gold diagonals. */
-function bar(title: string, sub: string): string {
+function bar(title: string, sub: string, id: string): string {
   return (
     `<header class="scp-olr-bar">` +
     `<span class="scp-olr-bar-icon">${ICON.bars}</span>` +
-    `<div class="scp-olr-bar-text"><h3 class="scp-olr-bar-title">${e(title)}</h3>${sub ? `<p class="scp-olr-bar-sub">${e(sub)}</p>` : ""}</div>` +
+    // .is-lead marks the tab's lead heading for the page (no style of its own here).
+    `<div class="scp-olr-bar-text"><h2 class="scp-olr-bar-title${id === "scp-ol-take-h" ? " is-lead" : ""}" id="${id}">${e(title)}</h2>${sub ? `<p class="scp-olr-bar-sub">${e(sub)}</p>` : ""}</div>` +
     `<span class="scp-olr-bar-grid" aria-hidden="true"></span>` +
     `<span class="scp-olr-bar-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -168,8 +174,8 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
       `<p class="scp-olr-fit-note">${e(m.fits.note)}</p></div>`
     : "";
   const projection =
-    `<section class="scp-olr-sec is-proj" aria-label="${e(m.heading)}">` +
-    bar(m.heading, m.asOf) +
+    `<section class="scp-olr-sec is-proj" aria-labelledby="scp-ol-take-h">` +
+    bar(m.heading, m.asOf, "scp-ol-take-h") +
     `<div class="scp-olr-body"><div class="scp-olr-layout">` +
     `<div class="scp-olr-main">${badges}${summary}${factors}</div>` +
     `<aside class="scp-olr-side" aria-label="${e(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
@@ -197,8 +203,8 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
       `</div>`;
     const link = o.link ? `<p class="scp-olr-more"><a href="${e(o.link.href)}">${e(o.link.text)}<span class="scp-olr-more-arrow">${ICON.arrow}</span></a></p>` : "";
     opportunity =
-      `<section class="scp-olr-sec is-opp" aria-label="Opportunity vs. Production">` +
-      bar("Opportunity vs. Production", "") +
+      `<section class="scp-olr-sec is-opp" aria-labelledby="scp-ol-opp-h">` +
+      bar("Opportunity vs. Production", "", "scp-ol-opp-h") +
       `<div class="scp-olr-body">` +
       `<p class="scp-olr-lede">${e(o.lede)}</p>` +
       `<div class="scp-olr-groups">${group("prod", "Production Efficiency", prod)}${group("opp", m.pos === "QB" ? "Opportunity Volume" : "Opportunity Share", opp)}</div>` +
@@ -209,7 +215,6 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
 
   return (
     `<div class="scp-olr" id="outlook-projection-premium" data-scp-premium="outlook-projection">` +
-    `<p class="scp-olr-flag">New design - comparison</p>` +
     projection +
     opportunity +
     `</div>`

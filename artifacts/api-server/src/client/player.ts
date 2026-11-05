@@ -762,6 +762,10 @@ function wireDurability(root: HTMLElement): void {
       }
       figure?.classList.toggle("has-sel", key !== null);
       let lost: Record<string, number[]> = {};
+      // The map panel's "selected location" box, one per region.
+      for (const panel of Array.from(card.querySelectorAll<HTMLElement>("[data-region-panel]"))) {
+        panel.hidden = key === null || panel.getAttribute("data-region-panel") !== key;
+      }
       for (const panel of Array.from(card.querySelectorAll<HTMLElement>("[data-region-detail]"))) {
         const mine = key !== null && panel.getAttribute("data-region-detail") === key;
         panel.hidden = !mine;
@@ -782,6 +786,17 @@ function wireDurability(root: HTMLElement): void {
     card.addEventListener("click", (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       if (!target) return;
+      // The phone fold on the availability matrix: the five most recent
+      // seasons open, the rest behind "View full career".
+      const more = target.closest<HTMLButtonElement>("[data-scp-avail-more]");
+      if (more) {
+        const grid = more.closest<HTMLElement>("[data-scp-avail]");
+        if (!grid) return;
+        const open = grid.classList.toggle("is-open");
+        more.setAttribute("aria-expanded", String(open));
+        more.textContent = open ? "Show recent seasons only" : (more.getAttribute("data-label") ?? more.textContent);
+        return;
+      }
       if (target.closest("[data-region-close]")) {
         select(null);
         return;

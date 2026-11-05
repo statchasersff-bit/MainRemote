@@ -17,6 +17,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { premiumTabHead } from "./premium-head";
 import { slotChip } from "../team-render";
 import {
   BADGE_FROM,
@@ -198,22 +199,16 @@ export function renderUsagePremium(view: UsageView, team: NflTeam): string {
   const targets = boardPanel("targets", view);
   const rushing = boardPanel("carries", view);
   if (!snaps && !targets && !rushing) return "";
-  const logo = team.logo ? `<img class="sct-up-emblem" src="${e(team.logo)}" alt="" width="120" height="120" loading="lazy" decoding="async">` : "";
   return (
     `<div class="sct-block sct-up" id="usage-premium" data-sct-premium="usage">` +
-    `<header class="sct-up-head">` +
-    `<span class="sct-up-head-icon">${ICON["layers"]}</span>` +
-    `<span class="sct-up-head-rule" aria-hidden="true"></span>` +
-    `<div class="sct-up-head-text">` +
     // .sct-h2 as well: a section address promotes the panel's first .sct-h2 to the page's H1 (team-render.ts).
-    `<h2 class="sct-h2 sct-up-h2">Snap Counts &amp; Player Usage</h2>` +
-    `<p class="sct-up-dek">${e(
-      `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
+    premiumTabHead({
+      icon: "usage",
+      heading: `<h2 class="sct-h2 sct-up-h2">Snap Counts &amp; Player Usage</h2>`,
+      dek:
+        `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
         `Track which players are seeing the field, where the ball is going, and how their roles change throughout the season.`,
-    )}</p>` +
-    `</div>` +
-    logo +
-    `</header>` +
+    }) +
     `<div class="sct-up-dash">` +
     `<div class="sct-up-col is-left">${snaps}</div>` +
     `<div class="sct-up-col is-right">${targets}${rushing}</div>` +

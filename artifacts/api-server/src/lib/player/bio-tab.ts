@@ -33,20 +33,13 @@ import { teamInk } from "./header";
 import { titleCase } from "./title-case";
 import { outlookShort } from "./outlook-tab";
 import { sectionHref } from "./sections";
-import type { BioPageFacts } from "./bio-tab-data";
+import type { BioPageFacts, BioTransaction } from "./bio-tab-data";
 import { headshotImg } from "../headshot-html";
 import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
 import { collegeLogoFor } from "../team/draft";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
-function open(id: string, heading: string, lede = ""): string {
-  return (
-    `<section class="scp-ox-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
-    (lede ? `<p class="scp-ox-lede">${escapeHtml(lede)}</p>` : "")
-  );
-}
 
 /* ------------------------------------------------------------ shared bits */
 
@@ -119,22 +112,118 @@ export function redraftCommandHref(data: PlayerPageData): string {
 
 /* ----------------------------------------------------- 4. transactions */
 
-const TX_CLASS: Record<string, string> = { Traded: "is-trade", Drafted: "is-draft", Signed: "is-sign", "Re-signed": "is-sign", Claimed: "is-sign", Contract: "is-deal", Tender: "is-deal", Tag: "is-deal", Joined: "is-join" };
+/**
+ * The transactions log, in the premium bio block's dress (mak, 2026-11-05:
+ * "similar design to the rest of the tabs"): the navy section bar, a row of
+ * counts by kind of move, then the moves newest first on a vertical rail,
+ * grouped under their year. Each kind keeps one tone across the chip, the
+ * rail node and the count, so a reader can scan for trades or IR stints.
+ * Same rows, same wording, same heading rule as before; nothing new is said.
+ */
+type TxTone = "trade" | "draft" | "sign" | "deal" | "out" | "inj" | "back" | "join";
+
+const TX_TONE: Record<BioTransaction["type"], TxTone> = {
+  Traded: "trade",
+  Drafted: "draft",
+  Signed: "sign",
+  "Re-signed": "sign",
+  Claimed: "sign",
+  Joined: "join",
+  Contract: "deal",
+  Tender: "deal",
+  Tag: "deal",
+  Released: "out",
+  Waived: "out",
+  Retired: "out",
+  "Waived/Injured": "inj",
+  "Placed on IR": "inj",
+  Suspended: "inj",
+  "Commissioner's Exempt List": "inj",
+  "Injury settlement": "inj",
+  Activated: "back",
+  Reinstated: "back",
+};
+
+/** The summary's labels, in the order a career reads. */
+const TONE_LABEL: [TxTone, string, string][] = [
+  ["draft", "Draft", "Drafts"],
+  ["trade", "Trade", "Trades"],
+  ["sign", "Signing", "Signings"],
+  ["deal", "Contract", "Contracts"],
+  ["join", "Team change", "Team changes"],
+  ["out", "Release", "Releases"],
+  ["inj", "IR / list move", "IR / list moves"],
+  ["back", "Activation", "Activations"],
+];
+
+const TX_ICON =
+  `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+  `<path d="M7 4h10M7 4l-3 3 3 3M17 20H7m10 0 3-3-3-3"/><path d="M4 7h13M20 17H7"/></svg>`;
 
 function renderTransactions(page: BioPageFacts): string {
   if (page.transactions.length === 0) return "";
-  const rows = page.transactions
-    .map(
-      (t) =>
-        `<li><time datetime="${escapeHtml(t.date)}">${escapeHtml(t.when)}</time>` +
-        `<span class="scp-bo-tx ${TX_CLASS[t.type] ?? ""}">${escapeHtml(t.type)}</span><span>${escapeHtml(t.text)}</span></li>`,
-    )
-    .join("");
   // Not "Transactions" until signings, releases and contracts are covered:
   // the list must not look like a complete history. No lede or source line
   // (mak, 2026-10-01).
   const heading = page.hasDatedMoves ? "Transactions" : page.tradesOnly ? "Trades" : "Trades and team changes";
-  return open("scp-bo-tx-h", heading) + `<ol class="scp-bo-txlog">${rows}</ol></section>`;
+
+  const counts = new Map<TxTone, number>();
+  for (const t of page.transactions) {
+    const tone = TX_TONE[t.type] ?? "join";
+    counts.set(tone, (counts.get(tone) ?? 0) + 1);
+  }
+  const years = page.transactions.map((t) => Number(t.date.slice(0, 4))).filter((y) => Number.isFinite(y));
+  const span = years.length ? (Math.min(...years) === Math.max(...years) ? String(years[0]) : `${Math.min(...years)} - ${Math.max(...years)}`) : "";
+  const total = page.transactions.length;
+  const chips = TONE_LABEL.filter(([tone]) => counts.has(tone))
+    .map(([tone, one, many]) => {
+      const n = counts.get(tone)!;
+      return `<li class="is-${tone}"><b>${n}</b> ${escapeHtml(n === 1 ? one : many)}</li>`;
+    })
+    .join("");
+  const summary =
+    `<div class="scp-bo-txsum">` +
+    `<p class="scp-bo-txsum-total"><b>${total}</b> ${total === 1 ? "move" : "moves"}` +
+    (span ? `<span>${escapeHtml(span)}</span>` : "") +
+    `</p>` +
+    `<ul class="scp-bo-txsum-kinds" aria-label="Moves by kind">${chips}</ul>` +
+    `</div>`;
+
+  let lastYear = "";
+  const rows = page.transactions
+    .map((t) => {
+      const year = t.date.slice(0, 4);
+      const tone = TX_TONE[t.type] ?? "join";
+      const marker =
+        year && year !== lastYear
+          ? `<li class="scp-bo-txyr" aria-hidden="true"><span>${escapeHtml(year)}</span></li>`
+          : "";
+      lastYear = year || lastYear;
+      return (
+        marker +
+        `<li class="scp-bo-txrow is-${tone}">` +
+        `<span class="scp-bo-txnode" aria-hidden="true"></span>` +
+        `<div class="scp-bo-txcard">` +
+        `<time datetime="${escapeHtml(t.date)}">${escapeHtml(t.when)}</time>` +
+        `<span class="scp-bo-tx is-${tone}">${escapeHtml(t.type)}</span>` +
+        `<span class="scp-bo-txtext">${escapeHtml(t.text)}</span>` +
+        `</div></li>`
+      );
+    })
+    .join("");
+
+  return (
+    `<section class="scp-bop scp-bo-txsec" aria-labelledby="scp-bo-tx-h">` +
+    `<div class="scp-bop-sec is-stops is-tx">` +
+    `<header class="scp-bop-bar">` +
+    `<span class="scp-bop-bar-icon">${TX_ICON}</span>` +
+    `<h2 class="scp-bop-bar-title" id="scp-bo-tx-h">${escapeHtml(titleCase(heading))}</h2>` +
+    `<span class="scp-bop-stripes" aria-hidden="true"></span>` +
+    `</header>` +
+    summary +
+    `<ol class="scp-bo-txlog">${rows}</ol>` +
+    `</div></section>`
+  );
 }
 
 /* --------------------------------------------------------------- the tab */
