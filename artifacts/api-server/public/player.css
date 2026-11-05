@@ -21696,17 +21696,31 @@ a.scp-peer:focus-visible {
     text-align: center;
   }
 
-  /* ---- plain section titles: the gold rule under the middle */
+  /* ---- the Outlook head: icon above the title, the as-of line and chips centered */
+  .scp .scp-ol .scp-ol-head {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .scp .scp-ol .scp-ol-asof,
+  .scp .scp-ol .scp-ol-tags {
+    justify-content: center;
+  }
+
+  /* ---- plain section titles (the tab heading too): the gold rule under the middle */
+  .scp .scp-h2,
   .scp .scp-ox-h2 {
     text-align: center;
   }
 
+  .scp .scp-h2::after,
   .scp .scp-ox-h2::after {
     left: 50%;
     transform: translateX(-50%);
   }
 
-  .scp .scp-ox-lede {
+  .scp .scp-ox-lede,
+  .scp .scp-head-sub {
     text-align: center;
   }
 }

@@ -181,11 +181,13 @@ function simulator(v: ContractsView): string {
   return (
     `<section class="sct-ctp-sim" id="sct-ctp-sim" data-sct-ct-scen aria-labelledby="sct-ctp-sim-h">` +
     `<div class="sct-ctp-sim-inner">` +
+    `<div class="sct-ctp-sim-lead">` +
     `<div class="sct-ctp-sim-head">` +
     ICON.sliders +
     `<h3 class="sct-ctp-sim-title" id="sct-ctp-sim-h">Cut Scenario</h3>` +
     `</div>` +
     `<p class="sct-ctp-sim-help">Pick players to see the cap after releasing them.${hint}</p>` +
+    `</div>` +
     `<div class="sct-ctp-timing" role="group" aria-label="Release timing">` +
     `<button type="button" class="sct-ctp-timing-btn" data-sct-ct-timing="pre" aria-pressed="true">Before June 1</button>` +
     `<button type="button" class="sct-ctp-timing-btn" data-sct-ct-timing="post" aria-pressed="false">After June 1</button>` +

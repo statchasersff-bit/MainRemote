@@ -61,7 +61,6 @@ import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { renderTeamHeader } from "./team/team-header";
-import { renderPremiumTeamHeader } from "./team/team-header-premium";
 import { statsFaq } from "./team/stats-faq";
 import { renderStatsPremium } from "./team/stats-premium";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
@@ -394,8 +393,7 @@ export function heroFactList(data: TeamPageData): HeroFact[] {
   return facts;
 }
 
-/** `premium`: the class a comparison copy carries instead of data-sct-switch, so the bundle wires only the header's. */
-export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium: false | string = false): string {
+export function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
 
@@ -441,7 +439,7 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium:
   // <a href> - so the switcher is also 31 crawlable internal links rather than
   // a dead end. The client bundle only adds outside-click and Escape.
   return (
-    `<details class="sct-switch${premium ? ` ${premium}` : ""}"${premium ? "" : " data-sct-switch"}>` +
+    `<details class="sct-switch" data-sct-switch>` +
     `<summary class="sct-switch-summary">` +
     // Lazy even though it is above the fold: a lazy image inside the viewport
     // is still fetched straight away, just at a lower priority than the hero
@@ -465,7 +463,7 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium:
  * switcher, the KPI cards, the freshness line) and the section strip under
  * it, both drawn by team/team-header.ts (mak's pick, 2026-11-05: "Design B",
  * the bright blue hero with the light strip; the original header and the dark
- * "Design A" were removed the same day).
+ * "Design A" were removed the same day, A for good on mak's second word).
  *
  * Standalone, the club's name is the page's <h1>. Embedded, WordPress supplies
  * the H1 and the name is an <h2>. On a page whose own heading WordPress
@@ -489,18 +487,6 @@ function teamHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Sectio
       facts,
       updatedMs: data.newsUpdatedAtMs,
       switcher: teamSwitcher(data.team, options),
-      tabs: items,
-    }) +
-    // "Premium Design A · Dark Navy", brought back at mak's request (2026-11-05)
-    // as a labeled comparison UNDER the header, on the same facts, switcher
-    // links and tab addresses; its switcher copy is not wired and its tabs
-    // carry none of the bundle's hooks. Not the default.
-    renderPremiumTeamHeader({
-      team: data.team,
-      season: data.state.season,
-      facts,
-      updatedMs: data.newsUpdatedAtMs,
-      switcher: teamSwitcher(data.team, options, "sct-tp-switch"),
       tabs: items,
     })
   );

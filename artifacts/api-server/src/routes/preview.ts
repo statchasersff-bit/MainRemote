@@ -971,7 +971,13 @@ router.get(/^\/preview\/depth-charts(?:\/(.*))?$/, (req, res) => {
           shortcode: "[statchasers_depth_charts]",
           styles: [`${DEPTH_ASSETS}css/frontend.css`],
           scripts: [`${DEPTH_ASSETS}js/frontend.js`],
-          fragment: result.fragment,
+          // The stubbed host names no StatChasers origin, so the plugin would
+          // draw ESPN's 500px crests. Point it at this server's own
+          // /team-logos/ and /news-image/ derivatives, as the live site does.
+          fragment: result.fragment.replace(
+            'data-image-origin=""',
+            `data-image-origin="${escapeHtml(publicOrigin(req))}"`,
+          ),
         }),
       );
     } catch (err) {

@@ -181,7 +181,12 @@
 		trigger.appendChild(caret);
 
 		var list = el("div", { class: "scdc-cs-list", role: "listbox" });
-		var root = el("div", { class: "scdc-cs" }, [trigger, list]);
+		if (config && config.icon) {
+			var icon = el("span", { class: "scdc-cs-icon", "aria-hidden": "true" });
+			icon.innerHTML = config.icon;
+			trigger.insertBefore(icon, valueEl);
+		}
+		var root = el("div", { class: "scdc-cs" + (config && config.className ? " " + config.className : "") }, [trigger, list]);
 		if (config && config.label) trigger.setAttribute("aria-label", config.label);
 
 		function optionByValue(v) {
@@ -354,6 +359,264 @@
 		SUSP: { label: "SUS", cls: "scdc-badge-out" },
 		SUS: { label: "SUS", cls: "scdc-badge-out" }
 	};
+
+	// ---- Search suggestions (shared by the original and premium toolbars) ----
+
+	// Index headshots by normalized name across *every* position (built once per
+	// loaded dataset), so a tab whose source lacks headshots (e.g. Fantasy's
+	// FAN_* columns) can still borrow a player's ESPN headshot found elsewhere.
+	function headshotIndexFor(teams) {
+		if (teams._scdcHeads) return teams._scdcHeads;
+		var index = {};
+		teams.forEach(function (t) {
+			var positions = t.positions || {};
+			Object.keys(positions).forEach(function (key) {
+				positions[key].forEach(function (p) {
+					if (p.headshot && p.name) {
+						var nk = normNameKey(p.name);
+						if (!index[nk]) index[nk] = p.headshot;
+					}
+				});
+			});
+		});
+		teams._scdcHeads = index;
+		return index;
+	}
+
+	// The alphabetical team + player list for one tab's columns. Players are
+	// de-duplicated by name and drawn only from the tab's visible columns. Each
+	// row carries its imagery: teams a logo; players a headshot + their team's
+	// abbr/logo, plus the position code.
+	function buildSuggestionItems(teams, cols) {
+		var heads = headshotIndexFor(teams);
+		var items = [];
+		teams.forEach(function (t) {
+			items.push({ type: "team", label: t.team.name, sub: t.team.abbr, logo: t.team.logo });
+		});
+		var seen = {};
+		teams.forEach(function (t) {
+			cols.forEach(function (col) {
+				var code = col.short || col.label || col.key;
+				getPlayers(t, col.key).forEach(function (p) {
+					if (!p.name) return;
+					var k = p.name.toLowerCase();
+					if (seen[k]) return;
+					seen[k] = true;
+					items.push({
+						type: "player",
+						label: p.name,
+						sub: t.team.abbr,
+						pos: code,
+						headshot: p.headshot || heads[normNameKey(p.name)] || null,
+						teamLogo: t.team.logo
+					});
+				});
+			});
+		});
+		items.sort(function (a, b) {
+			return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+		});
+		return items;
+	}
+
+	// Row imagery: a team logo for team rows; a player headshot with a small
+	// team-logo badge for player rows. Missing images fall back to the team
+	// abbreviation. Logos render on transparent backgrounds.
+	function suggestAvatar(it) {
+		if (it.type === "team") {
+			var teamWrap = el("span", { class: "scdc-sg-avatar scdc-sg-avatar-team" });
+			if (it.logo) {
+				teamWrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.logo, alt: "", width: "24", height: "24" })));
+			} else {
+				teamWrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
+			}
+			return teamWrap;
+		}
+		var wrap = el("span", { class: "scdc-sg-avatar" });
+		if (it.headshot) {
+			wrap.appendChild(el("img", imgProps({ class: "scdc-sg-head", src: it.headshot, alt: "", width: "28", height: "28" })));
+			if (it.teamLogo) {
+				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-badge", src: it.teamLogo, alt: "", width: "14", height: "14" })));
+			}
+		} else if (it.teamLogo) {
+			// No headshot for this player (ESPN doesn't publish one, or the cached
+			// file predates them). Show the team logo at full size rather than an
+			// orphaned corner badge floating beside the abbreviation.
+			wrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.teamLogo, alt: "", width: "24", height: "24" })));
+		} else {
+			wrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
+		}
+		return wrap;
+	}
+
+	// Autocomplete glue for a search input: opens on focus/click/typing, filters
+	// `opts.items()` by the input, keyboard navigation, selection via
+	// `opts.onSelect(label)`. Capped at 60 rows so a full roster can't build
+	// thousands of DOM nodes at once. `opts.onInput(value)` fires on typing.
+	function attachSuggest(search, suggestBox, opts) {
+		var shown = [];
+		var active = -1;
+
+		function setActive(i) {
+			active = i;
+			Array.prototype.forEach.call(suggestBox.children, function (c, idx) {
+				c.className = idx === i ? "scdc-suggest-item is-active" : "scdc-suggest-item";
+			});
+			var item = suggestBox.children[i];
+			if (item && item.scrollIntoView) item.scrollIntoView({ block: "nearest" });
+		}
+
+		function close() {
+			suggestBox.style.display = "none";
+			suggestBox.innerHTML = "";
+			active = -1;
+			search.setAttribute("aria-expanded", "false");
+		}
+
+		function select(it) {
+			search.value = it.label;
+			close();
+			opts.onSelect(it.label);
+		}
+
+		function open() {
+			var items = opts.items();
+			var q = search.value.trim().toLowerCase();
+			var list = q
+				? items.filter(function (it) {
+						return it.label.toLowerCase().indexOf(q) !== -1;
+				  })
+				: items;
+			shown = list.slice(0, 60);
+			active = -1;
+			suggestBox.innerHTML = "";
+			if (!shown.length) {
+				close();
+				return;
+			}
+			shown.forEach(function (it, i) {
+				// Name, with the color-coded position code to its right (players only).
+				var main = el("span", { class: "scdc-suggest-main" }, [
+					el("span", { class: "scdc-suggest-label", text: it.label })
+				]);
+				if (it.type === "player" && it.pos) {
+					var posEl = el("span", { class: "scdc-suggest-pos", text: it.pos });
+					posEl.style.color = POSITION_COLOR[it.pos] || "#64748b";
+					// Inline, so the code can't be squeezed to nothing beside the
+					// nowrap label if the stylesheet is ever stripped or overridden.
+					posEl.style.flex = "0 0 auto";
+					main.appendChild(posEl);
+				}
+				var left = el("span", { class: "scdc-suggest-left" }, [suggestAvatar(it), main]);
+				var right = el("span", {
+					class: "scdc-suggest-type",
+					text: it.type === "team" ? "Team" : it.sub || "Player"
+				});
+				var row = el("div", { class: "scdc-suggest-item", role: "option" }, [left, right]);
+				// mousedown (not click) so the selection fires before the input's blur.
+				row.addEventListener("mousedown", function (e) {
+					e.preventDefault();
+					select(it);
+				});
+				row.addEventListener("mouseenter", function () {
+					setActive(i);
+				});
+				suggestBox.appendChild(row);
+			});
+			suggestBox.style.display = "block";
+			search.setAttribute("aria-expanded", "true");
+		}
+
+		search.addEventListener("input", function () {
+			opts.onInput(search.value);
+			open();
+		});
+		search.addEventListener("focus", open);
+		search.addEventListener("click", open);
+		search.addEventListener("blur", function () {
+			// Small delay so a click inside the list still resolves first.
+			setTimeout(close, 120);
+		});
+		search.addEventListener("keydown", function (e) {
+			var isOpen = suggestBox.style.display !== "none" && shown.length;
+			if (e.key === "ArrowDown") {
+				e.preventDefault();
+				if (!isOpen) { open(); return; }
+				setActive(Math.min(active + 1, shown.length - 1));
+			} else if (e.key === "ArrowUp") {
+				if (!isOpen) return;
+				e.preventDefault();
+				setActive(Math.max(active - 1, 0));
+			} else if (e.key === "Enter") {
+				if (isOpen && active >= 0 && shown[active]) {
+					e.preventDefault();
+					select(shown[active]);
+				}
+			} else if (e.key === "Escape") {
+				close();
+			}
+		});
+
+		return { close: close };
+	}
+
+	// ---- CSV export (shared) ----
+
+	// CSV-quote a field if it contains a comma, quote, or newline.
+	function csvCell(value) {
+		var s = value == null ? "" : String(value);
+		if (/[",\n]/.test(s)) {
+			s = '"' + s.replace(/"/g, '""') + '"';
+		}
+		return s;
+	}
+
+	// Export the on-screen data (visible teams × displayed columns) as a
+	// wide-format CSV: one row per Team + Position, players in depth order
+	// spread across Player 1, Player 2, … columns. Opens natively in Excel.
+	function exportCsv(visible, columns, tabKey) {
+		var records = [];
+		visible.forEach(function (team) {
+			columns.forEach(function (col) {
+				var players = getPlayers(team, col.key);
+				if (players.length) {
+					records.push({ team: team, position: col.label, players: players });
+				}
+			});
+		});
+		if (!records.length) return;
+
+		var maxPlayers = records.reduce(function (m, r) {
+			return Math.max(m, r.players.length);
+		}, 0);
+
+		var header = ["Team", "Abbr", "Position"];
+		for (var i = 0; i < maxPlayers; i++) header.push("Player " + (i + 1));
+
+		var lines = [header.map(csvCell).join(",")];
+		records.forEach(function (r) {
+			var cells = [r.team.team.name, r.team.team.abbr, r.position];
+			for (var j = 0; j < maxPlayers; j++) {
+				var p = r.players[j];
+				cells.push(p ? p.name + (p.status ? " (" + p.status + ")" : "") : "");
+			}
+			lines.push(cells.map(csvCell).join(","));
+		});
+
+		// Prepend a BOM so Excel reads UTF-8 names (accents, apostrophes) right.
+		var csv = "\ufeff" + lines.join("\r\n");
+		var stamp = new Date().toISOString().slice(0, 10);
+		var filename = "statchasers-depth-charts-" + VIEW_TO_SLUG[tabKey] + "-" + stamp + ".csv";
+
+		var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+		var url = URL.createObjectURL(blob);
+		var a = el("a", { href: url, download: filename });
+		a.style.display = "none";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
 
 	// "Josh Sweat" -> "J. Sweat". Keeps everything after the first name intact
 	// so suffixes/compound surnames survive (e.g. "Amon-Ra St. Brown").
@@ -664,205 +927,24 @@
 		var suggestBox = el("div", { class: "scdc-suggest", role: "listbox" });
 		var searchWrap = el("div", { class: "scdc-search-wrap" }, [search, suggestBox]);
 
-		var suggestItems = []; // full list for the current tab
-		var suggestShown = []; // currently rendered (query-filtered) subset
-		var suggestActive = -1; // highlighted index in suggestShown
-		var suggestTab = null; // tab the list was last built for
-
-		// Index headshots by normalized name across *every* position (built once),
-		// so a tab whose source lacks headshots (e.g. Fantasy's FAN_* columns) can
-		// still borrow a player's ESPN headshot found elsewhere.
-		var headshotIndex = null;
-		function getHeadshotIndex() {
-			if (headshotIndex) return headshotIndex;
-			headshotIndex = {};
-			teams.forEach(function (t) {
-				var positions = t.positions || {};
-				Object.keys(positions).forEach(function (key) {
-					positions[key].forEach(function (p) {
-						if (p.headshot && p.name) {
-							var nk = normNameKey(p.name);
-							if (!headshotIndex[nk]) headshotIndex[nk] = p.headshot;
-						}
-					});
-				});
-			});
-			return headshotIndex;
-		}
-
-		// Build the alphabetical team + player list for the active tab. Players are
-		// de-duplicated by name and drawn only from the tab's visible columns. Each
-		// row carries its imagery: teams a logo; players a headshot + their team's
-		// abbr/logo, plus the position code.
-		function buildSuggestions() {
-			var cols = TABS[state.tab].columns;
-			var heads = getHeadshotIndex();
-			var items = [];
-			teams.forEach(function (t) {
-				items.push({ type: "team", label: t.team.name, sub: t.team.abbr, logo: t.team.logo });
-			});
-			var seen = {};
-			teams.forEach(function (t) {
-				cols.forEach(function (col) {
-					var code = col.short || col.label || col.key;
-					getPlayers(t, col.key).forEach(function (p) {
-						if (!p.name) return;
-						var k = p.name.toLowerCase();
-						if (seen[k]) return;
-						seen[k] = true;
-						items.push({
-							type: "player",
-							label: p.name,
-							sub: t.team.abbr,
-							pos: code,
-							headshot: p.headshot || heads[normNameKey(p.name)] || null,
-							teamLogo: t.team.logo
-						});
-					});
-				});
-			});
-			items.sort(function (a, b) {
-				return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
-			});
-			suggestItems = items;
-			suggestTab = state.tab;
-		}
-
-		function ensureSuggestions() {
-			if (suggestTab !== state.tab) buildSuggestions();
-		}
-
-		function setActive(i) {
-			suggestActive = i;
-			Array.prototype.forEach.call(suggestBox.children, function (c, idx) {
-				c.className = idx === i ? "scdc-suggest-item is-active" : "scdc-suggest-item";
-			});
-			var item = suggestBox.children[i];
-			if (item && item.scrollIntoView) item.scrollIntoView({ block: "nearest" });
-		}
-
-		function closeSuggest() {
-			suggestBox.style.display = "none";
-			suggestBox.innerHTML = "";
-			suggestActive = -1;
-			search.setAttribute("aria-expanded", "false");
-		}
-
-		function selectSuggestion(it) {
-			search.value = it.label;
-			state.search = it.label;
-			closeSuggest();
-			draw();
-		}
-
-		// Row imagery: a team logo for team rows; a player headshot with a small
-		// team-logo badge for player rows. Missing images fall back to the team
-		// abbreviation. Logos render on transparent backgrounds.
-		function suggestAvatar(it) {
-			if (it.type === "team") {
-				var teamWrap = el("span", { class: "scdc-sg-avatar scdc-sg-avatar-team" });
-				if (it.logo) {
-					teamWrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.logo, alt: "", width: "24", height: "24" })));
-				} else {
-					teamWrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
+		// Autocomplete rows for the active tab, rebuilt when the tab changes.
+		var suggestItems = null;
+		var suggestTab = null;
+		var suggest = attachSuggest(search, suggestBox, {
+			items: function () {
+				if (suggestTab !== state.tab) {
+					suggestItems = buildSuggestionItems(teams, TABS[state.tab].columns);
+					suggestTab = state.tab;
 				}
-				return teamWrap;
-			}
-			var wrap = el("span", { class: "scdc-sg-avatar" });
-			if (it.headshot) {
-				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-head", src: it.headshot, alt: "", width: "28", height: "28" })));
-				if (it.teamLogo) {
-					wrap.appendChild(el("img", imgProps({ class: "scdc-sg-badge", src: it.teamLogo, alt: "", width: "14", height: "14" })));
-				}
-			} else if (it.teamLogo) {
-				// No headshot for this player (ESPN doesn't publish one, or the cached
-				// file predates them). Show the team logo at full size rather than an
-				// orphaned corner badge floating beside the abbreviation.
-				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.teamLogo, alt: "", width: "24", height: "24" })));
-			} else {
-				wrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
-			}
-			return wrap;
-		}
-
-		// Render the dropdown filtered by the current input; capped so a full
-		// player roster can't build thousands of DOM nodes at once.
-		function openSuggest() {
-			ensureSuggestions();
-			var q = search.value.trim().toLowerCase();
-			var list = q
-				? suggestItems.filter(function (it) {
-						return it.label.toLowerCase().indexOf(q) !== -1;
-				  })
-				: suggestItems;
-			suggestShown = list.slice(0, 60);
-			suggestActive = -1;
-			suggestBox.innerHTML = "";
-			if (!suggestShown.length) {
-				closeSuggest();
-				return;
-			}
-			suggestShown.forEach(function (it, i) {
-				// Name, with the color-coded position code to its right (players only).
-				var main = el("span", { class: "scdc-suggest-main" }, [
-					el("span", { class: "scdc-suggest-label", text: it.label })
-				]);
-				if (it.type === "player" && it.pos) {
-					var posEl = el("span", { class: "scdc-suggest-pos", text: it.pos });
-					posEl.style.color = POSITION_COLOR[it.pos] || "#64748b";
-					// Inline, so the code can't be squeezed to nothing beside the
-					// nowrap label if the stylesheet is ever stripped or overridden.
-					posEl.style.flex = "0 0 auto";
-					main.appendChild(posEl);
-				}
-				var left = el("span", { class: "scdc-suggest-left" }, [suggestAvatar(it), main]);
-				var right = el("span", {
-					class: "scdc-suggest-type",
-					text: it.type === "team" ? "Team" : it.sub || "Player"
-				});
-				var row = el("div", { class: "scdc-suggest-item", role: "option" }, [left, right]);
-				// mousedown (not click) so the selection fires before the input's blur.
-				row.addEventListener("mousedown", function (e) {
-					e.preventDefault();
-					selectSuggestion(it);
-				});
-				row.addEventListener("mouseenter", function () {
-					setActive(i);
-				});
-				suggestBox.appendChild(row);
-			});
-			suggestBox.style.display = "block";
-			search.setAttribute("aria-expanded", "true");
-		}
-
-		search.addEventListener("input", function () {
-			state.search = search.value;
-			openSuggest();
-			draw();
-		});
-		search.addEventListener("focus", openSuggest);
-		search.addEventListener("click", openSuggest);
-		search.addEventListener("blur", function () {
-			// Small delay so a click inside the list still resolves first.
-			setTimeout(closeSuggest, 120);
-		});
-		search.addEventListener("keydown", function (e) {
-			var open = suggestBox.style.display !== "none" && suggestShown.length;
-			if (e.key === "ArrowDown") {
-				e.preventDefault();
-				if (!open) { openSuggest(); return; }
-				setActive(Math.min(suggestActive + 1, suggestShown.length - 1));
-			} else if (e.key === "ArrowUp") {
-				if (!open) return;
-				e.preventDefault();
-				setActive(Math.max(suggestActive - 1, 0));
-			} else if (e.key === "Enter") {
-				if (open && suggestActive >= 0 && suggestShown[suggestActive]) {
-					e.preventDefault();
-					selectSuggestion(suggestShown[suggestActive]);
-				}
-			} else if (e.key === "Escape") {
-				closeSuggest();
+				return suggestItems;
+			},
+			onInput: function (value) {
+				state.search = value;
+				draw();
+			},
+			onSelect: function (label) {
+				state.search = label;
+				draw();
 			}
 		});
 
@@ -926,7 +1008,7 @@
 				// carried-over query could otherwise leave the new tab looking empty.
 				state.search = "";
 				search.value = "";
-				closeSuggest();
+				suggest.close();
 				commit("push");
 			});
 			btn._key = key;
@@ -1058,63 +1140,9 @@
 			body.appendChild(grid);
 		}
 
-		// CSV-quote a field if it contains a comma, quote, or newline.
-		function csvCell(value) {
-			var s = value == null ? "" : String(value);
-			if (/[",\n]/.test(s)) {
-				s = '"' + s.replace(/"/g, '""') + '"';
-			}
-			return s;
-		}
-
-		// Export the on-screen data (visible teams × displayed columns) as a
-		// wide-format CSV: one row per Team + Position, players in depth order
-		// spread across Player 1, Player 2, … columns. Opens natively in Excel.
+		// Exports exactly what's on screen (visible teams × displayed columns).
 		function handleDownload() {
-			var columns = currentColumns();
-			var visible = currentVisible();
-
-			var records = [];
-			visible.forEach(function (team) {
-				columns.forEach(function (col) {
-					var players = getPlayers(team, col.key);
-					if (players.length) {
-						records.push({ team: team, position: col.label, players: players });
-					}
-				});
-			});
-			if (!records.length) return;
-
-			var maxPlayers = records.reduce(function (m, r) {
-				return Math.max(m, r.players.length);
-			}, 0);
-
-			var header = ["Team", "Abbr", "Position"];
-			for (var i = 0; i < maxPlayers; i++) header.push("Player " + (i + 1));
-
-			var lines = [header.map(csvCell).join(",")];
-			records.forEach(function (r) {
-				var cells = [r.team.team.name, r.team.team.abbr, r.position];
-				for (var j = 0; j < maxPlayers; j++) {
-					var p = r.players[j];
-					cells.push(p ? p.name + (p.status ? " (" + p.status + ")" : "") : "");
-				}
-				lines.push(cells.map(csvCell).join(","));
-			});
-
-			// Prepend a BOM so Excel reads UTF-8 names (accents, apostrophes) right.
-			var csv = "﻿" + lines.join("\r\n");
-			var stamp = new Date().toISOString().slice(0, 10);
-			var filename = "statchasers-depth-charts-" + VIEW_TO_SLUG[state.tab] + "-" + stamp + ".csv";
-
-			var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-			var url = URL.createObjectURL(blob);
-			var a = el("a", { href: url, download: filename });
-			a.style.display = "none";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
+			exportCsv(currentVisible(), currentColumns(), state.tab);
 		}
 
 		// Re-sync the controls to `state`, redraw, and optionally update the URL.
@@ -1142,14 +1170,391 @@
 		}
 
 		// ---- Initialize from the fragment ----
-		applyResolved(resolveSlugs(parseHash()));
+		var initial = resolveSlugs(parseHash());
+		applyResolved(initial);
 		commit("");
+
+		// NEW DESIGN - COMPARISON: the premium browser, under the complete
+		// original, drawing the same loaded teams (no second fetch). It keeps
+		// its own filter state and never writes the URL fragment, so the two
+		// cannot fight over history while they are compared side by side.
+		renderPremium(root, { teams: teams, initial: initial });
 
 		// Back/forward (and a hand-edited fragment): re-read it, no new history entry.
 		window.addEventListener("popstate", function () {
 			applyResolved(resolveSlugs(parseHash()));
 			commit("");
 		});
+	}
+
+	// =====================================================================
+	// NEW DESIGN - COMPARISON: the premium league-wide browser.
+	//
+	// Mounted under the complete original by render(), from the same loaded,
+	// sorted and imagery-optimized `teams` array (no second fetch and no second
+	// ranking pass). Same TABS, same getPlayers, same search semantics
+	// (teamMatchesSearch), same count rule (visible teams x displayed columns),
+	// same CSV (exportCsv). Its own filter state; it does not touch the URL
+	// fragment while the two designs are compared.
+	// =====================================================================
+
+	var PRM_ICON = {
+		fantasy:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="20" y2="15"></line><line x1="12" x2="12" y1="20" y2="10"></line><line x1="18" x2="18" y1="20" y2="4"></line></svg>',
+		offense:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="6.5" transform="rotate(-45 12 12)"></ellipse><path d="m8.5 15.5 7-7"></path><path d="m10 13 1.2 1.2"></path><path d="m11.8 11.2 1.2 1.2"></path><path d="m13.6 9.4 1.2 1.2"></path></svg>',
+		defense:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>',
+		special:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+		search:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.8-3.8"></path></svg>',
+		layers:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>',
+		helmet:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 13.5a7.5 7.5 0 0 1 15 0V16a2 2 0 0 1-2 2h-1.3l-1-3H9.6l-.9 3H6.5a2 2 0 0 1-2-2Z"></path><path d="M15.2 15h5"></path><path d="M9.5 10.5h.01"></path></svg>',
+		download:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+		info:
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+		up: '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9.2 8.5H.8Z" fill="currentColor"></path></svg>',
+		down: '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5.8 1.5h8.4Z" fill="currentColor"></path></svg>'
+	};
+
+	// Premium position headings: the Fantasy tab's are spelled out already;
+	// the other tabs' single-code labels get their full names here.
+	var PRM_HEADING = {
+		QB: "Quarterbacks", RB: "Running Backs", WR: "Wide Receivers", TE: "Tight Ends",
+		LT: "Left Tackles", LG: "Left Guards", C: "Centers", RG: "Right Guards", RT: "Right Tackles",
+		EDGE: "Edge Rushers", DL: "Defensive Line", LB: "Linebackers", CB: "Cornerbacks", S: "Safeties",
+		K: "Kickers", P: "Punters", LS: "Long Snappers", KR: "Kick Returners", PR: "Punt Returners"
+	};
+	function prmHeading(col) {
+		var code = col.short || col.label || col.key;
+		return col.label.length > 4 ? col.label : PRM_HEADING[code] || col.label;
+	}
+
+	function prmPlayerRow(player) {
+		var children = [];
+		var move = el("span", { class: "scdc-prm-move" });
+		if (player.movement === "up") {
+			move.className += " is-up";
+			move.innerHTML = PRM_ICON.up;
+			move.appendChild(el("span", { class: "scdc-prm-sr", text: "Moved up in the depth chart." }));
+		} else if (player.movement === "down") {
+			move.className += " is-down";
+			move.innerHTML = PRM_ICON.down;
+			move.appendChild(el("span", { class: "scdc-prm-sr", text: "Moved down in the depth chart." }));
+		}
+		children.push(move);
+
+		var rankText = String(player.rank);
+		if (rankText.length < 2) rankText = "0" + rankText;
+		children.push(el("span", { class: "scdc-prm-rank", text: rankText }));
+		children.push(el("span", { class: "scdc-prm-name", text: player.name, title: player.name }));
+
+		if (player.movement === "new") {
+			children.push(el("span", { class: "scdc-prm-badge scdc-prm-badge-new", text: "NEW", title: "Newly listed on this depth chart" }));
+		}
+		if (player.status) {
+			var known = STATUS_BADGE[String(player.status).toUpperCase()];
+			children.push(
+				el("span", {
+					class: "scdc-prm-badge " + (known ? known.cls : "scdc-badge-out"),
+					text: known ? known.label : player.status
+				})
+			);
+		}
+		var row = el("div", { class: "scdc-prm-row", role: "listitem" }, children);
+		if (player.id) row.setAttribute("data-id", String(player.id));
+		return row;
+	}
+
+	function prmPositionGroup(team, col) {
+		var players = getPlayers(team, col.key);
+		var headId = "scdc-prm-h-" + team.team.abbr.toLowerCase() + "-" + col.key.toLowerCase();
+		var head = el("div", { class: "scdc-prm-col-head" }, [
+			el("span", { class: "scdc-prm-col-label", id: headId, text: prmHeading(col) }),
+			el("span", { class: "scdc-prm-col-count", text: String(players.length) })
+		]);
+		var rule = el("div", { class: "scdc-prm-col-rule", "aria-hidden": "true" });
+		var list;
+		if (players.length) {
+			list = el("div", { class: "scdc-prm-list", role: "list", "aria-labelledby": headId }, players.map(prmPlayerRow));
+		} else {
+			list = el("div", { class: "scdc-prm-list is-empty", text: "-" });
+		}
+		return el("div", { class: "scdc-prm-col" }, [head, rule, list]);
+	}
+
+	function prmTeamCard(team, columns) {
+		var logo;
+		if (team.team.logo) {
+			logo = el("img", imgProps({ src: team.team.logo, alt: "", width: "40", height: "40", loading: "lazy" }));
+		} else {
+			logo = el("span", { text: team.team.abbr });
+		}
+		var summary = columns
+			.map(function (col) {
+				return { label: col.short || col.label, n: getPlayers(team, col.key).length };
+			})
+			.filter(function (x) { return x.n > 0; })
+			.map(function (x) { return x.n + " " + x.label; })
+			.join(" · ");
+
+		var head = el("div", { class: "scdc-prm-team" }, [
+			el("div", { class: "scdc-prm-logo" }, [logo]),
+			el("div", { class: "scdc-prm-team-bar", "aria-hidden": "true" }),
+			el("div", { class: "scdc-prm-team-id" }, [
+				el("h3", { class: "scdc-prm-team-name", text: team.team.name }),
+				summary ? el("div", { class: "scdc-prm-team-summary", text: summary }) : null
+			])
+		]);
+		var cols = el("div", { class: "scdc-prm-cols" }, columns.map(function (col) {
+			return prmPositionGroup(team, col);
+		}));
+		var card = el("article", { class: "scdc-prm-card", "data-team": team.team.abbr }, [head, cols]);
+		card.appendChild(el("span", { class: "scdc-prm-corner", "aria-hidden": "true" }));
+		return card;
+	}
+
+	function renderPremium(root, shared) {
+		var teams = shared.teams;
+		var state = {
+			tab: shared.initial.tab,
+			team: shared.initial.team,
+			position: shared.initial.position,
+			search: ""
+		};
+
+		var wrap = el("section", { class: "scdc-prm-compare", "aria-label": "New design - comparison" });
+		wrap.appendChild(el("div", { class: "scdc-prm-divider" }, [el("span", { text: "NEW DESIGN - COMPARISON" })]));
+		var prm = el("div", { class: "scdc-prm" });
+		wrap.appendChild(prm);
+
+		// ---- Navigation + count ----
+		var tabsEl = el("div", { class: "scdc-prm-tabs", role: "group", "aria-label": "Depth chart view" });
+		var tabButtons = {};
+		TAB_ORDER.forEach(function (key) {
+			var btn = el("button", { type: "button", class: "scdc-prm-tab", "aria-pressed": "false" });
+			btn.innerHTML = PRM_ICON[key];
+			btn.appendChild(el("span", { text: TABS[key].label }));
+			btn.addEventListener("click", function () {
+				if (state.tab === key) return;
+				state.tab = key;
+				state.position = "ALL";
+				state.search = "";
+				search.value = "";
+				suggest.close();
+				commit();
+			});
+			tabButtons[key] = btn;
+			tabsEl.appendChild(btn);
+		});
+		var countEl = el("div", { class: "scdc-prm-count", role: "status", "aria-live": "polite" });
+		prm.appendChild(el("div", { class: "scdc-prm-top" }, [tabsEl, countEl]));
+
+		// ---- Toolbar ----
+		var search = el("input", {
+			type: "text",
+			class: "scdc-prm-input",
+			placeholder: "Search team or player...",
+			autocomplete: "off",
+			role: "combobox",
+			"aria-label": "Search team or player",
+			"aria-expanded": "false",
+			"aria-autocomplete": "list"
+		});
+		var suggestBox = el("div", { class: "scdc-suggest", role: "listbox" });
+		var searchIcon = el("span", { class: "scdc-prm-search-icon", "aria-hidden": "true" });
+		searchIcon.innerHTML = PRM_ICON.search;
+		var searchWrap = el("div", { class: "scdc-search-wrap scdc-prm-search" }, [searchIcon, search, suggestBox]);
+
+		var suggestItems = null;
+		var suggestTab = null;
+		var suggest = attachSuggest(search, suggestBox, {
+			items: function () {
+				if (suggestTab !== state.tab) {
+					suggestItems = buildSuggestionItems(teams, TABS[state.tab].columns);
+					suggestTab = state.tab;
+				}
+				return suggestItems;
+			},
+			onInput: function (value) {
+				state.search = value;
+				draw();
+			},
+			onSelect: function (label) {
+				state.search = label;
+				draw();
+			}
+		});
+
+		var posSelect = customSelect({
+			label: "Filter by position",
+			className: "scdc-prm-select",
+			icon: PRM_ICON.layers,
+			onChange: function (v) {
+				state.position = v;
+				commit();
+			}
+		});
+		var teamSelect = customSelect({
+			label: "Filter by team",
+			className: "scdc-prm-select",
+			icon: PRM_ICON.helmet,
+			onChange: function (v) {
+				state.team = v;
+				commit();
+			}
+		});
+		teamSelect.setOptions(
+			[{ value: "ALL", label: "All teams" }].concat(
+				teams.map(function (t) {
+					return {
+						value: t.team.abbr,
+						label: t.team.name + " (" + t.team.abbr + ")",
+						logo: t.team.logo,
+						abbr: t.team.logo ? null : t.team.abbr
+					};
+				})
+			)
+		);
+		teamSelect.setValue(state.team);
+
+		var exportBtn = el("button", { type: "button", class: "scdc-prm-export", "aria-label": "Export the displayed depth charts as CSV" });
+		exportBtn.innerHTML = PRM_ICON.download;
+		exportBtn.appendChild(el("span", { text: "Export" }));
+		exportBtn.addEventListener("click", function () {
+			exportCsv(currentVisible(), currentColumns(), state.tab);
+		});
+
+		prm.appendChild(
+			el("div", { class: "scdc-prm-toolbar" }, [
+				el("div", { class: "scdc-prm-field scdc-prm-field-search" }, [searchWrap]),
+				el("div", { class: "scdc-prm-field scdc-prm-field-pos" }, [posSelect.el]),
+				el("div", { class: "scdc-prm-field scdc-prm-field-team" }, [teamSelect.el]),
+				el("div", { class: "scdc-prm-field scdc-prm-field-export" }, [exportBtn])
+			])
+		);
+
+		// ---- Fantasy notice ----
+		var notice = el("div", { class: "scdc-prm-notice", role: "note" });
+		notice.innerHTML = PRM_ICON.info;
+		notice.appendChild(
+			el("p", {}, [
+				el("strong", { text: "Fantasy view" }),
+				document.createTextNode(" prioritizes fantasy value and may differ from official team depth charts.")
+			])
+		);
+		prm.appendChild(notice);
+
+		var body = el("div", { class: "scdc-prm-body" });
+		prm.appendChild(body);
+		root.appendChild(wrap);
+
+		// ---- State -> view ----
+		function syncTabs() {
+			TAB_ORDER.forEach(function (key) {
+				var on = key === state.tab;
+				tabButtons[key].className = "scdc-prm-tab" + (on ? " is-active" : "");
+				tabButtons[key].setAttribute("aria-pressed", on ? "true" : "false");
+			});
+		}
+		function syncPosOptions() {
+			var opts = [{ value: "ALL", label: "All positions" }];
+			TABS[state.tab].columns.forEach(function (col) {
+				var code = col.short || col.label || col.key;
+				opts.push({ value: col.key, label: prmHeading(col), badge: code, badgeColor: POSITION_COLOR[code] || "#64748b" });
+			});
+			posSelect.setOptions(opts);
+			posSelect.setValue(state.position);
+		}
+		function currentColumns() {
+			var tabColumns = TABS[state.tab].columns;
+			return state.position === "ALL"
+				? tabColumns
+				: tabColumns.filter(function (c) { return c.key === state.position; });
+		}
+		function currentVisible() {
+			var cols = TABS[state.tab].columns;
+			return teams.filter(function (t) {
+				if (state.team !== "ALL" && t.team.abbr !== state.team) return false;
+				return teamMatchesSearch(t, state.search, cols);
+			});
+		}
+
+		// Cards are built once per team + tab + position filter and reused across
+		// searches and team filters (the same node is simply re-appended).
+		var cardCache = {};
+		function cardFor(team, columns) {
+			var key = state.tab + "|" + state.position + "|" + team.team.abbr;
+			if (!cardCache[key]) cardCache[key] = prmTeamCard(team, columns);
+			return cardCache[key];
+		}
+
+		function reset() {
+			state.search = "";
+			state.team = "ALL";
+			state.position = "ALL";
+			search.value = "";
+			commit();
+		}
+
+		function draw() {
+			var columns = currentColumns();
+			var visible = currentVisible();
+
+			notice.style.display = state.tab === "fantasy" ? "" : "none";
+			exportBtn.disabled = !visible.length;
+
+			var count = 0;
+			visible.forEach(function (t) {
+				columns.forEach(function (col) {
+					count += getPlayers(t, col.key).length;
+				});
+			});
+			countEl.innerHTML = "";
+			countEl.appendChild(document.createTextNode("Showing "));
+			countEl.appendChild(el("b", { text: String(count) }));
+			countEl.appendChild(document.createTextNode(count === 1 ? " player" : " players"));
+
+			body.innerHTML = "";
+			if (!visible.length) {
+				var resetBtn = el("button", { type: "button", class: "scdc-prm-reset", text: "Reset filters" });
+				resetBtn.addEventListener("click", reset);
+				body.appendChild(
+					el("div", { class: "scdc-prm-empty" }, [
+						el("p", { class: "scdc-prm-empty-title", text: "No teams match" }),
+						el("p", { class: "scdc-prm-empty-text", text: "Try another name, position or team." }),
+						resetBtn
+					])
+				);
+				return;
+			}
+
+			// Column count per card: the tab's groups, five across at most; the
+			// grid packs more cards per row as the column count drops.
+			var perRow = Math.min(5, columns.length);
+			var grid = el("div", { class: "scdc-prm-grid" });
+			grid.style.setProperty("--prm-cols", String(perRow));
+			grid.setAttribute("data-cols", String(perRow));
+			var frag = document.createDocumentFragment();
+			visible.forEach(function (t) {
+				frag.appendChild(cardFor(t, columns));
+			});
+			grid.appendChild(frag);
+			body.appendChild(grid);
+		}
+
+		function commit() {
+			syncTabs();
+			syncPosOptions();
+			teamSelect.setValue(state.team);
+			draw();
+		}
+
+		commit();
 	}
 
 	function init(root) {

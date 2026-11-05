@@ -1087,59 +1087,6 @@ describe("the team header (mak's pick of 2026-11-05: the bright blue hero and th
   });
 });
 
-describe("Premium Design A · Dark Navy, the comparison under the header (back at mak's request, 2026-11-05)", () => {
-  test("directly under the header on the hub and on section pages, on the same facts, switcher and tabs, unwired", async () => {
-    for (const path of ["/team/new-england-patriots", "/team/kansas-city-chiefs/coaching/", "/team/washington-commanders/usage/"]) {
-      const { doc } = await dom(path);
-      const b = doc.querySelector(".sct-tpb");
-      const tp = doc.querySelector('[data-sct-premium="team-header"]');
-      assert.ok(tp, `${path}: Design A renders`);
-      assert.equal(b.nextElementSibling, tp, `${path}: directly under the header`);
-      assert.equal(tp.querySelector(".sct-cp-flag").textContent, "Premium Design A · Dark Navy");
-      assert.equal(tp.querySelector("h1, h2, h3, h4"), null, "no heading inside the comparison: the page keeps its one H1");
-      assert.equal(doc.querySelectorAll("h1").length <= 1, true);
-      // Isolation both ways.
-      assert.equal(tp.querySelector('[class*="sct-tpb"]'), null, "no header classes inside A");
-      assert.equal(b.querySelector('[class*="sct-tp-"], .sct-tp'), null, "no A classes inside the header");
-      // The same identity, facts and stamp as the header.
-      assert.equal(tp.querySelector(".sct-tp-title").textContent, b.querySelector(".sct-tpb-title").textContent);
-      assert.equal(tp.querySelector(".sct-tp-eyebrow").textContent, b.querySelector(".sct-tpb-eyebrow").textContent);
-      assert.equal(tp.querySelector(".sct-tp-sub").textContent, b.querySelector(".sct-tpb-sub").textContent);
-      assert.equal(tp.querySelector(".sct-tp-logo").getAttribute("src"), b.querySelector(".sct-tpb-logo").getAttribute("src"));
-      const facts = (root, card, label, value) => [...root.querySelectorAll(card)].map((k) => [k.querySelector(label).textContent, k.querySelector(value).textContent]);
-      assert.deepEqual(facts(tp, ".sct-tp-kpi", ".sct-tp-kpi-label", ".sct-tp-kpi-value"), facts(b, ".sct-tpb-kpi", ".sct-tpb-kpi-label", ".sct-tpb-kpi-value"), `${path}: facts`);
-      for (const k of tp.querySelectorAll(".sct-tp-kpi")) assert.ok(k.querySelector(".sct-tp-kpi-icon svg"), "a gold icon on every card");
-      const t0 = b.querySelector(".sct-tpb-updated time");
-      const t1 = tp.querySelector(".sct-tp-updated time");
-      if (t0) {
-        assert.equal(t1.getAttribute("datetime"), t0.getAttribute("datetime"));
-        assert.equal(t1.getAttribute("data-ts"), t0.getAttribute("data-ts"));
-      } else assert.equal(t1, null);
-      // The switcher: the same 32 destinations and current club; only the header's is wired.
-      const hrefs = (el) => [...el.querySelectorAll(".sct-switch-team")].map((a) => a.getAttribute("href"));
-      assert.deepEqual(hrefs(tp), hrefs(b));
-      assert.equal(tp.querySelector(".sct-switch-team.is-current").textContent, b.querySelector(".sct-switch-team.is-current").textContent);
-      assert.ok(tp.querySelector("details.sct-switch.sct-tp-switch"));
-      assert.equal(tp.querySelector("[data-sct-switch]"), null);
-      assert.equal(doc.querySelectorAll("[data-sct-switch]").length, 1);
-      // The strip: the same tabs, addresses and open tab as the header's; an icon on each; no hooks, no ids.
-      const tabs = [...tp.querySelectorAll(".sct-tp-tab")];
-      const links = [...b.querySelectorAll(".sct-nav-link")];
-      assert.deepEqual(tabs.map((a) => a.querySelector(".sct-tp-tab-label").textContent), links.map((a) => a.textContent));
-      assert.deepEqual(tabs.map((a) => a.getAttribute("href")), links.map((a) => a.getAttribute("href")));
-      assert.deepEqual(tabs.map((a) => a.classList.contains("is-active")), links.map((a) => a.classList.contains("is-active")));
-      assert.equal(tp.querySelector(".sct-tp-tab.is-active").getAttribute("aria-current"), "page");
-      assert.equal(tp.querySelector(".sct-tp-tab svg"), null, "text-first tabs, like the header's");
-      assert.equal(tp.querySelector(".sct-tp-nav").previousElementSibling, tp.querySelector(".sct-tp-hero"), "the strip is a separate block under the hero");
-      assert.equal(tp.querySelector(".sct-nav-link, [data-sct-nav], [data-sct-panel-id], [data-sct-lead]"), null, "none of the bundle's hooks");
-      assert.equal(tp.querySelector("[id]"), null, "no ids inside the comparison");
-      const ids = [...doc.querySelectorAll("[data-sct-root] [id]")].map((el) => el.id);
-      assert.equal(new Set(ids).size, ids.length, `${path}: duplicate ids`);
-      assert.doesNotMatch(tp.textContent, /\u2014/);
-    }
-  });
-});
-
 describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders removed the same day)", () => {
   test("the banner carries the heading; the panels carry the rows with the tab's bars, tiers and ranks", async () => {
     for (const path of ["/team/new-england-patriots/stats/", "/team/kansas-city-chiefs/stats/", "/team/new-york-jets/stats/"]) {
@@ -3213,6 +3160,121 @@ describe("draft tab", () => {
 });
 
 describe("contracts tab", () => {
+  test("the premium comparison sits under the whole original on the same figures (mak's brief, 2026-11-05)", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("contracts");
+    const old = panel.querySelector(".sct-ct");
+    const neu = panel.querySelector(".sct-ctp");
+    assert.ok(old && neu, "both blocks render");
+    assert.ok(old.compareDocumentPosition(neu) & 4, "the comparison follows the original");
+    assert.equal(neu.previousElementSibling, old, "directly under the original block");
+    assert.equal(neu.querySelector(".sct-cp-flag")?.textContent, "New Design · Comparison");
+    // No second heading of the tab's words, no duplicate ids, no em dash.
+    assert.equal(panel.querySelectorAll("h2").length, 1);
+    assert.equal(neu.querySelector(".sct-ctp-title").tagName, "P");
+    assert.equal(neu.querySelector(".sct-ctp-title").textContent, "Patriots Contracts & Salary Cap");
+    const ids = [...panel.querySelectorAll("[id]")].map((el) => el.id);
+    assert.equal(new Set(ids).size, ids.length, "ids are unique across both blocks");
+    assert.doesNotMatch(neu.innerHTML, /\u2014/);
+    // Its own cut scenario on the bundle's hooks, baseline = cap space.
+    assert.ok(neu.hasAttribute("data-sct-ct"), "a [data-sct-ct] root of its own");
+    assert.equal(neu.getAttribute("data-cap-space"), old.getAttribute("data-cap-space"));
+    assert.ok(neu.querySelector("[data-sct-ct-scen]"));
+    assert.equal(neu.querySelector('[data-sct-ct-out="after"]').textContent, old.querySelector('[data-sct-ct-out="after"]').textContent);
+    assert.equal(neu.querySelector("[data-sct-ct-try]")?.dataset.sctCtTry, old.querySelector("[data-sct-ct-try]")?.dataset.sctCtTry);
+    assert.equal(neu.querySelectorAll("[data-sct-ct-timing]").length, 2);
+    // The dead-money ledger is not a scenario output here.
+    assert.equal(neu.querySelector('[data-sct-ct-out="dead"]'), null);
+    // Every contract, in the original's order, with the same release figures.
+    const oldRows = [...old.querySelectorAll(".sct-ct-table tbody tr")];
+    const newRows = [...neu.querySelectorAll(".sct-ctp-table tbody tr")];
+    assert.equal(newRows.length, oldRows.length);
+    oldRows.forEach((o, i) => {
+      const n = newRows[i];
+      for (const k of ["sctCtId", "preSave", "preDead", "postSave", "postDead"]) assert.equal(n.dataset[k], o.dataset[k], `${k} row ${i}`);
+      assert.equal(n.querySelector(".sct-ct-name").textContent, o.querySelector(".sct-ct-name").textContent);
+      assert.equal(n.querySelector(".is-cap").textContent, o.querySelector(".is-cap").textContent);
+      assert.ok(n.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
+      // Both timings printed, pre first; the sort key opens on the pre figure.
+      const net = n.querySelector(".is-net");
+      assert.equal(net.dataset.sort, o.dataset.preSave);
+      assert.equal(net.querySelector(".is-pre").textContent.replace("*", ""), o.querySelector(".is-save-col .sct-ct-fig").textContent.replace("*", ""));
+      assert.ok(net.querySelector(".is-post"));
+      assert.match(net.dataset.preTone, /^(save|cost|zero)$/);
+    });
+    assert.equal(neu.querySelector("thead th.is-cap").getAttribute("aria-sort"), "descending");
+    assert.deepEqual(
+      [...neu.querySelectorAll("thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort),
+      [...old.querySelectorAll("thead [data-sct-ct-sort]")].map((b) => b.dataset.sctCtSort),
+    );
+    assert.ok(neu.querySelector("[data-sct-ct-table]"), "the sort hook the bundle looks for");
+    // Worth tags carry the model's words, headshots the roster's photos.
+    const tags = [...neu.querySelectorAll(".sct-ctp-tag")].map((t) => t.textContent);
+    assert.deepEqual(tags, [...old.querySelectorAll(".sct-ct-tag")].map((t) => t.textContent));
+    assert.equal(neu.querySelectorAll(".sct-ctp-face-img").length, old.querySelectorAll(".sct-ct-face-img").length);
+    // The four cards, with the original ledger's figures.
+    for (const h of ["Cap Position", "Flexibility", "Where a Release Frees Cap", "2026 Dead Money"]) {
+      assert.ok([...neu.querySelectorAll(".sct-ctp-card-h")].some((el) => el.textContent === h), h);
+    }
+    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+    const oldValues = [...old.querySelectorAll(".sct-ct-ledger .sct-ct-lg-value .sct-ct-num")].map(text);
+    const newValues = [
+      ...[...neu.querySelectorAll(".is-position .sct-ctp-feature-value, .is-position .sct-ctp-crow-value > .sct-ctp-num")].map(text),
+      ...[...neu.querySelectorAll(".is-flex .sct-ctp-feature-value, .is-flex .sct-ctp-crow-value > .sct-ctp-num")].map(text),
+    ];
+    assert.deepEqual(newValues, oldValues, "Cap Position and Flexibility figures");
+    assert.equal(text(neu.querySelector(".is-dead .sct-ctp-feature-value")), text(old.querySelector('.sct-ct-dead [data-sct-ct-out="dead"]')));
+    assert.equal(neu.querySelectorAll(".sct-ctp-dead-row").length, old.querySelectorAll(".sct-ct-dead-row").length);
+    assert.deepEqual(
+      [...neu.querySelectorAll(".sct-ctp-rel")].map((r) => r.dataset.sctCtCut),
+      [...old.querySelectorAll(".sct-ct-cut")].map((r) => r.dataset.sctCtCut),
+    );
+    assert.match(neu.querySelector(".is-release .sct-ctp-card-dek").textContent, /^Releases before June 1/);
+  });
+
+  test("with the bundle, the comparison's scenario matches the original's and follows the June 1 toggle", async () => {
+    const { doc, window, errors } = await hydrated("/team/new-england-patriots/");
+    const old = doc.querySelector(".sct-ct");
+    const neu = doc.querySelector(".sct-ctp");
+    assert.equal(neu.dataset.sctCt, "js");
+    const outs = (b) => ["count", "freed", "added", "after"].map((k) => b.querySelector(`[data-sct-ct-out="${k}"]`).textContent);
+    const tick = (b, id) => {
+      const pick = b.querySelector(`[data-sct-ct-row][data-sct-ct-id="${id}"] [data-sct-ct-pick]`);
+      pick.checked = !pick.checked;
+      pick.dispatchEvent(new window.Event("change", { bubbles: true }));
+    };
+    const rows = [...neu.querySelectorAll("[data-sct-ct-row]")];
+    const pos = rows.find((r) => Number(r.dataset.preSave) > 0);
+    const neg = rows.find((r) => Number(r.dataset.preSave) < 0);
+    const moved = rows.find((r) => r !== pos && r !== neg && r.dataset.preSave !== r.dataset.postSave);
+    for (const r of [pos, neg, moved]) {
+      tick(old, r.dataset.sctCtId);
+      tick(neu, r.dataset.sctCtId);
+      assert.deepEqual(outs(neu), outs(old));
+    }
+    assert.equal(outs(neu)[0], "3");
+    assert.ok(pos.classList.contains("is-picked"));
+    assert.equal(neu.querySelector(`[data-sct-ct-cut="${pos.dataset.sctCtId}"]`)?.classList.contains("is-picked") ?? true, true);
+    // The toggle: totals follow, and the sheet's Net if cut sort key moves to the post figure.
+    for (const b of [old, neu]) b.querySelector('[data-sct-ct-timing="post"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.deepEqual(outs(neu), outs(old));
+    assert.equal(neu.dataset.timing, "post");
+    assert.equal(moved.querySelector(".is-net").dataset.sort, moved.dataset.postSave);
+    assert.equal(moved.querySelector(".is-dead").dataset.sort, moved.dataset.postDead);
+    assert.equal(neu.querySelector("[data-sct-ct-timing-word]").textContent, "after June 1");
+    assert.ok(moved.querySelector("[data-sct-ct-pick]").checked, "picks survive the toggle");
+    for (const b of [old, neu]) b.querySelector('[data-sct-ct-timing="pre"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.equal(moved.querySelector(".is-net").dataset.sort, moved.dataset.preSave);
+    // Sorting keeps the picks; clearing restores the baseline; the two blocks are independent.
+    neu.querySelector('thead [data-sct-ct-sort="apy"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.equal(neu.querySelector("thead th.is-apy").getAttribute("aria-sort"), "descending");
+    assert.equal(neu.querySelectorAll("[data-sct-ct-row].is-picked").length, 3);
+    neu.querySelector("[data-sct-ct-reset]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    assert.deepEqual(outs(neu), ["0", "$0", "$0", neu.querySelector('[data-sct-ct-out="after"]').textContent]);
+    assert.equal(outs(old)[0], "3", "the original keeps its own picks");
+    assert.deepEqual(errors, []);
+  });
+
   test("with the bundle, a head press sorts the sheet and a second press flips it (mak, 2026-11-02)", async () => {
     const { doc, window, errors } = await hydrated("/team/new-england-patriots/");
     const table = doc.querySelector(".sct-ct-table");
@@ -3364,7 +3426,8 @@ describe("contracts tab", () => {
       assert.ok(r.querySelector("[data-sct-ct-pick]"), "a pick box on every row");
     }
     assert.ok(panel.querySelector("[data-sct-ct-scen]"), "the scenario bar is rendered");
-    assert.equal(panel.querySelectorAll("[data-sct-ct-timing]").length, 2);
+    // The original's pair; the premium comparison under it carries its own.
+    assert.equal(panel.querySelectorAll(".sct-ct [data-sct-ct-timing]").length, 2);
 
     // Worth: priced rows carry a figure, tagged rows a pill, and the note
     // explaining the model is on the page.
