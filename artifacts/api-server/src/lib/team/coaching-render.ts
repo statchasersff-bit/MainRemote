@@ -40,6 +40,7 @@ import { signed } from "./usage-copy";
 import { coachingFaq } from "./coaching-faq";
 import { renderCoachingPremium } from "./coaching-premium";
 import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
+import { renderCoachingCareerPremium } from "./coaching-career-premium";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
@@ -166,31 +167,57 @@ function stepCrest(code: string): string {
   return `<img class="sct-co-step-crest" src="${e(club.logo)}" alt="" width="18" height="18" loading="lazy" decoding="async">`;
 }
 
-function timelineStep(step: { role: string; years: string }): string {
+/** Today's crest for a timeline code (STL wears the Rams' crest), or null when the club has none. */
+export function stepLogo(code: string): string | null {
+  return getTeamByAbbreviation(MOVED_CODES[code] ?? code)?.logo ?? null;
+}
+
+/** One career step read for a timeline row: its clubs as codes, the short role, and its span. */
+export interface TimelineStep {
+  years: string;
+  codes: string[];
+  role: string;
+  /** The stored role when the row's reads differently, for a title. */
+  full: string | null;
+  start: number;
+  /** Inclusive; the start year when the step names one season. */
+  end: number;
+}
+
+export function timelineStepModel(step: { role: string; years: string }): TimelineStep {
   const year = parseInt(step.years, 10);
   const hits = STEP_CLUBS.map(([re, code]) => ({ at: step.role.search(re), re, code: code(year) }))
     .filter((h) => h.at >= 0)
     .sort((a, b) => a.at - b.at);
   let role = step.role.replace(/\s*\([^)]*\)/g, "").trim();
-  const codes = [...new Set(hits.map((h) => h.code))].join(" / ");
+  const codes = [...new Set(hits.map((h) => h.code))];
   // One club named, however many of its words match: drop it from the role,
   // along with the city in front of it ("Carolina Panthers OC" -> "OC").
-  if (hits.length && !codes.includes(" / ")) {
+  if (hits.length && codes.length === 1) {
     role = role.replace(new RegExp(`^(?:[A-Z][A-Za-z.]+\\s+){0,2}${hits[0].re.source}\\s+`), "");
   }
   role = shortRole(role);
   role = role[0].toUpperCase() + role.slice(1);
+  const m = step.years.match(/^(\d{4})(?:-(\d{2}|\d{4}))?/);
+  const start = m ? Number(m[1]) : year;
+  let end = start;
+  if (m?.[2]) end = m[2].length === 4 ? Number(m[2]) : Number(m[1].slice(0, 2) + m[2]);
+  if (end < start) end += 100;
+  return { years: step.years, codes, role, full: role !== step.role ? step.role : null, start, end };
+}
+
+function timelineStep(step: { role: string; years: string }): string {
+  const m = timelineStepModel(step);
   return (
-    `<li class="sct-co-step"${role !== step.role ? ` title="${e(step.role)}"` : ""}>` +
-    `<span class="sct-co-step-years">${e(step.years)}</span>` +
+    `<li class="sct-co-step"${m.full ? ` title="${e(m.full)}"` : ""}>` +
+    `<span class="sct-co-step-years">${e(m.years)}</span>` +
     `<span class="sct-co-step-body">` +
-    (codes
-      ? `<span class="sct-co-step-team">${codes
-          .split(" / ")
+    (m.codes.length
+      ? `<span class="sct-co-step-team">${m.codes
           .map((code) => `<span class="sct-co-step-club">${stepCrest(code)}${e(code)}</span>`)
           .join(`<span class="sct-co-step-sep" aria-hidden="true">/</span>`)}</span>`
       : "") +
-    `<span class="sct-co-step-role">${e(role)}</span></span></li>`
+    `<span class="sct-co-step-role">${e(m.role)}</span></span></li>`
   );
 }
 
@@ -1233,7 +1260,7 @@ function printFromProse(fp: Fingerprint): Print {
 }
 
 /** A dossier row read for the chart: its span, its score, whether he called plays there. */
-interface Stop {
+export interface Stop {
   code: string;
   role: string;
   years: string;
@@ -1253,7 +1280,7 @@ interface Stop {
   points: Array<{ year: number; ppg: number; rank: string }>;
 }
 
-function readStops(c: TeamCoaching): Stop[] {
+export function readStops(c: TeamCoaching): Stop[] {
   return c.dossier
     .map((row): Stop => {
       const p = stopParts(row);
@@ -1365,7 +1392,7 @@ const chroma = (hex: string) => {
  * color), else a tint of its primary, else stays put and the code labels
  * carry it. A club seen twice wears one color throughout.
  */
-function stopColors(stops: Stop[]): Map<string, string> {
+export function stopColors(stops: Stop[]): Map<string, string> {
   const colors = new Map<string, string>();
   const primary = (code: string) => TEAM_COLORS[(MOVED_CODES[code] ?? code).toLowerCase()] ?? "#0b1634";
   const host = stops.find((s) => s.current)?.code;
@@ -2276,6 +2303,10 @@ export function renderCoachingSection(
     `<div class="sct-block sct-co">` +
     // 6. Coaching Career & Historical Performance.
     career(coaching) +
+    // The premium comparison of the career section (mak's brief,
+    // 2026-11-05): directly under the complete original, before Fantasy
+    // Impact. Not the default until mak approves.
+    renderCoachingCareerPremium(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +
     `</div>`;

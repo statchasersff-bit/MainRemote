@@ -15941,7 +15941,7 @@ a.scp-peer:focus-visible {
   line-height: 1.35;
   color: #3b5171;
 }
-.scp .scp-bkp-note {
+.scp .scp-bkp-rnote {
   color: var(--bkp-muted);
 }
 /* The scoring panel: points, a hairline, the finish pill, on cream. */
@@ -16319,6 +16319,16 @@ a.scp-peer:focus-visible {
     height: 34px;
     padding: 0 10px;
     font-size: 15px;
+    white-space: nowrap;
+  }
+  .scp .scp-bkp-week {
+    padding: 4px 8px;
+  }
+  .scp .scp-bkp-week b {
+    font-size: 13px;
+  }
+  .scp .scp-bkp-week small {
+    font-size: 12px;
   }
   .scp .scp-bkp-opp b {
     font-size: 17px;

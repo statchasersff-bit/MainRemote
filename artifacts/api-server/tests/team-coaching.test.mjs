@@ -90,7 +90,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.ok(cp && cpt && co, "the three blocks render");
     assert.equal(cp.nextElementSibling, cpt, "the tendencies dashboard follows the top block");
     assert.equal(cpt.nextElementSibling, co, "career and fantasy close the page");
-    assert.equal(panel.querySelector(".sct-cp-flag"), null, "no comparison flag: it is the design");
+    for (const id of ["coaching-premium", "coaching-premium-tendencies"]) assert.equal(doc.querySelector(`#${id} .sct-cp-flag`), null, `${id}: no comparison flag, it is the design`);
     assert.equal(cp.querySelector(".sct-cp-h2").textContent, "Offensive Coaching & Scheme");
     assert.equal(cp.querySelector(".sct-cp-dek").textContent, "Play-calling tendencies, offensive philosophy, formations, and coaching history.");
     assert.deepEqual([...cp.querySelectorAll(".sct-cp-h3")].map((h) => h.textContent), ["Play Calling", "Formations & Tempo"]);
@@ -501,6 +501,85 @@ describe("the premium blocks draw each club's own data", () => {
     assert.doesNotMatch(cpt.textContent, /McDaniels|Patriots/);
     assert.equal(cpt.querySelectorAll(".sct-cpt-col").length, coaching.teams.ari.backfield.bars.length);
     assert.match(cpt.querySelector(".is-dist .sct-cpt-h4").textContent, /^Target Distribution Under /);
+  });
+});
+
+describe("premium career comparison (mak's brief, 2026-11-05)", () => {
+  test("renders under the complete original career block, before Fantasy Impact, from the same stops", async () => {
+    const { doc } = await page("/team/new-england-patriots/coaching/");
+    const co = doc.querySelector("#coaching .sct-co");
+    const orig = co.querySelector(".sct-co-dossier");
+    const cc = co.querySelector("#coaching-career-premium.sct-cp.sct-cpt.sct-cc");
+    assert.ok(orig && cc, "both versions render");
+    assert.equal(orig.nextElementSibling, cc, "directly under the original career block");
+    assert.ok(cc.nextElementSibling.classList.contains("sct-co-fantasy"), "Fantasy Impact follows");
+    assert.equal(cc.querySelector(".sct-cp-flag").textContent, "New design · Comparison");
+    assert.equal(orig.querySelector("[class*='sct-cc']"), null, "the original carries none of the premium markup");
+    assert.equal(cc.querySelector(".sct-cpt-h3").textContent, "Coaching Career & Historical Performance");
+    assert.equal(cc.querySelector(".sct-cpt-dek").textContent, "McDaniels' stops, and how the offenses he called have scored and distributed the ball.");
+    // The timeline: one row per career step, the same years, codes and roles as the original rows; the current stop is the one holding this season.
+    const rows = [...cc.querySelectorAll(".sct-cc-stop")];
+    const origRows = [...orig.querySelectorAll(".sct-co-step")];
+    assert.equal(rows.length, coaching.teams.ne.playCaller.careerPath.length);
+    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-years").textContent), origRows.map((r) => r.querySelector(".sct-co-step-years").textContent));
+    assert.deepEqual(rows.map((r) => [...r.querySelectorAll(".sct-cc-code")].map((c) => c.textContent).join(" / ")), origRows.map((r) => [...r.querySelectorAll(".sct-co-step-club")].map((c) => c.textContent).join(" / ")));
+    assert.deepEqual(rows.map((r) => r.querySelector(".sct-cc-role").textContent.replace(" (current stop)", "")), origRows.map((r) => r.querySelector(".sct-co-step-role").textContent));
+    const current = rows.filter((r) => r.classList.contains("is-current"));
+    assert.equal(current.length, 1);
+    assert.equal(current[0].getAttribute("aria-current"), "step");
+    assert.equal(current[0].querySelector(".sct-cc-years").textContent, "2025-26");
+    assert.equal(rows.filter((r) => r.querySelector(".sct-cc-crest")).length, rows.length, "every row carries a crest");
+    // The chart: a stop per dossier row, a point per season, hollow for the year he did not call, dotted for head-coach stops.
+    const svg = cc.querySelector(".sct-cc-svg.is-wide");
+    const seasons = coaching.teams.ne.dossier.flatMap((r) => r.seasons);
+    assert.equal(svg.querySelectorAll(".sct-cc-pt").length, seasons.length);
+    assert.equal(svg.querySelectorAll(".sct-cc-dot.is-hollow").length, 1);
+    assert.equal(svg.querySelectorAll(".sct-cc-seg.is-hc").length, 4);
+    assert.equal(svg.querySelectorAll(".sct-cc-seg").length, coaching.teams.ne.dossier.length - 1);
+    assert.ok(svg.querySelector(".sct-cc-avg"));
+    assert.equal(svg.querySelector(".sct-cc-pill.is-avg text").textContent, "NFL AVG");
+    // Peak and current are data-driven: the best season he called, and this season's point.
+    const peak = Math.max(...coaching.teams.ne.dossier.filter((r) => !/QB coach/.test(r.stop)).flatMap((r) => r.seasons.map((s) => s.ppg)));
+    assert.equal(svg.querySelector(".sct-cc-callout.is-peak .v").textContent, peak.toFixed(1));
+    const live = coaching.teams.ne.dossier.find((r) => r.current).seasons.at(-1);
+    assert.equal(svg.querySelector(".sct-cc-callout.is-current .v").textContent, live.ppg.toFixed(1));
+    assert.equal(svg.querySelectorAll(".sct-cc-ring").length, 1);
+    assert.equal(svg.querySelectorAll(".sct-cc-dot.is-current").length, 1);
+    // Era pills once per run of a club; the year axis ends on the current season; nothing overlaps another label.
+    assert.deepEqual([...svg.querySelectorAll(".sct-cc-pill.is-era text")].map((t) => t.textContent), ["NE", "DEN", "STL", "NE", "LV", "NE"]);
+    const years = [...svg.querySelectorAll(".sct-cc-year")].map((t) => t.textContent);
+    assert.equal(years.at(-1), String(live.year));
+    assert.ok(svg.querySelector(".sct-cc-year.is-current"));
+    const boxes = [...svg.querySelectorAll(".sct-cc-pill rect, .sct-cc-callout rect")].map((r) => ["x", "y", "width", "height"].map((a) => Number(r.getAttribute(a))));
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+      const [ax, ay, aw, ah] = boxes[i]; const [bx, by, bw, bh] = boxes[j];
+      assert.ok(!(ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by), `labels ${i} and ${j} overlap`);
+    }
+    // Legend, note and the hidden table carry the same facts.
+    assert.deepEqual([...cc.querySelectorAll(".sct-cc-legend li")].map((li) => li.textContent), ["NE", "DEN", "STL", "LV", "Head coach", "Not the caller", "NFL avg"]);
+    assert.equal(cc.querySelector(".sct-cc-note").textContent, "Points per game by season, 2005-2026, one line per stop. The step between stops is the move.");
+    assert.equal(cc.querySelectorAll(".sct-cc-chart table.sct-visually-hidden tbody tr").length, seasons.length);
+    for (const g of svg.querySelectorAll(".sct-cc-pt")) assert.match(g.getAttribute("aria-label"), /^\d{4}.* · \d+(\.\d)? PPG/);
+    assert.ok(cc.querySelector(".sct-cc-svg.is-narrow"), "a narrow chart for the scrolling tiers");
+  });
+
+  test("other careers: one stop, a single-club head coach, a many-stop coach", async () => {
+    const one = await page("/team/baltimore-ravens/coaching/");
+    const cc1 = one.doc.querySelector("#coaching-career-premium");
+    assert.equal(cc1.querySelectorAll(".sct-cc-stop").length, coaching.teams.bal.playCaller.careerPath.length);
+    assert.equal(cc1.querySelectorAll(".sct-cc-stop.is-current").length, 1);
+    assert.doesNotMatch(cc1.textContent, /McDaniels|Patriots/);
+    const hc = await page("/team/los-angeles-rams/coaching/");
+    const cc2 = hc.doc.querySelector("#coaching-career-premium");
+    const svg2 = cc2.querySelector(".sct-cc-svg.is-wide");
+    assert.equal(svg2.querySelectorAll(".sct-cc-pt").length, coaching.teams.lar.dossier.flatMap((r) => r.seasons).length);
+    assert.deepEqual([...svg2.querySelectorAll(".sct-cc-pill.is-era text")].map((t) => t.textContent), ["LAR"]);
+    assert.equal(svg2.querySelector(".sct-cc-seg").classList.contains("is-hc"), true);
+    assert.deepEqual([...cc2.querySelectorAll(".sct-cc-legend li")].map((li) => li.textContent), ["LAR", "NFL avg"]);
+    const many = await page("/team/pittsburgh-steelers/coaching/");
+    const cc3 = many.doc.querySelector("#coaching-career-premium");
+    assert.equal(cc3.querySelectorAll(".sct-cc-svg.is-wide .sct-cc-pt").length, coaching.teams.pit.dossier.flatMap((r) => r.seasons).length);
+    assert.equal(cc3.querySelectorAll(".sct-cc-svg.is-wide .sct-cc-callout.is-current").length, 1);
   });
 });
 

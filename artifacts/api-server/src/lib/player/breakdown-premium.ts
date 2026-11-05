@@ -132,7 +132,7 @@ function renderRow(c: BreakdownCard, pos: string): string {
     `<div class="scp-bkp-perf-t">` +
     `<h3 class="scp-bkp-head">${escapeHtml(c.headline)}</h3>` +
     `<p class="scp-bkp-line">${escapeHtml(statLineFor(game, pos))}` +
-    (c.note ? ` <span class="scp-bkp-note">${escapeHtml(c.note)}</span>` : "") +
+    (c.note ? ` <span class="scp-bkp-rnote">${escapeHtml(c.note)}</span>` : "") +
     `</p>` +
     `</div></div>` +
     `<div class="scp-bkp-fp">` +
