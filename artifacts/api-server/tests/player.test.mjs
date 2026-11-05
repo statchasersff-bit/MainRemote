@@ -825,12 +825,59 @@ describe("the game log tab", () => {
     }
   });
 
+  test("the premium comparison block repeats the tab's figures under it (mak, 2026-11-05)", async () => {
+    // The redesign renders UNDER the existing tab, flagged, and both stay
+    // until mak approves one: every number it prints is the tab's own.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const gl = doc.querySelector("#game-log");
+    const wrap = gl.querySelector(".scp-glp-wrap");
+    assert.ok(wrap, "the comparison block sits inside the Game Log tab");
+    assert.match(wrap.querySelector(".scp-glp-flag").textContent, /New design/);
+    assert.equal(gl.querySelectorAll("table.scp-table--log").length, 1, "the tab's own log is still there, once");
+    assert.equal(wrap.querySelectorAll("table.scp-glp-table").length, 1);
+
+    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+    const rows = (table) =>
+      [...table.querySelectorAll("tr")]
+        .filter((r) => !r.classList.contains("scp-detail"))
+        .map((r) => [...r.children].map(text));
+    assert.deepEqual(
+      rows(wrap.querySelector("table.scp-glp-table")),
+      rows(gl.querySelector("table.scp-table--log")),
+      "every header, cell and the Avg row match the tab's table",
+    );
+    assert.deepEqual(
+      [...wrap.querySelectorAll(".scp-glp-kpi-v")].map(text),
+      [...gl.querySelectorAll(".scp-gl-summary .scp-st-v")].map(text),
+      "the KPI cards carry the summary strip's figures",
+    );
+    assert.deepEqual(
+      [...wrap.querySelectorAll(".scp-glp-fcard")].map((t) => text(t).toLowerCase()),
+      [...gl.querySelectorAll(".scp-gl-tile")].map((t) => text(t).toLowerCase()),
+      "the finish cards carry the tier counts and shares",
+    );
+    const pins = (sel) =>
+      [...gl.querySelectorAll(sel)].map((p) => `${p.getAttribute("style")} ${text(p.querySelector("strong"))}`);
+    assert.deepEqual(pins(".scp-glp-pin"), pins(".scp-gl-pin"), "the range chart's dots sit where the ladder's do");
+    assert.deepEqual(
+      [...wrap.querySelectorAll(".scp-seasons .scp-season-opt")].map((a) => a.getAttribute("href")),
+      [...gl.querySelectorAll(".scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")].map((a) => a.getAttribute("href")),
+      "the season chips are the tab's own links, so the in-place swap serves both",
+    );
+    assert.equal(
+      wrap.querySelectorAll("table.scp-glp-table tr.scp-detail").length,
+      gl.querySelectorAll("table.scp-table--log tr.scp-detail").length,
+      "every week's detail row is there to fold",
+    );
+    assert.ok(wrap.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
+  });
+
   test("the season selector offers every season, newest first, the one on screen lit", async () => {
     // One log on the page (the game-log audit, 2026-11-04): picking a year
     // REPLACES the log, so the current season is a chip like the rest and
     // there is no "All".
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const chips = [...doc.querySelectorAll("#game-log .scp-season-opt")];
+    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
     if (chips.length === 0) return; // a single-season player gets no selector
 
     const shown = Number(doc.querySelector("[data-scp-root]")?.getAttribute("data-log-season"));
@@ -875,7 +922,7 @@ describe("the game log tab", () => {
 
   test("a past season replaces the log: its heading, its table, no fixtures, the profile untouched", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const chips = [...doc.querySelectorAll("#game-log .scp-season-opt")];
+    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
     const other = chips.find((a) => !a.classList.contains("is-active"));
     if (!other) return;
 
@@ -1068,7 +1115,7 @@ describe("the game log tab", () => {
     // continuous, is the single wrong thing this FAQ could say; keeping it on
     // one season is what makes the tense a property rather than a coin flip.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const seasons = [...doc.querySelectorAll("#game-log .scp-season-opt")]
+    const seasons = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")]
       .map((el) => Number(el.textContent.trim()))
       .filter(Number.isFinite);
     const current = Number(
@@ -1100,7 +1147,7 @@ describe("the game log tab", () => {
     // Years only - All is a view of the whole career, not a season the FAQ
     // could name.
     const offered = [
-      ...doc.querySelectorAll('#game-log .scp-season-opt:not([data-season="all"])'),
+      ...doc.querySelectorAll('#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt:not([data-season="all"])'),
     ].map((el) => el.textContent.trim());
     const items = [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")].map((item) =>
       item.querySelector("summary")?.textContent.trim() ?? "",
@@ -2771,7 +2818,8 @@ describe("the embedded fragment", () => {
     for (const [section, want] of [
       ["stats", `${fixture.name} Stats`],
       ["game-log", `${fixture.name} Game Log`],
-      ["outlook", `${fixture.name} Fantasy Outlook`],
+      // Dated since the Outlook brief mak approved on 2026-11-05.
+      ["outlook", `${fixture.name} 2026 Fantasy Outlook`],
       ["news", `${fixture.name} News`],
       ["bio", `${fixture.name} Bio`],
     ]) {
@@ -3420,7 +3468,7 @@ describe("a state swap", () => {
 
   /** The game log's season chips, which a single-season player does not get. */
   function chips(doc) {
-    return [...doc.querySelectorAll("#game-log .scp-season-opt")];
+    return [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
   }
 
   test("picking a season re-renders in place and leaves the URL alone", async () => {
@@ -3446,7 +3494,7 @@ describe("a state swap", () => {
     assert.equal(window.location.pathname, landed, "the address bar did not move");
     assert.equal(window.location.search, "", "and nothing was appended to it");
 
-    const active = doc.querySelector("#game-log .scp-season-opt.is-active");
+    const active = doc.querySelector("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt.is-active");
     assert.equal(
       active.getAttribute("data-season"),
       want,

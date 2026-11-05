@@ -64,6 +64,13 @@ const ICON_STAR =
   `<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="currentColor"/>` +
   `</svg>`;
 
+/** The laurel on the best gap: two leaf arcs around the "#1 YPC" mark. */
+const ICON_LAUREL =
+  `<svg viewBox="0 0 48 40" width="48" height="40" aria-hidden="true" focusable="false">` +
+  `<path d="M12 6c-6 4-9 12-6 20 2 5 6 8 10 10M36 6c6 4 9 12 6 20-2 5-6 8-10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` +
+  `<path d="M8 12l-4 1M7 18l-4 2M8 24l-4 3M11 30l-3 4M40 12l4 1M41 18l4 2M40 24l4 3M37 30l3 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>` +
+  `</svg>`;
+
 const ICON_FOOT_YPC =
   `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">` +
   `<path d="M2 12L7 7l3 3 4-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` +
@@ -73,7 +80,9 @@ const ICON_FOOT_ATT =
   `<rect x="2" y="7" width="3" height="7" rx="1" fill="currentColor"/><rect x="6.5" y="4" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="9" width="3" height="5" rx="1" fill="currentColor"/>` +
   `</svg>`;
 
-function head(id: string, icon: string, title: string, sub: string): string {
+function head(id: string, icon: string, title: string, sub: string, yards = false): string {
+  // No "Preview" tag and, on the passing bar, faint yard numbers in the
+  // stripes (attached_assets/usagedesign.png, 2026-11-05).
   return (
     `<header class="sct-us-prm-head">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
@@ -81,16 +90,26 @@ function head(id: string, icon: string, title: string, sub: string): string {
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
     `<p class="sct-us-prm-sub">${e(sub)}</p>` +
     `</div>` +
-    `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
-    `<span class="sct-us-prm-tag">Preview</span>` +
+    `<span class="sct-us-prm-stripes${yards ? " is-yards" : ""}" aria-hidden="true">${yards ? `<i>10</i><i>20</i><i>30</i>` : ""}</span>` +
     `</header>`
   );
 }
 
-function insight(html: string): string {
+const ICON_BARS =
+  `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">` +
+  `<rect x="2" y="11" width="4" height="7" rx="1" fill="currentColor"/><rect x="8" y="7" width="4" height="11" rx="1" fill="currentColor"/><rect x="14" y="3" width="4" height="15" rx="1" fill="currentColor"/>` +
+  `</svg>`;
+const ICON_TARGET =
+  `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">` +
+  `<circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.4" fill="currentColor"/>` +
+  `</svg>`;
+
+/** The insight strip: a gold glyph, a thin gold slash, the sentence (the mockup's strip). */
+function insight(html: string, icon: string = ICON_INSIGHT): string {
   return (
     `<div class="sct-us-prm-insight">` +
-    `<span class="sct-us-prm-insight-icon" aria-hidden="true">${ICON_INSIGHT}</span>` +
+    `<span class="sct-us-prm-insight-icon" aria-hidden="true">${icon}</span>` +
+    `<span class="sct-us-prm-insight-slash" aria-hidden="true"></span>` +
     `<p>${html}</p>` +
     `</div>`
   );
@@ -123,13 +142,14 @@ export function premiumRunDirection(view: UsageView): string {
       `<li class="sct-us-prm-card sct-us-prm-gap${isBest ? " is-best" : ""}" data-gap="${g}">` +
       `<div class="sct-us-prm-card-top">` +
       `<span class="sct-us-prm-pill">${e(GAP_LABEL[g])}</span>` +
-      (isBest ? `<span class="sct-us-prm-badge">${ICON_STAR}Most efficient</span>` : "") +
       `</div>` +
-      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(r.ypc != null ? r.ypc.toFixed(1) : "–")}</span><small>YPC</small>` +
-      (isBest || !rank ? "" : `<em class="sct-us-prm-rank">${e(`#${rank}`)}</em>`) +
+      // The mockup's card: the big YPC, "24 att · 12%" under it, the best
+      // gap's laurel "#1 YPC" at the number's right; no "#N" on the others.
+      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(r.ypc != null ? r.ypc.toFixed(1) : "–")}</span>` +
+      (isBest && rank ? `<span class="sct-us-prm-laurel" title="Most efficient gap with at least 8% of the attempts">${ICON_LAUREL}<b>${e(`#${rank}`)}</b><i>YPC</i></span>` : "") +
       `</div>` +
-      `<p class="sct-us-prm-line">${e(`${share}% of designed runs`)}</p>` +
-      `<span class="sct-us-prm-bar" role="img" aria-label="${e(`${share}% of designed runs`)}"><span style="width:${Math.round((100 * r.att) / most)}%"></span></span>` +
+      `<p class="sct-us-prm-line">${e(`${r.att} att · ${share}%`)}</p>` +
+      `<span class="sct-us-prm-bar" role="img" aria-label="${e(`${share}% of designed runs`)}"><span class="sct-us-prm-bar-track"><span style="width:${Math.round((100 * r.att) / most)}%"></span></span><b>${e(`${share}%`)}</b></span>` +
       `<div class="sct-us-prm-meta">` +
       `<span>${ICON_FOOT_YPC}${e(`${r.ypc != null ? r.ypc.toFixed(1) : "–"} YPC`)}</span>` +
       `<span>${ICON_FOOT_ATT}${e(`${r.att} ATT`)}</span>` +
@@ -149,7 +169,7 @@ export function premiumRunDirection(view: UsageView): string {
     ) +
     `<div class="sct-us-prm-body">` +
     `<ul class="sct-us-prm-gaps">${cards}</ul>` +
-    (note ? insight(md(note)) : "") +
+    (note ? insight(md(note), ICON_BARS) : "") +
     `</div>` +
     `</section>`
   );
@@ -217,21 +237,19 @@ export function premiumPassMap(view: UsageView): string {
     const isBest = k === best;
     const deep = DEEP.includes(k);
     return (
+      // The mockup's zone card: the owner rides in the pill ("Deep left -
+      // Wilson"), the share stands alone, "6.8 YPA · 12 att" under it, the
+      // art at the right; no footer row, the gold card needs no badge.
       `<li class="sct-us-prm-card sct-us-prm-zone${isBest ? " is-best" : ""}${deep ? " is-deep" : " is-short"}" data-zone="${k}">` +
       `<div class="sct-us-prm-card-top">` +
-      `<span class="sct-us-prm-pill">${e(ZONE_LABEL[k])}</span>` +
-      (isBest ? `<span class="sct-us-prm-badge">${ICON_STAR}Best high-volume zone</span>` : "") +
+      `<span class="sct-us-prm-pill">${e(owner ? `${ZONE_LABEL[k]} - ${owner}` : ZONE_LABEL[k])}</span>` +
       `</div>` +
       `<div class="sct-us-prm-zone-row">` +
       `<div class="sct-us-prm-zone-text">` +
-      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(`${share}%`)}</span><small>of throws</small></div>` +
-      `<p class="sct-us-prm-line">${e(owner ? `${owner}'s side` : deep ? "20+ air yards" : "Under 20 air yards")}</p>` +
+      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(`${share}%`)}</span></div>` +
+      `<p class="sct-us-prm-line">${e(`${ypa != null ? `${ypa.toFixed(1)} YPA` : "no YPA"} · ${att} att`)}</p>` +
       `</div>` +
       `<span class="sct-us-prm-art">${deep ? arc(k, share, maxShare) : bars({ share }, shortTop)}</span>` +
-      `</div>` +
-      `<div class="sct-us-prm-meta">` +
-      `<span>${ICON_FOOT_YPC}${e(ypa != null ? `${ypa.toFixed(1)} YPA` : "no YPA")}</span>` +
-      `<span>${ICON_FOOT_ATT}${e(`${att} ATT`)}</span>` +
       `</div>` +
       `</li>`
     );
@@ -247,12 +265,12 @@ export function premiumPassMap(view: UsageView): string {
 
   return (
     `<section class="sct-us-prm sct-us-prm-pass" aria-labelledby="prm-pass-h" data-sct-premium="passing">` +
-    head("prm-pass-h", ICON_PASS, "Passing Distribution", `Share of ${qbName}'s ${mapped} pass attempts and yards per attempt by field zone through Week ${view.throughWeek}.`) +
+    head("prm-pass-h", ICON_PASS, "Passing Distribution", `Share of ${qbName}'s ${mapped} pass attempts and yards per attempt by field zone through Week ${view.throughWeek}.`, true) +
     `<div class="sct-us-prm-body">` +
     `<div class="sct-us-prm-board">` +
     `<div class="sct-us-prm-rail" aria-hidden="true">` +
-    `<span class="sct-us-prm-rail-tag"><b>Deep</b><i>20+ air yds</i></span>` +
-    `<span class="sct-us-prm-rail-tag"><b>Short</b><i>0-19 air yds</i></span>` +
+    `<span class="sct-us-prm-rail-tag"><b>Deep</b><i>(20+ yds)</i></span>` +
+    `<span class="sct-us-prm-rail-tag"><b>Short</b><i>(0-19 yds)</i></span>` +
     `</div>` +
     `<div class="sct-us-prm-rows">` +
     `<ul class="sct-us-prm-zones is-deep">${DEEP.map(card).join("")}</ul>` +
@@ -260,7 +278,7 @@ export function premiumPassMap(view: UsageView): string {
     `<ul class="sct-us-prm-zones is-short">${SHORT.map(card).join("")}</ul>` +
     `</div>` +
     `</div>` +
-    notes.map((n) => insight(md(n))).join("") +
+    notes.map((n) => insight(md(n), ICON_TARGET)).join("") +
     `<p class="sct-us-prm-fine">${e(coverage)}</p>` +
     `</div>` +
     `</section>`

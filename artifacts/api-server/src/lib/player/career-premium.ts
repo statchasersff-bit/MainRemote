@@ -1,0 +1,224 @@
+/**
+ * The premium comparison version of the Stats tab's Fantasy Football Career
+ * Stats section (mak's brief, 2026-11-05): a navy title bar, the
+ * season-by-season fantasy points-per-game chart with a career-average line
+ * and each season's finish, four career KPI cards, the career read with the
+ * Redraft Command card beside it, and the career highs.
+ *
+ * Rendered UNDER the whole existing section (chart, rate tiles, read, the
+ * Redraft Command panel and the career highs) while CAREER_PREMIUM_COMPARE
+ * is on, behind a "New design - comparison" label, so both are on the page.
+ * Everything here is read from careerPremiumModel() in stats-tab.ts, which
+ * builds it from the code paths the current section prints from: the same
+ * per-game points, the same career average (career points over career games,
+ * not an average of season averages), the same rate tiles with the same
+ * definitions, the same paragraphs, the same highs.
+ *
+ * No charting library: the bars are CSS heights on a linear scale that
+ * starts at zero, the average line is a positioned rule, and every bar
+ * carries its own tooltip (season, club, games, PPG, points, finish) and is
+ * focusable for the keyboard.
+ */
+
+import { escapeHtml } from "../render";
+import type { PlayerRenderOptions } from "../player-render";
+import type { PlayerPageData } from "./player-data";
+import { careerPremiumModel, type CareerSeasonBar } from "./stats-tab";
+
+/** Flip off to drop the comparison block without touching the current section. */
+export const CAREER_PREMIUM_COMPARE = true;
+
+const one = (v: number): string => v.toFixed(1);
+
+/* ------------------------------------------------------------------ icons */
+
+const svg = (body: string): string =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+
+const ICON = {
+  chart: svg(`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`),
+  gauge: svg(`<path d="M4 15a8 8 0 0 1 16 0"/><path d="M12 15l4-5"/><circle cx="12" cy="15" r="1.5"/>`),
+  calendar: svg(`<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/>`),
+  medal: svg(`<circle cx="12" cy="14" r="5"/><path d="M8 3l2 6M16 3l-2 6M12 12v4"/>`),
+  wave: svg(`<path d="M3 15c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>`),
+  bolt: svg(`<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>`),
+  layers: svg(`<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17l9 5 9-5"/>`),
+  trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M10 17h4v4"/>`),
+  bars: svg(`<path d="M5 20V10M12 20V4M19 20v-7"/>`),
+  arrow: svg(`<path d="M5 12h14M13 6l6 6-6 6"/>`),
+};
+
+/** The icon a KPI tile wears, by its title. */
+function rateIcon(title: string): string {
+  const k = title.toLowerCase();
+  if (k.includes("ppg")) return ICON.gauge;
+  if (k.includes("appearance")) return ICON.calendar;
+  if (k.startsWith("top-")) return ICON.medal;
+  return ICON.wave;
+}
+
+/** The icon a career high wears, by its label. */
+function highIcon(label: string, i: number): string {
+  const k = label.toLowerCase();
+  if (k.includes("td")) return ICON.trophy;
+  if (k.includes("fantasy")) return ICON.gauge;
+  if (k.startsWith("career")) return ICON.bars;
+  return i === 0 ? ICON.layers : ICON.bars;
+}
+
+/* ------------------------------------------------------------------ chart */
+
+/** The y-axis top: the smallest multiple of 4 above the tallest bar (or the average), never under 8, so the four ticks are whole numbers. */
+function axisTop(max: number): number {
+  return Math.max(8, Math.ceil(max / 4) * 4);
+}
+
+function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
+  const seasons = m.seasons;
+  const max = Math.max(...seasons.map((s) => s.ppg), m.careerPpg, 0);
+  const top = axisTop(max);
+  const pct = (v: number): number => Math.max(0, Math.min(100, (v / top) * 100));
+  const done = seasons.filter((s) => !s.inProgress);
+  const latest = done.length ? done[done.length - 1]! : null;
+  const n = seasons.length;
+  const showAvg = n > 1;
+  const ticks = [0, 1, 2, 3, 4].map((i) => (top * i) / 4);
+
+  const bar = (s: CareerSeasonBar): string => {
+    const kind = s.inProgress ? "is-now" : latest && s.season === latest.season && n > 1 ? "is-last" : "";
+    const tip = [
+      `${s.season}${s.inProgress ? " (in progress)" : ""}`,
+      s.clubs.length ? s.clubs.join("/") : null,
+      `${s.gp} GP`,
+      `${one(s.ppg)} ${m.scoring} PPG`,
+      `${one(s.pts)} points`,
+      s.finish ? `${m.pos}${s.finish}${s.inProgress ? " so far" : ""}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      `<div class="scp-cp-col${kind ? ` ${kind}` : ""}" tabindex="0" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}">` +
+      `<b class="scp-cp-val">${escapeHtml(one(s.ppg))}</b>` +
+      `<i class="scp-cp-fill" style="height:${pct(s.ppg).toFixed(1)}%"></i>` +
+      `</div>`
+    );
+  };
+
+  const label = (s: CareerSeasonBar): string =>
+    `<div class="scp-cp-x${s.current ? " is-cur" : ""}">` +
+    `<strong>${s.season}</strong>` +
+    (s.finish ? `<span class="scp-cp-fin">${escapeHtml(`${m.pos}${s.finish}`)}</span>` : `<span class="scp-cp-fin is-none">${s.inProgress ? "in progress" : "unranked"}</span>`) +
+    `<small>${escapeHtml(`${s.gp} GP${s.clubs.length ? ` · ${s.clubs.join("/")}` : ""}`)}</small>` +
+    `</div>`;
+
+  const aria =
+    `${m.pos} fantasy points per game by season: ` +
+    seasons.map((s) => `${s.season} ${one(s.ppg)}${s.finish ? ` (${m.pos}${s.finish})` : ""}${s.inProgress ? ", in progress" : ""}`).join(", ") +
+    (showAvg ? `. Career average ${one(m.careerPpg)}.` : ".");
+
+  return (
+    `<figure class="scp-cp-chart${showAvg ? " has-avg" : ""}" style="--scp-cp-n:${n}">` +
+    `<figcaption class="scp-sr">${escapeHtml(aria)}</figcaption>` +
+    `<div class="scp-cp-y" aria-hidden="true">${ticks
+      .slice()
+      .reverse()
+      .map((t) => `<span>${escapeHtml(Number.isInteger(t) ? String(t) : one(t))}</span>`)
+      .join("")}</div>` +
+    `<div class="scp-cp-scroll" data-scp-arc>` +
+    `<div class="scp-cp-plot" role="img" aria-label="${escapeHtml(aria)}">` +
+    `<div class="scp-cp-grid" aria-hidden="true">${ticks.map(() => `<i></i>`).join("")}</div>` +
+    (showAvg
+      ? `<div class="scp-cp-avg" style="bottom:${pct(m.careerPpg).toFixed(2)}%" aria-hidden="true"><span>Career avg <b>${escapeHtml(one(m.careerPpg))}</b></span></div>`
+      : "") +
+    `<div class="scp-cp-cols">${seasons.map(bar).join("")}</div>` +
+    `</div>` +
+    `<div class="scp-cp-xs" aria-hidden="true">${seasons.map(label).join("")}</div>` +
+    `</div>` +
+    (seasons.some((s) => s.inProgress)
+      ? `<p class="scp-cp-legend"><i class="is-now"></i>Current season, in progress<i class="is-last"></i>Latest full season<i></i>Earlier seasons</p>`
+      : n > 1
+        ? `<p class="scp-cp-legend"><i class="is-last"></i>Latest season<i></i>Earlier seasons</p>`
+        : "") +
+    `</figure>`
+  );
+}
+
+/* ------------------------------------------------------------------ block */
+
+export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+  const m = careerPremiumModel(data, options);
+  if (!m) return "";
+
+  const head =
+    `<header class="scp-cp-bar">` +
+    `<span class="scp-cp-bar-rule" aria-hidden="true"></span>` +
+    `<span class="scp-cp-bar-icon" aria-hidden="true">${ICON.chart}</span>` +
+    `<div class="scp-cp-bar-text">` +
+    `<h3 class="scp-cp-bar-title">${escapeHtml(`${m.name} Fantasy Football Stats`)}</h3>` +
+    `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>` +
+    `</div>` +
+    `<span class="scp-cp-bar-stripes" aria-hidden="true"></span>` +
+    `</header>`;
+
+  const kpis = m.rates.length
+    ? `<ul class="scp-cp-kpis">` +
+      m.rates
+        .map(
+          (t) =>
+            `<li class="scp-cp-kpi" title="${escapeHtml(t.tip)}">` +
+            `<span class="scp-cp-kpi-icon" aria-hidden="true">${rateIcon(t.title)}</span>` +
+            `<span class="scp-cp-kpi-value">${escapeHtml(t.value)}</span>` +
+            `<span class="scp-cp-kpi-label">${escapeHtml(t.title)}</span>` +
+            `<span class="scp-cp-kpi-sub">${escapeHtml(t.caption)}</span>` +
+            `</li>`,
+        )
+        .join("") +
+      `</ul>`
+    : "";
+
+  const read = m.paragraphs.length
+    ? `<div class="scp-cp-read">` +
+      `<div class="scp-cp-prose">` +
+      `<h4 class="scp-cp-h">What His Career Numbers Say</h4>` +
+      m.paragraphs.map((p) => `<p>${p}</p>`).join("") +
+      `</div>` +
+      `<aside class="scp-cp-rc" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">` +
+      `<span class="scp-cp-rc-icon" aria-hidden="true">${ICON.bolt}</span>` +
+      `<h4 class="scp-cp-rc-h">${escapeHtml(m.redraft.heading)}</h4>` +
+      `<p>${escapeHtml(m.redraft.body)}</p>` +
+      `<a class="scp-cp-rc-btn" href="${escapeHtml(m.redraft.href)}" data-cta="redraft-command-stats-premium">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
+      `</aside>` +
+      `</div>`
+    : "";
+
+  const highs = m.highs.length
+    ? `<div class="scp-cp-highs">` +
+      `<h4 class="scp-cp-h is-highs">Career Highs</h4>` +
+      `<ul class="scp-cp-high-list">` +
+      m.highs
+        .map(
+          (h, i) =>
+            `<li class="scp-cp-high">` +
+            `<span class="scp-cp-high-icon" aria-hidden="true">${highIcon(h.label, i)}</span>` +
+            `<span class="scp-cp-high-v">${escapeHtml(h.v)}</span>` +
+            `<span class="scp-cp-high-l">${escapeHtml(h.label)}</span>` +
+            `<span class="scp-cp-high-s">${escapeHtml(h.sub)}</span>` +
+            `</li>`,
+        )
+        .join("") +
+      `</ul></div>`
+    : "";
+
+  return (
+    `<p class="scp-cp-label" aria-hidden="true">New design - comparison</p>` +
+    `<section class="scp-ox-sec scp-cp" aria-label="Premium fantasy football career stats (comparison)" data-scp-premium="career">` +
+    head +
+    `<div class="scp-cp-body">` +
+    chart(m) +
+    kpis +
+    read +
+    highs +
+    `</div>` +
+    `</section>`
+  );
+}

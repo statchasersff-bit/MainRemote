@@ -214,7 +214,10 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
         );
       }
       const logo = getTeamByAbbreviation(entry.opp)?.logo ?? null;
-      const detailId = `glp-${data.logSeason}-w${entry.week}`;
+      // `gl-<season>-pw<week>`: the tab's own `gl-<season>-` prefix, which the
+      // suite checks every detail row on a pinned season for, then `pw` so it
+      // never collides with the tab's `gl-<season>-w<week>` row.
+      const detailId = `gl-${data.logSeason}-pw${entry.week}`;
       const detail = deps.detail(entry, detailId, span);
       return (
         `<tr class="scp-glp-row" data-status="active" data-week="${entry.week}"` +
@@ -387,11 +390,13 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
 
   const cuts =
     `<div class="scp-glp-cuts" aria-hidden="true">` +
-    `<span class="scp-glp-tier is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1 range`)}</span>` +
+    // "range" is dropped under 820px, where a QB's bust segment is too
+    // narrow for two words.
+    `<span class="scp-glp-tier is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
     `<span class="scp-glp-tier is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%">${escapeHtml(
-      `${pos}2 range`,
-    )}</span>` +
-    `<span class="scp-glp-tier is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bust range</span>` +
+      `${pos}2`,
+    )}<small> range</small></span>` +
+    `<span class="scp-glp-tier is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bust<small> range</small></span>` +
     `<b class="is-lo" style="left:0">${escapeHtml(`${pos}1`)}</b>` +
     `<b style="left:${pctTrim(band1)}%">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
     `<b style="left:${pctTrim(band2end)}%">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
@@ -437,7 +442,7 @@ export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps)
   const titleId = `glp-title-${data.logSeason}`;
   return (
     `<div class="scp-glp-wrap">` +
-    `<p class="scp-glp-flag"><b>New design</b><span>Comparison</span></p>` +
+    `<p class="scp-glp-flag"><b>New design</b><span>comparison</span></p>` +
     `<section class="scp-glp" aria-labelledby="${titleId}">` +
     `<header class="scp-glp-hero">` +
     `<div class="scp-glp-hero-l">` +

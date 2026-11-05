@@ -23099,6 +23099,7 @@ a.sct-srow-team:focus-visible {
  * under .sct-cp- and touches nothing of the original. */
 
 :is(.sct, #sct-table-armour) .sct-cp {
+  /* Above the original since mak's note: the dashed rule closes the block. */
   --cp-navy: #0b3a7a;
   --cp-navy-deep: #0d1b38;
   --cp-gold: #d4af37;
@@ -23116,14 +23117,14 @@ a.sct-srow-team:focus-visible {
   --cp-radius: 14px;
   container-type: inline-size;
   container-name: premium;
-  margin: 40px 0 0;
-  padding: 0 0 8px;
-  border-top: 2px dashed var(--cp-line);
+  margin: 0 0 36px;
+  padding: 0 0 22px;
+  border-bottom: 2px dashed var(--cp-line);
 }
 
 :is(.sct, #sct-table-armour) .sct-cp-flag {
   display: inline-block;
-  margin: 18px 0 10px;
+  margin: 0 0 10px;
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--cp-gold-soft);
@@ -23989,12 +23990,16 @@ a.sct-srow-team:focus-visible {
     gap: 0;
   }
 
+  /* The stat box spans both rows, so the headline sits at the foot of its
+     row and the body at the head of the next: they meet in the middle. */
   :is(.sct, #sct-table-armour) .sct-cp-take-h {
     grid-area: head;
+    align-self: end;
   }
 
   :is(.sct, #sct-table-armour) .sct-cp-take-b {
     grid-area: body;
+    align-self: start;
     font-size: 0.84rem;
   }
 
@@ -24810,6 +24815,23 @@ a.sct-srow-team:focus-visible {
   mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%);
 }
 
+/* Faint italic yard numbers over the stripes on the passing bar. */
+:is(.sct, #sct-table-armour) .sct-us-prm-stripes.is-yards {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 54px;
+  padding-right: 34px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-stripes.is-yards i {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-prm-icon {
   position: relative;
   display: inline-flex;
@@ -24982,7 +25004,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-us-prm-big {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   color: var(--prm-ink);
   line-height: 1;
@@ -25020,14 +25042,22 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-us-prm-line {
   margin: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.8rem;
+  color: var(--prm-ink);
+  font-size: 0.86rem;
   font-weight: 600;
   line-height: 1.3;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-prm-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The track in rose, the share at its end (attached_assets/usagedesign.png). */
+:is(.sct, #sct-table-armour) .sct-us-prm-bar-track {
   display: block;
+  flex: 1 1 auto;
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
@@ -25035,20 +25065,71 @@ a.sct-srow-team:focus-visible {
   box-shadow: inset 0 1px 2px rgba(11, 22, 52, 0.1);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-prm-bar > span {
+:is(.sct, #sct-table-armour) .sct-us-prm-bar-track > span {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--prm-navy-2), #46609c);
+  background: linear-gradient(90deg, #8f3b4a, #b3616f);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-prm-card.is-best .sct-us-prm-bar {
+:is(.sct, #sct-table-armour) .sct-us-prm-bar > b {
+  flex: 0 0 auto;
+  color: var(--prm-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-card.is-best .sct-us-prm-bar-track {
   background: rgba(184, 144, 31, 0.18);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-prm-card.is-best .sct-us-prm-bar > span {
+:is(.sct, #sct-table-armour) .sct-us-prm-card.is-best .sct-us-prm-bar-track > span {
   background: linear-gradient(90deg, var(--prm-gold-ink), var(--prm-gold));
+}
+
+/* The laurel "#1 YPC" mark at the number's right on the best gap. */
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 40px;
+  margin-left: auto;
+  color: var(--prm-gold-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel svg {
+  position: absolute;
+  inset: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel b {
+  position: relative;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel i {
+  position: absolute;
+  bottom: 6px;
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel {
+  flex-direction: column;
+  gap: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-laurel b {
+  margin-bottom: 8px;
 }
 
 /* The footer: icon + metric pairs over a faint divider. */
@@ -25118,6 +25199,22 @@ a.sct-srow-team:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 8px rgba(184, 144, 31, 0.35);
 }
 
+/* The thin gold slash between the glyph and the sentence. */
+:is(.sct, #sct-table-armour) .sct-us-prm-insight-slash {
+  flex: 0 0 2px;
+  width: 2px;
+  height: 26px;
+  border-radius: 1px;
+  background: var(--prm-gold);
+  transform: skewX(-18deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-insight-icon {
+  color: var(--prm-gold-ink);
+  background: var(--prm-cream);
+  box-shadow: inset 0 0 0 1px rgba(184, 144, 31, 0.35);
+}
+
 :is(.sct, #sct-table-armour) .sct-us-prm-insight p {
   margin: 0;
   color: var(--sc-muted-strong);
@@ -25133,7 +25230,8 @@ a.sct-srow-team:focus-visible {
 :is(.sct, #sct-table-armour) .sct-us-prm-fine {
   margin: 10px 0 0;
   color: var(--prm-muted);
-  font-size: 0.74rem;
+  font-size: 0.76rem;
+  font-style: italic;
   line-height: 1.5;
 }
 
@@ -25247,10 +25345,14 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-us-prm-zone-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38%;
+  grid-template-columns: minmax(0, 1fr) 42%;
   align-items: end;
   gap: 10px;
-  min-height: 62px;
+  min-height: 64px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-zone .sct-us-prm-big .sct-us-num {
+  font-size: 2.4rem;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-prm-zone-text {

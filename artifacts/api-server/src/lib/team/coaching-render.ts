@@ -781,45 +781,89 @@ void identityParagraph;
  * what is not charted in season (personnel groupings, pistol, motion at
  * the snap versus before it), rather than an estimate.
  */
-function formations(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+/** What is not charted in season; printed under the formation tiles rather than estimated. */
+export const FORMATIONS_NOTE =
+  "Not charted in season, so not estimated here: personnel groupings (11, 12, 21 personnel), pistol as distinct from shotgun, motion at the snap as distinct from motion before it, and zone versus gap run concepts. The league publishes participation data after the season.";
+
+/** One formation tile: the row's current rate and its gap to the NFL average in points. */
+export interface FormationTile {
+  key: string;
+  label: string;
+  value: string;
+  gap: number | null;
+  avg: string;
+  /** Up or down only past 3 points off the league; flat inside that band. */
+  tone: "up" | "down" | "flat";
+}
+
+/**
+ * The Formations & Personnel model. The original block and the premium
+ * comparison both draw it, so the two cannot disagree. Shotgun and under
+ * center are exhaustive for the charted dropbacks (under = 100 - shotgun);
+ * there is no third category in the row.
+ */
+export interface FormationsModel {
+  sub: string;
+  split: { shotgun: number; under: number; avg: number | null } | null;
+  tiles: FormationTile[];
+  note: string;
+}
+
+const FORMATION_TILES: Array<[string, string]> = [
+  ["motionRate", "Pre-snap motion"],
+  ["paRate", "Play-action rate"],
+  ["noHuddleRate", "No-huddle rate"],
+];
+
+export function formationsModel(c: TeamCoaching, team: NflTeam, view: UsageView | null): FormationsModel | null {
   const views = rowViews(c, view);
   const find = (k: string) => views.find((x) => x.row.key === k);
   const shotgun = find("shotgunRate");
+  if (!shotgun && !find("motionRate") && !find("paRate")) return null;
   const sg = shotgun ? num(shotgun.v.current) : null;
   const sgAvg = shotgun ? num(shotgun.row.nflAvg) : null;
-  const tile = (key: string, label: string) => {
+  const tiles = FORMATION_TILES.flatMap(([key, label]): FormationTile[] => {
     const x = find(key);
-    if (!x) return "";
+    if (!x) return [];
     const now = num(x.v.current);
     const avg = num(x.row.nflAvg);
     const gap = now != null && avg != null ? Math.round((now - avg) * 10) / 10 : null;
-    return (
-      `<li class="sct-co-ftile">` +
-      `<span class="sct-co-kpi-label">${e(label)}</span>` +
-      `<span class="sct-co-kpi-value">${e(x.v.current)}</span>` +
-      (gap != null ? `<span class="sct-co-kpi-line is-${Math.abs(gap) >= 3 ? (gap > 0 ? "up" : "down") : "flat"}">${e(`${signed(gap)} vs NFL avg ${x.row.nflAvg}`)}</span>` : "") +
-      `</li>`
-    );
+    const tone: FormationTile["tone"] = gap != null && Math.abs(gap) >= 3 ? (gap > 0 ? "up" : "down") : "flat";
+    return [{ key, label, value: x.v.current, gap, avg: x.row.nflAvg, tone }];
+  });
+  return {
+    sub: `How the ${team.nickname} line up, from the play-by-play and charting that are published in season.`,
+    split: sg != null ? { shotgun: sg, under: Math.round((100 - sg) * 10) / 10, avg: sgAvg } : null,
+    tiles,
+    note: FORMATIONS_NOTE,
   };
-  if (!shotgun && !find("motionRate") && !find("paRate")) return "";
-  const under = sg != null ? Math.round((100 - sg) * 10) / 10 : null;
+}
+
+function formations(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const m = formationsModel(c, team, view);
+  if (!m) return "";
+  const tile = (t: FormationTile) =>
+    `<li class="sct-co-ftile">` +
+    `<span class="sct-co-kpi-label">${e(t.label)}</span>` +
+    `<span class="sct-co-kpi-value">${e(t.value)}</span>` +
+    (t.gap != null ? `<span class="sct-co-kpi-line is-${t.tone}">${e(`${signed(t.gap)} vs NFL avg ${t.avg}`)}</span>` : "") +
+    `</li>`;
+  const sp = m.split;
   return (
     `<div class="sct-co-block sct-co-form">` +
     h3("Formations & Personnel") +
-    `<p class="sct-co-dsub">${e(`How the ${team.nickname} line up, from the play-by-play and charting that are published in season.`)}</p>` +
-    (sg != null
-      ? `<div class="sct-co-split" role="img" aria-label="${e(`Shotgun ${sg}% of snaps, under center ${under}%${sgAvg != null ? `; NFL average shotgun ${sgAvg}%` : ""}`)}">` +
-        `<span class="sct-co-split-bar"><span class="sct-co-split-sg" style="width:${sg}%"></span>` +
-        (sgAvg != null ? `<span class="sct-co-split-avg" style="left:${sgAvg}%"></span>` : "") +
+    `<p class="sct-co-dsub">${e(m.sub)}</p>` +
+    (sp
+      ? `<div class="sct-co-split" role="img" aria-label="${e(`Shotgun ${sp.shotgun}% of snaps, under center ${sp.under}%${sp.avg != null ? `; NFL average shotgun ${sp.avg}%` : ""}`)}">` +
+        `<span class="sct-co-split-bar"><span class="sct-co-split-sg" style="width:${sp.shotgun}%"></span>` +
+        (sp.avg != null ? `<span class="sct-co-split-avg" style="left:${sp.avg}%"></span>` : "") +
         `</span>` +
-        `<span class="sct-co-split-key"><span><b>${e(`${sg}%`)}</b> shotgun</span><span><b>${e(`${under}%`)}</b> under center</span>` +
-        (sgAvg != null ? `<span class="sct-co-split-avgkey">NFL avg shotgun ${e(`${sgAvg}%`)}</span>` : "") +
+        `<span class="sct-co-split-key"><span><b>${e(`${sp.shotgun}%`)}</b> shotgun</span><span><b>${e(`${sp.under}%`)}</b> under center</span>` +
+        (sp.avg != null ? `<span class="sct-co-split-avgkey">NFL avg shotgun ${e(`${sp.avg}%`)}</span>` : "") +
         `</span></div>`
       : "") +
-    `<ul class="sct-co-ftiles">${tile("motionRate", "Pre-snap motion")}${tile("paRate", "Play-action rate")}${tile("noHuddleRate", "No-huddle rate")}</ul>` +
-    `<p class="sct-co-note is-form">${e(
-      "Not charted in season, so not estimated here: personnel groupings (11, 12, 21 personnel), pistol as distinct from shotgun, motion at the snap as distinct from motion before it, and zone versus gap run concepts. The league publishes participation data after the season.",
-    )}</p>` +
+    `<ul class="sct-co-ftiles">${m.tiles.map(tile).join("")}</ul>` +
+    `<p class="sct-co-note is-form">${e(m.note)}</p>` +
     `</div>`
   );
 }
@@ -831,32 +875,80 @@ function formations(c: TeamCoaching, team: NflTeam, view: UsageView | null): str
  * the fourth-down go rate reads "3 of 3 opportunities", never a headline
  * rank, and the head coach's part in those decisions is said.
  */
-function redZoneFourth(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+/** One situational stat: its headline value and the lines under it, in print order. */
+export interface SitStat {
+  label: string;
+  value: string;
+  /** Empty strings are lines the data cannot fill; renderers skip them. */
+  lines: string[];
+}
+
+/**
+ * The Red Zone and Fourth Down model, drawn by the original panel and the
+ * premium comparison alike. Beside the printed lines it carries the parts
+ * the premium lays out as separate cells (the change, the rank, the plays).
+ */
+export interface RzFourthModel {
+  sub: string;
+  priorYear: string;
+  rz:
+    | (SitStat & {
+        change: string;
+        dir: "up" | "down" | "flat";
+        prior: string;
+        nflAvg: string;
+        rank: number | null;
+        plays: number | null;
+        priorPlays: number | null;
+      })
+    | null;
+  fourth:
+    | (SitStat & {
+        rate: string;
+        count: number | null;
+        went: number | null;
+        prior: string;
+        priorDetail: string;
+        nflAvg: string;
+        small: boolean;
+      })
+    | null;
+  context: string;
+}
+
+export function rzFourthModel(c: TeamCoaching, team: NflTeam, view: UsageView | null): RzFourthModel | null {
   const views = rowViews(c, view);
   const rz = views.find((x) => x.row.key === "rzPassRate");
   const fourth = views.find((x) => x.row.key === "fourthGoRate");
-  if (!rz && !fourth) return "";
+  if (!rz && !fourth) return null;
   const s = c.tendencies.samples;
   const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
   const staff = getCoachingStaff(team.abbreviation, seasonOf(c));
   const hc = staff?.hc ?? null;
   const callerIsHC = /head coach/i.test(c.playCaller.kicker);
-  const stat = (label: string, value: string, lines: string[]) =>
-    `<div class="sct-co-sit">` +
-    `<span class="sct-co-kpi-label">${e(label)}</span>` +
-    `<span class="sct-co-kpi-value">${e(value)}</span>` +
-    lines.filter(Boolean).map((l) => `<span class="sct-co-sit-line">${e(l)}</span>`).join("") +
-    `</div>`;
-  let rzHtml = "";
+  let rzModel: RzFourthModel["rz"] = null;
   if (rz) {
+    const change =
+      rz.v.delta != null && rz.v.change.dir !== "flat" ? `${changeText(rz.row, rz.v)} vs ${priorYear} (${rz.row.prior})` : rz.v.delta != null ? `Level with ${priorYear} (${rz.row.prior})` : "";
     const lines = [
-      rz.v.delta != null && rz.v.change.dir !== "flat" ? `${changeText(rz.row, rz.v)} vs ${priorYear} (${rz.row.prior})` : rz.v.delta != null ? `Level with ${priorYear} (${rz.row.prior})` : "",
+      change,
       `NFL average ${rz.row.nflAvg}${atEdge(rz.v.rank) ? ` · ${ordinal(rz.v.rank as number)} in NFL` : ""}`,
       s ? `${s.rzPlays} red-zone plays this season${s.priorRzPlays != null ? `; ${s.priorRzPlays} in ${priorYear}` : ""}` : "",
     ];
-    rzHtml = stat("Red-zone pass rate", rz.v.current, lines);
+    rzModel = {
+      label: "Red-zone pass rate",
+      value: rz.v.current,
+      lines,
+      change,
+      dir: rz.v.delta != null ? rz.v.change.dir : "flat",
+      prior: rz.row.prior,
+      nflAvg: rz.row.nflAvg,
+      rank: atEdge(rz.v.rank) ? rz.v.rank : null,
+      plays: s ? s.rzPlays : null,
+      priorPlays: s?.priorRzPlays ?? null,
+    };
   }
-  let fourthHtml = "";
+  let fourthModel: RzFourthModel["fourth"] = null;
   if (fourth) {
     const n = s?.fourthShortAll ?? null;
     const go = s?.fourthShortGo ?? null;
@@ -864,24 +956,45 @@ function redZoneFourth(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
     const count = n ?? (noteSnaps ? Number(noteSnaps[1]) : null);
     const went = go ?? (count != null && fourth.v.current !== "-" ? Math.round((Number(num(fourth.v.current)) / 100) * count) : null);
     const value = count != null && went != null && count > 0 ? `${went} of ${count}` : fourth.v.current;
-    const lines = [
-      count != null && count > 0 ? `${fourth.v.current} go rate on 4th-and-2 or less in opponent territory` : "Fewer than three such snaps so far",
+    const priorDetail =
       fourth.row.prior !== "-"
         ? `${priorYear}: ${s?.priorFourthShortGo != null && s.priorFourthShortAll ? `${s.priorFourthShortGo} of ${s.priorFourthShortAll} (${fourth.row.prior})` : fourth.row.prior}`
-        : "",
+        : "";
+    const small = count != null && count < 15;
+    const lines = [
+      count != null && count > 0 ? `${fourth.v.current} go rate on 4th-and-2 or less in opponent territory` : "Fewer than three such snaps so far",
+      priorDetail,
       `NFL average ${fourth.row.nflAvg}`,
-      count != null && count < 15 ? `A small sample: a tendency to watch, not a settled one.` : "",
+      small ? `A small sample: a tendency to watch, not a settled one.` : "",
     ];
-    fourthHtml = stat("Fourth-down go rate", value, lines);
+    fourthModel = { label: "Fourth-down go rate", value, lines, rate: fourth.v.current, count, went, prior: fourth.row.prior, priorDetail, nflAvg: fourth.row.nflAvg, small };
   }
+  return {
+    sub: `Play selection inside the 20 and on short fourth downs, ${seasonOf(c)} to date, with the plays each rate is measured on.`,
+    priorYear,
+    rz: rzModel,
+    fourth: fourthModel,
+    context: `Fourth-down decisions are game management${hc && !callerIsHC ? `, shared with head coach ${hc}` : ""}; red-zone play selection counts plays, not trips, so a few long drives move it early in a season.`,
+  };
+}
+
+function redZoneFourth(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const m = rzFourthModel(c, team, view);
+  if (!m) return "";
+  const stat = (st: SitStat | null) =>
+    st
+      ? `<div class="sct-co-sit">` +
+        `<span class="sct-co-kpi-label">${e(st.label)}</span>` +
+        `<span class="sct-co-kpi-value">${e(st.value)}</span>` +
+        st.lines.filter(Boolean).map((l) => `<span class="sct-co-sit-line">${e(l)}</span>`).join("") +
+        `</div>`
+      : "";
   return (
     `<div class="sct-co-panel sct-co-rz4">` +
     h3("Red zone and fourth down") +
-    `<p class="sct-co-panel-sub">${e(`Play selection inside the 20 and on short fourth downs, ${seasonOf(c)} to date, with the plays each rate is measured on.`)}</p>` +
-    `<div class="sct-co-sits">${rzHtml}${fourthHtml}</div>` +
-    `<p class="sct-co-take-ctx">${e(
-      `Fourth-down decisions are game management${hc && !callerIsHC ? `, shared with head coach ${hc}` : ""}; red-zone play selection counts plays, not trips, so a few long drives move it early in a season.`,
-    )}</p>` +
+    `<p class="sct-co-panel-sub">${e(m.sub)}</p>` +
+    `<div class="sct-co-sits">${stat(m.rz)}${stat(m.fourth)}</div>` +
+    `<p class="sct-co-take-ctx">${e(m.context)}</p>` +
     `</div>`
   );
 }
@@ -1814,7 +1927,7 @@ function takeaway(line: string, context: string): string {
   );
 }
 
-const signedPts = (d: number) => (d === 0 ? "0" : `${d > 0 ? "+" : "−"}${Math.abs(d)}`);
+export const signedPts = (d: number) => (d === 0 ? "0" : `${d > 0 ? "+" : "−"}${Math.abs(d)}`);
 
 /** The position furthest from league, if it is 3+ points off (the builder's bar). */
 function distLean(c: TeamCoaching): BarRow | null {
@@ -1823,40 +1936,66 @@ function distLean(c: TeamCoaching): BarRow | null {
   return top && Math.abs((top.pct as number) - (top.nfl as number)) >= 3 ? top : null;
 }
 
-const surnameOf = (c: TeamCoaching): string => c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
+export const surnameOf = (c: TeamCoaching): string => c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
 
-function distribution(c: TeamCoaching): string {
+/** The target-distribution model: each position against the league, the one lean, and the panel's read. */
+export interface DistributionModel {
+  title: string;
+  sub: string;
+  rows: Array<{ row: BarRow; d: number; lean: boolean }>;
+  line: string;
+  context: string;
+}
+
+export function distributionModel(c: TeamCoaching): DistributionModel {
   const lean = distLean(c);
   const many = /^Across his/.test(c.distribution.note);
+  return {
+    title: `Target distribution under ${surnameOf(c)}`,
+    sub: c.distribution.sub,
+    // Gold marks the one position that materially deviates, not a position.
+    rows: c.distribution.rows.map((row) => ({ row, d: (row.pct ?? 0) - (row.nfl ?? 0), lean: row === lean })),
+    line: lean
+      ? `${lean.label} have drawn ${lean.pct}% of targets vs ${lean.nfl}% league average.`
+      : "Every position sits within a few points of league average: the target tree follows the talent.",
+    context: many ? "Across the offenses he has called: a historical tendency, read alongside the current roster." : "One season of data, read alongside the current roster.",
+  };
+}
+
+function distribution(c: TeamCoaching): string {
+  const m = distributionModel(c);
   return (
     `<div class="sct-co-panel">` +
-    h3(`Target distribution under ${surnameOf(c)}`) +
-    `<p class="sct-co-panel-sub">${e(c.distribution.sub)}</p>` +
+    h3(m.title) +
+    `<p class="sct-co-panel-sub">${e(m.sub)}</p>` +
     // The "Filled bar = X offenses · thin marker = league average" key went
     // 2026-11-03 (mak); the "+5 vs NFL" pills carry the comparison.
-    c.distribution.rows
-      .map((row) => {
-        const d = (row.pct ?? 0) - (row.nfl ?? 0);
-        // Gold marks the one position that materially deviates, not a position.
-        return barRow(
-          { ...row, gold: row === lean },
+    m.rows
+      .map(({ row, d, lean }) =>
+        barRow(
+          { ...row, gold: lean },
           `${row.label}: ${row.pct}% of targets, league average ${row.nfl}%`,
           `${row.pct}% · NFL ${row.nfl}%`,
-          `<span class="sct-co-diff${row === lean ? " is-lean" : ""}">${e(`${signedPts(d)} vs NFL`)}</span>`,
-        );
-      })
+          `<span class="sct-co-diff${lean ? " is-lean" : ""}">${e(`${signedPts(d)} vs NFL`)}</span>`,
+        ),
+      )
       .join("") +
-    takeaway(
-      lean
-        ? `${lean.label} have drawn ${lean.pct}% of targets vs ${lean.nfl}% league average.`
-        : "Every position sits within a few points of league average: the target tree follows the talent.",
-      many ? "Across the offenses he has called: a historical tendency, read alongside the current roster." : "One season of data, read alongside the current roster.",
-    ) +
+    takeaway(m.line, m.context) +
     `</div>`
   );
 }
 
-function backfield(c: TeamCoaching, view: UsageView | null): string {
+/** The backfield-share model: the bars (the live season from the usage feed), their caption and the panel's read. */
+export interface BackfieldModel {
+  title: string;
+  sub: string;
+  bars: TeamCoaching["backfield"]["bars"];
+  caption: string;
+  line: string;
+  context: string;
+}
+
+export function backfieldModel(c: TeamCoaching, view: UsageView | null): BackfieldModel {
   const bars = c.backfield.bars.map((bar) => {
     if (!bar.feed || !view) return bar;
     // The current season's bar is the lead back's live share of the room's
@@ -1873,11 +2012,24 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
     : /The trend is a spread/.test(note)
       ? "Spreading: the lead back's share has drifted down, so committee risk is real."
       : "No stable concentration pattern across his seasons.";
+  return {
+    title: `Backfield share under ${surnameOf(c)}`,
+    sub: c.backfield.sub,
+    bars,
+    caption,
+    line,
+    context: /^Starred seasons/.test(note) ? "Starred seasons were a previous staff's: context, not his record." : "Lead back's share of the backfield's carries + 2 × targets, by season.",
+  };
+}
+
+function backfield(c: TeamCoaching, view: UsageView | null): string {
+  const m = backfieldModel(c, view);
+  const { bars, caption } = m;
   // The "Tracked range 27% -> 80% · 2026 55%" line went 2026-11-02 (mak).
   return (
     `<div class="sct-co-panel">` +
-    h3(`Backfield share under ${surnameOf(c)}`) +
-    `<p class="sct-co-panel-sub">${e(c.backfield.sub)}</p>` +
+    h3(m.title) +
+    `<p class="sct-co-panel-sub">${e(m.sub)}</p>` +
     `<div class="sct-co-cols" role="img" aria-label="${e(`Lead back share by season: ${caption}`)}">` +
     bars
       .map(
@@ -1894,7 +2046,7 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
       )
       .join("") +
     `</div>` +
-    takeaway(line, /^Starred seasons/.test(note) ? "Starred seasons were a previous staff's: context, not his record." : "Lead back's share of the backfield's carries + 2 × targets, by season.") +
+    takeaway(m.line, m.context) +
     `</div>`
   );
 }
@@ -1919,7 +2071,29 @@ function personnel(c: TeamCoaching): string {
   );
 }
 
-function scoreState(c: TeamCoaching): string {
+/** One score-state row read against leading by 7+: its pass rate, sample and gap in points. */
+export interface ScoreStateRow {
+  row: BarRow;
+  /** "57% pass", or the stored result when it does not parse. */
+  pass: string;
+  /** "152 plays", when the stored result carries it. */
+  plays: string | null;
+  d: number;
+  /** "Baseline" on the first row, else "+9 pp" / "0 pp". */
+  diff: string;
+  baseline: boolean;
+  /** A real gap (3+ points) from the baseline: the row that gets gold. */
+  flag: boolean;
+}
+
+export interface ScoreStateModel {
+  sub: string;
+  rows: ScoreStateRow[];
+  verdict: string;
+  context: string;
+}
+
+export function scoreStateModel(c: TeamCoaching): ScoreStateModel {
   const rows = c.scoreState.rows;
   const base = rows[0]?.share ?? null;
   const swing = base != null && rows[2]?.share != null ? rows[2].share - base : null;
@@ -1931,30 +2105,41 @@ function scoreState(c: TeamCoaching): string {
       : Math.abs(swing) < 3
         ? `Script-neutral: ${t}% pass when trailing by 7+, ${base}% when leading by 7+.`
         : `${Math.abs(swing) < 10 ? "Small" : "Clear"} trailing ${swing > 0 ? "bump" : "dip"}: ${t}% pass when trailing by 7+, vs ${base}% when leading by 7+.`;
+  return {
+    sub: c.scoreState.sub,
+    rows: rows.map((row, i) => {
+      const m = (row.result ?? "").match(/^(\S+ pass) · (\d+ plays)$/);
+      const d = base != null ? (row.share ?? 0) - base : 0;
+      // Each row is read against leading by 7+; only a real gap gets gold.
+      const flag = i > 0 && Math.abs(d) >= 3;
+      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Baseline" : `${signedPts(d)} pp`, baseline: i === 0, flag };
+    }),
+    verdict,
+    context: small ? "Early-season samples remain small." : "Play counts show each bucket's sample.",
+  };
+}
+
+function scoreState(c: TeamCoaching): string {
+  const m = scoreStateModel(c);
   // Solo when the entry has no personnel panel: spans both grid columns.
   return (
     `<div class="sct-co-panel">` +
     h3("Play-calling by score state") +
-    `<p class="sct-co-panel-sub">${e(c.scoreState.sub)}</p>` +
-    rows
-      .map((row, i) => {
-        const m = (row.result ?? "").match(/^(\S+ pass) · (\d+ plays)$/);
-        const d = base != null ? (row.share ?? 0) - base : 0;
-        // Each row is read against leading by 7+; only a real gap gets gold.
-        const flag = i > 0 && Math.abs(d) >= 3;
-        const diff =
-          i === 0
-            ? `<span class="sct-co-diff">Baseline</span>`
-            : `<span class="sct-co-diff${flag ? " is-lean" : ""}">${e(`${signedPts(d)} pp`)}</span>`;
+    `<p class="sct-co-panel-sub">${e(m.sub)}</p>` +
+    m.rows
+      .map((r) => {
+        const diff = r.baseline
+          ? `<span class="sct-co-diff">Baseline</span>`
+          : `<span class="sct-co-diff${r.flag ? " is-lean" : ""}">${e(r.diff)}</span>`;
         return barRow(
-          { ...row, gold: flag },
-          `${row.label}: ${row.result}`,
-          m ? m[1] : (row.result ?? `${row.share}%`),
-          diff + (m ? `<span class="sct-co-plays">${e(m[2])}</span>` : ""),
+          { ...r.row, gold: r.flag },
+          `${r.row.label}: ${r.row.result}`,
+          r.pass,
+          diff + (r.plays ? `<span class="sct-co-plays">${e(r.plays)}</span>` : ""),
         );
       })
       .join("") +
-    (verdict ? takeaway(verdict, small ? "Early-season samples remain small." : "Play counts show each bucket's sample.") : "") +
+    (m.verdict ? takeaway(m.verdict, m.context) : "") +
     `</div>`
   );
 }
@@ -2073,6 +2258,9 @@ export function renderCoachingSection(
 ): CoachingSection {
   if (!coaching) return { html: "", faqHtml: "", faq: [] };
   const html =
+    // The premium comparison version (mak, 2026-11-05) sits ABOVE the
+    // original since mak's later note; the original is untouched below it.
+    renderCoachingPremium(coaching, team, view) +
     `<div class="sct-block sct-co">` +
     header() +
     // 1 + 2. One block (mak's critique, 2026-11-05): the identity header,
@@ -2110,10 +2298,7 @@ export function renderCoachingSection(
     career(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +
-    `</div>` +
-    // The premium comparison version (mak, 2026-11-05): rendered under the
-    // whole section, the original untouched, so the two can be compared.
-    renderCoachingPremium(coaching, team, view);
+    `</div>`;
 
   // mak's question list (2026-11-03) replaces the builder's single question:
   // written by rule from the same data as the page, in the page's FAQPage too.
