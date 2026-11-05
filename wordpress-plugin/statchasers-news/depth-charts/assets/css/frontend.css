@@ -722,3 +722,717 @@
 	font-weight: 700;
 	line-height: 1;
 }
+
+
+/* =========================================================================
+   NEW DESIGN - COMPARISON: the premium league-wide browser (.scdc-prm).
+   Rendered by renderPremium() under the complete original. Own tokens, its
+   own container queries (the WordPress column, not the window, is what it
+   answers to), and nothing here reaches the original's classes.
+   ========================================================================= */
+.scdc-prm-compare {
+	margin-top: 2.75rem;
+}
+.scdc-prm-divider {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 0 0 18px;
+	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 11px;
+	font-weight: 800;
+	letter-spacing: 0.14em;
+	color: #0b2345;
+}
+.scdc-prm-divider::before,
+.scdc-prm-divider::after {
+	content: "";
+	flex: 1 1 auto;
+	height: 1px;
+	background: #cbdbea;
+}
+.scdc-prm-divider span {
+	flex: 0 0 auto;
+	padding: 6px 12px;
+	border: 1px solid #d4af37;
+	border-radius: 999px;
+	background: #fff8e1;
+}
+
+.scdc-prm {
+	--prm-navy-deep: #0b2345;
+	--prm-navy: #0b3a7a;
+	--prm-navy-dark: #071a35;
+	--prm-gold: #d4af37;
+	--prm-gold-bright: #f0c13b;
+	--prm-ink: #102344;
+	--prm-muted: #5b7290;
+	--prm-faint: #7b8fa8;
+	--prm-bg: #f7faff;
+	--prm-surface: #edf4fb;
+	--prm-border: #cbdbea;
+	--prm-rule: #dbe6f2;
+	--prm-up: #087a42;
+	--prm-down: #c73940;
+	--prm-new-bg: #e3edff;
+	--prm-new-ink: #1d4ed8;
+	--prm-shadow: 0 1px 2px rgba(11, 35, 69, 0.04), 0 8px 24px rgba(11, 35, 69, 0.07);
+	--prm-cols: 5;
+
+	container-type: inline-size;
+	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	color: var(--prm-ink);
+	font-size: 14px;
+	line-height: 1.4;
+}
+.scdc-prm button {
+	font-family: inherit;
+}
+.scdc-prm-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ---- Navigation + count ---- */
+.scdc-prm-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+.scdc-prm-tabs {
+	display: inline-flex;
+	gap: 4px;
+	max-width: 100%;
+	min-width: 0;
+}
+.scdc-prm-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	height: 46px;
+	padding: 0 20px;
+	border: 1px solid var(--prm-border);
+	border-radius: 11px;
+	background: linear-gradient(180deg, #ffffff 0%, #e9f0f9 100%);
+	color: var(--prm-ink);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(11, 35, 69, 0.06);
+	transition: background-color 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.scdc-prm-tab svg {
+	width: 20px;
+	height: 20px;
+	flex: 0 0 auto;
+	color: var(--prm-navy);
+}
+.scdc-prm-tab:hover {
+	border-color: #b4c8de;
+	background: linear-gradient(180deg, #ffffff 0%, #dfe9f6 100%);
+}
+.scdc-prm-tab:focus-visible,
+.scdc-prm-export:focus-visible,
+.scdc-prm-reset:focus-visible,
+.scdc-prm-input:focus-visible,
+.scdc-prm-select .scdc-cs-trigger:focus-visible {
+	outline: 2px solid var(--prm-gold-bright);
+	outline-offset: 2px;
+}
+.scdc-prm-tab.is-active {
+	background: linear-gradient(180deg, #163f78 0%, #0b2345 100%);
+	color: #ffffff;
+	border-color: var(--prm-gold);
+	box-shadow: 0 0 0 1px var(--prm-gold), 0 5px 14px rgba(11, 35, 69, 0.32);
+}
+.scdc-prm-tab.is-active svg {
+	color: var(--prm-gold-bright);
+}
+.scdc-prm-count {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 36px;
+	padding: 0 14px;
+	border: 1px solid var(--prm-border);
+	border-radius: 9px;
+	background: var(--prm-surface);
+	color: var(--prm-ink);
+	font-size: 13px;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.scdc-prm-count b {
+	font-weight: 700;
+}
+
+/* ---- Toolbar: Search | Position | Team | Export ---- */
+.scdc-prm-toolbar {
+	display: grid;
+	grid-template-columns: minmax(0, 1.75fr) minmax(0, 0.9fr) minmax(0, 1.05fr) auto;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 14px;
+}
+.scdc-prm-field {
+	min-width: 0;
+}
+.scdc-prm-search {
+	position: relative;
+}
+.scdc-prm-search-icon {
+	position: absolute;
+	left: 14px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: inline-flex;
+	color: var(--prm-navy);
+	pointer-events: none;
+}
+.scdc-prm-search-icon svg {
+	width: 19px;
+	height: 19px;
+}
+.scdc-prm-input {
+	width: 100%;
+	height: 44px;
+	padding: 0 14px 0 44px;
+	border: 1px solid var(--prm-border);
+	border-radius: 11px;
+	background: #ffffff;
+	color: var(--prm-ink);
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	outline: none;
+	box-shadow: 0 1px 2px rgba(11, 35, 69, 0.04);
+}
+.scdc-prm-input::placeholder {
+	color: var(--prm-muted);
+	font-weight: 500;
+}
+.scdc-prm-input:focus {
+	border-color: var(--prm-navy);
+	box-shadow: 0 0 0 3px rgba(11, 58, 122, 0.14);
+}
+.scdc-prm-select .scdc-cs-trigger {
+	height: 44px;
+	gap: 10px;
+	padding: 0 12px 0 14px;
+	border-color: var(--prm-border);
+	border-radius: 11px;
+	background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+	color: var(--prm-ink);
+	font-size: 14px;
+	font-weight: 500;
+	box-shadow: 0 1px 2px rgba(11, 35, 69, 0.04);
+}
+.scdc-prm-select .scdc-cs-trigger:focus-visible,
+.scdc-prm-select.is-open .scdc-cs-trigger {
+	border-color: var(--prm-navy);
+	box-shadow: 0 0 0 3px rgba(11, 58, 122, 0.14);
+}
+.scdc-prm-select .scdc-cs-icon {
+	flex: 0 0 auto;
+	display: inline-flex;
+	color: var(--prm-navy);
+}
+.scdc-prm-select .scdc-cs-icon svg {
+	width: 19px;
+	height: 19px;
+}
+.scdc-prm-select .scdc-cs-caret {
+	color: var(--prm-navy-deep);
+}
+.scdc-prm-select .scdc-cs-caret svg {
+	width: 16px;
+	height: 16px;
+}
+.scdc-prm-select .scdc-cs-list {
+	border-radius: 11px;
+}
+.scdc-prm-field-export {
+	padding-left: 12px;
+	border-left: 1px solid var(--prm-border);
+}
+.scdc-prm-export {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	width: 100%;
+	height: 44px;
+	padding: 0 22px;
+	border: 1px solid var(--prm-navy-dark);
+	border-radius: 11px;
+	background: linear-gradient(180deg, #163f78 0%, #0b2345 100%);
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(11, 35, 69, 0.28);
+}
+.scdc-prm-export svg {
+	width: 18px;
+	height: 18px;
+	color: var(--prm-gold-bright);
+}
+.scdc-prm-export:hover {
+	background: linear-gradient(180deg, #1b4a8a 0%, #0e2c57 100%);
+}
+.scdc-prm-export:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ---- Fantasy notice ---- */
+.scdc-prm-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 40px;
+	margin: 0 0 16px;
+	padding: 8px 14px;
+	border: 1px solid #e6c766;
+	border-radius: 10px;
+	background: linear-gradient(180deg, #fffaea 0%, #fdf2cc 100%);
+	color: var(--prm-ink);
+	font-size: 13.5px;
+}
+.scdc-prm-notice svg {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	color: #d4a017;
+}
+.scdc-prm-notice p {
+	margin: 0;
+}
+.scdc-prm-notice strong {
+	font-weight: 700;
+}
+
+/* ---- Team cards ---- */
+.scdc-prm-grid {
+	display: grid;
+	gap: 18px;
+	align-items: start;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--prm-cols) * 230px)), 1fr));
+}
+.scdc-prm-card {
+	position: relative;
+	overflow: hidden;
+	min-width: 0;
+	padding: 16px 20px 16px;
+	border: 1px solid var(--prm-border);
+	border-radius: 16px;
+	background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+	box-shadow: var(--prm-shadow);
+}
+/* Gold diagonal stripe and navy wedge, top-right corner only. */
+.scdc-prm-corner {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 110px;
+	height: 32px;
+	pointer-events: none;
+}
+.scdc-prm-corner::before,
+.scdc-prm-corner::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+.scdc-prm-corner::before {
+	background: var(--prm-gold-bright);
+	clip-path: polygon(33% 0, 47% 0, 92% 100%, 78% 100%);
+}
+.scdc-prm-corner::after {
+	background: var(--prm-navy-deep);
+	clip-path: polygon(55% 0, 100% 0, 100% 100%);
+}
+.scdc-prm-team {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 14px;
+	padding-right: 110px;
+	min-width: 0;
+}
+.scdc-prm-logo {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 54px;
+	height: 54px;
+	border: 1px solid var(--prm-border);
+	border-radius: 12px;
+	background: var(--prm-surface);
+	overflow: hidden;
+}
+.scdc-prm-logo img {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
+}
+.scdc-prm-logo span {
+	font-size: 14px;
+	font-weight: 800;
+	color: var(--prm-navy-deep);
+}
+.scdc-prm-team-bar {
+	flex: 0 0 auto;
+	width: 3px;
+	height: 46px;
+	border-radius: 2px;
+	background: var(--prm-gold-bright);
+}
+.scdc-prm-team-id {
+	min-width: 0;
+}
+.scdc-prm-team-name {
+	margin: 0;
+	padding: 0;
+	font-family: inherit;
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	color: var(--prm-navy-deep);
+	overflow-wrap: anywhere;
+}
+.scdc-prm-team-summary {
+	margin-top: 4px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--prm-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---- Position groups: N equal columns, hairline separators ----
+   Each column draws its own left (and top) hairline just outside its box, in
+   the 1px gap; the grid clips the ones that land on its outer edge, so no
+   nth-child bookkeeping is needed when the column count changes. */
+.scdc-prm-cols {
+	display: grid;
+	grid-template-columns: repeat(var(--c, var(--prm-cols)), minmax(0, 1fr));
+	gap: 14px 1px;
+	margin: 0 -11px;
+	overflow: hidden;
+}
+.scdc-prm-col {
+	position: relative;
+	min-width: 0;
+	padding: 0 11px;
+}
+.scdc-prm-col::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: -1px;
+	width: 1px;
+	background: var(--prm-rule);
+}
+.scdc-prm-col::after {
+	content: "";
+	position: absolute;
+	left: 11px;
+	right: 11px;
+	top: -8px;
+	height: 1px;
+	background: var(--prm-rule);
+}
+.scdc-prm-col-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 22px;
+	min-width: 0;
+}
+.scdc-prm-col-label {
+	min-width: 0;
+	font-size: 12.5px;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--prm-navy-deep);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.scdc-prm-col-count {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	height: 19px;
+	padding: 0 7px;
+	border-radius: 999px;
+	background: #e3ecf7;
+	color: var(--prm-navy-deep);
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+.scdc-prm-col-rule {
+	height: 2px;
+	margin: 6px 0 8px;
+	border-radius: 2px;
+	background: linear-gradient(to right, var(--prm-gold-bright) 0, var(--prm-gold-bright) 40px, var(--prm-rule) 40px, var(--prm-rule) 100%);
+}
+.scdc-prm-list {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+.scdc-prm-list.is-empty {
+	padding: 2px 4px;
+	font-size: 12px;
+	color: var(--prm-faint);
+}
+
+/* ---- Player rows ---- */
+.scdc-prm-row {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	height: 26px;
+	padding: 0 4px 0 2px;
+	border-radius: 6px;
+	min-width: 0;
+	transition: background-color 0.12s;
+}
+.scdc-prm-row:hover {
+	background: var(--prm-surface);
+}
+.scdc-prm-move {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 10px;
+	height: 12px;
+	color: transparent;
+}
+.scdc-prm-move svg {
+	width: 10px;
+	height: 10px;
+}
+.scdc-prm-move.is-up {
+	color: var(--prm-up);
+}
+.scdc-prm-move.is-down {
+	color: var(--prm-down);
+}
+.scdc-prm-rank {
+	flex: 0 0 auto;
+	width: 20px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--prm-faint);
+	font-variant-numeric: tabular-nums;
+}
+.scdc-prm-name {
+	flex: 0 1 auto;
+	min-width: 0;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--prm-ink);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.scdc-prm-badge {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	height: 18px;
+	padding: 0 6px;
+	border-radius: 4px;
+	font-size: 10px;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	line-height: 1;
+}
+.scdc-prm-badge-new {
+	background: var(--prm-new-bg);
+	color: var(--prm-new-ink);
+}
+
+/* ---- Empty state ---- */
+.scdc-prm-empty {
+	padding: 36px 20px;
+	border: 1px solid var(--prm-border);
+	border-radius: 16px;
+	background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+	box-shadow: var(--prm-shadow);
+	text-align: center;
+}
+.scdc-prm-empty-title {
+	margin: 0 0 4px;
+	font-size: 16px;
+	font-weight: 800;
+	color: var(--prm-navy-deep);
+}
+.scdc-prm-empty-text {
+	margin: 0 0 16px;
+	font-size: 13.5px;
+	color: var(--prm-muted);
+}
+.scdc-prm-reset {
+	display: inline-flex;
+	align-items: center;
+	height: 38px;
+	padding: 0 18px;
+	border: 1px solid var(--prm-navy-dark);
+	border-radius: 9px;
+	background: linear-gradient(180deg, #163f78 0%, #0b2345 100%);
+	color: #ffffff;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+	box-shadow: 0 3px 10px rgba(11, 35, 69, 0.25);
+}
+
+/* ---- Responsive: the component's own width, not the window's ----
+   --c is the column count a card actually uses; data-cols is the number of
+   groups the view has (capped at five). */
+@container (max-width: 1150px) {
+	.scdc-prm-name {
+		font-size: 13.5px;
+	}
+}
+@container (max-width: 960px) {
+	.scdc-prm-grid[data-cols="5"] .scdc-prm-cols,
+	.scdc-prm-grid[data-cols="4"] .scdc-prm-cols {
+		--c: 3;
+	}
+	.scdc-prm-tab {
+		padding: 0 15px;
+	}
+	.scdc-prm-card {
+		padding: 14px 16px 14px;
+	}
+}
+@container (max-width: 860px) {
+	.scdc-prm-toolbar {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+	}
+	.scdc-prm-field-search {
+		grid-column: 1 / -1;
+	}
+}
+@container (max-width: 760px) {
+	.scdc-prm-top {
+		flex-wrap: wrap;
+	}
+	.scdc-prm-tabs {
+		overflow-x: auto;
+		padding: 2px;
+		margin: -2px;
+		scrollbar-width: none;
+	}
+	.scdc-prm-tabs::-webkit-scrollbar {
+		display: none;
+	}
+	.scdc-prm-count {
+		margin-left: auto;
+	}
+}
+@container (max-width: 700px) {
+	.scdc-prm-grid[data-cols="5"] .scdc-prm-cols,
+	.scdc-prm-grid[data-cols="4"] .scdc-prm-cols,
+	.scdc-prm-grid[data-cols="3"] .scdc-prm-cols {
+		--c: 2;
+	}
+	.scdc-prm-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+@container (max-width: 520px) {
+	.scdc-prm-toolbar {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+	.scdc-prm-field-export {
+		grid-column: 1 / -1;
+		padding-left: 0;
+		border-left: 0;
+	}
+	.scdc-prm-tab {
+		height: 42px;
+		padding: 0 12px;
+		font-size: 13px;
+		gap: 7px;
+	}
+	.scdc-prm-tab svg {
+		width: 18px;
+		height: 18px;
+	}
+	.scdc-prm-logo {
+		width: 46px;
+		height: 46px;
+	}
+	.scdc-prm-logo img {
+		width: 34px;
+		height: 34px;
+	}
+	.scdc-prm-team-bar {
+		height: 40px;
+	}
+	.scdc-prm-team-name {
+		font-size: 19px;
+	}
+	.scdc-prm-team {
+		padding-right: 0;
+		gap: 11px;
+	}
+	.scdc-prm-team-id {
+		padding-top: 22px;
+	}
+	.scdc-prm-corner {
+		width: 70px;
+		height: 22px;
+	}
+	.scdc-prm-card {
+		padding: 12px 14px 12px;
+	}
+	.scdc-prm-name {
+		font-size: 13px;
+	}
+	.scdc-prm-col {
+		padding: 0 8px;
+	}
+	.scdc-prm-cols {
+		margin: 0 -8px;
+	}
+	.scdc-prm-col::after {
+		left: 8px;
+		right: 8px;
+	}
+}
+@container (max-width: 380px) {
+	.scdc-prm-grid[data-cols] .scdc-prm-cols {
+		--c: 1;
+	}
+}

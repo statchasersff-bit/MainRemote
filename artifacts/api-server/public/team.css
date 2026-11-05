@@ -27253,531 +27253,6 @@ a.sct-srow-team:focus-visible {
   }
 }
 
-/* ===================================================================
- * Team page: "Premium Design A · Dark Navy", the dark navy-and-gold
- * comparison of the hero and the strip (mak's brief, 2026-11-05; brought back
- * at mak's request after Design B became the header the same day). Rendered
- * under the header, labeled, not the default. Its own size container ("tp");
- * every rule is under .sct .sct-tp and nothing reaches the header (.sct-tpb).
- * The switcher inside it reuses the .sct-switch panel rules; only its summary
- * pill is restyled here. */
-
-.sct .sct-tp {
-  --tp-navy-950: #07172f;
-  --tp-navy-900: #091e3d;
-  --tp-navy-850: #0b294f;
-  --tp-navy-800: #103966;
-  --tp-royal: #1155a2;
-  --tp-blue: #1763b5;
-  --tp-gold: #d4af37;
-  --tp-gold-bright: #f0c34e;
-  --tp-gold-deep: #b8901f;
-  --tp-text: #102344;
-  --tp-muted: #5f7492;
-  --tp-border: #cddaea;
-  container-type: inline-size;
-  container-name: tp;
-  margin: 28px 0 32px;
-  color: #fff;
-}
-
-.sct .sct-tp .sct-cp-flag {
-  display: inline-block;
-  margin: 0 0 10px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #fbf3d5;
-  color: #7a5c0e;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* ---- the hero */
-.sct .sct-tp-hero {
-  position: relative;
-  border-radius: 18px;
-  background: linear-gradient(115deg, #081b37 0%, #103766 42%, #104f92 65%, #071d3c 100%);
-  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
-}
-
-/* The clip lives on the decor wrapper, never on the hero: an open switcher drops below it. */
-.sct .sct-tp-decor {
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sct .sct-tp-bands {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(118deg, rgba(5, 18, 40, 0.55) 0 14%, transparent 14% 30%, rgba(17, 85, 162, 0.22) 30% 46%, transparent 46% 58%, rgba(23, 99, 181, 0.18) 58% 72%, transparent 72% 86%, rgba(5, 18, 40, 0.5) 86%),
-    radial-gradient(90% 120% at 100% 100%, rgba(5, 18, 40, 0.55) 0%, transparent 60%);
-}
-
-.sct .sct-tp-gold {
-  position: absolute;
-  width: 3px;
-  height: 160%;
-  background: linear-gradient(180deg, var(--tp-gold-bright) 0%, var(--tp-gold) 50%, var(--tp-gold-deep) 100%);
-  box-shadow: 12px 0 0 rgba(212, 175, 55, 0.55), 24px 0 0 rgba(212, 175, 55, 0.25), 0 0 14px rgba(240, 195, 78, 0.25);
-  transform: rotate(28deg);
-  opacity: 0.9;
-}
-
-.sct .sct-tp-gold.is-tl {
-  top: -40%;
-  left: 6px;
-}
-
-.sct .sct-tp-gold.is-br {
-  right: 44px;
-  bottom: -60%;
-}
-
-.sct .sct-tp-watermark {
-  position: absolute;
-  top: 50%;
-  right: -40px;
-  width: 360px;
-  height: 360px;
-  transform: translateY(-50%);
-  background-image: var(--team-logo);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  opacity: 0.13;
-  filter: saturate(0.5) brightness(1.8);
-}
-
-.sct .sct-tp-inner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "badge text actions" "badge kpis kpis" "badge updated updated";
-  align-items: center;
-  column-gap: 24px;
-  row-gap: 10px;
-  padding: 24px 28px 18px;
-}
-
-/* ---- the crest in its badge */
-.sct .sct-tp-badge {
-  grid-area: badge;
-  align-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 148px;
-  height: 148px;
-  border: 3px solid var(--tp-gold);
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 25%, #fff 0%, #f4f7fc 55%, #dce7f3 100%);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 0 0 6px rgba(212, 175, 55, 0.25), 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.sct .sct-tp-logo {
-  width: 112px;
-  height: 112px;
-  object-fit: contain;
-}
-
-/* ---- the identity */
-.sct .sct-tp-text {
-  grid-area: text;
-  min-width: 0;
-}
-
-.sct .sct-tp-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 4px;
-  color: #d6e2f3;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sct .sct-tp-eyebrow-rule {
-  width: 18px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--tp-gold);
-}
-
-.sct .sct-tp-title {
-  margin: 0;
-  color: #fff;
-  font-size: 2.9rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.sct .sct-tp-sub {
-  margin: 6px 0 0;
-  color: #b9c9e0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-/* ---- the switcher, as a white pill */
-.sct .sct-tp-actions {
-  grid-area: actions;
-  align-self: start;
-  justify-self: end;
-}
-
-.sct .sct-tp .sct-switch-summary {
-  min-height: 42px;
-  padding: 6px 14px 6px 10px;
-  border: 1px solid rgba(212, 175, 55, 0.7);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff 0%, #eef3fa 100%);
-  color: var(--tp-navy-950);
-  font-size: 0.9rem;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 #fff;
-}
-
-.sct .sct-tp .sct-switch-summary:hover,
-.sct .sct-tp .sct-switch-summary:focus-visible {
-  border-color: var(--tp-gold-bright);
-  box-shadow: 0 0 0 3px rgba(240, 195, 78, 0.28), 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.sct .sct-tp .sct-switch-caret {
-  border-color: var(--tp-navy-950);
-}
-
-.sct .sct-tp .sct-switch-panel {
-  color: var(--tp-text);
-}
-
-/* ---- the four KPI cards */
-.sct .sct-tp-kpis {
-  grid-area: kpis;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sct .sct-tp-kpi {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 78px;
-  margin: 0;
-  padding: 12px 16px;
-  border: 1px solid rgba(210, 222, 238, 0.9);
-  border-bottom: 3px solid var(--tp-gold);
-  border-radius: 12px;
-  background: linear-gradient(145deg, #fff 0%, #f5f8fd 68%, #e7eff9 100%);
-  color: var(--tp-text);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08), 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.sct .sct-tp-kpi-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-  color: var(--tp-gold-deep);
-}
-
-.sct .sct-tp-kpi-icon svg {
-  width: 26px;
-  height: 26px;
-  stroke-width: 2.1;
-}
-
-.sct .sct-tp-kpi-div {
-  flex: 0 0 1px;
-  width: 1px;
-  height: 36px;
-  background: #d2deee;
-}
-
-.sct .sct-tp-kpi-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sct .sct-tp-kpi-label {
-  color: var(--tp-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sct .sct-tp-kpi-value {
-  color: var(--tp-navy-950);
-  font-size: 1.3rem;
-  font-weight: 800;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-
-.sct .sct-tp-updated {
-  grid-area: updated;
-  margin: 0;
-  color: #b9c9e0;
-  font-size: 0.78rem;
-  font-style: italic;
-}
-
-/* ---- the strip: the header's light bar, separate, text-first, a navy open tab under a gold bar */
-.sct .sct-tp-nav {
-  margin-top: 12px;
-  border: 1px solid #bfd1e8;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #f8fbff 0%, #edf4fd 100%);
-  box-shadow: 0 4px 10px rgba(10, 38, 77, 0.05), 0 10px 22px rgba(10, 38, 77, 0.07);
-  overflow: hidden;
-}
-
-.sct .sct-tp-nav-list {
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
-  min-height: 62px;
-  margin: 0;
-  padding: 7px 8px;
-  list-style: none;
-}
-
-.sct .sct-tp-nav-list li {
-  display: flex;
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
-}
-
-.sct .sct-tp .sct-tp-tab {
-  position: relative;
-  display: inline-flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 48px;
-  padding: 0 10px;
-  border-radius: 13px;
-  color: var(--tp-text);
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.sct .sct-tp .sct-tp-tab:hover {
-  background: #e1ecfa;
-  color: var(--tp-navy-900);
-}
-
-.sct .sct-tp .sct-tp-tab:focus-visible {
-  outline: 2px solid #10539c;
-  outline-offset: -2px;
-}
-
-.sct .sct-tp .sct-tp-tab.is-active,
-.sct .sct-tp .sct-tp-tab.is-active:hover {
-  background: linear-gradient(180deg, #0e4b93 0%, #082e61 100%);
-  color: #fff;
-  font-weight: 800;
-  box-shadow: 0 3px 8px rgba(5, 31, 68, 0.15);
-}
-
-.sct .sct-tp .sct-tp-tab.is-active::after {
-  content: "";
-  position: absolute;
-  right: 13%;
-  bottom: 5px;
-  left: 13%;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--tp-gold-bright);
-}
-
-/* ---- medium: 950-1299px */
-@container tp (max-width: 1299px) {
-  .sct .sct-tp-inner {
-    column-gap: 20px;
-    padding: 20px 22px 16px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 124px;
-    height: 124px;
-  }
-
-  .sct .sct-tp-logo {
-    width: 94px;
-    height: 94px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 2.35rem;
-  }
-
-  .sct .sct-tp-watermark {
-    width: 280px;
-    height: 280px;
-    opacity: 0.08;
-  }
-
-  .sct .sct-tp-kpi {
-    min-height: 70px;
-    padding: 10px 12px;
-  }
-
-  .sct .sct-tp-kpi-value {
-    font-size: 1.12rem;
-  }
-
-  .sct .sct-tp-nav-list {
-    min-height: 56px;
-    padding: 6px 7px;
-  }
-
-  .sct .sct-tp .sct-tp-tab {
-    min-height: 44px;
-    font-size: 0.82rem;
-  }
-}
-
-/* ---- narrow: 650-949px. The selector drops under the name; the KPIs go two by two. */
-@container tp (max-width: 949px) {
-  .sct .sct-tp-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
-    row-gap: 12px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 104px;
-    height: 104px;
-    align-self: start;
-  }
-
-  .sct .sct-tp-logo {
-    width: 78px;
-    height: 78px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 2rem;
-  }
-
-  .sct .sct-tp-actions {
-    justify-self: start;
-  }
-
-  .sct .sct-tp-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sct .sct-tp-watermark {
-    width: 240px;
-    height: 240px;
-    right: -60px;
-  }
-
-  .sct .sct-tp-nav-list {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-  }
-
-  .sct .sct-tp-nav-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sct .sct-tp-nav-list li {
-    flex: 0 0 auto;
-  }
-
-  .sct .sct-tp .sct-tp-tab {
-    padding: 0 14px;
-  }
-}
-
-/* ---- mobile: under 650px */
-@container tp (max-width: 649px) {
-  .sct .sct-tp-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
-    column-gap: 14px;
-    padding: 16px 16px 14px;
-  }
-
-  .sct .sct-tp-badge {
-    width: 84px;
-    height: 84px;
-    border-width: 2.5px;
-  }
-
-  .sct .sct-tp-logo {
-    width: 62px;
-    height: 62px;
-  }
-
-  .sct .sct-tp-title {
-    font-size: 1.65rem;
-  }
-
-  .sct .sct-tp-sub {
-    font-size: 0.85rem;
-  }
-
-  .sct .sct-tp-eyebrow {
-    font-size: 0.72rem;
-  }
-
-  .sct .sct-tp-gold.is-br {
-    display: none;
-  }
-
-  .sct .sct-tp-watermark {
-    width: 200px;
-    height: 200px;
-    opacity: 0.07;
-  }
-
-  .sct .sct-tp-kpi {
-    min-height: 62px;
-    gap: 10px;
-    padding: 9px 11px;
-  }
-
-  .sct .sct-tp-kpi-value {
-    font-size: 1.05rem;
-  }
-
-  .sct .sct-tp .sct-switch-summary {
-    max-width: 100%;
-  }
-
-  .sct .sct-tp-nav-list {
-    min-height: 52px;
-    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
-    mask-image: linear-gradient(90deg, #000 92%, transparent);
-  }
-}
-
 /* =========================================================================
    Depth Chart: the premium comparison (mak's brief, 2026-11-05,
    attached_assets/depth1.png). Rendered under the original Depth Chart tab
@@ -29444,7 +28919,7 @@ a.sct-srow-team:focus-visible {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 18px;
+  gap: 8px 16px;
   min-height: 44px;
 }
 
@@ -29452,6 +28927,21 @@ a.sct-srow-team:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Under 1240px the help line sits beneath the title; wider, beside it. */
+:is(.sct, #sct-table-armour) .sct-ctp-sim-lead {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+@container (min-width: 1240px) {
+  :is(.sct, #sct-table-armour) .sct-ctp-sim-lead {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-icon {
@@ -29549,9 +29039,9 @@ a.sct-srow-team:focus-visible {
 :is(.sct, #sct-table-armour) .sct-ctp-metrics {
   display: grid;
   grid-template-columns: repeat(4, auto);
-  gap: 6px 22px;
+  gap: 6px 18px;
   margin: 0 0 0 auto;
-  padding: 0 0 0 18px;
+  padding: 0 0 0 16px;
   border-left: 1px solid var(--ctp-border);
 }
 
@@ -29613,7 +29103,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-ctp-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2.25fr) minmax(275px, 1fr);
+  grid-template-columns: minmax(0, 2.4fr) minmax(270px, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -29697,7 +29187,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-ctp-table {
   width: 100%;
-  min-width: 760px;
+  min-width: 720px;
   margin: 0;
   border-collapse: separate;
   border-spacing: 0;
@@ -29706,7 +29196,7 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-table :where(th, td) {
-  padding: 0 9px;
+  padding: 0 7px;
   border: 0;
   text-align: left;
   vertical-align: middle;
@@ -29732,9 +29222,9 @@ a.sct-srow-team:focus-visible {
   background: none;
   color: inherit;
   font-family: var(--sc-font);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -29870,7 +29360,11 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-player {
-  min-width: 190px;
+  /* Takes the width the figure columns leave; max-width 0 lets a long name
+     clip rather than widen the sheet past its column. */
+  width: 100%;
+  max-width: 0;
+  min-width: 150px;
   font-weight: 700;
 }
 
@@ -29912,6 +29406,16 @@ a.sct-srow-team:focus-visible {
   align-items: center;
   gap: 2px 6px;
   min-width: 0;
+  overflow: hidden;
+}
+
+/* A long name clips with an ellipsis when the column is tight; the full
+   name stays in the link text. */
+:is(.sct, #sct-table-armour) .sct-ctp-who .sct-ct-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp .sct-ct-name,
@@ -29963,7 +29467,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-pos {
   width: 1%;
-  min-width: 48px;
+  min-width: 40px;
   text-align: center;
 }
 
@@ -29976,7 +29480,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-num {
   width: 1%;
-  min-width: 64px;
+  min-width: 54px;
   font-family: "Barlow", var(--sc-font);
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
@@ -29992,7 +29496,7 @@ a.sct-srow-team:focus-visible {
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-span {
   width: 1%;
-  min-width: 78px;
+  min-width: 68px;
   color: var(--ctp-muted);
   font-family: "Barlow", var(--sc-font);
   font-variant-numeric: tabular-nums;
@@ -30016,7 +29520,7 @@ a.sct-srow-team:focus-visible {
 
 /* Worth: the model's figure over its verdict, the cell tinted by it. */
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-worth {
-  min-width: 82px;
+  min-width: 74px;
   padding-top: 4px;
   padding-bottom: 4px;
   line-height: 1.1;
@@ -30072,7 +29576,7 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-net {
-  min-width: 86px;
+  min-width: 76px;
   font-weight: 800;
   font-size: 0.95rem;
 }
@@ -30096,7 +29600,7 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-table .is-dead {
-  min-width: 70px;
+  min-width: 58px;
   color: var(--ctp-text);
   font-weight: 600;
 }
@@ -30138,9 +29642,7 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-ctp-card-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 0;
+  display: block;
   margin: 10px 0 0;
   color: var(--ctp-muted);
   font-size: 0.8rem;
@@ -30496,6 +29998,11 @@ a.sct-srow-team:focus-visible {
     padding-left: 0;
     border-left: 0;
   }
+
+  /* The sheet scrolls inside its card here, so names get their room back. */
+  :is(.sct, #sct-table-armour) .sct-ctp-table .is-player {
+    min-width: 200px;
+  }
 }
 
 @container (max-width: 750px) {
@@ -30539,7 +30046,7 @@ a.sct-srow-team:focus-visible {
   }
 
   :is(.sct, #sct-table-armour) .sct-ctp-stripes {
-    right: 10px;
+    display: none;
   }
 
   :is(.sct, #sct-table-armour) .sct-ctp-sim {
