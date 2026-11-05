@@ -877,6 +877,86 @@ describe("the game log tab", () => {
     assert.ok(wrap.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
   });
 
+  test("the premium breakdown and matchups repeat the tab's sections under them (mak, 2026-11-05)", async () => {
+    // The redesign of the Game-by-Game Breakdown and Upcoming Matchups
+    // renders UNDER the existing pair, flagged, and both stay until mak
+    // approves one: every headline, line, figure, kickoff and link is the
+    // tab's own.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const gl = doc.querySelector("#game-log");
+    const wrap = gl.querySelector(".scp-bkp-wrap");
+    assert.ok(wrap, "the comparison block sits inside the Game Log tab");
+    assert.match(wrap.querySelector(".scp-bkp-flag").textContent, /New design/);
+    const text = (el) => (el ? el.textContent.replace(/\s+/g, " ").trim() : "");
+
+    // Order on the page: the old breakdown, the old fixtures, then this block.
+    const oldUpcoming = gl.querySelector(".scp-next-note");
+    if (oldUpcoming) {
+      assert.ok(
+        oldUpcoming.compareDocumentPosition(wrap) & 4,
+        "the block follows the existing Upcoming Matchups, not between the pair",
+      );
+    }
+
+    const oldCards = [...gl.querySelectorAll(".scp-gl-game")].map((c) => ({
+      week: text(c.querySelector(".scp-gl-when")).replace(/,.*$/, ""),
+      head: text(c.querySelector(".scp-gl-head")),
+      line: text(c.querySelector(".scp-gl-line")),
+      note: text(c.querySelector(".scp-gl-note")),
+      pts: text(c.querySelector(".scp-gl-fp b")),
+      badge: text(c.querySelector(".scp-gl-fbadge")),
+    }));
+    const newRows = [...wrap.querySelectorAll(".scp-bkp-row")].map((r) => ({
+      week: text(r.querySelector(".scp-bkp-week b")),
+      head: text(r.querySelector(".scp-bkp-head")),
+      line: text(r.querySelector(".scp-bkp-line")).replace(new RegExp(` ${text(r.querySelector(".scp-bkp-note")).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), ""),
+      note: text(r.querySelector(".scp-bkp-note")),
+      pts: text(r.querySelector(".scp-bkp-fp-v b")),
+      badge: text(r.querySelector(".scp-bkp-fbadge")),
+    }));
+    assert.ok(oldCards.length > 0, "the fixture has breakdown cards");
+    assert.deepEqual(newRows, oldCards, "every row carries its card's week, headline, line, note, points and finish");
+
+    // The accent and pill follow the fantasy tier; the result badge follows the game.
+    for (const r of wrap.querySelectorAll(".scp-bkp-row")) {
+      assert.match(r.getAttribute("data-tier"), /^(t12|t24|low)$/);
+      assert.match(r.querySelector(".scp-bkp-res").getAttribute("data-wlt"), /^[WLT]$/);
+    }
+
+    const oldNext = [...gl.querySelectorAll("tr.scp-next")].map((row) => ({
+      week: text(row.querySelector(".scp-next-week")),
+      code: text(row.querySelector(".scp-next-code")),
+      when: text(row.querySelector(".scp-next-when")),
+      rank: text(row.querySelector(".scp-next-rank")),
+      read: text(row.querySelector(".scp-next-read")),
+      href: row.querySelector(".scp-next-cta")?.getAttribute("href") ?? null,
+      next: row.hasAttribute("data-next"),
+    }));
+    const newNext = [...wrap.querySelectorAll("tr.scp-bkp-nx")].map((row) => ({
+      week: text(row.querySelector(".scp-bkp-nx-week")),
+      code: text(row.querySelector(".scp-bkp-nx-code")),
+      when: text(row.querySelector(".scp-bkp-nx-when")),
+      rank: text(row.querySelector(".scp-bkp-nx-rank b")),
+      read: text(row.querySelector(".scp-bkp-pill")),
+      href: row.querySelector(".scp-bkp-cta")?.getAttribute("href") ?? null,
+      next: row.hasAttribute("data-next"),
+    }));
+    assert.deepEqual(newNext, oldNext, "the matchup table repeats the fixtures, ranks, readings and links");
+    if (oldNext.length) {
+      const sub = text(wrap.querySelector(".scp-bkp-up .scp-bkp-sub"));
+      assert.match(sub, new RegExp(`^Next ${["zero", "one", "two", "three", "four", "five", "six"][oldNext.length]} game`));
+      assert.equal(
+        text(wrap.querySelector(".scp-bkp-note")),
+        text(oldUpcoming),
+        "the methodology strip is the tab's note, word for word",
+      );
+      assert.equal(
+        wrap.querySelector(".scp-bkp-note a[href*='outlook']")?.getAttribute("href") ?? null,
+        oldUpcoming.querySelector("a[href*='outlook']")?.getAttribute("href") ?? null,
+      );
+    }
+  });
+
   test("the season selector offers every season, newest first, the one on screen lit", async () => {
     // One log on the page (the game-log audit, 2026-11-04): picking a year
     // REPLACES the log, so the current season is a chip like the rest and

@@ -138,11 +138,12 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
     `<div class="scp-cp-xs" aria-hidden="true">${seasons.map(label).join("")}</div>` +
     `</div>` +
     // The legend also names the average, so the plot's own label can leave
-    // a narrow chart where it would sit on a bar.
+    // a narrow chart where it would sit on a bar. Each entry is one span, so
+    // a swatch never wraps away from its words.
     (seasons.some((s) => s.inProgress)
-      ? `<p class="scp-cp-legend"><i class="is-now"></i>Current season, in progress<i class="is-last"></i>Latest full season<i></i>Earlier seasons${showAvg ? `<i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}` : ""}</p>`
+      ? `<p class="scp-cp-legend"><span><i class="is-now"></i>Current season, in progress</span><span><i class="is-last"></i>Latest full season</span><span><i></i>Earlier seasons</span>${showAvg ? `<span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span>` : ""}</p>`
       : n > 1
-        ? `<p class="scp-cp-legend"><i class="is-last"></i>Latest season<i></i>Earlier seasons<i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</p>`
+        ? `<p class="scp-cp-legend"><span><i class="is-last"></i>Latest season</span><span><i></i>Earlier seasons</span><span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span></p>`
         : "") +
     `</figure>`
   );
