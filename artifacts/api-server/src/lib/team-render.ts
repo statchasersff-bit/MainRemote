@@ -60,6 +60,7 @@ import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { renderTeamHeader } from "./team/team-header";
+import { renderPremiumTeamHeader } from "./team/team-header-premium";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
@@ -391,7 +392,8 @@ export function heroFactList(data: TeamPageData): HeroFact[] {
   return facts;
 }
 
-export function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
+/** `premium`: the class a comparison copy carries instead of data-sct-switch, so the bundle wires only the header's. */
+export function teamSwitcher(team: NflTeam, options: TeamRenderOptions, premium: false | string = false): string {
   const prefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
 
@@ -437,7 +439,7 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string 
   // <a href> - so the switcher is also 31 crawlable internal links rather than
   // a dead end. The client bundle only adds outside-click and Escape.
   return (
-    `<details class="sct-switch" data-sct-switch>` +
+    `<details class="sct-switch${premium ? ` ${premium}` : ""}"${premium ? "" : " data-sct-switch"}>` +
     `<summary class="sct-switch-summary">` +
     // Lazy even though it is above the fold: a lazy image inside the viewport
     // is still fetched straight away, just at a lower priority than the hero
@@ -475,15 +477,31 @@ export function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string 
  * title, the description and the strip are what say which address this is.
  */
 function teamHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Section[], activeId?: string): string {
-  return renderTeamHeader({
-    team: data.team,
-    season: data.state.season,
-    headingTag: options.ownHeading ? "p" : options.embed ? "h2" : "h1",
-    facts: heroFactList(data),
-    updatedMs: data.newsUpdatedAtMs,
-    switcher: teamSwitcher(data.team, options),
-    tabs: navItems(tabs, data.team, data.state.season, options, activeId),
-  });
+  const facts = heroFactList(data);
+  const items = navItems(tabs, data.team, data.state.season, options, activeId);
+  return (
+    renderTeamHeader({
+      team: data.team,
+      season: data.state.season,
+      headingTag: options.ownHeading ? "p" : options.embed ? "h2" : "h1",
+      facts,
+      updatedMs: data.newsUpdatedAtMs,
+      switcher: teamSwitcher(data.team, options),
+      tabs: items,
+    }) +
+    // "Premium Design A · Dark Navy", brought back at mak's request (2026-11-05)
+    // as a labeled comparison UNDER the header, on the same facts, switcher
+    // links and tab addresses; its switcher copy is not wired and its tabs
+    // carry none of the bundle's hooks. Not the default.
+    renderPremiumTeamHeader({
+      team: data.team,
+      season: data.state.season,
+      facts,
+      updatedMs: data.newsUpdatedAtMs,
+      switcher: teamSwitcher(data.team, options, "sct-tp-switch"),
+      tabs: items,
+    })
+  );
 }
 
 /* ------------------------------------------------------------- section nav */

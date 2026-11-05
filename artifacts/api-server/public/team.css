@@ -28338,8 +28338,8 @@ a.sct-srow-team:focus-visible {
   display: flex;
   align-items: center;
   gap: 18px;
-  min-height: 92px;
-  padding: 14px 26px;
+  min-height: 88px;
+  padding: 11px 26px;
   overflow: hidden;
   border-radius: var(--drp-radius);
   background: linear-gradient(110deg, #071a35 0%, #103d70 65%, #092448 100%);
@@ -28402,11 +28402,11 @@ a.sct-srow-team:focus-visible {
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-sub {
-  margin: 5px 0 0;
-  max-width: 68ch;
+  margin: 4px 0 0;
+  max-width: 78ch;
   color: rgba(255, 255, 255, 0.85);
-  font-size: 0.82rem;
-  line-height: 1.4;
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 /* ---- the two columns */
@@ -28608,6 +28608,11 @@ a.sct-srow-team:focus-visible {
   text-decoration: none;
 }
 
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-dr-name,
+:is(.sct, #sct-table-armour) .sct-drp-college-name {
+  white-space: nowrap;
+}
+
 :is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:hover,
 :is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link:hover {
   color: var(--sc-gold-deep);
@@ -28789,7 +28794,7 @@ a.sct-srow-team:focus-visible {
 :is(.sct, #sct-table-armour) .sct-drp-kicker {
   margin: 8px 0 0;
   color: var(--drp-navy-900);
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
@@ -29092,12 +29097,39 @@ a.sct-srow-team:focus-visible {
 /* ---- the column decides: one column under 1050px, the next draft's
    picks first, then the tables, then the rest of the rail. */
 @container (max-width: 1050px) {
+  /* Two equal columns: the next draft's picks and the tables span both,
+     then Last 5 Drafts sits beside the Round 1 list and the note. */
   :is(.sct, #sct-table-armour) .sct-drp-layout {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Row 3 is the Round 1 list's height, row 4 the rest of the Last 5
+       Drafts card beside it, so the note sits right under the list. */
+    grid-template-rows: auto auto max-content 1fr;
+    gap: 16px;
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-rail {
     display: contents;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital { grid-column: 1 / -1; grid-row: 1; }
+  :is(.sct, #sct-table-armour) .sct-drp-main { grid-column: 1 / -1; grid-row: 2; }
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history { grid-column: 1; grid-row: 3 / span 2; }
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-r1 { grid-column: 2; grid-row: 3; }
+  :is(.sct, #sct-table-armour) .sct-drp-method { grid-column: 2; grid-row: 4; align-self: start; }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital .sct-drp-card-body {
+    max-width: 640px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-share {
+    grid-template-columns: 64px minmax(0, 1fr) 34px 44px;
+  }
+}
+
+@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-drp-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-card.is-capital { order: 1; }
@@ -29106,12 +29138,19 @@ a.sct-srow-team:focus-visible {
   :is(.sct, #sct-table-armour) .sct-drp-card.is-r1 { order: 4; }
   :is(.sct, #sct-table-armour) .sct-drp-method { order: 5; }
 
-  :is(.sct, #sct-table-armour) .sct-drp-share {
-    grid-template-columns: 64px minmax(0, 1fr) 34px 44px;
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital,
+  :is(.sct, #sct-table-armour) .sct-drp-main,
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history,
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-r1,
+  :is(.sct, #sct-table-armour) .sct-drp-method {
+    grid-column: auto;
+    grid-row: auto;
   }
-}
 
-@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital .sct-drp-card-body {
+    max-width: none;
+  }
+
   :is(.sct, #sct-table-armour) .sct-drp-hero {
     gap: 12px;
     min-height: 0;
