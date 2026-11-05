@@ -1,13 +1,13 @@
 /**
- * The premium Depth Chart comparison (mak's brief, 2026-11-05,
- * attached_assets/depth1.png): a navy-and-gold banner, pill view tabs, a
- * scheme-and-grades strip, and a POS / STARTER / SECOND / THIRD / FOURTH
- * matrix of compact player cards, with the "Also listed" strip beneath.
+ * The Depth Chart tab (mak's brief, 2026-11-05, attached_assets/depth1.png;
+ * approved and the old chart removed the same day): a navy-and-gold banner
+ * carrying the heading, pill view tabs, a scheme-and-grades strip, and a
+ * POS / STARTER / SECOND / THIRD / FOURTH matrix of compact player cards,
+ * with the "Also listed" strip beneath.
  *
  * Presentation only. The sides, slots, rows, designations, experience, name
- * links and grades are the ones the original tab prints, handed in as
- * helpers by renderDepthChart (team-render.ts) so the two blocks can never
- * disagree. Mounted under the original until mak approves it as the design.
+ * links and grades come in as helpers from renderDepthChart
+ * (team-render.ts), which also feeds the tab's FAQ from the same chart.
  *
  * No captain badge: the chart document carries no captain field, and the
  * brief says to omit the badge rather than infer it.
@@ -15,7 +15,8 @@
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
-import type { DepthGradeUnit, TeamPageData } from "../team-render";
+import type { DepthGradeUnit } from "../team-render";
+import type { TeamPageData } from "./team-data";
 import type { DepthRow, DepthView, FootballSide, FootballSlot } from "./depth-charts";
 
 const e = escapeHtml;
@@ -72,7 +73,8 @@ function banner(data: TeamPageData, h: DepthPremiumHelpers): string {
     logo +
     `<span class="sct-dpp-hero-rule" aria-hidden="true"></span>` +
     `<div class="sct-dpp-hero-copy">` +
-    `<h2 class="sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>` +
+    // .sct-h2: the section page promotes the first such heading to its H1.
+    `<h2 class="sct-h2 sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>` +
     `<p class="sct-dpp-sub">${e(h.summary.lead || h.summary.tail)}</p>` +
     `</div>` +
     `<span class="sct-dpp-stripes" aria-hidden="true"></span>` +
@@ -246,7 +248,6 @@ export function renderDepthPremium(data: TeamPageData, h: DepthPremiumHelpers): 
     `</div>`;
   return (
     `<div class="sct-dpp" data-sct-depth-premium>` +
-    `<p class="sct-dpp-flag">New design - comparison</p>` +
     banner(data, h) +
     `<div class="sct-dpp-views" data-sct-dc>${tabs}${panels.map((p) => p.html).join("")}</div>` +
     `</div>`

@@ -80,13 +80,13 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
       assert.equal(doc.querySelector("#depth-chart .sct-dc-stamp"), null);
 
       // Offense, defense, special teams, then fantasy; Offense pressed.
-      const panels = [...doc.querySelectorAll("#depth-chart .sct-dc[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel);
+      assert.ok(doc.querySelector("#depth-chart .sct-dpp-hero h1.sct-dpp-title"), "the banner carries the H1");
+      const panels = [...doc.querySelectorAll("#depth-chart .sct-dpp-views[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel);
       assert.deepEqual(panels, ["offense", "defense", "special", "fantasy"]);
       assert.equal(doc.querySelector('[data-sct-dc-view="offense"]').getAttribute("aria-pressed"), "true");
-      // No visible card title (the H1 and the pressed view already name the
-      // side); each card is labelled for assistive tech only.
-      assert.equal(doc.querySelectorAll("#depth-chart .sct-dcx-title").length, 0);
-      const labels = [...doc.querySelectorAll("#depth-chart .sct-dc[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.getAttribute("aria-label"));
+      // Each panel is labelled for assistive tech only; the H1 and the
+      // pressed view already name the side.
+      const labels = [...doc.querySelectorAll("#depth-chart .sct-dpp-views[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.getAttribute("aria-label"));
       assert.deepEqual(labels, [
         `${name} Offense Depth Chart`,
         `${name} Defense Depth Chart`,
@@ -97,29 +97,27 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
       // The offense has a QB row and three WR rows (every tested club lists a
       // 3WR base); defense and special teams are not empty.
       const offense = doc.querySelector('[data-sct-dc-panel="offense"]');
-      assert.equal(offense.querySelectorAll('.sct-dcx-row[data-pos="QB"]').length, 1);
-      assert.equal(offense.querySelectorAll('.sct-dcx-row[data-pos="WR"]').length, 3);
-      assert.ok(doc.querySelectorAll('[data-sct-dc-panel="defense"] .sct-dcx-row').length >= 8);
-      assert.ok(doc.querySelectorAll('[data-sct-dc-panel="special"] .sct-dcx-row[data-pos="K"]').length === 1);
-      // Every row is Starter / Second / Third / Fourth wide, blanks included.
-      for (const row of doc.querySelectorAll("#depth-chart .sct-dcx-grid .sct-dcx-row")) {
-        assert.equal(row.querySelectorAll(".sct-dcx-cells > li").length, 4, `${row.dataset.slot}: four cells`);
+      assert.equal(offense.querySelectorAll('.sct-dpp-row[data-pos="QB"]').length, 1);
+      assert.equal(offense.querySelectorAll('.sct-dpp-row[data-pos="WR"]').length, 3);
+      assert.ok(doc.querySelectorAll('[data-sct-dc-panel="defense"] .sct-dpp-row').length >= 8);
+      assert.ok(doc.querySelectorAll('[data-sct-dc-panel="special"] .sct-dpp-row[data-pos="K"]').length === 1);
+      // Every football row is Starter / Second / Third / Fourth wide, blanks included.
+      for (const row of doc.querySelectorAll("#depth-chart .sct-dpp-row:not(.is-fan)")) {
+        assert.equal(row.querySelectorAll(".sct-dpp-cells > li").length, 4, `${row.dataset.slot}: four cells`);
       }
 
-      // Long-tail fantasy headings.
-      const fan = [...doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dcx-fan-title')].map(text);
-      for (const pos of ["Quarterback", "Running Back", "Wide Receiver", "Tight End"]) {
-        assert.ok(fan.includes(`${name} ${pos} Depth Chart`), `${pos}: ${fan.join(" | ")}`);
-      }
+      // The fantasy hierarchy: one row per skill position, in order.
+      const fan = [...doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dpp-row.is-fan')].map((r) => r.dataset.pos);
+      for (const pos of ["QB", "RB", "WR", "TE"]) assert.ok(fan.includes(pos), `${pos}: ${fan.join(" | ")}`);
 
       // Player names are crawlable anchors (most of the chart; a rookie the
       // site has no profile for stays plain text).
       // Linemen and most defenders have no profile on the site, so the
       // football chart is held to "many", the fantasy card to "nearly all".
-      const linked = doc.querySelectorAll("#depth-chart .sct-dcx-card a.sct-player-link[href]");
+      const linked = doc.querySelectorAll("#depth-chart .sct-dpp-card a.sct-player-link[href]");
       assert.ok(linked.length >= 20, `${linked.length} names link on the chart`);
-      const fanCards = doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dcx-card');
-      const fanLinked = doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dcx-card a.sct-player-link[href]');
+      const fanCards = doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dpp-card');
+      const fanLinked = doc.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dpp-card a.sct-player-link[href]');
       assert.ok(fanLinked.length >= fanCards.length * 0.8, `${fanLinked.length} of ${fanCards.length} fantasy names link`);
 
       // The questions are the page's own and separate football from fantasy;

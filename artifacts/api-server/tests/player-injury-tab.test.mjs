@@ -13,6 +13,7 @@ import { parseReport, practiceValue, reportDate, mergeWeek } from "../scripts/pl
 
 const d = await importModule("lib/player/injury-tab-data");
 const tab = await importModule("lib/player/injury-tab");
+const inp = await importModule("lib/player/injury-premium");
 const dur = await importModule("lib/player/injury-durability");
 
 after(cleanupBundles);
@@ -239,39 +240,47 @@ function state(overrides = {}) {
   };
 }
 
+/** The tab as the page prints it: the premium dashboard as the body (player-render.ts renderInjury), the FAQ after it. */
 function render(overrides) {
-  const html = tab.renderInjuryTab(state(overrides), { now: NOW, playerPathPrefix: "/nfl/players/" });
+  const s = state(overrides);
+  const opts = { now: NOW, playerPathPrefix: "/nfl/players/" };
+  const html = tab.renderInjuryTab(s, opts, [], inp.renderInjuryPremium(s, opts));
   return { html, doc: new JSDOM(`<main>${html}</main>`).window.document };
 }
 
 describe("rendered", () => {
-  test("the answer first, in the status panel, then the headed parts in order", () => {
+  test("the banner leads, the status row under it, then the headed parts in order", () => {
     const { doc } = render();
-    // No "Is he injured?" heading since 2026-09-30: the panel answers it
-    // straight under the tab's H1.
-    assert.ok(doc.querySelector(".scp-in > .scp-ox-sec.scp-in-now:first-child .scp-in-statusbar"));
+    // The premium dashboard IS the tab (mak's brief, 2026-11-05; "remove the
+    // older version" the same day): banner, status row, practice strip,
+    // Durability Profile, history, the plan, then the FAQ.
+    assert.ok(doc.querySelector(".scp-in > .scp-inp:first-child > .scp-inp-hero + .scp-inp-status"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
     assert.deepEqual(h2, [
-      // Back by mak's refresh of 2026-10-09, with a Yes/No sentence under it.
-      "Is Jacoby Brissett injured?",
-      // Redraft Command's injury card, moved above the glance (mak, 2026-11-05).
+      // The brief's heading; "Is he injured?" opens the FAQ instead.
+      "Jacoby Brissett Injury Status and History",
       "Durability Profile",
-      // "Injury History at a Glance" and "Where He's Been Hurt" (body map +
-      // body-part table) removed 2026-11-05 (mak).
       "Jacoby Brissett Injury History",
       "If Brissett Misses Time",
       "Jacoby Brissett Injury FAQ",
     ]);
+    assert.equal(doc.querySelectorAll("h1").length, 0);
+    // None of the old sections: the question heading, the status strip, the
+    // practice grid, the card, the old timeline, the old plan cards.
+    for (const sel of [".scp-in-ask", ".scp-in-statusbar", ".scp-in-practice", ".scp-in-dur-sec", ".scp-in-tl", ".scp-ox-two", ".scp-in-cta", ".scp-inp-flag"]) {
+      assert.equal(doc.querySelector(sel), null, `${sel} is gone`);
+    }
     // The methodology footer left the tab 2026-10-22 (mak).
     assert.equal(doc.querySelector("footer.scp-st-foot"), null);
     assert.equal(
-      doc.querySelector(".scp-in-main p").textContent,
+      doc.querySelector(".scp-inp-now-text").textContent,
       "No injury designation for Week 4 at the Giants. Brissett has not missed a game this season.",
     );
-    assert.equal(doc.querySelector(".scp-in-big").textContent, "Active");
-    assert.ok(doc.querySelector(".scp-in-main.is-good"));
+    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Active");
+    assert.ok(doc.querySelector(".scp-inp-now.is-good"));
     // "Status checked" is the snapshot time, not the render time.
-    assert.equal(doc.querySelector(".scp-in-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
+    assert.equal(doc.querySelector(".scp-inp-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
+    assert.match(doc.querySelector(".scp-inp-sub").textContent, /^Current injury status, game availability, practice reports, and complete injury history for Cardinals quarterback Jacoby Brissett\.$/);
   });
 
   test("counts agree across timeline and FAQ", () => {
@@ -284,10 +293,10 @@ describe("rendered", () => {
     assert.equal(doc.querySelector(".scp-in-bodymap"), null);
     assert.equal(doc.querySelector(".scp-in-risk"), null);
     // Timeline: four injury entries plus the "Healthy" 2026 entry.
-    const items = [...doc.querySelectorAll(".scp-in-tl > li")];
+    const items = [...doc.querySelectorAll(".scp-inp-tl > li")];
     assert.equal(items.length, 5);
     assert.match(items[0].textContent, /Healthy/);
-    const chipGames = items.map((li) => Number((li.querySelector(".scp-in-chip.is-bad")?.textContent ?? "0").replace(/\D/g, "")));
+    const chipGames = items.map((li) => Number((li.querySelector(".scp-inp-badge.is-bad")?.textContent ?? "0").replace(/\D/g, "")));
     assert.equal(chipGames.reduce((a, b) => a + b, 0), 11);
     // The state-aware Injury FAQ (faq-engine.ts, 2026-09-30): a healthy
     // player gets no "what injury" or "why isn't he playing".
@@ -308,30 +317,36 @@ describe("rendered", () => {
     assert.equal(doc.querySelector("#scp-faq-injury-h").textContent, "Jacoby Brissett Injury FAQ");
   });
 
-  test("the practice card with nothing on file says so", () => {
+  test("the practice strip with nothing on file says so; a listed player is told the report is not on file yet", () => {
     const { doc } = render({ team: { ...ARI, code: "ZZZ" } });
-    assert.match(doc.querySelector(".scp-in-practice").textContent, /hasn't appeared on an injury report this season/);
+    assert.match(doc.querySelector(".scp-inp-practice").textContent, /hasn't appeared on an injury report this season/);
+    // A designation with no report rows: not on file yet, which is not "never listed".
+    const q = render({ team: { ...ARI, code: "ZZZ" }, designation: { injuryStatus: "Questionable", injuryBodyPart: "Hip" } }).doc;
+    assert.match(q.querySelector(".scp-inp-pbody").textContent, /^No practice report on file for Week 4 yet\.$/);
   });
 
   test("questionable: amber, the lede leads with the designation, FAQ says game-time", () => {
     const { doc } = render({ designation: { injuryStatus: "Questionable", injuryBodyPart: "Hip" } });
-    assert.ok(doc.querySelector(".scp-in-main.is-mid"));
-    assert.equal(doc.querySelector(".scp-in-big").textContent, "Questionable");
-    assert.match(doc.querySelector(".scp-in-main p").textContent, /^Brissett is questionable for Week 4 with a hip injury\./);
+    assert.ok(doc.querySelector(".scp-inp-now.is-mid"));
+    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Questionable");
+    assert.match(doc.querySelector(".scp-inp-now-text").textContent, /^Brissett is questionable for Week 4 with a hip injury\./);
+    // The practice strip: the current week inline (its days still due), the
+    // earlier week folded behind a summary.
+    assert.match(doc.querySelector(".scp-inp-pw.is-cur").textContent, /^Week 4 @ NYG, Oct 4Wed due Sep 30\|Thu due Oct 1\|Fri due Oct 2Due Fri$/);
+    assert.match(doc.querySelector(".scp-inp-pmore summary").textContent, /^Earlier week$/);
     assert.match(doc.querySelectorAll(".scp-in-faq details")[1].textContent, /game-time decision/);
   });
 
-  test("out: red, and 'if he misses time' moves up under the status", () => {
+  test("out: red, the plan section flagged urgent, the sidebar copy follows the designation", () => {
     const { doc } = render({ designation: { injuryStatus: "Out", injuryBodyPart: "Ankle" } });
-    assert.ok(doc.querySelector(".scp-in-main.is-bad"));
+    assert.ok(doc.querySelector(".scp-inp-now.is-bad"));
+    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Out");
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
-    assert.equal(h2[0], "Is Jacoby Brissett injured?");
-    assert.equal(h2[1], "If Brissett Misses Time");
-    // The answer sentence left the page 2026-10-22; it still feeds the SEO copy.
+    assert.equal(h2[0], "Jacoby Brissett Injury Status and History");
+    assert.equal(h2[3], "If Brissett Misses Time");
+    assert.ok(doc.querySelector(".scp-inp-sec.is-plan.is-urgent"));
+    assert.match(doc.querySelector(".scp-inp-rc p").textContent, /^Out this week: see how Redraft Command weighs that/);
     assert.equal(doc.querySelector(".scp-in-answer"), null);
-    assert.equal(doc.querySelector(".scp-in-pread"), null);
-    assert.equal(doc.querySelector(".scp-in-plegend"), null);
-    assert.ok(doc.querySelector(".scp-in-urgent"));
   });
 
   test("a backup gets no 'if he misses time'; CTAs carry the spec's data-cta values", () => {
@@ -347,7 +362,7 @@ describe("rendered", () => {
   test("15+ injuries: the newest ten, then a Show all", () => {
     const many = Array.from({ length: 16 }, (_, i) => ({ season: 2010 + i, week: 5, type: i % 2 ? "Ankle" : "Knee", bodyPart: "", side: "right", gamesMissed: 1 }));
     const { doc } = render({ injury: { history: { grade: "C", score: 70, nfl: many, college: [] }, seasonMissed: 0, lastPlayedWeek: 3 } });
-    assert.match(doc.querySelector(".scp-in-more summary").textContent, /Show all 16 injuries/);
+    assert.match(doc.querySelector(".scp-inp-more summary").textContent, /Show all 16 injuries/);
   });
 
   test("the tab itself feeds no sink: the page pushes its FAQ (renderInjury)", () => {
@@ -433,19 +448,58 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     assert.match(hand.querySelector("span").textContent, /^20\d\d(, 20\d\d)*[,:] (\d+ games?|played thru)$/);
     for (const l of labels) assert.match(l.getAttribute("style"), /^top:\d+(\.\d+)?%$/);
     // The health bar and the status line.
-    const hp = card.querySelector(".scp-in-hp");
-    assert.match(hp.getAttribute("aria-label"), /^Durability \d+\.\d of 100, /);
+    const hp = card.querySelector(".scp-inp-hp");
+    assert.match(hp.getAttribute("aria-label"), /^Durability score \d+\.\d of 100, /);
     assert.match(hp.getAttribute("style"), /--hp:#/);
-    assert.equal(card.querySelector(".scp-in-dur-status b").textContent, "Healthy");
+    assert.equal(card.querySelector(".scp-inp-dur-status b").textContent, "Active");
     // The grid: a row per season, outlined missed weeks only where the record says.
     assert.ok(card.querySelectorAll(".scp-in-av-row").length >= 2);
     for (const b of card.querySelectorAll(".scp-in-ab.is-mark")) assert.ok(b.classList.contains("is-r"));
     // Four tiles.
-    assert.deepEqual([...card.querySelectorAll(".scp-in-dt-k")].map((k) => k.textContent), ["Major Injuries", "Soft-Tissue Events", "Games Missed", "Missed / Season"]);
+    assert.deepEqual([...card.querySelectorAll(".scp-inp-dt-k")].map((k) => k.textContent.replace(/ \(.*\)$/, "")), ["Major Injuries", "Soft-Tissue Events", "Games Missed", "Missed / Season"]);
   });
 
   test("a player outside the durability set gets no card", () => {
     const { doc } = render({ player: { id: "999999999", slug: "nobody", name: "No Body", position: "QB", years_exp: 1 } });
     assert.equal(doc.querySelector("[data-scp-durability]"), null);
+  });
+});
+
+describe("the premium dashboard (mak's brief, 2026-11-05; the tab's own design since the same day)", () => {
+  const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+
+  test("the three facts, the durability pieces, the history and the links read from the tab's model", () => {
+    const { doc } = render();
+    const prm = doc.querySelector(".scp-inp");
+    assert.ok(prm);
+    assert.equal(text(prm.querySelector("h2.scp-inp-title")), "Jacoby Brissett Injury Status and History");
+    assert.doesNotMatch(prm.textContent, /Is Jacoby Brissett injured\?/);
+    assert.deepEqual(
+      [...prm.querySelectorAll(".scp-inp-kpi .scp-inp-kpi-l")].map(text),
+      ["2026 games missed", "Latest injury", "Next game"],
+    );
+    assert.equal(text(prm.querySelector(".scp-inp-kpi.is-missed .scp-inp-kpi-v")), "0");
+    assert.match(text(prm.querySelector(".scp-inp-kpi.is-next .scp-inp-kpi-v")), /^Week 4 @ NYG$/);
+    // Section bars are h2s; cards and timeline entries h3s.
+    assert.deepEqual([...prm.querySelectorAll("h2.scp-inp-bar-title")].map(text), ["Durability Profile", "Jacoby Brissett Injury History", "If Brissett Misses Time"]);
+    assert.ok(prm.querySelectorAll("h3.scp-inp-ev-title").length >= 4);
+    // Durability: the card's own figure, pills, record and grid, wired like the card.
+    assert.ok(prm.querySelector(".scp-inp-sec.is-dur[data-scp-durability] [data-scp-figure]"));
+    assert.ok(prm.querySelector(".scp-inp-sec.is-dur .scp-in-sr"), "a text alternative lists the regions");
+    assert.ok(prm.querySelector(".scp-inp-sec.is-dur .scp-in-av"), "the availability grid");
+    // History: the healthy row, then one card per event with its badge and report chips.
+    assert.ok(prm.querySelector(".scp-inp-ev.is-now"));
+    assert.deepEqual([...prm.querySelectorAll(".scp-inp-ev:not(.is-now) .scp-inp-badge")].map(text), ["Played through", "2 games", "1 game", "8 games"]);
+    // Sidebar and plan: the tab's links and data-cta names.
+    assert.equal(prm.querySelector(".scp-inp-btn").getAttribute("data-cta"), "redraft-command-injury-sidebar");
+    assert.match(prm.querySelector(".scp-inp-btn").getAttribute("href"), /redraft-command\/\?player=jacoby-brissett$/);
+    assert.equal(prm.querySelector(".scp-inp-cta-link").getAttribute("data-cta"), "redraft-command-injury-backup");
+    assert.equal(prm.querySelectorAll(".scp-inp-plan-card").length, 2);
+    assert.doesNotMatch(prm.textContent, /—/);
+  });
+
+  test("no injury record: nothing renders, as the tab itself does not", () => {
+    assert.equal(inp.renderInjuryPremium(state({ injury: null }), { now: NOW }), "");
+    assert.equal(tab.renderInjuryTab(state({ injury: null }), { now: NOW }), "");
   });
 });

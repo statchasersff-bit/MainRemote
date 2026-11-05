@@ -136,7 +136,7 @@ describe("depth charts push", () => {
 
     const html = await depthTab();
     // Two WR rows, the source's order, the kicker printed as K.
-    const rows = [...html.matchAll(/<div class="sct-dcx-row" data-pos="([^"]+)" data-slot="([^"]+)">/g)].map((m) => `${m[2]}:${m[1]}`);
+    const rows = [...html.matchAll(/<div class="sct-dpp-row" data-pos="([^"]+)" data-slot="([^"]+)">/g)].map((m) => `${m[2]}:${m[1]}`);
     assert.deepEqual(rows, ["wr1:WR", "wr2:WR", "qb:QB", "mlb:MLB", "pk:K"]);
     assert.ok(html.indexOf("First Receiver") < html.indexOf("Second Receiver"), "slots in the pushed order");
     assert.match(html, /Base offense: 2 WR, 2 TE/);
@@ -152,8 +152,8 @@ describe("depth charts push", () => {
     }
     assert.equal((await post(doc)).status, 200);
     const html = await depthTab();
-    assert.match(html, /sct-dcx-folded/);
-    assert.equal([...html.matchAll(/data-sct-dc-panel="offense"[\s\S]*?<div class="sct-dcx-row" data-pos="WR"/g)].length, 1, "one folded WR row");
+    assert.match(html, /Listed by position group/);
+    assert.equal([...html.matchAll(/data-sct-dc-panel="offense"[\s\S]*?<div class="sct-dpp-row" data-pos="WR"/g)].length, 1, "one folded WR row");
     assert.ok(html.includes("Column Quarterback"));
   });
 });

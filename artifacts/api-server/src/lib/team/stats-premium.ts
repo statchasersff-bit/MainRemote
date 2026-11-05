@@ -1,23 +1,26 @@
 /**
- * The premium comparison of the Stats tab (mak's brief, 2026-11-05, built to
- * attached_assets/teamstats.png): the navy title banner, Offense and Defense
- * as two navy-headed panels, then Efficiency, Pass Protection & Pass Rush,
- * Possession & Discipline and Pace & Play Style as navy section bands over
- * light inner panels of label / rank bar / value / rank-pill rows, the two
- * play-mix bars, and the five-season history as a tinted table.
+ * The Stats tab (mak's brief, 2026-11-05, built to attached_assets/teamstats.png
+ * and approved the same day: "remove the old version"): the navy title banner
+ * carrying the tab's heading, Offense and Defense as two navy-headed panels,
+ * then Efficiency, Pass Protection & Pass Rush, Possession & Discipline and
+ * Pace & Play Style as navy section bands over light inner panels of label /
+ * rank bar / value / rank-pill rows, the two play-mix bars, and the
+ * five-season history as a tinted table.
  *
- * Rendered UNDER the whole original tab (renderTeamStats() appends it after
- * the history block), labeled; nothing of the original is touched. Every row
- * is the tab's own StatRow (lib/team/stats.ts and lib/team/efficiency.ts):
+ * Every row is the tab's own StatRow (lib/team/stats.ts and
+ * lib/team/efficiency.ts), chosen by renderTeamStats() in team-render.ts:
  * same value strings, same ranks and tie labels, same directions. The bar is
  * the tab's rank bar (1st fills the track, 32nd leaves a stub) and the tint
  * is the tab's tier, both handed in by the caller so nothing is computed
- * twice; volume rows (pace, blitz rate, time to throw) stay untinted here as
- * they do above. The history cells tint by the tab's history tier (top ten
- * green, bottom ten red, the middle plain). No headings inside: the tab's
- * H2s above already name every block, so each title here is a <p>.
+ * twice; volume rows (pace, blitz rate, time to throw) are ranked but never
+ * tinted. The history cells tint by the tab's history tier (top ten green,
+ * bottom ten red, the middle plain).
  *
- * Markup `sct-sp-*`; every rule in team.css is under `.sct .sct-sp`.
+ * Headings: the banner holds the tab's H2 (handed in; a section address
+ * promotes it to the H1), the bands and the Offense / Defense panels are H2s,
+ * the inner panels and the play-mix cards H3s. `data-kind` on the panels
+ * (efficiency / passrush / possession / pace) is what the week-consistency
+ * test reads. Markup `sct-sp-*`; every rule in team.css is under `.sct .sct-sp`.
  */
 
 import { escapeHtml as e } from "../render";
@@ -30,6 +33,10 @@ export type HistoryTier = "elite" | "good" | "mid" | "poor" | "none";
 export interface StatsPremiumInput {
   team: NflTeam;
   season: number;
+  /** The tab's heading, already marked up (h2() with "sct-sp-title"); the banner carries it. */
+  heading: string;
+  /** The prior-season fallback warning, "" in season. */
+  note: string;
   /** The production ladders' week ("through Week N"), null when unknown. */
   liveWeek: number | null;
   /** The play-by-play ladders' week, null when unknown. */
@@ -104,21 +111,21 @@ const heads = (first = "Statistic"): string =>
 function unitPanel(unit: "offense" | "defense", title: string, week: string, list: StatRow[], input: StatsPremiumInput): string {
   if (!list.length) return "";
   return (
-    `<section class="sct-sp-unit" data-unit="${unit}" aria-label="${e(title)}">` +
+    `<section class="sct-sp-unit" data-unit="${unit}" data-kind="">` +
     `<div class="sct-sp-unit-head"><span class="sct-sp-ico">${unit === "offense" ? ICON.football : ICON.shield}</span>` +
-    `<p class="sct-sp-unit-title">${e(title)}</p>${week ? `<span class="sct-sp-week">${e(week)}</span>` : ""}</div>` +
+    `<h2 class="sct-sp-unit-title">${e(title)}</h2>${week ? `<span class="sct-sp-week">${e(week)}</span>` : ""}</div>` +
     `<div class="sct-sp-unit-body">${heads()}${rows(list, input)}</div>` +
     `</section>`
   );
 }
 
 /** A light inner panel with a tinted heading band (Offense Efficiency, Pass Rush, ...). */
-function innerPanel(icon: string, title: string, sub: string, list: StatRow[], input: StatsPremiumInput, wide = false): string {
+function innerPanel(kind: string, icon: string, title: string, sub: string, list: StatRow[], input: StatsPremiumInput, wide = false): string {
   if (!list.length) return "";
   return (
-    `<section class="sct-sp-panel${wide ? " is-wide" : ""}" aria-label="${e(title)}">` +
+    `<section class="sct-sp-panel${wide ? " is-wide" : ""}" data-kind="${e(kind)}">` +
     `<div class="sct-sp-panel-head"><span class="sct-sp-ico">${icon}</span>` +
-    `<div class="sct-sp-panel-text"><p class="sct-sp-panel-title">${e(title)}</p><p class="sct-sp-panel-sub">${e(sub)}</p></div>` +
+    `<div class="sct-sp-panel-text"><h3 class="sct-sp-panel-title">${e(title)}</h3><p class="sct-sp-panel-sub">${e(sub)}</p></div>` +
     `<span class="sct-sp-panel-heads" aria-hidden="true"><span>Value</span><span>Rank</span></span></div>` +
     rows(list, input) +
     `</section>`
@@ -129,7 +136,7 @@ function innerPanel(icon: string, title: string, sub: string, list: StatRow[], i
 function band(icon: string, title: string, sub: string): string {
   return (
     `<div class="sct-sp-band"><span class="sct-sp-ico">${icon}</span>` +
-    `<p class="sct-sp-band-title">${e(title)}</p><p class="sct-sp-band-sub">${e(sub)}</p>` +
+    `<h2 class="sct-sp-band-title">${e(title)}</h2><p class="sct-sp-band-sub">${e(sub)}</p>` +
     `<span class="sct-sp-band-gold" aria-hidden="true"></span></div>`
   );
 }
@@ -139,11 +146,11 @@ function mix(title: string, caption: string, b: PlayBalance): string {
   const pass = b.passPct.toFixed(1);
   const run = b.rushPct.toFixed(1);
   return (
-    `<section class="sct-sp-mix" aria-label="${e(title)}">` +
-    `<div class="sct-sp-mix-head"><span class="sct-sp-ico">${ICON.play}</span><p class="sct-sp-mix-title">${e(title)}</p></div>` +
+    `<section class="sct-sp-mix">` +
+    `<div class="sct-sp-mix-head"><span class="sct-sp-ico">${ICON.play}</span><h3 class="sct-sp-mix-title">${e(title)}</h3></div>` +
     `<span class="sct-sp-mix-bar" aria-hidden="true"><span class="sct-sp-mix-pass" style="${e(`width:${pass}%`)}"></span><span class="sct-sp-mix-run" style="${e(`width:${run}%`)}"></span></span>` +
-    `<p class="sct-sp-mix-legend"><span class="sct-sp-mix-key" data-kind="pass">Pass ${e(pass)}%</span><span class="sct-sp-mix-key" data-kind="run">Run ${e(run)}%</span></p>` +
-    `<p class="sct-sp-mix-caption">${e(caption)}</p>` +
+    `<p class="sct-sp-mix-legend"><span class="sct-sp-mix-key" data-kind="pass">Pass ${e(pass)}%</span><span class="sct-sp-mix-key" data-kind="run">Run ${e(run)}%</span>` +
+    `<span class="sct-sp-mix-caption">${e(caption)}</span></p>` +
     `</section>`
   );
 }
@@ -196,7 +203,7 @@ function history(input: StatsPremiumInput): string {
 }
 
 export function renderStatsPremium(input: StatsPremiumInput): string {
-  const { team, season, liveWeek, effWeek } = input;
+  const { team, season, liveWeek, effWeek, heading, note } = input;
   const live = through(liveWeek);
   const eff = through(effWeek);
   const dash = (w: string): string => (w ? ` - ${w}` : "");
@@ -206,14 +213,15 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
     unitPanel("defense", "Defense", live, input.production.defense, input);
 
   const efficiency =
-    innerPanel(ICON.target, "Offense Efficiency", `Per play, what they did${dash(eff)}`, input.efficiency.offense, input) +
-    innerPanel(ICON.shield, "Defense Efficiency", `Per play, what they allowed${dash(eff)}`, input.efficiency.defense, input);
+    innerPanel("efficiency", ICON.target, "Offense Efficiency", `Per play, what they did${dash(eff)}`, input.efficiency.offense, input) +
+    innerPanel("efficiency", ICON.shield, "Defense Efficiency", `Per play, what they allowed${dash(eff)}`, input.efficiency.defense, input);
 
   const passRush =
-    innerPanel(ICON.helmet, "Pass Protection", `What the offense faced${dash(eff)}`, input.passRush.offense, input) +
-    innerPanel(ICON.rush, "Pass Rush", `What the defense sent${dash(eff)}`, input.passRush.defense, input);
+    innerPanel("passrush", ICON.helmet, "Pass Protection", `What the offense faced${dash(eff)}`, input.passRush.offense, input) +
+    innerPanel("passrush", ICON.rush, "Pass Rush", `What the defense sent${dash(eff)}`, input.passRush.defense, input);
 
   const possession = innerPanel(
+    "possession",
     ICON.warning,
     "Turnovers, Downs & Penalties",
     `Turnover margin first; takeaways and giveaways are its two halves${dash(live)}`,
@@ -222,7 +230,7 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
     true,
   );
 
-  const pace = innerPanel(ICON.layers, "Snaps, Attempts & Scores", `Run/pass mix and scoring, ranked most to least${dash(live)}`, input.pace, input);
+  const pace = innerPanel("pace", ICON.layers, "Snaps, Attempts & Scores", `Run/pass mix and scoring, ranked most to least${dash(live)}`, input.pace, input);
   const mixes =
     (input.balance ? mix("Play Mix (Offense)", `${team.fullName}'s offensive play distribution.`, input.balance) : "") +
     (input.balanceFaced ? mix("Play Mix (Defense)", "Play distribution faced on defense.", input.balanceFaced) : "");
@@ -250,17 +258,17 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
   if (!sections.length) return "";
 
   return (
-    `<div class="sct-sp" data-sct-premium="team-stats">` +
-    `<p class="sct-cp-flag">New design · Comparison</p>` +
+    `<div class="sct-sp">` +
     `<header class="sct-sp-hero">` +
     `<span class="sct-sp-hero-decor" aria-hidden="true"><span class="sct-sp-hero-bands"></span><span class="sct-sp-hero-gold"></span></span>` +
     `<img class="sct-sp-hero-logo" src="${e(team.logo)}" alt="" width="64" height="64" loading="lazy" decoding="async">` +
     `<span class="sct-sp-hero-rule" aria-hidden="true"></span>` +
     `<div class="sct-sp-hero-text">` +
-    `<p class="sct-sp-title">${e(`${team.nickname} Team Stats ${season}`)}</p>` +
+    heading +
     `<p class="sct-sp-sub">${e(`Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`)}</p>` +
     `</div>` +
     `</header>` +
+    (note ? `<p class="sct-note sct-sp-note">${e(note)}</p>` : "") +
     sections.join("") +
     `</div>`
   );

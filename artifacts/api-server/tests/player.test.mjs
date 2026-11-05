@@ -1525,7 +1525,7 @@ describe("the injury tab", () => {
 
     for (const { player, doc } of found) {
       const tab = doc.querySelector("#injury");
-      const status = tab.querySelector(".scp-in-statusbar");
+      const status = tab.querySelector(".scp-inp-status");
       assert.ok(status, `${player.slug}: no status block`);
 
       // First, ahead of the durability score and the counts.
@@ -1560,7 +1560,7 @@ describe("the injury tab", () => {
     for (const { player, doc } of found) {
       // The timeline's first list: the ten most recent. Anything past ten is in
       // a "Show all" fold by the spec (lib/player/injury-tab.ts).
-      const episodes = [...doc.querySelectorAll("#injury .scp-in-tl > li")].filter(
+      const episodes = [...doc.querySelectorAll("#injury .scp-inp-tl > li")].filter(
         (li) => !li.closest("details"),
       );
       if (episodes.length === 0) continue;
@@ -1570,9 +1570,9 @@ describe("the injury tab", () => {
           `${player.slug}: an entry with no heading`,
         );
         // The current season's "Healthy" line is one sentence, no when/cost.
-        if (episode.querySelector(".scp-in-ev.is-now")) continue;
+        if (episode.querySelector(".scp-inp-ev.is-now")) continue;
         assert.ok(
-          episode.querySelector(".scp-in-meta")?.textContent.trim(),
+          episode.querySelector(".scp-inp-ev-meta")?.textContent.trim(),
           `${player.slug}: an entry with no when/cost line`,
         );
       }
@@ -1653,7 +1653,7 @@ describe("the injury tab", () => {
         `${player.slug}: ${questions.length} questions - the ceiling is 15`,
       );
       // State-aware (2026-09-30): the injured-only questions only when he is.
-      const designated = Boolean(doc.querySelector("#injury .scp-in-main:not(.is-good)"));
+      const designated = Boolean(doc.querySelector("#injury .scp-inp-now:not(.is-good)"));
       if (!designated) {
         assert.ok(!questions.some((q) => /^What injury does|^Why isn't/.test(q)), `${player.slug}: a healthy player asked about an injury`);
       }
@@ -3100,7 +3100,7 @@ describe("player section URLs", () => {
    */
   const PHRASES = {
     stats: / 2\d{3} Stats$/,
-    injury: /^Is .+ injured\?$/,
+    injury: / Injury Status and History$/,
     "game-log": /Game Log \d{4}$/,
     outlook: /Rest-of-Season Projection$/,
     news: /Season Timeline$/,

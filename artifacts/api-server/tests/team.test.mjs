@@ -730,14 +730,16 @@ describe("embedded mode", () => {
     assert.ok(ne, "the snapshot has the Patriots");
     assert.ok(Array.isArray(ne.slots) && ne.slots.length > 0, "the snapshot carries slot rows");
 
-    // The panel heads itself with the page's phrase, then the stamp (the
-    // document's own refresh time, never the render time) and a one-paragraph
-    // summary naming listed starters.
+    // The navy banner heads the panel with the page's phrase (the section
+    // page's H1) and the one-sentence summary naming listed starters (mak,
+    // 2026-11-05: the premium design is the tab; no stamp, no notes).
     const panel = doc.querySelector("#depth-chart");
-    assert.equal(panel.querySelector(".sct-h2").textContent.trim(), "New England Patriots Depth Chart");
+    assert.ok(panel.querySelector(".sct-dpp[data-sct-depth-premium]"), "the premium block is the tab");
+    assert.equal(panel.querySelector(".sct-dc[data-sct-dc], .sct-dcx, .sct-dpp-flag"), null, "the old chart and the comparison flag are gone");
+    assert.equal(panel.querySelector(".sct-dpp-hero .sct-h2").textContent.trim(), "New England Patriots Depth Chart");
+    assert.ok(panel.querySelector(".sct-dpp-hero img.sct-dpp-logo"), "the banner carries the club's logo");
     assert.equal(panel.querySelector(".sct-dc-stamp"), null, "no season / updated stamp (mak, 2026-11-05)");
-    assert.equal(panel.querySelector(".sct-dc-note"), null, "no instructional view notes");
-    const summary = panel.querySelector(".sct-dc-summary").textContent;
+    const summary = panel.querySelector(".sct-dpp-sub").textContent;
     assert.match(summary, /^The New England Patriots depth chart has .+ starting at quarterback/);
     const qbSlot = ne.slots.find((slot) => slot.key === "qb");
     assert.ok(summary.includes(qbSlot.players[0].name), "the summary names the listed QB1");
@@ -755,7 +757,6 @@ describe("embedded mode", () => {
       panels.map((p) => p.dataset.sctDcPanel),
       buttons.map((b) => b.dataset.sctDcView),
     );
-    assert.equal(panel.querySelectorAll(".sct-dcx-title").length, 0, "no visible card title");
     assert.deepEqual(
       panels.map((p) => p.getAttribute("aria-label")),
       [
@@ -772,23 +773,24 @@ describe("embedded mode", () => {
     const sides = { offense: "offense", defense: "defense", special: "specialTeams" };
     for (const [key, side] of Object.entries(sides)) {
       const card = panels.find((p) => p.dataset.sctDcPanel === key);
-      const labels = [...card.querySelectorAll(".sct-dcx-labels > span")].map((s) => s.textContent);
+      const labels = [...card.querySelectorAll(".sct-dpp-head > span")].map((s) => s.textContent);
       assert.deepEqual(labels, ["Pos", "Starter", "Second", "Third", "Fourth"]);
       const expected = ne.slots.filter((slot) => slot.side === side && slot.players.length);
-      const rows = [...card.querySelectorAll(".sct-dcx-row")];
+      const rows = [...card.querySelectorAll(".sct-dpp-row")];
       assert.deepEqual(
         rows.map((r) => r.dataset.slot),
         expected.map((slot) => slot.key),
         `${key}: a row per slot, in the source's order`,
       );
-      const more = [...card.querySelectorAll(".sct-dcx-more .sct-dcx-card")];
+      const more = [...card.querySelectorAll(".sct-dpp-more .sct-dpp-card")];
       for (const slot of expected) {
         const row = rows.find((r) => r.dataset.slot === slot.key);
         const pos = slot.slot === "PK" ? "K" : slot.slot;
         assert.equal(row.dataset.pos, pos);
-        const cards = [...row.querySelectorAll(".sct-dcx-card")];
+        const cards = [...row.querySelectorAll(".sct-dpp-card")];
         assert.ok(cards.length <= 4, `${slot.key}: at most four strings across`);
-        const deeper = more.filter((c) => c.querySelector(".sct-dcx-subpos")?.textContent === `${pos}${c.dataset.rank}`);
+        assert.ok(cards[0]?.classList.contains("is-starter") && !cards[1]?.classList.contains("is-starter"), `${slot.key}: the starter is set apart`);
+        const deeper = more.filter((c) => c.querySelector(".sct-dpp-slot")?.textContent === `${pos}${c.dataset.rank}`);
         const players = [...slot.players].sort((a, b) => a.rank - b.rank);
         assert.deepEqual(
           [...cards, ...deeper].map(rowName),
@@ -801,44 +803,49 @@ describe("embedded mode", () => {
           `${slot.key}: the source's ranks`,
         );
         for (const card of cards) {
-          assert.ok(card.querySelector(".sct-dcx-well"), "headshot well");
-          assert.equal(card.querySelector(".sct-dcx-subpos"), null, "the row labels the slot");
+          assert.ok(card.querySelector(".sct-dpp-well"), "headshot well");
+          assert.equal(card.querySelector(".sct-dpp-slot"), null, "the row labels the slot");
         }
       }
-      assert.equal(card.querySelectorAll(".sct-dcx-rank").length, 0, `${key}: no PPR rank on the football chart`);
-      assert.equal(card.querySelector(".sct-dcx-folded"), null, `${key}: slotted, not folded`);
+      assert.equal(card.querySelectorAll(".sct-dpp-ppr").length, 0, `${key}: no PPR rank on the football chart`);
+      assert.equal(card.querySelector(".sct-dpp-note"), null, `${key}: slotted, not folded`);
     }
     const offense = panels[0];
-    assert.equal(offense.querySelectorAll('.sct-dcx-row[data-pos="WR"]').length, ne.slots.filter((s) => s.slot === "WR").length);
-    assert.match(offense.querySelector(".sct-dcx-formation")?.textContent ?? "", /^Base offense: /);
+    assert.equal(offense.querySelectorAll('.sct-dpp-row[data-pos="WR"]').length, ne.slots.filter((s) => s.slot === "WR").length);
+    // The strip: base personnel, then the two unit grades; none on special teams.
+    assert.match(offense.querySelector(".sct-dpp-strip-label")?.textContent ?? "", /^Base offense: /);
+    assert.deepEqual([...offense.querySelectorAll(".sct-dpp-strip-label")].slice(1).map((l) => l.textContent), ["Passing game", "Rushing attack"]);
+    assert.equal(offense.querySelectorAll(".sct-dpp-grade").length, 2);
+    assert.equal(panels[2].querySelector(".sct-dpp-strip"), null, "no scheme strip on special teams");
+    assert.ok(offense.querySelector(".sct-dpp-rookie"), "a rookie tag on the chart");
+    assert.equal(offense.querySelector(".sct-dpp-captain"), null, "no captain badge: the document has no captain field");
 
     // The fantasy card: one group per position under a long-tail heading,
     // every box labelled with its rank in the hierarchy, the four skill
     // positions carrying the league PPR rank too.
     const fantasy = panels[3];
-    const groups = [...fantasy.querySelectorAll(".sct-dcx-fan")];
+    const groups = [...fantasy.querySelectorAll(".sct-dpp-row.is-fan")];
     assert.deepEqual(
-      groups.map((g) => g.querySelector(".sct-dcx-fan-title").textContent.trim()),
-      ["QB", "RB", "WR", "TE", "K"]
-        .filter((pos) => (ne.positions[`FAN_${pos}`] ?? []).length)
-        .map((pos) => `New England Patriots ${{ QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", K: "Kicker" }[pos]} Depth Chart`),
+      groups.map((g) => g.dataset.pos),
+      ["QB", "RB", "WR", "TE", "K"].filter((pos) => (ne.positions[`FAN_${pos}`] ?? []).length),
     );
+    assert.match(fantasy.querySelector(".sct-dpp-note").textContent, /^StatChasers' fantasy hierarchy/);
     for (const group of groups) {
       const pos = group.dataset.pos;
       const expected = [...ne.positions[`FAN_${pos}`]].sort((a, b) => a.rank - b.rank);
-      const cards = [...group.querySelectorAll(".sct-dcx-card")];
+      const cards = [...group.querySelectorAll(".sct-dpp-card")];
       assert.deepEqual(cards.map(rowName), expected.map((p) => p.name), `${pos}: the fantasy order`);
       assert.deepEqual(
-        cards.map((c) => c.querySelector(".sct-dcx-subpos").textContent),
+        cards.map((c) => c.querySelector(".sct-dpp-rank").textContent),
         expected.map((p) => `${pos}${p.rank}`),
         `${pos}: WR1 / WR2 labels`,
       );
     }
-    const chips = [...fantasy.querySelectorAll(".sct-dcx-rank")];
+    const chips = [...fantasy.querySelectorAll(".sct-dpp-ppr")];
     assert.ok(chips.length > 0, "PPR ranks on the Fantasy view");
     for (const chip of chips) {
       assert.match(chip.textContent, /^PPR(QB|RB|WR|TE)\d+$/);
-      const pos = chip.closest(".sct-dcx-fan").dataset.pos;
+      const pos = chip.closest(".sct-dpp-row").dataset.pos;
       assert.ok(chip.textContent.startsWith(`PPR${pos}`), `${chip.textContent} on a ${pos} card`);
     }
 
@@ -849,7 +856,7 @@ describe("embedded mode", () => {
       for (const player of ne.positions[`FAN_${pos}`] ?? []) {
         const twin = offenseCol.find((o) => o.name === player.name);
         if (player.status || !twin?.status) continue;
-        const card = [...fantasy.querySelectorAll(".sct-dcx-card")].find((c) => rowName(c) === player.name);
+        const card = [...fantasy.querySelectorAll(".sct-dpp-card")].find((c) => rowName(c) === player.name);
         assert.ok(card?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
       }
     }
@@ -861,7 +868,7 @@ describe("embedded mode", () => {
     assert.deepEqual(clusters, ["More New England Patriots", "Fantasy Football Tools"]);
     const own = [...tail.querySelector(".sct-dc-links").querySelectorAll(".sct-dc-link")].map((a) => a.getAttribute("href"));
     assert.ok(own.includes("/team/new-england-patriots/") && own.includes("/team/new-england-patriots/schedule/"), own.join(" "));
-    assert.ok(panel.querySelectorAll(".sct-dcx-card a.sct-player-link[href]").length > 10, "player names link to profiles");
+    assert.ok(panel.querySelectorAll(".sct-dpp-card a.sct-player-link[href]").length > 10, "player names link to profiles");
   });
 
   test("the depth chart FAQ names the players the chart above it lists", async () => {
@@ -894,7 +901,7 @@ describe("embedded mode", () => {
     // not as a wrong chart; a listed football starter who is out is named
     // with his designation in the starter answer.
     const sidelined = [
-      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-dcx-fan[data-pos="WR"] .sct-dcx-card.is-sidelined'),
+      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-dpp-row[data-pos="WR"] .sct-dpp-card.is-sidelined'),
     ].map(rowName);
     for (const who of sidelined) {
       assert.ok(
@@ -902,8 +909,8 @@ describe("embedded mode", () => {
         `a sidelined receiver on the fantasy chart (${who}) goes unmentioned`,
       );
     }
-    for (const row of doc.querySelectorAll('#depth-chart [data-sct-dc-panel="offense"] .sct-dcx-row')) {
-      const first = row.querySelector(".sct-dcx-card");
+    for (const row of doc.querySelectorAll('#depth-chart [data-sct-dc-panel="offense"] .sct-dpp-row')) {
+      const first = row.querySelector(".sct-dpp-card");
       if (!first?.classList.contains("is-sidelined") || !["QB", "RB", "TE"].includes(row.dataset.pos)) continue;
       const who = rowName(first);
       assert.ok(
@@ -1133,58 +1140,79 @@ describe("Premium Design A · Dark Navy, the comparison under the header (back a
   });
 });
 
-describe("the premium Stats comparison (mak's brief, 2026-11-05: teamstats.png)", () => {
-  test("under the whole original tab, on the same rows, values, ranks and tiers", async () => {
+describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders removed the same day)", () => {
+  test("the banner carries the heading; the panels carry the rows with the tab's bars, tiers and ranks", async () => {
     for (const path of ["/team/new-england-patriots/stats/", "/team/kansas-city-chiefs/stats/", "/team/new-york-jets/stats/"]) {
       const { doc } = await dom(path);
-      const sp = doc.querySelector('[data-sct-premium="team-stats"]');
-      assert.ok(sp, `${path}: the comparison renders`);
-      assert.equal(sp.querySelector(".sct-cp-flag").textContent, "New design · Comparison");
-      // Under everything: no original block follows it inside the panel.
-      let after = sp.nextElementSibling;
-      while (after) { assert.ok(!after.classList.contains("sct-block"), "nothing of the original tab below the comparison"); after = after.nextElementSibling; }
-      assert.equal(sp.querySelector("h1, h2, h3, h4"), null, "no headings inside the comparison");
-      assert.match(sp.querySelector(".sct-sp-title").textContent, /^[A-Za-z0-9 ]+ Team Stats \d{4}$/);
-      // Every original ladder row is here with the same value, rank label and tier, in the same order per ladder.
-      const original = [...doc.querySelectorAll(".sct-ladder")].map((l) => ({
-        title: l.querySelector(".sct-ladder-title").textContent,
-        rows: [...l.querySelectorAll(".sct-stat")].map((r) => [r.querySelector(".sct-stat-label").firstChild.textContent, r.querySelector(".sct-stat-value").textContent, r.querySelector(".sct-stat-rank")?.firstChild.textContent ?? null, r.querySelector(".sct-stat-rank")?.getAttribute("data-tier") ?? null]),
-      }));
-      const premium = [...sp.querySelectorAll(".sct-sp-unit, .sct-sp-panel")].map((p) => ({
-        title: (p.querySelector(".sct-sp-unit-title") ?? p.querySelector(".sct-sp-panel-title")).textContent,
-        rows: [...p.querySelectorAll(".sct-sp-row")].map((r) => [r.querySelector(".sct-sp-label").firstChild.textContent, r.querySelector(".sct-sp-value").textContent, r.querySelector(".sct-sp-rank:not(.is-none)")?.firstChild.textContent ?? null, r.querySelector(".sct-sp-rank:not(.is-none)")?.getAttribute("data-tier") ?? null]),
-      }));
-      assert.equal(premium.length, original.length, `${path}: one panel per ladder`);
-      for (let i = 0; i < original.length; i++) assert.deepEqual(premium[i].rows, original[i].rows, `${path}: ${original[i].title}`);
-      // Bars: a rank draws the tab's fill, no rank draws an empty track; volume rows carry no tint.
-      for (const r of sp.querySelectorAll(".sct-sp-row")) {
+      const panel = doc.querySelector("#stats");
+      const sp = panel.querySelector(".sct-sp");
+      assert.ok(sp, `${path}: the tab renders`);
+      assert.equal(panel.querySelectorAll(".sct-ladder, .sct-tiles, .sct-mix, .sct-hist, .sct-cp-flag, [data-sct-premium]").length, 0, "nothing of the old tab, no comparison label");
+      // The tab's heading sits inside the banner: the .sct-h2 the section
+      // address promotes to the H1 on the WordPress mount (see below); here,
+      // standalone, the header's club name is the H1 and this is the H2.
+      const heading = sp.querySelector(".sct-sp-hero h2.sct-h2.sct-sp-title");
+      assert.ok(heading, "the banner carries the tab's heading");
+      assert.match(heading.textContent, /Team Stats \d{4}$/);
+      assert.equal(doc.querySelectorAll("h1").length, 1);
+      assert.equal(sp.querySelectorAll(".sct-h2").length, 1, "one .sct-h2 in the tab: the banner's");
+      // Section headings: Offense, Defense and the bands are H2s; inner panels and play-mix cards H3s.
+      const h2s = [...sp.querySelectorAll("h2")].map((h) => h.textContent);
+      for (const want of ["Offense", "Defense", "Efficiency", "Pass Protection & Pass Rush", "Possession & Discipline", "Pace & Play Style", "Season History"]) assert.ok(h2s.includes(want), `${path}: H2 "${want}" (${h2s.join(" | ")})`);
+      assert.equal(new Set(h2s).size, h2s.length, "no heading printed twice");
+      const h3s = [...sp.querySelectorAll("h3")].map((h) => h.textContent);
+      for (const want of ["Offense Efficiency", "Defense Efficiency", "Pass Protection", "Pass Rush", "Turnovers, Downs & Penalties", "Snaps, Attempts & Scores"]) assert.ok(h3s.includes(want), `${path}: H3 "${want}"`);
+      // Rows: label, bar, value, rank. A rank draws the fill; no rank draws an empty track and an unranked pill.
+      const rows = [...sp.querySelectorAll(".sct-sp-row")];
+      assert.ok(rows.length >= 30, `${path}: rows (${rows.length})`);
+      for (const r of rows) {
         const bar = r.querySelector(".sct-sp-bar");
         const rank = r.querySelector(".sct-sp-rank:not(.is-none)");
         assert.equal(bar.getAttribute("aria-hidden"), "true");
-        if (rank) assert.match(bar.querySelector(".sct-sp-fill").getAttribute("style"), /^width:\d+(\.\d+)?%$/);
-        else assert.ok(bar.classList.contains("is-empty"));
+        assert.ok(r.querySelector(".sct-sp-value").textContent.length > 0);
+        if (rank) {
+          assert.match(bar.querySelector(".sct-sp-fill").getAttribute("style"), /^width:\d+(\.\d+)?%$/);
+          assert.match(rank.firstChild.textContent, /^(T-)?\d+(st|nd|rd|th)$/);
+          assert.equal(rank.getAttribute("data-tier"), bar.getAttribute("data-tier"), "pill and bar agree");
+        } else assert.ok(bar.classList.contains("is-empty"));
       }
-      // The play mix: the tab's own two shares.
-      const mixes = [...doc.querySelectorAll(".sct-mix")].map((m) => [...m.querySelectorAll(".sct-mix-key")].map((k) => k.textContent));
-      const spMixes = [...sp.querySelectorAll(".sct-sp-mix")].map((m) => [...m.querySelectorAll(".sct-sp-mix-key")].map((k) => k.textContent));
-      assert.deepEqual(spMixes, mixes, `${path}: play mix`);
-      // The history: the same seasons, columns, values and rank labels; the tint follows the tab's tier.
-      const hist = [...doc.querySelectorAll(".sct-hist tbody tr")].map((tr) => [tr.querySelector(".sct-hist-year").firstChild.textContent, ...[...tr.querySelectorAll(".sct-hist-cell")].map((td) => [td.querySelector(".sct-hist-value")?.firstChild.textContent ?? "", td.querySelector(".sct-hist-rank")?.firstChild.textContent ?? "", td.getAttribute("data-tier")])]);
-      const spHist = [...sp.querySelectorAll(".sct-sp-h tbody tr")].map((tr) => [tr.querySelector(".sct-sp-h-year").textContent, ...[...tr.querySelectorAll(".sct-sp-h-cell")].map((td) => [td.querySelector(".sct-sp-h-value")?.textContent ?? "", td.querySelector(".sct-sp-h-rank")?.firstChild.textContent ?? "", td.getAttribute("data-tier")])]);
-      assert.equal(spHist.length, hist.length);
-      for (let i = 0; i < hist.length; i++) {
-        assert.equal(spHist[i][0], hist[i][0]);
-        for (let c = 1; c < hist[i].length; c++) {
-          assert.equal(spHist[i][c][0], hist[i][c][0]);
-          assert.equal(spHist[i][c][1], hist[i][c][1]);
-          const want = { elite: "good", good: "good", mid: "mid", poor: "poor", none: "none" }[hist[i][c][2]];
-          assert.equal(spHist[i][c][2], want, `${path}: ${hist[i][0]} col ${c}`);
-        }
+      // Volume rows (pace, blitz rate, time to throw) are ranked but never tinted.
+      for (const r of sp.querySelectorAll('[data-kind="pace"] .sct-sp-row')) {
+        const label = r.querySelector(".sct-sp-label").firstChild.textContent;
+        if (/\/G$/.test(label)) assert.equal(r.querySelector(".sct-sp-rank").getAttribute("data-tier"), "none", `${label} is untinted`);
       }
-      assert.ok(sp.querySelector(".sct-sp-h tbody tr.is-current .sct-sp-h-now"), "the live season is marked");
-      assert.equal(sp.querySelector("[id]"), null, "no ids inside the comparison");
+      // The play mix: two shares that sum to 100, pass then run.
+      for (const m of sp.querySelectorAll(".sct-sp-mix")) {
+        const keys = [...m.querySelectorAll(".sct-sp-mix-key")].map((k) => k.textContent);
+        assert.match(keys[0], /^Pass \d+\.\d%$/);
+        assert.match(keys[1], /^Run \d+\.\d%$/);
+        const sum = keys.reduce((n, k) => n + Number.parseFloat(k.replace(/[^0-9.]/g, "")), 0);
+        assert.ok(Math.abs(sum - 100) < 0.2, `${path}: ${keys.join(" + ")}`);
+      }
+      // The history: a real table, the live season marked, every cell a value over a rank, tinted by rank.
+      const trs = [...sp.querySelectorAll(".sct-sp-h tbody tr")];
+      assert.ok(trs.length >= 2, "two seasons at least");
+      assert.ok(trs[0].classList.contains("is-current") && trs[0].querySelector(".sct-sp-h-now"), "the live season is marked");
+      for (const td of sp.querySelectorAll(".sct-sp-h-cell:not(.is-empty)")) {
+        const rank = td.querySelector(".sct-sp-h-rank")?.firstChild.textContent;
+        const n = rank ? Number.parseInt(rank.replace(/^T-/, ""), 10) : null;
+        const tier = td.getAttribute("data-tier");
+        if (n === null) assert.equal(tier, "none");
+        else assert.equal(tier, n <= 10 ? "good" : n >= 23 ? "poor" : "mid", `${path}: ${td.textContent} -> ${tier}`);
+      }
+      assert.equal(sp.querySelector("[id]"), null, "no ids inside the tab's blocks");
       assert.doesNotMatch(sp.textContent, /\u2014/);
     }
+  });
+
+  test("on the WordPress mount the banner's heading is the page's H1", async () => {
+    const page = await get("/embed/team/ne?section=stats&h1=1");
+    assert.equal(page.status, 200);
+    const h1s = [...page.body.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((m) => m[1]);
+    // The page's own phrase (teamSectionHeading), in the banner's heading slot.
+    assert.deepEqual(h1s, ["New England Patriots Stats 2026"]);
+    assert.match(page.body, /<header class="sct-sp-hero">[\s\S]*?<h1 class="sct-h2 sct-sp-title">New England Patriots Stats 2026<\/h1>/, "promoted in place, inside the banner");
+    assert.ok(!/<h2[^>]*>Patriots Team Stats 2026<\/h2>/.test(page.body), "and the tab's own heading is not printed a second time");
   });
 });
 
@@ -2484,16 +2512,20 @@ describe("the Stats ladders never mix weeks", () => {
    * whatever the last build wrote, so the two sources sit weeks apart here:
    * exactly the state that used to leak into one ladder.
    */
-  const ladders = (doc, kind) => [...doc.querySelectorAll(`.sct-ladder[data-kind="${kind}"]`)];
+  // The panels of the Stats tab (team/stats-premium.ts): the Offense / Defense
+  // units carry data-kind="" and name their week in the head; the inner
+  // panels carry their bucket and name it in the sub-line.
+  const ladders = (doc, kind) => [...doc.querySelectorAll(`.sct-sp-unit[data-kind="${kind}"], .sct-sp-panel[data-kind="${kind}"]`)];
   const captionWeek = (ladder) => {
-    const caption = ladder.querySelector(".sct-ladder-caption")?.textContent ?? "";
-    const m = caption.match(/through Week (\d+)/);
+    const caption = (ladder.querySelector(".sct-sp-week") ?? ladder.querySelector(".sct-sp-panel-sub"))?.textContent ?? "";
+    const m = caption.match(/through Week (\d+)/i);
     return m ? Number(m[1]) : null;
   };
+  const titleOf = (ladder) => (ladder.querySelector(".sct-sp-unit-title") ?? ladder.querySelector(".sct-sp-panel-title"))?.textContent;
   const cell = (ladder, label) => {
-    for (const li of ladder.querySelectorAll(".sct-stat")) {
-      if (li.querySelector(".sct-stat-label")?.firstChild?.textContent?.trim() === label) {
-        return li.querySelector(".sct-stat-value")?.textContent?.trim() ?? null;
+    for (const li of ladder.querySelectorAll(".sct-sp-row")) {
+      if (li.querySelector(".sct-sp-label")?.firstChild?.textContent?.trim() === label) {
+        return li.querySelector(".sct-sp-value")?.textContent?.trim() ?? null;
       }
     }
     return null;
@@ -2526,7 +2558,7 @@ describe("the Stats ladders never mix weeks", () => {
       assert.equal(
         captionWeek(ladder),
         file.throughWeek,
-        `${ladder.querySelector(".sct-ladder-title")?.textContent}: the caption is the file's week`,
+        `${titleOf(ladder)}: the caption is the file's week`,
       );
     }
 
@@ -2554,15 +2586,14 @@ describe("the Stats ladders never mix weeks", () => {
 
   test("every ladder says which week its source has reached", async () => {
     const { doc } = await dom("/team/new-england-patriots/stats/");
-    const all = [...doc.querySelectorAll(".sct-ladder")];
-    assert.ok(all.length >= 6, `the Stats tab renders its ladders (${all.length})`);
+    const all = [...doc.querySelectorAll(".sct-sp-unit, .sct-sp-panel")];
+    assert.ok(all.length >= 6, `the Stats tab renders its panels (${all.length})`);
     for (const ladder of all) {
-      const title = ladder.querySelector(".sct-ladder-title")?.textContent;
-      assert.ok(captionWeek(ladder), `${title}: the caption names a week`);
+      assert.ok(captionWeek(ladder), `${titleOf(ladder)}: the caption names a week`);
     }
     // Within a bucket the two units agree with each other, whatever the
     // sources say to one another.
-    for (const kind of ["efficiency", "passrush", ""]) {
+    for (const kind of ["efficiency", "passrush", "possession", "pace", ""]) {
       const weeks = new Set(
         all
           .filter((l) => (l.getAttribute("data-kind") ?? "") === kind)
@@ -2581,8 +2612,8 @@ describe("the Stats ladders never mix weeks", () => {
       new URL("../src/lib/team-render.ts", import.meta.url),
       "utf8",
     );
-    const block = src.slice(src.indexOf('"Offense Efficiency"'), src.indexOf('"Pass Rush"'));
-    assert.ok(block.length > 0, "the Efficiency ladders are rendered");
+    const block = src.slice(src.indexOf("efficiency: {"), src.indexOf("possession: pickRows("));
+    assert.ok(block.length > 0, "the Efficiency and Pass Rush rows are chosen");
     assert.ok(
       !/\.\.\.pickRows\(stats\.(offense|defense|situational)/.test(block),
       "no provider rows are spread in beside the file's rows",
@@ -3021,7 +3052,7 @@ describe("draft tab FAQ (mak, 2026-11-02)", () => {
 });
 
 describe("draft tab", () => {
-  test("the hub carries the next draft's picks by round and the last five classes", async () => {
+  test("the hub carries the next draft's picks by round and the last five classes, in the premium design", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const panel = doc.getElementById("draft");
     assert.ok(panel, "the Draft panel is in the hub");
@@ -3031,57 +3062,89 @@ describe("draft tab", () => {
     const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
     assert.equal(ids[ids.indexOf("stats") + 1], "draft", "Draft sits next to Stats");
 
-    // One continuous view (mak, 2026-10-29): picks above history, no switch.
+    // The premium design is the tab (mak, 2026-11-05: built as a comparison,
+    // then "remove the old version"): the banner carries the heading and the
+    // intro sentence; no view switch, no comparison flag, no old rail.
+    const premium = panel.querySelector(".sct-drp[data-sct-draft-premium]");
+    assert.ok(premium, "the premium block is the tab");
+    assert.equal(panel.querySelector(".sct-dr, [data-sct-dr-panel], .sct-drp-flag"), null, "the old layout and the flag are gone");
     assert.equal(panel.querySelectorAll("[data-sct-dc-view], [data-sct-dc]").length, 0, "no view switch");
-    const stacked = [...panel.querySelectorAll("[data-sct-dr-panel]")].map((s) => s.getAttribute("data-sct-dr-panel"));
-    assert.deepEqual(stacked, ["picks", "history"]);
-    assert.ok(!panel.querySelector("[data-sct-dr-panel][hidden]"), "both panels show");
+    assert.equal(premium.querySelector(".sct-drp-hero h2.sct-h2.sct-drp-title").textContent, "Patriots Draft Picks & History");
+    assert.match(premium.querySelector(".sct-drp-sub").textContent, /^Every pick the Patriots hold in the \d{4} NFL Draft, round by round, then the club's last 5 draft classes/);
+    assert.ok(premium.querySelector(".sct-drp-hero img.sct-drp-logo"), "the banner carries the club's logo");
+    assert.equal(premium.querySelectorAll("h1").length, 0, "no H1 in a hub panel");
+    assert.deepEqual(
+      [...premium.querySelectorAll(".sct-drp-rail > *")].map((el) => el.className.replace(/\s+/g, " ")),
+      ["sct-drp-card is-capital", "sct-drp-card is-history", "sct-drp-card is-r1", "sct-drp-method"],
+      "the rail: next draft, Last 5 Drafts, Round 1 picks, the position-group note",
+    );
 
-    // Picks: a seven-row dot ledger (2026-10-29), each row counting what the club holds.
-    const rounds = [...panel.querySelectorAll(".sct-dr-ledger .sct-dr-row")];
+    // Picks: a seven-row ledger, each row counting what the club holds, with
+    // an accessible sentence; three-stat strip, kicker, three-item legend.
+    const rounds = [...premium.querySelectorAll(".sct-drp-ledger .sct-drp-lrow")];
     assert.equal(rounds.length, 7, "one row per round");
     const picks = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8"),
     );
     const held = picks.teams.ne.holds.length;
-    assert.equal(
-      rounds.reduce((n, r) => n + Number(r.getAttribute("data-count")), 0),
-      held,
-      "the rows add up to the picks the file holds",
-    );
-    assert.match(panel.querySelector(".sct-dr-strip .sct-dr-num")?.textContent ?? "", new RegExp(`^${held}$`));
-    assert.ok(panel.querySelector(".sct-dr-ledger .sct-dr-dot.is-own"), "an own pick is a filled dot");
-    assert.equal(
-      panel.querySelectorAll(".sct-dr-ledger .sct-dr-dot.is-own, .sct-dr-ledger .sct-dr-dot.is-from").length,
-      held,
-      "one dot per pick held",
-    );
-    assert.equal(panel.querySelectorAll(".sct-dr-legend .sct-dr-legend-item").length, 3, "a three-item legend");
-    assert.ok(panel.querySelector(".sct-dr-kicker")?.textContent?.length, "a kicker line");
-    assert.equal(panel.querySelector(".sct-dr-tile"), null, "the tiles are gone");
+    for (const [i, row] of rounds.entries()) {
+      const inRound = picks.teams.ne.holds.filter((h) => h.round === i + 1).length;
+      assert.equal(row.querySelector(".sct-drp-lcount").textContent, String(inRound), `Round ${i + 1} count`);
+      assert.match(row.querySelector(".sct-visually-hidden").textContent, new RegExp(`^Round ${i + 1}: .* held\\.$`));
+      assert.equal(row.querySelectorAll(".sct-drp-dot.is-own, .sct-drp-dot.is-from").length, inRound, `Round ${i + 1}: a marker per pick held`);
+      assert.equal(row.querySelectorAll(".sct-drp-dot.is-sent").length, picks.teams.ne.sent.filter((h) => h.round === i + 1).length, `Round ${i + 1}: a marker per pick sent`);
+    }
+    const strip = [...premium.querySelectorAll(".sct-drp-card.is-capital .sct-drp-strip .sct-drp-num")].map((n) => n.textContent);
+    assert.deepEqual(strip, [String(held), String(picks.teams.ne.holds.filter((h) => h.from).length), String(picks.teams.ne.sent.length)]);
+    assert.ok(premium.querySelector(".sct-drp-ledger .sct-drp-dot.is-own"), "an own pick is a filled dot");
+    assert.ok([...premium.querySelectorAll(".sct-drp-ledger .sct-drp-dot-club")].some((c) => c.querySelector("img.sct-drp-dot-crest")), "a club mark beside a moved pick");
+    assert.equal(premium.querySelectorAll(".sct-drp-legend > span").length, 3, "a three-item legend");
+    assert.ok(premium.querySelector(".sct-drp-card.is-capital .sct-drp-kicker")?.textContent?.length, "a kicker line");
+    assert.match(premium.querySelector(".sct-drp-card.is-capital .sct-drp-foot").textContent, /^Compensatory picks are awarded in March/);
 
-    // History: one table per draft, newest first, from the register.
-    const seasons = [...panel.querySelectorAll(".sct-dr-season .sct-dr-h4")].map((h) => h.textContent);
-    assert.equal(seasons.length, 5, "five draft classes");
-    assert.deepEqual(seasons, [...seasons].sort().reverse(), "newest first");
+    // Last 5 Drafts: the strip, the takeaway, the bars with the count leading
+    // and a gold dot on a group that drew a Round 1 pick; then the Round 1 list.
     const history = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8"),
     );
+    const window5 = history.teams.ne.filter((p) => p.season > history.latestSeason - 5);
+    const hist = premium.querySelector(".sct-drp-card.is-history");
+    assert.equal(hist.querySelector(".sct-drp-strip .sct-drp-num").textContent, String(window5.length));
+    assert.match(hist.querySelector(".sct-drp-takeaway").textContent, /^\d+% of picks spent on /);
+    const shares = [...hist.querySelectorAll(".sct-drp-share")];
+    assert.equal(shares.reduce((n, li) => n + Number(li.querySelector(".sct-drp-share-n").textContent), 0), window5.length, "the bars sum to the window");
+    assert.ok(shares[0].querySelector(".sct-drp-r1dot"), "the biggest group drew a Round 1 pick");
+    const r1 = [...premium.querySelectorAll(".sct-drp-card.is-r1 .sct-drp-r1")];
+    assert.deepEqual(
+      r1.map((li) => `${li.querySelector(".sct-drp-r1-year").textContent} ${li.querySelector(".sct-dr-name").textContent} ${li.querySelector(".sct-drp-r1-pick").textContent}`),
+      window5.filter((p) => p.round === 1).sort((a, b) => b.season - a.season).map((p) => `${p.season} ${p.name} Pick ${p.pick}`),
+    );
+    assert.match(premium.querySelector(".sct-drp-method").textContent, /Position groups are the broad ones/);
+
+    // History: one year card per draft, newest first, from the register.
+    const seasons = [...premium.querySelectorAll(".sct-drp-year .sct-drp-h3")].map((h) => h.textContent);
+    assert.equal(seasons.length, 5, "five draft classes");
+    assert.deepEqual(seasons, [...seasons].sort().reverse(), "newest first");
+    assert.match(premium.querySelector(".sct-drp-year-sum").textContent, /^\d+ picks · \d+ in Round 1$/);
     const latest = history.teams.ne.filter((p) => p.season === history.latestSeason);
-    const firstTable = panel.querySelector(".sct-dr-table tbody");
+    const firstTable = premium.querySelector(".sct-drp-table tbody");
     assert.equal(firstTable.querySelectorAll("tr").length, latest.length, "every pick of the latest draft");
     assert.equal(firstTable.querySelector("tr .sct-dr-name")?.textContent, latest[0].name);
+    assert.deepEqual(
+      [...premium.querySelectorAll(".sct-drp-table thead th")].slice(0, 6).map((th) => th.textContent),
+      ["Rd", "Pick", "Player", "Pos", "College", "Status"],
+    );
 
     // Player column: a headshot well ahead of every name, the photo through
     // the image route for every pick the register paired with a Sleeper id
     // (mak, 2026-10-29: "add player images"); a pick without one keeps the
     // empty well so the names line up.
-    const playerCells = [...panel.querySelectorAll(".sct-dr-table tbody th.is-player")];
-    assert.ok(playerCells.every((c) => c.querySelector(".sct-dr-player > .sct-dr-face")), "every name has a face well");
-    const withPhoto = playerCells.filter((c) => c.querySelector(".sct-dr-face img"));
+    const playerCells = [...premium.querySelectorAll(".sct-drp-table tbody th.is-player")];
+    assert.ok(playerCells.every((c) => c.querySelector(".sct-drp-player > .sct-drp-face")), "every name has a face well");
+    const withPhoto = playerCells.filter((c) => c.querySelector(".sct-drp-face img"));
     assert.ok(withPhoto.length > 0, "at least one pick has a photo");
     for (const c of withPhoto) {
-      const img = c.querySelector(".sct-dr-face img");
+      const img = c.querySelector(".sct-drp-face img");
       assert.match(img.getAttribute("src"), /\/news-image\/player\/\d+\/(latest|[0-9a-f]{10})\/160\.webp$/);
       assert.equal(img.getAttribute("alt"), "", "decorative: the name is beside it");
       assert.equal(img.getAttribute("loading"), "lazy");
@@ -3091,19 +3154,19 @@ describe("draft tab", () => {
     const firstRows = [...firstTable.querySelectorAll("tr")];
     for (const p of paired) {
       const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
-      assert.match(row.querySelector(".sct-dr-face img")?.getAttribute("src") ?? "", new RegExp(`/news-image/player/${p.sleeperId}/`), `${p.name} wears their own photo`);
+      assert.match(row.querySelector(".sct-drp-face img")?.getAttribute("src") ?? "", new RegExp(`/news-image/player/${p.sleeperId}/`), `${p.name} wears their own photo`);
     }
 
     // College column: the school's crest in a small square beside its
     // written-out name, through the image route's college source (same
     // date, "add college images"); a school with no pairing keeps the square.
     const logos = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "college_logos.json"), "utf8"));
-    const collegeCells = [...panel.querySelectorAll(".sct-dr-table td.is-college")];
-    assert.ok(collegeCells.every((c) => c.querySelector(".sct-dr-college > .sct-dr-crest + .sct-dr-college-name")), "crest square then the name");
+    const collegeCells = [...premium.querySelectorAll(".sct-drp-table td.is-college")];
+    assert.ok(collegeCells.every((c) => c.querySelector(".sct-drp-college > .sct-drp-crest + .sct-drp-college-name")), "crest square then the name");
     for (const p of latest) {
       const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
       const logo = logos.logos[p.college];
-      const img = row.querySelector(".sct-dr-crest img");
+      const img = row.querySelector(".sct-drp-crest img");
       if (logo) {
         assert.match(img?.getAttribute("src") ?? "", new RegExp(`/news-image/college/${logo.id}/(latest|[0-9a-f]{10})/80\\.webp$`), `${p.college} crest`);
         assert.match(img.getAttribute("srcset"), /80\.webp 80w, .*160\.webp 160w$/);
@@ -3112,154 +3175,41 @@ describe("draft tab", () => {
         assert.equal(img, null, `${p.college} has no crest`);
       }
     }
-    assert.ok(panel.querySelector(".sct-dr-crest img"), "at least one crest");
+    assert.ok(premium.querySelector(".sct-drp-crest img"), "at least one crest");
+
+    // Pos column: the position with the depth-chart slot beneath where a
+    // chart lists the player (mak, 2026-10-29).
+    assert.ok(premium.querySelector(".sct-drp-table td.is-pos .sct-drp-pos + .sct-dr-slot"), "a slot under a position");
 
     // Status column: roster standing from the weekly rosters (mak,
-    // 2026-10-29: "active, waived, traded, etc."), with where a departed
-    // player is now on a second line; the old participation tiers are gone.
+    // 2026-10-29: "active, waived, traded, etc.") as a toned badge, with
+    // where a departed player is now on a second line.
     const statusDoc = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_status.json"), "utf8"));
-    const statusCells = [...panel.querySelectorAll(".sct-dr-table td.is-status")];
-    const labels = new Set(statusCells.map((c) => c.querySelector(".sct-dr-status").textContent));
+    const statusCells = [...premium.querySelectorAll(".sct-drp-table td.is-status")];
+    const labels = new Set(statusCells.map((c) => c.querySelector(".sct-drp-badge")?.textContent));
     for (const old of ["Starter", "Regular", "Rotational", "Limited", "No games", "Not active"]) assert.ok(!labels.has(old), `${old} is gone`);
     assert.ok(labels.has("Active"), "the current class is active");
+    assert.ok(statusCells.every((c) => !c.querySelector(".sct-drp-badge") || c.querySelector(".sct-drp-badge").getAttribute("data-tone")), "every badge has a tone");
     for (const p of latest) {
       const row = firstRows.find((r) => r.querySelector(".sct-dr-name")?.textContent === p.name);
       const entry = statusDoc.players[p.gsisId];
       const cell = row.querySelector("td.is-status");
       if (!entry) continue;
       if (entry.left) {
-        assert.equal(cell.querySelector(".sct-dr-status").getAttribute("data-status"), entry.left.kind, `${p.name} shows how they left`);
-        if (entry.now.kind !== "none" && entry.left.kind !== "retired") assert.match(cell.querySelector(".sct-dr-status-sub")?.textContent ?? "", /^now /, `${p.name} says where they are now`);
+        assert.equal(cell.querySelector(".sct-drp-badge").getAttribute("data-status"), entry.left.kind, `${p.name} shows how they left`);
+        if (entry.now.kind !== "none" && entry.left.kind !== "retired") assert.match(cell.querySelector(".sct-drp-status-sub")?.textContent ?? "", /^now /, `${p.name} says where they are now`);
       } else {
-        assert.equal(cell.querySelector(".sct-dr-status").getAttribute("data-status"), entry.now.kind, `${p.name} shows their standing`);
+        assert.equal(cell.querySelector(".sct-drp-badge").getAttribute("data-status"), entry.now.kind, `${p.name} shows their standing`);
       }
       // No row is muted (mak, 2026-10-29: "do not fade out players who are not on the team").
       assert.ok(!row.classList.contains("is-gone"), `${p.name} reads like every other row`);
     }
-    // The Status footnote came out the same day.
-    assert.equal(panel.querySelector(".sct-dr-classes .sct-dr-foot"), null, "no footnote under the tables");
+    assert.equal(premium.querySelector(".sct-drp-main .sct-drp-foot"), null, "no footnote under the tables");
 
     // No outside source is named in the page.
     assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
   });
 
-  test("the premium depth chart comparison sits under the original and carries the same chart (mak, 2026-11-05)", async () => {
-    // The chart prints only at its own address (hub-prints-own-panels-only).
-    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
-    const panel = doc.getElementById("depth-chart") ?? doc.body;
-    const original = panel.querySelector(".sct-dc[data-sct-dc]");
-    const premium = panel.querySelector(".sct-dpp[data-sct-depth-premium]");
-    assert.ok(original && premium, "both blocks render");
-    assert.ok(original.compareDocumentPosition(premium) & 4, "the comparison follows the original");
-    assert.equal(premium.querySelector(".sct-dpp-flag").textContent, "New design - comparison");
-    assert.equal(premium.querySelectorAll("h1").length, 0, "no second H1");
-    assert.equal(premium.querySelector(".sct-dpp-title").textContent, "New England Patriots Depth Chart");
-    assert.match(premium.querySelector(".sct-dpp-sub").textContent, /^The New England Patriots depth chart has .+ starting at quarterback/);
-
-    // The same four views, pressed the same way, in a second [data-sct-dc]
-    // block the client's wireDepthViews loop picks up on its own.
-    const views = (root, sel) => [...root.querySelectorAll(sel)].map((b) => `${b.dataset.sctDcView}:${b.getAttribute("aria-pressed")}`);
-    assert.deepEqual(views(premium.querySelector("[data-sct-dc]"), "[data-sct-dc-view]"), views(original, "[data-sct-dc-view]"));
-    assert.deepEqual(
-      [...premium.querySelectorAll("[data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel),
-      [...original.querySelectorAll("[data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel),
-    );
-
-    // Every football row: the same slot, the same names in the same order.
-    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
-    const rows = (root, row, pos, name) =>
-      [...root.querySelectorAll(row)].map((r) => `${r.dataset.slot ?? r.dataset.pos}|${[...r.querySelectorAll(name)].map(text).join(",")}`);
-    assert.deepEqual(
-      rows(premium, '[data-sct-dc-panel="offense"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
-      rows(original, '[data-sct-dc-panel="offense"] .sct-dcx-row', ".sct-dcx-pos", ".sct-dcx-card .sct-depth-name"),
-    );
-    assert.deepEqual(
-      rows(premium, '[data-sct-dc-panel="defense"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
-      rows(original, '[data-sct-dc-panel="defense"] .sct-dcx-row', ".sct-dcx-pos", ".sct-dcx-card .sct-depth-name"),
-    );
-    assert.deepEqual(
-      rows(premium, '[data-sct-dc-panel="fantasy"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
-      [...original.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dcx-fan')].map(
-        (g) => `${g.dataset.pos}|${[...g.querySelectorAll(".sct-dcx-card .sct-depth-name")].map(text).join(",")}`,
-      ),
-    );
-    // Also listed: the same overflow, the same count.
-    const more = (root, title, cardName) => [...root.querySelectorAll(title)].map((t) => `${text(t)}:${[...t.parentElement.querySelectorAll(cardName)].map(text).join(",")}`);
-    assert.deepEqual(more(premium, ".sct-dpp-more-title", ".sct-depth-name"), more(original, ".sct-dcx-more-title", ".sct-depth-name"));
-
-    // Designations, rookies and service lines are the original's, card for card.
-    const marks = (root, card, tag, rookie, exp) =>
-      [...root.querySelectorAll(card)].map((c) => `${text(c.querySelector(".sct-depth-name"))}:${c.querySelector(tag)?.textContent.trim() ?? ""}:${!!c.querySelector(rookie)}:${c.querySelector(exp)?.textContent ?? ""}`);
-    assert.deepEqual(
-      marks(premium, '[data-sct-dc-panel="offense"] .sct-dpp-card', ".sct-dpp-tag", ".sct-dpp-rookie", ".sct-dpp-exp"),
-      marks(original, '[data-sct-dc-panel="offense"] .sct-dcx-card', ".sct-dcx-tag", ".sct-dcx-rookie", ".sct-dcx-exp"),
-    );
-    assert.ok(premium.querySelector(".sct-dpp-rookie"), "a rookie tag shows");
-    assert.equal(premium.querySelector(".sct-dpp-captain"), null, "no captain badge: the document has no captain field");
-
-    // The strip: the formation and the two grades the original prints in its header.
-    const strip = premium.querySelector('[data-sct-dc-panel="offense"] .sct-dpp-strip');
-    assert.deepEqual(
-      [...strip.querySelectorAll(".sct-dpp-strip-label")].map(text),
-      [text(original.querySelector('[data-sct-dc-panel="offense"] .sct-dcx-formation')), ...[...original.querySelectorAll('[data-sct-dc-panel="offense"] .sct-dcx-grade-label')].map(text)],
-    );
-    assert.deepEqual(
-      [...strip.querySelectorAll(".sct-dpp-grade")].map(text),
-      [...original.querySelectorAll('[data-sct-dc-panel="offense"] .sct-dcx-grade-mark')].map(text),
-    );
-    assert.equal(premium.querySelector('[data-sct-dc-panel="special"] .sct-dpp-strip'), null, "no scheme strip on special teams");
-    assert.doesNotMatch(premium.innerHTML, /nflverse|tankathon|pro-football-reference|espn\.com|footballguys/i);
-  });
-
-  test("the premium comparison sits under the whole original tab and carries the same figures (mak, 2026-11-05)", async () => {
-    const { doc } = await dom("/team/new-england-patriots");
-    const panel = doc.getElementById("draft");
-    const original = panel.querySelector(".sct-dr");
-    const premium = panel.querySelector(".sct-drp[data-sct-draft-premium]");
-    assert.ok(original && premium, "both blocks render");
-    assert.ok(original.compareDocumentPosition(premium) & 4, "the comparison follows the original");
-    assert.ok(premium.compareDocumentPosition(panel.querySelector(".sct-dr-faq") ?? premium) & 4 || !panel.querySelector(".sct-dr-faq"), "the FAQ still closes the tab");
-    assert.equal(premium.querySelector(".sct-drp-flag").textContent, "New design - comparison");
-    assert.equal(premium.querySelectorAll("h1").length, 0, "no second H1");
-    assert.equal(premium.querySelector(".sct-drp-title").textContent, "Patriots Draft Picks & History");
-    assert.ok(premium.querySelector(".sct-drp-hero img.sct-drp-logo"), "the banner carries the club's logo");
-
-    // The class tables: the same rows, in the same order, with the same cells.
-    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
-    const cells = (root, sel) => [...root.querySelectorAll(sel)].map((tr) => [...tr.children].slice(0, 6).map(text).join("|"));
-    assert.deepEqual(cells(premium, ".sct-drp-table tbody tr"), cells(original, ".sct-dr-table tbody tr"));
-    assert.equal(premium.querySelectorAll(".sct-drp-year").length, 5, "all five classes, not the screenshot's three");
-    assert.deepEqual(
-      [...premium.querySelectorAll(".sct-drp-table a")].map((a) => a.getAttribute("href")),
-      [...original.querySelectorAll(".sct-dr-table a")].map((a) => a.getAttribute("href")),
-      "the same profile links",
-    );
-
-    // Status badges carry a tone; the sub line keeps the where-now text.
-    const badges = [...premium.querySelectorAll(".sct-drp-badge")];
-    assert.ok(badges.length > 0 && badges.every((b) => b.getAttribute("data-tone")), "every badge has a tone");
-    assert.ok(badges.some((b) => b.getAttribute("data-tone") === "ok" && b.textContent === "Active"));
-
-    // The ledger: seven rows, each with an accessible sentence and the held count the original shows.
-    const rows = [...premium.querySelectorAll(".sct-drp-lrow")];
-    assert.equal(rows.length, 7);
-    assert.deepEqual(
-      rows.map((li) => li.querySelector(".sct-drp-lcount").textContent),
-      [...original.querySelectorAll(".sct-dr-ledger .sct-dr-row")].map((li) => li.dataset.count),
-    );
-    assert.match(rows[5].querySelector(".sct-visually-hidden").textContent, /^Round 6: .* held\.$/);
-
-    // The mix and the Round 1 list match the original.
-    assert.deepEqual(
-      [...premium.querySelectorAll(".sct-drp-share")].map((li) => `${text(li.querySelector(".sct-drp-share-label"))} ${text(li.querySelector(".sct-drp-share-n"))}`),
-      [...original.querySelectorAll(".sct-dr-share")].map((li) => `${text(li.querySelector(".sct-dr-share-label"))} ${text(li.querySelector(".sct-dr-num"))}`),
-    );
-    assert.deepEqual(
-      [...premium.querySelectorAll(".sct-drp-r1")].map(text),
-      [...original.querySelectorAll(".sct-dr-r1")].map(text),
-    );
-    assert.doesNotMatch(premium.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
-  });
 });
 
 describe("contracts tab", () => {

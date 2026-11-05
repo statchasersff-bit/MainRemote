@@ -103,6 +103,7 @@ import { renderPremiumCareer } from "./player/career-premium";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
 import { injuryTabParts } from "./player/injury-tab";
+import { renderInjuryPremium } from "./player/injury-premium";
 import { renderBioTab } from "./player/bio-tab";
 import { renderNewsTabParts } from "./player/news-tab";
 import { renderGameLogPremium, type PremiumLogDeps } from "./player/gamelog-premium";
@@ -1860,7 +1861,10 @@ function renderInjury(
   // The original tab's sections (status card, at-a-glance grade and tiles,
   // availability profile, body-part table and history) were removed on
   // 2026-09-30 at mak's request.
-  const parts = injuryTabParts(data, options, data.injury.faq ?? []);
+  // The premium Injury Status and History comparison (mak's brief,
+  // 2026-11-05) prints inside the tab's wrap under everything the tab has;
+  // a comparison only until mak approves.
+  const parts = injuryTabParts(data, options, data.injury.faq ?? [], renderInjuryPremium(data, options));
   if (!parts) return { body: heading, foot: "", faq: "" };
   options.faqSink?.push(...parts.faqText);
   return { body: heading + parts.body, foot: parts.foot, faq: parts.faq };
