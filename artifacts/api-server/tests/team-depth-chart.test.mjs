@@ -80,13 +80,13 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
       assert.equal(doc.querySelector("#depth-chart .sct-dc-stamp"), null);
 
       // Offense, defense, special teams, then fantasy; Offense pressed.
-      const panels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel);
+      const panels = [...doc.querySelectorAll("#depth-chart .sct-dc[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel);
       assert.deepEqual(panels, ["offense", "defense", "special", "fantasy"]);
       assert.equal(doc.querySelector('[data-sct-dc-view="offense"]').getAttribute("aria-pressed"), "true");
       // No visible card title (the H1 and the pressed view already name the
       // side); each card is labelled for assistive tech only.
       assert.equal(doc.querySelectorAll("#depth-chart .sct-dcx-title").length, 0);
-      const labels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")].map((p) => p.getAttribute("aria-label"));
+      const labels = [...doc.querySelectorAll("#depth-chart .sct-dc[data-sct-dc] [data-sct-dc-panel]")].map((p) => p.getAttribute("aria-label"));
       assert.deepEqual(labels, [
         `${name} Offense Depth Chart`,
         `${name} Defense Depth Chart`,

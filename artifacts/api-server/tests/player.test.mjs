@@ -837,7 +837,11 @@ describe("the game log tab", () => {
     const log = gl.querySelector(".scp-glp-wrap");
     const story = gl.querySelector(".scp-bkp-wrap");
     assert.ok(log && story);
-    assert.ok(log.compareDocumentPosition(story) & 4, "the log, then the breakdown and the fixtures");
+    // The breakdown and the fixtures sit INSIDE the Game Log frame, under the
+    // finishes panel (mak, 2026-11-05).
+    assert.ok(log.contains(story), "the breakdown and the fixtures are inside the log frame");
+    assert.ok(log.querySelector(".scp-glp-body > .scp-bkp-wrap"), "a panel of the body");
+    assert.ok(log.querySelector(".scp-glp-pin").compareDocumentPosition(story) & 4, "under the finishes chart");
     assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
     assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-sortable"));
     assert.ok(gl.querySelectorAll(".scp-glp-kpi-v").length >= 3, "the KPI cards");

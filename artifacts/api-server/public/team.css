@@ -29192,3 +29192,1998 @@ a.sct-srow-team:focus-visible {
     min-width: 540px;
   }
 }
+
+/* ===================================================================
+ * Team page: "Premium Design A · Dark Navy", the dark navy-and-gold
+ * comparison of the hero and the strip (mak's brief, 2026-11-05; brought back
+ * at mak's request after Design B became the header the same day). Rendered
+ * under the header, labeled, not the default. Its own size container ("tp");
+ * every rule is under .sct .sct-tp and nothing reaches the header (.sct-tpb).
+ * The switcher inside it reuses the .sct-switch panel rules; only its summary
+ * pill is restyled here. */
+
+.sct .sct-tp {
+  --tp-navy-950: #07172f;
+  --tp-navy-900: #091e3d;
+  --tp-navy-850: #0b294f;
+  --tp-navy-800: #103966;
+  --tp-royal: #1155a2;
+  --tp-blue: #1763b5;
+  --tp-gold: #d4af37;
+  --tp-gold-bright: #f0c34e;
+  --tp-gold-deep: #b8901f;
+  --tp-text: #102344;
+  --tp-muted: #5f7492;
+  --tp-border: #cddaea;
+  container-type: inline-size;
+  container-name: tp;
+  margin: 28px 0 32px;
+  color: #fff;
+}
+
+.sct .sct-tp .sct-cp-flag {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fbf3d5;
+  color: #7a5c0e;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- the hero */
+.sct .sct-tp-hero {
+  position: relative;
+  border-radius: 18px;
+  background: linear-gradient(115deg, #081b37 0%, #103766 42%, #104f92 65%, #071d3c 100%);
+  box-shadow: 0 10px 30px rgba(7, 23, 47, 0.28);
+}
+
+/* The clip lives on the decor wrapper, never on the hero: an open switcher drops below it. */
+.sct .sct-tp-decor {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sct .sct-tp-bands {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(118deg, rgba(5, 18, 40, 0.55) 0 14%, transparent 14% 30%, rgba(17, 85, 162, 0.22) 30% 46%, transparent 46% 58%, rgba(23, 99, 181, 0.18) 58% 72%, transparent 72% 86%, rgba(5, 18, 40, 0.5) 86%),
+    radial-gradient(90% 120% at 100% 100%, rgba(5, 18, 40, 0.55) 0%, transparent 60%);
+}
+
+.sct .sct-tp-gold {
+  position: absolute;
+  width: 3px;
+  height: 160%;
+  background: linear-gradient(180deg, var(--tp-gold-bright) 0%, var(--tp-gold) 50%, var(--tp-gold-deep) 100%);
+  box-shadow: 12px 0 0 rgba(212, 175, 55, 0.55), 24px 0 0 rgba(212, 175, 55, 0.25), 0 0 14px rgba(240, 195, 78, 0.25);
+  transform: rotate(28deg);
+  opacity: 0.9;
+}
+
+.sct .sct-tp-gold.is-tl {
+  top: -40%;
+  left: 6px;
+}
+
+.sct .sct-tp-gold.is-br {
+  right: 44px;
+  bottom: -60%;
+}
+
+.sct .sct-tp-watermark {
+  position: absolute;
+  top: 50%;
+  right: -40px;
+  width: 360px;
+  height: 360px;
+  transform: translateY(-50%);
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.13;
+  filter: saturate(0.5) brightness(1.8);
+}
+
+.sct .sct-tp-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "badge text actions" "badge kpis kpis" "badge updated updated";
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 10px;
+  padding: 24px 28px 18px;
+}
+
+/* ---- the crest in its badge */
+.sct .sct-tp-badge {
+  grid-area: badge;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
+  border: 3px solid var(--tp-gold);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff 0%, #f4f7fc 55%, #dce7f3 100%);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 0 0 6px rgba(212, 175, 55, 0.25), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.sct .sct-tp-logo {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+}
+
+/* ---- the identity */
+.sct .sct-tp-text {
+  grid-area: text;
+  min-width: 0;
+}
+
+.sct .sct-tp-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  color: #d6e2f3;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tp-eyebrow-rule {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--tp-gold);
+}
+
+.sct .sct-tp-title {
+  margin: 0;
+  color: #fff;
+  font-size: 2.9rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.sct .sct-tp-sub {
+  margin: 6px 0 0;
+  color: #b9c9e0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* ---- the switcher, as a white pill */
+.sct .sct-tp-actions {
+  grid-area: actions;
+  align-self: start;
+  justify-self: end;
+}
+
+.sct .sct-tp .sct-switch-summary {
+  min-height: 42px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff 0%, #eef3fa 100%);
+  color: var(--tp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 #fff;
+}
+
+.sct .sct-tp .sct-switch-summary:hover,
+.sct .sct-tp .sct-switch-summary:focus-visible {
+  border-color: var(--tp-gold-bright);
+  box-shadow: 0 0 0 3px rgba(240, 195, 78, 0.28), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.sct .sct-tp .sct-switch-caret {
+  border-color: var(--tp-navy-950);
+}
+
+.sct .sct-tp .sct-switch-panel {
+  color: var(--tp-text);
+}
+
+/* ---- the four KPI cards */
+.sct .sct-tp-kpis {
+  grid-area: kpis;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-tp-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(210, 222, 238, 0.9);
+  border-bottom: 3px solid var(--tp-gold);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f5f8fd 68%, #e7eff9 100%);
+  color: var(--tp-text);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08), 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sct .sct-tp-kpi-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--tp-gold-deep);
+}
+
+.sct .sct-tp-kpi-icon svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.1;
+}
+
+.sct .sct-tp-kpi-div {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 36px;
+  background: #d2deee;
+}
+
+.sct .sct-tp-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sct .sct-tp-kpi-label {
+  color: var(--tp-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct .sct-tp-kpi-value {
+  color: var(--tp-navy-950);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.sct .sct-tp-updated {
+  grid-area: updated;
+  margin: 0;
+  color: #b9c9e0;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+/* ---- the strip: the header's light bar, separate, text-first, a navy open tab under a gold bar */
+.sct .sct-tp-nav {
+  margin-top: 12px;
+  border: 1px solid #bfd1e8;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #edf4fd 100%);
+  box-shadow: 0 4px 10px rgba(10, 38, 77, 0.05), 0 10px 22px rgba(10, 38, 77, 0.07);
+  overflow: hidden;
+}
+
+.sct .sct-tp-nav-list {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 62px;
+  margin: 0;
+  padding: 7px 8px;
+  list-style: none;
+}
+
+.sct .sct-tp-nav-list li {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.sct .sct-tp .sct-tp-tab {
+  position: relative;
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 10px;
+  border-radius: 13px;
+  color: var(--tp-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sct .sct-tp .sct-tp-tab:hover {
+  background: #e1ecfa;
+  color: var(--tp-navy-900);
+}
+
+.sct .sct-tp .sct-tp-tab:focus-visible {
+  outline: 2px solid #10539c;
+  outline-offset: -2px;
+}
+
+.sct .sct-tp .sct-tp-tab.is-active,
+.sct .sct-tp .sct-tp-tab.is-active:hover {
+  background: linear-gradient(180deg, #0e4b93 0%, #082e61 100%);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 3px 8px rgba(5, 31, 68, 0.15);
+}
+
+.sct .sct-tp .sct-tp-tab.is-active::after {
+  content: "";
+  position: absolute;
+  right: 13%;
+  bottom: 5px;
+  left: 13%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--tp-gold-bright);
+}
+
+/* ---- medium: 950-1299px */
+@container tp (max-width: 1299px) {
+  .sct .sct-tp-inner {
+    column-gap: 20px;
+    padding: 20px 22px 16px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 124px;
+    height: 124px;
+  }
+
+  .sct .sct-tp-logo {
+    width: 94px;
+    height: 94px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 2.35rem;
+  }
+
+  .sct .sct-tp-watermark {
+    width: 280px;
+    height: 280px;
+    opacity: 0.08;
+  }
+
+  .sct .sct-tp-kpi {
+    min-height: 70px;
+    padding: 10px 12px;
+  }
+
+  .sct .sct-tp-kpi-value {
+    font-size: 1.12rem;
+  }
+
+  .sct .sct-tp-nav-list {
+    min-height: 56px;
+    padding: 6px 7px;
+  }
+
+  .sct .sct-tp .sct-tp-tab {
+    min-height: 44px;
+    font-size: 0.82rem;
+  }
+}
+
+/* ---- narrow: 650-949px. The selector drops under the name; the KPIs go two by two. */
+@container tp (max-width: 949px) {
+  .sct .sct-tp-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
+    row-gap: 12px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 104px;
+    height: 104px;
+    align-self: start;
+  }
+
+  .sct .sct-tp-logo {
+    width: 78px;
+    height: 78px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 2rem;
+  }
+
+  .sct .sct-tp-actions {
+    justify-self: start;
+  }
+
+  .sct .sct-tp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct .sct-tp-watermark {
+    width: 240px;
+    height: 240px;
+    right: -60px;
+  }
+
+  .sct .sct-tp-nav-list {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .sct .sct-tp-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sct .sct-tp-nav-list li {
+    flex: 0 0 auto;
+  }
+
+  .sct .sct-tp .sct-tp-tab {
+    padding: 0 14px;
+  }
+}
+
+/* ---- mobile: under 650px */
+@container tp (max-width: 649px) {
+  .sct .sct-tp-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "badge text" "actions actions" "kpis kpis" "updated updated";
+    column-gap: 14px;
+    padding: 16px 16px 14px;
+  }
+
+  .sct .sct-tp-badge {
+    width: 84px;
+    height: 84px;
+    border-width: 2.5px;
+  }
+
+  .sct .sct-tp-logo {
+    width: 62px;
+    height: 62px;
+  }
+
+  .sct .sct-tp-title {
+    font-size: 1.65rem;
+  }
+
+  .sct .sct-tp-sub {
+    font-size: 0.85rem;
+  }
+
+  .sct .sct-tp-eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .sct .sct-tp-gold.is-br {
+    display: none;
+  }
+
+  .sct .sct-tp-watermark {
+    width: 200px;
+    height: 200px;
+    opacity: 0.07;
+  }
+
+  .sct .sct-tp-kpi {
+    min-height: 62px;
+    gap: 10px;
+    padding: 9px 11px;
+  }
+
+  .sct .sct-tp-kpi-value {
+    font-size: 1.05rem;
+  }
+
+  .sct .sct-tp .sct-switch-summary {
+    max-width: 100%;
+  }
+
+  .sct .sct-tp-nav-list {
+    min-height: 52px;
+    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
+  }
+}
+
+/* =========================================================================
+   Depth Chart: the premium comparison (mak's brief, 2026-11-05,
+   attached_assets/depth1.png). Rendered under the original Depth Chart tab
+   by depth-premium.ts until mak approves it as the design. Scoped to
+   .sct-dpp; a container so the column, not the window, decides the layout.
+   ========================================================================= */
+
+:is(.sct, #sct-table-armour) .sct-dpp {
+  --dpp-navy-950: #071a35;
+  --dpp-navy-900: #0b2345;
+  --dpp-navy-800: #103862;
+  --dpp-gold: #d4af37;
+  --dpp-gold-bright: #f0c13c;
+  --dpp-gold-light: #fff3d7;
+  --dpp-text: #102344;
+  --dpp-muted: #5b7290;
+  --dpp-surface-light: #f7faff;
+  --dpp-surface-blue: #eaf2fb;
+  --dpp-border: #cbdbea;
+  --dpp-border-light: #e0e9f3;
+  --dpp-green: #087a42;
+  --dpp-green-light: #e5f6e9;
+  --dpp-red: #bd3337;
+  --dpp-red-light: #fce9ea;
+  --dpp-blue: #2764a8;
+  --dpp-blue-light: #e7f0fb;
+  --dpp-amber: #8a5a00;
+  --dpp-amber-light: #fdf1d6;
+  --dpp-shadow: 0 3px 8px rgba(10, 32, 65, 0.045), 0 10px 22px rgba(10, 32, 65, 0.06);
+  --dpp-cols: 88px repeat(4, minmax(0, 1fr));
+  container-type: inline-size;
+  display: grid;
+  gap: 14px;
+  margin: 28px 0 0;
+  color: var(--dpp-text);
+  font-family: var(--sc-font);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-flag {
+  display: inline-block;
+  justify-self: start;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--dpp-gold-light);
+  color: var(--sc-gold-deep);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- the banner */
+
+:is(.sct, #sct-table-armour) .sct-dpp-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 88px;
+  padding: 11px 26px;
+  overflow: hidden;
+  border-radius: 15px;
+  background: linear-gradient(110deg, #071a35 0%, #103c70 65%, #092447 100%);
+  color: #fff;
+  box-shadow: var(--dpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 46%;
+  background: linear-gradient(112deg, transparent 0 46%, rgba(255, 255, 255, 0.045) 46% 62%, transparent 62% 74%, rgba(255, 255, 255, 0.035) 74% 100%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-stripes {
+  position: absolute;
+  top: -8px;
+  right: 34px;
+  width: 44px;
+  height: 56px;
+  background: linear-gradient(118deg, transparent 0 40%, var(--dpp-gold-bright) 40% 52%, transparent 52% 70%, var(--dpp-gold) 70% 82%, transparent 82%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-logo {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-hero-rule {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 58px;
+  border-radius: 2px;
+  background: var(--dpp-gold);
+  transform: skewX(-12deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-hero-copy {
+  position: relative;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-title {
+  margin: 0;
+  padding: 0;
+  color: #fff !important;
+  font-size: 1.95rem !important;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-sub {
+  margin: 4px 0 0;
+  max-width: 88ch;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+/* ---- the view tabs */
+
+:is(.sct, #sct-table-armour) .sct-dpp-views {
+  display: grid;
+  gap: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 20px;
+  border: 1px solid var(--dpp-border);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef4fb 100%);
+  color: var(--dpp-navy-900);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.06);
+  overflow: hidden;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tab:hover {
+  border-color: #b4c8df;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tab:focus-visible {
+  outline: 2px solid var(--dpp-gold);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tab[aria-pressed="true"] {
+  border-color: var(--dpp-navy-900);
+  background: linear-gradient(180deg, #123b69 0%, #081e3d 100%);
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(8, 35, 68, 0.16);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-tab[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: var(--dpp-gold-bright);
+}
+
+/* Without scripting every panel shows and the buttons would do nothing. */
+:is(.sct, #sct-table-armour) .sct-dpp-views:not([data-sct-dc="js"]) .sct-dpp-tabs {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-panel[hidden] {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-note {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--dpp-border);
+  border-radius: 12px;
+  background: var(--dpp-surface-blue);
+  color: #2a4470;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+/* ---- the scheme and grades strip */
+
+:is(.sct, #sct-table-armour) .sct-dpp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+  min-height: 58px;
+  padding: 8px 16px;
+  border: 1px solid var(--dpp-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8fd 100%);
+  box-shadow: var(--dpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 8px;
+  border-radius: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-strip-item:first-child {
+  background: var(--dpp-gold-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-strip-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 28px;
+  margin: 0 18px;
+  background: var(--dpp-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-icon {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  color: var(--dpp-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-strip-label {
+  color: var(--dpp-navy-900);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-grade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--dpp-amber-light);
+  color: var(--dpp-amber);
+  font-family: "Barlow", var(--sc-font);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-grade[data-tone="good"] {
+  background: var(--dpp-green);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-grade[data-tone="mid"] {
+  background: #ffe9a3;
+  color: #6b4a00;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-grade[data-tone="poor"] {
+  background: var(--dpp-red-light);
+  color: var(--dpp-red);
+}
+
+/* ---- the matrix */
+
+:is(.sct, #sct-table-armour) .sct-dpp-matrix {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--dpp-border);
+  border-radius: 17px;
+  background: linear-gradient(145deg, #ffffff 0%, #f7faff 100%);
+  box-shadow: var(--dpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-scroll {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-scroll:focus-visible {
+  outline: 2px solid var(--dpp-gold);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-inner {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-head,
+:is(.sct, #sct-table-armour) .sct-dpp-row {
+  display: grid;
+  grid-template-columns: var(--dpp-cols);
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-inner.is-fan .sct-dpp-head,
+:is(.sct, #sct-table-armour) .sct-dpp-row.is-fan {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-head {
+  min-height: 38px;
+  border-bottom: 1px solid var(--dpp-border);
+  background: linear-gradient(180deg, #eef4fb 0%, #e3ecf7 100%);
+  color: var(--dpp-navy-900);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-row {
+  min-height: 50px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--dpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-head + .sct-dpp-row {
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-row:nth-child(odd) {
+  background: rgba(234, 242, 251, 0.35);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-pos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  margin: 0;
+  padding: 0 6px;
+  border: 1px solid #c3d6ec;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #e6f0fb 0%, #d2e2f4 100%);
+  color: #102b53 !important;
+  font-size: 1.02rem !important;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-cells {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-cells.is-fan,
+:is(.sct, #sct-table-armour) .sct-dpp-cells.is-loose {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-cells.is-fan > .sct-dpp-card,
+:is(.sct, #sct-table-armour) .sct-dpp-cells.is-loose > .sct-dpp-card {
+  flex: 0 1 236px;
+  min-width: 190px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-blank {
+  min-height: 1px;
+}
+
+/* ---- the player card */
+
+:is(.sct, #sct-table-armour) .sct-dpp-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 42px;
+  margin: 0;
+  padding: 3px 9px 3px 5px;
+  border: 1px solid #cbd9e9;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f7faff 0%, #e9f1fb 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.04);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-card.is-starter {
+  border-color: #b9cde5;
+  background: linear-gradient(145deg, #ffffff 0%, #edf4fc 100%);
+  box-shadow: 0 2px 6px rgba(10, 30, 60, 0.07);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-card.is-starter .sct-dpp-name {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-card:has(.sct-player-link:hover) {
+  border-color: #9fb9d8;
+  box-shadow: 0 3px 8px rgba(10, 30, 60, 0.1);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-avatar {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-well {
+  display: block;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid var(--dpp-border);
+  background: linear-gradient(180deg, #dfe9f5 0%, #c9d9ec 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* A player on an out designation: muted portrait, the badge on its corner
+   says which (IR, Out, PUP). The name stays at full strength. */
+:is(.sct, #sct-table-armour) .sct-dpp-card.is-sidelined .sct-dpp-photo {
+  filter: grayscale(1);
+  opacity: 0.8;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-card .sct-dpp-tag {
+  position: absolute;
+  right: -7px;
+  bottom: -4px;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--dpp-red);
+  color: #fff;
+  font-size: 0.56rem;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-card .sct-dpp-tag[data-severity="questionable"],
+:is(.sct, #sct-table-armour) .sct-dpp-card .sct-dpp-tag[data-severity="doubtful"] {
+  background: #c98a00;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--dpp-navy-900);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name .sct-depth-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name .sct-depth-name-brief {
+  display: none;
+}
+
+/* The chart's link rule draws a border under a name at rest; the card's
+   name wears none, and takes the gold on hover instead. */
+:is(.sct, #sct-table-armour) .sct-dpp .sct-player-link,
+:is(.sct, #sct-table-armour) .sct-dpp .sct-player-link:hover {
+  border-bottom: 0;
+  text-decoration: none;
+}
+
+/* The original chart prints the abbreviated name and keeps the full one for
+   the screen reader; this card has the room, so the full name shows. */
+:is(.sct, #sct-table-armour) .sct-dpp .sct-depth-name-long {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name .sct-player-link:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name .sct-player-link:focus-visible {
+  outline: 2px solid var(--dpp-gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--dpp-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-rookie {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--dpp-red-light);
+  color: var(--dpp-red);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-slot,
+:is(.sct, #sct-table-armour) .sct-dpp-rank {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--dpp-surface-blue);
+  color: var(--dpp-navy-900);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-ppr {
+  color: var(--dpp-navy-900);
+  font-family: "Barlow", var(--sc-font);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-ppr-key {
+  margin-right: 3px;
+  color: var(--dpp-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-new {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--dpp-green-light);
+  color: var(--dpp-green);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-name .sct-dc-move {
+  font-size: 0.6rem;
+}
+
+/* ---- also listed */
+
+:is(.sct, #sct-table-armour) .sct-dpp-more {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--dpp-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-more-title {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 5px 12px;
+  border: 1px solid var(--dpp-border);
+  border-radius: 8px;
+  background: var(--dpp-surface-blue);
+  color: var(--dpp-navy-900) !important;
+  font-size: 0.74rem !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-more-count {
+  color: var(--dpp-muted);
+}
+
+/* ---- the column decides */
+
+@container (max-width: 949px) {
+  :is(.sct, #sct-table-armour) .sct-dpp-inner {
+    min-width: 1000px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-inner.is-fan {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-head-pos,
+  :is(.sct, #sct-table-armour) .sct-dpp-row .sct-dpp-pos {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-head-pos {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-left: -14px;
+    padding-left: 14px;
+    background: linear-gradient(180deg, #eef4fb 0%, #e3ecf7 100%);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-row .sct-dpp-pos {
+    box-shadow: -14px 0 0 0 #f7faff, 0 0 0 4px #f7faff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-strip {
+    gap: 6px 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-strip-sep {
+    display: none;
+  }
+}
+
+@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-dpp-hero {
+    gap: 12px;
+    min-height: 0;
+    padding: 12px 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-title {
+    font-size: 1.4rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-sub {
+    font-size: 0.74rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-stripes {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-tab {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-strip {
+    display: grid;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-strip-sep {
+    display: none;
+  }
+
+  /* A narrower POS column and a wider sheet: ~205px per card, so a long
+     name still reads before it ellipses. */
+  :is(.sct, #sct-table-armour) .sct-dpp-inner {
+    --dpp-cols: 72px repeat(4, minmax(0, 1fr));
+    min-width: 960px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-cells.is-fan > .sct-dpp-card,
+  :is(.sct, #sct-table-armour) .sct-dpp-cells.is-loose > .sct-dpp-card {
+    flex-basis: 100%;
+  }
+
+  /* On a phone the abbreviated name stands in, as on the original chart. */
+  :is(.sct, #sct-table-armour) .sct-dpp .sct-depth-name-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-name .sct-depth-name-brief {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.sct, #sct-table-armour) .sct-dpp-tab,
+  :is(.sct, #sct-table-armour) .sct-dpp-card {
+    transition: none;
+  }
+}
+
+/* ===================================================================
+ * Stats tab: the premium comparison of the whole tab (mak's brief,
+ * 2026-11-05, attached_assets/teamstats.png), rendered UNDER the original
+ * blocks (team/stats-premium.ts). Own size container ("sp"); every rule is
+ * under .sct .sct-sp and nothing reaches the original ladders. The bar fill
+ * and tier tints are the tab's own (rankFill / statTier), only restyled. */
+
+.sct .sct-sp {
+  --sp-navy-950: #071a35;
+  --sp-navy-900: #0b2345;
+  --sp-navy-800: #103862;
+  --sp-gold: #d4af37;
+  --sp-gold-bright: #f0c13c;
+  --sp-text: #102344;
+  --sp-muted: #5b7290;
+  --sp-surface: #f8fbff;
+  --sp-surface-blue: #ebf3fc;
+  --sp-border: #cbdbea;
+  --sp-border-light: #e1e9f3;
+  --sp-green: #087a42;
+  --sp-green-light: #e4f6e8;
+  --sp-red: #b93437;
+  --sp-red-light: #fce9ea;
+  --sp-neutral: #7c91ac;
+  --sp-neutral-light: #e8eef5;
+  --sp-track: #dbe5f0;
+  container-type: inline-size;
+  container-name: sp;
+  margin: 36px 0 8px;
+  color: var(--sp-text);
+  font-family: var(--sc-font-text, inherit);
+}
+
+.sct .sct-sp .sct-cp-flag {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fbf3d5;
+  color: #7a5c0e;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct .sct-sp p {
+  margin: 0;
+}
+
+/* ---- the title banner */
+.sct .sct-sp-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  margin: 0 0 16px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #071a35 0%, #10447d 65%, #092448 100%);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(7, 26, 53, 0.22);
+  isolation: isolate;
+}
+
+.sct .sct-sp-hero-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sct .sct-sp-hero-bands {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 0 52%, rgba(255, 255, 255, 0.06) 52% 64%, transparent 64% 70%, rgba(255, 255, 255, 0.04) 70% 84%, transparent 84%);
+}
+
+.sct .sct-sp-hero-gold {
+  position: absolute;
+  top: -40%;
+  right: 34px;
+  width: 7px;
+  height: 180%;
+  background: var(--sp-gold);
+  box-shadow: 16px 0 0 var(--sp-gold-bright);
+  transform: rotate(24deg);
+  opacity: 0.95;
+}
+
+.sct .sct-sp-hero-logo {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.sct .sct-sp-hero-rule {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--sp-gold);
+}
+
+.sct .sct-sp-hero-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-right: 80px;
+}
+
+.sct .sct-sp-title {
+  color: #fff;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.sct .sct-sp-sub {
+  margin-top: 4px !important;
+  color: #d5e2f4;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* ---- shared: icons, grids, bands */
+.sct .sct-sp-ico {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--sp-gold-bright);
+}
+
+.sct .sct-sp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 16px;
+}
+
+.sct .sct-sp-band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin: 0 0 12px;
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #0b2345 0%, #10447d 70%, #0b2b55 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+.sct .sct-sp-band-title {
+  flex: 0 0 auto;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.sct .sct-sp-band-sub {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #d5e2f4;
+  font-size: 0.74rem;
+  text-align: right;
+}
+
+.sct .sct-sp-band-gold {
+  position: absolute;
+  top: -30%;
+  right: -4px;
+  width: 5px;
+  height: 160%;
+  background: var(--sp-gold);
+  box-shadow: 10px 0 0 var(--sp-gold-bright);
+  transform: rotate(24deg);
+  opacity: 0.8;
+}
+
+/* ---- the Offense / Defense panels */
+.sct .sct-sp-unit {
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  background: var(--sp-surface);
+  box-shadow: 0 3px 10px rgba(7, 26, 53, 0.06);
+  overflow: hidden;
+}
+
+.sct .sct-sp-unit-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 6px 14px;
+  background: linear-gradient(110deg, #0b2345 0%, #10447d 100%);
+  color: #fff;
+}
+
+.sct .sct-sp-unit-title {
+  flex: 1 1 auto;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.sct .sct-sp-week {
+  color: #d5e2f4;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.sct .sct-sp-unit-body {
+  padding: 6px 12px 8px;
+}
+
+/* ---- the row system: label | bar | value | rank, one grid everywhere */
+.sct .sct-sp-heads,
+.sct .sct-sp-row {
+  display: grid;
+  grid-template-columns: minmax(118px, 1.15fr) minmax(80px, 1.6fr) 60px 58px;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.sct .sct-sp-heads {
+  padding: 4px 0 4px;
+  border-bottom: 1px solid var(--sp-border-light);
+  color: var(--sp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sct .sct-sp-heads span:nth-child(3),
+.sct .sct-sp-heads span:nth-child(4) {
+  text-align: center;
+}
+
+.sct .sct-sp-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-sp-row {
+  min-height: 31px;
+  margin: 0;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--sp-border-light);
+}
+
+.sct .sct-sp-row:last-child {
+  border-bottom: 0;
+}
+
+.sct .sct-sp-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sp-text);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sct .sct-sp-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sp-track);
+  overflow: hidden;
+}
+
+.sct .sct-sp-bar.is-empty {
+  opacity: 0.5;
+}
+
+.sct .sct-sp-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sp-neutral);
+}
+
+.sct .sct-sp-bar[data-tier="good"] .sct-sp-fill {
+  background: linear-gradient(90deg, #0d8a4c, var(--sp-green));
+}
+
+.sct .sct-sp-bar[data-tier="poor"] .sct-sp-fill {
+  background: linear-gradient(90deg, #c84a4d, var(--sp-red));
+}
+
+.sct .sct-sp-value {
+  color: var(--sp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sct .sct-sp-rank {
+  justify-self: center;
+  display: inline-block;
+  min-width: 44px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sp-neutral-light);
+  color: var(--sp-text);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sct .sct-sp-rank[data-tier="good"] {
+  background: var(--sp-green-light);
+  color: var(--sp-green);
+}
+
+.sct .sct-sp-rank[data-tier="poor"] {
+  background: var(--sp-red-light);
+  color: var(--sp-red);
+}
+
+.sct .sct-sp-rank.is-none {
+  color: var(--sp-muted);
+}
+
+/* ---- the light inner panels */
+.sct .sct-sp-panel {
+  padding: 0 12px 8px;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  background: var(--sp-surface);
+  box-shadow: 0 3px 10px rgba(7, 26, 53, 0.05);
+  overflow: hidden;
+}
+
+.sct .sct-sp-panel.is-wide {
+  margin: 0 0 16px;
+}
+
+.sct .sct-sp-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  margin: 0 -12px 4px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--sp-border-light);
+  background: linear-gradient(180deg, #eef4fc 0%, #e4edf9 100%);
+}
+
+.sct .sct-sp-panel-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sct .sct-sp-panel-title {
+  color: var(--sp-navy-950);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.sct .sct-sp-panel-sub {
+  color: var(--sp-muted);
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.sct .sct-sp-panel-heads {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 60px 58px;
+  column-gap: 10px;
+  color: var(--sp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* The wide panel: the bar gets the room the two-column panels cannot give it. */
+.sct .sct-sp-panel.is-wide .sct-sp-row {
+  grid-template-columns: minmax(150px, 0.8fr) minmax(200px, 3fr) 64px 60px;
+}
+
+.sct .sct-sp-panel.is-wide .sct-sp-panel-heads {
+  grid-template-columns: 64px 60px;
+}
+
+/* ---- Pace & Play Style: the pace panel beside the two mix panels */
+.sct .sct-sp-pace {
+  display: grid;
+  grid-template-columns: 52fr 48fr;
+  gap: 16px;
+  align-items: start;
+  margin: 0 0 16px;
+}
+
+.sct .sct-sp-mixes {
+  display: grid;
+  gap: 12px;
+}
+
+.sct .sct-sp-mix {
+  padding: 10px 14px 10px;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  background: var(--sp-surface);
+  box-shadow: 0 3px 10px rgba(7, 26, 53, 0.05);
+}
+
+.sct .sct-sp-mix-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.sct .sct-sp-mix-title {
+  color: var(--sp-navy-950);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.sct .sct-sp-mix-bar {
+  display: flex;
+  height: 13px;
+  border-radius: 999px;
+  background: #e0e8f1;
+  overflow: hidden;
+}
+
+.sct .sct-sp-mix-pass {
+  display: block;
+  height: 100%;
+  background: #123f78;
+}
+
+.sct .sct-sp-mix-run {
+  display: block;
+  height: 100%;
+  background: var(--sp-gold);
+}
+
+.sct .sct-sp-mix-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px !important;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--sp-text);
+}
+
+.sct .sct-sp-mix-key::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #123f78;
+  vertical-align: 1px;
+}
+
+.sct .sct-sp-mix-key[data-kind="run"]::before {
+  background: var(--sp-gold);
+}
+
+.sct .sct-sp-mix-caption {
+  margin-top: 2px !important;
+  color: var(--sp-muted);
+  font-size: 0.7rem;
+}
+
+/* ---- Season History: the tinted table */
+.sct .sct-sp-h-scroll {
+  margin: 0 0 8px;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  background: var(--sp-surface);
+  box-shadow: 0 3px 10px rgba(7, 26, 53, 0.05);
+  overflow-x: auto;
+}
+
+.sct .sct-sp-h {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct .sct-sp-h th,
+.sct .sct-sp-h td {
+  padding: 0;
+  border: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sct .sct-sp-h thead th {
+  height: 38px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--sp-border);
+  background: linear-gradient(180deg, #eef4fc 0%, #e4edf9 100%);
+  color: var(--sp-navy-950);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sct .sct-sp-h tbody tr + tr th,
+.sct .sct-sp-h tbody tr + tr td {
+  border-top: 1px solid var(--sp-border-light);
+}
+
+.sct .sct-sp-h-season {
+  text-align: left !important;
+  padding: 0 12px !important;
+  white-space: nowrap;
+}
+
+.sct .sct-sp-h tbody .sct-sp-h-season {
+  height: 46px;
+}
+
+.sct .sct-sp-h-year {
+  color: var(--sp-navy-950);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.sct .sct-sp-h-now {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fbf3d5;
+  color: #7a5c0e;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.sct .sct-sp-h-games {
+  display: block;
+  color: var(--sp-muted);
+  font-size: 0.66rem;
+}
+
+.sct .sct-sp-h-cell {
+  height: 46px;
+  padding: 0 8px !important;
+}
+
+.sct .sct-sp-h-cell[data-tier="good"] {
+  background: #dff2e4;
+}
+
+.sct .sct-sp-h-cell[data-tier="poor"] {
+  background: #f9e1e2;
+}
+
+.sct .sct-sp-h-cell[data-tier="mid"] {
+  background: #eef3f9;
+}
+
+.sct .sct-sp-h-value {
+  display: block;
+  color: var(--sp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.sct .sct-sp-h-rank {
+  display: block;
+  color: var(--sp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.sct .sct-sp-h-cell[data-tier="good"] .sct-sp-h-rank {
+  color: var(--sp-green);
+}
+
+.sct .sct-sp-h-cell[data-tier="poor"] .sct-sp-h-rank {
+  color: var(--sp-red);
+}
+
+/* ---- medium: under 1100px the band subtitle wraps under the title */
+@container sp (max-width: 1099px) {
+  .sct .sct-sp-band {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding: 8px 16px;
+  }
+
+  .sct .sct-sp-band-sub {
+    flex-basis: 100%;
+    text-align: left;
+  }
+
+  .sct .sct-sp-heads,
+  .sct .sct-sp-row {
+    grid-template-columns: minmax(104px, 1.1fr) minmax(60px, 1.4fr) 54px 54px;
+    column-gap: 8px;
+  }
+}
+
+/* ---- narrow: under 950px every pair stacks */
+@container sp (max-width: 949px) {
+  .sct .sct-sp-grid,
+  .sct .sct-sp-pace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct .sct-sp-heads,
+  .sct .sct-sp-row {
+    grid-template-columns: minmax(130px, 1fr) minmax(120px, 2fr) 60px 58px;
+  }
+
+  .sct .sct-sp-panel.is-wide .sct-sp-row {
+    grid-template-columns: minmax(130px, 1fr) minmax(120px, 2fr) 64px 60px;
+  }
+
+  .sct .sct-sp-hero-text {
+    padding-right: 56px;
+  }
+}
+
+/* ---- phone: under 650px */
+@container sp (max-width: 649px) {
+  .sct .sct-sp-hero {
+    gap: 12px;
+    min-height: 0;
+    padding: 12px 14px;
+  }
+
+  .sct .sct-sp-hero-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .sct .sct-sp-hero-text {
+    padding-right: 0;
+  }
+
+  .sct .sct-sp-hero-gold {
+    display: none;
+  }
+
+  .sct .sct-sp-title {
+    font-size: 1.4rem;
+  }
+
+  .sct .sct-sp-sub {
+    font-size: 0.74rem;
+  }
+
+  .sct .sct-sp-heads,
+  .sct .sct-sp-row,
+  .sct .sct-sp-panel.is-wide .sct-sp-row {
+    grid-template-columns: minmax(96px, 1fr) minmax(50px, 1.2fr) 52px 54px;
+    column-gap: 6px;
+  }
+
+  .sct .sct-sp-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+
+  .sct .sct-sp-value {
+    font-size: 0.82rem;
+  }
+
+  .sct .sct-sp-panel-sub,
+  .sct .sct-sp-band-sub {
+    font-size: 0.68rem;
+  }
+
+  .sct .sct-sp-h-cell,
+  .sct .sct-sp-h tbody .sct-sp-h-season {
+    height: 44px;
+  }
+
+  .sct .sct-sp-h-scroll {
+    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, #000 94%, transparent);
+  }
+}

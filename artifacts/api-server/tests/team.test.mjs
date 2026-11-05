@@ -1074,7 +1074,7 @@ describe("the team header (mak's pick of 2026-11-05: the bright blue hero and th
     const css = (await get("/team.css")).body;
     assert.match(css, /\.sct \.sct-tpb-navigation \{[^}]*position:\s*sticky/);
     assert.match(css, /\.sct \.sct-tpb-navigation \{[^}]*top:\s*var\(--sct-nav-offset/);
-    for (const dead of [/\n\.sct-hero\b/, /\n\.sct-nav\b/, /\.sct-facts/, /\.sct-tp-/, /\.sct \.sct-tp\b/]) assert.doesNotMatch(css, dead, `${dead} still in team.css`);
+    for (const dead of [/\n\.sct-hero\b/, /\n\.sct-nav\b/, /\.sct-facts/]) assert.doesNotMatch(css, dead, `${dead} still in team.css`);
     // The club's name is armoured against the host theme's heading sizes.
     assert.match(css, /\.sct \.sct-tpb-title \{[^}]*font-size:[^;]*!important/);
   });
@@ -1122,12 +1122,68 @@ describe("Premium Design A · Dark Navy, the comparison under the header (back a
       assert.deepEqual(tabs.map((a) => a.getAttribute("href")), links.map((a) => a.getAttribute("href")));
       assert.deepEqual(tabs.map((a) => a.classList.contains("is-active")), links.map((a) => a.classList.contains("is-active")));
       assert.equal(tp.querySelector(".sct-tp-tab.is-active").getAttribute("aria-current"), "page");
-      for (const a of tabs) assert.ok(a.querySelector(".sct-tp-tab-icon svg"), "an icon on every tab");
+      assert.equal(tp.querySelector(".sct-tp-tab svg"), null, "text-first tabs, like the header's");
+      assert.equal(tp.querySelector(".sct-tp-nav").previousElementSibling, tp.querySelector(".sct-tp-hero"), "the strip is a separate block under the hero");
       assert.equal(tp.querySelector(".sct-nav-link, [data-sct-nav], [data-sct-panel-id], [data-sct-lead]"), null, "none of the bundle's hooks");
       assert.equal(tp.querySelector("[id]"), null, "no ids inside the comparison");
       const ids = [...doc.querySelectorAll("[data-sct-root] [id]")].map((el) => el.id);
       assert.equal(new Set(ids).size, ids.length, `${path}: duplicate ids`);
       assert.doesNotMatch(tp.textContent, /\u2014/);
+    }
+  });
+});
+
+describe("the premium Stats comparison (mak's brief, 2026-11-05: teamstats.png)", () => {
+  test("under the whole original tab, on the same rows, values, ranks and tiers", async () => {
+    for (const path of ["/team/new-england-patriots/stats/", "/team/kansas-city-chiefs/stats/", "/team/new-york-jets/stats/"]) {
+      const { doc } = await dom(path);
+      const sp = doc.querySelector('[data-sct-premium="team-stats"]');
+      assert.ok(sp, `${path}: the comparison renders`);
+      assert.equal(sp.querySelector(".sct-cp-flag").textContent, "New design · Comparison");
+      // Under everything: no original block follows it inside the panel.
+      let after = sp.nextElementSibling;
+      while (after) { assert.ok(!after.classList.contains("sct-block"), "nothing of the original tab below the comparison"); after = after.nextElementSibling; }
+      assert.equal(sp.querySelector("h1, h2, h3, h4"), null, "no headings inside the comparison");
+      assert.match(sp.querySelector(".sct-sp-title").textContent, /^[A-Za-z0-9 ]+ Team Stats \d{4}$/);
+      // Every original ladder row is here with the same value, rank label and tier, in the same order per ladder.
+      const original = [...doc.querySelectorAll(".sct-ladder")].map((l) => ({
+        title: l.querySelector(".sct-ladder-title").textContent,
+        rows: [...l.querySelectorAll(".sct-stat")].map((r) => [r.querySelector(".sct-stat-label").firstChild.textContent, r.querySelector(".sct-stat-value").textContent, r.querySelector(".sct-stat-rank")?.firstChild.textContent ?? null, r.querySelector(".sct-stat-rank")?.getAttribute("data-tier") ?? null]),
+      }));
+      const premium = [...sp.querySelectorAll(".sct-sp-unit, .sct-sp-panel")].map((p) => ({
+        title: (p.querySelector(".sct-sp-unit-title") ?? p.querySelector(".sct-sp-panel-title")).textContent,
+        rows: [...p.querySelectorAll(".sct-sp-row")].map((r) => [r.querySelector(".sct-sp-label").firstChild.textContent, r.querySelector(".sct-sp-value").textContent, r.querySelector(".sct-sp-rank:not(.is-none)")?.firstChild.textContent ?? null, r.querySelector(".sct-sp-rank:not(.is-none)")?.getAttribute("data-tier") ?? null]),
+      }));
+      assert.equal(premium.length, original.length, `${path}: one panel per ladder`);
+      for (let i = 0; i < original.length; i++) assert.deepEqual(premium[i].rows, original[i].rows, `${path}: ${original[i].title}`);
+      // Bars: a rank draws the tab's fill, no rank draws an empty track; volume rows carry no tint.
+      for (const r of sp.querySelectorAll(".sct-sp-row")) {
+        const bar = r.querySelector(".sct-sp-bar");
+        const rank = r.querySelector(".sct-sp-rank:not(.is-none)");
+        assert.equal(bar.getAttribute("aria-hidden"), "true");
+        if (rank) assert.match(bar.querySelector(".sct-sp-fill").getAttribute("style"), /^width:\d+(\.\d+)?%$/);
+        else assert.ok(bar.classList.contains("is-empty"));
+      }
+      // The play mix: the tab's own two shares.
+      const mixes = [...doc.querySelectorAll(".sct-mix")].map((m) => [...m.querySelectorAll(".sct-mix-key")].map((k) => k.textContent));
+      const spMixes = [...sp.querySelectorAll(".sct-sp-mix")].map((m) => [...m.querySelectorAll(".sct-sp-mix-key")].map((k) => k.textContent));
+      assert.deepEqual(spMixes, mixes, `${path}: play mix`);
+      // The history: the same seasons, columns, values and rank labels; the tint follows the tab's tier.
+      const hist = [...doc.querySelectorAll(".sct-hist tbody tr")].map((tr) => [tr.querySelector(".sct-hist-year").firstChild.textContent, ...[...tr.querySelectorAll(".sct-hist-cell")].map((td) => [td.querySelector(".sct-hist-value")?.firstChild.textContent ?? "", td.querySelector(".sct-hist-rank")?.firstChild.textContent ?? "", td.getAttribute("data-tier")])]);
+      const spHist = [...sp.querySelectorAll(".sct-sp-h tbody tr")].map((tr) => [tr.querySelector(".sct-sp-h-year").textContent, ...[...tr.querySelectorAll(".sct-sp-h-cell")].map((td) => [td.querySelector(".sct-sp-h-value")?.textContent ?? "", td.querySelector(".sct-sp-h-rank")?.firstChild.textContent ?? "", td.getAttribute("data-tier")])]);
+      assert.equal(spHist.length, hist.length);
+      for (let i = 0; i < hist.length; i++) {
+        assert.equal(spHist[i][0], hist[i][0]);
+        for (let c = 1; c < hist[i].length; c++) {
+          assert.equal(spHist[i][c][0], hist[i][c][0]);
+          assert.equal(spHist[i][c][1], hist[i][c][1]);
+          const want = { elite: "good", good: "good", mid: "mid", poor: "poor", none: "none" }[hist[i][c][2]];
+          assert.equal(spHist[i][c][2], want, `${path}: ${hist[i][0]} col ${c}`);
+        }
+      }
+      assert.ok(sp.querySelector(".sct-sp-h tbody tr.is-current .sct-sp-h-now"), "the live season is marked");
+      assert.equal(sp.querySelector("[id]"), null, "no ids inside the comparison");
+      assert.doesNotMatch(sp.textContent, /\u2014/);
     }
   });
 });
@@ -3085,6 +3141,124 @@ describe("draft tab", () => {
 
     // No outside source is named in the page.
     assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
+  });
+
+  test("the premium depth chart comparison sits under the original and carries the same chart (mak, 2026-11-05)", async () => {
+    // The chart prints only at its own address (hub-prints-own-panels-only).
+    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
+    const panel = doc.getElementById("depth-chart") ?? doc.body;
+    const original = panel.querySelector(".sct-dc[data-sct-dc]");
+    const premium = panel.querySelector(".sct-dpp[data-sct-depth-premium]");
+    assert.ok(original && premium, "both blocks render");
+    assert.ok(original.compareDocumentPosition(premium) & 4, "the comparison follows the original");
+    assert.equal(premium.querySelector(".sct-dpp-flag").textContent, "New design - comparison");
+    assert.equal(premium.querySelectorAll("h1").length, 0, "no second H1");
+    assert.equal(premium.querySelector(".sct-dpp-title").textContent, "New England Patriots Depth Chart");
+    assert.match(premium.querySelector(".sct-dpp-sub").textContent, /^The New England Patriots depth chart has .+ starting at quarterback/);
+
+    // The same four views, pressed the same way, in a second [data-sct-dc]
+    // block the client's wireDepthViews loop picks up on its own.
+    const views = (root, sel) => [...root.querySelectorAll(sel)].map((b) => `${b.dataset.sctDcView}:${b.getAttribute("aria-pressed")}`);
+    assert.deepEqual(views(premium.querySelector("[data-sct-dc]"), "[data-sct-dc-view]"), views(original, "[data-sct-dc-view]"));
+    assert.deepEqual(
+      [...premium.querySelectorAll("[data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel),
+      [...original.querySelectorAll("[data-sct-dc-panel]")].map((p) => p.dataset.sctDcPanel),
+    );
+
+    // Every football row: the same slot, the same names in the same order.
+    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+    const rows = (root, row, pos, name) =>
+      [...root.querySelectorAll(row)].map((r) => `${r.dataset.slot ?? r.dataset.pos}|${[...r.querySelectorAll(name)].map(text).join(",")}`);
+    assert.deepEqual(
+      rows(premium, '[data-sct-dc-panel="offense"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
+      rows(original, '[data-sct-dc-panel="offense"] .sct-dcx-row', ".sct-dcx-pos", ".sct-dcx-card .sct-depth-name"),
+    );
+    assert.deepEqual(
+      rows(premium, '[data-sct-dc-panel="defense"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
+      rows(original, '[data-sct-dc-panel="defense"] .sct-dcx-row', ".sct-dcx-pos", ".sct-dcx-card .sct-depth-name"),
+    );
+    assert.deepEqual(
+      rows(premium, '[data-sct-dc-panel="fantasy"] .sct-dpp-row', ".sct-dpp-pos", ".sct-dpp-card .sct-depth-name"),
+      [...original.querySelectorAll('[data-sct-dc-panel="fantasy"] .sct-dcx-fan')].map(
+        (g) => `${g.dataset.pos}|${[...g.querySelectorAll(".sct-dcx-card .sct-depth-name")].map(text).join(",")}`,
+      ),
+    );
+    // Also listed: the same overflow, the same count.
+    const more = (root, title, cardName) => [...root.querySelectorAll(title)].map((t) => `${text(t)}:${[...t.parentElement.querySelectorAll(cardName)].map(text).join(",")}`);
+    assert.deepEqual(more(premium, ".sct-dpp-more-title", ".sct-depth-name"), more(original, ".sct-dcx-more-title", ".sct-depth-name"));
+
+    // Designations, rookies and service lines are the original's, card for card.
+    const marks = (root, card, tag, rookie, exp) =>
+      [...root.querySelectorAll(card)].map((c) => `${text(c.querySelector(".sct-depth-name"))}:${c.querySelector(tag)?.textContent.trim() ?? ""}:${!!c.querySelector(rookie)}:${c.querySelector(exp)?.textContent ?? ""}`);
+    assert.deepEqual(
+      marks(premium, '[data-sct-dc-panel="offense"] .sct-dpp-card', ".sct-dpp-tag", ".sct-dpp-rookie", ".sct-dpp-exp"),
+      marks(original, '[data-sct-dc-panel="offense"] .sct-dcx-card', ".sct-dcx-tag", ".sct-dcx-rookie", ".sct-dcx-exp"),
+    );
+    assert.ok(premium.querySelector(".sct-dpp-rookie"), "a rookie tag shows");
+    assert.equal(premium.querySelector(".sct-dpp-captain"), null, "no captain badge: the document has no captain field");
+
+    // The strip: the formation and the two grades the original prints in its header.
+    const strip = premium.querySelector('[data-sct-dc-panel="offense"] .sct-dpp-strip');
+    assert.deepEqual(
+      [...strip.querySelectorAll(".sct-dpp-strip-label")].map(text),
+      [text(original.querySelector('[data-sct-dc-panel="offense"] .sct-dcx-formation')), ...[...original.querySelectorAll('[data-sct-dc-panel="offense"] .sct-dcx-grade-label')].map(text)],
+    );
+    assert.deepEqual(
+      [...strip.querySelectorAll(".sct-dpp-grade")].map(text),
+      [...original.querySelectorAll('[data-sct-dc-panel="offense"] .sct-dcx-grade-mark')].map(text),
+    );
+    assert.equal(premium.querySelector('[data-sct-dc-panel="special"] .sct-dpp-strip'), null, "no scheme strip on special teams");
+    assert.doesNotMatch(premium.innerHTML, /nflverse|tankathon|pro-football-reference|espn\.com|footballguys/i);
+  });
+
+  test("the premium comparison sits under the whole original tab and carries the same figures (mak, 2026-11-05)", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const panel = doc.getElementById("draft");
+    const original = panel.querySelector(".sct-dr");
+    const premium = panel.querySelector(".sct-drp[data-sct-draft-premium]");
+    assert.ok(original && premium, "both blocks render");
+    assert.ok(original.compareDocumentPosition(premium) & 4, "the comparison follows the original");
+    assert.ok(premium.compareDocumentPosition(panel.querySelector(".sct-dr-faq") ?? premium) & 4 || !panel.querySelector(".sct-dr-faq"), "the FAQ still closes the tab");
+    assert.equal(premium.querySelector(".sct-drp-flag").textContent, "New design - comparison");
+    assert.equal(premium.querySelectorAll("h1").length, 0, "no second H1");
+    assert.equal(premium.querySelector(".sct-drp-title").textContent, "Patriots Draft Picks & History");
+    assert.ok(premium.querySelector(".sct-drp-hero img.sct-drp-logo"), "the banner carries the club's logo");
+
+    // The class tables: the same rows, in the same order, with the same cells.
+    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+    const cells = (root, sel) => [...root.querySelectorAll(sel)].map((tr) => [...tr.children].slice(0, 6).map(text).join("|"));
+    assert.deepEqual(cells(premium, ".sct-drp-table tbody tr"), cells(original, ".sct-dr-table tbody tr"));
+    assert.equal(premium.querySelectorAll(".sct-drp-year").length, 5, "all five classes, not the screenshot's three");
+    assert.deepEqual(
+      [...premium.querySelectorAll(".sct-drp-table a")].map((a) => a.getAttribute("href")),
+      [...original.querySelectorAll(".sct-dr-table a")].map((a) => a.getAttribute("href")),
+      "the same profile links",
+    );
+
+    // Status badges carry a tone; the sub line keeps the where-now text.
+    const badges = [...premium.querySelectorAll(".sct-drp-badge")];
+    assert.ok(badges.length > 0 && badges.every((b) => b.getAttribute("data-tone")), "every badge has a tone");
+    assert.ok(badges.some((b) => b.getAttribute("data-tone") === "ok" && b.textContent === "Active"));
+
+    // The ledger: seven rows, each with an accessible sentence and the held count the original shows.
+    const rows = [...premium.querySelectorAll(".sct-drp-lrow")];
+    assert.equal(rows.length, 7);
+    assert.deepEqual(
+      rows.map((li) => li.querySelector(".sct-drp-lcount").textContent),
+      [...original.querySelectorAll(".sct-dr-ledger .sct-dr-row")].map((li) => li.dataset.count),
+    );
+    assert.match(rows[5].querySelector(".sct-visually-hidden").textContent, /^Round 6: .* held\.$/);
+
+    // The mix and the Round 1 list match the original.
+    assert.deepEqual(
+      [...premium.querySelectorAll(".sct-drp-share")].map((li) => `${text(li.querySelector(".sct-drp-share-label"))} ${text(li.querySelector(".sct-drp-share-n"))}`),
+      [...original.querySelectorAll(".sct-dr-share")].map((li) => `${text(li.querySelector(".sct-dr-share-label"))} ${text(li.querySelector(".sct-dr-num"))}`),
+    );
+    assert.deepEqual(
+      [...premium.querySelectorAll(".sct-drp-r1")].map(text),
+      [...original.querySelectorAll(".sct-dr-r1")].map(text),
+    );
+    assert.doesNotMatch(premium.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
   });
 });
 
