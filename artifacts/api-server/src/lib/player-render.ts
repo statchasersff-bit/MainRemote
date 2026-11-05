@@ -105,6 +105,7 @@ import { renderOutlook2026 } from "./player/outlook-2026";
 import { injuryTabParts } from "./player/injury-tab";
 import { renderInjuryPremium } from "./player/injury-premium";
 import { renderBioTab } from "./player/bio-tab";
+import { renderBioPremium } from "./player/bio-premium";
 import { renderNewsTabParts } from "./player/news-tab";
 import { renderGameLogPremium, type PremiumLogDeps } from "./player/gamelog-premium";
 import { renderBreakdownPremium, type BreakdownPremiumDeps } from "./player/breakdown-premium";
@@ -954,7 +955,9 @@ function renderBio(
   // mak's Bio spec (2026-09-30) replaces the old narrative and career
   // timeline: two bios and two timelines on one page confuse readers and
   // split the page's subject. A player with no fact record keeps the old ones.
-  const spec = renderBioTab(data, options);
+  // The premium Bio and Career block (mak's brief, 2026-11-05) is the tab
+  // since the same day; the transactions log follows it inside the wrap.
+  const spec = renderBioTab(data, options, renderBioPremium(data, options));
   const narrative = spec ? "" : renderBioNarrative(data);
   const timeline = spec ? "" : renderCareerTimeline(data);
   // The Bio tab's FAQ owns the evergreen entity searches (faq-engine.ts).

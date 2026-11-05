@@ -1931,6 +1931,9 @@ describe("the bio tab", () => {
       const bio = page.doc.querySelector("#bio");
       assert.equal(bio.querySelector(".scp-bio"), null, `${page.player.slug}: the old narrative is gone`);
       assert.equal(bio.querySelector(".scp-stints"), null, `${page.player.slug}: the old timeline is gone`);
+      // The premium "Bio and Career" block (bio-premium.ts, 2026-11-05) is
+      // the tab: its banner, Career Overview, Career Timeline and stops bars
+      // are the tab's headings.
       const headings = [...bio.querySelectorAll("h2")].map((h) => h.textContent.trim());
       // "{Name} Bio" is the section page's H1 (the hero's heading, the entity
       // brief of 2026-11-03); the panel no longer repeats it as an H2.
@@ -1939,10 +1942,10 @@ describe("the bio tab", () => {
       assert.equal(headings.filter((h) => /timeline/i.test(h)).length, 1, `${page.player.slug}: one timeline`);
 
       // The bio text comes first and carries the facts the Quick Facts show.
-      const prose = bio.querySelector(".scp-bo-prose");
-      const journey = bio.querySelector(".scp-bo-journey");
+      const prose = bio.querySelector(".scp-bop-prose");
+      const journey = bio.querySelector(".scp-bop-tl");
       if (prose && journey) assert.ok(prose.compareDocumentPosition(journey) & 4, "the bio text opens the tab");
-      const quick = Object.fromEntries([...bio.querySelectorAll(".scp-bo-facts dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
+      const quick = Object.fromEntries([...bio.querySelectorAll(".scp-bop-card-side.is-facts dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
       if (quick.Born && prose) assert.match(prose.textContent, /Born \w+ \d{1,2}, \d{4}/, `${page.player.slug}: the text gives the birth date`);
       if ((quick.College || quick.Colleges) && prose) assert.match(prose.textContent, /played college football at /);
     }
@@ -1976,7 +1979,7 @@ describe("the bio tab", () => {
     for (const page of await bioPages(6)) {
       const bio = page.doc.querySelector("#bio");
       // The three places are what they say they are.
-      const rc = bio.querySelector('[data-cta="redraft-command-bio-sidebar"]');
+      const rc = bio.querySelector('[data-cta="redraft-command-bio-premium"]');
       if (rc) assert.ok(rc.closest(".is-rc"), "the sidebar CTA sits in the Redraft Command card");
       const inline = bio.querySelector('[data-cta="redraft-command-bio-inline"]');
       if (inline) assert.ok(inline.closest(".scp-bo-cta"), "the inline CTA sits in the prompt");
@@ -1997,11 +2000,11 @@ describe("the bio tab", () => {
 
   test("the career timeline runs forwards and never predates the draft", async () => {
     for (const page of await bioPages(6)) {
-      const stops = [...page.doc.querySelectorAll("#bio .scp-bo-stop")];
+      const stops = [...page.doc.querySelectorAll("#bio .scp-bop-seg")];
       if (stops.length === 0) continue;
 
       // A traded season is two stops in one year, so the years never go back.
-      const years = stops.map((stop) => Number(stop.querySelector(".scp-bo-yrs").textContent.trim().slice(0, 4)));
+      const years = stops.map((stop) => Number(stop.querySelector(".scp-bop-seg-years").textContent.trim().slice(0, 4)));
       for (let i = 1; i < years.length; i += 1) {
         assert.ok(years[i] >= years[i - 1], `${page.player.slug}: the timeline runs ${years[i - 1]} then ${years[i]}`);
       }
@@ -2009,7 +2012,7 @@ describe("the bio tab", () => {
       // The bug this is here for: the upstream stats API answers for seasons a
       // player was not in the league by handing back his CURRENT team with an
       // empty stat line, which put a 2016 draftee on a roster in 2005.
-      const drafted = [...page.doc.querySelectorAll("#bio .scp-bo-facts dt")].find((dt) => dt.textContent === "Drafted");
+      const drafted = [...page.doc.querySelectorAll("#bio .scp-bop-card-side.is-facts dt")].find((dt) => dt.textContent === "Drafted");
       const draftYear = Number(drafted?.nextElementSibling.textContent.match(/(\d{4})/)?.[1]);
       if (!Number.isFinite(draftYear)) continue;
       assert.ok(years[0] >= draftYear, `${page.player.slug}: the timeline starts in ${years[0]}, before the ${draftYear} draft`);
@@ -2027,14 +2030,15 @@ describe("the bio tab", () => {
     const res = await get("/player/deebo-samuel/bio/");
     if (res.status !== 200) return t.skip("no deebo-samuel profile in this data");
     const doc = new JSDOM(res.body).window.document;
-    const clubs = [...doc.querySelectorAll("#bio .scp-bo-stops h3")].map((n) => n.textContent);
+    // The card head: the club's name, the "Current team" chip and the years with the stint tag.
+    const clubs = [...doc.querySelectorAll("#bio .scp-bop-stops .scp-bop-card-head")].map((n) => n.textContent);
     const sf = clubs.filter((text) => /49ers/.test(text)).length;
     if (sf < 2 || !clubs.some((text) => /Commanders/.test(text))) {
       return t.skip("the data no longer has him leaving and returning");
     }
     assert.ok(clubs.some((text) => /49ers.*second stint/.test(text)), "the return is marked as a second stint");
 
-    const prose = doc.querySelector("#bio .scp-bo-prose").textContent;
+    const prose = doc.querySelector("#bio .scp-bop-prose").textContent;
     assert.match(prose, /played for the Washington Commanders \(2025\) and returned to the San Francisco 49ers in 2026\./);
 
     const answer = [...doc.querySelectorAll("script, .scp-tab-faq p, [class*='faq'] p")]
@@ -2065,7 +2069,7 @@ describe("the bio tab", () => {
       // The draft has no block of its own: the Quick Facts row carries it.
       assert.equal(page.doc.querySelector("#bio .scp-draft"), null);
       assert.equal(page.doc.querySelector("#bio .scp-facts"), null);
-      const prose = page.doc.querySelector("#bio .scp-bo-prose")?.textContent ?? "";
+      const prose = page.doc.querySelector("#bio .scp-bop-prose")?.textContent ?? "";
       if (/NFL Draft/.test(prose)) assert.match(prose, /\d{4} NFL Draft/, "a draft the text mentions names its year");
     }
   });
