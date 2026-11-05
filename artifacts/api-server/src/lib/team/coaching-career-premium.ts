@@ -7,8 +7,10 @@
  * chart with team-colored stop segments, the NFL average, era pills, the
  * peak and current callouts, a legend and a methodology strip.
  *
- * Rendered DIRECTLY UNDER the complete original career block, which is
- * untouched. Every number is the original's own model: readStops() and
+ * Since 2026-11-05 ("remove the older version") this IS the section: the
+ * original heading, timeline and chart are unmounted in coaching-render.ts
+ * and only its season-by-season table follows. Every number is the
+ * original's own model: readStops() and
  * stopColors() for the chart, timelineStepModel() for the rows, the league
  * averages from getLeaguePpg(); nothing is fetched or computed twice. The
  * block shares the premium tokens (`.sct-cp`, `.sct-cpt`) and adds
@@ -82,13 +84,13 @@ function box(r: Rect, cls: string, inner: string): string {
 }
 
 /**
- * The scoring history at one width. Two are rendered (1100 and 800 wide)
+ * The scoring history at one width. Two are rendered (1100 and 720 wide)
  * and the container query shows one, so the type holds its size on a
  * narrow column instead of scaling down with the viewBox.
  */
 function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<string, number>, W: number, H: number, narrow: boolean): string {
   const padL = 46;
-  const padR = narrow ? 92 : 104;
+  const padR = narrow ? 84 : 104;
   const padT = narrow ? 44 : 50;
   const padB = 40;
   const x0 = Math.min(...stops.map((s) => s.start));
@@ -115,7 +117,7 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
 
   // Year labels: each stop's first season and the last season on the line,
   // longer stints claiming their slot first; the current year reads bold.
-  const minGap = narrow ? 36 : 40;
+  const minGap = narrow ? 36 : 52;
   // The last season on the line always gets its label (it is the current year); then the stops' first seasons, longer stints first.
   const wanted = stops.filter((s) => s.start !== x1 - 1).map((s) => ({ yr: s.start, span: s.end - s.start + 1 }));
   wanted.push({ yr: x1 - 1, span: Infinity });
@@ -260,9 +262,9 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     const r = place(
       [
         { x: mid.px - w / 2, y: top - h - 12, w, h },
+        { x: dots[0]!.px - w / 2, y: dots[0]!.py - h - 14, w, h },
         { x: mid.px - w / 2, y: bottom + 12, w, h },
-        { x: dots[0]!.px - w / 2, y: top - h - 12, w, h },
-        { x: dots[dots.length - 1]!.px - w / 2, y: bottom + 12, w, h },
+        { x: dots[dots.length - 1]!.px - w / 2, y: dots[dots.length - 1]!.py + 14, w, h },
       ],
       [...placed, ...dotRects],
       bounds,
@@ -314,7 +316,7 @@ function chart(c: TeamCoaching, stops: Stop[]): string {
     `<figure class="sct-cc-chart" aria-label="${e(`${possessive} offenses by stop: points per game, ${x0}-${x1}`)}">` +
     `<div class="sct-cc-scroll" tabindex="0">` +
     chartSvg(stops, colors, league, 1100, 330, false) +
-    chartSvg(stops, colors, league, 800, 300, true) +
+    chartSvg(stops, colors, league, 720, 290, true) +
     `</div>` +
     legend +
     `<figcaption class="sct-cc-note"><span class="sct-cc-note-icon">${ICON["info"]}</span><span>${e(`Points per game by season, ${x0}-${x1}, one line per stop. The step between stops is the move.`)}</span></figcaption>` +
@@ -336,7 +338,6 @@ export function renderCoachingCareerPremium(c: TeamCoaching): string {
   const possessive = /s$/.test(surnameOf(c)) ? `${surnameOf(c)}'` : `${surnameOf(c)}'s`;
   return (
     `<div class="sct-block sct-cp sct-cpt sct-cc" id="coaching-career-premium" data-sct-premium="coaching-career">` +
-    `<p class="sct-cp-flag">New design · Comparison</p>` +
     `<section class="sct-cpt-section is-career">` +
     `<header class="sct-cpt-head is-main">` +
     `<span class="sct-cpt-head-icon">${HEADSET}</span>` +

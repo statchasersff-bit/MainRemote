@@ -361,3 +361,97 @@ describe("player header", () => {
     assert.equal(render.teamInk(CARDINALS), "#97233F");
   });
 });
+
+const premium = await importModule("lib/player/header-premium");
+
+describe("the premium header comparison block (mak's brief, 2026-11-05)", () => {
+  const NAV = [
+    { id: "overview", label: "Overview" },
+    { id: "stats", label: "Stats" },
+    { id: "injury", label: "Injury" },
+  ];
+  const both = (data, options = {}, tab = "stats") => {
+    const html = render.renderHero(data, options, tab) + premium.renderPremiumHero(data, options, tab, { nav: NAV, matchupHref: "/nfl/cardinals-vs-giants/" });
+    return new JSDOM(`<body>${html}</body>`).window.document;
+  };
+
+  test("it follows the existing header under a comparison label, as an H2, with one navigation", () => {
+    const d = both(state());
+    const label = d.querySelector(".scp-pp-label");
+    assert.equal(text(label), "New design - comparison");
+    assert.equal(label.previousElementSibling, d.querySelector("header.scp-phead"));
+    assert.equal(label.nextElementSibling, d.querySelector('[data-scp-premium="header"]'));
+    assert.equal(d.querySelectorAll("h1").length, 1, "the existing header keeps the only H1");
+    assert.equal(text(d.querySelector(".scp-pp h2.scp-pp-name")), "Jacoby Brissett");
+    const nav = d.querySelector(".scp-pp-nav");
+    assert.equal(nav.getAttribute("aria-hidden"), "true");
+    assert.equal(nav.querySelectorAll("a, [id]").length, 0, "the preview has no links and no ids");
+    assert.equal(text(nav.querySelector(".is-active")), "Stats");
+  });
+
+  test("identity: position, club, number and position word, the bio line, no status without a classification", () => {
+    const d = both(state());
+    assert.equal(text(d.querySelector(".scp-pp-pos")), "QB");
+    assert.equal(text(d.querySelector(".scp-pp-team")), "Arizona Cardinals");
+    assert.equal(d.querySelector(".scp-pp-team").getAttribute("href"), "/team/arizona-cardinals/");
+    assert.equal(text(d.querySelector(".scp-pp-under")), "#7 Quarterback");
+    assert.deepEqual([...d.querySelectorAll(".scp-pp-bio-i")].map(text), ["33 yrs", "6'4\", 235 lbs", "11th Season", "2016 R3, P91"]);
+    assert.equal(d.querySelector(".scp-pp-status"), null);
+    assert.equal(text(d.querySelector(".scp-pp-num")), "7");
+  });
+
+  test("the status pill: the designation first, else the page's roster status, never Active by default", () => {
+    const q = both(state({ designation: { injuryStatus: "Questionable" }, injuryReport: { status: "Questionable" } }));
+    const pill = q.querySelector(".scp-pp-status");
+    assert.equal(text(pill), "Questionable");
+    assert.ok(pill.classList.contains("is-mid"));
+    const active = both(state({ bioPage: { status: "active" } }));
+    assert.equal(text(active.querySelector(".scp-pp-status")), "Active");
+    assert.ok(active.querySelector(".scp-pp-status").classList.contains("is-good"));
+    const fa = both(state({ team: null, bioPage: { status: "free-agent" } }));
+    assert.equal(text(fa.querySelector(".scp-pp-status")), "Free Agent");
+    assert.equal(text(fa.querySelector(".scp-pp-team")), "Free agent");
+    assert.equal(fa.querySelector(".scp-pp-strip"), null, "no club, no next matchup");
+    assert.equal(fa.querySelector(".scp-pp-btn.is-primary").getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
+  });
+
+  test("the fantasy panel and the stat cards print the existing header's figures", () => {
+    const log = [
+      { week: 1, game_status: "active", stats: { pass_att: 30, pass_cmp: 20, pass_yd: 250, pass_td: 2, pass_int: 1 } },
+      { week: 2, game_status: "active", stats: { pass_att: 35, pass_cmp: 22, pass_yd: 300, pass_td: 1, pass_int: 0 } },
+    ];
+    const d = both(state({ gameLog: log }));
+    const oldTrio = [...d.querySelectorAll(".scp-phead .scp-pboard .scp-pstat b")].map(text);
+    const newTrio = [...d.querySelectorAll(".scp-pp-fan-v")].map(text);
+    assert.deepEqual(newTrio, oldTrio);
+    assert.deepEqual([...d.querySelectorAll(".scp-pp-fan-l")].map(text), ["FPPG · PPR", "POS RANK", "ROSTERED"]);
+    assert.ok(d.querySelector(".scp-pp-fan-cell.is-lead .scp-pp-fan-v"), "the rate leads");
+    const oldLine = [...d.querySelectorAll(".scp-phead .scp-pline .scp-pstat b")].map(text).sort();
+    const cards = [...d.querySelectorAll(".scp-pp-card")];
+    assert.deepEqual(cards.map((c) => text(c.querySelector(".scp-pp-card-v"))).sort(), oldLine, "the same four figures as the counting line");
+    assert.deepEqual(cards.map((c) => text(c.querySelector(".scp-pp-card-l"))), ["PASS YDS", "CMP / ATT", "PASS TD", "INT"], "yards first");
+  });
+
+  test("the actions and the strip reuse the header's links and words", () => {
+    const d = both(state());
+    const old = d.querySelector(".scp-phead a[data-scp-cta='startsit-header']").getAttribute("href");
+    const secondary = d.querySelector(".scp-pp-btn.is-secondary");
+    assert.equal(secondary.getAttribute("href"), old);
+    assert.equal(text(secondary), "Should I start Brissett?");
+    assert.equal(text(d.querySelector(".scp-pp-btn.is-primary")), "View in Redraft Command");
+    assert.equal(d.querySelector(".scp-pp-btn.is-primary").getAttribute("href"), d.querySelector(".scp-phead a[data-scp-cta='redraft-command-header']").getAttribute("href"));
+    const strip = d.querySelector(".scp-pp-strip");
+    assert.equal(text(strip.querySelector(".scp-pp-mu")), "Week 4 at New York Giants");
+    assert.equal(text(strip.querySelector(".scp-pp-mu-when")), "Sun Oct 4, 1:00 PM ET");
+    assert.equal(text(strip.querySelector(".scp-pp-chip")), "8th vs QBs · favorable");
+    assert.equal(strip.querySelector(".scp-pp-mu-link").getAttribute("href"), "/nfl/cardinals-vs-giants/");
+    assert.doesNotMatch(d.querySelector(".scp-pp").outerHTML, /—/, "no em dashes");
+  });
+
+  test("before Week 1 the secondary action is the outlook; no number, no watermark", () => {
+    const d = both(state({ leagueWeek: 0, player: { ...state().player, number: null }, stats: { gamesPlayed: 0, ppg: 0 }, fantasyOutlook2026: { season: 2026, body: "A take." } }));
+    assert.equal(d.querySelector(".scp-pp-num"), null);
+    assert.match(text(d.querySelector(".scp-pp-btn.is-secondary")), /outlook$/);
+    assert.equal(text(d.querySelector(".scp-pp-fan-cell.is-lead .scp-pp-fan-v")), "-", "never 0.0");
+  });
+});

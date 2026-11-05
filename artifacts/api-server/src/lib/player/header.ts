@@ -38,7 +38,7 @@ function styleAttr(parts: Array<string | null | false>): string {
 }
 
 /** "1st", "2nd", "23rd". */
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   const suffix = ["th", "st", "nd", "rd"][n % 10] ?? "th";
@@ -130,7 +130,7 @@ function splitName(name: string): { first: string; last: string } {
 }
 
 /** Height stored as total inches ("73") rendered as feet and inches. */
-function formatHeight(height: string | null): string {
+export function formatHeight(height: string | null): string {
   if (!height) return "";
   const trimmed = height.trim();
   if (trimmed.includes("'") || trimmed.includes("-")) return trimmed;
@@ -277,7 +277,7 @@ function ctaTab(tab: string): string {
 /* ------------------------------------------------------- what is next */
 
 /** Week 1 is not logged yet: there is nothing this season to start anyone in. */
-function seasonNotStarted(data: PlayerPageData): boolean {
+export function seasonNotStarted(data: PlayerPageData): boolean {
   return (data.leagueWeek ?? 0) === 0;
 }
 
@@ -289,7 +289,7 @@ function seasonNotStarted(data: PlayerPageData): boolean {
  * so it flips on the same data refresh that moves everything else on the page
  * and a cached render cannot be a day out of step with its own game log.
  */
-function headerFixture(
+export function headerFixture(
   data: PlayerPageData,
 ): { game: UpcomingGame; bye: number | null } | null {
   const game = data.upcoming[0];
@@ -300,7 +300,7 @@ function headerFixture(
 }
 
 /** "Sun Oct 4, 1:00 PM ET", or as much of it as ESPN has confirmed. */
-function headerKickoff(game: UpcomingGame): string {
+export function headerKickoff(game: UpcomingGame): string {
   if (game.kickoffMs === null) return "";
   const parts = easternParts(game.kickoffMs);
   const day = `${parts.weekday} ${parts.month} ${parts.day}`;
@@ -308,7 +308,7 @@ function headerKickoff(game: UpcomingGame): string {
 }
 
 /** The strip's chip: the same three bands the Upcoming Matchups cards use. */
-const CHIP_WORD: Record<MatchupBand, { cls: string; word: string }> = {
+export const CHIP_WORD: Record<MatchupBand, { cls: string; word: string }> = {
   soft: { cls: "is-good", word: "favorable" },
   mid: { cls: "is-mid", word: "neutral" },
   tough: { cls: "is-bad", word: "tough" },
@@ -328,7 +328,7 @@ function rosteredPct(value: number): string {
   return `${Math.min(Math.round(value), value >= 100 ? 100 : 99)}%`;
 }
 
-interface BoardCell {
+export interface BoardCell {
   /** The figure: "16.5", "QB17", "13%". */
   value: string;
   /** The word after it, which is what identifies it: "PPG", "rostered". */
@@ -346,7 +346,7 @@ interface BoardCell {
  * reader learns to read across profiles, and a two-figure strip on one
  * player reads as a layout bug. Never 0.0 for a player who has not played.
  */
-function headerBoard(data: PlayerPageData): BoardCell[] {
+export function headerBoard(data: PlayerPageData): BoardCell[] {
   const { stats, format, player } = data;
   const played = Boolean(stats && stats.gamesPlayed > 0);
 
@@ -380,7 +380,7 @@ function headerBoard(data: PlayerPageData): BoardCell[] {
 }
 
 /** Redraft Command's own page, for the header's rest-of-season button. */
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
+export const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /**
  * A plain person, for a player with no usable headshot: head and shoulders,

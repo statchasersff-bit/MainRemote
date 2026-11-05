@@ -16416,3 +16416,847 @@ a.scp-peer:focus-visible {
     margin-left: 0;
   }
 }
+
+/* --------------------------------------- player header: premium comparison */
+
+/*
+ * The premium comparison version of the profile header
+ * (lib/player/header-premium.ts; mak's brief of 2026-11-05, against
+ * attached_assets/player header reference.png, a 1920px drawing). Rendered
+ * under the existing header while HEADER_PREMIUM_COMPARE is on.
+ *
+ * Three zones on a wide block: the team-colored portrait panel on a gold
+ * diagonal, the identity and the four stat cards in the middle, the fantasy
+ * panel and the two actions at the right. The block is its own size
+ * container ("pp"): under 1100 the cards go two by two; under 900 the right
+ * column folds under the identity beside a narrower portrait and the cards
+ * and actions take the full width; under 600 the portrait is a 120px column
+ * beside the name alone and everything else stacks. Scoped to .scp-pp;
+ * appended after the other sessions' blocks, never over them.
+ */
+.scp .scp-pp {
+  --sc-navy-950: #071a35;
+  --sc-navy-900: #0c2547;
+  --sc-navy-800: #123d6a;
+  --sc-brand-navy: #0b3a7a;
+  --sc-gold: #d4af37;
+  --sc-gold-bright: #f1bf3c;
+  --sc-gold-light: #fff1ce;
+  --sc-white: #ffffff;
+  --sc-light: #f5f8fc;
+  --sc-border: #d3dfed;
+  --sc-text: #102344;
+  --sc-muted: #6680a2;
+  --sc-hero-muted: #c3d2e6;
+  --scp-pp-team: #34425a;
+  --scp-pp-team-2: #5b6778;
+  --scp-pp-radius: 20px;
+  --scp-pp-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  container-type: inline-size;
+  container-name: pp;
+  display: grid;
+  gap: 12px;
+  margin: 10px 0 8px;
+  color: var(--sc-text);
+  font-family: var(--scp-pp-sans);
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+
+.scp .scp-pp-label {
+  margin: 26px 0 0;
+  padding-top: 12px;
+  border-top: 2px dashed #dde2ea;
+  color: #5b6778;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- the hero: a navy gradient with quiet geometry at the right */
+
+.scp .scp-pp-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(220px, 20%) minmax(0, 1fr) minmax(300px, 26%);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "well id fan"
+    "well cards acts";
+  column-gap: 26px;
+  row-gap: 18px;
+  min-height: 310px;
+  padding: 0 28px 24px 0;
+  border: 1px solid #0d2b50;
+  border-radius: var(--scp-pp-radius);
+  background:
+    linear-gradient(115deg, #081a34 0%, #123b67 60%, #0a2447 100%);
+  box-shadow:
+    0 2px 6px rgba(8, 28, 60, 0.12),
+    0 16px 36px -14px rgba(8, 28, 60, 0.45);
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Low-contrast diagonal bands over the right half, two gold slashes at the
+   far edge. */
+.scp .scp-pp-stripes {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 0;
+  width: 48%;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 88%, rgba(241, 191, 60, 0.85) 88% 90.2%, transparent 90.2% 93.5%, rgba(241, 191, 60, 0.6) 93.5% 95.2%, transparent 95.2%),
+    linear-gradient(115deg, transparent 0 28%, rgba(255, 255, 255, 0.035) 28% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.05) 58% 76%, transparent 76%);
+}
+
+.scp .scp-pp-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- the portrait panel: club color, cut on a gold diagonal */
+
+.scp .scp-pp-well {
+  grid-area: well;
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* The gold edge: the same polygon as the paint, 7px wider on the diagonal. */
+.scp .scp-pp-well::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--sc-gold-bright), var(--sc-gold));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 44px) 100%, 0 100%);
+}
+
+.scp .scp-pp-well-paint {
+  position: absolute;
+  inset: 0 8px 0 0;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.14), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 28px),
+    linear-gradient(135deg, var(--scp-pp-team), color-mix(in srgb, var(--scp-pp-team) 78%, #000000));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 44px) 100%, 0 100%);
+}
+
+/* The jersey number: outline only, behind the figure, clipped by the panel. */
+.scp .scp-pp-num {
+  position: absolute;
+  top: 2%;
+  right: 12%;
+  z-index: 1;
+  color: transparent;
+  font-family: var(--scp-pp-sans);
+  font-size: 190px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.23);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The cutout stands on the panel's floor at its own ratio, drawn a little
+   wider than the panel so the face reads large and the shoulders run off the
+   left edge, the way the reference crops its figure. Sleeper's cutouts are
+   head-and-shoulders (350x254), so the figure cannot reach the top. */
+.scp .scp-pp-img {
+  position: absolute;
+  bottom: 0;
+  left: -10%;
+  z-index: 2;
+  display: block;
+  width: 125%;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+}
+
+.scp .scp-pp-sil {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 8%;
+  z-index: 2;
+  width: 60%;
+  fill: rgba(255, 255, 255, 0.22);
+}
+
+.scp .scp-pp-well.is-missing .scp-pp-sil {
+  display: block;
+}
+
+/* ---- the identity */
+
+.scp .scp-pp-id {
+  grid-area: id;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 28px;
+}
+
+.scp .scp-pp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.scp .scp-pp-pos {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: var(--scp-pp-team);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 2px 6px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.scp .scp-pp a.scp-pp-team,
+.scp .scp-pp span.scp-pp-team {
+  color: #fff !important;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none !important;
+  text-transform: uppercase;
+}
+
+.scp .scp-pp a.scp-pp-team:hover,
+.scp .scp-pp a.scp-pp-team:focus-visible {
+  color: var(--sc-gold-bright) !important;
+  outline: none;
+}
+
+/* The thin vertical divider between runs of the tag, under and bio lines. */
+.scp .scp-pp-sep {
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  margin: 0 2px;
+  background: rgba(255, 255, 255, 0.35);
+  vertical-align: middle;
+}
+
+/* The status pill: the designation's color, or the roster status's. */
+.scp .scp-pp a.scp-pp-status,
+.scp .scp-pp span.scp-pp-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none !important;
+  text-transform: uppercase;
+}
+
+.scp .scp-pp .scp-pp-status.is-good { color: #2fd48a !important; background: rgba(23, 110, 66, 0.35); }
+.scp .scp-pp .scp-pp-status.is-mid { color: var(--sc-gold-bright) !important; background: rgba(212, 175, 55, 0.18); }
+.scp .scp-pp .scp-pp-status.is-bad { color: #ff8f82 !important; background: rgba(179, 50, 50, 0.3); }
+.scp .scp-pp .scp-pp-status.is-none { color: #d7e2f1 !important; background: rgba(255, 255, 255, 0.1); }
+
+.scp .scp-pp .scp-pp-name {
+  margin: 2px 0 0 !important;
+  padding: 0;
+  border: 0;
+  color: #fff !important;
+  font-family: var(--scp-pp-sans);
+  font-size: clamp(34px, 4.6cqw, 56px) !important;
+  font-stretch: 100%;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+
+.scp .scp-pp .scp-pp-name::after {
+  display: none;
+}
+
+.scp .scp-pp-under {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 14px;
+  margin: 2px 0 0;
+  color: var(--sc-hero-muted);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.scp .scp-pp-under .scp-pp-sep {
+  height: 1.3em;
+}
+
+.scp .scp-pp-bio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 4px 0 0;
+  color: var(--sc-hero-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- the fantasy panel: gold-edged, three cells, the rate in gold */
+
+.scp .scp-pp-fan-wrap {
+  grid-area: fan;
+  justify-self: end;
+  align-self: start;
+  width: 100%;
+  max-width: 440px;
+  padding-top: 30px;
+}
+
+.scp .scp-pp-fan-cap {
+  margin: 0 0 10px;
+  color: var(--sc-hero-muted);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.scp .scp-pp-fan {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 14px 6px;
+  border: 1.5px solid var(--sc-gold);
+  border-radius: 16px;
+  background: rgba(4, 16, 38, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.scp .scp-pp-fan-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 6px;
+}
+
+.scp .scp-pp-fan-cell + .scp-pp-fan-cell {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.scp .scp-pp-fan-v {
+  margin: 0;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.scp .scp-pp-fan-cell.is-lead .scp-pp-fan-v {
+  color: var(--sc-gold-bright);
+}
+
+.scp .scp-pp-fan-l {
+  margin: 0;
+  color: var(--sc-hero-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---- the four season stat cards */
+
+.scp .scp-pp-cards {
+  grid-area: cards;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-self: end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-pp-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "icon v" "icon l";
+  column-gap: 12px;
+  row-gap: 2px;
+  align-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 82px;
+  margin: 0;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid #d2dfed;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #ffffff 0%, #f6f9fd 65%, #eaf2fa 100%);
+  box-shadow: 0 3px 7px rgba(8, 28, 60, 0.06), 0 10px 20px rgba(8, 28, 60, 0.08);
+  color: var(--sc-text);
+}
+
+.scp .scp-pp-card-icon {
+  grid-area: icon;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--sc-gold);
+}
+
+.scp .scp-pp-card-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.scp .scp-pp-card-v {
+  grid-area: v;
+  align-self: end;
+  color: var(--sc-text);
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.scp .scp-pp-card-v.is-long {
+  font-size: 22px;
+}
+
+.scp .scp-pp-card-l {
+  grid-area: l;
+  align-self: start;
+  color: var(--sc-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---- the actions: gold primary, white secondary, level with the cards */
+
+.scp .scp-pp-actions {
+  grid-area: acts;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-self: end;
+  gap: 12px;
+}
+
+.scp .scp-pp a.scp-pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.scp .scp-pp a.scp-pp-btn.is-primary {
+  color: var(--sc-navy-950) !important;
+  background: linear-gradient(180deg, var(--sc-gold-bright), var(--sc-gold));
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.scp .scp-pp a.scp-pp-btn.is-secondary {
+  color: var(--sc-text) !important;
+  background: #fff;
+  border: 1.5px solid #c9d8ea;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.scp .scp-pp a.scp-pp-btn:hover,
+.scp .scp-pp a.scp-pp-btn:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.scp .scp-pp a.scp-pp-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(241, 191, 60, 0.75);
+}
+
+.scp .scp-pp-btn-icon,
+.scp .scp-pp-btn-arrow {
+  display: inline-flex;
+}
+
+.scp .scp-pp-btn-icon svg,
+.scp .scp-pp-btn-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---- the next matchup strip */
+
+.scp .scp-pp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  min-height: 50px;
+  padding: 8px 18px 8px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff 0%, #f6f9fd 100%);
+  box-shadow: inset 4px 0 0 var(--sc-gold), 0 2px 6px rgba(8, 28, 60, 0.05);
+}
+
+.scp .scp-pp-strip-cap {
+  color: #8a6205;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scp .scp-pp-mu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sc-text);
+  font-size: 15px;
+}
+
+.scp .scp-pp-mu strong {
+  font-weight: 800;
+}
+
+.scp .scp-pp-mu-logo {
+  width: 24px;
+  height: 24px;
+}
+
+.scp .scp-pp-mu-when {
+  color: var(--sc-muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.scp .scp-pp-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.scp .scp-pp-chip.is-good { color: #1f7a4d; background: #e3f2ea; }
+.scp .scp-pp-chip.is-mid { color: #8a6d12; background: #fbf3dc; }
+.scp .scp-pp-chip.is-bad { color: #a23b2a; background: #f8e6e2; }
+
+.scp .scp-pp a.scp-pp-mu-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--sc-brand-navy) !important;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none !important;
+}
+
+.scp .scp-pp a.scp-pp-mu-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- the tab bar preview (decorative: the page's own nav stays below) */
+
+.scp .scp-pp-nav {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(8, 28, 60, 0.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scp .scp-pp-nav-i {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 19px 20px 17px;
+  color: var(--sc-text);
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.scp .scp-pp-nav-i.is-active {
+  font-weight: 800;
+}
+
+.scp .scp-pp-nav-i.is-active::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: var(--sc-gold-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scp .scp-pp a.scp-pp-btn {
+    transition: none;
+  }
+}
+
+/* ---- responsive, on the block's own width */
+
+/* Medium: a narrower portrait and right column, the cards two by two. */
+@container pp (max-width: 1100px) {
+  .scp .scp-pp-hero {
+    grid-template-columns: minmax(190px, 20%) minmax(0, 1fr) minmax(280px, 28%);
+    column-gap: 20px;
+    padding-right: 22px;
+  }
+
+  .scp .scp-pp-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-pp-num {
+    font-size: 150px;
+  }
+
+  .scp .scp-pp-fan-v {
+    font-size: 27px;
+  }
+
+  .scp .scp-pp-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Tablet: the portrait beside the identity and the fantasy panel; the cards
+   and the actions under both at the full width. */
+@container pp (max-width: 900px) {
+  .scp .scp-pp-hero {
+    grid-template-columns: minmax(170px, 24%) minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "well id"
+      "well fan"
+      "cards cards"
+      "acts acts";
+    row-gap: 16px;
+    padding: 0 20px 20px 0;
+  }
+
+  .scp .scp-pp-id {
+    padding-top: 22px;
+  }
+
+  .scp .scp-pp-fan-wrap {
+    justify-self: start;
+    max-width: 460px;
+    padding-top: 0;
+  }
+
+  .scp .scp-pp-fan-cap {
+    text-align: left;
+  }
+
+  .scp .scp-pp-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-left: 20px;
+  }
+
+  .scp .scp-pp-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-left: 20px;
+  }
+
+  .scp .scp-pp a.scp-pp-btn {
+    flex: 1 1 240px;
+  }
+
+  .scp .scp-pp-num {
+    top: 4%;
+    right: 14%;
+    font-size: 120px;
+  }
+
+  .scp .scp-pp-img {
+    left: -8%;
+    width: 118%;
+  }
+
+  .scp .scp-pp-stripes {
+    width: 34%;
+  }
+}
+
+@container pp (max-width: 720px) {
+  .scp .scp-pp-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: a 120px portrait column beside the name, then everything stacked. */
+@container pp (max-width: 600px) {
+  .scp .scp-pp-hero {
+    grid-template-columns: 120px minmax(0, 1fr);
+    grid-template-areas:
+      "well id"
+      "fan fan"
+      "cards cards"
+      "acts acts";
+    column-gap: 14px;
+    row-gap: 14px;
+    min-height: 0;
+    padding: 0 14px 16px 0;
+  }
+
+  .scp .scp-pp-well::before,
+  .scp .scp-pp-well-paint {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
+  }
+
+  .scp .scp-pp-well-paint {
+    inset: 0 5px 0 0;
+  }
+
+  .scp .scp-pp-id {
+    gap: 8px;
+    padding-top: 16px;
+  }
+
+  .scp .scp-pp .scp-pp-name {
+    font-size: clamp(26px, 8cqw, 32px) !important;
+  }
+
+  .scp .scp-pp-under {
+    font-size: 15px;
+  }
+
+  .scp .scp-pp-bio {
+    font-size: 13px;
+  }
+
+  .scp .scp-pp a.scp-pp-team,
+  .scp .scp-pp span.scp-pp-team {
+    font-size: 14px;
+  }
+
+  .scp .scp-pp-num {
+    top: 2%;
+    right: 10%;
+    font-size: 72px;
+  }
+
+  .scp .scp-pp-img {
+    left: -6%;
+    width: 112%;
+  }
+
+  .scp .scp-pp-fan-wrap,
+  .scp .scp-pp-cards,
+  .scp .scp-pp-actions {
+    margin-left: 14px;
+  }
+
+  .scp .scp-pp-fan-wrap {
+    max-width: none;
+  }
+
+  .scp .scp-pp-fan {
+    padding: 12px 4px;
+  }
+
+  .scp .scp-pp-fan-v {
+    font-size: 24px;
+  }
+
+  .scp .scp-pp-fan-l {
+    font-size: 10.5px;
+    white-space: normal;
+  }
+
+  .scp .scp-pp-card {
+    min-height: 72px;
+    padding: 10px 12px;
+  }
+
+  .scp .scp-pp-card-v {
+    font-size: 26px;
+  }
+
+  .scp .scp-pp-actions {
+    flex-direction: column;
+  }
+
+  .scp .scp-pp a.scp-pp-btn {
+    flex: 1 1 auto;
+    white-space: normal;
+  }
+
+  .scp .scp-pp-strip {
+    padding: 10px 14px 10px 16px;
+  }
+
+  .scp .scp-pp a.scp-pp-mu-link {
+    margin-left: 0;
+  }
+
+  .scp .scp-pp-nav-i {
+    padding: 15px 14px 13px;
+    font-size: 15px;
+  }
+
+  .scp .scp-pp-stripes {
+    width: 28%;
+  }
+}
