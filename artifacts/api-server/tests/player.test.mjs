@@ -856,9 +856,14 @@ describe("the game log tab", () => {
       [...gl.querySelectorAll(".scp-gl-tile")].map((t) => text(t).toLowerCase()),
       "the finish cards carry the tier counts and shares",
     );
-    const pins = (sel) =>
-      [...gl.querySelectorAll(sel)].map((p) => `${p.getAttribute("style")} ${text(p.querySelector("strong"))}`);
-    assert.deepEqual(pins(".scp-glp-pin"), pins(".scp-gl-pin"), "the range chart's dots sit where the ladder's do");
+    // The same dots, rank for rank. Their x positions can differ: the premium
+    // axis extends past the position's floor (WR60) when a week finished
+    // below it, where the ladder clamps the dot onto the end.
+    const pins = (sel) => [...gl.querySelectorAll(sel)].map((p) => text(p.querySelector("strong")));
+    assert.deepEqual(pins(".scp-glp-pin"), pins(".scp-gl-pin"), "the range chart's dots are the ladder's");
+    const xs = [...wrap.querySelectorAll(".scp-glp-pin")].map((p) => Number(/left:([\d.]+)%/.exec(p.getAttribute("style"))[1]));
+    for (let i = 1; i < xs.length; i++) assert.ok(xs[i] > xs[i - 1], "the dots sit left to right by rank");
+    if (xs.length) assert.ok(xs[xs.length - 1] <= 100, "the worst week is on the axis, not past it");
     assert.deepEqual(
       [...wrap.querySelectorAll(".scp-seasons .scp-season-opt")].map((a) => a.getAttribute("href")),
       [...gl.querySelectorAll(".scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")].map((a) => a.getAttribute("href")),

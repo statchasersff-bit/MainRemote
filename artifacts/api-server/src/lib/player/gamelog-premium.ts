@@ -95,10 +95,16 @@ const ICON = {
   ),
   info: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>`),
   chart: svg(`<path d="M3 20h18"/><path d="M6 17V9M11 17V5M16 17v-6M21 17V3"/>`),
-  up: svg(`<path d="m5 15 7-7 7 7"/>`),
-  dash: svg(`<path d="M6 12h12"/>`),
-  down: svg(`<path d="m5 9 7 7 7-7"/>`),
+  layers: svg(
+    `<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 17 9 5 9-5"/>`,
+  ),
+  alert: svg(
+    `<path d="M10.3 4.2 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.2h.01"/>`,
+  ),
 };
+
+/** The gold diagonal stripes at a navy bar's right edge, the reference's accent. */
+const STRIPES = `<span class="scp-glp-stripes" aria-hidden="true"></span>`;
 
 /** A faint football outline, the hero's right-hand decoration. */
 const BALL =
@@ -153,12 +159,16 @@ function renderKpis(data: PlayerPageData, deps: PremiumLogDeps): string {
   const s = deps.summary;
   if (!s) return "";
   const pos = data.player.position ?? "";
+  // Icon left; the value and its label on one line, the caption under them
+  // (the reference's "8 GAMES / Regular season · PPR").
   const card = (icon: string, value: string, label: string, caption: string): string =>
     `<div class="scp-glp-kpi">` +
     `<span class="scp-glp-kpi-ico">${icon}</span>` +
-    `<b class="scp-glp-kpi-v">${escapeHtml(value)}</b>` +
-    `<span class="scp-glp-kpi-l">${escapeHtml(label)}</span>` +
+    `<span class="scp-glp-kpi-t">` +
+    `<span class="scp-glp-kpi-top"><b class="scp-glp-kpi-v">${escapeHtml(value)}</b>` +
+    `<span class="scp-glp-kpi-l">${escapeHtml(label)}</span></span>` +
     `<small class="scp-glp-kpi-c">${escapeHtml(caption)}</small>` +
+    `</span>` +
     `</div>`;
   const scope = `Regular season · ${SCORING_LABELS[data.format]}`;
   return (
@@ -226,7 +236,7 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
         `<th scope="row">${entry.week}</th>` +
         `<td class="scp-glp-opp">` +
         (logo
-          ? `<img class="scp-glp-opp-logo" src="${escapeHtml(logo)}" alt="" aria-hidden="true" width="20" height="20" loading="lazy" decoding="async" />`
+          ? `<img class="scp-glp-opp-logo" src="${escapeHtml(logo)}" alt="" aria-hidden="true" width="26" height="26" loading="lazy" decoding="async" />`
           : "") +
         `<span>${escapeHtml(entry.opp)}</span></td>` +
         difficultyCell(entry, deps, pos) +
@@ -294,6 +304,7 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
     `<span class="scp-glp-ico is-sm">${ICON.chart}</span>` +
     `<h3 class="scp-glp-bar-t" id="${id}">${escapeHtml(titleCase("Where his weeks finished"))}</h3>` +
     (summary ? `<p class="scp-glp-bar-sum">${summary}</p>` : "") +
+    STRIPES +
     `</header>`;
 
   if (!scale || !built) {
@@ -305,8 +316,13 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
 
   const { games, story, ink } = built;
   const n = games.length;
-  const { band1, band2end } = bandEdges(scale);
-  const { pins, avg } = layoutLadder(games, scale);
+  // The axis runs to the position's usual floor (WR60, QB32), or further
+  // when a week finished past it: the reference puts a WR70 at the band's
+  // end rather than clamping it onto WR60 the way the tab's ladder does.
+  const worstRank = Math.max(...games.map((g) => g.rank));
+  const chart = worstRank > scale.max ? { ...scale, max: worstRank } : scale;
+  const { band1, band2end } = bandEdges(chart);
+  const { pins, avg } = layoutLadder(games, chart);
 
   const t1 = games.filter((g) => g.rank <= scale.t1).length;
   const t2 = games.filter((g) => g.rank > scale.t1 && g.rank <= scale.t2).length;
@@ -328,9 +344,9 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
     `</div>`;
   const cards =
     `<div class="scp-glp-fcards">` +
-    card(t1, `${pos}1 Weeks`, "top", ICON.up) +
-    card(t2, `${pos}2 Weeks`, "mid", ICON.dash) +
-    card(bust, `${pos}${scale.t2 + 1}+ Weeks`, "low", ICON.down) +
+    card(t1, `${pos}1 Weeks`, "top", ICON.trophy) +
+    card(t2, `${pos}2 Weeks`, "mid", ICON.layers) +
+    card(bust, `${pos}${scale.t2 + 1}+ Weeks`, "low", ICON.alert) +
     `</div>`;
 
   const labelCls = (label: "above" | "below" | "none"): string =>
@@ -369,6 +385,14 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
   // close to it; the CSS lifts it to the first row otherwise.
   const bestPin = pins.find((p) => p.best) ?? null;
   const phoneBelow = Boolean(avg && avg.label === "below" && bestPin && Math.abs(avg.x - bestPin.x) < 14);
+  // The best week's label is a line taller (its badge), so a second-row
+  // label within reach of it starts lower: the CSS drops the row by one
+  // line only when this is set, so most charts keep the shorter figure.
+  const deepBelow =
+    bestPin !== null &&
+    bestPin.label === "above" &&
+    (pins.some((p) => p.label === "below" && Math.abs(p.x - bestPin.x) < 16) ||
+      Boolean(avg && avg.label === "below" && Math.abs(avg.x - bestPin.x) < 16));
   const sparse = n >= 10;
   const hidden = pins.filter((p) => p.label === "none").flatMap((p) => p.games);
   const also =
@@ -388,30 +412,38 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
   );
   const legend = `<p class="scp-glp-also${sparse ? "" : " is-phone"}">${weekList}</p>`;
 
+  // The tier names, each titled with the ranks its segment spans: the chart's
+  // "WR1 range" runs to WR24 (ladderScale), while the finish pills call only
+  // WR1-WR12 a WR1 (weeklyTier). Both are the page's existing rules; the
+  // title says which one the band uses.
+  const span = (lo: number, hi: number): string => `${pos}${lo} to ${pos}${hi}`;
   const cuts =
-    `<div class="scp-glp-cuts" aria-hidden="true">` +
+    `<div class="scp-glp-cuts">` +
     // "range" is dropped under 820px, where a QB's bust segment is too
     // narrow for two words.
-    `<span class="scp-glp-tier is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
-    `<span class="scp-glp-tier is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%">${escapeHtml(
-      `${pos}2`,
-    )}<small> range</small></span>` +
-    `<span class="scp-glp-tier is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bust<small> range</small></span>` +
-    `<b class="is-lo" style="left:0">${escapeHtml(`${pos}1`)}</b>` +
-    `<b style="left:${pctTrim(band1)}%">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
-    `<b style="left:${pctTrim(band2end)}%">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
-    `<b class="is-hi" style="left:100%">${escapeHtml(`${pos}${scale.max}`)}</b>` +
+    `<span class="scp-glp-tier is-k1" style="left:0;width:${pctTrim(band1)}%" title="${escapeHtml(
+      `${pos}1 range on this chart: ${span(1, scale.t1)}`,
+    )}">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
+    `<span class="scp-glp-tier is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%" title="${escapeHtml(
+      `${pos}2 range on this chart: ${span(scale.t1 + 1, scale.t2)}`,
+    )}">${escapeHtml(`${pos}2`)}<small> range</small></span>` +
+    `<span class="scp-glp-tier is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%" title="${escapeHtml(
+      `Bust range on this chart: ${pos}${scale.t2 + 1} and worse`,
+    )}">Bust<small> range</small></span>` +
+    `<b class="is-lo" style="left:0" aria-hidden="true">${escapeHtml(`${pos}1`)}</b>` +
+    `<b style="left:${pctTrim(band1)}%" aria-hidden="true">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
+    `<b style="left:${pctTrim(band2end)}%" aria-hidden="true">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
     `</div>`;
 
   const ordered = [...games].sort((a, b) => a.rank - b.rank || a.week - b.week);
   const aria =
-    `Weekly finishes on a scale from ${pos}1 to ${pos}${scale.max}: ` +
+    `Weekly finishes on a scale from ${pos}1 to ${pos}${chart.max}: ` +
     ordered.map((g) => `Week ${g.week} ${pos}${g.rank}`).join(", ") +
     `.` +
     (avg ? ` Season average ${pos}${avg.rank}.` : "");
 
   const track =
-    `<div class="scp-glp-track${hasBelow ? " has-below" : ""}${phoneBelow ? " has-phone-below" : ""}" role="img" aria-label="${escapeHtml(aria)}">` +
+    `<div class="scp-glp-track${hasBelow ? " has-below" : ""}${deepBelow ? " has-deep-below" : ""}${phoneBelow ? " has-phone-below" : ""}" role="img" aria-label="${escapeHtml(aria)}">` +
     `<div class="scp-glp-band is-b1" style="width:${pctTrim(band1)}%"></div>` +
     `<div class="scp-glp-band is-b2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%"></div>` +
     `<div class="scp-glp-band is-b3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%"></div>` +
@@ -455,11 +487,14 @@ export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps)
     )}</p>` +
     `</div></div>` +
     BALL +
+    STRIPES +
     `</header>` +
     `<div class="scp-glp-body">` +
+    `<div class="scp-glp-main">` +
     renderSeasons(data, deps) +
     renderKpis(data, deps) +
     renderTable(data, deps) +
+    `</div>` +
     renderFinishes(data, archive) +
     `</div></section></div>`
   );

@@ -41,6 +41,9 @@ const ICON = {
   calendar: svg(`<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/>`),
   medal: svg(`<circle cx="12" cy="14" r="5"/><path d="M8 3l2 6M16 3l-2 6M12 12v4"/>`),
   wave: svg(`<path d="M3 15c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>`),
+  trend: svg(`<path d="M3 17l5-6 4 4 5-7 4 3"/><path d="M17 8h4v4"/>`),
+  // The header's faint football, drawn once at the right of the band.
+  football: svg(`<path d="M4.6 19.4c-2.3-2.3-1.3-8.4 3-12.8s10.5-5.3 12.8-3 1.3 8.4-3 12.8-10.5 5.3-12.8 3z"/><path d="M8 16l8-8"/><path d="M9.5 11.5l1.6 1.6M11.7 9.3l1.6 1.6M10.6 14.6l1.6 1.6M13.9 7.1l1.6 1.6"/>`),
   bolt: svg(`<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>`),
   layers: svg(`<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17l9 5 9-5"/>`),
   trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M10 17h4v4"/>`),
@@ -53,8 +56,8 @@ function rateIcon(title: string): string {
   const k = title.toLowerCase();
   if (k.includes("ppg")) return ICON.gauge;
   if (k.includes("appearance")) return ICON.calendar;
-  if (k.startsWith("top-")) return ICON.medal;
-  return ICON.wave;
+  if (k.startsWith("top-")) return ICON.trophy;
+  return ICON.trend;
 }
 
 /** The icon a career high wears, by its label. */
@@ -134,10 +137,12 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
     `</div>` +
     `<div class="scp-cp-xs" aria-hidden="true">${seasons.map(label).join("")}</div>` +
     `</div>` +
+    // The legend also names the average, so the plot's own label can leave
+    // a narrow chart where it would sit on a bar.
     (seasons.some((s) => s.inProgress)
-      ? `<p class="scp-cp-legend"><i class="is-now"></i>Current season, in progress<i class="is-last"></i>Latest full season<i></i>Earlier seasons</p>`
+      ? `<p class="scp-cp-legend"><i class="is-now"></i>Current season, in progress<i class="is-last"></i>Latest full season<i></i>Earlier seasons${showAvg ? `<i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}` : ""}</p>`
       : n > 1
-        ? `<p class="scp-cp-legend"><i class="is-last"></i>Latest season<i></i>Earlier seasons</p>`
+        ? `<p class="scp-cp-legend"><i class="is-last"></i>Latest season<i></i>Earlier seasons<i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</p>`
         : "") +
     `</figure>`
   );
@@ -153,10 +158,12 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     `<header class="scp-cp-bar">` +
     `<span class="scp-cp-bar-rule" aria-hidden="true"></span>` +
     `<span class="scp-cp-bar-icon" aria-hidden="true">${ICON.chart}</span>` +
+    `<span class="scp-cp-bar-divider" aria-hidden="true"></span>` +
     `<div class="scp-cp-bar-text">` +
     `<h3 class="scp-cp-bar-title">${escapeHtml(`${m.name} Fantasy Football Stats`)}</h3>` +
     `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>` +
     `</div>` +
+    `<span class="scp-cp-bar-art" aria-hidden="true">${ICON.football}</span>` +
     `<span class="scp-cp-bar-stripes" aria-hidden="true"></span>` +
     `</header>`;
 

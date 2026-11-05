@@ -744,12 +744,33 @@ function notability(game: StoryGame, season: StorySeason, scale: LadderScale, hi
  * Section B. One card per played game, most recent first, with the generated
  * headline and note - or the analyst's, where an override is stored.
  */
-export function renderBreakdownSection(games: StoryGame[], season: StorySeason): string {
-  const scale = SCALES[season.pos];
-  if (!scale || games.length === 0) return "";
+/** One breakdown card's readings, shared by the tab's cards and the premium comparison block. */
+export interface BreakdownCard {
+  game: StoryGame;
+  headline: string;
+  note: string;
+  /** "t12" = finished inside the chart's top tier (rank <= t1), "t24" the middle tier, "low" a bust. */
+  tier: "t12" | "t24" | "low";
+  /** The season's highest-points game (three games or more). */
+  seasonHigh: boolean;
+  /** "Nov 1", Eastern time. */
+  date: string;
+  /** One of a finished season's notable games, shown before the fold. */
+  lead: boolean;
+}
 
+/**
+ * The cards in page order (newest first) with the copy each one prints,
+ * so the tab's breakdown and the premium comparison under it cannot
+ * disagree. Null for a position with no scale or a season with no games.
+ */
+export function buildBreakdownCards(
+  games: StoryGame[],
+  season: StorySeason,
+): { cards: BreakdownCard[]; scale: LadderScale } | null {
+  const scale = SCALES[season.pos];
+  if (!scale || games.length === 0) return null;
   const pos = season.pos;
-  const id = `gl-breakdown-h${season.idSuffix}`;
 
   // Season-wide readings each card compares itself against - from three
   // games on. One or two games make no season to be the high or the most
@@ -773,6 +794,41 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
       }
     }
   }
+
+  // A finished season leads with its two or three most notable games and
+  // folds the rest behind one control (2026-11-04); the season in progress
+  // shows every card, newest first, as before.
+  const byWeek = [...games].sort((a, b) => b.week - a.week);
+  const lead = new Set<StoryGame>();
+  if (season.pastTense && games.length > 4) {
+    [...games]
+      .sort((a, b) => notability(b, season, scale, high) - notability(a, season, scale, high) || b.week - a.week)
+      .slice(0, 3)
+      .forEach((g) => lead.add(g));
+  }
+
+  const cards = byWeek.map((game): BreakdownCard => {
+    const { m, d } = easternDate(game.dateMs);
+    return {
+      game,
+      headline: game.override?.headline ?? headlineFor(game, season, scale, game === high),
+      note: game.override?.note ?? noteFor(game, season, scale, bestEffWeek),
+      tier: game.rank <= scale.t1 ? "t12" : game.rank <= scale.t2 ? "t24" : "low",
+      seasonHigh: game === high,
+      date: `${MONTHS_SHORT[m]} ${d}`,
+      lead: lead.has(game),
+    };
+  });
+  return { cards, scale };
+}
+
+export function renderBreakdownSection(games: StoryGame[], season: StorySeason): string {
+  const built = buildBreakdownCards(games, season);
+  if (!built) return "";
+  const { cards: list } = built;
+  const pos = season.pos;
+  const id = `gl-breakdown-h${season.idSuffix}`;
+  const lead = list.filter((c) => c.lead);
 
   const byline = (() => {
     if (season.pastTense) {
@@ -798,34 +854,19 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
     );
   })();
 
-  // A finished season leads with its two or three most notable games and
-  // folds the rest behind one control (2026-11-04); the season in progress
-  // shows every card, newest first, as before.
-  const byWeek = [...games].sort((a, b) => b.week - a.week);
-  const lead = new Set<StoryGame>();
-  if (season.pastTense && games.length > 4) {
-    [...games]
-      .sort((a, b) => notability(b, season, scale, high) - notability(a, season, scale, high) || b.week - a.week)
-      .slice(0, 3)
-      .forEach((g) => lead.add(g));
-  }
-  const card = (game: StoryGame): string => {
-      const cardCls =
-        game.rank <= scale.t1 ? " is-t12" : game.rank > scale.t2 ? " is-low" : "";
-      const badgeCls =
-        game.rank <= scale.t1 ? "is-t12" : game.rank <= scale.t2 ? "is-t24" : "is-low";
+  const card = (c: BreakdownCard): string => {
+      const { game } = c;
+      const cardCls = c.tier === "t12" ? " is-t12" : c.tier === "low" ? " is-low" : "";
+      const badgeCls = c.tier === "t12" ? "is-t12" : c.tier === "t24" ? "is-t24" : "is-low";
       const scoreCls =
         game.result.wlt === "W" ? " is-w" : game.result.wlt === "L" ? " is-l" : "";
-      const { m, d } = easternDate(game.dateMs);
-      const headline =
-        game.override?.headline ?? headlineFor(game, season, scale, game === high);
-      const note = game.override?.note ?? noteFor(game, season, scale, bestEffWeek);
+      const { headline, note } = c;
       const at = game.homeAway === "away" ? "@" : "vs";
 
       return (
         `<article class="scp-gl-game${cardCls}">` +
         `<div class="scp-gl-meta">` +
-        `<div class="scp-gl-when">${escapeHtml(`Week ${game.week}, ${MONTHS_SHORT[m]} ${d}`)}</div>` +
+        `<div class="scp-gl-when">${escapeHtml(`Week ${game.week}, ${c.date}`)}</div>` +
         // Crest AFTER the name (mak, 2026-10-29): "vs Broncos" then the logo.
         `<div class="scp-gl-opp">` +
         `<span>${escapeHtml(`${at} ${game.opp.nickname}`)}</span>` +
@@ -849,21 +890,21 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
   };
 
   let cards: string;
-  if (lead.size) {
-    const rest = byWeek.filter((g) => !lead.has(g));
+  if (lead.length) {
+    const rest = list.filter((c) => !c.lead);
     cards =
-      `<div class="scp-gl-games">${byWeek.filter((g) => lead.has(g)).map(card).join("")}</div>` +
+      `<div class="scp-gl-games">${lead.map(card).join("")}</div>` +
       `<details class="scp-gl-more"><summary>${escapeHtml(`Show all ${games.length} games`)}</summary>` +
       `<div class="scp-gl-games">${rest.map(card).join("")}</div></details>`;
   } else {
-    cards = `<div class="scp-gl-games">${byWeek.map(card).join("")}</div>`;
+    cards = `<div class="scp-gl-games">${list.map(card).join("")}</div>`;
   }
 
   return (
     `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Game-by-game breakdown"))}</h2>` +
     (byline ? `<p class="scp-gl-byline">${byline}</p>` : "") +
-    (lead.size ? `<p class="scp-gl-lede">${escapeHtml(`The ${lead.size} games that stood out, then the rest of the season.`)}</p>` : "") +
+    (lead.length ? `<p class="scp-gl-lede">${escapeHtml(`The ${lead.length} games that stood out, then the rest of the season.`)}</p>` : "") +
     cards +
     `</section>`
   );

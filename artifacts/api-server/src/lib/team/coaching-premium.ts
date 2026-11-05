@@ -5,8 +5,10 @@
  * key-takeaway panel, a Formations & Tempo section with its table and a
  * formation visual, and a bottom insight banner.
  *
- * Rendered DIRECTLY UNDER the whole existing section, which is untouched,
- * so the two designs can be compared on one page. Every number here is the
+ * Since 2026-11-05 ("keep the new designs") this IS the page's top block:
+ * the original header, profile, KPI tiles and tendency tables are unmounted
+ * in coaching-render.ts. The heading carries .sct-h2 so a section address
+ * promotes it to the H1 (team-render.ts promoteHeading). Every number here is the
  * same row view the original tables draw (rowViews / changeText /
  * groupSentence from coaching-render.ts), so the two cannot disagree; no
  * data is fetched or computed twice. Styles are isolated under `.sct-cp-*`
@@ -314,10 +316,9 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   void cityOf;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
-    `<p class="sct-cp-flag">New design · Comparison</p>` +
     `<div class="sct-cp-head">` +
     `<span class="sct-cp-head-icon">${ICON["diagram"]}</span>` +
-    `<div class="sct-cp-head-text"><h2 class="sct-cp-h2">Offensive Coaching &amp; Scheme</h2>` +
+    `<div class="sct-cp-head-text"><h2 class="sct-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>` +
     `<p class="sct-cp-dek">Play-calling tendencies, offensive philosophy, formations, and coaching history.</p></div>` +
     ICON["art"] +
     `</div>` +
