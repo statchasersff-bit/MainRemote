@@ -1357,6 +1357,9 @@ export interface UsageSection {
   faq: Array<{ question: string; answer: string }>;
 }
 
+/** The original top-of-page renderers mak retired on 2026-11-05, kept callable for a restore. */
+export const RETIRED_USAGE_BLOCKS = { header, intro, snapTable, shareBoards };
+
 export function renderUsageSection(
   view: UsageView | null,
   team: NflTeam,
@@ -1365,16 +1368,13 @@ export function renderUsageSection(
   if (!view) return { html: "", faqHtml: "", faq: [] };
   const html =
     `<div class="sct-block sct-us">` +
-    header(view) +
-    intro(team) +
-    // The four KPI cards are gone (mak, 2026-11-05); kpis() stays unmounted.
-    // Snap Counts and the distribution boards share one row (mak, 2026-11-05):
-    // snaps on the left where they were, the Target / Rushing boards beside
-    // them, stacked. One column again under the usage container's 1040px.
-    `<div class="sct-us-toprow">` +
-    snapTable(view, team) +
-    shareBoards(view) +
-    `</div>` +
+    // The premium dashboard IS the top of the page since mak kept it
+    // (2026-11-05, "remove the older version ... put our new version there"):
+    // the heading, the intro, Snap Counts & Playing Time and the Target /
+    // Rushing Distribution boards, in one navy-and-gold module. The original
+    // header(), intro(), snapTable() and shareBoards() are unmounted, not
+    // deleted (RETIRED_USAGE_BLOCKS), and kpis() stays unmounted as before.
+    renderUsagePremium(view, team) +
     backfield(view, team) +
     // The premium comparison versions (mak's brief, 2026-11-05) render
     // directly under each current block while the flag is on.
@@ -1385,10 +1385,7 @@ export function renderUsageSection(
     trendsBlock(view, team) +
     definitions(view, team) +
     fantasy(view, team) +
-    `</div>` +
-    // The premium comparison version (mak, 2026-11-05): rendered under the
-    // whole section, the original untouched, so the two can be compared.
-    renderUsagePremium(view, team);
+    `</div>`;
 
   const faq = usageFaq(view, team);
   const faqHtml = faq.length

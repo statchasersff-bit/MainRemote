@@ -24145,9 +24145,8 @@ a.sct-srow-team:focus-visible {
   --up-stripe: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0 10px, transparent 10px 22px);
   container-type: inline-size;
   container-name: premium-usage;
-  margin: 40px 0 0;
-  padding: 0 0 8px;
-  border-top: 2px dashed var(--up-line);
+  margin: 0 0 30px;
+  padding: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-up-flag {
@@ -24222,6 +24221,10 @@ a.sct-srow-team:focus-visible {
   font-size: 1.6rem !important;
   font-weight: 800;
   line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-h2::after {
+  content: none;
 }
 
 :is(.sct, #sct-table-armour) .sct-up-dek {

@@ -120,19 +120,24 @@ describe("placement", () => {
 
   test("with the host's heading off, the section's H1 is the address's phrase", async () => {
     const { doc } = await page("/embed/team/buffalo-bills?section=usage&h1=1");
-    assert.equal(doc.querySelector("h1").textContent, "Buffalo Bills Snap Counts & Player Usage (2026)");
+    const h1s = [...doc.querySelectorAll("h1")];
+    assert.equal(h1s.length, 1);
+    assert.equal(h1s[0].textContent, "Buffalo Bills Snap Counts & Player Usage (2026)");
+    assert.ok(h1s[0].classList.contains("sct-up-h2"), "the dashboard heading is the H1");
   });
 });
 
 describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
-  test("header, intro, snaps, boards, situational, run direction, passing, trends, definitions, fantasy", async () => {
+  test("dashboard (heading, intro, snaps, boards), situational, run direction, passing, trends, definitions, fantasy", async () => {
     const { doc } = await page("/team/buffalo-bills/usage/");
     const root = doc.querySelector("#usage .sct-us");
+    // The retired top is off the page (unmounted, not deleted).
+    for (const sel of [".sct-us-head", ".sct-us-intro", ".sct-us-toprow", ".sct-us-snaps", ".sct-us-boards", ".sct-us-board", ".sct-up-flag"]) assert.equal(root.querySelector(sel), null, `${sel} is gone`);
+    assert.equal(root.firstElementChild.id, "usage-premium", "the dashboard opens the page");
     const order = [
-      ".sct-us-head",
-      ".sct-us-intro",
-      ".sct-us-snaps",
-      ".sct-us-boards",
+      "#usage-premium",
+      ".sct-up-snaps",
+      ".sct-up-board",
       "#situational",
       "#run-direction",
       "#passing",
@@ -144,18 +149,16 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const all = [...root.querySelectorAll("*")];
     const idx = order.map((el) => all.indexOf(el));
     assert.deepEqual([...idx].sort((a, b) => a - b), idx);
+    assert.deepEqual([...root.querySelectorAll(".sct-up-ph-title")].map((h) => h.textContent), ["Snap Counts & Playing Time", "Target Distribution", "Rushing Distribution"]);
     const h3s = [...root.querySelectorAll(".sct-us-h3")].map((h) => h.textContent);
     assert.deepEqual(h3s, [
-      "Snap Counts & Playing Time",
-      "Target Distribution",
-      "Rushing Distribution",
       "Situational Usage",
       "Rushing Direction",
       "Passing Distribution",
       "Notable Usage Changes",
       "Advanced & Fantasy Analysis",
     ]);
-    assert.equal(root.querySelector(".sct-us-head h2").textContent, "Snap Counts & Player Usage");
+    assert.equal(root.querySelector("#usage-premium h2.sct-h2.sct-up-h2").textContent, "Snap Counts & Player Usage");
     // The "{season} Regular Season · Through Week N" line is gone (mak, 2026-11-05).
     assert.equal(root.querySelector(".sct-us-context"), null);
     // The old fantasy framing is gone from the top of the page.
@@ -166,12 +169,11 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
 
   test("the intro is the brief's football summary; the KPI cards and the three sub lines are gone (mak, 2026-11-05)", async () => {
     const { doc } = await page("/team/buffalo-bills/usage/");
-    const intro = doc.querySelector(".sct-us-intro").textContent;
+    const intro = doc.querySelector("#usage-premium .sct-up-dek").textContent;
     assert.match(intro, /^Explore how the Bills distribute offensive snaps, targets, rushing attempts, and red-zone opportunities\./);
     assert.match(intro, /how their roles change throughout the season\.$/);
     assert.equal(doc.querySelector(".sct-us-kpis"), null, "no KPI cards");
-    assert.equal(doc.querySelector(".sct-us-snaps > .sct-us-sub"), null, "no snaps sub line");
-    for (const board of doc.querySelectorAll(".sct-us-board")) assert.equal(board.querySelector(".sct-us-sub"), null, "no board sub line");
+    for (const panel of doc.querySelectorAll(".sct-up-panel")) assert.equal(panel.querySelector(".sct-us-sub"), null, "no sub line on a dashboard panel");
     assert.ok(!doc.querySelector("#usage").textContent.includes("official gamebooks. Skill positions only"));
     assert.ok(!doc.querySelector("#usage").textContent.includes("intended receiver, so the"));
     assert.ok(!doc.querySelector("#usage").textContent.includes("exclude kneel-downs"));
@@ -201,7 +203,7 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
 
   test("the snap table lists every skill player with a snap, carries every view on the row, and states its windows", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
-    const block = doc.querySelector(".sct-us-snaps");
+    const block = doc.querySelector(".sct-up-snaps");
     const rows = [...block.querySelectorAll("tbody tr")];
     const ne = usage.teams.ne;
     const expected = ne.players.filter((p) => (p.snaps ?? 0) > 0).length;
@@ -222,18 +224,18 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.equal(maye.querySelector(".sct-us-share-val").textContent, `${m.snapShare}%`);
     assert.match(maye.querySelector(".sct-us-snap-chg").textContent, /^([+−]\d+ pp|0 pp|–)$/);
     // Controls ship hidden; the caption names the actual weeks of both windows.
-    assert.ok(block.querySelector(".sct-us-snap-controls").hasAttribute("hidden"));
+    assert.ok(block.querySelector(".sct-up-controls").hasAttribute("hidden"));
     const last3 = ne.games.slice(-3);
-    assert.match(block.querySelector(".sct-us-snap-caption").textContent, new RegExp(`Last 3 = Weeks ${last3[0]}-${last3[2]}\\.`));
-    assert.match(block.querySelector(".sct-us-snap-caption").textContent, /a game a player sat out counts as zero snaps/);
+    assert.match(block.querySelector(".sct-up-note").textContent, new RegExp(`Last 3 = Weeks ${last3[0]}-${last3[2]}\\.`));
+    assert.match(block.querySelector(".sct-up-note").textContent, /a game a player sat out counts as zero snaps/);
     assert.equal(block.querySelectorAll("[data-snap-week] option").length, ne.games.length + 1);
   });
 
   test("with the bundle, Last 3 and a week rewrite the snap cells, re-sort and filter by position", async () => {
     const { doc, window, errors } = await hydrated("/team/new-england-patriots/usage/");
-    const block = doc.querySelector(".sct-us-snaps");
+    const block = doc.querySelector(".sct-up-snaps");
     assert.equal(block.dataset.sctSnaps, "js");
-    assert.equal(block.querySelector(".sct-us-snap-controls").hidden, false);
+    assert.equal(block.querySelector(".sct-up-controls").hidden, false);
     const rowFor = (name) => [...block.querySelectorAll("tbody tr")].find((r) => r.textContent.includes(name));
     const henry = rowFor("Hunter Henry");
     const [l3snaps, l3share, l3chg] = henry.getAttribute("data-v-last3").split("|");
@@ -265,7 +267,7 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
 
   test("the distribution boards carry the conventional counts and say how carries are counted", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
-    const boards = [...doc.querySelectorAll(".sct-us-board")];
+    const boards = [...doc.querySelectorAll(".sct-up-board")];
     assert.deepEqual(boards.map((b) => b.querySelector("h3").textContent), ["Target Distribution", "Rushing Distribution"]);
     assert.deepEqual(
       [...boards[0].querySelectorAll("thead th")].map((th) => th.textContent),
@@ -594,7 +596,7 @@ describe("all 32 clubs", () => {
     for (const slug of slugs) {
       const { doc } = await page(`/team/${slug}/usage/`);
       const section = doc.querySelector("#usage");
-      section.querySelector(".sct-us-intro")?.remove();
+      section.querySelector(".sct-up-dek")?.remove();
       const text = section.textContent + (doc.querySelector('[data-sct-faq-for="usage"]')?.textContent ?? "");
       for (const [re, why] of OVERCLAIMS) {
         const hit = text.match(re);
@@ -604,60 +606,55 @@ describe("all 32 clubs", () => {
   });
 });
 
-describe("premium comparison version (mak, 2026-11-05)", () => {
-  test("renders under the whole original section, labeled, with the same numbers", async () => {
+describe("the premium dashboard is the top of the page (mak, 2026-11-05)", () => {
+  test("opens the section, unlabeled, with every snap row's views and the boards' counts", async () => {
     for (const slug of ["new-england-patriots", "buffalo-bills"]) {
       const { doc } = await page(`/team/${slug}/usage/`);
       const us = doc.querySelector("#usage .sct-us");
-      const up = doc.querySelector("#usage-premium.sct-up");
-      assert.ok(us && up, `${slug}: both versions render`);
-      assert.equal(us.nextElementSibling, up, `${slug}: the premium block follows the original`);
-      assert.equal(up.querySelector(".sct-up-flag").textContent, "New design · Comparison");
-      assert.equal(us.querySelector("[class*='sct-up']"), null, "nothing of the premium markup inside the original");
-      // The snap rows carry the same views, player for player, in the same order.
-      const attrs = (root, sel) => [...root.querySelectorAll(sel)].map((r) => `${r.dataset.pos}|${r.getAttribute("data-v-season")}|${r.getAttribute("data-v-last3")}`);
-      assert.deepEqual(attrs(up, ".sct-up-snaps tbody tr"), attrs(us, ".sct-us-snaps tbody tr"), `${slug}: snap rows`);
-      // The boards: the same count, season share and last-3 share for every player both name.
-      const lines = (root, sel) =>
-        Object.fromEntries([...root.querySelectorAll(`${sel} tbody tr`)].filter((tr) => tr.querySelector("th")).map((tr) => [tr.querySelector("th").textContent, [...tr.querySelectorAll("td")].slice(0, 2).map((td) => td.textContent.replace(/[^0-9%.–-]/g, "")).join(",")]));
-      const ot = lines(us, "#targets"), pt = lines(up, ".sct-up-board:nth-of-type(1)");
-      for (const name of Object.keys(ot)) if (pt[name]) assert.equal(pt[name], ot[name], `${slug}: ${name} targets`);
-      // Header, three navy panel heads, the methodology strip, the premium controls shipped hidden.
+      const up = us.querySelector("#usage-premium.sct-up");
+      assert.ok(up, `${slug}: the dashboard renders`);
+      assert.equal(us.firstElementChild, up, `${slug}: it opens the section`);
+      assert.equal(up.querySelector(".sct-up-flag"), null, "no comparison flag: it is the design");
+      const team = usage.teams[slug === "new-england-patriots" ? "ne" : "buf"];
+      // Every skill player with a snap, each row carrying season, last-3 and every team game.
+      const rows = [...up.querySelectorAll(".sct-up-snaps tbody tr")];
+      assert.equal(rows.length, team.players.filter((p) => (p.snaps ?? 0) > 0).length);
+      for (const r of rows) {
+        assert.match(r.getAttribute("data-v-season"), /^\d+\|\d*\|-?\d*$/);
+        for (const w of team.games) assert.ok(r.hasAttribute(`data-v-w${w}`), `week ${w}`);
+      }
+      // The boards: the lead's count is the file's.
+      const board = (i) => up.querySelector(`.sct-up-board:nth-of-type(${i})`);
+      const topT = [...board(1).querySelectorAll("tbody tr")].find((tr) => tr.querySelector("th"));
+      const name = topT.querySelector("th").textContent.trim();
+      const p = team.players.find((x) => name.includes(x.name));
+      assert.ok(p, `${slug}: ${name} is in the file`);
+      assert.equal(topT.querySelector("td").textContent, String(p.targets));
+      // Header, three navy panel heads, the methodology strip, the controls shipped hidden.
       assert.match(up.querySelector(".sct-up-dek").textContent, /^Explore how the \S+ distribute offensive snaps/);
       assert.deepEqual([...up.querySelectorAll(".sct-up-ph-title")].map((h) => h.textContent), ["Snap Counts & Playing Time", "Target Distribution", "Rushing Distribution"]);
       assert.match(up.querySelector(".sct-up-note").textContent, /^Season = Weeks/);
       assert.ok(up.querySelector(".sct-up-controls").hasAttribute("hidden"));
-      // Player links and headshots as on the original.
       assert.ok(up.querySelectorAll(".sct-up-name.sct-player-link").length >= 5);
-      assert.ok(up.querySelectorAll(".sct-up-snaps .sct-us-face").length === up.querySelectorAll(".sct-up-snaps tbody tr").length);
+      assert.ok(up.querySelectorAll(".sct-up-snaps .sct-us-face").length === rows.length);
     }
   });
 
-  test("the premium snap switch works and is independent of the original's", async () => {
+  test("the snap switch works on the dashboard and no id is duplicated on the page", async () => {
     const { doc, window, errors } = await hydrated("/team/new-england-patriots/usage/");
-    const orig = doc.querySelector(".sct-us-snaps");
     const prem = doc.querySelector(".sct-up-snaps");
     assert.equal(prem.dataset.sctSnaps, "js");
     assert.equal(prem.querySelector(".sct-up-controls").hidden, false);
-    const rowFor = (block, name) => [...block.querySelectorAll("tbody tr")].find((r) => r.textContent.includes(name));
-    const henryP = rowFor(prem, "Hunter Henry");
-    const henryO = rowFor(orig, "Hunter Henry");
-    const seasonN = henryO.querySelector(".sct-us-snap-n").textContent;
-    const [l3snaps, l3share] = henryP.getAttribute("data-v-last3").split("|");
+    const henry = [...prem.querySelectorAll("tbody tr")].find((r) => r.textContent.includes("Hunter Henry"));
+    const [l3snaps, l3share] = henry.getAttribute("data-v-last3").split("|");
     prem.querySelector('[data-snap-view="last3"]').dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    assert.equal(henryP.querySelector(".sct-us-snap-n").textContent, l3snaps);
-    assert.equal(henryP.querySelector(".sct-us-share-val").textContent, `${l3share}%`);
+    assert.equal(henry.querySelector(".sct-us-snap-n").textContent, l3snaps);
+    assert.equal(henry.querySelector(".sct-us-share-val").textContent, `${l3share}%`);
     assert.equal(prem.querySelector('[data-snap-view="last3"]').classList.contains("is-on"), true);
-    // The original did not move.
-    assert.equal(henryO.querySelector(".sct-us-snap-n").textContent, seasonN);
-    assert.equal(orig.querySelector('[data-snap-view="season"]').classList.contains("is-on"), true);
-    // Position filter on the premium block only.
     const pos = prem.querySelector("[data-snap-pos]");
     pos.value = "RB";
     pos.dispatchEvent(new window.Event("change", { bubbles: true }));
     for (const r of [...prem.querySelectorAll("tbody tr")].filter((r) => !r.hidden)) assert.equal(r.dataset.pos, "RB");
-    assert.ok([...orig.querySelectorAll("tbody tr")].some((r) => !r.hidden && r.dataset.pos !== "RB"));
-    // No duplicate ids between the two blocks.
     const ids = [...doc.querySelectorAll("#usage [id]")].map((el) => el.id);
     assert.equal(new Set(ids).size, ids.length, "duplicate ids");
     assert.deepEqual(errors, []);
