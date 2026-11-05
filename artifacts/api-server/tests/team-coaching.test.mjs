@@ -453,7 +453,9 @@ describe("premium comparison version (mak, 2026-11-05)", () => {
       const vals = (root, sel) => [...root.querySelectorAll(sel)].map((el) => el.textContent);
       assert.deepEqual(vals(cp, ".sct-cp-table td.is-now"), vals(co, ".sct-co-table td.is-now"), `${slug}: current values`);
       assert.deepEqual(vals(cp, ".sct-cp-table td.is-prior"), vals(co, ".sct-co-table td.is-prior"), `${slug}: prior values`);
-      assert.deepEqual(vals(cp, ".sct-cp-table .sct-cp-change"), vals(co, ".sct-co-table .sct-co-change"), `${slug}: changes`);
+      // The premium table prints triangles where the original prints arrows; the words and numbers are the same.
+      const arrows = (list) => list.map((t) => t.replace(/^▲/, "↑").replace(/^▼/, "↓"));
+      assert.deepEqual(arrows(vals(cp, ".sct-cp-table .sct-cp-change")), vals(co, ".sct-co-table .sct-co-change"), `${slug}: changes`);
       // The NFL-average tick on every row that has an average, with its number.
       for (const tick of cp.querySelectorAll(".sct-cp-db-avg")) assert.match(tick.getAttribute("title"), /^NFL avg /);
       // Profile, continuity, four KPIs, two navy section headers, takeaway, formation visual, banner.
@@ -462,6 +464,8 @@ describe("premium comparison version (mak, 2026-11-05)", () => {
       assert.equal(cp.querySelectorAll(".sct-cp-kpi").length, 4);
       assert.deepEqual([...cp.querySelectorAll(".sct-cp-h3")].map((h) => h.textContent), ["Play Calling", "Formations & Tempo"]);
       assert.ok(cp.querySelector(".sct-cp-take .sct-cp-take-h").textContent.endsWith("."));
+      assert.equal(cp.querySelector(".sct-cp-dek").textContent, "Play-calling tendencies, offensive philosophy, formations, and coaching history.");
+      assert.match(cp.querySelector(".sct-cp-form-title").textContent, /^Formation Profile \(\d{4}\)$/);
       assert.ok(cp.querySelector(".sct-cp-banner .sct-cp-banner-h").textContent.endsWith("."));
       // The donut is shotgun against under center only, from the shotgun row.
       const sg = coaching.teams[slug === "new-england-patriots" ? "ne" : "buf"].tendencies.rows.find((r) => r.key === "shotgunRate");
@@ -480,7 +484,7 @@ describe("premium comparison version (mak, 2026-11-05)", () => {
     const necp = ne.doc.querySelector("#coaching-premium");
     assert.equal(necp.querySelector(".sct-cp-context").textContent, "Under head coach Mike Vrabel · Third stint with New England");
     assert.deepEqual([...necp.querySelectorAll(".sct-cp-kpi-label")].map((l) => l.textContent), ["Pass Rate", "Red-Zone Pass Rate", "Pre-Snap Motion", "Neutral Pace"]);
-    assert.match([...necp.querySelectorAll(".sct-cp-kpi-line")][3].textContent, /^\d+\.\ds (faster|slower) than 2025$/);
+    assert.match([...necp.querySelectorAll(".sct-cp-kpi-move, .sct-cp-kpi-pill")][3].textContent, /^[▲▼] \d+\.\ds (faster|slower) than 2025$/);
   });
 });
 

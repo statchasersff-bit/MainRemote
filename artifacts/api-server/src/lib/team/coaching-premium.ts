@@ -46,15 +46,22 @@ const ordinal = (n: number): string => {
 
 /* ------------------------------------------------------------------ icons */
 
-/** Small inline icons, 16px, drawn in currentColor. */
+/** Inline icons drawn in currentColor; the mockup's set: play diagram, football, target, layers, gauge, clipboard, bars, info. */
 const ICON: Record<string, string> = {
-  pass: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 12.5C4 6 10 2.5 14 2.5c0 4-3.5 10-10 11.5l-2-1.5z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 10l4-4" stroke="currentColor" stroke-width="1.5"/></svg>`,
-  target: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2.5" fill="currentColor"/></svg>`,
-  motion: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 8h8M7 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 5v6" stroke="currentColor" stroke-width="1.5"/></svg>`,
-  clock: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`,
-  play: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2.5l10 5.5-10 5.5z" fill="currentColor"/></svg>`,
-  grid: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="2" y="2" width="5" height="5" fill="currentColor"/><rect x="9" y="2" width="5" height="5" fill="currentColor"/><rect x="2" y="9" width="5" height="5" fill="currentColor"/><rect x="9" y="9" width="5" height="5" fill="currentColor"/></svg>`,
+  diagram: `<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path d="M5 9l6 6M11 9l-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="23" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 25c5-9 12-9 17-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M22 19l4 2-1 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  pass: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 19c1-8 7-14 16-15 -1 9-7 15-16 15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 15l6-6M10 12l2 2M12 10l2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  target: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg>`,
+  motion: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3l9 4.5-9 4.5-9-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 17l4-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="1.6" fill="currentColor"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 3h6v3H9zM8 11l3 3M11 11l-3 3M13 15h3M13 18h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  grid: `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3l9 4.5-9 4.5-9-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  bars: `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><rect x="2" y="11" width="4" height="7" fill="currentColor"/><rect x="8" y="7" width="4" height="11" fill="currentColor"/><rect x="14" y="3" width="4" height="15" fill="currentColor"/></svg>`,
   trend: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 12l4-4 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5h3v3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  info: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  /** The decorative wave under a KPI (a divider, not data). */
+  wave: `<svg viewBox="0 0 100 18" width="100%" height="18" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12c12-8 22 2 34-2s22-10 34-4 20 6 32 2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  /** The faint play diagram on the header's right. */
+  art: `<svg viewBox="0 0 300 100" width="300" height="100" aria-hidden="true" class="sct-cp-art"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 80c40-50 80-50 110-20"/><path d="M118 52l12 8-14 6"/><path d="M160 85c30-40 70-30 100-60"/><path d="M252 20l8 5-10 6"/><circle cx="60" cy="30" r="8"/><circle cx="110" cy="70" r="8"/><circle cx="220" cy="60" r="8"/><path d="M170 20l12 12M182 20l-12 12M230 10l12 12M242 10l-12 12M280 70l12 12M292 70l-12 12"/></g></svg>`,
 };
 
 const KPI_ICON: Record<string, string> = { passRate: "pass", rzPassRate: "target", motionRate: "motion", pace: "clock" };
@@ -92,6 +99,11 @@ function profileCard(c: TeamCoaching, team: NflTeam): string {
   );
 }
 
+/** "▼ 2.5 pp vs 2025" / "▲ 1.4s faster than 2025": the change line, a triangle for direction. */
+function tri(t: string): string {
+  return t.replace(/^↑/, "▲").replace(/^↓/, "▼");
+}
+
 function kpiCards(c: TeamCoaching, view: UsageView | null): string {
   const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
   const views = rowViews(c, view);
@@ -99,18 +111,20 @@ function kpiCards(c: TeamCoaching, view: UsageView | null): string {
     .filter((x): x is NonNullable<typeof x> => !!x)
     .map(({ row, v }) => {
       let line = "";
-      if (atEdge(v.rank)) line = `${ordinal(v.rank as number)} in NFL`;
+      if (atEdge(v.rank)) line = `<span class="sct-cp-kpi-pill">${e(`${ordinal(v.rank as number)} in NFL`)}</span>`;
       else if (v.delta != null && v.change.dir !== "flat") {
-        const t = changeText(row, v);
-        line = row.key === "pace" ? `${t.replace(/^[↑↓] /, "")} than ${priorYear}` : `${t.replace(/^↑/, "Up").replace(/^↓/, "Down")} vs. ${priorYear}`;
-      } else if (v.delta != null) line = `Level with ${priorYear}`;
+        const t = tri(changeText(row, v));
+        line = `<span class="sct-cp-kpi-move is-${v.delta > 0 ? "up" : "down"}">${e(row.key === "pace" ? `${t} than ${priorYear}` : `${t} vs ${priorYear}`)}</span>`;
+      } else if (v.delta != null) line = `<span class="sct-cp-kpi-move is-flat">${e(`Level with ${priorYear}`)}</span>`;
       return (
         `<li class="sct-cp-kpi">` +
         `<span class="sct-cp-kpi-icon">${ICON[KPI_ICON[row.key as string] ?? "trend"]}</span>` +
         `<span class="sct-cp-kpi-label">${e(KPI_LABEL[row.key as string] ?? row.label)}</span>` +
         `<span class="sct-cp-kpi-value">${e(v.current)}</span>` +
-        (line ? `<span class="sct-cp-kpi-line">${e(line)}</span>` : "") +
-        `<span class="sct-cp-kpi-foot" aria-hidden="true"></span>` +
+        line +
+        // No sparkline: there is no per-week series behind a tile, so the
+        // accent is a plain rule (mak's refinement note, 2026-11-05).
+        `<span class="sct-cp-kpi-rule" aria-hidden="true"></span>` +
         `</li>`
       );
     })
@@ -165,13 +179,14 @@ function table(
     .map(({ row, v, i }) => {
       const sub = row.sub && row.key && KEEP_SUB.has(row.key) ? `<span class="sct-cp-sub">${e(row.sub)}</span>` : "";
       const rank = atEdge(v.rank) ? `<span class="sct-cp-rank">${e(ordinal(v.rank as number))}</span>` : "";
+      const chg = tri(changeText(row, v));
       return (
         `<tr${row === notable?.row ? ` class="is-notable"` : ""}>` +
         `<th scope="row" class="sct-cp-td is-metric">${rowLabel(row, `sct-cp-def-${i}`)}${sub}</th>` +
         `<td class="sct-cp-td is-prior">${e(row.prior)}</td>` +
         `<td class="sct-cp-td is-now">${e(v.current)}</td>` +
         `<td class="sct-cp-td is-change"><span class="sct-cp-chg">${dumbbell(row, v, priorYear, season)}` +
-        `<span class="sct-cp-change is-${v.change.dir}">${e(changeText(row, v))}</span>${rank}</span></td>` +
+        `<span class="sct-cp-change is-${v.change.dir}">${e(chg)}</span>${rank}</span></td>` +
         `</tr>`
       );
     })
@@ -183,7 +198,7 @@ function table(
     `<th scope="col">Metric</th>` +
     `<th scope="col" class="is-prior">${e(priorYear)}<span class="sct-cp-th-sub">${e(callerLast || "Prior season")}</span></th>` +
     `<th scope="col" class="is-now">${season}<span class="sct-cp-th-sub">Current</span></th>` +
-    `<th scope="col">Change<span class="sct-cp-th-sub">vs ${e(priorYear)} · tick = NFL avg</span></th>` +
+    `<th scope="col">Change<span class="sct-cp-th-sub">vs ${e(priorYear)} · Tick = NFL Avg</span></th>` +
     `</tr></thead><tbody>${rows}</tbody></table></div>`
   );
 }
@@ -219,18 +234,20 @@ function takeaway(group: Array<{ row: TendencyRow; v: RowView; i: number }>, tea
   // The highlighted stat: a row at a league edge, else the biggest move.
   const edge = group.find(({ v }) => atEdge(v.rank));
   const stat = edge ?? top;
+  const cell = (v: string, l: string) => `<span class="sct-cp-stat-cell"><span class="sct-cp-stat-v">${e(v)}</span><span class="sct-cp-stat-l">${e(l)}</span></span>`;
   const statHtml = stat
-    ? `<p class="sct-cp-stat"><span class="sct-cp-stat-v">${e(stat.v.current)}</span><span class="sct-cp-stat-l">${e(stat.row.label.replace(/ \(all downs\)$/, ""))}</span>` +
+    ? `<p class="sct-cp-stat">` +
+      cell(stat.v.current, stat.row.label.replace(/ \(all downs\)$/, "")) +
       (edge && atEdge(edge.v.rank)
-        ? `<span class="sct-cp-stat-sep" aria-hidden="true">|</span><span class="sct-cp-stat-v">${e(ordinal(edge.v.rank as number))}</span><span class="sct-cp-stat-l">in NFL</span>`
+        ? `<span class="sct-cp-stat-sep" aria-hidden="true"></span>${cell(ordinal(edge.v.rank as number), "in NFL")}`
         : top
-          ? `<span class="sct-cp-stat-sep" aria-hidden="true">|</span><span class="sct-cp-stat-v">${e(changeText(top.row, top.v))}</span><span class="sct-cp-stat-l">vs ${e(priorYear)}</span>`
+          ? `<span class="sct-cp-stat-sep" aria-hidden="true"></span>${cell(tri(changeText(top.row, top.v)), `vs ${priorYear}`)}`
           : "") +
       `</p>`
     : "";
   return (
     `<aside class="sct-cp-take">` +
-    `<p class="sct-cp-take-kicker">${ICON["trend"]} Key Takeaway</p>` +
+    `<p class="sct-cp-take-kicker"><span class="sct-cp-take-icon">${ICON["bars"]}</span>Key Takeaway</p>` +
     `<p class="sct-cp-take-h">${e(headline)}</p>` +
     `<p class="sct-cp-take-b">${e(body)}</p>` +
     statHtml +
@@ -239,7 +256,7 @@ function takeaway(group: Array<{ row: TendencyRow; v: RowView; i: number }>, tea
 }
 
 /** Shotgun against under center: exhaustive by the row's definition (a snap is logged shotgun or not), so a two-segment donut is honest. */
-function formationVisual(group: Array<{ row: TendencyRow; v: RowView; i: number }>): string {
+function formationVisual(group: Array<{ row: TendencyRow; v: RowView; i: number }>, season: number): string {
   const sg = group.find(({ row }) => row.key === "shotgunRate");
   const share = sg ? num(sg.v.current) : null;
   if (share == null) return "";
@@ -250,18 +267,18 @@ function formationVisual(group: Array<{ row: TendencyRow; v: RowView; i: number 
   const under = Math.round((100 - share) * 10) / 10;
   return (
     `<aside class="sct-cp-form">` +
-    `<p class="sct-cp-take-kicker">${ICON["grid"]} Formation Profile</p>` +
+    `<p class="sct-cp-form-title">${e(`Formation Profile (${season})`)}</p>` +
     `<div class="sct-cp-donut-wrap">` +
-    `<svg class="sct-cp-donut" viewBox="0 0 90 90" width="104" height="104" role="img" aria-label="${e(`Shotgun ${share}% of snaps, under center ${under}%`)}">` +
+    `<svg class="sct-cp-donut" viewBox="0 0 90 90" width="120" height="120" role="img" aria-label="${e(`Shotgun ${share}% of snaps, under center ${under}%`)}">` +
     `<circle cx="45" cy="45" r="${r}" class="sct-cp-donut-under"/>` +
     `<circle cx="45" cy="45" r="${r}" class="sct-cp-donut-sg" stroke-dasharray="${dash.toFixed(1)} ${(circ - dash).toFixed(1)}" transform="rotate(-90 45 45)"/>` +
     `<text x="45" y="43" text-anchor="middle" class="sct-cp-donut-v">${e(`${share}%`)}</text>` +
-    `<text x="45" y="56" text-anchor="middle" class="sct-cp-donut-l">shotgun</text>` +
+    `<text x="45" y="56" text-anchor="middle" class="sct-cp-donut-l">Shotgun</text>` +
     `</svg>` +
     `<ul class="sct-cp-donut-key">` +
-    `<li><i class="sct-cp-sw is-sg"></i>Shotgun <b>${e(`${share}%`)}</b></li>` +
-    `<li><i class="sct-cp-sw is-under"></i>Under center <b>${e(`${under}%`)}</b></li>` +
-    (avg != null ? `<li class="is-avg">NFL avg shotgun ${e(`${avg}%`)}</li>` : "") +
+    `<li><i class="sct-cp-sw is-sg"></i><span>Shotgun</span><b>${e(`${share}%`)}</b></li>` +
+    `<li><i class="sct-cp-sw is-under"></i><span>Under Center</span><b>${e(`${under}%`)}</b></li>` +
+    (avg != null ? `<li class="is-avg"><i class="sct-cp-sw is-avg"></i><span>NFL avg shotgun</span><b>${e(`${avg}%`)}</b></li>` : "") +
     `</ul></div>` +
     `<p class="sct-cp-form-note">Shotgun or not, over every offensive snap; pistol counts as shotgun when the play-by-play logs it so.</p>` +
     `</aside>`
@@ -275,6 +292,7 @@ function banner(group: Array<{ row: TendencyRow; v: RowView; i: number }>, team:
   return (
     `<div class="sct-cp-banner">` +
     `<span class="sct-cp-banner-icon">${ICON["target"]}</span>` +
+    `<span class="sct-cp-banner-rule" aria-hidden="true"></span>` +
     `<div><p class="sct-cp-banner-h">${e(headline)}</p>` +
     `<p class="sct-cp-banner-b">${e(groupSentence(group, team, priorYear, returning))}</p></div>` +
     `</div>`
@@ -292,21 +310,26 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   const calling = groupOf(GROUPS[0]!.keys);
   const form = groupOf(GROUPS[1]!.keys);
   const section = (title: string, icon: string, body: string) =>
-    `<section class="sct-cp-section"><h3 class="sct-cp-h3"><span class="sct-cp-h3-icon">${icon}</span>${e(title)}</h3>${body}</section>`;
+    `<section class="sct-cp-section"><h3 class="sct-cp-h3"><span class="sct-cp-h3-icon">${icon}</span>${e(title)}</h3><div class="sct-cp-section-body">${body}</div></section>`;
+  void cityOf;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
     `<p class="sct-cp-flag">New design · Comparison</p>` +
-    `<div class="sct-cp-head"><h2 class="sct-cp-h2">Offensive Coaching &amp; Scheme</h2>` +
-    `<p class="sct-cp-dek">${e(`${cityOf(team)}: play-calling tendencies, formations and tempo, ${season} against ${priorYear} and the NFL average.`)}</p></div>` +
+    `<div class="sct-cp-head">` +
+    `<span class="sct-cp-head-icon">${ICON["diagram"]}</span>` +
+    `<div class="sct-cp-head-text"><h2 class="sct-cp-h2">Offensive Coaching &amp; Scheme</h2>` +
+    `<p class="sct-cp-dek">Play-calling tendencies, offensive philosophy, formations, and coaching history.</p></div>` +
+    ICON["art"] +
+    `</div>` +
     `<div class="sct-cp-overview">${profileCard(c, team)}${kpiCards(c, view)}</div>` +
     (calling.length
       ? section("Play Calling", ICON["play"]!, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)
       : "") +
     (form.length
-      ? section("Formations & Tempo", ICON["grid"]!, `<div class="sct-cp-split">${table(form, c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form)}</div>`) +
+      ? section("Formations & Tempo", ICON["grid"]!, `<div class="sct-cp-split">${table(form, c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form, season)}</div>`) +
         banner(form, team, priorYear, returning)
       : "") +
-    `<p class="sct-cp-foot">Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3+ pp or a second of pace.</p>` +
+    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3+ pp or a second of pace.</p>` +
     `</div>`
   );
 }

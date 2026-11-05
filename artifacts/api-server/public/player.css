@@ -12335,38 +12335,53 @@ a.scp-peer:focus-visible {
 
 /*
  * The premium comparison version of the Stats tab (lib/player/stats-premium.ts;
- * mak's brief of 2026-11-05 and the visual refinement the same day), rendered
- * under the whole existing Stats section. Navy gradient title bars with a
- * gold rule and icon tile, a KPI row, two metric cards with aligned bars and
- * rank pills, the career table restyled, and a branded analysis panel.
+ * mak's briefs of 2026-11-05, matched to attached_assets/statsdesign.png).
+ * Rendered under the whole existing Stats section.
  *
- * The block is its own size container ("stp"): every breakpoint below reads
- * the width the block actually has, not the viewport, so a narrow preview
- * pane reflows the layout instead of shrinking it. Scoped to .scp-stp.
+ * The block is its own size container ("stp") and every breakpoint reads
+ * the block's own width: the page column is --sc-shell wide on a desktop
+ * and ~735px in mak's preview pane, and the reference was drawn at 1536px,
+ * so the layout ADAPTS to the width it has (five KPI cards, then three and
+ * two, then two; two metric panels, then one) rather than shrinking the
+ * desktop arrangement. Tokens are scoped to .scp-stp; the game-log block
+ * below is another session's.
  */
 .scp .scp-stp {
-  --stp-navy: #0b3a7a;
-  --stp-navy-deep: #0d1b38;
-  --stp-navy-2: #12264f;
-  --stp-gold: #d4af37;
-  --stp-gold-deep: #b8901f;
-  --stp-gold-ink: #8a6205;
-  --stp-cream: #fbf3dd;
-  --stp-cream-2: #fff9ea;
-  --stp-line: #dbe2ec;
-  --stp-line-2: #c9d3e0;
-  --stp-bg: #f5f8fc;
-  --stp-ink: #0d1b38;
-  --stp-muted: #5b6778;
-  --stp-blue: #3b5b96;
-  --stp-green: #1f7a4d;
-  --stp-red: #a23b2a;
+  --sc-premium-navy: #0d1b38;
+  --sc-premium-navy-2: #13274f;
+  --sc-premium-navy-3: #1c3566;
+  --sc-premium-brand: #0b3a7a;
+  --sc-premium-gold: #d4af37;
+  --sc-premium-gold-deep: #b8901f;
+  --sc-premium-gold-ink: #8a6205;
+  --sc-premium-surface: #f5f8fc;
+  --sc-premium-surface-2: #eaf0f7;
+  --sc-premium-border: #d5dfed;
+  --sc-premium-border-2: #c4d1e2;
+  --sc-premium-text: #102344;
+  --sc-premium-muted: #5a6f8d;
+  --sc-premium-cream: #fbf3dd;
+  --sc-premium-cream-2: #fff8e6;
+  --sc-premium-blue: #5b7db3;
+  --sc-premium-green: #2f8f5b;
+  --sc-premium-red: #b2433a;
+  --sc-premium-radius: 14px;
+  --sc-premium-gap: 14px;
+  --sc-premium-padding: 18px;
+  --sc-premium-shadow:
+    0 5px 14px rgba(12, 31, 64, 0.08),
+    0 12px 28px rgba(12, 31, 64, 0.05);
+  --sc-premium-card-shadow:
+    inset 0 1px 0 #fff,
+    0 2px 5px rgba(12, 31, 64, 0.06),
+    0 10px 22px rgba(12, 31, 64, 0.08);
   container-type: inline-size;
   container-name: stp;
   display: grid;
-  gap: 20px;
+  gap: 16px;
   margin: 8px 0 0;
-  padding: 0;
+  padding: 0 0 4px;
+  color: var(--sc-premium-text);
 }
 
 .scp .scp-stp-label {
@@ -12382,29 +12397,26 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-sec {
   min-width: 0;
-  border: 1px solid var(--stp-line);
-  border-radius: 18px;
+  border: 1px solid var(--sc-premium-border);
+  border-radius: var(--sc-premium-radius);
   background: #fff;
-  box-shadow:
-    0 1px 2px rgba(13, 27, 56, 0.05),
-    0 12px 32px rgba(13, 27, 56, 0.09);
+  box-shadow: var(--sc-premium-shadow);
   overflow: hidden;
 }
 
-/* ---- title bars: 72px on the full layout, a premium title bar not a toolbar */
+/* ---- the bars: a navy band, a gold rule, quiet diagonals at the right */
 
 .scp .scp-stp-bar {
   position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 72px;
-  padding: 14px 22px 14px 26px;
+  min-height: 66px;
+  padding: 12px 22px 12px 24px;
   color: #fff;
   background:
-    radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 55%),
-    linear-gradient(100deg, var(--stp-navy-deep) 0%, var(--stp-navy-2) 60%, var(--stp-navy) 100%);
-  border-bottom: 1px solid rgba(212, 175, 55, 0.45);
+    radial-gradient(130% 200% at 0% 0%, rgba(255, 255, 255, 0.07) 0%, transparent 55%),
+    linear-gradient(100deg, var(--sc-premium-navy) 0%, var(--sc-premium-navy-2) 55%, var(--sc-premium-navy-3) 100%);
   overflow: hidden;
 }
 
@@ -12412,20 +12424,17 @@ a.scp-peer:focus-visible {
   position: absolute;
   inset: 0 auto 0 0;
   width: 6px;
-  background: linear-gradient(180deg, var(--stp-gold), var(--stp-gold-deep));
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, var(--sc-premium-gold), var(--sc-premium-gold-deep));
 }
 
 .scp .scp-stp-bar-stripes {
   position: absolute;
   inset: 0 0 0 auto;
-  width: 38%;
+  width: 150px;
   pointer-events: none;
   background:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 22px),
-    repeating-linear-gradient(115deg, rgba(212, 175, 55, 0.09) 0 1px, transparent 1px 66px);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
+    linear-gradient(115deg, transparent 0 60%, rgba(212, 175, 55, 0.28) 60% 63%, transparent 63% 72%, rgba(212, 175, 55, 0.18) 72% 74%, transparent 74%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 26px);
 }
 
 .scp .scp-stp-bar-icon {
@@ -12435,18 +12444,15 @@ a.scp-peer:focus-visible {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(212, 175, 55, 0.55);
-  border-radius: 12px;
-  color: var(--stp-gold);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 5px 14px rgba(0, 0, 0, 0.3);
+  width: 36px;
+  height: 36px;
+  color: var(--sc-premium-gold);
 }
 
 .scp .scp-stp-bar-icon svg {
-  width: 23px;
-  height: 23px;
+  width: 32px;
+  height: 32px;
+  stroke-width: 2.1;
 }
 
 .scp .scp-stp-bar-text {
@@ -12454,24 +12460,23 @@ a.scp-peer:focus-visible {
   z-index: 1;
   display: flex;
   flex: 1 1 auto;
-  align-items: baseline;
-  gap: 18px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   min-width: 0;
 }
 
 .scp .scp-stp-bar-title {
-  flex: 0 0 auto;
   margin: 0 !important;
   padding: 0;
   border: 0;
   color: #fff !important;
   font-family: var(--scp-ph-sans);
-  font-size: 22px !important;
+  font-size: 21px !important;
   font-weight: 800;
   letter-spacing: -0.012em;
   line-height: 1.15;
   text-transform: none;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .scp .scp-stp-bar-title::after {
@@ -12479,13 +12484,28 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-bar-sub {
-  flex: 1 1 auto;
   margin: 0;
-  padding-left: 18px;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255, 255, 255, 0.86);
   font-size: 13.5px;
+  font-weight: 500;
   line-height: 1.4;
+}
+
+.scp .scp-stp-bar.is-hero {
+  min-height: 82px;
+  padding: 16px 24px 16px 28px;
+}
+
+.scp .scp-stp-bar.is-hero .scp-stp-bar-rule {
+  width: 7px;
+}
+
+.scp .scp-stp-bar.is-hero .scp-stp-bar-title {
+  font-size: 28px !important;
+}
+
+.scp .scp-stp-bar.is-hero .scp-stp-bar-sub {
+  font-size: 14.5px;
 }
 
 .scp .scp-stp-bar-ctl {
@@ -12493,99 +12513,107 @@ a.scp-peer:focus-visible {
   z-index: 1;
   flex: 0 0 auto;
   margin-left: auto;
+  padding-left: 12px;
 }
 
-/* The segmented toggle on a navy bar: gold-accented selected state. */
+/* The segmented toggle: the selected state filled gold, navy text. */
 .scp .scp-stp .scp-stp-seg {
   margin: 0;
   padding: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .scp .scp-stp .scp-stp-seg button {
-  padding: 6px 14px;
+  padding: 7px 16px;
   border: 0;
   border-radius: 999px;
   background: none;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 12.5px;
+  color: #fff;
+  font-size: 13.5px;
   font-weight: 700;
 }
 
 .scp .scp-stp .scp-stp-seg button[aria-pressed="true"] {
-  color: var(--stp-ink);
-  background: linear-gradient(180deg, #fff, #f1e6c6);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(212, 175, 55, 0.6);
+  color: var(--sc-premium-text);
+  background: var(--sc-premium-gold);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .scp .scp-stp-body {
-  padding: 18px 22px 20px;
-  background: linear-gradient(180deg, #fff 0%, var(--stp-bg) 100%);
+  padding: var(--sc-premium-padding) var(--sc-premium-padding) 20px;
+  background: linear-gradient(180deg, #f9fbfd 0%, var(--sc-premium-surface) 100%);
 }
 
-/* ---- the KPI row: five substantial cards, ~96px tall */
+/* ---- the KPI cards: five distinct cards, then three, then two */
 
 .scp .scp-stp-kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--sc-premium-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .scp .scp-stp-kpi {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas: "icon label label" "icon value sub";
+  column-gap: 12px;
+  row-gap: 3px;
+  align-items: center;
+  align-content: center;
   min-width: 0;
-  min-height: 96px;
+  min-height: 94px;
   margin: 0;
-  padding: 14px 16px 13px 60px;
-  border: 1px solid var(--stp-line-2);
-  border-radius: 14px;
-  background: linear-gradient(170deg, #ffffff 0%, #eef3f9 100%);
-  box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(13, 27, 56, 0.06), 0 8px 20px rgba(13, 27, 56, 0.08);
+  padding: 14px 16px;
+  border: 1px solid var(--sc-premium-border-2);
+  border-radius: var(--sc-premium-radius);
+  background: linear-gradient(170deg, #ffffff 0%, var(--sc-premium-surface-2) 100%);
+  box-shadow: var(--sc-premium-card-shadow);
 }
 
 .scp .scp-stp-kpi-icon {
-  position: absolute;
-  top: 50%;
-  left: 14px;
+  grid-area: icon;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
-  color: var(--stp-gold-ink);
-  background: linear-gradient(160deg, #fff6dc, var(--stp-cream));
+  color: var(--sc-premium-gold-ink);
+  background: linear-gradient(160deg, #fff6dc, var(--sc-premium-cream));
   box-shadow: inset 0 0 0 1px rgba(184, 144, 31, 0.35), 0 2px 6px rgba(184, 144, 31, 0.18);
-  transform: translateY(-50%);
 }
 
 .scp .scp-stp-kpi-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .scp .scp-stp-kpi-label {
-  color: var(--stp-muted);
+  grid-area: label;
+  align-self: end;
+  color: var(--sc-premium-muted);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.09em;
-  line-height: 1.2;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
   text-transform: uppercase;
 }
 
 .scp .scp-stp-kpi-value {
-  color: var(--stp-ink);
+  grid-area: value;
+  align-self: start;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  color: var(--sc-premium-text);
   font-family: var(--scp-ph-sans);
-  font-size: 30px;
+  font-size: 29px;
   font-weight: 800;
   font-stretch: 80%;
   font-variant-numeric: tabular-nums;
@@ -12594,7 +12622,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-kpi-value small {
-  color: var(--stp-muted);
+  color: var(--sc-premium-muted);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -12602,27 +12630,33 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-kpi-dot {
-  color: var(--stp-line-2);
+  color: var(--sc-premium-border-2);
   font-style: normal;
 }
 
+/* The support ("81 Targets") in its own column beside the value, on its baseline. */
 .scp .scp-stp-kpi-sub {
-  color: var(--stp-muted);
-  font-size: 12px;
+  grid-area: sub;
+  align-self: end;
+  justify-self: start;
+  padding-bottom: 3px;
+  color: var(--sc-premium-text);
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-/* ---- the metric cards: sized to their rows, not stretched to each other */
+/* ---- the metric panels */
 
 .scp .scp-stp-colhead {
   margin: 0 0 8px;
-  color: var(--stp-ink);
+  color: var(--sc-premium-text);
   font-size: 13px;
   font-weight: 800;
 }
 
 .scp .scp-stp-colhead small {
-  color: var(--stp-muted);
+  color: var(--sc-premium-muted);
   font-weight: 600;
 }
 
@@ -12630,7 +12664,7 @@ a.scp-peer:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 16px;
+  gap: 18px;
 }
 
 .scp .scp-stp-cards + .scp-stp-colhead {
@@ -12640,10 +12674,10 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-card {
   min-width: 0;
   padding: 16px 18px 12px;
-  border: 1px solid var(--stp-line-2);
-  border-radius: 14px;
-  background: linear-gradient(170deg, #ffffff 0%, #eef3f9 100%);
-  box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(13, 27, 56, 0.06), 0 10px 24px rgba(13, 27, 56, 0.09);
+  border: 1px solid var(--sc-premium-border-2);
+  border-radius: var(--sc-premium-radius);
+  background: linear-gradient(175deg, #f8fafd 0%, var(--sc-premium-surface-2) 100%);
+  box-shadow: var(--sc-premium-card-shadow);
 }
 
 .scp .scp-stp-card.is-wide {
@@ -12654,16 +12688,16 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-subhead {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   margin: 0 0 8px !important;
   padding: 0;
   border: 0;
-  color: var(--stp-ink) !important;
+  color: var(--sc-premium-text) !important;
   font-family: var(--scp-ph-sans);
-  font-size: 15px !important;
+  font-size: 18px !important;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  text-transform: none;
 }
 
 .scp .scp-stp-card-title::after,
@@ -12672,10 +12706,10 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-subhead {
-  margin-top: 12px !important;
+  margin-top: 10px !important;
   padding-top: 12px;
-  border-top: 1px solid var(--stp-line);
-  font-size: 13.5px !important;
+  border-top: 1px solid var(--sc-premium-border-2);
+  font-size: 17px !important;
 }
 
 .scp .scp-stp-card-icon {
@@ -12685,15 +12719,13 @@ a.scp-peer:focus-visible {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  color: var(--stp-gold-ink);
-  background: linear-gradient(160deg, #fff6dc, var(--stp-cream));
-  box-shadow: inset 0 0 0 1px rgba(184, 144, 31, 0.35), 0 2px 6px rgba(184, 144, 31, 0.16);
+  color: var(--sc-premium-gold);
 }
 
 .scp .scp-stp-card-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.2;
 }
 
 .scp .scp-stp-rows {
@@ -12702,14 +12734,16 @@ a.scp-peer:focus-visible {
   list-style: none;
 }
 
+/* Four regions: label, bar, value, pill. The minimums keep the label on one
+   line and the bar substantial; under them the row reflows (below). */
 .scp .scp-stp-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 64px 96px;
+  grid-template-columns: minmax(204px, 1.4fr) minmax(96px, 1fr) 72px 104px;
   align-items: center;
   gap: 14px;
   margin: 0;
   padding: 10px 0;
-  border-top: 1px solid rgba(13, 27, 56, 0.08);
+  border-top: 1px solid rgba(16, 35, 68, 0.1);
 }
 
 .scp .scp-stp-row:first-child {
@@ -12717,25 +12751,25 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-row-label {
-  color: var(--stp-ink);
+  color: var(--sc-premium-text);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   line-height: 1.2;
   text-transform: uppercase;
 }
 
 .scp .scp-stp-bar-track {
   display: block;
-  height: 9px;
+  height: 10px;
   overflow: hidden;
   border-radius: 999px;
-  background: #dfe6ef;
-  box-shadow: inset 0 1px 2px rgba(13, 27, 56, 0.12);
+  background: #d8e0ea;
+  box-shadow: inset 0 1px 2px rgba(16, 35, 68, 0.08);
 }
 
 .scp .scp-stp-bar-track.is-empty {
-  background: repeating-linear-gradient(90deg, #dfe6ef 0 6px, transparent 6px 10px);
+  background: repeating-linear-gradient(90deg, #d8e0ea 0 6px, transparent 6px 10px);
   box-shadow: none;
 }
 
@@ -12743,26 +12777,27 @@ a.scp-peer:focus-visible {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--stp-navy-2), var(--stp-blue));
+  background: linear-gradient(90deg, #4f6ea3, var(--sc-premium-blue));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .scp .scp-stp-row[data-family="use"] .scp-stp-bar-fill {
-  background: linear-gradient(90deg, #176240, #2f9a66);
+  background: linear-gradient(90deg, #237a4b, var(--sc-premium-green));
+}
+
+.scp .scp-stp-row[data-family="style"] .scp-stp-bar-fill,
+.scp .scp-stp-bar-track[data-tier="none"] .scp-stp-bar-fill {
+  background: linear-gradient(90deg, #6f9a83, #88ad99);
 }
 
 .scp .scp-stp-bar-track[data-tier="poor"] .scp-stp-bar-fill {
-  background: linear-gradient(90deg, #8e3222, #c15a48);
-}
-
-.scp .scp-stp-bar-track[data-tier="none"] .scp-stp-bar-fill {
-  background: linear-gradient(90deg, #8a94a6, #b4bccb);
+  background: linear-gradient(90deg, #9c3830, var(--sc-premium-red));
 }
 
 .scp .scp-stp-row-value {
-  color: var(--stp-ink);
+  color: var(--sc-premium-text);
   font-family: var(--scp-ph-sans);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   font-stretch: 80%;
   font-variant-numeric: tabular-nums;
@@ -12770,61 +12805,63 @@ a.scp-peer:focus-visible {
   line-height: 1;
 }
 
+/* Rank pills: one size, lightly tinted by tier, readable without zooming. */
 .scp .scp-stp-rank {
   justify-self: end;
-  padding: 4px 11px;
+  min-width: 92px;
+  padding: 5px 11px;
   border-radius: 999px;
-  color: var(--stp-blue);
-  background: #e6edf8;
-  box-shadow: inset 0 0 0 1px rgba(59, 91, 150, 0.22);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.03em;
+  color: var(--sc-premium-text);
+  background: #e6ecf5;
+  box-shadow: inset 0 0 0 1px rgba(16, 35, 68, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
   white-space: nowrap;
 }
 
 .scp .scp-stp-rank[data-tier="good"] {
-  color: var(--stp-green);
-  background: #e1f1e8;
-  box-shadow: inset 0 0 0 1px rgba(31, 122, 77, 0.28);
+  color: #1d6b45;
+  background: #e2f1e8;
+  box-shadow: inset 0 0 0 1px rgba(31, 122, 77, 0.22);
 }
 
 .scp .scp-stp-rank[data-tier="poor"] {
-  color: var(--stp-red);
-  background: #f8e4df;
-  box-shadow: inset 0 0 0 1px rgba(162, 59, 42, 0.28);
+  color: #963428;
+  background: #f8e5e1;
+  box-shadow: inset 0 0 0 1px rgba(162, 59, 42, 0.22);
 }
 
 .scp .scp-stp-rank[data-tier="none"] {
-  color: var(--stp-muted);
+  color: var(--sc-premium-muted);
   background: #eef1f5;
-  box-shadow: inset 0 0 0 1px rgba(91, 103, 120, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(90, 111, 141, 0.2);
 }
 
-/* The qualification note: one muted row with an information mark. */
+/* The qualification note: a bare muted line with an information mark. */
 .scp .scp-stp p.scp-stp-note {
   display: flex;
   width: 100%;
   max-width: none;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   margin: 14px 0 0;
-  padding: 9px 13px;
-  border: 1px solid var(--stp-line);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--stp-muted);
-  font-size: 12.5px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--sc-premium-muted);
+  font-size: 13px;
   line-height: 1.4;
 }
 
 .scp .scp-stp-note-icon {
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--stp-navy);
+  color: var(--sc-premium-navy-2);
 }
 
-/* ---- the career table: readable type, 36px rows, the season column pinned */
+/* ---- the career table: 13px type in 36px rows, the season column pinned */
 
 .scp .scp-stp-tablewrap {
   position: relative;
@@ -12838,7 +12875,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-stp-tablewrap .scp-table--career {
-  min-width: 760px;
+  min-width: 780px;
   border: 0;
   border-radius: 0;
   font-size: 13px;
@@ -12848,25 +12885,31 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-tablewrap .scp-table--career td {
   padding: 10px 12px;
   line-height: 1.2;
+  text-align: center;
 }
 
 .scp .scp-stp-tablewrap .scp-table--career thead th {
   color: #fff;
-  background: var(--stp-navy-deep);
-  border-bottom: 1px solid rgba(212, 175, 55, 0.45);
-  font-size: 11px;
+  background: var(--sc-premium-navy);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
+.scp .scp-stp-tablewrap .scp-table--career thead th:first-child {
+  color: var(--sc-premium-gold);
+  border-left: 0;
+}
+
 .scp .scp-stp-tablewrap .scp-table--career .scp-group-row td {
-  color: var(--stp-gold);
-  background: var(--stp-navy-deep);
-  border-bottom: 0;
-  font-size: 10.5px;
+  color: var(--sc-premium-gold);
+  background: var(--sc-premium-navy);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -12876,7 +12919,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(even) th,
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(even) td {
-  background: #f6f8fb;
+  background: #f4f6fa;
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tbody tr:nth-child(odd) th,
@@ -12886,16 +12929,21 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-tablewrap .scp-table--career tbody th,
 .scp .scp-stp-tablewrap .scp-table--career tbody td {
-  border-top: 1px solid var(--stp-line);
+  border-top: 1px solid var(--sc-premium-border);
+  border-left: 1px solid var(--sc-premium-border);
   font-variant-numeric: tabular-nums;
 }
 
+.scp .scp-stp-tablewrap .scp-table--career tbody td:first-of-type,
 .scp .scp-stp-tablewrap .scp-table--career tbody th {
-  color: var(--stp-ink);
+  border-left: 0;
+}
+
+.scp .scp-stp-tablewrap .scp-table--career tbody th {
+  color: var(--sc-premium-text);
   font-weight: 800;
 }
 
-/* The season column stays while the sheet scrolls. */
 .scp .scp-stp-tablewrap .scp-table--career thead th:first-child,
 .scp .scp-stp-tablewrap .scp-table--career .scp-group-row .scp-group-pad,
 .scp .scp-stp-tablewrap .scp-table--career tbody th,
@@ -12907,21 +12955,21 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-tablewrap .scp-table--career thead th:first-child,
 .scp .scp-stp-tablewrap .scp-table--career .scp-group-row .scp-group-pad {
-  background: var(--stp-navy-deep);
+  background: var(--sc-premium-navy);
 }
 
-.scp .scp-stp-tablewrap .scp-table--career tr.is-current th,
 .scp .scp-stp-tablewrap .scp-table--career tr.is-current td {
-  background: var(--stp-cream-2) !important;
+  background: var(--sc-premium-cream-2) !important;
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tr.is-current th {
-  box-shadow: inset 5px 0 0 var(--stp-gold);
-  color: var(--stp-gold-ink);
+  background: linear-gradient(180deg, #f0cf62, var(--sc-premium-gold)) !important;
+  color: var(--sc-premium-text);
 }
 
 .scp .scp-stp-tablewrap .scp-table--career tr.is-current .scp-partial {
-  color: var(--stp-gold-ink);
+  margin-left: 6px;
+  color: var(--sc-premium-text);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -12930,21 +12978,26 @@ a.scp-peer:focus-visible {
 
 .scp .scp-stp-tablewrap .scp-table--career tfoot th,
 .scp .scp-stp-tablewrap .scp-table--career tfoot td {
-  color: var(--stp-ink);
-  background: #e7edf5;
-  border-top: 2px solid var(--stp-line-2);
+  color: var(--sc-premium-text);
+  background: #e3e9f2;
+  border-top: 2px solid var(--sc-premium-border-2);
+  border-left: 1px solid var(--sc-premium-border-2);
   font-weight: 800;
 }
 
-/* ---- the analysis panel: a featured branded section */
+.scp .scp-stp-tablewrap .scp-table--career tfoot th {
+  border-left: 0;
+}
+
+/* ---- the analysis panel: cream, gold-edged, an angled navy brand block */
 
 .scp .scp-stp-analysis {
   display: grid;
-  grid-template-columns: 176px minmax(0, 1fr);
-  border: 1px solid rgba(212, 175, 55, 0.55);
-  border-radius: 18px;
-  background: linear-gradient(170deg, #fffdf6 0%, var(--stp-cream-2) 100%);
-  box-shadow: 0 1px 2px rgba(13, 27, 56, 0.05), 0 12px 30px rgba(184, 144, 31, 0.16);
+  grid-template-columns: 236px minmax(0, 1fr);
+  border: 1.5px solid var(--sc-premium-gold);
+  border-radius: var(--sc-premium-radius);
+  background: linear-gradient(90deg, #fff4d6 0%, #fffaee 40%, #fff7e3 100%);
+  box-shadow: 0 2px 4px rgba(12, 31, 64, 0.05), 0 12px 28px rgba(184, 144, 31, 0.2);
   overflow: hidden;
 }
 
@@ -12952,28 +13005,35 @@ a.scp-peer:focus-visible {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 22px 18px;
-  color: var(--stp-gold);
-  background:
-    linear-gradient(115deg, transparent 0 78%, rgba(212, 175, 55, 0.18) 78% 79%, transparent 79%),
-    linear-gradient(170deg, var(--stp-navy-deep), var(--stp-navy-2));
-  text-align: center;
+  justify-content: flex-start;
+  margin-right: -36px;
+  padding: 22px 54px 22px 26px;
+  color: #fff;
+  background: linear-gradient(170deg, var(--sc-premium-navy), var(--sc-premium-navy-2));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 34px) 100%, 0 100%);
+  text-align: left;
+}
+
+.scp .scp-stp-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--sc-premium-gold);
+  clip-path: polygon(calc(100% - 8px) 0, 100% 0, calc(100% - 34px) 100%, calc(100% - 42px) 100%);
 }
 
 .scp .scp-stp-brand-rule {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 4px;
-  background: linear-gradient(180deg, var(--stp-gold), var(--stp-gold-deep));
+  display: none;
 }
 
 .scp .scp-stp-brand-text {
+  position: relative;
   font-family: var(--scp-ph-sans);
-  font-size: 15px;
+  font-size: 18px;
+  font-style: italic;
   font-weight: 800;
-  letter-spacing: 0.14em;
-  line-height: 1.45;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
   text-transform: uppercase;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 }
@@ -12985,28 +13045,33 @@ a.scp-peer:focus-visible {
 .scp .scp-stp-analysis-cols {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-left: 36px;
 }
 
 .scp .scp-stp-analysis-part {
-  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "head" "body" "note";
+  align-content: center;
+  padding: 16px 20px 16px 70px;
 }
 
 .scp .scp-stp-analysis-part + .scp-stp-analysis-part {
-  border-left: 1px solid rgba(184, 144, 31, 0.32);
+  border-left: 1px solid rgba(184, 144, 31, 0.5);
 }
 
 .scp .scp-stp-analysis-h {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0 0 8px !important;
+  grid-area: head;
+  position: relative;
+  display: block;
+  margin: 0 0 5px !important;
   padding: 0;
   border: 0;
-  color: var(--stp-gold-ink) !important;
+  color: var(--sc-premium-gold-ink) !important;
   font-family: var(--scp-ph-sans);
-  font-size: 13px !important;
+  font-size: 14px !important;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -13014,41 +13079,54 @@ a.scp-peer:focus-visible {
   display: none;
 }
 
+/* The gold icon stands in the part's left gutter, centered on the heading. */
+.scp .scp-stp-analysis-h .scp-stp-card-icon {
+  position: absolute;
+  top: 50%;
+  left: -50px;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+}
+
+.scp .scp-stp-analysis-h .scp-stp-card-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
 .scp .scp-stp-analysis-part p {
+  grid-area: body;
   margin: 0;
-  color: var(--stp-ink);
-  font-size: 15px;
+  color: var(--sc-premium-text);
+  font-size: 13.5px;
+  font-weight: 500;
   line-height: 1.5;
 }
 
 .scp .scp-stp-analysis-note {
-  margin-top: 5px !important;
-  color: var(--stp-muted) !important;
-  font-size: 12.5px !important;
+  grid-area: note;
+  margin-top: 4px !important;
+  color: var(--sc-premium-muted) !important;
+  font-size: 12px !important;
 }
 
 /* ---- responsive, on the block's own width */
 
-@container stp (max-width: 1000px) {
+/* The desktop column is --sc-shell (1180px) with the tab's gutters inside
+   it, so five cards hold down to 1100px of block width. */
+@container stp (max-width: 1100px) {
   .scp .scp-stp-kpis {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
 
-  /* Side by side the metric labels wrap to three lines here; stacked, each
-     panel keeps the full row anatomy readable. */
+@container stp (max-width: 1000px) {
   .scp .scp-stp-cards {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .scp .scp-stp-bar-text {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
-  }
-
-  .scp .scp-stp-bar-sub {
-    padding-left: 0;
-    border-left: 0;
+  .scp .scp-stp-bar.is-hero .scp-stp-bar-title {
+    font-size: 26px !important;
   }
 }
 
@@ -13058,27 +13136,33 @@ a.scp-peer:focus-visible {
   }
 
   .scp .scp-stp-brand {
-    padding: 12px 16px;
-    background: linear-gradient(170deg, var(--stp-navy-deep), var(--stp-navy-2));
+    margin-right: 0;
+    padding: 12px 20px;
+    clip-path: none;
   }
 
-  .scp .scp-stp-brand-rule {
+  .scp .scp-stp-brand::before {
     inset: auto 0 0 0;
-    width: auto;
     height: 3px;
+    clip-path: none;
   }
 
   .scp .scp-stp-brand-text > span {
     display: inline;
   }
 
+  .scp .scp-stp-brand-text > span + span {
+    margin-left: 0.3em;
+  }
+
   .scp .scp-stp-analysis-cols {
     grid-template-columns: minmax(0, 1fr);
+    padding-left: 0;
   }
 
   .scp .scp-stp-analysis-part + .scp-stp-analysis-part {
     border-left: 0;
-    border-top: 1px solid rgba(184, 144, 31, 0.32);
+    border-top: 1px solid rgba(184, 144, 31, 0.5);
   }
 
   .scp .scp-stp-tablewrap::after {
@@ -13094,19 +13178,10 @@ a.scp-peer:focus-visible {
 @container stp (max-width: 640px) {
   .scp .scp-stp-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
   }
 
-  .scp .scp-stp-kpi {
-    min-height: 84px;
-    padding-left: 54px;
-  }
-
-  .scp .scp-stp-kpi-value {
-    font-size: 26px;
-  }
-
-  .scp .scp-stp-bar {
+  .scp .scp-stp-bar,
+  .scp .scp-stp-bar.is-hero {
     flex-wrap: wrap;
     min-height: 0;
     padding: 14px 16px 14px 20px;
@@ -13114,15 +13189,37 @@ a.scp-peer:focus-visible {
 
   .scp .scp-stp-bar-ctl {
     margin-left: 0;
+    padding-left: 0;
     width: 100%;
   }
+}
 
+@container stp (max-width: 560px) {
   .scp .scp-stp-body {
     padding: 14px 14px 16px;
   }
 
+  .scp .scp-stp-kpi {
+    min-height: 84px;
+    padding: 12px 14px;
+  }
+
+  .scp .scp-stp-kpi-value {
+    font-size: 26px;
+  }
+
+  .scp .scp-stp-kpi {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "icon label" "icon value" "icon sub";
+  }
+
+  .scp .scp-stp-kpi-sub {
+    padding: 0;
+    font-size: 12.5px;
+  }
+
   .scp .scp-stp-row {
-    grid-template-columns: minmax(0, 1fr) 56px auto;
+    grid-template-columns: minmax(0, 1fr) 60px auto;
     grid-template-areas: "label value rank" "bar bar bar";
     gap: 10px;
     row-gap: 6px;
@@ -13130,8 +13227,33 @@ a.scp-peer:focus-visible {
 
   .scp .scp-stp-row-label { grid-area: label; }
   .scp .scp-stp-row-value { grid-area: value; }
-  .scp .scp-stp-rank { grid-area: rank; }
+  .scp .scp-stp-rank { grid-area: rank; min-width: 0; }
   .scp .scp-stp-bar-track { grid-area: bar; }
+
+  .scp .scp-stp-analysis-part {
+    padding-left: 20px;
+  }
+
+  .scp .scp-stp-analysis-h .scp-stp-card-icon {
+    position: static;
+    display: inline-flex;
+    width: 26px;
+    height: 26px;
+    margin-right: 8px;
+    vertical-align: middle;
+    transform: none;
+  }
+
+  .scp .scp-stp-analysis-h .scp-stp-card-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@container stp (max-width: 380px) {
+  .scp .scp-stp-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ------------------------------------------ game log: premium comparison */
