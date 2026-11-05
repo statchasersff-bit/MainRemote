@@ -1086,6 +1086,26 @@ tooltips/popovers, the baseline badge names the live blend phase instead of a
 fixed "Preseason Baseline Active", CSV has 17 week columns (the source's
 header said 18) plus PO2/PO3, and card deltas print one decimal.
 
+**Premium redesign, in comparison (2026-11-05, not approved).** mak's brief
+("exact premium NFL strength of schedule redesign") is built as
+`src/lib/sos-premium.ts` (`renderSosPremium`, root `.scsos-pm`, CSS at the
+end of `public/sos.css`) and printed INSIDE `.scsos-view` after the original
+grid, under a "New Design · Comparison" flag, on the overview and the four
+position pages (not the playoffs page); `SOS_PREMIUM_COMPARE` in
+sos-render.ts (env `SC_SOS_PREMIUM_COMPARE=0` turns it off). Nothing is
+computed twice: it reads the same SosBoard, and its controls are the
+original's links (tab/scoring pills carry data-tab/pos/scoring and swap in
+place, positions are the sub-pages, Export is the same CSV route); the blend
+badge and legend tip share `baselineInfo()` / `legendTipBody()`. Rows use
+`data-pm-row` (the original keeps `data-row` and the `#scsos-team-*` ids);
+the client (`client/sos.ts`) wires each board from its own root with a
+`BoardNames` table - sorting, card jumps, compact names and the finder, which
+on the premium block also serves the Team board (`data-find` = name + code).
+Tier colors are this sheet's own (shared `[data-bucket]` rules), on an inner
+`.scsos-pm-cell` span so the td's padding is the gutter. Sticky Player +
+Team columns above a 700px container, Player only below. The test "the
+premium comparison block" compares every rank, tile and card to the original.
+
 ## Redraft Draft Strategy Analysis
 
 `[statchasers_redraft_strategy]` (API `/redraft-strategy`, fragment

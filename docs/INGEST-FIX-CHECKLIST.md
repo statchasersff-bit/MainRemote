@@ -1,5 +1,14 @@
 # The news ingest: how it reaches the feed
 
+**Since 2026-11-05 the wire is read from RotoWire directly.** The timer sweeps
+RotoWire's 32 team news pages every ten minutes (`lib/rotowire-news.ts`,
+`runRotowireIngest` in `routes/news.ts`, `POST /api/ingest/rotowire` by hand)
+and stores the notes in the wire lane under the same ids and titles the relay
+used. The Dynasty Command route below is now the fallback: the timer reads it
+only when the sweep itself fails, and `POST /api/ingest` still pulls or pushes
+it. `/api/status` reports the sweep under `rotowire` (pages answered, where the
+notes' times came from); `ingest` reflects whichever source last succeeded.
+
 **Resolved 2026-08-20 14:00 UTC.** The ingest calls Dynasty Command's Replit
 address directly, authenticated with a scoped key, so Cloudflare is not in the
 path. Bot Fight Mode stays on at full strength and nothing in Cloudflare was

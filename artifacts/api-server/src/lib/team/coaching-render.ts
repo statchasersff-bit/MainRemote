@@ -42,6 +42,7 @@ import { renderCoachingPremium } from "./coaching-premium";
 import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
 import { renderCoachingCareerPremium } from "./coaching-career-premium";
 import { renderCoachingSeasonsPremium } from "./coaching-seasons-premium";
+import { renderCoachingFantasyPremium } from "./coaching-fantasy-premium";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
@@ -1868,10 +1869,10 @@ function careerHeader(c: TeamCoaching): string {
 
 /* ---------------------------------------------------------------- finishes */
 
-type FinishRow = TeamCoaching["finishes"]["rows"][number];
+export type FinishRow = TeamCoaching["finishes"]["rows"][number];
 
 /** "QB18 · Jones" -> position, rank, player. */
-function readFinish(text: string): { pos: string; rank: number; player: string } | null {
+export function readFinish(text: string): { pos: string; rank: number; player: string } | null {
   const m = text.match(/^([A-Z]{2})(\d+) · (.+)$/);
   return m ? { pos: m[1], rank: Number(m[2]), player: m[3] } : null;
 }
@@ -1887,7 +1888,7 @@ const FINISH_TIERS: Array<[number, string, string]> = [
   [24, "mid", "13-24"],
   [Infinity, "low", "25+"],
 ];
-const finishTier = (rank: number) => FINISH_TIERS.find(([max]) => rank <= max) as [number, string, string];
+export const finishTier = (rank: number) => FINISH_TIERS.find(([max]) => rank <= max) as [number, string, string];
 
 function finishPill(pos: string, rank: number, provisional = false, partial = false): string {
   const [, key, label] = finishTier(rank);
@@ -1901,7 +1902,7 @@ function finishPill(pos: string, rank: number, provisional = false, partial = fa
 }
 
 /** "Patriots 2021" / "Patriots · 2026" -> club, season. */
-function finishStop(row: FinishRow): { club: string; year: string } {
+export function finishStop(row: FinishRow): { club: string; year: string } {
   const m = row.stop.match(/^(.*?)\s*(?:·\s*)?(\d{4})$/);
   return m ? { club: m[1], year: m[2] } : { club: row.stop, year: "" };
 }
@@ -1928,13 +1929,17 @@ function finishFor(c: TeamCoaching, fpYear: string): FinishRow | undefined {
  * three-week QB34 never reads like a season-end one. The stored methodology
  * note sits one click down.
  */
+/** Every tracked season (the builder's history) plus the in-season row, oldest first. */
+export function finishRows(c: TeamCoaching): FinishRow[] {
+  return c.finishes.history
+    ? [...c.finishes.history.map((r) => ({ ...r, current: false })), ...c.finishes.rows.filter((r) => r.current)]
+    : c.finishes.rows;
+}
+
 function finishes(c: TeamCoaching, team: NflTeam): string {
   const last = c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
-  // Every tracked season (the builder's history) plus the in-season row.
-  const all: FinishRow[] = c.finishes.history
-    ? [...c.finishes.history.map((r) => ({ ...r, current: false })), ...c.finishes.rows.filter((r) => r.current)]
-    : c.finishes.rows;
+  const all = finishRows(c);
   const rows = all
     .map((row) => {
       const { club, year } = finishStop(row);
@@ -2248,7 +2253,22 @@ function scoreState(c: TeamCoaching): string {
  * sample, each one line. Every item is read off the module above; the
  * builder's full paragraph stays one click down.
  */
-function bottomLine(c: TeamCoaching, view: UsageView | null): string {
+export interface BottomLineModel {
+  season: number;
+  /** "Strong" / "Partial" / "Limited": last season's carryover, from the reliability rating. */
+  carry: string;
+  /** "↑ Shotgun", "↓ Pace": this season's directional signals. */
+  signals: string[];
+  /** "↑ TE targets": the caller's historical target leans against the league. */
+  leans: string[];
+  /** Games in the ledger sample, when the entry has one. */
+  games: number | null;
+  /** The builder's full paragraph. */
+  summary: string;
+}
+
+/** The bottom line's items, shared with the premium block (coaching-fantasy-premium.ts). */
+export function bottomLineModel(c: TeamCoaching, view: UsageView | null): BottomLineModel {
   const season = seasonOf(c);
   const rating = reliabilityRating(c);
   const carry = { HIGH: "Strong", MEDIUM: "Partial", LOW: "Limited" }[rating];
@@ -2268,7 +2288,12 @@ function bottomLine(c: TeamCoaching, view: UsageView | null): string {
     .filter((r) => r.pct != null && r.nfl != null && Math.abs((r.pct as number) - (r.nfl as number)) >= 3)
     .sort((a, b) => Math.abs((b.pct as number) - (b.nfl as number)) - Math.abs((a.pct as number) - (a.nfl as number)))
     .map((r) => `${(r.pct as number) > (r.nfl as number) ? "↑" : "↓"} ${SHORT[r.label] ?? r.label} targets`);
-  const games = c.reliability.ledgerStats?.games;
+  const games = c.reliability.ledgerStats?.games ?? null;
+  return { season, carry, signals, leans, games, summary: c.bottomLine };
+}
+
+function bottomLine(c: TeamCoaching, view: UsageView | null): string {
+  const { season, carry, signals, leans, games, summary } = bottomLineModel(c, view);
   const item = (k: string, v: string) => `<li><span class="sct-co-bl-k">${e(k)}</span><span class="sct-co-bl-v">${e(v)}</span></li>`;
   return (
     `<div class="sct-co-bottom">` +
@@ -2280,7 +2305,7 @@ function bottomLine(c: TeamCoaching, view: UsageView | null): string {
     (games ? item("Sample", `${games} game${games === 1 ? "" : "s"} · current personnel usage still matters most`) : "") +
     `</ul>` +
     `<details class="sct-co-more"><summary class="sct-co-more-q">Full summary</summary>` +
-    `<p class="sct-co-more-a">${e(c.bottomLine)}</p></details>` +
+    `<p class="sct-co-more-a">${e(summary)}</p></details>` +
     `</div>`
   );
 }
@@ -2317,7 +2342,30 @@ export interface CoachingSection {
  * signal readings in fantasy terms, the positional finishes by season, the
  * rookie note where an entry has one, and the StatChasers bottom line.
  */
-function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+export interface FantasyRead {
+  /** "More shotgun." */
+  heading: string;
+  /** The reading in a sentence. */
+  body: string;
+  /** "↑" / "↓" / "" (flat or unmeasured). */
+  dir: string;
+  /** Prior season's figure and this season's, as the table prints them ("67.6%"); null without a row. */
+  prior: string | null;
+  current: string | null;
+  /** This season minus last, in the row's own unit; null without a measure. */
+  delta: number | null;
+  /** True when the row is a percentage, so a change is in percentage points. */
+  pct: boolean;
+}
+
+export interface FantasyReadsModel {
+  season: number;
+  priorYear: string;
+  reads: FantasyRead[];
+}
+
+/** The signal readings in fantasy terms, shared with the premium block (coaching-fantasy-premium.ts). */
+export function fantasyReadsModel(c: TeamCoaching, view: UsageView | null): FantasyReadsModel {
   const season = seasonOf(c);
   const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
   const reads = c.shifts
@@ -2325,17 +2373,35 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
     .map((s) => {
       const row = c.tendencies.rows.find((r) => r.key === s.key);
       const v = row ? rowView(row, view) : null;
-      const move = row && v ? `${row.prior} → ${v.current}` : "";
+      const dir = v?.delta == null || v.delta === 0 ? "" : v.delta > 0 ? "↑" : "↓";
+      return {
+        heading: s.heading,
+        body: s.body,
+        dir,
+        prior: row ? row.prior : null,
+        current: v ? v.current : null,
+        delta: v?.delta ?? null,
+        pct: /%$/.test(row?.prior ?? ""),
+      };
+    });
+  return { season, priorYear, reads };
+}
+
+function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const m = fantasyReadsModel(c, view);
+  const { season, priorYear } = m;
+  const reads = m.reads
+    .map((r) => {
+      const move = r.prior && r.current ? `${r.prior} → ${r.current}` : "";
       // One compact chip a signal (mak, 2026-11-05): the direction glyph,
       // the heading, the two seasons' figures; the reading itself stays for
       // a screen reader and as the chip's tooltip.
-      const dir = v?.delta == null || v.delta === 0 ? "" : v.delta > 0 ? "↑" : "↓";
       return (
-        `<li class="sct-co-fread" title="${e(s.body)}">` +
-        (dir ? `<span class="sct-co-fread-dir" aria-hidden="true">${dir}</span>` : "") +
-        `<span class="sct-co-fread-h">${e(s.heading)}</span>` +
+        `<li class="sct-co-fread" title="${e(r.body)}">` +
+        (r.dir ? `<span class="sct-co-fread-dir" aria-hidden="true">${r.dir}</span>` : "") +
+        `<span class="sct-co-fread-h">${e(r.heading)}</span>` +
         (move ? `<span class="sct-co-fread-move">${e(`${priorYear} ${move.split(" → ")[0]} → ${season} ${move.split(" → ")[1]}`)}</span>` : "") +
-        `<span class="sct-co-fread-b sct-visually-hidden">${e(s.body)}</span>` +
+        `<span class="sct-co-fread-b sct-visually-hidden">${e(r.body)}</span>` +
         `</li>`
       );
     })
@@ -2387,6 +2453,9 @@ export function renderCoachingSection(
     renderCoachingSeasonsPremium(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +
+    // The premium Fantasy Impact comparison (mak's brief, 2026-11-05) prints
+    // directly under the original; a comparison only until mak approves.
+    renderCoachingFantasyPremium(coaching, team, view) +
     `</div>`;
 
   // mak's question list (2026-11-03) replaces the builder's single question:

@@ -1239,8 +1239,6 @@ export interface InjuryPremiumModel {
   practice: { head: string; note: string | null; empty: string | null; weeks: PremiumPracticeWeek[] };
   healthy: string | null;
   events: InjuryEvent[];
-  impactHtml: string;
-  rc: { href: string; text: string; cta: string };
   contingency: ContingencyModel | null;
 }
 
@@ -1271,7 +1269,6 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
         ? `No practice report on file for Week ${m.next.week} yet.`
         : `${m.last} hasn't appeared on an injury report this season.`
     : null;
-  const { impactHtml, rcText } = impactCopy(m);
   return {
     name: m.name,
     last: m.last,
@@ -1293,8 +1290,6 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     practice: { head: m.practiceHead, note: m.practiceNote, empty, weeks },
     healthy: healthyRow(m),
     events: m.events,
-    impactHtml,
-    rc: { href: m.rc, text: rcText, cta: `Open ${m.last} in Redraft Command` },
     contingency: contingencyModel(m, data),
   };
 }

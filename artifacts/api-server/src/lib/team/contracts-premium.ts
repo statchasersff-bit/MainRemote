@@ -1,32 +1,28 @@
 /**
- * The Contracts & Salary Cap tab's premium comparison (mak's brief,
- * 2026-11-05, attached_assets/contracts1.png): a navy-and-gold banner, one
- * cut-scenario strip, the contract sheet under a navy "2026 Contracts" head
- * on the left, and on the right four cards: Cap Position, Flexibility,
- * Where a Release Frees Cap and the season's Dead Money. Rendered UNDER the
- * whole original tab by contracts-render.ts until mak approves it.
+ * The Contracts & Salary Cap tab (mak's brief, 2026-11-05,
+ * attached_assets/contracts1.png; the tab's own design since the same day,
+ * when mak said "remove the old version of the contracts tab"): a
+ * navy-and-gold banner whose heading is the tab's H2, one cut-scenario
+ * strip, the contract sheet under a navy "2026 Contracts" head on the left,
+ * and on the right four cards: Cap Position, Flexibility, Where a Release
+ * Frees Cap and the season's Dead Money. The Worth note and the footnote
+ * close it; the club FAQ follows as the section's tail.
  *
- * Presentation only. Every figure is the ContractsView the original reads,
- * the sums are contracts-render.ts's flexFigures(), and the money, sign,
- * ordinal, span and link helpers are the original's exports, so the two
- * blocks cannot disagree on a number.
+ * Presentation only. Every figure is the ContractsView; the sums are
+ * contracts-render.ts's flexFigures(), and the money, sign, ordinal, span,
+ * name and roster helpers are that module's exports.
  *
- * The block is its own `[data-sct-ct]` root, so the bundle's wireCutScenario
- * (client/team.ts) drives it exactly as it drives the original: the same
- * pick boxes, timing buttons, outputs and sort heads, on this block's own
- * rows. The two scenarios are therefore independent and identical in their
- * arithmetic. What this block adds that the original does not: every row
- * prints both the pre- and post-June-1 release figures, and the block's
- * data-timing (which the bundle writes) picks the visible pair, so Net if
- * cut and Dead follow the toggle.
- *
- * Ids are `sct-ctp-` prefixed so nothing collides with the original's while
- * both are on the page, and the banner title is a <p>, not a second H2 of
- * the same words.
+ * The block is the `[data-sct-ct]` root the bundle's wireCutScenario
+ * (client/team.ts) drives: pick boxes, timing buttons, outputs and sort
+ * heads. Every row prints both the pre- and post-June-1 release figures,
+ * and the block's data-timing (which the bundle writes) picks the visible
+ * pair, so Net if cut and Dead follow the toggle. Ids are `sct-ctp-`
+ * prefixed.
  */
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
+import { premiumTabHead } from "./premium-head";
 import type { ContractLine, ContractsView, WorthDoc } from "./contracts";
 import {
   RANK_BOTTOM_THIRD,
@@ -145,21 +141,14 @@ function banner(team: NflTeam, v: ContractsView): string {
   const sub =
     `Every contract the ${team.nickname} carry against the ${v.season} cap, largest cap number first, ` +
     `then the cap ladder and where a release frees cap.`;
-  const logo = team.logo
-    ? `<img class="sct-ctp-logo" src="${e(team.logo)}" alt="" width="64" height="64" loading="lazy" decoding="async">`
-    : "";
   return (
-    `<header class="sct-ctp-hero">` +
-    logo +
-    `<span class="sct-ctp-hero-rule" aria-hidden="true"></span>` +
-    `<div class="sct-ctp-hero-copy">` +
-    // A <p>, not a heading: the tab's H2 is the original's above, and the
-    // comparison must not add a second one of the same words.
-    `<p class="sct-ctp-title">${e(`${team.nickname} Contracts & Salary Cap`)}</p>` +
-    `<p class="sct-ctp-sub">${e(sub)}</p>` +
-    `</div>` +
-    `<span class="sct-ctp-stripes" aria-hidden="true"></span>` +
-    `</header>`
+    // The tab's heading, in the banner: .sct-h2 is the house heading.
+    premiumTabHead({
+      hook: "sct-ctp-hero",
+      icon: "contracts",
+      heading: `<h2 class="sct-h2 sct-up-h2 sct-ctp-title">${e(`${team.nickname} Contracts & Salary Cap`)}</h2>`,
+      dek: sub,
+    })
   );
 }
 
@@ -500,7 +489,7 @@ function deadCard(v: ContractsView): string {
 
 /* --------------------------------------------------------------- section */
 
-/** The whole comparison, or "" when the view has no players (the original is "" too). */
+/** The whole tab, or "" when the view has no players. */
 export function renderContractsPremium(team: NflTeam, v: ContractsView | null): string {
   if (!v || v.players.length === 0) return "";
   const foot =
@@ -510,10 +499,9 @@ export function renderContractsPremium(team: NflTeam, v: ContractsView | null): 
       ? `; a starred figure is estimated from the deal's structure where the published release math is not available.`
       : `, estimated from the deal's structure: the remaining prorated bonus and guaranteed salary stay on the books, and the rest is freed.`);
   return (
-    `<div class="sct-ctp" data-sct-ct data-sct-contracts-premium` +
+    `<div class="sct-ctp" data-sct-ct` +
     (v.capSpace !== null ? ` data-cap-space="${v.capSpace}" data-dead-total="${v.deadTotal ?? 0}"` : "") +
     `>` +
-    `<p class="sct-cp-flag">New Design · Comparison</p>` +
     banner(team, v) +
     simulator(v) +
     `<div class="sct-ctp-grid">` +

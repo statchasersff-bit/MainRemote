@@ -463,6 +463,82 @@ describe("the markup", () => {
     assert.equal(render.abbreviateName("Jacory Croskey-Merritt"), "J. Croskey");
   });
 
+  test("the premium comparison block: the same board, under the original, on both tabs and no playoffs page", () => {
+    // Every figure in the premium block (lib/sos-premium.ts) is read from the
+    // board the original prints, so the two can never disagree: the rows,
+    // their ranks and every weekly tile are compared cell for cell here.
+    const tiles = (html, cell) =>
+      [...html.matchAll(new RegExp(`<td class="${cell}"[^>]*data-sort="([^"]*)"[^>]*>([\\s\\S]*?)</td>`, "g"))].map((m) => {
+        const bucket = /data-bucket="([a-z]+)"/.exec(m[0])?.[1] ?? "bye";
+        const text = m[2].replace(/<span class="scsos-sr">[^<]*<\/span>/g, "").replace(/<[^>]+>/g, "|").replace(/\|+/g, "|").replace(/^\||\|$/g, "");
+        return `${m[1]}:${bucket}:${text}`;
+      });
+    const ranks = (html, cell) => [...html.matchAll(new RegExp(`<td class="${cell}( is-muted)?" data-sort="(\\d+)">`, "g"))].map((m) => m[2]);
+
+    for (const tab of ["team", "player"]) {
+      const html = render.renderSosPage(board, { ...team, tab }, { embed: true, page: tab === "player" ? "all" : "rb" });
+      const at = html.indexOf('<section class="scsos-pm');
+      assert.ok(at > html.lastIndexOf('<table class="scsos-table"'), "under the original grid");
+      assert.ok(at < html.indexOf('</div>', html.lastIndexOf('</table>') + 20), "inside .scsos-view, so a view swap replaces it");
+      const original = html.slice(0, at);
+      const premium = html.slice(at, html.indexOf("</section>", at));
+      assert.match(premium, /<p class="scsos-pm-flag">New Design · Comparison<\/p>/);
+      assert.doesNotMatch(premium, /\u2014/, "no em dashes");
+
+      // Rows: one per original row, addressed by data-pm-row so the original's count and ids stay its own.
+      const kind = tab === "player" ? "player" : "team";
+      const origRows = original.match(new RegExp(`<tr data-row="${kind}-`, "g")).length;
+      assert.equal(premium.match(new RegExp(`<tr data-pm-row="${kind}-`, "g")).length, origRows);
+      assert.doesNotMatch(premium, /<tr data-row=|id="scsos-team-/);
+      assert.match(premium, new RegExp(`<table class="scsos-pm-table" data-scsos-table data-kind="${kind}">`));
+
+      // Ranks and tiles, in the same order.
+      assert.deepEqual(ranks(premium, "scsos-pm-rank"), ranks(original, "scsos-rank"));
+      assert.deepEqual(tiles(premium, "scsos-pm-wk"), tiles(original, "scsos-wk"));
+      for (let w = 1; w <= 17; w += 1) assert.match(premium, new RegExp(`class="scsos-pm-th is-week" data-key="w${w}"`));
+      assert.doesNotMatch(premium, /data-key="w18"/);
+      if (tab === "team") assert.match(premium, /<span class="scsos-pm-cell is-bye"[^>]*>BYE<\/span>/);
+      assert.match(premium, /<span class="scsos-sr">, (Smash|Favorable|Neutral|Tough|Avoid)<\/span>/, "the tier is in the cell for a screen reader");
+
+      // The four cards: the same rows, figures and deltas as the original's.
+      const cardOf = (html, cls) =>
+        [...html.matchAll(new RegExp(`<article class="${cls} is-(good|bad)" data-card="([^"]+)"[^>]*data-row="([^"]+)">[\\s\\S]*?<\\/article>`, "g"))].map((m) => {
+          const value = /-value">([0-9.]+)<small>aFPA/.exec(m[0])[1];
+          const delta = /([+-]?[0-9.]+) vs/.exec(m[0])[1];
+          return [m[1], m[2], m[3], value, delta].join("|");
+        });
+      assert.equal(cardOf(premium, "scsos-pm-card").length, 4);
+      assert.deepEqual(cardOf(premium, "scsos-pm-card"), cardOf(original, "scsos-card"));
+      assert.equal((premium.match(/scsos-pm-card-mark" src="/g) ?? []).length, 4, "a team watermark on each");
+
+      // The controls are the original's links: same tab and scoring views, same pages, same CSV.
+      const hrefs = (html, cls) => [...html.matchAll(new RegExp(`<a class="${cls}[^"]*" href="([^"]+)"`, "g"))].map((m) => m[1]);
+      assert.deepEqual(hrefs(premium, "scsos-pm-tab"), hrefs(original, "scsos-tab"));
+      assert.deepEqual(hrefs(premium, "scsos-pm-opt"), hrefs(original, "scsos-opt"));
+      assert.deepEqual(hrefs(premium, "scsos-pm-export"), hrefs(original, "scsos-export"));
+      assert.match(premium, /scsos-pm-opt is-page is-scope( is-active)?" href="[^"]*playoffs/, "Playoffs is a scope beside the positions");
+      assert.doesNotMatch(premium, /[?&]pos=/);
+      // The blend badge and the finder.
+      assert.match(premium, /<summary class="scsos-pm-baseline-pill">.*2025\u20132026 Blend Active/);
+      assert.match(premium, new RegExp(`<div class="scsos-pm-find" data-scsos-pm-find data-noun="${tab === "player" ? "RB" : "team"}" hidden>`));
+      assert.match(premium, new RegExp(`placeholder="Find a ${tab === "player" ? "RB" : "team"} by name"`));
+      if (tab === "team") {
+        assert.match(premium, /data-find="[^"]+ [A-Z]{2,3}"/, "a team is found by its name or code");
+        assert.match(premium, /class="scsos-pm is-team-board"/);
+        assert.equal((premium.match(/<a class="scsos-pm-teamlink" href="https:\/\/statchasers\.com\/nfl\/teams\/[a-z0-9-]+\/schedule\/"/g) ?? []).length, 32);
+      } else {
+        assert.match(premium, /<span class="scsos-pm-badge" title="[^"]+">[A-Z]{2,3}<\/span>/);
+        assert.match(premium, /<a class="scsos-pm-player" href="[^"]+" title="View Beta Back on StatChasers"><span class="scsos-pname-full">Beta Back<\/span><span class="scsos-pname-short">B\. Back<\/span><\/a>/);
+      }
+    }
+
+    // Not on the playoffs page, and off by the flag.
+    const boards = {};
+    for (const pos of ["QB", "RB", "WR", "TE"]) boards[pos] = model.buildSosBoard(fpaTable(), schedule(), POOL, pos, "ppr");
+    assert.doesNotMatch(render.renderSosPage(board, team, { embed: true, page: "playoffs", boards }), /scsos-pm/);
+    assert.equal(render.SOS_PREMIUM_COMPARE, true);
+  });
+
   test("the CSV is the grid: a weekly cell is the opponent and that defense's rank", () => {
     const csv = render.renderSosCsv(board, "team").trim().split("\n");
     assert.equal(csv.length, 33);

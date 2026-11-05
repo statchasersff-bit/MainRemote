@@ -1699,11 +1699,9 @@ function renderCareerStats(
       (row) =>
         `<tr class="scp-row${row.inProgress ? " is-current" : ""}"` +
         `${row.inProgress ? ' data-partial="1"' : ""}>` +
-        `<th scope="row">${escapeHtml(String(row.season))}` +
-        (row.inProgress
-          ? `<span class="scp-partial" title="Season in progress">to date</span>`
-          : "") +
-        `</th>` +
+        // No "to date" marker after the year (removed 2026-11-05 at mak's
+        // request); the row's is-current highlight still marks the season.
+        `<th scope="row">${escapeHtml(String(row.season))}</th>` +
         `<td>${escapeHtml(count(row.gamesPlayed))}</td>` +
         `<td>${escapeHtml(opt(t(row).gs))}</td>` +
         cells(row) +
@@ -2001,8 +1999,9 @@ export function renderPlayerPage(
   const outlookParts: TabParts | null = existingOutlook.exists
     ? {
         // The premium comparison of the first two sections (mak's brief,
-        // 2026-11-05, no portrait) sits under the tab's own two sections and
-        // above the closing sections; a comparison only until mak approves.
+        // 2026-11-05, no portrait) IS the tab's first two sections since the
+        // same day, when mak approved it and had the originals removed; the
+        // in-season body above it is empty, the closing sections follow.
         body:
           existingOutlook.html +
           (outlookSpec?.body ?? "") +

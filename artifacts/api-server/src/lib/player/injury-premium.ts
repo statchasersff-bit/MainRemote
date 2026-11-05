@@ -7,9 +7,9 @@
  * (designation card + three facts), the practice strip, Durability Profile
  * (availability grid, four tiles, region pills, the open record, the body
  * figure with its markers and the HP bar), the injury history as a timeline
- * with the Fantasy Impact and Redraft Command sidebar, and "If He Misses
- * Time" with its two cards and the gold strip. The FAQ follows it
- * (injury-tab.ts).
+ * (its Fantasy Impact + Redraft Command sidebar removed 2026-11-05 at mak's
+ * request), and "If He Misses Time" with its two cards and the gold strip.
+ * The FAQ follows it (injury-tab.ts).
  *
  * Every word and number is injuryPremiumModel() in injury-tab.ts and
  * durabilityParts() in injury-durability.ts, the code paths the old
@@ -39,12 +39,9 @@ const ICON = {
   clipboard: svg(`<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>`),
   shield: svg(`<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>`),
   medkit: svg(`<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M12 11v5M9.5 13.5h5"/>`),
-  bars: svg(`<path d="M5 20v-6M12 20V9M19 20V4"/>`),
-  crosshair: svg(`<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>`),
   swap: svg(`<path d="M4 8h13M14 5l3 3-3 3"/><path d="M20 16H7M10 13l-3 3 3 3"/>`),
   people: svg(`<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M15 19a4.5 4.5 0 0 1 6 0"/>`),
   info: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>`),
-  out: svg(`<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>`),
   arrow: svg(`<path d="M5 12h14M13 6l6 6-6 6"/>`),
   plus: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>`),
   heart: svg(`<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>`),
@@ -147,24 +144,53 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
     : "No localized injuries recorded from the weekly reports.";
   const hp =
     `<div class="scp-inp-hp" role="img" aria-label="${e(`Durability score ${d.score.toFixed(1)} of 100, ${d.tier.name}`)}" style="--hp:${e(d.tier.color)}">` +
-    `<div class="scp-inp-hp-head"><span class="scp-inp-hp-k" title="Redraft Command's durability score (HP): higher is more durable">HP</span><span class="scp-inp-hp-v"><b>${e(d.score.toFixed(1))}</b><small> / 100</small></span></div>` +
+    `<div class="scp-inp-hp-head"><span class="scp-inp-hp-k" title="Redraft Command's durability score (HP): higher is more durable">Health profile</span><span class="scp-inp-hp-v"><b>${e(d.score.toFixed(1))}</b><small> / 100</small></span></div>` +
     `<div class="scp-inp-hp-bar"><span class="scp-inp-hp-fill" style="width:${pct.toFixed(1)}%"></span><span class="scp-inp-hp-notches" aria-hidden="true"></span></div>` +
     `<p class="scp-inp-hp-tier is-${e(d.tier.key)}">${e(d.tier.name)}</p>` +
     `</div>`;
+  // One box per region, the selected one shown (client/player.ts swaps them
+  // with the markers, the pills and the record): the map's only external
+  // label now that the callouts show for the selected region alone.
+  const selected = d.regions
+    .filter((r) => r.episodes > 0)
+    .map(
+      (r) =>
+        `<div class="scp-inp-sel" data-region-panel="${e(r.key)}"${r.key === d.worst ? "" : " hidden"} style="--sel:${e(r.color.stroke)}">` +
+        `<span class="scp-inp-sel-k">Selected location</span>` +
+        `<b class="scp-inp-sel-v">${e(r.label)}</b>` +
+        `<span class="scp-inp-sel-s">${e(`${r.episodes} occurrence${r.episodes === 1 ? "" : "s"} · ${r.gamesMissed} game${r.gamesMissed === 1 ? "" : "s"} missed`)}</span>` +
+        `<span class="scp-inp-sel-s">${e(r.severe ? "Season-ending injury on record" : r.gamesMissed > 0 ? `Latest ${r.latest}` : `Played through${r.latest ? ` · latest ${r.latest}` : ""}`)}</span>` +
+        `</div>`,
+    )
+    .join("");
+  const seasonsWord = `${d.seasons} season${d.seasons === 1 ? "" : "s"}`;
+  // The reviewer's layout (2026-11-05): the four tiles in one row, then the
+  // availability matrix beside the map panel, then the region pills and the
+  // open record across the full width.
   return (
     `<section class="scp-inp-sec is-dur" aria-labelledby="scp-inp-dur-h" data-scp-durability>` +
     bar(ICON.shield, "Durability Profile", "", "scp-inp-dur-h") +
     `<div class="scp-inp-dur">` +
+    `<div class="scp-inp-tiles">${tiles}</div>` +
+    `<div class="scp-inp-dur-grid">` +
     `<div class="scp-inp-dur-l">` +
-    `<div class="scp-inp-dur-top">${d.grid}<div class="scp-inp-tiles">${tiles}</div></div>` +
-    `<div class="scp-inp-regions">${d.pills}${d.details}</div>` +
-    `<p class="scp-in-sr">${e(regionsText)}</p>` +
+    `<h3 class="scp-inp-dur-h">Season-by-Season Availability<small>${e(seasonsWord)}</small></h3>` +
+    d.grid +
     `</div>` +
     `<div class="scp-inp-dur-r">` +
+    `<h3 class="scp-inp-dur-h">Injury Location Map<small>Interactive</small></h3>` +
     d.figure +
+    selected +
     hp +
     `<p class="scp-inp-dur-status"><b class="is-${e(m.status.kind)}">${e(m.status.word)}</b><i aria-hidden="true"> • </i><b>${e(d.availPct.toFixed(1))}%</b> career availability</p>` +
     `</div>` +
+    `</div>` +
+    `<div class="scp-inp-regions">` +
+    `<h3 class="scp-inp-dur-h">Injury Regions<small>Select a region for its history</small></h3>` +
+    d.pills +
+    d.details +
+    `</div>` +
+    `<p class="scp-in-sr">${e(regionsText)}</p>` +
     `</div></section>`
   );
 }
@@ -222,16 +248,10 @@ function renderHistory(m: InjuryPremiumModel): string {
       ? `<ol class="scp-inp-tl">${items.join("")}${evs.slice(0, 10).join("")}</ol>` +
         `<details class="scp-inp-more"><summary>${e(`Show all ${m.events.length} injuries`)}</summary><ol class="scp-inp-tl">${evs.slice(10).join("")}</ol></details>`
       : `<ol class="scp-inp-tl">${items.join("")}${evs.join("")}</ol>`;
-  const side =
-    `<aside class="scp-inp-side" aria-label="Fantasy impact">` +
-    `<div class="scp-inp-impact"><h3 class="scp-inp-card-h"><span class="scp-inp-card-icon">${ICON.bars}</span>Fantasy Impact</h3><p>${m.impactHtml}</p></div>` +
-    `<div class="scp-inp-rc"><h3 class="scp-inp-card-h"><span class="scp-inp-card-icon">${ICON.crosshair}</span>Redraft Command</h3><p>${e(m.rc.text)}</p>` +
-    `<a class="scp-inp-btn" href="${e(m.rc.href)}" data-cta="redraft-command-injury-sidebar">${e(m.rc.cta)}<span class="scp-inp-btn-icon">${ICON.out}</span></a></div>` +
-    `</aside>`;
   return (
     `<section class="scp-inp-sec is-hist" aria-labelledby="scp-inp-hist-h">` +
     bar(ICON.medkit, `${m.name} Injury History`, "Every logged injury, most recent first. Games missed are regular-season games.", "scp-inp-hist-h") +
-    `<div class="scp-inp-hist"><div class="scp-inp-tlwrap">${list || `<p class="scp-inp-none">No logged injuries.</p>`}</div>${side}</div>` +
+    `<div class="scp-inp-hist"><div class="scp-inp-tlwrap">${list || `<p class="scp-inp-none">No logged injuries.</p>`}</div></div>` +
     `</section>`
   );
 }

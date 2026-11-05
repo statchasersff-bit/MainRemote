@@ -60,7 +60,7 @@ class SCDC_Shortcode {
 
 		// --- Keep the stylesheet out of "Remove Unused CSS" ---
 		// Almost every selector in frontend.css styles DOM the renderer builds at
-		// runtime (.scdc-suggest-pos, .scdc-sg-logo, .scdc-team-card, …), so it is
+		// runtime (.scdc-suggest-pos, .scdc-sg-logo, .scdc-prm-card, …), so it is
 		// absent from the server HTML that an unused-CSS pass scans. Stripped, the
 		// dropdown's team logos and position codes collapse to zero width inside
 		// their flex rows and disappear. Mark the tag, and register with the usual

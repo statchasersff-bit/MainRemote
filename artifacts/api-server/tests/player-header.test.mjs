@@ -121,10 +121,33 @@ describe("player header", () => {
     // The identity column reads: tags, heading, number and position, bio line.
     assert.deepEqual([...h.querySelector(".scp-pid").children].map((c) => c.className.split(" ")[0]), ["scp-ptags", "scp-phead-h1", "scp-pp-under", "scp-pspec"]);
 
+    // The phone's rows (mak's mobile brief, 2026-11-05): the club row opens the
+    // hero - crest, club link, the status slot (no "QB · #7" since 11-05) - and the meta
+    // lines under the H1 carry position · age, then build · college. The
+    // desktop tag row, under-row and spec line stay in the markup; player.css
+    // shows one set or the other, never both.
+    const top = h.querySelector(".scp-phead-hero > .scp-pm-top:first-child");
+    assert.ok(top, "the club row opens the hero");
+    // The fixture's club has no crest on file, so the position stands in the box.
+    assert.equal(top.querySelector(".scp-pm-logo"), null);
+    assert.equal(text(top.querySelector(".scp-pm-logo-pos")), "QB");
+    const crested = header(state({ team: { ...state().team, logo: "/team-logos/ari.svg" } })).querySelector(".scp-pm-logo");
+    assert.equal(crested.getAttribute("src"), "/team-logos/ari.svg");
+    assert.equal(crested.getAttribute("alt"), "", "the crest is decoration beside the club's name");
+    assert.equal(text(top.querySelector(".scp-pm-team")), "Arizona Cardinals");
+    assert.equal(top.querySelector(".scp-pm-team").getAttribute("href"), "/team/arizona-cardinals/");
+    assert.equal(top.querySelector(".scp-pm-pos"), null, "no position-and-number line under the club");
+    assert.equal(top.querySelector(".scp-pm-status"), null, "no status, no pill - never Active by default");
+    const meta = h.querySelector(".scp-pm-meta");
+    assert.equal(text(meta.querySelector(".scp-pm-meta-1")), "Quarterback·33 yrs");
+    assert.equal(text(meta.querySelector(".scp-pm-meta-2")), "6'4\"·235 lbs");
+    assert.equal(h.querySelectorAll("h1").length, 1, "the phone rows never repeat the heading");
+
     // The fantasy board: the trio under a caption that says it is fantasy, the rate leading.
     assert.equal(text(h.querySelector(".scp-pboard-cap")), "2026 Fantasy Season");
     assert.ok(h.querySelector(".scp-pboard-wrap > .scp-pboard-cap + .scp-pboard"));
-    assert.ok(h.querySelector(".scp-pid + .scp-pboard-wrap"), "the board follows the identity column");
+    // The phone's meta lines sit between the two (hidden above 480px).
+    assert.ok(h.querySelector(".scp-pid + .scp-pm-meta + .scp-pboard-wrap"), "the board follows the identity column and its phone meta");
     const fan = [...h.querySelectorAll(".scp-pboard .scp-pstat")];
     assert.deepEqual(fan.map((c) => text(c.querySelector("b"))), ["16.5", "QB17", "13%"]);
     assert.deepEqual(fan.map((c) => text(c.querySelector("abbr"))), ["FPPG · PPR", "POS RANK", "ROSTERED"]);

@@ -12,6 +12,7 @@
 import { headshotImg } from "../headshot-html";
 import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
 import { escapeHtml } from "../render";
+import { premiumTabHead } from "./premium-head";
 import type { CategoryShare, DraftCapitalView, DraftHistoryView, DraftPick, DraftSeason, DraftStatusDoc, DraftView, PickStatus } from "./draft";
 import { CATEGORY_LABEL, collegeLogoFor, getDraftStatus, pickCategory, pickStatus } from "./draft";
 import { capitalKicker, collegeName, depthSlotCell, faceIdFor, historyKicker, nick, playerCell } from "./draft-render";
@@ -58,20 +59,14 @@ function banner(team: NflTeam, view: DraftView): string {
   }
   const intro = parts.join(", then ");
   const sub = intro.charAt(0).toUpperCase() + intro.slice(1) + ".";
-  const logo = team.logo
-    ? `<img class="sct-drp-logo" src="${e(team.logo)}" alt="" width="64" height="64" loading="lazy" decoding="async">`
-    : "";
   return (
-    `<header class="sct-drp-hero">` +
-    logo +
-    `<span class="sct-drp-hero-rule" aria-hidden="true"></span>` +
-    `<div class="sct-drp-hero-copy">` +
     // .sct-h2: the tab's heading, like every hub panel's.
-    `<h2 class="sct-h2 sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>` +
-    `<p class="sct-drp-sub">${e(sub)}</p>` +
-    `</div>` +
-    `<span class="sct-drp-stripes" aria-hidden="true"></span>` +
-    `</header>`
+    premiumTabHead({
+      hook: "sct-drp-hero",
+      icon: "draft",
+      heading: `<h2 class="sct-h2 sct-up-h2 sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>`,
+      dek: sub,
+    })
   );
 }
 

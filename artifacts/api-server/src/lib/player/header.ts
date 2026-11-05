@@ -699,6 +699,41 @@ export function renderHero(
 
   const identity = `<div class="scp-pid">${tagRow}${heading}${underRow}${specRow}</div>`;
 
+  /* ---- the phone's own rows (mak's mobile brief, 2026-11-05) ---- */
+
+  // Shown only when the block is 480px or narrower (player.css, the last
+  // `pp` container query): the desktop tag row, under-row and spec line are
+  // hidden there and these take their place, so each fact is in the
+  // accessibility tree once at any width. The heading is never duplicated.
+  //
+  // Row 1: the club's crest, its name, the status at the right ("QB · #8"
+  // under the name removed 2026-11-05 at mak's request). Row 2's text (under the H1): "Quarterback · 42 yrs", then
+  // "6'2\", 223 lbs · California". Season and draft stay on the Bio tab.
+  const dot = `<span class="scp-pm-dot" aria-hidden="true">·</span>`;
+  // No crest on file (or no club): the position's letters stand in the box.
+  const crest = team?.logo
+    ? `<img class="scp-pm-logo" src="${escapeHtml(team.logo)}" alt="" width="24" height="24" loading="eager" decoding="async">`
+    : `<span class="scp-pm-logo-pos" aria-hidden="true">${escapeHtml(pos || "FA")}</span>`;
+  const clubLine = team
+    ? `<a class="scp-pm-team" href="${escapeHtml(`${teamPrefix}${team.slug}/${query}`)}" target="_top">${escapeHtml(team.fullName)}</a>`
+    : `<span class="scp-pm-team">Free agent</span>`;
+  const topRow =
+    `<div class="scp-pm-top">` +
+    `<span class="scp-pm-logo-box">${crest}</span>` +
+    `<div class="scp-pm-club">${clubLine}` +
+    `</div>` +
+    (status ? `<span class="scp-pm-status">${status}</span>` : "") +
+    `</div>`;
+  const metaOne = [pos ? escapeHtml(POSITION_WORD[pos] ?? pos) : "", player.age ? `${escapeHtml(String(player.age))} yrs` : ""].filter(Boolean);
+  const metaTwo = [escapeHtml(height), player.weight ? `${escapeHtml(String(player.weight))} lbs` : "", college ? escapeHtml(college) : ""].filter(Boolean);
+  const meta =
+    metaOne.length || metaTwo.length
+      ? `<div class="scp-pm-meta">` +
+        (metaOne.length ? `<p class="scp-pm-meta-1">${metaOne.join(dot)}</p>` : "") +
+        (metaTwo.length ? `<p class="scp-pm-meta-2">${metaTwo.join(dot)}</p>` : "") +
+        `</div>`
+      : "";
+
   /* ---- the actions ---- */
 
   const next = headerFixture(data);
@@ -734,13 +769,10 @@ export function renderHero(
     const fixture = `Week ${game.week} ${game.homeAway === "away" ? "at" : "vs."} ${opp}`;
     const when = headerKickoff(game);
     const band = game.matchup ? CHIP_WORD[matchupBand(game.matchup.rank)] : null;
-    const logo = game.opponent
-      ? `<img class="scp-pstrip-logo" src="${escapeHtml(game.opponent.logo)}" alt="" width="24" height="24" loading="lazy" decoding="async" />`
-      : "";
     strip =
       `<div class="scp-pstrip">` +
       `<span class="scp-pstrip-cap">Next matchup</span>` +
-      `<span class="scp-pstrip-mu">${logo}<strong>${escapeHtml(bye !== null ? `Week ${bye}: bye. Then ${fixture}` : fixture)}</strong></span>` +
+      `<span class="scp-pstrip-mu"><strong>${escapeHtml(bye !== null ? `Week ${bye}: bye. Then ${fixture}` : fixture)}</strong></span>` +
       // One unbreakable run: "1:00 PM" on one line with "ET" alone on the
       // next is the break it must not take.
       (when ? `<span class="scp-pstrip-when">${escapeHtml(when)}</span>` : "") +
@@ -759,8 +791,10 @@ export function renderHero(
     styleAttr([ink && `--scp-team:${ink}`, team && `--scp-team-2:${team.secondaryColor}`]) +
     `>` +
     `<section class="scp-phead-hero" aria-label="${escapeHtml(`${player.name} summary`)}">` +
+    topRow +
     renderPortrait(data) +
     identity +
+    meta +
     renderBoard(data) +
     renderCards(data) +
     actions +

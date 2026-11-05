@@ -321,7 +321,30 @@ const BOX: Record<string, [string, string]> = {
  * missed box names its season and week so the script can outline the open
  * region's lost weeks; the worst region's are outlined on arrival.
  */
-export function renderAvailGrid(gm: GmPlayer, current: { season: number; week: number } | null, highlight: Record<string, number[]> | null): string {
+/**
+ * How the grid lays its seasons out (the reviewer's rules, 2026-11-05):
+ * newest season first, and a career of seven seasons or more split into two
+ * column groups, recent on the left, so an eighteen-season career takes
+ * nine rows rather than eighteen. `foldAt` marks rows past the N most recent
+ * for the phone fold ("View full career"); the default is the old card's
+ * single column, oldest first, no fold.
+ */
+export interface AvailGridLayout {
+  newestFirst?: boolean;
+  /** "auto": one column up to six seasons, two from seven. */
+  columns?: 1 | 2 | "auto";
+  foldAt?: number;
+}
+
+/** The season count at which the matrix splits into two columns. */
+export const AVAIL_TWO_COLUMNS_FROM = 7;
+
+export function renderAvailGrid(
+  gm: GmPlayer,
+  current: { season: number; week: number } | null,
+  highlight: Record<string, number[]> | null,
+  layout: AvailGridLayout = {},
+): string {
   const seasons: Record<string, [number, number] | undefined> = { ...gm.extra.seasons, ...gm.seasons } as Record<string, [number, number]>;
   const weeks: Record<string, string | undefined> = { ...gm.extra.w, ...(gm.w ?? {}) };
   const all = Object.keys(seasons).map(Number).sort((a, b) => a - b);
@@ -329,6 +352,8 @@ export function renderAvailGrid(gm: GmPlayer, current: { season: number; week: n
   const years: number[] = [];
   for (let y = all[0]!; y <= all[all.length - 1]!; y += 1) years.push(y);
   const hasPO = years.some((y) => gm.post[y]);
+  const ordered = layout.newestFirst ? [...years].reverse() : years;
+  const columns = layout.columns === "auto" ? (years.length >= AVAIL_TWO_COLUMNS_FROM ? 2 : 1) : (layout.columns ?? 1);
   const box = (k: string, title: string, season?: number, week?: number, mark = false): string =>
     `<i class="scp-in-ab is-${k}${mark ? " is-mark" : ""}"${season != null && week != null ? ` data-s="${season}" data-w="${week}"` : ""} title="${escapeHtml(title)}"></i>`;
   const spacer = `<i class="scp-in-ab-gap" aria-hidden="true"></i>`;
@@ -389,11 +414,48 @@ export function renderAvailGrid(gm: GmPlayer, current: { season: number; week: n
     return out;
   };
 
+  const head = `<div class="scp-in-av-head" aria-hidden="true"><span class="scp-in-av-year"></span><span class="scp-in-av-reg">Regular season</span>${hasPO ? `<span class="scp-in-av-po">Playoffs</span>` : ""}</div>`;
+  // data-rank: 0 for the newest season whichever column it sits in, so the
+  // phone fold can keep the N most recent rows across both groups.
+  const rank = (y: number): number => (layout.newestFirst ? ordered.indexOf(y) : years.length - 1 - years.indexOf(y));
+  const row = (y: number): string =>
+    `<div class="scp-in-av-row${layout.foldAt && rank(y) >= layout.foldAt ? " is-beyond" : ""}" data-rank="${rank(y)}"><span class="scp-in-av-year">${y}</span><span class="scp-in-av-boxes">${rowFor(y)}</span></div>`;
+  const legend = `<div class="scp-in-av-legend"><span><i class="scp-in-ab is-g"></i>Played</span><span><i class="scp-in-ab is-r"></i>Missed to Injury</span><span><i class="scp-in-ab is-d"></i>Bye / Inactive</span></div>`;
+  const fold = layout.foldAt && years.length > layout.foldAt ? ` is-folded" data-fold="${layout.foldAt}` : "";
+  const more =
+    layout.foldAt && years.length > layout.foldAt
+      ? `<button type="button" class="scp-in-av-more" data-scp-avail-more aria-expanded="false" data-label="${escapeHtml(`View full career (${years.length} seasons)`)}">${escapeHtml(`View full career (${years.length} seasons)`)}</button>`
+      : "";
+  if (columns === 2) {
+    const split = Math.ceil(ordered.length / 2);
+    const groups: Array<[string, number[]]> = layout.newestFirst
+      ? [["Recent seasons", ordered.slice(0, split)], ["Earlier seasons", ordered.slice(split)]]
+      : [["Earlier seasons", ordered.slice(0, split)], ["Recent seasons", ordered.slice(split)]];
+    return (
+      `<div class="scp-in-av is-cols${hasPO ? " has-po" : ""}${fold}" data-scp-avail>` +
+      `<div class="scp-in-av-cols">` +
+      groups
+        .map(
+          ([label, ys], i) =>
+            `<div class="scp-in-av-col" data-group="${i === 0 && layout.newestFirst ? "recent" : i === 1 && layout.newestFirst ? "earlier" : "all"}">` +
+            `<p class="scp-in-av-group">${escapeHtml(label)}</p>` +
+            head +
+            ys.map(row).join("") +
+            `</div>`,
+        )
+        .join("") +
+      `</div>` +
+      more +
+      legend +
+      `</div>`
+    );
+  }
   return (
-    `<div class="scp-in-av${hasPO ? " has-po" : ""}" data-scp-avail>` +
-    `<div class="scp-in-av-head" aria-hidden="true"><span class="scp-in-av-year"></span><span class="scp-in-av-reg">Regular season</span>${hasPO ? `<span class="scp-in-av-po">Playoffs</span>` : ""}</div>` +
-    years.map((y) => `<div class="scp-in-av-row"><span class="scp-in-av-year">${y}</span><span class="scp-in-av-boxes">${rowFor(y)}</span></div>`).join("") +
-    `<div class="scp-in-av-legend"><span><i class="scp-in-ab is-g"></i>Played</span><span><i class="scp-in-ab is-r"></i>Missed to Injury</span><span><i class="scp-in-ab is-d"></i>Bye / Inactive</span></div>` +
+    `<div class="scp-in-av${hasPO ? " has-po" : ""}${fold}" data-scp-avail>` +
+    head +
+    ordered.map(row).join("") +
+    more +
+    legend +
     `</div>`
   );
 }
@@ -432,6 +494,9 @@ function renderPills(regions: RegionView[], worst: string | null): string {
   );
 }
 
+/** Events a region's record shows before its "View all" fold. */
+export const RECORD_OPEN_EVENTS = 2;
+
 /** Every region's record, the worst one open; the script swaps them. */
 function renderDetails(regions: RegionView[], worst: string | null): string {
   return regions
@@ -441,23 +506,29 @@ function renderDetails(regions: RegionView[], worst: string | null): string {
       const missed = r.episodes.reduce((n, e) => n + e.gamesMissed, 0);
       const told = r.episodes.map((ep, i) => ({ ep, ...tellEpisode(ep, r.episodes[i - 1] ?? null, i, noun) })).reverse();
       const lost = regionLostWeeks(r.episodes);
+      const item = ({ ep, tag, text }: (typeof told)[number]): string => {
+        const week = ep.inGame?.week ?? ep.week;
+        return (
+          `<li><div class="scp-in-rd-line"><span class="scp-in-rd-when">${ep.season}${week != null ? ` · ${escapeHtml(weekName(ep.season, week))}` : ""}</span>` +
+          `<span class="scp-in-rd-inj">${escapeHtml(capitalizeWords(ep.injury))}</span>` +
+          `<span class="scp-in-rd-tag is-${tag.toLowerCase().replace(/[^a-z]/g, "")}">${escapeHtml(tag)}</span></div>` +
+          `<p>${escapeHtml(text)}</p></li>`
+        );
+      };
+      // The two most recent events open; the rest behind "View all N"
+      // (the reviewer's layout, 2026-11-05), every event's full sentence kept.
+      const shown = told.slice(0, RECORD_OPEN_EVENTS);
+      const folded = told.slice(RECORD_OPEN_EVENTS);
       return (
         `<div class="scp-in-rd" data-region-detail="${escapeHtml(r.region.key)}" data-lost="${escapeHtml(JSON.stringify(lost))}"${r.region.key === worst ? "" : " hidden"}>` +
         `<div class="scp-in-rd-head"><span><b>${escapeHtml(r.region.label)}</b> · ${r.episodes.length} Occurrence${r.episodes.length === 1 ? "" : "s"} · ${missed} Game${missed === 1 ? "" : "s"} Missed</span>` +
         `<button type="button" class="scp-in-rd-x" data-region-close aria-label="Close">×</button></div>` +
-        `<ol class="scp-in-rd-list">` +
-        told
-          .map(({ ep, tag, text }) => {
-            const week = ep.inGame?.week ?? ep.week;
-            return (
-              `<li><div class="scp-in-rd-line"><span class="scp-in-rd-when">${ep.season}${week != null ? ` · ${escapeHtml(weekName(ep.season, week))}` : ""}</span>` +
-              `<span class="scp-in-rd-inj">${escapeHtml(capitalizeWords(ep.injury))}</span>` +
-              `<span class="scp-in-rd-tag is-${tag.toLowerCase().replace(/[^a-z]/g, "")}">${escapeHtml(tag)}</span></div>` +
-              `<p>${escapeHtml(text)}</p></li>`
-            );
-          })
-          .join("") +
-        `</ol></div>`
+        `<ol class="scp-in-rd-list">${shown.map(item).join("")}</ol>` +
+        (folded.length
+          ? `<details class="scp-in-rd-more"><summary class="scp-in-rd-more-s">${escapeHtml(`View all ${told.length} injury events`)}</summary>` +
+            `<ol class="scp-in-rd-list" start="${shown.length + 1}">${folded.map(item).join("")}</ol></details>`
+          : "") +
+        `</div>`
       );
     })
     .join("");
@@ -611,7 +682,7 @@ function renderLabels(labels: FigureLabel[], worst: string | null): string {
       const x1 = FIGURE_GUTTER_PCT + (l.mx * FIGURE_FRAME_PCT) / 100;
       // The label box ends 6% inside the frame's empty margin; its text stops 1.5% short of that.
       const x2 = l.column === "left" ? FIGURE_GUTTER_PCT + 6 : 100 - FIGURE_GUTTER_PCT - 6;
-      return `<line x1="${pct(x1)}" y1="${pct(l.my)}" x2="${pct(x2)}" y2="${pct(l.y)}" vector-effect="non-scaling-stroke"/>`;
+      return `<line class="${l.region === worst ? "is-on" : ""}" data-region="${escapeHtml(l.region)}" x1="${pct(x1)}" y1="${pct(l.my)}" x2="${pct(x2)}" y2="${pct(l.y)}" vector-effect="non-scaling-stroke"/>`;
     })
     .join("");
   const callouts = labels
@@ -715,7 +786,7 @@ export interface DurabilityParts {
   availPct: number;
   seasons: number;
   tiles: DurabilityTile[];
-  regions: Array<{ key: string; label: string; episodes: number; gamesMissed: number }>;
+  regions: Array<{ key: string; label: string; episodes: number; gamesMissed: number; severe: boolean; latest: number | null; color: { stroke: string; fill: string } }>;
   worst: string | null;
   figure: string;
   pills: string;
@@ -742,11 +813,21 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
       { value: String(gm.gmTot), label: "Games Missed", title: `Over ${seasons} season${seasons === 1 ? "" : "s"}` },
       { value: n1(gm.perYearRate), label: "Missed / Season", title: null },
     ],
-    regions: regions.map((r) => ({ key: r.region.key, label: r.region.label, episodes: r.episodes.length, gamesMissed: r.gamesMissed })),
+    regions: regions.map((r) => ({
+      key: r.region.key,
+      label: r.region.label,
+      episodes: r.episodes.length,
+      gamesMissed: r.gamesMissed,
+      severe: r.severe,
+      latest: r.episodes.length ? Math.max(...r.episodes.map((ep) => ep.season)) : null,
+      color: { stroke: r.color.stroke, fill: r.color.fill },
+    })),
     worst,
     figure: renderFigure(data, regions, worst),
     pills: renderPills(regions, worst),
     details: renderDetails(regions, worst),
-    grid: renderAvailGrid(gm, current, highlight),
+    // Newest season first, two column groups from seven seasons, the five
+    // most recent rows open on a phone (the reviewer's layout, 2026-11-05).
+    grid: renderAvailGrid(gm, current, highlight, { newestFirst: true, columns: "auto", foldAt: 5 }),
   };
 }

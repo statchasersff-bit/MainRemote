@@ -33,10 +33,11 @@ its folder from the Plugins screen afterwards.
 - Stores refresh metadata (last refreshed time, status, error message) in the
   `scdc_refresh_meta` option and shows it on the admin page.
 - Provides the shortcode **`[statchasers_depth_charts]`** which renders the UI
-  (Fantasy / Offense / Defense / Special Teams tabs, search, team + position
-  filters, responsive team grid, depth-order columns, movement arrows, and a
-  **Download** button) from the cached JSON.
-  - The Download button exports exactly what's on screen as a CSV (one row per
+  (Fantasy / Offense / Defense / Special Teams views, one toolbar with search,
+  position + team filters and an **Export** button, then one card per team
+  with a column per position group, depth-order rows and movement arrows) from
+  the cached JSON.
+  - The Export button exports exactly what's on screen as a CSV (one row per
     Team + Position, players in depth order). It opens natively in Excel. (The
     standalone app produced `.xlsx` via a 400 KB library; the plugin uses CSV to
     avoid bundling that - same data and UX, different file extension.)

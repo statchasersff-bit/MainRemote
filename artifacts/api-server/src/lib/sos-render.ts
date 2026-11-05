@@ -21,6 +21,7 @@
 import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
 import { renderSosFaq } from "./sos-faq";
+import { renderSosPremium } from "./sos-premium";
 import { getFPAUrl, getPlayerPageUrl, getTeamHubUrl } from "./team/links";
 import type { FantasyPosition } from "./fpa/nflverse";
 import type { NflTeam } from "./team/teams";
@@ -77,6 +78,13 @@ export interface SosRenderOptions {
 
 export const SOS_H1 = "Fantasy Football Strength of Schedule";
 
+/**
+ * The premium comparison block (sos-premium.ts) under the original board,
+ * while mak compares the two. Flip off to ship the original alone; when the
+ * redesign is approved it replaces the original instead.
+ */
+export const SOS_PREMIUM_COMPARE = process.env["SC_SOS_PREMIUM_COMPARE"] !== "0";
+
 /** This app's own page, which the sub-page links default to. */
 export const SOS_DEFAULT_PAGE_BASE = "/strength-of-schedule";
 
@@ -92,7 +100,7 @@ export function sosPagePath(base: string, page: SosPage): string {
   return `${trimmed}/${page}${slash}`;
 }
 
-const PAGE_LABELS: Record<Exclude<SosPage, "all">, string> = {
+export const PAGE_LABELS: Record<Exclude<SosPage, "all">, string> = {
   qb: "QB",
   rb: "RB",
   wr: "WR",
@@ -262,20 +270,20 @@ function renderMethodNote(): string {
   );
 }
 
-const TAB_LABELS: Record<SosTab, string> = { team: "Team SOS", player: "Player SOS" };
+export const TAB_LABELS: Record<SosTab, string> = { team: "Team SOS", player: "Player SOS" };
 
-const POSITION_NAMES: Record<FantasyPosition, string> = {
+export const POSITION_NAMES: Record<FantasyPosition, string> = {
   QB: "quarterbacks",
   RB: "running backs",
   WR: "wide receivers",
   TE: "tight ends",
 };
 
-function one(value: number | null | undefined): string {
+export function one(value: number | null | undefined): string {
   return value === null || value === undefined || !Number.isFinite(value) ? "-" : value.toFixed(1);
 }
 
-function signed(value: number): string {
+export function signed(value: number): string {
   const r = Math.round(value * 10) / 10;
   return `${r > 0 ? "+" : ""}${r.toFixed(1)}`;
 }
@@ -293,7 +301,7 @@ export function abbreviateName(name: string): string {
  * The position is the page's own since the per-position pages (2026-10-09),
  * and `?pos=` 301s to that page, so no link writes it any more.
  */
-function viewHref(state: SosState, options: SosRenderOptions): string {
+export function viewHref(state: SosState, options: SosRenderOptions): string {
   const extra = (options.linkQuery ?? "").replace(/^\?/, "");
   const q = `?tab=${state.tab}&scoring=${state.scoring}` + (extra ? `&${extra}` : "");
   return q;
@@ -303,7 +311,7 @@ function viewHref(state: SosState, options: SosRenderOptions): string {
  * A sub-page's link, carrying a non-default scoring (and the Player tab,
  * which the playoffs page does not have) so the reader's view follows them.
  */
-function pageHref(page: Exclude<SosPage, "all">, state: SosState, options: SosRenderOptions): string {
+export function pageHref(page: Exclude<SosPage, "all">, state: SosState, options: SosRenderOptions): string {
   const params: string[] = [];
   if (state.tab !== "team" && page !== "playoffs") params.push(`tab=${state.tab}`);
   if (state.scoring !== "ppr") params.push(`scoring=${state.scoring}`);
@@ -313,7 +321,7 @@ function pageHref(page: Exclude<SosPage, "all">, state: SosState, options: SosRe
   return sosPagePath(base, page) + (params.length ? `?${params.join("&")}` : "");
 }
 
-function csvHref(state: SosState, options: SosRenderOptions): string {
+export function csvHref(state: SosState, options: SosRenderOptions): string {
   const base = options.csvBase ?? "/sos";
   return `${base}/download.csv?tab=${state.tab}&pos=${state.position.toLowerCase()}&scoring=${state.scoring}`;
 }
@@ -522,17 +530,25 @@ function renderReadLine(): string {
   );
 }
 
-function renderLegend(): string {
-  const tip =
-    `<details class="scsos-pop scsos-legend-tip">` +
-    `<summary class="scsos-info" aria-label="How matchup difficulty is calculated">i</summary>` +
-    `<div class="scsos-pop-body">` +
+/** The legend tip's body: how the five tiers follow the opponent's defense rank. */
+export function legendTipBody(): string {
+  return (
     `<p>Based on opponent aFPA rank by selected position (1 = toughest D, 32 = easiest).</p>` +
     `<ul class="scsos-pop-list">` +
     BUCKETS.map(
       (b) => `<li><span>${BUCKET_LABELS[b]}</span><span>${BUCKET_RANGES[b]}</span></li>`,
     ).join("") +
-    `</ul></div></details>`;
+    `</ul>`
+  );
+}
+
+function renderLegend(): string {
+  const tip =
+    `<details class="scsos-pop scsos-legend-tip">` +
+    `<summary class="scsos-info" aria-label="How matchup difficulty is calculated">i</summary>` +
+    `<div class="scsos-pop-body">` +
+    legendTipBody() +
+    `</div></details>`;
 
   const swatches =
     BUCKETS.map(
@@ -555,13 +571,22 @@ function renderLegend(): string {
  * blend (fpa/blend.ts) is on, and the popover carries the FPA table's own
  * sentence about the mix - the same words the FPA page prints.
  */
-function renderBaseline(board: SosBoard): string {
+export interface BaselineInfo {
+  /** 0 preseason, 1 weeks 1-4, 2 week 5+, 3 week 12+. */
+  phase: number;
+  label: string;
+  lead: string;
+  phases: [string, string][];
+}
+
+/** The badge's facts: which phase of the FPA blend is on, and the words for it. */
+export function baselineInfo(board: SosBoard): BaselineInfo {
   const prior = board.season - 1;
   const week = board.weekNumber ?? 0;
   const phase = board.isPreseason || week < 1 ? 0 : week <= 4 ? 1 : week < 12 ? 2 : 3;
   const phases: [string, string][] = [
     ["Preseason", `100% ${prior} full season`],
-    ["Weeks 1–4", `Blended baseline and ${board.season} data`],
+    ["Weeks 1\u20134", `Blended baseline and ${board.season} data`],
     ["Week 5+", "Mostly current-season data"],
     ["Week 12+", "Rolling 10-week data"],
   ];
@@ -570,27 +595,39 @@ function renderBaseline(board: SosBoard): string {
       ? "Preseason Baseline Active"
       : phase === 3
         ? "Rolling 10-Week Data Active"
-        : `${prior}–${board.season} Blend Active`;
+        : `${prior}\u2013${board.season} Blend Active`;
   const lead =
     phase === 0
       ? `Using ${prior} full-season data until ${board.season} sample sizes become reliable.`
       : `Through Week ${week}: ${board.methodology}`;
+  return { phase, label, lead, phases };
+}
 
+/** The popover body under the badge: the lead sentence and the four phases, the current one marked. */
+export function baselineBody(info: BaselineInfo): string {
   return (
-    `<details class="scsos-pop scsos-baseline" data-phase="${phase}">` +
-    `<summary class="scsos-baseline-pill"><span class="scsos-dot" aria-hidden="true"></span>${escapeHtml(label)}` +
-    `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>` +
-    `<div class="scsos-pop-body is-right">` +
-    `<p class="scsos-pop-title">${escapeHtml(label)}</p>` +
-    `<p>${escapeHtml(lead)}</p>` +
+    `<p class="scsos-pop-title">${escapeHtml(info.label)}</p>` +
+    `<p>${escapeHtml(info.lead)}</p>` +
     `<ul class="scsos-pop-list is-phases">` +
-    phases
+    info.phases
       .map(
         ([when, what], i) =>
-          `<li${i === phase ? ` class="is-current" aria-current="true"` : ""}><span>${escapeHtml(when)}</span><span>${escapeHtml(what)}</span></li>`,
+          `<li${i === info.phase ? ` class="is-current" aria-current="true"` : ""}><span>${escapeHtml(when)}</span><span>${escapeHtml(what)}</span></li>`,
       )
       .join("") +
-    `</ul></div></details>`
+    `</ul>`
+  );
+}
+
+function renderBaseline(board: SosBoard): string {
+  const info = baselineInfo(board);
+  return (
+    `<details class="scsos-pop scsos-baseline" data-phase="${info.phase}">` +
+    `<summary class="scsos-baseline-pill"><span class="scsos-dot" aria-hidden="true"></span>${escapeHtml(info.label)}` +
+    `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>` +
+    `<div class="scsos-pop-body is-right">` +
+    baselineBody(info) +
+    `</div></details>`
   );
 }
 
@@ -943,6 +980,10 @@ export function renderSosPage(
     `<div class="scsos-scroll">` +
     table +
     `</div>` +
+    // The premium redesign, under the original it is compared with (mak's
+    // brief of 2026-11-05); off the playoffs page, which has no tabs, cards
+    // or export to redesign. Swapped with the view, like everything above.
+    (playoffs || !SOS_PREMIUM_COMPARE ? "" : renderSosPremium(board, state, options)) +
     `</div>` +
     // Outside .scsos-view: the Related block stays through a view swap, the
     // FAQ is swapped with the view (client/sos.ts) because its questions and
