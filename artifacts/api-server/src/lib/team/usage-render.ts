@@ -24,7 +24,8 @@
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
 import { slotChip } from "../team-render";
-import { premiumPassMap, premiumRunDirection, USAGE_PREMIUM_COMPARE } from "./usage-premium";
+import { premiumPassMap, premiumRunDirection } from "./usage-premium";
+import { premiumSituational } from "./usage-situational-premium";
 import { getPlayerPageUrl } from "./links";
 import {
   DYNASTY_LEAGUE_ANALYZER_URL,
@@ -1358,7 +1359,7 @@ export interface UsageSection {
 }
 
 /** The original top-of-page renderers mak retired on 2026-11-05, kept callable for a restore. */
-export const RETIRED_USAGE_BLOCKS = { header, intro, snapTable, shareBoards };
+export const RETIRED_USAGE_BLOCKS = { header, intro, snapTable, shareBoards, backfield, runDirection, passMap };
 
 export function renderUsageSection(
   view: UsageView | null,
@@ -1375,13 +1376,15 @@ export function renderUsageSection(
     // header(), intro(), snapTable() and shareBoards() are unmounted, not
     // deleted (RETIRED_USAGE_BLOCKS), and kpis() stays unmounted as before.
     renderUsagePremium(view, team) +
-    backfield(view, team) +
-    // The premium comparison versions (mak's brief, 2026-11-05) render
-    // directly under each current block while the flag is on.
-    runDirection(view) +
-    (USAGE_PREMIUM_COMPARE ? premiumRunDirection(view) : "") +
-    passMap(view) +
-    (USAGE_PREMIUM_COMPARE ? premiumPassMap(view) : "") +
+    // Situational Usage IS the premium dashboard since mak kept it
+    // (2026-11-05, "remove the older version"); the original backfield() card
+    // is unmounted, not deleted (RETIRED_USAGE_BLOCKS).
+    premiumSituational(view, team) +
+    // Rushing Direction and Passing Distribution ARE the premium versions
+    // since mak kept them (2026-11-05, "remove older version"); the original
+    // runDirection() and passMap() cards are unmounted (RETIRED_USAGE_BLOCKS).
+    premiumRunDirection(view) +
+    premiumPassMap(view) +
     trendsBlock(view, team) +
     definitions(view, team) +
     fantasy(view, team) +

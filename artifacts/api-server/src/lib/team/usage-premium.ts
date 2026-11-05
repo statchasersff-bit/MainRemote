@@ -160,7 +160,8 @@ export function premiumRunDirection(view: UsageView): string {
 
   const note = runNote(view);
   return (
-    `<section class="sct-us-prm sct-us-prm-run" aria-labelledby="prm-run-h" data-sct-premium="run-direction">` +
+    // id="run-direction": the section's anchor, carried over from the retired card (2026-11-05).
+    `<section class="sct-us-prm sct-us-prm-run" id="run-direction" aria-labelledby="prm-run-h" data-sct-premium="run-direction">` +
     head(
       "prm-run-h",
       ICON_RUN,
@@ -264,7 +265,8 @@ export function premiumPassMap(view: UsageView): string {
       : `All ${mapped} of ${qbName}'s pass attempts carry a charted location and depth. Attempts are as charted in the play-by-play; spikes and plays wiped out by penalty are not counted.`;
 
   return (
-    `<section class="sct-us-prm sct-us-prm-pass" aria-labelledby="prm-pass-h" data-sct-premium="passing">` +
+    // id="passing": the section's anchor, carried over from the retired card (2026-11-05).
+    `<section class="sct-us-prm sct-us-prm-pass" id="passing" aria-labelledby="prm-pass-h" data-sct-premium="passing">` +
     head("prm-pass-h", ICON_PASS, "Passing Distribution", `Share of ${qbName}'s ${mapped} pass attempts and yards per attempt by field zone through Week ${view.throughWeek}.`, true) +
     `<div class="sct-us-prm-body">` +
     `<div class="sct-us-prm-board">` +

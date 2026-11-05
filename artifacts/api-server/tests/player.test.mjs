@@ -231,13 +231,13 @@ describe("player page content", () => {
     const header = doc.querySelector("header.scp-phead");
     assert.ok(header, "the header is on the page");
     assert.equal(header.getAttribute("aria-label"), "Player summary");
-    for (const zone of [".scp-pwell", ".scp-pid", ".scp-pboard", ".scp-pstrip"]) {
+    for (const zone of [".scp-pwell", ".scp-pid", ".scp-pboard", ".scp-pp-actions", ".scp-pstrip"]) {
       assert.ok(header.querySelector(zone), `${zone} is served`);
     }
-    // The old header's measured squeeze is gone, and so are its hooks.
-    assert.equal(doc.querySelectorAll("[data-scp-hero], .scp-hero-probe").length, 0);
-    // The bio line and the strip are dotted runs (mak, 2026-11-04); the
-    // tags, the heading and the action strip carry no middle dot.
+    // The old header's measured squeeze is gone, and so are its hooks; the
+    // comparison block of 2026-11-05 became the header, label and preview nav gone.
+    assert.equal(doc.querySelectorAll("[data-scp-hero], .scp-hero-probe, [data-scp-premium='header'], .scp-pp-label, .scp-pp-nav").length, 0);
+    // The tags, the heading and the strip carry no middle dot.
     for (const zone of [".scp-ptags", ".scp-phead-h1", ".scp-pstrip"]) {
       assert.ok(!header.querySelector(zone).textContent.includes("·"), `no middle dots in ${zone}`);
     }
@@ -266,35 +266,34 @@ describe("player page content", () => {
     assert.equal(new Set(sections).size, sections.length, "and no two share one");
   });
 
-  test("the strip's fantasy trio is three figures, the first in gold", async () => {
+  test("the board's fantasy trio is three figures, the first in gold", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const cells = [...doc.querySelectorAll(".scp-pboard-fan .scp-pstat")];
+    const cells = [...doc.querySelectorAll(".scp-pboard .scp-pstat")];
     assert.equal(cells.length, 3);
     assert.ok(cells[0].classList.contains("is-lead"));
     const [ppg, rank, owned] = cells.map((cell) => [
-      cell.querySelector("abbr")?.textContent.trim() ?? "",
+      cell.querySelector("abbr").textContent.trim(),
       cell.querySelector("b").textContent.trim(),
     ]);
-    assert.equal(ppg[0], "PPG");
+    assert.match(ppg[0], /^FPPG · (PPR|HALF|STD)$/);
     assert.match(cells[0].querySelector("abbr").getAttribute("title"), /^(PPR|HALF|STD) fantasy points per game$/);
     assert.match(ppg[1], /^(\d+\.\d|-)$/);
+    assert.equal(rank[0], "POS RANK");
     assert.match(rank[1], /^([A-Z]+\d+|-)$/, "a rank is a position and a place");
-    assert.equal(rank[0], rank[1] === "-" ? "rank" : "", "the rank names itself unless it is a dash");
-    assert.equal(owned[0], "rostered");
+    assert.equal(owned[0], "ROSTERED");
     assert.match(owned[1], /^(<1|\d+)%$|^-$/, "ownership is a whole percentage");
     assert.match(doc.querySelector(".scp-pboard-cap").textContent.trim(), /^\d{4} Fantasy Season$/);
-    // The counting line's suffix: "thru Wk N" in season, the year otherwise.
-    const thru = doc.querySelector(".scp-pline-thru");
-    if (thru) assert.match(thru.textContent.trim(), /^(thru Wk \d+|\d{4} season)$/);
+    // The season's counting totals are the four stat cards, when he has a logged game.
+    for (const v of doc.querySelectorAll(".scp-pp-card-v")) assert.match(v.textContent.trim(), /^[\d,./-]+$/);
   });
 
-  test("the strip's buttons say where they go and tag the tab", async () => {
+  test("the header's buttons say where they go and tag the tab", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const redraft = doc.querySelector(".scp-pbtn--line");
-    assert.equal(redraft.textContent.trim(), "ROS Value in Fantasy");
+    const redraft = doc.querySelector(".scp-pbtn--gold");
+    assert.equal(redraft.textContent.trim(), "View in Redraft Command");
     assert.ok(redraft.getAttribute("href").endsWith(`?player=${fixture.slug}`));
     assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-gamelog");
-    const start = doc.querySelector(".scp-pbtn--dark");
+    const start = doc.querySelector(".scp-pbtn--white");
     if (start) assert.match(start.getAttribute("data-cta"), /^(startsit|outlook)-header-gamelog$/);
 
     const chip = doc.querySelector(".scp-mchip");
@@ -324,8 +323,9 @@ describe("player page content", () => {
     // body long enough to slide under it - and on no others.
     const { doc } = await dom(`/player/${fixture.slug}`);
 
+    // (The game log's table left this list on 2026-11-05: the premium
+    // table carries its own navy header row.)
     for (const selector of [
-      "table.scp-table--log",
       "table.scp-table--career",
       "table.scp-table--regions",
     ]) {
@@ -569,7 +569,7 @@ describe("the game log's season", () => {
       const current = new Date().getUTCMonth() >= 2 ? year : year - 1;
       if (season !== current) continue;
 
-      const rows = [...doc.querySelectorAll("#game-log table.scp-table--log .scp-row")].map((row) => ({
+      const rows = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row")].map((row) => ({
         week: Number(row.querySelector("th")?.textContent.trim()),
         status: row.getAttribute("data-status"),
       }));
@@ -661,7 +661,7 @@ describe("the game log's season", () => {
       const current = new Date().getUTCMonth() >= 2 ? year : year - 1;
       if (!Number.isFinite(season) || season >= current) continue;
 
-      const weeks = [...doc.querySelectorAll("#game-log table.scp-table--log .scp-row th")].map((th) =>
+      const weeks = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row th")].map((th) =>
         Number(th.textContent.trim()),
       );
       if (weeks.length === 0) continue;
@@ -688,13 +688,13 @@ describe("the game log's season", () => {
       const root = doc.querySelector("[data-scp-root]");
       if (root?.getAttribute("data-position") !== "K") continue;
 
-      const rows = [...doc.querySelectorAll("#game-log table.scp-table--log .scp-row")];
+      const rows = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row")];
       if (rows.length === 0) continue;
 
       // A row carrying fantasy points is a row he played in, whatever the
       // status attribute says.
       const scored = rows.filter((row) => {
-        const pts = row.querySelector(".scp-pts")?.textContent.trim();
+        const pts = row.querySelector(".scp-glp-pts")?.textContent.trim();
         return pts && Number(pts) > 0;
       });
       if (scored.length === 0) continue;
@@ -718,7 +718,7 @@ describe("the game log tab", () => {
     const { doc } = await dom(`/player/${slug}${query}`);
     return {
       doc,
-      headers: [...doc.querySelectorAll("#game-log table.scp-table--log thead th")].map(
+      headers: [...doc.querySelectorAll("#game-log table.scp-glp-table thead th")].map(
         (th) => th.textContent.trim(),
       ),
     };
@@ -778,10 +778,10 @@ describe("the game log tab", () => {
     // whose script does not run has to arrive complete rather than with its
     // content behind a button that cannot work.
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const table = doc.querySelector("#game-log table.scp-table--log");
+    const table = doc.querySelector("#game-log table.scp-glp-table");
     assert.ok(table, "the game log table is in the HTML");
 
-    const rows = [...table.querySelectorAll("tr.scp-row[data-status='active']")];
+    const rows = [...table.querySelectorAll("tr.scp-glp-row[data-status='active']")];
     assert.ok(rows.length > 0, "at least one week was played");
 
     for (const row of rows) {
@@ -804,9 +804,9 @@ describe("the game log tab", () => {
     // A breakdown that quietly balances itself is worth less than one that shows
     // where it cannot: anything the coefficients do not model is its own line.
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const table = doc.querySelector("#game-log table.scp-table--log");
+    const table = doc.querySelector("#game-log table.scp-glp-table");
 
-    for (const row of [...table.querySelectorAll("tr.scp-row[data-status='active']")]) {
+    for (const row of [...table.querySelectorAll("tr.scp-glp-row[data-status='active']")]) {
       const id = row.getAttribute("data-detail");
       if (!id) continue;
       const detail = table.querySelector(`tr.scp-detail[id="${id}"]`);
@@ -815,7 +815,7 @@ describe("the game log tab", () => {
       );
       if (parts.length === 0) continue;
 
-      const points = Number(row.querySelector(".scp-pts").textContent.trim());
+      const points = Number(row.querySelector(".scp-glp-pts").textContent.trim());
       const sum = parts.reduce((total, value) => total + value, 0);
       assert.ok(
         Math.abs(sum - points) < 0.06,
@@ -825,135 +825,27 @@ describe("the game log tab", () => {
     }
   });
 
-  test("the premium comparison block repeats the tab's figures under it (mak, 2026-11-05)", async () => {
-    // The redesign renders UNDER the existing tab, flagged, and both stay
-    // until mak approves one: every number it prints is the tab's own.
+  test("the premium redesign is the tab: one table, no old blocks, no comparison flags (mak, 2026-11-05)", async () => {
+    // mak approved the premium Game Log and the premium breakdown +
+    // matchups the day they were built and had the old design removed.
     const { doc } = await dom(`/player/${fixture.slug}`);
     const gl = doc.querySelector("#game-log");
-    const wrap = gl.querySelector(".scp-glp-wrap");
-    assert.ok(wrap, "the comparison block sits inside the Game Log tab");
-    assert.match(wrap.querySelector(".scp-glp-flag").textContent, /New design/);
-    assert.equal(gl.querySelectorAll("table.scp-table--log").length, 1, "the tab's own log is still there, once");
-    assert.equal(wrap.querySelectorAll("table.scp-glp-table").length, 1);
-
-    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
-    const rows = (table) =>
-      [...table.querySelectorAll("tr")]
-        .filter((r) => !r.classList.contains("scp-detail"))
-        .map((r) => [...r.children].map(text));
-    assert.deepEqual(
-      rows(wrap.querySelector("table.scp-glp-table")),
-      rows(gl.querySelector("table.scp-table--log")),
-      "every header, cell and the Avg row match the tab's table",
-    );
-    assert.deepEqual(
-      [...wrap.querySelectorAll(".scp-glp-kpi-v")].map(text),
-      [...gl.querySelectorAll(".scp-gl-summary .scp-st-v")].map(text),
-      "the KPI cards carry the summary strip's figures",
-    );
-    assert.deepEqual(
-      [...wrap.querySelectorAll(".scp-glp-fcard")].map((t) => text(t).toLowerCase()),
-      [...gl.querySelectorAll(".scp-gl-tile")].map((t) => text(t).toLowerCase()),
-      "the finish cards carry the tier counts and shares",
-    );
-    // The same dots, rank for rank. Their x positions can differ: the premium
-    // axis extends past the position's floor (WR60) when a week finished
-    // below it, where the ladder clamps the dot onto the end.
-    const pins = (sel) => [...gl.querySelectorAll(sel)].map((p) => text(p.querySelector("strong")));
-    assert.deepEqual(pins(".scp-glp-pin"), pins(".scp-gl-pin"), "the range chart's dots are the ladder's");
-    const xs = [...wrap.querySelectorAll(".scp-glp-pin")].map((p) => Number(/left:([\d.]+)%/.exec(p.getAttribute("style"))[1]));
-    for (let i = 1; i < xs.length; i++) assert.ok(xs[i] > xs[i - 1], "the dots sit left to right by rank");
-    if (xs.length) assert.ok(xs[xs.length - 1] <= 100, "the worst week is on the axis, not past it");
-    assert.deepEqual(
-      [...wrap.querySelectorAll(".scp-seasons .scp-season-opt")].map((a) => a.getAttribute("href")),
-      [...gl.querySelectorAll(".scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")].map((a) => a.getAttribute("href")),
-      "the season chips are the tab's own links, so the in-place swap serves both",
-    );
-    assert.equal(
-      wrap.querySelectorAll("table.scp-glp-table tr.scp-detail").length,
-      gl.querySelectorAll("table.scp-table--log tr.scp-detail").length,
-      "every week's detail row is there to fold",
-    );
-    assert.ok(wrap.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
-  });
-
-  test("the premium breakdown and matchups repeat the tab's sections under them (mak, 2026-11-05)", async () => {
-    // The redesign of the Game-by-Game Breakdown and Upcoming Matchups
-    // renders UNDER the existing pair, flagged, and both stay until mak
-    // approves one: every headline, line, figure, kickoff and link is the
-    // tab's own.
-    const { doc } = await dom(`/player/${fixture.slug}`);
-    const gl = doc.querySelector("#game-log");
-    const wrap = gl.querySelector(".scp-bkp-wrap");
-    assert.ok(wrap, "the comparison block sits inside the Game Log tab");
-    assert.match(wrap.querySelector(".scp-bkp-flag").textContent, /New design/);
-    const text = (el) => (el ? el.textContent.replace(/\s+/g, " ").trim() : "");
-
-    // Order on the page: the old breakdown, the old fixtures, then this block.
-    const oldUpcoming = gl.querySelector(".scp-next-note");
-    if (oldUpcoming) {
-      assert.ok(
-        oldUpcoming.compareDocumentPosition(wrap) & 4,
-        "the block follows the existing Upcoming Matchups, not between the pair",
-      );
+    for (const sel of [".scp-table--log", ".scp-gl-summary", ".scp-gl-ladder", ".scp-gl-game", ".scp-nexts", ".scp-glp-flag", ".scp-bkp-flag"]) {
+      assert.equal(gl.querySelector(sel), null, `${sel} is gone`);
     }
-
-    const oldCards = [...gl.querySelectorAll(".scp-gl-game")].map((c) => ({
-      week: text(c.querySelector(".scp-gl-when")).replace(/,.*$/, ""),
-      head: text(c.querySelector(".scp-gl-head")),
-      line: text(c.querySelector(".scp-gl-line")),
-      note: text(c.querySelector(".scp-gl-note")),
-      pts: text(c.querySelector(".scp-gl-fp b")),
-      badge: text(c.querySelector(".scp-gl-fbadge")),
-    }));
-    const newRows = [...wrap.querySelectorAll(".scp-bkp-row")].map((r) => ({
-      week: text(r.querySelector(".scp-bkp-week b")),
-      head: text(r.querySelector(".scp-bkp-head")),
-      line: text(r.querySelector(".scp-bkp-line")).replace(new RegExp(` ${text(r.querySelector(".scp-bkp-rnote")).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), ""),
-      note: text(r.querySelector(".scp-bkp-rnote")),
-      pts: text(r.querySelector(".scp-bkp-fp-v b")),
-      badge: text(r.querySelector(".scp-bkp-fbadge")),
-    }));
-    assert.ok(oldCards.length > 0, "the fixture has breakdown cards");
-    assert.deepEqual(newRows, oldCards, "every row carries its card's week, headline, line, note, points and finish");
-
-    // The accent and pill follow the fantasy tier; the result badge follows the game.
-    for (const r of wrap.querySelectorAll(".scp-bkp-row")) {
+    assert.equal(gl.querySelectorAll("table.scp-glp-table").length, 1, "one log on the page");
+    const log = gl.querySelector(".scp-glp-wrap");
+    const story = gl.querySelector(".scp-bkp-wrap");
+    assert.ok(log && story);
+    assert.ok(log.compareDocumentPosition(story) & 4, "the log, then the breakdown and the fixtures");
+    assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
+    assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-sortable"));
+    assert.ok(gl.querySelectorAll(".scp-glp-kpi-v").length >= 3, "the KPI cards");
+    assert.ok(gl.querySelector(".scp-glp-pin"), "the finishes chart");
+    assert.ok(gl.querySelectorAll(".scp-bkp-row").length > 0, "the breakdown rows");
+    for (const r of gl.querySelectorAll(".scp-bkp-row")) {
       assert.match(r.getAttribute("data-tier"), /^(t12|t24|low)$/);
       assert.match(r.querySelector(".scp-bkp-res").getAttribute("data-wlt"), /^[WLT]$/);
-    }
-
-    const oldNext = [...gl.querySelectorAll("tr.scp-next")].map((row) => ({
-      week: text(row.querySelector(".scp-next-week")),
-      code: text(row.querySelector(".scp-next-code")),
-      when: text(row.querySelector(".scp-next-when")),
-      rank: text(row.querySelector(".scp-next-rank")),
-      read: text(row.querySelector(".scp-next-read")),
-      href: row.querySelector(".scp-next-cta")?.getAttribute("href") ?? null,
-      next: row.hasAttribute("data-next"),
-    }));
-    const newNext = [...wrap.querySelectorAll("tr.scp-bkp-nx")].map((row) => ({
-      week: text(row.querySelector(".scp-bkp-nx-week")),
-      code: text(row.querySelector(".scp-bkp-nx-code")),
-      when: text(row.querySelector(".scp-bkp-nx-when")),
-      rank: text(row.querySelector(".scp-bkp-nx-rank b")),
-      read: text(row.querySelector(".scp-bkp-pill")),
-      href: row.querySelector(".scp-bkp-cta")?.getAttribute("href") ?? null,
-      next: row.hasAttribute("data-next"),
-    }));
-    assert.deepEqual(newNext, oldNext, "the matchup table repeats the fixtures, ranks, readings and links");
-    if (oldNext.length) {
-      const sub = text(wrap.querySelector(".scp-bkp-up .scp-bkp-sub"));
-      assert.match(sub, new RegExp(`^Next ${["zero", "one", "two", "three", "four", "five", "six"][oldNext.length]} game`));
-      assert.equal(
-        text(wrap.querySelector(".scp-bkp-note")),
-        text(oldUpcoming),
-        "the methodology strip is the tab's note, word for word",
-      );
-      assert.equal(
-        wrap.querySelector(".scp-bkp-note a[href*='outlook']")?.getAttribute("href") ?? null,
-        oldUpcoming.querySelector("a[href*='outlook']")?.getAttribute("href") ?? null,
-      );
     }
   });
 
@@ -962,7 +854,7 @@ describe("the game log tab", () => {
     // REPLACES the log, so the current season is a chip like the rest and
     // there is no "All".
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
+    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
     if (chips.length === 0) return; // a single-season player gets no selector
 
     const shown = Number(doc.querySelector("[data-scp-root]")?.getAttribute("data-log-season"));
@@ -985,29 +877,29 @@ describe("the game log tab", () => {
     }
     // The selector sits under the tab's heading and above the table.
     const nav = doc.querySelector("#game-log .scp-seasonnav");
-    const table = doc.querySelector("#game-log table.scp-table--log");
+    const table = doc.querySelector("#game-log table.scp-glp-table");
     assert.ok(nav.compareDocumentPosition(table) & 4, "the selector comes before the log it selects");
     assert.equal(doc.querySelector("#game-log .scp-archive"), null, "no second log block under the page");
   });
 
   test("the season at a glance sits over the table, summed from the same rows", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const tiles = [...doc.querySelectorAll("#game-log .scp-gl-summary .scp-st-rate")];
+    const tiles = [...doc.querySelectorAll("#game-log .scp-glp-kpi")];
     if (tiles.length === 0) return;
-    const titles = tiles.map((t) => t.querySelector("h3").textContent.trim());
+    const titles = tiles.map((t) => t.querySelector(".scp-glp-kpi-l").textContent.trim());
     assert.deepEqual(titles.slice(0, 2), [/^Games?$/.test(titles[0]) ? titles[0] : "Games", "FPTS/G"]);
     assert.ok(titles.includes("Best FPTS"));
-    const games = Number(tiles[0].querySelector(".scp-st-v").textContent);
-    const active = doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row[data-status='active']").length;
+    const games = Number(tiles[0].querySelector(".scp-glp-kpi-v").textContent);
+    const active = doc.querySelectorAll("#game-log table.scp-glp-table tbody tr.scp-glp-row[data-status='active']").length;
     assert.equal(games, active, "the Games tile counts the table's played rows");
-    assert.match(tiles[0].querySelector("p:last-child").textContent, /^Regular season · (PPR|Half-PPR|Standard)/);
-    const table = doc.querySelector("#game-log table.scp-table--log");
-    assert.ok(doc.querySelector("#game-log .scp-gl-summary").compareDocumentPosition(table) & 4, "tiles before the table");
+    assert.match(tiles[0].querySelector(".scp-glp-kpi-c").textContent, /^Regular season · (PPR|Half-PPR|Standard)/);
+    const table = doc.querySelector("#game-log table.scp-glp-table");
+    assert.ok(doc.querySelector("#game-log .scp-glp-kpis").compareDocumentPosition(table) & 4, "tiles before the table");
   });
 
   test("a past season replaces the log: its heading, its table, no fixtures, the profile untouched", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
+    const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
     const other = chips.find((a) => !a.classList.contains("is-active"));
     if (!other) return;
 
@@ -1015,7 +907,7 @@ describe("the game log tab", () => {
     const pinned = await dom(`${other.getAttribute("href")}`);
     const gl = pinned.doc.querySelector("#game-log");
     assert.match(gl.querySelector(".scp-h2").textContent, new RegExp(`Game Log ${year}$`), "the heading names the year");
-    assert.equal(gl.querySelectorAll("table.scp-table--log").length, 1, "one log on the page");
+    assert.equal(gl.querySelectorAll("table.scp-glp-table").length, 1, "one log on the page");
     const ids = [...gl.querySelectorAll("tr.scp-detail")].map((r) => r.id);
     assert.ok(ids.length === 0 || ids.every((id) => id.startsWith(`gl-${year}-`)), `the rows are ${year}'s: ${ids.slice(0, 3)}`);
     assert.equal(gl.querySelector(".scp-nexts"), null, "a finished season has no fixtures");
@@ -1039,22 +931,22 @@ describe("the game log tab", () => {
       "the year in the document title is the tab's",
     );
     assert.equal(
-      pinned.doc.querySelector(".scp-phead .scp-pboard-fan")?.textContent,
-      doc.querySelector(".scp-phead .scp-pboard-fan")?.textContent,
+      pinned.doc.querySelector(".scp-phead .scp-pboard")?.textContent,
+      doc.querySelector(".scp-phead .scp-pboard")?.textContent,
       "the hero's board is the current season's",
     );
   });
 
   test("the Difficulty cell carries the defense rank chip and its band word", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const heads = [...doc.querySelectorAll("#game-log table.scp-table--log thead th")].map((th) => th.textContent.trim());
+    const heads = [...doc.querySelectorAll("#game-log table.scp-glp-table thead th")].map((th) => th.textContent.trim());
     assert.deepEqual(heads.slice(0, 3), ["Wk", "Opp", "Difficulty"]);
-    for (const row of doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row[data-status='active']")) {
-      const cell = row.querySelector("td.scp-diff");
+    for (const row of doc.querySelectorAll("#game-log table.scp-glp-table tbody tr.scp-glp-row[data-status='active']")) {
+      const cell = row.querySelector("td.scp-glp-diff-cell");
       assert.ok(cell, "every played row has the cell");
       // The rank moved out of the Opp cell on 2026-11-05: Opp is crest + code only.
-      assert.equal(row.querySelector("td.scp-opp .scp-opp-rank"), null, "no rank chip in the Opp cell");
-      const chip = cell.querySelector(".scp-opp-rank");
+      assert.equal(row.querySelector("td.scp-glp-opp .scp-glp-diff"), null, "no rank chip in the Opp cell");
+      const chip = cell.querySelector(".scp-glp-diff b");
       if (!chip) { assert.equal(cell.textContent.trim(), "-"); continue; }
       const rank = Number.parseInt(chip.textContent, 10);
       const want = rank <= 10 ? "Favorable" : rank >= 23 ? "Tough" : "Neutral";
@@ -1062,13 +954,13 @@ describe("the game log tab", () => {
       assert.equal(word, want, `${chip.textContent}: ${cell.textContent}`);
     }
     // The Avg row carries the season's average matchup in the same word.
-    const avg = doc.querySelector("#game-log table.scp-table--log tfoot td.scp-diff");
+    const avg = doc.querySelector("#game-log table.scp-glp-table tfoot td.scp-glp-diff-cell");
     if (avg) assert.match(avg.textContent.trim(), /^(Favorable|Neutral|Tough|-)$/);
   });
 
   test("absences say only what is known: a bye, an injury, or nothing", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const labels = [...doc.querySelectorAll("#game-log table.scp-table--log tbody tr.scp-row:not([data-status='active']) .scp-row-empty")]
+    const labels = [...doc.querySelectorAll("#game-log table.scp-glp-table tbody tr.scp-glp-row:not([data-status='active']) .scp-glp-row-empty")]
       .map((td) => td.textContent.trim());
     for (const label of labels) {
       assert.match(label, /^(Bye week|Active, did not play|Did not play( \([a-z][a-z /-]+\))?)$/, label);
@@ -1078,7 +970,7 @@ describe("the game log tab", () => {
 
   test("an unplayed season is ignored rather than rendered empty", async () => {
     const { doc } = await dom(`/player/${fixture.slug}?log=1998`);
-    const rows = [...doc.querySelectorAll("#game-log table.scp-table--log .scp-row")];
+    const rows = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row")];
     assert.ok(rows.length > 0, "an impossible season falls back to a real one");
   });
 
@@ -1107,8 +999,8 @@ describe("the game log tab", () => {
       "the chart and trailing-five headings are gone",
     );
 
-    const table = doc.querySelector("#game-log table.scp-table--log");
-    const games = [...table.querySelectorAll('tbody tr.scp-row[data-status="active"]')];
+    const table = doc.querySelector("#game-log table.scp-glp-table");
+    const games = [...table.querySelectorAll('tbody tr.scp-glp-row[data-status="active"]')];
     const avg = table.querySelector("tfoot tr.scp-avg");
     if (games.length < 2) {
       assert.equal(avg, null, "one game has no average row");
@@ -1162,7 +1054,7 @@ describe("the game log tab", () => {
 
       // The Game Log FAQ leads with his last game (faq-pools.ts, 2026-09-30):
       // the week it names is the table's last active row.
-      const rows = [...doc.querySelectorAll("#game-log tr.scp-row[data-status='active']")];
+      const rows = [...doc.querySelectorAll("#game-log tr.scp-glp-row[data-status='active']")];
       const lastWeek = Math.max(...rows.map((r) => Number(r.getAttribute("data-week"))).filter(Number.isFinite));
       assert.match(items[0].querySelector("summary").textContent, /his last game\?$/);
       assert.match(
@@ -1200,7 +1092,7 @@ describe("the game log tab", () => {
     // continuous, is the single wrong thing this FAQ could say; keeping it on
     // one season is what makes the tense a property rather than a coin flip.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const seasons = [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")]
+    const seasons = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")]
       .map((el) => Number(el.textContent.trim()))
       .filter(Number.isFinite);
     const current = Number(
@@ -1232,7 +1124,7 @@ describe("the game log tab", () => {
     // Years only - All is a view of the whole career, not a season the FAQ
     // could name.
     const offered = [
-      ...doc.querySelectorAll('#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt:not([data-season="all"])'),
+      ...doc.querySelectorAll('#game-log .scp-seasonnav .scp-season-opt:not([data-season="all"])'),
     ].map((el) => el.textContent.trim());
     const items = [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")].map((item) =>
       item.querySelector("summary")?.textContent.trim() ?? "",
@@ -1266,7 +1158,7 @@ describe("the game log tab", () => {
     const list = doc.querySelector("#game-log .scp-nexts");
     if (!list) return; // season over, or no schedule
 
-    const table = doc.querySelector("#game-log table.scp-table--log");
+    const table = doc.querySelector("#game-log table.scp-glp-table");
     const summary = doc.querySelector("#game-log .scp-logintro .scp-note");
     const faq = doc.querySelector(".scp-tab-faq[data-faq-tab='game-log']");
 
@@ -1288,7 +1180,7 @@ describe("the game log tab", () => {
     }
 
     // No fixture ever became a row: every row in the table carries a status.
-    for (const row of table.querySelectorAll("tbody tr.scp-row")) {
+    for (const row of table.querySelectorAll("tbody tr.scp-glp-row")) {
       assert.ok(
         ["active", "bye", "out"].includes(row.getAttribute("data-status")),
         "a game-log row is a recorded week, not a scheduled one",
@@ -1298,7 +1190,7 @@ describe("the game log tab", () => {
 
   test("the matchup-rank caption links the table it is measured from", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const note = doc.querySelector("#game-log .scp-next-note");
+    const note = doc.querySelector("#game-log .scp-bkp-note");
     if (!note) return; // season over, or no schedule
 
     // The definition is only checkable against the points-allowed table, so
@@ -1318,7 +1210,7 @@ describe("the game log tab", () => {
 
   test("every fixture opens the pair's page, at its canonical address", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const cards = [...doc.querySelectorAll("#game-log .scp-next")];
+    const cards = [...doc.querySelectorAll("#game-log tr.scp-bkp-nx")];
     if (cards.length === 0) return;
 
     const teamSlug = doc
@@ -1327,7 +1219,7 @@ describe("the game log tab", () => {
       ?.match(/\/team\/([a-z0-9-]+)/)?.[1];
 
     for (const card of cards) {
-      const cta = card.querySelector(".scp-next-cta");
+      const cta = card.querySelector(".scp-bkp-cta");
       // A card with an opponent this server cannot resolve gets no link rather
       // than one pointing at a page that is not there.
       if (!cta) continue;
@@ -1359,7 +1251,7 @@ describe("the game log tab", () => {
 
   test("a fixture card carries the week, the opponent, home/away and the time", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const cards = [...doc.querySelectorAll("#game-log .scp-next")];
+    const cards = [...doc.querySelectorAll("#game-log tr.scp-bkp-nx")];
     if (cards.length === 0) return;
 
     assert.ok(cards.length <= 4, `${cards.length} fixtures - at most four`);
@@ -1367,26 +1259,26 @@ describe("the game log tab", () => {
     const weeks = [];
     for (const card of cards) {
       assert.match(
-        card.querySelector(".scp-next-week").textContent.trim(),
+        card.querySelector(".scp-bkp-nx-week").textContent.trim(),
         /^Week \d+$/,
         "the card names its week",
       );
-      weeks.push(Number(/\d+/.exec(card.querySelector(".scp-next-week").textContent)[0]));
+      weeks.push(Number(/\d+/.exec(card.querySelector(".scp-bkp-nx-week").textContent)[0]));
 
       const ha = card.getAttribute("data-homeaway");
       assert.ok(["home", "away"].includes(ha), "home or away, never neither");
       // The marker is on the focal line, so it is readable in one glance.
       assert.equal(
-        card.querySelector(".scp-next-ha").textContent.trim(),
+        card.querySelector(".scp-bkp-ha").textContent.trim(),
         ha === "away" ? "@" : "vs",
       );
       assert.ok(
-        card.querySelector(".scp-next-code").textContent.trim().length > 0,
+        card.querySelector(".scp-bkp-nx-code").textContent.trim().length > 0,
         "the opponent has a code",
       );
       // And the words are there for a screen reader, which cannot read a glyph.
       assert.match(
-        card.querySelector(".scp-next-name").textContent,
+        card.querySelector(".scp-bkp-nx-name").textContent,
         ha === "away" ? /^Away at / : /^Home vs /,
       );
       // A row of the compact table (2026-11-04), not a card.
@@ -1401,15 +1293,15 @@ describe("the game log tab", () => {
 
   test("no fixture claims a stat, and none is a finished game", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const cards = [...doc.querySelectorAll("#game-log .scp-next")];
+    const cards = [...doc.querySelectorAll("#game-log tr.scp-bkp-nx")];
     if (cards.length === 0) return;
 
     // Every played week in the table is behind every scheduled week on a card.
-    const played = [...doc.querySelectorAll("#game-log tr.scp-row[data-status='active']")]
+    const played = [...doc.querySelectorAll("#game-log tr.scp-glp-row[data-status='active']")]
       .map((row) => Number(row.querySelector("th").textContent.trim()))
       .filter(Number.isFinite);
     const firstUpcoming = Number(
-      /\d+/.exec(cards[0].querySelector(".scp-next-week").textContent)[0],
+      /\d+/.exec(cards[0].querySelector(".scp-bkp-nx-week").textContent)[0],
     );
     for (const week of played) {
       assert.ok(
@@ -1430,7 +1322,7 @@ describe("the game log tab", () => {
 
   test("the matchup rank names its position and its direction", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const cards = [...doc.querySelectorAll("#game-log .scp-next")];
+    const cards = [...doc.querySelectorAll("#game-log tr.scp-bkp-nx")];
     if (cards.length === 0) return;
 
     const position = doc
@@ -1438,20 +1330,20 @@ describe("the game log tab", () => {
       .getAttribute("data-position");
 
     for (const card of cards) {
-      const rank = card.querySelector(".scp-next-rank");
+      const rank = card.querySelector(".scp-bkp-nx-rank b");
       if (!rank) continue;
       assert.match(rank.textContent.trim(), /^\d+(st|nd|rd|th)$/);
       const value = Number.parseInt(rank.textContent, 10);
       assert.ok(value >= 1 && value <= 32, `rank ${value} is outside the league`);
       assert.equal(
-        card.querySelector(".scp-next-vs").textContent.trim(),
+        card.querySelector(".scp-bkp-nx-rank span").textContent.trim(),
         `vs ${position}`,
         "the rank is against this player's own position",
       );
     }
 
     // The direction is stated rather than implied, and never as "easiest".
-    const note = doc.querySelector("#game-log .scp-next-note").textContent;
+    const note = doc.querySelector("#game-log .scp-bkp-note").textContent;
     assert.match(note, /1st allows the most/, "the caption states which end is which");
     assert.ok(
       !/easiest|hardest/i.test(note),
@@ -1465,7 +1357,7 @@ describe("the game log tab", () => {
     // PPR ranks under a PPR sentence.
     for (const [query, label] of [["", "PPR"], ["?format=standard", "Standard"]]) {
       const { doc } = await dom(`/player/${fixture.slug}/game-log/${query}`);
-      const note = doc.querySelector("#game-log .scp-next-note");
+      const note = doc.querySelector("#game-log .scp-bkp-note");
       if (!note) continue;
       assert.ok(
         note.textContent.includes(label),
@@ -1500,9 +1392,9 @@ describe("the game log tab", () => {
     // Games played: one count on the whole tab. The table's Career GP is the
     // rates tile's game count and the chart's bars sum to it.
     const careerGp = Number(career.querySelector("tfoot td")?.textContent);
-    const tileGames = Number(/(\d+) games?, \d+ seasons?/.exec(doc.querySelector("#stats .scp-st-rate p:last-child")?.textContent ?? "")?.[1]);
-    assert.equal(tileGames, careerGp, "the Career PPG tile counts the table's games");
-    const barGp = [...doc.querySelectorAll("#stats .scp-st-x small")].reduce((s, el) => s + Number.parseInt(el.textContent, 10), 0);
+    const tileGames = Number(/(\d+) games?, \d+ seasons?/.exec(doc.querySelector("#stats .scp-cp-kpi .scp-cp-kpi-sub")?.textContent ?? "")?.[1]);
+    assert.equal(tileGames, careerGp, "the Career PPG card counts the table's games");
+    const barGp = [...doc.querySelectorAll("#stats .scp-cp-x small")].reduce((s, el) => s + Number.parseInt(el.textContent, 10), 0);
     assert.equal(barGp, careerGp, "the chart's GP labels sum to the table's Career GP");
     const chart = doc.querySelector("#stats #scp-st-arc-h");
     assert.ok(chart, "the per-season chart is on the tab");
@@ -2407,7 +2299,7 @@ describe("the player search", () => {
       // The peers rail is the page's other way out, and it is built from the
       // same prefix - a card pointing back at the bare tool would take the
       // reader off statchasers.com mid-visit.
-      const peers = [...doc.querySelectorAll("a.scp-peer")].map((a) =>
+      const peers = [...doc.querySelectorAll("a.scp-pr-card")].map((a) =>
         a.getAttribute("href"),
       );
       assert.ok(peers.length > 0, "the fragment carries the rail too");
@@ -2533,12 +2425,12 @@ describe("the positional peers rail", () => {
     const rail = doc.querySelector("[data-scp-peers]");
     assert.ok(rail, "the rail is server-rendered, not fetched");
 
-    const cards = [...rail.querySelectorAll(".scp-peer")];
+    const cards = [...rail.querySelectorAll(".scp-pr-card")];
     assert.ok(cards.length >= 2, "a neighborhood, not a card on its own");
     assert.ok(cards.length <= 7, "three either side and the player himself");
 
     const ranks = cards.map((card) =>
-      Number(card.querySelector(".scp-peer-rank").textContent.replace(/^[A-Z]+/, "")),
+      Number(card.querySelector(".scp-pr-rank").textContent.replace(/^[A-Z]+/, "")),
     );
     assert.deepEqual(
       ranks,
@@ -2547,10 +2439,10 @@ describe("the positional peers rail", () => {
     );
     assert.equal(new Set(ranks).size, ranks.length, "one card per rank");
 
-    const current = rail.querySelectorAll(".scp-peer.is-current");
+    const current = rail.querySelectorAll(".scp-pr-card.is-current");
     assert.equal(current.length, 1, "exactly one card is the reader's own");
     assert.match(current[0].textContent, /You are here/i);
-    assert.match(current[0].querySelector(".scp-peer-name").textContent, /\S/);
+    assert.match(current[0].querySelector(".scp-pr-name").textContent, /\S/);
     // Not a link back to the page you are standing on.
     assert.equal(current[0].tagName, "DIV");
     assert.equal(current[0].getAttribute("aria-current"), "page");
@@ -2567,9 +2459,9 @@ describe("the positional peers rail", () => {
   test("the card the reader is on agrees with the header", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
 
-    const cells = [...doc.querySelectorAll(".scp-pboard-fan .scp-pstat")];
+    const cells = [...doc.querySelectorAll(".scp-pboard .scp-pstat")];
     const rankCell = cells.find((cell) => /^[A-Z]+\d+$/.test(cell.querySelector("b").textContent.trim()));
-    const current = doc.querySelector(".scp-peer.is-current .scp-peer-rank");
+    const current = doc.querySelector(".scp-pr-card.is-current .scp-pr-rank");
     assert.ok(current, "the reader's card carries its rank");
 
     // The header only prints a rank when it has one; when it does, the rail
@@ -2585,7 +2477,7 @@ describe("the positional peers rail", () => {
 
   test("every peer is a page that resolves", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const hrefs = [...doc.querySelectorAll("a.scp-peer")].map((a) =>
+    const hrefs = [...doc.querySelectorAll("a.scp-pr-card")].map((a) =>
       a.getAttribute("href"),
     );
     assert.ok(hrefs.length > 0);
@@ -2661,13 +2553,29 @@ describe("the positional peers rail", () => {
     assert.ok(tabs >= 4, "the fixture carries most of the tabs");
   });
 
-  test("the heading carries no subheading", async () => {
+  test("the heading names the position and the player; the figure is observed, never projected", async () => {
+    // The premium rail (mak, 2026-11-05): "WRs Like Garrett Wilson" in its
+    // navy bar, a subtitle that says what the rail is (a slice of the rank
+    // table), and three per-game rates a card from the same games.
     const { doc } = await dom(`/player/${fixture.slug}`);
-    assert.equal(doc.querySelector(".scp-peers .scp-head-sub"), null);
-    const h = doc.querySelector(".scp-peers h2");
-    assert.equal(h.className, "scp-ox-h2", "the Overview's section title, like the FAQ");
-    // mak, 2026-09-30: "QBs like Jacoby Brissett", not "Nearby Positional Peers".
-    assert.equal(h.textContent, `${doc.querySelector(".scp-root, [data-position]").getAttribute("data-position")}s like ${fixture.name}`);
+    const text = (el) => (el ? el.textContent.replace(/\s+/g, " ").trim() : "");
+    const rail = doc.querySelector("#overview > .scp-peers");
+    const h = rail.querySelector("h2");
+    assert.equal(h.className, "scp-pr-title");
+    assert.equal(text(h), `${doc.querySelector(".scp-root, [data-position]").getAttribute("data-position")}s Like ${fixture.name}`);
+    assert.match(text(rail.querySelector(".scp-pr-sub")), /^Nearby .+ in \d{4} fantasy points/);
+    assert.doesNotMatch(text(rail), /Proj/i, "nothing on the rail is called a projection");
+    assert.equal(rail.querySelector(".scp-pr-flag"), null, "no comparison flag: this is the rail");
+    const unit = text(rail.querySelector(".scp-pr-card .scp-pr-value small"));
+    assert.match(unit, /^(PPG|PTS)$/);
+    for (const c of rail.querySelectorAll(".scp-pr-card")) {
+      assert.equal(text(c.querySelector(".scp-pr-value small")), unit);
+      const metrics = [...c.querySelectorAll(".scp-pr-metric")];
+      if (metrics.length) {
+        assert.equal(metrics.length, 3);
+        for (const m of metrics) assert.match(text(m.querySelector("b")), /^\d+(\.\d+)?$/);
+      }
+    }
   });
 });
 
@@ -3189,7 +3097,7 @@ describe("player section URLs", () => {
   const PHRASES = {
     stats: / 2\d{3} Stats$/,
     injury: /^Is .+ injured\?$/,
-    "game-log": /Where His Weeks Finished$/,
+    "game-log": /^Game Log - /,
     outlook: /Rest-of-Season Projection$/,
     news: /Season Timeline$/,
     bio: /Career Timeline$/,
@@ -3373,7 +3281,7 @@ describe("player section URLs", () => {
     );
     const tag = target.replace(/[^a-z0-9]/gi, "");
     assert.equal(
-      doc.querySelector(".scp-pbtn--line").getAttribute("data-cta"),
+      doc.querySelector(".scp-pbtn--gold").getAttribute("data-cta"),
       `redraft-command-header-${tag}`,
       "and so does the analytics tag on the header's buttons",
     );
@@ -3553,7 +3461,7 @@ describe("a state swap", () => {
 
   /** The game log's season chips, which a single-season player does not get. */
   function chips(doc) {
-    return [...doc.querySelectorAll("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt")];
+    return [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
   }
 
   test("picking a season re-renders in place and leaves the URL alone", async () => {
@@ -3579,7 +3487,7 @@ describe("a state swap", () => {
     assert.equal(window.location.pathname, landed, "the address bar did not move");
     assert.equal(window.location.search, "", "and nothing was appended to it");
 
-    const active = doc.querySelector("#game-log .scp-seasonnav:not(.scp-glp-seasons) .scp-season-opt.is-active");
+    const active = doc.querySelector("#game-log .scp-seasonnav .scp-season-opt.is-active");
     assert.equal(
       active.getAttribute("data-season"),
       want,

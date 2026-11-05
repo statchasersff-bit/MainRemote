@@ -1,9 +1,8 @@
 /**
- * The premium Game Log comparison block (mak's brief, 2026-11-05).
- *
- * Rendered UNDER the existing Game Log tab, never in place of it: the two
- * stay on the page together until mak approves the redesign. Everything
- * this block prints is the tab's own figures handed in through `deps` -
+ * The premium Game Log (mak's brief, 2026-11-05; the tab itself since the
+ * same day, when mak approved it and the old chips, summary strip, table
+ * and ladder were removed). Everything this block prints comes through
+ * `deps` from the tab's own helpers in player-render.ts -
  * the season chips' hrefs, the box-score columns, the summary strip's four
  * numbers, the Avg row's values, each row's cells and detail - so the two
  * versions can never disagree, and the ladder reads the same StoryGame list
@@ -224,10 +223,9 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
         );
       }
       const logo = getTeamByAbbreviation(entry.opp)?.logo ?? null;
-      // `gl-<season>-pw<week>`: the tab's own `gl-<season>-` prefix, which the
-      // suite checks every detail row on a pinned season for, then `pw` so it
-      // never collides with the tab's `gl-<season>-w<week>` row.
-      const detailId = `gl-${data.logSeason}-pw${entry.week}`;
+      // `gl-<season>-w<week>`: the suite checks every detail row on a pinned
+      // season for the `gl-<season>-` prefix.
+      const detailId = `gl-${data.logSeason}-w${entry.week}`;
       const detail = deps.detail(entry, detailId, span);
       return (
         `<tr class="scp-glp-row" data-status="active" data-week="${entry.week}"` +
@@ -466,15 +464,14 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
 /* ------------------------------------------------------------------ block */
 
 /**
- * The whole comparison block: flag, hero, season chips, KPI cards, the
- * table with its note, and the finishes panel.
+ * The whole block: hero, season chips, KPI cards, the table with its note,
+ * and the finishes panel.
  */
 export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps): string {
   const archive = data.logSeason !== data.season;
   const titleId = `glp-title-${data.logSeason}`;
   return (
     `<div class="scp-glp-wrap">` +
-    `<p class="scp-glp-flag"><b>New design</b><span>comparison</span></p>` +
     `<section class="scp-glp" aria-labelledby="${titleId}">` +
     `<header class="scp-glp-hero">` +
     `<div class="scp-glp-hero-l">` +

@@ -1,8 +1,7 @@
 /**
- * The premium Game-by-Game Breakdown + Upcoming Matchups comparison block
- * (mak's brief, 2026-11-05). Rendered UNDER the existing pair of sections,
- * never in place of them: the two versions stay on the page together
- * until mak approves one.
+ * The premium Game-by-Game Breakdown + Upcoming Matchups (mak's brief,
+ * 2026-11-05; the tab's own sections since the same day, when mak approved
+ * the redesign and the old cards and fixtures table were removed).
  *
  * Nothing here is a new number or a new sentence. The breakdown rows read
  * buildBreakdownCards() - the same headline, note, tier and season-high
@@ -185,7 +184,7 @@ function renderUpcoming(data: PlayerPageData, deps: BreakdownPremiumDeps): strin
       const band = game.matchup ? matchupBand(game.matchup.rank) : null;
       const href = deps.matchupHref(game);
       return (
-        `<tr class="scp-bkp-nx"${band ? ` data-band="${band}"` : ""}${index === 0 ? ` data-next="1"` : ""}>` +
+        `<tr class="scp-bkp-nx" data-homeaway="${game.homeAway}"${band ? ` data-band="${band}"` : ""}${index === 0 ? ` data-next="1"` : ""}>` +
         `<th scope="row"><span class="scp-bkp-nx-week">${escapeHtml(`Week ${game.week}`)}</span>` +
         (index === 0 ? `<span class="scp-bkp-next">Next</span>` : "") +
         `</th>` +
@@ -244,7 +243,7 @@ function renderUpcoming(data: PlayerPageData, deps: BreakdownPremiumDeps): strin
 /* ------------------------------------------------------------------- block */
 
 /**
- * The whole comparison block: flag, the breakdown rows, the matchup table.
+ * The whole block: the breakdown rows, then the matchup table.
  * An archive season has no fixtures, so it prints the breakdown alone.
  */
 export function renderBreakdownPremium(data: PlayerPageData, deps: BreakdownPremiumDeps): string {
@@ -254,7 +253,6 @@ export function renderBreakdownPremium(data: PlayerPageData, deps: BreakdownPrem
   if (!breakdown && !upcoming) return "";
   return (
     `<div class="scp-bkp-wrap">` +
-    `<p class="scp-bkp-flag"><b>New design</b><span>comparison</span></p>` +
     breakdown +
     upcoming +
     `</div>`

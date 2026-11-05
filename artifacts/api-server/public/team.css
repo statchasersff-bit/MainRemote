@@ -27207,3 +27207,938 @@ a.sct-srow-team:focus-visible {
     gap: 6px 14px;
   }
 }
+
+/* ===================================================================
+ * Usage: the premium comparison of Situational Usage (mak's brief,
+ * 2026-11-05, attached_assets/situational reference.png), rendered under
+ * the current card. On the .sct-us-prm tokens and header; every rule here
+ * is under .sct-us-sit-. Tiers on the `usage` container: 1050 stacks the
+ * cards under the matrix, 640 scrolls the matrix. */
+
+:is(.sct, #sct-table-armour) .sct-us-prm.sct-us-sit {
+  --sit-p1: #087a42;
+  --sit-p1-2: #0b9a54;
+  --sit-p2: #3f6fb0;
+  --sit-p2-2: #5b8ccb;
+  --sit-p3: #8aa6cf;
+  --sit-p3-2: #a9bfde;
+  --sit-ink: #102344;
+  --sit-muted: #5b7290;
+  --sit-line: #cfdded;
+  --sit-line-soft: #e1e9f2;
+  position: relative;
+  container-type: inline-size;
+  container-name: situational;
+  background: linear-gradient(145deg, #fff 0%, #f9fbfe 60%, #eff5fc 100%);
+}
+
+
+/* ---- header: icon, gold rule, title over subtitle, the faint ball, gold accents */
+:is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit {
+  min-height: 98px;
+  gap: 18px;
+  padding: 16px 26px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit .sct-us-prm-icon {
+  width: 52px;
+  height: 52px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit .sct-us-prm-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-rule {
+  position: relative;
+  flex: 0 0 3px;
+  width: 3px;
+  height: 52px;
+  border-radius: 2px;
+  background: var(--prm-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-titles {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit .sct-us-prm-title {
+  font-size: 1.85rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sub {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-ball {
+  position: absolute;
+  top: 50%;
+  right: 96px;
+  width: 120px;
+  height: 80px;
+  transform: translateY(-50%) rotate(-12deg);
+  color: #fff;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: 30px;
+  width: 4px;
+  height: 160%;
+  background: var(--prm-gold);
+  box-shadow: 16px 0 0 rgba(212, 175, 55, 0.6), 32px 0 0 rgba(212, 175, 55, 0.3);
+  transform: rotate(24deg);
+  pointer-events: none;
+}
+
+/* ---- body: matrix beside the cards */
+:is(.sct, #sct-table-armour) .sct-us-sit-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(290px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+  padding: 20px 22px 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-body.is-solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-fine {
+  margin: 0;
+  padding: 10px 22px 18px;
+  color: var(--sit-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+/* ---- the matrix */
+:is(.sct, #sct-table-armour) .sct-us-sit-matrix {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--sit-line);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, #f4f8fd 100%);
+  box-shadow: 0 3px 8px rgba(12, 35, 65, 0.05), 0 10px 20px rgba(12, 35, 65, 0.04);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.35fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+  align-items: center;
+  gap: 18px;
+  min-height: 80px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--sit-line-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-row:nth-child(odd):not(.is-head) {
+  background: rgba(237, 244, 251, 0.55);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-row:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-row.is-head {
+  min-height: 58px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--sit-line);
+  background: linear-gradient(110deg, #edf4fc 0%, #e4eef9 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--sit-ink);
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-th.is-player {
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sw {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sw.is-p1,
+:is(.sct, #sct-table-armour) .sct-us-sit-fill.is-p1 {
+  background: linear-gradient(180deg, var(--sit-p1-2) 0%, var(--sit-p1) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sw.is-p2,
+:is(.sct, #sct-table-armour) .sct-us-sit-fill.is-p2 {
+  background: linear-gradient(180deg, var(--sit-p2-2) 0%, var(--sit-p2) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sw.is-p3,
+:is(.sct, #sct-table-armour) .sct-us-sit-fill.is-p3 {
+  background: linear-gradient(180deg, var(--sit-p3-2) 0%, var(--sit-p3) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-sit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f0dfa6;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fff6d6 0%, #fdeab3 100%);
+  box-shadow: inset 0 1px 0 #fff;
+  color: var(--sit-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-icon b {
+  --sc-font: var(--prm-display, "Barlow Condensed", "Arial Narrow", sans-serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-row.is-standout .sct-us-sit-icon {
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 2px var(--prm-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-label {
+  color: var(--sit-ink);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-n {
+  color: var(--sit-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-pct {
+  color: var(--sit-ink);
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-cell.is-empty .sct-us-sit-pct {
+  color: var(--sit-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 11px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e3eaf3;
+  box-shadow: inset 0 1px 2px rgba(13, 35, 67, 0.1);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* ---- the cards */
+:is(.sct, #sct-table-armour) .sct-us-sit-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card {
+  margin: 0;
+  padding: 16px 18px 18px;
+  border: 1px solid #d8e2ed;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #fff 0%, #fffaf0 100%);
+  box-shadow: 0 3px 8px rgba(12, 32, 64, 0.045), 0 9px 18px rgba(12, 32, 64, 0.05);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card.is-featured {
+  border: 1.5px solid var(--prm-gold);
+  background: linear-gradient(135deg, #fff8e7 0%, #fff 100%);
+  box-shadow: 0 3px 8px rgba(184, 144, 31, 0.1), 0 10px 22px rgba(12, 32, 64, 0.07);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f0dfa6;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fff8e1 0%, #fff2cf 100%);
+  color: var(--prm-gold-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card.is-featured .sct-us-sit-card-icon {
+  background: linear-gradient(180deg, #f4c842 0%, var(--prm-gold) 100%);
+  border-color: #c9a22c;
+  color: var(--prm-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card-title {
+  margin: 0;
+  padding: 0;
+  color: var(--sit-ink) !important;
+  font-size: 1.2rem !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card-body {
+  margin: 0;
+  color: var(--sit-ink);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sit-card-body strong {
+  font-weight: 800;
+}
+
+/* ---- medium and below: the cards stack under the matrix (the live column is ~720px) */
+@container situational (min-width: 1050px) and (max-width: 1299px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit-th.is-player {
+    font-size: 0.78rem;
+  }
+}
+
+@container situational (max-width: 1049px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit-body {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 16px 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-card.is-featured {
+    grid-column: 1 / -1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-row {
+    grid-template-columns: minmax(170px, 1.25fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+    gap: 14px;
+    min-height: 72px;
+    padding: 9px 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-label {
+    font-size: 1rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-pct {
+    font-size: 1.4rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-th {
+    font-size: 0.88rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-ball {
+    right: 80px;
+    opacity: 0.1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit .sct-us-prm-title {
+    font-size: 1.5rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-fine {
+    padding: 10px 16px 16px;
+  }
+}
+
+/* ---- mobile: the matrix scrolls sideways inside its card; the cards stack */
+@container situational (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit-matrix {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-row {
+    min-width: 560px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-ball,
+  :is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit::after {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit {
+    min-height: 0;
+    padding: 14px 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-head.is-sit .sct-us-prm-title {
+    font-size: 1.3rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit-sub {
+    font-size: 0.82rem;
+  }
+}
+
+/* ===================================================================
+ * Coaching: the premium comparison of the season-by-season table (mak's
+ * brief, 2026-11-05, attached_assets/coachref.png), rendered under the
+ * current table. On the premium tokens and header; every rule here is
+ * under .sct-cs-. Dense by design: 30px rows, the table scrolls sideways
+ * with a sticky season column under 1150px rather than shrinking. */
+
+:is(.sct, #sct-table-armour) .sct-cp.sct-cs {
+  --cs-good: #157444;
+  --cs-good-bg: #e3f3df;
+  --cs-poor: #a83a3a;
+  --cs-poor-bg: #fce9e6;
+  --cs-mid: #3f5f85;
+  --cs-mid-bg: #eaf2fb;
+  --cs-window-bg: #e9eef4;
+  --cs-blue: #3469b0;
+  --cs-blue-2: #5b8ed4;
+  --cs-track: #dce5f0;
+  margin: 0 0 22px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-seasons {
+  min-height: 76px;
+  padding: 12px 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-head.is-seasons .sct-cpt-h3 {
+  font-size: 1.65rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-ball {
+  position: absolute;
+  top: 50%;
+  right: 84px;
+  width: 110px;
+  height: 74px;
+  transform: translateY(-50%) rotate(-12deg);
+  color: #fff;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-body {
+  padding: 14px 16px 16px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafd 100%);
+}
+
+/* ---- the two career stats as chips */
+:is(.sct, #sct-table-armour) .sct-cs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  margin: 0;
+  padding: 8px 18px;
+  border: 1px solid #d3e0ef;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f2f7fd 0%, #e8f1fb 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.04);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-chip-v {
+  --sc-font: var(--cp-display);
+  color: var(--cp-navy-deep);
+  font-size: 1.95rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-chip-l {
+  color: var(--cp-ink);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ---- the table */
+:is(.sct, #sct-table-armour) .sct-cs-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid #cbd9eb;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, #f7fafd 100%);
+  box-shadow: 0 3px 8px rgba(12, 32, 64, 0.045), 0 10px 22px rgba(12, 32, 64, 0.05);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-scroll:focus-visible {
+  outline: 2px solid var(--cp-gold);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-table {
+  width: 100%;
+  min-width: 1040px;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-table :where(th, td) {
+  padding: 5px 8px;
+  border: 0;
+  border-bottom: 1px solid #e2eaf4;
+  vertical-align: middle;
+  text-align: left;
+  background: none;
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-table thead th {
+  height: 60px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #cbd9eb;
+  background: linear-gradient(110deg, #edf4fc 0%, #e4eef9 100%);
+  color: var(--cp-navy-deep) !important;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-table thead th abbr {
+  text-decoration: none;
+  border: 0;
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-th-sub {
+  display: block;
+  margin-top: 2px;
+  white-space: normal;
+  color: #536b8b;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-th.is-ppg,
+:is(.sct, #sct-table-armour) .sct-cs-th.is-rank,
+:is(.sct, #sct-table-armour) .sct-cs-th.is-lb,
+:is(.sct, #sct-table-armour) .sct-cs-td.is-ppg,
+:is(.sct, #sct-table-armour) .sct-cs-td.is-rank,
+:is(.sct, #sct-table-armour) .sct-cs-td.is-lb {
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-row {
+  height: 30px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-row:nth-child(even) {
+  background: #f8fbff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-row.is-current {
+  background: #edf4fc;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-table tbody tr:last-child :where(th, td) {
+  border-bottom: 0;
+}
+
+/* The sticky season column rides on the row's own opaque background. */
+:is(.sct, #sct-table-armour) .sct-cs-td.is-season,
+:is(.sct, #sct-table-armour) .sct-cs-th.is-season {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 86px;
+  background: inherit;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-th.is-season {
+  background: linear-gradient(110deg, #edf4fc 0%, #e8f0fa 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-year {
+  color: var(--cp-navy-deep);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-win {
+  display: block;
+  color: #536b8b;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-live {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #dbe8f8;
+  color: var(--cp-navy-deep);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The stint rail: the club's color down the team column, one run per stint. */
+:is(.sct, #sct-table-armour) .sct-cs-td.is-team {
+  position: relative;
+  padding-left: 16px;
+  box-shadow: inset 3px 0 0 var(--seg);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-crest {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-code {
+  color: var(--cp-navy-deep);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-td.is-role {
+  min-width: 136px;
+  border-right: 1px solid #e2eaf4;
+  background: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-role {
+  display: block;
+  color: var(--cp-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-role-years {
+  display: block;
+  color: #536b8b;
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-role-note {
+  display: block;
+  color: #536b8b;
+  font-size: 0.68rem;
+  font-style: italic;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-ppg {
+  color: var(--cp-navy-deep);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-ppg.is-peak {
+  color: var(--cp-gold-text);
+  text-shadow: 0 0 0 currentColor;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-rank {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-rank.is-good {
+  background: var(--cs-good-bg);
+  color: var(--cs-good);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-rank.is-mid {
+  background: var(--cs-mid-bg);
+  color: var(--cs-mid);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-rank.is-poor {
+  background: var(--cs-poor-bg);
+  color: var(--cs-poor);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-rank.is-window {
+  background: var(--cs-window-bg);
+  color: #3f5f85;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-td.is-share {
+  min-width: 122px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-share {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-pct {
+  color: var(--cp-navy-deep);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-pct.is-lean {
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--cp-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-delta {
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-delta.is-up {
+  color: var(--cs-good);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-delta.is-down {
+  color: var(--cs-poor);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-delta.is-flat {
+  color: #65758b;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-track {
+  position: relative;
+  display: block;
+  width: 84px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cs-track);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #285ba0 0%, var(--cs-blue-2) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-lb {
+  color: var(--cp-navy-deep);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-lb.is-workhorse {
+  text-decoration: underline;
+  text-decoration-color: var(--cp-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-lb.is-peak {
+  color: var(--cp-gold-text);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-none {
+  color: #7f91a8;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-row.is-notcaller .sct-cs-ppg {
+  color: #4a5f7d;
+  font-weight: 700;
+}
+
+/* The years he was not calling: one band across every column. */
+:is(.sct, #sct-table-armour) .sct-cs-gap td {
+  height: 30px;
+  padding: 4px 14px;
+  border-top: 1px solid #cbd9eb;
+  border-bottom: 1px solid #cbd9eb;
+  background: linear-gradient(100deg, #edf3fb 0%, #dce9f8 100%);
+  color: #244879;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-gap-icon {
+  display: inline-flex;
+  vertical-align: -3px;
+  margin-right: 8px;
+  color: #3f5f85;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-gap-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- the note, and the scroll hint that shows only when the table scrolls */
+:is(.sct, #sct-table-armour) .sct-cs-hint {
+  display: none;
+  margin: 6px 0 0;
+  color: #6b7a90;
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 12px 18px;
+  border: 1px solid #d3e0ef;
+  border-radius: 12px;
+  background: #eef4fb;
+  color: #3f556f;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-note-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--cp-navy);
+}
+
+/* ---- narrower columns: the table keeps its geometry and scrolls */
+@container premium (max-width: 1149px) {
+  :is(.sct, #sct-table-armour) .sct-cs-hint {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cs-body {
+    padding: 12px;
+  }
+}
+
+@container premium (max-width: 699px) {
+  :is(.sct, #sct-table-armour) .sct-cs-chips {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cs-chip {
+    min-height: 44px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cs-chip-v {
+    font-size: 1.6rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cs-ball {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-head.is-seasons .sct-cpt-h3 {
+    font-size: 1.3rem !important;
+  }
+}

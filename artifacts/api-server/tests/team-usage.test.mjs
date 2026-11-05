@@ -150,11 +150,10 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const idx = order.map((el) => all.indexOf(el));
     assert.deepEqual([...idx].sort((a, b) => a - b), idx);
     assert.deepEqual([...root.querySelectorAll(".sct-up-ph-title")].map((h) => h.textContent), ["Snap Counts & Playing Time", "Target Distribution", "Rushing Distribution"]);
+    assert.equal(root.querySelector("#situational .sct-us-prm-title").textContent, "Situational Usage");
+    assert.deepEqual([...root.querySelectorAll("#run-direction .sct-us-prm-title, #passing .sct-us-prm-title")].map((h) => h.textContent), ["Rushing Direction", "Passing Distribution"]);
     const h3s = [...root.querySelectorAll(".sct-us-h3")].map((h) => h.textContent);
     assert.deepEqual(h3s, [
-      "Situational Usage",
-      "Rushing Direction",
-      "Passing Distribution",
       "Notable Usage Changes",
       "Advanced & Fantasy Analysis",
     ]);
@@ -290,18 +289,19 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
   test("every situational row carries its sample, and the takeaways are in NFL terms", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
     const ne = usage.teams.ne;
-    const rows = [...doc.querySelectorAll("#situational .sct-us-grow:not(.is-head)")];
+    const rows = [...doc.querySelectorAll("#situational .sct-us-sit-row:not(.is-head)")];
     assert.equal(rows.length, 6);
     const keys = ["early", "third", "rz", "in10", "twoMin", "trailing"];
     rows.forEach((r, i) => {
-      assert.equal(r.querySelector(".sct-us-gn").textContent, `${ne.rbSituationTotals[keys[i]]} opportunities`);
+      assert.equal(r.querySelector(".sct-us-sit-n").textContent, `${ne.rbSituationTotals[keys[i]]} opportunities`);
     });
-    assert.match(doc.querySelector("#situational .sct-us-sub").textContent, /Opportunities, not snaps/);
-    const takeaways = [...doc.querySelectorAll("#situational .sct-us-takeaway")].map((t) => t.textContent);
+    assert.match(doc.querySelector("#situational .sct-us-sit-fine").textContent, /Opportunities, not snaps/);
+    const cards = [...doc.querySelectorAll("#situational .sct-us-sit-card")];
+    const takeaways = cards.map((c) => `${c.querySelector(".sct-us-sit-card-title").textContent}: ${c.querySelector(".sct-us-sit-card-body").textContent}`);
     assert.equal(takeaways.length, 3);
-    assert.match(takeaways[0], /^Stevenson: \d+ carries and \d+ targets in \d+ games, \d+% of the backs' touches and \d+% of the offensive snaps\./);
-    assert.match(takeaways[1], /^Passing downs: Rhamondre Stevenson accounts for \d+% of the backs' third-down carries and targets \(\d+ opportunities\), compared with/);
-    assert.match(takeaways[2], /^If Stevenson misses time: Henderson is next in line\./);
+    assert.match(takeaways[0], /^Stevenson's Workload: \d+ carries and \d+ targets in \d+ games, \d+% of the backs' touches and \d+% of the offensive snaps\./);
+    assert.match(takeaways[1], /^Third-Down Specialist: Rhamondre Stevenson accounts for \d+% of the backs' third-down carries and targets \(\d+ opportunities\), compared with/);
+    assert.match(takeaways[2], /^If Stevenson Misses Time: Henderson is next in line\./);
     // No fantasy words in the NFL section.
     for (const t of takeaways) assert.ok(!/stash|cut|RB2-level|bench/.test(t), t);
   });
@@ -310,17 +310,21 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
     const ne = usage.teams.ne;
     const maye = ne.players.find((p) => p.name === "Drake Maye");
-    assert.match(doc.querySelector("#passing .sct-us-sub").textContent, new RegExp(`^Share of Maye's ${ne.passerZoneAttempts} pass attempts`));
-    const coverage = [...doc.querySelectorAll("#passing .sct-us-fine")].map((p) => p.textContent).join(" ");
+    assert.match(doc.querySelector("#passing .sct-us-prm-sub").textContent, new RegExp(`^Share of Maye's ${ne.passerZoneAttempts} pass attempts`));
+    const coverage = [...doc.querySelectorAll("#passing .sct-us-prm-fine")].map((p) => p.textContent).join(" ");
     if (maye.passAttempts > ne.passerZoneAttempts) assert.match(coverage, new RegExp(`${ne.passerZoneAttempts} of Maye's ${maye.passAttempts} pass attempts`));
     else assert.match(coverage, new RegExp(`^All ${ne.passerZoneAttempts} of Maye's pass attempts carry a charted location`));
-    for (const z of doc.querySelectorAll("#passing .sct-us-zone-ypa")) assert.match(z.textContent, /^(\d+\.\d YPA · \d+ att|no attempts)$/);
-    const gaps = [...doc.querySelectorAll("#run-direction .sct-us-gap")];
+    const zones = [...doc.querySelectorAll("#passing .sct-us-prm-zone")];
+    assert.equal(zones.length, 6);
+    for (const z of zones) assert.match(z.textContent, /\d+\.\d YPA · \d+ att|no attempts/);
+    const gaps = [...doc.querySelectorAll("#run-direction .sct-us-prm-gap")];
     assert.equal(gaps.length, 5);
     for (const g of gaps) {
-      assert.match(g.querySelector(".sct-us-gap-att").textContent, /^\d+ att · \d+%$/);
-      assert.ok(g.querySelector(".sct-us-gap-bar > span").getAttribute("style").startsWith("width:"));
+      assert.match(g.querySelector(".sct-us-prm-line").textContent, /^\d+ att · \d+%$/);
+      assert.ok(g.querySelector(".sct-us-prm-bar-track > span").getAttribute("style").startsWith("width:"));
     }
+    // The original cards are off the page.
+    assert.equal(doc.querySelector("#usage .sct-us-gap, #usage .sct-us-zone, #usage .sct-us-gap-bar"), null);
   });
 
   test("Notable Usage Changes replaces the Buy Low card at the top level and states both windows", async () => {
@@ -372,9 +376,9 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
 describe("the highlights", () => {
   test("exactly one gold gap and one gold zone; one owner per situation row", async () => {
     const { doc } = await page("/team/buffalo-bills/usage/");
-    assert.equal(doc.querySelectorAll(".sct-us-gap.is-best").length, 1);
-    assert.equal(doc.querySelectorAll(".sct-us-zone.is-best").length, 1);
-    const rows = [...doc.querySelectorAll(".sct-us-grow:not(.is-head)")];
+    assert.equal(doc.querySelectorAll(".sct-us-prm-gap.is-best").length, 1);
+    assert.equal(doc.querySelectorAll(".sct-us-prm-zone.is-best").length, 1);
+    const rows = [...doc.querySelectorAll("#situational .sct-us-sit-row:not(.is-head)")];
     assert.equal(rows.length, 6);
     for (const row of rows) assert.ok(row.querySelectorAll(".is-owner").length >= 1);
   });
@@ -718,42 +722,90 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
 });
 
 describe("the premium comparison blocks (mak's brief, 2026-11-05)", () => {
-  test("each renders directly under its current block, with the same numbers and copy", async () => {
+  test("Rushing Direction and Passing Distribution are the premium blocks, on the sections' anchors", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
     const root = doc.querySelector("#usage .sct-us");
     const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
 
-    const run = root.querySelector("#run-direction");
-    const prmRun = root.querySelector('[data-sct-premium="run-direction"]');
-    assert.ok(run && prmRun, "both rushing blocks");
-    assert.equal(run.nextElementSibling, prmRun, "the premium rushing block follows the current one");
-    const oldYpc = [...run.querySelectorAll(".sct-us-gap .sct-us-num")].map(text);
-    const newYpc = [...prmRun.querySelectorAll(".sct-us-prm-gap .sct-us-num")].map(text);
-    assert.deepEqual(newYpc, oldYpc, "the same YPC per gap, in the same order");
-    assert.equal(prmRun.querySelectorAll(".sct-us-prm-gap.is-best").length, run.querySelectorAll(".sct-us-gap.is-best").length);
-    assert.equal(prmRun.querySelector(".sct-us-prm-gap.is-best")?.dataset.gap, [...run.querySelectorAll(".sct-us-gap")].findIndex((g) => g.classList.contains("is-best")) === -1 ? undefined : ["LE", "LT", "MID", "RT", "RE"][[...run.querySelectorAll(".sct-us-gap")].findIndex((g) => g.classList.contains("is-best"))]);
-    assert.equal(text(prmRun.querySelector(".sct-us-prm-insight p")), text(run.querySelector(".sct-us-note")), "the insight strip is the current note");
+    // Rushing Direction: the premium block carries the section's anchor; five gaps with a YPC each, one gold, the insight strip.
+    const prmRun = root.querySelector("#run-direction");
+    assert.equal(prmRun.getAttribute("data-sct-premium"), "run-direction");
+    const ypc = [...prmRun.querySelectorAll(".sct-us-prm-gap .sct-us-num")].map(text);
+    assert.equal(ypc.length, 5);
+    for (const v of ypc) assert.match(v, /^(\d+\.\d|–)$/);
+    assert.equal(prmRun.querySelectorAll(".sct-us-prm-gap.is-best").length, 1);
+    assert.match(prmRun.querySelector(".sct-us-prm-gap.is-best").dataset.gap, /^(LE|LT|MID|RT|RE)$/);
+    assert.match(text(prmRun.querySelector(".sct-us-prm-insight p")), /% of runs have gone inside/);
     assert.equal(text(prmRun.querySelector(".sct-us-prm-title")), "Rushing Direction");
 
-    const pass = root.querySelector("#passing");
-    const prmPass = root.querySelector('[data-sct-premium="passing"]');
-    assert.ok(pass && prmPass, "both passing blocks");
-    assert.equal(pass.nextElementSibling, prmPass, "the premium passing block follows the current one");
-    const oldShares = [...pass.querySelectorAll(".sct-us-zone .sct-us-num")].map(text);
-    const newShares = [...prmPass.querySelectorAll(".sct-us-prm-zone .sct-us-num")].map(text);
-    assert.deepEqual(newShares, oldShares, "the same share per zone, deep row then short row");
+    // Passing Distribution: six zones deep then short, a share each, arcs on the deep cards, bars on the short, two insight strips, the footnote.
+    const prmPass = root.querySelector("#passing");
+    assert.equal(prmPass.getAttribute("data-sct-premium"), "passing");
+    const shares = [...prmPass.querySelectorAll(".sct-us-prm-zone .sct-us-num")].map(text);
+    assert.equal(shares.length, 6);
+    for (const v of shares) assert.match(v, /^\d+%$/);
     assert.deepEqual([...prmPass.querySelectorAll(".sct-us-prm-zone")].map((z) => z.dataset.zone), ["DL", "DM", "DR", "SL", "SM", "SR"]);
     assert.equal(prmPass.querySelectorAll(".sct-us-prm-zone.is-deep .sct-us-prm-arc").length, 3, "a route arc on every deep card");
     assert.equal(prmPass.querySelectorAll(".sct-us-prm-zone.is-short .sct-us-prm-bars").length, 3, "bars on every short card");
-    assert.deepEqual(
-      [...prmPass.querySelectorAll(".sct-us-prm-insight p")].map(text),
-      [...pass.querySelectorAll(".sct-us-note")].map(text),
-      "the insight strips are the current notes",
-    );
-    assert.equal(text(prmPass.querySelector(".sct-us-prm-fine")), text(pass.querySelector(".sct-us-fine")), "the footnote is the current one");
+    assert.ok(prmPass.querySelectorAll(".sct-us-prm-insight p").length >= 1);
+    assert.match(text(prmPass.querySelector(".sct-us-prm-fine")), /pass attempts carry a charted location/);
     assert.equal(text(prmPass.querySelector(".sct-us-prm-divider")), "Deep = 20+ air yards");
+    assert.equal(text(prmPass.querySelector(".sct-us-prm-title")), "Passing Distribution");
 
     // The premium headings are not section headings: the tab's h3 list is unchanged.
     assert.equal(root.querySelectorAll(".sct-us-prm .sct-us-h3").length, 0);
+  });
+
+  test("the Situational Usage dashboard is the section: the backs, their shares and samples from the file, the takeaways as cards", async () => {
+    const { doc } = await page("/team/new-england-patriots/usage/");
+    const root = doc.querySelector("#usage .sct-us");
+    const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+    const prm = root.querySelector("#situational");
+    assert.ok(prm.classList.contains("sct-us-sit"), "the premium block carries the section's id");
+    assert.equal(prm.getAttribute("data-sct-premium"), "situational");
+    assert.equal(root.querySelector(".sct-us-grid, .sct-us-bfrow, .sct-us-takeaways"), null, "the original card is gone");
+    assert.equal(prm.querySelector(".sct-cp-flag"), null, "no comparison flag: it is the design");
+    assert.equal(text(prm.querySelector(".sct-us-prm-title")), "Situational Usage");
+    const ne = usage.teams.ne;
+    const rbs = ne.players.filter((p) => p.pos === "RB" && (p.wopp ?? 0) > 0).sort((a, b) => b.wopp - a.wopp).slice(0, 3);
+    const heads = [...prm.querySelectorAll(".sct-us-sit-row.is-head .sct-us-sit-th.is-player")].map(text);
+    assert.deepEqual(heads, rbs.map((p) => p.name.split(" ").pop()));
+    assert.deepEqual([...prm.querySelectorAll(".sct-us-sit-row.is-head .sct-us-sit-sw")].map((s) => s.className.match(/is-p\d/)[0]), heads.map((_, i) => `is-p${i + 1}`));
+    const keys = ["early", "third", "rz", "in10", "twoMin", "trailing"];
+    const rows = [...prm.querySelectorAll(".sct-us-sit-row:not(.is-head)")];
+    assert.equal(rows.length, 6);
+    rows.forEach((r, i) => {
+      const n = ne.rbSituationTotals[keys[i]];
+      const cells = [...r.querySelectorAll(".sct-us-sit-cell")];
+      cells.forEach((cell, j) => {
+        const pct = Math.round((100 * rbs[j].situation[keys[i]]) / n);
+        assert.equal(text(cell.querySelector(".sct-us-sit-pct")), `${pct}%`, `${keys[i]} ${rbs[j].name}`);
+        assert.equal(cell.querySelector(".sct-us-sit-fill").getAttribute("style"), `width:${pct}%`);
+        assert.match(cell.querySelector(".sct-us-sit-track").getAttribute("aria-label"), new RegExp(`opportunity share, ${pct} percent$`));
+      });
+      assert.equal(r.querySelectorAll(".sct-us-sit-cell.is-owner").length, 1);
+    });
+    assert.ok(prm.querySelectorAll(".sct-us-sit-row.is-standout").length <= 2);
+    const cards = [...prm.querySelectorAll(".sct-us-sit-card")];
+    assert.equal(cards.length, 3);
+    assert.ok(cards[0].classList.contains("is-featured"));
+    assert.equal(cards.filter((c) => c.classList.contains("is-featured")).length, 1);
+    assert.match(text(cards[0].querySelector(".sct-us-sit-card-title")), /^[A-Z][A-Za-z.'-]+'s Workload$/);
+    assert.match(text(cards[0].querySelector(".sct-us-sit-card-body")), new RegExp(`^${rbs[0].carries} carries and ${rbs[0].targets} targets in ${rbs[0].games} games`));
+    assert.match(text(cards[cards.length - 1].querySelector(".sct-us-sit-card-title")), /^If [A-Z][A-Za-z.'-]+ Misses Time$/);
+    assert.doesNotMatch(prm.textContent, /—/);
+  });
+
+  test("the premium Situational Usage dashboard renders for every club from its own backs", async () => {
+    for (const slug of ["baltimore-ravens", "detroit-lions", "san-francisco-49ers"]) {
+      const { doc } = await page(`/team/${slug}/usage/`);
+      const prm = doc.querySelector('[data-sct-premium="situational"]');
+      assert.ok(prm, `${slug}: renders`);
+      assert.doesNotMatch(prm.textContent, /Stevenson|Patriots/);
+      const cols = Number(prm.querySelector(".sct-us-sit-matrix").getAttribute("style").match(/--sit-cols:(\d)/)[1]);
+      assert.equal(prm.querySelectorAll(".sct-us-sit-th.is-player").length, cols);
+      assert.ok(cols >= 1 && cols <= 3);
+      assert.equal(prm.querySelectorAll(".sct-us-sit-row:not(.is-head)").length, 6);
+    }
   });
 });

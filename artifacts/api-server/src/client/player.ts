@@ -381,7 +381,7 @@ function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void
  */
 function wirePeerRail(root: HTMLElement): void {
   for (const rail of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-peers]"))) {
-    const current = rail.querySelector<HTMLElement>(".scp-peer.is-current");
+    const current = rail.querySelector<HTMLElement>(".scp-pr-card.is-current");
     if (!current) continue;
     // A rail that fits has nothing to center, and every card is already in
     // view - which is the desktop case.

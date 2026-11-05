@@ -41,6 +41,7 @@ import { coachingFaq } from "./coaching-faq";
 import { renderCoachingPremium } from "./coaching-premium";
 import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
 import { renderCoachingCareerPremium } from "./coaching-career-premium";
+import { renderCoachingSeasonsPremium } from "./coaching-seasons-premium";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
 const e = escapeHtml;
@@ -1229,11 +1230,11 @@ function vsLeague(share: number, league: number): string {
   return `${gap > 0 ? "↑" : "↓"} ${Math.abs(gap)} pts vs league`;
 }
 
-type Pos = "WR" | "RB" | "TE";
-const POS: Pos[] = ["WR", "RB", "TE"];
+export type Pos = "WR" | "RB" | "TE";
+export const POS: Pos[] = ["WR", "RB", "TE"];
 
 /** One tracked season's usage numbers (the builder's `prints`, or read back from its prose). */
-interface Print {
+export interface Print {
   year: number;
   label: string;
   shares: Record<Pos, number | null>;
@@ -1242,7 +1243,7 @@ interface Print {
 }
 
 /** The position whose share sits 3+ points off the league: the season's distinctive trait, or none. */
-function leanOf(p: Print): Pos | null {
+export function leanOf(p: Print): Pos | null {
   const best = POS.map((pos) => ({ pos, d: p.shares[pos] != null && p.league[pos] != null ? (p.shares[pos] as number) - (p.league[pos] as number) : 0 }))
     .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))[0];
   return best && Math.abs(best.d) >= 3 ? best.pos : null;
@@ -1658,26 +1659,59 @@ function careerChart(c: TeamCoaching, stops: Stop[]): string {
  * did not call. The fantasy finishes left this table for the Fantasy Impact
  * section. The two career stats the chart cannot show sit under the title.
  */
-function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string>): string {
-  // One row per season he was on a stop, in order; a stop's print (shares)
-  // joins its season by year and, for a windowed stop, by its label.
+/** One season on a stop, as the table prints it; the group fields are set on a stint's first row. */
+export interface HistoryRow {
+  s: Stop;
+  pt: Stop["points"][number];
+  p: Print | null;
+  /** "2024" or "2019-21": the years he was not calling before this row, printed as a gap band. */
+  gapBefore: string | null;
+  groupStart: boolean;
+  /** Rows in the stint (same club and role), on its first row; 0 otherwise. */
+  groupLen: number;
+  /** "2006-08", on the stint's first row. */
+  groupYears: string;
+  /** "Wks 1-13" for a windowed stop, else "". */
+  win: string;
+  live: boolean;
+  lean: Pos | null;
+  /** The rank as printed: "3rd", "19th in window", or "" when he did not call. */
+  rankText: string;
+}
+
+export interface HistoryModel {
+  last: string;
+  span: string;
+  season: number;
+  stats: Array<{ value: string; label: string }>;
+  rows: HistoryRow[];
+  /** The first tracked season, or null when no season carries shares. */
+  trackedFrom: number | null;
+  note: string;
+}
+
+/**
+ * The season-by-season model: one row per season he was on a stop, in
+ * order, each joined to its print (shares) by year and, for a windowed stop,
+ * by its label; the two career stats; the stint groups; the note. The
+ * original table and the premium comparison both draw it.
+ */
+export function historyModel(c: TeamCoaching, stops: Stop[]): HistoryModel | null {
   const rows = stops.flatMap((s) =>
     s.points.map((pt) => ({ s, pt, p: s.prints.find((p) => p.year === pt.year && (!s.window || /\(Wks/.test(p.label))) ?? s.prints.find((p) => p.year === pt.year) ?? null })),
   );
-  if (!rows.length) return "";
-  const first = rows[0].pt.year;
-  const lastYr = rows[rows.length - 1].pt.year;
+  if (!rows.length) return null;
+  const first = rows[0]!.pt.year;
+  const lastYr = rows[rows.length - 1]!.pt.year;
   const span = first === lastYr ? String(first) : `${first}-${String(lastYr).slice(2)}`;
   const season = seasonOf(c);
 
-  const stat = (value: string, label: string) =>
-    `<li class="sct-co-fpstat"><span class="sct-co-fpstat-v">${e(value)}</span><span class="sct-co-fpstat-l">${e(label)}</span></li>`;
-  const stats: string[] = [];
+  const stats: Array<{ value: string; label: string }> = [];
   const prints = rows.filter((r) => r.p).map((r) => ({ s: r.s, p: r.p as Print }));
   const withLb = prints.filter((r) => r.p.leadBack != null);
   if (withLb.length >= 2) {
     const top = withLb.reduce((a, b) => ((b.p.leadBack as number) > (a.p.leadBack as number) ? b : a));
-    stats.push(stat(`${top.p.leadBack}%`, `Peak lead-back share · ${top.p.year} ${top.s.code}`));
+    stats.push({ value: `${top.p.leadBack}%`, label: `Peak lead-back share · ${top.p.year} ${top.s.code}` });
   }
   if (prints.length >= 2) {
     let best: { pos: Pos; side: "below" | "above"; n: number; of: number } | null = null;
@@ -1689,8 +1723,65 @@ function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string
         if (n && (!best || n > best.n)) best = { pos, side, n, of: known.length };
       }
     }
-    if (best) stats.push(stat(`${best.n} / ${best.of}`, `tracked seasons with ${best.pos} share 3+ pp ${best.side} league`));
+    if (best) stats.push({ value: `${best.n} / ${best.of}`, label: `tracked seasons with ${best.pos} share 3+ pp ${best.side} league` });
   }
+
+  const covered = new Set(stops.flatMap((s) => Array.from({ length: s.end - s.start + 1 }, (_, i) => s.start + i)));
+  const same = (a: Stop, b: Stop) => a.code === b.code && a.role === b.role;
+  const out: HistoryRow[] = rows.map(({ s, pt, p }, i) => {
+    const prev = rows[i - 1];
+    let gapBefore: string | null = null;
+    if (prev) {
+      const missing: number[] = [];
+      for (let yr = prev.pt.year + 1; yr < pt.year; yr++) if (!covered.has(yr)) missing.push(yr);
+      if (missing.length) gapBefore = missing.length === 1 ? String(missing[0]) : `${missing[0]}-${String(missing[missing.length - 1]).slice(2)}`;
+    }
+    const groupStart = !prev || !same(prev.s, s);
+    const found = groupStart ? rows.slice(i).findIndex((r) => !same(r.s, s)) : 0;
+    const groupLen = groupStart ? (found === -1 ? rows.length - i : found) : 0;
+    const groupRows = groupStart ? rows.slice(i, i + groupLen) : [];
+    const groupYears = groupStart
+      ? (() => {
+          const a = Math.min(...groupRows.map((r) => r.s.start));
+          const b = Math.max(...groupRows.map((r) => r.s.end));
+          return a === b ? String(a) : `${a}-${String(b).slice(2)}`;
+        })()
+      : "";
+    return {
+      s,
+      pt,
+      p,
+      gapBefore,
+      groupStart,
+      groupLen,
+      groupYears,
+      win: s.window ? s.window.replace(/^play-caller /i, "") : "",
+      live: s.current && pt.year === season,
+      lean: p ? leanOf(p) : null,
+      rankText: s.caller ? pt.rank.replace(/ · \d{4} thru Wk \d+$/, "") : "",
+    };
+  });
+
+  const last = surnameOf(c);
+  const trackedFrom = prints.length ? prints[0]!.p.year : null;
+  const tracked = trackedFrom != null ? ` Target shares and the lead back's share are tracked from ${trackedFrom} on.` : "";
+  return {
+    last,
+    span,
+    season,
+    stats,
+    rows: out,
+    trackedFrom,
+    note: `Team offenses by season, scoring and rank from the league's game results. Bold share: the season's distinctive position, 3+ points off the league. Bold lead back: 65%+ of the backfield's carries + 2 × targets.${tracked} A windowed season covers the weeks he called only.`,
+  };
+}
+
+function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string>): string {
+  const m = historyModel(c, stops);
+  if (!m) return "";
+  const stat = (value: string, label: string) =>
+    `<li class="sct-co-fpstat"><span class="sct-co-fpstat-v">${e(value)}</span><span class="sct-co-fpstat-l">${e(label)}</span></li>`;
+  const stats = m.stats.map((st) => stat(st.value, st.label));
 
   const sub = (text: string) => `<span class="sct-co-cell-sub">${e(text)}</span>`;
   const shareCell = (p: Print | null, pos: Pos, lean: Pos | null) => {
@@ -1706,48 +1797,24 @@ function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string
     return `<td class="sct-co-td is-share"><span class="sct-co-fpv${lean === pos ? " is-lean" : ""}">${v}%</span>${delta}</td>`;
   };
 
-  const covered = new Set(stops.flatMap((s) => Array.from({ length: s.end - s.start + 1 }, (_, i) => s.start + i)));
   let body = "";
-  for (let i = 0; i < rows.length; i++) {
-    const { s, pt, p } = rows[i];
-    const prev = rows[i - 1];
-    if (prev) {
-      const missing: number[] = [];
-      for (let yr = prev.pt.year + 1; yr < pt.year; yr++) if (!covered.has(yr)) missing.push(yr);
-      if (missing.length) {
-        const label = missing.length === 1 ? String(missing[0]) : `${missing[0]}-${String(missing[missing.length - 1]).slice(2)}`;
-        body += `<tr class="sct-co-fpgap"><td colspan="8">${e(`${label} · not calling plays`)}</td></tr>`;
-      }
-    }
-    const same = (a: Stop, b: Stop) => a.code === b.code && a.role === b.role;
-    const groupStart = !prev || !same(prev.s, s);
-    const groupLen = groupStart ? rows.slice(i).findIndex((r) => !same(r.s, s)) : 0;
-    const groupRows = groupStart ? rows.slice(i, groupLen === -1 ? rows.length : i + groupLen) : [];
-    const groupYears = groupStart
-      ? (() => {
-          const a = Math.min(...groupRows.map((r) => r.s.start));
-          const b = Math.max(...groupRows.map((r) => r.s.end));
-          return a === b ? String(a) : `${a}-${String(b).slice(2)}`;
-        })()
-      : "";
-    const win = s.window ? s.window.replace(/^play-caller /i, "") : "";
-    const live = s.current && pt.year === season;
-    const lean = p ? leanOf(p) : null;
+  for (const r of m.rows) {
+    const { s, pt, p, live, lean, win } = r;
+    if (r.gapBefore) body += `<tr class="sct-co-fpgap"><td colspan="8">${e(`${r.gapBefore} · not calling plays`)}</td></tr>`;
     const stint =
-      groupStart
-        ? `<th scope="rowgroup" rowspan="${groupLen === -1 ? rows.length - i : groupLen}" class="sct-co-td is-stint">` +
-          `<span class="sct-co-fpv sct-co-fpclub">${stepCrest(s.code)}${e(s.code)}</span>${sub(s.role)}${sub(groupYears)}</th>`
+      r.groupStart
+        ? `<th scope="rowgroup" rowspan="${r.groupLen}" class="sct-co-td is-stint">` +
+          `<span class="sct-co-fpv sct-co-fpclub">${stepCrest(s.code)}${e(s.code)}</span>${sub(s.role)}${sub(r.groupYears)}</th>`
         : "";
-    const rankText = s.caller ? pt.rank.replace(/ · \d{4} thru Wk \d+$/, "") : "";
     body +=
-      `<tr class="${live ? "is-current" : ""}${groupStart ? " is-stint-start" : ""}${s.caller ? "" : " is-notcaller"}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
+      `<tr class="${live ? "is-current" : ""}${r.groupStart ? " is-stint-start" : ""}${s.caller ? "" : " is-notcaller"}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
       `<th scope="row" class="sct-co-td is-season"><span class="sct-co-fpyear">${pt.year}</span>` +
       (win ? sub(win) : "") +
       (live ? `<span class="sct-co-fnow">In-season</span>` : s.caller ? "" : sub("not the caller")) +
       `</th>` +
       stint +
       `<td class="sct-co-td is-ppg"><span class="sct-co-fpv">${e(pt.ppg.toFixed(1))}</span></td>` +
-      `<td class="sct-co-td is-rank">${rankText ? `<span class="sct-co-fpv">${e(rankText)}</span>` : `<span class="sct-co-fpv is-none">-</span>`}</td>` +
+      `<td class="sct-co-td is-rank">${r.rankText ? `<span class="sct-co-fpv">${e(r.rankText)}</span>` : `<span class="sct-co-fpv is-none">-</span>`}</td>` +
       POS.map((pos) => shareCell(p, pos, lean)).join("") +
       `<td class="sct-co-td is-lb">` +
       (p?.leadBack != null ? `<span class="sct-co-fpv${p.leadBack >= 65 ? " is-workhorse" : ""}">${p.leadBack}%</span>` : `<span class="sct-co-fpv is-none">-</span>`) +
@@ -1755,8 +1822,8 @@ function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string
       `</tr>`;
   }
 
-  const last = surnameOf(c);
-  const tracked = prints.length ? ` Target shares and the lead back's share are tracked from ${prints[0]!.p.year} on.` : "";
+  const last = m.last;
+  const span = m.span;
   return (
     `<div class="sct-co-fpblock">` +
     `<div class="sct-co-fphead"><p class="sct-co-fptitle">${e(`Season by Season Under ${last}, ${span}`)}</p>` +
@@ -1774,9 +1841,7 @@ function historyTable(c: TeamCoaching, stops: Stop[], colors: Map<string, string
     `<th scope="col" class="sct-co-th is-share">TE share</th>` +
     `<th scope="col" class="sct-co-th is-lb">Lead back<span class="sct-co-th-sub">% of carries + 2 × targets</span></th>` +
     `</tr></thead><tbody>${body}</tbody></table></div>` +
-    `<p class="sct-co-fnote">${e(
-      `Team offenses by season, scoring and rank from the league's game results. Bold share: the season's distinctive position, 3+ points off the league. Bold lead back: 65%+ of the backfield's carries + 2 × targets.${tracked} A windowed season covers the weeks he called only.`,
-    )}</p>` +
+    `<p class="sct-co-fnote">${e(m.note)}</p>` +
     `</div>`
   );
 }
@@ -2307,6 +2372,10 @@ export function renderCoachingSection(
     // (kept by mak, 2026-11-05) with the season-by-season table under it.
     renderCoachingCareerPremium(coaching) +
     career(coaching) +
+    // The premium comparison of the season-by-season table (mak's brief,
+    // 2026-11-05): directly under the table, before Fantasy Impact. Not the
+    // default until mak approves.
+    renderCoachingSeasonsPremium(coaching) +
     // 7. Fantasy Impact, collapsed.
     fantasyImpact(coaching, team, view) +
     `</div>`;
