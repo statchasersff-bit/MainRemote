@@ -29,6 +29,7 @@ import type { NamedPlayer } from "./roster";
 import type { NflTeam } from "./teams";
 import { getTeamByAbbreviation } from "./teams";
 import type { ContractLine, ContractsView, WorthDoc } from "./contracts";
+import { renderContractsPremium } from "./contracts-premium";
 
 const e = escapeHtml;
 
@@ -42,17 +43,17 @@ export function money(m: number): string {
 }
 
 /** money() with an explicit "+" on a positive figure, for a difference. */
-function signed(m: number): string {
+export function signed(m: number): string {
   return m > 0.0005 ? `+${money(m)}` : money(m);
 }
 
-const ordinal = (n: number): string => {
+export const ordinal = (n: number): string => {
   const rem = n % 100;
   const suffix = rem >= 11 && rem <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
   return `${n}${suffix}`;
 };
 
-const STATUS_WORD: Record<string, string> = {
+export const STATUS_WORD: Record<string, string> = {
   IR: "Injured reserve",
   PUP: "Physically unable to perform",
   PS: "Practice squad",
@@ -82,7 +83,7 @@ function rankPill(rank: number | null, sense: "more-is-good" | "more-is-bad" | "
   );
 }
 
-function playerCell(p: ContractLine): string {
+export function playerCell(p: ContractLine): string {
   const href = getPlayerProfileUrl(p.name);
   return href
     ? `<a class="sct-ct-name sct-player-link" href="${e(href)}" target="_top">${e(p.name)}</a>`
@@ -135,7 +136,7 @@ function statusPill(p: ContractLine): string {
  * green, TE yellow, QB red, every defender brown. Linemen and specialists
  * stay neutral.
  */
-function positionGroup(position: string): string {
+export function positionGroup(position: string): string {
   const p = position.toUpperCase();
   if (p === "QB") return "qb";
   if (p === "RB" || p === "FB" || p === "HB") return "rb";
@@ -154,7 +155,7 @@ function posChip(p: ContractLine): string {
  * One key per player shared by the sheet row, the release card and the
  * scenario's cold-start hint, so a click on a card ticks the row.
  */
-function lineKey(p: ContractLine): string {
+export function lineKey(p: ContractLine): string {
   return p.otcId !== null ? `otc-${p.otcId}` : `n-${nameKey(p.name)}`;
 }
 
@@ -224,13 +225,33 @@ function ledgerGroup(title: string, stripLine: string, rows: LedgerRow[], tail =
   );
 }
 
-function ledger(team: NflTeam, v: ContractsView): string {
+/**
+ * The Flexibility card's arithmetic, in one place so the original ledger
+ * and the premium comparison (contracts-premium.ts) cannot disagree: sums
+ * of the view's own figures, nothing derived.
+ */
+export interface FlexFigures {
+  savers: ContractLine[];
+  costers: ContractLine[];
+  /** Cap freed by every release that frees money, summed, pre-June 1. */
+  releasable: number;
+  /** Deals the Worth model prices (Worth and an APY). */
+  priced: ContractLine[];
+  /** Worth minus APY summed over the underpaid side (plus) and the overpaid side (minus). */
+  surplus: number;
+  deficit: number;
+  /** Dead money if every contract on the sheet were released before June 1. */
+  locked: number;
+  /** Priced deals carrying neither tag. */
+  fair: number;
+}
+
+export function flexFigures(v: ContractsView): FlexFigures {
   const rows = v.players;
   const savers = rows.filter((p) => p.cutSave > 0);
   const costers = rows.filter((p) => p.cutSave < 0);
   const releasable = savers.reduce((n, p) => n + p.cutSave, 0);
   const priced = rows.filter((p) => p.worth && p.apy > 0);
-  const deals = (n: number): string => `${n} ${n === 1 ? "deal" : "deals"}`;
   let surplus = 0;
   let deficit = 0;
   for (const p of priced) {
@@ -238,6 +259,15 @@ function ledger(team: NflTeam, v: ContractsView): string {
     if (diff > 0) surplus += diff;
     else deficit += diff;
   }
+  const locked = rows.reduce((n, p) => n + p.cutDead, 0);
+  const fair = Math.max(0, priced.length - v.tagged.over - v.tagged.under);
+  return { savers, costers, releasable, priced, surplus, deficit, locked, fair };
+}
+
+function ledger(team: NflTeam, v: ContractsView): string {
+  const rows = v.players;
+  const { savers, costers, releasable, priced, surplus, deficit, locked, fair } = flexFigures(v);
+  const deals = (n: number): string => `${n} ${n === 1 ? "deal" : "deals"}`;
 
   // Cap position: where the club stands.
   const position: LedgerRow[] = [
@@ -262,7 +292,6 @@ function ledger(team: NflTeam, v: ContractsView): string {
   // The kicker line under the rows ("$4.8M free today; ... Cut scenario") went 2026-11-02 (mak).
 
   // Flexibility: what the club could do.
-  const locked = rows.reduce((n, p) => n + p.cutDead, 0);
   const flexibility: LedgerRow[] = [
     {
       label: "Cut savings",
@@ -300,7 +329,6 @@ function ledger(team: NflTeam, v: ContractsView): string {
   // (mak's critique, 2026-10-30): the league year is page context and lives
   // in the intro and the sheet's head, not here.
   const positionStrip = strip([[rows.length, rows.length === 1 ? "contract" : "contracts"]]);
-  const fair = Math.max(0, priced.length - v.tagged.over - v.tagged.under);
   const flexStrip = priced.length
     ? strip([
         [v.tagged.over, "over"],
@@ -385,7 +413,7 @@ function scenarioBar(v: ContractsView): string {
  * range"). A one-season deal is its year alone. The title keeps the count
  * of years for the hover.
  */
-function signedCell(p: ContractLine): string {
+export function signedCell(p: ContractLine): string {
   if (p.yearSigned === null) return "-";
   const last = p.finalYear ?? (p.years ? p.yearSigned + p.years - 1 : null);
   const span = last !== null && last !== p.yearSigned ? `${p.yearSigned}-${last}` : String(p.yearSigned);
@@ -422,7 +450,7 @@ function worthCell(p: ContractLine, doc: WorthDoc | null): string {
 /** Rows shown before "Show all": the top of the cap sheet (mak, 2026-10-23). */
 
 /** "Milton Williams" -> "Williams, Milton": the Player column's sort key (suffix dropped). */
-function sortName(name: string): string {
+export function sortName(name: string): string {
   const parts = name.replace(/\s+(?:Jr\.?|Sr\.?|II|III|IV|V)$/i, "").trim().split(/\s+/);
   return parts.length > 1 ? `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(" ")}` : name;
 }
@@ -661,7 +689,7 @@ function deadBlock(team: NflTeam, v: ContractsView): string {
   );
 }
 
-function worthNote(v: ContractsView): string {
+export function worthNote(v: ContractsView): string {
   const w: WorthDoc | null = v.worth;
   if (!w) return "";
   const pct = Math.round((w.ratio - 1) * 100);
@@ -726,7 +754,12 @@ export function renderContractsSection(team: NflTeam, v: ContractsView | null): 
       ? `; a starred figure is estimated from the deal's structure where the published release math is not available.`
       : `, estimated from the deal's structure: the remaining prorated bonus and guaranteed salary stay on the books, and the rest is freed.`) +
     `</p>` +
-    `</div>`
+    `</div>` +
+    // The premium comparison (mak's brief, 2026-11-05, attached_assets/
+    // contracts1.png) under the whole original block: the same view, its
+    // own cut scenario on the same bundle code. Not the default until mak
+    // approves it.
+    renderContractsPremium(team, v)
     // The club-specific FAQ (contracts-faq.ts, mak 2026-11-02) is the
     // section's tail, placed by team-render.ts like every other tab's.
   );

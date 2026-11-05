@@ -249,6 +249,11 @@ export interface BioPageInput {
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+/** The long position name the bio text uses: "quarterback"; null for an unknown code. */
+export function positionWord(pos: string | null | undefined): string | null {
+  return POSITION_WORDS[pos ?? ""] ?? null;
+}
+
 const POSITION_WORDS: Record<string, string> = {
   QB: "quarterback",
   RB: "running back",

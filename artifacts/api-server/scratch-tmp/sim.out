@@ -1,0 +1,41 @@
+js flags js js timing attr undefined
+baseline old: 0 | $0 | $0 | $12.0M
+baseline new: 0 | $0 | $0 | $12.0M
++ positive otc-10950 (Isaiah McGuire)
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+  picked row class: true rel card picked: true sim active: true reset hidden: false alt: After June 1 the same cuts would free $3.7M and leave $178K dead.
++ negative otc-5596 (Deshaun Watson)
+  old: 2 | -$82.5M | $127.3M | -$70.5M
+  new: 2 | -$82.5M | $127.3M | -$70.5M  MATCH
++ pre!=post otc-5596 (Deshaun Watson) pre -86.207 post 0
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+toggle After June 1
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+  timing attr: post pressed: false,true net cell sort key: 0 dead sort: 40.959 foot word: after June 1
+  still checked: true,false,false
+toggle Before June 1
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+  net cell sort key back: -86.207
+sorted by apy: ascending cap head sort: null picked still: 1
+after sort (totals unchanged)
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+clear
+  old: 0 | $0 | $0 | $12.0M
+  new: 0 | $0 | $0 | $12.0M  MATCH
+Try <first>
+  old: 1 | $3.7M | $178K | $15.7M
+  new: 1 | $3.7M | $178K | $15.7M  MATCH
+tap release row (new only)
+  old: 0 | $0 | $0 | $12.0M
+  new: 0 | $0 | $0 | $12.0M  MATCH
+  row picked: false
+tap release row button again
+  old: 0 | $0 | $0 | $12.0M
+  new: 0 | $0 | $0 | $12.0M  MATCH
+old independent: 0 | $0 | $0 | $12.0M
+errors: []

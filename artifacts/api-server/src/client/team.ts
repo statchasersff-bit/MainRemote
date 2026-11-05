@@ -986,6 +986,21 @@ function wireCutScenario(root: HTMLElement): void {
       return abs >= 1 ? `${sign}$${abs.toFixed(1)}M` : `${sign}$${Math.round(abs * 1000)}K`;
     };
     let timing: "pre" | "post" = "pre";
+    // The sheet's per-row release figures that follow the timing (the
+    // premium comparison's Net if cut and Dead cells print both and show
+    // one off the block's data-timing; their sort keys follow here).
+    const timed = Array.from(block.querySelectorAll<HTMLElement>("[data-sct-ct-col]"));
+    const applyTiming = (): void => {
+      block.dataset["timing"] = timing;
+      for (const cell of timed) {
+        const row = cell.closest<HTMLElement>("[data-sct-ct-row]");
+        const col = cell.dataset["sctCtCol"] === "dead" ? "Dead" : "Save";
+        cell.dataset["sort"] = row?.dataset[`${timing}${col}`] ?? "";
+      }
+      for (const label of Array.from(block.querySelectorAll<HTMLElement>("[data-sct-ct-timing-word]"))) {
+        label.textContent = timing === "post" ? "after June 1" : "before June 1";
+      }
+    };
     const pickFor = (id: string | undefined): HTMLInputElement | null =>
       id ? block.querySelector<HTMLInputElement>(`[data-sct-ct-row][data-sct-ct-id="${id}"] [data-sct-ct-pick]`) : null;
     // The release panel's cards are a second handle on the row's pick box.
@@ -1053,6 +1068,7 @@ function wireCutScenario(root: HTMLElement): void {
       button.addEventListener("click", () => {
         timing = button.dataset["sctCtTiming"] === "post" ? "post" : "pre";
         for (const b of timings) b.setAttribute("aria-pressed", String(b === button));
+        applyTiming();
         update();
       });
     }
@@ -1091,7 +1107,7 @@ function wireCutScenario(root: HTMLElement): void {
  * unaffected.
  */
 function wireContractSort(block: HTMLElement): void {
-  const table = block.querySelector<HTMLTableElement>(".sct-ct-table");
+  const table = block.querySelector<HTMLTableElement>(".sct-ct-table, [data-sct-ct-table]");
   const tbody = table?.tBodies[0];
   if (!table || !tbody) return;
   const heads = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th"));

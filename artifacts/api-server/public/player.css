@@ -1246,16 +1246,6 @@ button.scp-search-opt {
   }
 }
 
-/* The Bio tab's career read holds its row longer (mak, 2026-10-01: Quick
-   Facts and "More on" sit beside the stop list, not under it): a slimmer
-   sidebar from 960px down, one column only under 700px. */
-@media (max-width: 960px) and (min-width: 700px) {
-  .scp .scp-bo .scp-ox-read {
-    grid-template-columns: minmax(0, 1fr) 280px;
-    gap: 24px;
-  }
-}
-
 @media (max-width: 640px) {
   .scp .scp-ox-meters,
   .scp .scp-ox-two {
@@ -1362,13 +1352,6 @@ button.scp-search-opt {
    heading (mak, 2026-10-05). */
 .scp .scp-section > .scp-st:first-child {
   margin-top: 0;
-}
-
-/* The Bio tab keeps its "{Name} Bio" panel heading, so its wrapper is not
-   :first-child; its lead sits on the heading's own 18px margin all the same
-   (mak, 2026-10-01: the 40px gap above the byline was too much). */
-.scp .scp-head + .scp-bo > .scp-ox-sec:first-child {
-  padding-top: 0;
 }
 
 /* The section H2s wear the Overview's (.scp-ox-h2: 17px, 28px gold rule) on
@@ -10680,326 +10663,12 @@ a.scp-peer:focus-visible {
 /* ---------------------------------------------------------------- bio tab */
 
 /*
- * mak's Bio spec (2026-09-30, lib/player/bio-tab.ts): quick facts, the career
- * journey rail, the stop cards and the transactions log, from the spec's
- * Appendix A. Scoped .scp-bo inside .scp-ox.scp-st, like the other spec tabs.
+ * The Bio tab's transactions log (mak's Bio spec, 2026-09-30, Appendix A).
+ * Scoped .scp-bo inside .scp-ox.scp-st, like the other spec tabs. The spec's
+ * quick facts, journey rail, stop cards and sidebar were replaced by the
+ * premium "{Name} Bio and Career" block (.scp-bop, end of this file) on
+ * 2026-11-05; only the log is left here.
  */
-
-.scp .scp-bo .scp-bo-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 16px;
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.scp .scp-bo .scp-bo-grid dt {
-  margin: 0;
-  color: var(--scp-ph-muted);
-  font-weight: 400;
-}
-
-.scp .scp-bo .scp-bo-grid dd {
-  margin: 0;
-  color: var(--scp-ph-ink);
-  font-weight: 600;
-  text-align: right;
-}
-
-.scp .scp-bo .scp-bo-grid.is-links a {
-  color: var(--scp-team);
-  text-decoration: none;
-}
-
-.scp .scp-bo .scp-bo-grid.is-links a:hover {
-  text-decoration: underline;
-}
-
-/* the journey rail */
-
-.scp .scp-bo .scp-bo-journey {
-  margin: 0;
-  padding: 22px;
-  overflow-x: auto;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
-}
-
-.scp .scp-bo .scp-bo-rail {
-  display: grid;
-  gap: 4px;
-}
-
-.scp .scp-bo .scp-bo-stop {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.scp .scp-bo .scp-bo-band {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 86px;
-  padding: 12px 12px 10px;
-  overflow: hidden;
-  border-radius: 10px;
-  background: var(--c);
-  color: #ffffff;
-}
-
-.scp .scp-bo .scp-bo-band::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 4px;
-  background: var(--a, transparent);
-}
-
-.scp .scp-bo .scp-bo-ab {
-  font-size: 24px;
-  font-weight: 800;
-  font-stretch: 72%;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.scp .scp-bo .scp-bo-yrs {
-  font-size: 12px;
-  line-height: 1.3;
-  opacity: 0.85;
-}
-
-.scp .scp-bo .scp-bo-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-.scp .scp-bo .scp-bo-stop.is-cur .scp-bo-band {
-  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--c);
-}
-
-.scp .scp-bo .scp-bo-stop.is-cur {
-  padding: 0 5px;
-}
-
-.scp .scp-bo .scp-bo-st {
-  padding: 10px 4px 0;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  line-height: 1.45;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-bo .scp-bo-st b {
-  display: block;
-  color: var(--scp-ph-ink);
-  font-size: 17px;
-  font-weight: 700;
-  font-stretch: 80%;
-}
-
-/* The best fantasy season, on the block it happened in (mak, 2026-10-01) -
-   one of the bio's three marked fantasy spots. */
-.scp .scp-bo .scp-bo-best {
-  padding: 3px 4px 0;
-  color: var(--scp-st-gold);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.35;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-bo .scp-bo-axis {
-  display: grid;
-  margin-top: 14px;
-  padding-top: 8px;
-  border-top: 1px solid var(--scp-ph-line);
-  color: var(--scp-ph-muted);
-  font-size: 11px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp .scp-bo .scp-bo-note {
-  margin: 12px 0 0;
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-}
-
-/* every stop */
-
-.scp .scp-bo .scp-bo-stops {
-  position: relative;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.scp .scp-bo .scp-bo-stops::before {
-  content: "";
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 15px;
-  width: 2px;
-  background: var(--scp-ph-line);
-}
-
-.scp .scp-bo .scp-bo-stops > li {
-  position: relative;
-  margin: 0;
-  padding: 0 0 16px 44px;
-  list-style: none;
-}
-
-.scp .scp-bo .scp-bo-stops > li::before {
-  content: "";
-  position: absolute;
-  top: 18px;
-  left: 7px;
-  width: 18px;
-  height: 18px;
-  box-sizing: border-box;
-  border: 3px solid #f6f7f9;
-  border-radius: 50%;
-  background: var(--c, var(--scp-ph-ink-2));
-}
-
-.scp .scp-bo .scp-bo-stops > li.is-college::before {
-  background: var(--scp-ph-muted);
-}
-
-.scp .scp-bo .scp-bo-ev {
-  position: relative;
-  overflow: hidden;
-  padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 12px;
-}
-
-/* The crest beside the heading (mak, 2026-11-04: "add team and college
-   logos"), in place of the faded corner watermark of 2026-10-23: a 40px
-   square in the card's first column, the heading and the sentence in the
-   second. The square stays, empty, for a stop with no crest. */
-.scp .scp-bo .scp-bo-ev {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  column-gap: 14px;
-  align-items: start;
-}
-
-.scp .scp-bo .scp-bo-ev-crest {
-  display: flex;
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-}
-
-.scp .scp-bo .scp-bo-ev-crest img {
-  display: block;
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.scp .scp-bo .scp-bo-ev > :not(.scp-bo-ev-crest) {
-  grid-column: 2;
-}
-
-.scp .scp-bo .scp-bo-ev h3 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  color: var(--scp-ph-ink);
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.scp .scp-bo .scp-bo-yr {
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.scp .scp-bo .scp-bo-chip {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--scp-ph-good-soft);
-  color: var(--scp-ph-good);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.scp .scp-bo .scp-bo-ev p {
-  margin: 6px 0 0;
-  padding: 0;
-  color: var(--scp-ph-ink-2);
-  font-size: 15px;
-  line-height: 1.55;
-}
-
-/* The heading sits level with the crest's middle when it stands alone. */
-.scp .scp-bo .scp-bo-ev h3 {
-  min-height: 40px;
-}
-
-/* The sub-heading of the merged section (mak, 2026-10-01): the stop list
-   lives under the timeline's own H2 now, and the chips row is gone. */
-/* The sidebar drops level with the heading (mak, 2026-10-01: Quick Facts sat
-   too close under the timeline card), except in the lead fallback, where it
-   tops out with the bio text. */
-.scp .scp-bo .scp-ox-read > .scp-ox-aside {
-  margin-top: 28px;
-}
-
-.scp .scp-bo .scp-bo-lead .scp-ox-read > .scp-ox-aside {
-  margin-top: 0;
-}
-
-.scp .scp-bo .scp-bo-stophead {
-  margin: 28px 0 10px;
-  color: var(--scp-ph-ink) !important;
-  font-size: 17px !important;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.scp .scp-bo .scp-bo-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 16px 20px;
-  border-radius: 12px;
-  background: #f6ebcf;
-  color: var(--scp-ph-ink);
-  font-size: 15px;
-}
-
-.scp .scp-bo .scp-bo-cta a {
-  color: var(--scp-ph-ink);
-  font-weight: 700;
-}
 
 /* transactions */
 
@@ -11071,10 +10740,6 @@ a.scp-peer:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .scp .scp-bo .scp-bo-journey {
-    padding: 16px;
-  }
-
   .scp .scp-bo .scp-bo-txlog li {
     grid-template-columns: 1fr;
     gap: 2px;
@@ -21087,5 +20752,961 @@ a.scp-peer:focus-visible {
 
   .scp .scp-inp-tiles {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ===================================================================
+ * The Bio tab's "{Name} Bio and Career" block (bio-premium.ts; mak's brief,
+ * 2026-11-05, attached_assets/bio1.png; the tab's own design since the same
+ * day, when mak approved it and said "remove the older version"). Its own
+ * size container ("bop"), with the tiers the old tab had as window queries:
+ * a slimmer 280px sidebar from 960 down, one column (stops first, then the
+ * cards; the fact strip 2x2) under 700, compact paddings and no banner
+ * stripes under 640, the fact strip single-column under 460. The timeline
+ * scrolls sideways when its blocks need more room than the column has.
+ * Every rule starts `.scp .scp-bop`.
+ * =================================================================== */
+.scp .scp-bop {
+  --bop-navy-950: #071a35;
+  --bop-navy: #0b3a7a;
+  --bop-gold: #d4af37;
+  --bop-gold-bright: #f0c13b;
+  --bop-gold-light: #fff3d8;
+  --bop-gold-ink: #7a5c0e;
+  --bop-text: #102344;
+  --bop-muted: #5b7290;
+  --bop-surface: #fff;
+  --bop-surface-light: #f8fbff;
+  --bop-surface-blue: #edf4fb;
+  --bop-border: #cbdbea;
+  --bop-border-light: #e1e9f3;
+  --bop-green: #1f7a3a;
+  --bop-green-light: #e6f6ea;
+  --bop-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  --bop-bar:
+    repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 16px),
+    linear-gradient(110deg, #071a35 0%, #103f74 65%, #092448 100%);
+  container-type: inline-size;
+  container-name: bop;
+  display: grid;
+  gap: 16px;
+  margin: 28px 0 0;
+  padding: 0;
+  color: var(--bop-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-bop *,
+.scp .scp-bop *::before,
+.scp .scp-bop *::after {
+  box-sizing: border-box;
+}
+
+.scp .scp-bop-svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.scp .scp-bop-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- gold diagonals at a navy bar's right edge */
+.scp .scp-bop-stripes {
+  position: absolute;
+  top: -20px;
+  right: 16px;
+  bottom: -20px;
+  width: 44px;
+  background: linear-gradient(115deg, transparent 0 38%, var(--bop-gold) 38% 52%, transparent 52% 64%, var(--bop-gold-bright) 64% 78%, transparent 78%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---- the title banner */
+.scp .scp-bop-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--bop-bar);
+  box-shadow: var(--bop-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-bop-crest {
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  padding: 5px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.scp .scp-bop-hero-rule {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 52px;
+  border-radius: 2px;
+  background: var(--bop-gold);
+  transform: skewX(-14deg);
+}
+
+.scp .scp-bop-hero-t {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-right: 110px;
+}
+
+.scp .scp-bop .scp-bop-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 32px !important;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  text-transform: none;
+}
+
+.scp .scp-bop .scp-bop-title::after,
+.scp .scp-bop .scp-bop-title::before,
+.scp .scp-bop .scp-bop-bar-title::after,
+.scp .scp-bop .scp-bop-bar-title::before,
+.scp .scp-bop .scp-bop-h2::before {
+  display: none;
+}
+
+.scp .scp-bop-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 9px;
+  margin: 5px 0 0;
+  color: #e3ecfa;
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.scp .scp-bop-sep {
+  color: var(--bop-gold-bright);
+}
+
+.scp .scp-bop-hero-geo {
+  position: absolute;
+  top: 0;
+  right: 60px;
+  bottom: 0;
+  width: 240px;
+  background: linear-gradient(115deg, transparent 0 30%, rgba(255, 255, 255, 0.05) 30% 46%, transparent 46% 58%, rgba(255, 255, 255, 0.04) 58% 74%, transparent 74%);
+  pointer-events: none;
+}
+
+/* ---- the identity strip */
+.scp .scp-bop-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--bop-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--bop-surface-light) 100%);
+  box-shadow: var(--bop-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-bop-fact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 74px;
+  padding: 12px 18px;
+  min-width: 0;
+}
+
+.scp .scp-bop-fact + .scp-bop-fact {
+  border-left: 1px solid var(--bop-border-light);
+}
+
+.scp .scp-bop-fact-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--bop-navy);
+  font-size: 26px;
+}
+
+.scp .scp-bop-fact > div {
+  min-width: 0;
+}
+
+.scp .scp-bop-facts dt {
+  margin: 0;
+  color: var(--bop-text);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.scp .scp-bop-facts dd {
+  margin: 3px 0 0;
+  color: var(--bop-navy-950);
+  font-family: var(--scp-ph-sans);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* ---- sections */
+.scp .scp-bop-sec {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.scp .scp-bop-sec.is-timeline,
+.scp .scp-bop-sec.is-stops {
+  border: 1px solid var(--bop-border);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff 0%, #f9fbfe 55%, #eff5fc 100%);
+  box-shadow: var(--bop-shadow);
+  overflow: hidden;
+}
+
+/* the plain section heading: navy text over a short gold rule */
+.scp .scp-bop .scp-bop-h2 {
+  position: relative;
+  margin: 0 0 12px !important;
+  padding: 0 0 8px !important;
+  border: 0;
+  color: var(--bop-navy-950) !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 21px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-bop .scp-bop-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bop-gold);
+}
+
+.scp .scp-bop-prose {
+  padding: 0 0 0 12px;
+}
+
+.scp .scp-bop-prose p {
+  margin: 0 0 8px;
+  color: var(--bop-text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.scp .scp-bop-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* the navy section bar */
+.scp .scp-bop-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 8px 20px;
+  color: #fff;
+  background: var(--bop-bar);
+  overflow: hidden;
+}
+
+.scp .scp-bop-bar-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--bop-gold-bright);
+  font-size: 24px;
+}
+
+.scp .scp-bop .scp-bop-bar-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 21px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+/* ---- the career timeline */
+.scp .scp-bop-tl {
+  padding: 14px 20px 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.scp .scp-bop-segs,
+.scp .scp-bop-axis {
+  display: grid;
+  gap: 0 10px;
+}
+
+.scp .scp-bop-seg {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.scp .scp-bop-seg-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 8px 12px;
+  border-radius: 10px 10px 0 0;
+  border-bottom: 4px solid var(--bop-gold);
+  color: #fff;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--c) 80%, #000) 0%, var(--c) 60%, color-mix(in srgb, var(--c) 86%, #fff) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.scp .scp-bop-seg-logo {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 3px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+}
+
+.scp .scp-bop-seg-t {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.scp .scp-bop-seg-name {
+  position: relative;
+  font-family: var(--scp-ph-sans);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scp .scp-bop-seg-years {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.scp .scp-bop-seg-body {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px 0;
+  justify-items: start;
+}
+
+.scp .scp-bop-seg-big {
+  color: var(--bop-navy-950);
+  font-family: var(--scp-ph-sans);
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.scp .scp-bop-seg-rest {
+  color: var(--bop-muted);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.scp .scp-bop .scp-bop-best {
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--bop-gold-light);
+  color: var(--bop-gold-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.scp .scp-bop-axis {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-bop-axis-cell {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.scp .scp-bop-axis-bar {
+  display: block;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--c);
+}
+
+.scp .scp-bop-axis-cell.is-gap::before {
+  content: "";
+  display: block;
+  height: 9px;
+}
+
+.scp .scp-bop-axis-years {
+  display: grid;
+  color: var(--bop-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.scp .scp-bop-axis-years span {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- the lower two columns */
+.scp .scp-bop-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* the vertical stop timeline */
+.scp .scp-bop-stops {
+  position: relative;
+  margin: 0;
+  padding: 18px 20px 18px 14px;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.scp .scp-bop-stops::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  bottom: 26px;
+  left: 29px;
+  width: 2px;
+  background: var(--bop-border);
+}
+
+.scp .scp-bop-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  align-items: start;
+}
+
+.scp .scp-bop-node {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 24px 0 0 9px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: var(--c, var(--bop-muted));
+  box-shadow: 0 0 0 1px var(--bop-border);
+}
+
+.scp .scp-bop-stop.is-college .scp-bop-node {
+  background: #7c8da3;
+}
+
+.scp .scp-bop-card {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px;
+  border: 1px solid var(--bop-border-light);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff 0%, var(--bop-surface-light) 100%);
+  box-shadow: 0 1px 2px rgba(10, 30, 60, 0.04), 0 4px 12px rgba(10, 30, 60, 0.05);
+}
+
+.scp .scp-bop-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.scp .scp-bop-card-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+}
+
+.scp .scp-bop-card-crest img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.scp .scp-bop .scp-bop-card-h {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  color: var(--bop-navy-950) !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 19px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.scp .scp-bop-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #bfe3cc;
+  background: var(--bop-green-light);
+  color: var(--bop-green);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.scp .scp-bop-card-years {
+  color: var(--bop-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.scp .scp-bop-card-p {
+  margin: 0 0 0 56px;
+  color: var(--bop-text);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+/* ---- the sidebar cards */
+.scp .scp-bop-side {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.scp .scp-bop-card-side {
+  padding: 12px 16px 14px;
+  border: 1px solid var(--bop-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--bop-surface-light) 100%);
+  box-shadow: var(--bop-shadow);
+}
+
+.scp .scp-bop-card-side.is-rc {
+  border-color: #e9d492;
+  background: linear-gradient(180deg, #fffaea 0%, #fff3d1 100%);
+}
+
+.scp .scp-bop .scp-bop-side-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  border: 0;
+  color: var(--bop-navy-950) !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 18px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.scp .scp-bop-side-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--bop-gold);
+  font-size: 22px;
+}
+
+.scp .scp-bop-dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-bop-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.scp .scp-bop-dl.is-links .scp-bop-row {
+  padding: 5px 0;
+  border-top: 1px solid var(--bop-border-light);
+}
+
+.scp .scp-bop-dl.is-links .scp-bop-row:first-child {
+  border-top: 0;
+}
+
+.scp .scp-bop-dl dt {
+  margin: 0;
+  color: var(--bop-text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.scp .scp-bop-dl dd {
+  margin: 0;
+  color: var(--bop-navy-950);
+  font-size: 13.5px;
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.scp .scp-bop-dl dd a {
+  color: var(--bop-navy);
+  text-decoration: none;
+}
+
+.scp .scp-bop-dl dd a:hover,
+.scp .scp-bop-dl dd a:focus-visible {
+  text-decoration: underline;
+}
+
+.scp .scp-bop-rc-p {
+  margin: 0 0 10px;
+  color: var(--bop-text);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.scp .scp-bop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--bop-navy-950);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.scp .scp-bop-btn:hover,
+.scp .scp-bop-btn:focus-visible {
+  background: var(--bop-navy);
+  color: #fff;
+  text-decoration: none;
+}
+
+.scp .scp-bop-btn:focus-visible,
+.scp .scp-bop-dl dd a:focus-visible {
+  outline: 2px solid var(--bop-gold);
+  outline-offset: 2px;
+}
+
+.scp .scp-bop-btn-icon {
+  display: inline-flex;
+  font-size: 16px;
+}
+
+/* ---- narrower columns: the old tab's tiers (960 / 700 / 640), as container queries */
+@container bop (max-width: 960px) {
+  .scp .scp-bop-lower {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 14px;
+  }
+}
+
+@container bop (max-width: 700px) {
+  .scp .scp-bop-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-bop-side {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    align-items: start;
+  }
+
+  .scp .scp-bop-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp .scp-bop-fact + .scp-bop-fact {
+    border-left: 0;
+  }
+
+  .scp .scp-bop-fact:nth-child(2n) {
+    border-left: 1px solid var(--bop-border-light);
+  }
+
+  .scp .scp-bop-fact:nth-child(n + 3) {
+    border-top: 1px solid var(--bop-border-light);
+  }
+
+  .scp .scp-bop .scp-bop-title {
+    font-size: 25px !important;
+  }
+
+  .scp .scp-bop-sub {
+    font-size: 14.5px;
+  }
+
+  .scp .scp-bop-hero-geo {
+    display: none;
+  }
+
+  .scp .scp-bop-hero-t {
+    padding-right: 70px;
+  }
+}
+
+@container bop (max-width: 640px) {
+  .scp .scp-bop-hero {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .scp .scp-bop-crest {
+    width: 48px;
+    height: 48px;
+  }
+
+  .scp .scp-bop-stripes {
+    display: none;
+  }
+
+  .scp .scp-bop-hero-t {
+    padding-right: 0;
+  }
+
+  .scp .scp-bop .scp-bop-bar-title {
+    font-size: 19px !important;
+  }
+
+  .scp .scp-bop-tl {
+    padding: 12px;
+  }
+
+  .scp .scp-bop-stops {
+    padding: 14px 12px 14px 8px;
+  }
+
+  .scp .scp-bop-stops::before {
+    left: 23px;
+  }
+
+  .scp .scp-bop-stop {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .scp .scp-bop-node {
+    margin-left: 5px;
+  }
+
+  .scp .scp-bop-card {
+    padding: 10px 12px;
+  }
+
+  .scp .scp-bop-card-p {
+    margin-left: 0;
+  }
+
+  .scp .scp-bop-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container bop (max-width: 460px) {
+  .scp .scp-bop-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-bop-fact:nth-child(2n) {
+    border-left: 0;
+  }
+
+  .scp .scp-bop-fact:nth-child(n + 2) {
+    border-top: 1px solid var(--bop-border-light);
+  }
+}
+
+/* ------------------------------------------------ phones: 560px and under */
+
+/*
+ * mak, 2026-11-05: on screens of 560px and under the header's "2026 Fantasy
+ * Season" caption, the four stat cards with the Redraft button under them,
+ * and every section title with its sub-line sit centered. A viewport query
+ * on purpose - the ask is the screen, not the column - and appended at the
+ * END of the file so it wins the ties with the container queries above.
+ */
+@media (max-width: 560px) {
+  /* ---- the header: caption, board, cards, buttons */
+  .scp .scp-pboard-wrap {
+    justify-self: center;
+  }
+
+  .scp .scp-pboard-cap {
+    text-align: center;
+  }
+
+  .scp .scp-pp-cards {
+    justify-content: center;
+  }
+
+  /* Each card centers its icon-and-figure pair as one unit. */
+  .scp .scp-pp-card {
+    grid-template-columns: auto auto;
+    justify-content: center;
+  }
+
+  .scp .scp-pp-actions {
+    align-items: center;
+    justify-self: center;
+  }
+
+  .scp .scp-phead a.scp-pbtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* ---- section heroes: crest or icon above a centered title and sub-line */
+  .scp .scp-inp-hero,
+  .scp .scp-bop-hero,
+  .scp .scp-bkp-hero,
+  .scp .scp-glp-hero,
+  .scp .scp-glp-hero-l,
+  .scp .scp-pr-hero,
+  .scp .scp-stp-bar,
+  .scp .scp-olp-bar,
+  .scp .scp-cp-bar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .scp .scp-glp-hero-l {
+    width: 100%;
+  }
+
+  /* The vertical gold rules turn into short horizontal ones. */
+  .scp .scp-inp-hero-rule,
+  .scp .scp-bop-hero-rule,
+  .scp .scp-bkp-rule,
+  .scp .scp-glp-rule,
+  .scp .scp-pr-rule,
+  .scp .scp-olp-bar-divider,
+  .scp .scp-cp-bar-divider {
+    width: 36px;
+    height: 3px;
+    transform: none;
+  }
+
+  .scp .scp-inp-hero-t,
+  .scp .scp-bop-hero-t {
+    padding-right: 0;
+  }
+
+  .scp .scp-stp-bar-text,
+  .scp .scp-olp-bar-text,
+  .scp .scp-cp-bar-text {
+    align-items: center;
+  }
+
+  .scp .scp-bop-sub {
+    justify-content: center;
+  }
+
+  /* ---- the inner section bars: icon and title centered on one line */
+  .scp .scp-inp-bar,
+  .scp .scp-bop-bar,
+  .scp .scp-glp-bar,
+  .scp .scp-olr-bar,
+  .scp .scp-ol .scp-ol-bar {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .scp .scp-olr-bar-text {
+    padding-right: 0;
+  }
+
+  .scp .scp-inp-bar-note,
+  .scp .scp-glp-bar-sum {
+    flex-basis: 100%;
+    margin-right: 0;
+    text-align: center;
+  }
+
+  /* ---- plain section titles: the gold rule under the middle */
+  .scp .scp-ox-h2 {
+    text-align: center;
+  }
+
+  .scp .scp-ox-h2::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .scp .scp-ox-lede {
+    text-align: center;
   }
 }
