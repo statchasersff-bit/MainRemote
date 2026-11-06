@@ -10,11 +10,24 @@
 export const START_DELAY_MS = 4 * 60 * 1000;
 export const VERSION_ATTEMPTS = 10;
 export const VERSION_RETRY_MS = 60 * 1000;
+/**
+ * WordPress caches the asset version it prints for 15 minutes
+ * (statchasers_news_asset_version()), so the origin reporting this build is
+ * not enough: on 2026-11-05 the crawl ran while WordPress still printed the
+ * previous ?ver=, and Cloudflare kept those pages (30-day s-maxage) pointing
+ * at the old stylesheet under the new markup - unstyled player pages. The
+ * crawl now also waits for a fresh WordPress render to print this build:
+ * 20 checks a minute apart outlast the 15-minute cache.
+ */
+export const SITE_ATTEMPTS = 20;
 
 export interface LiveWarmDeps {
   /** This build's asset version; "0" means no built version.json, so no crawl. */
   version: string;
   originVersion: () => Promise<string | null>;
+  /** The ?ver= a fresh (cache-busted) WordPress render prints; omitted in old callers and tests. */
+  siteVersion?: () => Promise<string | null>;
+  siteAttempts?: number;
   run: (args: string[]) => Promise<string>;
   sleep: (ms: number) => Promise<void>;
   note: (line: string) => void;
@@ -44,6 +57,19 @@ export async function runLiveWarm(deps: LiveWarmDeps): Promise<string | null> {
       return null;
     }
     await deps.sleep(deps.retryDelayMs ?? VERSION_RETRY_MS);
+  }
+  if (deps.siteVersion) {
+    const siteAttempts = deps.siteAttempts ?? SITE_ATTEMPTS;
+    let printed: string | null = null;
+    for (let i = 1; i <= siteAttempts; i += 1) {
+      printed = await deps.siteVersion();
+      if (printed === deps.version) break;
+      if (i === siteAttempts) {
+        deps.note(`skipped: WordPress still prints ${printed ?? "nothing"} after ${siteAttempts} checks, this build is ${deps.version}`);
+        return null;
+      }
+      await deps.sleep(deps.retryDelayMs ?? VERSION_RETRY_MS);
+    }
   }
   deps.note(`start: origin serves ${deps.version}`);
   try {

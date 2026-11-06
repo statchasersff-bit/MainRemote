@@ -131,7 +131,7 @@ describe("the profile is the player's page", () => {
       assert.ok(order.indexOf("scp-phead-h1") < order.indexOf("scp-pspec"), "name, then identity");
       const line = [...header.querySelectorAll(".scp-pp-card-v")].map(text);
       assert.ok(line.length >= 2, `the stat cards: ${line}`);
-      assert.ok(line.every((v) => /^[\d,./-]+$/.test(v)), `numbers only: ${line}`);
+      assert.ok(line.every((v) => /^[\d,./%-]+$/.test(v)), `numbers only: ${line}`);
       assert.ok(pid.compareDocumentPosition(header.querySelector(".scp-pp-cards")) & 4, "identity before production");
 
       // The identity column is served before the board in the markup.
@@ -146,15 +146,19 @@ describe("the profile is the player's page", () => {
 
       // The Overview blocks of the brief, in its order, each linking into its tab.
       const ids = [...doc.querySelectorAll("#overview section.scp-ox-sec h2")].map((h) => h.id);
-      const want = ["scp-ox-strip-h", "scp-ox-news-h", "scp-ox-season-h", "scp-ox-read-h", "scp-ox-log-h", "scp-ox-cards-h", "scp-ox-career-h", "scp-ox-about-h"];
+      // The five sections of mak's Overview redesign (2026-11-05).
+      const want = ["scp-ox-season-h", "scp-ox-weekly-h", "scp-ox-read-h", "scp-ox-news-h", "scp-ox-about-h"];
       const present = want.filter((id) => ids.includes(id));
       assert.deepEqual(ids.filter((id) => want.includes(id)), present, "the brief's order");
       assert.ok(present.includes("scp-ox-season-h"), "the season table");
       assert.ok(present.includes("scp-ox-about-h"), "the About block");
-      for (const [id, section] of [["scp-ox-season-h", "stats"], ["scp-ox-about-h", "bio"], ["scp-ox-news-h", "news"], ["scp-ox-log-h", "game-log"]]) {
+      for (const [id, section] of [["scp-ox-season-h", "stats"], ["scp-ox-about-h", "stats"], ["scp-ox-news-h", "news"], ["scp-ox-weekly-h", "game-log"]]) {
         if (!present.includes(id)) continue;
         const sec = doc.getElementById(id).closest("section");
         assert.equal(sec.querySelector("a.scp-ox-more")?.getAttribute("href"), `/player/${player.slug}/${section}/`, `${id} links to ${section}`);
+      }
+      if (present.includes("scp-ox-about-h")) {
+        assert.ok(doc.querySelector(`#overview .scp-ox-bg a[href="/player/${player.slug}/bio/"]`), "Career & Background links to Bio");
       }
 
       // Hub -> every section, as crawlable anchors.
@@ -269,8 +273,8 @@ describe("data sanity", () => {
       const leagueWeek = 0;
 
       // Games played: the table's GP, the hero's caption, the Stats tab's rail.
-      const cols = [...doc.querySelectorAll("#overview .scp-ox-season thead th")].map(text);
-      const row = [...doc.querySelectorAll("#overview .scp-ox-season tbody td")].map(text);
+      const cols = [...doc.querySelectorAll("#overview .scp-ox-season dt")].map(text);
+      const row = [...doc.querySelectorAll("#overview .scp-ox-season dd")].map(text);
       const gp = Number(row[cols.indexOf("GP")]);
       assert.ok(gp > 0 && gp <= 22, `games played: ${gp}`);
       if (leagueWeek) assert.ok(gp <= leagueWeek, `${gp} games cannot exceed ${leagueWeek} weeks`);

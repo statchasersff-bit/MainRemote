@@ -64,6 +64,7 @@ function banner(team: NflTeam, view: DraftView): string {
     premiumTabHead({
       hook: "sct-drp-hero",
       icon: "draft",
+      art: "draft",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>`,
       dek: sub,
     })
@@ -329,24 +330,33 @@ function historyCard(h: DraftHistoryView): string {
 }
 
 function roundOneCard(team: NflTeam, picks: DraftPick[]): string {
+  // Dressed like the year cards: navy head with the gold slash, the same
+  // column-head band, zebra rows, faces and Barlow numerals.
   const body = picks.length
-    ? `<ol class="sct-drp-r1-list" aria-label="${e(`${team.nickname} Round 1 picks, newest first`)}">` +
+    ? `<table class="sct-drp-table is-r1">` +
+      `<caption class="sct-visually-hidden">${e(`${team.nickname} Round 1 picks, newest first`)}</caption>` +
+      `<thead><tr>` +
+      `<th scope="col" class="sct-drp-th is-num">Year</th>` +
+      `<th scope="col" class="sct-drp-th is-num">Pick</th>` +
+      `<th scope="col" class="sct-drp-th is-player">Player</th>` +
+      `<th scope="col" class="sct-drp-th is-pos">Pos</th>` +
+      `</tr></thead><tbody>` +
       picks
         .map(
           (p) =>
-            `<li class="sct-drp-r1">` +
-            `<span class="sct-drp-r1-year"><b class="sct-drp-num">${p.season}</b></span>` +
-            `<span class="sct-drp-r1-name">${playerCell(p)}</span>` +
-            `<span class="sct-drp-r1-pos">${e(CATEGORY_LABEL[pickCategory(p)] ?? p.position)}</span>` +
-            `<span class="sct-drp-r1-pick">${e(`Pick ${p.pick}`)}</span>` +
-            `</li>`,
+            `<tr class="sct-drp-row sct-drp-r1">` +
+            `<td class="sct-drp-td is-num sct-drp-r1-year">${p.season}</td>` +
+            `<td class="sct-drp-td is-num sct-drp-r1-pick">${p.pick}</td>` +
+            `<th scope="row" class="sct-drp-td is-player"><span class="sct-drp-player">${face(team, p)}${playerCell(p)}</span></th>` +
+            `<td class="sct-drp-td is-pos"><span class="sct-drp-pos">${e(CATEGORY_LABEL[pickCategory(p)] ?? p.position)}</span></td>` +
+            `</tr>`,
         )
         .join("") +
-      `</ol>`
+      `</tbody></table>`
     : `<p class="sct-drp-r1-none">No Round 1 picks in these drafts.</p>`;
   return (
     `<section class="sct-drp-card is-r1" aria-labelledby="sct-drp-r1-title">` +
-    `<div class="sct-drp-card-head is-light">${ICON.ribbon}<h3 class="sct-drp-h3" id="sct-drp-r1-title">Round 1 picks</h3></div>` +
+    `<div class="sct-drp-card-head">${ICON.ribbon}<h3 class="sct-drp-h3" id="sct-drp-r1-title">Round 1 Picks</h3><span class="sct-drp-slash" aria-hidden="true"></span></div>` +
     `<div class="sct-drp-card-body is-flush">${body}</div>` +
     `</section>`
   );

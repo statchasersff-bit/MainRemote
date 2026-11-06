@@ -319,6 +319,7 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
     premiumTabHead({
       hook: "sct-cp-head",
       icon: "coaching",
+      art: "coaching",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
       dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
     }) +

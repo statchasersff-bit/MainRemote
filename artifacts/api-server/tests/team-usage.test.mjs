@@ -221,7 +221,7 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const m = ne.players.find((p) => p.name === "Drake Maye");
     assert.equal(maye.querySelector(".sct-us-snap-n").textContent, String(m.snaps));
     assert.equal(maye.querySelector(".sct-us-share-val").textContent, `${m.snapShare}%`);
-    assert.match(maye.querySelector(".sct-us-snap-chg").textContent, /^([+−]\d+ pp|0 pp|–)$/);
+    assert.match(maye.querySelector(".sct-us-snap-chg").textContent, /^([+−]\d+%|0%|–)$/);
     // Controls ship hidden; the caption names the actual weeks of both windows.
     assert.ok(block.querySelector(".sct-up-controls").hasAttribute("hidden"));
     const last3 = ne.games.slice(-3);
@@ -242,7 +242,7 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.equal(henry.querySelector(".sct-us-snap-n").textContent, l3snaps);
     assert.equal(henry.querySelector(".sct-us-share-val").textContent, `${l3share}%`);
     assert.equal(block.querySelector('[data-snap-view="last3"]').getAttribute("aria-pressed"), "true");
-    if (l3chg) assert.ok(henry.querySelector(".sct-us-snap-chg").textContent.endsWith(" pp"));
+    if (l3chg) assert.ok(henry.querySelector(".sct-us-snap-chg").textContent.endsWith("%"));
     // A week: the row shows that game's count; rows with no snaps that week hide.
     const ne = usage.teams.ne;
     const w = ne.games[ne.games.length - 1];

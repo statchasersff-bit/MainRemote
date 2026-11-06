@@ -1,5 +1,5 @@
 /**
- * The premium comparison of the Coaching tab's Fantasy Impact section
+ * The premium Coaching tab Fantasy Impact section
  * (mak's brief "Exact Premium NFL Coaching Fantasy Impact Redesign",
  * 2026-11-05; no mockup image came with it, so the block is built from the
  * brief's words in the language of attached_assets/coachingdesign.png): a
@@ -9,8 +9,8 @@
  * note and the "How finishes are calculated" accordion), and the gold
  * Fantasy Bottom Line panel with its "Full summary" fold.
  *
- * Rendered directly UNDER the original Fantasy Impact section by
- * coaching-render.ts, flagged, until mak approves it. Presentation only:
+ * The Coaching tab's Fantasy Impact section since mak removed the original
+ * (2026-11-06); coaching-render.ts mounts it. Presentation only:
  * every word and number is the original's own model (fantasyReadsModel,
  * finishRows / readFinish / finishStop / finishTier, bottomLineModel in
  * coaching-render.ts), so the two cannot disagree. Markup `sct-cf-`
@@ -174,7 +174,6 @@ export function renderCoachingFantasyPremium(c: TeamCoaching, team: NflTeam, vie
   const season = seasonOf(c);
   return (
     `<div class="sct-block sct-cp sct-cpt sct-cf" id="coaching-fantasy-premium" data-sct-premium="coaching-fantasy">` +
-    `<p class="sct-cp-flag">New Design · Comparison</p>` +
     `<header class="sct-cf-head">` +
     `<span class="sct-cf-head-icon" aria-hidden="true">${PLAYBOOK}</span>` +
     `<span class="sct-cf-head-rule" aria-hidden="true"></span>` +

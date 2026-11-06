@@ -602,210 +602,6 @@ button.scp-search-opt {
   border-radius: 4px;
 }
 
-/*
- * Compressed (mak, 2026-10-23): three lines a card and about 100px tall where
- * it was 228. Line one is the week and the opponent, line two the number -
- * the points and the finish for a played week, "22nd vs QB" for one ahead -
- * and line three the verdict: the result word, or the matchup chip. The bar,
- * the kickoff date, the 40px rank and the opponent link under it are gone.
- */
-.scp .scp-ox-strip {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(98px, 1fr));
-  margin: 0;
-  padding: 0;
-  overflow-x: auto;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 12px;
-  list-style: none;
-}
-
-.scp .scp-ox-wk {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  min-height: 96px;
-  margin: 0;
-  padding: 13px 12px 11px;
-  border-left: 1px solid var(--scp-ph-line);
-  text-align: center;
-}
-
-.scp .scp-ox-wk:first-child {
-  border-left: 0;
-}
-
-.scp .scp-ox-wk-top {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 6px;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.scp .scp-ox-wk-w {
-  font-weight: 700;
-}
-
-.scp .scp-ox-wk-opp {
-  color: var(--tp-ink, var(--scp-ph-ink));
-  font-size: 14px;
-  font-weight: 800;
-  font-stretch: 80%;
-}
-
-.scp .scp-ox-wk-line {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 5px;
-  font-size: 19px;
-  font-weight: 700;
-  font-stretch: 80%;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.scp .scp-ox-wk-line.is-muted {
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-  font-weight: 500;
-  font-stretch: 100%;
-}
-
-.scp .scp-ox-wk-line small {
-  color: var(--scp-ph-muted);
-  font-size: 12px;
-  font-weight: 600;
-  font-stretch: 100%;
-}
-
-/* The best week keeps its gold, on the number now that there is no bar. */
-.scp .scp-ox-wk-pts.is-best {
-  color: var(--tp-c-b8871f, #b8871f);
-}
-
-.scp .scp-ox-wk-dot {
-  color: var(--scp-ph-line);
-  font-weight: 400;
-}
-
-.scp .scp-ox-wk-fin {
-  font-size: 13px;
-  font-weight: 700;
-  font-stretch: 100%;
-}
-
-.scp .scp-ox-wk-fin.is-good { color: var(--scp-ph-good); }
-.scp .scp-ox-wk-fin.is-mid { color: var(--scp-ph-mid); }
-.scp .scp-ox-wk-fin.is-bad { color: var(--scp-ph-bad); }
-.scp .scp-ox-wk-fin.is-muted { color: var(--scp-ph-muted); font-weight: 500; }
-
-/* The third line: the result word, set small and spaced, at the card's foot. */
-.scp .scp-ox-wk-res {
-  margin-top: auto;
-  color: var(--scp-ph-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.scp .scp-ox-wk-res.is-w { color: var(--tp-ink, var(--scp-ph-ink)); }
-.scp .scp-ox-wk-res.is-l { color: var(--tp-ink, var(--scp-ph-ink)); }
-
-/*
- * Results and forecasts (mak, 2026-10-21).
- *
- * Played weeks are the record: a solid white card with a settled ink rule
- * along its top edge. Upcoming weeks are the forecast: a hatched fill under a
- * dashed top rule and an italic week line, so the eye reads the seam between
- * "happened" and "might" before it reads a single number.
- */
-.scp .scp-ox-wk:not(.is-future):not(.is-bye)::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--scp-ph-ink);
-  opacity: 0.85;
-}
-
-.scp .scp-ox-wk:not(.is-future):not(.is-bye) .scp-ox-wk-top {
-  color: var(--tp-ink, var(--scp-ph-ink));
-}
-
-.scp .scp-ox-wk.is-future {
-  background: repeating-linear-gradient(135deg, #fafbfc 0 8px, var(--tp-c-f1f4f8, #f1f4f8) 8px 16px);
-  border-top: 3px dashed var(--scp-ph-line);
-  padding-top: 10px;
-}
-
-.scp .scp-ox-wk.is-future .scp-ox-wk-top {
-  font-style: italic;
-  color: var(--scp-ph-muted);
-}
-
-.scp .scp-ox-wk.is-future .scp-ox-wk-opp {
-  font-style: normal;
-  opacity: 0.8;
-}
-
-/* The one card people came for: the gold frame, the warm fill, the tag. */
-.scp .scp-ox-wk.is-next {
-  z-index: 1;
-  outline: 3px solid var(--scp-ph-gold);
-  outline-offset: -3px;
-  border-top-color: var(--scp-ph-gold);
-  border-top-style: solid;
-  background: linear-gradient(180deg, var(--tp-c-fffbf0, #fffbf0) 0%, var(--scp-ph-gold-soft) 100%);
-  /* An inner glow, not a drop shadow: the strip scrolls sideways on narrow
-     screens, and a shadow outside the card would be clipped by that box. */
-  box-shadow: inset 0 0 0 1px var(--tp-a-184-135-31-220, rgba(184, 135, 31, 0.22)), inset 0 -28px 36px -28px var(--tp-a-184-135-31-280, rgba(184, 135, 31, 0.28));
-  /* Room under the tag: the week line starts below it instead of against it. */
-  padding-top: 20px;
-}
-
-.scp .scp-ox-wk.is-next .scp-ox-wk-top {
-  font-style: normal;
-  color: var(--tp-ink, var(--scp-ph-ink));
-}
-
-.scp .scp-ox-wk.is-next .scp-ox-wk-opp {
-  opacity: 1;
-}
-
-.scp .scp-ox-wk.is-next::before {
-  content: "Up next";
-  position: absolute;
-  top: -3px;
-  right: 10px;
-  padding: 2px 8px;
-  border-radius: 0 0 6px 6px;
-  background: var(--scp-ph-gold);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.scp .scp-ox-wk-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  margin-top: auto;
-}
-
 .scp .scp-ox-chip {
   display: inline-block;
   padding: 2px 9px;
@@ -829,8 +625,8 @@ button.scp-search-opt {
 
 .scp .scp-ox-read {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
@@ -849,11 +645,6 @@ button.scp-search-opt {
 
 .scp .scp-ox-prose p:last-child {
   margin-bottom: 0;
-}
-
-/* The meter cards under the paragraph (mak, 2026-10-23). */
-.scp .scp-ox-read .scp-ox-meters {
-  margin-top: 18px;
 }
 
 .scp .scp-ox-panel {
@@ -913,109 +704,6 @@ button.scp-search-opt {
 
 .scp .scp-ox .scp-ox-btn:hover {
   background: var(--tp-c-1c2f4b, #1c2f4b);
-}
-
-.scp .scp-ox-profile {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 14px;
-  margin: 0;
-  font-size: 14px;
-}
-
-/* The Redraft Command button closes the profile card (mak, 2026-10-23: the
-   two cards are one). */
-.scp .scp-ox-panel.is-profile .scp-ox-btn {
-  margin-top: 14px;
-}
-
-.scp .scp-ox-profile dt {
-  color: var(--scp-ph-muted);
-  font-weight: 400;
-}
-
-.scp .scp-ox-profile dd {
-  margin: 0;
-  font-weight: 600;
-  text-align: right;
-}
-
-/* ---- efficiency meters ---- */
-
-.scp .scp-ox-meters {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.scp .scp-ox-meter {
-  padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 12px;
-}
-
-.scp .scp-ox-meter-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.scp .scp-ox-meter h3 {
-  margin: 0;
-  padding: 0;
-  color: var(--tp-ink, var(--scp-ph-ink));
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.scp .scp-ox-meter-val {
-  font-size: 22px;
-  font-weight: 700;
-  font-stretch: 80%;
-}
-
-.scp .scp-ox-track {
-  position: relative;
-  height: 8px;
-  margin: 12px 0 6px;
-  border-radius: 4px;
-  background: #edf0f4;
-}
-
-.scp .scp-ox-track i {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 4px;
-}
-
-.scp .scp-ox-track i.is-good { background: var(--scp-ph-good); }
-.scp .scp-ox-track i.is-mid { background: var(--scp-ph-mid); }
-.scp .scp-ox-track i.is-bad { background: var(--scp-ph-bad); }
-
-.scp .scp-ox-track::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -3px;
-  bottom: -3px;
-  width: 1px;
-  background: #a9b2c0;
-}
-
-.scp .scp-ox-meter-pct {
-  margin: 0;
-  color: var(--scp-ph-muted);
-  font-size: 13px;
-  /* Centered under the bar (mak, 2026-11-04). */
-  text-align: center;
-}
-
-/* "Fantasy profile" centered over its rows (mak, 2026-11-04). */
-.scp .scp-ox-panel.is-profile > h3 {
-  text-align: center;
 }
 
 /* ---- tables ---- */
@@ -1126,45 +814,6 @@ button.scp-search-opt {
   margin-top: 10px;
 }
 
-.scp .scp-ox-card .scp-ox-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-}
-
-.scp .scp-ox-status::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.scp .scp-ox-card .scp-ox-status.is-good { color: var(--scp-ph-good); }
-.scp .scp-ox-card .scp-ox-status.is-mid { color: var(--scp-ph-mid); }
-.scp .scp-ox-card .scp-ox-status.is-bad { color: var(--scp-ph-bad); }
-
-.scp .scp-ox-inj {
-  margin: 14px 0 0;
-  padding: 0;
-  font-size: 14px;
-  list-style: none;
-}
-
-.scp .scp-ox-inj li {
-  display: grid;
-  grid-template-columns: 52px 1fr auto;
-  gap: 10px;
-  margin: 0;
-  padding: 9px 0;
-  border-top: 1px solid #eef1f5;
-}
-
-.scp .scp-ox-inj span:last-child {
-  color: var(--scp-ph-muted);
-}
-
 /* ---- faq ---- */
 
 .scp .scp-ox-faq details {
@@ -1210,14 +859,13 @@ button.scp-search-opt {
 
 /* ---- tiers ---- */
 
-@media (max-width: 960px) {
+@media (max-width: 820px) {
   .scp .scp-ox-read {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 640px) {
-  .scp .scp-ox-meters,
   .scp .scp-ox-two {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1236,7 +884,6 @@ button.scp-search-opt {
   .scp #overview .scp-ox-h2,
   .scp #overview .scp-ox-lede,
   .scp #overview .scp-ox-prose,
-  .scp #overview .scp-ox-panel.is-profile h3,
   .scp #overview .scp-ox-card,
   .scp #overview .scp-ox-faq summary,
   .scp #overview .scp-ox-faq details p {
@@ -1254,24 +901,12 @@ button.scp-search-opt {
     text-align: center;
   }
 
-  /* The status line is an inline-flex pill; as a flex row it centers like the
-     text around it. */
-  .scp #overview .scp-ox-card .scp-ox-status {
-    display: flex;
-    justify-content: center;
-  }
-
   /* The "+" keeps its right-hand slot; the same room on the left keeps the
      question itself in the middle. */
   .scp #overview .scp-ox-faq summary {
     padding-left: 32px;
   }
 
-  /* The injury history rows are a three-column list, not prose; their
-     columns keep their edges. */
-  .scp #overview .scp-ox-card .scp-ox-inj {
-    text-align: left;
-  }
 }
 
 /* The same step the profile's other sections take at this width. */
@@ -8054,11 +7689,7 @@ a.scp-peer:focus-visible {
 .scp .scp-table--week th.scp-col-box,
 .scp .scp-table--week td.scp-score,
 .scp .scp-table--week td.scp-pts,
-.scp .scp-table--week td.scp-col-box,
-.scp .scp-ox-log th.scp-col-res,
-.scp .scp-ox-log th.scp-col-pts,
-.scp .scp-ox-log td.scp-score,
-.scp .scp-ox-log td.scp-pts {
+.scp .scp-table--week td.scp-col-box {
   text-align: center;
 }
 
@@ -8095,32 +7726,10 @@ a.scp-peer:focus-visible {
 /* The Overview's game log and career tables wear the Game Log tab's table
    (mak, 2026-09-30); the season in progress gets the Stats career table's
    tint. */
-.scp .scp-ox-career tbody tr.is-cur {
-  background: color-mix(in srgb, var(--sc-navy) 4%, var(--sc-surface));
-}
-
-.scp .scp-ox-career tbody tr.is-cur th[scope="row"] {
-  box-shadow: inset 3px 0 0 var(--sc-navy);
-}
-
-.scp .scp-ox-log td.scp-opp a {
-  font-weight: 600;
-}
 
 /* The opponent's crest ahead of the name (mak, 2026-11-04), the week table's size. */
-.scp .scp-ox-log td.scp-opp .scp-opp-logo {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  margin-right: 7px;
-  vertical-align: -4px;
-  object-fit: contain;
-}
 
 /* Finish as plain text, no pill (mak, 2026-11-04). */
-.scp .scp-ox-log td.scp-col-fin .scp-fin {
-  font-weight: 700;
-}
 
 /*
  * Collapsed only once the client says it can be.
@@ -10029,11 +9638,6 @@ a.scp-peer:focus-visible {
   color: #ffffff !important;
 }
 
-.scp .scp-ox-inj {
-  padding: 0 !important;
-  line-height: 1.5 !important;
-}
-
 /* An anchor that takes the color around it, kept.
  *
  * `color: inherit` is inheritance, and inheritance loses to any rule that names
@@ -10712,8 +10316,7 @@ a.scp-peer:focus-visible {
   }
 }
 
-.scp .scp-row-dnp,
-.scp .scp-ox-wk-dnp {
+.scp .scp-row-dnp {
   color: inherit;
   text-decoration: underline;
   text-decoration-style: dotted;
@@ -10774,22 +10377,6 @@ a.scp-peer:focus-visible {
   .scp .scp-ox .scp-nw-digest {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-
-/* ---- overview: the season table ---- */
-
-.scp .scp-ox .scp-ox-season th abbr {
-  text-decoration: none;
-}
-
-.scp .scp-ox .scp-ox-season td {
-  font-size: 16px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.scp .scp-ox .scp-ox-season th {
-  text-align: center;
 }
 
 /* ---- overview: About ---- */
@@ -20628,25 +20215,35 @@ a.scp-peer:focus-visible {
 }
 
 /*
- * mak's mobile brief, 2026-11-05: at 480px and under the header stops being
+ * mak's mobile brief, 2026-11-05: at 560px and under (480px until the
+ * compact-identity brief of the same day) the header stops being
  * the desktop design squeezed into a column and becomes three rows in one
  * navy card - the club and status, the portrait beside the name, the
  * fantasy panel - with the stat cards and the buttons under the panel.
- * Everything wider than 480px is untouched: these rules only answer the
+ * Everything wider is untouched: these rules only answer the
  * block's own `pp` container, and sit at the END of the file so they win
  * the ties with the 600px query and the 560px viewport block above.
  *
- * Markup: header.ts prints `.scp-pm-top` (crest, club, status)
- * and `.scp-pm-meta` (position · age, build · college) for this layout
+ * Markup: header.ts prints `.scp-pm-meta` (club · #N · POS · status, then
+ * age · height · weight · college), `.scp-pm-rc` and a QB's `.is-phone`
+ * Comp % card for this layout
  * only; they are display:none everywhere else, and the desktop tag row,
  * under-row and spec line are display:none here, so no fact is read twice.
  */
-.scp .scp-pm-top,
-.scp .scp-pm-meta {
+.scp .scp-pm-meta,
+.scp .scp-pm-rc,
+.scp .scp-pp-card.is-phone,
+.scp .scp-pm-season,
+.scp .scp-pm-fan-cap,
+.scp .scp-pwell-mark,
+.scp .scp-pm-meta-3,
+.scp .scp-stp-analysis-lede,
+.scp .scp-stp-prod-lede,
+.scp .scp-ox-startsit {
   display: none;
 }
 
-@container pp (max-width: 480px) {
+@container pp (max-width: 560px) {
   .scp .scp-phead-hero {
     grid-template-columns: 76px minmax(0, 1fr);
     grid-template-rows: auto auto auto auto auto auto;
@@ -20676,53 +20273,6 @@ a.scp-peer:focus-visible {
   .scp .scp-pp-under,
   .scp .scp-pspec {
     display: none;
-  }
-
-  /* ---- row 1: the club and the status, a thin rule under them */
-  .scp .scp-pm-top {
-    grid-area: top;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    margin: 0 0 11px;
-    padding: 0 0 9px;
-    border-bottom: 1px solid rgba(167, 191, 220, 0.28);
-  }
-
-  .scp .scp-pm-logo-box {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 9px;
-    background:
-      linear-gradient(160deg, color-mix(in srgb, var(--scp-team, var(--tp-c-123d6a, #123d6a)) 38%, var(--tp-c-0b2345, #0b2345)), var(--tp-c-071a35, #071a35));
-  }
-
-  .scp .scp-pm-logo {
-    display: block;
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-  }
-
-  .scp .scp-pm-logo-pos {
-    color: var(--sc-gold-bright);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-  }
-
-  .scp .scp-pm-club {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
   }
 
   .scp .scp-phead a.scp-pm-team,
@@ -20948,14 +20498,6 @@ a.scp-peer:focus-visible {
 
   .scp .scp-phead .scp-phead-h1 {
     font-size: clamp(21px, 6.8cqw, 23px) !important;
-  }
-
-  /* The club row at 320px: "SAN FRANCISCO 49ERS" beside "QUESTIONABLE" needs
-     every pixel, so the pill tightens and the club's letters close up a touch. */
-  .scp .scp-phead a.scp-pm-team,
-  .scp .scp-phead span.scp-pm-team {
-    font-size: 11px;
-    letter-spacing: 0.04em;
   }
 
   .scp .scp-phead .scp-pm-status a.scp-ptag-inj,
@@ -21664,26 +21206,2533 @@ a.scp-peer:focus-visible {
 /* ==== end team palette ==== */
 
 /*
- * mak, 2026-11-05: on screens of 560px and under the section tabs (Overview,
- * Stats, Game Log, Outlook, Injury, News, Bio) wrap onto as many rows as they
- * need instead of scrolling sideways in a rail. Each row's tabs share its
- * width, so the rows fill edge to edge.
+ * mak's compact identity brief, 2026-11-05 (560px and under):
+ *  - an 80px portrait beside the name, two short lines under it
+ *    ("Patriots · #10 · QB · Active", "24 yrs · 6'4" · 225 lbs · College");
+ *    no separate club banner (the markup is gone);
+ *  - the four white stat tiles become one four-column strip (a QB's reads
+ *    Pass yds, TD, INT, Comp %);
+ *  - the fantasy trio as a flat three-column row, no bordered panel;
+ *  - the two big buttons leave the header: a compact Redraft Command link
+ *    sits under the fantasy row, and "Should I start" moves to the
+ *    Overview's start-or-roster section (.scp-ox-startsit);
+ *  - the tabs follow the header directly (the next matchup strip prints its
+ *    copy under them), scroll sideways, stay sticky (.scp-controls already
+ *    is), and mark the open tab with a plain underline.
+ * The header rules answer the block's own `pp` container like the rest of
+ * the phone header; the strip, tabs and Overview link sit outside that
+ * container, so they answer the viewport.
+ */
+@container pp (max-width: 560px) {
+  .scp .scp-phead-hero {
+    grid-template-columns: 80px minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto auto;
+    grid-template-areas:
+      "well id"
+      "well meta"
+      "cards cards"
+      "fan fan"
+      "rc rc"
+      "acts acts";
+  }
+
+  .scp .scp-pwell {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* ---- the two lines beside the portrait */
+  .scp .scp-pm-meta-1 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 2px;
+    color: var(--tp-c-d7e5f7, #d7e5f7);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .scp .scp-phead a.scp-pm-team,
+  .scp .scp-phead span.scp-pm-team {
+    color: #fff !important;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .scp .scp-pm-status {
+    display: inline-flex;
+  }
+
+  /* The status as a small word in its own color, sized to the line. */
+  .scp .scp-phead .scp-pm-status a.scp-ptag-inj,
+  .scp .scp-phead .scp-pm-status span.scp-ptag-inj,
+  .scp .scp-phead .scp-pm-status .scp-ptag-status {
+    min-height: 0;
+    height: 17px;
+    padding: 0 6px;
+    font-size: 9.5px;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  .scp .scp-pm-meta-2 {
+    margin-top: 2px !important;
+    color: var(--tp-c-a7bfdc, #a7bfdc);
+    font-size: 11.5px;
+  }
+
+  /* ---- one four-column stat strip in place of the tiles */
+  .scp .scp-pp-cards {
+    grid-area: cards;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    justify-content: stretch;
+    margin: 14px 0 0;
+    padding: 10px 0;
+    border: 0;
+    border-top: 1px solid rgba(167, 191, 220, 0.24);
+    border-bottom: 1px solid rgba(167, 191, 220, 0.24);
+    border-radius: 0;
+    background: none;
+  }
+
+  .scp .scp-pp-card.is-desk {
+    display: none;
+  }
+
+  .scp .scp-pp-card.is-phone {
+    display: flex;
+  }
+
+  .scp .scp-pp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-align: center;
+  }
+
+  .scp .scp-pp-card + .scp-pp-card:not(.is-desk),
+  .scp .scp-pp-card.is-desk + .scp-pp-card {
+    border-left: 1px solid rgba(167, 191, 220, 0.2);
+  }
+
+  .scp .scp-pp-card:first-child {
+    border-left: 0;
+  }
+
+  .scp .scp-pp-card-icon {
+    display: none;
+  }
+
+  .scp .scp-pp-card-v,
+  .scp .scp-pp-card-l {
+    align-self: center;
+    text-align: center;
+  }
+
+  .scp .scp-pp-card-v,
+  .scp .scp-pp-card-v.is-long {
+    color: #fff;
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .scp .scp-pp-card-l {
+    color: var(--tp-c-a7bfdc, #a7bfdc);
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ---- the fantasy trio: a flat three-column row */
+  .scp .scp-pboard-wrap {
+    grid-area: fan;
+    justify-self: stretch;
+    margin: 10px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .scp .scp-pboard-cap {
+    margin: 0 0 6px;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+
+  .scp .scp-pstat b,
+  .scp .scp-pstat.is-lead .scp-pstat b {
+    font-size: 19px;
+  }
+
+  .scp .scp-pstat.is-lead b {
+    color: var(--sc-gold-bright);
+  }
+
+  /* ---- the actions: a compact Redraft Command link, no buttons */
+  .scp .scp-pp-actions {
+    display: none;
+  }
+
+  .scp .scp-phead a.scp-pm-rc {
+    grid-area: rc;
+    display: inline-flex;
+    align-items: center;
+    justify-self: center;
+    gap: 6px;
+    margin: 12px 0 0;
+    color: var(--sc-gold-bright) !important;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none !important;
+  }
+
+  .scp .scp-pm-rc svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@container pp (max-width: 360px) {
+  .scp .scp-phead-hero {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .scp .scp-pwell {
+    width: 70px;
+    height: 70px;
+  }
+
+  .scp .scp-pp-card-v,
+  .scp .scp-pp-card-v.is-long,
+  .scp .scp-pstat b,
+  .scp .scp-pstat.is-lead .scp-pstat b {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* No next matchup strip under the header on the phone (mak's mobile
+     brief, 2026-11-05): the Overview's week strip and the Outlook's
+     upcoming matchups carry the fixture where it belongs. */
+  .scp .scp-phead > .scp-pstrip {
+    display: none;
+  }
+
+  /* No top margin on the player header at this width (mak, 2026-11-05): it
+     sat on top of the host's own page padding. */
+  .scp .scp-phead {
+    margin-top: 0;
+  }
+
+  /* 12px over the player header (the search sits above it), not 18px:
+     the plugin (1.10.52) also drops Divi's 58px page padding at this width. */
+  .scp .scp-phead {
+    margin-top: 12px;
+  }
+
+  /* The tab bar: one row that scrolls sideways, sticky as before, the open
+     tab marked by a clear underline rather than a filled pill. */
+  .scp .scp-controls {
+    margin-top: 12px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .scp .scp-nav {
+    overflow-x: auto;
+  }
+
+  .scp .scp-nav-list {
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+
+  .scp .scp-nav-list > li {
+    flex: 0 0 auto;
+  }
+
+  .scp .scp-nav-link {
+    min-height: 44px;
+    padding: 8px 13px;
+    border-radius: 0;
+  }
+
+  .scp .scp-nav-link.is-active,
+  .scp .scp-nav-link.is-active:hover {
+    color: var(--tp-ink, var(--sc-navy));
+    background: none;
+    box-shadow: inset 0 -3px 0 var(--tp-ink, var(--sc-navy));
+    font-weight: 800;
+  }
+
+  /* "Should I start" where the Overview's answer begins. */
+  .scp .scp-ox a.scp-ox-startsit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--sc-border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--sc-navy) !important;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-shadow: 0 2px 6px rgba(8, 28, 60, 0.06);
+  }
+}
+
+/*
+ * The Overview redesign (mak, 2026-11-05; lib/player/overview.ts): season
+ * stats as one stat strip, the weekly chart beside the next four games, one
+ * fantasy read with compact efficiency rows, a three-item news brief and a
+ * career-and-background panel, plus a conditional availability alert. At
+ * the END of the file so these win the ties with the older overview rules
+ * above. Sizes from the brief: 17px section titles, 13-15px body, 11-13px
+ * metadata, 12-18px card padding, a ~190px chart.
+ */
+.scp .scp-ox .scp-ox-sec {
+  padding-top: 28px;
+}
+
+.scp .scp-ox .scp-ox-h2 {
+  margin-bottom: 14px;
+}
+
+.scp .scp-ox .scp-ox-more {
+  margin-top: 10px;
+  font-size: 13.5px;
+}
+
+.scp .scp-ox .scp-ow-h3 {
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 11.5px !important;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.scp .scp-ox .scp-ow-note {
+  margin: 8px 0 0;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* ---- the availability alert ---- */
+
+.scp .scp-ox .scp-ox-alert {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 16px;
+  margin: 20px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--scp-ph-mid-soft);
+  border-left: 4px solid var(--scp-ph-mid);
+  border-radius: 10px;
+  background: var(--scp-ph-gold-soft);
+}
+
+.scp .scp-ox .scp-ox-alert.is-bad {
+  border-color: var(--scp-ph-bad-soft);
+  border-left-color: var(--scp-ph-bad);
+  background: #fdf3f1;
+}
+
+.scp .scp-ox .scp-ox-alert.is-good {
+  border-color: var(--scp-ph-good-soft);
+  border-left-color: var(--scp-ph-good);
+  background: #f2f9f5;
+}
+
+.scp .scp-ox .scp-ox-alert p {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.scp .scp-ox .scp-ox-alert-h {
+  grid-column: 1;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-size: 15px !important;
+}
+
+.scp .scp-ox .scp-ox-alert-p {
+  grid-column: 1;
+  color: var(--scp-ph-ink-2);
+}
+
+.scp .scp-ox a.scp-ox-alert-a {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+/* ---- 1. season stats: one strip of figures ---- */
+
+.scp .scp-ox .scp-ox-season {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 9), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.scp .scp-ox .scp-ox-stat {
+  min-width: 0;
+  padding: 12px 12px 11px;
+  border-left: 1px solid var(--scp-ph-line);
+  text-align: right;
+}
+
+.scp .scp-ox .scp-ox-stat:first-child {
+  border-left: 0;
+}
+
+.scp .scp-ox .scp-ox-stat dt {
+  margin: 0;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ox-stat dt abbr {
+  border: 0;
+  text-decoration: none;
+  cursor: help;
+}
+
+.scp .scp-ox .scp-ox-stat dd {
+  margin: 4px 0 0;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-family: var(--scp-ph-sans);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ox-stat.is-fpts {
+  background: var(--scp-ph-gold-soft);
+}
+
+/* ---- 2. weekly performance + upcoming ---- */
+
+.scp .scp-ox .scp-ox-weekly {
+  container: ow / inline-size;
+}
+
+.scp .scp-ox .scp-ow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 20px;
+  align-items: start;
+}
+
+.scp .scp-ox .scp-ow.is-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scp .scp-ox .scp-ow-chart {
+  margin: 0;
+  padding: 14px 14px 10px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+/* The caption is the chart's text equivalent; the bars and the line say it visually. */
+.scp .scp-ox .scp-ow-cap {
+  margin: 0 0 10px;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.scp .scp-ox .scp-ow-plot {
+  position: relative;
+  height: 170px;
+  margin: 0 0 22px 28px;
+}
+
+.scp .scp-ox .scp-ow-grid i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.scp .scp-ox .scp-ow-grid b {
+  position: absolute;
+  right: calc(100% + 6px);
+  top: -7px;
+  color: var(--scp-ph-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ow-avg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1.5px dashed var(--scp-ph-mid);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.scp .scp-ox .scp-ow-avg b {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--scp-ph-mid);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.scp .scp-ox .scp-ow-cols {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-ox .scp-ow-col {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  outline: none;
+  cursor: default;
+}
+
+.scp .scp-ox .scp-ow-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 34px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--tp-c-2a4570, #2a4570);
+  transition: filter 0.15s;
+}
+
+/* Literal gold, not the team-palette token: the caption promises gold. */
+.scp .scp-ox .scp-ow-col.is-hit .scp-ow-bar {
+  background: #d4a72c;
+}
+
+.scp .scp-ox .scp-ow-col:is(:hover, :focus-visible) .scp-ow-bar {
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 2px var(--tp-c-b8871f, #b8871f);
+}
+
+.scp .scp-ox .scp-ow-v {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  color: var(--scp-ph-ink-2);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ow-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 34px;
+  height: 46%;
+  border: 1px dashed #c9d1dc;
+  border-radius: 4px 4px 0 0;
+  background: repeating-linear-gradient(135deg, #f4f6f9 0 4px, #ffffff 4px 8px);
+  color: var(--scp-ph-muted);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+.scp .scp-ox .scp-ow-col.is-dnp .scp-ow-mark {
+  border-color: #e3b7ae;
+  color: var(--scp-ph-bad);
+}
+
+.scp .scp-ox .scp-ow-x {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The week's details: in the accessibility tree always (a list of weeks),
+   on screen while the bar is hovered or focused (tap focuses it). */
+.scp .scp-ox .scp-ow-tip {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ow-col:is(:hover, :focus, :focus-within) .scp-ow-tip {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: max-content;
+  max-width: 190px;
+  height: auto;
+  padding: 8px 10px;
+  overflow: visible;
+  clip: auto;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  background: var(--tp-c-0b2345, #0b2345);
+  box-shadow: 0 6px 18px rgba(8, 28, 60, 0.22);
+  color: #dfe7f2;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.scp .scp-ox .scp-ow-col.is-played:is(:hover, :focus, :focus-within) .scp-ow-tip {
+  bottom: auto;
+  top: 0;
+}
+
+.scp .scp-ox .scp-ow-col.is-l:is(:hover, :focus, :focus-within) .scp-ow-tip {
+  left: 0;
+  transform: none;
+}
+
+.scp .scp-ox .scp-ow-col.is-r:is(:hover, :focus, :focus-within) .scp-ow-tip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.scp .scp-ox .scp-ow-tip b {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+/* The next four games: dense rows, not cards. */
+.scp .scp-ox .scp-ow-next {
+  padding: 14px 14px 12px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.scp .scp-ox .scp-ow-games {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-ox .scp-ow-g {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 4px;
+  border-top: 1px solid #edf0f4;
+  font-size: 14px;
+}
+
+.scp .scp-ox .scp-ow-g:first-child {
+  border-top: 0;
+}
+
+.scp .scp-ox .scp-ow-g.is-next {
+  border-radius: 8px;
+  background: var(--scp-ph-gold-soft);
+}
+
+.scp .scp-ox .scp-ow-g.is-next + .scp-ow-g {
+  border-top-color: transparent;
+}
+
+.scp .scp-ox .scp-ow-gw {
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ow-go {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ow-logo {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.scp .scp-ox .scp-ow-g.is-bye .scp-ow-go {
+  color: var(--scp-ph-muted);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.scp .scp-ox .scp-ow-gr {
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ow-gr small {
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.scp .scp-ox .scp-ow-gc {
+  text-align: right;
+}
+
+.scp .scp-ox .scp-ow-gc .scp-ox-chip {
+  padding: 2px 8px;
+  font-size: 11.5px;
+}
+
+/* Value labels over the bars only where each column is wide enough. */
+@container ow (max-width: 760px) {
+  .scp .scp-ox .scp-ow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+@container ow (max-width: 520px) {
+  .scp .scp-ox .scp-ow-v {
+    display: none;
+  }
+
+  .scp .scp-ox .scp-ow-cols {
+    gap: 3px;
+  }
+
+  .scp .scp-ox .scp-ow-plot {
+    height: 160px;
+  }
+}
+
+/* ---- 3. fantasy outlook + efficiency ---- */
+
+.scp .scp-ox .scp-ox-outlook .scp-ox-read {
+  padding: 16px 18px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.scp .scp-ox .scp-ox-call {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-family: var(--scp-ph-sans);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.scp .scp-ox .scp-ox-call::before {
+  content: "";
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--scp-ph-muted);
+}
+
+.scp .scp-ox .scp-ox-call.is-elite::before,
+.scp .scp-ox .scp-ox-call.is-starter::before { background: var(--scp-ph-good); }
+.scp .scp-ox .scp-ox-call.is-flex::before { background: var(--sc-gold); }
+.scp .scp-ox .scp-ox-call.is-waiver::before { background: var(--scp-ph-bad); }
+
+.scp .scp-ox .scp-ox-call-sub {
+  color: var(--scp-ph-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.scp .scp-ox .scp-ox-outlook .scp-ox-prose {
+  margin: 0;
+  padding: 0;
+  color: var(--scp-ph-ink-2);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.scp .scp-ox .scp-ox-eff-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-ox .scp-ox-eff {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "l v"
+    "bar p";
+  align-items: center;
+  gap: 3px 12px;
+  margin: 0;
+  padding: 8px 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.scp .scp-ox .scp-ox-eff:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.scp .scp-ox .scp-ox-eff-l {
+  grid-area: l;
+  color: var(--scp-ph-ink-2);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.scp .scp-ox .scp-ox-eff-v {
+  grid-area: v;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-family: var(--scp-ph-sans);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ox-eff-bar {
+  grid-area: bar;
+  position: relative;
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: #edf0f4;
+  overflow: hidden;
+}
+
+/* The league median, as a tick. */
+.scp .scp-ox .scp-ox-eff-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: #b8c1ce;
+}
+
+.scp .scp-ox .scp-ox-eff-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #8c99ab;
+}
+
+.scp .scp-ox .scp-ox-eff-bar i.is-good { background: var(--scp-ph-good); }
+.scp .scp-ox .scp-ox-eff-bar i.is-bad { background: var(--scp-ph-bad); }
+
+.scp .scp-ox .scp-ox-eff-p {
+  grid-area: p;
+  color: var(--scp-ph-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.scp .scp-ox .scp-ox-eff-w {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* ---- 4. news: one compact row each ---- */
+
+.scp .scp-ox .scp-nw-digest {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.scp .scp-ox .scp-nw-dg-item {
+  padding: 10px 0 10px 12px;
+  border-top: 1px solid #edf0f4;
+}
+
+.scp .scp-ox .scp-nw-dg-item:first-child {
+  border-top-color: transparent;
+}
+
+.scp .scp-ox .scp-nw-dg-h {
+  font-size: 14.5px;
+}
+
+/* ---- 5. career + background ---- */
+
+.scp .scp-ox .scp-ox-bg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.scp .scp-ox .scp-ox-honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-ox .scp-ox-honors li {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--tp-c-e7d39e, #e7d39e);
+  border-radius: 999px;
+  background: var(--scp-ph-gold-soft);
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.scp .scp-ox .scp-ox-career-line {
+  margin: 0;
+  padding: 0;
+  color: var(--scp-ph-ink-2);
+  font-size: 14px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ox-career-line span {
+  color: var(--scp-ph-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about dd {
+  font-size: 14px;
+}
+
+.scp .scp-ox .scp-ox-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- tablets and phones ---- */
+
+@media (max-width: 820px) {
+  .scp .scp-ox .scp-ox-season {
+    grid-template-columns: repeat(min(var(--n, 9), 5), minmax(0, 1fr));
+  }
+
+  .scp .scp-ox .scp-ox-stat:nth-child(5n + 1) {
+    border-left: 0;
+  }
+
+  .scp .scp-ox .scp-ox-stat:nth-child(n + 6) {
+    border-top: 1px solid var(--scp-ph-line);
+  }
+
+  .scp .scp-ox .scp-ox-stat {
+    padding: 9px 10px;
+  }
+
+  .scp .scp-ox .scp-ox-stat dd {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .scp .scp-ox .scp-ox-sec {
+    padding-top: 24px;
+  }
+
+  .scp .scp-ox .scp-ox-alert {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .scp .scp-ox a.scp-ox-alert-a {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 4px;
+  }
+
+  /* Phones: five columns for a nine- or ten-stat line, four for eight, so
+     the rows fill (overview.ts sets is-c5 / is-c4). */
+  .scp .scp-ox .scp-ox-season {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .scp .scp-ox .scp-ox-season.is-c5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .scp .scp-ox .scp-ox-stat,
+  .scp .scp-ox .scp-ox-stat:nth-child(n) {
+    padding: 8px 4px;
+    border-left: 1px solid var(--scp-ph-line);
+    border-top: 0;
+    text-align: center;
+  }
+
+  .scp .scp-ox .is-c4 .scp-ox-stat:nth-child(4n + 1),
+  .scp .scp-ox .is-c5 .scp-ox-stat:nth-child(5n + 1) {
+    border-left: 0;
+  }
+
+  .scp .scp-ox .is-c4 .scp-ox-stat:nth-child(n + 5),
+  .scp .scp-ox .is-c5 .scp-ox-stat:nth-child(n + 6) {
+    border-top: 1px solid var(--scp-ph-line);
+  }
+
+  .scp .scp-ox .scp-ox-stat dt {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .scp .scp-ox .scp-ox-stat dd {
+    font-size: 16px;
+  }
+
+  .scp .scp-ox .scp-ow-chart,
+  .scp .scp-ox .scp-ow-next,
+  .scp .scp-ox .scp-ox-outlook .scp-ox-read,
+  .scp .scp-ox .scp-ox-bg-grid {
+    padding: 12px;
+  }
+
+  .scp .scp-ox .scp-ow-g {
+    grid-template-columns: 28px minmax(0, 1fr) auto auto;
+    gap: 6px;
+  }
+
+  /* The phone centering of 2026-10-25 stays for the titles; the analytical
+     blocks keep their left edge, numbers keep their alignment. */
+  .scp #overview .scp-ox-outlook .scp-ox-prose,
+  .scp #overview .scp-ox-call {
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .scp .scp-ox .scp-ox-bg-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .scp .scp-ox .scp-ox-stat dd {
+    font-size: 14.5px;
+  }
+
+  .scp .scp-ox .scp-ox-stat dt {
+    font-size: 9.5px;
+  }
+}
+
+/*
+ * mak's mobile header brief (ESPN-style hierarchy), 2026-11-05, 560px and
+ * under. White surfaces, dark type, thin neutral rules; the team's color
+ * only where it marks something: the portrait's tint, the season bar, the
+ * open tab's underline and the links. The colors come from the palette the
+ * root already carries (team/palette.ts: --team-bright is the team's own
+ * color held to 4.5:1 against white, so white text reads on it and it reads
+ * on white), never a house navy-and-gold. Order: search, identity, NFL
+ * season strip, fantasy summary, Redraft Command link, tabs, the tab.
+ * Desktop is untouched: every rule here is behind a phone query, and the
+ * phone-only markup (.scp-pm-season, .scp-pm-fan-cap, .scp-pwell-mark,
+ * .scp-pm-meta-3, .scp-stp-analysis-lede) is display:none elsewhere.
+ */
+.scp {
+  --scp-m-ink: #14181f;
+  --scp-m-muted: #5b6573;
+  --scp-m-rule: #e2e6eb;
+  --scp-m-team: var(--scp-team-ink, var(--team-bright, #1d4f91));
+}
+
+@media (max-width: 560px) {
+  /* 12px page gutters: the host gives 4px, the root adds 8px. */
+  .scp {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  /* ---- search: a plain 44px field */
+  .scp .scp-search {
+    margin: 8px 0 0;
+  }
+
+  .scp .scp-search-input {
+    height: 40px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #d5dbe2;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 16px;
+  }
+
+  .scp .scp-search-icon {
+    left: 13px;
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/*
+ * mak's masthead brief, 2026-11-06 (replaces the 11-05 white identity rules
+ * here): one designed player masthead on the white foundation. The header
+ * runs edge to edge with 16px gutters; the portrait stands in the club's
+ * faded logo and a soft team wash and dissolves into the white (no box, no
+ * hard bottom edge); the name sits on two deliberate lines at ~28px under a
+ * team-color eyebrow ("Cardinals · #7 · QB"), then the physical line and
+ * the college; the NFL numbers lead in a bordered panel under a narrow
+ * team-color heading; the fantasy trio is a quieter tinted strip with its
+ * "Fantasy · PPR" label, and "Open in Redraft Command" closes that strip.
  */
 @media (max-width: 560px) {
-  .scp-nav {
-    overflow-x: visible;
+  .scp .scp-phead {
+    margin: 8px -8px 0;
+  }
+}
+
+@container pp (max-width: 560px) {
+  .scp .scp-phead-hero {
+    grid-template-columns: 132px minmax(0, 1fr);
+    grid-template-rows: 1fr auto auto auto auto auto 1fr auto auto auto;
+    grid-template-areas:
+      "well ."
+      "well eye"
+      "well id"
+      "well phys"
+      "well col"
+      "well fp"
+      "well ."
+      "cap cap"
+      "cards cards"
+      "acts acts";
+    column-gap: 14px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--scp-m-ink);
   }
 
-  .scp-nav-list {
+  /* The team wash behind the portrait, fading out into the white. */
+  .scp .scp-phead-hero::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -8px;
+    left: 0;
+    z-index: 0;
+    width: 230px;
+    height: 200px;
+    background: radial-gradient(ellipse 60% 58% at 40% 48%, color-mix(in srgb, var(--scp-m-team) 15%, transparent), transparent 100%);
+    pointer-events: none;
+  }
+
+  .scp .scp-phead-hero::after {
+    display: none;
+  }
+
+  /* ---- the portrait: logo backdrop, figure dissolving at the shoulders */
+  .scp .scp-pwell {
+    grid-row: 1 / span 7;
+    align-self: stretch;
+    width: 132px;
+    height: auto;
+    min-height: 162px;
+    margin: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .scp .scp-pwell-paint {
+    display: none;
+  }
+
+  .scp .scp-pwell-mark {
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 1;
+    width: 136px;
+    height: 136px;
+    object-fit: contain;
+    opacity: 0.16;
+    transform: translateX(-50%);
+    -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 45%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 45%, #000 45%, transparent 75%);
+  }
+
+  .scp .scp-pwell-img {
+    position: absolute;
+    inset: auto auto 0 50%;
+    z-index: 2;
+    width: auto;
+    max-width: none;
+    height: 158px;
+    object-fit: contain;
+    object-position: bottom center;
+    transform: translateX(-50%);
+    filter: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
+  }
+
+  .scp .scp-pwell-sil {
+    left: 50%;
+    width: 84%;
+    fill: color-mix(in srgb, var(--scp-m-team) 22%, #fff);
+    transform: translateX(-50%);
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+  }
+
+  /* ---- the identity column: eyebrow, name, physical line, college */
+  .scp .scp-pm-meta {
+    display: contents;
+  }
+
+  .scp .scp-pm-meta-1 {
+    grid-area: eye;
+    display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 0;
+    margin: 0;
+    color: var(--scp-m-team);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+    text-transform: uppercase;
   }
 
-  .scp-nav-list > li {
-    flex: 1 1 auto;
+  .scp .scp-phead a.scp-pm-team,
+  .scp .scp-phead span.scp-pm-team {
+    color: var(--scp-m-team) !important;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-decoration: none !important;
+    text-transform: uppercase;
   }
 
-  .scp-nav-link {
-    min-height: 38px;
-    padding: 7px 12px;
+  .scp .scp-pm-dot {
+    margin: 0 5px;
+    color: color-mix(in srgb, var(--scp-m-team) 45%, #fff);
+  }
+
+  .scp .scp-pm-status {
+    display: inline-flex;
+    margin-left: 2px;
+  }
+
+  /* The status: small, flat, no glow. */
+  .scp .scp-phead .scp-pm-status a.scp-ptag-inj,
+  .scp .scp-phead .scp-pm-status span.scp-ptag-inj,
+  .scp .scp-phead .scp-pm-status .scp-ptag-status {
+    min-height: 0;
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 4px;
+    box-shadow: none !important;
+    text-shadow: none;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: 0.06em;
+  }
+
+  /* "Active": a quiet badge, dark green on pale green. */
+  .scp .scp-phead .scp-pm-status .scp-ptag-status.is-good {
+    border-color: transparent;
+    background: #e7f5ec;
+    color: #1d6b3c !important;
+    font-weight: 700;
+  }
+
+  .scp .scp-phead .scp-pm-status :is(.scp-ptag-inj, .scp-ptag-status)::before,
+  .scp .scp-phead .scp-pm-status :is(.scp-ptag-inj, .scp-ptag-status)::after {
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  .scp .scp-pid {
+    grid-area: id;
+    align-self: start;
+    padding: 0;
+  }
+
+  .scp .scp-phead .scp-phead-h1 {
+    margin: 4px 0 7px !important;
+    color: var(--scp-m-ink) !important;
+    font-size: 28px !important;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    overflow-wrap: normal;
+    text-wrap: initial;
+  }
+
+  .scp .scp-phead-first,
+  .scp .scp-phead-last {
+    display: block;
+  }
+
+  .scp .scp-phead-name.is-long {
+    font-size: 23px;
+  }
+
+  .scp .scp-pm-meta-2,
+  .scp .scp-pm-meta-3 {
+    display: block;
+    margin: 0 !important;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  .scp .scp-pm-meta-2 {
+    grid-area: phys;
+    color: #3a4350;
+    font-weight: 600;
+  }
+
+  .scp .scp-pm-meta-3 {
+    grid-area: col;
+    color: var(--scp-m-muted);
+    font-weight: 500;
+  }
+
+  .scp .scp-pm-meta-2 .scp-pm-dot {
+    margin: 0 4px;
+    color: #a3abb5;
+  }
+
+  /* ---- the NFL season panel: the numbers that lead */
+  .scp .scp-pm-season {
+    grid-area: cap;
+    display: block;
+    position: relative;
+    z-index: 1;
+    margin: 8px 0 0;
+    padding: 0 12px;
+    border-radius: 10px 10px 0 0;
+    background: var(--scp-m-team);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 24px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .scp .scp-pp-cards {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    align-items: center;
+    min-height: 66px;
+    padding: 9px 0;
+    border: 1px solid var(--scp-m-rule);
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  }
+
+  .scp .scp-pp-card + .scp-pp-card:not(.is-desk),
+  .scp .scp-pp-card.is-desk + .scp-pp-card {
+    border-left: 1px solid #f2f4f6;
+  }
+
+  .scp .scp-pp-card {
+    gap: 4px;
+    padding: 0 2px;
+  }
+
+  .scp .scp-pp-card-v,
+  .scp .scp-pp-card-v.is-long {
+    color: var(--scp-m-ink);
+    font-size: clamp(21px, 7cqw, 27px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .scp .scp-pp-card-l {
+    color: var(--scp-m-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  /* ---- the fantasy door (11-06 PM): the header leads with the NFL
+     profile; one outlined button under the college opens the player's
+     Redraft Command profile. 44px tap target, the button itself 32px. */
+  .scp .scp-pboard-wrap {
+    display: none;
+  }
+
+  .scp .scp-phead a.scp-pm-fp {
+    grid-area: fp;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 44px;
+    position: relative;
+    z-index: 0;
+    margin: 2px 0 0;
+    padding: 6px 10px;
+    border: 0;
+    background: none;
+    color: var(--scp-m-team) !important;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none !important;
+    white-space: nowrap;
+  }
+
+  /* The visible outline: drawn inside the 44px target, not as its edge. */
+  .scp .scp-phead a.scp-pm-fp::before {
+    content: "";
+    position: absolute;
+    inset: 6px 0;
+    border: 1px solid var(--scp-m-team);
+    border-radius: 8px;
+    background: #fff;
+    z-index: -1;
+  }
+
+  .scp .scp-phead a.scp-pm-fp:hover,
+  .scp .scp-phead a.scp-pm-fp:focus-visible {
+    text-decoration: underline !important;
+  }
+
+  .scp .scp-pm-fp-arrow {
+    font-size: 14px;
+  }
+}
+
+@container pp (max-width: 360px) {
+  .scp .scp-phead-hero {
+    grid-template-columns: 112px minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .scp .scp-pwell {
+    width: 112px;
+    min-height: 148px;
+  }
+
+  .scp .scp-pwell-mark {
+    width: 116px;
+    height: 116px;
+  }
+
+  .scp .scp-pwell-img {
+    height: 140px;
+  }
+
+  .scp .scp-phead .scp-phead-h1 {
+    font-size: 25px !important;
+  }
+
+  .scp .scp-phead-name.is-long {
+    font-size: 21px;
+  }
+
+}
+
+@media (max-width: 560px) {
+  /* ---- the tabs: a full-width white strip under a thin rule */
+  /* 48px tall (mak, 11-06): the desktop's --scp-nav-h min-height would
+     leave 8px of air under the 46px tabs. */
+  .scp .scp-controls {
+    min-height: 48px;
+    margin: 8px -8px 0;
+    padding: 0 4px;
+    border: 0;
+    border-top: 1px solid var(--scp-m-rule);
+    border-bottom: 1px solid var(--scp-m-rule);
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+  }
+
+  .scp .scp-nav-link {
+    min-height: 46px;
+    padding: 0 15px;
+    color: #4a5361;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .scp .scp-nav-link.is-active,
+  .scp .scp-nav-link.is-active:hover {
+    color: var(--scp-m-ink);
+    background: none;
+    box-shadow: inset 0 -3px 0 var(--scp-m-team);
+    text-shadow: none;
+    font-weight: 700;
+  }
+
+  /* ---- each tab's own heading: plain type on white, no colored band */
+  .scp .scp-stp-bar,
+  .scp .scp-cp-bar,
+  .scp .scp-glp-hero,
+  .scp .scp-glp-bar,
+  .scp .scp-bkp-hero,
+  .scp .scp-olr-bar,
+  .scp .scp-olp-bar,
+  .scp .scp-inp-hero,
+  .scp .scp-inp-bar,
+  .scp .scp-bop-hero,
+  .scp .scp-bop-bar,
+  .scp .scp-pr-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 0;
+    padding: 16px 0 8px !important;
+    border: 0;
+    border-radius: 0;
+    background: none !important;
+    box-shadow: none;
+    color: var(--scp-m-ink);
+    text-align: left;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::before,
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::after,
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3)::after {
+    display: none !important;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) [aria-hidden="true"]:not(svg *),
+  .scp .scp-inp-crest,
+  .scp .scp-bop-crest {
+    display: none !important;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--scp-m-ink) !important;
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    text-transform: none !important;
+  }
+
+  /* The inner section bars read as subheads under the tab heading. */
+  .scp :is(.scp-glp-bar, .scp-inp-bar, .scp-bop-bar) :is(h2, h3) {
+    font-size: 19px !important;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(p, span:not([aria-hidden])) {
+    color: var(--scp-m-muted) !important;
+    text-align: left !important;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) > div {
+    align-items: flex-start;
+    width: 100%;
+    padding: 0 !important;
+    text-align: left;
+  }
+
+  /* The Stats lede moves to the fantasy-impact read (stats-premium.ts). */
+  .scp .scp-stp-bar-sub.is-moved {
+    display: none !important;
+  }
+
+  /* "2026 Stats" on the phone: the name stays in the heading's text. */
+  .scp .scp-stp-bar-title .scp-stp-name {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* The sentence the intro gave up, under the production cards. */
+  .scp .scp-stp-body > p.scp-stp-prod-lede {
+    display: block;
+    margin: 12px 0 0;
+    color: var(--scp-m-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Its own row over the read: the part is a grid of named areas, and an
+     extra <p> would otherwise share the body's cell. */
+  .scp .scp-stp-analysis-part:has(> .scp-stp-analysis-lede) {
+    grid-template-areas: "head" "lede" "body" "note";
+  }
+
+  .scp .scp-stp-analysis-part p.scp-stp-analysis-lede {
+    grid-area: lede;
+    display: block;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The tab's content starts about 16px under the tab bar, not 72px. */
+  .scp .scp-section {
+    padding-top: 0;
+  }
+
+  .scp .scp-section > :first-child,
+  .scp .scp-section > :first-child > :first-child {
+    margin-top: 0 !important;
+  }
+
+  .scp .scp-section > .scp-ox:first-child > .scp-ox-sec:first-child {
+    padding-top: 16px;
+  }
+
+  /* No gold rule under the first heading below the tabs (mak, 11-06): it
+     sat right under the masthead and read as a stray decoration. */
+  .scp .scp-section > .scp-ox:first-child > .scp-ox-sec:first-child .scp-ox-h2::after {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The Stats tab's toggles, on white now that their band is gone: a quiet
+     outlined pair, the pressed one filled in the team's ink. */
+  .scp .scp-stp .scp-stp-bar .scp-stp-seg {
+    margin-top: 8px;
+    padding: 2px;
+    border: 1px solid var(--scp-m-rule);
+    background: #fff;
+  }
+
+  .scp .scp-stp .scp-stp-bar .scp-stp-seg button {
+    min-height: 32px;
+    color: var(--scp-m-muted);
+    font-size: 13px;
+  }
+
+  .scp .scp-stp .scp-stp-bar .scp-stp-seg button[aria-pressed="true"] {
+    color: #fff;
+    background: var(--scp-m-team);
+    box-shadow: none;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-olr-bar, .scp-olp-bar) .scp-stp-bar-ctl {
+    margin: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The section that held a banner loses its outer card too, so the
+     heading reads as part of the page rather than a title on a card's edge. */
+  .scp :is(section, div):has(> :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar.is-hero, .scp-inp-hero, .scp-bop-hero, .scp-pr-hero)) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .scp :is(section, div):has(> .scp-stp-bar) > .scp-stp-body {
+    padding-left: 0;
+    padding-right: 0;
+    background: none;
+  }
+}
+
+/* ======================================================================
+ * mak's mobile type scale, 2026-11-06 (560px and under). Explicit sizes
+ * on each piece of the phone header, the tabs and the Stats intro, set
+ * here last so no earlier clamp() or banner rule keeps them oversized.
+ * No global reduction, no transforms: text resizing and zoom still work.
+ * Touch targets stay 44px+ even where the type got smaller.
+ */
+@media (max-width: 560px) {
+  .scp .scp-search-input {
+    font-size: 16px;
+    font-weight: 400;
+  }
+}
+
+@container pp (max-width: 560px) {
+  /* Team · #15 · QB */
+  .scp.scp .scp-pm-meta-1,
+  .scp.scp .scp-phead :is(a, span).scp-pm-team {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .scp.scp .scp-phead .scp-pm-status :is(a.scp-ptag-inj, span.scp-ptag-inj, .scp-ptag-status),
+  .scp.scp .scp-phead .scp-pm-status .scp-ptag-status.is-good {
+    height: 17px;
+    font-size: 10px;
+    font-weight: 600;
+    box-shadow: none !important;
+    text-shadow: none;
+  }
+
+  /* The name: 26px on two natural lines (first / last). */
+  .scp.scp .scp-phead .scp-phead-h1,
+  .scp.scp .scp-phead .scp-phead-h1 .scp-phead-name,
+  .scp.scp .scp-phead .scp-phead-name.is-long {
+    font-size: 26px !important;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.08;
+  }
+
+  .scp.scp .scp-pm-meta-2,
+  .scp.scp .scp-pm-meta-3 {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .scp.scp .scp-phead a.scp-pm-fp {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* The season panel: 24px heading + 66px numbers = 90px. */
+  .scp.scp .scp-pm-season {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+
+  .scp.scp .scp-pp-cards {
+    min-height: 66px;
+    padding: 8px 0;
+  }
+
+  .scp.scp .scp-pp-card {
+    gap: 3px;
+  }
+
+  .scp.scp :is(.scp-pp-card-v, .scp-pp-card-v.is-long) {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scp.scp .scp-pp-card-l {
+    font-size: 10px;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Tabs: 14px, 400 / 600; the 46px links keep the 48px bar. */
+  .scp.scp .scp-nav-link {
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .scp.scp .scp-nav-link.is-active,
+  .scp.scp .scp-nav-link.is-active:hover {
+    font-weight: 600;
+  }
+
+  /* "2026 Stats" */
+  .scp.scp.scp.scp .scp-stp-bar :is(h2, h3) {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Season totals / Per game: 13px 600 in a 32px pill, each option's hit
+     area stretched to 44px above and below the drawn pill. */
+  .scp.scp .scp-stp .scp-stp-bar .scp-stp-seg button {
+    position: relative;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .scp.scp .scp-stp .scp-stp-bar .scp-stp-seg button::before {
+    content: "";
+    position: absolute;
+    inset: -7px 0;
+  }
+}
+
+@container pp (max-width: 380px) {
+  /* A name part over 11 characters ("Valdes-Scantling") would break at its
+     hyphen onto a third line at 26px in this column; 24px keeps it on two. */
+  .scp.scp .scp-phead .scp-phead-name.is-long {
+    font-size: 24px !important;
+  }
+}
+
+/* ======================================================================
+ * mak's density pass below the tabs, 2026-11-06 (560px and under). One
+ * rule throughout the Stats tab: single metrics sit in compact rows or
+ * grouped summaries; large cards are kept for charts, comparisons and the
+ * Redraft Command card. Plus one gutter: the embed's root gets the same
+ * 12px the standalone page has (the host adds 4px), so headings, panels
+ * and tables all start 16px from the screen edge, the header with them.
+ */
+.scp .scp-stp-gp {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .scp.scp,
+  .scp.scp.is-embed {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .scp.scp .scp-phead,
+  .scp.scp .scp-controls {
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+
+  .scp.scp .scp-controls {
+    padding: 0 4px;
+  }
+
+  .scp.scp .scp-nav-link {
+    padding: 0 12px;
+  }
+
+  /* ---- section headings: 22px, 16px above, 12px to what follows */
+  .scp.scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
+    font-size: 22px !important;
+  }
+
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar) {
+    gap: 12px;
+    padding: 16px 0 12px !important;
+  }
+
+  .scp.scp.scp .scp-stp-bar .scp-stp-bar-ctl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  .scp.scp.scp .scp-stp .scp-stp-bar .scp-stp-seg {
+    margin-top: 0;
+  }
+
+  /* "8 games" beside the toggle, in place of the Games card. */
+  .scp.scp .scp-stp-gp {
+    display: inline;
+    color: var(--scp-m-muted);
+    font-size: 13px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .scp.scp.scp .scp-stp-kpi.is-games {
+    display: none;
+  }
+
+  /* ---- the season figures: one grouped 2x2 panel, no icons */
+  .scp.scp.scp .scp-stp-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--scp-m-rule);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .scp.scp.scp .scp-stp-kpi {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    min-height: 0;
+    margin: 0;
+    grid-column: auto;
+    justify-self: stretch;
+    width: auto;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-align: left;
+  }
+
+  .scp.scp.scp .scp-stp-kpi > * {
+    align-self: flex-start;
+  }
+
+  /* Dividers between the cells (the Games card, when present, is hidden
+     and sits first, so count from the visible ones). */
+  .scp.scp.scp .scp-stp-kpis > .scp-stp-kpi:not(.is-games) {
+    border-top: 1px solid var(--scp-m-rule);
+  }
+
+  .scp.scp.scp .scp-stp-kpis:has(> .is-games:first-child) > .scp-stp-kpi:nth-child(2n + 1),
+  .scp.scp.scp .scp-stp-kpis:not(:has(> .is-games:first-child)) > .scp-stp-kpi:nth-child(2n) {
+    border-left: 1px solid var(--scp-m-rule);
+  }
+
+  .scp.scp.scp .scp-stp-kpis:has(> .is-games:first-child) > .scp-stp-kpi:nth-child(-n + 3),
+  .scp.scp.scp .scp-stp-kpis:not(:has(> .is-games:first-child)) > .scp-stp-kpi:nth-child(-n + 2) {
+    border-top: 0;
+  }
+
+  /* An odd one out spans the row rather than leaving a hole. */
+  .scp.scp.scp .scp-stp-kpis:has(> .is-games:first-child) > .scp-stp-kpi:last-child:nth-child(even),
+  .scp.scp.scp .scp-stp-kpis:not(:has(> .is-games:first-child)) > .scp-stp-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .scp.scp.scp .scp-stp-kpi-icon {
+    display: none;
+  }
+
+  .scp.scp.scp .scp-stp-kpi-label {
+    color: var(--scp-m-muted);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-align: left;
+  }
+
+  .scp.scp.scp .scp-stp-kpi-line {
+    justify-content: flex-start;
+    gap: 2px 8px;
+  }
+
+  .scp.scp.scp .scp-stp-kpi-value,
+  .scp.scp.scp .scp-stp-kpi-value:has(.scp-stp-kpi-dot) {
+    color: var(--scp-m-ink);
+    font-size: 22px;
+    font-weight: 700;
+    font-stretch: normal;
+    line-height: 1.1;
+  }
+
+  .scp.scp.scp .scp-stp-kpi-sub {
+    color: var(--scp-m-muted);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ---- metric panels: tighter rows, a thin bar */
+  .scp.scp.scp .scp-stp-card {
+    padding: 12px 12px 6px;
+    border-color: var(--scp-m-rule);
+    background: #fff;
+    box-shadow: none;
+  }
+
+  .scp.scp.scp :is(.scp-stp-card-title, .scp-stp-subhead) {
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+
+  .scp.scp.scp .scp-stp-row,
+  .scp.scp.scp .scp-stp-card:is(.is-eff, .is-use) .scp-stp-row {
+    row-gap: 5px;
+    padding: 8px 0;
+  }
+
+  .scp.scp.scp .scp-stp-row-label {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .scp.scp.scp .scp-stp-row-value {
+    font-size: 15px;
+  }
+
+  .scp.scp.scp .scp-stp-row .scp-stp-bar-track {
+    height: 5px;
+  }
+
+  /* ---- career rates: the same grouped 2x2 panel */
+  .scp.scp.scp .scp-cp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--scp-m-rule);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .scp.scp.scp .scp-cp-kpi {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-height: 0;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-align: left;
+  }
+
+  .scp.scp.scp .scp-cp-kpi:nth-child(2n) {
+    border-left: 1px solid var(--scp-m-rule);
+  }
+
+  .scp.scp.scp .scp-cp-kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--scp-m-rule);
+  }
+
+  .scp.scp.scp .scp-cp-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .scp.scp.scp :is(.scp-cp-kpi-icon, .scp-cp-high-icon) {
+    display: none;
+  }
+
+  .scp.scp.scp .scp-cp-kpi-value {
+    order: 2;
+    color: var(--scp-m-ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scp.scp.scp .scp-cp-kpi-label {
+    order: 1;
+    color: var(--scp-m-muted);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .scp.scp.scp .scp-cp-kpi-sub {
+    order: 3;
+    color: var(--scp-m-muted);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* ---- career highs: compact rows, label and year left, figure right */
+  .scp.scp.scp .scp-cp-highs {
+    padding: 12px 12px 4px;
+    border-color: var(--scp-m-rule);
+    background: #fff;
+    box-shadow: none;
+  }
+
+  .scp.scp.scp.scp .scp-cp .scp-cp-h.is-highs {
+    margin: 0 0 4px !important;
+    padding: 0;
+    font-size: 15px !important;
+    text-align: left;
+  }
+
+  .scp.scp.scp.scp .scp-cp .scp-cp-h.is-highs::after {
+    display: none;
+  }
+
+  .scp.scp.scp .scp-cp-high-list {
+    display: block;
+  }
+
+  .scp.scp.scp .scp-cp-high {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "l v" "s v";
+    column-gap: 12px;
+    row-gap: 1px;
+    align-items: center;
+    min-height: 0;
+    padding: 8px 0;
+    border: 0;
+    border-top: 1px solid var(--scp-m-rule);
+    text-align: left;
+  }
+
+  .scp.scp.scp .scp-cp-high:first-child {
+    border-top: 0;
+  }
+
+  .scp.scp.scp .scp-cp-high-v {
+    grid-area: v;
+    color: var(--scp-m-ink);
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scp.scp.scp .scp-cp-high-l {
+    grid-area: l;
+    color: var(--scp-m-ink);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .scp.scp.scp .scp-cp-high-s {
+    grid-area: s;
+    color: var(--scp-m-muted);
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* mak, 2026-11-06: the phone's Stats tab opens on "2026 Stats" and goes
+     straight to the advanced metrics. The totals/per-game toggle, the games
+     label, the season figures (already in the header's NFL panel) and the
+     touchdown sentence under them are not shown. The heading stays: it is
+     the section's H2 the SEO ladder keys on (scp-st-prod-h). */
+  .scp.scp.scp .scp-stp-bar.is-hero .scp-stp-bar-ctl,
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-body {
+    display: none !important;
+  }
+
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-bar.is-hero {
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* mak, 2026-11-06: the advanced metrics ARE the phone's "2026 Stats"
+     section. Their own banner ("{Name} Passing Stats" + the summary line)
+     is hidden visually and kept for crawlers and screen readers (the same
+     treatment as the name in "2026 Stats"); the panels sit 12px under the
+     "2026 Stats" heading. */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] > .scp-stp-bar {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    margin: -1px;
+    padding: 0 !important;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* 12px under the heading: the .scp-stp grid's 18px row gap, less 6. */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] {
+    margin-top: -6px !important;
+    padding-top: 0 !important;
+  }
+
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] > .scp-stp-body {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  /* "Career Stats" and its NFL stats / Fantasy switch on one row (mak,
+     2026-11-06); the switch keeps its 44px hit areas. */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar > div {
+    width: auto;
+    flex: 0 1 auto;
+    align-items: center;
+  }
+
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar .scp-stp-seg {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Words the phone drops but crawlers and screen readers keep: the career
+     switch reads "NFL" (mak, 2026-11-06), its name still "NFL stats". */
+  .scp .scp-stp-xs {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  /* 320px phones: 10px less switch so it still fits beside "Career Stats". */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar .scp-stp-seg button {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* "{Name} Fantasy Football Stats" reads "Career Fantasy Stats" on phones
+     (mak, 2026-11-06); "Career " is generated, not heading text. */
+  .scp .scp-cp-title-main::before {
+    content: "Career ";
+  }
+
+  .scp .scp-cp-title-main::after {
+    content: " PPG";
+  }
+
+  /* The banner rule that mutes its spans (the subtitle) must not reach
+     the heading's own words. */
+  .scp.scp.scp.scp.scp :is(h2, h3) .scp-cp-title-main {
+    color: inherit !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* No subtitle under "Career Fantasy Stats" on phones (mak, 2026-11-06). */
+  .scp.scp.scp.scp .scp-cp-bar .scp-cp-bar-sub {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* No NFL / Fantasy switch on phones (mak, 2026-11-06): the table stays
+     on its NFL columns, and with one option left there is nothing to show. */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar .scp-stp-bar-ctl {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The career rates panel, centered in each cell (mak, 2026-11-06). */
+  .scp.scp.scp .scp-cp-kpi {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The career chart without its card (mak, 2026-11-06): no frame, no
+     shadow, no inset, so it runs the page's 16px gutters like the tables.
+     The section body loses its side padding and wash for the same reason. */
+  .scp.scp.scp .scp-cp-body {
+    padding-left: 0;
+    padding-right: 0;
+    background: none;
+  }
+
+  .scp.scp.scp .scp-cp-chart {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+}
+
+/* ======================================================================
+ * Career fantasy chart and rates, clarity pass (mak, 2026-11-06): the
+ * rank basis under the chart, a tap tooltip on each bar, definitions behind
+ * an info button on each rate. Phones: "Career Fantasy PPG" with the
+ * scoring under it, and only year + rank under each bar.
+ */
+.scp .scp-cp-chart {
+  position: relative;
+}
+
+.scp .scp-cp-legend .scp-cp-basis {
+  flex-basis: 100%;
+  color: var(--scp-m-muted, #5b6573);
+  font-weight: 500;
+}
+
+.scp .scp-cp-col {
+  cursor: pointer;
+}
+
+.scp .scp-cp-col.is-hot .scp-cp-fill {
+  filter: brightness(0.88) saturate(1.2);
+}
+
+.scp .scp-cp-col.is-hot .scp-cp-val {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The tapped season's detail, in one line under the bars. */
+.scp .scp-cp-tip {
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #14181f;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.scp .scp-cp-tip[hidden] {
+  display: none;
+}
+
+/* The info button: a small "i" in a ring, with a 44px tap area. */
+.scp .scp-info {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin: 0 0 0 5px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  font: italic 700 10px/1 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: 1px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.scp .scp-info::before {
+  content: "";
+  position: absolute;
+  inset: -15px;
+}
+
+/* The glyph is drawn, so the label's text stays the label's words. */
+.scp .scp-info::after {
+  content: "i";
+}
+
+.scp .scp-info[aria-expanded="true"] {
+  background: currentColor;
+  opacity: 1;
+}
+
+.scp .scp-info[aria-expanded="true"]::after {
+  color: #fff;
+}
+
+.scp .scp-cp-kpi-def {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  color: var(--scp-m-muted, #5b6573);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.scp .scp-cp-kpi-def[hidden] {
+  display: none;
+}
+
+@media (max-width: 560px) {
+
+
+  /* Year and rank under each bar; games and team are in the bar's tip. */
+  .scp.scp.scp .scp-cp-x small {
+    display: none;
+  }
+
+  .scp.scp.scp .scp-cp-kpi-def {
+    order: 4;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The chart's key, centered under it (mak, 2026-11-06). */
+  .scp.scp.scp .scp-cp-legend {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .scp.scp.scp .scp-cp-legend .scp-cp-basis {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  /* "What His Career Numbers Say" reads "Fantasy Analysis" on phones
+     (mak, 2026-11-06); the heading's own text is unchanged. */
+  .scp .scp-cp-read #scp-st-read-h::before {
+    content: "Fantasy Analysis";
+  }
+}
+
+/* The read's heading icon is the phone's only (below). */
+.scp .scp-cp-h-icon {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  /* "Fantasy Analysis" wears the metric panels' heading style (Efficiency,
+     Usage, Style, Context): gold icon first, 18px / 800, left-aligned, no
+     gold rule under it (mak, 2026-11-06). */
+  .scp.scp.scp.scp .scp-cp-read #scp-st-read-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px !important;
+    padding: 0 !important;
+    font-size: 18px !important;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-align: left;
+  }
+
+  .scp.scp.scp.scp .scp-cp-read #scp-st-read-h::after {
+    display: none;
+  }
+
+  .scp.scp.scp .scp-cp-read .scp-cp-h-icon {
+    display: inline-flex;
+    order: -1;
+    color: var(--cp-gold, var(--tp-c-d4af37, #d4af37)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The Fantasy Analysis text, left-aligned under its heading (mak,
+     2026-11-06). */
+  .scp.scp.scp .scp-cp-read .scp-cp-prose,
+  .scp.scp.scp .scp-cp-read .scp-cp-prose p {
+    text-align: left;
   }
 }

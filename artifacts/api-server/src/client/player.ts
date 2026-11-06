@@ -339,7 +339,24 @@ function wireHeader(root: HTMLElement): void {
  * not reported as a click from whichever tab the page loaded on. The nav link
  * carries the line; the tag is the button's stem plus the tab.
  */
+/**
+ * Keep the open tab inside the tab strip's visible width when the strip
+ * scrolls sideways (the phone, mak's mobile brief 2026-11-05). scrollLeft on
+ * the strip itself rather than scrollIntoView, which would also scroll the
+ * page; leaves a sliver of the previous tab showing so the overflow reads.
+ */
+function revealTab(root: HTMLElement, link: HTMLElement | null): void {
+  const nav = root.querySelector<HTMLElement>("[data-scp-nav]");
+  if (!nav || !link || nav.scrollWidth <= nav.clientWidth) return;
+  const left = link.offsetLeft - nav.offsetLeft;
+  const right = left + link.offsetWidth;
+  if (left < nav.scrollLeft || right > nav.scrollLeft + nav.clientWidth) {
+    nav.scrollLeft = Math.max(0, left - 24);
+  }
+}
+
 function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void {
+  revealTab(root, link);
   const kind = link.dataset["scpKind"] ?? "";
   const heading = root.querySelector<HTMLElement>(".scp-phead-h1");
   let line = root.querySelector<HTMLElement>(".scp-phead-kind");
@@ -730,6 +747,68 @@ function wireCareerChart(root: HTMLElement): void {
   for (const el of pending) observer.observe(el);
 }
 
+/**
+ * The career chart's tap detail (2026-11-06).
+ *
+ * Each bar carries its season's detail (team, games, PPG, points, rank) in
+ * data-scp-cp-tip. A tap, hover or focus prints it in one line under the
+ * bars (never over them or the heading), and a second tap clears it. The
+ * labels under the bars keep only the year and the rank.
+ */
+function wireCareerTips(root: HTMLElement): void {
+  for (const figure of Array.from(root.querySelectorAll<HTMLElement>(".scp-cp-chart"))) {
+    const cols = Array.from(figure.querySelectorAll<HTMLElement>("[data-scp-cp-tip]"));
+    const scroller = figure.querySelector<HTMLElement>("[data-scp-arc]");
+    if (cols.length === 0 || !scroller) continue;
+    const tip = document.createElement("p");
+    tip.className = "scp-cp-tip";
+    tip.hidden = true;
+    tip.setAttribute("role", "status");
+    scroller.insertAdjacentElement("afterend", tip);
+    let open: HTMLElement | null = null;
+    const show = (col: HTMLElement): void => {
+      tip.textContent = col.getAttribute("data-scp-cp-tip") ?? "";
+      tip.hidden = false;
+      for (const other of cols) other.classList.toggle("is-hot", other === col);
+      open = col;
+    };
+    const hide = (): void => {
+      tip.hidden = true;
+      for (const other of cols) other.classList.remove("is-hot");
+      open = null;
+    };
+    for (const col of cols) {
+      col.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "mouse") show(col);
+      });
+      col.addEventListener("click", () => (open === col ? hide() : show(col)));
+      col.addEventListener("focus", () => show(col));
+    }
+    figure.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "mouse") hide();
+    });
+  }
+}
+
+/**
+ * Info buttons (2026-11-06): each opens the definition named by its
+ * aria-controls, in place, and closes it on a second tap.
+ */
+function wireInfoButtons(root: HTMLElement): void {
+  for (const btn of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-scp-info]"))) {
+    const id = btn.getAttribute("aria-controls");
+    const panel = id ? root.querySelector<HTMLElement>(`#${CSS.escape(id)}`) : null;
+    if (!panel) continue;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const opening = panel.hidden;
+      panel.hidden = !opening;
+      btn.setAttribute("aria-expanded", String(opening));
+    });
+  }
+}
+
 /* ------------------------------------------------------------------ boot */
 
 /**
@@ -1035,6 +1114,7 @@ function wireProfile(root: HTMLElement): void {
     leadKey: "scpLead",
     onSelect: (link, id) => headerTab(root, link, id),
   });
+  revealTab(root, root.querySelector<HTMLElement>(".scp-nav-link.is-active"));
   wireTimestamps(root);
   wirePlayerSearch(root);
   wireChartTooltip(root);
@@ -1046,6 +1126,8 @@ function wireProfile(root: HTMLElement): void {
   wireCareerView(root);
   wireNewsFilter(root);
   wireCareerChart(root);
+  wireCareerTips(root);
+  wireInfoButtons(root);
   wireStateSwap(root);
   wireDurability(root);
   wireFrameHeight(root);

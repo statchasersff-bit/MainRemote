@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.51
+Stable tag: 1.10.52
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.52 =
+* Team hubs: clicking the Draft or Contracts tab no longer scrolls the window down to the panel. WP Rocket's "Delay JavaScript execution" was holding the team script back until the first click, so that click followed the tab's #draft link natively; the team script is now excluded from Delay JS and minify/combine (it has no dependencies and still loads deferred).
+* Player pages on phones (560px and under): Divi's 58px of padding above the page content is removed, so the player card starts just under the site header instead of 76px below it. Player pages only; wider screens keep the theme's spacing.
 
 = 1.10.51 =
 * NFL Depth Charts (depth-charts 1.7.4): the league-wide browser mak reviewed on 2026-11-05 is now the tool. One toolbar (search, position, team, Export) under the four view tabs and the count, the Fantasy notice, then one white card per team with a column per position group; it answers to the width of the column it sits in, not the window. The earlier layout - two toolbar rows, the gold tab strip, the auto-fit team grid - is removed along with the "NEW DESIGN - COMPARISON" divider and the "View new design" button. The view, team and position filters still live in the URL fragment (#fantasy/buffalo-bills/rb) with back/forward, the default view is still the bare address, and the CSV export is unchanged.

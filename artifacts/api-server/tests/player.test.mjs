@@ -283,8 +283,10 @@ describe("player page content", () => {
     assert.equal(owned[0], "ROSTERED");
     assert.match(owned[1], /^(<1|\d+)%$|^-$/, "ownership is a whole percentage");
     assert.match(doc.querySelector(".scp-pboard-cap").textContent.trim(), /^\d{4} Fantasy Season$/);
-    // The season's counting totals are the four stat cards, when he has a logged game.
-    for (const v of doc.querySelectorAll(".scp-pp-card-v")) assert.match(v.textContent.trim(), /^[\d,./-]+$/);
+    // The season's counting totals are the four stat cards, when he has a logged
+    // game; a QB's phone-only Comp % card (2026-11-05) is a rate.
+    for (const v of doc.querySelectorAll(".scp-pp-card:not(.is-phone) .scp-pp-card-v")) assert.match(v.textContent.trim(), /^[\d,./-]+$/);
+    for (const v of doc.querySelectorAll(".scp-pp-card.is-phone .scp-pp-card-v")) assert.match(v.textContent.trim(), /^\d+\.\d%$/);
   });
 
   test("the header's buttons say where they go and tag the tab", async () => {

@@ -44,6 +44,8 @@ const ICON = {
   trophy: svg(`<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M9 21h6M10 17h4"/>`),
   fact: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>`),
   target: svg(`<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>`),
+  star: svg(`<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>`),
+  players: svg(`<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/>`),
 };
 
 /** The strip's icon, by the fact's label; the info glyph for a label the outlook has not used before. */
@@ -70,6 +72,7 @@ function header(team: NflTeam, outlook: TeamOutlook, underway: boolean): string 
   return premiumTabHead({
     hook: "sct-tfo-head",
     icon: "outlook",
+    art: "outlook",
     // The panel's heading (.sct-h2, its gold rule suppressed by the shared
     // header), printed on a section page too.
     heading: `<h2 class="sct-h2 sct-up-h2 sct-tfo-title">${e(`${team.fullName} Fantasy Football Outlook & Stats ${outlook.season}`)}</h2>`,
@@ -153,13 +156,24 @@ function card(player: OutlookPlayer, live: RosterPlayer | null, team: NflTeam): 
   );
 }
 
+/**
+ * One group, framed like the Coaching page's sections (mak, 2026-11-06):
+ * a navy header band with the gold icon tile and slash, the cards in a
+ * white body under it. The H3 and its id are unchanged.
+ */
 function group(g: OutlookGroup, live: Map<string, RosterPlayer>, team: NflTeam, index: number): string {
   if (g.players.length === 0) return "";
   const id = `sct-tfo-g${index}`;
+  const icon = index === 0 ? ICON.star : ICON.players;
   return (
     `<section class="sct-tfo-group" aria-labelledby="${id}">` +
+    `<header class="sct-tfo-group-head">` +
+    `<span class="sct-tfo-group-icon" aria-hidden="true">${icon}</span>` +
     `<h3 class="sct-tfo-h3" id="${id}">${e(g.label)}</h3>` +
+    `</header>` +
+    `<div class="sct-tfo-group-body">` +
     `<ul class="sct-tfo-grid">${g.players.map((p) => card(p, live.get(searchKey(p.name)) ?? null, team)).join("")}</ul>` +
+    `</div>` +
     `</section>`
   );
 }

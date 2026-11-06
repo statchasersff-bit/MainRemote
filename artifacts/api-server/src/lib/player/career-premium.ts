@@ -55,7 +55,7 @@ const ICON = {
 function rateIcon(title: string): string {
   const k = title.toLowerCase();
   if (k.includes("ppg")) return ICON.gauge;
-  if (k.includes("appearance")) return ICON.calendar;
+  if (k.includes("appear")) return ICON.calendar;
   if (k.startsWith("top-")) return ICON.trophy;
   return ICON.trend;
 }
@@ -95,12 +95,12 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
       `${s.gp} GP`,
       `${one(s.ppg)} ${m.scoring} PPG`,
       `${one(s.pts)} points`,
-      s.finish ? `${m.pos}${s.finish}${s.inProgress ? " so far" : ""}` : null,
+      s.finish ? `${m.pos}${s.finish} in total points${s.inProgress ? " so far" : ""}` : null,
     ]
       .filter(Boolean)
       .join(" · ");
     return (
-      `<div class="scp-cp-col${kind ? ` ${kind}` : ""}" tabindex="0" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}">` +
+      `<div class="scp-cp-col${kind ? ` ${kind}` : ""}" tabindex="0" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}" data-scp-cp-tip="${escapeHtml(tip)}">` +
       `<b class="scp-cp-val">${escapeHtml(one(s.ppg))}</b>` +
       `<i class="scp-cp-fill" style="height:${pct(s.ppg).toFixed(1)}%"></i>` +
       `</div>`
@@ -113,6 +113,10 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
     (s.finish ? `<span class="scp-cp-fin">${escapeHtml(`${m.pos}${s.finish}`)}</span>` : `<span class="scp-cp-fin is-none">${s.inProgress ? "in progress" : "unranked"}</span>`) +
     `<small>${escapeHtml(`${s.gp} GP${s.clubs.length ? ` · ${s.clubs.join("/")}` : ""}`)}</small>` +
     `</div>`;
+
+  // What the rank under each bar means (2026-11-06): every season is ranked
+  // by total points at the position, the season in progress included.
+  const rankNote = `${m.pos} rank = season finish by total ${m.scoring} points`;
 
   const aria =
     `${m.pos} fantasy points per game by season: ` +
@@ -141,9 +145,9 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
     // a narrow chart where it would sit on a bar. Each entry is one span, so
     // a swatch never wraps away from its words.
     (seasons.some((s) => s.inProgress)
-      ? `<p class="scp-cp-legend"><span><i class="is-now"></i>Current season, in progress</span><span><i class="is-last"></i>Latest full season</span><span><i></i>Earlier seasons</span>${showAvg ? `<span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span>` : ""}</p>`
+      ? `<p class="scp-cp-legend"><span><i class="is-now"></i>Current season, in progress</span><span><i class="is-last"></i>Latest full season</span><span><i></i>Earlier seasons</span>${showAvg ? `<span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span>` : ""}<span class="scp-cp-basis">${escapeHtml(rankNote)}</span></p>`
       : n > 1
-        ? `<p class="scp-cp-legend"><span><i class="is-last"></i>Latest season</span><span><i></i>Earlier seasons</span><span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span></p>`
+        ? `<p class="scp-cp-legend"><span><i class="is-last"></i>Latest season</span><span><i></i>Earlier seasons</span><span><i class="is-avg"></i>Career avg ${escapeHtml(one(m.careerPpg))}</span><span class="scp-cp-basis">${escapeHtml(rankNote)}</span></p>`
         : "") +
     `</figure>`
   );
@@ -162,7 +166,11 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     `<span class="scp-cp-bar-divider" aria-hidden="true"></span>` +
     `<div class="scp-cp-bar-text">` +
     // The tab's H2 for this section, with the id the SEO ladder keys on.
-    `<h2 class="scp-ox-h2 scp-cp-bar-title" id="scp-st-arc-h">${escapeHtml(`${m.name} Fantasy Football Stats`)}</h2>` +
+    // Same text for crawlers; phones read "Career Fantasy PPG" (mak,
+    // 2026-11-06): the name and "Football Stats" are .scp-stp-xs (hidden
+    // <=560px), and "Career " / " PPG" are CSS ::before / ::after there,
+    // never part of the heading text.
+    `<h2 class="scp-ox-h2 scp-cp-bar-title" id="scp-st-arc-h"><span class="scp-stp-xs">${escapeHtml(m.name)} </span><span class="scp-cp-title-main">Fantasy<span class="scp-stp-xs"> Football Stats</span></span></h2>` +
     `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>` +
     `</div>` +
     `<span class="scp-cp-bar-art" aria-hidden="true">${ICON.football}</span>` +
@@ -173,12 +181,16 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     ? `<ul class="scp-cp-kpis">` +
       m.rates
         .map(
-          (t) =>
+          (t, i) =>
             `<li class="scp-cp-kpi" title="${escapeHtml(t.tip)}">` +
             `<span class="scp-cp-kpi-icon" aria-hidden="true">${rateIcon(t.title)}</span>` +
             `<span class="scp-cp-kpi-value">${escapeHtml(t.value)}</span>` +
-            `<span class="scp-cp-kpi-label">${escapeHtml(t.title)}</span>` +
+            // The definition behind an info button (2026-11-06): a title
+            // attribute never shows on a touch screen, so a tap opens it.
+            `<span class="scp-cp-kpi-label">${escapeHtml(t.title)}` +
+            `<button type="button" class="scp-info" data-scp-info aria-expanded="false" aria-controls="scp-cp-def-${i}" aria-label="${escapeHtml(`About ${t.title}`)}"></button></span>` +
             `<span class="scp-cp-kpi-sub">${escapeHtml(t.caption)}</span>` +
+            `<span class="scp-cp-kpi-def" id="scp-cp-def-${i}" hidden>${escapeHtml(t.tip)}</span>` +
             `</li>`,
         )
         .join("") +
@@ -188,7 +200,10 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
   const read = m.paragraphs.length
     ? `<div class="scp-cp-read">` +
       `<div class="scp-cp-prose">` +
-      `<h2 class="scp-ox-h2 scp-cp-h" id="scp-st-read-h">What His Career Numbers Say</h2>` +
+      // Phones read "Fantasy Analysis" (mak, 2026-11-06): the words are
+      // .scp-stp-xs there and the new title is a CSS ::before, so the
+      // heading's text is unchanged.
+      `<h2 class="scp-ox-h2 scp-cp-h" id="scp-st-read-h"><span class="scp-stp-card-icon scp-cp-h-icon" aria-hidden="true">${ICON.chart}</span><span class="scp-stp-xs">What His Career Numbers Say</span></h2>` +
       m.paragraphs.map((p) => `<p>${p}</p>`).join("") +
       `</div>` +
       `<aside class="scp-cp-rc" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">` +

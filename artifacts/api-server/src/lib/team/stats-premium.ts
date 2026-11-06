@@ -263,6 +263,7 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
     premiumTabHead({
       hook: "sct-sp-hero",
       icon: "stats",
+      art: "stats",
       heading,
       dek: `Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`,
     }) +

@@ -125,11 +125,6 @@ function finishBands(pos: string): [number, number] {
 const topN = (pos: string): number => finishBands(pos)[0];
 
 /** Weekly swing bands, by the standard deviation of weekly points. */
-function swingWord(pos: string, sd: number): "low" | "moderate" | "high" {
-  const [lo, hi] = pos === "TE" ? [5, 8] : pos === "QB" ? [6, 9] : [7, 10];
-  return sd < lo ? "low" : sd <= hi ? "moderate" : "high";
-}
-
 /** Regular-season games a club played, by season. */
 const teamGames = (season: number): number => (season <= 2020 ? 16 : 17);
 
@@ -217,6 +212,24 @@ function clubCode(raw: string | null | undefined): string {
   return getTeamByAbbreviation(raw)?.code ?? raw.toUpperCase();
 }
 
+/**
+ * Each season's clubs, in the order he played for them ("PHI/IND" for a
+ * season split by a trade), read from the same game logs the chart's
+ * "17 GP · SEA" captions use. The career table's Team column (2026-11-06).
+ */
+export function seasonClubs(data: PlayerPageData): Map<number, string[]> {
+  const out = new Map<number, string[]>();
+  for (const s of data.logCareer ?? []) {
+    const clubs: string[] = [];
+    for (const e of s.weeks) {
+      const c = clubCode(e.team);
+      if (c && !clubs.includes(c)) clubs.push(c);
+    }
+    if (clubs.length) out.set(s.season, clubs);
+  }
+  return out;
+}
+
 function career(data: PlayerPageData): Career {
   const pos = data.player.position ?? "";
   const leagueSeason = data.leagueSeason ?? data.season;
@@ -240,8 +253,10 @@ function career(data: PlayerPageData): Career {
         clubs,
         line: sumLine(s.weeks, pts),
         splits,
-        // A season in progress is ranked as the header ranks it.
-        finish: inProgress ? currentRank(data) ?? s.finish : s.finish,
+        // Every season on one basis: the finish by total points. A season in
+        // progress used to take the header's rank, which turns to points per
+        // game after four games, so the chart mixed two rules (2026-11-06).
+        finish: inProgress ? currentTotalRank(data) ?? s.finish : s.finish,
         inProgress,
         weeks: s.weeks,
       };
@@ -253,9 +268,10 @@ function career(data: PlayerPageData): Career {
 }
 
 /** The rank the header prints for the season on the page. */
-function currentRank(data: PlayerPageData): number | null {
+/** This season's finish at the position by total points, the basis every finished season uses. */
+function currentTotalRank(data: PlayerPageData): number | null {
   const row = data.production?.find((r) => r.season === data.season);
-  return row?.posFinishPpg ?? data.seasonRank ?? row?.posFinishTotal ?? data.seasonRankTotal ?? null;
+  return row?.posFinishTotal ?? data.seasonRankTotal ?? null;
 }
 
 /** Ranked metrics, best percentile first; descriptive and unranked ones dropped. */
@@ -1303,33 +1319,47 @@ function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
       tip: `Fantasy points per game across his career, in ${SCORING_WORDS[data.format]} scoring: total points divided by games played.`,
     },
   ];
-  // "Appearance rate", not availability (2026-11-04): a healthy backup who
-  // did not dress for a game was available for it.
+  // "Games appeared in", not availability (2026-11-04, renamed 2026-11-06):
+  // a healthy backup who did not get into a game was still available for
+  // it, so the share must not read as an injury or availability rate.
   if (games > 0) {
+    const through = c.leagueWeek > 0 && c.leagueWeek < 18 && lastSeason === c.leagueSeason ? `${lastSeason} Week ${c.leagueWeek}` : String(lastSeason);
     tiles.push({
       value: `${Math.min(100, Math.round((total.gp / games) * 100))}%`,
-      title: "Appearance rate",
-      caption: "Share of team games appeared in",
-      tip: `Games he appeared in (${total.gp}) as a share of his clubs' games over those seasons (${games}).`,
+      title: "Games appeared in",
+      caption: `${total.gp} of ${games} team games`,
+      tip:
+        `Games he played in (${total.gp}) out of his teams' regular-season games from ${first} through ${through} (${games}), ` +
+        `counting every season since his first game. It measures playing time, not health: games he was available for but did not play still count against it.`,
     });
   }
   // Weekly finishes, with the count beside the share, so "22% top-12 weeks"
   // cannot be read against "no top-12 season finish" below.
+  // Ranked weeks, not games (2026-11-06): a weekly rank needs an offensive
+  // snap or a touch, while a game played counts every game he was active
+  // for, so the two counts can differ and the tip says by how many.
   if (ranked.length) {
+    const unranked = total.gp - ranked.length;
     tiles.push({
       value: `${Math.round((top / ranked.length) * 100)}%`,
       title: `Top-${n12} weeks`,
-      caption: `${top} of ${plural(ranked.length, "week")} inside the weekly top ${n12}`,
-      tip: `Weeks he finished inside the top ${n12} at ${pos}, as a share of his ranked weeks: a weekly finish, not a season finish.`,
+      caption: `${top} of ${plural(ranked.length, "ranked week")}`,
+      tip:
+        `Weeks he finished inside the top ${n12} at ${pos}, as a share of his ranked weeks: a weekly finish, not a season finish.` +
+        (unranked > 0
+          ? ` ${unranked} of his ${total.gp} games ${unranked === 1 ? "has" : "have"} no weekly rank: he was active but recorded no offensive snap or touch.`
+          : ""),
     });
   }
+  // No "Moderate week-to-week" word (2026-11-06): its bands were fixed
+  // cut-offs, not a comparison with other players, so the caption says what
+  // the number is instead.
   if (n > 1 && allWeeks.length > 1) {
-    const w = swingWord(pos, sd);
     tiles.push({
       value: one(sd),
       title: "Weekly swing",
-      caption: `${w[0]!.toUpperCase()}${w.slice(1)} week-to-week`,
-      tip: "The standard deviation of his weekly fantasy points across his career, in points.",
+      caption: "Std. dev. of weekly points",
+      tip: "The standard deviation of his weekly fantasy points across his career, in points: how far a typical week lands from his average.",
     });
   }
   return tiles;

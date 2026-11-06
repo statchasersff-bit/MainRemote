@@ -146,6 +146,7 @@ function banner(team: NflTeam, v: ContractsView): string {
     premiumTabHead({
       hook: "sct-ctp-hero",
       icon: "contracts",
+      art: "contracts",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-ctp-title">${e(`${team.nickname} Contracts & Salary Cap`)}</h2>`,
       dek: sub,
     })

@@ -25,7 +25,6 @@ const e = escapeHtml;
 export interface DepthPremiumHelpers {
   football: FootballSide[];
   fantasy: DepthView | null;
-  summary: { lead: string; tail: string };
   formation: (side: FootballSide) => string | null;
   grades: (view: DepthView["key"]) => DepthGradeUnit[];
   experience: (name: string) => number | null;
@@ -64,15 +63,19 @@ const ICON = {
 
 /* ----------------------------------------------------------------- banner */
 
-function banner(data: TeamPageData, h: DepthPremiumHelpers): string {
+function banner(data: TeamPageData, tabs: string): string {
   const { team } = data;
   return (
     // .sct-h2: the section page promotes the first such heading to its H1.
     premiumTabHead({
       hook: "sct-dpp-hero",
       icon: "depth",
+      // The view buttons sit in the band (mak, 2026-11-06), in place of the art.
+      actionsHtml: tabs,
       heading: `<h2 class="sct-h2 sct-up-h2 sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>`,
-      dek: h.summary.lead || h.summary.tail,
+      // A standing description like the other tabs' (mak, 2026-11-06), not
+      // the generated sentence naming starters it replaced.
+      dek: `Starters and backups for the ${team.nickname} offense, defense and special teams, plus the fantasy depth chart for the skill positions.`,
     })
   );
 }
@@ -243,8 +246,9 @@ export function renderDepthPremium(data: TeamPageData, h: DepthPremiumHelpers): 
     `</div>`;
   return (
     `<div class="sct-dpp" data-sct-depth-premium>` +
-    banner(data, h) +
-    `<div class="sct-dpp-views" data-sct-dc>${tabs}${panels.map((p) => p.html).join("")}</div>` +
+    // The banner sits inside the [data-sct-dc] block because its buttons do:
+    // the client's view switch looks for them there.
+    `<div class="sct-dpp-views" data-sct-dc>${banner(data, tabs)}${panels.map((p) => p.html).join("")}</div>` +
     `</div>`
   );
 }

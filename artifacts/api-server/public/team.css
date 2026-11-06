@@ -16229,97 +16229,8 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
-/* Fantasy Impact: one collapsed section. */
-:is(.sct, #sct-table-armour) .sct-co-fantasy {
-  margin: 26px 0 0;
-  padding: 0 0 4px;
-  border-top: 2px solid var(--sc-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-sum {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 14px;
-  padding: 18px 0 8px;
-  cursor: pointer;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-sum::-webkit-details-marker {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-sum::before {
-  content: "▸";
-  color: var(--sc-gold);
-  font-size: 0.9rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy[open] .sct-co-fantasy-sum::before {
-  content: "▾";
-}
-
-:is(.sct, #sct-table-armour) .sct-co-h3.is-sum {
-  display: inline;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-hint {
-  color: var(--sc-muted);
-  font-size: 0.82rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-body {
-  padding: 8px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-freads {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 20px;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--sc-border);
-  border-top: 2px solid var(--sc-gold);
-  border-radius: 10px;
-  background: var(--tp-c-fafbfd, #fafbfd);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-h {
-  color: var(--tp-ink, var(--sc-navy));
-  font-size: 0.92rem;
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-move {
-  color: var(--sc-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-b {
-  color: var(--tp-ink, var(--sc-ink));
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finblock {
-  margin-bottom: 18px;
-}
-
 @container coaching (max-width: 860px) {
-  :is(.sct, #sct-table-armour) .sct-co-kpis,
-  :is(.sct, #sct-table-armour) .sct-co-freads {
+  :is(.sct, #sct-table-armour) .sct-co-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -16330,8 +16241,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 @container coaching (max-width: 560px) {
   :is(.sct, #sct-table-armour) .sct-co-ftiles,
-  :is(.sct, #sct-table-armour) .sct-co-sits,
-  :is(.sct, #sct-table-armour) .sct-co-freads {
+  :is(.sct, #sct-table-armour) .sct-co-sits {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -17739,6 +17649,18 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-up-pos {
   display: block;
   line-height: 1;
+}
+
+/* Name and position on one line (mak, 2026-11-06). */
+:is(.sct, #sct-table-armour) .sct-up-who-text.is-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-who-text.is-inline .sct-up-pos {
+  flex: 0 0 auto;
 }
 
 :is(.sct, #sct-table-armour) .sct-up-table .is-num,
@@ -21378,274 +21300,6 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* ------------------------------------------- coaching: compact Fantasy Impact */
-
-/*
- * The Fantasy Impact section, compacted (mak's brief, 2026-11-05): the
- * "What the signals mean" heading and cards became one row of chips under
- * the section title, the finishes table is the focal point at 52px rows
- * with two-line stop cells and 21px finish badges, the note is a footnote,
- * and the bottom line is a strip (brand label left, a two-column grid of
- * its four readings right). Appended at the END of the file: these rules
- * follow and outrank the originals above by order or by specificity.
- */
-:is(.sct, #sct-table-armour) .sct-co-fantasy-sum {
-  padding: 14px 0 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fantasy-body {
-  padding: 4px 0 0;
-}
-
-/* The signals row: one chip a signal. */
-:is(.sct, #sct-table-armour) .sct-co-freads {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 14px;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 4px 8px;
-  min-height: 40px;
-  margin: 0;
-  padding: 6px 12px 6px 10px;
-  border: 1px solid var(--sc-border);
-  border-top: 1px solid var(--sc-border);
-  border-left: 3px solid var(--sc-gold);
-  border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-f7f9fc, #f7f9fc) 100%);
-  box-shadow: 0 1px 2px rgba(11, 22, 52, 0.05);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-dir {
-  color: #1f7a4d;
-  font-size: 0.95rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-h {
-  font-size: 0.8rem;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fread-move {
-  padding-left: 8px;
-  border-left: 1px solid var(--sc-border);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-/* The reading stays for a screen reader and as the chip's tooltip. */
-:is(.sct, #sct-table-armour) .sct-co-fread-b.sct-visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* The finishes table: the focal point, dense. */
-:is(.sct, #sct-table-armour) .sct-co-finblock {
-  margin-bottom: 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-eyebrow {
-  margin: 0 0 6px;
-  padding: 0 0 7px;
-  font-size: 1.02rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-dsub {
-  margin: -2px 0 8px;
-  font-size: 0.8rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-th {
-  padding: 8px 10px;
-  font-size: 0.64rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-td {
-  padding: 7px 10px;
-  vertical-align: middle;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fstop {
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-cell-sub {
-  margin-top: 1px;
-  font-size: 0.68rem;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fnow {
-  display: inline;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--sc-muted);
-  font-size: inherit;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fnow::before {
-  content: " · ";
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill {
-  padding: 0 7px;
-  border-radius: 5px;
-  font-size: 0.68rem;
-  line-height: 20px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-elite {
-  background: #dff1e6;
-  color: #1d5a37;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-strong {
-  background: #e8f3ee;
-  color: #2f6b47;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-mid {
-  background: var(--tp-c-eef2f7, #eef2f7);
-  color: var(--tp-ink, var(--sc-navy));
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .sct-co-fpill.is-low {
-  background: #f7eeee;
-  color: #8a4b4b;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes .is-fin .sct-co-fwho {
-  margin-top: 4px;
-  font-size: 0.74rem;
-  line-height: 1.2;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finishes tr.is-current .sct-co-td {
-  background: var(--tp-c-fcfaf3, #fcfaf3);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-fnote {
-  margin: 8px 0 0;
-  font-size: 0.74rem;
-  line-height: 1.4;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-finblock .sct-co-more {
-  margin: 4px 0 0;
-}
-
-/* The bottom line as a strip: the brand label, then the readings two across. */
-:is(.sct, #sct-table-armour) .sct-co-bottom {
-  display: grid;
-  grid-template-columns: 136px minmax(0, 1fr);
-  gap: 4px 18px;
-  align-items: start;
-  padding: 8px 14px;
-  border: 1px solid var(--tp-c-efe4c4, #efe4c4);
-  border-left: 3px solid var(--sc-gold);
-  border-radius: 0 10px 10px 0;
-  background: linear-gradient(135deg, var(--tp-c-fdf9ee, #fdf9ee) 0%, var(--tp-c-fbf3dc, #fbf3dc) 100%);
-}
-
-:is(.sct, #sct-table-armour) .sct-co-bl-title {
-  grid-row: 1 / 3;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  margin: 2px 0 0;
-  font-size: 0.66rem;
-  line-height: 1.25;
-}
-
-:is(.sct, #sct-table-armour) ul.sct-co-bl {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3px 18px;
-}
-
-:is(.sct, #sct-table-armour) ul.sct-co-bl li {
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 7px;
-  min-height: 20px;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-bl-k {
-  font-size: 0.6rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-bl-k::after {
-  content: ":";
-}
-
-:is(.sct, #sct-table-armour) .sct-co-bl-v {
-  font-size: 0.8rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-co-bottom .sct-co-more {
-  grid-column: 2;
-  margin: 2px 0 0;
-}
-
-@container coaching (max-width: 860px) {
-  :is(.sct, #sct-table-armour) .sct-co-freads {
-    display: flex;
-  }
-  :is(.sct, #sct-table-armour) .sct-co-bottom {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  :is(.sct, #sct-table-armour) .sct-co-bl-title {
-    grid-row: auto;
-    flex-direction: row;
-    align-items: center;
-  }
-  :is(.sct, #sct-table-armour) .sct-co-bottom .sct-co-more {
-    grid-column: 1;
-  }
-}
-
-@container coaching (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-co-freads {
-    display: flex;
-  }
-  :is(.sct, #sct-table-armour) .sct-co-fread {
-    flex-wrap: wrap;
-  }
-  :is(.sct, #sct-table-armour) ul.sct-co-bl {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  :is(.sct, #sct-table-armour) ul.sct-co-bl li {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-}
-
 /* ===================================================================
  * Team page: the header - the hero and the tab strip (team/team-header.ts).
  * mak's pick of 2026-11-05 from two premium comparisons: "Design B", the
@@ -22561,8 +22215,7 @@ a.sct-ex-game:hover .sct-ex-line {
   object-position: top;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link,
-:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link {
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link {
   color: var(--tp-ink, var(--drp-navy-900));
   font-weight: 700;
   text-decoration: none;
@@ -22575,14 +22228,12 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:hover,
-:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link:hover {
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:hover {
   color: var(--sc-gold-deep);
   text-decoration: underline;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:focus-visible,
-:is(.sct, #sct-table-armour) .sct-drp-r1 .sct-player-link:focus-visible {
+:is(.sct, #sct-table-armour) .sct-drp-table .sct-player-link:focus-visible {
   outline: 2px solid var(--drp-gold);
   outline-offset: 2px;
   border-radius: 3px;
@@ -22710,18 +22361,6 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: var(--drp-radius);
   background: var(--drp-surface);
   box-shadow: var(--drp-shadow);
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-card-head.is-light {
-  min-height: 44px;
-  padding: 8px 16px;
-  background: linear-gradient(180deg, #ffffff 0%, var(--tp-c-f4f8fd, #f4f8fd) 100%);
-  border-bottom: 2px solid var(--drp-gold);
-  color: var(--tp-ink, var(--drp-navy-900));
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-card-head.is-light .sct-drp-icon {
-  color: var(--drp-gold);
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-card-body {
@@ -22969,62 +22608,27 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 0.7rem;
 }
 
-/* Round 1 list. */
-:is(.sct, #sct-table-armour) .sct-drp-r1-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-r1 {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 4px 14px;
-  border-top: 1px solid var(--drp-border-light);
-  background: var(--drp-surface-light);
-  font-size: 0.8rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-r1:nth-child(even) {
-  background: #ffffff;
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-r1:first-child {
-  border-top: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-r1-year .sct-drp-num {
-  font-size: 0.86rem;
-  color: var(--tp-ink, var(--drp-navy-900));
-}
-
-:is(.sct, #sct-table-armour) .sct-drp-r1-name {
+/* Round 1 card: a narrow version of the year tables. */
+:is(.sct, #sct-table-armour) .sct-drp-table.is-r1 {
   min-width: 0;
-  overflow: hidden;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-r1-pos {
-  padding: 1px 7px;
-  border: 1px solid var(--drp-border);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--tp-ink, var(--drp-navy-900));
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+:is(.sct, #sct-table-armour) .sct-drp-table.is-r1 .is-num {
+  min-width: 0;
+  padding-right: 4px;
 }
 
-:is(.sct, #sct-table-armour) .sct-drp-r1-pick {
-  color: var(--drp-blue);
-  font-size: 0.76rem;
-  font-weight: 700;
-  white-space: nowrap;
+:is(.sct, #sct-table-armour) .sct-drp-table.is-r1 .is-player {
+  width: auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table.is-r1 .is-pos {
+  min-width: 0;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-table.is-r1 .sct-dr-name {
+  white-space: normal;
 }
 
 :is(.sct, #sct-table-armour) .sct-drp-r1-none {
@@ -23235,6 +22839,75 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--dpp-gold-bright);
 }
 
+/* The view buttons inside the header band (mak, 2026-11-06): light outlines
+   on the navy, the pressed one white with the gold underline. */
+:is(.sct, #sct-table-armour) .sct-up-head-actions {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-right: 34px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dpp-views > .sct-up-head {
+  margin-bottom: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tabs {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tab {
+  min-height: 36px;
+  padding: 0 16px;
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tab:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+:is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tab[aria-pressed="true"] {
+  border-color: #fff;
+  background: #fff;
+  color: var(--tp-ink, var(--dpp-navy-900));
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* Narrower: the buttons take their own row under the title. */
+@container (max-width: 1099px) {
+  :is(.sct, #sct-table-armour) .sct-up-head.has-actions {
+    flex-wrap: wrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-head.has-actions .sct-up-head-text {
+    flex: 1 1 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-head.has-actions .sct-up-head-actions {
+    flex-basis: 100%;
+    margin-left: 0;
+    padding-right: 0;
+  }
+}
+
+@container (max-width: 559px) {
+  :is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-head .sct-dpp-tab {
+    padding: 0 12px;
+  }
+}
+
 /* Without scripting every panel shows and the buttons would do nothing. */
 :is(.sct, #sct-table-armour) .sct-dpp-views:not([data-sct-dc="js"]) .sct-dpp-tabs {
   display: none;
@@ -23267,6 +22940,8 @@ a.sct-ex-game:hover .sct-ex-line {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  /* Centered in the card (mak, 2026-11-06). */
+  justify-content: center;
   gap: 8px 0;
   min-height: 58px;
   padding: 8px 16px;
@@ -23741,6 +23416,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
   :is(.sct, #sct-table-armour) .sct-dpp-strip {
     display: grid;
+    justify-items: center;
     gap: 6px;
     padding: 10px 12px;
   }
@@ -27293,19 +26969,6 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-bottom: 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-shp-context {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 0;
-  font-weight: 600;
-}
-
-:is(.sct, #sct-table-armour) .sct-shp-dot {
-  margin: 0 7px;
-  color: var(--shp-gold);
-}
-
 /* ---- the featured pair */
 
 :is(.sct, #sct-table-armour) .sct-shp-featured {
@@ -27328,6 +26991,16 @@ a.sct-ex-game:hover .sct-ex-line {
   border-radius: var(--shp-radius);
   background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f5f9ff, #f5f9ff) 100%);
   box-shadow: 0 4px 12px rgba(8, 35, 70, 0.055);
+}
+
+/* Next Game and Last Game read centered (mak, 2026-11-06). */
+:is(.sct, #sct-table-armour) .sct-shp-card {
+  align-items: center;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-shp-card :is(.sct-shp-badges, .sct-shp-fixture, .sct-shp-facts, .sct-shp-last-line) {
+  justify-content: center;
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-card.is-next {
@@ -28543,34 +28216,109 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-tfo-group {
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--tfo-border-light);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(13, 35, 67, 0.05), 0 12px 24px rgba(13, 35, 67, 0.07);
+}
+
+/* The group header: the Coaching sections' navy band (.sct-cpt-head). */
+:is(.sct, #sct-table-armour) .sct-tfo-group-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+  margin: 0;
+  padding: 10px 22px;
+  overflow: hidden;
+  background: linear-gradient(110deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-0c2c53, #0c2c53) 55%, var(--tp-c-153e70, #153e70) 100%);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.035) 0 14px, transparent 14px 38px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group-head::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: 26px;
+  width: 3px;
+  height: 160%;
+  background: var(--tfo-gold);
+  box-shadow: 14px 0 0 var(--tp-a-212-175-55-550, rgba(212, 175, 55, 0.55));
+  transform: rotate(22deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group-icon {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1.5px var(--tfo-gold);
+  color: var(--tfo-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 :is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3 {
   position: relative;
-  margin: 6px 0 14px !important;
-  padding: 0 0 8px !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   border: 0;
-  color: var(--tp-ink, var(--tfo-navy-950)) !important;
+  color: #fff !important;
   font-size: 1.5rem !important;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: -0.01em;
   text-transform: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3::before {
-  display: none;
+/* The header band is the section's mark; no gold underline as well. */
+:is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3::before,
+:is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3::after {
+  display: none !important;
 }
 
-:is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 54px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--tfo-gold);
+:is(.sct, #sct-table-armour) .sct-tfo-group-body {
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, #fff 0%, var(--tp-c-f8fafd, #f8fafd) 100%);
+}
+
+@container premium (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-tfo-group-head {
+    min-height: 54px;
+    padding: 8px 16px;
+    gap: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tfo .sct-tfo-h3 {
+    font-size: 1.22rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tfo-group-body {
+    padding: 12px;
+  }
 }
 
 :is(.sct, #sct-table-armour) .sct-tfo-grid {
