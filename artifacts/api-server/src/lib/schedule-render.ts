@@ -860,10 +860,35 @@ const FILTER_LABELS: Record<GameFilter, string> = {
 
 /* --------------------------------------------------------- sidebar cards */
 
-function card(label: string, body: string, kind = ""): string {
+/** 24px stroke icons for the side cards' navy heads, drawn in the gold. */
+const CARD_ICONS: Record<string, string> = {
+  trophy:
+    `<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/>` +
+    `<path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4M17 6h2.5a2.5 2.5 0 0 1-2.6 4"/>`,
+  down: `<path d="M12 4v15M6 13l6 6 6-6"/>`,
+  target: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>`,
+  spread: `<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>`,
+  flag: `<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>`,
+  plane:
+    `<path d="M10.5 13.5 3 11l1.5-1.5 8 1L17 6c1-1 2.5-1.5 3-1s0 2-1 3l-4.5 4.5 1 8L14 21l-2.5-7.5z"/>`,
+  layers: `<path d="M12 3 3 8l9 5 9-5z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>`,
+  chart: `<path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/>`,
+};
+
+/**
+ * One side card: a navy head (gold icon, title, a pair of gold stripes at
+ * the right edge) over the card's own body. The icon is decoration; the
+ * title says what the card is.
+ */
+function card(label: string, body: string, kind = "", icon = "chart"): string {
   return (
     `<section class="scs-card"${kind ? ` data-kind="${kind}"` : ""}>` +
-    `<h3 class="scs-card-label">${escapeHtml(label)}</h3>${body}</section>`
+    `<div class="scs-card-head">` +
+    `<span class="scs-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"` +
+    ` fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"` +
+    ` focusable="false">${CARD_ICONS[icon] ?? CARD_ICONS["chart"]}</svg></span>` +
+    `<h3 class="scs-card-label">${escapeHtml(label)}</h3></div>` +
+    `<div class="scs-card-body">${body}</div></section>`
   );
 }
 
@@ -947,6 +972,7 @@ function renderMarketCards(games: ScheduleGame[], week: number): string {
             "Highest posted over/under this week",
           ) + coverage,
           "market",
+          "trophy",
         )
       : "",
     lowest
@@ -958,6 +984,7 @@ function renderMarketCards(games: ScheduleGame[], week: number): string {
             "Lowest posted over/under this week",
           ),
           "market",
+          "down",
         )
       : "",
     closest
@@ -965,6 +992,7 @@ function renderMarketCards(games: ScheduleGame[], week: number): string {
           "Closest spread",
           figure(closest, spreadLabel(closest), "Tightest line on the board"),
           "market",
+          "target",
         )
       : "",
     biggest
@@ -972,6 +1000,7 @@ function renderMarketCards(games: ScheduleGame[], week: number): string {
           "Biggest spread",
           figure(biggest, spreadLabel(biggest), "Widest line on the board"),
           "market",
+          "spread",
         )
       : "",
   ].join("");
@@ -988,6 +1017,7 @@ function renderByeCard(
       "Bye week",
       `<p class="scs-card-note">No teams on bye.</p>`,
       "bye",
+      "flag",
     );
   }
 
@@ -1002,7 +1032,7 @@ function renderByeCard(
     )
     .join("");
 
-  return card("Bye week", `<ul class="scs-bye-list">${items}</ul>`, "bye");
+  return card("Bye week", `<ul class="scs-bye-list">${items}</ul>`, "bye", "flag");
 }
 
 function renderTravelCard(games: ScheduleGame[]): string {
@@ -1012,6 +1042,7 @@ function renderTravelCard(games: ScheduleGame[]): string {
       "Travel alert",
       `<p class="scs-card-note">No international travel this week.</p>`,
       "travel",
+      "plane",
     );
   }
   const items = intl
@@ -1023,7 +1054,7 @@ function renderTravelCard(games: ScheduleGame[]): string {
         )}</p></li>`,
     )
     .join("");
-  return card("Travel alert", `<ul class="scs-plain-list">${items}</ul>`, "travel");
+  return card("Travel alert", `<ul class="scs-plain-list">${items}</ul>`, "travel", "plane");
 }
 
 function renderDivisionCard(games: ScheduleGame[]): string {
@@ -1033,6 +1064,7 @@ function renderDivisionCard(games: ScheduleGame[]): string {
       "Divisional games",
       `<p class="scs-card-note">No divisional games this week.</p>`,
       "division",
+      "layers",
     );
   }
   return card(
@@ -1044,6 +1076,7 @@ function renderDivisionCard(games: ScheduleGame[]): string {
         .map((game) => `<li>${miniMatchup(game)}</li>`)
         .join("")}</ul>`,
     "division",
+    "layers",
   );
 }
 

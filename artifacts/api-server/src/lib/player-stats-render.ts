@@ -428,19 +428,83 @@ function renderSectionHead(label: string, id: string, heading: string): string {
   );
 }
 
-/**
- * The figure and who: "277" large, a line of context under it ("138.5 per
- * game"), then the player close beneath.
+/*
+ * The premium leader card (mak's brief, 2026-11-06): a navy header with the
+ * category's icon and an accent stripe, the figure large with its context in
+ * a pill, then who - portrait, a rule, name, position and team. The
+ * look is keyed off the card's stat key only; the figures and the players
+ * are stats-data.ts's, unchanged.
  */
-function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, className: string): string {
+
+/** Accent per kind of stat, one place. */
+const LEADER_ACCENTS = {
+  gold: "#d4af37",
+  blue: "#168de8",
+  purple: "#9063e8",
+  teal: "#12b9a8",
+  cyan: "#12c4d5",
+  green: "#22a56b",
+  violet: "#6f6cf2",
+} as const;
+
+/** 24px stroke icons, drawn in the accent. */
+const LEADER_ICONS: Record<string, string> = {
+  trophy:
+    `<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/>` +
+    `<path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4M17 6h2.5a2.5 2.5 0 0 1-2.6 4"/>`,
+  football:
+    `<path d="M4.6 19.4c-.9-4.6.6-9.4 4.2-12.4S17 3.7 19.4 4.6c.9 4.6-.6 9.4-4.2 12.4s-8.2 3.3-10.6 2.4z"/>` +
+    `<path d="M9 15l6-6M10.2 11.4l2.4 2.4M11.8 9.8l2.4 2.4"/>`,
+  goal: `<path d="M6 3v8h12V3"/><path d="M12 11v10M9 21h6"/>`,
+  arc: `<path d="M3 20c2.5-8.5 8.5-13.5 17-15"/><path d="M15 4h5v5"/><circle cx="4" cy="19.5" r="1.3"/>`,
+  runner:
+    `<circle cx="15" cy="4.5" r="2"/><path d="M7.5 21l3.2-6.2 3.3 2.4.8 3.8"/>` +
+    `<path d="M10.7 14.8l1.5-6.3-3.4 1.7-1.8 2.7M12.2 8.5l2.8 3 3.5.7"/>`,
+  target: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>`,
+  hands:
+    `<path d="M7 12V6.5a1.5 1.5 0 0 1 3 0V11M10 11V5a1.5 1.5 0 0 1 3 0v6M13 11V6a1.5 1.5 0 0 1 3 0v6"/>` +
+    `<path d="M16 10.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.4a6 6 0 0 1-5-2.7L4.3 15a1.5 1.5 0 0 1 2.4-1.7L7 14"/>`,
+  share: `<path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5v10z"/><path d="M14 3a7.5 7.5 0 0 1 7 7h-7z"/>`,
+  chart: `<path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/>`,
+};
+
+/** Stat key -> icon and accent. Anything unlisted gets the chart, in blue. */
+const LEADER_STYLE: Record<string, { icon: string; accent: keyof typeof LEADER_ACCENTS }> = {
+  fantasyPoints: { icon: "trophy", accent: "gold" },
+  passingYards: { icon: "football", accent: "blue" },
+  passingTouchdowns: { icon: "goal", accent: "purple" },
+  airYards: { icon: "arc", accent: "violet" },
+  rushYards: { icon: "runner", accent: "green" },
+  rushTouchdowns: { icon: "goal", accent: "purple" },
+  targets: { icon: "target", accent: "blue" },
+  receivingYards: { icon: "hands", accent: "cyan" },
+  targetSharePct: { icon: "share", accent: "teal" },
+};
+
+function leaderStyle(key: string): { icon: string; accent: string } {
+  const style = LEADER_STYLE[key] ?? { icon: "chart", accent: "blue" as const };
+  return { icon: LEADER_ICONS[style.icon] ?? LEADER_ICONS["chart"]!, accent: LEADER_ACCENTS[style.accent] };
+}
+
+/**
+ * The figure and who: the number large, its other reading in a pill
+ * ("138.5/G", "277 total", "on 22 targets"), then the player.
+ */
+function renderLeaderBody(
+  leader: LeaderFigure,
+  position: StatsPosition,
+  options: StatsRenderOptions,
+  className: string,
+): string {
   const row = leader.player;
   // The leaders are the first thing on the page, so the photos are not lazy:
   // a lazy image in the first screen is requested later than an eager one
-  // for no saving. width/height match the 36px box player-stats.css draws,
-  // so the row keeps its height before the file arrives rather than growing
-  // when it does. skip-lazy / data-no-lazy keep WP Rocket from swapping in
-  // its empty-SVG placeholder (drawn at 300x150) on the WordPress host.
-  // The 160px square derivative on this server (headshot-html.ts).
+  // for no saving. width/height match the box player-stats.css draws, so the
+  // footer keeps its height before the file arrives. skip-lazy / data-no-lazy
+  // keep WP Rocket from swapping in its empty-SVG placeholder (drawn at
+  // 300x150) on the WordPress host. The 160px square derivative on this
+  // server (headshot-html.ts). The face well holds the size when a photo is
+  // missing or fails (the bundle removes a broken one).
   const photo =
     (row?.playerId
       ? headshotImg({
@@ -449,11 +513,13 @@ function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, cla
           className: "sca-leader-photo skip-lazy",
           alt: "",
           variants: ["160"],
-          width: 36,
-          height: 36,
+          width: 56,
+          height: 56,
           extra: ` data-no-lazy="1"`,
         })
       : null) ?? "";
+
+  const meta = [position, row?.team ?? ""].filter(Boolean);
 
   return (
     `<div class="${className}">` +
@@ -462,9 +528,17 @@ function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, cla
     (leader.note ? `<span class="sca-leader-note">${escapeHtml(leader.note)}</span>` : "") +
     `</p>` +
     `<div class="sca-leader-who">` +
-    photo +
+    `<span class="sca-leader-face">${photo}</span>` +
+    `<div class="sca-leader-id">` +
     `<h3 class="sca-leader-name">${row ? renderName(row, options, "sca-leader-link") : "-"}</h3>` +
-    (row?.team ? `<span class="sca-leader-team">${escapeHtml(row.team)}</span>` : "") +
+    (row
+      ? `<span class="sca-leader-meta">${meta
+          .map((part, i) =>
+            i === 1 ? `<span class="sca-leader-team">${escapeHtml(part)}</span>` : escapeHtml(part),
+          )
+          .join(`<span class="sca-leader-sep" aria-hidden="true"> · </span>`)}</span>`
+      : "") +
+    `</div>` +
     `</div>` +
     `</div>`
   );
@@ -476,12 +550,19 @@ function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, cla
  * or the other off the root's `is-per-game` class, which the Per Game
  * switch sets, so switching needs no fetch and a season swap keeps it.
  */
-function renderLeader(card: LeaderCard, options: StatsRenderOptions): string {
+function renderLeader(card: LeaderCard, position: StatsPosition, options: StatsRenderOptions): string {
+  const style = leaderStyle(card.key);
   return (
-    `<article class="sca-leader">` +
+    `<article class="sca-leader" style="--sca-la:${style.accent}">` +
+    `<div class="sca-leader-head">` +
+    `<span class="sca-leader-icon" aria-hidden="true">` +
+    `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"` +
+    ` stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">${style.icon}</svg>` +
+    `</span>` +
     `<p class="sca-leader-cat">${escapeHtml(card.title)}</p>` +
-    renderLeaderBody(card.total, options, card.perGame ? "sca-leader-total" : "sca-leader-body") +
-    (card.perGame ? renderLeaderBody(card.perGame, options, "sca-leader-pg") : "") +
+    `</div>` +
+    renderLeaderBody(card.total, position, options, card.perGame ? "sca-leader-total" : "sca-leader-body") +
+    (card.perGame ? renderLeaderBody(card.perGame, position, options, "sca-leader-pg") : "") +
     `</article>`
   );
 }
@@ -498,7 +579,7 @@ function renderLeaders(table: StatsTable, options: StatsRenderOptions): string {
   return (
     `<section class="sca-section sca-leaders" aria-label="Stat leaders">` +
     `<div class="sca-leader-row">` +
-    table.cards.map((card) => renderLeader(card, options)).join("") +
+    table.cards.map((card) => renderLeader(card, table.position, options)).join("") +
     `</div>` +
     `</section>`
   );

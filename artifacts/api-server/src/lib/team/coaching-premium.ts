@@ -334,7 +334,7 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
       ? section("Formations & Tempo", ICON["grid"]!, `<div class="sct-cp-split">${table(form, c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form, season)}</div>`) +
         banner(form, team, priorYear, returning)
       : "") +
-    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3+ pp or a second of pace.</p>` +
+    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3%+ or a second of pace.</p>` +
     `</div>`
   );
 }

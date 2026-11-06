@@ -185,7 +185,8 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const root = doc.querySelector("#usage .sct-us");
     const fantasy = root.querySelector(".sct-us-fantasy");
     const ctas = [...root.querySelectorAll("[data-cta]")];
-    assert.ok(ctas.length >= 10);
+    // 6+ since the handcuff bridges' five links went (2026-11-06).
+    assert.ok(ctas.length >= 6, String(ctas.length));
     for (const a of ctas) assert.ok(fantasy.contains(a), `${a.getAttribute("data-cta")} sits above the fantasy section`);
     // The tiered table, its legend, the signal cards, the handcuff line and the close cards are all inside it.
     for (const sel of [".sct-us-table", ".sct-us-key-help", ".sct-us-signals", ".sct-us-handcuff", ".sct-us-convert"]) {
@@ -340,9 +341,9 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
       assert.match(body, /over his last (one game|two games|three games) \(Weeks? [\d, -]+(and \d+)?\) against the (three before them|one game before|two games before) \(Weeks? [\d, -]+(and \d+)?\)/, body);
       assert.ok(!/[Tt]rade|buy|sell|stash/.test(body), body);
       // "within the steady band" only when the number really is inside it.
-      const m = body.match(/target share within the steady band \(([+−]\d+\.\d) points\)/);
+      const m = body.match(/target share within the steady band \(([+−]\d+\.\d)%\)/);
       if (m) assert.ok(Math.abs(Number(m[1].replace("−", "-"))) < 2, body);
-      const sm = body.match(/snap share within the steady band \(([+−]\d+) points\)/);
+      const sm = body.match(/snap share within the steady band \(([+−]\d+)%\)/);
       if (sm) assert.ok(Math.abs(Number(sm[1].replace("−", "-"))) < 5, body);
     }
     // The Buy Low card still exists, inside the fantasy section only.
@@ -678,12 +679,11 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     // (The "Turn the usage signal into a trade" block, the target-tree and
     // pass-map bridges and the footer tool row went 2026-10-20 at mak's request;
     // the intro's "Turn usage into a roster decision" box went 2026-11-02.)
+    // The handcuff line's two bridges ("Need the handcuff?", "Thinking
+    // longer term?") and their five links came off 2026-11-06 (mak).
+    assert.deepEqual(ctas.filter((c) => c.endsWith("-usage-handcuff")), []);
+    assert.ok(!/Need the handcuff\?|Thinking longer term\?/.test(us.textContent));
     for (const want of [
-      "rb-handcuffs-usage-handcuff",
-      "waiver-wire-usage-handcuff",
-      "dynasty-trade-calc-usage-handcuff",
-      "dynasty-league-analyzer-usage-handcuff",
-      "dynasty-rankings-usage-handcuff",
       "trade-analyzer-usage-close",
       "startsit-usage-close",
       "ros-rankings-usage-close",
@@ -710,11 +710,9 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     const trade = us.querySelector("[data-cta='trade-analyzer-usage-close']");
     assert.equal(trade.textContent, "Open Trade Analyzer");
     assert.equal(trade.getAttribute("href"), "https://statchasers.com/redraft-command/fantasy-football-trade-calculator");
-    // The handcuff line still links the Dynasty Trade Calculator; the close card no longer does (2026-10-22).
-    assert.equal(
-      us.querySelector("[data-cta='dynasty-trade-calc-usage-handcuff']").getAttribute("href"),
-      "https://statchasers.com/dynasty-command/dynasty-trade-calculator",
-    );
+    // The Dynasty Trade Calculator is linked from nowhere on the page since the
+    // handcuff bridges went (2026-11-06); the close card dropped it 2026-10-22.
+    assert.equal(us.querySelector("[data-cta='dynasty-trade-calc-usage-handcuff']"), null);
     assert.equal(us.querySelector("[data-cta='dynasty-trade-calc-usage-close']"), null);
     assert.equal(us.querySelector("[data-cta='projections-usage-close']"), null);
     assert.equal(us.querySelector("[data-cta='dynasty-rankings-usage-close']"), null);

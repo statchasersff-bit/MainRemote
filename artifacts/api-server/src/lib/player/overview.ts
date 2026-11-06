@@ -59,9 +59,9 @@ import {
   teamInk,
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
+import { redraftPlayerUrl } from "./redraft-link";
 
 const DASH = "-";
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /* ------------------------------------------------------------------ atoms */
 
@@ -386,10 +386,14 @@ function renderChart(data: PlayerPageData, s: Season, options: PlayerRenderOptio
         );
       }
       if (c.kind === "dnp" || c.pts === null) {
-        const why = didNotPlayLabel(injuryForWeek(data, s.leagueSeason, c.week));
+        // "Out" only when an injury covers the week; a healthy backup who
+        // never got in is "DNP" (mak, 2026-11-06: Minshew read "Out" for
+        // weeks 1-7 as Murray's backup).
+        const inj = injuryForWeek(data, s.leagueSeason, c.week);
+        const why = didNotPlayLabel(inj, c.entry?.stats as { gp?: number } | undefined);
         return (
-          `<li class="scp-ow-col is-dnp${side}" tabindex="0">` +
-          `<span class="scp-ow-mark" aria-hidden="true">Out</span>` +
+          `<li class="scp-ow-col is-dnp${inj ? " is-inj" : ""}${side}" tabindex="0">` +
+          `<span class="scp-ow-mark" aria-hidden="true">${inj ? "Out" : "DNP"}</span>` +
           `<span class="scp-ow-tip"><b>${escapeHtml(`Week ${c.week} ${fixtureWords(c)}`)}</b> ${escapeHtml(why)}` +
           (c.result ? `<span>${escapeHtml(`${RESULT_WORD[c.result]} ${c.score ?? ""}`.trim())}</span>` : "") +
           `</span>${x}</li>`
@@ -623,7 +627,7 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
   const name = data.player.name;
   const last = lastName(name);
   const pos = s.pos;
-  const redraft = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
+  const redraft = redraftPlayerUrl(data.player);
   const rank = s.played.length ? seasonRank(data) : null;
 
   let call = "";
@@ -677,7 +681,7 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string 
 /** Facts the header prints already, by label: never repeated here. */
 const IN_HEADER = /^(age|height|weight|colleges?|jersey|number|experience|nfl experience|team|position|drafted|draft)$/i;
 
-function careerLine(data: PlayerPageData, pos: string): string | null {
+function careerLine(data: PlayerPageData, pos: string): { totals: string; span: string } | null {
   const rows = data.statsProfile?.career ?? [];
   if (rows.length === 0) return null;
   // Only when the rows reach back to his first season: a total over the part
@@ -689,10 +693,11 @@ function careerLine(data: PlayerPageData, pos: string): string | null {
   const gp = sum((r) => r.gamesPlayed);
   if (!gp) return null;
   const span = `${first}-${Math.max(...rows.map((r) => r.season))}`;
-  if (pos === "QB") return `${plural(gp, "game")}, ${whole(sum((r) => r.totals.passYd))} passing yards, ${whole(sum((r) => r.totals.passTd))} passing TD (${span})`;
-  if (pos === "RB") return `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rushYd))} rushing yards, ${whole(sum((r) => r.totals.rushTd + r.totals.recTd))} total TD (${span})`;
-  if (pos === "WR" || pos === "TE") return `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rec))} catches, ${whole(sum((r) => r.totals.recYd))} receiving yards, ${whole(sum((r) => r.totals.recTd))} TD (${span})`;
-  return null;
+  let totals: string | null = null;
+  if (pos === "QB") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.passYd))} passing yards, ${whole(sum((r) => r.totals.passTd))} passing TD`;
+  else if (pos === "RB") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rushYd))} rushing yards, ${whole(sum((r) => r.totals.rushTd + r.totals.recTd))} total TD`;
+  else if (pos === "WR" || pos === "TE") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rec))} catches, ${whole(sum((r) => r.totals.recYd))} receiving yards, ${whole(sum((r) => r.totals.recTd))} TD`;
+  return totals ? { totals, span } : null;
 }
 
 function renderBackground(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
@@ -727,27 +732,84 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
   if (!honors.length && !career && facts.length < 2) return "";
   const statsHref = tabHref(data, options, "stats");
   const bioHref = tabHref(data, options, "bio");
+  // Two cards side by side (mak's brief, 2026-11-06): navy heads with a gold
+  // icon, rule and diagonals; the honors as gold pills over the career
+  // totals; the background facts in a two-column grid, each with its icon.
+  const card = (kind: string, icon: string, id: string, title: string, body: string): string =>
+    `<section class="scp-ox-bgc is-${kind}" aria-labelledby="${id}">` +
+    `<header class="scp-ox-bgc-head"><span class="scp-ox-bgc-icon" aria-hidden="true">${BG_ICON[icon]}</span>` +
+    `<span class="scp-ox-bgc-rule" aria-hidden="true"></span><h3 class="scp-ox-bgc-h" id="${id}">${escapeHtml(title)}</h3>` +
+    `<span class="scp-ox-bgc-slash" aria-hidden="true"></span></header>` +
+    `<div class="scp-ox-bgc-body">${body}</div></section>`;
+  const highlights =
+    honors.length || career
+      ? card(
+          "career",
+          "trophy",
+          "scp-ox-hl-h",
+          "Career highlights",
+          (honors.length
+            ? `<ul class="scp-ox-honors" role="list">${honors.map((h) => `<li><span class="scp-ox-honor-star" aria-hidden="true">${BG_ICON.star}</span>${escapeHtml(h)}</li>`).join("")}</ul>`
+            : "") +
+            (career
+              ? `<div class="scp-ox-career-line"><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON.bars}</span>` +
+                `<p><span class="scp-ox-bgc-k">Career</span> <b class="scp-ox-bgc-total">${escapeHtml(career.totals)}</b> ` +
+                `<span class="scp-ox-bgc-span">(${escapeHtml(career.span)})</span></p></div>`
+              : ""),
+        )
+      : "";
+  const background = facts.length
+    ? card(
+        "bg",
+        "person",
+        "scp-ox-bgf-h",
+        "Background",
+        `<dl class="scp-ox-about">` +
+          facts
+            .map(
+              ([dt, dd]) =>
+                `<div class="scp-ox-bgc-fact"><dt><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON[factIcon(dt)]}</span>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd></div>`,
+            )
+            .join("") +
+          `</dl>`,
+      )
+    : "";
   return (
     sectionOpen("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg", "career") +
-    `<div class="scp-ox-bg-grid">` +
-    (honors.length || career
-      ? `<div class="scp-ox-bg-col"><h3 class="scp-ow-h3">Career highlights</h3>` +
-        (honors.length ? `<ul class="scp-ox-honors" role="list">${honors.map((h) => `<li>${escapeHtml(h)}</li>`).join("")}</ul>` : "") +
-        (career ? `<p class="scp-ox-career-line"><span>Career</span> ${escapeHtml(career)}</p>` : "") +
-        `</div>`
-      : "") +
-    (facts.length
-      ? `<div class="scp-ox-bg-col"><h3 class="scp-ow-h3">Background</h3><dl class="scp-ox-about">` +
-        facts.map(([dt, dd]) => `<div><dt>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd></div>`).join("") +
-        `</dl></div>`
-      : "") +
-    `</div>` +
+    `<div class="scp-ox-bgc-grid${highlights && background ? "" : " is-one"}">${highlights}${background}</div>` +
     `<p class="scp-ox-links">` +
     (statsHref ? more(statsHref, "Full career stats") : "") +
     (bioHref ? more(bioHref, `${possessive(lastName(player.name))} timeline and biography`) : "") +
     `</p>` +
     SECTION_END
   );
+}
+
+/** The cards' line icons: 24px grid, stroke only. */
+const BG_SVG = (body: string): string =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">${body}</svg>`;
+const BG_ICON: Record<string, string> = {
+  trophy: BG_SVG(`<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/>`),
+  person: BG_SVG(`<circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>`),
+  star: BG_SVG(`<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>`),
+  bars: BG_SVG(`<path d="M5 20V12M10 20V6M15 20v-9M20 20V9M3 20h18"/>`),
+  calendar: BG_SVG(`<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`),
+  pin: BG_SVG(`<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>`),
+  cap: BG_SVG(`<path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5V16c1.5 1.5 3.5 2.2 5.5 2.2s4-.7 5.5-2.2v-4.5M21.5 9.5V15"/>`),
+  group: BG_SVG(`<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.3"/><path d="M15.5 14.2A4.5 4.5 0 0 1 21 18.5"/>`),
+  football: BG_SVG(`<ellipse cx="12" cy="12" rx="9" ry="5.5" transform="rotate(-35 12 12)"/><path d="M9.5 14.5l5-5M11 11.5l1.5 1.5M12.5 10l1.5 1.5"/>`),
+  info: BG_SVG(`<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.2"/>`),
+};
+
+/** Each background fact's icon, by its label. */
+function factIcon(label: string): string {
+  const l = label.toLowerCase();
+  if (/^born|birth ?date/.test(l)) return "calendar";
+  if (/birthplace|hometown/.test(l)) return "pin";
+  if (/school|college/.test(l)) return "cap";
+  if (/^teams?$/.test(l)) return "group";
+  if (/draft|entered the nfl/.test(l)) return "football";
+  return "info";
 }
 
 /* ------------------------------------------------------- the lead head */

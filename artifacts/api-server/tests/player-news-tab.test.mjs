@@ -240,93 +240,94 @@ describe("rendered", () => {
   }
   const render = (s, o = {}) => new JSDOM(`<body><div data-scp-root>${tab.renderNewsTab(s, { now: ET("2026-09-30T12:00:00Z"), ...o })}</div></body>`, { runScripts: "outside-only", pretendToBeVisual: true });
 
-  test("the lead leads, is not in the feed, and the Moves filter shows only with moves", () => {
+  // The team pages' News design (mak, 2026-11-06): one featured story, a
+  // grid of story cards, the rail beside them; the week groups are gone.
+  test("the latest story is featured, the rest fill the grid, Moves shows only with moves", () => {
     const doc = render(state()).window.document;
-    // No "Latest story" heading or lede (mak, 2026-10-02).
-    assert.equal(doc.querySelector("#scp-nw-latest-h"), null);
-    assert.equal(doc.querySelector(".scp-nw .scp-st-foot"), null);
-    assert.equal(doc.querySelector(".scp-nw-lead h3").textContent, "Brissett posts season high in loss at San Francisco");
-    // The feature card (2026-10-23): category badge and date, the headline,
-    // the finish pill + points + score + read as the badge row, one stat
-    // line, one sentence, two links.
-    const lead0 = doc.querySelector(".scp-nw-lead");
-    assert.equal(lead0.querySelector(".scp-nw-meta .scp-nw-cat").textContent, "Game recap");
-    assert.equal(lead0.querySelector(".scp-nw-hero .scp-nw-fin").textContent, "Finish: QB4");
-    assert.equal(lead0.querySelector(".scp-nw-fpts").textContent, "25.6 FPTS");
-    assert.equal(lead0.querySelector(".scp-nw-score").textContent, "L 30–36 @ SF");
+    assert.equal(doc.querySelector(".scp-nw-lead"), null, "the old lead card is gone");
+    assert.equal(doc.querySelector(".scp-nw-wk"), null, "no week groups");
+    const lead0 = doc.querySelector(".scp-nwp-card.is-featured");
+    assert.equal(lead0.querySelector("h3").textContent, "Brissett posts season high in loss at San Francisco");
+    assert.equal(lead0.hasAttribute("data-scp-news-item"), false, "the featured story is not filtered");
+    assert.equal(lead0.querySelector(".scp-nwp-news-kicker").textContent, "Game recap");
+    assert.ok(lead0.querySelector(".scp-nwp-news-meta time").getAttribute("datetime"));
+    assert.equal(lead0.querySelector(".scp-nwp-ribbon").textContent, "L 30–36 @ SF", "a recap's ribbon is the score");
+    assert.equal(lead0.querySelector(".scp-nw-fin").textContent, "Finish: QB4");
+    assert.equal(lead0.querySelector(".scp-nwp-fpts").textContent, "25.6 FPTS");
     assert.equal(lead0.querySelector(".scp-nw-read").textContent, "Fantasy impact: ↑Ceiling game");
-    assert.deepEqual([...lead0.querySelectorAll(".scp-nw-statline")].map((p) => p.textContent), ["38/52 · 280 YDS · 2 TD · 0 INT · 4 CAR · 4 YDS · 1 TD"]);
-    assert.match(lead0.querySelector(".scp-nw-lead-sum").textContent, /^Volume drove the ceiling: /);
-    assert.equal(lead0.querySelector(".scp-nw-takeaway"), null, "no takeaway box");
-    assert.ok(lead0.querySelector(".scp-nw-lead-media"), "a media well on the left");
-    assert.deepEqual([...lead0.querySelectorAll(".scp-nw-foot a")].map((a) => a.getAttribute("href")), [
+    assert.equal(lead0.querySelector(".scp-nwp-stats").textContent, "38/52 · 280 YDS · 2 TD · 0 INT · 4 CAR · 4 YDS · 1 TD");
+    assert.match(lead0.querySelector(".scp-nwp-sum").textContent, /^Volume drove the ceiling: /);
+    assert.ok(lead0.querySelector(".scp-nwp-well .scp-nwp-photo, .scp-nwp-well .scp-nwp-photo-empty"), "a photo well");
+    assert.deepEqual([...lead0.querySelectorAll(".scp-nwp-cta a")].map((a) => a.getAttribute("href")), [
       "/nfl/arizona-cardinals-vs-san-francisco-49ers/2026-week-3/",
       "/player/jacoby-brissett/game-log/",
     ]);
-    assert.equal(doc.querySelector(".scp-nw-stat"), null);
-    // A feed row: marker, category badge + date, headline, one stat line, one
-    // sentence; the finish and the week tag as badges on the right.
-    const w2 = doc.querySelector('.scp-nw-item[data-type="game"]');
+    // The second link repeats the headline's destination, for sighted readers only.
+    assert.equal(lead0.querySelector(".scp-nwp-cta a:not(.is-box)").getAttribute("aria-hidden"), "true");
+    const grid = [...doc.querySelectorAll(".scp-nwp-grid .scp-nwp-card")];
+    assert.deepEqual(grid.map((c) => c.querySelector("h3").textContent), ["Brissett struggles vs. Seattle", "Brissett solid in win at Los Angeles"], "newest first, the featured story left out");
+    const w2 = grid[0];
+    assert.equal(w2.dataset.type, "game");
     assert.equal(w2.dataset.impact, "down");
-    assert.match(w2.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: Negative/);
-    assert.ok(w2.querySelector(".scp-nw-marker"), "a marker on the left");
-    assert.equal(w2.querySelector(".scp-nw-meta .scp-nw-cat").textContent, "Game recap");
-    assert.equal(w2.querySelector(".scp-nw-side .scp-nw-fin").textContent, "Finish: QB28");
-    assert.equal(w2.querySelector(".scp-nw-side .scp-nw-tag").textContent, "Floor");
-    assert.equal(w2.querySelector(".scp-nw-statline").textContent, "7.5 FPTS · 17/28 · 95 YDS · 1 TD · 1 INT");
-    assert.equal(w2.querySelector(".scp-nw-sum").textContent, "The Seahawks limited Brissett to 3.4 yards per attempt.");
-    assert.equal(w2.querySelector(".scp-nw-more"), null, "a recap has no More fold");
-    assert.equal(w2.querySelector(".scp-nw-side .scp-nw-readlink").textContent.trim(), "View Game Recap →", "the link sits in the right column");
-    assert.equal(w2.querySelector(".scp-nw-body .scp-nw-readlink"), null);
-    assert.equal(doc.querySelector(".scp-nw-dek"), null, "no dek under the heading");
-    assert.deepEqual([...doc.querySelectorAll(".scp-nw-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "Practice"]);
-    assert.deepEqual([...doc.querySelectorAll(".scp-nw-wklabel b")].map((b) => b.textContent), ["Week 2", "Week 1"]);
-    assert.equal(doc.querySelector('[data-f="moves"]'), null);
+    assert.equal(w2.querySelector(".scp-nw-fin").textContent, "Finish: QB28");
+    assert.equal(w2.querySelector(".scp-nwp-fpts").textContent, "7.5 FPTS");
+    assert.equal(w2.querySelector(".scp-nwp-stats").textContent, "17/28 · 95 YDS · 1 TD · 1 INT");
+    assert.equal(w2.querySelector(".scp-nwp-sum").textContent, "The Seahawks limited Brissett to 3.4 yards per attempt.");
+    assert.equal(w2.querySelector(".scp-nwp-cta a:not(.is-box)").textContent.trim(), "View game recap →");
+    // Three stories: nothing to filter.
+    assert.equal(doc.querySelector("[data-scp-news-filter]"), null);
     const signed = news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction", { summary: "Brissett reworked his deal. The move clears cap room for the club." });
-    const moved = render(state({ news: [signed] })).window.document;
-    assert.ok(moved.querySelector('[data-f="moves"]'));
-    const move = moved.querySelector('.scp-nw-item[data-group="moves"]');
+    const extra = [signed, news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice")];
+    const moved = render(state({ news: extra })).window.document;
+    assert.deepEqual([...moved.querySelectorAll(".scp-nwp-filters button")].map((b) => b.textContent), ["All", "Games", "Practice", "Moves"]);
+    const move = moved.querySelector('.scp-nwp-card[data-group="moves"]');
     assert.equal(move.dataset.type, "contract", "a restructure is a contract item");
-    assert.equal(move.querySelector(".scp-nw-cat").textContent, "Contract");
-    assert.ok(move.querySelector(".scp-nw-marker.is-deal svg"), "a non-game row gets its type's icon");
-    assert.equal(move.querySelector(".scp-nw-sum").textContent, "Brissett reworked his deal.", "one sentence on the row");
-    assert.match(move.querySelector(".scp-nw-more p").textContent, /^The move clears cap room for the club\. Contract news:/, "the rest folds into More");
-    // A move newer than the latest recap outranks it for the lead.
+    assert.equal(move.querySelector(".scp-nwp-news-kicker").textContent, "Contract");
+    assert.equal(move.querySelector(".scp-nwp-sum").textContent, "Brissett reworked his deal.", "one sentence on the card");
+    assert.ok(move.querySelector(".scp-nwp-byline a"), "a report names its source");
+    const noMoves = render(state({ news: [news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice"), news("s", "2026-07-09T23:00:00Z", "Expected to start", "status")] })).window.document;
+    assert.equal(noMoves.querySelector('[data-f="moves"]'), null);
+    // A move newer than the latest recap outranks it for the featured spot.
     const traded = news("t2", "2026-09-29T21:00:00Z", "Traded to the Giants", "transaction");
     const lead = render(state({ news: [traded] })).window.document;
-    assert.equal(lead.querySelector(".scp-nw-lead h3").textContent, "Traded to the Giants (opens in new tab)");
+    assert.equal(lead.querySelector(".scp-nwp-card.is-featured h3").textContent, "Traded to the Giants (opens in new tab)");
   });
 
-  test("a pending recap shows in its week, unlinked", () => {
+  test("no pending or bye rows: the grid holds stories only", () => {
     const doc = render(state({ gameLog: LOG.slice(0, 2) })).window.document;
-    const pending = doc.querySelector(".scp-nw-pending");
-    assert.equal(pending.textContent, "PendingRecap pending · analysis updating");
-    assert.equal(pending.closest(".scp-nw-wk").querySelector(".scp-nw-wklabel b").textContent, "Week 3");
+    assert.equal(doc.querySelector(".scp-nw-pending"), null);
+    for (const card of doc.querySelectorAll(".scp-nwp-card")) assert.ok(card.querySelector("h3").textContent.trim());
   });
 
-  test("no news at all this season: the newest older item leads, marked with its season", () => {
+  test("no news at all this season: the newest older item is featured, marked with its season", () => {
     const old = news("o", "2025-12-20T21:00:00Z", "Named starter for finale", "depth-chart");
     const doc = render(state({ gameLog: [], schedule: [], news: [old] })).window.document;
-    assert.match(doc.querySelector(".scp-nw-lead .scp-nw-new").textContent, /^From 2025$/);
-    assert.equal(doc.querySelector(".scp-nw-none").textContent, "No updates yet this season.");
+    const card = doc.querySelector(".scp-nwp-card.is-featured.is-old");
+    assert.match(card.querySelector(".scp-nwp-news-kicker").textContent, /^From 2025$/);
+    assert.equal(doc.querySelector(".scp-nwp-feed"), null, "no grid under it");
   });
 
   test("filters, clicked, through the real client bundle", async () => {
     const bundle = path.join(APP_DIR, "public", "dist", "statchasers-player.js");
     assert.ok(fs.existsSync(bundle), "pnpm test builds the bundle first");
-    const prac = news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice");
-    const dom = render(state({ news: [prac] }));
+    const extra = [
+      news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice"),
+      news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction"),
+    ];
+    const dom = render(state({ news: extra }));
     dom.window.eval(fs.readFileSync(bundle, "utf8"));
     await new Promise((resolve) => setTimeout(resolve, 20));
     const doc = dom.window.document;
+    const shown = () => [...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => !i.hidden).map((i) => i.dataset.type);
     doc.querySelector('[data-f="prac"]').click();
-    const visible = [...doc.querySelectorAll(".scp-nw-item")].filter((i) => !i.hidden).map((i) => i.dataset.type);
-    assert.deepEqual(visible, ["prac"]);
-    assert.deepEqual([...doc.querySelectorAll(".scp-nw-wk")].filter((w) => !w.hidden).map((w) => w.querySelector("b").textContent), ["Offseason"]);
-    doc.querySelector('[data-f="status"]').click();
-    assert.equal(doc.querySelector("#scp-nw-empty").hidden, false, "the empty note shows");
+    assert.deepEqual(shown(), ["prac"]);
+    assert.equal(doc.querySelector("#scp-nw-empty").hidden, true);
+    doc.querySelector('[data-f="moves"]').click();
+    assert.deepEqual(shown(), ["contract"]);
+    doc.querySelector('[data-f="game"]').click();
+    assert.deepEqual(shown(), ["game", "game"]);
     doc.querySelector('[data-f="all"]').click();
-    assert.equal([...doc.querySelectorAll(".scp-nw-item")].filter((i) => i.hidden).length, 0);
+    assert.equal([...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => i.hidden).length, 0);
     dom.window.close();
   });
 });

@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-05",
+  "builtAt": "2026-11-06",
   "sources": [
     "nflverse play-by-play (tendencies, score states, 4th downs, defensive EPA)",
     "FTN Data charting via nflverse, CC-BY-SA 4.0 (play action, motion)",
@@ -649,7 +649,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR43 · Coleman",
+                "text": "WR44 · Coleman",
                 "tone": "bad"
               },
               {
@@ -1046,7 +1046,7 @@
           "stop": "Cardinals · HC",
           "years": "2026",
           "scoring": "21.9 ppg",
-          "scoringContext": "through Week 8, 21st in NFL",
+          "scoringContext": "through Week 8, 20th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "TEs took 35% of targets (league 24%) in 2026; the lead back handled 44% of backfield weighted opportunities.",
@@ -1071,7 +1071,7 @@
             {
               "year": 2026,
               "ppg": 21.9,
-              "rank": 21,
+              "rank": 20,
               "games": 8
             }
           ]
@@ -1138,7 +1138,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR16 · Wilson",
+                "text": "WR17 · Wilson",
                 "tone": "plain"
               },
               {
@@ -1499,7 +1499,7 @@
           "stop": "Falcons · OC",
           "years": "2026",
           "scoring": "21.4 ppg",
-          "scoringContext": "through Week 8, 23rd in NFL",
+          "scoringContext": "through Week 8, 22nd in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "a league-typical WR/TE/RB target split in 2026; the lead back handled 74% of backfield weighted opportunities.",
@@ -1524,7 +1524,7 @@
             {
               "year": 2026,
               "ppg": 21.4,
-              "rank": 23,
+              "rank": 22,
               "games": 8
             }
           ]
@@ -1680,10 +1680,10 @@
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
         "explanation": "New play-caller (Todd Monken called plays here in 2025). Last season's tendencies describe a different coach's offense - project from this season's sample, small as it is.",
-        "ledger": "Doyle - 8 of 8 games in 2026 · first season",
+        "ledger": "Doyle - 9 of 9 games in 2026 · first season",
         "ledgerStats": {
-          "called": 8,
-          "games": 8,
+          "called": 9,
+          "games": 9,
           "priorSeasons": 0,
           "firstSeason": 2026,
           "note": null
@@ -1699,10 +1699,10 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "52.5%",
-            "current": "56.8%",
+            "current": "54.9%",
             "change": {
               "dir": "up",
-              "text": "+4.3"
+              "text": "+2.4"
             },
             "nflAvg": "60%",
             "priorNum": 52.5,
@@ -1714,10 +1714,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−8.8%",
-            "current": "−4.2%",
+            "current": "−6.8%",
             "change": {
               "dir": "up",
-              "text": "+4.6"
+              "text": "+2"
             },
             "nflAvg": "0%",
             "priorNum": -8.8,
@@ -1729,7 +1729,7 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "34.7s",
-            "current": "35.1s",
+            "current": "35.2s",
             "change": {
               "dir": "down",
               "text": "slower"
@@ -1745,10 +1745,10 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "45.5%",
-            "current": "50.7%",
+            "current": "48.9%",
             "change": {
               "dir": "up",
-              "text": "+5.2"
+              "text": "+3.4"
             },
             "nflAvg": "55%"
           },
@@ -1758,10 +1758,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "2.9%",
-            "current": "3.6%",
+            "current": "3.2%",
             "change": {
-              "dir": "up",
-              "text": "+0.7"
+              "dir": "flat",
+              "text": "steady"
             },
             "nflAvg": "6%"
           },
@@ -1771,10 +1771,10 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "22.4%",
-            "current": "25.7%",
+            "current": "23.9%",
             "change": {
               "dir": "up",
-              "text": "+3.3"
+              "text": "+1.5"
             },
             "nflAvg": "23%"
           },
@@ -1797,10 +1797,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "65%",
-            "current": "57%",
+            "current": "60.3%",
             "change": {
               "dir": "down",
-              "text": "−8"
+              "text": "−4.7"
             },
             "nflAvg": "61%"
           },
@@ -1834,10 +1834,10 @@
           }
         ],
         "samples": {
-          "games": 8,
-          "throughWeek": 8,
-          "fourthShortAll": 5,
-          "fourthShortGo": 5,
+          "games": 9,
+          "throughWeek": 9,
+          "fourthShortAll": 6,
+          "fourthShortGo": 6,
           "rzPlays": 83,
           "priorFourthShortAll": 9,
           "priorFourthShortGo": 8,
@@ -1859,11 +1859,11 @@
           "unit": "4th-down go",
           "heading": "Going for it more.",
           "body": "More drives continue past field-goal range.",
-          "note": "5 such snaps"
+          "note": "6 such snaps"
         },
         {
           "key": "shotgunRate",
-          "stat": "57",
+          "stat": "60.3",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action.",
@@ -1881,7 +1881,7 @@
         "dc": {
           "name": "Anthony Weaver",
           "sub": "Minter calls the defensive plays in his multiple, disguise-heavy system. Weaver serves as the non-play-calling defensive coordinator, bringing extensive front-seven/D-line expertise while contributing to the entire defensive plan",
-          "body": "Through Week 8 the defense allows 0.01 EPA per play (17th of 32, ranked on pass and run snaps in the play-by-play). A middle-of-the-pack unit so far - game script here is week-to-week, so check the spread before leaning on it."
+          "body": "Through Week 9 the defense allows 0.01 EPA per play (18th of 32, ranked on pass and run snaps in the play-by-play). A middle-of-the-pack unit so far - game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
           "stat": "New install",
@@ -1893,18 +1893,18 @@
         {
           "stop": "Ravens · OC",
           "years": "2026",
-          "scoring": "22.4 ppg",
-          "scoringContext": "through Week 8, 19th in NFL",
+          "scoring": "21.0 ppg",
+          "scoringContext": "through Week 9, 25th in NFL",
           "current": true,
           "thesis": "The current stop:",
-          "fingerprint": "TEs took 28% of targets (league 24%) in 2026; the lead back handled 70% of backfield weighted opportunities.",
+          "fingerprint": "TEs took 28% of targets (league 24%) in 2026; the lead back handled 68% of backfield weighted opportunities.",
           "prints": [
             {
               "year": 2026,
               "label": "2026",
               "shares": {
                 "WR": 55,
-                "RB": 17,
+                "RB": 18,
                 "TE": 28
               },
               "league": {
@@ -1912,15 +1912,15 @@
                 "RB": 18,
                 "TE": 24
               },
-              "leadBack": 70
+              "leadBack": 68
             }
           ],
           "seasons": [
             {
               "year": 2026,
-              "ppg": 22.4,
-              "rank": 19,
-              "games": 8
+              "ppg": 21,
+              "rank": 25,
+              "games": 9
             }
           ]
         }
@@ -1930,7 +1930,7 @@
         "rows": [
           {
             "stop": "Ravens · 2026",
-            "context": "pace through Week 8",
+            "context": "pace through Week 9",
             "current": true,
             "cells": [
               {
@@ -1938,15 +1938,15 @@
                 "tone": "bad"
               },
               {
-                "text": "RB10 · Henry",
+                "text": "RB8 · Henry",
                 "tone": "good"
               },
               {
-                "text": "WR10 · Flowers",
+                "text": "WR9 · Flowers",
                 "tone": "good"
               },
               {
-                "text": "TE24 · Andrews",
+                "text": "TE23 · Andrews",
                 "tone": "plain"
               }
             ]
@@ -1970,7 +1970,7 @@
           },
           {
             "label": "Running backs",
-            "pct": 17,
+            "pct": 18,
             "nfl": 18
           }
         ],
@@ -1993,7 +1993,7 @@
           },
           {
             "label": "'26 BAL",
-            "value": 70,
+            "value": 68,
             "current": true,
             "feed": true
           }
@@ -2001,7 +2001,7 @@
         "note": "Starred seasons were a previous staff's - context, not this caller's record. The trend is concentration: the lead back's share of backfield weighted opportunities (carries + 2×targets) has held or grown season over season. A clear RB1 role is the safest volume in fantasy - this backfield has one."
       },
       "scoreState": {
-        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 8.",
+        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 9.",
         "rows": [
           {
             "label": "Leading by 7+",
@@ -2015,16 +2015,16 @@
           },
           {
             "label": "Trailing by 7+",
-            "share": 62,
-            "result": "62% pass · 77 plays"
+            "share": 53,
+            "result": "53% pass · 131 plays"
           }
         ],
-        "note": "Little change by score: the Ravens have passed on 62% of plays while trailing by 7+ and 60% while leading by 7+. Play counts are shown so you can weigh each bucket's sample."
+        "note": "A modest pass-rate drop when trailing. The Ravens have passed on 53% of plays while trailing by 7+, compared with 60% while leading by 7+. The 7-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Declan Doyle is new to the Ravens call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 8 games, the Ravens have been more motion-heavy, more aggressive on short 4th downs and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Declan Doyle is new to the Ravens call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 9 games, the Ravens have been more motion-heavy, more aggressive on short 4th downs and more under-center than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Declan Doyle's play-calling affect Ravens fantasy players?",
-        "answer": "Declan Doyle is a first-year play-caller for the Ravens, so last season's tendencies carry little predictive weight. Through Week 8 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate below league average (43% vs 53%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward tight ends (28% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Declan Doyle is a first-year play-caller for the Ravens, so last season's tendencies carry little predictive weight. Through Week 9 2026, the offense shows 4th-down go rate above league average (100% vs 75%) and red-zone pass rate below league average (43% vs 53%). The lead back handles 68% of backfield weighted opportunities, and the target split leans toward tight ends (28% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "car": {
@@ -2319,7 +2319,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR15 · McMillan",
+                "text": "WR16 · McMillan",
                 "tone": "plain"
               },
               {
@@ -5044,7 +5044,7 @@
                 "tone": "good"
               },
               {
-                "text": "RB9 · Williams",
+                "text": "RB10 · Williams",
                 "tone": "good"
               },
               {
@@ -5385,7 +5385,7 @@
           "stop": "Broncos · OC",
           "years": "2026",
           "scoring": "21.5 ppg",
-          "scoringContext": "through Week 8, 22nd in NFL",
+          "scoringContext": "through Week 8, 21st in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "TEs took 17% of targets (league 24%) in 2026; the lead back handled 42% of backfield weighted opportunities.",
@@ -5410,7 +5410,7 @@
             {
               "year": 2026,
               "ppg": 21.5,
-              "rank": 22,
+              "rank": 21,
               "games": 8
             }
           ]
@@ -5437,7 +5437,7 @@
                 "tone": "bad"
               },
               {
-                "text": "TE42 · Engram",
+                "text": "TE43 · Engram",
                 "tone": "bad"
               }
             ]
@@ -5948,7 +5948,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB8 · Goff",
+                "text": "QB9 · Goff",
                 "tone": "good"
               },
               {
@@ -6317,7 +6317,7 @@
           "stop": "Packers · HC",
           "years": "2019-26",
           "scoring": "21.4 ppg",
-          "scoringContext": "2026 through Week 8, 23rd in NFL",
+          "scoringContext": "2026 through Week 8, 22nd in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "WRs took 64% of targets (league 58%) in 2026; the lead back handled 37% of backfield weighted opportunities.",
@@ -6499,7 +6499,7 @@
             {
               "year": 2026,
               "ppg": 21.4,
-              "rank": 23,
+              "rank": 22,
               "games": 8
             }
           ]
@@ -6784,7 +6784,7 @@
                 "tone": "good"
               },
               {
-                "text": "RB37 · Lloyd",
+                "text": "RB39 · Lloyd",
                 "tone": "bad"
               },
               {
@@ -8028,7 +8028,7 @@
                 "tone": "good"
               },
               {
-                "text": "WR35 · Allen",
+                "text": "WR36 · Allen",
                 "tone": "bad"
               },
               {
@@ -8150,10 +8150,10 @@
         "priorSeasonsAsCaller": 1,
         "sameSchemeFamily": true,
         "explanation": "Same play-caller as last season - his second season calling this offense. Last year's tendencies are a valid baseline for projecting it.",
-        "ledger": "Coen - 7 of 7 games in 2026 · 1 prior season as caller here",
+        "ledger": "Coen - 8 of 8 games in 2026 · 1 prior season as caller here",
         "ledgerStats": {
-          "called": 7,
-          "games": 7,
+          "called": 8,
+          "games": 8,
           "priorSeasons": 1,
           "firstSeason": 2025,
           "note": null
@@ -8169,10 +8169,10 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "60.2%",
-            "current": "54.8%",
+            "current": "53.9%",
             "change": {
               "dir": "down",
-              "text": "−5.4"
+              "text": "−6.3"
             },
             "nflAvg": "60%",
             "priorNum": 60.2,
@@ -8184,10 +8184,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+1.6%",
-            "current": "−4.8%",
+            "current": "−5.2%",
             "change": {
               "dir": "down",
-              "text": "−6.4"
+              "text": "−6.8"
             },
             "nflAvg": "0%",
             "priorNum": 1.6,
@@ -8199,7 +8199,7 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "33.9s",
-            "current": "33.8s",
+            "current": "34s",
             "change": {
               "dir": "flat",
               "text": "steady"
@@ -8215,10 +8215,10 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "56.6%",
-            "current": "51.9%",
+            "current": "50.4%",
             "change": {
               "dir": "down",
-              "text": "−4.7"
+              "text": "−6.2"
             },
             "nflAvg": "55%"
           },
@@ -8241,10 +8241,10 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "21.9%",
-            "current": "24.8%",
+            "current": "22.2%",
             "change": {
-              "dir": "up",
-              "text": "+2.9"
+              "dir": "flat",
+              "text": "steady"
             },
             "nflAvg": "23%"
           },
@@ -8267,10 +8267,10 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "60.9%",
-            "current": "54.5%",
+            "current": "54.3%",
             "change": {
               "dir": "down",
-              "text": "−6.4"
+              "text": "−6.6"
             },
             "nflAvg": "61%"
           },
@@ -8280,10 +8280,10 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "50%",
-            "current": "57%",
+            "current": "54%",
             "change": {
               "dir": "up",
-              "text": "+7"
+              "text": "+4"
             },
             "nflAvg": "53%",
             "priorNum": 50,
@@ -8295,20 +8295,20 @@
             "sub": "opponent territory, 2 yds or less",
             "def": "Share of 4th-and-2-or-less snaps in opponent territory (midfield included) where the offense ran a play instead of punting or attempting a field goal. Snaps wiped out by penalty are removed. Shown as - until a team has had three such snaps.",
             "prior": "86%",
-            "current": "67%",
+            "current": "40%",
             "change": {
               "dir": "down",
-              "text": "−19"
+              "text": "−46"
             },
             "nflAvg": "75%"
           }
         ],
         "samples": {
-          "games": 7,
-          "throughWeek": 8,
-          "fourthShortAll": 3,
+          "games": 8,
+          "throughWeek": 9,
+          "fourthShortAll": 5,
           "fourthShortGo": 2,
-          "rzPlays": 67,
+          "rzPlays": 78,
           "priorFourthShortAll": 21,
           "priorFourthShortGo": 18,
           "priorRzPlays": 203
@@ -8317,26 +8317,26 @@
       "shifts": [
         {
           "key": "fourthGoRate",
-          "stat": "67",
+          "stat": "40",
           "unit": "4th-down go",
           "heading": "Kicking more.",
           "body": "More of those drives end in a punt or field-goal try.",
-          "note": "3 such snaps"
-        },
-        {
-          "key": "rzPassRate",
-          "stat": "57",
-          "unit": "red-zone pass %",
-          "heading": "Pass-heavy in the red zone.",
-          "body": "More receiving TD opportunity, less goal-line rushing volume.",
-          "note": null
+          "note": "5 such snaps"
         },
         {
           "key": "proe",
-          "stat": "−4.8",
+          "stat": "−5.2",
           "unit": "PROE",
           "heading": "A run lean has emerged.",
           "body": "Adjusted for situation, so the run lean reads as intent, not game script.",
+          "note": null
+        },
+        {
+          "key": "shotgunRate",
+          "stat": "54.3",
+          "unit": "shotgun",
+          "heading": "More under center.",
+          "body": "Under-center snaps travel with the run game and play-action.",
           "note": null
         }
       ],
@@ -8350,7 +8350,7 @@
         "dc": {
           "name": "Anthony Campanile",
           "sub": "Multiple, aggressive defense emphasizing physical run play, a zone-oriented secondary and varied coverage shells/pressure packages. Campanile's system shows significant Hafley/Green Bay influence with Flores-style mugged and split-field pressures; Jacksonville led the NFL in run defense and produced 31 takeaways in 2025",
-          "body": "Through Week 8 the defense allows -0.1 EPA per play (4th of 32, ranked on pass and run snaps in the play-by-play). Stronger defensive efficiency can help create more neutral or positive game scripts, which would generally support rushing volume. The Jaguars offense still determines whether those scripts materialize."
+          "body": "Through Week 9 the defense allows -0.13 EPA per play (3rd of 32, ranked on pass and run snaps in the play-by-play). Stronger defensive efficiency can help create more neutral or positive game scripts, which would generally support rushing volume. The Jaguars offense still determines whether those scripts materialize."
         },
         "continuity": {
           "stat": "Year 2",
@@ -8395,14 +8395,14 @@
         {
           "stop": "Jaguars · HC",
           "years": "2025-26",
-          "scoring": "28.0 ppg",
-          "scoringContext": "2026 through Week 8, 5th in NFL",
+          "scoring": "28.6 ppg",
+          "scoringContext": "2026 through Week 9, 4th in NFL",
           "current": true,
           "thesis": "The current stop:",
-          "fingerprint": "RBs took 15% of targets (league 18%) in 2026; the lead back handled 62% of backfield weighted opportunities.",
+          "fingerprint": "RBs took 15% of targets (league 18%) in 2026; the lead back handled 58% of backfield weighted opportunities.",
           "fingerprints": [
             "WRs took 64% of targets (league 58%) in 2025; the lead back handled 69% of backfield weighted opportunities.",
-            "RBs took 15% of targets (league 18%) in 2026; the lead back handled 62% of backfield weighted opportunities."
+            "RBs took 15% of targets (league 18%) in 2026; the lead back handled 58% of backfield weighted opportunities."
           ],
           "prints": [
             {
@@ -8433,7 +8433,7 @@
                 "RB": 18,
                 "TE": 24
               },
-              "leadBack": 62
+              "leadBack": 58
             }
           ],
           "seasons": [
@@ -8445,9 +8445,9 @@
             },
             {
               "year": 2026,
-              "ppg": 28,
-              "rank": 5,
-              "games": 7
+              "ppg": 28.6,
+              "rank": 4,
+              "games": 8
             }
           ]
         }
@@ -8501,11 +8501,11 @@
           },
           {
             "stop": "Jaguars · 2026",
-            "context": "pace through Week 8",
+            "context": "pace through Week 9",
             "current": true,
             "cells": [
               {
-                "text": "QB9 · Lawrence",
+                "text": "QB7 · Lawrence",
                 "tone": "good"
               },
               {
@@ -8513,11 +8513,11 @@
                 "tone": "plain"
               },
               {
-                "text": "WR21 · Washington",
+                "text": "WR15 · Washington",
                 "tone": "plain"
               },
               {
-                "text": "TE18 · Strange",
+                "text": "TE17 · Strange",
                 "tone": "plain"
               }
             ]
@@ -8559,7 +8559,7 @@
           },
           {
             "label": "'26 JAX",
-            "value": 62,
+            "value": 58,
             "current": true,
             "feed": true
           }
@@ -8567,17 +8567,17 @@
         "note": "No clean trend: the lead back's share of backfield weighted opportunities (carries + 2×targets) has moved around season to season. Treat the current split as the read and revisit it weekly."
       },
       "scoreState": {
-        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 8.",
+        "sub": "Pass rate when leading, close, and trailing, 2026 through Week 9.",
         "rows": [
           {
             "label": "Leading by 7+",
             "share": 47,
-            "result": "47% pass · 139 plays"
+            "result": "47% pass · 178 plays"
           },
           {
             "label": "Within 7",
             "share": 58,
-            "result": "58% pass · 196 plays"
+            "result": "58% pass · 212 plays"
           },
           {
             "label": "Trailing by 7+",
@@ -8587,10 +8587,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Jaguars have passed on 61% of plays while trailing by 7+, compared with 47% while leading by 7+. The 14-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Coen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 7 games, the Jaguars have been less aggressive on short 4th downs, more pass-heavy in the red zone and more run-leaning by PROE than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Coen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 8 games, the Jaguars have been less aggressive on short 4th downs, more run-leaning by PROE and more under-center than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Liam Coen's play-calling affect Jaguars fantasy players?",
-        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 8 2026, the offense shows 4th-down go rate below league average (67% vs 75%) and shotgun rate below league average (54.5% vs 61%). The lead back handles 62% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 9 2026, the offense shows 4th-down go rate below league average (40% vs 75%) and shotgun rate below league average (54.3% vs 61%). The lead back handles 58% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "kc": {
@@ -10407,7 +10407,7 @@
         "dc": {
           "name": "Chris Shula",
           "sub": "Highly multiple, adaptable defense featuring extensive dime personnel (32.4% in 2025, the NFL's highest dime rate since the 2023 Cowboys), simulated pressures, stunts and coverage disguise. Shula varies fronts and coverages by opponent while simplifying individual assignments to let players play fast",
-          "body": "Through Week 8 the defense allows -0.11 EPA per play (3rd of 32, ranked on pass and run snaps in the play-by-play). Stronger defensive efficiency can help create more neutral or positive game scripts, which would generally support rushing volume. The Rams offense still determines whether those scripts materialize."
+          "body": "Through Week 8 the defense allows -0.11 EPA per play (4th of 32, ranked on pass and run snaps in the play-by-play). Stronger defensive efficiency can help create more neutral or positive game scripts, which would generally support rushing volume. The Rams offense still determines whether those scripts materialize."
         },
         "continuity": {
           "stat": "Year 10",
@@ -10961,7 +10961,7 @@
                 "tone": "good"
               },
               {
-                "text": "TE23 · Higbee",
+                "text": "TE24 · Higbee",
                 "tone": "plain"
               }
             ]
@@ -11561,7 +11561,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR20 · Tucker",
+                "text": "WR21 · Tucker",
                 "tone": "plain"
               },
               {
@@ -12044,7 +12044,7 @@
                 "tone": "bad"
               },
               {
-                "text": "WR37 · Washington",
+                "text": "WR38 · Washington",
                 "tone": "bad"
               },
               {
@@ -13067,7 +13067,7 @@
         "dc": {
           "name": "Zak Kuhr",
           "sub": "Man-heavy, multiple-front Vrabel defense; film usage includes single-high structures, simulated/varied pressures and run-front movement. Kuhr took over the defense after the 2025 opener, when Terrell Williams stepped away, and remained its primary caller through New England's Super Bowl LX run; he was promoted to DC for 2026. New England finished 2025 fourth in scoring defense.",
-          "body": "Through Week 8 the defense allows 0.01 EPA per play (18th of 32, ranked on pass and run snaps in the play-by-play). A middle-of-the-pack unit so far - game script here is week-to-week, so check the spread before leaning on it."
+          "body": "Through Week 8 the defense allows 0.01 EPA per play (17th of 32, ranked on pass and run snaps in the play-by-play). A middle-of-the-pack unit so far - game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
           "stat": "Year 2",
@@ -14590,11 +14590,11 @@
                 "tone": "bad"
               },
               {
-                "text": "WR9 · Olave",
+                "text": "WR10 · Olave",
                 "tone": "good"
               },
               {
-                "text": "TE17 · Johnson",
+                "text": "TE18 · Johnson",
                 "tone": "plain"
               }
             ]
@@ -15894,7 +15894,7 @@
           "stop": "Jets · OC",
           "years": "2026",
           "scoring": "21.3 ppg",
-          "scoringContext": "through Week 8, 25th in NFL",
+          "scoringContext": "through Week 8, 24th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "TEs took 28% of targets (league 24%) in 2026; the lead back handled 61% of backfield weighted opportunities.",
@@ -15919,7 +15919,7 @@
             {
               "year": 2026,
               "ppg": 21.3,
-              "rank": 25,
+              "rank": 24,
               "games": 8
             }
           ]
@@ -16566,11 +16566,11 @@
                 "tone": "bad"
               },
               {
-                "text": "RB39 · Barkley",
+                "text": "RB41 · Barkley",
                 "tone": "bad"
               },
               {
-                "text": "WR41 · Smith",
+                "text": "WR42 · Smith",
                 "tone": "bad"
               },
               {
@@ -17415,7 +17415,7 @@
                 "tone": "plain"
               },
               {
-                "text": "RB8 · Warren",
+                "text": "RB9 · Warren",
                 "tone": "good"
               },
               {
@@ -18249,7 +18249,7 @@
           "stop": "49ers · HC",
           "years": "2017-26",
           "scoring": "28.1 ppg",
-          "scoringContext": "2026 through Week 7, 4th in NFL",
+          "scoringContext": "2026 through Week 7, 5th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "WRs took 46% of targets (league 58%) in 2026; the lead back handled 63% of backfield weighted opportunities.",
@@ -18475,7 +18475,7 @@
             {
               "year": 2026,
               "ppg": 28.1,
-              "rank": 4,
+              "rank": 5,
               "games": 7
             }
           ]
@@ -18800,7 +18800,7 @@
             "current": true,
             "cells": [
               {
-                "text": "QB7 · Purdy",
+                "text": "QB8 · Purdy",
                 "tone": "good"
               },
               {
@@ -19203,7 +19203,7 @@
           "stop": "Buccaneers · OC",
           "years": "2026",
           "scoring": "22.3 ppg",
-          "scoringContext": "through Week 8, 20th in NFL",
+          "scoringContext": "through Week 8, 19th in NFL",
           "current": true,
           "thesis": "The current stop:",
           "fingerprint": "TEs took 17% of targets (league 24%) in 2026; the lead back handled 64% of backfield weighted opportunities.",
@@ -19228,7 +19228,7 @@
             {
               "year": 2026,
               "ppg": 22.3,
-              "rank": 20,
+              "rank": 19,
               "games": 8
             }
           ]
@@ -19295,7 +19295,7 @@
                 "tone": "plain"
               },
               {
-                "text": "WR38 · Egbuka",
+                "text": "WR39 · Egbuka",
                 "tone": "bad"
               },
               {
@@ -20445,7 +20445,7 @@
                 "tone": "bad"
               },
               {
-                "text": "TE40 · Okonkwo",
+                "text": "TE41 · Okonkwo",
                 "tone": "bad"
               }
             ]

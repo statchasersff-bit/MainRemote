@@ -51,8 +51,8 @@ import type { UpcomingGame } from "./upcoming";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
 import { samePerson, type PlayerUsage, type RosRank, type StartingQb, type UsageMetric } from "./outlook-context";
 import { baseWords, surname, type Trend } from "../team/usage";
+import { redraftPlayerUrl } from "./redraft-link";
 
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /* ---- icons: the redesign's glyphs (mak's brief, 2026-11-05), inline so no
    icon dependency; every one aria-hidden, the words beside it carry the
@@ -318,7 +318,7 @@ function model(data: PlayerPageData): Model | null {
     last: lastName(data.player.name),
     pos,
     slug: data.player.slug,
-    rc: `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`,
+    rc: redraftPlayerUrl(data.player),
     season,
     week,
     preseason,

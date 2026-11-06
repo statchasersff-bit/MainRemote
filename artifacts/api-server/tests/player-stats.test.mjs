@@ -245,7 +245,7 @@ describe("the data module", () => {
     const leader = yards.total.player;
     assert.equal(leader.values.receivingYards, most);
     assert.equal(yards.total.figure, most.toLocaleString("en-US"));
-    assert.equal(yards.total.note, `${(most / leader.values.games).toFixed(1)} per game`);
+    assert.equal(yards.total.note, `${(most / leader.values.games).toFixed(1)}/G`);
     assert.match(yards.perGame.note, /^[\d,]+ total$/);
     const share = wr.cards.find((c) => c.title === "Target Share Leader");
     assert.match(share.total.figure, /^\d+\.\d%$/);
@@ -424,7 +424,7 @@ describe("the pages", () => {
 
       const yards = byCat("Receiving Yards Leader");
       const pg = yards.querySelector(".sca-leader-pg");
-      assert.match(yards.querySelector(".sca-leader-total .sca-leader-note").textContent, /^\d+\.\d per game$/);
+      assert.match(yards.querySelector(".sca-leader-total .sca-leader-note").textContent, /^\d+\.\d\/G$/);
       assert.match(pg.querySelector(".sca-leader-note").textContent, /^[\d,]+ total$/);
       assert.match(pg.querySelector(".sca-leader-num").textContent, /^\d+\.\d$/);
 

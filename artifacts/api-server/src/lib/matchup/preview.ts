@@ -29,6 +29,11 @@ import { getTeamCoaching, type TeamCoaching } from "../team/coaching";
 import { loadRosterPct } from "../player/data";
 import type { MatchupData, Meeting } from "./matchup-data";
 import { impliedTotals, type Forecast, type GameLine, type WeekLines } from "./game-lines";
+import { battlesFor, defendersVersion, gameConditions, teamForm, type Battle, type BattleSide, type Conditions, type TeamForm } from "./preview-extras";
+import { starters } from "./preview-starters";
+import { depthChartsVersion, nameKey } from "../team/depth-charts";
+import { teamTrends, type TeamTrends } from "./preview-betting";
+import type { ScheduleGame } from "../schedule/schedule-data";
 
 export type Pos = "QB" | "RB" | "WR" | "TE";
 export type Verdict = "MUST START" | "START" | "FLEX" | "SIT";
@@ -182,6 +187,17 @@ export interface Preview {
   usageThrough: number | null;
   /** When the freshest input was read: the byline's "Updated". */
   updatedMs: number;
+  /** Last five results and scoring against the season (preview-extras.ts, 2026-11-06). */
+  form: Record<SideKey, TeamForm | null>;
+  /** Player battles, keyed by the OFFENSE's side. */
+  battles: Record<SideKey, Battle[]>;
+  conditions: Conditions | null;
+  /** When the line was last seen, set only once it is more than LINE_DATED_MS old. */
+  lineSeenMs: number | null;
+  /** The data checks that removed or changed something, for logs and tests. */
+  checks: string[];
+  /** Each team's record against its games' closing lines (preview-betting.ts). */
+  trends: Record<SideKey, TeamTrends | null>;
 }
 
 export interface H2hStrip {
@@ -274,6 +290,17 @@ function formatPpg(p: UsagePlayer, format: ScoringFormat): number | null {
 }
 
 const OUT = new Set(["Out", "IR", "PUP", "Doubtful", "Sus", "Suspended", "NFI", "COV"]);
+/** Designations that settle an absence; Doubtful is a sit for the verdicts, never a fact in the copy. */
+const ABSENT = new Set(["Out", "IR", "PUP", "Sus", "Suspended", "NFI", "COV"]);
+
+/** A line ESPN has not shown for three days is no longer the market. */
+export const LINE_STALE_MS = 72 * 3_600_000;
+/** Past twelve hours the hero says when it was seen. */
+export const LINE_DATED_MS = 12 * 3_600_000;
+
+export function lineIsFresh(line: Pick<GameLine, "seenAt">, now: number): boolean {
+  return now - line.seenAt <= LINE_STALE_MS;
+}
 
 function isOut(status: string | null | undefined): boolean {
   return !!status && OUT.has(status);
@@ -351,6 +378,8 @@ export interface PreviewInputs {
   lines: WeekLines | null;
   forecast: Forecast | null;
   now: number;
+  /** The season's regular-season slate, for the closing-line betting trends (2026-11-06). */
+  slate?: ScheduleGame[] | null;
 }
 
 export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview | null {
@@ -376,14 +405,24 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     return { ppr, half: pick("half"), std: pick("std") };
   };
 
-  const line =
+  // Data check (mak, 2026-11-06: "no stale lines"): a line ESPN has not
+  // shown for LINE_STALE_MS is dropped, odds and every sentence built on them
+  // with it; one older than LINE_DATED_MS prints the time it was seen. The
+  // venue facts on it (roof, ESPN's weather) are not odds and are kept.
+  const checks: string[] = [];
+  const found =
     inputs.lines?.games.find(
       (g) =>
         (meeting.espnEventId && g.eventId === meeting.espnEventId) ||
         (g.home === meeting.home.abbreviation && g.away === meeting.away.abbreviation),
     ) ?? null;
+  const fresh = (g: GameLine) => lineIsFresh(g, inputs.now);
+  const line = found && fresh(found) ? found : null;
+  if (found && !line) checks.push(`line-stale:${Math.round((inputs.now - found.seenAt) / 3_600_000)}h`);
+  const lineSeenMs = line && inputs.now - line.seenAt > LINE_DATED_MS ? line.seenAt : null;
   const implied = line ? impliedTotals(line) : null;
   const slate = (inputs.lines?.games ?? [])
+    .filter(fresh)
     .flatMap((g) => {
       const t = impliedTotals(g);
       return t ? [t.away, t.home] : [];
@@ -410,6 +449,18 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       ppr: {},
     };
   };
+  const battleSide = (s: PreviewSide): BattleSide => ({
+    team: s.team,
+    stats: s.stats,
+    usage: s.usage?.players ?? [],
+    qb: starters(s.roster, "QB", 1)[0]?.name ?? null,
+    ids: Object.fromEntries(
+      [
+        ...(s.usage?.players ?? []).filter((u) => u.sleeperId).map((u) => [nameKey(u.name), u.sleeperId!] as const),
+        ...s.roster.filter((r) => r.id).map((r) => [nameKey(r.name), r.id] as const),
+      ],
+    ),
+  });
   const away = makeSide("away", meeting.away, meeting.home);
   const home = makeSide("home", meeting.home, meeting.away);
   const sideOf = (k: SideKey) => (k === "away" ? away : home);
@@ -458,6 +509,12 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       if (ppg === null || !league) continue;
       const rostered = owned(p.sleeperId);
       if (rostered < 5) continue;
+      // Data check: only a player on this team's current roster is named; the
+      // usage file keeps a traded or released player under his old team.
+      if (side.roster.length && !side.roster.some((r) => r.id === p.sleeperId)) {
+        checks.push(`not-on-roster:${side.team.abbreviation}:${p.name}`);
+        continue;
+      }
       const oppRank = opp.fpa?.byPos[p.pos]?.rank ?? null;
       const oppFpa = opp.fpa?.byPos[p.pos]?.fpa ?? null;
       // Matchup: +/-15% from the softest to the stingiest defense at the spot.
@@ -640,7 +697,28 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     h2h: buildH2h(data, meeting, line),
     injuryImpact: injuryImpact(away, home, injuries),
     usageThrough: usage?.throughWeek ?? null,
-    updatedMs: Math.max(inputs.lines?.fetchedAt ?? 0, usage ? Date.parse(usage.builtAt) || 0 : 0),
+    updatedMs: Math.max(
+      inputs.lines?.fetchedAt ?? 0,
+      usage ? Date.parse(usage.builtAt) || 0 : 0,
+      defendersVersion(season),
+      Date.parse(depthChartsVersion()) || 0,
+    ),
+    form: {
+      away: teamForm(pageFor(away.team).schedule?.games),
+      home: teamForm(pageFor(home.team).schedule?.games),
+    },
+    battles: { away: battlesFor(battleSide(away), battleSide(home), season), home: battlesFor(battleSide(home), battleSide(away), season) },
+    conditions: gameConditions(found, inputs.forecast),
+    lineSeenMs,
+    checks,
+    trends: {
+      away: inputs.slate
+        ? teamTrends(away.team, inputs.slate, "road", line?.spread ? (line.spread > 0 ? "favorite" : "underdog") : null, meeting.week)
+        : null,
+      home: inputs.slate
+        ? teamTrends(home.team, inputs.slate, "home", line?.spread ? (line.spread < 0 ? "favorite" : "underdog") : null, meeting.week)
+        : null,
+    },
   };
 
   /* ---- verdicts and reasons */
@@ -839,7 +917,7 @@ function buildCall(
   away: PreviewSide,
   home: PreviewSide,
   line: GameLine | null,
-  facts: Array<{ side: SideKey; p: UsagePlayer; ppg: number; oppRank: number | null; oppFpa: number | null }>,
+  facts: Array<{ side: SideKey; p: UsagePlayer; ppg: number; oppRank: number | null; oppFpa: number | null; injury: RosterPlayer | null }>,
   forecast: Forecast | null,
   slateCount: number,
   meeting: Meeting,
@@ -854,9 +932,10 @@ function buildCall(
   // leak; the percentages, pace and weather stay in `sentences` for "Why?".
   const short: string[] = [];
 
+  // Data check: the script never credits volume to a player listed out.
   const topBy = (side: PreviewSide, pos: Pos[]) =>
     facts
-      .filter((f) => f.side === side.key && pos.includes(f.p.pos))
+      .filter((f) => f.side === side.key && pos.includes(f.p.pos) && !isOut(f.injury?.injuryStatus))
       .sort((x, y) => y.ppg - x.ppg)[0]?.p ?? null;
 
   // 1. The market.
@@ -1067,11 +1146,16 @@ function injuryRows(
   const rows: InjuryRow[] = listed.slice(0, 6).map((r) => {
     const status = r.injuryStatus!;
     const u = usageOf(r);
+    // `out` keeps Doubtful with the absences for the impact grouping; the
+    // copy only states an absence the designation settles (data check, mak
+    // 2026-11-06: "no implied injury outcomes"), so a Doubtful player reads
+    // "if he sits" like a Questionable one.
     const out = isOut(status);
+    const absent = ABSENT.has(status);
     const practice = r.practice ? ` Practice: ${r.practice.replace(/ in Practice$/i, "").toLowerCase()}.` : "";
     const timing =
-      status === "Questionable"
-        ? ` Game-time decision: inactives post 90 minutes before the ${kickoff ?? "kickoff"}${kickoff ? " kickoff" : ""}.`
+      status === "Questionable" || status === "Doubtful"
+        ? ` Inactives post 90 minutes before the ${kickoff ?? "kickoff"}${kickoff ? " kickoff" : ""}.`
         : "";
     let fallout: string;
     let impact: InjuryRow["impact"] = status === "Questionable" ? "watch" : out ? "out" : "watch";
@@ -1094,8 +1178,8 @@ function injuryRows(
       const flow = next.length
         ? `${next.map((p) => `${p.name} (${one(p.targetShare!)}%)`).join(" and ")} ${next.length > 1 ? "are" : "is"} next in line`
         : "nobody on the roster has a clear claim to it";
-      if (out && next[0]) beneficiary = { name: next[0].name, pos: next[0].pos };
-      fallout = out
+      if (absent && next[0]) beneficiary = { name: next[0].name, pos: next[0].pos };
+      fallout = absent
         ? `His ${share} is open; ${flow}.`
         : `If he sits, his ${share} flows first to ${next[0] ? `${next[0].name} (${one(next[0].targetShare!)}%)` : "the depth chart"}.`;
     } else if (u.pos === "RB") {
@@ -1107,19 +1191,22 @@ function injuryRows(
         fallout = `Handcuff alert for ${lead.name} managers: ${u.name} is a backup (${pct(u.snapShare)} of snaps), so the ${lead.name} handcuff chain is thinner until he is back.`;
       } else {
         const next = rbs.find((p) => p.id !== u.id && healthy(p));
-        if (out && next) beneficiary = { name: next.name, pos: next.pos };
+        if (absent && next) beneficiary = { name: next.name, pos: next.pos };
         fallout = next
-          ? `${out ? "With him out" : "If he sits"}, ${next.name} (${pct(next.snapShare)} of snaps so far) leads the backfield; his ${one(pprPpg(u) ?? 0)} PPR points a game need replacing.`
-          : `${out ? "With him out" : "If he sits"}, the ${side.team.nickname} have no back with a real 2026 role behind him.`;
+          ? `${absent ? "With him out" : "If he sits"}, ${next.name} (${pct(next.snapShare)} of snaps so far) leads the backfield; his ${one(pprPpg(u) ?? 0)} PPR points a game need replacing.`
+          : `${absent ? "With him out" : "If he sits"}, the ${side.team.nickname} have no back with a real 2026 role behind him.`;
       }
     } else {
       const qbs = players.filter((p) => p.pos === "QB" && p.games > 0).sort((x, y) => y.dropbacks - x.dropbacks);
-      const starter = qbs[0];
+      // Data check: "while X starts" names the depth chart's QB1 when the
+      // roster has one, not just the season's dropback leader.
+      const depthQb = starters(side.roster, "QB", 1)[0];
+      const starter = (depthQb && players.find((p) => p.sleeperId === depthQb.id)) ?? qbs[0];
       if (starter && starter.id !== u.id) impact = "none";
       fallout =
         starter && starter.id !== u.id
           ? `No fantasy fallout while ${starter.name} starts.`
-          : `${out ? "With him out" : "If he sits"}, downgrade every ${side.team.nickname} pass catcher until the backup proves otherwise.`;
+          : `${absent ? "With him out" : "If he sits"}, downgrade every ${side.team.nickname} pass catcher until the backup proves otherwise.`;
     }
     return {
       status,

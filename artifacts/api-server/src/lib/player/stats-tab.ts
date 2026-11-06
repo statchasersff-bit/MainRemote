@@ -46,13 +46,13 @@ import { passerRating } from "./stats-profile";
 import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSeason } from "./stats-tab-data";
 import type { GameLogEntry } from "./types";
 import { lastName, teamInk } from "./header";
+import { redraftPlayerUrl } from "./redraft-link";
 
 const DASH = "-";
 
 /** The scoring as the reference page words it: "full PPR", not the toggle's "PPR". */
 const SCORING_WORDS = { ppr: "full PPR", half: "half-PPR", standard: "standard" } as const;
 const MINUS = "−";
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /* ------------------------------------------------------------------ atoms */
 
@@ -1145,7 +1145,7 @@ function readParagraphs(data: PlayerPageData, c: Career, options: PlayerRenderOp
   if (rows.length === 0 || total.gp === 0) return [];
   const name = data.player.name;
   const last = lastName(name);
-  const redraft = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
+  const redraft = redraftPlayerUrl(data.player);
   const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
   const done = rows.filter((r) => !r.inProgress);
   const n = rows.length;
@@ -1244,7 +1244,7 @@ function redraftCard(data: PlayerPageData): RedraftCard {
   return {
     heading: "Redraft Command",
     body: `Career stats tell you who he's been. Redraft Command projects what he's worth from here: rest-of-season rank, trade value and waiver priority for your league settings.`,
-    href: `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`,
+    href: redraftPlayerUrl(data.player),
     cta: `Open ${last} in Redraft Command`,
   };
 }

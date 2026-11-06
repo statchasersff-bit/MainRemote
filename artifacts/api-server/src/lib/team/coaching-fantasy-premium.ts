@@ -58,7 +58,7 @@ function trends(c: TeamCoaching, view: UsageView | null): string {
     // the brief insists (67.6% to 78% is +10.4 pp, not +10.4%).
     const change =
       r.delta != null && r.delta !== 0 && r.pct
-        ? `<span class="sct-cf-trend-pp ${tone}">${e(`${signedPts(Math.round(r.delta * 10) / 10)} pp`)}</span>`
+        ? `<span class="sct-cf-trend-pp ${tone}">${e(`${signedPts(Math.round(r.delta * 10) / 10)}%`)}</span>`
         : "";
     return (
       `<li class="sct-cf-trend ${tone}">` +

@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { JSDOM, VirtualConsole } from "jsdom";
 import { startServer, APP_DIR } from "./helpers/server.mjs";
+import { importModule } from "./helpers/bundle.mjs";
 
 let server;
 let teamBundle;
@@ -747,20 +748,27 @@ describe("the fixture page", () => {
     const { doc } = page;
 
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
-    const hero = doc.querySelector("header.sct-pv-hero") ?? doc.querySelector("header.sct-sbh");
+    // The premium hero since 2026-11-06 (mak approved it and had the old
+    // .sct-pv-hero removed), the scoreboard without a preview.
+    const hero = doc.querySelector("header.sct-mpp-hero") ?? doc.querySelector("header.sct-sbh");
     assert.ok(hero, "there is a hero");
     assert.ok(hero.querySelector("h1"), "and the H1 is inside it");
-    if (!hero.matches(".sct-pv-hero")) return;
+    if (!hero.matches(".sct-mpp-hero")) return;
+    await assertPremiumHero(hero);
+  });
+});
 
-    assert.equal(hero.querySelectorAll(".sct-pv-side").length, 2, "two sides");
+/** The upcoming page's hero: two teams, the kickoff fact, the KPI cards adding up. */
+async function assertPremiumHero(hero) {
+    assert.equal(hero.querySelectorAll(".sct-mpp-ident").length, 2, "two sides");
     assert.equal(hero.querySelectorAll(".sct-sbh-score, table").length, 0, "no score, no table");
-    const chips = [...hero.querySelectorAll(".sct-pv-chip")].map((n) => n.textContent);
-    assert.match(chips[0] ?? "", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/, `kickoff chip: ${chips[0]}`);
+    const facts = [...hero.querySelectorAll(".sct-mpp-fact")].map((n) => n.textContent);
+    assert.match(facts[0] ?? "", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/, `kickoff fact: ${facts[0]}`);
 
-    // The strip's implied totals are (total -/+ spread) / 2 of what it prints.
-    const cells = [...hero.querySelectorAll(".sct-pv-bet")].map((c) => ({
-      k: c.querySelector(".sct-pv-bet-k").textContent,
-      v: c.querySelector(".sct-pv-bet-v").textContent,
+    // The KPI cards' implied totals add up to the total they print.
+    const cells = [...hero.querySelectorAll(".sct-mpp-kpi")].map((c) => ({
+      k: c.querySelector(".sct-mpp-kpi-label").textContent,
+      v: c.querySelector(".sct-mpp-kpi-value").textContent,
     }));
     if (cells.length) {
       const total = Number(cells.find((c) => c.k === "Total").v);
@@ -768,6 +776,185 @@ describe("the fixture page", () => {
       assert.equal(implied.length, 2, "both implied totals");
       assert.ok(Math.abs(implied[0] + implied[1] - total) < 0.02, "implied totals add up to the total");
     }
+}
+
+/**
+ * The upcoming page IS the premium design (mak, 2026-11-06: "i prefer the new
+ * design of the upcoming matchups pages. remove the old one"). Found from the
+ * schedule rather than a fixed pair, so it runs whichever week it is.
+ */
+describe("the upcoming page (premium design)", () => {
+  async function upcomingPaths() {
+    const { getTeamByAbbreviation: team } = await importModule("lib/team/teams");
+    const rows = fs.readFileSync(path.join(APP_DIR, "data", "schedule", "games.csv"), "utf8").trim().split("\n");
+    const head = rows.shift().split(",");
+    const col = (n) => head.indexOf(n);
+    const today = new Date().toISOString().slice(0, 10);
+    const out = [];
+    for (const line of rows) {
+      const c = line.split(",");
+      if (c[col("game_type")] !== "REG" || c[col("away_score")] !== "" || c[col("gameday")] < today) continue;
+      const a = team(c[col("away_team")]);
+      const h = team(c[col("home_team")]);
+      if (a && h) out.push(`/nfl/${a.slug}-vs-${h.slug}/`);
+      if (out.length >= 3) break;
+    }
+    return out;
+  }
+
+  test("the hero, the cards and the rail replace the old layer; headings, FAQ and footer stay", async () => {
+    let checked = 0;
+    const paths = await upcomingPaths();
+    for (const p of paths) {
+      // Either team order resolves; the canonical one may be a redirect away.
+      const res = await fetch(`${server.origin}${p}`, { redirect: "follow" });
+      if (res.status !== 200) continue;
+      const doc = new JSDOM(await res.text()).window.document;
+      const root = doc.querySelector("[data-sct-root]");
+      if (root.getAttribute("data-matchup-state") !== "upcoming" || !doc.querySelector(".sct-mpp")) continue;
+      checked++;
+      // One H1, visible, in the preview banner (mak's SEO brief, 2026-11-06):
+      // "Packers vs. Patriots: Week 9 Game Preview"; none left in the hero.
+      assert.equal(doc.querySelectorAll("h1").length, 1, p);
+      const hero = doc.querySelector("header.sct-mpp-hero");
+      assert.equal(hero.querySelector("h1, h2, [data-sct-hero-heading]"), null, `${p}: no heading in the hero`);
+      const h1 = doc.querySelector(".sct-mpp-banner h1[data-sct-hero-heading]");
+      assert.match(h1?.textContent ?? "", /^\S.* vs\. .+: .+ Game Preview$/, p);
+      assert.match(doc.title, / vs\. .+ Preview: .*Odds.* \| .+, \d{4}$/, `${p}: ${doc.title}`);
+      // The FAQ does not repeat the odds, injuries or key matchups above it,
+      // and links nowhere that is not on the page.
+      for (const q of doc.querySelectorAll("#pv-faq ~ * summary, .sct-pv-qa summary")) {
+        assert.doesNotMatch(q.textContent, /playing in|benefits most|injur|gives up more|best fantasy matchup/i, q.textContent);
+      }
+      for (const a of doc.querySelectorAll('a[href^="#"]')) {
+        const id = a.getAttribute("href").slice(1);
+        if (id) assert.ok(doc.getElementById(id), `${p}: dead in-page link #${id}`);
+      }
+      // Injury copy states an absence only for a settled designation.
+      for (const item of doc.querySelectorAll(".sct-mpp-inj")) {
+        const status = item.querySelector(".sct-mpp-status")?.getAttribute("title") ?? "";
+        // The position and designation tags sit right of the name (2026-11-06).
+        assert.ok(item.querySelector(".sct-mpp-inj-top > .sct-mpp-inj-name + .sct-mpp-slot, .sct-mpp-inj-top > .sct-mpp-inj-name + .sct-mpp-status"), `${p}: tags beside the name`);
+        const copy = item.querySelector(".sct-mpp-inj-note")?.textContent ?? "";
+        // Collapsed by default, the note inside the disclosure (2026-11-06).
+        const d = item.querySelector("details.sct-mpp-inj-d");
+        assert.ok(d && !d.open && d.querySelector("summary .sct-mpp-inj-name"), `${p}: collapsed row`);
+        assert.doesNotMatch(copy, /Game-time decision/, `${p}: implied outcome`);
+        if (/^(Questionable|Doubtful)$/i.test(status)) assert.doesNotMatch(copy, /is open|With him out/, `${p}: ${status} written as out`);
+      }
+      await assertPremiumHero(hero);
+      assert.ok(doc.querySelector(".sct-mpp.is-top > nav.sct-mpp-crumbs [aria-current=page]"), "the breadcrumb");
+      // Nothing of the old layer is left.
+      for (const old of [".sct-pv-hero", ".sct-pv-lb", ".sct-pv-cmp", ".sct-pv-inj-card", ".sct-mu-starters", ".sct-mu-last", ".sct-pv-cta", ".sct-cp-flag"]) {
+        assert.equal(doc.querySelector(old), null, `${p}: ${old}`);
+      }
+      // The old sections' H2s, same ids, on the cards.
+      for (const id of ["pv-call", "pv-lev", "pv-snap", "pv-inj"]) {
+        const h = doc.getElementById(id);
+        if (!h) continue; // a section without data (no line, no leverage rows)
+        assert.equal(h.tagName, "H2", id);
+        assert.ok(h.closest(".sct-mpp-card"), id);
+      }
+      // Keys to the Game (mak, 2026-11-06): right under The Call, one to three
+      // keys of different kinds, each a question over figures with their ranks.
+      const keys = doc.querySelector(".sct-mpp-card.is-keys");
+      if (keys) {
+        assert.equal(keys.previousElementSibling?.classList.contains("is-call"), true, "under The Call");
+        assert.equal(keys.querySelector("h2")?.id, "pv-keys");
+        const items = [...keys.querySelectorAll(".sct-mpp-key")];
+        assert.ok(items.length >= 1 && items.length <= 3, `${items.length} keys`);
+        const kinds = items.map((k) => k.dataset.kind);
+        assert.equal(new Set(kinds).size, kinds.length, "no two keys of one kind");
+        for (const k of items) {
+          assert.match(k.querySelector("h3.sct-mpp-key-q").textContent, /\?$/);
+          const copy = k.querySelector(".sct-mpp-key-copy").textContent;
+          if (k.dataset.kind !== "injury") assert.match(copy, /\d+(st|nd|rd|th)/, "a figure with its rank");
+          assert.doesNotMatch(copy, /\u2014/, "no em dashes");
+        }
+      }
+      // Recent Form and Player Battles (mak, 2026-11-06): after the keys, before
+      // the leverage card; results are W/L/T, battles never claim an assignment.
+      const form = doc.querySelector(".sct-mpp-card.is-form");
+      if (form) {
+        assert.equal(form.querySelector("h2")?.id, "pv-form");
+        for (const g of form.querySelectorAll(".sct-mpp-form-g")) assert.match(g.dataset.wlt, /^[WLT]$/);
+        assert.ok(form.querySelectorAll(".sct-mpp-form-games").length >= 1);
+      }
+      const battles = doc.querySelector(".sct-mpp-card.is-battles");
+      if (battles) {
+        // No title bar since 2026-11-06: named by aria-label.
+        assert.match(battles.getAttribute("aria-label") ?? "", /player battles$/);
+        for (const b of battles.querySelectorAll(".sct-mpp-bt")) {
+          assert.ok(b.querySelector(".is-off .sct-mpp-bt-p") && b.querySelector(".is-def .sct-mpp-bt-p"), "both sides named");
+          // Collapsed: faces, names and positions; the stats open below (2026-11-06).
+          const d = b.querySelector("details.sct-mpp-bt-d");
+          assert.ok(d && !d.open && d.querySelector("summary .sct-mpp-bt-pos"), "collapsed face-off");
+        }
+        const receiver = battles.querySelector('.sct-mpp-bt[data-kind="receiver"] .sct-mpp-bt-note');
+        if (receiver) assert.match(receiver.textContent, /not a set matchup/);
+      }
+      // Team Comparison replaces Team Matchup and the Game Snapshot rail card
+      // (mak, 2026-11-06): NFL stats only, every value with a 32-team rank, an
+      // edge only past three places.
+      assert.equal(doc.querySelector(".sct-mpp-snap"), null, `${p}: no Game Snapshot card`);
+      assert.equal(doc.querySelector(".sct-mpp-dvp"), null, `${p}: no Points Allowed by Position card`);
+      const cmp = doc.querySelector(".sct-mpp-card.is-compare");
+      if (cmp) {
+        // First in the main column, above The Call (mak, 2026-11-06).
+        assert.equal(cmp.parentElement.firstElementChild, cmp, `${p}: Team Comparison leads`);
+        const call = doc.querySelector(".sct-mpp-card.is-call");
+        if (call) assert.equal(cmp.nextElementSibling, call, `${p}: The Call follows it`);
+        assert.equal(cmp.querySelector("h2#pv-snap")?.textContent, "Team Comparison");
+        const tabs = [...cmp.querySelectorAll('[role="tab"]')];
+        assert.ok(tabs.length >= 2 && tabs[0].textContent === "Offense", `${p}: tabs`);
+        assert.equal(tabs[0].getAttribute("aria-selected"), "true");
+        assert.doesNotMatch(cmp.textContent, /fantasy|PPR|pts allowed/i, `${p}: no fantasy rows`);
+        for (const tr of cmp.querySelectorAll("tbody tr")) {
+          const ranks = [...tr.querySelectorAll("td small")].map((x) => Number.parseInt(x.textContent.replace(/^T-/, ""), 10));
+          for (const r of ranks) if (Number.isFinite(r)) assert.ok(r >= 1 && r <= 32, `${p}: rank ${r}`);
+          const edge = tr.dataset.edge;
+          if (edge === "away" || edge === "home") {
+            assert.ok(Math.abs(ranks[0] - ranks[1]) > 3, `${p}: an edge needs more than three places`);
+            assert.ok(edge === "away" ? ranks[0] < ranks[1] : ranks[1] < ranks[0], `${p}: the edge is the better rank`);
+            assert.ok(tr.querySelector(`td.is-${edge}.is-adv`));
+          }
+        }
+      }
+      // Fantasy Football Impact (mak, 2026-11-06): ADDED right under Matchup
+      // Leverage; at most three takeaways, no redistribution or "matchup-proof"
+      // claims, a season (not weekly) rank, every format rendered.
+      const ff = doc.querySelector(".sct-mpp-card.is-fantasy");
+      if (ff) {
+        // Matchup Leverage was removed (mak, 2026-11-06); the impact card stays.
+        assert.equal(doc.querySelector(".sct-mpp-card.is-leverage"), null, `${p}: no Matchup Leverage card`);
+        assert.equal(ff.querySelector("h2")?.id, "pv-fantasy");
+        for (const panel of ff.querySelectorAll('[role="tabpanel"]')) {
+          const items = panel.querySelectorAll(".sct-mpp-ff-item");
+          assert.ok(items.length <= 3, `${p}: ${items.length} takeaways`);
+          const texts = [...items].map((i) => i.querySelector(".sct-mpp-ff-text").textContent);
+          assert.equal(new Set(texts.map((t) => t.replace(/[A-Z][a-z'.-]+/g, "X"))).size, texts.length, `${p}: no two takeaways read alike`);
+          for (const t of texts) assert.doesNotMatch(t, /matchup-proof|must[- ]start|flows (first )?to|transfers?/i, `${p}: ${t}`);
+          assert.ok(panel.querySelector("details.sct-mpp-ff-all:not([open]) table[data-filterable]"), `${p}: collapsed table`);
+        }
+      }
+      // Betting Outlook (mak, 2026-11-06): under Fantasy Football Impact, no
+      // provider named, no picks or probabilities, records with sample sizes.
+      const bo = doc.querySelector(".sct-mpp-card.is-betting");
+      if (bo) {
+        if (ff) assert.equal(ff.nextElementSibling, bo, `${p}: under Fantasy Football Impact`);
+        assert.doesNotMatch(bo.textContent, /draftkings|fanduel|espn|nflverse|consensus line|lock|best bet|guarantee|\d+% (chance|probability)/i, `${p}: betting copy`);
+        for (const span of bo.querySelectorAll(".sct-mpp-bo-rec span")) assert.match(span.textContent, /\d+ games/, `${p}: sample size`);
+      }
+      // The tail: FAQ (with its schema), then Next steps, right after the premium body.
+      // (The lighter-design comparison, .sct-mpl, was removed 2026-11-06.)
+      assert.equal(doc.querySelector(".sct-mpl"), null, "no lighter-design comparison");
+      const tail = doc.querySelector(".sct-mpp:not(.is-top) + .sct-pv");
+      assert.ok(tail?.querySelector("#pv-faq"), "the FAQ follows the cards");
+      assert.ok(tail.querySelector("footer.sct-pv-foot"), "Next steps");
+      assert.ok([...doc.querySelectorAll('script[type="application/ld+json"]')].some((s) => s.textContent.includes('"FAQPage"')), "FAQ schema");
+    }
+    // Between seasons nothing is upcoming; otherwise a page must have been checked.
+    if (paths.length) assert.ok(checked > 0, `no premium upcoming page among ${paths.join(", ")}`);
   });
 });
 
@@ -1464,7 +1651,7 @@ describe("the matchup hero is one block", () => {
       if (!found) return;
       const { doc } = found;
 
-      const hero = doc.querySelector(".sct-sbh, .sct-pv-hero");
+      const hero = doc.querySelector(".sct-sbh, .sct-mpp-hero");
       assert.ok(hero, "the hero renders");
 
       const offenders = [...hero.querySelectorAll("*")]
@@ -1894,31 +2081,127 @@ describe("one owner per game", () => {
     }
   });
 
-  test("in preview mode the pair page keeps the last meeting's stats under the injury report", async () => {
-    for (const path of PAIRS) {
-      const { doc } = await dom(path);
-      const root = doc.querySelector("[data-sct-root]");
-      if (root.getAttribute("data-matchup-state") !== "upcoming") continue;
-      const block = doc.querySelector(".sct-mu-last");
-      if (!block) continue; // The two have never met.
-      assert.ok(block.closest(".sct-pv"), "inside the preview");
-      assert.equal(block.previousElementSibling?.getAttribute("aria-label"), "Need a replacement?", "under the injury report's waiver CTA");
-      // Head-to-Head follows when the window holds two or more meetings; at
-      // one meeting that block is folded into this one and the CTA follows.
-      const next = block.nextElementSibling;
-      assert.ok(next?.getAttribute("aria-labelledby") === "pv-h2h" || next?.classList.contains("sct-pv-cta"), "above Head-to-Head or the CTA");
-      assert.match(block.querySelector("h2").textContent, /^Last meeting: [A-Za-z0-9 .]+ \d+, [A-Za-z0-9 .]+ \d+ \(Week \d+, [A-Z][a-z]{2} \d{1,2}, \d{4}\)$/);
-      const link = block.querySelector("a.sct-textlink");
-      assert.match(link.getAttribute("href"), /\/\d{4}-week-\d{1,2}\/$/, "to the dated page");
-      assert.match(link.textContent, /full box score and player stats/);
-      const rows = [...block.querySelectorAll(".sct-mu-last-row")];
-      assert.ok(rows.length <= 6);
-      for (const row of rows) {
-        assert.ok(row.querySelector(".sct-mu-last-who a[href*='/nfl/players/']"), "linked to the profile");
-        assert.match(row.querySelector(".sct-mu-last-pts").textContent, /^\d+\.\d$/, "the figure alone, no unit");
+  // The "Last meeting" block under the old injury report left the upcoming
+  // page with the old decision layer (mak, 2026-11-06); the Head-to-Head
+  // rail card carries the meetings now.
+});
+
+describe("matchup game conditions (mak, 2026-11-06)", () => {
+  test("the impact note shows only past a threshold, and never indoors", async () => {
+    const { gameConditions } = await importModule("lib/matchup/preview-extras");
+    const outdoors = { indoor: false, weather: null };
+    assert.equal(gameConditions(outdoors, { tempF: 55, windMph: 8, precipPct: 10 }).impact, null, "a mild day says nothing");
+    assert.match(gameConditions(outdoors, { tempF: 55, windMph: 18, precipPct: 10 }).impact, /18 mph/);
+    assert.match(gameConditions(outdoors, { tempF: 20, windMph: 5, precipPct: 60 }).impact, /60% chance of rain.*20°F/);
+    const dome = gameConditions({ indoor: true, weather: null }, { tempF: 10, windMph: 30, precipPct: 90 });
+    assert.equal(dome.indoor, true);
+    assert.equal(dome.impact, null, "indoors, no weather note");
+    assert.equal(gameConditions(null, null), null, "nothing known, no card");
+  });
+});
+
+describe("matchup preview data checks (mak, 2026-11-06)", () => {
+  test("a line ESPN has not shown for three days is stale", async () => {
+    const { lineIsFresh, LINE_STALE_MS } = await importModule("lib/matchup/preview");
+    const now = Date.UTC(2026, 10, 6, 17);
+    assert.equal(lineIsFresh({ seenAt: now - 3_600_000 }, now), true);
+    assert.equal(lineIsFresh({ seenAt: now - LINE_STALE_MS + 1 }, now), true);
+    assert.equal(lineIsFresh({ seenAt: now - LINE_STALE_MS - 1 }, now), false);
+  });
+
+  test("a battle names only defenders on the team's current depth chart", async () => {
+    const { depthChartNames, nameKey } = await importModule("lib/team/depth-charts");
+    const res = await fetch(`${server.origin}/nfl/green-bay-packers-vs-new-england-patriots/`, { redirect: "follow" });
+    const doc = new JSDOM(await res.text()).window.document;
+    const blocks = [...doc.querySelectorAll(".sct-mpp-bt-block")];
+    for (const block of blocks) {
+      const defense = block.classList.contains("is-away") ? "ne" : "gb";
+      const names = depthChartNames(defense);
+      if (!names) continue;
+      for (const n of block.querySelectorAll(".is-def .sct-mpp-bt-name")) {
+        const name = (n.getAttribute("title") ?? n.textContent).replace(/Q$/, "").trim();
+        assert.ok(names.has(nameKey(name)), `${name} is not on the ${defense.toUpperCase()} depth chart`);
       }
-      assert.match(doc.querySelector("title").textContent, /Fantasy Preview & (Last Meeting )?Stats$/);
-      return;
     }
   });
 });
+
+describe("team comparison tabs (mak, 2026-11-06)", () => {
+  test("switching tabs shows one panel, through the real client bundle", async () => {
+    const res = await fetch(`${server.origin}/nfl/green-bay-packers-vs-new-england-patriots/`, { redirect: "follow" });
+    const html = await res.text();
+    const bundle = path.join(APP_DIR, "public", "dist", "statchasers-team.js");
+    const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true });
+    dom.window.eval(fs.readFileSync(bundle, "utf8"));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const doc = dom.window.document;
+    const tabs = [...doc.querySelectorAll('.sct-mpp-cmp [role="tab"]')];
+    if (tabs.length < 2) return dom.window.close();
+    const shown = () => [...doc.querySelectorAll('.sct-mpp-cmp [role="tabpanel"]')].filter((x) => !x.hidden).map((x) => x.id);
+    assert.deepEqual(shown(), ["pv-cmp-offense"]);
+    tabs[1].click();
+    assert.deepEqual(shown(), ["pv-cmp-defense"]);
+    assert.equal(tabs[1].getAttribute("aria-selected"), "true");
+    tabs[1].dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    assert.deepEqual(shown(), [tabs[tabs.length - 1].getAttribute("aria-controls")]);
+    dom.window.close();
+  });
+});
+
+describe("fantasy football impact controls (mak, 2026-11-06)", () => {
+  test("format switch and table filters, through the real client bundle", async () => {
+    const res = await fetch(`${server.origin}/nfl/green-bay-packers-vs-new-england-patriots/`, { redirect: "follow" });
+    const html = await res.text();
+    const bundle = path.join(APP_DIR, "public", "dist", "statchasers-team.js");
+    const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true });
+    dom.window.eval(fs.readFileSync(bundle, "utf8"));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const doc = dom.window.document;
+    const ff = doc.querySelector(".sct-mpp-card.is-fantasy");
+    if (!ff) return dom.window.close();
+    const shown = () => [...ff.querySelectorAll('[role="tabpanel"]')].filter((x) => !x.hidden).map((x) => x.id);
+    assert.deepEqual(shown(), ["pv-ff-ppr"]);
+    ff.querySelector("#pv-ff-tab-half").click();
+    assert.deepEqual(shown(), ["pv-ff-half"]);
+    const panel = ff.querySelector("#pv-ff-half");
+    const rows = () => [...panel.querySelectorAll("tbody tr")].filter((r) => !r.hidden);
+    const all = rows().length;
+    const team = panel.querySelector('button[data-filter="team"]:not([data-value="all"])');
+    team.click();
+    assert.ok(rows().length > 0 && rows().length < all, "team filter narrows the table");
+    assert.ok(rows().every((r) => r.dataset.team === team.dataset.value));
+    panel.querySelector('button[data-filter="pos"][data-value="QB"]').click();
+    assert.ok(rows().every((r) => r.dataset.pos === "QB" && r.dataset.team === team.dataset.value));
+    dom.window.close();
+  });
+});
+
+describe("betting outlook math (mak, 2026-11-06)", () => {
+  test("ATS and O/U against closing lines count pushes; line movement survives a favorite flip", async () => {
+    const { teamTrends, spreadMove, spreadText } = await importModule("lib/matchup/preview-betting");
+    const { getTeamByAbbreviation: team } = await importModule("lib/team/teams");
+    const gb = team("gb");
+    const ne = team("ne");
+    const chi = team("chi");
+    const g = (week, away, home, as, hs, spread, total) => ({ week, away, home, awayScore: as, homeScore: hs, spreadLine: spread, totalLine: total, status: "final" });
+    const slate = [
+      g(1, gb, chi, 24, 20, 3, 40), // CHI -3: GB +3 wins by 4 -> cover; 44 > 40 over
+      g(2, chi, gb, 17, 20, 3, 37), // GB -3 at home, wins by 3 -> push; 37 = 37 push
+      g(3, gb, ne, 10, 27, -2.5, 41), // GB -2.5 away, loses -> no cover; 37 < 41 under
+      g(9, gb, ne, 0, 0, 0, 0), // this game and later: excluded
+    ];
+    const t = teamTrends(gb, slate, "road", "underdog", 9);
+    assert.deepEqual(t.ats, { w: 1, l: 1, p: 1 });
+    assert.deepEqual(t.ou, { o: 1, u: 1, p: 1 });
+    assert.equal(t.games, 3);
+    assert.deepEqual({ w: t.venueAts.w, l: t.venueAts.l, p: t.venueAts.p, games: t.venueAts.games }, { w: 1, l: 1, p: 0, games: 2 });
+    assert.equal(t.roleAts.games, 1, "an underdog only in week 1");
+    // Home-signed (negative = home favored): NE -2.5 to GB -1 is 3.5 toward GB.
+    assert.equal(spreadText(-2.5, gb, ne), "NE \u22122.5");
+    assert.equal(spreadText(1, gb, ne), "GB \u22121");
+    assert.equal(spreadMove(-2.5, 1, gb, ne), "3.5 toward GB");
+    assert.equal(spreadMove(-1.5, -3, gb, ne), "1.5 toward NE");
+    assert.equal(spreadMove(-3, -3, gb, ne), "No change");
+  });
+});
+

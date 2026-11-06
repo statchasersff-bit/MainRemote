@@ -151,7 +151,14 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
     `<div class="scp-inp-hp" role="img" aria-label="${e(`Durability score ${d.score.toFixed(1)} of 100, ${d.tier.name}`)}" style="--hp:${e(d.tier.color)}">` +
     `<div class="scp-inp-hp-head"><span class="scp-inp-hp-k" title="Redraft Command's durability score (HP): higher is more durable">Health profile</span><span class="scp-inp-hp-v"><b>${e(d.score.toFixed(1))}</b><small> / 100</small></span></div>` +
     `<div class="scp-inp-hp-bar"><span class="scp-inp-hp-fill" style="width:${pct.toFixed(1)}%"></span><span class="scp-inp-hp-notches" aria-hidden="true"></span></div>` +
-    `<p class="scp-inp-hp-tier is-${e(d.tier.key)}">${e(d.tier.name)}</p>` +
+    `</div>`;
+  // The tier pill and the availability line share one row under the bar
+  // (mak, 2026-11-06). The pill sits outside the role="img" block so the
+  // line stays readable text; the block's label already names the tier.
+  const hpFoot =
+    `<div class="scp-inp-hp-foot">` +
+    `<p class="scp-inp-hp-tier is-${e(d.tier.key)}" aria-hidden="true">${e(d.tier.name)}</p>` +
+    `<p class="scp-inp-dur-status"><b class="is-${e(m.status.kind)}">${e(m.status.word)}</b><i aria-hidden="true"> • </i><b>${e(d.availPct.toFixed(1))}%</b> career availability</p>` +
     `</div>`;
   // One box per region, the selected one shown (client/player.ts swaps them
   // with the markers, the pills and the record): the map's only external
@@ -161,17 +168,20 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
     .map(
       (r) =>
         `<div class="scp-inp-sel" data-region-panel="${e(r.key)}"${r.key === d.worst ? "" : " hidden"} style="--sel:${e(r.color.stroke)}">` +
-        `<span class="scp-inp-sel-k">Selected location</span>` +
+        // No "Selected location" label; the region and its counts share the
+        // top row, the note sits centered under them (mak, 2026-11-06).
+        `<div class="scp-inp-sel-top">` +
         `<b class="scp-inp-sel-v">${e(r.label)}</b>` +
         `<span class="scp-inp-sel-s">${e(`${r.episodes} occurrence${r.episodes === 1 ? "" : "s"} · ${r.gamesMissed} game${r.gamesMissed === 1 ? "" : "s"} missed`)}</span>` +
-        `<span class="scp-inp-sel-s">${e(r.severe ? "Season-ending injury on record" : r.gamesMissed > 0 ? `Latest ${r.latest}` : `Played through${r.latest ? ` · latest ${r.latest}` : ""}`)}</span>` +
+        `</div>` +
+        `<span class="scp-inp-sel-s is-note">${e(r.severe ? "Season-ending injury on record" : r.gamesMissed > 0 ? `Latest ${r.latest}` : `Played through${r.latest ? ` · latest ${r.latest}` : ""}`)}</span>` +
         `</div>`,
     )
     .join("");
   const seasonsWord = `${d.seasons} season${d.seasons === 1 ? "" : "s"}`;
   // The reviewer's layout (2026-11-05): the four tiles in one row, then the
-  // availability matrix beside the map panel, then the region pills and the
-  // open record across the full width.
+  // availability matrix (with the region pills and the open record under
+  // it, 2026-11-06) beside the map panel.
   return (
     `<section class="scp-inp-sec is-dur" aria-labelledby="scp-inp-dur-h" data-scp-durability>` +
     bar(ICON.shield, "Durability Profile", "", "scp-inp-dur-h") +
@@ -179,21 +189,27 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
     `<div class="scp-inp-tiles">${tiles}</div>` +
     `<div class="scp-inp-dur-grid">` +
     `<div class="scp-inp-dur-l">` +
+    // Its own card, framed like the map panel (mak, 2026-11-06).
+    `<div class="scp-inp-avbox">` +
     `<h3 class="scp-inp-dur-h">Season-by-Season Availability<small>${e(seasonsWord)}</small></h3>` +
     d.grid +
+    `</div>` +
+    // Injury Regions directly under the availability matrix (mak,
+    // 2026-11-06), in the left column beside the map panel; its own card
+    // (.scp-inp-regions is framed in player.css).
+    `<div class="scp-inp-regions">` +
+    `<h3 class="scp-inp-dur-h">Injury Regions<small>Select a region for its history</small></h3>` +
+    d.pills +
+    d.details +
+    `</div>` +
     `</div>` +
     `<div class="scp-inp-dur-r">` +
     `<h3 class="scp-inp-dur-h">Injury Location Map<small>Interactive</small></h3>` +
     d.figure +
     selected +
     hp +
-    `<p class="scp-inp-dur-status"><b class="is-${e(m.status.kind)}">${e(m.status.word)}</b><i aria-hidden="true"> • </i><b>${e(d.availPct.toFixed(1))}%</b> career availability</p>` +
+    hpFoot +
     `</div>` +
-    `</div>` +
-    `<div class="scp-inp-regions">` +
-    `<h3 class="scp-inp-dur-h">Injury Regions<small>Select a region for its history</small></h3>` +
-    d.pills +
-    d.details +
     `</div>` +
     `<p class="scp-in-sr">${e(regionsText)}</p>` +
     `</div></section>`
@@ -286,9 +302,15 @@ export function renderInjuryPremium(data: PlayerPageData, options: PlayerRenderO
     `</header>`;
   return (
     `<div class="scp-inp" aria-labelledby="scp-inp-title">` +
+    // The banner, status row and practice strip share one card, the way the
+    // Outlook tab's Rest-of-Season Projection holds its navy bar and body
+    // (mak, 2026-11-06).
+    `<section class="scp-inp-intro" aria-labelledby="scp-inp-title">` +
     hero +
+    `<div class="scp-inp-intro-body">` +
     renderStatus(m) +
     renderPractice(m) +
+    `</div></section>` +
     renderDurability(data, m) +
     renderHistory(m) +
     renderPlan(m) +

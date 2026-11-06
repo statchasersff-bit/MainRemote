@@ -105,6 +105,10 @@ const text = (el) => el?.textContent.replace(/\s+/g, " ").trim() ?? "";
 const pairs = (card) =>
   [...card.querySelectorAll("dl > div")].map((d) => `${text(d.querySelector("dt"))}: ${text(d.querySelector("dd"))}`);
 
+// With no advanced line at all, the season container keeps the KPI cards and
+// their toggle (mak, 2026-11-06), so it is never empty.
+const NO_ADV = { statsAdvanced: { current: null, last: null } };
+
 describe("stats tab", () => {
   test("the sections in the spec's order, each with an H2 and aria-labelledby", () => {
     const doc = render(state());
@@ -125,12 +129,16 @@ describe("stats tab", () => {
     // career section now, not a section of its own.
     assert.deepEqual(heads, [
       "Jacoby Brissett 2026 Stats",
-      "Jacoby Brissett Passing Stats",
       "Jacoby Brissett Fantasy Football Stats",
     ]);
-    assert.deepEqual([...doc.querySelectorAll("h2")].map((h) => h.id), ["scp-st-prod-h", "scp-st-adv-h", "scp-st-arc-h", "scp-st-read-h"]);
+    assert.deepEqual([...doc.querySelectorAll("h2")].map((h) => h.id), ["scp-st-prod-h", "scp-st-arc-h", "scp-st-read-h"]);
     assert.equal(doc.querySelector("h2#scp-st-prod-h").className.includes("is-lead"), true);
-    assert.ok(doc.querySelector("h2#scp-st-adv-h"));
+    // The advanced metrics sit inside "2026 Stats" (mak, 2026-11-06); the
+    // "Passing Stats" section, its H2 and its summary line are gone.
+    assert.equal(doc.querySelector("#scp-st-adv-h"), null);
+    assert.ok(doc.querySelector('section[aria-labelledby="scp-st-prod-h"] .scp-stp-cards'));
+    assert.equal(doc.querySelector(".scp-stp-kpis"), null, "the KPI cards are gone when there are metrics");
+    assert.equal(doc.querySelector("[data-scp-seg]"), null, "no totals / per-game toggle with nothing to switch");
     assert.ok(doc.querySelector(".scp-cp h2#scp-st-arc-h.scp-cp-bar-title"), "the career block's bar is the section's H2");
     assert.ok(doc.querySelector(".scp-cp h2#scp-st-read-h.scp-cp-h"), "the read's H2 is in the career block");
     assert.equal(text(doc.querySelector("#scp-st-arc-h + .scp-cp-bar-sub")), "Fantasy points per game, every season.");
@@ -140,7 +148,7 @@ describe("stats tab", () => {
   });
 
   test("the toggle: counting stats carry both figures, rates and ranks carry neither", () => {
-    const doc = render(state());
+    const doc = render(state(NO_ADV));
     const group = doc.querySelector("[data-scp-seg]");
     assert.equal(group.getAttribute("role"), "group");
     assert.equal(group.getAttribute("aria-label"), "Show stats as");
@@ -167,7 +175,8 @@ describe("stats tab", () => {
   test("the toggle, clicked, through the real client bundle", async () => {
     const bundle = path.join(APP_DIR, "public", "dist", "statchasers-player.js");
     assert.ok(fs.existsSync(bundle), "pnpm test builds the bundle first");
-    const html = prm.renderPremiumStats(state()) + cp.renderPremiumCareer(state()) + st.renderStatsTab(state());
+    const s0 = state(NO_ADV);
+    const html = prm.renderPremiumStats(s0) + cp.renderPremiumCareer(s0) + st.renderStatsTab(s0);
     const dom = new JSDOM(`<body><div data-scp-root><div class="scp-ox scp-st">${html}</div></div></body>`, { runScripts: "outside-only", pretendToBeVisual: true });
     dom.window.eval(fs.readFileSync(bundle, "utf8"));
     // The bundle boots on DOMContentLoaded, which jsdom fires on a later tick.
@@ -224,8 +233,6 @@ describe("stats tab", () => {
     // Three games is a small sample: no trends to read, so no StatChasers
     // Analysis panel at all (mak, 2026-11-05) - not even the profile.
     assert.equal(doc.querySelector(".scp-stp-analysis"), null);
-    // The section bar: the name H2, then the one-line read.
-    assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-stp-bar-sub")), /volume · \S+ efficiency$|efficiency$/);
   });
 
   test("below the qualifying line: no ranks, one footnote says why, no row repeats it", () => {
@@ -237,7 +244,7 @@ describe("stats tab", () => {
     // One qualification note, with the line itself (2026-11-04), and not
     // "Not enough attempts to rank" on every row.
     assert.equal(text(doc.querySelector(".scp-stp-note")), "Ranks: 2026: below the qualifying line so far (50+ pass attempts, 6+ games and a 25%+ snap share), so no ranks.");
-    const sec = doc.querySelector("#scp-st-adv-h").closest("section");
+    const sec = doc.querySelector(".scp-stp-note").closest("section");
     assert.doesNotMatch(text(sec).replace(text(doc.querySelector(".scp-stp-note")), ""), /Not enough attempts/);
     for (const pill of sec.querySelectorAll(".scp-stp-rank")) {
       assert.equal(text(pill), "Unranked");
@@ -266,7 +273,7 @@ describe("stats tab", () => {
     // drop while the career table kept it (Minshew, 2023).
     const idle = { week: 2, opp: "SEA", team: "ARI", game_status: "active", pos_rank: null, stats: { pts_ppr: 0, gp: 1, gs: 0, off_snp: 0, pass_att: 0 } };
     const weeks = [qb(1, 16, 12, "ARI", { gp: 1, gs: 1 }), idle, qb(3, 16, 12, "ARI", { gp: 1, gs: 1 })];
-    const doc = render(state({ logCareer: [{ season: 2026, weeks, finish: 20 }] }));
+    const doc = render(state({ ...NO_ADV, logCareer: [{ season: 2026, weeks, finish: 20 }] }));
     assert.equal(text(doc.querySelector(".scp-stp-kpi:first-child .scp-stp-kpi-value")), "3");
     assert.match(text(doc.querySelector(".scp-cp-x")), /3 GP/);
     assert.match(text(doc.querySelector(".scp-cp-kpi")), /10\.7Career PPG3 games, 1 season · PPR/);
@@ -316,7 +323,7 @@ describe("stats tab", () => {
     // No season-and-club kicker over the read (mak, 2026-10-05); past tense.
     assert.equal(doc.querySelector(".scp-st-kicker"), null);
     assert.match(text(doc.querySelector("#scp-st-prod-h + .scp-stp-bar-sub")), /^(Touchdowns accounted|He didn't score)/);
-    assert.ok(doc.querySelector("[data-scp-seg]"));
+    assert.equal(doc.querySelector("[data-scp-seg]"), null);
     // Last season stands in alone until this season has a line; no column heading for one season.
     assert.equal(doc.querySelector(".scp-stp-colhead"), null);
     assert.ok([...doc.querySelectorAll(".scp-stp-row-label")].some((l) => text(l) === "Time to throw"));
@@ -334,8 +341,8 @@ describe("stats tab", () => {
     assert.match(text(prose), /Trey McBride/);
     const ctas = [...doc.querySelectorAll("[data-cta]")].map((el) => [el.dataset.cta, el.getAttribute("href")]);
     assert.deepEqual(ctas, [
-      ["redraft-command-stats-prose", "https://statchasers.com/redraft-command/?player=jacoby-brissett"],
-      ["redraft-command-stats-sidebar", "https://statchasers.com/redraft-command/?player=jacoby-brissett"],
+      ["redraft-command-stats-prose", "https://statchasers.com/redraft-command/players/1"],
+      ["redraft-command-stats-sidebar", "https://statchasers.com/redraft-command/players/1"],
     ]);
     assert.ok(doc.querySelector("a.scp-cp-rc-btn[data-cta='redraft-command-stats-sidebar']"), "the sidebar's button");
     // The KPI cards sit under the chart, ahead of the read.
@@ -432,8 +439,6 @@ describe("stats tab", () => {
     assert.equal(lede.querySelector("a").getAttribute("href"), "/nfl/players/trey-mcbride/");
     assert.equal(lede.querySelector("b"), null, "HTML prints as text");
     assert.match(text(lede), /<b>no HTML<\/b>/);
-    // Not given: the generated summary line stays.
-    assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-stp-bar-sub")), /efficiency$/);
     assert.deepEqual([...doc.querySelectorAll(".scp-stp-analysis-part")].map((p) => `${text(p.querySelector("h4"))}: ${text(p.querySelector("p:not(.scp-stp-analysis-lede)"))}`), ["Fantasy impact: A volume passer."]);
     // The phone's copy of the hero lede rides at the top of the fantasy-impact
     // read (mak's mobile brief, 2026-11-05); the hero's own is marked moved.
@@ -529,7 +534,7 @@ describe("the premium head (mak's brief, 2026-11-05; the old sections removed th
   });
 
   test("the block's toggles work: per game swaps its KPI figures, Fantasy swaps its table view", async () => {
-    const s = state();
+    const s = state(NO_ADV);
     const html = prm.renderPremiumStats(s, { careerTable: table }) + st.renderStatsTab(s);
     const bundle = path.join(APP_DIR, "public", "dist", "statchasers-player.js");
     const dom = new JSDOM(`<body><div data-scp-root><div class="scp-ox scp-st">${html}</div></div></body>`, { runScripts: "outside-only", pretendToBeVisual: true });

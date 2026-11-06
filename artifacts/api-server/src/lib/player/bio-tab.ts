@@ -37,8 +37,8 @@ import type { BioPageFacts, BioTransaction } from "./bio-tab-data";
 import { headshotImg } from "../headshot-html";
 import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
 import { collegeLogoFor } from "../team/draft";
+import { redraftPlayerUrl } from "./redraft-link";
 
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 
 /* ------------------------------------------------------------ shared bits */
@@ -107,7 +107,7 @@ export function collegeCrest(page: BioPageFacts, className: string): string {
 
 /** The Redraft Command deep link for this player, shared with the premium block. */
 export function redraftCommandHref(data: PlayerPageData): string {
-  return `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
+  return redraftPlayerUrl(data.player);
 }
 
 /* ----------------------------------------------------- 4. transactions */

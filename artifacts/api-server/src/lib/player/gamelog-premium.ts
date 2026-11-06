@@ -22,7 +22,6 @@ import { matchupBand, type MatchupBand } from "./header";
 import { weeklyTier, type LogColumn, type WeeklyTier } from "./metrics";
 import { SCORING_LABELS } from "./scoring";
 import {
-  bandEdges,
   buildGamelogStory,
   ladderScale,
   ladderSummary,
@@ -72,10 +71,6 @@ export interface PremiumLogDeps {
 
 const DASH = "-";
 
-const pctTrim = (v: number): string => {
-  const s = v.toFixed(1);
-  return s.endsWith(".0") ? s.slice(0, -2) : s;
-};
 
 /* ------------------------------------------------------------------- icons */
 
@@ -243,6 +238,9 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
   const rows = seasonLog
     .map((entry) => {
       const status = entry.game_status ?? "out";
+      // Weeks he did not play are left out (mak, 2026-11-06); a bye still
+      // shows, it is the team's week off rather than his absence.
+      if (status !== "active" && status !== "bye") return "";
       if (status !== "active") {
         const { label, href } = deps.dnp(entry);
         return (
@@ -345,13 +343,9 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
 
   const { games, story, ink } = built;
   const n = games.length;
-  // The axis runs to the position's usual floor (WR60, QB32), or further
-  // when a week finished past it: the reference puts a WR70 at the band's
-  // end rather than clamping it onto WR60 the way the tab's ladder does.
-  const worstRank = Math.max(...games.map((g) => g.rank));
-  const chart = worstRank > scale.max ? { ...scale, max: worstRank } : scale;
-  const { band1, band2end } = bandEdges(chart);
-  const { pins, avg } = layoutLadder(games, chart);
+  // The average finish for the summary line. The ladder chart it was laid
+  // out for (bands, pins, tier labels) is gone (mak, 2026-11-06).
+  const { avg } = layoutLadder(games, scale);
 
   const t1 = games.filter((g) => g.rank <= scale.t1).length;
   const t2 = games.filter((g) => g.rank > scale.t1 && g.rank <= scale.t2).length;
@@ -378,116 +372,11 @@ function renderFinishes(data: PlayerPageData, archive: boolean): string {
     card(bust, `${pos}${scale.t2 + 1}+ Weeks`, "low", ICON.alert) +
     `</div>`;
 
-  const labelCls = (label: "above" | "below" | "none"): string =>
-    label === "below" ? " is-below" : label === "none" ? " is-nolabel" : "";
-  // A label at either end of the band aligns inward, so "Wk 3 @ DET" under a
-  // rank-1 dot is not clipped by the figure's edge.
-  const edgeCls = (x: number): string => (x < 7 ? " is-edge-lo" : x > 93 ? " is-edge-hi" : "");
-  const weekLabel = (g: StoryGame): string =>
-    `<span class="scp-glp-wk">${escapeHtml(`Wk ${g.week}`)}<small>${escapeHtml(
-      ` ${g.homeAway === "away" ? "@" : "vs"} ${g.opp.abbr}`,
-    )}</small></span>`;
-
-  const pinHtml = pins
-    .map(
-      (pin) =>
-        `<div class="scp-glp-pin${pin.best ? " is-best" : ""}${pin.games.length > 1 ? " is-multi" : ""}${labelCls(
-          pin.label,
-        )}${edgeCls(pin.x)}" style="left:${pctTrim(pin.x)}%"><i></i>` +
-        `<span><strong>${escapeHtml(`${pos}${pin.rank}`)}` +
-        (pin.games.length > 1 ? `<b>${escapeHtml(` ×${pin.games.length}`)}</b>` : "") +
-        `</strong>${pin.games.map(weekLabel).join("")}` +
-        (pin.best ? `<em>Best week</em>` : "") +
-        `</span></div>`,
-    )
-    .join("");
-
-  const avgHtml = avg
-    ? `<div class="scp-glp-avgmark${labelCls(avg.label)}${edgeCls(avg.x)}" style="left:${pctTrim(avg.x)}%" title="${escapeHtml(
-        `Season average finish: ${pos}${avg.rank}`,
-      )}"><i></i><span><strong>${escapeHtml(`${pos}${avg.rank}`)}</strong><span class="scp-glp-wk">Season avg</span></span></div>`
-    : "";
-
-  const hasBelow = pins.some((p) => p.label === "below") || avg?.label === "below";
-  // On a phone only the best week's label and the average's stay under the
-  // band, so the average needs the second row only when the best week is
-  // close to it; the CSS lifts it to the first row otherwise.
-  const bestPin = pins.find((p) => p.best) ?? null;
-  const phoneBelow = Boolean(avg && avg.label === "below" && bestPin && Math.abs(avg.x - bestPin.x) < 14);
-  // The best week's label is a line taller (its badge), so a second-row
-  // label within reach of it starts lower: the CSS drops the row by one
-  // line only when this is set, so most charts keep the shorter figure.
-  const deepBelow =
-    bestPin !== null &&
-    bestPin.label === "above" &&
-    (pins.some((p) => p.label === "below" && Math.abs(p.x - bestPin.x) < 16) ||
-      Boolean(avg && avg.label === "below" && Math.abs(avg.x - bestPin.x) < 16));
-  const sparse = n >= 10;
-  const hidden = pins.filter((p) => p.label === "none").flatMap((p) => p.games);
-  const also =
-    !sparse && hidden.length
-      ? `<p class="scp-glp-also">${escapeHtml(
-          `Also: ${hidden.map((g) => `Wk ${g.week} (${pos}${g.rank})`).join(", ")}`,
-        )}</p>`
-      : "";
-  // Every week in order: the legend the 10-plus-game ladder always prints,
-  // and on a phone (where only the best week and the average keep their
-  // labels under the band) the list the hidden labels fold into.
-  const weekList = escapeHtml(
-    [...games]
-      .sort((a, b) => a.week - b.week)
-      .map((g) => `Wk ${g.week} ${pos}${g.rank}`)
-      .join(" · "),
-  );
-  const legend = `<p class="scp-glp-also${sparse ? "" : " is-phone"}">${weekList}</p>`;
-
-  // The tier names, each titled with the ranks its segment spans: the chart's
-  // "WR1 range" runs to WR24 (ladderScale), while the finish pills call only
-  // WR1-WR12 a WR1 (weeklyTier). Both are the page's existing rules; the
-  // title says which one the band uses.
-  const span = (lo: number, hi: number): string => `${pos}${lo} to ${pos}${hi}`;
-  const cuts =
-    `<div class="scp-glp-cuts">` +
-    // "range" is dropped under 820px, where a QB's bust segment is too
-    // narrow for two words.
-    `<span class="scp-glp-tier is-k1" style="left:0;width:${pctTrim(band1)}%" title="${escapeHtml(
-      `${pos}1 range on this chart: ${span(1, scale.t1)}`,
-    )}">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
-    `<span class="scp-glp-tier is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%" title="${escapeHtml(
-      `${pos}2 range on this chart: ${span(scale.t1 + 1, scale.t2)}`,
-    )}">${escapeHtml(`${pos}2`)}<small> range</small></span>` +
-    `<span class="scp-glp-tier is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%" title="${escapeHtml(
-      `Bust range on this chart: ${pos}${scale.t2 + 1} and worse`,
-    )}">Bust<small> range</small></span>` +
-    `<b class="is-lo" style="left:0" aria-hidden="true">${escapeHtml(`${pos}1`)}</b>` +
-    `<b style="left:${pctTrim(band1)}%" aria-hidden="true">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
-    `<b style="left:${pctTrim(band2end)}%" aria-hidden="true">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
-    `</div>`;
-
-  const ordered = [...games].sort((a, b) => a.rank - b.rank || a.week - b.week);
-  const aria =
-    `Weekly finishes on a scale from ${pos}1 to ${pos}${chart.max}: ` +
-    ordered.map((g) => `Week ${g.week} ${pos}${g.rank}`).join(", ") +
-    `.` +
-    (avg ? ` Season average ${pos}${avg.rank}.` : "");
-
-  const track =
-    `<div class="scp-glp-track${hasBelow ? " has-below" : ""}${deepBelow ? " has-deep-below" : ""}${phoneBelow ? " has-phone-below" : ""}" role="img" aria-label="${escapeHtml(aria)}">` +
-    `<div class="scp-glp-band is-b1" style="width:${pctTrim(band1)}%"></div>` +
-    `<div class="scp-glp-band is-b2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%"></div>` +
-    `<div class="scp-glp-band is-b3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%"></div>` +
-    `<i class="scp-glp-mark" style="left:${pctTrim(band1)}%"></i>` +
-    `<i class="scp-glp-mark" style="left:${pctTrim(band2end)}%"></i>` +
-    avgHtml +
-    pinHtml +
-    `</div>`;
-
   return (
     `<section class="scp-glp-finishes" aria-labelledby="${id}"${ink ? ` style="--scp-glp-team:${escapeHtml(ink)}"` : ""}>` +
     bar(summary) +
     `<div class="scp-glp-finishes-body">` +
     cards +
-    `<figure class="scp-glp-ladder">${cuts}${track}${also}${legend}</figure>` +
     `</div></section>`
   );
 }

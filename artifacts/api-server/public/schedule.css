@@ -1448,6 +1448,315 @@ a.scs-game-name:focus-visible {
   font-size: 11px;
 }
 
+/* ------------------------------------------------------ premium dress */
+
+/*
+ * The weekly board's premium dress (mak's brief, 2026-11-06): a navy head on
+ * the board, rounded board and week buttons, a heavier week heading, a gold
+ * rule under "at", pill MATCHUP links, and side cards with navy heads, a gold
+ * icon and gold stripes.
+ *
+ * Dress only. Every column track, container query and window tier above and
+ * below is unchanged - the board's widths were measured (see "the board,
+ * narrowing") and the 640px phone card is mak's own design (2026-10-20). So
+ * the row-level dress sits behind min-width: 641px and the phone card never
+ * sees it.
+ */
+.scs {
+  --scs-pm-navy: #081e42;
+  --scs-pm-navy-2: #0b3a7a;
+  --scs-pm-head: linear-gradient(110deg, #081e42 0%, #0b3167 70%, #0b3a7a 100%);
+  --scs-pm-line: #d6e0ed;
+  --scs-pm-rule: #e2e9f2;
+  --scs-pm-ink: #101b34;
+  --scs-pm-muted: #52647f;
+  --scs-pm-wash: #f5f8fc;
+  --scs-pm-gold: #d4af37;
+}
+
+/* The tabs: a 3px gold underline under the active one. */
+.scs-view-link {
+  border-bottom-width: 3px;
+}
+
+/* The week heading, heavier. */
+.scs-view-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.scs-view-sub {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.scs-viewhead {
+  margin-bottom: 14px;
+}
+
+/* The week rail: compact rounded buttons, the current one navy. */
+.scs-rail {
+  margin-top: 0;
+}
+
+.scs-rail-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border-color: var(--scs-pm-line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.scs-rail-link:hover,
+.scs-rail-link:focus-visible {
+  border-color: var(--scs-pm-navy-2);
+  background: #eaf1fb;
+}
+
+.scs-rail-link.is-active {
+  border-color: var(--scs-pm-navy);
+  background: var(--scs-pm-navy);
+  box-shadow: 0 2px 6px rgba(8, 30, 66, 0.25);
+}
+
+.scs-rail-link:focus-visible {
+  outline: 2px solid var(--scs-pm-gold);
+  outline-offset: 1px;
+}
+
+/* The board: rounded, a quiet border, a navy head. */
+.scs-board {
+  margin-top: 16px;
+  border-color: var(--scs-pm-line);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(12, 35, 75, 0.08);
+}
+
+.scs-board-head {
+  padding-top: 11px;
+  padding-bottom: 11px;
+  border-bottom: 0;
+  background: var(--scs-pm-head);
+  color: #fff;
+}
+
+.scs-board-head span {
+  font-size: 0.6875em;
+  letter-spacing: 0.1em;
+}
+
+/* "at" over a short 2px gold rule. */
+.scs-game-at::after {
+  width: 20px;
+  height: 2px;
+  margin-top: 4px;
+  border-radius: 1px;
+}
+
+@media (min-width: 641px) {
+  .scs-game {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom-color: var(--scs-pm-rule);
+  }
+
+  .scs-game:hover {
+    background: #f3f7fd;
+  }
+
+  .scs-game-date {
+    font-size: 0.75em;
+    color: var(--scs-pm-ink);
+  }
+
+  .scs-game-status {
+    font-size: 0.6875em;
+    font-weight: 500;
+    color: var(--scs-pm-muted);
+  }
+
+  .scs-game-name {
+    font-size: 0.84em;
+  }
+
+  .scs-game-score {
+    font-size: 1.15em;
+    font-weight: 700;
+  }
+
+  .scs-game-at {
+    font-size: 0.625em;
+  }
+
+  /* MATCHUP ›, a small white pill. Same track as before, so the measured
+     column widths still hold: the padding is in ems of the label. */
+  .scs-go {
+    gap: 3px;
+    padding: 0.45em 0.8em;
+    border: 1px solid var(--scs-pm-line);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(12, 35, 75, 0.06);
+    font-size: 0.625em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: color 150ms ease, background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .scs-go-chev {
+    font-size: 1.35em;
+  }
+
+  .scs-game:hover .scs-go,
+  .scs-go:hover,
+  .scs-go:focus-visible {
+    border-color: var(--scs-pm-navy-2);
+    background: #eaf1fb;
+  }
+}
+
+/* Desktop: a wider side column for the cards' heads. Below 1100px the
+   column keeps the source's 175px and the same collapse at 570px. */
+@media (min-width: 1100px) {
+  .scs {
+    --scs-side-week: 236px;
+  }
+}
+
+/* The side cards: a navy head, gold icon and stripes, a white body. */
+.scs-card {
+  padding: 0;
+  overflow: hidden;
+  border-color: var(--scs-pm-line);
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(12, 35, 75, 0.07);
+}
+
+.scs-card-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 30px 6px 8px;
+  overflow: hidden;
+  background: var(--scs-pm-head);
+  text-align: left;
+}
+
+.scs-card-head::before,
+.scs-card-head::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  transform: skewX(-38deg);
+  background: var(--scs-pm-gold);
+  pointer-events: none;
+}
+
+.scs-card-head::before {
+  right: 2px;
+  width: 8px;
+}
+
+.scs-card-head::after {
+  right: 16px;
+  width: 3px;
+  opacity: 0.5;
+}
+
+.scs-card-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(145deg, #1d4f92 0%, #133a72 100%);
+  color: var(--scs-pm-gold);
+}
+
+.scs-card-icon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.scs-card-label {
+  min-width: 0;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+.scs-card-body {
+  padding: 10px 12px 12px;
+}
+
+.scs-card-body > .scs-mini:first-child,
+.scs-card-body > .scs-bye-list:first-child {
+  margin-top: 0;
+}
+
+.scs-card-figure {
+  margin-top: 6px;
+  color: var(--scs-pm-ink);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.scs-card[data-kind="division"] .scs-card-figure {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.scs-card-note {
+  color: var(--scs-pm-muted);
+}
+
+.scs-mini-logo,
+.scs-bye-logo {
+  width: 26px;
+  height: 26px;
+}
+
+.scs-mini-code,
+.scs-bye {
+  color: var(--scs-pm-ink);
+}
+
+.scs-mini-at::after {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* Dark: the navy heads stay navy; the ink tokens above are light-only. */
+.scs-dark .scs-card-figure,
+.scs-dark .scs-mini-code,
+.scs-dark .scs-bye,
+.scs-dark .scs-game-date {
+  color: hsl(var(--scs-primary));
+}
+
+.scs-dark .scs-game:hover {
+  background: hsl(var(--scs-row-hover));
+}
+
+.scs-dark .scs-go {
+  background: hsl(var(--scs-card));
+}
+
 /* ------------------------------------------------- the board, narrowing */
 
 /*
@@ -2068,4 +2377,30 @@ a.scs-game-name:focus-visible {
 .scs .scs-go:hover,
 .scs .scs-go:focus-visible {
   color: hsl(var(--scs-accent));
+}
+
+/* The current week's white numeral, which the rail rule above would gray. */
+.scs .scs-rail-link.is-active {
+  color: hsl(var(--scs-primary-foreground));
+}
+
+/* Premium dress (2026-11-06): the board's pill link is navy above the phone
+   card and turns gold-free on hover; the phone card keeps the rule above. */
+@media (min-width: 641px) {
+  .scs .scs-go {
+    color: hsl(var(--scs-primary));
+  }
+
+  .scs .scs-go:hover,
+  .scs .scs-go:focus-visible {
+    color: hsl(var(--scs-primary));
+  }
+}
+
+/* The side cards' titles: white on the navy head, whatever the theme does
+   to an h3. */
+.scs .scs-card-label {
+  color: #fff !important;
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
 }

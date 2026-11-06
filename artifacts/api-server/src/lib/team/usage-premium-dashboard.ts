@@ -189,7 +189,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   const seasonTitle = isT
     ? `Share of the team's targets through Week ${view.throughWeek}`
     : `Share of the team's carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}`;
-  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM} points`;
+  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
   return (
     `<section class="sct-up-panel sct-up-board" aria-label="${e(isT ? "Target Distribution" : "Rushing Distribution")}">` +
     panelHead(isT ? "Target Distribution" : "Rushing Distribution", isT ? "target" : "run") +

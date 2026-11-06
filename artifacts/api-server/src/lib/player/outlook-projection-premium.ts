@@ -181,7 +181,8 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
     : "";
   const projection =
     `<section class="scp-olr-sec is-proj" aria-labelledby="scp-ol-take-h">` +
-    bar(m.heading, m.asOf, "scp-ol-take-h", phoneHeading(m.heading, m.name, { word: "Rest-of-Season", short: "ROS" })) +
+    // No "Through Week N" line under the heading (mak, 2026-11-06).
+    bar(m.heading, "", "scp-ol-take-h", phoneHeading(m.heading, m.name, { word: "Rest-of-Season", short: "ROS" })) +
     `<div class="scp-olr-body"><div class="scp-olr-layout">` +
     `<div class="scp-olr-main">${badges}${summary}${factors}</div>` +
     `<aside class="scp-olr-side" aria-label="${e(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +

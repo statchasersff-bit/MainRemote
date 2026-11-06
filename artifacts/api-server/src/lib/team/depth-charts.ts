@@ -680,3 +680,73 @@ export function restoreDepthCharts(): Promise<void> {
   })();
   return restoring;
 }
+
+/** Statuses that keep a player off the field this week. */
+const UNAVAILABLE = new Set(["O", "IR", "PUP", "SUS", "NFI", "D"]);
+
+/**
+ * The first `n` available players at one depth-chart slot, in depth order,
+ * for the matchup page's Player Battles (2026-11-06). Bracketed notes in a
+ * name ("(IR-R)") are dropped, a player listed Out, Doubtful, IR, PUP,
+ * suspended or NFI is skipped, and a Questionable tag is kept so the card
+ * can say so.
+ */
+export function depthStarters(
+  abbreviation: string,
+  slot: string,
+  n: number,
+): Array<{ name: string; questionable: boolean }> {
+  const doc = readDoc();
+  const entry = doc?.teams.find((team) => team.team?.abbr === abbreviation.toUpperCase());
+  const rows = [...(entry?.positions?.[slot] ?? [])].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
+  const out: Array<{ name: string; questionable: boolean }> = [];
+  for (const row of rows) {
+    if (out.length >= n) break;
+    const status = (row.status ?? "").toUpperCase();
+    const name = String(row.name ?? "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+    if (!name || UNAVAILABLE.has(status) || /\((IR|PUP|NFI|SUS)/i.test(String(row.name))) continue;
+    out.push({ name, questionable: status === "Q" });
+  }
+  return out;
+}
+
+/**
+ * Name keys of every AVAILABLE player on a team's depth chart, any slot, or
+ * null when the team has no chart. The matchup page's data check (2026-11-06):
+ * a defender from the season stats is named only if he is still on this
+ * chart, so a released or traded player never appears in a battle.
+ */
+export function depthChartNames(abbreviation: string): Set<string> | null {
+  const doc = readDoc();
+  const entry = doc?.teams.find((team) => team.team?.abbr === abbreviation.toUpperCase());
+  if (!entry) return null;
+  const names = new Set<string>();
+  for (const rows of Object.values(entry.positions ?? {})) {
+    for (const row of rows ?? []) {
+      const status = (row.status ?? "").toUpperCase();
+      if (UNAVAILABLE.has(status) || /\((IR|PUP|NFI|SUS)/i.test(String(row.name))) continue;
+      const name = String(row.name ?? "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+      if (name) names.add(nameKey(name));
+    }
+  }
+  return names;
+}
+
+/**
+ * A player's headshot URL from the team's depth chart, matched by name, or
+ * null. The URL is a source for headshotImg(), which serves it through the
+ * site's own image route (never printed as-is).
+ */
+export function depthHeadshot(abbreviation: string, name: string): string | null {
+  const doc = readDoc();
+  const entry = doc?.teams.find((team) => team.team?.abbr === abbreviation.toUpperCase());
+  if (!entry) return null;
+  const key = nameKey(name);
+  for (const rows of Object.values(entry.positions ?? {})) {
+    for (const row of rows ?? []) {
+      const n = String(row.name ?? "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+      if (n && nameKey(n) === key && row.headshot) return String(row.headshot);
+    }
+  }
+  return null;
+}

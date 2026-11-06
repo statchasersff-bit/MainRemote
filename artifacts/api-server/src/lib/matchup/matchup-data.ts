@@ -25,6 +25,7 @@ import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
 import { logger } from "../logger";
 import { getKickoffForecast, getWeekLines } from "./game-lines";
+import { getSeasonSlate } from "../schedule/schedule-data";
 import { buildPreview, type Preview } from "./preview";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
@@ -498,7 +499,9 @@ export async function getMatchupData(
         ? await getKickoffForecast(featured.venueCity, featured.venueState, featured.kickoffMs).catch(() => null)
         : null;
     try {
-      data.preview = buildPreview(data, { lines, forecast, now });
+      // The season slate's closing lines feed the betting trends; allowed to fail.
+      const slate = featured.seasonType === "post" ? null : await getSeasonSlate(state.season, now).catch(() => null);
+      data.preview = buildPreview(data, { lines, forecast, now, slate: slate?.games ?? null });
     } catch (err) {
       logger.warn({ err, matchup: pair.slug }, "Matchup preview failed");
     }

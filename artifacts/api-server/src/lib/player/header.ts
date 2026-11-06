@@ -38,6 +38,7 @@ import { getEntryPoints } from "./scoring";
 import { heroCells, playedEntries, seasonTotals } from "./season-line";
 import { passerRating } from "./stats-profile";
 import type { UpcomingGame } from "./upcoming";
+import { redraftPlayerUrl } from "./redraft-link";
 
 const DASH = "-";
 
@@ -394,8 +395,6 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
   ];
 }
 
-/** Redraft Command's own page, for the header's rest-of-season button. */
-export const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /**
  * A plain person, for a player with no usable headshot: head and shoulders,
@@ -771,7 +770,7 @@ export function renderHero(
     // the NFL profile, so the FPPG / rank / rostered row and its separate
     // Redraft Command arrow are gone and this outlined button under the
     // college opens the player's Redraft Command profile instead.
-    `<a class="scp-pm-fp" href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
+    `<a class="scp-pm-fp" href="${escapeHtml(redraftPlayerUrl(player))}"` +
     ` aria-label="${escapeHtml(`View ${possessive(player.name)} fantasy profile in Redraft Command`)}"` +
     ` data-cta="redraft-command-header-${cta}-mobile" data-scp-cta="redraft-command-header">` +
     `View fantasy profile<span class="scp-pm-fp-arrow" aria-hidden="true">→</span></a>` +
@@ -782,9 +781,9 @@ export function renderHero(
   const next = headerFixture(data);
   const outlookHref = sectionHref(data, options, "outlook");
   const redraft =
-    `<a class="scp-pbtn scp-pbtn--gold" href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
+    `<a class="scp-pbtn scp-pbtn--gold" href="${escapeHtml(redraftPlayerUrl(player))}"` +
     ` data-cta="redraft-command-header-${cta}" data-scp-cta="redraft-command-header">` +
-    `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.trend}</span>View in Redraft Command` +
+    `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.trend}</span>View Fantasy Football Profile` +
     `<span class="scp-pbtn-arrow" aria-hidden="true">${ICON.arrow}</span></a>`;
   // Start/sit while there is a week to start him in; before Week 1, or once
   // the schedule has run out, the question is the season rather than a week.

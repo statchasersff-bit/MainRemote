@@ -254,7 +254,7 @@ describe("rendered", () => {
     // The premium dashboard IS the tab (mak's brief, 2026-11-05; "remove the
     // older version" the same day): banner, status row, practice strip,
     // Durability Profile, history, the plan, then the FAQ.
-    assert.ok(doc.querySelector(".scp-in > .scp-inp:first-child > .scp-inp-hero + .scp-inp-status"));
+    assert.ok(doc.querySelector(".scp-in > .scp-inp:first-child > .scp-inp-intro > .scp-inp-hero + .scp-inp-intro-body > .scp-inp-status"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
     assert.deepEqual(h2, [
       // The brief's heading; "Is he injured?" opens the FAQ instead.
@@ -274,7 +274,7 @@ describe("rendered", () => {
     assert.equal(doc.querySelector("footer.scp-st-foot"), null);
     assert.equal(
       doc.querySelector(".scp-inp-now-text").textContent,
-      "No injury designation for Week 4 at the Giants. Brissett has not missed a game this season.",
+      "No injury designation for Week 4 at the Giants.",
     );
     assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Active");
     assert.ok(doc.querySelector(".scp-inp-now.is-good"));
@@ -467,8 +467,13 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     const body = card.querySelector(".scp-inp-dur");
     assert.ok(body.firstElementChild.classList.contains("scp-inp-tiles"), "the four tiles lead");
     assert.ok(body.children[1].classList.contains("scp-inp-dur-grid"), "then the matrix beside the map");
-    assert.ok(body.children[2].classList.contains("scp-inp-regions"), "then the regions across the width");
-    assert.deepEqual([...card.querySelectorAll("h3.scp-inp-dur-h")].map((h) => h.firstChild.textContent), ["Season-by-Season Availability", "Injury Location Map", "Injury Regions"]);
+    // The regions sit directly under the matrix, in its column (mak, 2026-11-06).
+    const left = body.querySelector(".scp-inp-dur-grid > .scp-inp-dur-l");
+    assert.ok(left.lastElementChild.classList.contains("scp-inp-regions"), "the regions under the matrix");
+    // The matrix and its heading have their own card (mak, 2026-11-06).
+    assert.ok(left.firstElementChild.matches(".scp-inp-avbox") && left.firstElementChild.querySelector("[data-scp-avail]"), "the matrix in its own card");
+    assert.equal(body.children.length, 3, "tiles, grid, screen-reader line");
+    assert.deepEqual([...card.querySelectorAll("h3.scp-inp-dur-h")].map((h) => h.firstChild.textContent), ["Season-by-Season Availability", "Injury Regions", "Injury Location Map"]);
     // Newest first, data-rank 0 at the top; the fold marks rows past the five most recent.
     const years = [...card.querySelectorAll(".scp-in-av-row .scp-in-av-year")].map((y) => Number(y.textContent));
     const rows = [...card.querySelectorAll(".scp-in-av-row")];
@@ -545,7 +550,7 @@ describe("the premium dashboard (mak's brief, 2026-11-05; the tab's own design s
     assert.ok(prm.querySelector(".scp-inp-sec.is-dur .scp-in-av"), "the availability grid");
     // History: the healthy row, then one card per event with its badge and report chips.
     assert.ok(prm.querySelector(".scp-inp-ev.is-now"));
-    assert.deepEqual([...prm.querySelectorAll(".scp-inp-ev:not(.is-now) .scp-inp-badge")].map(text), ["Played through", "2 games", "1 game", "8 games"]);
+    assert.deepEqual([...prm.querySelectorAll(".scp-inp-ev:not(.is-now) .scp-inp-badge")].map(text), ["Played through", "2 games missed", "1 game missed", "8 games missed"]);
     // No sidebar (removed 2026-11-05); the plan keeps the tab's link and data-cta name.
     assert.equal(prm.querySelector(".scp-inp-side"), null);
     assert.equal(prm.querySelector(".scp-inp-cta-link").getAttribute("data-cta"), "redraft-command-injury-backup");

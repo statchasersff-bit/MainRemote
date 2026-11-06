@@ -111,7 +111,7 @@ function formationTile(t: FormationTile): string {
     `<span class="sct-cpt-kpi-label">${e(t.label)}</span>` +
     `<span class="sct-cpt-kpi-value">${e(t.value)}</span>` +
     // A difference from the league, not a grade: neutral ink whichever way it points.
-    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${signedPts(t.gap)} pp vs NFL avg ${t.avg}`)}</span>` : "") +
+    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${signedPts(t.gap)}% vs NFL avg ${t.avg}`)}</span>` : "") +
     `</div></li>`
   );
 }
@@ -225,7 +225,7 @@ function distributionCard(c: TeamCoaching): string {
         (row.nfl != null ? `<span class="sct-cpt-mark" style="left:${pct(row.nfl)}"></span>` : "") +
         `</span>` +
         `<span class="sct-cpt-row-val"><b>${e(`${row.pct}%`)}</b><span class="sct-cpt-row-avg">${e(`NFL ${row.nfl}%`)}</span></span>` +
-        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(`${signedPts(d)} pp`)}</span></span>` +
+        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(`${signedPts(d)}%`)}</span></span>` +
         `</div>`
       );
     })
