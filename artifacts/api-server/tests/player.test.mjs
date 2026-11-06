@@ -292,8 +292,8 @@ describe("player page content", () => {
   test("the header's buttons say where they go and tag the tab", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const redraft = doc.querySelector(".scp-pbtn--gold");
-    assert.equal(redraft.textContent.trim(), "View in Redraft Command");
-    assert.ok(redraft.getAttribute("href").endsWith(`?player=${fixture.slug}`));
+    assert.equal(redraft.textContent.trim(), "View Fantasy Football Profile");
+    assert.ok(redraft.getAttribute("href").endsWith(`/redraft-command/players/${fixture.id}`));
     assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-gamelog");
     const start = doc.querySelector(".scp-pbtn--white");
     if (start) assert.match(start.getAttribute("data-cta"), /^(startsit|outlook)-header-gamelog$/);
@@ -647,33 +647,23 @@ describe("the game log's season", () => {
     }
   });
 
-  test("a finished season still shows its whole shape", async () => {
-    // The other half of the same rule: a PRIOR season short of a full log is
-    // missing data, not unplayed, and the absences are the point of the table.
+  test("the log lists only weeks he played, plus byes (mak, 2026-11-06)", async () => {
+    // Weeks he did not play are left out of the table; a bye still shows.
     let checked = 0;
     for (const player of roster.slice(0, 120)) {
-      if (checked >= 3) break;
+      if (checked >= 5) break;
       const res = await get(`/player/${player.slug}`);
       if (res.status !== 200) continue;
       const doc = new JSDOM(res.body).window.document;
-      const season = Number(
-        doc.querySelector("[data-scp-root]")?.getAttribute("data-season"),
-      );
-      const year = new Date().getUTCFullYear();
-      const current = new Date().getUTCMonth() >= 2 ? year : year - 1;
-      if (!Number.isFinite(season) || season >= current) continue;
-
-      const weeks = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row th")].map((th) =>
-        Number(th.textContent.trim()),
-      );
-      if (weeks.length === 0) continue;
-      assert.equal(
-        Math.max(...weeks),
-        season >= 2021 ? 18 : 17,
-        `${player.slug}: ${season} is over and should show every week`,
-      );
+      const rows = [...doc.querySelectorAll("#game-log table.scp-glp-table .scp-glp-row")];
+      if (rows.length === 0) continue;
+      for (const row of rows) {
+        assert.ok(["active", "bye"].includes(row.getAttribute("data-status")), `${player.slug}: week ${row.querySelector("th")?.textContent} is ${row.getAttribute("data-status")}`);
+      }
+      assert.doesNotMatch(doc.querySelector("#game-log table.scp-glp-table").textContent, /Did not play/);
       checked += 1;
     }
+    assert.ok(checked > 0);
   });
 
   test("a kicker's attempts count as having played", async () => {
@@ -843,11 +833,14 @@ describe("the game log tab", () => {
     // finishes panel (mak, 2026-11-05).
     assert.ok(log.contains(story), "the breakdown and the fixtures are inside the log frame");
     assert.ok(log.querySelector(".scp-glp-body > .scp-bkp-wrap"), "a panel of the body");
-    assert.ok(log.querySelector(".scp-glp-pin").compareDocumentPosition(story) & 4, "under the finishes chart");
+    assert.ok(log.querySelector(".scp-glp-finishes").compareDocumentPosition(story) & 4, "under the finishes panel");
     assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-expandable"));
     assert.ok(gl.querySelector("table.scp-glp-table").hasAttribute("data-scp-sortable"));
     assert.ok(gl.querySelectorAll(".scp-glp-kpi-v").length >= 3, "the KPI cards");
-    assert.ok(gl.querySelector(".scp-glp-pin"), "the finishes chart");
+    // The finishes panel keeps its count cards; the ladder chart under them
+    // (tier labels, bands, pins) is gone (mak, 2026-11-06).
+    assert.ok(gl.querySelector(".scp-glp-finishes .scp-glp-fcards"), "the finishes cards");
+    assert.equal(gl.querySelector(".scp-glp-ladder, .scp-glp-cuts, .scp-glp-pin"), null, "no finishes chart");
     assert.ok(gl.querySelectorAll(".scp-bkp-row").length > 0, "the breakdown rows");
     for (const r of gl.querySelectorAll(".scp-bkp-row")) {
       assert.match(r.getAttribute("data-tier"), /^(t12|t24|low)$/);
@@ -1341,11 +1334,11 @@ describe("the game log tab", () => {
       assert.match(rank.textContent.trim(), /^\d+(st|nd|rd|th)$/);
       const value = Number.parseInt(rank.textContent, 10);
       assert.ok(value >= 1 && value <= 32, `rank ${value} is outside the league`);
-      assert.equal(
-        card.querySelector(".scp-bkp-nx-rank span").textContent.trim(),
-        `vs ${position}`,
-        "the rank is against this player's own position",
-      );
+      // The position is named once, in the column header (mak, 2026-11-06).
+      assert.equal(card.querySelector(".scp-bkp-nx-rank span"), null, "no per-row 'vs POS'");
+      const headers = [...card.closest("table").querySelectorAll("thead th")].map((th) => th.textContent.trim());
+      assert.ok(headers.includes(`vs ${position}`), "the rank is against this player's own position");
+      assert.doesNotMatch(card.querySelector(".scp-bkp-pill")?.textContent ?? "", /matchup/i, "the pill is the band's word alone");
     }
 
     // The direction is stated rather than implied, and never as "easiest".
@@ -1831,47 +1824,41 @@ describe("the news tab", () => {
     return null;
   }
 
-  test("every item has a headline, a take and an impact; dates are absolute", async () => {
+  test("every story has a headline, a category and an absolute date", async () => {
     const found = await withNews();
     assert.ok(found, "at least one player has a news tab");
-    const tab = found.doc.querySelector(".scp-nw");
-    const items = [...tab.querySelectorAll(".scp-nw-lead, .scp-nw-item")];
+    // The team pages' News design (mak, 2026-11-06).
+    const tab = found.doc.querySelector(".scp-nwp");
+    const items = [...tab.querySelectorAll(".scp-nwp-card")];
     assert.ok(items.length > 0);
     for (const item of items) {
       assert.ok(item.querySelector("h3")?.textContent.trim(), "a headline");
-      if (item.matches(".scp-nw-item")) {
-        // Every row carries a category badge and a date (2026-10-23); a
-        // recap's stat line opens with its points and its finish and week tag
-        // sit on the right, anything else has its one sentence.
-        assert.ok(item.querySelector(".scp-nw-cat")?.textContent.trim(), "a category badge");
-        assert.ok(item.querySelector(".scp-nw-marker"), "a marker");
-        assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
-        if (item.dataset.type === "game") {
-          assert.match(item.querySelector(".scp-nw-statline").textContent, /^\S+ FPTS/);
-          assert.ok(item.querySelector(".scp-nw-side .scp-nw-tag")?.textContent.trim(), "a week tag");
-        } else {
-          assert.ok(item.querySelector(".scp-nw-sum")?.textContent.trim(), "one sentence");
-        }
-        assert.match(item.dataset.impact, /^(up|flat|down)$/);
-        assert.match(item.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: (Positive|Neutral|Negative)/);
+      assert.ok(item.querySelector(".scp-nwp-news-kicker")?.textContent.trim(), "a category");
+      assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
+      assert.ok(item.querySelector(".scp-nwp-well"), "a photo well");
+      if (item.matches(".is-old")) continue;
+      assert.match(item.dataset.impact, /^(up|flat|down)$/);
+      if (item.dataset.type === "game") {
+        assert.match(item.querySelector(".scp-nwp-fpts")?.textContent ?? "", /^\S+ FPTS$/);
+        assert.match(item.querySelector(".scp-nw-read").textContent, /^Fantasy impact: /);
       } else {
-        assert.ok(item.querySelector("time")?.getAttribute("datetime"), "the lead carries its date");
+        assert.ok(item.querySelector(".scp-nwp-byline")?.textContent.trim(), "a source");
       }
     }
   });
 
   test("no relative times anywhere on the tab", async () => {
     const found = await withNews();
-    const tab = found.doc.querySelector(".scp-nw");
+    const tab = found.doc.querySelector(".scp-nwp");
     assert.equal(tab.querySelector("[data-ts]"), null, "nothing the client would turn into \"3h ago\"");
     assert.doesNotMatch(tab.textContent, /\b(\d+[hdm]|\d+mo|just now|\w+ ago)\b/);
   });
 
   test("the lead is not repeated in the feed, and outbound links open safely", async () => {
     const found = await withNews();
-    const tab = found.doc.querySelector(".scp-nw");
-    const lead = tab.querySelector(".scp-nw-lead h3")?.textContent.trim();
-    const feed = [...tab.querySelectorAll(".scp-nw-item h3")].map((h) => h.textContent.trim());
+    const tab = found.doc.querySelector(".scp-nwp");
+    const lead = tab.querySelector(".scp-nwp-card.is-featured h3")?.textContent.trim();
+    const feed = [...tab.querySelectorAll(".scp-nwp-grid .scp-nwp-card h3")].map((h) => h.textContent.trim());
     if (lead) assert.ok(!feed.includes(lead));
     for (const a of tab.querySelectorAll('a[target="_blank"]')) {
       assert.equal(a.getAttribute("rel"), "noopener");
@@ -1879,15 +1866,15 @@ describe("the news tab", () => {
     }
   });
 
-  test("filters, week groups and the empty note are in place for the client", async () => {
+  test("filters and the empty note are in place for the client", async () => {
     const found = await withNews();
-    const tab = found.doc.querySelector(".scp-nw");
+    const tab = found.doc.querySelector(".scp-nwp");
     const group = tab.querySelector("[data-scp-news-filter]");
     if (!group) return;
     assert.equal(group.getAttribute("role"), "group");
     assert.equal(group.getAttribute("aria-label"), "Filter updates");
     assert.equal(group.querySelector('[aria-pressed="true"]').dataset.f, "all");
-    assert.ok(tab.querySelector("ol.scp-nw-feed > li.scp-nw-wk .scp-nw-wklabel b"));
+    assert.ok(tab.querySelector(".scp-nwp-feed [data-scp-news-item]"));
     const empty = tab.querySelector("#scp-nw-empty");
     assert.equal(empty.getAttribute("role"), "status");
     assert.ok(empty.hasAttribute("hidden"));
@@ -1901,7 +1888,7 @@ describe("the news tab", () => {
 
   test("the team's news offers a way through to the hub", async () => {
     const found = await withNews();
-    const more = found.doc.querySelector(".scp-nw #scp-nw-team-h ~ a.scp-ox-more");
+    const more = found.doc.querySelector(".scp-nwp-rail-card.is-team a.scp-nwp-rail-more");
     if (more) {
       assert.match(more.getAttribute("href"), /^\/team\/.+\/news\/$/);
       assert.equal(more.getAttribute("target"), "_top", "a link into the site must break out of the legacy frame");

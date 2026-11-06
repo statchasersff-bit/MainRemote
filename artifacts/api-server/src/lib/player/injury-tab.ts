@@ -55,6 +55,7 @@ import {
 } from "./injury-tab-data";
 import { hasPlayerSection, sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
+import { redraftPlayerUrl } from "./redraft-link";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
@@ -300,7 +301,7 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
     practiceHead: "",
     practiceNote: null,
     starter: data.depth?.order === 1,
-    rc: `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`,
+    rc: redraftPlayerUrl(player),
     // The same test the Outlook tab applies to itself, so this tab never
     // links to an Outlook page that is not there.
     hasOutlook: hasPlayerSection(data, "outlook"),
@@ -454,15 +455,9 @@ function statusAnswer(m: Model): string {
         const at = m.next.homeAway === "home" ? "against the" : "at the";
         first = `No injury designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
       }
-      const missed =
-        m.seasonMissed === 0 && m.playedThisSeason > 0
-          ? m.seasonOut
-            ? ` ${m.last} has not missed a game to injury this season.`
-            : ` ${m.last} has not missed a game this season.`
-          : m.seasonMissed
-            ? ` ${m.last} has missed ${games(m.seasonMissed)} to injury this season.`
-            : "";
-      return first + missed;
+      // No "has (not) missed a game this season" tail (mak, 2026-11-06):
+      // the "2026 games missed" figure beside the card says it.
+      return first;
     }
   }
 }
@@ -703,7 +698,8 @@ function statusCells(m: Model, data: PlayerPageData): StatusCell[] {
     cells.push({
       key: "latest",
       label: "Latest injury",
-      value: latest.category === OTHER_CATEGORY ? cap(injuryName(latest.type)) : latest.category.split(" / ")[0]!,
+      // "Undisclosed", not "Undisclosed injury": the label already says injury (mak, 2026-11-06).
+      value: latest.category === OTHER_CATEGORY ? cap(injuryName(latest.type)).replace(/^Undisclosed injury$/, "Undisclosed") : latest.category.split(" / ")[0]!,
       sub: `${when}, ${latest.games ? `${games(latest.games)} missed` : "played through"}`,
     });
   }
@@ -1306,7 +1302,7 @@ export function eventWords(ev: InjuryEvent): { title: string; side: string; meta
   const side = ev.side ? (ev.side === "R" ? "Right" : "Left") : "";
   const title = /\b(surgery)\b/i.test(ev.type) || !ev.surgery ? ev.type : `${ev.type}, surgery`;
   const chip =
-    ev.phase === "POST" ? { kind: "mid", text: "Postseason" } : ev.games > 0 ? { kind: "bad", text: games(ev.games) } : { kind: "mid", text: "Played through" };
+    ev.phase === "POST" ? { kind: "mid", text: "Postseason" } : ev.games > 0 ? { kind: "bad", text: `${games(ev.games)} missed` } : { kind: "mid", text: "Played through" };
   return { title, side, meta: metaFor(ev), chip };
 }
 

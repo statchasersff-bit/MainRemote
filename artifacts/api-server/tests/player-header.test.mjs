@@ -136,7 +136,7 @@ describe("player header", () => {
     // The phone's fantasy door: one button under the college (mak, 2026-11-06
     // PM); the fantasy row and its separate Redraft arrow are gone.
     const fp = meta.querySelector("a.scp-pm-fp");
-    assert.equal(fp.getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
+    assert.equal(fp.getAttribute("href"), "https://statchasers.com/redraft-command/players/123");
     assert.match(text(fp), /^View fantasy profile/);
     assert.equal(fp.getAttribute("aria-label"), "View Jacoby Brissett's fantasy profile in Redraft Command");
     assert.equal(h.querySelector(".scp-pm-fan, .scp-pm-rc"), null, "no fantasy row on the phone");
@@ -158,8 +158,8 @@ describe("player header", () => {
     // The actions: Redraft Command in gold, the start/sit question in white.
     const [redraft, start] = h.querySelectorAll(".scp-pbtn");
     assert.ok(redraft.classList.contains("scp-pbtn--gold"));
-    assert.equal(text(redraft), "View in Redraft Command");
-    assert.equal(redraft.getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
+    assert.equal(text(redraft), "View Fantasy Football Profile");
+    assert.equal(redraft.getAttribute("href"), "https://statchasers.com/redraft-command/players/123");
     assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-overview");
     assert.equal(redraft.getAttribute("data-scp-cta"), "redraft-command-header");
     assert.ok(start.classList.contains("scp-pbtn--white"));

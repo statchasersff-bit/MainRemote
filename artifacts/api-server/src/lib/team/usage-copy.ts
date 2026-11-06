@@ -403,23 +403,23 @@ export function usageTrends(view: UsageView): UsageTrend[] {
       const name = kind === "snap" ? "snap share" : "target share";
       const band = kind === "snap" ? BAND_SNAP : BAND_TS;
       const places = kind === "snap" ? 0 : 1;
-      if (Math.abs(d) < band) return `, with his ${name} within the steady band (${signed(d, places)} points)`;
-      return `, and his ${name} is ${d > 0 ? "up" : "down"} ${Math.abs(d).toFixed(places)} points${sameWindow ? "" : ` ${windowWords(t)}`}, though his latest game did not hold that level`;
+      if (Math.abs(d) < band) return `, with his ${name} within the steady band (${signed(d, places)}%)`;
+      return `, and his ${name} is ${d > 0 ? "up" : "down"} ${Math.abs(d).toFixed(places)}%${sameWindow ? "" : ` ${windowWords(t)}`}, though his latest game did not hold that level`;
     };
 
     let body: string;
     let short: string;
     if (snapMove && tsMove) {
       body =
-        `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))} percentage points ${windowWords(r.snap)}, ` +
-        `while his target share has ${tsD > 0 ? "risen" : "fallen"} ${Math.abs(tsD).toFixed(1)} points${sameWindow ? "" : ` ${windowWords(r.ts)}`}.`;
-      short = `snap share ${signed(snapD, 0)} points and target share ${signed(tsD)} points (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
+        `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))}% ${windowWords(r.snap)}, ` +
+        `while his target share has ${tsD > 0 ? "risen" : "fallen"} ${Math.abs(tsD).toFixed(1)}%${sameWindow ? "" : ` ${windowWords(r.ts)}`}.`;
+      short = `snap share ${signed(snapD, 0)}% and target share ${signed(tsD)}% (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
     } else if (snapMove) {
-      body = `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))} percentage points ${windowWords(r.snap)}${receiver ? other("ts") : ""}.`;
-      short = `snap share ${signed(snapD, 0)} points (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
+      body = `has ${snapD > 0 ? "increased" : "reduced"} his snap share by ${Math.abs(Math.round(snapD))}% ${windowWords(r.snap)}${receiver ? other("ts") : ""}.`;
+      short = `snap share ${signed(snapD, 0)}% (${weeksList(r.snap.trailWeeks, true)} vs ${weeksList(r.snap.baseWeeks, true)})`;
     } else {
-      body = `has seen his target share ${tsD > 0 ? "rise" : "fall"} ${Math.abs(tsD).toFixed(1)} points ${windowWords(r.ts)}${other("snap")}.`;
-      short = `target share ${signed(tsD)} points (${weeksList(r.ts.trailWeeks, true)} vs ${weeksList(r.ts.baseWeeks, true)})`;
+      body = `has seen his target share ${tsD > 0 ? "rise" : "fall"} ${Math.abs(tsD).toFixed(1)}% ${windowWords(r.ts)}${other("snap")}.`;
+      short = `target share ${signed(tsD)}% (${weeksList(r.ts.trailWeeks, true)} vs ${weeksList(r.ts.baseWeeks, true)})`;
     }
     const lead = snapMove ? snapD : tsD;
     out.push({

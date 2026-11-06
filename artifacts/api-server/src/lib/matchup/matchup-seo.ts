@@ -27,6 +27,13 @@ const SITE_NAME = "StatChasers";
 export const MATCHUP_TITLE_MAX = TITLE_MAX;
 
 /**
+ * The upcoming preview's title, the one template allowed past TITLE_MAX:
+ * mak specified its wording (2026-11-06), 77 characters for Packers vs.
+ * Patriots. The ladder still has to fit somewhere, so it stops here.
+ */
+export const PREVIEW_TITLE_MAX = 82;
+
+/**
  * The first candidate that fits, most descriptive first. No brand: the full
  * team names are what people search. The last candidate is written short
  * enough to fit for every pair.
@@ -132,34 +139,32 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     };
   }
 
-  // The upcoming decision page: a game-level fantasy preview, with start/sit
-  // as one section of it (mak approved this title and description, 2026-10-05;
-  // the spec's 2026-10-03 "Start/Sit, Fantasy Matchups, Odds & Prediction"
-  // title is retired).
+  // The upcoming preview targets the general game search, fantasy as one part
+  // of it (mak's SEO brief, 2026-11-06): "Packers vs. Patriots Preview:
+  // Matchups, Odds, Injuries & Analysis | Week 9, 2026", away team first, the
+  // H1 "Packers vs. Patriots: Week 9 Game Preview" (previewPageHeading). mak
+  // named this title himself, so it runs past the 60-character cap the other
+  // templates keep; shorter rungs only for the longest nickname pairs. Was
+  // "{pair} {week} {year}: Fantasy Preview & Last Meeting Stats" (2026-10-10).
   const pv = data.matchupState === "upcoming" ? data.preview : null;
   if (pv) {
-    const label = `${pv.away.team.nickname} vs ${pv.home.team.nickname}`;
+    const label = `${pv.away.team.nickname} vs. ${pv.home.team.nickname}`;
     const week = pv.meeting.weekLabel;
+    const when = `${week}, ${pv.meeting.season}`;
     const long =
-      `${label} ${week} fantasy football preview with start/sit recommendations, projections, ` +
-      `matchup data, injuries, usage and points allowed by position.`;
-    // With a last meeting summarized above the preview (the SEO brief of
-    // 2026-10-10) the title says so: "Falcons vs Saints Week 17 2026:
-    // Fantasy Preview & Last Meeting Stats", the year dropped when it runs
-    // past sixty. A pair meeting for the first time keeps the 2026-10-05
-    // wording.
-    const title = data.lastMeeting
-      ? fitMatchupTitle([
-          `${label} ${week} ${pv.meeting.season}: Fantasy Preview & Last Meeting Stats`,
-          `${label} ${week}: Fantasy Preview & Stats`,
-        ])
-      : fitMatchupTitle([`${label} Fantasy Football Matchup Preview - ${week}`]);
+      `${label} ${week} preview: the odds, keys to the game, recent form, player matchups, ` +
+      `injuries and weather, plus fantasy start/sit calls.`;
     return {
-      title,
+      title: fitTitle(
+        [
+          `${label} Preview: Matchups, Odds, Injuries & Analysis | ${when}`,
+          `${label} Preview: Odds, Injuries & Analysis | ${when}`,
+          `${label} Preview: Odds & Injuries | ${when}`,
+        ],
+        PREVIEW_TITLE_MAX,
+      ),
       description:
-        long.length <= 160
-          ? long
-          : `${label} ${week} fantasy football preview: start/sit calls, matchup data, injuries, usage and points allowed by position.`,
+        long.length <= 160 ? long : `${label} ${week} preview: odds, keys to the game, form, matchups, injuries and fantasy start/sit.`,
       canonical,
       siteName: SITE_NAME,
     };

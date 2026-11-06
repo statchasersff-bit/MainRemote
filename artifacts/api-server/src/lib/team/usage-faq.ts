@@ -221,7 +221,7 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
       up.length || down.length
         ? (up.length ? `Growing ${wk}: ${list(up)}.` : `No ${nick} player has a confirmed rise in role ${wk}.`) +
             (down.length ? ` Shrinking: ${list(down)}.` : ` No one's role is in a confirmed decline.`) +
-            ` Each move is the player's last three games against the three he played before them; it counts when it clears the steady band (5 points of snap share, 2 of target share) and the latest game confirms it.`
+            ` Each move is the player's last three games against the three he played before them; it counts when it clears the steady band (5% of snap share, 2% of target share) and the latest game confirms it.`
         : skill.length
           ? `No ${nick} player's role has moved enough to call a trend ${wk}${base ? `: the last three games' snap and target shares are within the steady band of ${base} or the latest game has not confirmed the move` : ""}.`
           : null,
@@ -345,7 +345,7 @@ function trendClause(row: UsageRow): string {
   if (t.delta == null || t.baseWeek == null) return "";
   return t.direction === "flat"
     ? `, holding steady over his last three games against ${baseWords(t)}`
-    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)} points over his last three games against ${baseWords(t)}`;
+    : `, ${t.direction} ${Math.abs(t.delta).toFixed(1)}% over his last three games against ${baseWords(t)}`;
 }
 
 function fpoeClause(p: UsagePlayer): string {

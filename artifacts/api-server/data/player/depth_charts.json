@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-04T13:22:38.703Z",
+  "generated_at": "2026-11-06T18:20:29.962Z",
   "source": "ourlads.com",
   "teams": {
     "BUF": [
@@ -626,32 +626,32 @@
         "fantasy_position": "QB",
         "players": [
           {
-            "name": "Lamar Jackson",
-            "depth_order": 1,
-            "sleeper_id": "4881",
-            "sleeper_name": "Lamar Jackson",
-            "sleeper_slug": "lamar-jackson"
-          },
-          {
-            "name": "Tyler Huntley",
-            "depth_order": 2,
-            "sleeper_id": "7083",
-            "sleeper_name": "Tyler Huntley",
-            "sleeper_slug": "tyler-huntley"
-          },
-          {
             "name": "Joe Fagnano",
-            "depth_order": 3,
+            "depth_order": 1,
             "sleeper_id": "13350",
             "sleeper_name": "Joe Fagnano",
             "sleeper_slug": "joe-fagnano"
           },
           {
+            "name": "Austin Reed",
+            "depth_order": 2,
+            "sleeper_id": "11931",
+            "sleeper_name": "Austin Reed",
+            "sleeper_slug": "austin-reed"
+          },
+          {
             "name": "Kedon Slovis",
-            "depth_order": 4,
+            "depth_order": 3,
             "sleeper_id": "11648",
             "sleeper_name": "Kedon Slovis",
             "sleeper_slug": "kedon-slovis"
+          },
+          {
+            "name": "Jacoby Brissett",
+            "depth_order": 4,
+            "sleeper_id": "3257",
+            "sleeper_name": "Jacoby Brissett",
+            "sleeper_slug": "jacoby-brissett"
           }
         ]
       },
@@ -773,6 +773,19 @@
             "sleeper_id": "3258",
             "sleeper_name": "Nick Vannett",
             "sleeper_slug": "nick-vannett"
+          }
+        ]
+      },
+      {
+        "role": "K",
+        "fantasy_position": "K",
+        "players": [
+          {
+            "name": "Jake Moody",
+            "depth_order": 1,
+            "sleeper_id": "10937",
+            "sleeper_name": "Jake Moody",
+            "sleeper_slug": "jake-moody"
           }
         ]
       }
@@ -2702,13 +2715,6 @@
             "sleeper_id": "2306",
             "sleeper_name": "Jameis Winston",
             "sleeper_slug": "jameis-winston"
-          },
-          {
-            "name": "Jake Haener",
-            "depth_order": 3,
-            "sleeper_id": "10215",
-            "sleeper_name": "Jake Haener",
-            "sleeper_slug": "jake-haener"
           }
         ]
       },
@@ -2839,18 +2845,18 @@
         "fantasy_position": "QB",
         "players": [
           {
-            "name": "Tanner McKee",
-            "depth_order": 1,
-            "sleeper_id": "9230",
-            "sleeper_name": "Tanner McKee",
-            "sleeper_slug": "tanner-mckee"
-          },
-          {
             "name": "Joe Milton",
-            "depth_order": 2,
+            "depth_order": 1,
             "sleeper_id": "11557",
             "sleeper_name": "Joe Milton",
             "sleeper_slug": "joe-milton"
+          },
+          {
+            "name": "Tanner McKee",
+            "depth_order": 2,
+            "sleeper_id": "9230",
+            "sleeper_name": "Tanner McKee",
+            "sleeper_slug": "tanner-mckee"
           },
           {
             "name": "Cole Payton",
@@ -3211,13 +3217,6 @@
             "sleeper_id": "10235",
             "sleeper_name": "Roschon Johnson",
             "sleeper_slug": "roschon-johnson"
-          },
-          {
-            "name": "Zavier Scott",
-            "depth_order": 4,
-            "sleeper_id": "11299",
-            "sleeper_name": "Zavier Scott",
-            "sleeper_slug": "zavier-scott"
           }
         ]
       },
@@ -3291,6 +3290,13 @@
             "sleeper_id": "13322",
             "sleeper_name": "Sam Roush",
             "sleeper_slug": "sam-roush"
+          },
+          {
+            "name": "Stephen Carlson",
+            "depth_order": 3,
+            "sleeper_id": "6451",
+            "sleeper_name": "Stephen Carlson",
+            "sleeper_slug": "stephen-carlson"
           }
         ]
       },
@@ -3667,8 +3673,15 @@
             "sleeper_slug": "aaron-jones-sr"
           },
           {
-            "name": "Demond Claiborne",
+            "name": "Deejay Dallas",
             "depth_order": 3,
+            "sleeper_id": "6931",
+            "sleeper_name": "DeeJay Dallas",
+            "sleeper_slug": "deejay-dallas"
+          },
+          {
+            "name": "Demond Claiborne",
+            "depth_order": 4,
             "sleeper_id": "13347",
             "sleeper_name": "Demond Claiborne",
             "sleeper_slug": "demond-claiborne"
@@ -4412,13 +4425,6 @@
             "sleeper_id": "13272",
             "sleeper_name": "Carson Beck",
             "sleeper_slug": "carson-beck"
-          },
-          {
-            "name": "Jacoby Brissett",
-            "depth_order": 3,
-            "sleeper_id": "3257",
-            "sleeper_name": "Jacoby Brissett",
-            "sleeper_slug": "jacoby-brissett"
           }
         ]
       },
@@ -4648,13 +4654,6 @@
             "sleeper_id": "12718",
             "sleeper_name": "Konata Mumpfield",
             "sleeper_slug": "konata-mumpfield"
-          },
-          {
-            "name": "Alex Bachman",
-            "depth_order": 2,
-            "sleeper_id": "6386",
-            "sleeper_name": "Alex Bachman",
-            "sleeper_slug": "alex-bachman"
           }
         ]
       },
@@ -4702,6 +4701,13 @@
             "sleeper_id": "1433",
             "sleeper_name": "Brandon McManus",
             "sleeper_slug": "brandon-mcmanus"
+          },
+          {
+            "name": "Joshua Karty",
+            "depth_order": 2,
+            "sleeper_id": "11789",
+            "sleeper_name": "Joshua Karty",
+            "sleeper_slug": "joshua-karty"
           }
         ]
       }

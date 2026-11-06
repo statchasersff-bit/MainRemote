@@ -1911,7 +1911,13 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): TabPart
     `<p class="scp-up-dek">${escapeHtml(`Injury, practice, transaction and game reports on ${data.player.name} this season, newest first.`)}</p></div>` +
     headArt("news") +
     `</header>`;
-  return { body: head + parts.body, foot: "", faq: parts.faq };
+  // The banner and the stories share one card, as the team pages' News tab
+  // holds its heading and feed (mak, 2026-11-06).
+  return {
+    body: `<section class="scp-nwp-frame" aria-labelledby="scp-nw-head">${head}<div class="scp-nwp-frame-body">${parts.body}</div></section>`,
+    foot: "",
+    faq: parts.faq,
+  };
 }
 
 /* --------------------------------------------------------- page assembly */

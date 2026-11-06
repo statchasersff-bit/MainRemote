@@ -20,7 +20,6 @@
  */
 
 import { escapeHtml } from "../render";
-import { titleCase } from "./title-case";
 import type { PlayerPageData } from "./player-data";
 import type { AdvMetric } from "./stats-tab-data";
 import {
@@ -235,34 +234,38 @@ function metricCards(m: StatsPremiumModel): string {
 export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?: string } = {}): string {
   const m = statsPremiumModel(data, inserts);
   if (!m) return "";
-  const cats = m.advanced?.cats ?? (m.pos === "QB" ? "passing" : m.pos === "RB" ? "rushing" : "receiving");
-
-  // The hero band (the reference): title over the lede, no icon tile.
+  
+  // The season container holds the advanced metric cards (mak, 2026-11-06:
+  // the five KPI cards - Games, Pass yards, Pass TD, INT, Comp % - came out,
+  // and the Efficiency / Usage / Style / Context panels with their ranks note
+  // went in). The separate "<Name> Passing Stats" section went with it. A
+  // player with no advanced line at all keeps the KPI cards and their
+  // totals / per-game toggle, so the container is never empty.
+  const kpiMode = !m.advanced;
   // Games played as a small label beside the toggle (mak, 2026-11-06): on
-  // the phone it replaces the Games card, which spent ~140px on one number.
-  // Desktop keeps the card and hides the label (player.css).
+  // the phone it replaces the Games card. KPI mode only.
   const gp = m.cells.find((c) => c.label === "Games")?.main[0]?.total;
-  const gpLabel = gp && gp !== "0" ? `<span class="scp-stp-gp">${escapeHtml(`${gp} ${gp === "1" ? "game" : "games"}`)}</span>` : "";
+  const gpLabel = kpiMode && gp && gp !== "0" ? `<span class="scp-stp-gp">${escapeHtml(`${gp} ${gp === "1" ? "game" : "games"}`)}</span>` : "";
   const seasonHead = bar(
     "scp-st-prod-h",
     ICON.bars,
     `${m.name} ${m.season} Stats`,
     m.lede,
-    `<div class="scp-st-seg scp-stp-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
-      `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
-      `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
-      `</div>` +
-      gpLabel,
+    kpiMode
+      ? `<div class="scp-st-seg scp-stp-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
+          `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
+          `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
+          `</div>` +
+          gpLabel
+      : "",
     true,
     m.name,
   );
 
-  const advHead = m.advanced
-    ? bar("scp-st-adv-h", ICON.bars, `${m.name} ${titleCase(cats)} Stats`, m.advanced.summary)
-    : "";
   const note = m.advanced
     ? `<p class="scp-stp-note"><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`Ranks: ${m.advanced.notes.join(" · ")}.`)}</p>`
     : "";
+  const seasonBody = kpiMode ? kpiCards(m) : metricCards(m) + note;
 
   const careerHead = m.careerTable
     ? bar(
@@ -311,10 +314,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     // On the phone the lede never sits in the intro (mak, 2026-11-06): it
     // goes to the fantasy-impact read, or, with no such read, under the
     // production cards it describes.
-    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub scp-up-dek">', '<p class="scp-stp-bar-sub scp-up-dek is-moved">') : seasonHead}<div class="scp-stp-body">${kpiCards(m)}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
-    (m.advanced
-      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-adv-h">${advHead}<div class="scp-stp-body">${metricCards(m)}${note}</div></section>`
-      : "") +
+    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub scp-up-dek">', '<p class="scp-stp-bar-sub scp-up-dek is-moved">') : seasonHead}<div class="scp-stp-body">${seasonBody}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
     (m.careerTable
       ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div></section>`
       : "") +

@@ -2756,15 +2756,6 @@ ul.sct-faq-list li {
  * The shorter spelling below is what stops it having to. */
 
 @media (max-width: 1080px) {
-  
-
-  
-
-  
-
-  
-
-  
 
   .sct-players {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2796,8 +2787,6 @@ ul.sct-faq-list li {
 
 @media (max-width: 900px) {
 
-  
-
   .sct-games {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2812,13 +2801,6 @@ ul.sct-faq-list li {
    the 900px media query above, which stacked a 700px board on a tablet.
    The container is the table's shell - see .sct-srow-name-brief. */
 @container (max-width: 370px) {
-  
-
-  
-
-  
-
-  
 
   .sct-result,
   .sct-sstatus {
@@ -2826,19 +2808,6 @@ ul.sct-faq-list li {
     justify-self: end;
   }
 
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
 }
 
 /* --------------------------------------------------------------- phones */
@@ -2974,14 +2943,10 @@ ul.sct-faq-list li {
     padding-left: 20px;
   }
 
-  
-
   .sct-players {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
-
-  
 
   .sct-game {
     padding: 10px 14px 11px;
@@ -3797,7 +3762,7 @@ ul.sct-faq-list li {
   .sct-mu-row {
     grid-template-columns: 48px minmax(0, 1fr) auto;
   }
-  
+
   .sct-mu-view {
     grid-column: 2 / -1;
   }
@@ -12945,8 +12910,7 @@ a.sct-ex-game:hover .sct-ex-line {
   text-underline-offset: 3px;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv :focus-visible,
-:is(.sct, #sct-table-armour) .sct-pv-hero :focus-visible {
+:is(.sct, #sct-table-armour) .sct-pv :focus-visible {
   outline: 2px solid var(--pv-gold);
   outline-offset: 2px;
 }
@@ -12957,84 +12921,12 @@ a.sct-ex-game:hover .sct-ex-line {
    eyebrow and the badge. Was the 2026-10-05 poster: logos stacked over
    two-line 40px names, a 44px AT medallion, the market and the kickoff on
    separate rows, two centered footer lines. */
-:is(.sct, #sct-table-armour) .sct-pv-hero {
-  --pv-gold: #ffa300;
-  position: relative;
-  color: #fff;
-  border-radius: 16px;
-  padding: 14px 20px 12px;
-  overflow: hidden;
-  background:
-    linear-gradient(104deg,
-      color-mix(in srgb, var(--pv-hero-away, var(--tp-c-0f1e33, #0f1e33)) 42%, var(--tp-c-070d18, #070d18)) 0%,
-      color-mix(in srgb, var(--pv-hero-away, var(--tp-c-0f1e33, #0f1e33)) 30%, var(--tp-c-070d18, #070d18)) 49.6%,
-      color-mix(in srgb, var(--pv-hero-home, var(--tp-c-0f1e33, #0f1e33)) 30%, var(--tp-c-070d18, #070d18)) 50.4%,
-      color-mix(in srgb, var(--pv-hero-home, var(--tp-c-0f1e33, #0f1e33)) 42%, var(--tp-c-070d18, #070d18)) 100%);
-  isolation: isolate;
-}
 
 /* A faint lift at the top so the text block does not sit on flat color. */
-:is(.sct, #sct-table-armour) .sct-pv-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%);
-  z-index: -1;
-}
 
 /* The divider: a hairline, not a stripe, and only as tall as the card. */
-:is(.sct, #sct-table-armour) .sct-pv-hero::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  margin-left: -1px;
-  background: rgba(255, 163, 0, 0.3);
-  transform: skewX(-8deg);
-  z-index: -1;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hero a {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
 
 /* Row 1: the breadcrumb on the left, the eyebrow on the right, one line. */
-:is(.sct, #sct-table-armour) .sct-pv-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 20px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-crumbs ol {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 11px;
-  opacity: 0.75;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-crumbs li + li::before {
-  content: "/";
-  margin-right: 4px;
-  opacity: 0.7;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-kicker {
-  flex: 0 0 auto;
-  text-align: right;
-  font-size: 11.5px !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.14em;
-  color: var(--pv-gold) !important;
-}
 
 /* The heading is the page's H1 and the hero's accessible name; the two team
    names on the next row already say it, so it takes no room. */
@@ -13051,186 +12943,22 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* Row 2: away at the left edge, home at the right, the badge on the seam. */
-:is(.sct, #sct-table-armour) .sct-pv-match {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 16px;
-  margin-top: 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-side {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  text-align: left;
-  justify-self: start;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-side.is-right {
-  flex-direction: row-reverse;
-  text-align: right;
-  justify-self: end;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-side-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-side.is-right .sct-pv-side-text {
-  align-items: flex-end;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-logo {
-  display: block;
-  flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
-  margin: 0;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-name {
-  font-size: clamp(20px, 2.8vw, 30px);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: 0.005em;
-  text-transform: uppercase;
-  text-wrap: balance;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-meta {
-  margin-top: 3px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  opacity: 0.85;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hero a.sct-pv-hub {
-  margin-top: 3px;
-  font-size: 11.5px;
-  font-weight: 700;
-  text-decoration: none;
-  opacity: 0.8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hero a.sct-pv-hub:hover {
-  opacity: 1;
-  border-bottom-color: var(--pv-gold);
-}
 
 /* The badge, on the divider: small, so the card reads as data. */
-:is(.sct, #sct-table-armour) .sct-pv-at {
-  grid-column: 2;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--tp-c-0b1634, #0b1634);
-  border: 1.5px solid var(--pv-gold);
-  box-shadow: 0 0 0 3px var(--tp-a-7-13-24-550, rgba(7, 13, 24, 0.55));
-  color: var(--pv-gold);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1;
-}
 
 /* The kickoff chips sit centered on the footer line (mak, 2026-11-02; flush
    right of the book note until then). */
-:is(.sct, #sct-table-armour) .sct-pv-chips {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 0 auto;
-  padding: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-chip {
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.2;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.92);
-}
 
 /* Row 3: the five markets, short. */
-:is(.sct, #sct-table-armour) .sct-pv-bets {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1px;
-  margin-top: 12px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.12);
-}
 
 /* Each market centered in its cell (mak, 2026-11-02). */
-:is(.sct, #sct-table-armour) .sct-pv-bet {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 7px 12px 6px;
-  background: var(--tp-a-5-12-24-720, rgba(5, 12, 24, 0.72));
-  text-align: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-bet-k {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-bet-v {
-  font: 700 21px/1.05 var(--pv-display);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-bet-s {
-  font-size: 11px;
-  opacity: 0.8;
-}
 
 /* Row 4: the book note and the kickoff chips on one line. Scoped to the
    hero: the page footer at the bottom shares the class name and was being
    laid out as this row (mak, 2026-11-02: "most text is on the right"). */
-:is(.sct, #sct-table-armour) .sct-pv-hero .sct-pv-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 16px;
-  margin-top: 10px;
-  padding-top: 0;
-  border-top: 0;
-  font-size: 11px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-bets-note {
-  opacity: 0.65;
-}
 
 /* Beside the book note the chips sit flush right (mak, 2026-11-02); alone
    on the line, as on a page without lines, they stay centered. */
-:is(.sct, #sct-table-armour) .sct-pv-hero .sct-pv-bets-note + .sct-pv-chips {
-  justify-content: flex-end;
-  margin: 0 0 0 auto;
-}
 
 /* ---- shared */
 /* Section titles: the markup carries .sct-h2, the hub's section heading that
@@ -13244,52 +12972,10 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--tp-ink, var(--pv-ink)) !important;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 13px !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong) !important;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lede {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--pv-muted);
-  margin: 0 0 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-call + .sct-pv-lede {
-  margin: 10px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-card {
-  background: var(--pv-card);
-  border: 1px solid var(--pv-border);
-  border-radius: 14px;
-  padding: 16px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cards,
 :is(.sct, #sct-table-armour) .sct-pv-cols {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-note {
-  margin-top: 12px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--pv-muted);
-  padding-top: 10px;
-  border-top: 1px solid var(--pv-line);
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-pos {
@@ -13301,29 +12987,9 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ---- 2. the call */
-:is(.sct, #sct-table-armour) .sct-pv-call {
-  border-left: 3px solid var(--pv-gold);
-  padding: 4px 0 4px 16px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-thesis {
-  font-size: 16px !important;
-  font-weight: 800;
-  line-height: 1.3;
-  margin-bottom: 4px;
-  color: var(--tp-ink, var(--pv-ink)) !important;
-}
 
 /* Compressed 2026-10-23 (mak): a three-sentence read, the meter right under
    it, the supporting numbers behind "Why?". */
-:is(.sct, #sct-table-armour) .sct-pv-call > p {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-meter {
-  margin-top: 10px;
-}
 
 :is(.sct, #sct-table-armour) .sct-pv-why {
   margin-top: 8px;
@@ -13336,65 +13002,10 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--pv-muted);
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-track {
-  position: relative;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--pv-away, #444), var(--pv-gray-bg) 50%, var(--pv-home, #444));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-dot {
-  position: absolute;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--pv-gold);
-  border: 3px solid var(--pv-card);
-  box-shadow: 0 0 0 1px var(--pv-line);
-  transform: translate(-50%, -50%);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-meter-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-  font-size: 10.5px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lean {
-  margin-top: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
 /* ---- 3. start/sit */
-:is(.sct, #sct-table-armour) .sct-pv-colhead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 13px !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong) !important;
-}
 
 /* No team swatch beside the label: the kept sections name the team in words
    only, and a white club color (the Jets) read as a stray indent. */
-:is(.sct, #sct-table-armour) .sct-pv-swatch {
-  display: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-swatch.is-away { background: var(--pv-away); }
-:is(.sct, #sct-table-armour) .sct-pv-swatch.is-home { background: var(--pv-home); }
 
 :is(.sct, #sct-table-armour) .sct-pv-rows {
   list-style: none;
@@ -13407,10 +13018,6 @@ a.sct-ex-game:hover .sct-ex-line {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-row-body {
-  min-width: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-pv-row-name {
@@ -13426,13 +13033,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-row-name a:hover {
   text-decoration: underline;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-row-why {
-  margin-top: 2px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--pv-muted);
 }
 
 /* ---- the board's cards (mak, 2026-10-05): the call drives the card. A 3px
@@ -13627,9 +13227,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* Pills: the kept sections' rank and status pills - round, 800, small caps. */
-:is(.sct, #sct-table-armour) .sct-pv-verdict,
-:is(.sct, #sct-table-armour) .sct-pv-lev,
-:is(.sct, #sct-table-armour) .sct-pv-inj {
+:is(.sct, #sct-table-armour) .sct-pv-verdict {
   flex: none;
   display: inline-block;
   min-width: 82px;
@@ -13660,129 +13258,10 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct-mu[data-theme="dark"]:is(.sct, #sct-table-armour) .sct-pv-verdict.is-start { background: rgba(111, 211, 220, 0.14); color: #6fd3dc; }
 
 /* The key: the same pills the cards wear, under a small label. */
-:is(.sct, #sct-table-armour) .sct-pv-key {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-key-h {
-  margin-right: 4px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-key .sct-pv-verdict {
-  min-width: 0;
-}
 
 /* The read: best start, best flex, avoid. */
-:is(.sct, #sct-table-armour) .sct-pv-read {
-  margin: 0 0 16px;
-  padding: 10px 14px;
-  border: 1px solid var(--pv-border);
-  border-left: 3px solid var(--pv-gold);
-  border-radius: 10px;
-  background: var(--pv-card);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read-h {
-  margin: 0 0 6px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px 16px;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read dt {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read dd {
-  margin: 2px 0 0;
-  font-size: 14.5px;
-  font-weight: 800;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read dd a {
-  color: var(--tp-ink, var(--pv-ink));
-  text-decoration: none;
-}
-
-@media (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-pv-read dl { grid-template-columns: minmax(0, 1fr); }
-}
 
 /* ---- 4. leverage */
-:is(.sct, #sct-table-armour) .sct-pv-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--pv-border);
-  border-radius: 14px;
-  background: var(--pv-card);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-table {
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-  border: 0;
-  margin: 0;
-  font-size: 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-table :where(th, td) {
-  padding: 10px 12px;
-  text-align: left;
-  vertical-align: top;
-  border: 0;
-  border-top: 1px solid var(--pv-line);
-  color: var(--tp-ink, var(--pv-ink));
-  font-weight: 400;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-table thead th {
-  border-top: 0;
-  background: var(--tp-c-0b1634, #0b1634);
-  color: #fff !important;
-  font-size: 11px !important;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-table tbody th {
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-table tbody th a {
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lev.is-up { background: color-mix(in srgb, #0f6b4f 14%, var(--pv-card)); color: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-pv-lev.is-neutral,
-:is(.sct, #sct-table-armour) .sct-pv-lev.is-proof { background: var(--pv-gray-bg); color: var(--pv-muted); }
-:is(.sct, #sct-table-armour) .sct-pv-lev.is-down { background: color-mix(in srgb, #94363a 13%, var(--pv-card)); color: var(--pv-red); }
-:is(.sct, #sct-table-armour) .sct-pv-lev { min-width: 0; }
 
 /* ---- 4b. leverage, structured (mak, 2026-10-05): numbers lead, labels
    follow, and the call is the column's star. */
@@ -13801,291 +13280,21 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-top: 7px;
 }
 
-:is(.sct, #sct-table-armour) .sct-pv-meta-line {
-  margin: -4px 0 12px;
-  font-size: 12px;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-counts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-counts b {
-  margin-right: 2px;
-  font-size: 16px;
-  letter-spacing: 0;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-counts .is-up b { color: #0f6b4f; }
-:is(.sct, #sct-table-armour) .sct-pv-counts .is-down b { color: #94363a; }
-
 /* Rails on the rows that matter; neutral rows stay plain. */
-:is(.sct, #sct-table-armour) .sct-pv-levtable tr[data-lev="up"] > th { box-shadow: inset 3px 0 0 #0f6b4f; }
-:is(.sct, #sct-table-armour) .sct-pv-levtable tr[data-lev="down"] > th { box-shadow: inset 3px 0 0 #b4646a; }
-:is(.sct, #sct-table-armour) .sct-pv-levtable tbody :where(th, td) { vertical-align: middle; padding-top: 7px; padding-bottom: 7px; }
-
-:is(.sct, #sct-table-armour) .sct-pv-sig {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-sig-i {
-  font-size: 12px;
-  color: var(--pv-muted);
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-sig-i b {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--tp-ink, var(--pv-ink));
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-def {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-def b {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--tp-ink, var(--pv-ink));
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-def-k {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-def-r {
-  flex-basis: 100%;
-  font-size: 11px;
-  line-height: 1.3;
-  color: var(--pv-muted);
-  opacity: 0.85;
-}
 
 /* The leverage pill: one line since 2026-10-23 (mak), a set width, a firmer tint. */
-:is(.sct, #sct-table-armour) .sct-pv-lev {
-  display: inline-flex;
-  align-items: center;
-  min-width: 104px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lev b {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lev small {
-  font-size: 10.5px;
-  font-weight: 600;
-  opacity: 0.85;
-}
 
 /* Matchup snapshot: the teams and their values lead, the metric recedes. */
-:is(.sct, #sct-table-armour) .sct-pv-take {
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-left: 3px solid var(--pv-gold);
-  border-radius: 8px;
-  background: var(--pv-soft);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-take-h {
-  margin: 0 0 4px;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-take p:not(.sct-pv-take-h) {
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-h3:has(+ .sct-pv-card-sub) {
-  margin-bottom: 2px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-card-sub {
-  margin: 0 0 10px;
-  font-size: 12px;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hls {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0 0 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hl {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border: 1px solid var(--pv-border);
-  border-left: 3px solid var(--pv-border);
-  border-radius: 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hl.is-soft { border-left-color: #0f6b4f; background: color-mix(in srgb, #0f6b4f 5%, var(--pv-card)); }
-:is(.sct, #sct-table-armour) .sct-pv-hl.is-tough { border-left-color: #b4646a; background: color-mix(in srgb, #b4646a 5%, var(--pv-card)); }
-
-:is(.sct, #sct-table-armour) .sct-pv-hl-k {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hl-v {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hl-s {
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-hl-s a {
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cbar {
-  display: block;
-  height: 3px;
-  margin-top: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--pv-ink) 7%, transparent);
-  overflow: hidden;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cbar i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: #94a3b8;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cl .sct-pv-cbar i {
-  margin-left: auto;
-}
-
-@media (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-pv-hls { grid-template-columns: minmax(0, 1fr); }
-}
 
 /* ---- outlook, players to watch (mak, 2026-10-05: the page is a
    game-level fantasy preview; start/sit is one section of it). */
-:is(.sct, #sct-table-armour) .sct-pv-read-4 dl {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-@media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-pv-read-4 dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-read + .sct-pv-take {
-  margin-top: 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 43px 20px;
-  align-items: start;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-pair > .sct-pv-sec {
-  min-width: 0;
-}
 
 /* The Team Matchup table runs full width (mak, 2026-10-23): each side is
    figure, rank pill and a rank bar anchored at the outside edge, growing
    toward the metric; the stronger side's bar is darker. */
-:is(.sct, #sct-table-armour) .sct-pv-cside {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cv {
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar {
-  flex: 1 1 auto;
-  height: 4px;
-  margin: 0 6px;
-  background: color-mix(in srgb, var(--pv-ink) 6%, transparent);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar i {
-  background: color-mix(in srgb, var(--pv-ink) 22%, transparent);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar.is-best i {
-  background: color-mix(in srgb, var(--pv-ink) 62%, transparent);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cr .sct-pv-cside .sct-pv-cbar i {
-  margin-left: auto;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cl .sct-pv-cside .sct-pv-cbar i {
-  margin-left: 0;
-}
 
 /* Narrow: no room for bars beside the figures, so the row is figure and
    rank pill only, and the metric column gives back its side padding. */
-@media (max-width: 640px) {
-  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cbar { display: none; }
-  :is(.sct, #sct-table-armour) .sct-pv-cside { gap: 6px; }
-  :is(.sct, #sct-table-armour) .sct-pv-cr .sct-pv-cside { justify-content: flex-end; }
-  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-rank { white-space: nowrap; }
-  :is(.sct, #sct-table-armour) .sct-pv-compare .sct-pv-cm { padding-left: 8px; padding-right: 8px; }
-  :is(.sct, #sct-table-armour) .sct-pv-cside .sct-pv-cv { font-size: 16px; }
-}
-
-@media (max-width: 900px) {
-  :is(.sct, #sct-table-armour) .sct-pv-pair { grid-template-columns: minmax(0, 1fr); }
-}
 
 :is(.sct, #sct-table-armour) .sct-pv-watch {
   list-style: none;
@@ -14224,264 +13433,19 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 /* ---- 5. snapshot compare rows */
-:is(.sct, #sct-table-armour) .sct-pv-compare {
-  width: 100%;
-  border-collapse: collapse;
-  border: 0;
-  margin: 0;
-  font-size: 14px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-compare :where(th, td) {
-  padding: 9px 4px;
-  border: 0;
-  border-bottom: 1px solid var(--pv-line);
-  color: var(--tp-ink, var(--pv-ink));
-  font-weight: 400;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-compare thead th {
-  font-size: 15px !important;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--tp-ink, var(--pv-ink)) !important;
-  border-bottom: 1px solid var(--pv-border);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cl { text-align: left; }
-:is(.sct, #sct-table-armour) .sct-pv-cr { text-align: right; }
-:is(.sct, #sct-table-armour) .sct-pv-compare .sct-pv-cm {
-  width: 1%;
-  padding-left: 18px;
-  padding-right: 18px;
-  text-align: center;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cv {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--tp-ink, var(--pv-ink));
-  margin: 0 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cv.is-best {
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-rank {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--pv-gray-bg);
-  color: var(--pv-muted-strong);
-  font-variant-numeric: tabular-nums;
-  vertical-align: 3px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-rank[data-tier="good"] { background: var(--pv-green-bg); color: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-pv-rank[data-tier="poor"] { background: var(--pv-red-bg); color: var(--pv-red); }
 
 /* ---- 6. injuries: one card, a group per team (mak, 2026-10-23). */
-:is(.sct, #sct-table-armour) .sct-pv-inj-group + .sct-pv-inj-group {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--pv-line);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-colhead {
-  margin-bottom: 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-rows {
-  gap: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-card .sct-pv-row + .sct-pv-row {
-  border-top: 0;
-  padding-top: 0;
-}
 
 /* The injury rows lead with a face (mak, 2026-11-02). The status chip is a
    small badge on the face's top-right corner, not a column (mak, 2026-11-03). */
-:is(.sct, #sct-table-armour) .sct-pv-inj-row {
-  align-items: flex-start;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-avatar {
-  position: relative;
-  flex: none;
-  display: block;
-  width: 36px;
-  height: 36px;
-  margin: 2px 6px 0 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-row .sct-pv-inj {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  margin: 0;
-  min-width: 0;
-  padding: 1px 5px;
-  font-size: 9px !important;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 0 2px var(--pv-card);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-row-name {
-  font-size: 14px;
-}
 
 /* Position tags on the injury rows wear the house position colors (mak, 2026-11-03). */
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-pos { font-weight: 800; }
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-pos[data-pos="QB"] { color: var(--sct-pos-qb); }
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-pos[data-pos="RB"] { color: var(--sct-pos-rb); }
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-pos[data-pos="WR"] { color: var(--sct-pos-wr); }
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-pos[data-pos="TE"] { color: var(--sct-pos-te); }
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-group .sct-pv-row-why {
-  margin-top: 0;
-  font-size: 12.5px;
-  line-height: 1.45;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj-foot {
-  margin-top: 6px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-rows + .sct-pv-inj-foot {
-  margin-top: 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-inj { min-width: 44px; background: var(--pv-amber-bg); color: var(--pv-amber); }
-:is(.sct, #sct-table-armour) .sct-pv-inj:is([data-status="IR"], [data-status="PUP"], [data-status="NFI"]) { background: var(--pv-red-bg); color: var(--pv-red); }
-:is(.sct, #sct-table-armour) .sct-pv-inj:is([data-status="O"], [data-status="SUS"]) { background: var(--pv-red-bg); color: var(--pv-red); }
-:is(.sct, #sct-table-armour) .sct-pv-inj[data-status="OK"] { background: var(--pv-green-bg); color: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-pv-card .sct-pv-row + .sct-pv-row {
-  border-top: 1px solid var(--pv-line);
-  padding-top: 10px;
-}
 
 /* ---- 7. head-to-head */
-:is(.sct, #sct-table-armour) .sct-pv-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
-}
 
-:is(.sct, #sct-table-armour) .sct-pv-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: var(--pv-card);
-  border: 1px solid var(--pv-border);
-  border-radius: 12px;
-  padding: 14px 16px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-stat-v {
-  font-size: 26px !important;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-stat-k {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-  line-height: 1.35;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-games {
-  list-style: none;
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  scroll-snap-type: x proximity;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-games li {
-  flex: none;
-  scroll-snap-align: start;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-game {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 112px;
-  padding: 8px 10px;
-  border: 1px solid var(--pv-border);
-  border-radius: 10px;
-  background: var(--pv-card);
-  color: var(--tp-ink, var(--pv-ink));
-  text-decoration: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-game:hover { border-color: var(--pv-gold); }
-:is(.sct, #sct-table-armour) .sct-pv-game-when { margin-bottom: 2px; font-size: 10.5px; font-weight: 700; color: var(--pv-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-:is(.sct, #sct-table-armour) .sct-pv-game-line { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; }
 /* Winner bold, loser muted (mak, 2026-10-05). */
-:is(.sct, #sct-table-armour) .sct-pv-game-line b { font-weight: 800; color: var(--tp-ink, var(--pv-ink)); }
-:is(.sct, #sct-table-armour) .sct-pv-game-line.is-loss { color: var(--pv-muted); font-weight: 500; }
-:is(.sct, #sct-table-armour) .sct-pv-game-line.is-loss b { font-weight: 500; color: var(--pv-muted); }
-:is(.sct, #sct-table-armour) .sct-pv-stat-n { font-size: 12px; line-height: 1.35; color: var(--pv-muted); }
-:is(.sct, #sct-table-armour) .sct-pv-stats + .sct-pv-take { margin: 0 0 10px; }
-:is(.sct, #sct-table-armour) .sct-pv-nowrap { white-space: nowrap; }
-:is(.sct, #sct-table-armour) .sct-pv-read-why { display: block; margin-top: 1px; font-size: 11.5px; font-weight: 600; color: var(--pv-muted); }
-:is(.sct, #sct-table-armour) .sct-pv-more { margin-top: 10px; font-weight: 700; font-size: 14px; }
-:is(.sct, #sct-table-armour) .sct-pv-more a { text-decoration: none; border-bottom: 2px solid var(--pv-gold); }
 
 /* ---- 8. CTA */
-:is(.sct, #sct-table-armour) .sct-pv-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 18px 20px;
-  border-radius: 12px;
-  color: #fff;
-  background: var(--tp-c-0b1634, #0b1634);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cta p { font-size: 14.5px; line-height: 1.5; opacity: 0.92; }
-:is(.sct, #sct-table-armour) .sct-pv-cta .sct-pv-cta-h { font-size: 17px !important; font-weight: 800; line-height: 1.25; opacity: 1; margin-bottom: 4px; color: #fff !important; }
-
-:is(.sct, #sct-table-armour) .sct-pv-cta-btn {
-  flex: none;
-  padding: 11px 16px;
-  border-radius: 10px;
-  background: var(--pv-gold);
-  color: var(--tp-ink, var(--tp-c-0b1634, #0b1634)) !important;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1;
-  text-decoration: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cta-btn:hover { filter: brightness(1.06); }
 
 /* ---- 9. FAQ */
 :is(.sct, #sct-table-armour) .sct-pv-faq {
@@ -14524,35 +13488,22 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ---- responsive */
 @media (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-pv-bets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  :is(.sct, #sct-table-armour) .sct-pv-bet:last-child { grid-column: 1 / -1; }
-  :is(.sct, #sct-table-armour) .sct-pv-cards,
+
   :is(.sct, #sct-table-armour) .sct-pv-cols { grid-template-columns: minmax(0, 1fr); }
-  :is(.sct, #sct-table-armour) .sct-pv-stats { grid-template-columns: minmax(0, 1fr); }
-  :is(.sct, #sct-table-armour) .sct-pv-cta { flex-direction: column; align-items: flex-start; }
-  :is(.sct, #sct-table-armour) .sct-pv-hero { padding: 14px 16px 12px; border-radius: 12px; }
-  :is(.sct, #sct-table-armour) .sct-pv-top { flex-wrap: wrap; }
-  :is(.sct, #sct-table-armour) .sct-pv-meter-labels { font-size: 10.5px; }
+
 }
 
 /* Narrow: each side goes back to crest over name, centered, so two long
    names beside two crests do not fight for 160px each. */
 @media (max-width: 600px) {
-  :is(.sct, #sct-table-armour) .sct-pv-match { column-gap: 8px; }
-  :is(.sct, #sct-table-armour) .sct-pv-side,
-  :is(.sct, #sct-table-armour) .sct-pv-side.is-right { flex-direction: column; gap: 6px; text-align: center; justify-self: center; }
-  :is(.sct, #sct-table-armour) .sct-pv-side-text,
-  :is(.sct, #sct-table-armour) .sct-pv-side.is-right .sct-pv-side-text { align-items: center; }
-  :is(.sct, #sct-table-armour) .sct-pv-logo { width: 40px; height: 40px; }
-  :is(.sct, #sct-table-armour) .sct-pv-name { font-size: 17px; }
-  :is(.sct, #sct-table-armour) .sct-pv-chips { margin-left: 0; justify-content: center; }
+
   :is(.sct, #sct-table-armour) .sct-pv-foot { justify-content: center; text-align: center; }
 }
 
 @media (max-width: 420px) {
-  :is(.sct, #sct-table-armour) .sct-pv-at { width: 24px; height: 24px; font-size: 12px; }
+
   :is(.sct, #sct-table-armour) .sct-pv-row { flex-direction: column; gap: 6px; }
-  :is(.sct, #sct-table-armour) .sct-pv-inj-row { flex-direction: row; gap: 10px; }
+
 }
 
 :is(.sct, #sct-table-armour) .sct-metric-value { font-size: 2.1rem; }
@@ -14892,431 +13843,24 @@ a.sct-ex-game:hover .sct-ex-line {
    defense cards (rank pill, bar, FP/G allowed per position), then two
    starter cards (slot, name with Q/D badge and the opposing defense's rank
    chip, five season figures). Hub card tokens, Barlow numerals. */
-:is(.sct, #sct-table-armour) .sct-mu-starters .sct-mu-st-note + .sct-pv-cards {
-  margin-top: 16px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-card {
-  padding: 12px 16px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-card .sct-pv-colhead {
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-sub {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-def {
-  width: 100%;
-  border-collapse: collapse;
-  border: 0;
-  margin: 0;
-  font-size: 13.5px;
-}
 
 /* Tightened 2026-10-23 (mak): rank pill, bar and FP/G read as one row. */
-:is(.sct, #sct-table-armour) .sct-mu-st-def :where(th, td) {
-  padding: 4px 4px;
-  border: 0;
-  border-bottom: 1px solid var(--pv-line);
-  color: var(--tp-ink, var(--pv-ink));
-  font-weight: 400;
-  text-align: left;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-def tbody tr:last-child :where(th, td) {
-  border-bottom: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-def th[scope="row"] {
-  width: 40px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-def td:nth-child(2) {
-  width: 52px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-def .sct-pv-rank {
-  vertical-align: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-bar {
-  width: 100%;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar {
-  height: 6px;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar i[data-tier="good"] { background: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-mu-st-bar .sct-pv-cbar i[data-tier="poor"] { background: var(--pv-red); }
-
-:is(.sct, #sct-table-armour) .sct-mu-st-num {
-  width: 48px;
-  text-align: right !important;
-  font: 700 15px/1 var(--pv-display);
-  font-variant-numeric: tabular-nums;
-}
 
 /* Starters as a lineup table in the Sleeper matchup style (mak,
    2026-10-23): headshot, name and slot with the matchup pill, and PPR PPG
    with the positional rank at the right. */
-:is(.sct, #sct-table-armour) .sct-mu-pr-team {
-  padding: 12px 16px 6px;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  padding: 7px 0;
-  border-top: 1px solid color-mix(in srgb, var(--pv-line) 60%, transparent);
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr:first-child { border-top: 0; }
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-face {
-  flex: none;
-  display: block;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--pv-gray-bg);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-face.is-away { background: color-mix(in srgb, var(--pv-away) 14%, var(--pv-card)); }
-:is(.sct, #sct-table-armour) .sct-mu-pr-face.is-home { background: color-mix(in srgb, var(--pv-home) 14%, var(--pv-card)); }
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-id {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-name {
-  font-size: 14.5px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--tp-ink, var(--pv-ink));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-name a {
-  color: var(--tp-ink, var(--pv-link));
-  text-decoration-color: var(--pv-gold);
-  text-underline-offset: 3px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-pos {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-pos .sct-mu-st-vs {
-  margin: 0;
-  text-transform: none;
-  letter-spacing: 0.01em;
-}
 
 /* The figure and its rank (the "PPR PPG" label under them went 2026-11-02;
    the switch in the heading row names the scoring instead). */
-:is(.sct, #sct-table-armour) .sct-mu-pr-pts {
-  flex: none;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  text-align: right;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-pts b {
-  font: 700 20px/1 var(--pv-display);
-  color: var(--tp-ink, var(--pv-ink));
-  font-variant-numeric: tabular-nums;
-}
 
 /* The starters heading and the scoring switch on one row. */
-:is(.sct, #sct-table-armour) .sct-mu-st-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  margin-bottom: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-head > .sct-h2 {
-  flex: 1 1 auto;
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-head .sct-mu-scoring {
-  margin: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-pr-rank {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--pv-muted-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-badge {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 0 5px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 15px;
-  vertical-align: 1px;
-  background: var(--pv-amber-bg);
-  color: var(--pv-amber);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-badge.is-d {
-  background: var(--pv-red-bg);
-  color: var(--pv-red);
-}
 
 /* The matchup pill: "10th vs QB", small and quiet, graded by quartile of
    the 32 defenses (1st = the most points allowed). The two lean steps are
    outlined, the two extremes tinted, so only the extremes carry weight. */
-:is(.sct, #sct-table-armour) .sct-mu-st-vs {
-  flex: 0 0 auto;
-  margin-left: auto;
-  padding: 0 6px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 15px;
-  white-space: nowrap;
-  opacity: 0.9;
-  color: var(--pv-muted-strong);
-  border-color: var(--pv-line);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="soft"] { color: var(--pv-green); background: var(--pv-green-bg); border-color: transparent; }
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="lean-soft"] { color: var(--pv-green); border-color: color-mix(in srgb, var(--pv-green) 35%, transparent); }
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="lean-tough"] { color: var(--pv-amber); border-color: color-mix(in srgb, var(--pv-amber) 40%, transparent); }
-:is(.sct, #sct-table-armour) .sct-mu-st-vs[data-tier="tough"] { color: var(--pv-red); background: var(--pv-red-bg); border-color: transparent; }
-
-:is(.sct, #sct-table-armour) .sct-mu-st-note {
-  margin: 10px 0 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--pv-muted);
-}
 
 /* ---- Matchup Leverage as a visual board (mak, 2026-10-23): a role bar, a
    matchup bar and a colored leverage dot per player; numbers in small print. */
-:is(.sct, #sct-table-armour) .sct-pv-lb {
-  padding: 6px 16px 8px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-head,
-:is(.sct, #sct-table-armour) .sct-pv-lb-row {
-  display: grid;
-  grid-template-columns: minmax(150px, 1.2fr) minmax(0, 1.4fr) minmax(0, 1.4fr) 120px;
-  gap: 0 18px;
-  align-items: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-head {
-  padding: 8px 0 6px;
-  border-bottom: 1px solid var(--pv-border);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-row {
-  padding: 8px 0 8px 10px;
-  margin: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--pv-line) 60%, transparent);
-  box-shadow: inset 3px 0 0 var(--pv-rail, transparent);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-row:last-child { border-bottom: 0; }
-:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="up"],
-:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="proof"] { --pv-rail: #0f6b4f; }
-:is(.sct, #sct-table-armour) .sct-pv-lb-row[data-lev="down"] { --pv-rail: #b4646a; }
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-who {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-face {
-  flex: none;
-  display: block;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--pv-gray-bg);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-face.is-away { background: color-mix(in srgb, var(--pv-away) 14%, var(--pv-card)); }
-:is(.sct, #sct-table-armour) .sct-pv-lb-face.is-home { background: color-mix(in srgb, var(--pv-home) 14%, var(--pv-card)); }
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-avatar {
-  position: relative;
-  flex: none;
-  display: block;
-  width: 36px;
-  height: 36px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-crest {
-  position: absolute;
-  right: -5px;
-  bottom: -3px;
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  /* No disc or ring behind the crest (mak, 2026-11-03). */
-  background: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-name {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  line-height: 1.25;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-name .sct-pv-pos {
-  font-size: 10.5px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-who a { color: var(--tp-ink, var(--pv-ink)); }
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-cell {
-  min-width: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar {
-  display: block;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--pv-ink) 7%, transparent);
-  overflow: hidden;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: #94a3b8;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="strong"] i,
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="favorable"] i { background: var(--pv-green); }
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="solid"] i,
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="neutral"] i { background: var(--tp-c-d4a106, #d4a106); }
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="light"] i,
-:is(.sct, #sct-table-armour) .sct-pv-lb-bar[data-tier="tough"] i { background: var(--pv-red); }
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-lab {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 4px;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-lab b {
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-lab small {
-  font-size: 11px;
-  color: var(--pv-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-lb-lev {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--tp-ink, var(--pv-ink));
-  white-space: nowrap;
-}
 
 :is(.sct, #sct-table-armour) .sct-pv-lb-dot {
   flex: none;
@@ -15333,138 +13877,18 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* Narrow: player and leverage dot on one line, then the role bar and the
    matchup bar each on a full-width line of their own. */
-@media (max-width: 720px) {
-  :is(.sct, #sct-table-armour) .sct-pv-lb-head { display: none; }
-  :is(.sct, #sct-table-armour) .sct-pv-lb-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px 14px;
-  }
-  :is(.sct, #sct-table-armour) .sct-pv-lb-who { grid-column: 1; grid-row: 1; }
-  :is(.sct, #sct-table-armour) .sct-pv-lb-lev { grid-column: 2; grid-row: 1; justify-content: flex-end; }
-  :is(.sct, #sct-table-armour) .sct-pv-lb-cell { grid-column: 1 / -1; }
-}
 
 /* ---- Team Matchup as a comparison graphic (mak, 2026-10-23): mirrored rank
    bars out from the center, the advantage side in its team color, a marker
    under the metric that names the edge. */
-:is(.sct, #sct-table-armour) .sct-pv-cmp {
-  padding: 8px 16px 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-head {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0 8px;
-  border-bottom: 1px solid var(--pv-border);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--tp-ink, var(--pv-ink));
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-group {
-  padding: 4px 0 2px;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-group + .sct-pv-cmp-group {
-  border-top: 1px solid var(--pv-line);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-gh {
-  margin: 6px 0 1px !important;
-  text-align: center;
-  font-size: 10.5px !important;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--pv-muted) !important;
-}
 
 /* Equal fixed value columns keep the two bars the same length, so the eye
    can compare them; the label column was 150px (tightened 2026-11-03). */
-:is(.sct, #sct-table-armour) .sct-pv-cmp-row {
-  display: grid;
-  grid-template-columns: 128px minmax(0, 1fr) 124px minmax(0, 1fr) 128px;
-  gap: 0 8px;
-  align-items: center;
-  padding: 5px 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-v {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-v.is-r { justify-content: flex-end; flex-direction: row-reverse; }
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-v b {
-  font: 800 17px/1 var(--pv-display);
-  color: var(--tp-ink, var(--pv-ink));
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-bar {
-  position: relative;
-  display: block;
-  height: 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--pv-ink) 6%, transparent);
-  overflow: hidden;
-}
 
 /* A faint tick at league average (rank 16.5 = half the track), so two
    middling bars read as middling rather than as a close race (2026-11-03). */
-:is(.sct, #sct-table-armour) .sct-pv-cmp-bar::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  margin-left: -1px;
-  background: color-mix(in srgb, var(--pv-ink) 38%, transparent);
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--pv-ink) 20%, transparent);
-}
 
 /* Mirrored: the fill sits against the center and grows outward. */
-:is(.sct, #sct-table-armour) .sct-pv-cmp-bar.is-l i { margin-left: auto; }
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="away"] .sct-pv-cmp-bar.is-l i { background: var(--pv-away); }
-:is(.sct, #sct-table-armour) .sct-pv-cmp-row[data-adv="home"] .sct-pv-cmp-bar.is-r i { background: var(--pv-home); }
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-mid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  text-align: center;
-}
-
-:is(.sct, #sct-table-armour) .sct-pv-cmp-k {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pv-muted-strong);
-  white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0 6px; }
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-bar { display: none; }
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-row > span:empty { display: none; }
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-v b { font-size: 15px; }
-  :is(.sct, #sct-table-armour) .sct-pv-cmp-mid { min-width: 96px; }
-}
 
 /* ======================================================================
  * Schedule page (mak's schedule brief, 2026-11-03)
@@ -15552,9 +13976,6 @@ a.sct-ex-game:hover .sct-ex-line {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  
-
-  
 }
 
 /* Four cards across leave each head about 250px: "Next game · Week 9" and
@@ -29112,102 +27533,215 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* ---- Notable Usage Changes: one card per move */
+/* ---- Notable Usage Changes: one card per move (mak's premium card brief,
+   2026-11-06): big round face, pale-blue metric pill, the signed move in
+   percentage points in trend green/red, the arrow in a tinted square, a
+   barely-blue header over a 1px divider, then the analysis. White cards,
+   natural heights, three across at desktop (auto-fill, so one card stays one
+   card wide), two on tablets, one on phones. Trend colors never take the
+   team palette: they mean up and down. */
 :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trends {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 20px 18px;
+  align-items: start;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-  padding: 14px 16px 16px;
-  border: 1px solid var(--prm-line-2);
-  border-radius: 14px;
-  background: linear-gradient(170deg, #fff 0%, var(--tp-c-f5f8fc, #f5f8fc) 100%);
-  box-shadow:
-    inset 0 1px 0 #fff,
-    0 1px 2px rgba(11, 22, 52, 0.06),
-    0 6px 16px rgba(11, 22, 52, 0.07);
+  display: block;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #d6e0ed;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(12, 35, 75, 0.08);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend:hover {
+  border-color: #c3d2e5;
+  box-shadow: 0 6px 20px rgba(12, 35, 75, 0.12);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-top {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px dashed var(--prm-line);
+  gap: 15px;
+  padding: 17px 18px 15px;
+  border-bottom: 1px solid #e2eaf4;
+  background: linear-gradient(135deg, #ffffff 0%, #f2f7ff 100%);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-top .sct-us-face {
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
+  width: 74px;
+  height: 74px;
+  overflow: hidden;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--prm-line);
+  background: #eef3f9;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px #d6e0ed;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-trend-top .sct-us-face-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  align-items: flex-start;
+  gap: 6px;
   min-width: 0;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-metric {
-  align-self: flex-start;
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 11px;
   border-radius: 999px;
-  color: var(--tp-ink, var(--prm-ink));
-  background: var(--tp-c-e9eef6, #e9eef6);
-  box-shadow: inset 0 0 0 1px rgba(11, 22, 52, 0.06);
-  font-size: 0.6rem;
+  background: #e4efff;
+  color: #081e42;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-num {
-  font-size: 1.7rem;
+  font-size: 2.15rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1;
   text-align: left;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend.is-up .sct-us-trend-num {
+  color: #008438;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend.is-down .sct-us-trend-num {
+  color: #b80c14;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend-arrow {
   display: inline-flex;
+  flex: 0 0 auto;
+  align-self: flex-start;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   margin-left: auto;
-  border-radius: 10px;
-  font-size: 0.9rem;
+  border-radius: 11px;
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend.is-up .sct-us-trend-arrow {
-  color: var(--us-green);
-  background: #dcfce7;
+  color: #008438;
+  background: #e2f6e9;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-trend.is-down .sct-us-trend-arrow {
-  color: var(--us-red);
-  background: #fee2e2;
+  color: #b80c14;
+  background: #fde7e8;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body {
-  color: var(--sc-muted-strong);
-  font-size: 0.88rem;
+  margin: 0;
+  padding: 13px 18px 17px;
+  color: #12284a;
+  font-size: 0.875rem;
+  font-weight: 400;
   line-height: 1.55;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body strong {
-  color: var(--tp-ink, var(--prm-ink));
+  color: #081e42;
   font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body .sct-us-trend-name {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body .sct-us-trend-name:hover,
+:is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body .sct-us-trend-name:focus-visible {
+  text-decoration: underline !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend {
+    transition: none;
+  }
+}
+
+/* Tablets and phones: the same header row, smaller. */
+@media (max-width: 899px) {
+  :is(.sct, #sct-table-armour) .sct-us-trend-top .sct-us-face {
+    width: 62px;
+    height: 62px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-num {
+    font-size: 1.9rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-trend-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trends {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-trend-top {
+    gap: 12px;
+    padding: 14px 15px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-trend-top .sct-us-face {
+    width: 58px;
+    height: 58px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-trend-metric {
+    height: 22px;
+    padding: 0 9px;
+    font-size: 0.64rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-num {
+    font-size: 1.75rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-trend-arrow {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-trend-body {
+    padding: 11px 15px 14px;
+    font-size: 0.8rem;
+  }
 }
 
 /* ---- the collapsed keys: a soft note panel with an info glyph */
@@ -30898,5 +29432,3178 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-sp-panel-sub {
     margin: 2px 0 0 !important;
     font-size: 12px !important;
+  }
+}
+
+/* ==== Matchup preview: the premium design (mak, 2026-11-06) ====
+   src/lib/matchup/preview-premium.ts. THE upcoming matchup page since mak
+   approved it the same day and had the old decision layer removed: the top
+   (.sct-mpp.is-top: breadcrumb + hero) and the body (.sct-mpp: banner, cards,
+   rail), then the old FAQ / Dynasty / Next steps tail (.sct-pv). Borrows the team hub's
+   header (.sct-tpb), the shared tab banner (.sct-up-head) and the Schedule
+   tab's navy-bar cards + dark rail (.sct-shp). Team fills are the page's
+   --pv-away / --pv-home. */
+:is(.sct, #sct-table-armour) .sct-mpp {
+  --mpp-navy-950: #071a35;
+  --mpp-navy-900: #0b2345;
+  --mpp-navy-700: #1a4d8a;
+  --mpp-gold: #d4af37;
+  --mpp-gold-bright: #f0c13b;
+  --mpp-gold-deep: #a8841c;
+  --mpp-text: #102344;
+  --mpp-muted: #5b7290;
+  --mpp-border: #cbdbea;
+  --mpp-border-light: #e1e9f3;
+  --mpp-surface: #f8fbff;
+  --mpp-green: #087a42;
+  --mpp-green-light: #e5f7ea;
+  --mpp-red: #b83238;
+  --mpp-red-light: #fce8eb;
+  --mpp-amber: #8a5a00;
+  --mpp-amber-light: #fff3d8;
+  --mpp-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+  --mpp-radius: 14px;
+  --mpp-head: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
+  --mpp-away: var(--pv-away, #1a4d8a);
+  --mpp-home: var(--pv-home, #b83238);
+  --mpp-panel-w: 168px;
+  --mpp-slant: 44px;
+  container-type: inline-size;
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  color: var(--mpp-text);
+  font-family: var(--sc-font);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp.is-top {
+  gap: 8px;
+  margin: 0;
+}
+
+/* The panel's own top padding would open a gap under the hero; the banner
+   sits 16px under it, as the cards sit under each other. */
+:is(.sct, #sct-table-armour) .sct-mpp.is-top + [data-sct-panel] {
+  padding-top: 16px !important;
+  margin-top: 0 !important;
+}
+
+/* The tail after the cards: the FAQ, the Dynasty line and Next steps. */
+:is(.sct, #sct-table-armour) .sct-mpp + .sct-pv {
+  margin-top: 36px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--mpp-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crumbs li + li::before {
+  content: "/";
+  margin: 0 8px;
+  color: #a9b8cb;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crumbs a {
+  color: var(--mpp-navy-900) !important;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crumbs a:hover {
+  text-decoration: underline !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crumbs [aria-current] {
+  color: var(--mpp-text);
+}
+
+/* The card and rail titles are the page's H2s (the old sections' headings):
+   armor them against the host's and the hub's heading rules. */
+:is(.sct, #sct-table-armour) .sct-mpp :is(h2.sct-mpp-h, h2.sct-mpp-rail-h) {
+  margin: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-left: 0 !important;
+  background: none !important;
+  font-family: var(--sc-font) !important;
+  text-shadow: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp h2.sct-mpp-h {
+  padding: 0 !important;
+  border-bottom: 0 !important;
+  color: #fff !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp h2.sct-mpp-rail-h {
+  margin-bottom: 10px !important;
+  padding: 0 0 7px !important;
+  color: var(--mpp-navy-900) !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp :is(h2.sct-mpp-h, h2.sct-mpp-rail-h)::before,
+:is(.sct, #sct-table-armour) .sct-mpp :is(h2.sct-mpp-h, h2.sct-mpp-rail-h)::after {
+  content: none !important;
+  display: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp p {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp ul,
+:is(.sct, #sct-table-armour) .sct-mpp ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-num {
+  font-family: "Barlow", var(--sc-font);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* ---- the hero: the team header's look, one slanted crest panel per side */
+:is(.sct, #sct-table-armour) .sct-mpp-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(110deg, #0a3268 0%, #125ba5 48%, #1769b3 65%, #092d60 100%);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(7, 27, 55, 0.26);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bands {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(112deg, transparent 0 36%, rgba(255, 255, 255, 0.07) 36% 55%, transparent 55% 61%, rgba(9, 45, 96, 0.38) 61% 75%, transparent 75%),
+    radial-gradient(58% 95% at 50% 30%, rgba(70, 150, 230, 0.3) 0%, transparent 66%),
+    linear-gradient(0deg, rgba(7, 27, 55, 0.5) 0%, transparent 45%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-topline {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--mpp-away) 0%, var(--mpp-gold-bright) 35%, var(--mpp-gold) 65%, var(--mpp-home) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: calc(var(--mpp-panel-w) + var(--mpp-slant)) minmax(0, 1fr) auto minmax(0, 1fr) calc(var(--mpp-panel-w) + var(--mpp-slant));
+  grid-template-areas:
+    "ap eb eb eb hp"
+    "ap ai at hi hp";
+  align-items: center;
+  column-gap: 18px;
+  min-height: 168px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel {
+  position: relative;
+  grid-row: 1 / -1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, var(--mpp-gold-bright) 0%, var(--mpp-gold) 55%, var(--mpp-gold-deep) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel.is-away {
+  grid-area: ap;
+  justify-content: flex-start;
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--mpp-slant)) 100%, 0 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel.is-home {
+  grid-area: hp;
+  justify-content: flex-end;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--mpp-slant) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel-fill {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0.05) 2px, transparent 2px, transparent 22px),
+    linear-gradient(145deg, color-mix(in srgb, var(--fill) 78%, #fff) 0%, var(--fill) 60%, color-mix(in srgb, var(--fill) 70%, #000) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel.is-away .sct-mpp-panel-fill {
+  --fill: var(--mpp-away);
+  right: 6px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--mpp-slant)) 100%, 0 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-panel.is-home .sct-mpp-panel-fill {
+  --fill: var(--mpp-home);
+  left: 6px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--mpp-slant) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crest {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  margin: 0 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(7, 27, 55, 0.35);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-crest img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-eyebrow {
+  grid-area: eb;
+  align-self: end;
+  padding-top: 18px;
+  color: var(--mpp-gold-bright);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ident {
+  display: grid;
+  gap: 4px;
+  align-self: start;
+  padding: 6px 0 20px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ident.is-away {
+  grid-area: ai;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ident.is-home {
+  grid-area: hi;
+  text-align: right;
+  justify-items: end;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-name {
+  color: #fff;
+  font-size: clamp(1.35rem, 3cqi, 2rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rec {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  color: #d9e1ee;
+  font-size: 0.82rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rec b {
+  color: #fff;
+  font-family: "Barlow", var(--sc-font);
+  font-size: 1.05rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rec span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hub {
+  color: var(--mpp-gold-bright) !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hub:hover {
+  text-decoration: underline !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-at {
+  grid-area: at;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--mpp-gold);
+  color: var(--mpp-gold-bright);
+  font-weight: 800;
+}
+
+/* KPI cards: the team header's white cards with gold icons */
+:is(.sct, #sct-table-armour) .sct-mpp-kpis {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px 22px 0 !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px 14px;
+  border: 1px solid #d4e0ee;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff 0%, #f7faff 65%, #ecf3fc 100%);
+  color: var(--mpp-text);
+  box-shadow: 0 3px 8px rgba(8, 36, 75, 0.1), 0 8px 18px rgba(8, 36, 75, 0.08);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--mpp-gold-deep);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-div {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 34px;
+  background: #d3dfed;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-label {
+  color: var(--mpp-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-value {
+  color: var(--mpp-navy-950);
+  font-family: "Barlow", var(--sc-font);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-kpi-sub {
+  color: var(--mpp-muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-facts {
+  position: relative;
+  z-index: 1;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding: 12px 22px 14px !important;
+  color: #e6edf7;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-fact-icon {
+  display: inline-flex;
+  color: var(--mpp-gold-bright);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-fact-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-fact.is-note {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+/* ---- the banner: the shared tab header, its title a <p> here */
+:is(.sct, #sct-table-armour) .sct-mpp .sct-up-head {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-title {
+  margin: 0;
+  /* Not !important: on phones the team pages' banner rule (team-mobile-560)
+     turns every tab banner into a plain dark heading, and this one follows. */
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* ---- layout: main + rail, as the Schedule tab */
+:is(.sct, #sct-table-armour) .sct-mpp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(270px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-main,
+:is(.sct, #sct-table-armour) .sct-mpp-rail {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ---- navy-bar cards */
+:is(.sct, #sct-table-armour) .sct-mpp-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--mpp-border);
+  border-radius: var(--mpp-radius);
+  background: linear-gradient(145deg, #fff 0%, var(--mpp-surface) 100%);
+  box-shadow: var(--mpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 16px;
+  overflow: hidden;
+  background: var(--mpp-head);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-icon {
+  display: inline-flex;
+  color: var(--mpp-gold-bright);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tag {
+  margin-left: auto;
+  padding-right: 34px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-slash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background: linear-gradient(118deg, transparent 0 38%, var(--mpp-gold) 38% 52%, transparent 52% 64%, var(--mpp-gold-bright) 64% 76%, transparent 76%);
+  opacity: 0.9;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-body {
+  padding: 14px 16px 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-copy {
+  color: #334a68;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--mpp-navy-900) !important;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  box-shadow: inset 0 -2px 0 var(--mpp-gold);
+}
+
+/* shared bits: faces, position slots, pills */
+:is(.sct, #sct-table-armour) .sct-mpp-face {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--mpp-away) 22%, #fff);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpp-away) 55%, #fff);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-face.is-home {
+  background: color-mix(in srgb, var(--mpp-home) 22%, #fff);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpp-home) 55%, #fff);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-face-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-slot {
+  display: inline-block;
+  min-width: 30px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #e9eff6;
+  color: #4b6280;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-slot[data-pos="QB"] { background: #fde8ea; color: #a12a3a; }
+:is(.sct, #sct-table-armour) .sct-mpp-slot[data-pos="RB"] { background: #e3f5ea; color: #13703f; }
+:is(.sct, #sct-table-armour) .sct-mpp-slot[data-pos="WR"] { background: #e4effc; color: #1d5ba6; }
+:is(.sct, #sct-table-armour) .sct-mpp-slot[data-pos="TE"] { background: #fbf1d6; color: #8a6400; }
+
+:is(.sct, #sct-table-armour) .sct-mpp-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-pill[data-tone="soft"] { background: var(--mpp-green-light); color: var(--mpp-green); }
+:is(.sct, #sct-table-armour) .sct-mpp-pill[data-tone="lean-soft"] { box-shadow: inset 0 0 0 1px #9fd5b4; color: var(--mpp-green); }
+:is(.sct, #sct-table-armour) .sct-mpp-pill[data-tone="lean-tough"] { box-shadow: inset 0 0 0 1px #e5c27a; color: var(--mpp-amber); }
+:is(.sct, #sct-table-armour) .sct-mpp-pill[data-tone="tough"] { background: var(--mpp-red-light); color: var(--mpp-red); }
+:is(.sct, #sct-table-armour) .sct-mpp-pill[data-tone="mid"] { background: #e9eff6; color: #4b6280; }
+
+/* ---- The Call */
+:is(.sct, #sct-table-armour) .sct-mpp-thesis {
+  margin-bottom: 6px !important;
+  color: var(--mpp-navy-950);
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meter {
+  position: relative;
+  height: 20px;
+  margin-top: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meter-track {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  left: 0;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--mpp-away) 0%, #dfe7f1 50%, var(--mpp-home) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meter-dot {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--mpp-gold);
+  box-shadow: 0 2px 6px rgba(7, 27, 55, 0.35);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-why {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #334a68;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-why summary {
+  cursor: pointer;
+  color: var(--mpp-navy-700);
+  font-weight: 700;
+}
+
+/* ---- two team columns (starters, injuries) */
+:is(.sct, #sct-table-armour) .sct-mpp-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-col {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--mpp-border-light);
+  border-top: 3px solid var(--mpp-away);
+  border-radius: 12px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-col.is-home {
+  border-top-color: var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-colhead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px !important;
+  border-bottom: 1px solid var(--mpp-border-light);
+  background: #f3f7fc;
+  color: var(--mpp-navy-950);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-colhead small {
+  margin-left: auto;
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st {
+  display: grid;
+  grid-template-columns: 36px 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st-id {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  justify-items: start;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st-name,
+:is(.sct, #sct-table-armour) .sct-mpp-lev-name,
+:is(.sct, #sct-table-armour) .sct-mpp-inj-name {
+  overflow: hidden;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp :is(.sct-mpp-st-name, .sct-mpp-lev-name, .sct-mpp-inj-name) a {
+  color: var(--mpp-navy-950) !important;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp :is(.sct-mpp-st-name, .sct-mpp-lev-name, .sct-mpp-inj-name) a:hover {
+  text-decoration: underline !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-badge {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  vertical-align: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-badge.is-q { background: var(--mpp-amber-light); color: var(--mpp-amber); }
+:is(.sct, #sct-table-armour) .sct-mpp-badge.is-d { background: var(--mpp-red-light); color: var(--mpp-red); }
+
+:is(.sct, #sct-table-armour) .sct-mpp-st-pts {
+  display: grid;
+  justify-items: end;
+  line-height: 1.05;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st-pts b {
+  color: var(--mpp-navy-950);
+  font-size: 1.3rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-st-pts small {
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ---- Matchup Leverage */
+:is(.sct, #sct-table-armour) .sct-mpp-lev-list {
+  overflow: hidden;
+  border: 1px solid var(--mpp-border-light);
+  border-radius: 12px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) 118px;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--mpp-border-light);
+  border-left: 3px solid transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-row:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-row[data-lev="up"],
+:is(.sct, #sct-table-armour) .sct-mpp-lev-row[data-lev="proof"] {
+  border-left-color: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-row[data-lev="down"] {
+  border-left-color: var(--mpp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-who > span:last-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev-who small {
+  color: var(--mpp-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meas {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meas-k {
+  color: var(--mpp-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meas-k b {
+  margin-left: 4px;
+  color: var(--mpp-navy-950);
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-meas small {
+  overflow: hidden;
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bar {
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6edf5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #94a6bd;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="strong"] i { background: var(--mpp-navy-900); }
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="solid"] i { background: var(--mpp-navy-700); }
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="light"] i { background: #9fb3cc; }
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="favorable"] i { background: var(--mpp-green); }
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="neutral"] i { background: var(--mpp-gold); }
+:is(.sct, #sct-table-armour) .sct-mpp-bar[data-tone="tough"] i { background: var(--mpp-red); }
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev {
+  justify-self: end;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-lev[data-lev="up"] { background: var(--mpp-green-light); color: var(--mpp-green); }
+:is(.sct, #sct-table-armour) .sct-mpp-lev[data-lev="proof"] { background: var(--mpp-navy-900); color: var(--mpp-gold-bright); }
+:is(.sct, #sct-table-armour) .sct-mpp-lev[data-lev="neutral"] { background: #fbf1d6; color: #7a5c0e; }
+:is(.sct, #sct-table-armour) .sct-mpp-lev[data-lev="down"] { background: var(--mpp-red-light); color: var(--mpp-red); }
+
+/* ---- Team Matchup: mirrored rank bars, the advantage side in its team color */
+:is(.sct, #sct-table-armour) .sct-mpp-tm-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px 6px;
+  color: var(--mpp-navy-950);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-group {
+  margin: 8px 0 4px !important;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--mpp-gold);
+  color: var(--mpp-navy-900);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 150px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-v {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-v.is-home {
+  justify-content: flex-end;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-v b {
+  color: var(--mpp-navy-950);
+  font-size: 1.1rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-v small {
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-k {
+  color: #334a68;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-bar {
+  display: flex;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf2f8;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-bar.is-away {
+  justify-content: flex-end;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #b7c5d6;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-tm-bar.is-away.is-adv i { background: var(--mpp-away); }
+:is(.sct, #sct-table-armour) .sct-mpp-tm-bar.is-home.is-adv i { background: var(--mpp-home); }
+
+/* ---- Injuries */
+:is(.sct, #sct-table-armour) .sct-mpp-inj {
+  display: flex;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj .sct-mpp-face {
+  width: 36px;
+  height: 36px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-body small {
+  color: #4b6280;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-status {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--mpp-amber-light);
+  color: var(--mpp-amber);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-status:is([data-status="O"], [data-status="IR"], [data-status="PUP"], [data-status="SUS"]) {
+  background: var(--mpp-red-light);
+  color: var(--mpp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-status[data-status="D"] {
+  background: #ffe6d5;
+  color: #a4430e;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-foot {
+  padding: 9px 12px !important;
+  color: var(--mpp-muted);
+  font-size: 0.76rem;
+  font-style: italic;
+}
+
+/* ---- the rail */
+:is(.sct, #sct-table-armour) .sct-mpp-snap {
+  padding: 14px 16px 16px;
+  border-radius: var(--mpp-radius);
+  background: linear-gradient(160deg, #071a35 0%, #0d2f5c 100%);
+  color: #fff;
+  box-shadow: var(--mpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-h {
+  margin-bottom: 12px !important;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--mpp-gold);
+  color: var(--mpp-gold-bright);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-cell {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-cell b {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-cell span {
+  color: #b9c7da;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-feature {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px !important;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--mpp-gold) 0%, var(--mpp-gold-bright) 100%);
+  color: var(--mpp-navy-950);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-feature span {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-snap-feature b {
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail-card {
+  padding: 12px 16px 14px;
+  border: 1px solid var(--mpp-border);
+  border-radius: var(--mpp-radius);
+  background: linear-gradient(145deg, #fff 0%, #f7faff 100%);
+  box-shadow: var(--mpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail-h {
+  margin-bottom: 10px !important;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--mpp-gold);
+  color: var(--mpp-navy-900);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail-note {
+  margin-top: 8px !important;
+  color: var(--mpp-muted);
+  font-size: 0.72rem;
+}
+
+:is(.sct, #sct-table-armour) table.sct-mpp-dvp {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-dvp th,
+:is(.sct, #sct-table-armour) .sct-mpp-dvp td {
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+  background: none;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-dvp thead th {
+  color: var(--mpp-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-dvp th[scope="row"] {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-dvp td b {
+  margin-right: 6px;
+  color: var(--mpp-navy-950);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-top > div {
+  display: grid;
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #edf4fb;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-top b {
+  color: var(--mpp-navy-950);
+  font-size: 1.3rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-top span {
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-game {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 2px;
+  border-bottom: 1px solid var(--mpp-border-light);
+  color: var(--mpp-text) !important;
+  font-size: 0.8rem;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-game:hover {
+  background: #f3f7fc;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-when {
+  color: var(--mpp-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-score {
+  display: inline-flex;
+  gap: 10px;
+  font-family: "Barlow", var(--sc-font);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-score .is-win {
+  color: var(--mpp-navy-950);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cta {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--mpp-radius);
+  background: linear-gradient(135deg, #0b2345 0%, #153e70 100%);
+  color: #d9e1ee;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  box-shadow: var(--mpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cta-h {
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cta-btn {
+  justify-self: start;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--mpp-gold) 0%, var(--mpp-gold-bright) 100%);
+  color: var(--mpp-navy-950) !important;
+  font-weight: 800;
+  text-decoration: none !important;
+}
+
+/* ---- widths (container queries on .sct-mpp) */
+@container (max-width: 1050px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp {
+    --mpp-panel-w: 132px;
+    --mpp-slant: 36px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-crest {
+    width: 92px;
+    height: 92px;
+    margin: 0 18px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-crest img {
+    width: 62px;
+    height: 62px;
+  }
+}
+
+@container (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cols,
+  :is(.sct, #sct-table-armour) .sct-mpp-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-lev-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "who lev" "role role" "mu mu";
+    row-gap: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-lev-who { grid-area: who; }
+  :is(.sct, #sct-table-armour) .sct-mpp-lev { grid-area: lev; }
+  :is(.sct, #sct-table-armour) .sct-mpp-meas:nth-of-type(2) { grid-area: role; }
+  :is(.sct, #sct-table-armour) .sct-mpp-meas:nth-of-type(3) { grid-area: mu; }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tm-row {
+    grid-template-columns: 1fr 120px 1fr;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tm-bar {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tm-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tm-v {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tm-v.is-home {
+    align-items: flex-end;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-fact.is-note {
+    margin-left: 0;
+  }
+}
+
+@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-match {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "eb eb eb"
+      "ap at hp"
+      "ai . hi";
+    row-gap: 8px;
+    min-height: 0;
+    padding: 0 14px 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-panel,
+  :is(.sct, #sct-table-armour) .sct-mpp-panel.is-away,
+  :is(.sct, #sct-table-armour) .sct-mpp-panel.is-home {
+    grid-row: auto;
+    justify-content: center;
+    background: none;
+    clip-path: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-panel-fill {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-crest {
+    width: 68px;
+    height: 68px;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-crest img {
+    width: 46px;
+    height: 46px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-at {
+    align-self: center;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ident,
+  :is(.sct, #sct-table-armour) .sct-mpp-ident.is-home {
+    justify-items: center;
+    padding: 0 0 4px;
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-name {
+    font-size: 1.15rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 12px 14px 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-kpi {
+    min-height: 0;
+    padding: 8px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-kpi-icon,
+  :is(.sct, #sct-table-armour) .sct-mpp-kpi-div {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-facts {
+    padding: 10px 14px 12px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-title {
+    font-size: 1.3rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-tag {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-body {
+    padding: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-st {
+    grid-template-columns: 32px 36px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-st .sct-mpp-face {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ==== Matchup preview: Keys to the Game (mak, 2026-11-06) ====
+   keysCard() in preview-premium.ts, chosen in preview-keys.ts: three numbered
+   keys in a row under The Call, each topped with the color of the team it is
+   about (gold for the game-wide turnover key). */
+:is(.sct, #sct-table-armour) .sct-mpp-keys {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--mpp-border-light);
+  border-top: 3px solid var(--mpp-gold);
+  border-radius: 12px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key[data-side="away"] {
+  border-top-color: var(--mpp-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key[data-side="home"] {
+  border-top-color: var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-kick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mpp-navy-700);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--mpp-navy-900);
+  color: var(--mpp-gold-bright);
+  font-family: "Barlow", var(--sc-font);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp h3.sct-mpp-key-q {
+  margin: 2px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--mpp-navy-950) !important;
+  font-family: var(--sc-font) !important;
+  font-size: 1.02rem !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp h3.sct-mpp-key-q::before,
+:is(.sct, #sct-table-armour) .sct-mpp h3.sct-mpp-key-q::after {
+  content: none !important;
+  display: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-copy {
+  flex: 1 1 auto;
+  color: #334a68;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-focus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px !important;
+  padding-top: 9px;
+  border-top: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-focus b {
+  margin-right: 2px;
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-focus span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #edf3fa;
+  color: var(--mpp-navy-900);
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-keys-note {
+  margin-top: 10px !important;
+  color: var(--mpp-muted);
+  font-size: 0.74rem;
+}
+
+@container (max-width: 900px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-keys {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ==== Matchup preview: Recent Form, Player Battles, Game Conditions (mak, 2026-11-06) ====
+   formCard / battlesCard / conditionsRail in preview-premium.ts, data from
+   preview-extras.ts. Same card system as the rest of the page. */
+
+/* ---- Recent Form: five result tiles, then scoring vs the season */
+:is(.sct, #sct-table-armour) .sct-mpp-form-games {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 12px !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 6px 2px 5px;
+  border-radius: 9px;
+  background: #f3f7fc;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #8ea2bb;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g[data-wlt="W"] b {
+  background: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g[data-wlt="L"] b {
+  background: var(--mpp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g span {
+  margin-top: 3px;
+  color: var(--mpp-navy-950);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-g small {
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-trend {
+  display: grid !important;
+  gap: 0;
+  padding: 0 12px 10px !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-t {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "k v d" "k s vs";
+  align-items: baseline;
+  column-gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-k {
+  grid-area: k;
+  align-self: center;
+  color: #334a68;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-t b {
+  grid-area: v;
+  justify-self: end;
+  color: var(--mpp-navy-950);
+  font-size: 1.15rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-s {
+  grid-area: s;
+  justify-self: end;
+  color: var(--mpp-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-vs {
+  grid-area: vs;
+  justify-self: end;
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-d {
+  grid-area: d;
+  justify-self: end;
+  min-width: 58px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e9eff6;
+  color: #4b6280;
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-t[data-tone="up"] .sct-mpp-form-d {
+  background: var(--mpp-green-light);
+  color: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-form-t[data-tone="down"] .sct-mpp-form-d {
+  background: var(--mpp-red-light);
+  color: var(--mpp-red);
+}
+
+/* ---- Player Battles: one block per offense, each battle a row */
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block + .sct-mpp-bt-block {
+  margin-top: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 8px 12px !important;
+  border-left: 3px solid var(--mpp-away);
+  border-radius: 8px;
+  background: #f3f7fc;
+  color: var(--mpp-navy-950);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block.is-home .sct-mpp-bt-head {
+  border-left-color: var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-head i {
+  color: var(--mpp-gold-deep);
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--mpp-border-light);
+  border-radius: 12px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-kind {
+  color: var(--mpp-navy-700);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-vs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--mpp-navy-900);
+  color: var(--mpp-gold-bright);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-side {
+  display: grid !important;
+  gap: 6px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-side.is-def {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-side li {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-name {
+  overflow: hidden;
+  color: var(--mpp-navy-950);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-name a {
+  color: var(--mpp-navy-950) !important;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-name a:hover {
+  text-decoration: underline !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-side small {
+  color: var(--mpp-muted);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-note {
+  margin-top: auto !important;
+  padding-top: 8px;
+  border-top: 1px solid var(--mpp-border-light);
+  color: #4b6280;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+/* ---- Game Conditions: the rail card; amber only when the weather matters */
+:is(.sct, #sct-table-armour) .sct-mpp-cond-list {
+  display: grid;
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-list dt {
+  color: var(--mpp-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-list dd {
+  margin: 0;
+  color: var(--mpp-navy-950);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-note {
+  margin-top: 8px !important;
+  color: var(--mpp-muted);
+  font-size: 0.74rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond.is-impact {
+  border-color: #e5c27a;
+  box-shadow: inset 0 3px 0 var(--mpp-gold), var(--mpp-shadow);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-impact {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px !important;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: var(--mpp-amber-light);
+  color: var(--mpp-amber);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cond-impact b {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@container (max-width: 900px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-bt-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 420px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-form-games {
+    gap: 4px;
+    padding: 10px 8px !important;
+  }
+}
+
+/* Battle names wrap rather than clip; on a narrow card the offense, "vs"
+   and the defense stack, all reading left to right. */
+:is(.sct, #sct-table-armour) .sct-mpp-bt-name {
+  overflow: visible;
+  white-space: normal;
+}
+
+@container (max-width: 520px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-bt-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bt-side.is-def {
+    text-align: left;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bt-vs {
+    width: auto;
+    height: auto;
+    justify-self: start;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+}
+
+/* The preview banner's title is the page's H1 since 2026-11-06 (an H2 in an
+   embed until the plugin promotes it): the theme's heading rules must not
+   reach it, so it keeps the banner's own look. */
+:is(.sct, #sct-table-armour) .sct-mpp :is(h1, h2).sct-mpp-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-family: var(--sc-font) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp :is(h1, h2).sct-mpp-title::before,
+:is(.sct, #sct-table-armour) .sct-mpp :is(h1, h2).sct-mpp-title::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ==== Matchup preview: Team Comparison (mak's brief, 2026-11-06) ====
+   compareCard() in preview-premium.ts, data in preview-compare.ts. One
+   white table under the card's bar: team header, three tabs, then a stable
+   27 / 46 / 27 grid (away value | metric | home value). The edge is a
+   heavier figure with a hairline in that team's color; nothing else is
+   tinted. */
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-sub {
+  margin-bottom: 10px !important;
+  color: var(--mpp-muted);
+  font-size: 0.82rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-teams {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 4px 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-team {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas: "logo name" "logo code";
+  align-items: center;
+  column-gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-team.is-home {
+  grid-template-columns: auto auto;
+  grid-template-areas: "name logo" "code logo";
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-team img {
+  grid-area: logo;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-name {
+  grid-area: name;
+  color: var(--mpp-navy-950);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-code {
+  grid-area: code;
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Tabs: a quiet segmented bar, navy underline on the active one. */
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  border-bottom: 1px solid var(--mpp-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tab {
+  min-height: 40px;
+  margin: 0 0 -1px;
+  padding: 0 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--mpp-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tab:hover {
+  color: var(--mpp-navy-900);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tab[aria-selected="true"] {
+  border-bottom-color: #0b3a7a;
+  color: #0b3a7a;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tab:focus-visible,
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-info:focus-visible {
+  outline: 2px solid #0b3a7a;
+  outline-offset: 2px;
+}
+
+/* The table: fixed columns so every tab aligns the same way. */
+:is(.sct, #sct-table-armour) table.sct-mpp-cmp-table {
+  width: 100%;
+  margin: 0 !important;
+  border: 0 !important;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table col.is-side {
+  width: 27%;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table col.is-metric {
+  width: 46%;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table :is(td, th) {
+  height: 52px;
+  padding: 6px 4px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--mpp-border-light) !important;
+  background: none !important;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table tbody tr:last-child :is(td, th) {
+  border-bottom: 0 !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v.is-home {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+  display: inline-block;
+  padding-bottom: 1px;
+  color: #334a68;
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.15;
+  box-shadow: inset 0 -2px 0 transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v small {
+  display: block;
+  margin-top: 1px;
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v.is-adv b {
+  color: var(--mpp-navy-950);
+  font-weight: 800;
+  box-shadow: inset 0 -2px 0 var(--mpp-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v.is-home.is-adv b {
+  box-shadow: inset 0 -2px 0 var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table th[scope="row"] {
+  color: #334a68;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-k {
+  display: inline-block;
+  max-width: calc(100% - 22px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* The definition: a small "i" that opens on hover, tap or keyboard focus. */
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-info {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid var(--mpp-border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--mpp-muted);
+  font: italic 700 10px/1 Georgia, serif;
+  vertical-align: middle;
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-info:is(:hover, :focus-visible, :focus)::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 5;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: var(--mpp-navy-950);
+  color: #fff;
+  font: 500 11.5px/1.4 var(--sc-font);
+  font-style: normal;
+  text-align: left;
+  white-space: normal;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+@container (min-width: 700px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+    font-size: 1.2rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-table th[scope="row"] {
+    font-size: 0.84rem;
+  }
+}
+
+@container (max-width: 430px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-name {
+    font-size: 0.72rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+    font-size: 0.95rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-table th[scope="row"] {
+    font-size: 0.72rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-tab {
+    transition: color 0.15s, border-color 0.15s;
+  }
+}
+
+/* The Injury Report lives in the rail since 2026-11-06 (under the
+   head-to-head card): one team column above the other at rail width. */
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-cols {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-body {
+  padding: 0;
+}
+
+/* No outer frame in the rail (mak, 2026-11-06): the title bar, then the two
+   team columns straight on the page, each still in its own box. */
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-head {
+  border-radius: var(--mpp-radius);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-tag {
+  display: none;
+}
+
+/* Injury Watch position tags: plain text, no per-position color or fill
+   (mak, 2026-11-06). */
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-slot,
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-slot[data-pos] {
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--mpp-muted);
+}
+
+/* Injury Watch rows collapse (mak, 2026-11-06): photo, name, position and
+   designation on one line; the note opens beneath on tap. */
+:is(.sct, #sct-table-armour) .sct-mpp-inj {
+  display: block;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d > summary:hover {
+  background: #f6f9fd;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d > summary:focus-visible {
+  outline: 2px solid var(--mpp-navy-700);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d .sct-mpp-inj-top {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-chev {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-right: 2px;
+  border-right: 2px solid var(--mpp-muted);
+  border-bottom: 2px solid var(--mpp-muted);
+  transform: rotate(45deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-d[open] .sct-mpp-inj-chev {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-inj-note {
+  margin: 0 !important;
+  padding: 0 12px 10px 58px;
+  color: #4b6280;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.sct, #sct-table-armour) .sct-mpp-inj-chev {
+    transition: transform 0.15s;
+  }
+}
+
+/* Player Battles live in the rail since 2026-11-06, under the Injury Watch:
+   one battle per row, and each battle stacked (offense, "vs", defense). */
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-body {
+  padding: 0;
+}
+
+/* No outer frame or title bar (mak, 2026-11-06): the team blocks and the
+   battle boxes sit straight in the rail. */
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-tag {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-side.is-def {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-vs {
+  width: auto;
+  height: auto;
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Player Battles in the Injury Watch's box (mak, 2026-11-06): the battles
+   are divided rows inside one box per offense, not boxes of their own. */
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-colhead span {
+  min-width: 0;
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-colhead small {
+  flex: 0 0 auto;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-bt-list {
+  gap: 0;
+  margin-top: 0 !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-bt {
+  padding: 10px 12px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+  border-radius: 0;
+  background: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-bt:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-bt-note {
+  padding-top: 0;
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block + .sct-mpp-bt-block {
+  margin-top: 16px;
+}
+
+/* Player Battles as a face-off (mak, 2026-11-06): photo, name and position
+   for each side, "vs" between, collapsed; the stats and note open below.
+   Overrides the rail's earlier stacked layout. */
+:is(.sct, #sct-table-armour) .sct-mpp-bt-block .sct-mpp-bt {
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d > summary {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d > summary:hover {
+  background: #f6f9fd;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d > summary:focus-visible {
+  outline: 2px solid var(--mpp-navy-700);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d .sct-mpp-bt-kind {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d[open] .sct-mpp-inj-chev {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-d .sct-mpp-bt-row,
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d .sct-mpp-bt-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-d .sct-mpp-bt-vs,
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d .sct-mpp-bt-vs {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  justify-self: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d .sct-mpp-bt-side,
+:is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-bt-d .sct-mpp-bt-side.is-def {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 6px;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-p {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-p .sct-mpp-face {
+  width: 36px;
+  height: 36px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-d .sct-mpp-bt-name {
+  overflow: visible;
+  color: var(--mpp-navy-950);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-pos {
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-more {
+  padding: 0 12px 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-stats {
+  display: grid !important;
+  gap: 3px;
+  margin: 0 0 6px !important;
+  padding: 8px 0 0 !important;
+  border-top: 1px solid var(--mpp-border-light);
+  color: #4b6280;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-stats b,
+:is(.sct, #sct-table-armour) .sct-mpp-bt-stats b a {
+  color: var(--mpp-navy-950) !important;
+  font-weight: 800;
+  text-decoration: none !important;
+}
+
+/* ==== Matchup preview: Fantasy Football Impact (mak's brief, 2026-11-06) ====
+   fantasyCard() in preview-premium.ts, model in preview-fantasy.ts. Added
+   under Matchup Leverage. One card: lede + scoring switch, up to three
+   takeaway rows, the collapsible starters table, the Start/Sit row. */
+:is(.sct, #sct-table-armour) .sct-mpp-ff-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-lede {
+  color: var(--mpp-muted);
+  font-size: 0.82rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-fmt {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--mpp-border);
+  border-radius: 8px;
+  background: #f3f7fc;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-fmt button,
+:is(.sct, #sct-table-armour) .sct-mpp-ff-filters button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--mpp-muted);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-fmt button[aria-selected="true"],
+:is(.sct, #sct-table-armour) .sct-mpp-ff-filters button[aria-pressed="true"] {
+  background: #0b3a7a;
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff :is(button):focus-visible,
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all > summary:focus-visible {
+  outline: 2px solid #0b3a7a;
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-h {
+  margin-bottom: 2px !important;
+  color: var(--mpp-navy-700);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-list {
+  display: grid !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-item > .sct-mpp-face {
+  width: 52px;
+  height: 52px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-name,
+:is(.sct, #sct-table-armour) .sct-mpp-ff-pname {
+  color: var(--mpp-navy-950);
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff :is(.sct-mpp-ff-name, .sct-mpp-ff-pname) a {
+  color: var(--mpp-navy-950) !important;
+  text-decoration: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff :is(.sct-mpp-ff-name, .sct-mpp-ff-pname) a:hover {
+  text-decoration: underline !important;
+}
+
+/* The kind: a small label, a muted accent per kind, same type size for all. */
+:is(.sct, #sct-table-armour) .sct-mpp-ff-kind {
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-item[data-kind="upgrade"] .sct-mpp-ff-kind {
+  background: var(--mpp-green-light);
+  color: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-item[data-kind="tough"] .sct-mpp-ff-kind {
+  background: var(--mpp-amber-light);
+  color: var(--mpp-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-item[data-kind="monitor"] .sct-mpp-ff-kind {
+  background: #e7f0fb;
+  color: #1d5ba6;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-meta {
+  color: var(--mpp-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-text {
+  margin-top: 2px !important;
+  color: #334a68;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-none {
+  padding: 10px 0;
+  color: #4b6280;
+  font-size: 0.84rem;
+}
+
+/* All Starter Outlooks: collapsed by default. */
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all {
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all > summary b {
+  display: block;
+  color: var(--mpp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all > summary small {
+  color: var(--mpp-muted);
+  font-size: 0.74rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-all[open] .sct-mpp-inj-chev {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-fgroup {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--mpp-border);
+  border-radius: 8px;
+  background: #f3f7fc;
+}
+
+:is(.sct, #sct-table-armour) table.sct-mpp-ff-table {
+  width: 100%;
+  margin: 0 0 6px !important;
+  border: 0 !important;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-table :is(th, td) {
+  padding: 7px 6px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--mpp-border-light) !important;
+  background: none !important;
+  color: #334a68;
+  font-size: 0.8rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-table thead th {
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-table thead th:first-child {
+  width: 42%;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-pl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-pl .sct-mpp-face {
+  width: 28px;
+  height: 28px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-pl > span:last-child {
+  display: grid;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-pname {
+  font-size: 0.84rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-sub2 {
+  display: none;
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-num b {
+  color: var(--mpp-navy-950);
+  font-size: 0.96rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-mu b {
+  display: block;
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-mu small {
+  color: var(--mpp-muted);
+  font-size: 0.66rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-mu[data-mu="favorable"] b {
+  color: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-mu[data-mu="tough"] b {
+  color: var(--mpp-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-table tr[hidden] {
+  display: none;
+}
+
+/* The Start/Sit row: one line, one button. */
+:is(.sct, #sct-table-armour) .sct-mpp-ff-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f3f7fc;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-cta b {
+  color: var(--mpp-navy-950);
+  font-size: 0.88rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-cta p {
+  color: #4b6280;
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #0b3a7a;
+  color: #fff !important;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+/* Phones: three columns (player | points | matchup); team, position and
+   season rank move under the name. */
+@container (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-table :is(.sct-mpp-ff-team, .sct-mpp-ff-rank) {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-table thead th:first-child {
+    width: 52%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-sub2 {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-item > .sct-mpp-face {
+    width: 42px;
+    height: 42px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-name {
+    font-size: 0.88rem;
+  }
+}
+
+/* The scoring switch in the Fantasy Football Impact title bar (2026-11-06):
+   at the right, clear of the gold slash, light on the navy. */
+:is(.sct, #sct-table-armour) .sct-mpp-head .sct-mpp-ff-fmt {
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 34px;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-head .sct-mpp-ff-fmt button {
+  min-height: 26px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-head .sct-mpp-ff-fmt button[aria-selected="true"] {
+  background: #fff;
+  color: var(--mpp-navy-950);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-head .sct-mpp-ff-fmt button:focus-visible {
+  outline-color: #fff;
+}
+
+@container (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head {
+    flex-wrap: wrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-head .sct-mpp-ff-fmt {
+    margin: 0 0 4px;
+  }
+}
+
+@container (max-width: 640px) {
+  /* Icon and title share the first line; the switch takes the second. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-h {
+    flex: 1 1 calc(100% - 40px);
+    min-width: 0;
+  }
+}
+
+/* All Starter Outlooks (2026-11-06): team and position live under the
+   name at every width; the rank joins them only where its column hides. */
+:is(.sct, #sct-table-armour) .sct-mpp-ff-sub2 {
+  display: block;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ff-rk-xs {
+  display: none;
+}
+
+@container (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-ff-rk-xs {
+    display: inline;
+  }
+}
+
+/* ==== Matchup preview: Betting Outlook (mak's brief, 2026-11-06) ====
+   bettingCard() in preview-premium.ts, model in preview-betting.ts. Compact
+   research layout: market table, angle rows, two team trend columns. No
+   sportsbook colors. */
+:is(.sct, #sct-table-armour) .sct-mpp-bo-sec + .sct-mpp-bo-sec {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-src {
+  margin: 2px 0 6px !important;
+  color: var(--mpp-muted);
+  font-size: 0.72rem;
+}
+
+:is(.sct, #sct-table-armour) table.sct-mpp-bo-mkt {
+  width: 100%;
+  margin: 0 !important;
+  border: 0 !important;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt :is(th, td) {
+  padding: 8px 6px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--mpp-border-light) !important;
+  background: none !important;
+  color: #334a68;
+  font-size: 0.82rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt thead th {
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tbody th {
+  width: 22%;
+  color: var(--mpp-navy-950);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt b {
+  color: var(--mpp-navy-950);
+  font-size: 0.98rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tr.is-ml td:nth-child(3) {
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-move {
+  color: var(--mpp-muted) !important;
+  font-size: 0.76rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-angles {
+  display: grid !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-angles li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-angles li:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-ah {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--mpp-navy-950);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-cat {
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: #edf3fa;
+  color: var(--mpp-navy-700);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-at {
+  margin-top: 3px !important;
+  color: #334a68;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-trends {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-team {
+  padding: 10px 12px;
+  border: 1px solid var(--mpp-border-light);
+  border-top: 2px solid var(--mpp-away);
+  border-radius: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-team.is-home {
+  border-top-color: var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tname {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px !important;
+  color: var(--mpp-navy-950);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-rec {
+  display: grid !important;
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-rec li {
+  display: grid;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-rec b {
+  color: var(--mpp-navy-950);
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-rec span {
+  color: var(--mpp-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-more {
+  margin-top: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mpp-navy-700);
+  font-size: 0.76rem;
+  font-weight: 800;
+  list-style: none;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-more[open] .sct-mpp-inj-chev {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-more > .sct-mpp-bo-rec {
+  margin-top: 8px !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-legal {
+  margin-top: 12px !important;
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+}
+
+@container (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-mkt :is(th, td) {
+    padding: 7px 4px !important;
+    font-size: 0.76rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tr.is-ml td:nth-child(3) {
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-trends {
+    gap: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-team {
+    padding: 8px 10px;
+  }
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-ml {
+  display: block;
+  white-space: nowrap;
+}
+
+/* Team Comparison, compact (mak, 2026-11-06): one line per metric, the rank
+   beside its value, ~38px rows, a slimmer team header, tabs and footer. */
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-compare .sct-mpp-body {
+  padding: 10px 16px 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-teams {
+  min-height: 40px;
+  padding: 0 4px 4px;
+  align-items: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-team {
+  column-gap: 7px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-team img {
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-name {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-code {
+  font-size: 0.63rem;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-tab {
+  min-height: 32px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-table :is(td, th) {
+  height: auto;
+  padding: 8px 4px !important;
+  line-height: 1.2;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-vw {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v.is-adv b {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-cmp-v small {
+  display: inline;
+  margin: 0;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-compare .sct-mpp-keys-note {
+  margin-top: 6px !important;
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+@container (min-width: 700px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+    font-size: 1rem;
+  }
+}
+
+@container (max-width: 430px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-compare .sct-mpp-body {
+    padding: 8px 12px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-v b {
+    font-size: 0.9rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-v small {
+    font-size: 0.62rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-vw {
+    gap: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cmp-table th[scope="row"] {
+    white-space: normal;
   }
 }

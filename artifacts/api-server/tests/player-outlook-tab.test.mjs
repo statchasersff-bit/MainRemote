@@ -189,7 +189,7 @@ describe("in season", () => {
   test("exactly two Redraft Command links: the sidebar card and the risk-foot line", () => {
     // mak, 2026-10-01: one main CTA plus one subtle bottom CTA. The expect-panel
     // button and the prose link are gone; a third link reappearing is the bug.
-    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.includes("?player=jacoby-brissett")]);
+    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.endsWith("/redraft-command/players/3257")]);
     for (const [, has] of ctas) assert.ok(has);
     const names = ctas.map(([c]) => c).filter(Boolean).sort();
     assert.deepEqual(names, ["redraft-command-outlook-premium", "redraft-command-outlook-projection-premium"]);
@@ -427,8 +427,8 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   });
 
   test("the hero: as-of line, tags, and what supports / threatens the value", () => {
-    // No "Updated {date}" (mak, 2026-11-05): the week alone.
-    assert.equal(doc.querySelector(".is-proj .scp-olr-bar-sub").textContent, "Through Week 8");
+    // No "Updated {date}" (mak, 2026-11-05), and no "Through Week N" either (2026-11-06).
+    assert.equal(doc.querySelector(".is-proj .scp-olr-bar-sub"), null);
     const tags = [...doc.querySelectorAll(".scp-olr-tag")].map((c) => c.textContent);
     assert.equal(tags[0], "High-volume starter");
     const cells = [...doc.querySelectorAll(".scp-olr-factor")].map((c) => c.textContent);
@@ -535,7 +535,7 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     assert.equal(prm.querySelector(".scp-olr-sec.is-proj").getAttribute("aria-labelledby"), "scp-ol-take-h");
     assert.equal(prm.querySelector(".scp-olr-sec.is-opp").getAttribute("aria-labelledby"), "scp-ol-opp-h");
     assert.deepEqual([...prm.querySelectorAll(".scp-olr-bar-title")].map(text), ["Michael Wilson Rest-of-Season Projection", "Opportunity vs. Production"]);
-    assert.equal(text(prm.querySelector(".is-proj .scp-olr-bar-sub")), "Through Week 8");
+    assert.equal(prm.querySelector(".is-proj .scp-olr-bar-sub"), null, "no as-of line (2026-11-06)");
     // The badges are the hero's chips, same words, same colors.
     const chips = model.chips.map((c) => `is-${c.kind}:${c.label}`);
     const tags = [...prm.querySelectorAll(".scp-olr-tag")].map((c) => `${c.className.match(/is-\w+/)[0]}:${text(c)}`);

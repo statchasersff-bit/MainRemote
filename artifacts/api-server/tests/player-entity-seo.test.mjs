@@ -297,9 +297,11 @@ describe("data sanity", () => {
         hero.yds = hero["PASS YDS"];
       }
 
-      // The Stats tab's production section carries the same games and totals.
+      // The Stats tab carries the same totals: its "2026 Stats" section holds
+      // the advanced metrics since 2026-11-06, so the yards are read from the
+      // stats block's career table (this season's row).
       const stats = parse((await get(`/player/${player.slug}/stats/`)).body).doc;
-      const prod = stats.querySelector("#scp-st-prod-h")?.closest("section") ?? stats.querySelector("#stats");
+      const prod = stats.querySelector('[data-scp-premium="stats"]') ?? stats.querySelector("#stats");
       const prodText = text(prod);
       assert.ok(prodText.includes(season), `the Stats tab is on ${season}`);
       const key = hero.yds;

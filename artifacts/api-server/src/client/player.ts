@@ -661,25 +661,17 @@ function wireNewsFilter(root: HTMLElement): void {
         const f = button.dataset.f ?? "all";
         let shown = 0;
         for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
-        for (const wk of Array.from(scope.querySelectorAll<HTMLElement>(".scp-nw-wk"))) {
-          let any = false;
-          for (const item of Array.from(wk.querySelectorAll<HTMLElement>(".scp-nw-item"))) {
-            const ok = f === "all" || item.dataset.type === f || (item.dataset.group ?? "") === f;
-            item.hidden = !ok;
-            if (ok) {
-              any = true;
-              shown += 1;
-            }
-          }
-          // A pending recap row counts as a game item.
-          if (!any && (f === "all" || f === "game") && wk.querySelector(".scp-nw-pending")) any = true;
-          wk.hidden = !any;
+        // The story cards (the team pages' News design, 2026-11-06); a match
+        // in the folded cards opens the fold.
+        for (const item of Array.from(scope.querySelectorAll<HTMLElement>("[data-scp-news-item]"))) {
+          const ok = f === "all" || item.dataset.type === f || (item.dataset.group ?? "") === f;
+          item.hidden = !ok;
+          if (ok) shown += 1;
         }
+        const fold = scope.querySelector<HTMLDetailsElement>(".scp-nwp-fold");
+        if (fold && f !== "all" && fold.querySelector("[data-scp-news-item]:not([hidden])")) fold.open = true;
         const empty = scope.querySelector<HTMLElement>("#scp-nw-empty");
         if (empty) empty.hidden = shown > 0;
-        // A match folded into the older weeks opens them.
-        const older = scope.querySelector<HTMLDetailsElement>(".scp-nw-older");
-        if (older && f !== "all" && older.querySelector(".scp-nw-item:not([hidden])")) older.open = true;
       });
     }
   }

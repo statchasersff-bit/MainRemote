@@ -12,25 +12,18 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
-import { headshotImg } from "../headshot-html";
 import type { NflTeam } from "../team/teams";
 import type { StatRow, TeamStats } from "../team/stats";
 import { getPlayerProfileUrl } from "../team/links";
 import {
   allowPhrase,
-  fmtData,
-  ordinal,
-  perFormat,
   rankWord,
   signedLine,
   type BoardRow,
-  type FpaHeadline,
-  type Leverage,
   type LeverageRow,
   type Pos,
   type Preview,
   type PreviewSide,
-  type ScoringFormat,
   type SideKey,
   type Verdict,
 } from "./preview";
@@ -97,18 +90,18 @@ function playerLink(name: string): string {
   return url ? `<a href="${e(url)}">${e(name)}</a>` : e(name);
 }
 
-function ml(n: number | null): string {
+export function ml(n: number | null): string {
   if (n === null) return "-";
   return n > 0 ? `+${n}` : String(n);
 }
 
 /** "BUF -7" from a home-signed spread. */
-function favLine(spread: number, away: NflTeam, home: NflTeam): string {
+export function favLine(spread: number, away: NflTeam, home: NflTeam): string {
   if (spread === 0) return "PK";
   return spread < 0 ? `${code(home)} ${signedLine(spread)}` : `${code(away)} ${signedLine(-spread)}`;
 }
 
-function implyRank(rank: number | null, count: number, week: number): string {
+export function implyRank(rank: number | null, count: number, week: number): string {
   if (!rank || !count) return "";
   return rank <= Math.ceil(count / 2)
     ? `${rankWord(rank, "highest")} of Week ${week}`
@@ -118,7 +111,7 @@ function implyRank(rank: number | null, count: number, week: number): string {
 /* ---------------------------------------------------------------- 1. hero */
 
 /** "60°F · Wind 10 mph", "Dome", or null. */
-function weatherText(p: Preview): string | null {
+export function weatherText(p: Preview): string | null {
   const line = p.line;
   if (line?.indoor) return "Dome";
   const f = p.forecast;
@@ -135,111 +128,6 @@ function weatherText(p: Preview): string | null {
 }
 
 const pairOf = (p: Preview): string => `${p.away.team.nickname} vs ${p.home.team.nickname}`;
-
-function renderHero(p: Preview, ctx: PreviewRenderContext): string {
-  const { away, home, meeting, line } = p;
-  const isDivision =
-    away.team.conference === home.team.conference && away.team.divisionName === home.team.divisionName;
-  // The eyebrow names the week; "Division game" moved to the context strip
-  // under the teams (mak, 2026-10-05).
-  const kicker = [
-    String(meeting.season),
-    meeting.weekLabel.toUpperCase(),
-    isDivision ? `${away.team.conference} ${away.team.divisionName.toUpperCase()}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  // Each team in an equal half, mirrored: the crest beside a stack of name,
-  // record and side, and the hub link as its own small action. One row, not
-  // a column, so the two halves read as one line (mak, 2026-10-22).
-  const sideBlock = (s: PreviewSide, align: "left" | "right") =>
-    `<div class="sct-pv-side is-${align}">` +
-    (s.team.logo
-      ? `<img class="sct-pv-logo" src="${e(s.team.logo)}" alt="" width="48" height="48" loading="eager" decoding="async">`
-      : "") +
-    `<div class="sct-pv-side-text">` +
-    `<span class="sct-pv-name">${e(s.team.fullName)}</span>` +
-    `<span class="sct-pv-meta">${e([s.record, s.key === "home" ? "HOME" : "AWAY"].filter(Boolean).join(" · "))}</span>` +
-    `<a class="sct-pv-hub" href="${e(ctx.hub(s.team))}">Team hub<span aria-hidden="true"> →</span></a>` +
-    `</div>` +
-    `</div>`;
-
-  const weather = weatherText(p);
-  // The year is in the eyebrow, so the kickoff chip drops it; the venue chip
-  // is the stadium alone. The chips close the card, on the footer line with
-  // the book note (mak, 2026-10-22).
-  const chips = [
-    [ctx.date.replace(/, \d{4}$/, ""), ctx.time].filter(Boolean).join(" · "),
-    ctx.network,
-    meeting.venue ?? null,
-    weather,
-  ]
-    .filter((x): x is string => !!x)
-    .map((x) => `<li class="sct-pv-chip">${e(x)}</li>`)
-    .join("");
-
-  // The context strip (game type, then the spread and total) that sat under
-  // the teams from 2026-10-05 is gone (mak, 2026-10-22): the division is in
-  // the eyebrow and the market is in the strip.
-
-  let strip = "";
-  let note = "";
-  if (line && line.spread !== null && line.total !== null && away.implied !== null && home.implied !== null) {
-    const cell = (label: string, value: string, sub: string) =>
-      `<div class="sct-pv-bet"><span class="sct-pv-bet-k">${e(label)}</span>` +
-      `<span class="sct-pv-bet-v">${e(value)}</span>` +
-      (sub ? `<span class="sct-pv-bet-s">${e(sub)}</span>` : "") +
-      `</div>`;
-    strip =
-      `<div class="sct-pv-bets" role="group" aria-label="Betting lines">` +
-      cell("Spread", favLine(line.spread, away.team, home.team), line.spreadOpen !== null ? `Opened ${favLine(line.spreadOpen, away.team, home.team)}` : "") +
-      cell("Total", exact(line.total), line.totalOpen !== null ? `Opened ${exact(line.totalOpen)}` : "") +
-      cell(`${code(home.team)} implied`, exact(home.implied), implyRank(home.impliedRank, p.slateCount, meeting.week)) +
-      cell(`${code(away.team)} implied`, exact(away.implied), implyRank(away.impliedRank, p.slateCount, meeting.week)) +
-      cell("Moneyline", `${code(home.team)} ${ml(line.moneyline.home)}`, `${code(away.team)} ${ml(line.moneyline.away)}`) +
-      `</div>`;
-    // The book note shares the footer line with the byline, under the lines
-    // it is about.
-    note = `<p class="sct-pv-bets-note">Lines move - check your book.</p>`;
-  }
-
-  // Each side's wash is the club's own primary color, darkened in the CSS -
-  // not the pair-contrast color, which gave the Jets their white (gray here).
-  const heroStyle = `--pv-hero-away:${away.team.primaryColor};--pv-hero-home:${home.team.primaryColor}`;
-
-  return (
-    // The hero is a data card, not a poster (mak, 2026-10-22): one top row
-    // (breadcrumb left, eyebrow right), the two teams on one line around a
-    // small badge, the betting strip, and a one-line footer: the book note
-    // and the kickoff chips (no byline since 2026-10-22). The heading stays in
-    // the markup for the page's H1 and screen readers, but the two team
-    // names already say it, so it is visually hidden.
-    `<header class="sct-pv-hero" style="${e(heroStyle)}" aria-labelledby="${e(ctx.headingId)}">` +
-    `<div class="sct-pv-top">` +
-    `<nav class="sct-pv-crumbs" aria-label="Breadcrumb"><ol>` +
-    `<li><a href="${e(ctx.breadcrumbRoot)}">StatChasers</a></li>` +
-    `<li>NFL Matchups</li>` +
-    `<li aria-current="page">${e(`${away.team.nickname} at ${home.team.nickname}, ${meeting.weekLabel}`)}</li>` +
-    `</ol></nav>` +
-    `<p class="sct-pv-kicker">${e(kicker)}</p>` +
-    `</div>` +
-    `<${ctx.headingTag} class="sct-pv-title" id="${e(ctx.headingId)}" data-sct-hero-heading>${e(ctx.heading)}</${ctx.headingTag}>` +
-    `<div class="sct-pv-match">` +
-    sideBlock(away, "left") +
-    `<span class="sct-pv-at" aria-hidden="true">@</span>` +
-    sideBlock(home, "right") +
-    `</div>` +
-    strip +
-    (note || chips
-      ? `<div class="sct-pv-foot">` +
-        note +
-        (chips ? `<ul class="sct-pv-chips">${chips}</ul>` : "") +
-        `</div>`
-      : "") +
-    `</header>`
-  );
-}
 
 /* -------------------------------------------- 1b. fantasy outlook */
 
@@ -389,34 +277,6 @@ function renderDynasty(p: Preview): string {
 
 /* ------------------------------------------------------------- 2. the call */
 
-function renderCall(p: Preview): string {
-  if (!p.call) return "";
-  const { away, home } = p;
-  const pos = 50 + p.call.lean * 45;
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-call">` +
-    h2("pv-call", "The Call") +
-    `<div class="sct-pv-call">` +
-    `<h3 class="sct-pv-thesis">${e(p.call.thesis)}.</h3>` +
-    `<p>${e(p.call.paragraph)}</p>` +
-    `<div class="sct-pv-meter">` +
-    `<div class="sct-pv-track" aria-hidden="true"><span class="sct-pv-dot" style="left:${pos.toFixed(1)}%"></span></div>` +
-    `<div class="sct-pv-meter-labels" aria-hidden="true"><span>${e(code(away.team))} controls</span><span>Competitive</span><span>${e(code(home.team))} controls</span></div>` +
-    // The written lean ("Projected script: CHI controls ...") and the coaching-
-    // profile footnote came off the page 2026-10-22 (mak); the lean stays for
-    // screen readers because the meter above is aria-hidden.
-    `<p class="sct-visually-hidden">${e(p.call.leanText)}</p>` +
-    `</div>` +
-    // The supporting numbers (pass rates by score state, pace, weather) sit
-    // behind "Why?" since 2026-10-23 (mak) so the read above stays scannable.
-    (p.call.detail && p.call.detail !== p.call.paragraph
-      ? `<details class="sct-pv-why"><summary>Why?</summary><p>${e(p.call.detail)}</p></details>`
-      : "") +
-    `</div>` +
-    `</section>`
-  );
-}
-
 /* --------------------------------------------------------- 3. start / sit */
 
 const VERDICT_CLASS: Record<Verdict, string> = {
@@ -545,113 +405,11 @@ export function renderBoard(p: Preview): string {
 
 /* ----------------------------------------------------------- 4. leverage */
 
-/** The decision, then what it means: the leverage pill's two lines. */
-const LEVERAGE_LABEL: Record<Leverage, [string, string]> = {
-  up: ["↑ Upgrade", "Matchup edge"],
-  neutral: ["- Neutral", "No clear edge"],
-  down: ["↓ Downgrade", "Tough matchup"],
-  proof: ["Matchup-proof", "Role wins"],
-};
-
-function levPill(chip: Leverage): string {
-  // One line since 2026-10-23 (mak): the sub-label repeated the label.
-  const [label, sub] = LEVERAGE_LABEL[chip];
-  return `<span class="sct-pv-lev is-${chip}" title="${e(sub)}"><b>${e(label)}</b></span>`;
-}
-
-function renderLeverage(p: Preview): string {
-  if (!p.leverage.length) return "";
-  const team = (k: SideKey) => (k === "away" ? p.away : p.home).team;
-  // The headshot (mak, 2026-10-23) in a round well washed with the team color,
-  // the club crest on its bottom-right corner (mak, 2026-11-03).
-  const face = (r: LeverageRow) => {
-    const img = r.sleeperId
-      ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
-      : "";
-    const logo = team(r.side).logo;
-    const crest = logo ? `<img class="sct-pv-lb-crest" src="${e(logo)}" alt="" width="16" height="16" loading="lazy" decoding="async">` : "";
-    return `<span class="sct-pv-lb-avatar" aria-hidden="true"><span class="sct-pv-lb-face is-${r.side}">${img}</span>${crest}</span>`;
-  };
-  // Team code and position on their own line under the name (mak, 2026-11-03).
-  const who = (r: LeverageRow) =>
-    `${face(r)}<span class="sct-pv-lb-name">${playerLink(r.name)}<span class="sct-pv-pos"><span class="sct-pos" data-pos="${e(r.pos)}">${e(r.pos)}</span> · ${e(code(team(r.side)))}</span></span>`;
-
-  // The "Leverage read" box (counts, best edge, toughest matchup, conflict)
-  // and the usage-through meta line came off 2026-10-22 (mak); leverageRead
-  // still feeds the watch list and the FAQ.
-
-  // A visual board since 2026-10-23 (mak): a role bar, a matchup bar and a
-  // colored leverage dot per player, the numbers demoted to small print.
-  // Every cell in all three scorings (mak, 2026-11-02): the role bar follows
-  // his rank in that scoring, the matchup bar the defense's rank in it, and
-  // the leverage call follows both. The switch swaps text, tiers and widths.
-  const role = (r: LeverageRow) => {
-    const tierOf = perFormat((f) => roleTierOf(r.formats[f].posRank, r.pos));
-    const widthOf = perFormat((f) => {
-      const posRank = r.formats[f].posRank;
-      return posRank === null ? 0 : Math.max(8, Math.round(100 * (1 - (posRank - 1) / (2 * STARTERS[r.pos]))));
-    });
-    const tier = tierOf.ppr;
-    const note = r.roleStats[0] ? `${r.roleStats[0].v} ${r.roleStats[0].k}` : r.role;
-    return (
-      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}"${fmtData(tierOf, "tier")} aria-hidden="true"><i style="width:${widthOf.ppr}%"${fmtData(widthOf, "w")}></i></span>` +
-      `<span class="sct-pv-lb-lab"><b${fmtData(perFormat((f) => ROLE_WORD[tierOf[f]]))}>${ROLE_WORD[tier]}</b><small>${e(note)}</small></span></div>`
-    );
-  };
-  const matchup = (r: LeverageRow) => {
-    const tierOf = perFormat((f) => {
-      const rank = r.formats[f].defRank;
-      return rank === null ? "neutral" : rank <= 10 ? "favorable" : rank >= 23 ? "tough" : "neutral";
-    });
-    const widthOf = perFormat((f) => (r.formats[f].defRank === null ? 0 : Math.round(((33 - r.formats[f].defRank!) / 32) * 100)));
-    const noteOf = perFormat((f) => {
-      const { defRank, defFpa } = r.formats[f];
-      return defRank !== null && defFpa !== null ? `${one(defFpa)} allowed · ${allowPhrase(defRank)}` : r.defense;
-    });
-    const tier = tierOf.ppr;
-    return (
-      `<div class="sct-pv-lb-cell"><span class="sct-pv-lb-bar" data-tier="${tier}"${fmtData(tierOf, "tier")} aria-hidden="true"><i style="width:${widthOf.ppr}%"${fmtData(widthOf, "w")}></i></span>` +
-      `<span class="sct-pv-lb-lab"><b${fmtData(perFormat((f) => MATCHUP_WORD[tierOf[f]]))}>${MATCHUP_WORD[tier]}</b><small${fmtData(noteOf)}>${e(noteOf.ppr)}</small></span></div>`
-    );
-  };
-  const levWord = (chip: Leverage) => LEVERAGE_LABEL[chip][0].replace(/^[↑↓-] /, "");
-  const dot = (r: LeverageRow) =>
-    `<div class="sct-pv-lb-lev"><span class="sct-pv-lb-dot is-${r.chip}"${fmtData(perFormat((f) => r.formats[f].chip), "lev")} aria-hidden="true"></span>` +
-    `<span${fmtData(perFormat((f) => levWord(r.formats[f].chip)))}>${e(levWord(r.chip))}</span></div>`;
-
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-lev" data-pv-fmt>` +
-    h2("pv-lev", `${pairOf(p)} Matchup Leverage`) +
-    `<p class="sct-pv-lede">Points allowed tells you where a defense is vulnerable. Matchup Leverage adds the missing piece: whether each player has the role to exploit it.</p>` +
-    `<div class="sct-pv-card sct-pv-lb">` +
-    `<div class="sct-pv-lb-head" aria-hidden="true"><span>Player</span><span>Role</span><span>Matchup</span><span>Leverage</span></div>` +
-    `<ul class="sct-pv-lb-rows">` +
-    p.leverage
-      .map(
-        (r) =>
-          `<li class="sct-pv-lb-row" data-lev="${r.chip}"${fmtData(perFormat((f) => r.formats[f].chip), "lev")}><div class="sct-pv-lb-who">${who(r)}</div>` +
-          role(r) +
-          matchup(r) +
-          dot(r) +
-          `</li>`,
-      )
-      .join("") +
-    `</ul></div>` +
-    `</section>`
-  );
-}
-
 /** Starters per position in a 12-team league: the role bar's yardstick. */
-const STARTERS: Record<Pos, number> = { QB: 12, RB: 24, WR: 36, TE: 12 };
+export const STARTERS: Record<Pos, number> = { QB: 12, RB: 24, WR: 36, TE: 12 };
 const ROLE_WORD = { strong: "Strong", solid: "Solid", light: "Light" } as const;
-const MATCHUP_WORD = { favorable: "Favorable", neutral: "Neutral", tough: "Tough" } as const;
 
-/** Strong = the top half of fantasy starters at the position, solid = a starter, light = the rest. */
-function roleTier(r: LeverageRow): keyof typeof ROLE_WORD {
-  return roleTierOf(r.posRank, r.pos);
-}
-
-function roleTierOf(posRank: number | null, pos: Pos): keyof typeof ROLE_WORD {
+export function roleTierOf(posRank: number | null, pos: Pos): keyof typeof ROLE_WORD {
   if (posRank === null) return "light";
   if (posRank <= STARTERS[pos] / 2) return "strong";
   if (posRank <= STARTERS[pos]) return "solid";
@@ -660,7 +418,7 @@ function roleTierOf(posRank: number | null, pos: Pos): keyof typeof ROLE_WORD {
 
 /* ----------------------------------------------------------- 5. snapshot */
 
-function findRow(stats: TeamStats | null, key: string): StatRow | null {
+export function findRow(stats: TeamStats | null, key: string): StatRow | null {
   if (!stats) return null;
   for (const group of [stats.offense, stats.defense, stats.situational, stats.volume]) {
     const row = group.find((c) => c.key === key);
@@ -669,300 +427,12 @@ function findRow(stats: TeamStats | null, key: string): StatRow | null {
   return null;
 }
 
-/** Color only the outliers (top or bottom 5); every other rank stays slate. */
-function tier(rank: number | null): string {
-  if (rank === null) return "none";
-  if (rank <= 5) return "good";
-  if (rank >= 28) return "poor";
-  return "mid";
-}
-
-function rankChip(rank: number | null, label: string | null, tierOverride?: string): string {
-  if (rank === null) return "";
-  return `<span class="sct-pv-rank" data-tier="${tierOverride ?? tier(rank)}">${e(label ?? ordinal(rank))}</span>`;
-}
-
-function compareRow(
-  label: string,
-  left: { value: string; rank: number | null; rankLabel?: string | null; tier?: string; best: boolean; bar?: number },
-  right: { value: string; rank: number | null; rankLabel?: string | null; tier?: string; best: boolean; bar?: number },
-): string {
-  const side = (s: typeof left, chipFirst: boolean) => {
-    const value = `<span class="sct-pv-cv${s.best ? " is-best" : ""}">${e(s.value)}</span>`;
-    const chip = rankChip(s.rank, s.rankLabel ?? null, s.tier);
-    // A restrained bar beside the figure, anchored at the outside edge and
-    // growing toward the metric: the stronger side's bar is darker (mak,
-    // 2026-10-23), so the comparison reads before the numbers do.
-    const bar =
-      s.bar !== undefined
-        ? `<span class="sct-pv-cbar${s.best ? " is-best" : ""}" aria-hidden="true"><i style="width:${Math.round(s.bar * 100)}%"></i></span>`
-        : "";
-    return `<span class="sct-pv-cside">${chipFirst ? bar + chip + value : value + chip + bar}</span>`;
-  };
-  return (
-    `<tr><td class="sct-pv-cl">${side(left, false)}</td>` +
-    `<th scope="row" class="sct-pv-cm">${e(label)}</th>` +
-    `<td class="sct-pv-cr">${side(right, true)}</td></tr>`
-  );
-}
-
-const SNAP_ROWS: Array<{ key: string; label: string }> = [
-  { key: "off-points", label: "Points/G" },
-  { key: "off-total-yards", label: "Yards/G" },
-  { key: "off-yards-per-play", label: "Yards/play" },
-  { key: "def-points", label: "Points/G allowed" },
-  { key: "def-total-yards", label: "Yards/G allowed" },
-];
-
-/** Bar length from an NFL rank: 1st fills it, 32nd nearly empties it. */
-const rankBar = (rank: number | null | undefined): number | undefined => (rank == null ? undefined : (33 - rank) / 32);
-
-/**
- * The Team Matchup as a comparison graphic (mak, 2026-10-23): mirrored rank
- * bars out from the center, the advantage side in its team color. The
- * "CHI advantage" / "NE softer" / "Close" pills under each label were
- * removed 2026-11-03 at mak's request; the colored bar alone names the edge.
- * Three groups: Offense, Defense, and the per-position Matchups.
- */
-function renderSnapshot(p: Preview, _ctx: PreviewRenderContext): string {
-  const { away, home } = p;
-  const A = code(away.team);
-  const H = code(home.team);
-  type Side = { value: string; rank: number | null; rankLabel?: string | null };
-  const advOf = (a: Side, h: Side): "even" | "away" | "home" => {
-    const close = a.rank === null || h.rank === null || Math.abs(a.rank - h.rank) <= 2;
-    return close ? "even" : a.rank! < h.rank! ? "away" : "home";
-  };
-  const widthOf = (s: Side): number => (s.rank === null ? 0 : Math.round(((33 - s.rank) / 32) * 100));
-  // `formats`: the same row in each scoring, for the points-allowed rows the
-  // page's switch rewrites (mak, 2026-11-02); the other rows have none.
-  const row = (label: string, a: Side, h: Side, formats?: Record<ScoringFormat, { a: Side; h: Side }>): string => {
-    const adv = advOf(a, h);
-    const sideIn = (f: ScoringFormat, k: "a" | "h"): Side => (formats ? formats[f][k] : k === "a" ? a : h);
-    const bar = (s: Side, cls: string, k: "a" | "h") =>
-      s.rank === null
-        ? `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"></span>`
-        : `<span class="sct-pv-cmp-bar ${cls}" aria-hidden="true"><i style="width:${widthOf(s)}%"${formats ? fmtData(perFormat((f) => widthOf(sideIn(f, k))), "w") : ""}></i></span>`;
-    const chip = (s: Side, k: "a" | "h") =>
-      s.rank === null
-        ? ""
-        : `<span class="sct-pv-rank" data-tier="${tier(s.rank)}"` +
-          (formats ? fmtData(perFormat((f) => sideIn(f, k).rankLabel ?? ordinal(sideIn(f, k).rank ?? 0))) + fmtData(perFormat((f) => tier(sideIn(f, k).rank)), "tier") : "") +
-          `>${e(s.rankLabel ?? ordinal(s.rank))}</span>`;
-    const val = (s: Side, cls: string, k: "a" | "h") =>
-      `<span class="sct-pv-cmp-v ${cls}"><b${formats ? fmtData(perFormat((f) => sideIn(f, k).value)) : ""}>${e(s.value)}</b>${chip(s, k)}</span>`;
-    return (
-      `<div class="sct-pv-cmp-row" data-adv="${adv}"${formats ? fmtData(perFormat((f) => advOf(formats[f].a, formats[f].h)), "adv") : ""}>` +
-      val(a, "is-l", "a") +
-      bar(a, "is-l", "a") +
-      `<span class="sct-pv-cmp-mid"><span class="sct-pv-cmp-k">${e(label)}</span></span>` +
-      bar(h, "is-r", "h") +
-      val(h, "is-r", "h") +
-      `</div>`
-    );
-  };
-  const stat = (key: string, label: string) => {
-    const a = findRow(away.stats, key);
-    const h = findRow(home.stats, key);
-    if (!a && !h) return "";
-    return row(
-      label,
-      // No "T-" tie prefix on the chip (mak, 2026-11-03).
-      { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel?.replace(/^T-/i, "") },
-      { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel?.replace(/^T-/i, "") },
-    );
-  };
-  const group = (title: string, rows: string) =>
-    rows ? `<div class="sct-pv-cmp-group"><h3 class="sct-pv-cmp-gh">${e(title)}</h3>${rows}</div>` : "";
-
-  // The Record row (W-L under each code) came out 2026-11-03 at mak's request.
-  const offense = group("Offense", stat("off-points", "Points/G") + stat("off-total-yards", "Yards/G") + stat("off-yards-per-play", "Yards/play"));
-  // Points allowed by position, under Defense since 2026-11-03 (mak; the
-  // separate "Matchups" group and its framing line are gone). The FPA rank
-  // runs 1st = most allowed, so the bar and the advantage use the reverse
-  // (33 - rank): in this group a longer bar is the stingier defense, the
-  // same reading as the two rows above. The chip still says "7th-most" /
-  // "6th-fewest", as the Leverage board does.
-  const allowed =
-    away.fpa && home.fpa
-      ? (["QB", "RB", "WR", "TE"] as Pos[])
-          .map((pos) => {
-            const sideIn = (s: PreviewSide, f: ScoringFormat): Side => {
-              const cell = (s.fpaFormats[f] ?? s.fpa!).byPos[pos];
-              return { value: one(cell.fpa), rank: cell.rank === null ? null : 33 - cell.rank, rankLabel: cell.rank === null ? null : allowPhrase(cell.rank) };
-            };
-            return row(
-              `${pos} pts allowed`,
-              sideIn(away, "ppr"),
-              sideIn(home, "ppr"),
-              perFormat((f) => ({ a: sideIn(away, f), h: sideIn(home, f) })),
-            );
-          })
-          .join("")
-      : "";
-  const defense = group("Defense", stat("def-points", "Points/G allowed") + stat("def-total-yards", "Yards/G allowed") + allowed);
-
-  if (!offense && !defense) return "";
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-snap" data-pv-fmt>` +
-    h2("pv-snap", `${pairOf(p)} Team Matchup`) +
-    `<div class="sct-pv-card sct-pv-cmp">` +
-    `<div class="sct-pv-cmp-head" aria-hidden="true"><span>${e(A)}</span><span>${e(H)}</span></div>` +
-    offense +
-    defense +
-    // The bar caption and the per-row "Favors NE RBs" line came off again
-    // 2026-11-03 (mak); the tick, the Matchups framing line and the
-    // "-most / -fewest" chips stay.
-    `</div>` +
-    `</section>`
-  );
-}
-
-function renderSnapshotTable(p: Preview, ctx: PreviewRenderContext): string {
-  const { away, home } = p;
-  const head =
-    `<thead><tr><th scope="col" class="sct-pv-cl">${e(code(away.team))}</th><th scope="col" class="sct-pv-cm"><span class="sct-visually-hidden">Metric</span></th>` +
-    `<th scope="col" class="sct-pv-cr">${e(code(home.team))}</th></tr></thead>`;
-
-  const teamRows = [
-    away.record || home.record
-      ? compareRow(
-          "Record",
-          { value: away.record ?? "-", rank: null, best: false },
-          { value: home.record ?? "-", rank: null, best: false },
-        )
-      : "",
-    ...SNAP_ROWS.map(({ key, label }) => {
-      const a = findRow(away.stats, key);
-      const h = findRow(home.stats, key);
-      if (!a && !h) return "";
-      const better = a?.rank != null && h?.rank != null && a.rank !== h.rank ? (a.rank < h.rank ? "a" : "h") : null;
-      return compareRow(
-        label,
-        { value: a?.value ?? "-", rank: a?.rank ?? null, rankLabel: a?.rankLabel, best: better === "a", bar: rankBar(a?.rank) },
-        { value: h?.value ?? "-", rank: h?.rank ?? null, rankLabel: h?.rankLabel, best: better === "h", bar: rankBar(h?.rank) },
-      );
-    }),
-  ].join("");
-
-  // The Fantasy Points Allowed by Position block that sat beside this table
-  // came off the page 2026-10-23 (mak); the starters block carries the
-  // per-position ranks now. The table runs full width with a rank bar on
-  // each side (mak, same day), so the space reads as the comparison.
-  if (!teamRows) return "";
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-snap">` +
-    h2("pv-snap", `${pairOf(p)} Team Matchup`) +
-    `<div class="sct-pv-card"><table class="sct-pv-compare">${head}<tbody>${teamRows}</tbody></table></div>` +
-    `</section>`
-  );
-}
-
 /* ------------------------------------------------------------- 6. injuries */
-
-function renderInjuries(p: Preview): string {
-  // One unified list since 2026-10-23 (mak): the two side-by-side cards left
-  // a column of dead space under the healthier team. Each team is a group
-  // with its rows; the "Clean sheet" row becomes a muted footer line.
-  const group = (s: PreviewSide) => {
-    const rows = p.injuries[s.key];
-    const listed = rows.filter((r) => r.chip !== "OK");
-    const clean = rows.some((r) => r.chip === "OK");
-    return (
-      `<div class="sct-pv-inj-group"><h3 class="sct-pv-colhead"><span class="sct-pv-swatch is-${s.key}" aria-hidden="true"></span>${e(code(s.team))}</h3>` +
-      (listed.length
-        ? `<ul class="sct-pv-rows">` +
-          listed
-            .map(
-              (r) =>
-                // The face first (mak, 2026-11-02), in a round well washed with the
-                // team color; the status chip rides its top-right corner instead of
-                // taking a column of its own (mak, 2026-11-03).
-                `<li class="sct-pv-row sct-pv-inj-row"><span class="sct-pv-inj-avatar"><span class="sct-pv-lb-face sct-pv-inj-face is-${s.key}" aria-hidden="true">` +
-                (r.sleeperId
-                  ? (headshotImg({ src: null, id: r.sleeperId, className: "sct-pv-lb-img", alt: "", variants: ["160"], width: 36, height: 36, loading: "lazy" }) ?? "")
-                  : "") +
-                `</span>` +
-                `<span class="sct-pv-inj" data-status="${e(r.chip)}" title="${e(r.status)}">${e(r.chip)}<span class="sct-visually-hidden"> ${e(r.status)}</span></span></span>` +
-                `<div class="sct-pv-row-body"><p class="sct-pv-row-name">${playerLink(r.name)}` +
-                (r.pos ? ` <span class="sct-pv-pos" data-pos="${e(r.pos)}">${e(r.pos)}</span>` : "") +
-                `</p><p class="sct-pv-row-why">${e(r.fallout)}</p></div></li>`,
-            )
-            .join("") +
-          `</ul>`
-        : "") +
-      (clean
-        ? `<p class="sct-pv-inj-foot">No ${listed.length ? "other " : ""}5%+ rostered ${e(s.team.nickname)} carry a designation.</p>`
-        : "") +
-      `</div>`
-    );
-  };
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-inj">` +
-    // The lede and the "Injury impact" strip (biggest beneficiary, watch, no
-    // impact) came off 2026-10-22 (mak); injuryImpact still feeds the watch
-    // list and the FAQ.
-    h2("pv-inj", `${pairOf(p)} Injury Report & Fantasy Impact`) +
-    `<div class="sct-pv-card sct-pv-inj-card">${group(p.away)}${group(p.home)}</div>` +
-    `</section>`
-  );
-}
 
 
 /* --------------------------------------------------------------- 7. h2h */
 
-function renderH2h(p: Preview, ctx: PreviewRenderContext): string {
-  const h = p.h2h;
-  if (!h) return "";
-  // One meeting in the window is the Last meeting block above, which carries
-  // the total-vs-line fact itself; this block would repeat it (mak, 2026-11-03).
-  if (h.games.length < 2) return "";
-  // Every tile: the figure, its label in caps, then an optional note.
-  const stat = (value: string, label: string, note?: string | null) =>
-    `<div class="sct-pv-stat"><span class="sct-pv-stat-v">${e(value)}</span><span class="sct-pv-stat-k">${e(label)}</span>` +
-    (note ? `<span class="sct-pv-stat-n">${e(note)}</span>` : "") +
-    `</div>`;
-  const cards = h.games
-    .slice(0, 10)
-    .map((m) => {
-      const s = m.score!;
-      const homeWon = s.home > s.away;
-      const awayWon = s.away > s.home;
-      return (
-        `<li><a class="sct-pv-game" href="${e(ctx.game(m))}">` +
-        `<span class="sct-pv-game-when">${e(`${m.season} · ${m.weekLabel}`)}</span>` +
-        `<span class="sct-pv-game-line${awayWon ? " is-win" : homeWon ? " is-loss" : ""}">${e(code(m.away))} <b>${s.away}</b></span>` +
-        `<span class="sct-pv-game-line${homeWon ? " is-win" : awayWon ? " is-loss" : ""}">@${e(code(m.home))} <b>${s.home}</b></span>` +
-        `</a></li>`
-      );
-    })
-    .join("");
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-h2h">` +
-    h2("pv-h2h", `${pairOf(p)} Head-to-Head`) +
-    `<div class="sct-pv-stats">` +
-    stat(h.record, `Series record · since ${h.since}`) +
-    (h.avgPoints !== null ? stat(one(h.avgPoints), "Avg total points", h.avgVsTotal) : "") +
-    (h.third ? stat(h.third.value, h.third.label) : "") +
-    `</div>` +
-    // The "Series trend" box and the "These two have met N times" lede came
-    // off 2026-10-22 (mak); the tiles and the game cards carry the facts.
-    `<ol class="sct-pv-games" aria-label="Recent meetings">${cards}</ol>` +
-    `</section>`
-  );
-}
-
 /* ------------------------------------------------------------------ 8. CTA */
-
-function renderCta(ctx: PreviewRenderContext): string {
-  return (
-    `<section class="sct-pv-cta" aria-label="Redraft Command">` +
-    `<div><p class="sct-pv-cta-h">Need the call for your actual team?</p>` +
-    `<p>This matchup preview uses a 12-team PPR baseline. Connect your league in Redraft Command to compare these players against your real starters, bench and scoring settings.</p></div>` +
-    `<a class="sct-pv-cta-btn" href="${e(ctx.redraftUrl)}" data-cta="preview-redraft">Set My Lineup in Redraft Command</a>` +
-    `</section>`
-  );
-}
 
 /* ------------------------------------------------------------------ 9. FAQ */
 
@@ -977,6 +447,13 @@ export interface PreviewFaq {
  * The upcoming FAQ: mak's 15-question template (2026-10-05), in his order,
  * every answer filled from the page's own numbers. A question whose inputs are
  * missing is left out rather than answered around.
+ *
+ * Trimmed 2026-11-06 (mak: "avoid a FAQ that merely repeats the odds,
+ * injuries and key matchups already explained above"): the best-matchup,
+ * injury, beneficiary, points-allowed-by-position and injury-impact questions
+ * are gone, and the outlook answer no longer restates the line. What is left
+ * answers fantasy start/sit searches and the kickoff/channel search, which no
+ * section above answers.
  */
 export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] {
   const { away, home, meeting } = p;
@@ -1001,11 +478,10 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
     picks.fade ? `the biggest fade is ${tag(picks.fade)}` : null,
   ].filter(Boolean);
   if (pickLine.length) {
-    const env = environment(p);
+    // No odds here: the hero and The Call carry them (mak, 2026-11-06).
     plain(
       `What is the fantasy football outlook for ${pair} in ${week}?`,
-      `In PPR 12-team leagues, ${pickLine.join(", ")}. Game environment: ${env.value}${env.note ? ` (${env.note})` : ""}.` +
-        (p.snapshotNote ? ` ${p.snapshotNote}` : ""),
+      `In PPR 12-team leagues, ${pickLine.join(", ")}.` + (p.snapshotNote ? ` ${p.snapshotNote}` : ""),
     );
   }
 
@@ -1025,7 +501,6 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
       `Who should I start in ${pair} in ${week}?`,
       `In PPR 12-team leagues for ${away.team.nickname} at ${home.team.nickname}, ${week} ${meeting.season}: ${parts.join(" ")}` +
         ` The calls weigh each player's PPR scoring against what this defense allows at his position and his team's implied total.`,
-      ` <a href="#start-sit">See the full Start/Sit board</a>.`,
     );
   }
 
@@ -1055,19 +530,6 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
       `In 12-team PPR leagues, sit ${list(
         fades.map((r) => `${r.name} (${r.team} ${r.pos}, ${one(r.ppg!)} PPR points a game${allows(r) ? `; ${allows(r)}` : ""})`),
       )}.` + (downs.length ? ` Tough matchups to downgrade: ${list(downs.map((r) => `${r.name} (${r.defense})`))}.` : ""),
-    );
-  }
-
-  // 5. Best fantasy matchup.
-  if (p.fpaHeadlines) {
-    const { soft, tough } = p.fpaHeadlines;
-    const edge = p.leverageRead?.edge ?? null;
-    plain(
-      `What is the best fantasy matchup in ${pair}?`,
-      `${soft.def} allows ${one(soft.fpa)} PPR points a game to ${soft.pos}s, the ${allowPhrase(soft.rank)} in the league` +
-        `${soft.who ? `, which sets up ${soft.who}` : ""}. The toughest spot is ${tough.def} against ${tough.pos}s ` +
-        `(${one(tough.fpa)} a game, the ${allowPhrase(tough.rank)}).` +
-        (edge && edge.name !== soft.who ? ` On role and matchup together, ${edge.name} has the clearest edge.` : ""),
     );
   }
 
@@ -1101,67 +563,6 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
         (note ? ` ${note}` : "") +
         q,
     );
-  }
-
-  // 11. The game's top injury question.
-  const injured = [...p.injuries.away.map((r) => ({ r, s: away })), ...p.injuries.home.map((r) => ({ r, s: home }))]
-    .filter((x) => x.r.chip !== "OK" && x.r.status !== "IR")
-    .sort((x, y) => y.r.rostered - x.r.rostered);
-  const top = injured[0];
-  if (top) {
-    plain(
-      `Is ${top.r.name} playing in ${week} against the ${top.s.opponent.nickname}?`,
-      `${top.r.name} is listed ${top.r.status} for the ${top.s.team.nickname}. ${top.r.fallout}`,
-    );
-  } else {
-    plain(
-      `Are there any key injuries for ${pair}?`,
-      `No player rostered in 5% or more of fantasy leagues on either team carries a game designation, so every ${away.team.nickname} and ${home.team.nickname} role is available.`,
-    );
-  }
-
-  // 12. Who benefits most from the costliest absence.
-  const gain = p.injuryImpact?.beneficiary;
-  if (gain) {
-    const absent = gain.because.replace(/ (out|on IR)$/, "");
-    const metric = all.find((r) => r.name === gain.name)?.metric;
-    plain(
-      `Who benefits most if ${absent} is out?`,
-      `${gain.name} (${gain.team} ${gain.pos}) gains the most: he steps into the work with ${gain.because}` +
-        `${metric ? `, coming off a ${metric} so far` : ""}.`,
-    );
-  }
-
-  // 13. Which defense gives up more, position by position.
-  if (away.fpa && home.fpa) {
-    const parts = (["QB", "RB", "WR", "TE"] as Pos[]).map((pos) => {
-      const a = away.fpa!.byPos[pos];
-      const h = home.fpa!.byPos[pos];
-      if (a.fpa === h.fpa) return `${pos}s, both allow ${one(a.fpa)} a game`;
-      const [more, m, less, l] = a.fpa > h.fpa ? [away, a, home, h] : [home, h, away, a];
-      return `${pos}s, the ${more.team.nickname} allow more (${one(m.fpa)} a game, ${allowPhrase(m.rank)}) than the ${less.team.nickname} (${one(l.fpa)}, ${allowPhrase(l.rank)})`;
-    });
-    plain(
-      `Which team gives up more fantasy points by position, the ${away.team.nickname} or ${home.team.nickname}?`,
-      `In PPR points allowed per game: against ${parts.join("; against ")}.`,
-    );
-  }
-
-  // 14. What the injuries do to lineups, in one answer.
-  const impact = p.injuryImpact;
-  if (impact) {
-    const outs = (["away", "home"] as SideKey[]).flatMap((k) =>
-      p.injuries[k].filter((r) => r.impact === "out").map((r) => `${r.name} (${code((k === "away" ? away : home).team)} ${r.pos})`),
-    );
-    const bits = [
-      outs.length ? `Out: ${list(outs)}.` : null,
-      impact.beneficiary ? `Biggest beneficiary: ${impact.beneficiary.name}, with ${impact.beneficiary.because}.` : null,
-      impact.watch.length ? `Watch closely: ${list(impact.watch.map((x) => x.name))}; inactives post 90 minutes before kickoff.` : null,
-      impact.none.length ? `No fantasy impact: ${list(impact.none.map((x) => x.name))}.` : null,
-    ].filter(Boolean);
-    if (bits.length) {
-      plain(`How do the ${away.team.nickname} and ${home.team.nickname} injuries affect fantasy football lineups?`, bits.join(" "));
-    }
   }
 
   // 15. Time and channel.
@@ -1244,57 +645,13 @@ function renderFooter(p: Preview, ctx: PreviewRenderContext): string {
 
 /* ------------------------------------------------------------------- page */
 
-export function renderPreviewTop(p: Preview, ctx: PreviewRenderContext): string {
-  return renderHero(p, ctx);
-}
-
 /**
- * `lead` is markup placed at the top of the body (the pair page's starters
- * block); `afterInjuries` sits under the Injury Report and its waiver CTA,
- * above Head-to-Head (the "Last meeting" block since 2026-10-23, mak).
+ * What follows the premium page (preview-premium.ts, the upcoming page since
+ * mak approved it 2026-11-06 and had the old layer removed): the FAQ, the
+ * Dynasty Command line and the Next steps footer, unchanged.
  */
-export function renderPreviewBody(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[], lead = "", afterInjuries = ""): string {
-  return (
-    `<div class="sct-pv">` +
-    lead +
-    // The "Fantasy matchup preview" intro came off the page 2026-10-23 (mak).
-    renderCall(p) +
-    // The Start/Sit Board section came off the page 2026-10-22 (mak); its
-    // rows still feed the FAQ, the watch list and the outlook picks.
-    nextStep(
-      "preview-startsit",
-      "Deciding between two players?",
-      "",
-      START_SIT_URL,
-      "Compare in Start/Sit",
-    ) +
-    renderLeverage(p) +
-    nextStep(
-      "preview-optimizer",
-      "Apply these matchup edges to your lineup.",
-      "The Lineup Optimizer checks every starting slot using your actual roster and league settings.",
-      LINEUP_OPTIMIZER_URL,
-      "Open the Lineup Optimizer",
-    ) +
-    renderSnapshot(p, ctx) +
-    renderInjuries(p) +
-    nextStep(
-      "preview-waivers",
-      "Need a replacement?",
-      "Scan available players across your leagues with the Fantasy Football Waiver Wire Scanner.",
-      WAIVER_WIRE_URL,
-      "Open the Waiver Wire Scanner",
-    ) +
-    afterInjuries +
-    // Players to Watch came off the page 2026-10-23 (mak); renderWatchList
-    // stays for the FAQ pool and a possible return.
-    renderH2h(p, ctx) +
-    renderCta(ctx) +
-    renderFaq(faq, p) +
-    renderDynasty(p) +
-    renderFooter(p, ctx) +
-    `</div>`
-  );
+export function renderPreviewTail(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[]): string {
+  return `<div class="sct-pv">` + renderFaq(faq, p) + renderDynasty(p) + renderFooter(p, ctx) + `</div>`;
 }
 
 /** Inline style tokens for the root: the two team fills. */

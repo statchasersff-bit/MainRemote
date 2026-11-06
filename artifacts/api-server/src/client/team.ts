@@ -1580,6 +1580,69 @@ function wireHeroLead(root: HTMLElement): void {
 
 /* ------------------------------------------------------------------ boot */
 
+/**
+ * Small in-card tabs (the matchup page's Team Comparison, 2026-11-06):
+ * [data-sct-seg-tabs] holding role="tab" buttons that control role="tabpanel"
+ * elements by id. Click, arrow keys, Home and End; no hash, no fetch, the
+ * panels already in the page.
+ */
+function wireSegTabs(root: HTMLElement): void {
+  for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-seg-tabs]"))) {
+    const tabs = Array.from(group.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    if (tabs.length < 2) continue;
+    const select = (tab: HTMLButtonElement, focus: boolean): void => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute("aria-controls") ?? "");
+        if (panel) panel.hidden = !on;
+      }
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab, false));
+      tab.addEventListener("keydown", (event) => {
+        const n = tabs.length;
+        const next =
+          event.key === "ArrowRight" ? tabs[(i + 1) % n] : event.key === "ArrowLeft" ? tabs[(i - 1 + n) % n] : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[n - 1] : null;
+        if (!next) return;
+        event.preventDefault();
+        select(next, true);
+      });
+    });
+  }
+}
+
+/**
+ * Row filters over a table (the matchup page's All Starter Outlooks,
+ * 2026-11-06): [data-sct-row-filter] holds buttons with data-filter (the row
+ * attribute, e.g. "team") and data-value ("all" or a value); the next
+ * table[data-filterable] shows the rows matching every chosen value.
+ */
+function wireRowFilters(root: HTMLElement): void {
+  for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-row-filter]"))) {
+    const table = box.parentElement?.querySelector<HTMLTableElement>("table[data-filterable]");
+    if (!table) continue;
+    const buttons = Array.from(box.querySelectorAll<HTMLButtonElement>("button[data-filter]"));
+    const chosen: Record<string, string> = {};
+    for (const b of buttons) if (b.getAttribute("aria-pressed") === "true") chosen[b.dataset["filter"]!] = b.dataset["value"]!;
+    const apply = (): void => {
+      for (const row of Array.from(table.tBodies[0]?.rows ?? [])) {
+        row.hidden = Object.entries(chosen).some(([key, value]) => value !== "all" && row.dataset[key] !== value);
+      }
+    };
+    for (const b of buttons) {
+      b.addEventListener("click", () => {
+        const key = b.dataset["filter"]!;
+        chosen[key] = b.dataset["value"]!;
+        for (const other of buttons) if (other.dataset["filter"] === key) other.setAttribute("aria-pressed", other === b ? "true" : "false");
+        apply();
+      });
+    }
+  }
+}
+
 function boot(): void {
   const roots = Array.from(
     document.querySelectorAll<HTMLElement>(ROOT_SELECTOR),
@@ -1587,6 +1650,8 @@ function boot(): void {
   for (const root of roots) {
     wireTabs(root);
     wireMatchupTabs(root);
+    wireSegTabs(root);
+    wireRowFilters(root);
     wireSwitcher(root);
     wireHeroLead(root);
     wireTimestamps(root);

@@ -198,9 +198,10 @@ function renderUpcoming(data: PlayerPageData, deps: BreakdownPremiumDeps): strin
         `</td>` +
         `<td class="scp-bkp-nx-when"><span class="scp-bkp-nx-cal">${ICON.calendarSm}</span>${escapeHtml(deps.kickoff(game))}</td>` +
         (game.matchup && band
-          ? `<td class="scp-bkp-nx-rank"><b data-band="${band}">${escapeHtml(deps.ordinal(game.matchup.rank))}</b>` +
-            `<span>${escapeHtml(` vs ${game.matchup.position}`)}</span></td>` +
-            `<td class="scp-bkp-nx-read"><span class="scp-bkp-pill" data-band="${band}">${escapeHtml(deps.bandRead[band])}</span>`
+          ? // The rank alone and the band's word alone (mak, 2026-11-06): the
+            // column headers already say "vs QB" and "Matchup".
+            `<td class="scp-bkp-nx-rank"><b data-band="${band}">${escapeHtml(deps.ordinal(game.matchup.rank))}</b></td>` +
+            `<td class="scp-bkp-nx-read"><span class="scp-bkp-pill" data-band="${band}">${escapeHtml(deps.bandRead[band].replace(/\s+matchup$/i, ""))}</span>`
           : `<td class="scp-bkp-nx-rank is-none"><span>No matchup rank</span></td><td class="scp-bkp-nx-read">`) +
         (href
           ? `<a class="scp-bkp-cta" href="${escapeHtml(href)}"><span>View matchup</span>` +

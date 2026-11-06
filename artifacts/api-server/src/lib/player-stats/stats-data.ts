@@ -126,7 +126,7 @@ export interface StatsRow {
 export interface LeaderFigure {
   /** "277", "44.0%". */
   figure: string;
-  /** "138.5 per game", "277 total", "on 22 targets". */
+  /** "138.5/G", "277 total", "on 22 targets". */
   note: string;
   player: StatsRow | null;
 }
@@ -1011,7 +1011,7 @@ export function getStatsTable(
       note = targets == null ? "" : `on ${targets} targets`;
     } else if (best.row) {
       const pg = perGameOf(best.row);
-      note = pg == null ? "" : `${perGameFigure(pg)} per game`;
+      note = pg == null ? "" : `${perGameFigure(pg)}/G`;
     }
     const totalFigure: LeaderFigure = best.row
       ? { figure: cardFigure(card, best.value), note, player: best.row }

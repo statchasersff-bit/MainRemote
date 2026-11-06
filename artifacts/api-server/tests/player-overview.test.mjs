@@ -179,13 +179,25 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.doesNotMatch(text(doc.querySelector(".scp-ow-chart")), /PPR/);
   });
 
-  test("weekly chart: an absence is marked Out, and a logged game the slate has not finalized is still a bar", () => {
+  test("weekly chart: an injury absence is marked Out, any other absence DNP; a logged game the slate has not finalized is still a bar", () => {
     const log = [entry(1, 16.5, 15), { ...entry(2, 0, null), game_status: "out", stats: {} }, entry(3, 25.6, 4)];
+    // No injury on record for week 2: a healthy backup who never got in
+    // (Minshew, 2026) reads DNP, in gray, not Out (mak, 2026-11-06).
     const doc = render(state({ gameLog: log, schedule: [final(1), final(2)] }));
     const c = cols(doc);
     assert.ok(c[1].matches(".is-dnp"));
-    assert.equal(text(c[1].querySelector(".scp-ow-mark")), "Out");
+    assert.ok(!c[1].matches(".is-inj"));
+    assert.equal(text(c[1].querySelector(".scp-ow-mark")), "DNP");
     assert.ok(c[2].matches(".is-played"), "week 3 comes from the log");
+    // An injury logged in week 2: Out, in red.
+    const hurt = render(state({
+      gameLog: log, schedule: [final(1), final(2)],
+      injury: { seasonMissed: 1, summary: { totalMissed: 1 }, history: { nfl: [{ season: 2026, week: 2, type: "Injury", bodyPart: "Hamstring", gamesMissed: 0 }] } },
+    }));
+    const h = cols(hurt);
+    assert.ok(h[1].matches(".is-dnp.is-inj"));
+    assert.equal(text(h[1].querySelector(".scp-ow-mark")), "Out");
+    assert.match(text(h[1].querySelector(".scp-ow-tip")), /Did not play \(hamstring\)/);
   });
 
   test("upcoming: the next four games with the bye in place, the grade from the shared bands", () => {
@@ -215,7 +227,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.ok(words >= 30 && words <= 90, `${words} words`);
     assert.equal(sec.querySelectorAll(".scp-ox-eff").length, 4);
     assert.doesNotMatch(text(sec), /Typical week|Floor|Ceiling|TD scoring/);
-    assert.equal(sec.querySelector("[data-cta='redraft-command-sidebar']").getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
+    assert.equal(sec.querySelector("[data-cta='redraft-command-sidebar']").getAttribute("href"), "https://statchasers.com/redraft-command/players/1");
   });
 
   test("fantasyCall: position-specific labels", () => {
@@ -296,6 +308,12 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     const facts = [...sec.querySelectorAll(".scp-ox-about dt")].map(text);
     assert.deepEqual(facts, ["Born", "Birthplace", "Drafted by"]);
     assert.match(text(sec.querySelector(".scp-ox-career-line")), /25 games, 4,852 passing yards, 31 passing TD \(2024-2026\)/);
+    // Two cards, each under its own navy head (mak, 2026-11-06); the years
+    // sit on their own line under the totals.
+    assert.deepEqual([...sec.querySelectorAll(".scp-ox-bgc-grid > .scp-ox-bgc h3")].map(text), ["Career highlights", "Background"]);
+    assert.equal(text(sec.querySelector(".scp-ox-bgc-total")), "25 games, 4,852 passing yards, 31 passing TD");
+    assert.equal(text(sec.querySelector(".scp-ox-bgc-span")), "(2024-2026)");
+    assert.equal(sec.querySelectorAll(".scp-ox-bgc-fact .scp-ox-bgc-ficon svg").length, 3, "an icon per fact");
     assert.deepEqual([...sec.querySelectorAll(".scp-ox-links a")].map((x) => x.getAttribute("href")), ["/nfl/players/jacoby-brissett/stats/", "/nfl/players/jacoby-brissett/bio/"]);
     assert.doesNotMatch(text(sec), /fantasy|PPR/i);
   });

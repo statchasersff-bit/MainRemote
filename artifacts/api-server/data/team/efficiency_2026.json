@@ -1,7 +1,7 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-04",
-  "throughWeek": 8,
+  "builtAt": "2026-11-06",
+  "throughWeek": 9,
   "definitions": {
     "play": "regular-season pass or run, not a two-point try, with an EPA value",
     "epaDropback": "qb_dropback = 1: throws, sacks and scrambles",
@@ -37,9 +37,9 @@
         "chartedDropbacks": 353,
         "epaPlay": {
           "value": -0.02,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
+          "rank": 18,
+          "tied": true,
+          "pct": 45
         },
         "epaDropback": {
           "value": -0.01,
@@ -79,9 +79,9 @@
         },
         "yardsPerCarry": {
           "value": 4.2,
-          "rank": 16,
+          "rank": 15,
           "tied": false,
-          "pct": 52
+          "pct": 55
         },
         "passerRating": {
           "value": 84.1,
@@ -151,9 +151,9 @@
         },
         "explosiveRate": {
           "value": 13.3,
-          "rank": 19,
+          "rank": 20,
           "tied": false,
-          "pct": 42
+          "pct": 39
         },
         "yardsPerPlay": {
           "value": 5.73,
@@ -400,9 +400,9 @@
         },
         "explosiveRate": {
           "value": 12.6,
-          "rank": 16,
+          "rank": 17,
           "tied": false,
-          "pct": 52
+          "pct": 48
         },
         "yardsPerPlay": {
           "value": 5.21,
@@ -517,7 +517,7 @@
       }
     },
     "bal": {
-      "games": 8,
+      "games": 9,
       "weeks": [
         1,
         2,
@@ -526,24 +526,25 @@
         5,
         6,
         7,
-        8
+        8,
+        9
       ],
       "offense": {
-        "plays": 472,
-        "dropbacks": 268,
-        "rushes": 204,
+        "plays": 526,
+        "dropbacks": 289,
+        "rushes": 237,
         "chartedDropbacks": 268,
         "epaPlay": {
-          "value": 0.02,
-          "rank": 13,
+          "value": -0.02,
+          "rank": 18,
           "tied": true,
-          "pct": 61
+          "pct": 45
         },
         "epaDropback": {
-          "value": 0.1,
-          "rank": 14,
+          "value": 0.04,
+          "rank": 19,
           "tied": false,
-          "pct": 58
+          "pct": 42
         },
         "epaRush": {
           "value": -0.08,
@@ -552,40 +553,40 @@
           "pct": 52
         },
         "successRate": {
-          "value": 45.6,
+          "value": 44.1,
           "rank": 12,
           "tied": false,
           "pct": 65
         },
         "explosiveRate": {
-          "value": 14.8,
-          "rank": 8,
+          "value": 13.5,
+          "rank": 11,
           "tied": false,
-          "pct": 77
+          "pct": 68
         },
         "yardsPerPlay": {
-          "value": 5.63,
-          "rank": 9,
-          "tied": false,
-          "pct": 74
-        },
-        "yardsPerPassAttempt": {
-          "value": 7.83,
-          "rank": 8,
-          "tied": false,
-          "pct": 77
-        },
-        "yardsPerCarry": {
-          "value": 4.62,
-          "rank": 8,
-          "tied": false,
-          "pct": 77
-        },
-        "passerRating": {
-          "value": 100.1,
+          "value": 5.49,
           "rank": 10,
           "tied": false,
           "pct": 71
+        },
+        "yardsPerPassAttempt": {
+          "value": 7.46,
+          "rank": 11,
+          "tied": false,
+          "pct": 68
+        },
+        "yardsPerCarry": {
+          "value": 4.68,
+          "rank": 6,
+          "tied": false,
+          "pct": 84
+        },
+        "passerRating": {
+          "value": 93.9,
+          "rank": 11,
+          "tied": false,
+          "pct": 68
         },
         "blitzRate": {
           "value": 34,
@@ -606,22 +607,22 @@
           "pct": 42
         },
         "timeToThrow": {
-          "value": 2.96,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "value": 2.94,
+          "rank": 8,
+          "tied": false,
+          "pct": 77
         },
         "sacks": {
-          "value": 22,
+          "value": 23,
           "rank": 24,
-          "tied": false,
+          "tied": true,
           "pct": 26
         }
       },
       "defense": {
-        "plays": 494,
-        "dropbacks": 300,
-        "rushes": 194,
+        "plays": 549,
+        "dropbacks": 326,
+        "rushes": 223,
         "chartedDropbacks": 300,
         "epaPlay": {
           "value": 0.01,
@@ -630,19 +631,19 @@
           "pct": 52
         },
         "epaDropback": {
-          "value": 0.05,
-          "rank": 16,
+          "value": 0.07,
+          "rank": 18,
           "tied": true,
-          "pct": 52
+          "pct": 45
         },
         "epaRush": {
-          "value": -0.06,
-          "rank": 22,
+          "value": -0.07,
+          "rank": 19,
           "tied": true,
-          "pct": 32
+          "pct": 42
         },
         "successRate": {
-          "value": 44.1,
+          "value": 44.3,
           "rank": 21,
           "tied": false,
           "pct": 35
@@ -654,28 +655,28 @@
           "pct": 61
         },
         "yardsPerPlay": {
-          "value": 5.33,
-          "rank": 15,
+          "value": 5.37,
+          "rank": 17,
           "tied": true,
-          "pct": 55
+          "pct": 48
         },
         "yardsPerPassAttempt": {
-          "value": 7.41,
+          "value": 7.59,
+          "rank": 25,
+          "tied": false,
+          "pct": 23
+        },
+        "yardsPerCarry": {
+          "value": 3.61,
+          "rank": 5,
+          "tied": false,
+          "pct": 87
+        },
+        "passerRating": {
+          "value": 96.1,
           "rank": 20,
           "tied": false,
           "pct": 39
-        },
-        "yardsPerCarry": {
-          "value": 3.75,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
-        },
-        "passerRating": {
-          "value": 95.2,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
         },
         "blitzRate": {
           "value": 33,
@@ -696,10 +697,10 @@
           "pct": 42
         },
         "timeToThrow": {
-          "value": 2.82,
-          "rank": 19,
+          "value": 2.81,
+          "rank": 20,
           "tied": true,
-          "pct": 42
+          "pct": 39
         },
         "sacks": {
           "value": 17,
@@ -710,58 +711,58 @@
       },
       "box": {
         "own": {
-          "gamesPlayed": 8,
-          "plays": 481,
-          "playsPerGame": 60.125,
-          "passPlays": 250,
-          "passRate": 51.975051975051976,
-          "pointsPerGame": 22.375,
-          "yardsPerGame": 338.625,
-          "yardsPerPlay": 5.632016632016632,
-          "passYardsPerGame": 205.125,
-          "rushYardsPerGame": 133.5,
-          "yardsPerPassAttempt": 7.828947368421052,
-          "yardsPerRushAttempt": 4.623376623376624,
-          "passerRating": 100.12792397660819,
-          "thirdDownPct": 39.175257731958766,
-          "fourthDownPct": 25,
-          "firstDownsPerGame": 18.5,
-          "passAttemptsPerGame": 28.5,
-          "rushAttemptsPerGame": 28.875,
+          "gamesPlayed": 9,
+          "plays": 535,
+          "playsPerGame": 59.44444444444444,
+          "passPlays": 270,
+          "passRate": 50.467289719626166,
+          "pointsPerGame": 21,
+          "yardsPerGame": 326.22222222222223,
+          "yardsPerPlay": 5.48785046728972,
+          "passYardsPerGame": 188.44444444444446,
+          "rushYardsPerGame": 137.77777777777777,
+          "yardsPerPassAttempt": 7.4574898785425106,
+          "yardsPerRushAttempt": 4.679245283018868,
+          "passerRating": 93.88495276653171,
+          "thirdDownPct": 37.83783783783784,
+          "fourthDownPct": 30,
+          "firstDownsPerGame": 17.555555555555557,
+          "passAttemptsPerGame": 27.444444444444443,
+          "rushAttemptsPerGame": 29.444444444444443,
           "passingTouchdowns": 10,
-          "rushingTouchdowns": 10,
-          "sacks": 22,
-          "takeaways": 8,
-          "giveaways": 8,
-          "turnoverMargin": 0,
-          "penaltyYardsPerGame": 61.625
+          "rushingTouchdowns": 11,
+          "sacks": 23,
+          "takeaways": 9,
+          "giveaways": 11,
+          "turnoverMargin": -2,
+          "penaltyYardsPerGame": 59.888888888888886
         },
         "opponent": {
-          "gamesPlayed": 8,
-          "plays": 497,
-          "playsPerGame": 62.125,
-          "passPlays": 278,
-          "passRate": 55.93561368209256,
-          "pointsPerGame": 25.375,
-          "yardsPerGame": 331,
-          "yardsPerPlay": 5.3279678068410465,
-          "passYardsPerGame": 228.25,
-          "rushYardsPerGame": 102.75,
-          "yardsPerPassAttempt": 7.413793103448276,
-          "yardsPerRushAttempt": 3.7534246575342465,
-          "passerRating": 95.23467432950193,
-          "thirdDownPct": 39.62264150943396,
+          "gamesPlayed": 9,
+          "plays": 553,
+          "playsPerGame": 61.44444444444444,
+          "passPlays": 304,
+          "passRate": 54.97287522603978,
+          "pointsPerGame": 26.22222222222222,
+          "yardsPerGame": 329.6666666666667,
+          "yardsPerPlay": 5.365280289330922,
+          "passYardsPerGame": 229.77777777777777,
+          "rushYardsPerGame": 99.88888888888889,
+          "yardsPerPassAttempt": 7.585365853658536,
+          "yardsPerRushAttempt": 3.610441767068273,
+          "passerRating": 96.1164343786295,
+          "thirdDownPct": 38.983050847457626,
           "fourthDownPct": 64.28571428571429,
-          "firstDownsPerGame": 20,
-          "passAttemptsPerGame": 32.625,
-          "rushAttemptsPerGame": 27.375,
-          "passingTouchdowns": 11,
-          "rushingTouchdowns": 10,
+          "firstDownsPerGame": 19.555555555555557,
+          "passAttemptsPerGame": 31.88888888888889,
+          "rushAttemptsPerGame": 27.666666666666668,
+          "passingTouchdowns": 12,
+          "rushingTouchdowns": 12,
           "sacks": 17,
-          "takeaways": 8,
-          "giveaways": 8,
-          "turnoverMargin": 0,
-          "penaltyYardsPerGame": 49.75
+          "takeaways": 11,
+          "giveaways": 9,
+          "turnoverMargin": 2,
+          "penaltyYardsPerGame": 46.888888888888886
         }
       }
     },
@@ -795,9 +796,9 @@
         },
         "epaRush": {
           "value": 0.02,
-          "rank": 4,
+          "rank": 3,
           "tied": true,
-          "pct": 90
+          "pct": 94
         },
         "successRate": {
           "value": 49.2,
@@ -897,15 +898,15 @@
         },
         "explosiveRate": {
           "value": 13.6,
-          "rank": 20,
+          "rank": 21,
           "tied": true,
-          "pct": 39
+          "pct": 35
         },
         "yardsPerPlay": {
           "value": 5.36,
-          "rank": 17,
+          "rank": 16,
           "tied": false,
-          "pct": 48
+          "pct": 52
         },
         "yardsPerPassAttempt": {
           "value": 7.03,
@@ -951,9 +952,9 @@
         },
         "sacks": {
           "value": 15,
-          "rank": 22,
+          "rank": 23,
           "tied": true,
-          "pct": 32
+          "pct": 29
         }
       },
       "box": {
@@ -1037,9 +1038,9 @@
         },
         "epaDropback": {
           "value": 0.08,
-          "rank": 15,
+          "rank": 14,
           "tied": true,
-          "pct": 55
+          "pct": 58
         },
         "epaRush": {
           "value": -0.04,
@@ -1055,9 +1056,9 @@
         },
         "explosiveRate": {
           "value": 13.9,
-          "rank": 10,
+          "rank": 9,
           "tied": false,
-          "pct": 71
+          "pct": 74
         },
         "yardsPerPlay": {
           "value": 5.46,
@@ -1073,9 +1074,9 @@
         },
         "yardsPerCarry": {
           "value": 4.22,
-          "rank": 14,
+          "rank": 13,
           "tied": false,
-          "pct": 58
+          "pct": 61
         },
         "passerRating": {
           "value": 89.2,
@@ -1109,9 +1110,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -1128,7 +1129,7 @@
         "epaDropback": {
           "value": 0.05,
           "rank": 16,
-          "tied": true,
+          "tied": false,
           "pct": 52
         },
         "epaRush": {
@@ -1151,9 +1152,9 @@
         },
         "yardsPerPlay": {
           "value": 5.37,
-          "rank": 18,
+          "rank": 17,
           "tied": true,
-          "pct": 45
+          "pct": 48
         },
         "yardsPerPassAttempt": {
           "value": 6.38,
@@ -1322,9 +1323,9 @@
         },
         "yardsPerCarry": {
           "value": 4.29,
-          "rank": 13,
+          "rank": 12,
           "tied": false,
-          "pct": 61
+          "pct": 65
         },
         "passerRating": {
           "value": 92.3,
@@ -1885,9 +1886,9 @@
         },
         "successRate": {
           "value": 42.2,
-          "rank": 10,
-          "tied": true,
-          "pct": 71
+          "rank": 11,
+          "tied": false,
+          "pct": 68
         },
         "explosiveRate": {
           "value": 14.4,
@@ -1915,9 +1916,9 @@
         },
         "passerRating": {
           "value": 83.5,
-          "rank": 9,
+          "rank": 10,
           "tied": false,
-          "pct": 74
+          "pct": 71
         },
         "blitzRate": {
           "value": 25.2,
@@ -2194,9 +2195,9 @@
         },
         "sacks": {
           "value": 15,
-          "rank": 22,
+          "rank": 23,
           "tied": true,
-          "pct": 32
+          "pct": 29
         }
       },
       "box": {
@@ -2347,9 +2348,9 @@
         },
         "timeToThrow": {
           "value": 2.95,
-          "rank": 7,
+          "rank": 6,
           "tied": true,
-          "pct": 81
+          "pct": 84
         },
         "sacks": {
           "value": 10,
@@ -2413,9 +2414,9 @@
         },
         "passerRating": {
           "value": 80.4,
-          "rank": 6,
+          "rank": 7,
           "tied": false,
-          "pct": 84
+          "pct": 81
         },
         "blitzRate": {
           "value": 35.4,
@@ -2547,9 +2548,9 @@
         },
         "explosiveRate": {
           "value": 15.6,
-          "rank": 3,
+          "rank": 2,
           "tied": false,
-          "pct": 94
+          "pct": 97
         },
         "yardsPerPlay": {
           "value": 5.94,
@@ -2643,9 +2644,9 @@
         },
         "yardsPerPlay": {
           "value": 5.51,
-          "rank": 21,
+          "rank": 22,
           "tied": false,
-          "pct": 35
+          "pct": 32
         },
         "yardsPerPassAttempt": {
           "value": 7.29,
@@ -2772,9 +2773,9 @@
         "chartedDropbacks": 327,
         "epaPlay": {
           "value": 0,
-          "rank": 17,
+          "rank": 16,
           "tied": false,
-          "pct": 48
+          "pct": 52
         },
         "epaDropback": {
           "value": 0.12,
@@ -2868,9 +2869,9 @@
         },
         "epaDropback": {
           "value": -0.05,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "rank": 6,
+          "tied": false,
+          "pct": 84
         },
         "epaRush": {
           "value": -0.1,
@@ -2934,9 +2935,9 @@
         },
         "timeToThrow": {
           "value": 2.81,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "sacks": {
           "value": 22,
@@ -3044,21 +3045,21 @@
         },
         "explosiveRate": {
           "value": 13.7,
-          "rank": 11,
+          "rank": 10,
           "tied": false,
-          "pct": 68
+          "pct": 71
         },
         "yardsPerPlay": {
           "value": 5.5,
-          "rank": 10,
+          "rank": 9,
           "tied": false,
-          "pct": 71
+          "pct": 74
         },
         "yardsPerPassAttempt": {
           "value": 7.53,
-          "rank": 10,
+          "rank": 9,
           "tied": false,
-          "pct": 71
+          "pct": 74
         },
         "yardsPerCarry": {
           "value": 3.55,
@@ -3116,9 +3117,9 @@
         },
         "epaDropback": {
           "value": 0.07,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
+          "rank": 18,
+          "tied": true,
+          "pct": 45
         },
         "epaRush": {
           "value": -0.03,
@@ -3128,9 +3129,9 @@
         },
         "successRate": {
           "value": 41.4,
-          "rank": 8,
+          "rank": 9,
           "tied": false,
-          "pct": 77
+          "pct": 74
         },
         "explosiveRate": {
           "value": 14.9,
@@ -3140,9 +3141,9 @@
         },
         "yardsPerPlay": {
           "value": 5.37,
-          "rank": 18,
+          "rank": 17,
           "tied": true,
-          "pct": 45
+          "pct": 48
         },
         "yardsPerPassAttempt": {
           "value": 7.48,
@@ -3183,7 +3184,7 @@
         "timeToThrow": {
           "value": 2.82,
           "rank": 19,
-          "tied": true,
+          "tied": false,
           "pct": 42
         },
         "sacks": {
@@ -3281,9 +3282,9 @@
         },
         "epaRush": {
           "value": 0.02,
-          "rank": 4,
+          "rank": 3,
           "tied": true,
-          "pct": 90
+          "pct": 94
         },
         "successRate": {
           "value": 42,
@@ -3311,9 +3312,9 @@
         },
         "yardsPerCarry": {
           "value": 4.12,
-          "rank": 17,
+          "rank": 16,
           "tied": false,
-          "pct": 48
+          "pct": 52
         },
         "passerRating": {
           "value": 68.9,
@@ -3347,9 +3348,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -3500,7 +3501,7 @@
       }
     },
     "jax": {
-      "games": 7,
+      "games": 8,
       "weeks": [
         1,
         2,
@@ -3508,15 +3509,16 @@
         4,
         5,
         6,
-        8
+        8,
+        9
       ],
       "offense": {
-        "plays": 407,
-        "dropbacks": 222,
-        "rushes": 185,
+        "plays": 462,
+        "dropbacks": 248,
+        "rushes": 214,
         "chartedDropbacks": 222,
         "epaPlay": {
-          "value": 0.16,
+          "value": 0.15,
           "rank": 3,
           "tied": false,
           "pct": 94
@@ -3528,43 +3530,43 @@
           "pct": 94
         },
         "epaRush": {
-          "value": 0.03,
-          "rank": 3,
-          "tied": false,
-          "pct": 94
+          "value": 0.01,
+          "rank": 6,
+          "tied": true,
+          "pct": 84
         },
         "successRate": {
-          "value": 47.7,
+          "value": 47.4,
           "rank": 7,
           "tied": false,
           "pct": 81
         },
         "explosiveRate": {
-          "value": 15.7,
-          "rank": 2,
-          "tied": false,
-          "pct": 97
-        },
-        "yardsPerPlay": {
-          "value": 5.92,
+          "value": 15.2,
           "rank": 6,
-          "tied": true,
+          "tied": false,
           "pct": 84
         },
+        "yardsPerPlay": {
+          "value": 5.9,
+          "rank": 7,
+          "tied": false,
+          "pct": 81
+        },
         "yardsPerPassAttempt": {
-          "value": 8.45,
+          "value": 8.55,
           "rank": 2,
-          "tied": true,
+          "tied": false,
           "pct": 97
         },
         "yardsPerCarry": {
-          "value": 4.3,
-          "rank": 12,
+          "value": 4.07,
+          "rank": 19,
           "tied": false,
-          "pct": 65
+          "pct": 42
         },
         "passerRating": {
-          "value": 111.5,
+          "value": 110.7,
           "rank": 2,
           "tied": false,
           "pct": 97
@@ -3601,63 +3603,63 @@
         }
       },
       "defense": {
-        "plays": 412,
-        "dropbacks": 270,
-        "rushes": 142,
+        "plays": 466,
+        "dropbacks": 291,
+        "rushes": 175,
         "chartedDropbacks": 270,
         "epaPlay": {
-          "value": -0.1,
-          "rank": 4,
+          "value": -0.13,
+          "rank": 3,
           "tied": false,
-          "pct": 90
+          "pct": 94
         },
         "epaDropback": {
-          "value": -0.05,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "value": -0.1,
+          "rank": 3,
+          "tied": false,
+          "pct": 94
         },
         "epaRush": {
-          "value": -0.19,
-          "rank": 1,
+          "value": -0.17,
+          "rank": 2,
           "tied": false,
-          "pct": 100
+          "pct": 97
         },
         "successRate": {
-          "value": 42.2,
-          "rank": 10,
-          "tied": true,
-          "pct": 71
+          "value": 41,
+          "rank": 8,
+          "tied": false,
+          "pct": 77
         },
         "explosiveRate": {
-          "value": 13.6,
-          "rank": 20,
-          "tied": true,
-          "pct": 39
+          "value": 12.2,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "yardsPerPlay": {
-          "value": 5.56,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "value": 5.41,
+          "rank": 21,
+          "tied": false,
+          "pct": 35
         },
         "yardsPerPassAttempt": {
-          "value": 7.64,
-          "rank": 26,
+          "value": 7.31,
+          "rank": 19,
           "tied": false,
-          "pct": 19
+          "pct": 42
         },
         "yardsPerCarry": {
-          "value": 3.39,
-          "rank": 1,
+          "value": 3.68,
+          "rank": 7,
           "tied": false,
-          "pct": 100
+          "pct": 81
         },
         "passerRating": {
-          "value": 84.9,
-          "rank": 10,
+          "value": 80.1,
+          "rank": 6,
           "tied": false,
-          "pct": 71
+          "pct": 84
         },
         "blitzRate": {
           "value": 30.4,
@@ -3684,66 +3686,66 @@
           "pct": 13
         },
         "sacks": {
-          "value": 15,
-          "rank": 22,
+          "value": 16,
+          "rank": 19,
           "tied": true,
-          "pct": 32
+          "pct": 42
         }
       },
       "box": {
         "own": {
-          "gamesPlayed": 7,
-          "plays": 414,
-          "playsPerGame": 59.142857142857146,
-          "passPlays": 214,
-          "passRate": 51.690821256038646,
-          "pointsPerGame": 28,
-          "yardsPerGame": 350.2857142857143,
-          "yardsPerPlay": 5.9227053140096615,
-          "passYardsPerGame": 227.42857142857142,
-          "rushYardsPerGame": 122.85714285714286,
-          "yardsPerPassAttempt": 8.447761194029852,
-          "yardsPerRushAttempt": 4.3,
-          "passerRating": 111.49461028192371,
-          "thirdDownPct": 48.23529411764706,
+          "gamesPlayed": 8,
+          "plays": 470,
+          "playsPerGame": 58.75,
+          "passPlays": 240,
+          "passRate": 51.06382978723404,
+          "pointsPerGame": 28.625,
+          "yardsPerGame": 346.375,
+          "yardsPerPlay": 5.895744680851064,
+          "passYardsPerGame": 229.25,
+          "rushYardsPerGame": 117.125,
+          "yardsPerPassAttempt": 8.54625550660793,
+          "yardsPerRushAttempt": 4.073913043478261,
+          "passerRating": 110.74706314243758,
+          "thirdDownPct": 46.391752577319586,
           "fourthDownPct": 40,
-          "firstDownsPerGame": 20.857142857142858,
-          "passAttemptsPerGame": 28.714285714285715,
-          "rushAttemptsPerGame": 28.571428571428573,
-          "passingTouchdowns": 17,
-          "rushingTouchdowns": 6,
+          "firstDownsPerGame": 20.25,
+          "passAttemptsPerGame": 28.375,
+          "rushAttemptsPerGame": 28.75,
+          "passingTouchdowns": 18,
+          "rushingTouchdowns": 8,
           "sacks": 13,
-          "takeaways": 12,
-          "giveaways": 5,
-          "turnoverMargin": 7,
-          "penaltyYardsPerGame": 65
+          "takeaways": 15,
+          "giveaways": 6,
+          "turnoverMargin": 9,
+          "penaltyYardsPerGame": 59.875
         },
         "opponent": {
-          "gamesPlayed": 7,
-          "plays": 417,
-          "playsPerGame": 59.57142857142857,
-          "passPlays": 257,
-          "passRate": 61.63069544364508,
-          "pointsPerGame": 15.857142857142858,
-          "yardsPerGame": 331.2857142857143,
-          "yardsPerPlay": 5.561151079136691,
-          "passYardsPerGame": 253.85714285714286,
-          "rushYardsPerGame": 77.42857142857143,
-          "yardsPerPassAttempt": 7.644628099173554,
-          "yardsPerRushAttempt": 3.3875,
-          "passerRating": 84.90013774104685,
-          "thirdDownPct": 35,
-          "fourthDownPct": 30,
-          "firstDownsPerGame": 18.714285714285715,
-          "passAttemptsPerGame": 34.57142857142857,
-          "rushAttemptsPerGame": 22.857142857142858,
+          "gamesPlayed": 8,
+          "plays": 471,
+          "playsPerGame": 58.875,
+          "passPlays": 277,
+          "passRate": 58.81104033970276,
+          "pointsPerGame": 15.125,
+          "yardsPerGame": 318.25,
+          "yardsPerPlay": 5.40552016985138,
+          "passYardsPerGame": 229,
+          "rushYardsPerGame": 89.25,
+          "yardsPerPassAttempt": 7.306513409961686,
+          "yardsPerRushAttempt": 3.6804123711340204,
+          "passerRating": 80.10057471264368,
+          "thirdDownPct": 34.04255319148936,
+          "fourthDownPct": 33.333333333333336,
+          "firstDownsPerGame": 17.625,
+          "passAttemptsPerGame": 32.625,
+          "rushAttemptsPerGame": 24.25,
           "passingTouchdowns": 8,
-          "rushingTouchdowns": 4,
-          "sacks": 15,
-          "takeaways": 5,
-          "giveaways": 12,
-          "turnoverMargin": -7,
-          "penaltyYardsPerGame": 63
+          "rushingTouchdowns": 5,
+          "sacks": 16,
+          "takeaways": 6,
+          "giveaways": 15,
+          "turnoverMargin": -9,
+          "penaltyYardsPerGame": 60.875
         }
       }
     },
@@ -3789,9 +3791,9 @@
         },
         "explosiveRate": {
           "value": 15.5,
-          "rank": 4,
+          "rank": 3,
           "tied": true,
-          "pct": 90
+          "pct": 94
         },
         "yardsPerPlay": {
           "value": 6.3,
@@ -3801,9 +3803,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.74,
-          "rank": 9,
+          "rank": 8,
           "tied": false,
-          "pct": 74
+          "pct": 77
         },
         "yardsPerCarry": {
           "value": 5.08,
@@ -3813,9 +3815,9 @@
         },
         "passerRating": {
           "value": 99.7,
-          "rank": 11,
+          "rank": 10,
           "tied": false,
-          "pct": 68
+          "pct": 71
         },
         "blitzRate": {
           "value": 28.3,
@@ -3897,15 +3899,15 @@
         },
         "yardsPerCarry": {
           "value": 3.55,
-          "rank": 4,
+          "rank": 3,
           "tied": false,
-          "pct": 90
+          "pct": 94
         },
         "passerRating": {
           "value": 80.6,
-          "rank": 7,
+          "rank": 8,
           "tied": false,
-          "pct": 81
+          "pct": 77
         },
         "blitzRate": {
           "value": 26,
@@ -4091,9 +4093,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -4115,9 +4117,9 @@
         },
         "epaRush": {
           "value": -0.06,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "rank": 23,
+          "tied": false,
+          "pct": 29
         },
         "successRate": {
           "value": 43.8,
@@ -4127,9 +4129,9 @@
         },
         "explosiveRate": {
           "value": 12.5,
-          "rank": 15,
+          "rank": 16,
           "tied": false,
-          "pct": 55
+          "pct": 52
         },
         "yardsPerPlay": {
           "value": 5.38,
@@ -4268,15 +4270,15 @@
         },
         "epaDropback": {
           "value": 0.08,
-          "rank": 15,
+          "rank": 14,
           "tied": true,
-          "pct": 55
+          "pct": 58
         },
         "epaRush": {
           "value": 0.01,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
+          "rank": 6,
+          "tied": true,
+          "pct": 84
         },
         "successRate": {
           "value": 48.7,
@@ -4352,15 +4354,15 @@
         "chartedDropbacks": 285,
         "epaPlay": {
           "value": -0.11,
-          "rank": 3,
-          "tied": false,
-          "pct": 94
-        },
-        "epaDropback": {
-          "value": -0.07,
           "rank": 4,
           "tied": false,
           "pct": 90
+        },
+        "epaDropback": {
+          "value": -0.07,
+          "rank": 5,
+          "tied": false,
+          "pct": 87
         },
         "epaRush": {
           "value": -0.16,
@@ -4547,9 +4549,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.48,
-          "rank": 11,
+          "rank": 10,
           "tied": false,
-          "pct": 68
+          "pct": 71
         },
         "yardsPerCarry": {
           "value": 2.99,
@@ -4873,9 +4875,9 @@
         },
         "explosiveRate": {
           "value": 13.1,
-          "rank": 17,
+          "rank": 18,
           "tied": false,
-          "pct": 48
+          "pct": 45
         },
         "yardsPerPlay": {
           "value": 5.67,
@@ -5280,27 +5282,27 @@
         },
         "explosiveRate": {
           "value": 14.3,
-          "rank": 9,
+          "rank": 8,
           "tied": false,
-          "pct": 74
+          "pct": 77
         },
         "yardsPerPlay": {
           "value": 5.92,
           "rank": 6,
-          "tied": true,
+          "tied": false,
           "pct": 84
         },
         "yardsPerPassAttempt": {
           "value": 8.45,
-          "rank": 2,
-          "tied": true,
-          "pct": 97
+          "rank": 3,
+          "tied": false,
+          "pct": 94
         },
         "yardsPerCarry": {
           "value": 4.1,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "passerRating": {
           "value": 100.2,
@@ -5370,9 +5372,9 @@
         },
         "explosiveRate": {
           "value": 12.4,
-          "rank": 14,
+          "rank": 15,
           "tied": false,
-          "pct": 58
+          "pct": 55
         },
         "yardsPerPlay": {
           "value": 5.25,
@@ -5382,9 +5384,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.33,
-          "rank": 19,
+          "rank": 20,
           "tied": false,
-          "pct": 42
+          "pct": 39
         },
         "yardsPerCarry": {
           "value": 3.84,
@@ -5630,9 +5632,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.6,
-          "rank": 25,
+          "rank": 26,
           "tied": false,
-          "pct": 23
+          "pct": 19
         },
         "yardsPerCarry": {
           "value": 4.81,
@@ -5752,15 +5754,15 @@
         "chartedDropbacks": 265,
         "epaPlay": {
           "value": 0.01,
-          "rank": 16,
+          "rank": 15,
           "tied": false,
-          "pct": 52
+          "pct": 55
         },
         "epaDropback": {
           "value": 0.08,
-          "rank": 15,
+          "rank": 14,
           "tied": true,
-          "pct": 55
+          "pct": 58
         },
         "epaRush": {
           "value": -0.08,
@@ -5848,9 +5850,9 @@
         },
         "epaDropback": {
           "value": 0.06,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "epaRush": {
           "value": -0.07,
@@ -5866,9 +5868,9 @@
         },
         "explosiveRate": {
           "value": 13.2,
-          "rank": 18,
+          "rank": 19,
           "tied": false,
-          "pct": 45
+          "pct": 42
         },
         "yardsPerPlay": {
           "value": 5.29,
@@ -6025,9 +6027,9 @@
         },
         "explosiveRate": {
           "value": 15.4,
-          "rank": 6,
+          "rank": 5,
           "tied": false,
-          "pct": 84
+          "pct": 87
         },
         "yardsPerPlay": {
           "value": 5.47,
@@ -6043,9 +6045,9 @@
         },
         "yardsPerCarry": {
           "value": 4.08,
-          "rank": 19,
+          "rank": 18,
           "tied": false,
-          "pct": 42
+          "pct": 45
         },
         "passerRating": {
           "value": 104.5,
@@ -6074,14 +6076,14 @@
         "timeToThrow": {
           "value": 2.96,
           "rank": 5,
-          "tied": true,
+          "tied": false,
           "pct": 87
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -6328,9 +6330,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -6364,15 +6366,15 @@
         },
         "explosiveRate": {
           "value": 13.6,
-          "rank": 20,
+          "rank": 21,
           "tied": true,
-          "pct": 39
+          "pct": 35
         },
         "yardsPerPlay": {
           "value": 5.56,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "rank": 23,
+          "tied": false,
+          "pct": 29
         },
         "yardsPerPassAttempt": {
           "value": 7.15,
@@ -6577,9 +6579,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -6607,9 +6609,9 @@
         },
         "successRate": {
           "value": 41.8,
-          "rank": 9,
+          "rank": 10,
           "tied": false,
-          "pct": 74
+          "pct": 71
         },
         "explosiveRate": {
           "value": 10.1,
@@ -6637,9 +6639,9 @@
         },
         "passerRating": {
           "value": 83.3,
-          "rank": 8,
+          "rank": 9,
           "tied": false,
-          "pct": 77
+          "pct": 74
         },
         "blitzRate": {
           "value": 27,
@@ -6754,9 +6756,9 @@
         },
         "epaDropback": {
           "value": 0.06,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "epaRush": {
           "value": -0.21,
@@ -6820,9 +6822,9 @@
         },
         "timeToThrow": {
           "value": 2.95,
-          "rank": 7,
+          "rank": 6,
           "tied": true,
-          "pct": 81
+          "pct": 84
         },
         "sacks": {
           "value": 19,
@@ -6844,9 +6846,9 @@
         },
         "epaDropback": {
           "value": -0.08,
-          "rank": 3,
+          "rank": 4,
           "tied": false,
-          "pct": 94
+          "pct": 90
         },
         "epaRush": {
           "value": -0.11,
@@ -6880,9 +6882,9 @@
         },
         "yardsPerCarry": {
           "value": 3.5,
-          "rank": 3,
+          "rank": 2,
           "tied": false,
-          "pct": 94
+          "pct": 97
         },
         "passerRating": {
           "value": 76.5,
@@ -7008,9 +7010,9 @@
         },
         "epaRush": {
           "value": 0.02,
-          "rank": 4,
+          "rank": 3,
           "tied": true,
-          "pct": 90
+          "pct": 94
         },
         "successRate": {
           "value": 53.3,
@@ -7020,9 +7022,9 @@
         },
         "explosiveRate": {
           "value": 15.5,
-          "rank": 4,
+          "rank": 3,
           "tied": true,
-          "pct": 90
+          "pct": 94
         },
         "yardsPerPlay": {
           "value": 6.36,
@@ -7038,9 +7040,9 @@
         },
         "yardsPerCarry": {
           "value": 4.67,
-          "rank": 6,
+          "rank": 7,
           "tied": false,
-          "pct": 84
+          "pct": 81
         },
         "passerRating": {
           "value": 110.1,
@@ -7098,9 +7100,9 @@
         },
         "epaRush": {
           "value": -0.18,
-          "rank": 2,
+          "rank": 1,
           "tied": false,
-          "pct": 97
+          "pct": 100
         },
         "successRate": {
           "value": 43.9,
@@ -7128,9 +7130,9 @@
         },
         "yardsPerCarry": {
           "value": 3.48,
-          "rank": 2,
+          "rank": 1,
           "tied": false,
-          "pct": 97
+          "pct": 100
         },
         "passerRating": {
           "value": 92.6,
@@ -7164,9 +7166,9 @@
         },
         "sacks": {
           "value": 15,
-          "rank": 22,
+          "rank": 23,
           "tied": true,
-          "pct": 32
+          "pct": 29
         }
       },
       "box": {
@@ -7323,9 +7325,9 @@
         },
         "sacks": {
           "value": 23,
-          "rank": 25,
+          "rank": 24,
           "tied": true,
-          "pct": 23
+          "pct": 26
         }
       },
       "defense": {
@@ -7377,9 +7379,9 @@
         },
         "yardsPerCarry": {
           "value": 3.58,
-          "rank": 5,
+          "rank": 4,
           "tied": false,
-          "pct": 87
+          "pct": 90
         },
         "passerRating": {
           "value": 74.9,
@@ -7536,9 +7538,9 @@
         },
         "yardsPerCarry": {
           "value": 4.21,
-          "rank": 15,
+          "rank": 14,
           "tied": false,
-          "pct": 55
+          "pct": 58
         },
         "passerRating": {
           "value": 78.7,
@@ -7632,9 +7634,9 @@
         },
         "passerRating": {
           "value": 95.9,
-          "rank": 20,
+          "rank": 19,
           "tied": false,
-          "pct": 39
+          "pct": 42
         },
         "blitzRate": {
           "value": 24.3,
@@ -7742,15 +7744,15 @@
         "chartedDropbacks": 271,
         "epaPlay": {
           "value": -0.01,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "epaDropback": {
           "value": 0.05,
-          "rank": 19,
+          "rank": 18,
           "tied": false,
-          "pct": 42
+          "pct": 45
         },
         "epaRush": {
           "value": -0.12,
@@ -7784,9 +7786,9 @@
         },
         "yardsPerCarry": {
           "value": 4.64,
-          "rank": 7,
+          "rank": 8,
           "tied": false,
-          "pct": 81
+          "pct": 77
         },
         "passerRating": {
           "value": 93.8,
@@ -7863,7 +7865,7 @@
         "yardsPerPlay": {
           "value": 5.33,
           "rank": 15,
-          "tied": true,
+          "tied": false,
           "pct": 55
         },
         "yardsPerPassAttempt": {

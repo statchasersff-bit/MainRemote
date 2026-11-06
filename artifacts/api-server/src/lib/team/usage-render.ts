@@ -29,10 +29,7 @@ import { premiumSituational } from "./usage-situational-premium";
 import { getPlayerPageUrl } from "./links";
 import {
   DYNASTY_LEAGUE_ANALYZER_URL,
-  DYNASTY_RANKINGS_URL,
-  DYNASTY_TRADE_CALCULATOR_URL,
   LEAGUE_ANALYZER_URL,
-  RB_HANDCUFF_RANKINGS_URL,
   ROS_RANKINGS_URL,
   START_SIT_URL,
   TRADE_CALCULATOR_URL,
@@ -193,11 +190,6 @@ function tool(href: string | null, text: string, cta: string): string {
   return href
     ? `<a class="sct-textlink" href="${e(href)}"${topTarget(href)} data-cta="${e(cta)}">${e(text)}</a>`
     : "";
-}
-
-/** A one-line handoff under a section: the question in bold, then the link. */
-function bridge(lead: string, html: string, quiet = false): string {
-  return html ? `<p class="sct-us-bridge${quiet ? " is-quiet" : ""}">${lead ? `<strong>${e(lead)}</strong> ` : ""}${html}</p>` : "";
 }
 
 /** A row of tool links, "Trade Analyzer · ROS Rankings · League Analyzer"; dropped links leave no separator. */
@@ -576,7 +568,7 @@ function board(kind: "targets" | "carries", view: UsageView, lines: BoardLine[],
   const seasonTitle = isT
     ? `Share of the team's targets through Week ${view.throughWeek}; the tick marks the last-3 share`
     : `Share of the team's carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}; the tick marks the last-3 share`;
-  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM} points`;
+  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
   // No sub line under either board (mak, 2026-11-05): the targets-under-
   // attempts and kneel-down notes live in the definitions block.
   return (
@@ -833,7 +825,8 @@ function trendsBlock(view: UsageView, team: NflTeam): string {
             `<li class="sct-us-trend is-${t.direction}">` +
             `<div class="sct-us-trend-top">${faceWell(t.player)}` +
             `<span class="sct-us-trend-meta"><span class="sct-us-trend-metric">${e(metric)}</span>` +
-            // Printed with "%", not "pp"/"pts" (mak, 2026-11-06): "+7%", "−8.5%".
+            // Printed with "%", never "pp" (mak, 2026-11-06: team pages use "%"
+            // everywhere): "+22%", "−8.5%". The figure is usageTrends()'s.
             `<span class="sct-us-trend-num sct-us-num" aria-hidden="true">${e(t.headline.replace(/\s*(pp|pts)$/, "%"))}</span></span>` +
             `<span class="sct-us-trend-arrow" aria-hidden="true">${t.direction === "up" ? "▲" : "▼"}</span>` +
             `</div>` +
@@ -844,7 +837,7 @@ function trendsBlock(view: UsageView, team: NflTeam): string {
         .join("") +
       `</ul>`
     : `<p class="sct-us-note">${e(
-        `No ${team.nickname} player's snap share or target share has moved past the steady band (5 and 2 points) over his last three games against the three before them.`,
+        `No ${team.nickname} player's snap share or target share has moved past the steady band (5% and 2%) over his last three games against the three before them.`,
       )}</p>`;
   return (
     `<section class="sct-us-prm sct-us-xp sct-us-chg" id="usage-trends" aria-labelledby="usage-trends-title">` +
@@ -852,7 +845,7 @@ function trendsBlock(view: UsageView, team: NflTeam): string {
       "usage-trends-title",
       XP_ICON.trend,
       "Notable Usage Changes",
-      "Role changes that clear the steady band: snap share by 5 points or target share by 2, the last three games a player played against the three before them, with the weeks each window covers.",
+      "Role changes that clear the steady band: snap share by 5% or target share by 2%, the last three games a player played against the three before them, with the weeks each window covers.",
     ) +
     `<div class="sct-us-xp-body">` +
     lines +
@@ -1270,14 +1263,11 @@ function signals(view: UsageView): string {
 }
 
 /**
- * The handcuff paragraph and its handoffs, in the fantasy section (moved
- * from the backfield card 2026-11-05): the projection in fantasy terms, then
- * the RB Handcuff Rankings and Waiver Wire Scanner, then the dynasty tools.
+ * The handcuff paragraph in the fantasy section (moved from the backfield
+ * card 2026-11-05): the projection in fantasy terms.
  */
 function handcuff(view: UsageView): string {
-  const cuff = handcuffProjection(view);
-  if (!cuff) return "";
-  const { rb1, rb2 } = cuff;
+  if (!handcuffProjection(view)) return "";
   const line = handcuffFantasyLine(view);
   return (
     (line
@@ -1286,25 +1276,10 @@ function handcuff(view: UsageView): string {
         `<span class="sct-us-prm-insight-slash" aria-hidden="true"></span>` +
         `<p class="sct-us-takeaway"><strong>${e(line.lead)}</strong> ${md(line.body)}</p>` +
         `</div>`
-      : "") +
-    `<div class="sct-us-xp-bridges">` +
-    bridge(
-      "Need the handcuff?",
-      `See where ${e(rb2.name)} ranks among the NFL's backup running backs in our ${tool(RB_HANDCUFF_RANKINGS_URL, "RB Handcuff Rankings", "rb-handcuffs-usage-handcuff")}` +
-        (WAIVER_WIRE_URL
-          ? `, then check the ${tool(WAIVER_WIRE_URL, "Waiver Wire Scanner", "waiver-wire-usage-handcuff")} to see whether he is available in your league.`
-          : "."),
-    ) +
-    // Succession is a dynasty question, so this is where the dynasty tools
-    // earn their links - quieter ones, under the redraft action.
-    (DYNASTY_TRADE_CALCULATOR_URL && DYNASTY_LEAGUE_ANALYZER_URL && DYNASTY_RANKINGS_URL
-      ? bridge(
-          "Thinking longer term?",
-          `Compare ${e(rb1.name)} and ${e(rb2.name)} in the ${tool(DYNASTY_TRADE_CALCULATOR_URL, "Dynasty Trade Calculator", "dynasty-trade-calc-usage-handcuff")}, see how each player fits your roster in the ${tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-handcuff")}, or check their current place in the ${tool(DYNASTY_RANKINGS_URL, "Dynasty Rankings", "dynasty-rankings-usage-handcuff")}.`,
-          true,
-        )
-      : "") +
-    `</div>`
+      : "")
+    // The "Need the handcuff?" and "Thinking longer term?" bridges under
+    // this line (RB Handcuff Rankings, Waiver Wire Scanner, the three dynasty
+    // tools) came off 2026-11-06 at mak's request.
   );
 }
 

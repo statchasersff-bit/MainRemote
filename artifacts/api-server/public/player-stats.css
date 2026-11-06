@@ -714,105 +714,214 @@ body.sca-page {
 
 /* --------------------------------------------------------------- leaders */
 
-/* Five columns split by hairlines rather than boxed: the category small and
-   quiet, the figure large - the one thing the eye lands on - a line of
-   context, then who, tucked close beneath. */
+/* The premium leader cards (mak's brief, 2026-11-06): white cards, each a
+   navy header with the category's icon and an accent stripe (--sca-la, set
+   per card by the renderer), the figure large with its context in a pill,
+   then who - portrait, a rule, name, position and team.
+   Five across when the shell is wide, then three, then two. */
 .sca-leader-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  row-gap: 24px;
+  gap: 12px;
 }
 
 .sca-leader {
+  --sca-la: var(--sc-gold);
+  --sca-face: 56px;
+  --sca-lname: 15px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 0 20px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #d6e0ed;
+  border-radius: 15px;
+  box-shadow: 0 4px 14px rgba(12, 35, 75, 0.1);
 }
 
-.sca-leader + .sca-leader {
-  border-left: 1px solid var(--sc-border);
+/* The header: icon well, title, and a diagonal stripe at the right edge. */
+.sca-leader-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 42px 8px 10px;
+  overflow: hidden;
+  background: linear-gradient(110deg, #081a3a 0%, #0b3167 75%, #0b3a7a 100%);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--sca-la) 55%, transparent);
 }
 
-.sca-leader:first-child {
-  padding-left: 0;
+.sca-leader-head::before,
+.sca-leader-head::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  transform: skewX(-38deg);
+  background: var(--sca-la);
+  pointer-events: none;
+}
+
+.sca-leader-head::before {
+  right: 2px;
+  width: 14px;
+}
+
+.sca-leader-head::after {
+  right: 24px;
+  width: 4px;
+  opacity: 0.45;
+}
+
+.sca-leader-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1d4f92 0%, #133a72 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: var(--sca-la);
+}
+
+.sca-leader-icon svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+}
+
+.sca-leader-cat {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
 }
 
 /* The per-game leader waits until the Per Game switch is on, and then the
    season-total one steps aside. */
+.sca-leader-total,
+.sca-leader-pg,
+.sca-leader-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
 .sca-leader-pg,
 .is-per-game .sca-leader-total {
   display: none;
 }
 
 .is-per-game .sca-leader-pg {
-  display: block;
+  display: flex;
 }
 
-.sca-leader-cat {
-  margin: 0 0 6px;
-  color: var(--sc-muted);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.85;
-}
-
+/* The figure. */
+/* The figure and its pill share a row; the pill drops under the figure
+   only when the card is too narrow for both. */
 .sca-leader-fig {
-  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0;
+  padding: 14px 16px 13px;
   line-height: 1;
 }
 
 .sca-leader-num {
   display: block;
-  color: var(--sc-navy);
-  font-size: clamp(1.75rem, 1.45rem + 1vw, 2.25rem);
+  color: #0b1c39;
+  font-size: 28px;
   font-weight: 800;
+  line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
 .sca-leader-note {
-  display: block;
-  margin-top: 4px;
-  color: var(--sc-muted);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #e9eff7;
+  color: #52647f;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
+/* Who: portrait | rule | rank, name, position and team. */
 .sca-leader-who {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  column-gap: 9px;
   align-items: center;
+  column-gap: 12px;
+  margin-top: auto;
+  min-height: 84px;
+  padding: 12px 14px;
+  border-top: 1px solid #e3e9f2;
+}
+
+.sca-leader-face {
+  display: block;
+  width: var(--sca-face);
+  height: var(--sca-face);
+  overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #f4f8fd 0%, #e2eaf5 100%);
 }
 
 .sca-leader-photo {
-  grid-row: 1 / span 2;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--sc-surface-sink);
+  display: block;
+  width: var(--sca-face);
+  height: var(--sca-face);
   object-fit: cover;
   object-position: top;
 }
 
-.sca-leader-name {
-  margin: 0;
-  color: var(--sc-ink);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+.sca-leader-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: var(--sca-face);
+  padding-left: 12px;
+  border-left: 1px solid #d6e0ed;
 }
 
-.sca-leader-team {
-  color: var(--sc-muted);
-  font-size: 11px;
+
+.sca-leader-name {
+  margin: 0;
+  padding: 0;
+  color: #0b1c39;
+  font-size: var(--sca-lname);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+}
+
+.sca-leader-meta {
+  color: #5d6f8a;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .sca-leader-link {
@@ -823,6 +932,22 @@ body.sca-page {
 .sca-leader-link:hover {
   text-decoration: underline;
   text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+.sca-leader-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* The table's narrow tier swaps names for "J. Allen"; a card has room. */
+.sca-leader .sca-name-full {
+  display: inline !important;
+}
+
+.sca-leader .sca-name-short {
+  display: none !important;
 }
 
 /* ------------------------------------------------------------- the table */
@@ -1166,33 +1291,110 @@ th[aria-sort="ascending"] .sca-sort::after {
 
 /* ----------------------------------------------------------- narrow tiers */
 
-@container sca (max-width: 1000px) {
+@container sca (max-width: 1060px) {
   .sca-leader-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* A row's first leader has no rule to its left. */
-  .sca-leader:nth-child(3n + 1) {
-    padding-left: 0;
-    border-left: 0;
   }
 }
 
 @container sca (max-width: 760px) {
   .sca-leader-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Two narrow columns on a phone: the same three parts, scaled down. */
+@container sca (max-width: 520px) {
+  .sca-leader {
+    --sca-face: 40px;
+    --sca-lname: 12.5px;
+    border-radius: 12px;
   }
 
-  .sca-leader,
-  .sca-leader:nth-child(3n + 1) {
-    padding: 0 0 0 14px;
-    border-left: 1px solid var(--sc-border);
+  .sca-leader-head {
+    gap: 8px;
+    min-height: 46px;
+    padding: 6px 30px 6px 8px;
   }
 
-  .sca-leader:nth-child(2n + 1) {
-    padding-left: 0;
-    border-left: 0;
+  .sca-leader-head::before {
+    width: 10px;
   }
+
+  .sca-leader-head::after {
+    right: 18px;
+    width: 3px;
+  }
+
+  .sca-leader-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
+  .sca-leader-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .sca-leader-cat {
+    font-size: 11px;
+    letter-spacing: 0.03em;
+  }
+
+  .sca-leader-fig {
+    gap: 5px 6px;
+    padding: 11px 10px 10px;
+  }
+
+  .sca-leader-num {
+    font-size: 22px;
+  }
+
+  .sca-leader-note {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .sca-leader-who {
+    column-gap: 8px;
+    min-height: 0;
+    padding: 9px 10px;
+  }
+
+  .sca-leader-id {
+    gap: 3px;
+    padding-left: 8px;
+  }
+
+
+  .sca-leader-meta {
+    font-size: 10.5px;
+  }
+}
+
+/* Too narrow for two: one column. */
+@container sca (max-width: 330px) {
+  .sca-leader-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sca-leader {
+    --sca-face: 48px;
+    --sca-lname: 14px;
+  }
+
+  .sca-leader-cat {
+    font-size: 12px;
+  }
+
+  .sca-leader-num {
+    font-size: 26px;
+  }
+}
+
+@container sca (max-width: 760px) {
 
   .sca-controls {
     padding: 0 0 12px;
@@ -1372,14 +1574,21 @@ th[aria-sort="ascending"] .sca-sort::after {
 /* Divi's `img { max-width: 100%; height: auto }` would let the headshot
    shrink with its grid track. */
 .sca .sca-leader-photo {
-  width: 36px;
-  height: 36px;
+  width: var(--sca-face);
+  height: var(--sca-face);
   max-width: none;
 }
 
 .sca .sca-leader-link {
-  color: var(--sc-ink);
+  color: inherit;
   text-decoration: none;
+}
+
+/* Divi pads bare p and h3 at the bottom. */
+.sca .sca-leader-cat,
+.sca .sca-leader-fig,
+.sca .sca-leader-name {
+  padding-bottom: 0;
 }
 
 .sca .sca-menu-btn {
@@ -1407,7 +1616,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 }
 
 .sca .sca-leader-name {
-  color: var(--sc-ink) !important;
-  font-size: 14px !important;
+  color: #0b1c39 !important;
+  font-size: var(--sca-lname) !important;
   line-height: 1.2 !important;
 }

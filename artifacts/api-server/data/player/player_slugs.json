@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-04T13:22:31.059Z",
+  "generated_at": "2026-11-06T18:20:22.826Z",
   "moves": [],
   "players": {
     "1": {
@@ -7468,7 +7468,10 @@
       "slug": "devin-asiasi"
     },
     "6957": {
-      "slug": "james-proche"
+      "slug": "james-proche-ii",
+      "previous": [
+        "james-proche"
+      ]
     },
     "6959": {
       "slug": "levante-bellamy"
@@ -12955,7 +12958,10 @@
       "slug": "luke-drzewiecki"
     },
     "13743": {
-      "slug": "joseph-manjack"
+      "slug": "joseph-manjack-iv",
+      "previous": [
+        "joseph-manjack"
+      ]
     },
     "13744": {
       "slug": "cameron-ross"
@@ -13407,5 +13413,6 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  }
+  },
+  "migrated_at": "2026-11-06T18:28:27.234Z"
 }

@@ -143,7 +143,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.equal(values[3], `${env.pace.value.toFixed(1)}s`);
     // Deltas in percentage points with a neutral triangle, the same unit as the table.
     const lines = [...pane.querySelectorAll(".sct-cp-kpi-move, .sct-cp-kpi-pill")].map((l) => l.textContent);
-    for (const l of lines) assert.match(l, /^([▲▼] \d+(\.\d)? pp vs 2025|[▲▼] \d+\.\d+s (faster|slower) than 2025|\d+(st|nd|rd|th) in NFL|Level with 2025)$/, l);
+    for (const l of lines) assert.match(l, /^([▲▼] \d+(\.\d)?% vs 2025|[▲▼] \d+\.\d+s (faster|slower) than 2025|\d+(st|nd|rd|th) in NFL|Level with 2025)$/, l);
   });
 
   test("the tenure claim is the official count: 15th season, no 16th (mak, 2026-11-05)", async () => {
@@ -168,7 +168,7 @@ describe("the tendencies tables", () => {
       // No NFL avg column: the tick on the dumbbell carries it, with the number on hover.
       assert.deepEqual(heads, ["Metric", "2025Brady", "2026Current", "Changevs 2025 · Tick = NFL Avg"]);
       for (const el of g.querySelectorAll(".sct-cp-change")) {
-        assert.match(el.textContent, /^(steady|-|[▲▼] \d+(\.\d)? pp|[▲▼] \d+\.\d+s (faster|slower))$/);
+        assert.match(el.textContent, /^(steady|-|[▲▼] \d+(\.\d)?%|[▲▼] \d+\.\d+s (faster|slower))$/);
       }
       for (const tick of g.querySelectorAll(".sct-cp-db-avg")) assert.match(tick.getAttribute("title"), /^NFL avg /);
       assert.ok(g.querySelectorAll("tr.is-notable").length <= 1, "at most one gold row per group");
@@ -255,7 +255,7 @@ describe("Fantasy Impact is the premium design (mak, 2026-11-06)", () => {
     assert.match(neu.querySelector(".sct-cf-sub").textContent, /^What the \d{4} tendencies and .+'s history mean for fantasy lineups$/);
     assert.equal(neu.querySelectorAll("h2").length, 0, "no page-level heading");
     assert.equal(doc.querySelectorAll("h3.sct-cf-h3").length, 1, "one Fantasy Impact heading on the page");
-    for (const pp of neu.querySelectorAll(".sct-cf-trend-pp")) assert.match(pp.textContent, /^[+−]\d+(\.\d)? pp$/);
+    for (const pp of neu.querySelectorAll(".sct-cf-trend-pp")) assert.match(pp.textContent, /^[+−]\d+(\.\d)?%$/);
     const rows = [...neu.querySelectorAll(".sct-cf-table tbody tr")];
     assert.ok(rows.length > 0);
     assert.equal(neu.querySelector(".sct-cf-panel .sct-cpt-h3").textContent, "Fantasy Finishes by Season");
@@ -347,7 +347,7 @@ describe("signals and the career block", () => {
     const chips = [...block.querySelectorAll(".sct-cs-chip")].map((c) => [text(c.querySelector(".sct-cs-chip-v")), text(c.querySelector(".sct-cs-chip-l"))]);
     assert.deepEqual(chips[0], ["80%", "Peak lead-back share · 2023 LV"]);
     assert.match(chips[1][0], /^\d+ \/ 10$/);
-    assert.match(chips[1][1], /^tracked seasons with (WR|RB|TE) share 3\+ pp (below|above) league$/);
+    assert.match(chips[1][1], /^tracked seasons with (WR|RB|TE) share 3%\+ (below|above) league$/);
     assert.equal(block.querySelectorAll(".sct-cs-lb.is-peak").length, 1);
     assert.equal(text(block.querySelector(".sct-cs-lb.is-peak")), "80%");
     assert.match(text(block.querySelector(".sct-cs-note")), /^Team offenses by season, scoring and rank from the league's game results\. Bold share: .* tracked from 2016 on\. A windowed season covers the weeks he called only\.$/);
@@ -400,7 +400,7 @@ describe("panels", () => {
     assert.equal(rows.length, data.length);
     const vals = rows.map((r) => r.querySelector(".sct-cpt-row-val").textContent);
     assert.match(vals[0], /^\d+% passBaseline$/);
-    for (const r of vals.slice(1)) assert.match(r, /^\d+% pass[+−]?\d+ pp$/, r);
+    for (const r of vals.slice(1)) assert.match(r, /^\d+% pass[+−]?\d+%$/, r);
     for (const r of rows) assert.match(r.querySelector(".sct-cpt-row-n").textContent, /^\d+ plays$/);
     assert.match(scoreState.querySelector(".sct-cpt-take-h").textContent, /pass when trailing by 7\+/);
     const bottom = doc.querySelector("#coaching-fantasy-premium");
@@ -415,7 +415,7 @@ describe("panels", () => {
     const panel = doc.querySelector(".sct-cpt-card.is-dist");
     const rows = coaching.teams.ne.distribution.rows;
     const diffs = [...panel.querySelectorAll(".sct-cpt-badge")].map((d) => d.textContent);
-    assert.deepEqual(diffs, rows.map((r) => `${r.pct - r.nfl === 0 ? "0" : `${r.pct - r.nfl > 0 ? "+" : "−"}${Math.abs(r.pct - r.nfl)}`} pp`));
+    assert.deepEqual(diffs, rows.map((r) => `${r.pct - r.nfl === 0 ? "0" : `${r.pct - r.nfl > 0 ? "+" : "−"}${Math.abs(r.pct - r.nfl)}`}%`));
     assert.equal(panel.querySelectorAll(".sct-cpt-fill.is-gold").length, 1);
     assert.ok(doc.querySelector(".sct-cpt-card.is-back .sct-cpt-col.is-current"));
   });
@@ -529,7 +529,7 @@ describe("the premium blocks draw each club's own data", () => {
       assert.deepEqual(texts(".sct-cpt-h4").slice(0, 2), ["Play-Calling by Score State", "Red Zone and Fourth Down"]);
       const rate = (key) => team.tendencies.rows.find((r) => r.key === key)?.current;
       assert.deepEqual(texts(".sct-cpt-kpi-value"), [rate("motionRate"), rate("paRate"), rate("noHuddleRate")].filter(Boolean));
-      for (const line of texts(".sct-cpt-kpi-line")) assert.match(line, /^([−+]\d+(\.\d+)?|0) pp vs NFL avg \d+(\.\d+)?%$/, line);
+      for (const line of texts(".sct-cpt-kpi-line")) assert.match(line, /^([−+]\d+(\.\d+)?|0)% vs NFL avg \d+(\.\d+)?%$/, line);
       for (const fill of cpt.querySelectorAll(".sct-cpt-fill")) assert.match(fill.getAttribute("style"), /^width:\d+(\.\d+)?%$/);
       assert.deepEqual(texts(".is-score .sct-cpt-row-label"), team.scoreState.rows.map((r) => r.label));
       assert.deepEqual(texts(".is-score .sct-cpt-row-n"), team.scoreState.rows.map((r) => r.result.split(" · ")[1]));

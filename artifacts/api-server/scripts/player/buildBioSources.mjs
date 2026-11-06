@@ -199,12 +199,21 @@ function wikidataQuery(pfrIds) {
     OPTIONAL { ?bp wdt:P17 ?country . } }
   OPTIONAL { ?item wdt:P69 ?school . OPTIONAL { ?school wdt:P31 ?type . } }
   OPTIONAL { ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> . }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
 }`;
 }
 
 const HS_TYPE = /high school|secondary school|preparatory school|boarding school|private school|public school|charter school/i;
 const NOT_HS = /university|college|community college/i;
+
+/**
+ * The label service's answer when an entity has no label in the asked
+ * languages: the bare id ("Q16568"). Wikidata moved many places' names to the
+ * language-neutral "mul" label (Jacksonville, Tampa, San Antonio, Makati), so
+ * "en" alone came back empty and the id was stored as the town (2026-11-06).
+ * The query asks for "en,mul" now; an id that still comes back is no name.
+ */
+const BARE_QID = /^Q\d+$/;
 
 /** One Wikidata batch's rows, folded into one record per PFR id. */
 export function foldWikidata(bindings) {
@@ -213,13 +222,14 @@ export function foldWikidata(bindings) {
     const pfr = b.pfr.value.split("/")[1];
     const rec = (out[pfr] ??= { qid: b.item.value.split("/").pop(), dob: null, birthPlace: null, highSchools: {}, wikipedia: null });
     if (b.dob) rec.dob = b.dob.value.slice(0, 10);
-    if (b.bpLabel) {
+    if (b.bpLabel && !BARE_QID.test(b.bpLabel.value)) {
       const state = b.stateCode?.value?.replace(/^US-/, "");
-      const place = state && US_STATES.has(state) ? `${b.bpLabel.value}, ${state}` : b.countryLabel ? `${b.bpLabel.value}, ${b.countryLabel.value}` : b.bpLabel.value;
+      const country = b.countryLabel && !BARE_QID.test(b.countryLabel.value) ? b.countryLabel.value : null;
+      const place = state && US_STATES.has(state) ? `${b.bpLabel.value}, ${state}` : country ? `${b.bpLabel.value}, ${country}` : b.bpLabel.value;
       // A P131* walk can land on more than one state-level entity; keep the first with a state.
       if (!rec.birthPlace || (!rec.birthPlace.includes(", ") && place.includes(", "))) rec.birthPlace = place;
     }
-    if (b.school && b.schoolLabel) {
+    if (b.school && b.schoolLabel && !BARE_QID.test(b.schoolLabel.value)) {
       const label = b.schoolLabel.value;
       const type = b.typeLabel?.value ?? "";
       if (!NOT_HS.test(label) && (HS_TYPE.test(type) || /high school/i.test(label))) rec.highSchools[label] = true;

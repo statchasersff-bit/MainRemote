@@ -501,7 +501,7 @@ button.scp-search-opt {
 }
 
 /* Shared with the Overview's lower sections (.scp-ox), below. */
-.scp :is(.scp-phead, .scp-ox) {
+.scp :is(.scp-phead, .scp-ox, .scp-nwp) {
   --scp-ph-ink: var(--tp-c-0e1b2e, #0e1b2e);
   --scp-ph-ink-2: #34425a;
   --scp-ph-muted: #5b6778;
@@ -17974,6 +17974,30 @@ a.scp-peer:focus-visible {
   pointer-events: none;
 }
 
+/* ---- the intro card: banner on top, status and practice in the body,
+   the same frame as the Outlook tab's .scp-olr-sec (mak, 2026-11-06) */
+.scp .scp-inp-intro {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--inp-border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
+  box-shadow: var(--inp-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-inp-intro > .scp-inp-hero {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.scp .scp-inp-intro-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
 /* ---- the status row: the designation card and three facts */
 .scp .scp-inp-status {
   display: grid;
@@ -18376,6 +18400,19 @@ a.scp-peer:focus-visible {
   align-content: start;
 }
 
+/* Season-by-Season Availability and Injury Regions each get their own card,
+   framed like the map panel (mak, 2026-11-06). */
+.scp .scp-inp-avbox,
+.scp .scp-inp-regions {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--inp-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--inp-surface-light) 100%);
+}
+
 .scp .scp-inp-dur-r {
   padding: 12px 14px 14px;
   border: 1px solid var(--inp-border);
@@ -18403,6 +18440,11 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp .scp-inp-dur-h small {
+  /* The note sits at the card's right edge (mak, 2026-11-06), on one line;
+     when the row is short the title wraps instead. */
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
   color: var(--inp-muted);
   font-size: 11px;
   font-weight: 600;
@@ -18476,12 +18518,17 @@ a.scp-peer:focus-visible {
   display: none;
 }
 
-.scp .scp-inp-sel-k {
-  color: var(--inp-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+/* The region and its counts on one row, the note centered under them
+   (mak, 2026-11-06). */
+.scp .scp-inp-sel-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.scp .scp-inp-sel-s.is-note {
+  text-align: center;
 }
 
 .scp .scp-inp-sel-v {
@@ -18782,9 +18829,21 @@ a.scp-peer:focus-visible {
   pointer-events: none;
 }
 
+/* The tier pill and "Active • 78.6% career availability" on one row
+   (mak, 2026-11-06); the line drops under the pill only when it can't fit. */
+.scp .scp-inp-hp-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  max-width: 380px;
+  width: 100%;
+  margin: -4px auto 0;
+}
+
 .scp .scp-inp-hp-tier {
   display: inline-block;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 3px 12px;
   border-radius: 999px;
   background: var(--inp-amber-light);
@@ -18807,9 +18866,9 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-inp-dur-status {
-  max-width: 380px;
-  width: 100%;
-  margin: 0 auto;
+  /* At the row's right edge, across from the tier pill (mak, 2026-11-06). */
+  margin: 0 0 0 auto;
+  text-align: right;
   color: var(--tp-ink, var(--inp-text));
   font-size: 13px;
 }
@@ -19181,6 +19240,10 @@ a.scp-peer:focus-visible {
 }
 
 @container inp (max-width: 760px) {
+  .scp .scp-inp-intro-body {
+    padding: 14px;
+  }
+
   .scp .scp-inp-status {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -21893,7 +21956,8 @@ a.scp-peer:focus-visible {
   writing-mode: vertical-rl;
 }
 
-.scp .scp-ox .scp-ow-col.is-dnp .scp-ow-mark {
+/* Red only when an injury covers the week; a healthy DNP stays gray (2026-11-06). */
+.scp .scp-ox .scp-ow-col.is-dnp.is-inj .scp-ow-mark {
   border-color: #e3b7ae;
   color: var(--scp-ph-bad);
 }
@@ -22243,62 +22307,274 @@ a.scp-peer:focus-visible {
   font-size: 14.5px;
 }
 
-/* ---- 5. career + background ---- */
+/* ---- 5. career + background: two cards side by side (mak's brief,
+   2026-11-06): navy heads with a gold icon, rule and diagonals; honors as
+   gold pills over the career totals; background facts in a two-column
+   grid, each with its icon. ---- */
 
-.scp .scp-ox .scp-ox-bg-grid {
+.scp .scp-ox .scp-ox-bgc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px 24px;
-  padding: 16px 18px;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 12px;
-  background: #ffffff;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
 }
 
-.scp .scp-ox .scp-ox-honors {
+.scp .scp-ox .scp-ox-bgc-grid.is-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scp .scp-ox .scp-ox-bgc {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #d6e0ed;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(12, 35, 75, 0.08);
+}
+
+.scp .scp-ox .scp-ox-bgc-head {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 10px;
-  padding: 0;
-  list-style: none;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 7px 64px 7px 14px;
+  overflow: hidden;
+  background: linear-gradient(110deg, var(--tp-c-081e42, #081e42) 0%, var(--tp-c-0b3a7a, #0b3a7a) 100%);
+  color: #fff;
 }
 
-.scp .scp-ox .scp-ox-honors li {
-  margin: 0;
-  padding: 4px 10px;
-  border: 1px solid var(--tp-c-e7d39e, #e7d39e);
-  border-radius: 999px;
-  background: var(--scp-ph-gold-soft);
-  color: var(--tp-ink, var(--scp-ph-ink));
-  font-size: 12.5px;
-  font-weight: 700;
+.scp .scp-ox .scp-ox-bgc-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tp-c-f0bf35, #f0bf35);
 }
 
-.scp .scp-ox .scp-ox-career-line {
-  margin: 0;
-  padding: 0;
-  color: var(--scp-ph-ink-2);
-  font-size: 14px;
-  line-height: 1.45;
-  font-variant-numeric: tabular-nums;
+.scp .scp-ox .scp-ox-bgc-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.scp .scp-ox .scp-ox-career-line span {
-  color: var(--scp-ph-muted);
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+.scp .scp-ox .scp-ox-bgc-rule {
+  flex: 0 0 auto;
+  width: 2px;
+  height: 32px;
+  border-radius: 1px;
+  background: var(--tp-c-d4af37, #d4af37);
+}
+
+.scp .scp-ox h3.scp-ox-bgc-h {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: #fff !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  line-height: 1.2 !important;
   text-transform: uppercase;
 }
 
-.scp .scp-ox .scp-ox-bg .scp-ox-about {
+.scp .scp-ox h3.scp-ox-bgc-h::after {
+  display: none !important;
+}
+
+/* Two gold diagonals at the right edge, clipped by the head. */
+.scp .scp-ox .scp-ox-bgc-slash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 56px;
+  background: linear-gradient(118deg, transparent 0 34%, var(--tp-c-d4af37, #d4af37) 34% 50%, transparent 50% 62%, var(--tp-c-f0bf35, #f0bf35) 62% 78%, transparent 78%);
+  pointer-events: none;
+}
+
+.scp .scp-ox .scp-ox-bgc-body {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 20px 22px;
+}
+
+/* The honors: gold pills that fit their text. */
+.scp .scp-ox .scp-ox-bgc .scp-ox-honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.scp .scp-ox .scp-ox-bgc .scp-ox-honors li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1.5px solid var(--tp-c-d4af37, #d4af37);
+  border-radius: 999px;
+  background: var(--tp-c-fff6dc, #fff6dc);
+  color: var(--tp-c-0b2345, #0b2345);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.scp .scp-ox .scp-ox-honor-star {
+  display: inline-flex;
+  color: var(--tp-c-b8860b, #b8860b);
+}
+
+.scp .scp-ox .scp-ox-honor-star svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* The pale-blue icon square: the career totals and every background fact. */
+.scp .scp-ox .scp-ox-bgc-ficon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--tp-c-eaf1fa, #eaf1fa);
+  color: var(--tp-c-0b2345, #0b2345);
+}
+
+.scp .scp-ox .scp-ox-bgc-ficon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.scp .scp-ox .scp-ox-bgc .scp-ox-career-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-ox .scp-ox-career-line p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+}
+
+.scp .scp-ox .scp-ox-bgc-k {
+  color: #5b7290;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scp .scp-ox .scp-ox-bgc-total {
+  color: var(--tp-c-0b2345, #0b2345);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ox .scp-ox-bgc-span {
+  color: #5b7290;
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The background facts: two columns read across (Born | Birthplace, High
+   school | Teams, Drafted by), a subtle rule between the columns and under
+   each row but the last. */
+.scp .scp-ox .scp-ox-bg dl.scp-ox-about {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 16px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact {
+  position: relative;
+  min-height: 40px;
+  margin: 0;
+  padding: 11px 12px 11px 54px;
+  border: 0;
+  border-bottom: 1px solid #dbe4ef;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(odd) {
+  padding-left: 52px;
+  border-right: 1px solid #dbe4ef;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(even) {
+  padding-left: 72px;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(even) .scp-ox-bgc-ficon {
+  left: 20px;
+}
+
+/* The last row has no rule under it. */
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:last-child,
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-last-child(2):nth-child(odd) {
+  border-bottom: 0;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:first-child,
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(2) {
+  padding-top: 0;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:first-child .scp-ox-bgc-ficon,
+.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(2) .scp-ox-bgc-ficon {
+  top: 0;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about .scp-ox-bgc-ficon {
+  position: absolute;
+  top: 11px;
+  left: 0;
+}
+
+.scp .scp-ox .scp-ox-bg .scp-ox-about dt {
+  margin: 0;
+  color: #5b7290;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  line-height: 1.3;
+  text-transform: uppercase;
 }
 
 .scp .scp-ox .scp-ox-bg .scp-ox-about dd {
-  font-size: 14px;
+  margin: 3px 0 0;
+  color: var(--tp-c-0b2345, #0b2345);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* Too narrow for two cards: stack them. */
+@container (max-width: 820px) {
+  .scp .scp-ox .scp-ox-bgc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 }
 
 .scp .scp-ox .scp-ox-links {
@@ -22388,8 +22664,7 @@ a.scp-peer:focus-visible {
 
   .scp .scp-ox .scp-ow-chart,
   .scp .scp-ox .scp-ow-next,
-  .scp .scp-ox .scp-ox-outlook .scp-ox-read,
-  .scp .scp-ox .scp-ox-bg-grid {
+  .scp .scp-ox .scp-ox-outlook .scp-ox-read {
     padding: 12px;
   }
 
@@ -22406,9 +22681,6 @@ a.scp-peer:focus-visible {
     justify-content: flex-start;
   }
 
-  .scp .scp-ox .scp-ox-bg-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @media (max-width: 360px) {
@@ -23042,7 +23314,8 @@ a.scp-peer:focus-visible {
     box-shadow: none !important;
   }
 
-  .scp .scp-bop-intro > .scp-bop-intro-body {
+  .scp .scp-bop-intro > .scp-bop-intro-body,
+  .scp .scp-inp-intro > .scp-inp-intro-body {
     padding-left: 0;
     padding-right: 0;
   }
@@ -23498,52 +23771,22 @@ a.scp-peer:focus-visible {
 
 @media (max-width: 560px) {
   /* mak, 2026-11-06: the phone's Stats tab opens on "2026 Stats" and goes
-     straight to the advanced metrics. The totals/per-game toggle, the games
-     label, the season figures (already in the header's NFL panel) and the
-     touchdown sentence under them are not shown. The heading stays: it is
-     the section's H2 the SEO ladder keys on (scp-st-prod-h). */
+     straight to the advanced metrics, which now live in this section's body
+     (stats-premium.ts). The totals/per-game toggle, the games label, any
+     season figures (a player with no advanced line; already in the header's
+     NFL panel) and the touchdown sentence are not shown. */
   .scp.scp.scp .scp-stp-bar.is-hero .scp-stp-bar-ctl,
-  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-body {
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-body > :is(.scp-stp-kpis, .scp-stp-prod-lede) {
     display: none !important;
   }
 
   .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-bar.is-hero {
     padding-bottom: 0 !important;
   }
-}
 
-@media (max-width: 560px) {
-  /* mak, 2026-11-06: the advanced metrics ARE the phone's "2026 Stats"
-     section. Their own banner ("{Name} Passing Stats" + the summary line)
-     is hidden visually and kept for crawlers and screen readers (the same
-     treatment as the name in "2026 Stats"); the panels sit 12px under the
-     "2026 Stats" heading. */
-  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] > .scp-stp-bar {
-    position: absolute !important;
-    width: 1px;
-    height: 1px;
-    min-height: 0;
-    margin: -1px;
-    padding: 0 !important;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-
-  /* 12px under the heading: the .scp-stp grid's 18px row gap, less 6. */
-  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] {
-    margin-top: -6px !important;
-    padding-top: 0 !important;
-  }
-
-  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-adv-h"] > .scp-stp-body {
-    padding-top: 0;
+  /* The panels sit 12px under the "2026 Stats" heading. */
+  .scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-prod-h"] > .scp-stp-body {
+    padding-top: 12px;
   }
 }
 
@@ -24431,6 +24674,7 @@ a.scp-peer:focus-visible {
   .scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) > .scp-ovp-body,
   .scp.scp.scp .scp-olr-sec.is-proj > .scp-olr-body,
   .scp.scp.scp .scp-bop-intro > .scp-bop-intro-body,
+  .scp.scp.scp .scp-inp-intro > .scp-inp-intro-body,
   .scp.scp.scp #news .scp-nw-top {
     padding-top: 0 !important;
   }
@@ -24609,7 +24853,7 @@ a.scp-peer:focus-visible {
   }
 
   /* Inside a card, the banner is the card's header. */
-  .scp.scp :is(.scp-olr-sec, .scp-bop-intro, .scp-ovp-sec, .scp-glp) > .scp-up-head,
+  .scp.scp :is(.scp-olr-sec, .scp-bop-intro, .scp-inp-intro, .scp-ovp-sec, .scp-glp) > .scp-up-head,
   .scp.scp .scp-stp-sec > .scp-up-head {
     margin: 0;
     border-radius: 0;
@@ -24844,5 +25088,1329 @@ a.scp-peer:focus-visible {
      header's (mak, 2026-11-06). */
   .scp.scp.scp .scp-pm-season {
     text-align: center;
+  }
+}
+
+/* Injury tab, mak 2026-11-06: the status card (Active + the three facts)
+   and the four Durability Profile tiles are centered in their boxes, at
+   every width. Specific enough to beat the phone 2x2 rules above. */
+.scp.scp.scp.scp.scp :is(.scp-inp-now, .scp-inp-kpi, .scp-inp-dt) {
+  justify-content: center;
+  text-align: center;
+}
+
+.scp.scp.scp.scp.scp .scp-inp-now {
+  align-items: center;
+}
+
+.scp.scp.scp.scp.scp .scp-inp-now-word {
+  justify-content: center;
+}
+
+.scp.scp.scp.scp.scp :is(.scp-inp-kpi, .scp-inp-dt) > div {
+  justify-items: center;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp .scp-inp-kpi {
+    align-items: center;
+  }
+}
+
+/* Injury Regions sit directly under the availability matrix (mak,
+   2026-11-06). The old tab's phone rule (.scp-in .scp-in-av { order: 2 })
+   would push the matrix below them; source order wins here. */
+.scp.scp.scp .scp-inp .scp-inp-avbox > .scp-in-av {
+  order: 0;
+}
+
+/* Every tab's lead banner starts the same distance under the tab strip
+   (mak, 2026-11-06): the section's own top padding and nothing more. The
+   wrappers that open a tab (.scp-ox, .scp-ox-sec, .scp-stp, .scp-glp-wrap,
+   .scp-olr, .scp-bop) carried 8-44px of top margin between sections; on the
+   one that leads the tab it goes, as Injury and News already had it. Phones
+   are already flush (the 560px rules). */
+@media (min-width: 561px) {
+  .scp.scp.scp.scp .scp-section > :first-child:has(.scp-up-head),
+  .scp.scp.scp.scp .scp-section > :first-child > :first-child:has(.scp-up-head),
+  .scp.scp.scp.scp .scp-section > :first-child > :first-child > :first-child:has(.scp-up-head) {
+    margin-top: 0 !important;
+  }
+}
+
+/* "View Fantasy Football Profile" (mak, 2026-11-06) is six characters longer
+   than the old label; in the medium header's 27% right column it overran the
+   button at 1100px and under (the label, icon and arrow need ~260px; the
+   button gets 250-278px), so the medium header trims it: 12px side padding,
+   14px type and no trailing arrow on the gold button. */
+@container pp (max-width: 1100px) and (min-width: 901px) {
+  .scp .scp-phead a.scp-pbtn {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+  }
+
+  .scp .scp-phead a.scp-pbtn--gold .scp-pbtn-arrow {
+    display: none;
+  }
+}
+
+/* Phones: the tier pill and the availability line keep one row (mak,
+   2026-11-06); a slimmer pill and 11.5px text fit the ~270px of card a
+   360px phone leaves. Narrower than that (320px) the line wraps under the
+   pill rather than overflow. */
+@container inp (max-width: 480px) {
+  .scp.scp .scp-inp-hp-foot {
+    gap: 4px;
+  }
+
+  .scp.scp .scp-inp-hp-tier {
+    padding: 2px 6px;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  .scp.scp .scp-inp-dur-status {
+    font-size: 11.5px;
+  }
+}
+
+/* Season-by-Season Availability in its own card (mak, 2026-11-06): the card's
+   frame and padding take ~30px from the matrix, whose 22-box rows have a
+   fixed minimum width; on phones the boxes step down so a row still fits
+   inside the card (8px boxes from 400px of tab, 7px under 300px). */
+@container inp (max-width: 400px) {
+  .scp.scp.scp .scp-inp .scp-in-av {
+    --ab: 8px;
+    --abg: 2px;
+  }
+
+  .scp.scp .scp-inp-avbox {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  /* "Playoffs" is wider than its four boxes; smaller, untracked type
+     keeps it inside the card. */
+  .scp.scp.scp .scp-inp .scp-in-av-head :is(.scp-in-av-reg, .scp-in-av-po) {
+    font-size: 8px;
+    letter-spacing: 0.02em;
+  }
+}
+
+@container inp (max-width: 300px) {
+  .scp.scp.scp .scp-inp .scp-in-av {
+    --ab: 7px;
+  }
+
+  .scp.scp .scp-inp-avbox {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .scp.scp.scp .scp-inp .scp-in-av-head :is(.scp-in-av-reg, .scp-in-av-po) {
+    font-size: 7px;
+    letter-spacing: 0;
+  }
+}
+
+/* Phones: the region and its counts keep one row (mak, 2026-11-06); a
+   long region name ("Hand / Wrist") under ~300px of card still wraps. */
+@container inp (max-width: 480px) {
+  .scp.scp .scp-inp-sel {
+    padding: 9px 10px;
+  }
+
+  .scp.scp .scp-inp-sel-top {
+    column-gap: 5px;
+  }
+
+  .scp.scp .scp-inp-sel-v {
+    font-size: 15px;
+  }
+
+  .scp.scp .scp-inp-sel-top .scp-inp-sel-s {
+    font-size: 11.5px;
+  }
+}
+
+/* =========================================================================
+   Player News tab in the team pages' News design (mak, 2026-11-06):
+   ported from team.css (.sct-nwp) (team/news-premium.ts), renamed .scp-nwp;
+   the team-only cards (Injury Watch, Next Game, Quick Links) left out.
+   Rendered by player/news-tab.ts. A container so the column, not the
+   window, decides the layout. --nwp-team is the club's accent.
+   ========================================================================= */
+
+.scp .scp-nwp {
+  --nwp-navy-950: var(--tp-c-071a35, #071a35);
+  --nwp-navy-900: var(--tp-c-0b2345, #0b2345);
+  --nwp-navy-800: var(--tp-c-103862, #103862);
+  --nwp-gold: var(--tp-c-d4af37, #d4af37);
+  --nwp-gold-bright: var(--tp-c-f0c13b, #f0c13b);
+  --nwp-text: var(--tp-c-102344, #102344);
+  --nwp-muted: #5b7290;
+  --nwp-surface-blue: var(--tp-c-edf4fb, #edf4fb);
+  --nwp-border: var(--tp-c-cbdbea, #cbdbea);
+  --nwp-border-light: var(--tp-c-e1e9f3, #e1e9f3);
+  --nwp-green: #087a42;
+  --nwp-green-light: #e4f7e8;
+  --nwp-amber: #a97108;
+  --nwp-amber-light: var(--tp-c-fff2d1, #fff2d1);
+  --nwp-red: #b83238;
+  --nwp-red-light: #fce9eb;
+  --nwp-blue: var(--tp-c-27619e, #27619e);
+  --nwp-blue-light: var(--tp-c-e7f0fb, #e7f0fb);
+  --nwp-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+  --nwp-radius: 15px;
+  --nwp-head: linear-gradient(110deg, var(--nwp-navy-950) 0%, var(--nwp-navy-800) 70%, var(--nwp-navy-900) 100%);
+  container-type: inline-size;
+  display: grid;
+  gap: 14px;
+  
+  margin: 0;
+  color: var(--tp-ink, var(--nwp-text));
+  font-family: var(--sc-font);
+}
+
+.scp .scp-nwp-icon {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  color: var(--nwp-gold-bright);
+}
+
+.scp .scp-nwp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.95fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.scp .scp-nwp-main,
+.scp .scp-nwp-rail {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-nwp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--nwp-border);
+  border-radius: var(--nwp-radius);
+  background: linear-gradient(135deg, #ffffff 0%, var(--tp-c-f5f9ff, #f5f9ff) 100%);
+  box-shadow: 0 4px 10px rgba(8, 35, 70, 0.045), 0 10px 20px rgba(8, 35, 70, 0.055);
+}
+
+.scp .scp-nwp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.scp .scp-nwp-well {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--nwp-surface-blue);
+}
+
+.scp .scp-nwp-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.scp .scp-nwp-photo-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(135deg, var(--nwp-surface-blue) 0%, var(--tp-c-dbe7f5, #dbe7f5) 100%);
+}
+
+.scp .scp-nwp-photo-empty::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--nwp-crest, none) center / 38% no-repeat;
+  opacity: 0.16;
+}
+
+.scp .scp-nwp-well:has(> .scp-nwp-photo-empty) {
+  position: relative;
+}
+
+.scp .scp-nwp-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 30px;
+  background:
+    linear-gradient(118deg, transparent 0 30%, var(--nwp-navy-900) 30% 52%, transparent 52% 60%, var(--nwp-team, var(--nwp-gold)) 60% 100%);
+  pointer-events: none;
+}
+
+.scp .scp-nwp-ribbon {
+  position: absolute;
+  left: 0;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 14px 0 11px;
+  border-top: 2px solid var(--nwp-team, var(--nwp-gold));
+  border-right: 2px solid var(--nwp-team, var(--nwp-gold));
+  border-radius: 0 8px 8px 0;
+  background: var(--tp-a-11-35-69-920, rgba(11, 35, 69, 0.92));
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scp .scp-nwp-ribbon-icon {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: var(--nwp-gold-bright);
+}
+
+.scp .scp-nwp-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px 14px;
+}
+
+.scp .scp-nwp-news-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--nwp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-nwp-news-kicker {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--nwp-blue-light);
+  color: var(--tp-ink, var(--nwp-navy-900));
+}
+
+.scp .scp-nwp-dot {
+  width: 1px;
+  height: 12px;
+  background: var(--nwp-gold);
+}
+
+.scp .scp-nwp-news-time {
+  font-weight: 600;
+}
+
+.scp .scp-nwp-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--tp-ink, var(--nwp-navy-900)) !important;
+  font-size: 1.02rem !important;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  text-transform: none;
+}
+
+.scp .scp-nwp-title::after {
+  display: none;
+}
+
+.scp .scp-nwp-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.scp .scp-nwp-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.scp .scp-nwp-link:hover {
+  color: var(--nwp-blue);
+  text-decoration: underline;
+}
+
+.scp .scp-nwp-card:has(.scp-nwp-link:focus-visible) {
+  outline: 2px solid var(--nwp-gold);
+  outline-offset: 2px;
+}
+
+.scp .scp-nwp-byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 0;
+  color: var(--nwp-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.scp .scp-nwp-player {
+  position: relative;
+  z-index: 2;
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.scp .scp-nwp-cta {
+  margin: auto 0 0;
+  padding-top: 4px;
+}
+
+.scp .scp-nwp-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.scp .scp-nwp-more .scp-nwp-arrow {
+  color: var(--nwp-gold);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.scp .scp-nwp-more {
+  margin: 0;
+}
+
+.scp .scp-nwp-more-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 11px 16px;
+  border: 1px solid var(--nwp-border);
+  border-radius: 11px;
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-eef4fb, #eef4fb) 100%);
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-size: 0.84rem;
+  font-weight: 800;
+  list-style: none;
+  cursor: pointer;
+}
+
+.scp .scp-nwp-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.scp .scp-nwp-more-summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--nwp-gold);
+  border-bottom: 2px solid var(--nwp-gold);
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.scp .scp-nwp-more[open] .scp-nwp-more-summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+.scp .scp-nwp-more-summary:hover {
+  border-color: var(--nwp-gold);
+}
+
+.scp .scp-nwp-more-summary:focus-visible {
+  outline: 2px solid var(--nwp-gold);
+  outline-offset: 2px;
+}
+
+.scp .scp-nwp-card.is-featured {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  min-height: 190px;
+}
+
+.scp .scp-nwp-card.is-featured {
+  align-items: stretch;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-well {
+  
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 100%;
+  height: auto;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-photo,
+.scp .scp-nwp-card.is-featured .scp-nwp-photo-empty {
+  position: absolute;
+  inset: 0;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-body {
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 22px;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-title {
+  font-size: 1.28rem !important;
+  line-height: 1.25;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-cta {
+  margin-top: 4px;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-corner {
+  width: 54px;
+  height: 36px;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-body > :not(.scp-nwp-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.scp .scp-nwp-watermark {
+  position: absolute;
+  right: -18px;
+  bottom: -26px;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  opacity: 0.09;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scp .scp-nwp-none {
+  padding: 18px 20px;
+  border: 1px solid var(--nwp-border);
+  border-radius: var(--nwp-radius);
+  background: #fff;
+}
+
+.scp .scp-nwp-none-title {
+  margin: 0;
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-weight: 800;
+}
+
+.scp .scp-nwp-none-body {
+  margin: 4px 0 0;
+  color: var(--nwp-muted);
+  font-size: 0.84rem;
+}
+
+.scp .scp-nwp-rail-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--nwp-border);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7faff, #f7faff) 100%);
+  box-shadow: var(--nwp-shadow);
+}
+
+.scp .scp-nwp-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 16px;
+  overflow: hidden;
+  background: var(--nwp-head);
+  color: #fff;
+}
+
+.scp .scp-nwp-h3 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #fff !important;
+  font-size: 1rem !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.scp .scp-nwp-h3::after {
+  display: none;
+}
+
+.scp .scp-nwp-slash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background:
+    linear-gradient(118deg, transparent 0 38%, var(--nwp-gold) 38% 52%, transparent 52% 64%, var(--nwp-gold-bright) 64% 76%, transparent 76%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.scp .scp-nwp-rail-body {
+  padding: 8px 14px 10px;
+}
+
+.scp .scp-nwp-empty {
+  margin: 4px 0;
+  color: var(--nwp-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+@container (max-width: 700px) {
+  .scp .scp-nwp-card.is-featured {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .scp .scp-nwp-card.is-featured .scp-nwp-well {
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    height: auto;
+  }
+
+  .scp .scp-nwp-card.is-featured .scp-nwp-body {
+    padding: 12px 16px 14px;
+  }
+}
+
+@container (max-width: 640px) {
+  .scp .scp-nwp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 1020px) {
+  /* One column: the featured story and the grid, then the rail's cards. */
+  .scp .scp-nwp-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+/* ---- player additions to the team News design (mak, 2026-11-06) */
+
+/* The banner and the stories in one card, like the team tab's frame. */
+.scp .scp-nwp-frame {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--tp-c-cbdbea, #cbdbea);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  overflow: hidden;
+}
+
+.scp.scp .scp-nwp-frame > .scp-up-head {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.scp .scp-nwp-frame-body {
+  padding: 16px 18px 18px;
+}
+
+.scp .scp-nwp-layout.is-solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scp .scp-nwp-card[hidden] {
+  display: none;
+}
+
+.scp .scp-nwp-feed {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Links inside a card sit above the headline's whole-card target. */
+.scp .scp-nwp-byline a,
+.scp .scp-nwp-more.is-box {
+  position: relative;
+  z-index: 2;
+}
+
+.scp .scp-nwp-byline a {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scp .scp-nwp-byline a:hover {
+  text-decoration: underline;
+}
+
+.scp .scp-nwp-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+.scp .scp-nwp-arrow {
+  color: var(--nwp-gold);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* A recap's result: the finish pill, the points, the impact read. */
+.scp .scp-nwp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.scp .scp-nwp-fpts {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-family: "Barlow", var(--sc-font);
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-nwp .scp-nw-fin,
+.scp .scp-nwp .scp-nw-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.scp .scp-nwp .scp-nw-read {
+  text-transform: uppercase;
+}
+
+.scp .scp-nwp .scp-nw-fin.is-good { background: var(--scp-ph-good); color: #fff; }
+.scp .scp-nwp .scp-nw-fin.is-mid { background: var(--scp-ph-ink); color: #fff; }
+.scp .scp-nwp .scp-nw-fin.is-bad { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+.scp .scp-nwp .scp-nw-read.is-up { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
+.scp .scp-nwp .scp-nw-read.is-down { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+
+.scp .scp-nwp .scp-nw-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.scp .scp-nwp-stats {
+  margin: 0;
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* One sentence: a recap's takeaway, a report's first sentence. */
+.scp .scp-nwp-sum {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--nwp-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.scp .scp-nwp-card.is-featured .scp-nwp-sum {
+  color: var(--tp-ink, var(--nwp-text));
+  font-size: 0.9rem;
+}
+
+/* The type filter above the grid: a segmented control. */
+.scp .scp-nwp-filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-self: start;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--nwp-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.scp .scp-nwp-filters button {
+  margin: 0;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--nwp-muted);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.scp .scp-nwp-filters button[aria-pressed="true"] {
+  background: var(--nwp-navy-900);
+  color: #fff;
+}
+
+.scp .scp-nwp-filters button:focus-visible {
+  outline: 2px solid var(--nwp-gold);
+  outline-offset: 1px;
+}
+
+.scp .scp-nwp-fold {
+  margin: 0;
+}
+
+.scp .scp-nwp-fold[open] .scp-nwp-more-summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+/* ---- the rail's rows: Around the team, the teammates */
+.scp .scp-nwp-rows {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.scp .scp-nwp-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  margin: 0;
+  padding: 9px 0;
+  border-top: 1px solid var(--nwp-border-light);
+}
+
+.scp .scp-nwp-row:first-child {
+  border-top: 0;
+}
+
+.scp .scp-nwp-face {
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid var(--nwp-border);
+  border-radius: 50%;
+  background: var(--nwp-surface-blue);
+}
+
+.scp .scp-nwp-face.is-crest {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.scp .scp-nwp-face-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.scp .scp-nwp-face.is-crest .scp-nwp-face-img {
+  object-fit: contain;
+}
+
+.scp .scp-nwp-row-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.scp .scp-nwp-row-meta {
+  color: var(--nwp-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scp .scp-nwp-row-who {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  text-decoration: none;
+}
+
+.scp .scp-nwp-row-h {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.scp .scp-nwp-row-h:hover {
+  color: var(--nwp-blue);
+  text-decoration: underline;
+}
+
+.scp .scp-nwp-row-note {
+  color: var(--nwp-muted);
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+.scp .scp-nwp-impact {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #edf0f4;
+  color: var(--nwp-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.scp .scp-nwp-impact.is-up {
+  background: var(--nwp-green-light);
+  color: var(--nwp-green);
+}
+
+.scp .scp-nwp-impact.is-down {
+  background: var(--nwp-red-light);
+  color: var(--nwp-red);
+}
+
+.scp .scp-nwp-rail-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 2px;
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@container (max-width: 760px) {
+  .scp .scp-nwp-frame-body {
+    padding: 14px;
+  }
+}
+
+/* Phones (the team tab's phone pass): no frame around the banner and
+   stories, the grid's stories as rows with a thumbnail, the rail's navy
+   heads as plain headings. */
+@media (max-width: 560px) {
+  .scp.scp.scp .scp-nwp-frame {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible;
+  }
+
+  .scp.scp.scp .scp-nwp-frame-body {
+    padding: 0 !important;
+  }
+
+  .scp.scp .scp-nwp-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured) {
+    display: grid !important;
+    grid-template-columns: 104px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: start;
+    margin: 0 !important;
+    padding: 12px 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #e6e9ee !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured)[hidden] {
+    display: none !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-well {
+    width: 104px !important;
+    height: 70px !important;
+    aspect-ratio: auto !important;
+    border-radius: 6px !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured) :is(.scp-nwp-ribbon, .scp-nwp-corner, .scp-nwp-cta .scp-nwp-more:not(.is-box)) {
+    display: none !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-body {
+    padding: 0 !important;
+  }
+
+  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-title {
+    margin: 2px 0 0 !important;
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+  }
+
+  .scp.scp .scp-nwp-card.is-featured {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
+
+  .scp.scp .scp-nwp-card.is-featured .scp-nwp-well {
+    border-radius: 8px !important;
+  }
+
+  .scp.scp .scp-nwp-card.is-featured .scp-nwp-body {
+    padding: 12px 0 0 !important;
+  }
+
+  .scp.scp .scp-nwp-rail-card {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .scp.scp .scp-nwp-head {
+    min-height: 0 !important;
+    margin: 0 0 6px !important;
+    padding: 0 !important;
+    background: none !important;
+    color: #0f1722 !important;
+  }
+
+  .scp.scp .scp-nwp-head :is(svg, .scp-nwp-slash) {
+    display: none !important;
+  }
+
+  .scp.scp .scp-nwp-h3 {
+    color: #0f1722 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.2px !important;
+    text-transform: none !important;
+  }
+
+  .scp.scp .scp-nwp-rail-body {
+    padding: 0 !important;
+  }
+}
+
+/* Career & Background cards on phones (mak's brief, 2026-11-06): compact
+   heads and type; the facts stay two across while values fit, one column
+   under 360px. */
+@media (max-width: 560px) {
+  .scp.scp.scp .scp-ox .scp-ox-bgc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-head {
+    min-height: 50px;
+    gap: 10px;
+    padding: 6px 48px 6px 10px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-rule {
+    height: 26px;
+  }
+
+  .scp.scp.scp .scp-ox h3.scp-ox-bgc-h {
+    font-size: 16px !important;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-slash {
+    width: 42px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-body {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc .scp-ox-honors li {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-total {
+    font-size: 16px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-span {
+    font-size: 12.5px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-ficon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bgc-ficon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(odd) {
+    padding-left: 42px;
+    padding-right: 8px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(even) {
+    padding-left: 54px;
+    padding-right: 0;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(even) .scp-ox-bgc-ficon {
+    left: 12px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about dt {
+    font-size: 10.5px;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about dd {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 359px) {
+  .scp.scp.scp .scp-ox .scp-ox-bg dl.scp-ox-about {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:is(:nth-child(odd), :nth-child(even)) {
+    padding: 9px 0 9px 42px;
+    border-right: 0;
+    border-bottom: 1px solid #dbe4ef;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:last-child {
+    border-bottom: 0;
+  }
+
+  .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact .scp-ox-bgc-ficon {
+    top: 9px;
+    left: 0;
+  }
+}
+
+/* Career & Background without its outer card (mak, 2026-11-06): the two
+   cards stand on the page under the section's heading bar, which keeps its
+   own rounded corners. */
+.scp.scp .scp-ox .scp-ovp-sec.scp-ox-bg {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.scp.scp .scp-ox .scp-ovp-sec.scp-ox-bg > .scp-ovp-bar {
+  border-radius: 16px;
+}
+
+.scp.scp .scp-ox .scp-ovp-sec.scp-ox-bg > .scp-ovp-body {
+  padding: 16px 0 0;
+}
+
+/* Game Log: no sheet around the season chips, the tiles and the table
+   (mak, 2026-11-06); they sit straight in the Game Log card's body, as
+   they already did on phones. */
+.scp.scp.scp .scp-glp-main {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* ======================================================================
+ * Subtler section headings (mak, 2026-11-06): every section title that is
+ * not its tab's lead banner wears the team Stats tab's Offense/Defense band
+ * (team.css .sct-sp-unit-head): a slim 42px navy band, a small gold icon,
+ * the title in Title Case at 1.15rem/800, no gold diagonals, grid, rules or
+ * art. The lead banners (.scp-up-head) are untouched; so are phones, where
+ * these headings were already plain titles.
+ * ==================================================================== */
+@media (min-width: 561px) {
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-olr-bar, .scp-olp-bar, .scp-inp-bar, .scp-bop-bar, .scp-glp-bar, .scp-bkp-hero, .scp-stp-bar, .scp-cp-bar, .scp-pr-hero):not(.scp-up-head) {
+    position: relative;
+    overflow: hidden;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    min-height: 46px !important;
+    gap: 10px !important;
+    padding: 8px 34px 8px 18px !important;
+    border-radius: 0;
+    background: linear-gradient(110deg, var(--tp-c-0b2345, #0b2345) 0%, var(--tp-c-10447d, #10447d) 70%, var(--tp-c-0b2b55, #0b2b55) 100%) !important;
+    box-shadow: none !important;
+    color: #fff;
+  }
+
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-olr-bar, .scp-olp-bar, .scp-inp-bar, .scp-bop-bar, .scp-glp-bar, .scp-bkp-hero, .scp-stp-bar, .scp-cp-bar, .scp-pr-hero):not(.scp-up-head)::before,
+  .scp.scp.scp.scp :is(.scp-ovp-bar-grid, .scp-ovp-bar-stripes, .scp-olr-bar-grid, .scp-olr-bar-stripes, .scp-olp-bar-stripes, .scp-olp-bar-rule, .scp-olp-bar-divider, .scp-olp-ball, .scp-inp-stripes, .scp-bop-stripes, .scp-glp-stripes, .scp-bkp-stripes, .scp-bkp-rule, .scp-stp-bar-stripes, .scp-stp-bar-rule, .scp-cp-bar-stripes, .scp-cp-bar-rule, .scp-cp-bar-divider, .scp-cp-bar-art, .scp-pr-stripes, .scp-pr-rule, .scp-pr-ball):not(.scp-up-head *) {
+    display: none !important;
+  }
+
+  /* The title: white, Title Case, no tracking, no underline rule. */
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-olr-bar, .scp-olp-bar, .scp-inp-bar, .scp-bop-bar, .scp-glp-bar, .scp-bkp-hero, .scp-stp-bar, .scp-cp-bar, .scp-pr-hero):not(.scp-up-head) :is(h2, h3) {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: #fff !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.25 !important;
+    text-transform: none !important;
+    text-shadow: none !important;
+  }
+
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-olr-bar, .scp-olp-bar, .scp-inp-bar, .scp-bop-bar, .scp-glp-bar, .scp-bkp-hero, .scp-stp-bar, .scp-cp-bar, .scp-pr-hero):not(.scp-up-head) :is(h2, h3)::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* The icon: small and gold, no tile. */
+  .scp.scp.scp.scp :is(.scp-ovp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-inp-bar-icon, .scp-bop-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-pr-ico):not(.scp-up-head *) {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: var(--tp-c-f0bf35, #f0bf35) !important;
+    font-size: 19px !important;
+  }
+
+  .scp.scp.scp.scp :is(.scp-ovp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-inp-bar-icon, .scp-bop-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-pr-ico):not(.scp-up-head *) svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+  /* The sub-line on the title's row, right-aligned (the team Stats tab's
+     Efficiency band, .sct-sp-band; mak, 2026-11-06). */
+  .scp.scp.scp.scp :is(.scp-olr-bar-text, .scp-olp-bar-text, .scp-bkp-hero-t, .scp-cp-bar-text, .scp-pr-hero-t, .scp-stp-bar-text):not(.scp-up-head *) {
+    display: flex !important;
+    flex: 1 1 auto;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px 16px;
+    text-align: left !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  /* The title keeps its line, as on the band; the sub-line wraps. */
+  .scp.scp.scp.scp :is(.scp-olr-bar-text, .scp-olp-bar-text, .scp-bkp-hero-t, .scp-cp-bar-text, .scp-pr-hero-t, .scp-stp-bar-text):not(.scp-up-head *) :is(h2, h3) {
+    flex: 0 0 auto;
+    max-width: 62%;
+  }
+
+  .scp.scp.scp.scp :is(.scp-olp-bar-sub, .scp-inp-bar-note, .scp-glp-bar-sum, .scp-bkp-sub, .scp-cp-bar-sub, .scp-pr-sub, .scp-olr-bar-sub):not(.scp-up-head *) {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0 0 0 auto !important;
+    text-align: right !important;
+    color: var(--tp-c-d5e2f4, #d5e2f4) !important;
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.3 !important;
+    text-transform: none !important;
+  }
+
+  /* Two thin gold slashes at the right edge, as on the band. */
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-olr-bar, .scp-olp-bar, .scp-inp-bar, .scp-bop-bar, .scp-glp-bar, .scp-bkp-hero, .scp-stp-bar, .scp-cp-bar, .scp-pr-hero):not(.scp-up-head)::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: -30% !important;
+    right: 6px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 5px !important;
+    height: 160% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: var(--tp-c-d4af37, #d4af37) !important;
+    box-shadow: 10px 0 0 var(--tp-c-f0bf35, #f0bf35) !important;
+    transform: rotate(24deg) !important;
+    opacity: 0.8 !important;
+    pointer-events: none;
   }
 }

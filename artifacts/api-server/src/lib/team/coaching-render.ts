@@ -538,7 +538,7 @@ export function changeText(row: TendencyRow, v: RowView): string {
   if (v.delta == null) return v.change.text;
   const arrow = v.delta > 0 ? "↑" : "↓";
   if (row.key === "pace" || row.invert) return `${arrow} ${Math.abs(v.delta).toFixed(1)}s ${v.delta > 0 ? "faster" : "slower"}`;
-  return `${arrow} ${Math.abs(v.delta).toFixed(1)} pp`;
+  return `${arrow} ${Math.abs(v.delta).toFixed(1)}%`;
 }
 
 /** The brief's two groups (2026-11-05); fourth down moves to Situational Play Calling. */
@@ -594,7 +594,7 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
     .map(({ row, v }) => {
       const d = v.delta as number;
-      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
       return MOVE_PHRASE[row.key as string]!(d > 0, pts);
     });
   const vs = group
@@ -609,7 +609,7 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0];
   const first = moves.length
     ? `Compared with ${returning ? priorYear : `the ${priorYear} staff`}, ${city} is ${list(moves)}.`
-    : `No tendency in this group has moved 3 percentage points (or a second of pace) from ${priorYear}.`;
+    : `No tendency in this group has moved 3% (or a second of pace) from ${priorYear}.`;
   const second = vs
     ? ` Against the league, its ${LEAGUE_NAME[vs.row.key as string]} (${vs.v.current}) is ${
         vs.row.key === "pace" ? (vs.gap > 0 ? "faster" : "slower") : vs.gap > 0 ? "above" : "below"
@@ -772,7 +772,7 @@ function identityParagraph(
       .slice(0, n)
       .map(({ row, v }) => {
         const d = v.delta as number;
-        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
         return MOVE_PHRASE[row.key as string]!(d > 0, pts);
       });
   const calling = pick(GROUPS[0]!.keys, 2);
@@ -1724,7 +1724,7 @@ export function historyModel(c: TeamCoaching, stops: Stop[]): HistoryModel | nul
         if (n && (!best || n > best.n)) best = { pos, side, n, of: known.length };
       }
     }
-    if (best) stats.push({ value: `${best.n} / ${best.of}`, label: `tracked seasons with ${best.pos} share 3+ pp ${best.side} league` });
+    if (best) stats.push({ value: `${best.n} / ${best.of}`, label: `tracked seasons with ${best.pos} share 3%+ ${best.side} league` });
   }
 
   const covered = new Set(stops.flatMap((s) => Array.from({ length: s.end - s.start + 1 }, (_, i) => s.start + i)));
@@ -2215,7 +2215,7 @@ export function scoreStateModel(c: TeamCoaching): ScoreStateModel {
       const d = base != null ? (row.share ?? 0) - base : 0;
       // Each row is read against leading by 7+; only a real gap gets gold.
       const flag = i > 0 && Math.abs(d) >= 3;
-      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Baseline" : `${signedPts(d)} pp`, baseline: i === 0, flag };
+      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Baseline" : `${signedPts(d)}%`, baseline: i === 0, flag };
     }),
     verdict,
     context: small ? "Early-season samples remain small." : "Play counts show each bucket's sample.",
