@@ -204,6 +204,22 @@ export function sidelinedBehind<T extends Pick<DepthChartEntry, "name" | "positi
 }
 
 /**
+ * A display name folded the way search_full_name is, minus a generational
+ * suffix: "Brian Robinson Jr." -> "brianrobinson". Same rule as nameMatchKey()
+ * in lib/render.ts, kept here so this module stays import-free.
+ */
+function suffixFreeKey(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/ (jr|sr|ii|iii|iv|v)$/, "")
+    .replace(/ /g, "");
+}
+
+/**
  * Rebuild the index from a freshly fetched dictionary.
  *
  * Called by lib/teams.ts with the payload it already has in hand, so this costs
@@ -223,6 +239,11 @@ export function indexRoster(
   // Same keys, carrying who the name belongs to. Filled for every player with a
   // team; pruned below by exactly the same ambiguity verdict.
   const playerCandidates = new Map<string, NamedPlayer>();
+  // The same folding of the name with its suffix dropped ("brianrobinson" for
+  // Brian Robinson Jr.), same ambiguity rule. The wire writes names without the
+  // suffix Sleeper keeps; these fill in only where no exact key exists.
+  const aliasCandidates = new Map<string, string | null>();
+  const aliasPlayers = new Map<string, NamedPlayer>();
 
   for (const key in data) {
     const player = data[key];
@@ -240,14 +261,20 @@ export function indexRoster(
       const displayName =
         player.full_name?.trim() ||
         [player.first_name, player.last_name].filter(Boolean).join(" ").trim();
-      if (displayName && !playerCandidates.has(searchName)) {
-        playerCandidates.set(searchName, {
-          id: String(player.player_id ?? key),
-          name: displayName,
-          team,
-          yearsExp: typeof player.years_exp === "number" ? player.years_exp : null,
-        });
+      const alias = suffixFreeKey(displayName);
+      if (alias && alias !== searchName) {
+        const seenAlias = aliasCandidates.get(alias);
+        if (seenAlias === undefined) aliasCandidates.set(alias, team);
+        else if (seenAlias !== null && seenAlias !== team) aliasCandidates.set(alias, null);
       }
+      const named: NamedPlayer = {
+        id: String(player.player_id ?? key),
+        name: displayName,
+        team,
+        yearsExp: typeof player.years_exp === "number" ? player.years_exp : null,
+      };
+      if (displayName && !playerCandidates.has(searchName)) playerCandidates.set(searchName, named);
+      if (displayName && alias && alias !== searchName && !aliasPlayers.has(alias)) aliasPlayers.set(alias, named);
     }
 
     const position = player.position ?? null;
@@ -331,6 +358,12 @@ export function indexRoster(
     teamByPlayerName.set(name, team);
     const player = playerCandidates.get(name);
     if (player) playerByName.set(name, player);
+  }
+  for (const [alias, team] of aliasCandidates) {
+    if (team === null || nameCandidates.has(alias)) continue;
+    teamByPlayerName.set(alias, team);
+    const player = aliasPlayers.get(alias);
+    if (player) playerByName.set(alias, player);
   }
 
   index = { byTeam, teamByPlayerName, playerByName, fetchedAt };
