@@ -275,6 +275,16 @@ export function searchKey(value: string | null | undefined): string {
     .trim();
 }
 
+/**
+ * searchKey without a generational suffix: "Brian Robinson Jr." and "Brian
+ * Robinson" fold to the same key. The wire drops the suffix that Sleeper and
+ * the shipped roster keep, so an exact key matched neither the headshot nor the
+ * team, and "Kenneth Walker" landed on a different (free agent) Kenneth Walker.
+ */
+export function nameMatchKey(value: string | null | undefined): string {
+  return searchKey(value).replace(/ (jr|sr|ii|iii|iv|v)$/, "");
+}
+
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",

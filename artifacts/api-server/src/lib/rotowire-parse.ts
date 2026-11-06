@@ -21,6 +21,7 @@
 
 import type { RawNewsItem } from "./news-item";
 import type { NflTeam } from "./team/teams";
+import { nameMatchKey } from "./render";
 
 /** Where RotoWire's football section lives. Links on the page are relative to it. */
 export const ROTOWIRE_ORIGIN = "https://www.rotowire.com";
@@ -205,4 +206,69 @@ export function rotowireItem(
   if (image) item.image = image;
   if (note.news) item.summary = note.news;
   return item;
+}
+
+/* ------------------------------------------------------------- headshots */
+
+export interface RosterEntry {
+  id: string;
+  team: string | null;
+  position: string | null;
+}
+
+/**
+ * The Sleeper headshot for a note's player, or null.
+ *
+ * Name first; a shared name is settled by the note's team, then position.
+ * Still ambiguous means no picture rather than the wrong one.
+ */
+export function headshotFor(
+  note: Pick<RotowireNote, "playerName" | "teamCode" | "position">,
+  roster: Map<string, RosterEntry[]>,
+): string | null {
+  const candidates = roster.get(nameMatchKey(note.playerName)) ?? [];
+  if (candidates.length === 0) return null;
+  let pick: RosterEntry[] = candidates;
+  if (pick.length > 1 && note.teamCode) {
+    const onTeam = pick.filter((c) => c.team === note.teamCode);
+    if (onTeam.length > 0) pick = onTeam;
+  }
+  if (pick.length > 1 && note.position) {
+    const atPos = pick.filter((c) => c.position === note.position);
+    if (atPos.length > 0) pick = atPos;
+  }
+  if (pick.length !== 1) return null;
+  return `https://sleepercdn.com/content/nfl/players/thumb/${pick[0]!.id}.jpg`;
+}
+
+/** A player the live Sleeper index knows, as headshotFromIndex reads one. */
+export interface IndexedPlayer {
+  id: string;
+  /** Lowercase club code, as the index stores it. */
+  team: string;
+}
+
+/**
+ * The Sleeper headshot from the live, all-positions index, or null.
+ *
+ * The fallback for players the shipped roster leaves out - it is the fantasy
+ * pool, so a linebacker, a guard or a punter on the wire had no picture. The
+ * index is keyed by Sleeper's search_full_name ("henrytootoo"), with
+ * suffix-free aliases, and a name on two clubs is already dropped from it.
+ * The player must be on the club whose page carried the note: a stale or
+ * wrong match then costs a picture rather than showing the wrong face.
+ */
+export function headshotFromIndex(
+  note: Pick<RotowireNote, "playerName" | "teamCode">,
+  lookup: (key: string) => IndexedPlayer | null,
+): string | null {
+  const key = note.playerName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  if (!key || !note.teamCode) return null;
+  const player = lookup(key);
+  if (!player || player.team.toUpperCase() !== note.teamCode) return null;
+  return `https://sleepercdn.com/content/nfl/players/thumb/${player.id}.jpg`;
 }

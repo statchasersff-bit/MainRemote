@@ -20,16 +20,21 @@
  *
  * Headshots. The page has no Sleeper id. The player is matched to the shipped
  * roster (data/player/players.json) by normalized name, then team, then
- * position; an unmatched player simply has no picture, as a club row does.
+ * position. That roster is the fantasy pool, so a player missing from it is
+ * looked up in the live Sleeper index (all positions) and kept only if he is
+ * on the club whose page carried the note. Still unmatched, no picture.
  */
 
 import { logger } from "./logger";
 import { knownNews } from "./news-known";
 import { newsDedupeKey, type RawNewsItem } from "./news-item";
 import { loadPlayers } from "./player/data";
-import { searchKey } from "./render";
+import { nameMatchKey } from "./render";
+import { playerForSearchKey } from "./team/roster";
 import { TEAMS, type NflTeam } from "./team/teams";
 import {
+  headshotFor,
+  headshotFromIndex,
   noonEasternOf,
   parseHeadlineTime,
   parseRotowirePage,
@@ -37,6 +42,7 @@ import {
   rotowireItemId,
   rotowireItemTitle,
   rotowireTeamUrl,
+  type RosterEntry,
   type RotowireNote,
 } from "./rotowire-parse";
 
@@ -110,48 +116,19 @@ async function pooled<T, R>(
 
 /* ------------------------------------------------------------- headshots */
 
-interface RosterEntry {
-  id: string;
-  team: string | null;
-  position: string | null;
-}
-
 /** The shipped roster by normalized name. Built once per sweep. */
 function rosterIndex(): Map<string, RosterEntry[]> {
   const byName = new Map<string, RosterEntry[]>();
   for (const p of loadPlayers()) {
-    const key = searchKey(p.name);
+    // Suffix-free, so "Kenneth Walker" finds Kenneth Walker III as well as the
+    // free agent of that name; the team filter below then picks between them.
+    const key = nameMatchKey(p.name);
     if (!key) continue;
     const list = byName.get(key) ?? [];
     list.push({ id: p.id, team: p.team?.toUpperCase() ?? null, position: p.position });
     byName.set(key, list);
   }
   return byName;
-}
-
-/**
- * The Sleeper headshot for a note's player, or null.
- *
- * Name first; a shared name is settled by the note's team, then position.
- * Still ambiguous means no picture rather than the wrong one.
- */
-export function headshotFor(
-  note: Pick<RotowireNote, "playerName" | "teamCode" | "position">,
-  roster: Map<string, RosterEntry[]>,
-): string | null {
-  const candidates = roster.get(searchKey(note.playerName)) ?? [];
-  if (candidates.length === 0) return null;
-  let pick: RosterEntry[] = candidates;
-  if (pick.length > 1 && note.teamCode) {
-    const onTeam = pick.filter((c) => c.team === note.teamCode);
-    if (onTeam.length > 0) pick = onTeam;
-  }
-  if (pick.length > 1 && note.position) {
-    const atPos = pick.filter((c) => c.position === note.position);
-    if (atPos.length > 0) pick = atPos;
-  }
-  if (pick.length !== 1) return null;
-  return `https://sleepercdn.com/content/nfl/players/thumb/${pick[0]!.id}.jpg`;
 }
 
 /* ----------------------------------------------------------------- sweep */
@@ -242,7 +219,10 @@ export async function fetchRotowireNews(
       summary.tooOld++;
       continue;
     }
-    summary.items.push(rotowireItem(note, pubDate, headshotFor(note, roster)));
+    // The fantasy roster first, as before; then the live index, which also
+    // carries defenders, linemen and specialists.
+    const image = headshotFor(note, roster) ?? headshotFromIndex(note, playerForSearchKey);
+    summary.items.push(rotowireItem(note, pubDate, image));
   }
 
   if (summary.failed.length > 0) {

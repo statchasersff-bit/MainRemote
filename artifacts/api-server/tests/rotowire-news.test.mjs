@@ -136,3 +136,71 @@ describe("team pages", () => {
     assert.throws(() => parse.rotowireTeamUrl({ abbreviation: "xyz" }), /no RotoWire team code/);
   });
 });
+
+describe("headshot matching drops the name suffix", async () => {
+  const { headshotFor } = parse;
+  const { nameMatchKey } = await importModule("lib/render");
+  const { indexRoster, teamForPlayerName } = await importModule("lib/team/roster");
+  // Keyed the way rosterIndex() keys the shipped roster.
+  const roster = new Map();
+  for (const p of [
+    { id: "8154", name: "Brian Robinson Jr.", team: "ATL", position: "RB" },
+    { id: "8151", name: "Kenneth Walker III", team: "KC", position: "RB" },
+    { id: "4634", name: "Kenneth Walker", team: null, position: "WR" },
+    { id: "10937", name: "Jake Moody", team: "BAL", position: "K" },
+  ]) {
+    const key = nameMatchKey(p.name);
+    roster.set(key, [...(roster.get(key) ?? []), p]);
+  }
+  const thumb = (id) => `https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg`;
+
+  test("the wire's suffix-free name finds the Jr.", () => {
+    assert.equal(headshotFor({ playerName: "Brian Robinson", teamCode: "ATL", position: "RB" }, roster), thumb("8154"));
+  });
+  test("the note's team picks the right Kenneth Walker", () => {
+    assert.equal(headshotFor({ playerName: "Kenneth Walker", teamCode: "KC", position: "RB" }, roster), thumb("8151"));
+  });
+  test("a plain name still matches", () => {
+    assert.equal(headshotFor({ playerName: "Jake Moody", teamCode: "BAL", position: "K" }, roster), thumb("10937"));
+  });
+  test("the Sleeper team fallback reads the suffix-free name", () => {
+    indexRoster(
+      {
+        1: { player_id: "8154", full_name: "Brian Robinson Jr.", search_full_name: "brianrobinsonjr", team: "ATL", position: "RB" },
+        2: { player_id: "9", full_name: "Josh Allen", search_full_name: "joshallen", team: "BUF", position: "QB" },
+      },
+      Date.now(),
+    );
+    assert.equal(teamForPlayerName("Brian Robinson"), "atl");
+    assert.equal(teamForPlayerName("Brian Robinson Jr."), "atl");
+    assert.equal(teamForPlayerName("Josh Allen"), "buf");
+  });
+});
+
+describe("players outside the fantasy roster", async () => {
+  const { headshotFromIndex } = parse;
+  const index = new Map([
+    ["roquansmith", { id: "4960", team: "bal" }],
+    ["henrytootoo", { id: "10970", team: "hou" }],
+  ]);
+  const lookup = (key) => index.get(key) ?? null;
+
+  test("a linebacker gets his Sleeper headshot", () => {
+    assert.equal(
+      headshotFromIndex({ playerName: "Roquan Smith", teamCode: "BAL" }, lookup),
+      "https://sleepercdn.com/content/nfl/players/thumb/4960.jpg",
+    );
+  });
+  test("punctuation folds the way Sleeper's search name does", () => {
+    assert.equal(
+      headshotFromIndex({ playerName: "Henry To'oTo'o", teamCode: "HOU" }, lookup),
+      "https://sleepercdn.com/content/nfl/players/thumb/10970.jpg",
+    );
+  });
+  test("a player on another club's page gets no picture", () => {
+    assert.equal(headshotFromIndex({ playerName: "Roquan Smith", teamCode: "PIT" }, lookup), null);
+  });
+  test("no club on the note, no picture", () => {
+    assert.equal(headshotFromIndex({ playerName: "Roquan Smith", teamCode: null }, lookup), null);
+  });
+});
