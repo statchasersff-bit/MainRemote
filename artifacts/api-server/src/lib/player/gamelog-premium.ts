@@ -32,6 +32,7 @@ import {
 import { titleCase } from "./title-case";
 import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
+import { headArt, headIcon } from "./tab-head";
 
 /** What the tab hands this block, so the two versions share one computation. */
 export interface PremiumLogDeps {
@@ -131,6 +132,36 @@ function difficultyCell(entry: GameLogEntry, deps: PremiumLogDeps, pos: string):
       `${entry.opp} ranked ${deps.ordinal(rank)} in points allowed to ${pos || "this position"} that season - 1st allows the most`,
     )}"><b>${escapeHtml(deps.ordinal(rank))}</b><span>${escapeHtml(deps.difficultyWord[band])}</span></span>` +
     `</td>`
+  );
+}
+
+/**
+ * The phone's season selector (mak, 2026-11-06): a dropdown on the heading's
+ * row in place of the chip strip, which the CSS hides under 560px (this one
+ * is hidden above it). The options are .scp-season-opt links with the chips'
+ * hrefs, so the client's state swap handles them the same way and the menu
+ * works with scripting off. Not in .scp-seasons: the chips stay the one
+ * group the swap restores focus to, and no option carries .is-active.
+ */
+function renderSeasonMenu(data: PlayerPageData, deps: PremiumLogDeps): string {
+  if (data.logSeasons.length < 2) return "";
+  const years = [...data.logSeasons].sort((x, y) => y - x);
+  const options = years
+    .map((year) => {
+      const on = year === data.logSeason;
+      return (
+        `<li><a class="scp-season-opt scp-glp-yr-opt"` +
+        (year === data.season ? "" : ` rel="nofollow"`) +
+        ` data-season="${year}"${on ? ` aria-current="true"` : ""}` +
+        ` href="${escapeHtml(deps.seasonHref(year))}">${year}</a></li>`
+      );
+    })
+    .join("");
+  return (
+    `<details class="scp-glp-yr" data-scp-yr>` +
+    `<summary class="scp-glp-yr-btn" aria-label="${escapeHtml(`Season: ${data.logSeason}`)}"><b>${data.logSeason}</b></summary>` +
+    `<ul class="scp-glp-yr-list">${options}</ul>` +
+    `</details>`
   );
 }
 
@@ -475,16 +506,22 @@ export function renderGameLogPremium(data: PlayerPageData, deps: PremiumLogDeps,
   return (
     `<div class="scp-glp-wrap">` +
     `<section class="scp-glp" aria-labelledby="${titleId}">` +
-    `<header class="scp-glp-hero">` +
+    `<header class="scp-glp-hero scp-up-head">` +
     `<div class="scp-glp-hero-l">` +
+    headIcon("gamelog") +
     `<span class="scp-glp-ico">${ICON.calendar}</span>` +
     `<span class="scp-glp-rule" aria-hidden="true"></span>` +
     `<div class="scp-glp-hero-t">` +
-    `<h2 class="scp-glp-title" id="${titleId}">${escapeHtml(`${data.player.name} Game Log ${data.logSeason}`)}</h2>` +
-    `<p class="scp-glp-sub">${escapeHtml(
+    // Phones read "2026 Game Log" (mak, 2026-11-06): the name and trailing
+    // year are clipped there, not removed, and the leading year is generated.
+    `<h2 class="scp-glp-title scp-up-h2" id="${titleId}"><span class="scp-stp-xs">${escapeHtml(data.player.name)} </span>` +
+    `<span class="scp-glp-title-main" data-year="${data.logSeason}">Game Log</span><span class="scp-stp-xs"> ${data.logSeason}</span></h2>` +
+    `<p class="scp-glp-sub scp-up-dek">${escapeHtml(
       `Week-by-week performance, usage, and fantasy production for the ${data.logSeason} season.`,
     )}</p>` +
     `</div></div>` +
+    renderSeasonMenu(data, deps) +
+    headArt("stats") +
     BALL +
     STRIPES +
     `</header>` +

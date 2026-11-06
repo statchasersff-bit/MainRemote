@@ -14,6 +14,7 @@ import { logger } from "./logger";
 export type DbAccessReason =
   | "news_ingest"
   | "club_ingest"
+  | "outlet_ingest"
   | "x_ingest"
   | "news_read"
   | "freshness_read"

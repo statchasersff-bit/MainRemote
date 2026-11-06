@@ -15,7 +15,7 @@
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import type { DepthGradeUnit } from "../team-render";
 import type { TeamPageData } from "./team-data";
 import type { DepthRow, DepthView, FootballSide, FootballSlot } from "./depth-charts";
@@ -248,7 +248,7 @@ export function renderDepthPremium(data: TeamPageData, h: DepthPremiumHelpers): 
     `<div class="sct-dpp" data-sct-depth-premium>` +
     // The banner sits inside the [data-sct-dc] block because its buttons do:
     // the client's view switch looks for them there.
-    `<div class="sct-dpp-views" data-sct-dc>${banner(data, tabs)}${panels.map((p) => p.html).join("")}</div>` +
+    `<div class="sct-dpp-views" data-sct-dc>${premiumTabFrame(banner(data, tabs), panels.map((p) => p.html).join(""))}</div>` +
     `</div>`
   );
 }

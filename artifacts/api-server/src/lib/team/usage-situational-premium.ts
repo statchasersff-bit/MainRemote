@@ -49,11 +49,9 @@ const ICON_ZAP = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="t
 /** The faint football on the header's right (decorative). */
 const BALL = `<svg class="sct-us-sit-ball" viewBox="0 0 120 80" width="120" height="80" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 62C26 24 70 6 108 18 94 56 50 74 12 62z"/><path d="M38 52l44-26"/><path d="M48 44l3 5M54 40l3 5M60 36l3 5M66 33l3 5M72 29l3 5"/></g></svg>`;
 
-/** Prose with its **bold** marks set, and the counts and shares set in bold where the text left them plain. */
+/** Prose as plain text: no bold anywhere in the card bodies (mak, 2026-11-06), so the **marks** are dropped. */
 function prose(body: string): string {
-  const html = e(body).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  if (/<strong>/.test(html)) return html;
-  return html.replace(/\b(\d+(?:\.\d+)?%|\d+ (?:carries|targets)|[+−-]?\d+\.\d+ (?:from last season|per game))/g, "<strong>$1</strong>");
+  return e(body.replace(/\*\*(.+?)\*\*/g, "$1"));
 }
 
 /** The card a takeaway becomes: its title from the lead, its glyph, and whether it is the featured one. */

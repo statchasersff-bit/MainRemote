@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { dataDirStatus } from "../lib/data-dir";
 import { imageCacheStatus } from "../lib/image-cache";
@@ -27,6 +27,7 @@ import {
 } from "../lib/news-known";
 import { invalidateFpaTableCache } from "../lib/fpa/fpa-data";
 import { fetchClubNews } from "../lib/club-news";
+import { fetchOutletNews, OUTLETS } from "../lib/outlet-news";
 import { fetchRotowireNews } from "../lib/rotowire-news";
 import type { RawNewsItem } from "../lib/news-item";
 import { TEAMS } from "../lib/team/teams";
@@ -50,7 +51,15 @@ async function backfillSummaries(): Promise<void> {
   const rows = await db
     .select({ id: newsItems.id, title: newsItems.title })
     .from(newsItems)
-    .where(and(isNull(newsItems.summary), isNotNull(newsItems.title)))
+    // Never the national outlets' lane: those rows are headline-only by rule
+    // (lib/outlet-news.ts), so nothing may be written about them either.
+    .where(
+      and(
+        isNull(newsItems.summary),
+        isNotNull(newsItems.title),
+        or(isNull(newsItems.sourceType), ne(newsItems.sourceType, OUTLET_SOURCE_TYPE)),
+      ),
+    )
     .orderBy(
       sql`${newsItems.pubDateMs} desc nulls last`,
       desc(newsItems.firstSeenAt),
@@ -188,6 +197,8 @@ function makeFallbackId(item: {
  */
 export const WIRE_INTERVAL_MS = 20 * 60 * 1000;
 export const CLUB_INTERVAL_MS = 60 * 60 * 1000;
+/** The national outlets (lib/outlet-news.ts): three small RSS feeds, every 30 minutes. */
+export const OUTLET_INTERVAL_MS = 30 * 60 * 1000;
 /**
  * The RotoWire sweep (2026-11-05): the wire read at its source. Ten minutes,
  * because a team page holds 25 notes and a busy Sunday can push that many
@@ -696,6 +707,73 @@ export async function runClubIngest(): Promise<IngestResult> {
  * Accept either a bare array or `{ items: [...] }`. Shared by the fetch path and
  * the pushed-body path so both understand the same two shapes.
  */
+/* ------------------------------------------------- national outlets lane */
+
+interface OutletIngestState {
+  lastAttemptMs: number | null;
+  lastSuccessMs: number | null;
+  lastResult: IngestResult | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+  feedsOk: number | null;
+  feedsFailed: string[];
+  read: number | null;
+  untagged: number | null;
+}
+
+const outletState: OutletIngestState = {
+  lastAttemptMs: null,
+  lastSuccessMs: null,
+  lastResult: null,
+  lastError: null,
+  consecutiveFailures: 0,
+  feedsOk: null,
+  feedsFailed: [],
+  read: null,
+  untagged: null,
+};
+
+export function outletIngestStatus(): OutletIngestState {
+  return { ...outletState };
+}
+
+/**
+ * Read ProFootballTalk, Yahoo Sports and CBS Sports (lib/outlet-news.ts) and
+ * store the tagged headlines in the "outlet" lane. One feed answering is
+ * enough to count: three independent sites, and the two that worked are worth
+ * keeping.
+ */
+export async function runOutletIngest(): Promise<IngestResult> {
+  outletState.lastAttemptMs = Date.now();
+  try {
+    const sweep = await fetchOutletNews();
+    if (sweep.ok === 0) {
+      throw new Error(
+        `none of the ${OUTLETS.length} outlet feeds answered` +
+          (sweep.failed[0] ? ` - e.g. ${sweep.failed[0].outlet}: ${sweep.failed[0].error}` : ""),
+      );
+    }
+    const result = await storeItems(sweep.items, "National outlets", OUTLET_SOURCE_TYPE);
+    outletState.lastSuccessMs = Date.now();
+    outletState.lastResult = result;
+    outletState.lastError = null;
+    outletState.consecutiveFailures = 0;
+    outletState.feedsOk = sweep.ok;
+    outletState.feedsFailed = sweep.failed.map((f) => f.outlet);
+    outletState.read = sweep.read;
+    outletState.untagged = sweep.untagged;
+    logger.info(
+      { ...result, feedsOk: sweep.ok, read: sweep.read, untagged: sweep.untagged, tooOld: sweep.tooOld },
+      "National outlet sweep complete",
+    );
+    return result;
+  } catch (err) {
+    outletState.lastError = err instanceof Error ? err.message : String(err);
+    outletState.consecutiveFailures++;
+    throw err;
+  }
+}
+
 export function coerceItems(data: unknown): RawNewsItem[] {
   if (Array.isArray(data)) return data as RawNewsItem[];
   const items = (data as { items?: unknown } | null)?.items;
@@ -722,6 +800,7 @@ export const DYNASTY_PROVIDER = "Dynasty Command";
  */
 export const WIRE_SOURCE_TYPE = "wire";
 export const CLUB_SOURCE_TYPE = "club";
+export const OUTLET_SOURCE_TYPE = "outlet";
 
 /**
  * Whether an update would write exactly what is already stored. Compared on
@@ -1006,12 +1085,14 @@ export async function storeItems(
 function laneLabel(sourceType: string): string {
   if (sourceType === WIRE_SOURCE_TYPE) return "NEWS_INGEST";
   if (sourceType === CLUB_SOURCE_TYPE) return "CLUB_INGEST";
+  if (sourceType === OUTLET_SOURCE_TYPE) return "OUTLET_INGEST";
   return `${sourceType.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_INGEST`;
 }
 
 function dbReasonFor(sourceType: string): DbAccessReason {
   if (sourceType === WIRE_SOURCE_TYPE) return "news_ingest";
   if (sourceType === CLUB_SOURCE_TYPE) return "club_ingest";
+  if (sourceType === OUTLET_SOURCE_TYPE) return "outlet_ingest";
   return "x_ingest";
 }
 
@@ -1157,6 +1238,19 @@ router.post("/ingest/clubs", async (req, res) => {
   }
 });
 
+/** POST /api/ingest/outlets - read the three national outlets now. Guarded like the others. */
+router.post("/ingest/outlets", async (req, res) => {
+  if (!requireIngestSecret(req, res)) return;
+  try {
+    const result = await runOutletIngest();
+    const outlets = outletIngestStatus();
+    res.json({ ok: true, ...result, feedsOk: outlets.feedsOk, feedsFailed: outlets.feedsFailed, read: outlets.read, untagged: outlets.untagged });
+  } catch (err) {
+    req.log.error({ err }, "National outlet sweep failed");
+    res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 /** POST /api/ingest/rotowire - sweep RotoWire's team pages now. Guarded like the others. */
 router.post("/ingest/rotowire", async (req, res) => {
   if (!requireIngestSecret(req, res)) return;
@@ -1213,6 +1307,7 @@ router.get("/status", (_req, res) => {
   void (async () => {
     const ingest = ingestStatus();
     const clubs = clubIngestStatus();
+    const outlets = outletIngestStatus();
     const rotowire = rotowireIngestStatus();
     const fpa = fpaRefreshStatus();
     const nowMs = Date.now();
@@ -1300,6 +1395,19 @@ router.get("/status", (_req, res) => {
           // logs, "was, min, chi" is already the answer.
           feedsFailed: clubs.clubsFailed,
           feedsStale: clubs.clubsStale,
+        },
+        outlets: {
+          lastAttempt: iso(outlets.lastAttemptMs),
+          lastSuccess: iso(outlets.lastSuccessMs),
+          lastResult: outlets.lastResult,
+          lastError: outlets.lastError,
+          consecutiveFailures: outlets.consecutiveFailures,
+          feedsOk: outlets.feedsOk,
+          feedsTotal: OUTLETS.length,
+          feedsFailed: outlets.feedsFailed,
+          headlinesRead: outlets.read,
+          untagged: outlets.untagged,
+          intervalMs: OUTLET_INTERVAL_MS,
         },
         // Fantasy Points Allowed, which is a weekly ingest with no traffic
         // hook behind it and so the one most able to stop without anyone

@@ -16,7 +16,7 @@
  */
 
 import { escapeHtml } from "../render";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import {
   GROUPS,
   IDENTITY_KEYS,
@@ -316,14 +316,17 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   void cityOf;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
-    premiumTabHead({
-      hook: "sct-cp-head",
-      icon: "coaching",
-      art: "coaching",
-      heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
-      dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
-    }) +
-    `<div class="sct-cp-overview">${profileCard(c, team)}${kpiCards(c, view)}</div>` +
+    premiumTabFrame(
+      premiumTabHead({
+        hook: "sct-cp-head",
+        icon: "coaching",
+        art: "coaching",
+        heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
+        dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
+      }),
+      `<div class="sct-cp-overview">${profileCard(c, team)}${kpiCards(c, view)}</div>`,
+      { solo: true },
+    ) +
     (calling.length
       ? section("Play Calling", ICON["play"]!, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)
       : "") +

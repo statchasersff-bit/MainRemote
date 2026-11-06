@@ -185,6 +185,14 @@ export interface PremiumTabHeadOptions {
    * two would share the same spot.
    */
   actionsHtml?: string;
+  /**
+   * A shorter title for phones (560px and under; mak, 2026-11-06:
+   * "Contracts & Salary Cap", "2026 Team Stats"). Printed aria-hidden beside
+   * the heading and shown only there, where the real heading is visually
+   * hidden: its words (the H2, or the page's H1 on a section address) never
+   * change, so search and screen readers read the full heading.
+   */
+  phoneTitle?: string;
   /** The faint art on the right: the play diagram unless a tab has its own. */
   art?: "play" | "draft" | "coaching" | "outlook" | "stats" | "contracts" | "news" | "depth" | "schedule";
 }
@@ -295,7 +303,7 @@ function scheduleArt(): string {
 
 const SCHEDULE_ART = scheduleArt();
 
-const TAB_ART: Record<NonNullable<PremiumTabHeadOptions["art"]>, string> = {
+export const TAB_ART: Record<NonNullable<PremiumTabHeadOptions["art"]>, string> = {
   play: ART,
   draft: DRAFT_ART,
   coaching: COACHING_ART,
@@ -312,10 +320,27 @@ export function premiumTabHead(o: PremiumTabHeadOptions): string {
     `<header class="sct-up-head${o.hook ? ` ${o.hook}` : ""}${o.actionsHtml ? " has-actions" : ""}">` +
     `<span class="sct-up-head-icon">${PREMIUM_HEAD_ICON[o.icon]}</span>` +
     `<span class="sct-up-head-rule" aria-hidden="true"></span>` +
-    `<div class="sct-up-head-text">${o.heading}<p class="sct-up-dek${o.dekClass ? ` ${o.dekClass}` : ""}">${o.dekHtml ?? escapeHtml(o.dek ?? "")}</p></div>` +
+    `<div class="sct-up-head-text${o.phoneTitle ? " has-phone-title" : ""}">${o.heading}` +
+    (o.phoneTitle ? `<p class="sct-up-m-title" aria-hidden="true">${escapeHtml(o.phoneTitle)}</p>` : "") +
+    `<p class="sct-up-dek${o.dekClass ? ` ${o.dekClass}` : ""}">${o.dekHtml ?? escapeHtml(o.dek ?? "")}</p></div>` +
     (o.actionsHtml
       ? `<div class="sct-up-head-actions">${o.actionsHtml}</div>`
       : o.art ? TAB_ART[o.art] : ART) +
     `</header>`
+  );
+}
+
+/**
+ * The tab banner and the block under it in one frame, the banner its header
+ * (mak, 2026-11-06: the Outlook tab's framing, "yes" to the same on every
+ * tab). `solo` marks a body that is a single card: the card drops its own
+ * border and becomes the frame's body (team.css, .sct-tab-frame).
+ */
+export function premiumTabFrame(head: string, body: string, opts: { solo?: boolean; hook?: string } = {}): string {
+  return (
+    `<div class="sct-tab-frame${opts.hook ? ` ${opts.hook}` : ""}">` +
+    head +
+    `<div class="sct-tab-frame-body${opts.solo ? " is-solo" : ""}">${body}</div>` +
+    `</div>`
   );
 }

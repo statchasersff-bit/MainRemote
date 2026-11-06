@@ -1567,12 +1567,14 @@ describe("the injury tab", () => {
       );
       if (episodes.length === 0) continue;
       for (const episode of episodes) {
+        // The current season's "Healthy" line is one sentence: no heading,
+        // no when/cost (it shows once no injury has cost him a game; since
+        // 2026-11-06 a week sat out for any other reason no longer counts).
+        if (episode.querySelector(".scp-inp-ev.is-now")) continue;
         assert.ok(
           episode.querySelector("h3")?.textContent.trim(),
           `${player.slug}: an entry with no heading`,
         );
-        // The current season's "Healthy" line is one sentence, no when/cost.
-        if (episode.querySelector(".scp-inp-ev.is-now")) continue;
         assert.ok(
           episode.querySelector(".scp-inp-ev-meta")?.textContent.trim(),
           `${player.slug}: an entry with no when/cost line`,
@@ -1934,7 +1936,7 @@ describe("the bio tab", () => {
       assert.equal(bio.querySelector(".scp-bio"), null, `${page.player.slug}: the old narrative is gone`);
       assert.equal(bio.querySelector(".scp-stints"), null, `${page.player.slug}: the old timeline is gone`);
       // The premium "Bio and Career" block (bio-premium.ts, 2026-11-05) is
-      // the tab: its banner, Career Overview, Career Timeline and stops bars
+      // the tab: its banner, Career Timeline and stops bars
       // are the tab's headings.
       const headings = [...bio.querySelectorAll("h2")].map((h) => h.textContent.trim());
       // "{Name} Bio" is the section page's H1 (the hero's heading, the entity
@@ -3109,8 +3111,8 @@ describe("player section URLs", () => {
     injury: / Injury Status and History$/,
     "game-log": /Game Log \d{4}$/,
     outlook: /Rest-of-Season Projection$/,
-    news: /Season Timeline$/,
-    bio: /Career Timeline$/,
+    news: /News & Updates$/,
+    bio: /Bio and Career$/,
   };
 
   /*

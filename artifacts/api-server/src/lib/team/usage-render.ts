@@ -778,31 +778,87 @@ function passMap(view: UsageView): string {
  * against the three before them, with the actual weeks and game counts of
  * both windows stated, so unequal samples are never implied equal.
  */
+/* ------------------------------------------------ the premium frame */
+
+/*
+ * The last three sections wear the premium frame the rest of the page does
+ * (mak, 2026-11-06: "redesign to match the rest of the page and other
+ * tabs"): the Situational Usage title bar (icon tile, gold rule, title over
+ * its explainer, stripes, gold accents) on a .sct-us-prm card, with the
+ * section's own content restyled under .sct-us-xp in team.css.
+ */
+const XP_ICON = {
+  trend: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>`,
+  info: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.9" r="0.95" fill="currentColor"/></svg>`,
+  bolt: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg>`,
+  tools: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 7h10M4 17h6M18 7h2M14 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  arrow: `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+
+/** The section's title bar: the Situational Usage header, with its own icon, title and explainer. */
+function xpHead(id: string, icon: string, title: string, sub: string): string {
+  return (
+    `<header class="sct-us-prm-head is-sit">` +
+    `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
+    `<span class="sct-us-sit-rule" aria-hidden="true"></span>` +
+    `<div class="sct-us-sit-titles">` +
+    `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
+    `<p class="sct-us-sit-sub">${e(sub)}</p>` +
+    `</div>` +
+    `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
+    `</header>`
+  );
+}
+
+/** A collapsed key ("How these numbers are counted", "How to read this table") as a soft note panel. */
+function xpKey(cls: string, summary: string, list: string): string {
+  return (
+    `<details class="sct-us-key-help${cls ? ` ${cls}` : ""}">` +
+    `<summary class="sct-us-key-sum"><span class="sct-us-xp-key-icon">${XP_ICON.info}</span>${e(summary)}</summary>` +
+    list +
+    `</details>`
+  );
+}
+
 function trendsBlock(view: UsageView, team: NflTeam): string {
   const items = usageTrends(view);
   const lines = items.length
     ? `<ul class="sct-us-trends">` +
       items
-        .map(
-          (t) =>
+        .map((t) => {
+          // "+7 pp" is a snap-share move, "−8.5 pts" a target-share one (usageTrends()).
+          const metric = /pp$/.test(t.headline) ? "Snap share" : "Target share";
+          return (
             `<li class="sct-us-trend is-${t.direction}">` +
-            `<span class="sct-us-trend-num sct-us-num" aria-hidden="true">${e(t.headline)}</span>` +
+            `<div class="sct-us-trend-top">${faceWell(t.player)}` +
+            `<span class="sct-us-trend-meta"><span class="sct-us-trend-metric">${e(metric)}</span>` +
+            // Printed with "%", not "pp"/"pts" (mak, 2026-11-06): "+7%", "−8.5%".
+            `<span class="sct-us-trend-num sct-us-num" aria-hidden="true">${e(t.headline.replace(/\s*(pp|pts)$/, "%"))}</span></span>` +
+            `<span class="sct-us-trend-arrow" aria-hidden="true">${t.direction === "up" ? "▲" : "▼"}</span>` +
+            `</div>` +
             `<p class="sct-us-trend-body"><strong>${playerLink(t.player, "sct-us-trend-name")}</strong> ${e(t.body)}</p>` +
-            `</li>`,
-        )
+            `</li>`
+          );
+        })
         .join("") +
       `</ul>`
     : `<p class="sct-us-note">${e(
         `No ${team.nickname} player's snap share or target share has moved past the steady band (5 and 2 points) over his last three games against the three before them.`,
       )}</p>`;
   return (
-    `<div class="sct-us-card" id="usage-trends">` +
-    h3("Notable Usage Changes") +
-    `<p class="sct-us-sub">${e(
+    `<section class="sct-us-prm sct-us-xp sct-us-chg" id="usage-trends" aria-labelledby="usage-trends-title">` +
+    xpHead(
+      "usage-trends-title",
+      XP_ICON.trend,
+      "Notable Usage Changes",
       "Role changes that clear the steady band: snap share by 5 points or target share by 2, the last three games a player played against the three before them, with the weeks each window covers.",
-    )}</p>` +
+    ) +
+    `<div class="sct-us-xp-body">` +
     lines +
-    `</div>`
+    definitions(view, team) +
+    `</div>` +
+    `</section>`
   );
 }
 
@@ -827,12 +883,7 @@ function definitions(view: UsageView, team: NflTeam): string {
     `Passing distribution: the primary passer's attempts with a charted location and depth; the coverage line under the map says how many that is.`,
     `Changes: the snap table compares the club's last three games with its three before them; the trends list and the fantasy table compare the player's own last three games with the three he played before them, and name the weeks.`,
   ];
-  return (
-    `<details class="sct-us-key-help sct-us-defs">` +
-    `<summary class="sct-us-key-sum">How these numbers are counted</summary>` +
-    `<ul class="sct-us-legend is-defs">${items.map((t) => `<li>${e(t)}</li>`).join("")}</ul>` +
-    `</details>`
-  );
+  return xpKey("sct-us-defs", "How these numbers are counted", `<ul class="sct-us-legend is-defs">${items.map((t) => `<li>${e(t)}</li>`).join("")}</ul>`);
 }
 
 /* ------------------------------------------------------------------- table */
@@ -1182,17 +1233,17 @@ function legend(): string {
     ["", "Moves", "every \"last 3\" is the last three games' average against the three games before them; the weeks that covers for a player are in his expanded profile"],
     ["", "+ button", "opens the full advanced profile - league rank, first-read share, air-yards share, inside-10 carries, xFP/FPOE - with percentile bars vs. the league"],
   ];
-  return (
-    `<details class="sct-us-key-help">` +
-    `<summary class="sct-us-key-sum">How to read this table</summary>` +
+  return xpKey(
+    "",
+    "How to read this table",
     `<ul class="sct-us-legend">` +
-    items
-      .map(
-        ([tier, label, text]) =>
-          `<li>${tier ? `<span class="sct-us-tier is-${tier}">${e(label)}</span>` : `<strong>${e(label)}:</strong>`} ${e(text)}</li>`,
-      )
-      .join("") +
-    `</ul></details>`
+      items
+        .map(
+          ([tier, label, text]) =>
+            `<li>${tier ? `<span class="sct-us-tier is-${tier}">${e(label)}</span>` : `<strong>${e(label)}:</strong>`} ${e(text)}</li>`,
+        )
+        .join("") +
+      `</ul>`,
   );
 }
 
@@ -1229,7 +1280,14 @@ function handcuff(view: UsageView): string {
   const { rb1, rb2 } = cuff;
   const line = handcuffFantasyLine(view);
   return (
-    (line ? `<p class="sct-us-takeaway sct-us-handcuff"><strong>${e(line.lead)}</strong> ${md(line.body)}</p>` : "") +
+    (line
+      ? `<div class="sct-us-prm-insight sct-us-handcuff">` +
+        `<span class="sct-us-prm-insight-icon" aria-hidden="true">${XP_ICON.bolt}</span>` +
+        `<span class="sct-us-prm-insight-slash" aria-hidden="true"></span>` +
+        `<p class="sct-us-takeaway"><strong>${e(line.lead)}</strong> ${md(line.body)}</p>` +
+        `</div>`
+      : "") +
+    `<div class="sct-us-xp-bridges">` +
     bridge(
       "Need the handcuff?",
       `See where ${e(rb2.name)} ranks among the NFL's backup running backs in our ${tool(RB_HANDCUFF_RANKINGS_URL, "RB Handcuff Rankings", "rb-handcuffs-usage-handcuff")}` +
@@ -1245,7 +1303,8 @@ function handcuff(view: UsageView): string {
           `Compare ${e(rb1.name)} and ${e(rb2.name)} in the ${tool(DYNASTY_TRADE_CALCULATOR_URL, "Dynasty Trade Calculator", "dynasty-trade-calc-usage-handcuff")}, see how each player fits your roster in the ${tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-handcuff")}, or check their current place in the ${tool(DYNASTY_RANKINGS_URL, "Dynasty Rankings", "dynasty-rankings-usage-handcuff")}.`,
           true,
         )
-      : "")
+      : "") +
+    `</div>`
   );
 }
 
@@ -1267,7 +1326,8 @@ function conversion(): string {
   };
   return (
     `<div class="sct-us-convert">` +
-    `<h4 class="sct-us-h4">Put This Usage Data to Work</h4>` +
+    `<div class="sct-us-xp-ph"><span class="sct-us-xp-ph-icon" aria-hidden="true">${XP_ICON.tools}</span>` +
+    `<h4 class="sct-us-h4">Put This Usage Data to Work</h4></div>` +
     `<p class="sct-us-convert-lead">Usage data becomes much more useful when you connect it to the decision you are actually trying to make.</p>` +
     `<div class="sct-us-products">` +
     ask(
@@ -1314,17 +1374,21 @@ function fantasy(view: UsageView, team: NflTeam): string {
   const tableHtml = table(view, team);
   if (!tableHtml) return "";
   return (
-    `<div class="sct-us-fantasy" id="fantasy">` +
-    h3("Advanced & Fantasy Analysis") +
-    `<p class="sct-us-sub">${e(
+    `<section class="sct-us-prm sct-us-xp sct-us-fantasy" id="fantasy" aria-labelledby="usage-fantasy-title">` +
+    xpHead(
+      "usage-fantasy-title",
+      XP_ICON.star,
+      "Advanced & Fantasy Analysis",
       `The same ${team.nickname} usage read for fantasy football: each player's opportunity as a percentile at his position, a lineup read, and the advanced profile behind the + button - expected fantasy points (xFP), points over expected (FPOE), WOPR, first-read share and air-yards share, each as a percentile against the league.`,
-    )}</p>` +
+    ) +
+    `<div class="sct-us-xp-body">` +
     tableHtml +
     legend() +
     signals(view) +
     handcuff(view) +
     conversion() +
-    `</div>`
+    `</div>` +
+    `</section>`
   );
 }
 
@@ -1385,8 +1449,9 @@ export function renderUsageSection(
     // runDirection() and passMap() cards are unmounted (RETIRED_USAGE_BLOCKS).
     premiumRunDirection(view) +
     premiumPassMap(view) +
+    // Notable Usage Changes carries "How these numbers are counted" at its
+    // foot since the premium frame (2026-11-06).
     trendsBlock(view, team) +
-    definitions(view, team) +
     fantasy(view, team) +
     `</div>`;
 

@@ -896,7 +896,8 @@ button.scp-search-opt {
     transform: translateX(-50%);
   }
 
-  .scp #overview .scp-ox-sec > .scp-ox-more {
+  .scp #overview .scp-ox-sec > .scp-ox-more,
+  .scp #overview .scp-ovp-body > .scp-ox-more {
     display: block;
     text-align: center;
   }
@@ -6986,42 +6987,87 @@ a.scp-peer:focus-visible {
  *                38px portrait well, the same name over the same position ink.
  *   the STANDING is the peers rail's rank badge (.scp-peer-rank), navy pill
  *                and all, because it says the same thing that rail says.
- *   the CHIPS    are the pill group the scoring toggle wore before the
- *                control bar traded it for the start/sit button - a hairline
- *                capsule of 999px pills, lit one at a time - as buttons.
- *   the CARD     is the recessed treatment described at the top of this file:
- *                soft fill, hairline, no shadow, with the club's primary as a
- *                left rule and a wash behind the heading - the peer card's
- *                --peer-team device at card scale.
+ *   the CHIPS    and the CARD were restyled 2026-11-06 (see the note below):
+ *                separate pills, white cards with the club's own gradient.
  *
  * The club color arrives as --club on the section, from the same team table
  * the hero paints itself with, so a club cannot be one color here and another
  * one page deeper.
  */
 
+/*
+ * 2026-11-06 redesign (mak's rankings-grid brief): white cards with the club's
+ * own gradient header, separate pills for the positions, a three-column grid
+ * that drops to two and then one with the width it is given. The data, the
+ * order and the client wiring are untouched; only these rules changed.
+ *
+ * The brief's reference colors are held here, on the index root only, so the
+ * profile's tokens are not touched by a page that is not a profile.
+ */
+.scp[data-scp-index] {
+  --dir-navy: #0b3a7a;
+  --dir-deep: #081e42;
+  --dir-gold: #d4af37;
+  --dir-ink: #101b34;
+  --dir-muted: #52647f;
+  --dir-border: #d6e0ed;
+  --dir-rule: #e4eaf2;
+  --dir-soft: #f5f8fc;
+  --dir-hover: #eef3f9;
+}
+
 .scp-dir-tools {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 13px;
 }
 
-/*
- * The search box is the profile's widget, unchanged.
- *
- * There it opens the page and carries the 24px the hero used to; here it is
- * the first row of a stack whose gap already spaces it, so the margin goes and
- * the box is held to a width a name fits in rather than the grid's four
- * columns of clubs.
- */
+/* The search box opens the section: no margin above it, and a width a name
+   fits in rather than the grid's. */
 .scp-dir-tools .scp-search {
   margin: 0;
-  max-width: 420px;
+  max-width: 580px;
+}
+
+.scp[data-scp-index] .scp-search-input {
+  border-color: var(--dir-border);
+  color: var(--dir-ink);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.scp[data-scp-index] .scp-search-input::placeholder {
+  color: var(--dir-muted);
+}
+
+.scp[data-scp-index] .scp-search-icon {
+  stroke: var(--dir-muted);
+}
+
+.scp[data-scp-index] .scp-search-input:hover {
+  border-color: #b9c8dc;
+}
+
+/* A quiet gold ring rather than the profile's offset outline. */
+.scp[data-scp-index] .scp-search-input:focus-visible {
+  outline: none;
+  border-color: var(--dir-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.22);
+}
+
+/* 14px where there is a mouse; a phone keeps 16px, under which iOS zooms the
+   page on focus. 42px tall either way. */
+@media (min-width: 641px) {
+  .scp[data-scp-index] .scp-search-input {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 14px;
+  }
 }
 
 .scp-dir-filters {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -7035,98 +7081,91 @@ a.scp-peer:focus-visible {
 
 .scp-dir-filters-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--sc-muted);
+  color: var(--dir-deep, var(--sc-ink));
 }
 
+/* Separate pills now, not one capsule track. */
 .scp-dir-chips {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface-soft);
+  gap: 8px;
 }
 
 .scp-dir-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 0;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--dir-border, var(--sc-border));
   border-radius: 999px;
-  background: transparent;
-  /* A <button> does not inherit the page's type, and every other pill in this
-     stylesheet is an <a> that does; without this the chips would be the one
-     control here set in the browser's default face. */
+  background: #fff;
+  /* A <button> does not inherit the page's type; every other pill here does. */
   font: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
-  color: var(--sc-muted-strong);
+  color: var(--dir-ink, var(--sc-ink));
+  white-space: nowrap;
   cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .scp-dir-chip:hover {
-  color: var(--tp-ink, var(--sc-ink));
+  background: var(--dir-hover, var(--sc-surface-soft));
+  border-color: #b9c8dc;
 }
 
 .scp-dir-chip:focus-visible {
-  outline: 2px solid var(--sc-gold-deep);
+  outline: 2px solid var(--dir-gold, var(--sc-gold-deep));
   outline-offset: 2px;
 }
 
-.scp-dir-chip.is-active {
-  background: var(--sc-navy);
+/* Navy with a gold hairline inside the border. */
+.scp-dir-chip.is-active,
+.scp-dir-chip.is-active:hover {
+  background: var(--dir-deep, var(--sc-navy));
+  border-color: var(--dir-deep, var(--sc-navy));
+  box-shadow: inset 0 0 0 1px var(--dir-gold, var(--sc-gold));
   color: #fff;
 }
 
-/* The count rides inside the chip, a step quieter than the position it counts. */
+/* The count rides inside the chip, a step quieter than the position. */
 .scp-dir-chip-n {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--sc-muted);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dir-muted, var(--sc-muted));
   font-variant-numeric: tabular-nums;
 }
 
 .scp-dir-chip.is-active .scp-dir-chip-n {
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.8);
 }
 
-/* A chip the club filter has emptied is taken off the row, and a `display` of
-   its own beats the `hidden` attribute's - the same trap the search box and
-   the chip row above both had to say this for. */
+/* A chip the club filter has emptied is taken off the row. */
 .scp-dir-chip[hidden] {
   display: none;
 }
 
 /*
- * The club filter: the chosen club's name, and the way out of it.
- *
- * It sits in the toolbar row beside the position chips, in the same label and
- * pill-track arrangement, because it is the same kind of statement about what
- * the list below is showing. It is one pill rather than a group of thirty-two:
- * the search box above is how a club is chosen, so all this has to do is say
- * which one, and be dismissible.
+ * The club filter: the chosen club's name, and the way out of it. Same label
+ * and pill arrangement as the positions; one pill, since the search box is
+ * how a club is chosen.
  */
 .scp-dir-club-filter {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* Hidden until a club is picked, and `display: flex` above would otherwise
-   put an empty label and an empty pill on the row from the start. */
 .scp-dir-club-filter[hidden] {
   display: none;
 }
 
-/* The dismiss mark, quieter than the name it follows and set off from it by
-   the space the chip's own gap already provides. */
 .scp-dir-chip-x {
   font-size: 13px;
   line-height: 1;
@@ -7137,227 +7176,212 @@ a.scp-peer:focus-visible {
   color: #fff;
 }
 
-/*
- * What the standings column means, said once.
- *
- * "QB14" is a claim about a season, a scoring format and a measure. Six
- * hundred of them with none of the three named is asking to be misread - most
- * of all in September, when the rank is over points scored in a game or two
- * rather than the rate it becomes in October.
- */
+/* What the standings column means, said once: season, format, measure, week. */
 .scp-dir-note {
   margin: 14px 0 0;
-  font-size: 12px;
-  color: var(--sc-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--dir-ink, var(--sc-ink));
 }
 
 .scp-dir-note b {
-  color: var(--tp-ink, var(--sc-ink));
+  color: var(--dir-ink, var(--sc-ink));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * The grid: three equal columns at most, never narrower than 300px.
+ *
+ * Sized off the width the grid is given rather than the viewport, because the
+ * WordPress column is narrower than the window: three columns while each can
+ * be 300px, then two, then one - no breakpoint to keep in step with the host.
+ * `align-items: start` keeps every card at its own height.
+ */
 .scp-dir {
   display: grid;
-  /* Wide enough for a name, a position and a standing without wrapping, and
-     narrow enough that a desktop shows four columns of clubs rather than two. */
-  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(max(300px, calc((100% - 32px) / 3)), 1fr));
+  gap: 18px 16px;
   align-items: start;
   margin-top: 18px;
 }
 
-/*
- * Filtered to one club, this is not a grid.
- *
- * auto-fill lays four tracks whatever is in them, so the one card left would
- * take the first of them and sit in a 288px column with three empty ones
- * beside it, reading as a card that failed to load rather than as the answer.
- * One track, wide enough to read a roster in and no wider - a single card
- * stretched across four columns is a worse answer than a narrow one.
- */
+/* Filtered to one club, one track of a readable width, not a grid. */
 .scp-dir[data-club] {
   grid-template-columns: minmax(0, 420px);
 }
 
 .scp-dir-club {
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface-soft);
+  border: 1px solid var(--dir-border, var(--sc-border));
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(12, 35, 75, 0.07);
   overflow: hidden;
 }
 
+/*
+ * The club's own colors (teamHeaderColors): its primary at the left, held to
+ * 4.5:1 under white text, into its dark base; the accent as a 3px rule under
+ * the band, which is where the Bears' orange and the Steelers' gold show.
+ */
 .scp-dir-club-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--sc-hairline);
-  /* White under the wash, not the card's soft fill: the heading is the one
-     band of this card that sits on top of it. */
-  background:
-    linear-gradient(
-      to right,
-      color-mix(in srgb, var(--club, var(--sc-navy)) 16%, transparent),
-      transparent 68%
-    ),
-    var(--sc-surface);
-  box-shadow: inset 3px 0 0 var(--club, var(--sc-navy));
+  min-height: 48px;
+  padding: 8px 12px;
+  background: linear-gradient(
+    105deg,
+    var(--club-head, var(--dir-navy)) 0%,
+    var(--club-deep, var(--dir-deep)) 100%
+  );
+  box-shadow: inset 0 -3px 0 var(--club-accent, var(--dir-gold));
+  padding-bottom: 11px;
 }
 
+/* A lift under the mark, so a dark logo (the Raiders', the Saints') still
+   separates from a dark band. */
 .scp-dir-club-logo {
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
 }
 
 .scp-dir-club-name {
   margin: 0;
   min-width: 0;
-  font-size: 13px !important;
+  font-size: 16px !important;
   font-weight: 800;
-  line-height: 1.2;
-  /* Stated rather than inherited from `.scp`, because this is a heading and a
-     host theme's heading rule beats inheritance. Not enough on its own - see
-     the armed copy in "host overrides" - but the component's own color
-     belongs with the component. */
-  color: var(--tp-ink, var(--sc-ink)) !important;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  color: #fff !important;
 }
 
 .scp-dir-club-link {
-  color: var(--tp-ink, var(--sc-ink));
+  color: #fff;
   text-decoration: none;
 }
 
 .scp-dir-club-link:hover {
-  color: var(--tp-ink, var(--club, var(--sc-navy)));
+  color: #fff;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .scp-dir-club-link:focus-visible {
-  outline: 2px solid var(--sc-gold-deep);
+  outline: 2px solid #fff;
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /*
- * How many of this club's players are scoring, out of how many are listed.
- *
- * The roster count on its own was the same number on all thirty-two cards. The
- * pair is the one fact the header can carry in the space it has: the ink half
- * is the players with production behind them, the muted half is the depth
- * under them. Both are counted by the same rule the rows are banded by, so the
- * header and the list can never disagree.
+ * How many of this club's players are scoring, out of how many are listed:
+ * a gold-ruled pill on a dark tint, white numerals. Counted by the same rule
+ * the rows are banded by, so the header and the list never disagree.
  */
 .scp-dir-club-count {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
+  flex: 0 0 auto;
   gap: 3px;
   margin-left: auto;
-  padding-left: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--dir-gold, var(--sc-gold));
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
   font-size: 11px;
-  font-weight: 700;
-  color: var(--tp-ink, var(--sc-ink));
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
+.scp-dir-club-count b {
+  font-weight: 800;
+}
+
 .scp-dir-club-of {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .scp-dir-list {
-  display: grid;
-  gap: 1px;
+  display: block;
   margin: 0;
-  padding: 5px;
+  padding: 4px 6px 6px;
   list-style: none;
 }
 
-/*
- * A hairline where the depth chart turns over from one position to the next.
- *
- * Not five sections with five headings: a card 288px wide cannot afford four
- * more headings, and the position ink beside every name already says which
- * group a row is in. This only marks where the runs meet, which is the part
- * the ink cannot say - it turns "find the tight ends" from reading eighteen
- * labels into finding the third rule down.
- *
- * `data-grouped` comes off the list when a position chip is pressed, because a
- * list filtered to one position has no runs to divide and the rule would just
- * be a line under the header.
- */
+/* A hairline between rows, and a stronger rule with a little air where the
+   card turns over from one position to the next. `data-grouped` comes off
+   the list when a position chip is pressed: one position has no runs. */
+.scp-dir-item {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--dir-rule, var(--sc-hairline));
+}
+
+.scp-dir-item:first-child {
+  border-top: 0;
+}
+
 .scp-dir-list[data-grouped] .scp-dir-item[data-lead] {
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px solid var(--sc-hairline);
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--dir-border, var(--sc-border));
 }
 
 .scp-dir-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 5px 7px;
-  border-radius: var(--sc-radius-xs);
-  /* One token for the row's fill, because two things set it: the band a row
-     is in (from the <li>, inherited) and the pointer (from the row itself,
-     which therefore wins without needing to out-specify the band). */
-  background: var(--row-fill, transparent);
-  color: var(--tp-ink, var(--sc-ink));
+  min-height: 46px;
+  padding: 5px 6px;
+  border-radius: 8px;
+  color: var(--dir-ink, var(--sc-ink));
   text-decoration: none;
+  transition: background-color 130ms ease;
 }
 
-/*
- * The club's own color, washed right out.
- *
- * The sink was the honest default when every row looked alike. Now that the
- * rows carry weight of their own, a hover has to be legible over the elite
- * row's tint as well as under the quietest one, and a wash of the club color
- * the card is already ruled and headed in is the one that reads as this card
- * responding rather than as another gray.
- */
+/* The highlight is a state - hover, keyboard focus - never a decoration on
+   whichever rows a band picks. */
 .scp-dir-row:hover,
 .scp-dir-row:focus-visible {
-  --row-fill: color-mix(in srgb, var(--club, var(--sc-navy)) 9%, var(--sc-surface));
-}
-
-.scp-dir-row:hover .scp-dir-name {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  background: var(--dir-hover, var(--sc-surface-soft));
 }
 
 .scp-dir-row:focus-visible {
-  outline: 2px solid var(--sc-gold-deep);
+  outline: 2px solid var(--dir-gold, var(--sc-gold-deep));
   outline-offset: -2px;
 }
 
 .scp-dir-face {
   position: relative;
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--sc-radius-xs);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   overflow: hidden;
-  /* The club's color washed out behind the portrait - the peer well's
-     device, at the search row's size. A player Sleeper has no thumbnail for
-     is left with this, which is the well doing its own job. */
+  /* The club's color washed out behind the portrait; a player with no photo
+     keeps the well at the same size, so the column never shifts. */
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      color-mix(in srgb, var(--club, var(--sc-navy)) 22%, transparent),
+      color-mix(in srgb, var(--club, var(--dir-navy)) 20%, transparent),
       transparent 74%
     ),
-    var(--sc-surface-sink);
+    var(--dir-soft, var(--sc-surface-sink));
+  box-shadow: inset 0 0 0 1px rgba(16, 27, 52, 0.06);
 }
 
 .scp-dir-shot {
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  /* Cropped to the top of the frame for the reason .scp-search-shot is:
-     Sleeper's cutouts are mostly shoulder. */
   object-fit: cover;
   object-position: 50% 8%;
 }
@@ -7365,25 +7389,35 @@ a.scp-peer:focus-visible {
 .scp-dir-who {
   display: flex;
   min-width: 0;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .scp-dir-name {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  color: var(--dir-ink, var(--sc-ink));
   overflow-wrap: anywhere;
 }
 
-/* The site's four position inks. A kicker keeps the muted gray rather than
-   taking a fifth color that would only ever mean "other". */
+.scp-dir-row:hover .scp-dir-name,
+.scp-dir-row:focus-visible .scp-dir-name {
+  color: var(--dir-deep, var(--sc-ink));
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* One ink per position, the same on every club. */
 .scp-dir-pos {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
+  line-height: 1.1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--sc-muted);
+  color: var(--dir-deep, var(--sc-muted));
 }
 
 .scp-dir-pos[data-pos="QB"] {
@@ -7402,148 +7436,176 @@ a.scp-peer:focus-visible {
   color: var(--sc-pos-te);
 }
 
-/*
- * The rank and what earned it, as one object rather than two.
- *
- * They were a pill and a number with air between them, which read as two
- * separate facts about the same player. They are one fact said twice - the
- * place and the number behind it - so they are stacked on one baseline rhythm
- * with the unit in lowercase, and the pair is what the bands below vary.
- */
+/* The rank over the number behind it, right-aligned in a fixed column so a
+   long name wraps instead of pushing it off the card. */
 .scp-dir-stand {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0;
+  gap: 3px;
+  min-width: 64px;
   margin-left: auto;
-  padding-left: 8px;
+  padding-left: 6px;
   text-align: right;
 }
 
+/*
+ * Pill or label, by finishBadge()'s band (directoryBand()), not by eye:
+ *   elite, starter  a filled navy pill - a weekly starter at the position
+ *   streaming,depth a navy label with no fill
+ *   poor, idle      the same label in the muted ink
+ * Both shapes are 20px tall, so the column lines up whatever the band.
+ */
 .scp-dir-rank {
-  padding: 2px 7px;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
   border-radius: 999px;
-  background: var(--scp-tier-2);
+  background: transparent;
+  color: var(--dir-navy, var(--sc-navy));
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-dir-item[data-band="elite"] .scp-dir-rank,
+.scp-dir-item[data-band="starter"] .scp-dir-rank {
+  background: var(--dir-navy, var(--sc-navy));
   color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp-dir-value {
-  font-size: 10px;
-  line-height: 1.4;
-  color: var(--sc-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-/* A player who has not taken part in a game this season. The column still
-   prints something, because a blank in a list of six hundred reads as a
-   rendering fault rather than as "he has not played". */
-.scp-dir-stand.is-empty {
-  color: var(--sc-muted);
-  font-size: 12px;
-}
-
-/* elite - top-12 at a skill position, top-5 at QB or TE. The card's headline
-   names, and the only band that tints its whole row. */
-.scp-dir-item[data-band="elite"] {
-  --row-fill: color-mix(in srgb, var(--scp-tier-1) 6%, transparent);
-}
-
-.scp-dir-item[data-band="elite"] .scp-dir-name {
-  font-weight: 800;
-}
-
-.scp-dir-item[data-band="elite"] .scp-dir-rank {
-  background: var(--scp-tier-1);
-}
-
-.scp-dir-item[data-band="elite"] .scp-dir-value {
-  color: var(--sc-muted-strong);
-  font-weight: 700;
-}
-
-/* streaming - the flex range. A step down the ramp, nothing else. */
-.scp-dir-item[data-band="streaming"] .scp-dir-rank {
-  background: var(--scp-tier-3);
-}
-
-/* depth - on a roster, not in a lineup. The ramp's pale end flips its label to
-   ink, exactly as .scp-finish-badge does, because white on tier 4 is not a
-   contrast this file is willing to print. */
-.scp-dir-item[data-band="depth"] .scp-dir-name {
-  font-weight: 600;
-}
-
-.scp-dir-item[data-band="depth"] .scp-dir-rank {
-  background: var(--scp-tier-4);
-  color: var(--tp-ink, var(--sc-ink));
-}
-
-/* poor - a rank, but a rank nobody is starting. Off the ramp entirely: the
-   pill keeps its shape so the column still lines up, and loses its fill so it
-   stops competing with the pills above it. */
-.scp-dir-item[data-band="poor"] .scp-dir-name,
-.scp-dir-item[data-band="idle"] .scp-dir-name {
-  font-weight: 600;
-  color: var(--sc-muted-strong);
 }
 
 .scp-dir-item[data-band="poor"] .scp-dir-rank,
 .scp-dir-item[data-band="idle"] .scp-dir-rank {
-  background: var(--sc-surface-sink);
-  color: var(--sc-muted-strong);
+  color: var(--dir-muted, var(--sc-muted));
   font-weight: 700;
 }
 
-/* idle - no games, or games with nothing to show for them. The quietest thing
-   the card can print while still printing it: these rows are the reason the
-   directory is long, and a reader scanning for production should be able to
-   skip them without their names ever catching the eye.
-   The PORTRAIT is what fades, and only the portrait: it is decorative, carries
-   an empty alt and answers to nothing. The position ink beside the name keeps
-   its full value, because it is 10px text that clears 4.5:1 at that value and
-   at no other - a band is a reason to say something more quietly, never a
-   reason to print it below the contrast it owes. The name recedes by weight
-   and by a muted ink that clears the same bar, above. */
-.scp-dir-item[data-band="idle"] .scp-dir-face {
-  opacity: 0.55;
+.scp-dir-value {
+  padding-right: 1px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--dir-muted, var(--sc-muted));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-/* A hovered row is a row being considered, whatever band it is in. */
+/* No games this season: the dash, in the column's place. */
+.scp-dir-stand.is-empty {
+  justify-content: center;
+  padding-right: 8px;
+  color: var(--dir-muted, var(--sc-muted));
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* The headline names carry a heavier name; the quiet ones a lighter ink that
+   still clears 4.5:1. Weight and ink only - no row tint. */
+.scp-dir-item[data-band="elite"] .scp-dir-name {
+  font-weight: 800;
+}
+
+.scp-dir-item[data-band="poor"] .scp-dir-name,
+.scp-dir-item[data-band="idle"] .scp-dir-name {
+  font-weight: 600;
+  color: #33445f;
+}
+
+/* idle: the decorative portrait recedes; the text keeps its contrast. */
+.scp-dir-item[data-band="idle"] .scp-dir-face {
+  opacity: 0.6;
+}
+
 .scp-dir-row:hover .scp-dir-face,
 .scp-dir-row:focus-visible .scp-dir-face {
   opacity: 1;
 }
 
-.scp-dir-row:hover .scp-dir-name,
-.scp-dir-row:focus-visible .scp-dir-name {
-  color: var(--tp-ink, var(--sc-ink));
-}
-
 .scp-dir-empty {
-  margin: 20px 0 0;
-  padding: 18px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface-soft);
-  color: var(--sc-muted);
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--dir-border, var(--sc-border));
+  border-radius: 12px;
+  background: var(--dir-soft, var(--sc-surface-soft));
+  color: var(--dir-muted, var(--sc-muted));
   font-size: 13px;
   text-align: center;
 }
 
 @media (max-width: 640px) {
   .scp-dir {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
+  }
+
+  .scp-dir[data-club] {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .scp-dir-tools .scp-search {
     max-width: none;
+  }
+
+  /* The pills scroll inside their own row rather than the page, with a fade
+     at the right edge saying there is more of it. */
+  .scp-dir-filters {
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .scp-dir-chips {
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 24px 2px 2px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  .scp-dir-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scp-dir-chip {
+    flex: 0 0 auto;
+    height: 31px;
+    padding: 0 12px;
+  }
+
+  .scp-dir-note {
+    font-size: 12px;
+  }
+
+  .scp-dir-row {
+    min-height: 44px;
+    gap: 9px;
+  }
+
+  .scp-dir-face {
+    width: 33px;
+    height: 33px;
+  }
+
+  .scp-dir-name {
+    font-size: 13px;
+  }
+
+  .scp-dir-pos {
+    font-size: 10px;
+  }
+
+  .scp-dir-rank {
+    font-size: 10px;
+  }
+
+  .scp-dir-value {
+    font-size: 10.5px;
   }
 }
 
@@ -9678,12 +9740,9 @@ a.scp-peer:focus-visible {
  * free agents card, whose name is bare text in the heading and which a theme's
  * plain `h2` rule reaches directly. */
 .scp .scp-dir-club-name,
-.scp .scp-dir-club-link {
-  color: var(--tp-ink, var(--sc-ink)) !important;
-}
-
+.scp .scp-dir-club-link,
 .scp .scp-dir-club-link:hover {
-  color: var(--tp-ink, var(--club, var(--sc-navy))) !important;
+  color: #fff !important;
 }
 
 /* The navy header band's own ink, kept.
@@ -19421,6 +19480,30 @@ a.scp-peer:focus-visible {
   pointer-events: none;
 }
 
+/* ---- the intro card: banner on top, facts and overview in the body,
+   the same frame as the Outlook tab's .scp-olr-sec (mak, 2026-11-06) */
+.scp .scp-bop-intro {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--bop-border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
+  box-shadow: var(--bop-shadow);
+  overflow: hidden;
+}
+
+.scp .scp-bop-intro > .scp-bop-hero {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.scp .scp-bop-intro-body {
+  display: grid;
+  gap: 16px;
+  padding: 16px 18px 18px;
+}
+
 /* ---- the identity strip */
 .scp .scp-bop-facts {
   display: grid;
@@ -20021,6 +20104,10 @@ a.scp-peer:focus-visible {
 }
 
 @container bop (max-width: 640px) {
+  .scp .scp-bop-intro-body {
+    padding: 14px;
+  }
+
   .scp .scp-bop-hero {
     padding: 12px 16px;
     gap: 12px;
@@ -21611,7 +21698,8 @@ a.scp-peer:focus-visible {
   min-width: 0;
   padding: 12px 12px 11px;
   border-left: 1px solid var(--scp-ph-line);
-  text-align: right;
+  /* Centered at every width (mak, 2026-11-06); was right-aligned on desktop. */
+  text-align: center;
 }
 
 .scp .scp-ox .scp-ox-stat:first-child {
@@ -22796,6 +22884,7 @@ a.scp-peer:focus-visible {
   .scp .scp-glp-bar,
   .scp .scp-bkp-hero,
   .scp .scp-olr-bar,
+  .scp .scp-ovp-bar,
   .scp .scp-olp-bar,
   .scp .scp-inp-hero,
   .scp .scp-inp-bar,
@@ -22815,19 +22904,19 @@ a.scp-peer:focus-visible {
     text-align: left;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::before,
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::after,
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3)::after {
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::before,
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero)::after,
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3)::after {
     display: none !important;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) [aria-hidden="true"]:not(svg *),
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) [aria-hidden="true"]:not(svg *),
   .scp .scp-inp-crest,
   .scp .scp-bop-crest {
     display: none !important;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
     margin: 0 !important;
     padding: 0 !important;
     color: var(--scp-m-ink) !important;
@@ -22844,12 +22933,12 @@ a.scp-peer:focus-visible {
     font-size: 19px !important;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(p, span:not([aria-hidden])) {
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(p, span:not([aria-hidden])) {
     color: var(--scp-m-muted) !important;
     text-align: left !important;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) > div {
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) > div {
     align-items: flex-start;
     width: 100%;
     padding: 0 !important;
@@ -22938,7 +23027,7 @@ a.scp-peer:focus-visible {
     box-shadow: none;
   }
 
-  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-olr-bar, .scp-olp-bar) .scp-stp-bar-ctl {
+  .scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar) .scp-stp-bar-ctl {
     margin: 0;
   }
 }
@@ -22946,11 +23035,16 @@ a.scp-peer:focus-visible {
 @media (max-width: 560px) {
   /* The section that held a banner loses its outer card too, so the
      heading reads as part of the page rather than a title on a card's edge. */
-  .scp :is(section, div):has(> :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar.is-hero, .scp-inp-hero, .scp-bop-hero, .scp-pr-hero)) {
+  .scp :is(section, div):has(> :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar.is-hero, .scp-inp-hero, .scp-bop-hero, .scp-pr-hero)) {
     border: 0 !important;
     border-radius: 0 !important;
     background: none !important;
     box-shadow: none !important;
+  }
+
+  .scp .scp-bop-intro > .scp-bop-intro-body {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .scp :is(section, div):has(> .scp-stp-bar) > .scp-stp-body {
@@ -23119,7 +23213,7 @@ a.scp-peer:focus-visible {
   }
 
   /* ---- section headings: 22px, 16px above, 12px to what follows */
-  .scp.scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
+  .scp.scp.scp.scp :is(.scp-stp-bar, .scp-cp-bar, .scp-glp-hero, .scp-glp-bar, .scp-bkp-hero, .scp-olr-bar, .scp-ovp-bar, .scp-olp-bar, .scp-inp-hero, .scp-inp-bar, .scp-bop-hero, .scp-bop-bar, .scp-pr-hero) :is(h2, h3) {
     font-size: 22px !important;
   }
 
@@ -23734,5 +23828,1021 @@ a.scp-peer:focus-visible {
   .scp.scp.scp .scp-cp-read .scp-cp-prose,
   .scp.scp.scp .scp-cp-read .scp-cp-prose p {
     text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  /* 16px between the site header and the player card (mak, 2026-11-06).
+     Plugin 1.10.52 removed Divi's 58px top padding on player pages, which
+     left the card (or the search above it) touching the header. Padding on
+     the root, not a margin, so it cannot collapse through to the theme. */
+  .scp.scp.is-embed {
+    padding-top: 16px;
+  }
+
+  .scp.scp.is-embed > :first-child,
+  .scp.scp.is-embed > .scp-search[hidden] + .scp-phead {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* No cards around these blocks on phones (mak, 2026-11-06): the Game Log
+     sheet (seasons, tiles, table), Where His Weeks Finished, What Could
+     Change His Value, Durability Profile, Injury History and If He Misses
+     Time. Frame, wash, shadow and side inset go, so the content runs the
+     page's 16px gutters under its heading. The cards inside them stay. */
+  .scp.scp.scp :is(.scp-glp-main, .scp-glp-finishes, .scp-olp-sec.is-change, .scp-inp-sec:is(.is-dur, .is-hist, .is-plan)) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible;
+  }
+
+  .scp.scp.scp .scp-glp-main {
+    margin-top: 0;
+    padding: 0;
+  }
+
+  .scp.scp.scp .scp-glp-body,
+  .scp.scp.scp :is(.scp-glp-finishes-body, .scp-olp-sec.is-change > .scp-olp-body, .scp-inp-dur, .scp-inp-hist, .scp-inp-plan) {
+    padding-left: 0;
+    padding-right: 0;
+    background: none;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Game Log tab on phones (mak, 2026-11-06): the banner reads "2026 Game
+     Log" (the year is generated; the full heading stays for crawlers), no
+     subtitle under it, and no "1 game · QB10" line under Where His Weeks
+     Finished. */
+  .scp .scp-glp-title-main::before {
+    content: attr(data-year) " ";
+  }
+
+  .scp.scp.scp.scp.scp :is(h2, h3) .scp-glp-title-main {
+    color: inherit !important;
+  }
+
+  .scp.scp.scp.scp .scp-glp-hero .scp-glp-sub,
+  .scp.scp.scp.scp .scp-glp-finishes .scp-glp-bar-sum {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The phone's game log lists only weeks he played (mak, 2026-11-06): no
+     "Did not play", bye or inactive rows. Zebra stripes count played rows
+     only, so they still alternate. */
+  .scp.scp .scp-glp-table tbody tr.scp-glp-row:not([data-status="active"]) {
+    display: none;
+  }
+
+  .scp.scp .scp-glp-table tbody tr.scp-glp-row:nth-child(even of .scp-glp-row) :is(td, th) {
+    background: none;
+  }
+
+  .scp.scp .scp-glp-table tbody tr.scp-glp-row:nth-child(even of .scp-glp-row[data-status="active"]) :is(td, th) {
+    background: var(--tp-c-fbfcfe, #fbfcfe);
+  }
+
+  .scp.scp .scp-glp-table tbody tr.scp-glp-row:hover :is(td, th) {
+    background: var(--glp-surface-blue);
+  }
+}
+
+/* ---- the Game Log's season dropdown: phones only (mak, 2026-11-06) */
+.scp .scp-glp-yr {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  /* "2026 Game Log" and the season dropdown share one row; the chip strip
+     under it goes. */
+  .scp.scp.scp.scp .scp-glp-hero {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 3;
+    overflow: visible !important;
+  }
+
+  .scp.scp.scp.scp .scp-glp-hero > .scp-glp-hero-l {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .scp.scp .scp-glp-main > .scp-glp-seasons {
+    display: none;
+  }
+
+  .scp.scp .scp-glp-yr {
+    position: relative;
+    z-index: 5;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .scp.scp .scp-glp-yr-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 14px 0 16px;
+    border: 1px solid var(--glp-line);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: var(--glp-shadow-sm);
+    color: var(--scp-m-ink);
+    font-size: 15px;
+    font-weight: 800;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .scp.scp .scp-glp-yr-btn::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The chevron, drawn: the banner rules hide anything aria-hidden here. */
+  .scp.scp .scp-glp-yr-btn::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-top: -4px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .scp.scp .scp-glp-yr[open] > .scp-glp-yr-btn::after {
+    margin-top: 4px;
+    transform: rotate(225deg);
+  }
+
+  .scp.scp .scp-glp-yr-btn:focus-visible {
+    outline: 2px solid var(--glp-gold-bright);
+    outline-offset: 2px;
+  }
+
+  .scp.scp .scp-glp-yr-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 112px;
+    max-height: 60vh;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    border: 1px solid var(--glp-line);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: var(--glp-shadow);
+    list-style: none;
+  }
+
+  .scp.scp .scp-glp-yr-list li {
+    margin: 0;
+    padding: 0;
+  }
+
+  .scp.scp .scp-glp-yr-opt {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    color: var(--scp-m-ink);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .scp.scp .scp-glp-yr-opt:hover,
+  .scp.scp .scp-glp-yr-opt:focus-visible {
+    background: var(--glp-surface-blue);
+  }
+
+  .scp.scp .scp-glp-yr-opt[aria-current="true"] {
+    background: linear-gradient(135deg, var(--glp-navy-800) 0%, var(--glp-navy-950) 100%);
+    color: var(--glp-gold-bright);
+    font-weight: 800;
+  }
+}
+
+/* ======================================================================
+ * The phone identity row on wider phones (mak, 2026-11-06). From 361px to
+ * 560px the portrait column grows with the header, clamp(120px, 34%,
+ * 180px), and the details take the rest; no fixed 132px column. The name
+ * is no longer forced onto two lines: first and last run inline and wrap
+ * only when they must (balanced, so "II" or a surname never sits alone).
+ * Type sizes, team colors, the NFL strip and the fantasy button are as they
+ * were; the 360px-and-under layout keeps its own 112px column.
+ */
+@container pp (min-width: 361px) and (max-width: 560px) {
+  .scp.scp .scp-phead-hero {
+    grid-template-columns: clamp(120px, 34%, 180px) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  /* The well fills its column; the cutout stays bottom-aligned at its own
+     aspect ratio, a little taller as the column widens. */
+  .scp.scp .scp-pwell {
+    width: auto;
+    min-width: 0;
+    min-height: clamp(162px, 36cqw, 168px);
+  }
+
+  .scp.scp .scp-pwell-img {
+    height: clamp(158px, 35cqw, 164px);
+  }
+
+  .scp.scp .scp-pwell-mark {
+    width: clamp(136px, 30cqw, 160px);
+    height: clamp(136px, 30cqw, 160px);
+  }
+
+  .scp.scp .scp-phead-hero::before {
+    width: clamp(230px, 56cqw, 300px);
+  }
+
+  .scp.scp :is(.scp-pm-meta-1, .scp-pid, .scp-pm-meta-2, .scp-pm-meta-3) {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .scp.scp .scp-phead-first,
+  .scp.scp .scp-phead-last {
+    display: inline;
+  }
+
+  .scp.scp .scp-phead .scp-phead-h1 {
+    text-wrap: balance;
+  }
+
+  /* The surname stays whole: "Valdes-Scantling" and "Minshew II" move to
+     the second line together rather than break at a hyphen or a space. */
+  .scp.scp .scp-phead-last {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Game Log difficulty on phones (mak, 2026-11-06): the rank pill alone,
+     colored by its band (green favorable, neutral, red tough); the word is
+     clipped, not removed, so screen readers still hear "10th Favorable". */
+  .scp.scp .scp-glp-table .scp-glp-diff > span {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .scp.scp .scp-glp-table .scp-glp-diff {
+    gap: 0;
+  }
+
+  .scp.scp .scp-glp-table .scp-glp-diff[data-band="soft"] b {
+    background: var(--glp-good-soft);
+    color: var(--glp-good);
+  }
+
+  .scp.scp .scp-glp-table .scp-glp-diff[data-band="tough"] b {
+    background: var(--glp-bad-soft);
+    color: var(--glp-bad);
+  }
+}
+
+/*
+ * The Overview's sections in the premium frame the other tabs wear (mak,
+ * 2026-11-06; lib/player/overview.ts sectionOpen): a navy bar with a gold
+ * icon, the faint grid and the two gold diagonals, over a card body. The
+ * colors are the Outlook bar's --tp-c-* tokens, so the team palette recolors
+ * it the same way. Under 560px the shared mobile rules above turn the bar
+ * into a plain heading and drop the card, as on every other tab.
+ */
+.scp .scp-ox .scp-ovp-sec {
+  min-width: 0;
+  margin: 20px 0 0;
+  padding: 0 !important;
+  border: 1px solid var(--tp-c-cfddec, #cfddec);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 0%, var(--tp-c-f9fbfe, #f9fbfe) 55%, var(--tp-c-eff5fc, #eff5fc) 100%);
+  box-shadow: 0 2px 5px rgba(10, 30, 60, 0.045), 0 10px 26px rgba(10, 30, 60, 0.075);
+  overflow: hidden;
+}
+
+.scp .scp-ox:first-child > .scp-ovp-sec:first-child {
+  margin-top: 28px;
+}
+
+.scp .scp-ovp-svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.scp .scp-ovp-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 22px;
+  color: #fff;
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
+    linear-gradient(110deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-103862, #103862) 65%, var(--tp-c-0b2345, #0b2345) 100%);
+  overflow: hidden;
+}
+
+.scp .scp-ovp-bar-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--tp-c-f0bf35, #f0bf35);
+  font-size: 26px;
+}
+
+.scp .scp-ox .scp-ovp-bar-title {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 120px 0 0 !important;
+  border: 0;
+  color: #fff !important;
+  font-size: 22px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.scp .scp-ox .scp-ovp-bar-title::before,
+.scp .scp-ox .scp-ovp-bar-title::after {
+  display: none;
+}
+
+.scp .scp-ovp-bar-grid {
+  position: absolute;
+  top: 0;
+  right: 70px;
+  bottom: 0;
+  width: 180px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 14px 14px;
+  mask-image: linear-gradient(90deg, transparent, #000 40%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%);
+  pointer-events: none;
+}
+
+.scp .scp-ovp-bar-stripes {
+  position: absolute;
+  top: -20px;
+  right: 18px;
+  bottom: -20px;
+  width: 40px;
+  background: linear-gradient(115deg, transparent 0 38%, var(--tp-c-d4af37, #d4af37) 38% 52%, transparent 52% 64%, var(--tp-c-f0bf35, #f0bf35) 64% 78%, transparent 78%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.scp .scp-ovp-body {
+  padding: 16px 18px 18px;
+}
+
+.scp .scp-ovp-body > .scp-ox-more:last-child,
+.scp .scp-ovp-body > .scp-ox-links:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .scp .scp-ox .scp-ovp-bar-title {
+    padding-right: 60px !important;
+    font-size: 19px !important;
+  }
+
+  .scp .scp-ovp-bar-grid {
+    display: none;
+  }
+
+  .scp .scp-ovp-body {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .scp .scp-ox .scp-ovp-sec {
+    margin-top: 8px;
+    overflow: visible;
+  }
+
+  .scp .scp-ox .scp-ovp-bar-title {
+    padding-right: 0 !important;
+  }
+
+  .scp .scp-ovp-body {
+    padding: 4px 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Bio tab on phones (mak, 2026-11-06): no "QB • Arizona Cardinals • #15"
+     line under the heading (the header above already says it). The
+     "Career Overview" heading is gone at every width (bio-premium.ts). */
+  .scp.scp.scp.scp .scp-bop-hero .scp-bop-sub {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Bio tab on phones (mak, 2026-11-06): the overview prose leads, the
+     Position / Born / Height / College card follows it. Visual order only;
+     the source order (and desktop) is unchanged. */
+  .scp.scp .scp-bop-intro-body > .scp-bop-sec.is-overview {
+    order: -1;
+  }
+
+  /* The prose starts on the card's left edge, not 12px in. */
+  .scp.scp .scp-bop-sec.is-overview > .scp-bop-prose {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Bio tab on phones (mak, 2026-11-06): no cards around Career Timeline,
+     What Happened at Each Stop, or Trades and Team Changes. Frame, wash and
+     shadow go and the side inset with them, so each runs the page's 16px
+     gutters under its heading; the cards inside them stay. The stop and
+     move lists keep their small left inset, which their rail line needs. */
+  .scp.scp.scp .scp-bop-sec:is(.is-timeline, .is-stops) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible;
+  }
+
+  .scp.scp.scp .scp-bop-sec.is-timeline > .scp-bop-tl {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .scp.scp.scp .scp-bop-sec.is-stops > .scp-bop-stops,
+  .scp.scp.scp .scp-bo .scp-bo-txlog {
+    padding-right: 0;
+  }
+
+  .scp.scp.scp .scp-bo-txsec .scp-bo-txsum {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* ---- phone tab headings without the player's name (mak, 2026-11-06):
+   phone-heading.ts. The name is a .scp-stp-xs span (clipped <=560); a
+   swapped word ("Rest-of-Season") is clipped the same way and its short
+   form printed from data-abbr, on phones only. */
+.scp .scp-ph-abbr {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .scp.scp .scp-ph-abbr {
+    display: inline;
+  }
+
+  .scp .scp-ph-abbr::before {
+    content: attr(data-abbr);
+  }
+
+  /* The banner rule that mutes spans in a heading bar must not reach the
+     heading's own words. */
+  .scp.scp.scp.scp.scp :is(h1, h2, h3) .scp-ph-abbr {
+    color: inherit !important;
+  }
+}
+
+/* ======================================================================
+ * Every tab's lead heading on phones wears the Stats tab's "2026 Stats"
+ * (mak, 2026-11-06): Inter 22/700, line-height 1.2, -0.01em, ink, left
+ * on the 16px gutter, 16px under the tab bar and 12px above the content.
+ * Overview "2026 Season Stats", "2026 Game Log", "ROS Projection",
+ * "Injury Status and History", News "Latest ... News & Updates", "Bio and
+ * Career". Appended whole; nothing above is edited.
+ */
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp :is(#scp-ox-season-h, .scp-glp-title, #scp-ol-take-h, #scp-inp-title, #scp-bop-title),
+  .scp.scp.scp.scp.scp #news > .scp-head > .scp-h2 {
+    align-self: stretch;
+    width: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    color: var(--scp-m-ink, #14181f) !important;
+    font-family: var(--sc-font) !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    text-transform: none !important;
+  }
+
+  .scp.scp.scp.scp.scp :is(#scp-ox-season-h, .scp-glp-title, #scp-ol-take-h, #scp-inp-title, #scp-bop-title)::after,
+  .scp.scp.scp.scp.scp #news > .scp-head > .scp-h2::after,
+  .scp.scp.scp.scp.scp #news > .scp-head > .scp-h2::before {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The lead headings' spacing: 16px under the tab bar, 12px to the
+     content, as "2026 Stats" (mak, 2026-11-06). */
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-glp-hero, .scp-olr-bar, .scp-inp-hero, .scp-bop-hero):has(:is(#scp-ox-season-h, .scp-glp-title, #scp-ol-take-h, #scp-inp-title, #scp-bop-title)) {
+    padding-top: 16px !important;
+    padding-bottom: 12px !important;
+  }
+
+  /* Overview: no extra air above its first section. */
+  .scp.scp.scp .scp-ox:first-child > .scp-ovp-sec:first-child {
+    margin-top: 0;
+  }
+
+  /* Game Log: the heading sets the row's top; the 44px dropdown centers on
+     its 26px line without making the row taller. */
+  .scp.scp.scp.scp .scp-glp-hero {
+    align-items: flex-start;
+  }
+
+  .scp.scp.scp .scp-glp-hero > .scp-glp-yr {
+    margin: -9px 0;
+  }
+
+  /* Injury: the status card starts 12px under the subtitle. */
+  .scp.scp.scp .scp-inp-hero + * {
+    margin-top: 0 !important;
+  }
+
+  /* News: its heading sits in the plain section head. */
+  .scp.scp.scp #news > .scp-head {
+    margin: 0 !important;
+    padding: 16px 0 12px !important;
+  }
+
+  .scp.scp.scp #news > .scp-head + * {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Overview: the bar's icon is hidden on phones, but as an empty flex item
+     it still took the bar's 14px gap above the heading. */
+  .scp.scp.scp .scp-ovp-bar > .scp-ovp-bar-icon {
+    display: none;
+  }
+
+  /* Injury: the tab's grid puts 14px between rows; the heading block gives
+     back 2px so its content starts 12px under the subtitle. */
+  .scp.scp.scp.scp .scp-inp-hero:has(#scp-inp-title) {
+    padding-bottom: 0 !important;
+    margin-bottom: -2px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* What sits under each lead heading starts 12px below it, as on Stats:
+     the paddings that added to that 12px go (mak, 2026-11-06). */
+  .scp.scp.scp.scp .scp-ovp-bar:has(#scp-ox-season-h) {
+    min-height: 0;
+  }
+
+  .scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) > .scp-ovp-body,
+  .scp.scp.scp .scp-olr-sec.is-proj > .scp-olr-body,
+  .scp.scp.scp .scp-bop-intro > .scp-bop-intro-body,
+  .scp.scp.scp #news .scp-nw-top {
+    padding-top: 0 !important;
+  }
+}
+
+/*
+ * The team pages' premium tab header on the player tabs (mak, 2026-11-06;
+ * lib/player/tab-head.ts). The values are team.css's .sct-up-head: navy band
+ * in the team's colors, diagonal geometry fading in on the right, two slim
+ * gold accents at the edge, a gold-ringed icon tile, a gold rule, the white
+ * title over its dek and the tab's faint art. Each tab's lead banner keeps its
+ * own classes and gains .scp-up-head; above 560px these rules win and its old
+ * decoration is hidden. At 560px and under the banner's phone treatment (a
+ * plain heading) is untouched and the new pieces are hidden.
+ */
+@media (min-width: 561px) {
+  .scp.scp .scp-up-head {
+    --up-gold: var(--tp-c-d4af37, #d4af37);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 86px;
+    margin: 0 0 16px;
+    padding: 14px 24px !important;
+    overflow: hidden;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(110deg, var(--tp-c-081a34, #081a34) 0%, var(--tp-c-0e3158, #0e3158) 55%, var(--tp-c-123f70, #153e70) 100%) !important;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(13, 35, 67, 0.05), 0 12px 24px rgba(13, 35, 67, 0.07);
+  }
+
+  /* Low-contrast diagonal geometry on the right half only. */
+  .scp.scp .scp-up-head::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    border: 0;
+    background: repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.035) 0 14px, transparent 14px 38px);
+    -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
+    transform: none;
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  /* Two slim gold accents at the edge. */
+  .scp.scp .scp-up-head::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -30%;
+    right: 26px;
+    left: auto;
+    bottom: auto;
+    width: 3px;
+    height: 160%;
+    border: 0;
+    background: var(--up-gold);
+    box-shadow: 14px 0 0 var(--tp-a-212-175-55-600, rgba(212, 175, 55, 0.6));
+    transform: rotate(22deg);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+
+  /* The banners' own decoration gives way to the shared pieces. */
+  .scp.scp .scp-up-head :is(.scp-stp-bar-rule, .scp-stp-bar-stripes, .scp-glp-ico, .scp-glp-rule, .scp-glp-stripes, .scp-glp-ball,
+    .scp-olr-bar-icon, .scp-olr-bar-grid, .scp-olr-bar-stripes, .scp-inp-crest, .scp-inp-hero-rule, .scp-inp-hero-geo, .scp-inp-stripes,
+    .scp-bop-crest, .scp-bop-hero-rule, .scp-bop-hero-geo, .scp-bop-stripes, .scp-ovp-bar-icon, .scp-ovp-bar-grid, .scp-ovp-bar-stripes) {
+    display: none !important;
+  }
+
+  .scp.scp .scp-up-head-icon {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1.5px var(--up-gold);
+    color: var(--up-gold);
+  }
+
+  .scp.scp .scp-up-head-icon svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+  }
+
+  .scp.scp .scp-up-head-rule {
+    position: relative;
+    z-index: 1;
+    display: block;
+    flex: 0 0 3px;
+    width: 3px;
+    height: 44px;
+    border-radius: 2px;
+    background: var(--up-gold);
+    transform: none;
+  }
+
+  /* The text block, whichever wrapper the banner gives it. */
+  .scp.scp .scp-up-head :is(.scp-up-head-text, .scp-stp-bar-text, .scp-glp-hero-t, .scp-olr-bar-text, .scp-inp-hero-t, .scp-bop-hero-t) {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 !important;
+    text-align: left;
+  }
+
+  .scp.scp .scp-up-head .scp-glp-hero-l {
+    flex: 1 1 auto;
+    gap: 14px;
+  }
+
+  .scp.scp .scp-up-head .scp-up-h2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0;
+    color: #fff !important;
+    font-size: 28px !important;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+
+  .scp.scp .scp-up-head .scp-up-h2::before,
+  .scp.scp .scp-up-head .scp-up-h2::after {
+    content: none;
+    display: none;
+  }
+
+  .scp.scp .scp-up-head .scp-up-dek {
+    margin: 5px 0 0 !important;
+    padding: 0;
+    color: var(--tp-c-e3ecfa, #e3ecfa) !important;
+    font-size: 14px !important;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .scp.scp .scp-up-art {
+    position: absolute;
+    top: 50%;
+    right: 56px;
+    width: 250px;
+    height: 86px;
+    transform: translateY(-50%);
+    color: #fff;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  /* A banner with controls (the Stats toggle) leaves the art out, as the
+     team Depth Chart's does. */
+  .scp.scp .scp-up-head.has-actions .scp-up-art {
+    display: none;
+  }
+
+  .scp.scp .scp-up-head .scp-stp-bar-ctl {
+    position: relative;
+    z-index: 1;
+    margin-right: 40px;
+  }
+
+  /* Inside a card, the banner is the card's header. */
+  .scp.scp :is(.scp-olr-sec, .scp-bop-intro, .scp-ovp-sec, .scp-glp) > .scp-up-head,
+  .scp.scp .scp-stp-sec > .scp-up-head {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* The Game Log's sheet no longer rides up into the band. */
+  .scp.scp .scp-glp-hero.scp-up-head ~ .scp-glp-body {
+    padding-top: 16px;
+  }
+
+  .scp.scp .scp-glp-hero.scp-up-head ~ .scp-glp-body .scp-glp-main {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 1099px) {
+  .scp.scp .scp-up-art {
+    right: 44px;
+    width: 190px;
+    opacity: 0.14;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 799px) {
+  .scp.scp .scp-up-art {
+    display: none;
+  }
+
+  .scp.scp .scp-up-head {
+    min-height: 78px;
+    padding: 12px 18px !important;
+  }
+
+  .scp.scp .scp-up-head .scp-up-h2 {
+    font-size: 24px !important;
+  }
+}
+
+/* Phones: the banners keep their own phone treatment; the shared pieces go. */
+@media (max-width: 560px) {
+  .scp .scp-up-head-icon,
+  .scp .scp-up-head-rule,
+  .scp .scp-up-art {
+    display: none !important;
+  }
+
+  /* The News banner is new, so it gets the phone treatment the others have:
+     a plain heading over its dek. */
+  .scp.scp .scp-nwh {
+    margin: 0 0 12px;
+    padding: 16px 0 8px;
+    background: none;
+    color: inherit;
+  }
+
+  .scp.scp .scp-nwh .scp-up-h2 {
+    margin: 0 !important;
+    color: var(--tp-ink, var(--scp-ph-ink)) !important;
+    font-size: 22px !important;
+    line-height: 1.2;
+  }
+
+  .scp.scp .scp-nwh .scp-up-h2::after {
+    display: none;
+  }
+
+  .scp.scp .scp-nwh .scp-up-dek {
+    margin: 4px 0 0;
+    color: var(--scp-ph-muted);
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Phones (mak, 2026-11-06): no dek under the News heading ("Injury,
+     practice, transaction and game reports on ..."), no "Latest update"
+     label over the lead card, and no "Through Week 8" under "ROS
+     Projection". */
+  .scp.scp.scp.scp #news .scp-up-dek,
+  .scp.scp.scp.scp #news .scp-nw-latest > .scp-nw-label,
+  .scp.scp.scp.scp .scp-olr-sec.is-proj .scp-olr-bar-sub {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* News: with the dek and "Latest update" gone, the lead card starts 12px
+     under the heading, as Stats' first panel does. */
+  .scp.scp.scp.scp #news > .scp-up-head {
+    padding-bottom: 0 !important;
+    margin-bottom: 4px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* News: the feed's own 16px top margin collapsed past the header's, so
+     the lead card sat 16px down; 12px, as on Stats (mak, 2026-11-06). */
+  .scp.scp.scp.scp #news > .scp-nwh + .scp-nw {
+    margin-top: 12px !important;
+  }
+
+  .scp.scp.scp.scp #news > .scp-nwh {
+    margin-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Overview on phones (mak, 2026-11-06): no dek under "2026 Season Stats",
+     no "Complete ... stats and career statistics" link under its table, no
+     "Analyze in Redraft Command" link under the outlook, and no "Full career
+     stats" / "timeline and biography" links closing Career & Background.
+     The links stay in the markup (crawlable); the tabs above reach both. */
+  .scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) .scp-up-dek,
+  .scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) a.scp-ox-more,
+  .scp.scp.scp.scp #overview a.scp-ox-more[data-cta="redraft-command-sidebar"],
+  .scp.scp.scp.scp #overview .scp-ox-links {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Injury tab on phones (mak, 2026-11-06): no description under "Injury
+     Status and History", no status sentence or "Checked ..." stamp in the
+     status card (its big word - Active, Questionable, Out - stays), and no
+     note under "Injury History". */
+  .scp.scp.scp.scp .scp-inp-hero .scp-inp-sub,
+  .scp.scp.scp.scp .scp-inp-now-text,
+  .scp.scp.scp.scp .scp-inp-checked,
+  .scp.scp.scp.scp .scp-inp-bar:has(#scp-inp-hist-h) .scp-inp-bar-note {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Injury tab on phones (mak, 2026-11-06): the current status joins the
+     three facts as one 2x2 panel - Status | 2026 games missed, Latest
+     injury | Next game. CSS only: the facts' own box steps aside (display:
+     contents) so the status card and the three facts are cells of one grid,
+     with hairline dividers and a "Status" label like the others'. */
+  .scp.scp.scp.scp .scp-inp-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    border: 1px solid var(--inp-border);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fff 0%, var(--inp-surface-light) 100%);
+    box-shadow: var(--inp-shadow);
+    overflow: hidden;
+  }
+
+  .scp.scp.scp.scp .scp-inp-kpis {
+    display: contents;
+  }
+
+  .scp.scp.scp.scp .scp-inp-now,
+  .scp.scp.scp.scp .scp-inp-kpi {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1px;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 12px;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .scp.scp.scp.scp .scp-inp-now {
+    background: none;
+  }
+
+  .scp.scp.scp.scp .scp-inp-now::before {
+    content: "Status";
+    color: var(--inp-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+
+  .scp.scp.scp.scp .scp-inp-now-word {
+    gap: 7px;
+    font-size: 18px;
+  }
+
+  .scp.scp.scp.scp .scp-inp-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scp.scp.scp.scp .scp-inp-kpi-icon {
+    display: none;
+  }
+
+  .scp.scp.scp.scp .scp-inp-kpi-v {
+    font-size: 18px;
+  }
+
+  /* Dividers: Status | missed on top, latest | next below. */
+  .scp.scp.scp.scp .scp-inp-kpi.is-missed,
+  .scp.scp.scp.scp .scp-inp-kpi.is-next {
+    border-left: 1px solid var(--inp-border-light) !important;
+  }
+
+  .scp.scp.scp.scp .scp-inp-kpi.is-latest,
+  .scp.scp.scp.scp .scp-inp-kpi.is-next {
+    border-top: 1px solid var(--inp-border-light) !important;
+  }
+}
+
+/* The designation's body part under the status word: phones only, where
+   the status sentence that names it on desktop is hidden (mak, 2026-11-06). */
+.scp .scp-inp-now-part {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-inp-now-part {
+    display: block;
+    margin: 0;
+    color: var(--inp-muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}
+
+@container pp (max-width: 560px) {
+  /* "2026 Regular Season" centered in its team-color bar, matching the team
+     header's (mak, 2026-11-06). */
+  .scp.scp.scp .scp-pm-season {
+    text-align: center;
   }
 }

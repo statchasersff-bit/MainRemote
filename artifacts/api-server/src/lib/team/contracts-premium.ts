@@ -22,7 +22,7 @@
 
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import type { ContractLine, ContractsView, WorthDoc } from "./contracts";
 import {
   RANK_BOTTOM_THIRD,
@@ -148,6 +148,7 @@ function banner(team: NflTeam, v: ContractsView): string {
       icon: "contracts",
       art: "contracts",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-ctp-title">${e(`${team.nickname} Contracts & Salary Cap`)}</h2>`,
+      phoneTitle: "Contracts & Salary Cap",
       dek: sub,
     })
   );
@@ -503,8 +504,7 @@ export function renderContractsPremium(team: NflTeam, v: ContractsView | null): 
     `<div class="sct-ctp" data-sct-ct` +
     (v.capSpace !== null ? ` data-cap-space="${v.capSpace}" data-dead-total="${v.deadTotal ?? 0}"` : "") +
     `>` +
-    banner(team, v) +
-    simulator(v) +
+    (simulator(v) ? premiumTabFrame(banner(team, v), simulator(v), { solo: true }) : banner(team, v)) +
     `<div class="sct-ctp-grid">` +
     `<div class="sct-ctp-main">${sheet(team, v)}</div>` +
     `<aside class="sct-ctp-rail" aria-label="${e(`${team.nickname} cap position, flexibility, release savings and dead money`)}">` +

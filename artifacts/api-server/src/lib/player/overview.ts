@@ -37,6 +37,7 @@
 
 import { escapeHtml } from "../render";
 import { possessive, titleCase } from "./title-case";
+import { phoneHeading } from "./phone-heading";
 import { renderFaqSection, selectFaq } from "./faq-engine";
 import { overviewPool } from "./faq-pools";
 import type { PlayerRenderOptions } from "../player-render";
@@ -57,6 +58,7 @@ import {
   startSitHref,
   teamInk,
 } from "./header";
+import { headArt, headIcon } from "./tab-head";
 
 const DASH = "-";
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
@@ -76,12 +78,34 @@ const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eig
 const word = (n: number): string => WORDS[n] ?? String(n);
 const plural = (n: number, w: string): string => `${n} ${w}${n === 1 ? "" : "s"}`;
 
-function sectionOpen(id: string, heading: string, cls = ""): string {
+const svg = (body: string): string =>
+  `<svg class="scp-ovp-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${body}</svg>`;
+const ICON = {
+  stats: svg(`<path d="M5 20v-6M12 20V9M19 20V4"/>`),
+  weekly: svg(`<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>`),
+  outlook: svg(`<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>`),
+  news: svg(`<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>`),
+  career: svg(`<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>`),
+} as const;
+
+/**
+ * A section: the navy bar every other tab's sections wear (Outlook's
+ * .scp-olr-bar, Bio's .scp-bop-bar) over a card body (mak, 2026-11-06).
+ * Close with SECTION_END.
+ */
+function sectionOpen(id: string, heading: string, cls = "", icon: keyof typeof ICON = "stats", name = ""): string {
   return (
-    `<section class="scp-ox-sec${cls ? ` ${cls}` : ""}" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(heading))}</h2>`
+    `<section class="scp-ox-sec scp-ovp-sec${cls ? ` ${cls}` : ""}" aria-labelledby="${id}">` +
+    `<header class="scp-ovp-bar">` +
+    `<span class="scp-ovp-bar-icon">${ICON[icon]}</span>` +
+    `<h2 class="scp-ovp-bar-title" id="${id}">${phoneHeading(titleCase(heading), name)}</h2>` +
+    `<span class="scp-ovp-bar-grid" aria-hidden="true"></span>` +
+    `<span class="scp-ovp-bar-stripes" aria-hidden="true"></span>` +
+    `</header>` +
+    `<div class="scp-ovp-body">`
   );
 }
+const SECTION_END = `</div></section>`;
 
 /** A tab every player page has: Stats, Game Log, Bio, News. */
 function tabHref(data: PlayerPageData, options: PlayerRenderOptions, seg: string): string {
@@ -315,7 +339,7 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
   const label = (c: { label: string }): string => (/ PTS$/.test(c.label) ? "FPTS" : c.label);
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
   return (
-    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`) +
+    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, "", "stats", data.player.name) +
     `<dl class="scp-ox-season is-c${cols.length >= 9 ? 5 : 4}" style="--n:${cols.length}">` +
     cols
       .map(
@@ -327,7 +351,7 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
       .join("") +
     `</dl>` +
     more(href, `Complete ${data.player.name} stats and career statistics`) +
-    `</section>`
+    SECTION_END
   );
 }
 
@@ -458,10 +482,10 @@ function renderWeekly(data: PlayerPageData, s: Season, options: PlayerRenderOpti
   if (!chart && !next) return "";
   const href = tabHref(data, options, "game-log");
   return (
-    sectionOpen("scp-ox-weekly-h", `${data.player.name} weekly performance & upcoming schedule`, "scp-ox-weekly") +
+    sectionOpen("scp-ox-weekly-h", `${data.player.name} weekly performance & upcoming schedule`, "scp-ox-weekly", "weekly") +
     `<div class="scp-ow${chart && next ? "" : " is-one"}">${chart}${next}</div>` +
     (chart && href ? more(href, "View full game log") : "") +
-    `</section>`
+    SECTION_END
   );
 }
 
@@ -629,14 +653,14 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
     : "";
 
   return (
-    sectionOpen("scp-ox-read-h", `${name} fantasy outlook & efficiency`, "scp-ox-outlook") +
+    sectionOpen("scp-ox-read-h", `${name} fantasy outlook & efficiency`, "scp-ox-outlook", "outlook") +
     startLink +
     `<div class="scp-ox-read">` +
     `<div class="scp-ox-read-main">${call}<p class="scp-ox-prose">${para}</p></div>` +
     renderMeters(data, s) +
     `</div>` +
     more(redraft, "Analyze in Redraft Command", ` data-cta="redraft-command-sidebar"`) +
-    `</section>`
+    SECTION_END
   );
 }
 
@@ -645,7 +669,7 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
 function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
   const brief = renderNewsBrief(data, options, 3);
   if (!brief) return "";
-  return sectionOpen("scp-ox-news-h", `${data.player.name} latest news`) + brief + `</section>`;
+  return sectionOpen("scp-ox-news-h", `${data.player.name} latest news`, "", "news") + brief + SECTION_END;
 }
 
 /* ------------------------------------------------ 5. career + background */
@@ -704,7 +728,7 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
   const statsHref = tabHref(data, options, "stats");
   const bioHref = tabHref(data, options, "bio");
   return (
-    sectionOpen("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg") +
+    sectionOpen("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg", "career") +
     `<div class="scp-ox-bg-grid">` +
     (honors.length || career
       ? `<div class="scp-ox-bg-col"><h3 class="scp-ow-h3">Career highlights</h3>` +
@@ -722,7 +746,32 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
     (statsHref ? more(statsHref, "Full career stats") : "") +
     (bioHref ? more(bioHref, `${possessive(lastName(player.name))} timeline and biography`) : "") +
     `</p>` +
-    `</section>`
+    SECTION_END
+  );
+}
+
+/* ------------------------------------------------------- the lead head */
+
+/**
+ * The tab's first section bar wears the team pages' tab header (tab-head.ts;
+ * mak, 2026-11-06), with a dek; the sections under it keep their bars.
+ */
+function leadHead(data: PlayerPageData, s: Season, html: string): string {
+  const name = lastName(data.player.name);
+  const DEK: Record<string, string> = {
+    "scp-ox-season-h": `${possessive(name)} ${s.leagueSeason} season so far: games, volume, touchdowns and fantasy points.`,
+    "scp-ox-weekly-h": `Fantasy points by week and his next four matchups.`,
+    "scp-ox-read-h": `Where he ranks, what it means for your lineup, and how efficient he has been.`,
+    "scp-ox-news-h": `The latest reports on ${name}, newest first.`,
+    "scp-ox-about-h": `Career totals, honors and background.`,
+  };
+  return html.replace(
+    /<header class="scp-ovp-bar">(<span class="scp-ovp-bar-icon">[\s\S]*?<\/span>)<h2 class="scp-ovp-bar-title" id="([^"]+)">([\s\S]*?)<\/h2>/,
+    (_m, icon: string, id: string, title: string) =>
+      `<header class="scp-ovp-bar scp-up-head">${headIcon("overview")}${icon}` +
+      `<div class="scp-up-head-text"><h2 class="scp-ovp-bar-title scp-up-h2" id="${id}">${title}</h2>` +
+      (DEK[id] ? `<p class="scp-up-dek">${escapeHtml(DEK[id]!)}</p>` : "") +
+      `</div>${headArt("overview")}`,
   );
 }
 
@@ -748,13 +797,16 @@ export function renderOverviewSections(
   const s = season(data);
   const ink = teamInk(data.team);
   const open = `<div class="scp-ox"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>`;
-  const before =
+  const before = leadHead(
+    data,
+    s,
     renderAlert(data, options) +
-    renderSeasonStats(data, s, options) +
-    renderWeekly(data, s, options) +
-    renderOutlook(data, s, options) +
-    renderNews(data, options) +
-    renderBackground(data, s, options);
+      renderSeasonStats(data, s, options) +
+      renderWeekly(data, s, options) +
+      renderOutlook(data, s, options) +
+      renderNews(data, options) +
+      renderBackground(data, s, options),
+  );
   const faq = renderFaq(data, options);
   return (
     (before ? `${open}${before}</div>` : "") +

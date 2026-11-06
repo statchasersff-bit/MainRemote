@@ -112,3 +112,64 @@ export function teamPaletteVars(team: NflTeam | null | undefined): string[] {
   const p = teamPalette(team.primaryColor, team.secondaryColor);
   return [`--team-base:${p.base}`, `--team-accent:${p.accent}`, `--team-bright:${p.bright}`];
 }
+
+/** `hex` with its HSL lightness raised until `ok` holds; hue and saturation kept. */
+function lighten(hex: string, ok: (h: string) => boolean): string {
+  const [r, g, b] = hexRgb(hex).map((x) => x / 255) as Rgb;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l0 = (max + min) / 2;
+  const d = max - min;
+  const raw = d === 0 ? 0 : d / (1 - Math.abs(2 * l0 - 1));
+  // A near-neutral (the Raiders' and Steelers' black) stays near-neutral:
+  // lifting its faint tint at full strength turns black into slate blue.
+  const sat = raw < 0.4 ? raw * 0.3 : raw;
+  let hue = 0;
+  if (d !== 0) {
+    if (max === r) hue = ((g - b) / d + 6) % 6;
+    else if (max === g) hue = (b - r) / d + 2;
+    else hue = (r - g) / d + 4;
+  }
+  const fromHsl = (l: number): string => {
+    const c = (1 - Math.abs(2 * l - 1)) * sat;
+    const x = c * (1 - Math.abs((hue % 2) - 1));
+    const m = l - c / 2;
+    const seg: Rgb = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(hue) % 6] as Rgb;
+    return rgbHex(seg.map((v) => (v + m) * 255) as Rgb);
+  };
+  for (let l = l0; l <= 1; l += 0.01) {
+    const h = fromHsl(l);
+    if (ok(h)) return h;
+  }
+  return hex;
+}
+
+/**
+ * The player index's club header (mak's rankings-grid brief, 2026-11-06): a
+ * gradient from the club's own primary to its dark base, with the accent as
+ * a rule under it.
+ *
+ * head: the primary itself, darkened only until white text reads on it at
+ * 4.5:1 - so the Panthers' header is Carolina blue and the Falcons' red,
+ * where teamPalette()'s `bright` follows the darker color and would draw
+ * both of them gray-black. deep: teamPalette()'s base (7:1 with white),
+ * darkened a step.
+ * accent: teamPalette()'s accent, which already reads on the base.
+ */
+export function teamHeaderColors(team: NflTeam | null | undefined): { head: string; deep: string; accent: string } {
+  if (!team || !/^#[0-9a-f]{6}$/i.test(team.primaryColor)) {
+    return { head: "#0b3a7a", deep: "#081e42", accent: "#d4af37" };
+  }
+  const p = teamPalette(team.primaryColor, team.secondaryColor);
+  // A near-black primary (the Bears' navy, the Raiders' black) is lifted until
+  // it is no darker than 10:1, by lightness so the hue survives (mixing
+  // toward white grays the Bears' navy out), or the band is one flat color end to end.
+  const head =
+    contrast(team.primaryColor, "#ffffff") > 9
+      ? lighten(team.primaryColor, (h) => contrast(h, "#ffffff") <= 10)
+      : shift(team.primaryColor, [0, 0, 0], (h) => contrast(h, "#ffffff") >= 4.5);
+  // A quarter of the way further toward black, so a club whose base IS its
+  // primary (the Cardinals) still draws a gradient rather than a flat band.
+  const deep = rgbHex(mixRgb(hexRgb(p.base), [0, 0, 0], 0.25));
+  return { head, deep, accent: p.accent };
+}

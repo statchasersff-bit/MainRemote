@@ -27,9 +27,11 @@
  */
 
 import { escapeHtml } from "../render";
+import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { outlookProjectionModel, type Chip, type OpportunityTake, type OpportunityTile } from "./outlook-tab";
+import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
 
@@ -98,12 +100,16 @@ export function emphasize(text: string): string {
 }
 
 /** A navy title bar: gold icon, the title, an optional sub-line, the pattern and gold diagonals. */
-function bar(title: string, sub: string, id: string): string {
+function bar(title: string, sub: string, id: string, titleHtml = e(title)): string {
+  // The tab's lead bar wears the team pages' tab header (tab-head.ts).
+  const lead = id === "scp-ol-take-h";
   return (
-    `<header class="scp-olr-bar">` +
+    `<header class="scp-olr-bar${lead ? " scp-up-head" : ""}">` +
+    (lead ? headIcon("outlook") : "") +
     `<span class="scp-olr-bar-icon">${ICON.bars}</span>` +
     // .is-lead marks the tab's lead heading for the page (no style of its own here).
-    `<div class="scp-olr-bar-text"><h2 class="scp-olr-bar-title${id === "scp-ol-take-h" ? " is-lead" : ""}" id="${id}">${e(title)}</h2>${sub ? `<p class="scp-olr-bar-sub">${e(sub)}</p>` : ""}</div>` +
+    `<div class="scp-olr-bar-text"><h2 class="scp-olr-bar-title${lead ? " is-lead scp-up-h2" : ""}" id="${id}">${titleHtml}</h2>${sub ? `<p class="scp-olr-bar-sub${lead ? " scp-up-dek" : ""}">${e(sub)}</p>` : ""}</div>` +
+    (lead ? headArt("outlook") : "") +
     `<span class="scp-olr-bar-grid" aria-hidden="true"></span>` +
     `<span class="scp-olr-bar-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -175,7 +181,7 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
     : "";
   const projection =
     `<section class="scp-olr-sec is-proj" aria-labelledby="scp-ol-take-h">` +
-    bar(m.heading, m.asOf, "scp-ol-take-h") +
+    bar(m.heading, m.asOf, "scp-ol-take-h", phoneHeading(m.heading, m.name, { word: "Rest-of-Season", short: "ROS" })) +
     `<div class="scp-olr-body"><div class="scp-olr-layout">` +
     `<div class="scp-olr-main">${badges}${summary}${factors}</div>` +
     `<aside class="scp-olr-side" aria-label="${e(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +

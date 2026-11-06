@@ -24,7 +24,7 @@
  */
 
 import { escapeHtml as e } from "../render";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import type { NflTeam } from "./teams";
 import type { HistorySeason, PlayBalance, StatRow } from "./stats";
 
@@ -78,7 +78,6 @@ const ICON = {
   calendar: svg(`<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>`),
 };
 
-const through = (week: number | null): string => (week ? `Through Week ${week}` : "");
 
 /** One row: label, rank bar, value, rank pill. The bar is decorative; the pill and hidden text carry the rank. */
 function row(r: StatRow, tier: Tier, fillOf: (rank: number) => string): string {
@@ -126,7 +125,7 @@ function innerPanel(kind: string, icon: string, title: string, sub: string, list
   return (
     `<section class="sct-sp-panel${wide ? " is-wide" : ""}" data-kind="${e(kind)}">` +
     `<div class="sct-sp-panel-head"><span class="sct-sp-ico">${icon}</span>` +
-    `<div class="sct-sp-panel-text"><h3 class="sct-sp-panel-title">${e(title)}</h3><p class="sct-sp-panel-sub">${e(sub)}</p></div>` +
+    `<div class="sct-sp-panel-text"><h3 class="sct-sp-panel-title">${e(title)}</h3>${sub ? `<p class="sct-sp-panel-sub">${e(sub)}</p>` : ""}</div>` +
     `<span class="sct-sp-panel-heads" aria-hidden="true"><span>Value</span><span>Rank</span></span></div>` +
     rows(list, input) +
     `</section>`
@@ -186,7 +185,7 @@ function history(input: StatsPremiumInput): string {
       return (
         `<tr${i === 0 ? ` class="is-current"` : ""}>` +
         `<th scope="row" class="sct-sp-h-season"><span class="sct-sp-h-year">${e(String(s.season))}</span>` +
-        (i === 0 ? `<span class="sct-sp-h-now">Current</span>` : "") +
+        // No "Current" pill on the live season (mak, 2026-11-06); the row keeps its .is-current tint.
         games +
         `</th>` +
         tds +
@@ -204,34 +203,37 @@ function history(input: StatsPremiumInput): string {
 }
 
 export function renderStatsPremium(input: StatsPremiumInput): string {
-  const { team, season, liveWeek, effWeek, heading, note } = input;
-  const live = through(liveWeek);
-  const eff = through(effWeek);
-  const dash = (w: string): string => (w ? ` - ${w}` : "");
+  const { team, season, heading, note } = input;
 
   const overview =
-    unitPanel("offense", "Offense", live, input.production.offense, input) +
-    unitPanel("defense", "Defense", live, input.production.defense, input);
+    // No "Through Week N" under Offense / Defense (mak, 2026-11-06); the
+    // inner panels below still name their week.
+    unitPanel("offense", "Offense", "", input.production.offense, input) +
+    unitPanel("defense", "Defense", "", input.production.defense, input);
 
   const efficiency =
-    innerPanel("efficiency", ICON.target, "Offense Efficiency", `Per play, what they did${dash(eff)}`, input.efficiency.offense, input) +
-    innerPanel("efficiency", ICON.shield, "Defense Efficiency", `Per play, what they allowed${dash(eff)}`, input.efficiency.defense, input);
+    // No panel names its week any more (mak, 2026-11-06: Offense / Defense,
+    // then Efficiency, then the rest); the ladders still read their sources'
+    // weeks for the numbers themselves.
+    innerPanel("efficiency", ICON.target, "Offense Efficiency", "Per play, what they did", input.efficiency.offense, input) +
+    innerPanel("efficiency", ICON.shield, "Defense Efficiency", "Per play, what they allowed", input.efficiency.defense, input);
 
   const passRush =
-    innerPanel("passrush", ICON.helmet, "Pass Protection", `What the offense faced${dash(eff)}`, input.passRush.offense, input) +
-    innerPanel("passrush", ICON.rush, "Pass Rush", `What the defense sent${dash(eff)}`, input.passRush.defense, input);
+    innerPanel("passrush", ICON.helmet, "Pass Protection", "What the offense faced", input.passRush.offense, input) +
+    innerPanel("passrush", ICON.rush, "Pass Rush", "What the defense sent", input.passRush.defense, input);
 
   const possession = innerPanel(
     "possession",
     ICON.warning,
     "Turnovers, Downs & Penalties",
-    `Turnover margin first; takeaways and giveaways are its two halves${dash(live)}`,
+    // No subtitle on this panel (mak, 2026-11-06).
+    "",
     input.possession,
     input,
     true,
   );
 
-  const pace = innerPanel("pace", ICON.layers, "Snaps, Attempts & Scores", `Run/pass mix and scoring, ranked most to least${dash(live)}`, input.pace, input);
+  const pace = innerPanel("pace", ICON.layers, "Snaps, Attempts & Scores", "Run/pass mix and scoring, ranked most to least", input.pace, input);
   const mixes =
     (input.balance ? mix("Play Mix (Offense)", `${team.fullName}'s offensive play distribution.`, input.balance) : "") +
     (input.balanceFaced ? mix("Play Mix (Defense)", "Play distribution faced on defense.", input.balanceFaced) : "");
@@ -260,15 +262,18 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
 
   return (
     `<div class="sct-sp">` +
+    premiumTabFrame(
     premiumTabHead({
       hook: "sct-sp-hero",
       icon: "stats",
       art: "stats",
       heading,
+      phoneTitle: `${season} Team Stats`,
       dek: `Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`,
-    }) +
-    (note ? `<p class="sct-note sct-sp-note">${e(note)}</p>` : "") +
-    sections.join("") +
+    }),
+      (note ? `<p class="sct-note sct-sp-note">${e(note)}</p>` : "") + (sections[0] ?? ""),
+    ) +
+    sections.slice(1).join("") +
     `</div>`
   );
 }

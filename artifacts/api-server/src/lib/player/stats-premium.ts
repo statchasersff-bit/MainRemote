@@ -35,6 +35,7 @@ import {
   type Cell,
   type StatsPremiumModel,
 } from "./stats-tab";
+import { headArt, headIcon } from "./tab-head";
 
 const DASH = "-";
 
@@ -89,14 +90,16 @@ function titleHtml(title: string, name: string, tail = ""): string {
 
 function bar(id: string, icon: string, title: string, sub: string, ctl = "", hero = false, name = "", tail = ""): string {
   return (
-    `<header class="scp-stp-bar${hero ? " is-hero" : ""}">` +
+    // The lead (hero) bar wears the team pages' tab header (tab-head.ts).
+    `<header class="scp-stp-bar${hero ? " is-hero scp-up-head has-actions" : ""}">` +
+    (hero ? headIcon("stats") : "") +
     `<span class="scp-stp-bar-rule" aria-hidden="true"></span>` +
     (hero ? "" : `<span class="scp-stp-bar-icon" aria-hidden="true">${icon}</span>`) +
     `<div class="scp-stp-bar-text">` +
     // The tab's H2s, with the ids the SEO ladder and the H1 promotion key on
     // (scp-st-prod-h is the lead heading; player-render promotes it).
-    `<h2 class="scp-ox-h2 scp-stp-bar-title${hero ? " is-lead" : ""}" id="${escapeHtml(id)}">${titleHtml(title, name, tail)}</h2>` +
-    (sub ? `<p class="scp-stp-bar-sub">${sub}</p>` : "") +
+    `<h2 class="scp-ox-h2 scp-stp-bar-title${hero ? " is-lead scp-up-h2" : ""}" id="${escapeHtml(id)}">${titleHtml(title, name, tail)}</h2>` +
+    (sub ? `<p class="scp-stp-bar-sub${hero ? " scp-up-dek" : ""}">${sub}</p>` : "") +
     `</div>` +
     (ctl ? `<div class="scp-stp-bar-ctl">${ctl}</div>` : "") +
     `<span class="scp-stp-bar-stripes" aria-hidden="true"></span>` +
@@ -308,7 +311,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     // On the phone the lede never sits in the intro (mak, 2026-11-06): it
     // goes to the fantasy-impact read, or, with no such read, under the
     // production cards it describes.
-    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub">', '<p class="scp-stp-bar-sub is-moved">') : seasonHead}<div class="scp-stp-body">${kpiCards(m)}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
+    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub scp-up-dek">', '<p class="scp-stp-bar-sub scp-up-dek is-moved">') : seasonHead}<div class="scp-stp-body">${kpiCards(m)}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
     (m.advanced
       ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-adv-h">${advHead}<div class="scp-stp-body">${metricCards(m)}${note}</div></section>`
       : "") +

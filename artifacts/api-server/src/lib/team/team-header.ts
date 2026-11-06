@@ -131,7 +131,9 @@ export function renderTeamHeader(input: TeamHeaderInput): string {
     `<p class="sct-tpb-sub" data-sct-lead>${e(`${team.fullName} fantasy football hub`)}</p>` +
     `</div>` +
     `<div class="sct-tpb-actions">${switcher}</div>` +
-    (kpis ? `<ul class="sct-tpb-stats">${kpis}</ul>` : "") +
+    // The phone header's season bar over the facts (mak, 2026-11-06: phones
+    // wear the player pages' format); hidden above 560px (team.css).
+    (kpis ? `<p class="sct-tpb-season" aria-hidden="true">${e(`${season} Regular Season`)}</p><ul class="sct-tpb-stats">${kpis}</ul>` : "") +
     updated +
     `</div>` +
     `</header>` +

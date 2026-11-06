@@ -17,7 +17,7 @@
  */
 
 import { escapeHtml } from "../render";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import { slotChip } from "../team-render";
 import {
   BADGE_FROM,
@@ -71,7 +71,7 @@ function who(p: UsagePlayer): string {
     : `<span class="sct-up-name" title="${e(p.name)}">${label}</span>`;
   return (
     `<span class="sct-up-who">${faceWell(p)}` +
-    `<span class="sct-up-who-text is-inline">${name}<span class="sct-up-pos">${slotChip(p.pos, true)}</span></span></span>`
+    `<span class="sct-up-who-text">${name}<span class="sct-up-pos">${slotChip(p.pos, true)}</span></span></span>`
   );
 }
 
@@ -176,7 +176,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         `<td class="sct-up-td is-num is-lead">${e(String(count(p)))}</td>` +
         extra +
         `<td class="sct-up-td is-bar">${bar(season, "is-share")}</td>` +
-        `<td class="sct-up-td is-recent">${recent == null ? "–" : `<span class="sct-up-recent">${recent}%</span>${move(delta)}`}</td>` +
+        `<td class="sct-up-td is-recent">${recent == null ? "–" : `${move(delta)}<span class="sct-up-recent">${recent}%</span>`}</td>` +
         (isT ? `<td class="sct-up-td is-num is-air">${e(air)}</td>` : "") +
         `</tr>`
       );
@@ -218,17 +218,19 @@ export function renderUsagePremium(view: UsageView, team: NflTeam): string {
   return (
     `<div class="sct-block sct-up" id="usage-premium" data-sct-premium="usage">` +
     // .sct-h2 as well: a section address promotes the panel's first .sct-h2 to the page's H1 (team-render.ts).
+    premiumTabFrame(
     premiumTabHead({
       icon: "usage",
       heading: `<h2 class="sct-h2 sct-up-h2">Snap Counts &amp; Player Usage</h2>`,
       dek:
         `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
         `Track which players are seeing the field, where the ball is going, and how their roles change throughout the season.`,
-    }) +
-    `<div class="sct-up-dash">` +
-    `<div class="sct-up-col is-left">${snaps}</div>` +
-    `<div class="sct-up-col is-right">${targets}${rushing}</div>` +
-    `</div>` +
+    }),
+      `<div class="sct-up-dash">` +
+        `<div class="sct-up-col is-left">${snaps}</div>` +
+        `<div class="sct-up-col is-right">${targets}${rushing}</div>` +
+        `</div>`,
+    ) +
     `</div>`
   );
 }
