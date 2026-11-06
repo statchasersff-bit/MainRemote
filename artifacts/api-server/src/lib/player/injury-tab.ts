@@ -237,6 +237,8 @@ interface Model {
   map: BodyMap;
   seasonsPlayed: number;
   seasonMissed: number | null;
+  /** Weeks sat out for any reason; seasonMissed counts injuries only. */
+  seasonOut: number | null;
   lastPlayedWeek: number | null;
   playedThisSeason: number;
   report: ReportRow[];
@@ -290,6 +292,7 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
     map: bodyMap(events),
     seasonsPlayed,
     seasonMissed: injury.seasonMissed,
+    seasonOut: injury.seasonOut,
     lastPlayedWeek: injury.lastPlayedWeek,
     playedThisSeason,
     report,
@@ -453,9 +456,11 @@ function statusAnswer(m: Model): string {
       }
       const missed =
         m.seasonMissed === 0 && m.playedThisSeason > 0
-          ? ` ${m.last} has not missed a game this season.`
+          ? m.seasonOut
+            ? ` ${m.last} has not missed a game to injury this season.`
+            : ` ${m.last} has not missed a game this season.`
           : m.seasonMissed
-            ? ` ${m.last} has missed ${games(m.seasonMissed)} this season.`
+            ? ` ${m.last} has missed ${games(m.seasonMissed)} to injury this season.`
             : "";
       return first + missed;
     }
@@ -614,7 +619,7 @@ function answerOf(m: Model, data: PlayerPageData): InjuryAnswer {
 
   const thisSeason =
     data.season === data.leagueSeason && m.seasonMissed !== null
-      ? `Games missed in ${m.season}: ${m.seasonMissed}.`
+      ? `Games missed to injury in ${m.season}: ${m.seasonMissed}.`
       : `No ${m.season} games played yet.`;
   const missed = `${thisSeason} Career games missed: ${m.t.games}.`;
 
@@ -1234,7 +1239,8 @@ export interface InjuryPremiumModel {
   logo: string | null;
   season: number;
   out: boolean;
-  status: { code: StatusCode; word: string; kind: string; answer: string; checked: { iso: string; text: string } | null; stale: boolean };
+  /** `part`: the designation's body part ("Hamstring") while he carries one, for the phone's status cell. */
+  status: { code: StatusCode; word: string; kind: string; answer: string; part: string | null; checked: { iso: string; text: string } | null; stale: boolean };
   cells: StatusCell[];
   practice: { head: string; note: string | null; empty: string | null; weeks: PremiumPracticeWeek[] };
   healthy: string | null;
@@ -1283,6 +1289,7 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
       word: STATUS_WORD[m.code],
       kind: STATUS_KIND[m.code],
       answer: statusAnswer(m),
+      part: ["Q", "D", "O", "IR", "PUP", "NFI"].includes(m.code) && m.bodyPart ? m.bodyPart : null,
       checked: m.checkedMs > 0 ? { iso: new Date(m.checkedMs).toISOString(), text: stampText(m.checkedMs) } : null,
       stale,
     },
@@ -1324,8 +1331,10 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
   const outlook = outlookHref ? { href: outlookHref, text: `See how the injury changes his rest-of-season value.` } : null;
   const missedLine =
     m.seasonMissed === 0 && m.playedThisSeason > 0
-      ? ` He has played every game in ${m.season}.`
-      : m.seasonMissed ? ` He has missed ${games(m.seasonMissed)} this season.` : "";
+      ? m.seasonOut
+        ? ` No injury has cost him a game in ${m.season}.`
+        : ` He has played every game in ${m.season}.`
+      : m.seasonMissed ? ` He has missed ${games(m.seasonMissed)} to injury this season.` : "";
 
   // 1. Is he injured?
   pool.push({
@@ -1425,8 +1434,10 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       key: "missed",
       q: `Has ${m.name} missed any games this season?`,
       a: m.seasonMissed === 0
-        ? `No. ${m.name} has played in every ${m.nickname ?? "team"} game in ${m.season}, ${games(m.playedThisSeason)} so far.`
-        : `Yes. ${m.name} has missed ${games(m.seasonMissed)} in ${m.season} and played in ${m.playedThisSeason}.`,
+        ? m.seasonOut
+          ? `Not to injury. ${m.name} has played in ${games(m.playedThisSeason)} in ${m.season}, and no injury has kept him out of one.`
+          : `No. ${m.name} has played in every ${m.nickname ?? "team"} game in ${m.season}, ${games(m.playedThisSeason)} so far.`
+        : `Yes. ${m.name} has missed ${games(m.seasonMissed)} to injury in ${m.season} and played in ${m.playedThisSeason}.`,
     });
   }
 

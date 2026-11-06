@@ -2,10 +2,12 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import {
   CLUB_INTERVAL_MS,
+  OUTLET_INTERVAL_MS,
   ROTOWIRE_INTERVAL_MS,
   WIRE_INTERVAL_MS,
   rotowireSweepEnabled,
   runClubIngest,
+  runOutletIngest,
   runIngest,
   runRotowireIngest,
   wireIngestEnabled,
@@ -172,6 +174,24 @@ app.listen(port, (err) => {
     const cap = new Promise((resolve) => setTimeout(resolve, 5 * 60 * 1000));
     void Promise.all([minute, Promise.race([warmed, cap])]).then(clubSweep);
     setInterval(clubSweep, CLUB_INTERVAL_MS);
+  }
+
+  // The national outlets (ProFootballTalk, Yahoo Sports, CBS Sports;
+  // lib/outlet-news.ts): three RSS feeds, every half hour, behind the same
+  // switch and the same post-boot delay as the clubs.
+  const outletSweep = () => {
+    runOutletIngest()
+      .then((result) => {
+        logger.info(result, "Scheduled national outlet sweep complete");
+      })
+      .catch((err) => {
+        logger.error({ err }, "Scheduled national outlet sweep failed");
+      });
+  };
+  if (wireIngestEnabled()) {
+    const minutes = new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+    void minutes.then(outletSweep);
+    setInterval(outletSweep, OUTLET_INTERVAL_MS);
   }
 
   // Player game logs, refreshed after each game window. Production only unless

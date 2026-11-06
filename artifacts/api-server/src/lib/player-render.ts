@@ -49,7 +49,7 @@ import { easternParts } from "./news-card";
 // here - only a comment mentions it - so this does not close a cycle.
 import { playerPageMeta } from "./player-seo";
 import { getTeamByAbbreviation, type NflTeam } from "./team/teams";
-import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
+import { teamHeaderColors, teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import {
   finishBadge,
   fpts,
@@ -115,6 +115,7 @@ import { renderPeersPremium } from "./player/peers-premium";
 import { renderFaqSection, selectFaq, tabHref } from "./player/faq-engine";
 import { gameLogPool, statsPool } from "./player/faq-pools";
 import { titleCase } from "./player/title-case";
+import { headArt, headIcon } from "./player/tab-head";
 
 export interface PlayerRenderOptions {
   /**
@@ -1006,12 +1007,9 @@ function renderBio(
 
   if (!narrative && !timeline && !faq && !spec) return null;
 
-  // The tab's heading, on the scoped URL as well as in the full profile. The
-  // header's H1 subtitle names the tab too, in a shorter phrase; this is the
-  // panel's own heading. See renderHero().
-  //
-  // No subtitle: it listed the facts of the table directly beneath it.
-  const heading = h2(`${data.player.name} Bio`);
+  // No panel heading: "{Name} Bio" was removed at mak's request (2026-11-06);
+  // the premium block's own title names the tab.
+  const heading = "";
 
   // The FAQ stays the tab's last block, under the peers rail the page stands
   // above it (mak, 2026-10-02).
@@ -1874,10 +1872,9 @@ function renderInjury(
 ): TabParts | null {
   if (!data.injury) return null;
 
-  // The tab's heading, and the thing that names the panel - on the scoped URL
-  // as well. See renderHero(). No subtitle since 2026-09-30: the status
-  // panel's answer follows the H1.
-  const heading = h2(`${data.player.name} Injury Update & History`);
+  // No panel heading: "{Name} Injury Update & History" was removed at mak's
+  // request (2026-11-06).
+  const heading = "";
 
   // The original tab's sections (status card, at-a-glance grade and tiles,
   // availability profile, body-part table and history) were removed on
@@ -1904,7 +1901,17 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): TabPart
   if (!parts) return null;
   // The panel names the player, as every section's heading does; it is the
   // section page's H1 when WordPress hands the heading to the tool.
-  return { body: h2(`Latest ${data.player.name} News & Updates`) + parts.body, foot: "", faq: parts.faq };
+  // The team pages' tab header (tab-head.ts; mak, 2026-11-06). Not wrapped in
+  // .scp-head, so a section page keeps it too: every other tab opens with
+  // its banner there, and News was the one that opened bare.
+  const head =
+    `<header class="scp-nwh scp-up-head">` +
+    headIcon("news") +
+    `<div class="scp-up-head-text"><h2 class="scp-up-h2" id="scp-nw-head">${escapeHtml(`Latest ${data.player.name} News & Updates`)}</h2>` +
+    `<p class="scp-up-dek">${escapeHtml(`Injury, practice, transaction and game reports on ${data.player.name} this season, newest first.`)}</p></div>` +
+    headArt("news") +
+    `</header>`;
+  return { body: head + parts.body, foot: "", faq: parts.faq };
 }
 
 /* --------------------------------------------------------- page assembly */
@@ -2448,10 +2455,18 @@ function renderDirectoryClub(
 
   const mark = team
     ? `<img class="scp-dir-club-logo" src="${escapeHtml(team.logo)}" alt=""` +
-      ` width="26" height="26" loading="lazy" decoding="async" />`
+      ` width="32" height="32" loading="lazy" decoding="async" />`
     : "";
 
-  const style = styleAttr([team && `--club:${team.primaryColor}`]);
+  // The header's gradient and rule (teamHeaderColors), in every club's own
+  // colors; the free agents card takes the house navy and gold.
+  const colors = teamHeaderColors(team);
+  const style = styleAttr([
+    team && `--club:${team.primaryColor}`,
+    `--club-head:${colors.head}`,
+    `--club-deep:${colors.deep}`,
+    `--club-accent:${colors.accent}`,
+  ]);
 
   // How many of them are actually producing. The bare roster count answered a
   // question nobody asked - thirty-two cards all saying "about seventeen" -

@@ -222,13 +222,19 @@ export interface InjuryProfile {
   /** The most recent logged injury, for the status block. */
   latest: NflInjuryEntry | null;
   /**
-   * Games the player missed in the season the page is showing.
+   * Games the player missed TO INJURY in the season the page is showing.
    *
    * Counted off the game log, which is padded to the TEAM's own schedule - so
-   * a week the team has not played yet is not counted as a game missed. Null
-   * when there is no log to count from.
+   * a week the team has not played yet is not counted as a game missed - and
+   * only the weeks a logged injury covers (the game log's own rule for "Did
+   * not play (hamstring)"). A week he sat for any other reason (not yet on
+   * the team, a healthy backup) is not an injury absence: Minshew's weeks 1-7
+   * of 2026 before he joined Arizona read "missed 7 games" until 2026-11-06.
+   * Null when there is no log to count from.
    */
   seasonMissed: number | null;
+  /** Every week this season he sat out, injured or not; null with no log. */
+  seasonOut: number | null;
   /** The most recent week he actually played, for the FAQ. */
   lastPlayedWeek: number | null;
   faq: InjuryFaq[];
@@ -1007,10 +1013,17 @@ function buildInjuryProfile(
   // Absences in the season on the page. "out" and not "bye", off a log that
   // stops at the team's last played game - so this counts games that happened
   // without him, never games that have not kicked off.
-  const seasonMissed =
-    gameLog.length > 0
-      ? gameLog.filter((entry) => entry.game_status === "out").length
-      : null;
+  const outWeeks = gameLog.filter((entry) => entry.game_status === "out");
+  const injuredIn = (week: number): boolean =>
+    history.nfl.some(
+      (inj) =>
+        inj.season === season &&
+        typeof inj.week === "number" &&
+        week >= inj.week &&
+        week <= inj.week + (inj.gamesMissed ?? 0),
+    );
+  const seasonMissed = gameLog.length > 0 ? outWeeks.filter((entry) => injuredIn(entry.week)).length : null;
+  const seasonOut = gameLog.length > 0 ? outWeeks.length : null;
   const played = gameLog.filter((entry) => entry.game_status === "active");
   const lastPlayedWeek =
     played.length > 0 ? Math.max(...played.map((entry) => entry.week)) : null;
@@ -1024,6 +1037,7 @@ function buildInjuryProfile(
     insight: buildTimelineInsight(history.nfl),
     latest: latestInjury(history.nfl),
     seasonMissed,
+    seasonOut,
     lastPlayedWeek,
     faq: injuryFaq({
       name,

@@ -24,11 +24,13 @@
  */
 
 import { escapeHtml } from "../render";
+import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { lastName } from "./header";
 import { positionWord, type BioPageFacts, type BioStop } from "./bio-tab-data";
 import { collegeCrest, moreOnRows, redraftCommandHref } from "./bio-tab";
+import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
 
@@ -76,13 +78,15 @@ function renderHeader(data: PlayerPageData): string {
   if (club && number !== null && number !== undefined) parts.push(`#${number}`);
   const sub = parts.map((p) => `<span>${e(p)}</span>`).join(`<span class="scp-bop-sep" aria-hidden="true">•</span>`);
   return (
-    `<header class="scp-bop-hero">` +
+    `<header class="scp-bop-hero scp-up-head">` +
+    headIcon("bio") +
     crest +
     `<span class="scp-bop-hero-rule" aria-hidden="true"></span>` +
     `<div class="scp-bop-hero-t">` +
-    `<h2 class="scp-bop-title" id="scp-bop-title">${e(`${data.player.name} Bio and Career`)}</h2>` +
-    `<p class="scp-bop-sub">${sub}</p>` +
+    `<h2 class="scp-bop-title scp-up-h2" id="scp-bop-title">${phoneHeading(`${data.player.name} Bio and Career`, data.player.name)}</h2>` +
+    `<p class="scp-bop-sub scp-up-dek">${sub}</p>` +
     `</div>` +
+    headArt("bio") +
     `<span class="scp-bop-hero-geo" aria-hidden="true"></span>` +
     `<span class="scp-bop-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -136,8 +140,9 @@ function renderFacts(data: PlayerPageData, page: BioPageFacts): string {
 function renderOverview(page: BioPageFacts): string {
   if (page.paragraphs.length === 0) return "";
   return (
-    `<section class="scp-bop-sec is-overview" aria-labelledby="scp-bop-ov-h">` +
-    `<h2 class="scp-bop-h2" id="scp-bop-ov-h">Career Overview</h2>` +
+    // No visible "Career Overview" heading (mak, 2026-11-06): the prose sits
+    // straight under the fact strip in the intro card.
+    `<section class="scp-bop-sec is-overview" aria-label="Career overview">` +
     `<div class="scp-bop-prose">${page.paragraphs.map((p) => `<p>${e(p)}</p>`).join("")}</div>` +
     `</section>`
   );
@@ -302,9 +307,15 @@ export function renderBioPremium(data: PlayerPageData, options: PlayerRenderOpti
   const lower = stops || side ? `<div class="scp-bop-lower">${stops}${side}</div>` : "";
   return (
     `<div class="scp-bop" aria-labelledby="scp-bop-title">` +
+    // The banner, fact strip and Career Overview share one card, the way the
+    // Outlook tab's Rest-of-Season Projection holds its navy bar and body
+    // (mak, 2026-11-06).
+    `<section class="scp-bop-intro" aria-labelledby="scp-bop-title">` +
     renderHeader(data) +
+    `<div class="scp-bop-intro-body">` +
     renderFacts(data, page) +
     renderOverview(page) +
+    `</div></section>` +
     renderTimeline(page) +
     lower +
     `</div>`

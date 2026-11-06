@@ -24,7 +24,7 @@
  */
 
 import { headshotImg } from "../headshot-html";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 import { CLUB_BAND_VARIANTS } from "../image-urls";
 import { newsKicker, newsStamp, splitHeadline } from "../news-card";
 import { TEAM_NEWS_VISIBLE } from "./team-data";
@@ -318,19 +318,21 @@ export function renderNewsPremium(data: TeamPageData, now: number): string {
     // The shared premium tab header (premium-head.ts), the Coaching tab's
     // design, since 2026-11-05 evening (mak: "match the design used by the
     // coaching tabs header"); full width above the feed and rail, as there.
-    premiumTabHead({
-      hook: "sct-nwp-hero",
-      icon: "news",
-      art: "news",
-      heading: `<h2 class="sct-h2 sct-up-h2 sct-nwp-h2">${e(`Latest ${team.nickname} News`)}</h2>`,
-      dek: `The latest ${team.nickname} reports and updates, newest first.`,
-    }) +
-    `<div class="sct-nwp-layout${news.length < 3 ? " is-thin" : ""}">` +
-    `<div class="sct-nwp-main">` +
-    feed +
-    `</div>` +
-    (rail ? `<aside class="sct-nwp-rail" aria-label="${e(`${team.nickname} injury watch, next game and quick links`)}">${rail}</aside>` : "") +
-    `</div>` +
+    premiumTabFrame(
+      premiumTabHead({
+        hook: "sct-nwp-hero",
+        icon: "news",
+        art: "news",
+        heading: `<h2 class="sct-h2 sct-up-h2 sct-nwp-h2">${e(`Latest ${team.nickname} News`)}</h2>`,
+        dek: `The latest ${team.nickname} reports and updates, newest first.`,
+      }),
+      `<div class="sct-nwp-layout${news.length < 3 ? " is-thin" : ""}">` +
+        `<div class="sct-nwp-main">` +
+        feed +
+        `</div>` +
+        (rail ? `<aside class="sct-nwp-rail" aria-label="${e(`${team.nickname} injury watch, next game and quick links`)}">${rail}</aside>` : "") +
+        `</div>`,
+    ) +
     `</div>`
   );
 }

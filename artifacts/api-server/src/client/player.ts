@@ -1103,6 +1103,29 @@ async function paintFigure(figure: HTMLElement): Promise<void> {
   figure.classList.add("is-fallback");
 }
 
+/**
+ * The phone's season dropdown on the Game Log heading (a <details>): close it
+ * on a tap outside it and on Escape, as a menu does. Picking a season needs
+ * nothing here, because its options are state-swap links.
+ */
+function wireSeasonMenu(root: HTMLElement): void {
+  const menus = Array.from(root.querySelectorAll<HTMLDetailsElement>("details[data-scp-yr]"));
+  if (!menus.length) return;
+  document.addEventListener("click", (event) => {
+    for (const menu of menus) {
+      if (menu.open && !(event.target instanceof Node && menu.contains(event.target))) menu.open = false;
+    }
+  });
+  root.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    for (const menu of menus) {
+      if (!menu.open) continue;
+      menu.open = false;
+      menu.querySelector<HTMLElement>("summary")?.focus();
+    }
+  });
+}
+
 function wireProfile(root: HTMLElement): void {
   wireTabs(root, {
     navSelector: "[data-scp-nav]",
@@ -1131,6 +1154,7 @@ function wireProfile(root: HTMLElement): void {
   wireStateSwap(root);
   wireDurability(root);
   wireFrameHeight(root);
+  wireSeasonMenu(root);
 }
 
 function boot(): void {

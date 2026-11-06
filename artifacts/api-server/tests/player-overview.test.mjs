@@ -259,7 +259,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     // Only the recaps the log makes: no section.
     assert.equal(withNews([]).querySelector("#scp-ox-news-h"), null);
     const doc = withNews([item("a", "injury", 10), item("b", "practice", 11), item("c", "transaction", 12), item("d", "depth-chart", 13), item("e", "recap", 14)]);
-    const rows = [...doc.querySelectorAll("#scp-ox-news-h ~ .scp-nw .scp-nw-dg-item")];
+    const rows = [...doc.querySelectorAll("section[aria-labelledby=scp-ox-news-h] .scp-nw .scp-nw-dg-item")];
     assert.equal(rows.length, 3);
     for (const r of rows) assert.notEqual(r.getAttribute("data-type"), "game");
     assert.match(text(rows[0]), /Item d/, "newest first");

@@ -185,13 +185,15 @@ export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: 
   if (!groups) return "";
   return (
     `<div class="sct-block sct-cp sct-tfo" id="outlook-premium">` +
+    // The banner, the summary and the context strip are one framed section,
+    // the banner its header, like the groups under it (mak, 2026-11-06).
+    `<section class="sct-tfo-intro">` +
     header(team, outlook, underway) +
-    // The summary and the context strip in one frame under the header, the
-    // way the Coaching page frames its profile and KPI cards (mak, 2026-11-05 PM).
     `<div class="sct-tfo-overview">` +
     `<p class="sct-tfo-lede">${e(outlook.summary)}</p>` +
     strip(outlook.facts) +
     `</div>` +
+    `</section>` +
     groups +
     (outlook.bottomLine
       ? `<section class="sct-tfo-bl" aria-label="Bottom line">` +

@@ -22,12 +22,14 @@
  */
 
 import { escapeHtml } from "../render";
+import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { eventWords, injuryPremiumModel, type InjuryPremiumModel } from "./injury-tab";
 import { durabilityParts } from "./injury-durability";
 import { getTeamByAbbreviation } from "../team/teams";
 import type { InjuryEvent } from "./injury-tab-data";
+import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
 
@@ -50,11 +52,11 @@ const ICON = {
 };
 
 /** The section bar: gold icon, the h3, an optional right-aligned note, the gold diagonals. */
-function bar(icon: string, title: string, note = "", id = ""): string {
+function bar(icon: string, title: string, note = "", id = "", name = ""): string {
   return (
     `<header class="scp-inp-bar">` +
     `<span class="scp-inp-bar-icon">${icon}</span>` +
-    `<h2 class="scp-inp-bar-title"${id ? ` id="${id}"` : ""}>${e(title)}</h2>` +
+    `<h2 class="scp-inp-bar-title"${id ? ` id="${id}"` : ""}>${phoneHeading(title, name)}</h2>` +
     (note ? `<p class="scp-inp-bar-note">${e(note)}</p>` : "") +
     `<span class="scp-inp-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -82,6 +84,9 @@ function renderStatus(m: InjuryPremiumModel): string {
     `<div class="scp-inp-status">` +
     `<div class="scp-inp-now is-${s.kind}">` +
     `<p class="scp-inp-now-word"><span class="scp-inp-dot" aria-hidden="true"></span>${e(s.word)}</p>` +
+    // The designation's body part, phones only (the sentence below names it
+    // on desktop and is hidden on phones; mak, 2026-11-06).
+    (s.part ? `<p class="scp-inp-now-part">${e(s.part)}</p>` : "") +
     `<p class="scp-inp-now-text">${e(s.answer)}</p>` +
     checked +
     `</div>` +
@@ -197,21 +202,6 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
 
 /* ----------------------------------------------------------------- history */
 
-function reportChips(ev: InjuryEvent): string {
-  if (!ev.reports.length) return "";
-  return (
-    `<ul class="scp-inp-chips" aria-label="Weekly injury reports">` +
-    ev.reports
-      .map((r) => {
-        const text = r.reserve ? r.reserve.replace(/^the /, "") : [r.practice ?? "", r.status ?? "no designation"].filter(Boolean).join(" · ");
-        const kind = r.reserve || r.status === "Out" || r.status === "Doubtful" ? "out" : r.status === "Questionable" || r.practice === "Limited" || r.practice === "DNP" ? "q" : "ok";
-        return `<li class="scp-inp-chip is-${kind}"><b>${e(`Wk ${r.week}`)}</b> ${e(text)}</li>`;
-      })
-      .join("") +
-    `</ul>`
-  );
-}
-
 function eventCard(ev: InjuryEvent): string {
   const w = eventWords(ev);
   const play = ev.play && ev.play.desc ? ev.play : null;
@@ -227,7 +217,8 @@ function eventCard(ev: InjuryEvent): string {
     (play
       ? `<p class="scp-inp-play"><b>The play</b><span>${e(`${when ? `${when} ` : ""}vs ${play.opponent}`)}</span><span class="scp-inp-play-d">${e(play.desc)}</span></p>`
       : "") +
-    reportChips(ev) +
+    // No weekly report pills under the card (mak, 2026-11-06): the note
+    // above already says which weeks he was listed and missed.
     `</article></li>`
   );
 }
@@ -250,7 +241,7 @@ function renderHistory(m: InjuryPremiumModel): string {
       : `<ol class="scp-inp-tl">${items.join("")}${evs.join("")}</ol>`;
   return (
     `<section class="scp-inp-sec is-hist" aria-labelledby="scp-inp-hist-h">` +
-    bar(ICON.medkit, `${m.name} Injury History`, "Every logged injury, most recent first. Games missed are regular-season games.", "scp-inp-hist-h") +
+    bar(ICON.medkit, `${m.name} Injury History`, "Every logged injury, most recent first. Games missed are regular-season games.", "scp-inp-hist-h", m.name) +
     `<div class="scp-inp-hist"><div class="scp-inp-tlwrap">${list || `<p class="scp-inp-none">No logged injuries.</p>`}</div></div>` +
     `</section>`
   );
@@ -284,10 +275,12 @@ export function renderInjuryPremium(data: PlayerPageData, options: PlayerRenderO
   const crest = m.logo ? `<img class="scp-inp-crest" src="${e(m.logo)}" alt="${e(club ? `${club} logo` : "Team logo")}" width="60" height="60" loading="lazy" decoding="async">` : "";
   const sub = `Current injury status, game availability, practice reports, and complete injury history for ${club ? `${club} ` : ""}${m.posWord} ${m.name}.`;
   const hero =
-    `<header class="scp-inp-hero">` +
+    `<header class="scp-inp-hero scp-up-head">` +
+    headIcon("injury") +
     crest +
     `<span class="scp-inp-hero-rule" aria-hidden="true"></span>` +
-    `<div class="scp-inp-hero-t"><h2 class="scp-inp-title" id="scp-inp-title">${e(`${m.name} Injury Status and History`)}</h2><p class="scp-inp-sub">${e(sub)}</p></div>` +
+    `<div class="scp-inp-hero-t"><h2 class="scp-inp-title scp-up-h2" id="scp-inp-title">${phoneHeading(`${m.name} Injury Status and History`, m.name)}</h2><p class="scp-inp-sub scp-up-dek">${e(sub)}</p></div>` +
+    headArt("injury") +
     `<span class="scp-inp-hero-geo" aria-hidden="true"></span>` +
     `<span class="scp-inp-stripes" aria-hidden="true"></span>` +
     `</header>`;

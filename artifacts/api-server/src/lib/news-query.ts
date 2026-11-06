@@ -84,6 +84,12 @@ export function newsReadCacheStatus(): { entries: number; hits: number; misses: 
  * switched off and nothing in lib/x is ever loaded.
  */
 const X_LANE = "x";
+/**
+ * The national outlets' lane (lib/outlet-news.ts). Every row carries a team,
+ * so listNews's `team_abbr IS NULL` already keeps it off the main feed; it is
+ * named here for the player read, which takes it in.
+ */
+const OUTLET_LANE = "outlet";
 
 export const DEFAULT_LIMIT = 100;
 export const MAX_LIMIT = 250;
@@ -324,7 +330,7 @@ export async function listNewsForPlayerName(
       .from(newsItems)
       .where(
         and(
-          or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE)),
+          or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE), eq(newsItems.sourceType, OUTLET_LANE)),
           or(eq(nameKey, key), nonAsciiName),
         ),
       )

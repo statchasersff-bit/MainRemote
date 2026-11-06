@@ -1057,7 +1057,8 @@ describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders
       // The history: a real table, the live season marked, every cell a value over a rank, tinted by rank.
       const trs = [...sp.querySelectorAll(".sct-sp-h tbody tr")];
       assert.ok(trs.length >= 2, "two seasons at least");
-      assert.ok(trs[0].classList.contains("is-current") && trs[0].querySelector(".sct-sp-h-now"), "the live season is marked");
+      assert.ok(trs[0].classList.contains("is-current"), "the live season is marked");
+      assert.equal(trs[0].querySelector(".sct-sp-h-now"), null, "no Current pill (mak, 2026-11-06)");
       for (const td of sp.querySelectorAll(".sct-sp-h-cell:not(.is-empty)")) {
         const rank = td.querySelector(".sct-sp-h-rank")?.firstChild.textContent;
         const n = rank ? Number.parseInt(rank.replace(/^T-/, ""), 10) : null;
@@ -2317,13 +2318,8 @@ describe("the Stats ladders never mix weeks", () => {
     assert.equal(efficiency.length, 2, "an Efficiency ladder per unit");
     assert.equal(passRush.length, 2, "Pass Protection and Pass Rush");
 
-    for (const ladder of [...efficiency, ...passRush]) {
-      assert.equal(
-        captionWeek(ladder),
-        file.throughWeek,
-        `${titleOf(ladder)}: the caption is the file's week`,
-      );
-    }
+    // No panel prints its week since 2026-11-06 (mak); the values below still come from the file.
+    for (const ladder of [...efficiency, ...passRush]) assert.equal(captionWeek(ladder), null, `${titleOf(ladder)}: no week line`);
 
     // The yardage rows and the sack counts read the FILE, not the provider:
     // the values on the page are the file's values for this club.
@@ -2347,12 +2343,13 @@ describe("the Stats ladders never mix weeks", () => {
     }
   });
 
-  test("every ladder says which week its source has reached", async () => {
+  test("no ladder prints a week line (mak, 2026-11-06)", async () => {
     const { doc } = await dom("/team/new-england-patriots/stats/");
     const all = [...doc.querySelectorAll(".sct-sp-unit, .sct-sp-panel")];
     assert.ok(all.length >= 6, `the Stats tab renders its panels (${all.length})`);
+    // The Offense / Defense units print no week since 2026-11-06 (mak); every inner panel does.
     for (const ladder of all) {
-      assert.ok(captionWeek(ladder), `${titleOf(ladder)}: the caption names a week`);
+      assert.equal(captionWeek(ladder), null, `${titleOf(ladder)}: no week line (mak, 2026-11-06)`);
     }
     // Within a bucket the two units agree with each other, whatever the
     // sources say to one another.
@@ -3000,7 +2997,8 @@ describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail 
     assert.equal(h2s[0].textContent, "Latest Patriots News");
     assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-nwp-h2") && h2s[0].classList.contains("sct-up-h2"));
     // The shared premium tab header (the Coaching tab's design, mak 2026-11-05 evening), across the block.
-    const head = neu.querySelector(":scope > header.sct-up-head.sct-nwp-hero");
+    // Since 2026-11-06 the banner heads the tab frame (premiumTabFrame).
+    const head = neu.querySelector(":scope > .sct-tab-frame > header.sct-up-head.sct-nwp-hero");
     assert.ok(head && head.contains(h2s[0]), "the heading sits in the shared banner");
     assert.ok(head.querySelector(".sct-up-head-icon svg") && head.querySelector("svg.sct-up-art"));
     assert.equal(head.querySelector(".sct-up-dek").textContent, "The latest Patriots reports and updates, newest first.");
@@ -3034,7 +3032,7 @@ describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail 
       assert.equal(card.querySelectorAll(".sct-nwp-more").length, 1, "one Read report link");
     }
     // The fold, at TEAM_NEWS_VISIBLE, with the rest in a disclosure.
-    const open = neu.querySelectorAll(":scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-card, :scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-grid > .sct-nwp-card").length;
+    const open = neu.querySelectorAll(":scope > .sct-tab-frame > .sct-tab-frame-body > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-card, :scope > .sct-tab-frame > .sct-tab-frame-body > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-grid > .sct-nwp-card").length;
     assert.equal(open, Math.min(10, cards.length));
     if (cards.length > 10) {
       const more = neu.querySelector("details.sct-nwp-more");

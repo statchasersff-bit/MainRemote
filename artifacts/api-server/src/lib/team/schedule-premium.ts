@@ -36,7 +36,7 @@ import { lastResult, nextGame, recordThrough, splitSchedule, type ScheduleGame, 
 import { seasonShape, type SeasonShape } from "./season-shape";
 import type { TeamPageData } from "./team-data";
 import type { NflTeam } from "./teams";
-import { premiumTabHead } from "./premium-head";
+import { premiumTabHead, premiumTabFrame } from "./premium-head";
 
 const e = escapeHtml;
 
@@ -391,8 +391,10 @@ function snapshotCard(shape: SeasonShape): string {
     `<h3 class="sct-shp-snap-h" id="sct-shp-snap-h">${e(`${shape.season} Season Snapshot`)}</h3>` +
     `<dl class="sct-shp-snap-grid">` +
     cells.map(([label, value]) => `<div class="sct-shp-snap-cell"><dd class="sct-shp-snap-value sct-shp-num">${e(value)}</dd><dt class="sct-shp-snap-label">${e(label)}</dt></div>`).join("") +
+    // The bye fills the grid's open square (mak, 2026-11-06); with a Neutral
+    // cell the grid is full and the bye spans a row of its own (team.css).
+    `<div class="sct-shp-snap-bye"><dd class="sct-shp-snap-bye-week sct-shp-num">${e(shape.bye ? `W${shape.bye}` : "TBD")}</dd><dt class="sct-shp-snap-bye-label">Bye week</dt></div>` +
     `</dl>` +
-    `<p class="sct-shp-snap-bye"><span class="sct-shp-snap-bye-week sct-shp-num">${e(shape.bye ? `W${shape.bye}` : "TBD")}</span><span class="sct-shp-snap-bye-label">Bye week</span></p>` +
     `<dl class="sct-shp-bars">` +
     bar("home", "Home", shape.home) +
     bar("away", "Away", shape.away) +
@@ -503,11 +505,10 @@ export function renderSchedulePremium(data: TeamPageData, options: TeamRenderOpt
     : "";
   return (
     `<div class="sct-shp">` +
-    identity(data, schedule) +
-    `<div class="sct-shp-featured">` +
-    nextCard(data, schedule, options, now) +
-    lastCard(data, schedule, options, now) +
-    `</div>` +
+    premiumTabFrame(
+      identity(data, schedule),
+      `<div class="sct-shp-featured">` + nextCard(data, schedule, options, now) + lastCard(data, schedule, options, now) + `</div>`,
+    ) +
     `<div class="sct-shp-layout${rail ? "" : " is-single"}">` +
     `<div class="sct-shp-main">${boards(data, schedule, options, now)}</div>` +
     rail +

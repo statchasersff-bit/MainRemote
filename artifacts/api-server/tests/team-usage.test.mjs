@@ -152,11 +152,13 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.deepEqual([...root.querySelectorAll(".sct-up-ph-title")].map((h) => h.textContent), ["Snap Counts & Playing Time", "Target Distribution", "Rushing Distribution"]);
     assert.equal(root.querySelector("#situational .sct-us-prm-title").textContent, "Situational Usage");
     assert.deepEqual([...root.querySelectorAll("#run-direction .sct-us-prm-title, #passing .sct-us-prm-title")].map((h) => h.textContent), ["Rushing Direction", "Passing Distribution"]);
-    const h3s = [...root.querySelectorAll(".sct-us-h3")].map((h) => h.textContent);
-    assert.deepEqual(h3s, [
-      "Notable Usage Changes",
-      "Advanced & Fantasy Analysis",
-    ]);
+    // Every section wears the premium frame since 2026-11-06: no .sct-us-h3 left,
+    // the last two titles are premium title bars like the rest.
+    assert.deepEqual([...root.querySelectorAll(".sct-us-h3")].map((h) => h.textContent), []);
+    assert.deepEqual(
+      [...root.querySelectorAll("#usage-trends .sct-us-prm-title, #fantasy .sct-us-prm-title")].map((h) => h.textContent),
+      ["Notable Usage Changes", "Advanced & Fantasy Analysis"],
+    );
     assert.equal(root.querySelector("#usage-premium h2.sct-h2.sct-up-h2").textContent, "Snap Counts & Player Usage");
     // The "{season} Regular Season · Through Week N" line is gone (mak, 2026-11-05).
     assert.equal(root.querySelector(".sct-us-context"), null);
@@ -333,7 +335,7 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const items = [...block.querySelectorAll(".sct-us-trend")];
     assert.ok(items.length >= 1);
     for (const li of items) {
-      assert.match(li.querySelector(".sct-us-trend-num").textContent, /^[+−]\d+(\.\d)? (pp|pts)$/);
+      assert.match(li.querySelector(".sct-us-trend-num").textContent, /^[+−]\d+(\.\d)?%$/);
       const body = li.querySelector(".sct-us-trend-body").textContent;
       assert.match(body, /over his last (one game|two games|three games) \(Weeks? [\d, -]+(and \d+)?\) against the (three before them|one game before|two games before) \(Weeks? [\d, -]+(and \d+)?\)/, body);
       assert.ok(!/[Tt]rade|buy|sell|stash/.test(body), body);
