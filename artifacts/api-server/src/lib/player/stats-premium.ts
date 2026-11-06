@@ -71,7 +71,23 @@ function cellIcon(label: string): string {
 
 /* ------------------------------------------------------------------ atoms */
 
-function bar(id: string, icon: string, title: string, sub: string, ctl = "", hero = false): string {
+/**
+ * The title, with the player's name in its own span when the title opens
+ * with it: phones show "2026 Stats" and keep the name for crawlers and
+ * screen readers (player.css, mak 2026-11-06). The heading's text is
+ * unchanged.
+ */
+function titleHtml(title: string, name: string, tail = ""): string {
+  if (!name || !title.startsWith(`${name} `)) return escapeHtml(title);
+  let rest = title.slice(name.length + 1);
+  // A trailing qualifier the phone drops too ("Career Stats by Season" reads
+  // "Career Stats" there, mak 2026-11-06); same span, same rule.
+  const cut = tail && rest.endsWith(tail) ? rest.slice(0, -tail.length) : "";
+  if (cut) rest = cut;
+  return `<span class="scp-stp-name">${escapeHtml(name)}</span> ${escapeHtml(rest)}` + (cut ? `<span class="scp-stp-name">${escapeHtml(tail)}</span>` : "");
+}
+
+function bar(id: string, icon: string, title: string, sub: string, ctl = "", hero = false, name = "", tail = ""): string {
   return (
     `<header class="scp-stp-bar${hero ? " is-hero" : ""}">` +
     `<span class="scp-stp-bar-rule" aria-hidden="true"></span>` +
@@ -79,7 +95,7 @@ function bar(id: string, icon: string, title: string, sub: string, ctl = "", her
     `<div class="scp-stp-bar-text">` +
     // The tab's H2s, with the ids the SEO ladder and the H1 promotion key on
     // (scp-st-prod-h is the lead heading; player-render promotes it).
-    `<h2 class="scp-ox-h2 scp-stp-bar-title${hero ? " is-lead" : ""}" id="${escapeHtml(id)}">${escapeHtml(title)}</h2>` +
+    `<h2 class="scp-ox-h2 scp-stp-bar-title${hero ? " is-lead" : ""}" id="${escapeHtml(id)}">${titleHtml(title, name, tail)}</h2>` +
     (sub ? `<p class="scp-stp-bar-sub">${sub}</p>` : "") +
     `</div>` +
     (ctl ? `<div class="scp-stp-bar-ctl">${ctl}</div>` : "") +
@@ -112,7 +128,7 @@ function kpiCards(m: StatsPremiumModel): string {
           .join("");
         const sub = c.sub.map((s) => `${figure(s)} ${escapeHtml(s.label)}`).join(" · ");
         return (
-          `<li class="scp-stp-kpi">` +
+          `<li class="scp-stp-kpi${c.label === "Games" ? " is-games" : ""}">` +
           `<span class="scp-stp-kpi-icon" aria-hidden="true">${cellIcon(c.label)}</span>` +
           `<span class="scp-stp-kpi-label">${escapeHtml(c.label)}</span>` +
           // Value and support on one wrapping line: a wide figure ("25 REC ·
@@ -219,6 +235,11 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
   const cats = m.advanced?.cats ?? (m.pos === "QB" ? "passing" : m.pos === "RB" ? "rushing" : "receiving");
 
   // The hero band (the reference): title over the lede, no icon tile.
+  // Games played as a small label beside the toggle (mak, 2026-11-06): on
+  // the phone it replaces the Games card, which spent ~140px on one number.
+  // Desktop keeps the card and hides the label (player.css).
+  const gp = m.cells.find((c) => c.label === "Games")?.main[0]?.total;
+  const gpLabel = gp && gp !== "0" ? `<span class="scp-stp-gp">${escapeHtml(`${gp} ${gp === "1" ? "game" : "games"}`)}</span>` : "";
   const seasonHead = bar(
     "scp-st-prod-h",
     ICON.bars,
@@ -227,8 +248,10 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     `<div class="scp-st-seg scp-stp-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
       `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
       `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
-      `</div>`,
+      `</div>` +
+      gpLabel,
     true,
+    m.name,
   );
 
   const advHead = m.advanced
@@ -245,12 +268,20 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
         `${m.name} Career Stats by Season`,
         "",
         `<div class="scp-st-seg scp-stp-seg" role="group" aria-label="Show columns" data-scp-view-seg>` +
-          `<button type="button" data-view="nfl" aria-pressed="true">NFL stats</button>` +
+          `<button type="button" data-view="nfl" aria-pressed="true">NFL<span class="scp-stp-xs"> stats</span></button>` +
           `<button type="button" data-view="fantasy" aria-pressed="false">Fantasy</button>` +
           `</div>`,
+        false,
+        m.name,
+        " by Season",
       )
     : "";
 
+  // The hero's lede ("Touchdowns account for 61% of his fantasy
+  // production...") belongs with the fantasy-impact read: on the phone it is
+  // printed there and hidden in the heading (mak's mobile brief, 2026-11-05).
+  // The desktop keeps it under the title. One copy shows at any width.
+  const ledeMoves = Boolean(m.lede) && m.analysis.some((p) => p.title === "Fantasy impact");
   const analysis = m.analysis.length
     ? `<div class="scp-stp-analysis">` +
       `<div class="scp-stp-brand"><span class="scp-stp-brand-rule" aria-hidden="true"></span><span class="scp-stp-brand-text"><span>StatChasers</span> <span>Analysis</span></span></div>` +
@@ -260,6 +291,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
           (p, i) =>
             `<div class="scp-stp-analysis-part">` +
             `<h4 class="scp-stp-analysis-h"><span class="scp-stp-card-icon">${i === 0 && m.analysis.length > 1 ? ICON.target : ICON.bars}</span>${escapeHtml(p.title)}</h4>` +
+            (ledeMoves && p.title === "Fantasy impact" ? `<p class="scp-stp-analysis-lede">${m.lede}</p>` : "") +
             `<p>${p.html}</p>` +
             (p.note ? `<p class="scp-stp-analysis-note">${escapeHtml(p.note)}</p>` : "") +
             `</div>`,
@@ -273,7 +305,10 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
   // analysis panel.
   return (
     `<div class="scp-stp" data-scp-premium="stats">` +
-    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${seasonHead}<div class="scp-stp-body">${kpiCards(m)}</div></section>` +
+    // On the phone the lede never sits in the intro (mak, 2026-11-06): it
+    // goes to the fantasy-impact read, or, with no such read, under the
+    // production cards it describes.
+    `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub">', '<p class="scp-stp-bar-sub is-moved">') : seasonHead}<div class="scp-stp-body">${kpiCards(m)}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
     (m.advanced
       ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-adv-h">${advHead}<div class="scp-stp-body">${metricCards(m)}${note}</div></section>`
       : "") +

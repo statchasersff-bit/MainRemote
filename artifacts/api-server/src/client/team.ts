@@ -257,7 +257,7 @@ function wireTabs(root: HTMLElement): void {
   // The host theme (Divi) binds its own click handler to every same-page
   // anchor - `a[href*="#"]` whose path is the page's - and animates the
   // window to the element the hash names. The hub-only tabs (#draft,
-  // #contracts, #coaching, #schedule) are exactly that, so with a handler on
+  // #contracts) are exactly that, so with a handler on
   // the link itself the panel switched AND the page scrolled to it (mak,
   // 2026-11-05: "it aligns my screen to the page"). A capture listener on an
   // ancestor runs before any listener on the link, whatever order they were
@@ -916,7 +916,7 @@ function wireSnapTables(root: HTMLElement): void {
           chg.innerHTML = "";
           const span = document.createElement("span");
           span.className = `sct-us-delta is-${c == null ? "none" : c === 0 ? "flat" : c > 0 ? "up" : "down"}`;
-          span.textContent = c == null ? "\u2013" : c === 0 ? "0 pp" : `${c > 0 ? "+" : "\u2212"}${Math.abs(c)} pp`;
+          span.textContent = c == null ? "\u2013" : c === 0 ? "0%" : `${c > 0 ? "+" : "\u2212"}${Math.abs(c)}%`;
           chg.appendChild(span);
         }
         body.appendChild(row);

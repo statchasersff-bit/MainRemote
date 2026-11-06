@@ -321,6 +321,7 @@ export function renderNewsPremium(data: TeamPageData, now: number): string {
     premiumTabHead({
       hook: "sct-nwp-hero",
       icon: "news",
+      art: "news",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-nwp-h2">${e(`Latest ${team.nickname} News`)}</h2>`,
       dek: `The latest ${team.nickname} reports and updates, newest first.`,
     }) +

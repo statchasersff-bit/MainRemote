@@ -121,26 +121,25 @@ describe("player header", () => {
     // The identity column reads: tags, heading, number and position, bio line.
     assert.deepEqual([...h.querySelector(".scp-pid").children].map((c) => c.className.split(" ")[0]), ["scp-ptags", "scp-phead-h1", "scp-pp-under", "scp-pspec"]);
 
-    // The phone's rows (mak's mobile brief, 2026-11-05): the club row opens the
-    // hero - crest, club link, the status slot (no "QB · #7" since 11-05) - and the meta
-    // lines under the H1 carry position · age, then build · college. The
-    // desktop tag row, under-row and spec line stay in the markup; player.css
-    // shows one set or the other, never both.
-    const top = h.querySelector(".scp-phead-hero > .scp-pm-top:first-child");
-    assert.ok(top, "the club row opens the hero");
-    // The fixture's club has no crest on file, so the position stands in the box.
-    assert.equal(top.querySelector(".scp-pm-logo"), null);
-    assert.equal(text(top.querySelector(".scp-pm-logo-pos")), "QB");
-    const crested = header(state({ team: { ...state().team, logo: "/team-logos/ari.svg" } })).querySelector(".scp-pm-logo");
-    assert.equal(crested.getAttribute("src"), "/team-logos/ari.svg");
-    assert.equal(crested.getAttribute("alt"), "", "the crest is decoration beside the club's name");
-    assert.equal(text(top.querySelector(".scp-pm-team")), "Arizona Cardinals");
-    assert.equal(top.querySelector(".scp-pm-team").getAttribute("href"), "/team/arizona-cardinals/");
-    assert.equal(top.querySelector(".scp-pm-pos"), null, "no position-and-number line under the club");
-    assert.equal(top.querySelector(".scp-pm-status"), null, "no status, no pill - never Active by default");
+    // The phone's rows (mak's compact identity brief, 2026-11-05): no club
+    // banner; two lines under the H1 - club · #N · POS · status, then
+    // age · height · weight · college. The desktop tag row, under-row and
+    // spec line stay in the markup; player.css shows one set or the other.
+    assert.equal(h.querySelector(".scp-pm-top"), null, "no separate club banner");
     const meta = h.querySelector(".scp-pm-meta");
-    assert.equal(text(meta.querySelector(".scp-pm-meta-1")), "Quarterback·33 yrs");
-    assert.equal(text(meta.querySelector(".scp-pm-meta-2")), "6'4\"·235 lbs");
+    const one = meta.querySelector(".scp-pm-meta-1");
+    assert.equal(one.querySelector(".scp-pm-team").getAttribute("href"), "/team/arizona-cardinals/");
+    assert.equal(text(one.querySelector(".scp-pm-team")), "Cardinals");
+    assert.match(text(one), /^Cardinals·#\d+·QB$/);
+    assert.equal(one.querySelector(".scp-pm-status"), null, "no status, no pill - never Active by default");
+    assert.equal(text(meta.querySelector(".scp-pm-meta-2")), "33 yrs·6'4\"·235 lbs");
+    // The phone's fantasy door: one button under the college (mak, 2026-11-06
+    // PM); the fantasy row and its separate Redraft arrow are gone.
+    const fp = meta.querySelector("a.scp-pm-fp");
+    assert.equal(fp.getAttribute("href"), "https://statchasers.com/redraft-command/?player=jacoby-brissett");
+    assert.match(text(fp), /^View fantasy profile/);
+    assert.equal(fp.getAttribute("aria-label"), "View Jacoby Brissett's fantasy profile in Redraft Command");
+    assert.equal(h.querySelector(".scp-pm-fan, .scp-pm-rc"), null, "no fantasy row on the phone");
     assert.equal(h.querySelectorAll("h1").length, 1, "the phone rows never repeat the heading");
 
     // The fantasy board: the trio under a caption that says it is fantasy, the rate leading.
@@ -225,13 +224,19 @@ describe("player header", () => {
     ];
     const h = header(state({ gameLog: log, bioProfile: { draft: { year: 2016, round: 3, pick: 91 }, college: "NC State" } }));
     assert.deepEqual([...h.querySelectorAll(".scp-pspec-i")].map(text), ["33 yrs", "6'4\", 235 lbs", "NC State", "11th Season", "2016 R3, P91"]);
-    const cards = [...h.querySelectorAll(".scp-pp-card")];
+    const cards = [...h.querySelectorAll(".scp-pp-card:not(.is-phone)")];
     assert.deepEqual(cards.map((c) => [text(c.querySelector(".scp-pp-card-v")), text(c.querySelector(".scp-pp-card-l"))]), [
       ["550", "PASS YDS"],
       ["42/235", "CMP / ATT"],
       ["3", "PASS TD"],
       ["1", "INT"],
     ]);
+    // The phone's strip: CMP / ATT gives way to the passer rating (Comp %
+    // until 2026-11-06), computed by the league formula from the same totals.
+    assert.ok(cards[1].classList.contains("is-desk"));
+    const phone = [...h.querySelectorAll(".scp-pp-card.is-phone")];
+    assert.deepEqual(phone.map((c) => [text(c.querySelector(".scp-pp-card-v")), text(c.querySelector(".scp-pp-card-l"))]), [["42.1", "RATE"]]);
+    assert.equal(phone[0].getAttribute("title"), "Passer rating");
     assert.equal(cards[0].getAttribute("title"), "Passing yards");
     assert.ok(cards[1].querySelector(".scp-pp-card-v").classList.contains("is-long"), "a two-figure value past five characters is set smaller");
     assert.ok(!cards[0].querySelector(".scp-pp-card-v").classList.contains("is-long"));

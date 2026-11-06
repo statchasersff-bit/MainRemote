@@ -90,18 +90,17 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.ok(cp && cpt && co, "the three blocks render");
     assert.equal(cp.nextElementSibling, cpt, "the tendencies dashboard follows the top block");
     assert.equal(cpt.nextElementSibling, co, "career and fantasy close the page");
-    // The Fantasy Impact comparison (2026-11-05) is the one flagged block left, until mak decides.
-    assert.equal([...panel.querySelectorAll(".sct-cp-flag")].filter((f) => !f.closest("#coaching-fantasy-premium"))[0] ?? null, null, "no comparison flag anywhere: the premium designs are the page");
+    assert.equal(panel.querySelector(".sct-cp-flag"), null, "no comparison flag anywhere: the premium designs are the page");
     assert.equal(cp.querySelector(".sct-cp-h2").textContent, "Offensive Coaching & Scheme");
-    assert.equal(cp.querySelector(".sct-cp-dek").textContent, "Play-calling tendencies, offensive philosophy, formations, and coaching history.");
+    assert.equal(cp.querySelector(".sct-up-dek").textContent, "Play-calling tendencies, offensive philosophy, formations, and coaching history.");
     assert.deepEqual([...cp.querySelectorAll(".sct-cp-h3")].map((h) => h.textContent), ["Play Calling", "Formations & Tempo"]);
     assert.deepEqual([...cpt.querySelectorAll(".sct-cpt-h3")].map((h) => h.textContent), ["Formations & Personnel", "Situational Play Calling", "Target & Backfield Tendencies"]);
     // The original header, identity block, tendency tables and sections 3-5 are off the page (unmounted, not deleted).
-    for (const sel of [".sct-co-head", ".sct-co-grid.is-overview", ".sct-co-tend", ".sct-co-form", ".sct-co-situational", ".sct-co-targets", ".sct-co-table", ".sct-co-panel", ".sct-co-card", ".sct-co-dossier", ".sct-co-fptable"]) {
+    for (const sel of [".sct-co-head", ".sct-co-grid.is-overview", ".sct-co-tend", ".sct-co-form", ".sct-co-situational", ".sct-co-targets", ".sct-co-table", ".sct-co-panel", ".sct-co-card", ".sct-co-dossier", ".sct-co-fptable", ".sct-co-fantasy", ".sct-co-bottom", "table.sct-co-finishes"]) {
       assert.equal(panel.querySelector(sel), null, `${sel} is gone`);
     }
     // The premium career block, the premium season table and fantasy remain, in order, inside .sct-co.
-    const order = ["#coaching-career-premium", "#coaching-seasons-premium", ".sct-co-fantasy"].map((sel) => co.querySelector(sel));
+    const order = ["#coaching-career-premium", "#coaching-seasons-premium", "#coaching-fantasy-premium"].map((sel) => co.querySelector(sel));
     order.forEach((el, i) => assert.ok(el, `component ${i} present`));
     const all = [...co.querySelectorAll("*")];
     const idx = order.map((el) => all.indexOf(el));
@@ -109,8 +108,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.deepEqual([...co.querySelectorAll(":scope > .sct-co-block > .sct-co-h3")].map((h) => h.textContent), []);
     assert.equal(co.querySelector("#coaching-career-premium .sct-cpt-h3").textContent, "Coaching Career & Historical Performance");
     assert.doesNotMatch(panel.textContent, /Offensive Identity · Through Week/);
-    assert.ok(co.querySelector(".sct-co-fantasy .sct-co-bottom"));
-    assert.equal(co.querySelector(".sct-co-fantasy").hasAttribute("open"), false);
+    assert.ok(co.querySelector("#coaching-fantasy-premium .sct-cf-bl-row"));
   });
 
   test("a section address promotes the premium heading to the page's only H1, in the address's words", async () => {
@@ -242,53 +240,26 @@ describe("career and fantasy", () => {
     assert.ok(rows[rows.length - 1].classList.contains("is-current"));
     assert.equal(rows[rows.length - 1].querySelector(".sct-cs-live").textContent, "In-season");
     assert.equal(block.querySelector("table.sct-co-finishes"), null, "no finishes in the NFL block");
-    assert.ok(doc.querySelector(".sct-co-fantasy table.sct-co-finishes"), "finishes in Fantasy Impact");
+    assert.ok(doc.querySelector("#coaching-fantasy-premium .sct-cf-table"), "finishes in Fantasy Impact");
   });
 });
 
-describe("the premium Fantasy Impact comparison (mak's brief, 2026-11-05)", () => {
-  test("renders directly under the original on the same words and numbers, flagged, with the finishes tiered and the live row marked", async () => {
+describe("Fantasy Impact is the premium design (mak, 2026-11-06)", () => {
+  test("the only Fantasy Impact section, unflagged, with the finishes tiered and the live row marked", async () => {
     const { doc } = await page("/team/cleveland-browns/coaching/");
-    const old = doc.querySelector(".sct-co-fantasy");
+    assert.equal(doc.querySelector(".sct-co-fantasy"), null, "the original is gone");
     const neu = doc.querySelector("#coaching-fantasy-premium.sct-cp.sct-cpt.sct-cf");
-    assert.ok(old && neu, "both render");
-    assert.equal(neu.previousElementSibling, old, "directly under the original");
-    assert.equal(neu.querySelector(".sct-cp-flag").textContent, "New Design · Comparison");
+    assert.ok(neu);
+    assert.equal(neu.querySelector(".sct-cp-flag"), null, "no comparison flag");
     assert.equal(neu.querySelector(".sct-cf-h3").textContent, "Fantasy Impact");
-    assert.equal(neu.querySelector(".sct-cf-sub").textContent, old.querySelector(".sct-co-fantasy-hint").textContent);
+    assert.match(neu.querySelector(".sct-cf-sub").textContent, /^What the \d{4} tendencies and .+'s history mean for fantasy lineups$/);
     assert.equal(neu.querySelectorAll("h2").length, 0, "no page-level heading");
-    // The tendency cards: one per original signal chip, same heading, same two figures, the change in points.
-    const chips = [...old.querySelectorAll(".sct-co-fread")];
-    const cards = [...neu.querySelectorAll(".sct-cf-trend")];
-    assert.equal(cards.length, chips.length);
-    chips.forEach((chip, i) => {
-      assert.equal(cards[i].querySelector(".sct-cf-trend-h").textContent, chip.querySelector(".sct-co-fread-h").textContent);
-      const move = chip.querySelector(".sct-co-fread-move")?.textContent;
-      if (move) assert.equal(cards[i].querySelector(".sct-cf-trend-move").textContent.replace(/\s+/g, " ").trim(), move);
-      const dir = chip.querySelector(".sct-co-fread-dir")?.textContent;
-      if (dir) assert.ok(cards[i].classList.contains(dir === "↑" ? "is-up" : "is-down"));
-    });
+    assert.equal(doc.querySelectorAll("h3.sct-cf-h3").length, 1, "one Fantasy Impact heading on the page");
     for (const pp of neu.querySelectorAll(".sct-cf-trend-pp")) assert.match(pp.textContent, /^[+−]\d+(\.\d)? pp$/);
-    // The finishes: every original row, same stop, same finishes; crests; the in-season row in cream with dashed pills.
-    const oldRows = [...old.querySelectorAll(".sct-co-finishes tbody tr")];
     const rows = [...neu.querySelectorAll(".sct-cf-table tbody tr")];
-    assert.equal(rows.length, oldRows.length);
+    assert.ok(rows.length > 0);
     assert.equal(neu.querySelector(".sct-cf-panel .sct-cpt-h3").textContent, "Fantasy Finishes by Season");
-    assert.equal(neu.querySelector(".sct-cf-intro").textContent, old.querySelector(".sct-co-dsub").textContent);
-    oldRows.forEach((o, i) => {
-      const n = rows[i];
-      assert.equal(n.querySelector(".sct-cf-stop-club").textContent, o.querySelector(".sct-co-fstop").textContent);
-      assert.deepEqual(
-        [...n.querySelectorAll(".sct-cf-pill")].map((p) => p.textContent),
-        [...o.querySelectorAll(".sct-co-fpill")].map((p) => p.textContent),
-      );
-      assert.deepEqual(
-        [...n.querySelectorAll(".sct-cf-who")].map((p) => p.textContent),
-        [...o.querySelectorAll(".sct-co-fwho")].map((p) => p.textContent),
-      );
-      assert.ok(n.querySelector("img.sct-cf-crest[src*='/team-logos/']"), "a crest on every stop");
-      assert.equal(n.classList.contains("is-current"), o.classList.contains("is-current"));
-    });
+    for (const r of rows) assert.ok(r.querySelector("img.sct-cf-crest[src*='/team-logos/']"), "a crest on every stop");
     const live = rows.find((r) => r.classList.contains("is-current"));
     assert.ok(live, "the in-season row");
     assert.match(live.querySelector(".sct-cf-stop-role").textContent, /^Through Week \d+ · In-season$/);
@@ -296,16 +267,10 @@ describe("the premium Fantasy Impact comparison (mak's brief, 2026-11-05)", () =
     for (const r of rows.filter((r) => r !== live)) {
       assert.ok([...r.querySelectorAll(".sct-cf-pill")].every((p) => /is-(elite|strong|mid|low)/.test(p.className)));
     }
-    assert.equal(neu.querySelector(".sct-cf-note").textContent.trim(), old.querySelector(".sct-co-fnote").textContent.trim());
-    assert.equal(neu.querySelector(".sct-cf-how-a").textContent, old.querySelector(".sct-co-finblock .sct-co-more-a").textContent);
-    // The bottom line: the same four items and the same full summary.
-    const oldItems = Object.fromEntries([...old.querySelectorAll(".sct-co-bl li")].map((li) => [li.querySelector(".sct-co-bl-k").textContent, li.querySelector(".sct-co-bl-v").textContent]));
-    const visible = (el) => { const c = el.cloneNode(true); c.querySelectorAll(".sct-visually-hidden").forEach((n) => n.remove()); return c.textContent.replace(/\s+/g, " ").trim(); };
-    const newItems = Object.fromEntries([...neu.querySelectorAll(".sct-cf-bl-row")].map((r) => [r.querySelector(".sct-cf-bl-k").textContent, visible(r.querySelector(".sct-cf-bl-v"))]));
-    assert.deepEqual(Object.keys(newItems).sort(), Object.keys(oldItems).sort());
-    for (const k of Object.keys(oldItems)) assert.equal(newItems[k].replace(/\s*·\s*/g, " · "), oldItems[k].replace(/\s*·\s*/g, " · "), k);
+    assert.ok(neu.querySelector(".sct-cf-note").textContent.trim());
+    assert.ok(neu.querySelector(".sct-cf-how-a").textContent.trim());
     assert.equal(neu.querySelector(".sct-cf-bl-title").textContent, "Fantasy Bottom Line");
-    assert.equal(neu.querySelector(".sct-cf-bl-more-a").textContent, old.querySelector(".sct-co-bottom .sct-co-more-a").textContent);
+    assert.ok(neu.querySelector(".sct-cf-bl-more-a").textContent.trim());
     assert.doesNotMatch(neu.innerHTML, /\u2014/);
     const ids = [...doc.querySelectorAll("[id]")].map((el) => el.id);
     assert.equal(new Set(ids).size, ids.length, "ids are unique");
@@ -326,7 +291,7 @@ describe("signals and the career block", () => {
       assert.ok(db.querySelector(".sct-cp-db-avg"), "NFL average tick");
     }
     // The bottom line's signal list leaves the three-snap fourth down out.
-    const bl = doc.querySelector(".sct-co-bl");
+    const bl = doc.querySelector("#coaching-fantasy-premium .sct-cf-bl");
     assert.doesNotMatch(bl.textContent, /4th-down/);
   });
 
@@ -334,7 +299,7 @@ describe("signals and the career block", () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const block = doc.querySelector("#coaching-seasons-premium");
     assert.equal(block.previousElementSibling.id, "coaching-career-premium");
-    assert.ok(block.nextElementSibling.classList.contains("sct-co-fantasy"));
+    assert.equal(block.nextElementSibling.id, "coaching-fantasy-premium");
     const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
     const seasons = coaching.teams.ne.dossier.flatMap((r) => r.seasons);
     assert.equal(text(block.querySelector(".sct-cpt-h3")), "Season by Season Under McDaniels, 2005-26");
@@ -390,19 +355,15 @@ describe("signals and the career block", () => {
     assert.doesNotMatch(block.textContent, /—/);
   });
 
-  test("Fantasy Impact: collapsed, with the signal readings, the finishes by season and the bottom line", async () => {
+  test("Fantasy Impact: the signal readings, the finishes by season and the bottom line", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
-    const fan = doc.querySelector(".sct-co-fantasy");
-    assert.equal(fan.tagName, "DETAILS");
-    assert.equal(fan.hasAttribute("open"), false);
-    assert.match(fan.querySelector("summary").textContent, /^Fantasy Impact/);
-    const reads = [...fan.querySelectorAll(".sct-co-fread-h")].map((h) => h.textContent);
+    const fan = doc.querySelector("#coaching-fantasy-premium");
+    const reads = [...fan.querySelectorAll(".sct-cf-trend-h")].map((h) => h.textContent);
     assert.deepEqual(reads, coaching.teams.ne.shifts.filter((s) => s.key !== "fourthGoRate").map((s) => s.heading));
-    const fin = fan.querySelector("table.sct-co-finishes");
     const history = coaching.teams.ne.finishes.history.length + 1;
-    assert.equal(fin.querySelectorAll("tbody tr").length, history);
-    assert.ok(fin.querySelector("tbody tr.is-current .sct-co-fnow"));
-    assert.ok(fan.querySelector(".sct-co-bottom .sct-co-bl"));
+    assert.equal(fan.querySelectorAll(".sct-cf-table tbody tr").length, history);
+    assert.ok(fan.querySelector(".sct-cf-table tbody tr.is-current"));
+    assert.ok(fan.querySelector(".sct-cf-bl-row"));
   });
 });
 
@@ -442,11 +403,11 @@ describe("panels", () => {
     for (const r of vals.slice(1)) assert.match(r, /^\d+% pass[+−]?\d+ pp$/, r);
     for (const r of rows) assert.match(r.querySelector(".sct-cpt-row-n").textContent, /^\d+ plays$/);
     assert.match(scoreState.querySelector(".sct-cpt-take-h").textContent, /pass when trailing by 7\+/);
-    const bottom = doc.querySelector(".sct-co-bottom");
-    const items = [...bottom.querySelectorAll("ul.sct-co-bl li")].map((li) => li.querySelector(".sct-co-bl-k").textContent);
+    const bottom = doc.querySelector("#coaching-fantasy-premium");
+    const items = [...bottom.querySelectorAll(".sct-cf-bl-row")].map((r) => r.querySelector(".sct-cf-bl-k").textContent);
     assert.equal(items[0], "2025 carryover");
     assert.ok(items.includes("Historical leans"));
-    assert.match(bottom.querySelector("details.sct-co-more").textContent, /The fantasy bottom line: Brady/);
+    assert.match(bottom.querySelector(".sct-cf-bl-more-a").textContent, /The fantasy bottom line: Brady/);
   });
 
   test("NE: the deviating position is the only gold bar, with its gap as a pill", async () => {
@@ -603,7 +564,7 @@ describe("premium career block (mak's brief, 2026-11-05; the design since the sa
     const cc = co.querySelector("#coaching-career-premium.sct-cp.sct-cpt.sct-cc");
     assert.ok(table && cc, "the premium block and the premium season table render");
     assert.equal(cc.nextElementSibling, table, "the season table sits directly under it");
-    assert.ok(table.nextElementSibling.classList.contains("sct-co-fantasy"), "then Fantasy Impact");
+    assert.equal(table.nextElementSibling.id, "coaching-fantasy-premium", "then Fantasy Impact");
     assert.equal(cc.querySelector(".sct-cp-flag"), null, "no comparison flag: it is the design");
     assert.equal(cc.querySelector(".sct-cpt-h3").textContent, "Coaching Career & Historical Performance");
     assert.equal(cc.querySelector(".sct-cpt-dek").textContent, "McDaniels' stops, and how the offenses he called have scored and distributed the ball.");

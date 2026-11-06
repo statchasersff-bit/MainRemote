@@ -246,12 +246,12 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     for (const link of navLinks) {
       const id = link.getAttribute("data-sct-panel-id");
       // The hub prints the panels that are its own - the Outlook, the hub-only
-      // tabs and the schedule preview. A section with an address of its own
-      // (Usage, Stats, News, Depth Chart) is printed ONLY there, so its tab
+      // tabs. A section with an address of its own (Usage, Stats, News,
+      // Depth Chart, Schedule) is printed ONLY there, so its tab
       // names no panel in this document: it is a link to that address, and
       // the hub's HTML does not carry a second copy of that page's content
       // (see ownsAddress in team-render.ts).
-      const hubPanel = ["outlook", "draft", "contracts", "schedule"].includes(id);
+      const hubPanel = ["outlook", "draft", "contracts"].includes(id);
       assert.equal(
         Boolean(doc.getElementById(id)),
         hubPanel,
@@ -262,11 +262,11 @@ describe("crawlable HTML (no JavaScript executed)", () => {
         // The Outlook is the hub, so its tab links to the hub. Draft and
         // Contracts are hub-only hash tabs; Coaching has its own address
         // since mak's coaching brief (2026-11-05).
-        // The Schedule is a preview on the hub (mak, 2026-11-03), so its
-        // tab is a hash tab here and the panel's own link leads to the page.
+        // The Schedule's hub preview was removed (mak, 2026-11-06), so its
+        // tab links to /schedule/ like the other address-owning tabs.
         id === "outlook"
           ? "/team/new-england-patriots/"
-          : id === "draft" || id === "contracts" || id === "schedule"
+          : id === "draft" || id === "contracts"
             ? `/team/new-england-patriots/#${id}`
             : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
@@ -473,15 +473,9 @@ describe("embedded mode", () => {
     const linked = rows.filter((r) => r.querySelector("a.sct-shp-view"));
     assert.ok(linked.length > 0, "at least some rows link to a pair page");
 
-    // The hub's preview cards offer the same links.
+    // The hub carries no schedule panel (mak, 2026-11-06): its tab is a link here.
     const hub = await dom("/team/new-england-patriots");
-    const cards = [...hub.doc.querySelectorAll("#schedule .sct-game")];
-    assert.ok(cards.length > 0, "the preview cards rendered");
-    for (const card of cards) {
-      const cta = card.querySelector(".sct-game-cta a");
-      assert.ok(cta, "a preview card offers its matchup or recap");
-      assert.match(cta.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
-    }
+    assert.equal(hub.doc.getElementById("schedule"), null, "no collapsed schedule on the hub");
   });
 
   test("the season shape rail only ever counts the rows beside it", async () => {
@@ -656,12 +650,17 @@ describe("embedded mode", () => {
     assert.ok(panel.querySelector(".sct-dpp[data-sct-depth-premium]"), "the premium block is the tab");
     assert.equal(panel.querySelector(".sct-dc[data-sct-dc], .sct-dcx, .sct-dpp-flag"), null, "the old chart and the comparison flag are gone");
     assert.equal(panel.querySelector(".sct-dpp-hero .sct-h2").textContent.trim(), "New England Patriots Depth Chart");
-    assert.ok(panel.querySelector(".sct-dpp-hero svg.sct-up-art"), "the banner carries the shared play-art");
+    // The view buttons sit in the banner, in place of the art (mak, 2026-11-06),
+    // and the banner sits inside the [data-sct-dc] block the client wires.
+    assert.equal(panel.querySelectorAll(".sct-dpp-hero .sct-up-head-actions [data-sct-dc-view]").length, 4);
+    assert.equal(panel.querySelector(".sct-dpp-hero svg.sct-up-art"), null, "no art behind the buttons");
+    assert.ok(panel.querySelector("[data-sct-dc] > .sct-dpp-hero"), "the banner is inside the view block");
     assert.equal(panel.querySelector(".sct-dc-stamp"), null, "no season / updated stamp (mak, 2026-11-05)");
-    const summary = panel.querySelector(".sct-dpp-hero .sct-up-dek").textContent;
-    assert.match(summary, /^The New England Patriots depth chart has .+ starting at quarterback/);
-    const qbSlot = ne.slots.find((slot) => slot.key === "qb");
-    assert.ok(summary.includes(qbSlot.players[0].name), "the summary names the listed QB1");
+    // A standing description like the other tabs' headers (mak, 2026-11-06).
+    assert.equal(
+      panel.querySelector(".sct-dpp-hero .sct-up-dek").textContent,
+      "Starters and backups for the Patriots offense, defense and special teams, plus the fantasy depth chart for the skill positions.",
+    );
 
     // Four views behind a filter, Offense first and pressed; every card is in
     // the HTML, not fetched; Fantasy is last.
@@ -2892,7 +2891,7 @@ describe("draft tab", () => {
     const r1 = [...premium.querySelectorAll(".sct-drp-card.is-r1 .sct-drp-r1")];
     assert.deepEqual(
       r1.map((li) => `${li.querySelector(".sct-drp-r1-year").textContent} ${li.querySelector(".sct-dr-name").textContent} ${li.querySelector(".sct-drp-r1-pick").textContent}`),
-      window5.filter((p) => p.round === 1).sort((a, b) => b.season - a.season).map((p) => `${p.season} ${p.name} Pick ${p.pick}`),
+      window5.filter((p) => p.round === 1).sort((a, b) => b.season - a.season).map((p) => `${p.season} ${p.name} ${p.pick}`),
     );
     assert.match(premium.querySelector(".sct-drp-method").textContent, /Position groups are the broad ones/);
 

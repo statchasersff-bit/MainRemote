@@ -36,6 +36,7 @@ import { OUTLOOK_SEASON } from "./outlook-2026";
 import { sectionHref } from "./sections";
 import { getEntryPoints } from "./scoring";
 import { heroCells, playedEntries, seasonTotals } from "./season-line";
+import { passerRating } from "./stats-profile";
 import type { UpcomingGame } from "./upcoming";
 
 const DASH = "-";
@@ -451,7 +452,12 @@ const POSITION_WORD: Record<string, string> = {
  * news plugin also names this class in Rocket's exclusion filter.
  */
 function renderPortrait(data: PlayerPageData): string {
-  const { player } = data;
+  const { player, team } = data;
+  // The club's logo, faded behind the figure, on the phone's white portrait
+  // area only (mak's mobile brief, 2026-11-05); hidden on the desktop panel.
+  const mark = team?.logo
+    ? `<img class="scp-pwell-mark" src="${escapeHtml(team.logo)}" alt="" aria-hidden="true" width="120" height="120" loading="lazy" decoding="async">`
+    : "";
   const jersey = player.number
     ? `<span class="scp-pwell-num" aria-hidden="true">${escapeHtml(String(player.number))}</span>`
     : "";
@@ -462,7 +468,7 @@ function renderPortrait(data: PlayerPageData): string {
       className: "scp-pwell-img",
       alt: `${player.name} headshot`,
       variants: ["f200", "f350"],
-      sizes: "(max-width: 600px) 120px, 300px",
+      sizes: "(max-width: 560px) 200px, (max-width: 600px) 120px, 300px",
       width: 350,
       height: 254,
       loading: "eager",
@@ -472,6 +478,7 @@ function renderPortrait(data: PlayerPageData): string {
   return (
     `<div class="scp-pwell${img ? "" : " is-missing"}" data-scp-pwell>` +
     `<div class="scp-pwell-paint" aria-hidden="true"></div>` +
+    mark +
     jersey +
     SILHOUETTE +
     img +
@@ -552,13 +559,29 @@ function renderCards(data: PlayerPageData): string {
   const totals = seasonTotals(played, (e) => getEntryPoints(e.stats, data.format));
   const cells = orderCells(heroCells(pos, totals)).slice(0, 4);
   if (cells.length === 0) return "";
+  // The phone's four-column strip (mak, 2026-11-05) reads Pass yds, TD, INT
+  // and a fourth cell shown only there, with the CMP / ATT card hidden there
+  // (the Stats tab carries the pair). Since 2026-11-06 that cell is the NFL
+  // passer rating, not Comp % (mak asked for QBR; ESPN's Total QBR is not in
+  // our data, the passer rating is the league's own formula on these totals).
+  const rating = pos === "QB" ? passerRating({ passAtt: totals.att, passCmp: totals.cmp, passYd: totals.passYd, passTd: totals.passTd, passInt: totals.int } as never) : null;
+  const pct =
+    rating !== null
+      ? `<li class="scp-pp-card is-phone" title="Passer rating">` +
+        `<span class="scp-pp-card-icon" aria-hidden="true">${ICON.target}</span>` +
+        `<b class="scp-pp-card-v">${escapeHtml(rating.toFixed(1))}</b>` +
+        `<span class="scp-pp-card-l">RATE</span>` +
+        `</li>`
+      : "";
   return (
+    // The phone's panel heading (2026-11-05), the season from the page data.
+    `<p class="scp-pm-season">${escapeHtml(`${data.season} Regular Season`)}</p>` +
     `<ul class="scp-pp-cards">` +
     cells
       .map((c) => {
         const face = cardFace(pos, c.label);
         return (
-          `<li class="scp-pp-card" title="${escapeHtml(c.title)}">` +
+          `<li class="scp-pp-card${pos === "QB" && c.label === "cmp" && pct ? " is-desk" : ""}" title="${escapeHtml(c.title)}">` +
           `<span class="scp-pp-card-icon" aria-hidden="true">${face.icon}</span>` +
           // A two-figure value ("135/205") at a size that holds the card.
           `<b class="scp-pp-card-v${c.value.length > 5 ? " is-long" : ""}">${escapeHtml(c.value)}</b>` +
@@ -567,6 +590,7 @@ function renderCards(data: PlayerPageData): string {
         );
       })
       .join("") +
+    pct +
     `</ul>`
   );
 }
@@ -585,6 +609,9 @@ const BOARD_LABEL = ["FPPG", "POS RANK", "ROSTERED"];
 function renderBoard(data: PlayerPageData): string {
   return (
     `<div class="scp-pboard-wrap">` +
+    // The phone's caption (mak's mobile brief, 2026-11-05): the scoring named
+    // once here, so the FPPG label drops its own " · PPR" at that width.
+    `<p class="scp-pm-fan-cap">${escapeHtml(`Fantasy · ${SCORING_SHORT[data.format]}`)}</p>` +
     `<p class="scp-pboard-cap">${escapeHtml(`${data.season} Fantasy Season`)}</p>` +
     `<div class="scp-pboard">` +
     headerBoard(data)
@@ -592,7 +619,7 @@ function renderBoard(data: PlayerPageData): string {
         (c, i) =>
           `<span class="scp-pstat${c.lead ? " is-lead" : ""}">` +
           `<b>${escapeHtml(c.value)}</b>` +
-          `<abbr title="${escapeHtml(c.title)}">${escapeHtml(i === 0 ? `${BOARD_LABEL[0]} · ${SCORING_SHORT[data.format]}` : BOARD_LABEL[i] ?? c.unit)}</abbr>` +
+          `<abbr title="${escapeHtml(c.title)}">${i === 0 ? `${BOARD_LABEL[0]}<span class="scp-pstat-fmt"> · ${escapeHtml(SCORING_SHORT[data.format])}</span>` : escapeHtml(BOARD_LABEL[i] ?? c.unit)}</abbr>` +
           `</span>`,
       )
       .join("") +
@@ -659,9 +686,19 @@ export function renderHero(
 
   /* ---- the heading, the number and position, the bio line ---- */
 
+  // The phone masthead (mak, 2026-11-06) sets the name on two deliberate
+  // lines, first name over the rest; the spans are inline elsewhere and the
+  // name's text is unchanged. A long part takes a smaller size there.
+  const nameParts = player.name.trim().split(/\s+/);
+  const first = nameParts.length > 1 ? nameParts[0] : "";
+  const rest = nameParts.length > 1 ? nameParts.slice(1).join(" ") : player.name;
+  const longName = Math.max(first.length, rest.length) > 11;
+  const nameHtml = first
+    ? `<span class="scp-phead-first">${escapeHtml(first)}</span> <span class="scp-phead-last">${escapeHtml(rest)}</span>`
+    : escapeHtml(player.name);
   const heading =
     `<${Heading} class="scp-phead-h1">` +
-    `<span class="scp-phead-name">${escapeHtml(player.name)}</span>` +
+    `<span class="scp-phead-name${longName ? " is-long" : ""}">${nameHtml}</span>` +
     // The section's word after the name, as part of the heading: "George
     // Pickens Stats". The profile has none, so its heading is the name
     // alone - no empty span, so the H1's text IS the name.
@@ -701,38 +738,44 @@ export function renderHero(
 
   /* ---- the phone's own rows (mak's mobile brief, 2026-11-05) ---- */
 
-  // Shown only when the block is 480px or narrower (player.css, the last
+  // Shown only when the block is 560px or narrower (player.css, the phone
   // `pp` container query): the desktop tag row, under-row and spec line are
   // hidden there and these take their place, so each fact is in the
   // accessibility tree once at any width. The heading is never duplicated.
   //
-  // Row 1: the club's crest, its name, the status at the right ("QB · #8"
-  // under the name removed 2026-11-05 at mak's request). Row 2's text (under the H1): "Quarterback · 42 yrs", then
-  // "6'2\", 223 lbs · California". Season and draft stay on the Bio tab.
+  // mak's compact identity (2026-11-05): no separate club banner; two short
+  // lines beside the portrait under the name -
+  //   "Patriots · #10 · QB · Active"
+  //   "24 yrs · 6'4\" · 225 lbs", then the college on its own line
   const dot = `<span class="scp-pm-dot" aria-hidden="true">·</span>`;
-  // No crest on file (or no club): the position's letters stand in the box.
-  const crest = team?.logo
-    ? `<img class="scp-pm-logo" src="${escapeHtml(team.logo)}" alt="" width="24" height="24" loading="eager" decoding="async">`
-    : `<span class="scp-pm-logo-pos" aria-hidden="true">${escapeHtml(pos || "FA")}</span>`;
-  const clubLine = team
-    ? `<a class="scp-pm-team" href="${escapeHtml(`${teamPrefix}${team.slug}/${query}`)}" target="_top">${escapeHtml(team.fullName)}</a>`
+  const club = team
+    ? `<a class="scp-pm-team" href="${escapeHtml(`${teamPrefix}${team.slug}/${query}`)}" target="_top">${escapeHtml(team.nickname)}</a>`
     : `<span class="scp-pm-team">Free agent</span>`;
-  const topRow =
-    `<div class="scp-pm-top">` +
-    `<span class="scp-pm-logo-box">${crest}</span>` +
-    `<div class="scp-pm-club">${clubLine}` +
-    `</div>` +
-    (status ? `<span class="scp-pm-status">${status}</span>` : "") +
-    `</div>`;
-  const metaOne = [pos ? escapeHtml(POSITION_WORD[pos] ?? pos) : "", player.age ? `${escapeHtml(String(player.age))} yrs` : ""].filter(Boolean);
-  const metaTwo = [escapeHtml(height), player.weight ? `${escapeHtml(String(player.weight))} lbs` : "", college ? escapeHtml(college) : ""].filter(Boolean);
+  const metaOne = [
+    club,
+    player.number ? `#${escapeHtml(String(player.number))}` : "",
+    pos ? escapeHtml(pos) : "",
+    status ? `<span class="scp-pm-status">${status}</span>` : "",
+  ].filter(Boolean);
+  const metaTwo = [
+    player.age ? `${escapeHtml(String(player.age))} yrs` : "",
+    escapeHtml(height),
+    player.weight ? `${escapeHtml(String(player.weight))} lbs` : "",
+  ].filter(Boolean);
   const meta =
-    metaOne.length || metaTwo.length
-      ? `<div class="scp-pm-meta">` +
-        (metaOne.length ? `<p class="scp-pm-meta-1">${metaOne.join(dot)}</p>` : "") +
-        (metaTwo.length ? `<p class="scp-pm-meta-2">${metaTwo.join(dot)}</p>` : "") +
-        `</div>`
-      : "";
+    `<div class="scp-pm-meta">` +
+    `<p class="scp-pm-meta-1">${metaOne.join(dot)}</p>` +
+    (metaTwo.length ? `<p class="scp-pm-meta-2">${metaTwo.join(dot)}</p>` : "") +
+    (college ? `<p class="scp-pm-meta-3">${escapeHtml(college)}</p>` : "") +
+    // The phone's one fantasy door (mak, 2026-11-06): the header leads with
+    // the NFL profile, so the FPPG / rank / rostered row and its separate
+    // Redraft Command arrow are gone and this outlined button under the
+    // college opens the player's Redraft Command profile instead.
+    `<a class="scp-pm-fp" href="${escapeHtml(`${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`)}"` +
+    ` aria-label="${escapeHtml(`View ${possessive(player.name)} fantasy profile in Redraft Command`)}"` +
+    ` data-cta="redraft-command-header-${cta}-mobile" data-scp-cta="redraft-command-header">` +
+    `View fantasy profile<span class="scp-pm-fp-arrow" aria-hidden="true">→</span></a>` +
+    `</div>`;
 
   /* ---- the actions ---- */
 
@@ -759,9 +802,45 @@ export function renderHero(
       `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.compass}</span>${escapeHtml(`${possessive(last)} ${OUTLOOK_SEASON} outlook`)}</a>`;
   }
   const actions = `<div class="scp-pp-actions">${redraft}${second}</div>`;
+  const strip = matchupStrip(data, extras);
 
-  /* ---- the next matchup strip ---- */
+  const ink = teamInk(team);
+  return (
+    `<header class="scp-phead" aria-label="Player summary"` +
+    styleAttr([ink && `--scp-team:${ink}`, team && `--scp-team-2:${team.secondaryColor}`]) +
+    `>` +
+    `<section class="scp-phead-hero" aria-label="${escapeHtml(`${player.name} summary`)}">` +
+    renderPortrait(data) +
+    identity +
+    meta +
+    renderBoard(data) +
+    renderCards(data) +
+    actions +
+    `<span class="scp-phead-stripes" aria-hidden="true"></span>` +
+    `</section>` +
+    strip +
+    `</header>`
+  );
+}
 
+/**
+ * The "Should I start {Last}?" link while there is a week to start him in,
+ * or "" before Week 1 and once the schedule has run out. The header's white
+ * button and the Overview's phone link (mak, 2026-11-05) share it.
+ */
+export function startSitHref(data: PlayerPageData, options: PlayerRenderOptions): string {
+  if (!data.team || !headerFixture(data) || seasonNotStarted(data)) return "";
+  return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+}
+
+/**
+ * The next matchup strip, under the hero. Not shown at 560px and under
+ * (mak's mobile brief, 2026-11-05): there the Overview's week-by-week strip
+ * and the Outlook's upcoming matchups carry the fixture where it belongs.
+ */
+function matchupStrip(data: PlayerPageData, extras: HeroExtras = {}): string {
+  const { team } = data;
+  const next = headerFixture(data);
   let strip = "";
   if (team && next) {
     const { game, bye } = next;
@@ -784,23 +863,5 @@ export function renderHero(
         : "") +
       `</div>`;
   }
-
-  const ink = teamInk(team);
-  return (
-    `<header class="scp-phead" aria-label="Player summary"` +
-    styleAttr([ink && `--scp-team:${ink}`, team && `--scp-team-2:${team.secondaryColor}`]) +
-    `>` +
-    `<section class="scp-phead-hero" aria-label="${escapeHtml(`${player.name} summary`)}">` +
-    topRow +
-    renderPortrait(data) +
-    identity +
-    meta +
-    renderBoard(data) +
-    renderCards(data) +
-    actions +
-    `<span class="scp-phead-stripes" aria-hidden="true"></span>` +
-    `</section>` +
-    strip +
-    `</header>`
-  );
+  return strip;
 }

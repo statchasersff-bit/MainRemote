@@ -91,12 +91,13 @@ import {
   matchupBand,
   OUTLOOK_SEASON,
   renderHero,
+  teamInk,
   type MatchupBand,
 } from "./player/header";
 import { didNotPlayLabel, injuryForWeek } from "./player/injury-week";
 import { renderOverviewSections } from "./player/overview";
 import { sectionHref } from "./player/sections";
-import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
+import { renderStatsTabParts, seasonClubs, STATS_LEAD_ID } from "./player/stats-tab";
 import { renderPremiumStats } from "./player/stats-premium";
 import { renderOutlookPremium } from "./player/outlook-premium";
 import { renderOutlookProjectionPremium } from "./player/outlook-projection-premium";
@@ -275,7 +276,13 @@ function styleAttr(parts: Array<string | null | false>): string {
  * team/palette.ts. A free agent keeps the house navy and gold.
  */
 function paletteAttrs(team: NflTeam | null | undefined): string {
-  return teamPaletteAttr(team) + styleAttr(teamPaletteVars(team));
+  // --scp-team-ink: the club's own primary held to 4.5:1 against white
+  // (teamInk, the header's --scp-team), on the root for the phone's season
+  // bar, tab underline and links (mak's mobile brief, 2026-11-05). Its own
+  // name, because components outside the header read --scp-team with a
+  // fallback and would change color on the desktop.
+  const ink = teamInk(team ?? null);
+  return teamPaletteAttr(team) + styleAttr([...teamPaletteVars(team), ink ? `--scp-team-ink:${ink}` : ""]);
 }
 
 /** A section heading with the compact gold rule beneath it. */
@@ -1688,14 +1695,14 @@ function renderCareerStats(
    */
   const groupRow =
     `<tr class="scp-group-row" aria-hidden="true">` +
-    `<td colspan="3" class="scp-group-pad"></td>` +
+    `<td colspan="4" class="scp-group-pad"></td>` +
     groups
       .map((group) => `<td colspan="${group.cols.length}"${viewCls(group.view)}>${escapeHtml(group.label)}</td>`)
       .join("") +
     `</tr>`;
 
   const head =
-    `<tr><th scope="col">Season</th><th scope="col">GP</th><th scope="col" title="Games started">GS</th>` +
+    `<tr><th scope="col">Season</th><th scope="col">Team</th><th scope="col">GP</th><th scope="col" title="Games started">GS</th>` +
     columns.map((c) => `<th scope="col"${viewCls(c.view)}>${escapeHtml(c.label)}</th>`).join("") +
     `</tr>`;
 
@@ -1704,6 +1711,7 @@ function renderCareerStats(
       .map((c) => `<td class="${[c.cls, c.view ? `is-${c.view}` : ""].filter(Boolean).join(" ")}">${escapeHtml(c.get(row))}</td>`)
       .join("");
 
+  const clubs = seasonClubs(data);
   const body = career
     .map(
       (row) =>
@@ -1712,6 +1720,8 @@ function renderCareerStats(
         // No "to date" marker after the year (removed 2026-11-05 at mak's
         // request); the row's is-current highlight still marks the season.
         `<th scope="row">${escapeHtml(String(row.season))}</th>` +
+        // The club(s) that season, "PHI/IND" when traded (mak, 2026-11-06).
+        `<td class="scp-team-cell">${escapeHtml(clubs.get(row.season)?.join("/") ?? DASH)}</td>` +
         `<td>${escapeHtml(count(row.gamesPlayed))}</td>` +
         `<td>${escapeHtml(opt(t(row).gs))}</td>` +
         cells(row) +
@@ -1720,7 +1730,7 @@ function renderCareerStats(
     .join("");
 
   const totalRow =
-    `<tr class="scp-total"><th scope="row">Career</th>` +
+    `<tr class="scp-total"><th scope="row">Career</th><td class="scp-team-cell"></td>` +
     `<td>${escapeHtml(count(totals.gamesPlayed))}</td>` +
     `<td>${escapeHtml(opt(totals.totals.gs))}</td>` +
     cells({

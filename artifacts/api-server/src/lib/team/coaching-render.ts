@@ -2423,7 +2423,7 @@ function fantasyImpact(c: TeamCoaching, team: NflTeam, view: UsageView | null): 
 }
 
 /** The original renderers mak retired on 2026-11-05, kept callable for a restore. */
-export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel, careerHeader, careerTimeline, careerChart, career };
+export const RETIRED_COACHING_BLOCKS = { header, coachCard, identityPane, tendencies, formations, scoreState, redZoneFourth, distribution, backfield, personnel, careerHeader, careerTimeline, careerChart, career, fantasyImpact };
 
 export function renderCoachingSection(
   coaching: TeamCoaching | null,
@@ -2451,10 +2451,10 @@ export function renderCoachingSection(
     // (2026-11-05, "remove the old version"); career() (the original table
     // block) is unmounted, not deleted.
     renderCoachingSeasonsPremium(coaching) +
-    // 7. Fantasy Impact, collapsed.
-    fantasyImpact(coaching, team, view) +
-    // The premium Fantasy Impact comparison (mak's brief, 2026-11-05) prints
-    // directly under the original; a comparison only until mak approves.
+    // 7. Fantasy Impact IS the premium design (mak, 2026-11-06, "remove the
+    // old fantasy impact section design"); fantasyImpact() is unmounted, not
+    // deleted (no coaching entry carries a rookie note today, so the premium
+    // block not printing one loses nothing).
     renderCoachingFantasyPremium(coaching, team, view) +
     `</div>`;
 

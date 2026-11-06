@@ -342,7 +342,7 @@ export function snapCaption(w: SnapWindows, team: NflTeam): string {
   return (
     `Season = ${weeksWords(w.games)} (${w.games.length} ${team.nickname} games). Last 3 = ${weeksWords(w.last3)}. ` +
     (w.prior3.length
-      ? `Change = snap share over ${weeksWords(w.last3)} against ${weeksWords(w.prior3)}, in percentage points; a game a player sat out counts as zero snaps.`
+      ? `Change = snap % over ${weeksWords(w.last3)} minus snap % over ${weeksWords(w.prior3)}; a game a player sat out counts as zero snaps.`
       : `Change needs more than three games.`) +
     ` In a week view, the change is against the player's previous game.`
   );
@@ -365,8 +365,8 @@ function snapTable(view: UsageView, team: NflTeam): string {
     c == null
       ? `<span class="sct-us-delta is-none">–</span>`
       : c === 0
-        ? `<span class="sct-us-delta is-flat">0 pp</span>`
-        : `<span class="sct-us-delta is-${c > 0 ? "up" : "down"}">${e(`${signed(c, 0)} pp`)}</span>`;
+        ? `<span class="sct-us-delta is-flat">0%</span>`
+        : `<span class="sct-us-delta is-${c > 0 ? "up" : "down"}">${e(`${signed(c, 0)}%`)}</span>`;
   const rows = rowsData
     .map(({ p, v }) => {
       const s = v["season"]!;

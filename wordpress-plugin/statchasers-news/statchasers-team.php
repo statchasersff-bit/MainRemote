@@ -552,6 +552,46 @@ function statchasers_team_auto_index( string $content ): string {
 // already rendered it and is recognized as mounted.
 add_filter( 'the_content', 'statchasers_team_auto_index', 20 );
 
+/**
+ * Keep the hub bundle out of "delay JavaScript until interaction".
+ *
+ * WP Rocket's Delay JS holds every script back until the first click or
+ * scroll. On a hub that first click is usually a tab, and the hub-only tabs
+ * (#draft, #contracts) are same-page hash links: with the bundle not yet
+ * running, the browser follows the hash natively and scrolls the window to
+ * the panel (mak, 2026-11-06: "when I click the draft tab the screen aligns
+ * on the page"). The bundle has no dependencies and is deferred, so running
+ * it on load costs nothing, and its capture-phase click handler is then in
+ * place before the reader's first click. Same opt-out the depth charts use.
+ */
+function statchasers_team_script_tag( string $tag, string $handle ): string {
+	if ( STATCHASERS_TEAM_HANDLE !== $handle || false !== strpos( $tag, 'data-no-defer' ) ) {
+		return $tag;
+	}
+	return str_replace(
+		' src=',
+		' data-no-optimize="1" data-noptimize="1" data-no-defer="1" data-cfasync="false" nowprocket src=',
+		$tag
+	);
+}
+add_filter( 'script_loader_tag', 'statchasers_team_script_tag', 10, 2 );
+
+/**
+ * WP Rocket's own exclusion lists, matched against the script URL.
+ *
+ * @param mixed $exclusions Existing patterns.
+ * @return array
+ */
+function statchasers_team_rocket_exclusion( $exclusions ): array {
+	if ( ! is_array( $exclusions ) ) {
+		$exclusions = array();
+	}
+	$exclusions[] = '/dist/statchasers-team.js';
+	return $exclusions;
+}
+add_filter( 'rocket_delay_js_exclusions', 'statchasers_team_rocket_exclusion' );
+add_filter( 'rocket_exclude_js', 'statchasers_team_rocket_exclusion' );
+
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {

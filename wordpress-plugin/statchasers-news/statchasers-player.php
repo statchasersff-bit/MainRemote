@@ -495,7 +495,22 @@ function statchasers_player_enqueue_assets(): void {
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_tool_header_layer_css() );
 		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_tool_mobile_gutter_css() );
+		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_player_mobile_top_css() );
 	}
+}
+
+/**
+ * No theme gap above the profile on a phone (mak, 2026-11-05).
+ *
+ * Divi pads `#main-content .container` 58px at the top on every standard
+ * page, and on a 390px screen that left 76px of white between the site's
+ * header and the player card (58px of theme plus the card's own top margin,
+ * which the app trims to 10px at the same width). Player pages only - it
+ * rides on the player handle - and only at 560px and under, the width the
+ * compact phone header takes over; the desktop page keeps the theme's air.
+ */
+function statchasers_player_mobile_top_css(): string {
+	return '@media (max-width:560px){#main-content .container{padding-top:0!important}}';
 }
 
 /**

@@ -249,7 +249,7 @@ describe("stats tab", () => {
   test("the fantasy impact reads by sample: a starter's floor, a reserve's playing time, a stale season says so", () => {
     // A starter's season: 14 games at 30 attempts.
     const starter = render(state({ leagueWeek: 15, logCareer: [{ season: 2026, weeks: Array.from({ length: 14 }, (_, i) => qb(i + 1, 16, 12, "ARI", { gs: 1 })), finish: 16 }] }));
-    const impact = (doc) => text([...doc.querySelectorAll(".scp-stp-analysis-part")].find((p) => text(p.querySelector("h4")) === "Fantasy impact").querySelector("p"));
+    const impact = (doc) => text([...doc.querySelectorAll(".scp-stp-analysis-part")].find((p) => text(p.querySelector("h4")) === "Fantasy impact").querySelector("p:not(.scp-stp-analysis-lede)"));
     assert.equal(impact(starter), "His floor is his volume: 30.0 pass attempts and 3.0 carries a game across 14 games this season. Efficiency decides how much of it becomes points.");
     assert.equal(starter.querySelector(".scp-stp-analysis-note"), null);
     // A reserve: 8 games at 10 attempts, 1 start.
@@ -285,7 +285,7 @@ describe("stats tab", () => {
     assert.ok(fig.classList.contains("has-avg"));
     const plot = fig.querySelector(".scp-cp-plot");
     assert.equal(plot.getAttribute("role"), "img");
-    assert.match(plot.getAttribute("aria-label"), /2024 6\.0 \(QB46\), 2025 16\.0 \(QB16\), 2026 16\.5 \(QB17\), in progress\. Career average/);
+    assert.match(plot.getAttribute("aria-label"), /2024 6\.0 \(QB46\), 2025 16\.0 \(QB16\), 2026 16\.5 \(QB20\), in progress\. Career average/);
     assert.equal(fig.querySelector(".scp-cp-xs").getAttribute("aria-hidden"), "true");
     // The year, the finish and "GP · club" under every bar, the current club marked.
     assert.deepEqual([...fig.querySelectorAll(".scp-cp-x")].map((d) => [...d.children].map((e) => e.tagName)), Array(3).fill(["STRONG", "SPAN", "SMALL"]));
@@ -343,13 +343,20 @@ describe("stats tab", () => {
     assert.ok(doc.querySelector(".scp-cp-chart").compareDocumentPosition(kpis) & 4, "cards after the chart");
     assert.ok(kpis.compareDocumentPosition(doc.querySelector("#scp-st-read-h")) & 4, "cards before the read's heading");
     const tiles = [...doc.querySelectorAll(".scp-cp-kpi-label")].map(text);
-    // "Appearance rate", not availability, and the top-12 WEEKS counted out
-    // beside their share (2026-11-04).
-    assert.deepEqual(tiles, ["Career PPG", "Appearance rate", "Top-12 weeks", "Weekly swing"]);
+    // "Games appeared in", not availability (2026-11-04, renamed 2026-11-06),
+    // and the top-12 WEEKS counted out beside their share, over ranked weeks.
+    assert.deepEqual(tiles, ["Career PPG", "Games appeared in", "Top-12 weeks", "Weekly swing"]);
     const captions = [...doc.querySelectorAll(".scp-cp-kpi-sub")].map(text);
     assert.equal(captions[0], "25 games, 3 seasons · PPR");
-    assert.equal(captions[1], "Share of team games appeared in");
-    assert.equal(captions[2], "15 of 25 weeks inside the weekly top 12");
+    assert.match(captions[1], /^\d+ of \d+ team games$/);
+    assert.equal(captions[2], "15 of 25 ranked weeks");
+    assert.equal(captions[3], "Std. dev. of weekly points", "no fixed-band word like \"Moderate\"");
+    // Each tile's definition sits behind its info button, closed by default.
+    for (const k of doc.querySelectorAll(".scp-cp-kpi")) {
+      const btn = k.querySelector("button[data-scp-info]");
+      const def = doc.getElementById(btn.getAttribute("aria-controls"));
+      assert.ok(def && def.hasAttribute("hidden") && text(def).length > 20, "a closed definition");
+    }
     assert.match(doc.querySelector(".scp-cp-kpi:last-child").getAttribute("title"), /standard deviation/);
     // The read says "season finish" so the two cannot be read against each other,
     // and a thin season is not a trend.
@@ -427,7 +434,11 @@ describe("stats tab", () => {
     assert.match(text(lede), /<b>no HTML<\/b>/);
     // Not given: the generated summary line stays.
     assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-stp-bar-sub")), /efficiency$/);
-    assert.deepEqual([...doc.querySelectorAll(".scp-stp-analysis-part")].map((p) => `${text(p.querySelector("h4"))}: ${text(p.querySelector("p"))}`), ["Fantasy impact: A volume passer."]);
+    assert.deepEqual([...doc.querySelectorAll(".scp-stp-analysis-part")].map((p) => `${text(p.querySelector("h4"))}: ${text(p.querySelector("p:not(.scp-stp-analysis-lede)"))}`), ["Fantasy impact: A volume passer."]);
+    // The phone's copy of the hero lede rides at the top of the fantasy-impact
+    // read (mak's mobile brief, 2026-11-05); the hero's own is marked moved.
+    assert.ok(doc.querySelector(".scp-stp-analysis-lede"));
+    assert.ok(doc.querySelector(".scp-stp-bar-sub.is-moved"));
     const paras = [...doc.querySelectorAll(".scp-cp-prose p")].map(text);
     assert.deepEqual(paras.slice(0, 2), ["First.", "Second."]);
     assert.equal(paras.length, 3, "blank paragraphs dropped, Redraft Command paragraph kept");
@@ -564,9 +575,9 @@ describe("the career section (mak's briefs of 2026-11-05, approved the same day)
     const games = s.logCareer.reduce((n, l) => n + l.weeks.filter((w) => w.game_status !== "inactive").length, 0);
     const pts = s.logCareer.reduce((n, l) => n + l.weeks.reduce((m, w) => m + (w.stats.pts_ppr ?? 0), 0), 0);
     assert.equal(text(d.querySelector(".scp-cp-avg b")), (pts / games).toFixed(1));
-    assert.deepEqual([...d.querySelectorAll(".scp-cp-fin")].map(text), ["QB46", "QB16", "QB17"], "the table's season finishes, oldest first");
+    assert.deepEqual([...d.querySelectorAll(".scp-cp-fin")].map(text), ["QB46", "QB16", "QB20"], "season finishes by total points, the season in progress too");
     const cols = [...d.querySelectorAll(".scp-cp-col")];
-    assert.match(cols[2].getAttribute("title"), /^2026 \(in progress\) · ARI · 3 GP · 16\.5 PPR PPG · 49\.6 points · QB17 so far$/);
+    assert.match(cols[2].getAttribute("title"), /^2026 \(in progress\) · ARI · 3 GP · 16\.5 PPR PPG · 49\.6 points · QB20 in total points so far$/);
     for (const c of cols) assert.equal(c.getAttribute("tabindex"), "0", "keyboard-focusable");
   });
 

@@ -25,13 +25,13 @@ import {
   boardLines,
   faceWell,
   packSnapView,
-  playerLink,
   rushYardsOnCarries,
   snapCaption,
   snapWindows,
   type BoardLine,
 } from "./usage-render";
 import { signed } from "./usage-copy";
+import { getPlayerPageUrl } from "./links";
 import type { NflTeam } from "./teams";
 import type { UsagePlayer, UsageView } from "./usage";
 
@@ -51,11 +51,27 @@ function panelHead(title: string, icon: string): string {
   return `<div class="sct-up-ph"><span class="sct-up-ph-icon">${ICON[icon]}</span><h3 class="sct-up-ph-title">${e(title)}</h3></div>`;
 }
 
-/** A row's player cell: headshot well, bold name link, position under it. */
+/** "Tetairoa McMillan" -> "T. McMillan"; a one-word name is left as it is. */
+function shortName(name: string): string {
+  const [first, ...rest] = name.trim().split(/\s+/);
+  return rest.length && first ? `${first.charAt(0)}. ${rest.join(" ")}` : name;
+}
+
+/**
+ * A row's player cell: headshot well, then the name as first initial and
+ * last name with the position beside it, on one line (mak, 2026-11-06:
+ * not the name over a position row). The full name stays in the link for
+ * screen readers and crawlers, visually hidden, with a title on hover.
+ */
 function who(p: UsagePlayer): string {
+  const href = getPlayerPageUrl(p.slug);
+  const label = `<span aria-hidden="true">${e(shortName(p.name))}</span><span class="sct-visually-hidden">${e(p.name)}</span>`;
+  const name = href
+    ? `<a class="sct-up-name sct-player-link" href="${e(href)}" target="_top" title="${e(p.name)}">${label}</a>`
+    : `<span class="sct-up-name" title="${e(p.name)}">${label}</span>`;
   return (
     `<span class="sct-up-who">${faceWell(p)}` +
-    `<span class="sct-up-who-text">${playerLink(p, "sct-up-name")}<span class="sct-up-pos">${slotChip(p.pos, true)}</span></span></span>`
+    `<span class="sct-up-who-text is-inline">${name}<span class="sct-up-pos">${slotChip(p.pos, true)}</span></span></span>`
   );
 }
 
@@ -83,8 +99,8 @@ function snapPanel(view: UsageView, team: NflTeam): string {
     c == null
       ? `<span class="sct-us-delta is-none">–</span>`
       : c === 0
-        ? `<span class="sct-us-delta is-flat">0 pp</span>`
-        : `<span class="sct-us-delta is-${c > 0 ? "up" : "down"}">${e(`${signed(c, 0)} pp`)}</span>`;
+        ? `<span class="sct-us-delta is-flat">0%</span>`
+        : `<span class="sct-us-delta is-${c > 0 ? "up" : "down"}">${e(`${signed(c, 0)}%`)}</span>`;
   const rows = rowsData
     .map(({ p, v }) => {
       const s = v["season"]!;
@@ -143,8 +159,8 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   const move = (delta: number | null) =>
     delta == null || Math.abs(delta) < BADGE_FROM
       ? ""
-      : `<span class="sct-up-move is-${delta > 0 ? "up" : "down"}" title="${e(`Last 3 weeks ${delta > 0 ? "+" : "−"}${Math.abs(delta)} pp vs season share`)}">` +
-        `<span aria-hidden="true">${delta > 0 ? "▲" : "▼"}</span><span class="sct-us-sr">${delta > 0 ? "up" : "down"}</span> ${Math.abs(delta)} pp</span>`;
+      : `<span class="sct-up-move is-${delta > 0 ? "up" : "down"}" title="${e(`Last 3 weeks ${delta > 0 ? "+" : "−"}${Math.abs(delta)}% vs season share`)}">` +
+        `<span aria-hidden="true">${delta > 0 ? "▲" : "▼"}</span><span class="sct-us-sr">${delta > 0 ? "up" : "down"}</span> ${Math.abs(delta)}%</span>`;
   const rows = named
     .map(({ p, season, recent, delta }) => {
       const yds = isT ? p.recYards : rushYardsOnCarries(p);

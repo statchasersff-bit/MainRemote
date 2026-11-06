@@ -47,7 +47,7 @@ before(async () => {
   // A player with a game log on the page, so the hub has a rank to answer with.
   for (const player of roster.slice(0, 40)) {
     const { body: html } = await text(`/player/${player.slug}`);
-    if (/scp-ox-strip/.test(html)) {
+    if (/scp-ow-chart/.test(html)) {
       fixture = player;
       break;
     }
@@ -89,10 +89,10 @@ test("the hub: an evergreen entity title, the H1 is the name", async () => {
   assert.equal(doc.querySelector("#overview .scp-head-sub"), null, "no promoted panel heading with a small line");
 
   // The answer sentence and the snapshot rail are gone (mak, 2026-10-23):
-  // the H1 and its small line open straight onto the week-by-week strip.
+  // the H1 opens onto the Overview's sections (the redesign of 2026-11-05).
   assert.equal(doc.querySelector("#overview .scp-answer"), null);
   assert.equal(doc.querySelector("#overview .scp-read-rail"), null);
-  assert.ok(doc.querySelector("#overview .scp-ox-strip"), "the season strip follows the heading");
+  assert.ok(doc.querySelector("#overview .scp-ow-chart"), "the weekly chart is on the Overview");
 });
 
 /*

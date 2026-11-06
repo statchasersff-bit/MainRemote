@@ -135,21 +135,6 @@ function venueText(game: ScheduleGame): string {
 
 function identity(data: TeamPageData, schedule: TeamSchedule): string {
   const { team } = data;
-  const record = recordThrough(schedule.games);
-  const parts = [
-    `${schedule.season} NFL season`,
-    record.played ? record.text : "",
-    team.division,
-    schedule.byeWeek ? `Bye Week ${schedule.byeWeek}` : "",
-  ]
-    .filter(Boolean)
-    .map((part) => `<span>${e(part)}</span>`);
-  if (schedule.updatedAtMs) {
-    const parts2 = easternParts(schedule.updatedAtMs);
-    parts.push(
-      `<span>Updated <time datetime="${e(new Date(schedule.updatedAtMs).toISOString())}">${e(`${parts2.month} ${parts2.day}`)}</time></span>`,
-    );
-  }
   // The shared premium tab header (premium-head.ts), the Draft tab's design,
   // since 2026-11-05 evening (mak: "should have the same design as the
   // [Draft Picks & History] header"); the context line is its dek. The
@@ -159,9 +144,11 @@ function identity(data: TeamPageData, schedule: TeamSchedule): string {
   return premiumTabHead({
     hook: "sct-shp-hero",
     icon: "schedule",
+    art: "schedule",
     heading: `<h2 class="sct-h2 sct-up-h2 sct-shp-title">${e(`${team.fullName} Schedule`)}</h2>`,
-    dekClass: "sct-shp-context",
-    dekHtml: parts.join(`<span class="sct-shp-dot" aria-hidden="true">·</span>`),
+    // A standing description like the other tabs' (mak, 2026-11-06), in
+    // place of the season / record / division / bye / updated line.
+    dek: `Every ${team.nickname} game of the ${schedule.season} season, with dates, kickoff times, TV, venues and results.`,
   });
 }
 
