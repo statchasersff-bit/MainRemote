@@ -94,7 +94,7 @@ export function seasonGames(season: number): SeasonGame[] {
 }
 
 /** Whether a game sits at or before (seasonType, week). */
-function upTo(g: { seasonType: string; week: number }, seasonType: string, week: number): boolean {
+export function upTo(g: { seasonType: string; week: number }, seasonType: string, week: number): boolean {
   if (g.seasonType === seasonType) return g.week <= week;
   return g.seasonType === "regular";
 }

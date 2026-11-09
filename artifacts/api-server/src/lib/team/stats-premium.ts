@@ -103,18 +103,20 @@ function rows(list: StatRow[], input: StatsPremiumInput): string {
   return `<ul class="sct-sp-rows">${list.map((r) => row(r, input.tier(r), input.fill)).join("")}</ul>`;
 }
 
-/** The column heads over a row list: statistic / value / rank. */
-const heads = (first = "Statistic"): string =>
-  `<p class="sct-sp-heads" aria-hidden="true"><span>${e(first)}</span><span></span><span>Value</span><span>Rank</span></p>`;
-
-/** A navy-headed unit panel (Offense / Defense). */
+/**
+ * The Offense / Defense unit panel. Since 2026-11-08 (mak: "match that of"
+ * Offense Efficiency) it wears the inner panels' light tinted head with the
+ * Value / Rank labels in it, in place of the navy band and its Statistic /
+ * Value / Rank row. The title stays an H2; data-unit and data-kind="" stay.
+ */
 function unitPanel(unit: "offense" | "defense", title: string, week: string, list: StatRow[], input: StatsPremiumInput): string {
   if (!list.length) return "";
   return (
-    `<section class="sct-sp-unit" data-unit="${unit}" data-kind="">` +
-    `<div class="sct-sp-unit-head"><span class="sct-sp-ico">${unit === "offense" ? ICON.football : ICON.shield}</span>` +
-    `<h2 class="sct-sp-unit-title">${e(title)}</h2>${week ? `<span class="sct-sp-week">${e(week)}</span>` : ""}</div>` +
-    `<div class="sct-sp-unit-body">${heads()}${rows(list, input)}</div>` +
+    `<section class="sct-sp-panel is-unit" data-unit="${unit}" data-kind="">` +
+    `<div class="sct-sp-panel-head"><span class="sct-sp-ico">${unit === "offense" ? ICON.football : ICON.shield}</span>` +
+    `<div class="sct-sp-panel-text"><h2 class="sct-sp-panel-title">${e(title)}</h2>${week ? `<p class="sct-sp-panel-sub">${e(week)}</p>` : ""}</div>` +
+    `<span class="sct-sp-panel-heads" aria-hidden="true"><span>Value</span><span>Rank</span></span></div>` +
+    rows(list, input) +
     `</section>`
   );
 }
@@ -260,20 +262,21 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
   if (hist) sections.push(hist);
   if (!sections.length) return "";
 
+  const head = premiumTabHead({
+    hook: "sct-sp-hero",
+    icon: "stats",
+    art: "stats",
+    heading,
+    phoneTitle: `${season} Team Stats`,
+    dek: `Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`,
+  });
   return (
     `<div class="sct-sp">` +
-    premiumTabFrame(
-    premiumTabHead({
-      hook: "sct-sp-hero",
-      icon: "stats",
-      art: "stats",
-      heading,
-      phoneTitle: `${season} Team Stats`,
-      dek: `Complete offensive, defensive and situational team statistics for the ${season} season, with efficiency metrics, play style, discipline and a multi-year performance history.`,
-    }),
-      (note ? `<p class="sct-note sct-sp-note">${e(note)}</p>` : "") + (sections[0] ?? ""),
-    ) +
-    sections.slice(1).join("") +
+    // Offense / Defense sit on the page like every section under them, not
+    // inside the header's white frame (mak, 2026-11-08); only a note, when
+    // there is one, stays in the frame under the header.
+    (note ? premiumTabFrame(head, `<p class="sct-note sct-sp-note">${e(note)}</p>`) : head) +
+    sections.join("") +
     `</div>`
   );
 }

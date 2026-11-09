@@ -23,8 +23,9 @@ import { escapeHtml } from "../render";
 import type { TeamCoaching } from "./coaching";
 import type { UsageView } from "./usage";
 import { TEAMS, type NflTeam } from "./teams";
-import { bottomLineModel, fantasyReadsModel, finishRows, finishStop, finishTier, readFinish, seasonOf, signedPts, surnameOf, type FinishRow } from "./coaching-render";
-import { ICON } from "./coaching-premium-tendencies";
+import { fantasyReadsModel, finishRows, finishStop, finishTier, readFinish, rowViews, seasonOf, surnameOf, type FinishRow } from "./coaching-render";
+import { reliabilityRating } from "./coaching";
+import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
 
 const e = escapeHtml;
 
@@ -53,20 +54,14 @@ function trends(c: TeamCoaching, view: UsageView | null): string {
   const cards = m.reads.map((r) => {
     const icon = r.dir === "↑" ? UP : r.dir === "↓" ? DOWN : FLAT;
     const tone = r.dir === "↑" ? "is-up" : r.dir === "↓" ? "is-down" : "is-flat";
-    const move = r.prior && r.current ? `<span class="sct-cf-trend-move"><span class="sct-cf-trend-yr">${e(m.priorYear)}</span> ${e(r.prior)} <span class="sct-cf-trend-arrow" aria-hidden="true">→</span> <span class="sct-cf-trend-yr">${e(String(m.season))}</span> ${e(r.current)}</span>` : "";
-    // The change in the row's own unit: percentage points for a rate, as
-    // the brief insists (67.6% to 78% is +10.4 pp, not +10.4%).
-    const change =
-      r.delta != null && r.delta !== 0 && r.pct
-        ? `<span class="sct-cf-trend-pp ${tone}">${e(`${signedPts(Math.round(r.delta * 10) / 10)}%`)}</span>`
-        : "";
+    // What the move means for fantasy, not its figures again (mak's review,
+    // 2026-11-08): the tables above already print every rate and change.
     return (
       `<li class="sct-cf-trend ${tone}">` +
       `<span class="sct-cf-trend-icon" aria-hidden="true">${icon}</span>` +
       `<div class="sct-cf-trend-text">` +
       `<span class="sct-cf-trend-h">${e(r.heading)}</span>` +
-      (move ? `<span class="sct-cf-trend-vals">${move}${change}</span>` : "") +
-      `<span class="sct-visually-hidden">${e(r.body)}</span>` +
+      `<span class="sct-cf-trend-b">${e(r.body)}</span>` +
       `</div>` +
       `</li>`
     );
@@ -113,12 +108,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
   return (
     `<section class="sct-cf-panel" aria-labelledby="sct-cf-fin-h">` +
-    `<header class="sct-cpt-head is-fin">` +
-    `<span class="sct-cpt-head-icon">${ICON["bars"]}</span>` +
-    `<span class="sct-cpt-head-rule"></span>` +
-    `<div class="sct-cpt-head-text"><h3 class="sct-cpt-h3" id="sct-cf-fin-h">Fantasy Finishes by Season</h3></div>` +
-    `</header>` +
-    `<p class="sct-cf-intro">${e(`Where ${possessive} QB1, RB1, WR1 and TE1 finished in PPR fantasy scoring`)}</p>` +
+    // The intro rides in the title bar as its subtitle, like Coaching Career's (mak, 2026-11-08).
+    usageStyleHead("Fantasy Finishes by Season", ICON["bars"]!, `Where ${possessive} QB1, RB1, WR1 and TE1 finished in PPR fantasy scoring`, "sct-cf-fin-h") +
     `<div class="sct-cf-scroll" tabindex="0" role="region" aria-label="${e(`Positional fantasy finishes under the ${team.nickname} play-caller`)}">` +
     `<table class="sct-cf-table">` +
     `<thead><tr>` +
@@ -145,25 +136,53 @@ function signal(text: string): string {
   return `<span class="sct-cf-sig"><span class="sct-cf-sig-dir ${up ? "is-up" : "is-down"}" aria-hidden="true">${m[1]}</span><span class="sct-visually-hidden">${up ? "up" : "down"}</span> ${e(m[2])}</span>`;
 }
 
+/**
+ * The Fantasy Bottom Line as one short synthesis (mak's review, 2026-11-08:
+ * the old panel repeated continuity, the historical leans, red-zone passing
+ * and motion). Written by rule from the same signals, with no figure in it:
+ * what the offense points toward for fantasy, then how far last season's
+ * usage can be trusted.
+ */
+export function bottomLineSynthesis(c: TeamCoaching, view: UsageView | null): string {
+  const season = seasonOf(c);
+  const views = rowViews(c, view);
+  const delta = (key: string, min: number): number | null => {
+    const d = views.find((x) => x.row.key === key)?.v.delta ?? null;
+    return d != null && Math.abs(d) >= min ? d : null;
+  };
+  const favors: string[] = [];
+  const rz = delta("rzPassRate", 3);
+  if (rz != null) favors.push(rz > 0 ? "pass-catchers near the goal line" : "the goal-line back");
+  const pass = delta("passRate", 3) ?? delta("proe", 3);
+  if (pass != null) favors.push(pass > 0 ? "pass-catcher volume" : "backfield volume");
+  const lean = c.distribution.rows
+    .filter((r) => r.pct != null && r.nfl != null && (r.pct as number) - (r.nfl as number) >= 3)
+    .sort((a, b) => ((b.pct as number) - (b.nfl as number)) - ((a.pct as number) - (a.nfl as number)))[0];
+  if (lean) favors.push(lean.label === "Running backs" ? "backs who catch passes" : lean.label === "Tight ends" ? "the tight end" : "the lead receivers");
+  const pace = delta("pace", 1);
+  if (pace != null) favors.push(pace > 0 ? "a few extra snaps for every starter" : "fewer total snaps to go around");
+  const and = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+  const first = favors.length
+    ? `This offense points toward ${and(favors)}.`
+    : "No tendency here moves a fantasy ranking on its own; rank these players on their roles.";
+  const rating = reliabilityRating(c);
+  const games = c.reliability.ledgerStats?.games ?? null;
+  const second =
+    rating === "HIGH"
+      ? `With the same play-caller as ${season - 1}, last season's usage is a sound guide`
+      : rating === "MEDIUM"
+        ? `Last season's usage is a partial guide`
+        : `With a new play-caller, weight this season's usage over last season's`;
+  return `${first} ${second}${games != null && games < 6 ? ", and the sample is still small." : "."}`;
+}
+
 function bottomLine(c: TeamCoaching, view: UsageView | null): string {
-  const m = bottomLineModel(c, view);
-  const join = (items: string[]): string => items.map(signal).join(`<span class="sct-cf-sig-sep" aria-hidden="true">·</span>`);
-  const row = (k: string, v: string): string => `<div class="sct-cf-bl-row"><dt class="sct-cf-bl-k">${e(k)}</dt><dd class="sct-cf-bl-v">${v}</dd></div>`;
   return (
     `<section class="sct-cf-bl" aria-labelledby="sct-cf-bl-h">` +
-    `<div class="sct-cf-bl-grid">` +
+    `<div class="sct-cf-bl-grid is-synth">` +
     `<div class="sct-cf-bl-id"><span class="sct-cf-bl-mark" aria-hidden="true">SC</span><h3 class="sct-cf-bl-title" id="sct-cf-bl-h">Fantasy Bottom Line</h3></div>` +
-    `<dl class="sct-cf-bl-ctx">` +
-    row(`${m.season - 1} carryover`, e(m.carry)) +
-    row("Historical leans", m.leans.length ? join(m.leans) : e("Target split near league")) +
-    `</dl>` +
-    `<dl class="sct-cf-bl-now">` +
-    (m.signals.length ? row(`${m.season} signals`, join(m.signals)) : "") +
-    (m.games ? row("Sample", `<b>${e(`${m.games} game${m.games === 1 ? "" : "s"}`)}</b> · current personnel usage still matters most`) : "") +
-    `</dl>` +
+    `<p class="sct-cf-bl-synth">${e(bottomLineSynthesis(c, view))}</p>` +
     `</div>` +
-    `<details class="sct-cf-bl-more"><summary class="sct-cf-bl-more-q">Full summary<span class="sct-cf-bl-plus" aria-hidden="true">+</span></summary>` +
-    `<p class="sct-cf-bl-more-a">${e(m.summary)}</p></details>` +
     `</section>`
   );
 }

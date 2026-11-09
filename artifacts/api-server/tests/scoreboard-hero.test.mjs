@@ -348,6 +348,12 @@ describe("the team colors", () => {
     assert.deepEqual(hero.pairColors("ARI", "LAR").home.ink, "#003594", "distinct pairs keep their primaries");
   });
 
+  test("teal and blue are two families: Miami keeps its aqua against navy", () => {
+    assert.deepEqual(hero.pairPlan("NE", "MIA"), { away: "primary", home: "primary" });
+    assert.ok(hero.tooClose(hero.teamInk("MIA"), hero.teamInk("NYJ")), "two teal-greens still clash");
+    assert.ok(hero.tooClose(hero.teamInk("BUF"), hero.teamInk("LAC")), "two blues still clash");
+  });
+
   test("an unknown club falls back to #1E3A5F", () => {
     assert.equal(hero.heroSideColor("XXX"), "#1E3A5F");
   });

@@ -378,6 +378,77 @@ function wireTabs(root: HTMLElement): void {
  * that panel and scrolls to it. With scripting off nothing here runs: the bar
  * stays hidden and every panel shows, stacked in order.
  */
+/**
+ * The matchup Play-by-Play tab (play-by-play.ts): Show all plays / Collapse
+ * all, the event filter (scoring, turnovers, major plays), and a drive chip
+ * that opens its drive. The controls are printed hidden; without this they
+ * stay hidden and every drive is a plain <details>.
+ */
+function wirePlayByPlay(root: HTMLElement): void {
+  const box = root.querySelector<HTMLElement>("[data-pbp]");
+  if (!box) return;
+  const controls = box.querySelector<HTMLElement>("[data-pbp-controls]");
+  const drives = Array.from(box.querySelectorAll<HTMLDetailsElement>("details.sct-pbp-drive"));
+  if (!controls || drives.length === 0) return;
+  controls.hidden = false;
+
+  // One Expand all / Collapse all toggle; its label follows the drives, so
+  // opening every drive by hand (or through a filter) flips it too.
+  const expand = controls.querySelector<HTMLButtonElement>("[data-pbp-expand]");
+  const syncExpand = (): void => {
+    if (!expand) return;
+    const shown = drives.filter((d) => !d.hidden);
+    const allOpen = shown.length > 0 && shown.every((d) => d.open);
+    expand.textContent = allOpen ? "Collapse all" : "Expand all";
+    expand.setAttribute("aria-expanded", allOpen ? "true" : "false");
+  };
+  expand?.addEventListener("click", () => {
+    const open = expand.getAttribute("aria-expanded") !== "true";
+    for (const d of drives) if (!d.hidden) d.open = open;
+    syncExpand();
+  });
+  for (const d of drives) d.addEventListener("toggle", syncExpand);
+
+  const filters = Array.from(controls.querySelectorAll<HTMLButtonElement>("[data-pbp-filter]"));
+  const MAJOR = ["score", "turnover", "sack", "big"];
+  function apply(value: string): void {
+    const wanted = value === "all" ? null : value === "major" ? MAJOR : [value];
+    for (const f of filters) {
+      const on = f.dataset["pbpFilter"] === value;
+      f.classList.toggle("is-on", on);
+      f.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    const hit = (el: HTMLElement): boolean =>
+      !wanted || (el.dataset["tags"] ?? "").split(" ").some((t) => wanted.includes(t));
+    for (const d of drives) {
+      const show = hit(d);
+      d.hidden = !show;
+      if (wanted && show) d.open = true;
+      for (const li of Array.from(d.querySelectorAll<HTMLElement>(".sct-pbp-play"))) li.hidden = !hit(li);
+    }
+    for (const q of Array.from(box.querySelectorAll<HTMLElement>(".sct-pbp-q"))) {
+      q.hidden = !q.querySelector("details.sct-pbp-drive:not([hidden])");
+    }
+    syncExpand();
+  }
+  for (const f of filters) f.addEventListener("click", () => apply(f.dataset["pbpFilter"] ?? "all"));
+
+  // A chip in the drive strip opens its drive (and clears a filter that hides it).
+  function openFromHash(): void {
+    const id = location.hash.slice(1);
+    if (!/^pbp-drive-\d+$/.test(id)) return;
+    const d = box!.querySelector<HTMLDetailsElement>(`#${id}`);
+    if (!d) return;
+    if (d.hidden) apply("all");
+    d.open = true;
+  }
+  for (const a of Array.from(box.querySelectorAll<HTMLAnchorElement>("a.sct-pbp-chip"))) {
+    a.addEventListener("click", () => setTimeout(openFromHash, 0));
+  }
+  window.addEventListener("hashchange", openFromHash);
+  openFromHash();
+}
+
 function wireMatchupTabs(root: HTMLElement): void {
   const found = root.querySelector<HTMLElement>("[data-mu-tabbar]");
   if (!found) return;
@@ -424,7 +495,7 @@ function wireMatchupTabs(root: HTMLElement): void {
   const stickyTop = (): number => Number.parseFloat(getComputedStyle(bar).top) || 0;
 
   // The scoreboard, above the bar and the panels, shown on every tab.
-  const hero = root.querySelector<HTMLElement>(".sct-sbh");
+  const hero = root.querySelector<HTMLElement>(".sct-mu-tops, .sct-sbh, .sct-mpp.is-top");
 
   /**
    * After a switch: bring the scoreboard (or, without one, the panel's top)
@@ -815,6 +886,42 @@ function wirePlayerStatsMore(root: HTMLElement): void {
       if ((event.target as HTMLElement).closest?.("thead .sct-sort")) set(true);
     });
   }
+}
+
+/**
+ * The Fantasy tab's lists (fantasy-tab.ts): the rows past the first N wait
+ * behind "Show all players" / "View full usage". Rows only hide once this has
+ * run, so without the bundle every row shows. The scoring switch re-sorts the
+ * box score, so the hidden set is re-marked by position after every change.
+ */
+function wireFantasyTabMore(root: HTMLElement): void {
+  const lists = Array.from(root.querySelectorAll<HTMLElement>("[data-fz-list]"));
+  const mark = (list: HTMLElement): void => {
+    const shown = Number.parseInt(list.dataset["fzShown"] ?? "0", 10) || 0;
+    const rows = Array.from(list.querySelectorAll<HTMLTableRowElement>("tbody tr"));
+    rows.forEach((row, at) => row.classList.toggle("is-extra", at >= shown));
+  };
+  for (const list of lists) {
+    // A saved Half/Standard choice has already re-sorted the rows.
+    mark(list);
+    const button = list.querySelector<HTMLButtonElement>("[data-fz-more]");
+    if (!button) continue;
+    list.dataset["fz"] = "js";
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const open = !list.classList.contains("is-open");
+      list.classList.toggle("is-open", open);
+      button.setAttribute("aria-expanded", String(open));
+      button.textContent = (open ? button.dataset["less"] : button.dataset["more"]) ?? "";
+    });
+  }
+  if (lists.length === 0) return;
+  // After wireScoring's own listeners have re-sorted the rows.
+  root.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement | null;
+    if (!target || target.type !== "radio") return;
+    for (const list of lists) mark(list);
+  });
 }
 
 /**
@@ -1650,6 +1757,7 @@ function boot(): void {
   for (const root of roots) {
     wireTabs(root);
     wireMatchupTabs(root);
+    wirePlayByPlay(root);
     wireSegTabs(root);
     wireRowFilters(root);
     wireSwitcher(root);
@@ -1661,6 +1769,7 @@ function boot(): void {
     wireFantasyFormat(root);
     wireHighlights(root);
     wirePlayerStatsMore(root);
+    wireFantasyTabMore(root);
     wireUsageDetail(root);
     wireUsageProfiles(root);
     wireSnapTables(root);

@@ -241,7 +241,7 @@ function sectionHead(icon: string, id: string, title: string, range: string): st
   return (
     `<div class="sct-shp-head">${icon}<h3 class="sct-shp-h3" id="${id}">${e(title)}</h3>` +
     (range ? `<span class="sct-shp-head-range">${e(range)}</span>` : "") +
-    `<span class="sct-shp-slash" aria-hidden="true"></span></div>`
+    `</div>`
   );
 }
 

@@ -181,6 +181,7 @@ const finishCache = new Map<string, Map<string, number>>();
 /** Drops what was derived from the game logs, after they are rebuilt. */
 export function resetAppearanceCaches(): void {
   finishCache.clear();
+  poolCache.clear();
   byId = null;
 }
 
@@ -240,4 +241,75 @@ export function positionFinishes(
   }
   finishCache.set(key, finishes);
   return finishes;
+}
+
+/**
+ * Every positive score logged in one week, by position and format, for
+ * weekFinish(). Held per season, week and format like the finishes above.
+ */
+const poolCache = new Map<string, Map<string, Array<{ id: string; points: number }>>>();
+
+function weekPool(season: number, week: number, format: "ppr" | "half" | "standard"): Map<string, Array<{ id: string; points: number }>> {
+  const key = `${season}:${week}:${format}`;
+  const cached = poolCache.get(key);
+  if (cached) return cached;
+  const pool = new Map<string, Array<{ id: string; points: number }>>();
+  let logs: Record<string, GameLogEntry[]>;
+  try {
+    logs = loadGameLogs(season);
+  } catch {
+    poolCache.set(key, pool);
+    return pool;
+  }
+  for (const [id, entries] of Object.entries(logs)) {
+    const entry = entries.find((row) => row.week === week);
+    const position = entry ? playerById(id)?.position : null;
+    if (!entry || !position) continue;
+    const stats = entry.stats ?? {};
+    const ppr = num(stats, "pts_ppr");
+    const receptions = num(stats, "rec");
+    const loggedHalf = stats.pts_half_ppr;
+    const points =
+      format === "ppr"
+        ? ppr
+        : format === "half"
+          ? typeof loggedHalf === "number" && Number.isFinite(loggedHalf)
+            ? loggedHalf
+            : ppr - receptions * 0.5
+          : ppr - receptions;
+    if (points <= 0) continue;
+    const list = pool.get(position) ?? [];
+    list.push({ id, points });
+    pool.set(position, list);
+  }
+  poolCache.set(key, pool);
+  return pool;
+}
+
+/**
+ * Where `points` would finish at `position` among everyone else's score in
+ * that same week (the completed game's own week, never the season to date).
+ * The player's own logged line is left out of the pool so a score the page
+ * computed can be ranked without counting him twice. Null for a score of
+ * zero or below, or a week with no logs.
+ */
+export function weekFinish(
+  season: number,
+  week: number,
+  position: string,
+  points: number,
+  format: "ppr" | "half" | "standard",
+  selfId: string | null,
+): number | null {
+  if (points <= 0) return null;
+  const list = weekPool(season, week, format).get(position);
+  if (!list || list.length === 0) return null;
+  let above = 0;
+  for (const entry of list) if (entry.id !== selfId && entry.points > points) above += 1;
+  return above + 1;
+}
+
+/** The dictionary position for a Sleeper id ("WR"), or null. */
+export function dictionaryPositionOf(id: string): string | null {
+  return playerById(id)?.position ?? null;
 }

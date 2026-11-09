@@ -42,15 +42,15 @@ import {
   type MatchupGameRef,
   type MeetingFacts,
 } from "./pair";
-import { getPlayerBySlug, getPlayerSlugByName, loadRosterPct } from "../player/data";
+import { getPlayerSlugByName, loadRosterPct } from "../player/data";
 import { type DefenseLine } from "./fantasy-points";
 import { playerContexts, ratesFor } from "./fantasy-data";
 import {
   renderFantasyMatchups,
-  renderFantasySection,
+  fantasyLines,
+  renderFantasyTakeaways,
   topScorers,
   usageFacts,
-  verdictPlayers,
   type FantasySectionInput,
 } from "./fantasy-section";
 import { playerPhoto, teamPosition } from "./player-cell";
@@ -68,6 +68,9 @@ import { statLine } from "./leaders-strip";
 import { shareImageAlt, shareImageFile, type ShareImageInput } from "./og-image";
 import { gameNotes, schemaVideo, type GameVideo } from "./game-notes";
 import { renderPossessions } from "./possessions";
+import { renderBoxScore } from "./box-score";
+import { renderFantasyTab } from "./fantasy-tab";
+import { loadGameOdds, renderBettingMarket } from "./betting-market";
 import { renderWinProbability, winProbabilityModel } from "./win-probability";
 import type { ScoringPlay } from "./scoring-plays";
 import {
@@ -84,10 +87,9 @@ import {
   videoSchema,
   type ExploreColumn,
   type ExploreGame,
-  type ExploreTeam,
-  type GameLogLink,
   type SeasonSide,
 } from "./recap-extras";
+import { premiumTabHead, type PremiumHeadIcon, type PremiumTabHeadOptions } from "../team/premium-head";
 import { type NflTeam } from "../team/teams";
 import { titleCase } from "../player/title-case";
 import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
@@ -156,6 +158,10 @@ import {
   type RecapBodyInput,
 } from "./recap-body";
 import { renderMatchupPreviewBody, renderMatchupPreviewTop } from "./preview-premium";
+import { addBarIcons, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
+import { findGameStory, findGameStoryEntry, renderRecapOverviewParts } from "./recap-overview";
+import { loadGamePbp, renderPlayByPlay } from "./play-by-play";
+import { pickLeaders } from "./leaders-strip";
 import type { Preview } from "./preview";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
 import type { ScheduleGame } from "../team/schedule";
@@ -535,6 +541,34 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
 }
 
 /**
+ * A completed game's top: recap-premium.ts (breadcrumb, premium hero,
+ * banner). The previous design's scoreboard and the Previous / New switch
+ * were removed at mak's request, 2026-11-09 ("I like the new design").
+ */
+function renderRecapHero(data: MatchupData, input: RecapBodyInput, options: MatchupRenderOptions): string {
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  if (!game || !meeting || game.status !== "final" || !scoreboardResult(game)) return renderHero(data, options);
+  const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
+  const query = options.linkQuery ?? "";
+  const top = renderRecapPremiumTop({
+    game,
+    headingTag: options.embed ? "h2" : "h1",
+    headingId: HERO_HEADING_ID,
+    heading: matchupPageHeading(data),
+    context: heroContext(data),
+    hub: {
+      away: `${teamPrefix}${meeting.away.slug}/${query}`,
+      home: `${teamPrefix}${meeting.home.slug}/${query}`,
+    },
+    tv: input.info?.tv ?? null,
+    attendance: input.info?.attendance ?? null,
+    breadcrumbRoot: "https://statchasers.com/",
+  });
+  return `<div class="sct-mu-tops">${top}</div>` + renderSeasonGameLink(data, options);
+}
+
+/**
  * "Browns vs Buccaneers, Week 2 2026: box score & recap" under the hero, to
  * the game's own address, when the pair's page leads with a season game that
  * has one (the historical layout; see recapLink for the same rule per row).
@@ -701,6 +735,46 @@ function renderGameLeadersStrip(data: MatchupData): string {
       const name = gamePlayers(data)[id]?.name ?? "";
       return fantasy?.contexts[id]?.sleeperId ?? dictionaryId(name) ?? rosterId(name);
     },
+  });
+}
+
+/**
+ * The new design's Overview tab (recap-overview.ts), or "" when the game has
+ * no stored play-by-play story - the page then keeps the previous Recap tab.
+ */
+function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSections): { main: string; leaders: string } {
+  const none = { main: "", leaders: "" };
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  if (!game || !meeting || game.status !== "final") return none;
+  const story = findGameStory({
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+    home: game.home.abbr,
+    away: game.away.abbr,
+  });
+  if (!story) return none;
+  const players = gamePlayers(data);
+  const fantasy = fantasyInput(data);
+  const sleeperOf = (id: string): string | null => {
+    const name = players[id]?.name ?? "";
+    return fantasy?.contexts[id]?.sleeperId ?? dictionaryId(name) ?? rosterId(name);
+  };
+  return renderRecapOverviewParts({
+    game,
+    story,
+    stats: input.stats,
+    players,
+    leaders: pickLeaders({ game, players }),
+    city: { away: meeting.away.city, home: meeting.home.city },
+    playerUrl: getPlayerProfileUrl,
+    photo: (id) => {
+      const sid = sleeperOf(id);
+      return sid ? playerPhoto(sid, "sct-ov-face", 48) : `<span class="sct-ov-face" aria-hidden="true"></span>`;
+    },
+    highlights: added.highlights,
+    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
   });
 }
 
@@ -1224,6 +1298,75 @@ function renderGameWinProbability(data: MatchupData): string {
   return renderWinProbability({ game, plays, odds: data.boxscore?.odds ?? null, playerUrl: getPlayerProfileUrl });
 }
 
+/** The Box Score tab: team stats, the player box score by category, advanced efficiency. */
+function renderGameBoxScore(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  const box = data.boxscore;
+  if (!game || !meeting || game.status !== "final" || !box) return "";
+  const lineAbbr = (team: typeof meeting.away): string | null => boxLineFor(box, team)?.abbr ?? null;
+  const sheetOf = (team: typeof meeting.away) => {
+    const abbr = lineAbbr(team);
+    return abbr ? (box.teamSheets?.[abbr] ?? null) : null;
+  };
+  const story = findGameStory({
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+    home: game.home.abbr,
+    away: game.away.abbr,
+  });
+  const adv = story?.adv;
+  return renderBoxScore({
+    game,
+    teamSheet: { away: sheetOf(meeting.away), home: sheetOf(meeting.home) },
+    playerSheet: { away: box.playerSheets?.[game.away.abbr] ?? null, home: box.playerSheets?.[game.home.abbr] ?? null },
+    advanced: adv ? { away: adv[game.away.abbr] ?? null, home: adv[game.home.abbr] ?? null } : null,
+    forcedFumbles: story?.ff ?? null,
+    playerUrl: getPlayerProfileUrl,
+    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+  });
+}
+
+/** The Fantasy tab (fantasy-tab.ts): standouts, fantasy box score, usage, actual vs expected, one CTA. */
+function renderGameFantasyTab(data: MatchupData): string {
+  const fantasy = fantasyInput(data);
+  const meeting = data.featured;
+  if (!fantasy || !meeting) return "";
+  return renderFantasyTab(
+    {
+      section: fantasy,
+      season: meeting.season,
+      week: meeting.seasonType === "post" ? null : meeting.week,
+      inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+      redraftUrl: REDRAFT_COMMAND_URL,
+    },
+    fantasyLines(fantasy),
+  );
+}
+
+/** The Play-by-Play tab, from the stored nflverse plays; "" without them. */
+function renderGamePlayByPlay(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  if (!game || !meeting || game.status !== "final") return "";
+  const entry = findGameStoryEntry({
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+    home: game.home.abbr,
+    away: game.away.abbr,
+  });
+  if (!entry) return "";
+  return renderPlayByPlay({
+    game,
+    pbp: loadGamePbp(meeting.season, entry.id),
+    scoringPlays: data.boxscore?.scoringPlays ?? [],
+    playerUrl: getPlayerProfileUrl,
+    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+  });
+}
+
 function renderGamePossessions(data: MatchupData): string {
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
@@ -1311,51 +1454,20 @@ function winnerPath(data: MatchupData, game: ScoreboardGame, options: MatchupRen
   };
 }
 
-/** "More on this game": each club's column with its hub links and its players' game logs. */
-function renderGameExplore(data: MatchupData, input: RecapBodyInput, options: MatchupRenderOptions): string {
+/**
+ * The recap footer's series link. The "More on this game" team grid (crest,
+ * hub links, player game-log chips) was removed at mak's request, 2026-11-09.
+ */
+function renderGameExplore(data: MatchupData, _input: RecapBodyInput, options: MatchupRenderOptions): string {
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting) return "";
-  const fantasy = fantasyInput(data);
-  const colors = heroPairColors(game.away.abbr, game.home.abbr);
-  const logs: GameLogLink[] = (fantasy ? verdictPlayers(fantasy) : []).flatMap(({ player: p, sleeperId }) => {
-    const profile = getPlayerProfileUrl(p.name);
-    if (!profile) return [];
-    const base = profile.endsWith("/") ? profile : `${profile}/`;
-    // The box score sometimes carries no position (Kyle Williams, 2026 week
-    // 3); the player dictionary fills it rather than shipping a blank slot.
-    const slug = getPlayerSlugByName(p.name);
-    const pos = p.pos ?? (slug ? getPlayerBySlug(slug)?.position ?? null : null);
-    return [
-      {
-        name: p.name,
-        team: p.team,
-        pos,
-        url: `${base}game-log/?log=${meeting.season}`,
-        ink: p.team === game.home.abbr ? colors.home.ink : colors.away.ink,
-        sleeperId,
-      },
-    ];
-  });
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const query = options.linkQuery ?? "";
-  const teams: ExploreTeam[] = (["away", "home"] as const).map((k) => {
-    const t = input.teams[game[k].abbr]!;
-    return {
-      abbr: t.abbr,
-      name: t.name,
-      short: t.short,
-      ink: colors[k].ink,
-      logo: t.logo ?? null,
-      hub: t.hub,
-      matchups: t.matchups,
-      allPlayers: fantasy ? "#fantasy" : null,
-    };
-  });
   const related = data.pinned
     ? `<p class="sct-ex-footer sct-ex-series"><a href="${escapeHtml(`${matchupPath(prefix, data.pair.slug)}${query}`)}">${escapeHtml(`Every ${game.away.short} vs ${game.home.short} game`)}</a></p>`
     : "";
-  return renderExplore([], { season: String(meeting.season), players: logs }, teams, related);
+  return renderExplore([], { season: String(meeting.season), players: [] }, [], related);
 }
 
 /** The recap build spec's sections that live outside recap-body.ts, for the tabs to place. */
@@ -1365,9 +1477,32 @@ function renderAddedSections(data: MatchupData, input: RecapBodyInput, options: 
     highlights: renderHighlights(game, gameVideo(data)),
     winProbability: renderGameWinProbability(data),
     possessions: renderGamePossessions(data),
-    betting: renderBetting(game, data.boxscore?.odds ?? null, bettingExtras(data, game, options)),
+    betting: renderGameBetting(data, game, options),
     explore: renderGameExplore(data, input, options),
   };
+}
+
+/**
+ * The Betting tab: the existing result panel and trends, then the frozen
+ * market (betting-market.ts, mak 2026-11-08) under them, only where the
+ * existing panel prints (a closing spread and total, the switch on).
+ */
+function renderGameBetting(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): string {
+  const odds = data.boxscore?.odds ?? null;
+  const existing = renderBetting(game, odds, bettingExtras(data, game, options));
+  const meeting = data.featured;
+  if (!existing || !odds || !meeting) return existing;
+  return (
+    existing +
+    renderBettingMarket({
+      game,
+      odds,
+      stored: loadGameOdds(meeting.season, data.boxscore?.eventId),
+      season: meeting.season,
+      through: { seasonType: meeting.seasonType, week: meeting.week },
+      inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+    })
+  );
 }
 
 /** The recap build spec's sections, one by one, for the tabs to place. */
@@ -1388,7 +1523,7 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
     .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games, data.state.season)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
   // The winner's next games follow, as their own card.
-  return renderBeforeAfter(game, sides) + renderExploreCard(winnerPath(data, game, options));
+  return renderBeforeAfter(game, sides, true) + renderExploreCard(winnerPath(data, game, options), true);
 }
 
 /** The recap's VideoObject as an inert island for the plugin, or "". */
@@ -1556,6 +1691,7 @@ export function recapBodyInput(
       tv: meeting.network ?? data.boxscore?.broadcast ?? null,
       attendance: data.boxscore?.attendance ?? null,
     },
+    premiumRail: true,
   };
 }
 
@@ -3645,10 +3781,16 @@ function sectionTitleCase(html: string): string {
 /** The completed game's tabs, in bar order: the hash, the label, the panel's id. */
 const RECAP_TABS = [
   ["recap", "Recap", "recap-tab"],
-  // "Stats & Fantasy" (mak, 2026-10-30): the player-stat tables live in this
-  // tab, and a reader arriving from a "player stats" search has to see where.
-  // The hash, the panel id and the client wiring keep the old "fantasy" name.
-  ["fantasy", "Stats & Fantasy", "fantasy-tab"],
+  // NFL stats first (mak, 2026-11-08): team stats (with play calling and
+  // possessions folded in) and the traditional player box score, no fantasy.
+  ["box-score", "Box Score", "box-score-tab"],
+  // Every possession and play (mak, 2026-11-08); the Scoring Summary moves here.
+  ["play-by-play", "Play-by-Play", "pbp-tab"],
+  // The fantasy story of the game in five sections (mak, 2026-11-08,
+  // fantasy-tab.ts), added beside Stats & Fantasy, which is unchanged.
+  ["fantasy-recap", "Fantasy", "fantasy-recap-tab"],
+  // "Stats & Fantasy" (2026-10-30) was deleted 2026-11-09 at mak's request;
+  // its verdicts, decisions and stock moved to the Fantasy tab above.
   ["game-flow", "Game flow", "game-flow-tab"],
   ["head-to-head", "Head-to-head", "h2h-tab"],
   ["betting", "Betting", "betting-tab"],
@@ -3683,29 +3825,64 @@ function recapTabs(
     // #fantasy still lands somewhere with scripting off. Recap's and
     // Betting's hashes are already section ids inside their panels.
     const anchor = id === "recap" || id === "betting" ? "" : `<span class="sct-mu-anchor" id="${id}"></span>`;
+    // #fantasy was the deleted Stats & Fantasy tab's hash (until 2026-11-09):
+    // old links open the Fantasy tab instead.
+    const legacy = id === "fantasy-recap" ? `<span class="sct-mu-anchor" id="fantasy"></span>` : "";
+    // The new design opens each tab with its own header, the team pages' tab
+    // header (premium-head.ts; mak, 2026-11-08).
+    // The Recap tab's header sits above both columns instead, at the full
+    // width over the sidebar (mak, 2026-11-09): see `lead` below.
+    const head = id === "recap" ? "" : recapTabHead(id, game, Boolean(overview));
     return (
       `<section class="sct-mu-tabpanel${id === "recap" ? " is-active" : ""}" id="${panelId}" role="tabpanel" ` +
-      `aria-labelledby="tab-${id}" data-mu-tab="${id}">${anchor}${html}</section>`
+      `aria-labelledby="tab-${id}" data-mu-tab="${id}">${anchor}${legacy}${head}${html}</section>`
     );
   };
 
+  // The new design's Overview tab (mak, 2026-11-07), when the game has a
+  // stored story: the five cards replace the Recap tab's lead, Team Stats
+  // and Scoring Summary, which move to Stats & Fantasy and Game flow; the
+  // play-by-play swing chart replaces the score-only model.
+  const overviewParts = renderOverview(data, input, added);
+  const overview = overviewParts.main;
+  const boxScore = renderGameBoxScore(data);
+  const playByPlay = renderGamePlayByPlay(data);
+  const fantasyRecap = renderGameFantasyTab(data);
+  // The Scoring Summary prints on Play-by-Play when there is one, not twice.
+  const scoring = playByPlay ? "" : renderGameScoring(data);
   let foot = "";
   const body = renderRecapBody(input, {
     arrange: (own) => {
       // The FAQ closes every tab, after Keep exploring (mak, 2026-09-30).
       foot = own.outlook + added.explore + own.faq;
+      // The verdicts, decisions and stock close the Fantasy tab (moved from
+      // the deleted Stats & Fantasy tab, mak 2026-11-09).
       const fantasy = fantasyInput(data);
-      const fantasyTab = fantasy
-        ? renderFantasySection(fantasy, renderGameMatchups(data, game))
-        : renderGameMatchups(data, game);
+      const fantasyTab = fantasyRecap + (fantasy ? renderFantasyTakeaways(fantasy) : "");
+      if (overview) {
+        return (
+          panel("recap", overview) +
+          panel("box-score", boxScore) +
+          panel("play-by-play", playByPlay) +
+          panel("fantasy-recap", fantasyTab) +
+          // Team Stats moved into the Box Score tab (2026-11-08); without one
+          // it opens Game flow.
+          panel("game-flow", (boxScore ? "" : own.why) + scoring + added.possessions) +
+          panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
+          panel("betting", added.betting)
+        );
+      }
       return (
+        // The story and leaders above both columns are this tab's too, so the
+        // panel stays (and with it the Recap button) when Team Stats and the
+        // Scoring Summary have moved to Box Score and Play-by-Play.
         panel(
           "recap",
-          own.why +
-            renderGameScoring(data),
+          (boxScore ? "" : own.why) + scoring || `<span class="sct-mu-anchor" aria-hidden="true"></span>`,
         ) +
-        // Player stats and usage lead the tab, above the fantasy section (mak, 2026-09-30).
-        panel("fantasy", renderPlayerStats(data) + renderUsage(data) + fantasyTab) +
+        panel("box-score", boxScore) +
+        panel("play-by-play", playByPlay) +
+        panel("fantasy-recap", fantasyTab) +
         panel("game-flow", added.winProbability + added.possessions) +
         panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
         panel("betting", added.betting)
@@ -3713,24 +3890,36 @@ function recapTabs(
       // Below the panels, on every tab, but under both columns at the full
       // width rather than beside the sidebar (mak, 2026-09-30): see `foot`.
     },
-    asideAfter: renderGameBeforeAfter(data, options),
+    // Game leaders sit directly under Game info in the new design (mak, 2026-11-08).
+    asideAfter: overviewParts.leaders + renderGameBeforeAfter(data, options),
   });
 
-  const top = renderTabBar(game, RECAP_TABS.filter(([id]) => present.has(id)));
+  const top = renderTabBar(
+    game,
+    RECAP_TABS.filter(([id]) => present.has(id)).map(([id, label, panelId]) =>
+      // "Overview" in the new design (mak's brief, 2026-11-07); the hash stays #recap.
+      [id, overview && id === "recap" ? "Overview" : label, panelId] as const,
+    ),
+  );
   // The Recap tab's lead - leaders, then the story with its highlights video
   // as one game-summary module - across the full width above both columns
   // (mak, 2026-09-30). Part of the Recap tab: the script shows and hides it
   // with that panel, and without the script it reads first, above the rest.
   // The winner's three edges sit under the story's text, beside the video
   // (mak, 2026-09-30); they stay under "Why won" as well.
-  const leadHtml =
-    renderGameLeadersStrip(data) +
+  const leadHtml = overview
+    ? ""
+    : renderGameLeadersStrip(data) +
     (renderGameRecap(data, options, renderTakeaways(input, "sct-mu-keys") + added.highlights) || added.highlights) +
     // Redraft Command as a strip under the story (mak, 2026-09-30).
     renderRedraftStrip(input);
-  const lead = leadHtml
-    ? `<div class="sct-rb sct-mu-lead is-active" data-mu-tab="recap">` +
-      `<div class="sct-mu-tabpanel">${leadHtml}</div></div>`
+  // The Recap/Overview tab's header opens the lead, so it spans the full width
+  // above the main column and the sidebar (mak, 2026-11-09: "should span full
+  // width"); shown and hidden with the tab like the rest of the lead.
+  const recapHead = present.has("recap") ? recapTabHead("recap", game, Boolean(overview)) : "";
+  const lead = leadHtml || recapHead
+    ? `<div class="sct-rb sct-mu-lead is-active${leadHtml ? "" : " is-head"}" data-mu-tab="recap">` +
+      `<div class="sct-mu-tabpanel">${recapHead}${leadHtml}</div></div>`
     : "";
   // The scoreboard sits above the tab bar and both columns, on every tab, as
   // the player pages put their header above their tabs.
@@ -3738,10 +3927,85 @@ function recapTabs(
   // The intro sentence sits between the scoreboard and the tab bar, on every
   // tab, above the content it describes (renderIntro).
   const themed = themeInks(
-    sectionTitleCase(renderHero(data, options) + renderIntro(data) + top + lead + body + footer),
+    sectionTitleCase(renderRecapHero(data, input, options) + renderIntro(data) + top + lead + body + footer),
     game,
   );
-  return { top: "", body: themed.html, style: themed.style };
+  // The new design's bars carry the Coaching page's icon boxes (2026-11-07).
+  const html = addBarIcons(themed.html);
+  return { top: "", body: html, style: themed.style };
+}
+
+/**
+ * Each recap tab's header in the new design (mak, 2026-11-08: "each of the
+ * tabs should have their own headers like we do with team pages"): the
+ * team pages' premium tab header, a title naming the pair and a dek saying
+ * what the tab holds. Head-to-Head and Betting are titled "Rivalry" and
+ * "Betting Recap" because their first sections already carry the
+ * "Head-to-Head" and "Odds and Results" headings.
+ */
+function recapTabHead(id: RecapTabId, game: ScoreboardGame, overview: boolean): string {
+  const pair = `${game.away.short} vs ${game.home.short}`;
+  const result = scoreboardResult(game);
+  const winner = result?.winner ? game[result.winner].short : null;
+  const spec: Record<RecapTabId, { icon: PremiumHeadIcon; title: string; phone: string; dek: string; art?: PremiumTabHeadOptions["art"] }> = {
+    recap: overview
+      ? {
+          icon: "game",
+          title: `${pair} Game Overview`,
+          phone: "Game Overview",
+          dek: winner
+            ? `The game recap, why the ${winner} won, how the game swung and the highlights.`
+            : "The game recap, the numbers behind the result, how the game swung and the highlights.",
+        }
+      : { icon: "game", title: `${pair} Game Recap`, phone: "Game Recap", dek: "The game's story, its leaders and the team stats." },
+    "box-score": {
+      icon: "stats",
+      title: `${pair} Box Score`,
+      phone: "Box Score",
+      dek: "Team stats, advanced efficiency and every player's passing, rushing, receiving, defense and special teams lines.",
+      art: "stats",
+    },
+    "play-by-play": {
+      icon: "plays",
+      title: `${pair} Play-by-Play`,
+      phone: "Play-by-Play",
+      dek: "The scoring summary, every drive and every play, quarter by quarter.",
+    },
+    "fantasy-recap": {
+      icon: "fantasy",
+      title: `${pair} Fantasy Recap`,
+      phone: "Fantasy Recap",
+      dek: "The fantasy standouts, the fantasy box score, usage and opportunity, actual versus expected points, and the verdicts.",
+    },
+    "game-flow": {
+      icon: "flow",
+      title: `${pair} Game Flow`,
+      phone: "Game Flow",
+      dek: "Play calling and how each team's possessions ended, drive by drive.",
+      art: "outlook",
+    },
+    "head-to-head": {
+      icon: "rivalry",
+      title: `${pair} Rivalry`,
+      phone: "Rivalry",
+      dek: "The all-time series, recent meetings and both teams' seasons to date.",
+    },
+    betting: {
+      icon: "betting",
+      title: `${pair} Betting Recap`,
+      phone: "Betting Recap",
+      dek: "How the game finished against the spread, total and moneyline, the line movement and each team's betting trends.",
+    },
+  };
+  const s = spec[id];
+  return premiumTabHead({
+    hook: "sct-mu-tabhead",
+    icon: s.icon,
+    heading: `<h2 class="sct-h2 sct-up-h2">${escapeHtml(s.title)}</h2>`,
+    dek: s.dek,
+    phoneTitle: s.phone,
+    art: s.art ?? "play",
+  });
 }
 
 /**
@@ -3833,6 +4097,26 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
   const rootStyle = styleAttr([
     ...(tabs?.style ?? []),
     ...(pv ? previewStyle(pv) : []),
+    // The premium hero's team fills on a completed game, as the upcoming
+    // page's previewStyle sets them (recap-premium.ts).
+    ...(tabs && data.featured
+      ? [
+          `--pv-away:${matchupColors(data.pair)(data.featured.away)}`,
+          `--pv-home:${matchupColors(data.pair)(data.featured.home)}`,
+          // The two clubs' fills, as the scoreboard paints them, for the new
+          // design's hero and section title bars (mak, 2026-11-07).
+          `--rh-away:${heroPairFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).away}`,
+          `--rh-home:${heroPairFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).home}`,
+          // One club's color under the section bars, the other's on their
+          // accents (mak, 2026-11-07; recapBarColors).
+          ...(() => {
+            const g = matchupScoreboardGame(data);
+            if (!g) return [];
+            const bar = recapBarColors(g);
+            return [`--pm-bg:${bar.bg}`, `--pm-accent:${bar.accent}`];
+          })(),
+        ]
+      : []),
     `--team-primary:${a.primaryColor}`,
     `--team-secondary:${a.secondaryColor}`,
     `--mu-a-primary:${a.primaryColor}`,
@@ -3892,7 +4176,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
           renderMeetings(data, options);
 
   return (
-    `<div class="sct sct-mu${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
+    `<div class="sct sct-mu${tabs ? " is-pm" : ""}${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
     ` data-matchup="${escapeHtml(data.pair.slug)}"` +
     ` data-matchup-state="${data.matchupState}"` +
     ` data-postgame="${isPostgame(data) ? "1" : "0"}"` +

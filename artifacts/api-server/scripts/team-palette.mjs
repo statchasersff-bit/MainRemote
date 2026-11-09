@@ -113,8 +113,16 @@ function mapped(c, fam) {
 
 function run(name, { file: CSS, root, owner }) {
   let css = readFileSync(CSS, "utf8");
+  // The block is replaced IN PLACE: CSS written after it (player.css has
+  // ~5,000 lines past it since 11-06) is kept and wrapped like the rest.
+  // A comment holds its spot while the code is rewritten.
+  const HOLD = "/* @@team-palette@@ */";
   const s = css.indexOf(START);
-  if (s !== -1) css = css.slice(0, s).replace(/\s*$/, "\n");
+  if (s !== -1) {
+    const e = css.indexOf(END, s);
+    if (e === -1) throw new Error(`${CSS}: "${START}" without "${END}"`);
+    css = css.slice(0, s).replace(/\s*$/, "\n") + HOLD + css.slice(e + END.length);
+  }
 
   const defs = new Map();
   const wrapped = (src, i) => /var\(--tp-[\w-]+,\s*$/.test(src.slice(Math.max(0, i - 48), i));
@@ -186,7 +194,7 @@ function run(name, { file: CSS, root, owner }) {
   }
 
   const body = [...defs].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `  ${k}: ${v};`).join("\n");
-  css +=
+  const block =
     `\n${START}\n` +
     `/* The root (${owner}) carries data-team-palette, --team-base,\n` +
     `   --team-accent and --team-bright (team/palette.ts) for a team that is\n` +
@@ -197,6 +205,7 @@ function run(name, { file: CSS, root, owner }) {
     `  --tp-bright: var(--team-bright, var(--tp-primary));\n` +
     `  --tp-ink: color-mix(in srgb, var(--tp-primary) 12%, #101827);\n` +
     `${body}\n}\n${END}\n`;
+  css = css.includes(HOLD) ? css.replace(HOLD, () => block.replace(/^\n/, "").replace(/\n$/, "")) : css + block;
   writeFileSync(CSS, css);
   console.log(`${name}: ${defs.size} colors mapped`);
 }

@@ -17,7 +17,9 @@
 
 import { escapeHtml } from "../render";
 import { premiumTabHead, premiumTabFrame } from "./premium-head";
+import { usageStyleHead } from "./coaching-premium-tendencies";
 import {
+  FORMATIONS_NOTE,
   GROUPS,
   IDENTITY_KEYS,
   KEEP_SUB,
@@ -33,6 +35,7 @@ import {
   seasonOf,
   splitTree,
   stintLine,
+  surnameOf,
   type RowView,
 } from "./coaching-render";
 import { getCoachingStaff, reliabilityRating, RELIABILITY_PCT, type TeamCoaching, type TendencyRow } from "./coaching";
@@ -102,38 +105,6 @@ function profileCard(c: TeamCoaching, team: NflTeam): string {
 }
 
 /** "▼ 2.5 pp vs 2025" / "▲ 1.4s faster than 2025": the change line, a triangle for direction. */
-function tri(t: string): string {
-  return t.replace(/^↑/, "▲").replace(/^↓/, "▼");
-}
-
-function kpiCards(c: TeamCoaching, view: UsageView | null): string {
-  const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
-  const views = rowViews(c, view);
-  const cards = IDENTITY_KEYS.map((k) => views.find((x) => x.row.key === k))
-    .filter((x): x is NonNullable<typeof x> => !!x)
-    .map(({ row, v }) => {
-      let line = "";
-      if (atEdge(v.rank)) line = `<span class="sct-cp-kpi-pill">${e(`${ordinal(v.rank as number)} in NFL`)}</span>`;
-      else if (v.delta != null && v.change.dir !== "flat") {
-        const t = tri(changeText(row, v));
-        line = `<span class="sct-cp-kpi-move is-${v.delta > 0 ? "up" : "down"}">${e(row.key === "pace" ? `${t} than ${priorYear}` : `${t} vs ${priorYear}`)}</span>`;
-      } else if (v.delta != null) line = `<span class="sct-cp-kpi-move is-flat">${e(`Level with ${priorYear}`)}</span>`;
-      return (
-        `<li class="sct-cp-kpi">` +
-        `<span class="sct-cp-kpi-icon">${ICON[KPI_ICON[row.key as string] ?? "trend"]}</span>` +
-        `<span class="sct-cp-kpi-label">${e(KPI_LABEL[row.key as string] ?? row.label)}</span>` +
-        `<span class="sct-cp-kpi-value">${e(v.current)}</span>` +
-        line +
-        // No sparkline: there is no per-week series behind a tile, so the
-        // accent is a plain rule (mak's refinement note, 2026-11-05).
-        `<span class="sct-cp-kpi-rule" aria-hidden="true"></span>` +
-        `</li>`
-      );
-    })
-    .join("");
-  return cards ? `<ul class="sct-cp-kpis">${cards}</ul>` : "";
-}
-
 /* ----------------------------------------------------------------- tables */
 
 /** The dumbbell: hollow prior, filled current, a tick for the NFL average; the same scale rule as the original strip. */
@@ -179,9 +150,18 @@ function table(
   const callerLast = c.tendencies.priorLabel.match(/\((.+)\)$/)?.[1] ?? "";
   const rows = group
     .map(({ row, v, i }) => {
-      const sub = row.sub && row.key && KEEP_SUB.has(row.key) ? `<span class="sct-cp-sub">${e(row.sub)}</span>` : "";
+      // The red-zone rate's sample sits on its own row: this table is the one
+      // place the full red-zone figure prints (mak's review, 2026-11-08).
+      const s = c.tendencies.samples;
+      const subText =
+        row.key === "rzPassRate" && s?.rzPlays
+          ? `${s.rzPlays} plays${s.priorRzPlays != null ? ` (${s.priorRzPlays} in ${priorYear})` : ""}`
+          : row.sub && row.key && KEEP_SUB.has(row.key)
+            ? row.sub
+            : "";
+      const sub = subText ? `<span class="sct-cp-sub">${e(subText)}</span>` : "";
       const rank = atEdge(v.rank) ? `<span class="sct-cp-rank">${e(ordinal(v.rank as number))}</span>` : "";
-      const chg = tri(changeText(row, v));
+      const chg = changeText(row, v);
       return (
         `<tr${row === notable?.row ? ` class="is-notable"` : ""}>` +
         `<th scope="row" class="sct-cp-td is-metric">${rowLabel(row, `sct-cp-def-${i}`)}${sub}</th>` +
@@ -215,13 +195,6 @@ const HEADLINE: Record<string, [string, string]> = {
   paRate: ["More play-action.", "Less play-action."],
 };
 
-const FORM_PHRASE: Record<string, [string, string]> = {
-  motionRate: ["more motion", "less motion"],
-  shotgunRate: ["more shotgun", "more under center"],
-  noHuddleRate: ["more no-huddle", "less no-huddle"],
-  pace: ["faster tempo", "slower tempo"],
-};
-
 function moves(group: Array<{ row: TendencyRow; v: RowView }>): Array<{ row: TendencyRow; v: RowView; d: number }> {
   return group
     .filter(({ row, v }) => v.delta != null && Math.abs(v.delta) >= (row.key === "pace" ? 1 : 3))
@@ -232,27 +205,12 @@ function moves(group: Array<{ row: TendencyRow; v: RowView }>): Array<{ row: Ten
 function takeaway(group: Array<{ row: TendencyRow; v: RowView; i: number }>, team: NflTeam, priorYear: string, returning: boolean): string {
   const top = moves(group)[0];
   const headline = top && top.row.key && HEADLINE[top.row.key] ? HEADLINE[top.row.key]![top.d > 0 ? 0 : 1] : `Play calling holds steady.`;
-  const body = groupSentence(group, team, priorYear, returning).split(" Against the league,")[0] ?? "";
-  // The highlighted stat: a row at a league edge, else the biggest move.
-  const edge = group.find(({ v }) => atEdge(v.rank));
-  const stat = edge ?? top;
-  const cell = (v: string, l: string) => `<span class="sct-cp-stat-cell"><span class="sct-cp-stat-v">${e(v)}</span><span class="sct-cp-stat-l">${e(l)}</span></span>`;
-  const statHtml = stat
-    ? `<p class="sct-cp-stat">` +
-      cell(stat.v.current, stat.row.label.replace(/ \(all downs\)$/, "")) +
-      (edge && atEdge(edge.v.rank)
-        ? `<span class="sct-cp-stat-sep" aria-hidden="true"></span>${cell(ordinal(edge.v.rank as number), "in NFL")}`
-        : top
-          ? `<span class="sct-cp-stat-sep" aria-hidden="true"></span>${cell(tri(changeText(top.row, top.v)), `vs ${priorYear}`)}`
-          : "") +
-      `</p>`
-    : "";
+  const body = groupSentence(group, team, priorYear, returning, false).split(" Against the league,")[0] ?? "";
   return (
     `<aside class="sct-cp-take">` +
     `<p class="sct-cp-take-kicker"><span class="sct-cp-take-icon">${ICON["bars"]}</span>Key Takeaway</p>` +
     `<p class="sct-cp-take-h">${e(headline)}</p>` +
     `<p class="sct-cp-take-b">${e(body)}</p>` +
-    statHtml +
     `</aside>`
   );
 }
@@ -287,18 +245,36 @@ function formationVisual(group: Array<{ row: TendencyRow; v: RowView; i: number 
   );
 }
 
-function banner(group: Array<{ row: TendencyRow; v: RowView; i: number }>, team: NflTeam, priorYear: string, returning: boolean): string {
-  const ms = moves(group).slice(0, 3);
-  const words = ms.map(({ row, d }) => FORM_PHRASE[row.key as string]?.[d > 0 ? 0 : 1]).filter((w): w is string => !!w);
-  const headline = words.length ? `${words.join(", ")}.`.replace(/^./, (ch) => ch.toUpperCase()) : "Formations and tempo hold steady.";
-  return (
-    `<div class="sct-cp-banner">` +
-    `<span class="sct-cp-banner-icon">${ICON["target"]}</span>` +
-    `<span class="sct-cp-banner-rule" aria-hidden="true"></span>` +
-    `<div><p class="sct-cp-banner-h">${e(headline)}</p>` +
-    `<p class="sct-cp-banner-b">${e(groupSentence(group, team, priorYear, returning))}</p></div>` +
-    `</div>`
-  );
+/**
+ * Formations & Tempo's one takeaway (mak's review, 2026-11-08): the
+ * offense's identity in words, with no figure the table beside it already
+ * shows. Motion and shotgun count when they moved 3+ points; pace reads
+ * against the league (a second either side of average) and against last
+ * season (a second of change).
+ */
+function identityLine(group: Array<{ row: TendencyRow; v: RowView; i: number }>, team: NflTeam, priorYear: string): string {
+  const get = (k: string) => group.find(({ row }) => row.key === k) ?? null;
+  const moved = (k: string, min: number): number | null => {
+    const d = get(k)?.v.delta ?? null;
+    return d != null && Math.abs(d) >= min ? d : null;
+  };
+  const motion = moved("motionRate", 3);
+  const gun = moved("shotgunRate", 3);
+  const parts: string[] = [];
+  if (motion != null) parts.push(motion > 0 ? "more motion-heavy" : "less motion-heavy");
+  if (gun != null) parts.push(`${motion != null && motion > 0 ? "" : "more "}${gun > 0 ? "shotgun-oriented" : "under-center"}`);
+  const p = get("pace");
+  const now = p ? num(p.v.current) : null;
+  const avg = p ? num(p.row.nflAvg) : null;
+  // Seconds per play: more is slower.
+  const desc = now == null || avg == null ? null : now - avg >= 1 ? "a deliberate pace" : avg - now >= 1 ? "a quick pace" : "a league-average pace";
+  const paceMove = moved("pace", 1);
+  const pace = desc ? (paceMove != null ? `${paceMove > 0 ? "speeding up" : "slowing down"} to ${desc}` : `keeping ${desc}`) : "";
+  const city = cityOf(team);
+  const text = parts.length
+    ? `${city} has shifted toward a ${parts.join(", ")} offense${pace ? ` while ${pace}` : ""}.`
+    : `${city} lines up much as it did in ${priorYear}${pace ? `, ${pace}` : ""}.`;
+  return `<p class="sct-cp-identity"><span class="sct-cp-identity-k">Takeaway</span>${e(text)}</p>`;
 }
 
 /* ----------------------------------------------------------------- public */
@@ -311,9 +287,12 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   const groupOf = (keys: string[]) => keys.map((k) => views.find((x) => x.row.key === k)).filter((x): x is NonNullable<typeof x> => !!x);
   const calling = groupOf(GROUPS[0]!.keys);
   const form = groupOf(GROUPS[1]!.keys);
-  const section = (title: string, icon: string, body: string) =>
-    `<section class="sct-cp-section"><h3 class="sct-cp-h3"><span class="sct-cp-h3-icon">${icon}</span>${e(title)}</h3><div class="sct-cp-section-body">${body}</div></section>`;
-  void cityOf;
+  // Each section wears the shared title bar with a one-line subtitle, like
+  // Fantasy Finishes by Season (mak, 2026-11-08).
+  const last = surnameOf(c);
+  const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
+  const section = (title: string, icon: string, sub: string, body: string) =>
+    `<section class="sct-cp-section">${usageStyleHead(title, icon, sub)}<div class="sct-cp-section-body">${body}</div></section>`;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
     premiumTabFrame(
@@ -324,17 +303,27 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
         heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
         dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
       }),
-      `<div class="sct-cp-overview">${profileCard(c, team)}${kpiCards(c, view)}</div>`,
+      // The four KPI cards went 2026-11-08 (mak): pass rate, red-zone rate,
+      // motion and pace all repeat in the tables below. Coach card only.
+      `<div class="sct-cp-overview is-coach-only">${profileCard(c, team)}</div>`,
       { solo: true },
     ) +
     (calling.length
-      ? section("Play Calling", ICON["play"]!, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)
+      ? section("Play Calling", ICON["play"]!, `How often ${last} calls a pass, by situation, ${season} vs ${priorYear}`, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)
       : "") +
     (form.length
-      ? section("Formations & Tempo", ICON["grid"]!, `<div class="sct-cp-split">${table(form, c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form, season)}</div>`) +
-        banner(form, team, priorYear, returning)
+      ? section(
+          "Formations & Tempo",
+          ICON["grid"]!,
+          `How ${possessive} offense lines up and how fast it plays, ${season} vs ${priorYear}`,
+          `<div class="sct-cp-split">${table(form, c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form, season)}</div>` +
+            identityLine(form, team, priorYear),
+        )
       : "") +
     `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3%+ or a second of pace.</p>` +
+    // The data limits that closed Formations & Personnel, kept when that
+    // section went (mak, 2026-11-08: it repeated Formations & Tempo).
+    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>${e(FORMATIONS_NOTE)}</p>` +
     `</div>`
   );
 }

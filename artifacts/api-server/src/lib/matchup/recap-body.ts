@@ -16,6 +16,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
+import { railHead } from "./rail-head";
 import type { BoxTeamStats } from "./boxscore";
 import { superBowlNumeral } from "./recap";
 import {
@@ -116,6 +117,8 @@ export interface RecapBodyInput {
   topScorers?: FaqScorer[];
   /** Game info's extra rows, only what a feed carries. */
   info?: { tv: string | null; attendance: number | null };
+  /** The new design's sidebar heads (rail-head.ts); false or absent is the previous design. */
+  premiumRail?: boolean;
   /** What the FAQ may say beyond the box score; each part omitted without data. */
   faqFacts?: FaqFacts;
 }
@@ -1483,7 +1486,7 @@ export function renderGameInfo(input: RecapBodyInput): string {
   if (input.info?.attendance) rows.push(["Attendance", input.info.attendance.toLocaleString("en-US")]);
   return (
     `<section class="sct-rb-card sct-rb-info" aria-labelledby="sct-rb-info">` +
-    `<h3 class="sct-rb-h3" id="sct-rb-info">Game info</h3>` +
+    railHead("info", "sct-rb-info", "Game info", input.premiumRail === true) +
     `<dl class="sct-rb-dl">` +
     rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${k === "Round" ? escapeHtml(v) : v}</dd>`).join("") +
     `</dl>` +

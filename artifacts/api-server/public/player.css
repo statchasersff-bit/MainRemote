@@ -7005,15 +7005,15 @@ a.scp-peer:focus-visible {
  * profile's tokens are not touched by a page that is not a profile.
  */
 .scp[data-scp-index] {
-  --dir-navy: #0b3a7a;
-  --dir-deep: #081e42;
-  --dir-gold: #d4af37;
-  --dir-ink: #101b34;
+  --dir-navy: var(--tp-c-0b3a7a, #0b3a7a);
+  --dir-deep: var(--tp-c-081e42, #081e42);
+  --dir-gold: var(--tp-c-d4af37, #d4af37);
+  --dir-ink: var(--tp-c-101b34, #101b34);
   --dir-muted: #52647f;
-  --dir-border: #d6e0ed;
-  --dir-rule: #e4eaf2;
-  --dir-soft: #f5f8fc;
-  --dir-hover: #eef3f9;
+  --dir-border: var(--tp-c-d6e0ed, #d6e0ed);
+  --dir-rule: var(--tp-c-e4eaf2, #e4eaf2);
+  --dir-soft: var(--tp-c-f5f8fc, #f5f8fc);
+  --dir-hover: var(--tp-c-eef3f9, #eef3f9);
 }
 
 .scp-dir-tools {
@@ -7031,7 +7031,7 @@ a.scp-peer:focus-visible {
 
 .scp[data-scp-index] .scp-search-input {
   border-color: var(--dir-border);
-  color: var(--dir-ink);
+  color: var(--tp-ink, var(--dir-ink));
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
@@ -7044,14 +7044,14 @@ a.scp-peer:focus-visible {
 }
 
 .scp[data-scp-index] .scp-search-input:hover {
-  border-color: #b9c8dc;
+  border-color: var(--tp-c-b9c8dc, #b9c8dc);
 }
 
 /* A quiet gold ring rather than the profile's offset outline. */
 .scp[data-scp-index] .scp-search-input:focus-visible {
   outline: none;
   border-color: var(--dir-gold);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.22);
+  box-shadow: 0 0 0 3px var(--tp-a-212-175-55-220, rgba(212, 175, 55, 0.22));
 }
 
 /* 14px where there is a mouse; a phone keeps 16px, under which iOS zooms the
@@ -7084,7 +7084,7 @@ a.scp-peer:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--dir-deep, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-deep, var(--sc-ink)));
 }
 
 /* Separate pills now, not one capsule track. */
@@ -7109,7 +7109,7 @@ a.scp-peer:focus-visible {
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
-  color: var(--dir-ink, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-ink, var(--sc-ink)));
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -7117,7 +7117,7 @@ a.scp-peer:focus-visible {
 
 .scp-dir-chip:hover {
   background: var(--dir-hover, var(--sc-surface-soft));
-  border-color: #b9c8dc;
+  border-color: var(--tp-c-b9c8dc, #b9c8dc);
 }
 
 .scp-dir-chip:focus-visible {
@@ -7181,11 +7181,11 @@ a.scp-peer:focus-visible {
   margin: 14px 0 0;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--dir-ink, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-ink, var(--sc-ink)));
 }
 
 .scp-dir-note b {
-  color: var(--dir-ink, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-ink, var(--sc-ink)));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -7342,7 +7342,7 @@ a.scp-peer:focus-visible {
   min-height: 46px;
   padding: 5px 6px;
   border-radius: 8px;
-  color: var(--dir-ink, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-ink, var(--sc-ink)));
   text-decoration: none;
   transition: background-color 130ms ease;
 }
@@ -7398,13 +7398,13 @@ a.scp-peer:focus-visible {
   font-size: 13.5px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--dir-ink, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-ink, var(--sc-ink)));
   overflow-wrap: anywhere;
 }
 
 .scp-dir-row:hover .scp-dir-name,
 .scp-dir-row:focus-visible .scp-dir-name {
-  color: var(--dir-deep, var(--sc-ink));
+  color: var(--tp-ink, var(--dir-deep, var(--sc-ink)));
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
@@ -7417,7 +7417,7 @@ a.scp-peer:focus-visible {
   line-height: 1.1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--dir-deep, var(--sc-muted));
+  color: var(--tp-ink, var(--dir-deep, var(--sc-muted)));
 }
 
 .scp-dir-pos[data-pos="QB"] {
@@ -7464,7 +7464,7 @@ a.scp-peer:focus-visible {
   padding: 0 7px;
   border-radius: 999px;
   background: transparent;
-  color: var(--dir-navy, var(--sc-navy));
+  color: var(--tp-ink, var(--dir-navy, var(--sc-navy)));
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -7512,7 +7512,7 @@ a.scp-peer:focus-visible {
 .scp-dir-item[data-band="poor"] .scp-dir-name,
 .scp-dir-item[data-band="idle"] .scp-dir-name {
   font-weight: 600;
-  color: #33445f;
+  color: var(--tp-ink, var(--tp-c-33445f, #33445f));
 }
 
 /* idle: the decorative portrait recedes; the text keeps its contrast. */
@@ -11850,8 +11850,10 @@ a.scp-peer:focus-visible {
   outline: 2px solid var(--glp-gold);
   outline-offset: 2px;
 }
-/* The sorted column: gold label and a gold rule under the cell. */
-.scp .scp-glp-table thead th[aria-sort] {
+/* The sorted column: gold label and a gold rule under the cell. The client
+   marks every sortable column aria-sort="none", so "none" is excluded or
+   every header turned gold (mak, 2026-11-07). */
+.scp .scp-glp-table thead th[aria-sort]:not([aria-sort="none"]) {
   color: var(--glp-gold-bright);
   box-shadow: inset 0 -3px 0 var(--glp-gold);
 }
@@ -21046,7 +21048,6 @@ a.scp-peer:focus-visible {
     display: none;
   }
 }
-
 /* ==== team palette (generated by scripts/team-palette.mjs; do not edit) ==== */
 /* The root (player-render.ts) carries data-team-palette, --team-base,
    --team-accent and --team-bright (team/palette.ts) for a team that is
@@ -21057,6 +21058,7 @@ a.scp-peer:focus-visible {
   --tp-bright: var(--team-bright, var(--tp-primary));
   --tp-ink: color-mix(in srgb, var(--tp-primary) 12%, #101827);
   --tp-a-11-35-69-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
+  --tp-a-11-35-69-920: color-mix(in srgb, var(--tp-primary) 92%, transparent);
   --tp-a-11-58-122-350: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary)) 35%, transparent);
   --tp-a-12-31-64-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
   --tp-a-12-31-64-350: color-mix(in srgb, var(--tp-primary) 35%, transparent);
@@ -21065,8 +21067,6 @@ a.scp-peer:focus-visible {
   --tp-a-13-35-67-300: color-mix(in srgb, var(--tp-primary) 30%, transparent);
   --tp-a-153-110-12-100: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 62%, #000) 10%, transparent);
   --tp-a-18-54-94-550: color-mix(in srgb, color-mix(in srgb, var(--tp-bright) 26%, var(--tp-primary)) 55%, transparent);
-  --tp-a-184-135-31-220: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 22%, transparent);
-  --tp-a-184-135-31-280: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 28%, transparent);
   --tp-a-184-144-31-120: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 12%, transparent);
   --tp-a-184-144-31-160: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 16%, transparent);
   --tp-a-184-144-31-180: color-mix(in srgb, color-mix(in srgb, var(--tp-accent) 81%, #000) 18%, transparent);
@@ -21120,6 +21120,7 @@ a.scp-peer:focus-visible {
   --tp-c-0b2345: var(--tp-primary);
   --tp-c-0b2549: var(--tp-primary);
   --tp-c-0b254b: var(--tp-primary);
+  --tp-c-0b2b55: color-mix(in srgb, var(--tp-bright) 13%, var(--tp-primary));
   --tp-c-0b2c53: color-mix(in srgb, var(--tp-bright) 11%, var(--tp-primary));
   --tp-c-0b3a7a: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
   --tp-c-0c2547: var(--tp-primary);
@@ -21130,6 +21131,7 @@ a.scp-peer:focus-visible {
   --tp-c-0d315b: color-mix(in srgb, var(--tp-bright) 19%, var(--tp-primary));
   --tp-c-0e1b2e: color-mix(in srgb, var(--tp-primary) 75%, #000);
   --tp-c-0e3158: color-mix(in srgb, var(--tp-bright) 18%, var(--tp-primary));
+  --tp-c-0f1722: color-mix(in srgb, var(--tp-primary) 61%, #000);
   --tp-c-0f3f82: color-mix(in srgb, var(--tp-bright) 52%, var(--tp-primary));
   --tp-c-101b34: color-mix(in srgb, var(--tp-primary) 85%, #000);
   --tp-c-102344: var(--tp-primary);
@@ -21138,6 +21140,7 @@ a.scp-peer:focus-visible {
   --tp-c-103862: color-mix(in srgb, var(--tp-bright) 27%, var(--tp-primary));
   --tp-c-103b69: color-mix(in srgb, var(--tp-bright) 33%, var(--tp-primary));
   --tp-c-103f74: color-mix(in srgb, var(--tp-bright) 42%, var(--tp-primary));
+  --tp-c-10447d: color-mix(in srgb, var(--tp-bright) 49%, var(--tp-primary));
   --tp-c-11295a: color-mix(in srgb, var(--tp-bright) 22%, var(--tp-primary));
   --tp-c-113366: color-mix(in srgb, var(--tp-bright) 31%, var(--tp-primary));
   --tp-c-12325a: color-mix(in srgb, var(--tp-bright) 23%, var(--tp-primary));
@@ -21153,14 +21156,18 @@ a.scp-peer:focus-visible {
   --tp-c-1c2f4b: color-mix(in srgb, var(--tp-bright) 19%, var(--tp-primary));
   --tp-c-1d3568: color-mix(in srgb, var(--tp-bright) 43%, var(--tp-primary));
   --tp-c-1d4e8c: color-mix(in srgb, var(--tp-bright) 72%, var(--tp-primary));
+  --tp-c-1d4f91: color-mix(in srgb, var(--tp-bright) 76%, var(--tp-primary));
   --tp-c-1f3350: color-mix(in srgb, var(--tp-bright) 25%, var(--tp-primary));
   --tp-c-1f4e8c: color-mix(in srgb, var(--tp-bright) 73%, var(--tp-primary));
   --tp-c-2364a8: color-mix(in srgb, var(--tp-bright) 99%, var(--tp-primary));
   --tp-c-26395a: color-mix(in srgb, var(--tp-bright) 39%, var(--tp-primary));
   --tp-c-2665b3: color-mix(in srgb, var(--tp-bright) 95.8%, #fff);
+  --tp-c-27619e: color-mix(in srgb, var(--tp-bright) 94%, var(--tp-primary));
   --tp-c-2a3d5c: color-mix(in srgb, var(--tp-bright) 44%, var(--tp-primary));
+  --tp-c-2a4570: color-mix(in srgb, var(--tp-bright) 60%, var(--tp-primary));
   --tp-c-2f63a8: color-mix(in srgb, var(--tp-bright) 96.4%, #fff);
   --tp-c-2f6fc0: color-mix(in srgb, var(--tp-bright) 88.6%, #fff);
+  --tp-c-33445f: color-mix(in srgb, var(--tp-bright) 53%, var(--tp-primary));
   --tp-c-355679: color-mix(in srgb, var(--tp-bright) 76%, var(--tp-primary));
   --tp-c-35598c: color-mix(in srgb, var(--tp-bright) 91%, var(--tp-primary));
   --tp-c-3b5171: color-mix(in srgb, var(--tp-bright) 74%, var(--tp-primary));
@@ -21187,9 +21194,11 @@ a.scp-peer:focus-visible {
   --tp-c-a87905: color-mix(in srgb, var(--tp-accent) 65%, #000);
   --tp-c-aa7800: color-mix(in srgb, var(--tp-accent) 64%, #000);
   --tp-c-aabdd5: color-mix(in srgb, var(--tp-bright) 41.5%, #fff);
+  --tp-c-b8860b: color-mix(in srgb, var(--tp-accent) 73%, #000);
   --tp-c-b8871f: color-mix(in srgb, var(--tp-accent) 81%, #000);
   --tp-c-b8901f: color-mix(in srgb, var(--tp-accent) 81%, #000);
   --tp-c-b8c8dc: color-mix(in srgb, var(--tp-bright) 34.6%, #fff);
+  --tp-c-b9c8dc: color-mix(in srgb, var(--tp-bright) 34.3%, #fff);
   --tp-c-b9cbe3: color-mix(in srgb, var(--tp-bright) 32%, #fff);
   --tp-c-c3d2e6: color-mix(in srgb, var(--tp-bright) 27.8%, #fff);
   --tp-c-c5d8ee: color-mix(in srgb, var(--tp-bright) 12.3%, #fff);
@@ -21215,8 +21224,10 @@ a.scp-peer:focus-visible {
   --tp-c-d2e2f6: color-mix(in srgb, var(--tp-bright) 8.8%, #fff);
   --tp-c-d3dfed: color-mix(in srgb, var(--tp-bright) 10.1%, #fff);
   --tp-c-d3e1f1: color-mix(in srgb, var(--tp-bright) 9.5%, #fff);
+  --tp-c-d4a72c: color-mix(in srgb, var(--tp-accent) 96%, #000);
   --tp-c-d4af37: var(--tp-accent);
   --tp-c-d4e0ef: color-mix(in srgb, var(--tp-bright) 9.6%, #fff);
+  --tp-c-d5e2f4: color-mix(in srgb, var(--tp-bright) 8.7%, #fff);
   --tp-c-d6e0ed: color-mix(in srgb, var(--tp-bright) 9.6%, #fff);
   --tp-c-d6e2f3: color-mix(in srgb, var(--tp-bright) 8.7%, #fff);
   --tp-c-d7e2f1: color-mix(in srgb, var(--tp-bright) 8.8%, #fff);
@@ -21228,10 +21239,12 @@ a.scp-peer:focus-visible {
   --tp-c-dbe4ef: color-mix(in srgb, var(--tp-bright) 8.5%, #fff);
   --tp-c-dbe5f3: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
   --tp-c-dbe6f6: color-mix(in srgb, var(--tp-bright) 7.4%, #fff);
+  --tp-c-dbe7f5: color-mix(in srgb, var(--tp-bright) 7.5%, #fff);
   --tp-c-dcae19: color-mix(in srgb, var(--tp-accent) 92%, #000);
   --tp-c-dce5f2: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
   --tp-c-dde5ef: color-mix(in srgb, var(--tp-bright) 8.2%, #fff);
   --tp-c-dde6f1: color-mix(in srgb, var(--tp-bright) 7.8%, #fff);
+  --tp-c-dfe7f2: color-mix(in srgb, var(--tp-bright) 7.4%, #fff);
   --tp-c-e0e8f2: color-mix(in srgb, var(--tp-bright) 7.2%, #fff);
   --tp-c-e1e8f2: color-mix(in srgb, var(--tp-bright) 7%, #fff);
   --tp-c-e1e9f3: color-mix(in srgb, var(--tp-bright) 6.9%, #fff);
@@ -21249,6 +21262,7 @@ a.scp-peer:focus-visible {
   --tp-c-e3edf8: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
   --tp-c-e3eefb: color-mix(in srgb, var(--tp-bright) 5.2%, #fff);
   --tp-c-e4b84c: color-mix(in srgb, var(--tp-accent) 85%, #fff);
+  --tp-c-e4eaf2: color-mix(in srgb, var(--tp-bright) 6.5%, #fff);
   --tp-c-e4ebf3: color-mix(in srgb, var(--tp-bright) 6.4%, #fff);
   --tp-c-e6cc7a: color-mix(in srgb, var(--tp-accent) 65%, #fff);
   --tp-c-e6ecf5: color-mix(in srgb, var(--tp-bright) 5.7%, #fff);
@@ -21256,6 +21270,7 @@ a.scp-peer:focus-visible {
   --tp-c-e6f0fa: color-mix(in srgb, var(--tp-bright) 4.9%, #fff);
   --tp-c-e7ba38: color-mix(in srgb, var(--tp-accent) 92%, #fff);
   --tp-c-e7d39e: color-mix(in srgb, var(--tp-accent) 50%, #fff);
+  --tp-c-e7f0fb: color-mix(in srgb, var(--tp-bright) 4.6%, #fff);
   --tp-c-e8c250: color-mix(in srgb, var(--tp-accent) 81%, #fff);
   --tp-c-e8c45a: color-mix(in srgb, var(--tp-accent) 77%, #fff);
   --tp-c-e8f1fc: color-mix(in srgb, var(--tp-bright) 4.2%, #fff);
@@ -21291,7 +21306,6 @@ a.scp-peer:focus-visible {
   --tp-c-f0f5fb: color-mix(in srgb, var(--tp-bright) 3.1%, #fff);
   --tp-c-f0f6ff: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
   --tp-c-f1bf3c: color-mix(in srgb, var(--tp-accent) 86%, #fff);
-  --tp-c-f1f4f8: color-mix(in srgb, var(--tp-bright) 3.4%, #fff);
   --tp-c-f1f5f9: color-mix(in srgb, var(--tp-bright) 3.3%, #fff);
   --tp-c-f2c230: color-mix(in srgb, var(--tp-accent) 91%, #fff);
   --tp-c-f2d36b: color-mix(in srgb, var(--tp-accent) 66%, #fff);
@@ -21306,6 +21320,7 @@ a.scp-peer:focus-visible {
   --tp-c-f5f7fa: color-mix(in srgb, var(--tp-bright) 2.5%, #fff);
   --tp-c-f5f8fc: color-mix(in srgb, var(--tp-bright) 2.1%, #fff);
   --tp-c-f5f9fe: color-mix(in srgb, var(--tp-bright) 1.8%, #fff);
+  --tp-c-f5f9ff: color-mix(in srgb, var(--tp-bright) 1.6%, #fff);
   --tp-c-f6cf4c: color-mix(in srgb, var(--tp-accent) 77%, #fff);
   --tp-c-f6dd9a: color-mix(in srgb, var(--tp-accent) 45%, #fff);
   --tp-c-f6ebcf: color-mix(in srgb, var(--tp-accent) 23%, #fff);
@@ -21339,6 +21354,7 @@ a.scp-peer:focus-visible {
   --tp-c-fff4d8: color-mix(in srgb, var(--tp-accent) 16%, #fff);
   --tp-c-fff4db: color-mix(in srgb, var(--tp-accent) 15%, #fff);
   --tp-c-fff5d7: color-mix(in srgb, var(--tp-accent) 16%, #fff);
+  --tp-c-fff6dc: color-mix(in srgb, var(--tp-accent) 14%, #fff);
   --tp-c-fff6df: color-mix(in srgb, var(--tp-accent) 13%, #fff);
   --tp-c-fff7e3: color-mix(in srgb, var(--tp-accent) 12%, #fff);
   --tp-c-fff8e3: color-mix(in srgb, var(--tp-accent) 12%, #fff);
@@ -21347,7 +21363,6 @@ a.scp-peer:focus-visible {
   --tp-c-fff9ea: color-mix(in srgb, var(--tp-accent) 9%, #fff);
   --tp-c-fffaea: color-mix(in srgb, var(--tp-accent) 9%, #fff);
   --tp-c-fffaec: color-mix(in srgb, var(--tp-accent) 8%, #fff);
-  --tp-c-fffbf0: color-mix(in srgb, var(--tp-accent) 6%, #fff);
   --tp-c-fffcf3: color-mix(in srgb, var(--tp-accent) 5%, #fff);
   --tp-c-fffdf5: color-mix(in srgb, var(--tp-accent) 4%, #fff);
   --tp-c-fffdf6: color-mix(in srgb, var(--tp-accent) 4%, #fff);
@@ -21643,7 +21658,7 @@ a.scp-peer:focus-visible {
     border: 1px solid var(--sc-border);
     border-radius: 10px;
     background: #fff;
-    color: var(--sc-navy) !important;
+    color: var(--tp-ink, var(--sc-navy)) !important;
     font-size: 14.5px;
     font-weight: 700;
     text-decoration: none !important;
@@ -21918,7 +21933,7 @@ a.scp-peer:focus-visible {
 
 /* Literal gold, not the team-palette token: the caption promises gold. */
 .scp .scp-ox .scp-ow-col.is-hit .scp-ow-bar {
-  background: #d4a72c;
+  background: var(--tp-c-d4a72c, #d4a72c);
 }
 
 .scp .scp-ox .scp-ow-col:is(:hover, :focus-visible) .scp-ow-bar {
@@ -22002,7 +22017,7 @@ a.scp-peer:focus-visible {
   border-radius: 8px;
   background: var(--tp-c-0b2345, #0b2345);
   box-shadow: 0 6px 18px rgba(8, 28, 60, 0.22);
-  color: #dfe7f2;
+  color: var(--tp-c-dfe7f2, #dfe7f2);
   font-size: 12px;
   line-height: 1.35;
   white-space: normal;
@@ -22327,7 +22342,7 @@ a.scp-peer:focus-visible {
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  border: 1px solid #d6e0ed;
+  border: 1px solid var(--tp-c-d6e0ed, #d6e0ed);
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 4px 14px rgba(12, 35, 75, 0.08);
@@ -22424,7 +22439,7 @@ a.scp-peer:focus-visible {
   border: 1.5px solid var(--tp-c-d4af37, #d4af37);
   border-radius: 999px;
   background: var(--tp-c-fff6dc, #fff6dc);
-  color: var(--tp-c-0b2345, #0b2345);
+  color: var(--tp-ink, var(--tp-c-0b2345, #0b2345));
   font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
@@ -22450,7 +22465,7 @@ a.scp-peer:focus-visible {
   height: 40px;
   border-radius: 10px;
   background: var(--tp-c-eaf1fa, #eaf1fa);
-  color: var(--tp-c-0b2345, #0b2345);
+  color: var(--tp-ink, var(--tp-c-0b2345, #0b2345));
 }
 
 .scp .scp-ox .scp-ox-bgc-ficon svg {
@@ -22481,7 +22496,7 @@ a.scp-peer:focus-visible {
 }
 
 .scp .scp-ox .scp-ox-bgc-total {
-  color: var(--tp-c-0b2345, #0b2345);
+  color: var(--tp-ink, var(--tp-c-0b2345, #0b2345));
   font-size: 18px;
   font-weight: 800;
   line-height: 1.35;
@@ -22512,12 +22527,12 @@ a.scp-peer:focus-visible {
   margin: 0;
   padding: 11px 12px 11px 54px;
   border: 0;
-  border-bottom: 1px solid #dbe4ef;
+  border-bottom: 1px solid var(--tp-c-dbe4ef, #dbe4ef);
 }
 
 .scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(odd) {
   padding-left: 52px;
-  border-right: 1px solid #dbe4ef;
+  border-right: 1px solid var(--tp-c-dbe4ef, #dbe4ef);
 }
 
 .scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:nth-child(even) {
@@ -22562,7 +22577,7 @@ a.scp-peer:focus-visible {
 
 .scp .scp-ox .scp-ox-bg .scp-ox-about dd {
   margin: 3px 0 0;
-  color: var(--tp-c-0b2345, #0b2345);
+  color: var(--tp-ink, var(--tp-c-0b2345, #0b2345));
   font-size: 16px;
   font-weight: 800;
   line-height: 1.3;
@@ -22710,7 +22725,7 @@ a.scp-peer:focus-visible {
   --scp-m-ink: #14181f;
   --scp-m-muted: #5b6573;
   --scp-m-rule: #e2e6eb;
-  --scp-m-team: var(--scp-team-ink, var(--team-bright, #1d4f91));
+  --scp-m-team: var(--scp-team-ink, var(--team-bright, var(--tp-c-1d4f91, #1d4f91)));
 }
 
 @media (max-width: 560px) {
@@ -26132,7 +26147,7 @@ a.scp-peer:focus-visible {
     margin: 0 0 6px !important;
     padding: 0 !important;
     background: none !important;
-    color: #0f1722 !important;
+    color: var(--tp-ink, var(--tp-c-0f1722, #0f1722)) !important;
   }
 
   .scp.scp .scp-nwp-head :is(svg, .scp-nwp-slash) {
@@ -26140,7 +26155,7 @@ a.scp-peer:focus-visible {
   }
 
   .scp.scp .scp-nwp-h3 {
-    color: #0f1722 !important;
+    color: var(--tp-ink, var(--tp-c-0f1722, #0f1722)) !important;
     font-size: 20px !important;
     font-weight: 700 !important;
     letter-spacing: -0.2px !important;
@@ -26248,7 +26263,7 @@ a.scp-peer:focus-visible {
   .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:is(:nth-child(odd), :nth-child(even)) {
     padding: 9px 0 9px 42px;
     border-right: 0;
-    border-bottom: 1px solid #dbe4ef;
+    border-bottom: 1px solid var(--tp-c-dbe4ef, #dbe4ef);
   }
 
   .scp.scp.scp .scp-ox .scp-ox-bg .scp-ox-about > .scp-ox-bgc-fact:last-child {
@@ -26412,5 +26427,175 @@ a.scp-peer:focus-visible {
     transform: rotate(24deg) !important;
     opacity: 0.8 !important;
     pointer-events: none;
+  }
+}
+
+/* ======================================================================
+ * Upcoming Matchups: the table sits directly in the section's container,
+ * as the Stats tab's Career Stats by Season table does (mak, 2026-11-07).
+ * No body padding and no inner rounded panel: the table runs edge to edge
+ * under the title bar, with the career table's solid head (dark band,
+ * 11.5px caps, thin white separators) and its gridlines. The methodology
+ * note keeps its inset below. Phones (the stacked cards, <=650px) are
+ * unchanged.
+ * ==================================================================== */
+@container bkp (min-width: 651px) {
+  .scp.scp .scp-bkp-up > .scp-bkp-body {
+    padding: 0;
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-panel {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-table thead th {
+    height: auto;
+    padding: 9px 14px;
+    background: var(--tp-c-0b1c39, #0b1c39);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-table thead th:first-child {
+    border-left: 0;
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-table tbody :is(th, td) {
+    border-bottom: 0;
+    border-top: 1px solid var(--tp-c-e0e8f2, #e0e8f2);
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-table tbody tr:first-child :is(th, td) {
+    border-top: 0;
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-table tbody tr:last-child :is(th, td) {
+    border-bottom: 1px solid var(--tp-c-e0e8f2, #e0e8f2);
+  }
+
+  .scp.scp .scp-bkp-up .scp-bkp-note {
+    margin: 14px 16px 16px;
+  }
+}
+
+/* ======================================================================
+ * News tab rail cards (Around the {Nickname}, {Nickname} Teammates) wear
+ * the Stats tab's metric panel heading (mak, 2026-11-07: "more like"
+ * Efficiency / Usage / Style / Context): a white card with a soft shadow,
+ * a gold icon with no tile, the title in Title Case dark ink at 19px/800,
+ * no colored band and no gold slashes. Phones keep their own plain
+ * heading (the <=560px block above already strips the band).
+ * Values are the .scp-stp-card ones, written out: the --sc-premium-*
+ * tokens live on .scp-stp only.
+ * ==================================================================== */
+@media (min-width: 561px) {
+  .scp.scp .scp-nwp-rail-card {
+    border: 1px solid var(--tp-c-ccd9e9, #ccd9e9);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 60%, var(--tp-c-edf3fa, #edf3fa) 100%);
+    box-shadow:
+      0 2px 5px rgba(10, 30, 60, 0.045),
+      0 8px 20px rgba(10, 30, 60, 0.075),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .scp.scp .scp-nwp-rail-card > .scp-nwp-head {
+    gap: 12px;
+    min-height: 0;
+    padding: 18px 20px 6px;
+    background: none;
+    color: var(--tp-ink, var(--tp-c-102344, #102344));
+  }
+
+  .scp.scp .scp-nwp-rail-card > .scp-nwp-head > .scp-nwp-icon {
+    width: 25px;
+    height: 25px;
+    color: var(--tp-c-d4af37, #d4af37);
+  }
+
+  .scp.scp .scp-nwp-rail-card > .scp-nwp-head > .scp-nwp-slash {
+    display: none;
+  }
+
+  .scp.scp .scp-nwp-rail-card .scp-nwp-h3 {
+    color: var(--tp-ink, var(--tp-c-102344, #102344)) !important;
+    font-family: var(--scp-ph-sans);
+    font-size: 19px !important;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-transform: none;
+  }
+
+  .scp.scp .scp-nwp-rail-card > .scp-nwp-rail-body {
+    padding: 0 20px 12px;
+  }
+}
+
+/* ======================================================================
+ * Game Log tab section headers (Where His Weeks Finished, Game-by-Game
+ * Breakdown, Upcoming Matchups) wear the Stats tab's metric panel heading
+ * too (mak, 2026-11-07, "same for these", after the News rail cards): no
+ * team-color band and no gold slashes; a gold icon with no tile, the
+ * title in Title Case dark ink at 19px/800, the summary in muted ink on
+ * the right; the section card is the .scp-stp-card surface. Five .scp
+ * and !important to outrank the "subtler section headings" block, which
+ * paints these bars with the same weight. Phones are unchanged.
+ * ==================================================================== */
+@media (min-width: 561px) {
+  .scp.scp.scp.scp :is(.scp-glp-finishes, .scp-bkp-sec) {
+    border: 1px solid var(--tp-c-ccd9e9, #ccd9e9);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffffff 0%, var(--tp-c-f7fafd, #f7fafd) 60%, var(--tp-c-edf3fa, #edf3fa) 100%);
+    box-shadow:
+      0 2px 5px rgba(10, 30, 60, 0.045),
+      0 8px 20px rgba(10, 30, 60, 0.075),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar, .scp-bkp-sec > .scp-bkp-hero) {
+    gap: 12px !important;
+    min-height: 0 !important;
+    padding: 18px 20px 6px !important;
+    background: none !important;
+    color: var(--tp-ink, var(--tp-c-102344, #102344));
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar, .scp-bkp-sec > .scp-bkp-hero)::after,
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar, .scp-bkp-sec > .scp-bkp-hero)::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar, .scp-bkp-sec > .scp-bkp-hero) :is(h2, h3) {
+    color: var(--tp-ink, var(--tp-c-102344, #102344)) !important;
+    font-family: var(--scp-ph-sans);
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar > .scp-glp-ico, .scp-bkp-sec > .scp-bkp-hero > .scp-bkp-ico) {
+    color: var(--tp-c-d4af37, #d4af37) !important;
+    font-size: 25px !important;
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-finishes > .scp-glp-bar > .scp-glp-ico, .scp-bkp-sec > .scp-bkp-hero > .scp-bkp-ico) svg {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .scp.scp.scp.scp.scp :is(.scp-glp-bar-sum, .scp-bkp-sub) {
+    color: var(--tp-c-5b6b82, #5b6b82) !important;
+    font-size: 0.8rem !important;
+  }
+
+  .scp.scp.scp.scp.scp .scp-glp-bar-sum * {
+    color: inherit !important;
   }
 }

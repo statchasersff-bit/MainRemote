@@ -10,6 +10,7 @@
 
 import { playerPhoto, teamPosition } from "./player-cell";
 import { escapeHtml, escapeJsonLd } from "../render";
+import { railHead } from "./rail-head";
 import { headshotImg } from "../headshot-html";
 import { YT_THUMB_VARIANTS } from "../image-urls";
 import type { ScheduleGame } from "../team/schedule";
@@ -205,20 +206,26 @@ export function beforeAfter(
   return { abbr: side.abbr, name: side.name, prev: ref(list[index - 1]), next: ref(list[index + 1]) };
 }
 
-export function renderBeforeAfter(game: ScoreboardGame, sides: BeforeAfterSide[]): string {
+export function renderBeforeAfter(game: ScoreboardGame, sides: BeforeAfterSide[], premium = false): string {
   if (sides.length === 0) return "";
   const colors = pairColors(game.away.abbr, game.home.abbr);
   const link = (ref: GameRef): string =>
     ref.url ? `<a href="${escapeHtml(ref.url)}">${escapeHtml(ref.label)}</a>` : escapeHtml(ref.label);
   return (
     `<section class="sct-rb-card sct-rb-info sct-ba" aria-labelledby="sct-rb-ba">` +
-    `<h3 class="sct-rb-h3" id="sct-rb-ba">Before and after</h3>` +
+    railHead("beforeAfter", "sct-rb-ba", "Before and after", premium) +
     sides
       .map((s) => {
         const key = s.abbr === game.home.abbr ? "home" : "away";
+        // The new design puts the club's crest before its name, as the
+        // next-games tiles do.
+        const logo = premium ? game[key].logoUrl : null;
+        const crest = logo
+          ? `<img class="sct-ba-crest" src="${escapeHtml(logo)}" alt="" width="24" height="24" loading="lazy" decoding="async" />`
+          : "";
         return (
           `<div class="sct-ba-team" style="--rb-team:${colors[key].ink}">` +
-          `<h4 class="sct-ba-name">${escapeHtml(s.name)}</h4>` +
+          `<h4 class="sct-ba-name">${crest}${escapeHtml(s.name)}</h4>` +
           `<dl class="sct-rb-dl">` +
           `<dt>Previous</dt><dd>${s.prev ? link(s.prev) : `<span class="sct-ba-none">Season opener</span>`}</dd>` +
           `<dt>Next</dt><dd>${s.next ? link(s.next) : `<span class="sct-ba-none">Season over</span>`}</dd>` +
@@ -437,7 +444,7 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
     `</div>`;
   const under = diffs.filter((d) => d < 0).length;
   const over = diffs.filter((d) => d > 0).length;
-  const fantasyLink = `<a href="#fantasy">Fantasy tab</a>`;
+  const fantasyLink = `<a href="#fantasy-recap">Fantasy tab</a>`;
   const takeaway =
     under === 2
       ? `Both offenses finished under the market's expectation, which matches the low fantasy output in the ${fantasyLink}.`
@@ -640,11 +647,11 @@ function exploreGame(g: ExploreGame): string {
  * the winner's next games, which sit under that card rather than in Keep
  * exploring.
  */
-export function renderExploreCard(c: ExploreColumn | null): string {
+export function renderExploreCard(c: ExploreColumn | null, premium = false): string {
   if (!c || c.games.length === 0) return "";
   return (
     `<section class="sct-rb-card sct-rb-info sct-ex-card" aria-labelledby="sct-rb-next">` +
-    `<h3 class="sct-rb-h3" id="sct-rb-next">${escapeHtml(c.title)}</h3>` +
+    railHead("calendar", "sct-rb-next", c.title, premium) +
     `<ul class="sct-ex-list">${c.games.map(exploreGame).join("")}</ul>` +
     (c.footer ? `<p class="sct-ex-footer"><a href="${escapeHtml(c.footer.url)}">${escapeHtml(c.footer.text)}</a></p>` : "") +
     `</section>`

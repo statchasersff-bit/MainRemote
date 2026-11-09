@@ -2998,7 +2998,7 @@ describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail 
     assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-nwp-h2") && h2s[0].classList.contains("sct-up-h2"));
     // The shared premium tab header (the Coaching tab's design, mak 2026-11-05 evening), across the block.
     // Since 2026-11-06 the banner heads the tab frame (premiumTabFrame).
-    const head = neu.querySelector(":scope > .sct-tab-frame > header.sct-up-head.sct-nwp-hero");
+    const head = neu.querySelector(":scope > header.sct-up-head.sct-nwp-hero");
     assert.ok(head && head.contains(h2s[0]), "the heading sits in the shared banner");
     assert.ok(head.querySelector(".sct-up-head-icon svg") && head.querySelector("svg.sct-up-art"));
     assert.equal(head.querySelector(".sct-up-dek").textContent, "The latest Patriots reports and updates, newest first.");
@@ -3032,7 +3032,7 @@ describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail 
       assert.equal(card.querySelectorAll(".sct-nwp-more").length, 1, "one Read report link");
     }
     // The fold, at TEAM_NEWS_VISIBLE, with the rest in a disclosure.
-    const open = neu.querySelectorAll(":scope > .sct-tab-frame > .sct-tab-frame-body > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-card, :scope > .sct-tab-frame > .sct-tab-frame-body > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-grid > .sct-nwp-card").length;
+    const open = neu.querySelectorAll(":scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-card, :scope > .sct-nwp-layout > .sct-nwp-main > .sct-nwp-grid > .sct-nwp-card").length;
     assert.equal(open, Math.min(10, cards.length));
     if (cards.length > 10) {
       const more = neu.querySelector("details.sct-nwp-more");

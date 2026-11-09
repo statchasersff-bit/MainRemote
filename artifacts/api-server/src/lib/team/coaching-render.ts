@@ -41,7 +41,7 @@ import { coachingFaq } from "./coaching-faq";
 import { renderCoachingPremium } from "./coaching-premium";
 import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
 import { renderCoachingCareerPremium } from "./coaching-career-premium";
-import { renderCoachingSeasonsPremium } from "./coaching-seasons-premium";
+import { renderSeasonHistoryTable } from "./coaching-seasons-premium";
 import { renderCoachingFantasyPremium } from "./coaching-fantasy-premium";
 import { faqEntries, renderFaqBlock } from "./faq-block";
 
@@ -536,9 +536,12 @@ function changeStrip(row: TendencyRow, v: RowView, priorYear: string, season: nu
 export function changeText(row: TendencyRow, v: RowView): string {
   if (v.change.dir === "flat") return "steady";
   if (v.delta == null) return v.change.text;
-  const arrow = v.delta > 0 ? "↑" : "↓";
-  if (row.key === "pace" || row.invert) return `${arrow} ${Math.abs(v.delta).toFixed(1)}s ${v.delta > 0 ? "faster" : "slower"}`;
-  return `${arrow} ${Math.abs(v.delta).toFixed(1)}%`;
+  // A rate's change is in percentage points (60.5% to 58% is -2.5 pp, not
+  // -2.5%), and pace is written out with no arrow beside the seconds (mak's
+  // review, 2026-11-08: an up arrow next to "faster" read as ambiguous).
+  const size = Math.abs(v.delta).toFixed(1);
+  if (row.key === "pace" || row.invert) return `${size} ${size === "1.0" ? "second" : "seconds"} ${v.delta > 0 ? "faster" : "slower"}`;
+  return `${v.delta > 0 ? "+" : "−"}${size} pp`;
 }
 
 /** The brief's two groups (2026-11-05); fourth down moves to Situational Play Calling. */
@@ -587,6 +590,9 @@ export function groupSentence(
   team: NflTeam,
   priorYear: string,
   returning: boolean,
+  // false: the readings without their figures in brackets, for a takeaway
+  // that sits beside the table carrying them (mak's review, 2026-11-08).
+  numbers = true,
 ): string {
   const city = cityOf(team);
   const moves = group
@@ -594,8 +600,9 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
     .map(({ row, v }) => {
       const d = v.delta as number;
-      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
-      return MOVE_PHRASE[row.key as string]!(d > 0, pts);
+      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+      const phrase = MOVE_PHRASE[row.key as string]!(d > 0, pts);
+      return numbers ? phrase : phrase.replace(/ \([^)]*\)$/, "");
     });
   const vs = group
     .map(({ row, v }) => {
@@ -772,7 +779,7 @@ function identityParagraph(
       .slice(0, n)
       .map(({ row, v }) => {
         const d = v.delta as number;
-        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
+        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
         return MOVE_PHRASE[row.key as string]!(d > 0, pts);
       });
   const calling = pick(GROUPS[0]!.keys, 2);
@@ -2446,11 +2453,10 @@ export function renderCoachingSection(
     `<div class="sct-block sct-co">` +
     // 6. Coaching Career & Historical Performance: the premium design
     // (kept by mak, 2026-11-05) with the season-by-season table under it.
-    renderCoachingCareerPremium(coaching) +
-    // The season-by-season table IS the premium one since mak kept it
-    // (2026-11-05, "remove the old version"); career() (the original table
-    // block) is unmounted, not deleted.
-    renderCoachingSeasonsPremium(coaching) +
+    // One historical table since mak's review (2026-11-08): the season
+    // table prints inside the career section under the chart, in place of
+    // the chart's hidden table and the separate Season by Season section.
+    renderCoachingCareerPremium(coaching, renderSeasonHistoryTable(coaching)) +
     // 7. Fantasy Impact IS the premium design (mak, 2026-11-06, "remove the
     // old fantasy impact section design"); fantasyImpact() is unmounted, not
     // deleted (no coaching entry carries a rookie note today, so the premium

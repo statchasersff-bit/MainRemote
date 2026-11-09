@@ -46,8 +46,6 @@ const SIT_ICON: Record<SituationKey, string> = {
 const ICON_BARS = `<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><rect x="3" y="12" width="4.5" height="9" rx="1.2" fill="currentColor"/><rect x="9.75" y="7" width="4.5" height="14" rx="1.2" fill="currentColor"/><rect x="16.5" y="3" width="4.5" height="18" rx="1.2" fill="currentColor"/></svg>`;
 const ICON_TARGET = stroke(`<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`, 22);
 const ICON_ZAP = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg>`;
-/** The faint football on the header's right (decorative). */
-const BALL = `<svg class="sct-us-sit-ball" viewBox="0 0 120 80" width="120" height="80" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 62C26 24 70 6 108 18 94 56 50 74 12 62z"/><path d="M38 52l44-26"/><path d="M48 44l3 5M54 40l3 5M60 36l3 5M66 33l3 5M72 29l3 5"/></g></svg>`;
 
 /** Prose as plain text: no bold anywhere in the card bodies (mak, 2026-11-06), so the **marks** are dropped. */
 function prose(body: string): string {
@@ -150,14 +148,14 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
   return (
     // id="situational": the section's anchor, carried over from the retired card.
     `<section class="sct-us-prm sct-us-sit" id="situational" data-sct-premium="situational" aria-labelledby="usage-prm-situational">` +
-    `<header class="sct-us-prm-head is-sit">` +
+    // The Rushing Direction title bar (mak, 2026-11-07: "match that of the
+    // Rushing Direction header"): icon, title beside its explainer, stripes.
+    `<header class="sct-us-prm-head">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${ICON_BARS}</span>` +
-    `<span class="sct-us-sit-rule" aria-hidden="true"></span>` +
-    `<div class="sct-us-sit-titles">` +
+    `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="usage-prm-situational">Situational Usage</h3>` +
-    `<p class="sct-us-sit-sub">${e("Each running back's share of the backfield's carries + targets in the situation, with the number of opportunities it is measured on.")}</p>` +
+    `<p class="sct-us-prm-sub">${e("Each running back's share of the backfield's carries + targets in the situation, with the number of opportunities it is measured on.")}</p>` +
     `</div>` +
-    BALL +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>` +
     `<div class="sct-us-sit-body${cards ? "" : " is-solo"}">` +

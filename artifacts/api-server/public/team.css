@@ -8884,6 +8884,12 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 44px;
 }
 
+/* A lead that is only the Overview tab's header (mak, 2026-11-09: full width
+   over both columns): the header's own 16px bottom margin is the gap. */
+.sct-mu .sct-rb.sct-mu-lead.is-head {
+  margin-bottom: 0;
+}
+
 .sct-mu-lead > .sct-mu-tabpanel {
   container-type: inline-size;
 }
@@ -14759,6 +14765,11 @@ a.sct-ex-game:hover .sct-ex-line {
   box-shadow: var(--cp-shadow);
 }
 
+/* Coach card only since 2026-11-08 (the KPI cards went): it takes the row. */
+:is(.sct, #sct-table-armour) .sct-cp-overview.is-coach-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 :is(.sct, #sct-table-armour) .sct-cp-profile {
   display: flex;
   flex-direction: column;
@@ -16390,6 +16401,31 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* ---- the title bar */
 
+/* The title bar carries the section's palette itself: Coaching's Formations &
+   Personnel, Coaching Career and Season by Season reuse it outside a
+   .sct-us-prm card (2026-11-08), where the variables were undefined and the
+   bar went white. */
+:is(.sct, #sct-table-armour) .sct-us-prm-head {
+  --prm-navy: var(--tp-c-0b1634, #0b1634);
+  --prm-navy-2: var(--tp-c-16254d, #16254d);
+  --prm-navy-3: var(--tp-c-1f3161, #1f3161);
+  --prm-gold: var(--tp-c-d4af37, #d4af37);
+  --prm-gold-deep: var(--tp-c-b8901f, #b8901f);
+  --prm-gold-ink: var(--tp-c-8a6205, #8a6205);
+  --prm-cream: var(--tp-c-fbf3dd, #fbf3dd);
+  --prm-cream-2: var(--tp-c-fff9ea, #fff9ea);
+  --prm-rose: #fbf1f1;
+  --prm-rose-2: #fff7f7;
+  --prm-rose-ink: #8f3b4a;
+  --prm-rose-line: #ebcfd3;
+  --prm-line: var(--tp-c-dfe5ee, #dfe5ee);
+  --prm-line-2: #cbd5e1;
+  --prm-bg: var(--tp-c-f6f8fb, #f6f8fb);
+  --prm-ink: var(--tp-c-0b1634, #0b1634);
+  --prm-muted: #64748b;
+}
+
+
 :is(.sct, #sct-table-armour) .sct-us-prm-head {
   position: relative;
   display: flex;
@@ -17196,19 +17232,7 @@ a.sct-ex-game:hover .sct-ex-line {
   pointer-events: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-cpt-head::after {
-  content: "";
-  position: absolute;
-  top: -30%;
-  right: 26px;
-  width: 3px;
-  height: 160%;
-  background: var(--cpt-gold);
-  box-shadow: 14px 0 0 var(--tp-a-212-175-55-550, rgba(212, 175, 55, 0.55));
-  transform: rotate(22deg);
-  opacity: 0.85;
-  pointer-events: none;
-}
+/* No gold double slash at the right edge (mak, 2026-11-08: removed). */
 
 :is(.sct, #sct-table-armour) .sct-cpt-head-icon {
   position: relative;
@@ -18106,19 +18130,7 @@ a.sct-ex-game:hover .sct-ex-line {
   mask-image: linear-gradient(90deg, transparent 38%, #000 100%);
 }
 
-:is(.sct, #sct-table-armour) .sct-cp-h3::after {
-  content: "";
-  position: absolute;
-  top: -30%;
-  right: 26px;
-  width: 3px;
-  height: 160%;
-  background: var(--cp-gold);
-  box-shadow: 14px 0 0 var(--tp-a-212-175-55-550, rgba(212, 175, 55, 0.55));
-  transform: rotate(22deg);
-  opacity: 0.85;
-  pointer-events: none;
-}
+/* No gold double slash at the right edge (mak, 2026-11-08: removed). */
 
 :is(.sct, #sct-table-armour) .sct-cp-h3-icon,
 :is(.sct, #sct-table-armour) .sct-cp-banner-icon {
@@ -20526,7 +20538,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-drp-year-sum {
   margin-left: auto;
-  padding-right: 34px;
+  padding-right: 0;
   color: rgba(255, 255, 255, 0.92);
   font-size: 0.82rem;
   font-weight: 600;
@@ -21164,7 +21176,7 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-year-sum {
-    padding-right: 28px;
+    padding-right: 0;
     font-size: 0.72rem;
   }
 
@@ -22853,7 +22865,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-ctp-head-sum {
   margin-left: auto;
-  padding-right: 34px;
+  padding-right: 0;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.78rem;
   font-weight: 600;
@@ -24273,7 +24285,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-nwp-week {
   margin-left: auto;
-  margin-right: 34px;
+  margin-right: 0;
   padding: 2px 9px;
   border: 1.5px solid var(--nwp-gold);
   border-radius: 999px;
@@ -25860,7 +25872,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-shp-head-range {
   margin-left: auto;
-  padding-right: 34px;
+  padding-right: 0;
   color: rgba(255, 255, 255, 0.86);
   font-size: 0.76rem;
   font-weight: 700;
@@ -26698,19 +26710,7 @@ a.sct-ex-game:hover .sct-ex-line {
   pointer-events: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-tfo-group-head::after {
-  content: "";
-  position: absolute;
-  top: -30%;
-  right: 26px;
-  width: 3px;
-  height: 160%;
-  background: var(--tfo-gold);
-  box-shadow: 14px 0 0 var(--tp-a-212-175-55-550, rgba(212, 175, 55, 0.55));
-  transform: rotate(22deg);
-  opacity: 0.85;
-  pointer-events: none;
-}
+/* No gold double slash at the right edge (mak, 2026-11-08: removed). */
 
 :is(.sct, #sct-table-armour) .sct-tfo-group-icon {
   position: relative;
@@ -32298,214 +32298,308 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
-/* ==== Matchup preview: Betting Outlook (mak's brief, 2026-11-06) ====
-   bettingCard() in preview-premium.ts, model in preview-betting.ts. Compact
-   research layout: market table, angle rows, two team trend columns. No
-   sportsbook colors. */
-:is(.sct, #sct-table-armour) .sct-mpp-bo-sec + .sct-mpp-bo-sec {
-  margin-top: 14px;
+/* ==== Matchup preview: Betting Outlook (mak's brief 2026-11-06; compacted
+   2026-11-07) ====
+   bettingCard() in preview-premium.ts, model in preview-betting.ts. Three
+   market tiles, a Betting Form table, a Scoring Trends table, one key insight,
+   collapsed per-team game tables, one footer line. Tight rows, restrained
+   tints; every chip keeps its letter. */
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-body {
   padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-sec + .sct-mpp-bo-sec {
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--mpp-border-light);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-src {
-  margin: 2px 0 6px !important;
-  color: var(--mpp-muted);
-  font-size: 0.72rem;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-sec > .sct-mpp-ff-h {
+  margin-bottom: 4px !important;
 }
 
-:is(.sct, #sct-table-armour) table.sct-mpp-bo-mkt {
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-betting abbr[title] {
+  border: 0;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
+/* -- market tiles */
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tiles {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tile {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  padding: 7px 10px 8px;
+  border: 1px solid var(--mpp-border-light);
+  border-radius: 8px;
+  background: var(--mpp-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tl {
+  color: var(--mpp-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tile > b {
+  color: var(--mpp-navy-950);
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tile > b.is-ml {
+  display: grid;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tsub {
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tmove {
+  margin-top: 1px;
+  color: var(--mpp-navy-700);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tmove[data-dir="none"] {
+  color: var(--mpp-muted);
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-src {
+  margin: 5px 0 0 !important;
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+}
+
+/* -- form + scoring tables */
+:is(.sct, #sct-table-armour) table:is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) {
   width: 100%;
   margin: 0 !important;
   border: 0 !important;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt :is(th, td) {
-  padding: 8px 6px !important;
+:is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) :is(th, td) {
+  padding: 4px 6px !important;
   border: 0 !important;
   border-bottom: 1px solid var(--mpp-border-light) !important;
   background: none !important;
   color: #334a68;
-  font-size: 0.82rem;
-  text-align: left;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  text-align: right;
   vertical-align: middle;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt thead th {
-  color: var(--mpp-muted);
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tbody th {
-  width: 22%;
-  color: var(--mpp-navy-950);
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt b {
-  color: var(--mpp-navy-950);
-  font-size: 0.98rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tr.is-ml td:nth-child(3) {
   white-space: nowrap;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-move {
-  color: var(--mpp-muted) !important;
-  font-size: 0.76rem !important;
+:is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) :is(th, td):first-child {
+  padding-left: 0 !important;
+  text-align: left;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-angles {
-  display: grid !important;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-angles li {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--mpp-border-light);
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-angles li:last-child {
-  border-bottom: 0;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-ah {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  color: var(--mpp-navy-950);
-  font-size: 0.9rem;
+:is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) thead th {
+  color: var(--mpp-muted);
+  font-size: 0.58rem;
   font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-cat {
-  padding: 1px 7px;
-  border-radius: 4px;
-  background: #edf3fa;
-  color: var(--mpp-navy-700);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-at {
-  margin-top: 3px !important;
-  color: #334a68;
-  font-size: 0.84rem;
-  line-height: 1.5;
+:is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) tbody tr:last-child :is(th, td) {
+  border-bottom: 0 !important;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-trends {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 6px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-team {
-  padding: 10px 12px;
-  border: 1px solid var(--mpp-border-light);
-  border-top: 2px solid var(--mpp-away);
-  border-radius: 10px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-team.is-home {
-  border-top-color: var(--mpp-home);
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-tname {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px !important;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tbl tbody th {
   color: var(--mpp-navy-950);
-  font-size: 0.86rem;
   font-weight: 800;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-rec {
-  display: grid !important;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tm {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-rec li {
-  display: grid;
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-rec b {
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tbl td.is-key {
   color: var(--mpp-navy-950);
-  font-size: 1.1rem;
-  line-height: 1.15;
+  font-weight: 800;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-rec span {
-  color: var(--mpp-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-diff[data-dir="up"] {
+  color: var(--mpp-navy-700) !important;
+  font-weight: 800;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-more {
-  margin-top: 8px;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-diff[data-dir="down"] {
+  color: var(--mpp-amber) !important;
+  font-weight: 800;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-more > summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+/* -- key insight */
+:is(.sct, #sct-table-armour) .sct-mpp-bo-key {
+  padding: 7px 10px;
+  border-left: 3px solid var(--mpp-gold);
+  border-radius: 0 8px 8px 0;
+  background: var(--mpp-surface);
+  color: var(--mpp-navy-950);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-cat {
+  display: block;
   color: var(--mpp-navy-700);
-  font-size: 0.76rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* -- recent results (collapsed) */
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games + .sct-mpp-bo-games {
+  border-top: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  color: var(--mpp-navy-950);
+  font-size: 0.78rem;
   font-weight: 800;
   list-style: none;
   cursor: pointer;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-more > summary::-webkit-details-marker {
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games > summary::-webkit-details-marker {
   display: none;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-more[open] .sct-mpp-inj-chev {
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games > summary .sct-mpp-inj-chev {
+  margin-left: 4px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games[open] > summary .sct-mpp-inj-chev {
   transform: rotate(-135deg) translateY(-2px);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-bo-more > .sct-mpp-bo-rec {
-  margin-top: 8px !important;
+:is(.sct, #sct-table-armour) .sct-mpp-bo-games > table {
+  margin-bottom: 6px !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-gt :is(th, td):nth-child(2) {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #dde2e9;
+  border-radius: 4px;
+  background: #eef1f5;
+  color: #4b5a6e;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-chip[data-v="w"] {
+  border-color: #bfe5cd;
+  background: var(--mpp-green-light);
+  color: var(--mpp-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-chip[data-v="l"] {
+  border-color: #f2c6cc;
+  background: var(--mpp-red-light);
+  color: var(--mpp-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-chip[data-v="o"] {
+  border-color: #c4d8ef;
+  background: #e8f0fa;
+  color: var(--mpp-navy-700);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-chip[data-v="u"] {
+  border-color: #f0dca8;
+  background: var(--mpp-amber-light);
+  color: var(--mpp-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-by {
+  display: inline-block;
+  min-width: 34px;
+  margin-left: 4px;
+  color: var(--mpp-muted);
+  font-size: 0.64rem;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
 }
 
 :is(.sct, #sct-table-armour) .sct-mpp-bo-legal {
-  margin-top: 12px !important;
+  margin-top: 10px !important;
   color: var(--mpp-muted);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
+  line-height: 1.45;
 }
 
 @container (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-mkt :is(th, td) {
-    padding: 7px 4px !important;
-    font-size: 0.76rem;
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-tiles {
+    gap: 6px;
   }
 
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-mkt tr.is-ml td:nth-child(3) {
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-tile {
+    padding: 6px 7px 7px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-tile > b {
+    font-size: 0.98rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-tile > b.is-ml {
+    font-size: 0.8rem;
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) :is(th, td) {
+    padding: 4px 3px !important;
+    font-size: 0.7rem;
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) thead th {
+    font-size: 0.52rem;
+    letter-spacing: 0.03em;
     white-space: normal;
   }
 
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-trends {
-    gap: 8px;
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-tm img {
+    display: none;
   }
 
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-team {
-    padding: 8px 10px;
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-by {
+    display: none;
   }
-}
-
-:is(.sct, #sct-table-armour) .sct-mpp-bo-ml {
-  display: block;
-  white-space: nowrap;
 }
 
 /* Team Comparison, compact (mak, 2026-11-06): one line per metric, the rank
@@ -32606,4 +32700,3869 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-mpp-cmp-table th[scope="row"] {
     white-space: normal;
   }
+}
+
+/* ==== Matchup recap: the upcoming page's premium design (mak, 2026-11-07) ====
+   "redesign matchup recap pages ... so it has a more similar design/style as
+   upcoming matchups". The top is recap-premium.ts (the .sct-mpp hero and
+   banner, reused); everything below is the recap's own markup dressed here
+   on `.sct-mu.is-pm`: navy-bar cards with the gold slash, rail cards with a
+   gold rule, the tab bar as pills. Inner content keeps its --rb-* tokens, so
+   the dark theme still reads. */
+
+/* ---- hero: the score under each name, the quarter table on the seam */
+/* The two team blocks share four rows (name, Away/Home, score, Team hub) on
+   a subgrid, so a name that wraps to three lines ("New England Patriots")
+   moves the other side's label, score and link down with it instead of
+   leaving the two scores at different heights (mak, 2026-11-08). The quarter
+   table spans all four rows and sits centered in them, as it did before
+   (mak, 2026-11-08: "in the center of the container"). */
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final {
+  grid-template-rows: auto repeat(4, auto);
+  grid-template-areas:
+    "ap eb eb eb hp"
+    "ap ai ls hi hp"
+    "ap ai ls hi hp"
+    "ap ai ls hi hp"
+    "ap ai ls hi hp";
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-ident {
+  grid-template-rows: subgrid;
+  align-self: stretch;
+  row-gap: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-name {
+  grid-row: 1;
+  align-self: end;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-rec {
+  grid-row: 2;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-score {
+  grid-row: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-hub {
+  grid-row: 4;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-at {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-badge {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--mpp-gold-bright);
+  color: var(--mpp-navy-950);
+  letter-spacing: 0.08em;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-ident {
+  gap: 2px;
+  padding-bottom: 18px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-won {
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: var(--mpp-gold-bright);
+  color: var(--mpp-navy-950);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-score {
+  margin: 2px 0 0 !important;
+  color: #fff;
+  font-family: "Barlow", var(--sc-font);
+  font-size: clamp(2.6rem, 6cqi, 3.6rem);
+  font-weight: 800;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ident.is-loser .sct-mpp-score {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls {
+  grid-area: ls;
+  align-self: center;
+  padding-bottom: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls table.sct-mu-linescore {
+  width: auto;
+  min-width: 232px;
+  margin: 0;
+  border: 1px solid #d4e0ee;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #fff 0%, #f7faff 65%, #ecf3fc 100%);
+  box-shadow: 0 3px 8px rgba(8, 36, 75, 0.12), 0 8px 18px rgba(8, 36, 75, 0.1);
+  color: var(--mpp-text);
+  font-family: "Barlow", var(--sc-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls caption {
+  padding: 0 0 5px;
+  caption-side: top;
+  color: #d9e1ee;
+  font-family: var(--sc-font);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls :is(th, td) {
+  padding: 5px 9px;
+  border: 0;
+  background: none;
+  color: var(--mpp-text);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls thead th {
+  padding-top: 7px;
+  border-bottom: 1px solid var(--mpp-border-light);
+  color: var(--mpp-muted);
+  font-family: var(--sc-font);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls tbody tr + tr :is(th, td) {
+  border-top: 1px solid var(--mpp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls th.sct-mu-ls-team {
+  padding-left: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls tbody tr.is-away th.sct-mu-ls-team {
+  box-shadow: inset 3px 0 0 var(--mpp-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls tbody tr.is-home th.sct-mu-ls-team {
+  box-shadow: inset 3px 0 0 var(--mpp-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls .sct-mu-ls-total {
+  padding-right: 12px;
+  background: #edf3fb;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ls tr.is-winner .sct-mu-ls-total {
+  color: var(--mpp-gold-deep);
+}
+
+/* The banner's H1 is a page heading here: armor it like the cards' titles. */
+:is(.sct, #sct-table-armour) .sct-mpp.is-final .sct-mpp-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  /* Color and size not !important: on phones the tab-banner rule turns the
+     banner into a plain dark heading, and this one follows. */
+  color: #fff;
+  font-family: var(--sc-font) !important;
+  font-size: 1.6rem;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp.is-final .sct-mpp-title::before,
+:is(.sct, #sct-table-armour) .sct-mpp.is-final .sct-mpp-title::after {
+  content: none !important;
+}
+
+/* Under the top: the intro sentence, then the tab bar. */
+.sct-mu.is-pm .sct-mu-tops + .sct-mu-intro,
+.sct-mu.is-pm .sct-mu-tops + .sct-mu-gamelink {
+  margin-top: 14px;
+}
+
+.sct-mu.is-pm .sct-mu-intro {
+  max-width: none;
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+@container (max-width: 1050px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-ls table.sct-mu-linescore {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ls :is(th, td) {
+    padding: 4px 6px;
+  }
+}
+
+@container (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: auto auto repeat(4, auto) auto;
+    grid-template-areas:
+      "eb eb eb"
+      "ap at hp"
+      "ai . hi"
+      "ai . hi"
+      "ai . hi"
+      "ai . hi"
+      "ls ls ls";
+    row-gap: 8px;
+    min-height: 0;
+    padding: 0 14px 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-at {
+    display: inline-flex;
+    align-self: center;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-panel {
+    grid-row: auto;
+    justify-content: center;
+    background: none;
+    clip-path: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-panel-fill {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-crest {
+    width: 68px;
+    height: 68px;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-crest img {
+    width: 46px;
+    height: 46px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-ident {
+    justify-items: center;
+    padding: 0 0 4px;
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-match.is-final .sct-mpp-name {
+    font-size: 1.1rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ls {
+    justify-self: center;
+    width: 100%;
+    max-width: 420px;
+    padding-bottom: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ls table.sct-mu-linescore {
+    width: 100%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp.is-final .sct-mpp-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* ---- tab bar: pills, the active one navy with a gold underline */
+.sct-mu.is-pm .sct-mu-tabs {
+  margin: 16px 0 18px;
+}
+
+.sct-mu.is-pm .sct-mu-tabs-inner {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct-mu.is-pm .sct-mu-tabs-list {
+  gap: 6px;
+}
+
+.sct.sct-mu.is-pm .sct-mu-tab {
+  padding: 9px 16px;
+  border: 1px solid var(--rb-line);
+  border-radius: 999px;
+  background: var(--rb-card);
+  color: var(--rb-slate);
+  font-family: var(--sc-font, "Inter", sans-serif);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.sct.sct-mu.is-pm .sct-mu-tab:hover {
+  border-color: #9fb3cc;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct.sct-mu.is-pm .sct-mu-tab.is-active,
+.sct.sct-mu.is-pm .sct-mu-tab[aria-selected="true"] {
+  border-color: transparent;
+  background: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
+  color: #fff;
+  box-shadow: inset 0 -3px 0 #f0c13b, 0 3px 8px rgba(10, 35, 70, 0.18);
+}
+
+.sct.sct-mu.is-pm .sct-mu-score {
+  font-family: "Barlow", var(--sc-font);
+  font-weight: 800;
+}
+
+/* ---- section cards: the navy bar with the gold slash */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section:not(.sct-hl), .sct-block.sct-mu-playerstats, .sct-block.sct-mu-usage, .sct-block.sct-mu-story) {
+  position: relative;
+  min-width: 0;
+  padding: 0 18px 18px;
+  overflow: clip;
+  border: 1px solid var(--pm-border, #cbdbea);
+  border-radius: 14px;
+  background: var(--rb-card, #fff);
+  box-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+}
+
+/* The bar: the section's own title, or the head row that holds it. */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+.sct-mu.is-pm .sct-rb .sct-fp-head:first-child {
+  position: relative;
+  margin: 0 -18px 16px !important;
+  padding: 12px 58px 12px 18px !important;
+  background: var(--pm-bar, linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%));
+  color: #fff !important;
+}
+
+.sct-mu.is-pm .sct-rb .sct-fp-block:first-child > .sct-fp-usage:first-child > .sct-fp-head:first-child,
+.sct-mu.is-pm .sct-rb .sct-fp > .sct-fp-block:first-child > .sct-fp-head:first-child {
+  margin-top: 0 !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) :is(h2.sct-rb-h2, h2.sct-h2) {
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  border: 0 !important;
+  color: #fff !important;
+  font-family: var(--sc-font) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) :is(h2.sct-rb-h2, h2.sct-h2) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) :is(h2.sct-rb-h2, h2.sct-h2)::after {
+  content: none !important;
+}
+
+/* The gold slash at the bar's right end, where the old gold rule was. */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title)::after,
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child::after,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head:first-child)::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  width: 42px !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: linear-gradient(118deg, transparent 0 38%, #d4af37 38% 52%, transparent 52% 64%, #f0c13b 64% 76%, transparent 76%) !important;
+  opacity: 0.9;
+}
+
+/* The sub-line right under the bar. */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(.sct-rb-h2, .sct-h2, .sct-rb-h3) + .sct-rb-sub {
+  margin-top: 0 !important;
+  margin-bottom: 14px;
+}
+
+/* Controls in a bar (the PPR / Half / Std switch) sit on navy. */
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+/* Cards stack 16px apart, as on the upcoming page. */
+.sct-mu.is-pm .sct-rb-main > .sct-mu-tabpanel > * + *,
+.sct-mu.is-pm .sct-mu-foot > * + *,
+.sct-mu.is-pm .sct-mu-lead .sct-mu-tabpanel > * + * {
+  margin-top: 16px !important;
+}
+
+.sct-mu.is-pm .sct-rb-main > .sct-mu-tabpanel {
+  margin-top: 0;
+}
+
+/* The story card: the headline is the bar; the video keeps its own frame. */
+.sct-mu.is-pm .sct-rb .sct-mu-story > h2.sct-mu-story-title {
+  font-size: 1.2rem !important;
+  text-wrap: pretty;
+}
+
+/* ---- leader cards: the upcoming page's white cards, team-color top */
+.sct-mu.is-pm .sct-ls :is(.sct-ls-card, li) {
+  border-radius: 12px;
+}
+
+/* ---- rail: white cards, uppercase title over a gold rule */
+.sct-mu.is-pm .sct-rb-aside {
+  gap: 16px;
+}
+
+.sct-mu.is-pm .sct-rb-card.sct-rb-info {
+  padding: 12px 16px 14px;
+  border: 1px solid var(--pm-border, #cbdbea);
+  border-radius: 14px;
+  background: var(--rb-card, #fff);
+  box-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+}
+
+.sct-mu.is-pm .sct-rb-aside .sct-rb-card.sct-rb-info .sct-rb-h3 {
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0 0 10px !important;
+  padding: 0 0 7px !important;
+  border-bottom: 2px solid #d4af37 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+  font-family: var(--sc-font) !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.12em !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+}
+
+.sct-mu.is-pm .sct-rb-aside .sct-rb-card.sct-rb-info .sct-rb-h3::after {
+  content: none !important;
+}
+
+/* ---- rail cards in the team News rail's design (mak, 2026-11-08: Game
+   Info, Game Leaders, Before and After and the next games "like" Injury
+   Watch, Today's Game and Quick Links). Heads from rail-head.ts: gold icon,
+   navy Title Case title over the gold rule; rows split by hairlines, label
+   left and value right; leaders as face rows with a role pill; the next
+   games as link tiles. New design only: the previous one keeps its cards. */
+.sct-mu.is-pm .sct-rb-card.sct-rb-info {
+  padding: 12px 16px;
+}
+
+.sct-mu.is-pm .sct-rb-rhead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 4px;
+  padding: 0 0 8px;
+  border-bottom: 2px solid #d4af37;
+}
+
+.sct-mu.is-pm .sct-rb-rhead-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  color: #d4af37;
+}
+
+.sct-mu.is-pm .sct-rb-aside .sct-rb-card.sct-rb-info .sct-rb-rhead .sct-rb-h3 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 1.15rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-info .sct-rb-dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  justify-content: stretch;
+  align-items: stretch;
+  gap: 0;
+  font-size: 0.86rem;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-info .sct-rb-dl > :is(dt, dd) {
+  margin: 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--rb-line);
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-info .sct-rb-dl > :is(dt, dd):nth-child(-n + 2) {
+  border-top: 0;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-info .sct-rb-dl dt {
+  display: flex;
+  align-items: center;
+  color: var(--rb-slate);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-info .sct-rb-dl dd {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-left: 12px;
+  color: var(--tp-ink, var(--rb-ink));
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Game Leaders: face, name over the line, role pill at the right. */
+.sct-mu.is-pm .sct-rb .sct-rb-leaders .sct-rb-dl {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-auto-flow: row dense;
+  align-items: stretch;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-leaders .sct-rb-dl dt {
+  display: flex;
+  grid-column: 2;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-leaders .sct-rb-dl dd {
+  display: flex;
+  grid-column: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding-left: 0;
+  padding-right: 10px;
+  min-width: 0;
+  text-align: left;
+}
+
+.sct-mu.is-pm .sct-rb-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--tp-c-e7f0fb, #e7f0fb);
+  color: var(--tp-ink, var(--rb-ink));
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sct-mu.is-pm .sct-rb-leader-face {
+  flex: none;
+}
+
+.sct-mu.is-pm .sct-rb-leader-face .sct-ov-face {
+  display: block;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--tp-c-e7f0fb, #e7f0fb);
+}
+
+.sct-mu.is-pm .sct-rb-leader-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sct-mu.is-pm .sct-rb-leader-who {
+  min-width: 0;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-leaders .sct-rb-leader-name {
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-leaders .sct-rb-leader-line {
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+/* Before and After: crest and club name, then its two rows. */
+.sct-mu.is-pm .sct-rb .sct-ba-team {
+  width: auto;
+  margin: 10px 0 0;
+  padding: 0;
+  border-left: 0;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ba-team + .sct-ba-team {
+  padding-top: 10px;
+  border-top: 1px solid var(--rb-line);
+}
+
+.sct-mu.is-pm .sct-rb .sct-ba-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+}
+
+.sct-mu.is-pm .sct-ba-crest {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ba .sct-rb-dl dd a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ba .sct-rb-dl dd a:hover {
+  text-decoration: underline;
+}
+
+/* The next games: Quick Links tiles, one game each, with the arrow. */
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-list li {
+  border-top: 0;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-game {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 8px 30px 8px 12px;
+  border: 1px solid var(--pm-border, #cbdbea);
+  border-radius: 11px;
+  background: var(--rb-card, #fff);
+  text-align: left;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card a.sct-ex-game::after {
+  content: "›";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  color: var(--tp-ink, var(--rb-ink));
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card a.sct-ex-game:hover {
+  border-color: #d4af37;
+  box-shadow: 0 2px 6px rgba(10, 35, 70, 0.08);
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card a.sct-ex-game:hover .sct-ex-line {
+  text-decoration: none;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-line {
+  justify-content: flex-start;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-meta {
+  font-size: 0.74rem;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-footer {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-footer a {
+  color: var(--tp-ink, var(--rb-ink));
+  text-decoration: none;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-footer a:hover {
+  text-decoration: underline;
+}
+
+.sct-mu.is-pm .sct-rb .sct-ex-card .sct-ex-footer a::after {
+  content: " ›";
+}
+
+.sct-mu.is-pm .sct-rb-card.sct-rb-redraft:not(.is-strip) {
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0b2345 0%, #153e70 100%);
+}
+
+.sct-mu.is-pm .sct-rb-redraft.is-strip {
+  border-radius: 14px;
+  background: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sct-mu.is-pm {
+    --pm-border: #2a3d5c;
+  }
+}
+
+:root[data-theme="dark"] .sct-mu.is-pm {
+  --pm-border: #2a3d5c;
+}
+
+@container (max-width: 640px) {
+  .sct-mu.is-pm .sct-rb :is(.sct-rb-section:not(.sct-hl), .sct-block.sct-mu-playerstats, .sct-block.sct-mu-usage, .sct-block.sct-mu-story) {
+    padding: 0 12px 14px;
+  }
+
+  .sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title),
+  .sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+  .sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+  .sct-mu.is-pm .sct-rb .sct-fp-head:first-child {
+    margin: 0 -12px 12px !important;
+    padding: 10px 48px 10px 12px !important;
+  }
+}
+
+.sct.sct-mu.is-pm .sct-mu-tab {
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+}
+
+.sct-mu.is-pm .sct-rb.sct-mu-foot {
+  margin-top: 16px;
+}
+
+/* Fantasy Points vs Expected: its bar is the card's first row. */
+.sct-mu.is-pm .sct-rb .sct-fp > .sct-fp-block:first-child {
+  margin-top: 0;
+}
+
+/* Switches that sit in a navy bar read light on it. */
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head .sct-mu-scoring-legend {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.sct-mu.is-pm .sct-rb .sct-fp-head > .sct-fp-toggle {
+  margin: 0;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sct-mu.is-pm .sct-rb .sct-fp-head .sct-fp-seg span {
+  padding: 5px 14px;
+  color: #e6edf7;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sct-mu.is-pm .sct-rb .sct-fp-head .sct-fp-seg input:checked + span {
+  background: #f0c13b;
+  color: #071a35;
+}
+
+/* No KPI cards on the recap hero (removed 2026-11-07): the facts row sits
+   straight under the match, on a hairline. */
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-facts {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* ==== Recap Overview tab, new design (mak, 2026-11-07) ====
+   recap-overview.ts: "What happened, why the winning team won, who made the
+   difference, and how the game changed." Five navy-bar cards with a numbered
+   step over each title; team inks come from --mu-ink-away / --mu-ink-home. */
+.sct-mu .sct-ov {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.sct-mu .sct-ov-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--pm-border, #cbdbea);
+  border-radius: 14px;
+  background: var(--rb-card, #fff);
+  box-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+}
+
+.sct-mu .sct-ov-head {
+  position: relative;
+  padding: 10px 58px 12px 18px;
+  background: var(--pm-bar, linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%));
+  color: #fff;
+}
+
+.sct-mu .sct-ov-step {
+  margin: 0 0 3px !important;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-mu .sct-ov-step b {
+  color: #f0c13b;
+}
+
+.sct-mu h2.sct-ov-h {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: #fff !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-wrap: pretty;
+}
+
+.sct-mu h2.sct-ov-h::before,
+.sct-mu h2.sct-ov-h::after {
+  content: none !important;
+}
+
+.sct-mu .sct-ov-card.is-recap h2.sct-ov-h {
+  font-size: 1.35rem !important;
+}
+
+.sct-mu .sct-ov-slash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background: linear-gradient(118deg, transparent 0 38%, #d4af37 38% 52%, transparent 52% 64%, #f0c13b 64% 76%, transparent 76%);
+  opacity: 0.9;
+}
+
+.sct-mu .sct-ov-body {
+  padding: 16px 18px 18px;
+}
+
+.sct-mu .sct-ov-copy {
+  margin: 0;
+  color: var(--tp-ink, var(--rb-ink));
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.sct-mu .sct-ov-copy + .sct-ov-copy {
+  margin-top: 12px;
+}
+
+.sct-mu .sct-ov-headline strong {
+  font-weight: 800;
+}
+
+/* 02: three figures, then the sentence */
+.sct-mu .sct-ov-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct-mu .sct-ov-tiles li {
+  display: grid;
+  gap: 2px;
+  margin: 0 !important;
+  padding: 12px 14px;
+  border: 1px solid var(--pm-border, #cbdbea);
+  border-top: 3px solid #d4af37;
+  border-radius: 12px;
+  background: var(--rb-paper, #f8fbff);
+}
+
+.sct-mu .sct-ov-num {
+  color: var(--tp-ink, var(--rb-ink));
+  font-family: "Barlow", "Inter", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-mu .sct-ov-tiles span {
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 03: the play-by-play win probability and the moments */
+.sct-mu .sct-ov-legend {
+  margin: 0 0 6px !important;
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-mu svg.sct-ov-wp {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sct-mu .sct-ov-wp-mid {
+  stroke: var(--rb-slate, #8a9bb2);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.sct-mu .sct-ov-wp-q {
+  stroke: var(--rb-line, #e1e9f3);
+  stroke-width: 1;
+}
+
+.sct-mu .sct-ov-wp-area {
+  fill: var(--ov-team);
+  opacity: 0.12;
+}
+
+.sct-mu .sct-ov-wp-line {
+  fill: none;
+  stroke: var(--ov-team);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.sct-mu .sct-ov-wp-t {
+  fill: var(--rb-slate, #5b7290);
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sct-mu .sct-ov-wp-mark circle {
+  fill: #071a35;
+  stroke: #f0c13b;
+  stroke-width: 2;
+}
+
+.sct-mu .sct-ov-wp-mark text {
+  fill: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.sct-mu .sct-ov-moments {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct-mu .sct-ov-moments li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 !important;
+  padding: 10px 12px;
+  border: 1px solid var(--rb-line, #e1e9f3);
+  border-radius: 10px;
+}
+
+.sct-mu .sct-ov-mk {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #f0c13b;
+  border-radius: 50%;
+  background: #071a35;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.sct-mu .sct-ov-mt {
+  display: grid;
+  gap: 2px;
+}
+
+.sct-mu .sct-ov-mt b {
+  color: var(--tp-ink, var(--rb-ink));
+  font-size: 0.95rem;
+}
+
+.sct-mu .sct-ov-mt small {
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.76rem;
+}
+
+/* 04: four leader cards */
+.sct-mu .sct-ov-leaders {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct-mu .sct-ov-leader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 12px;
+  border: 1px solid var(--rb-line, #e1e9f3);
+  border-top: 3px solid var(--ov-away);
+  border-radius: 12px;
+}
+
+.sct-mu .sct-ov-leader.is-home {
+  border-top-color: var(--ov-home);
+}
+
+.sct-mu .sct-ov-face {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--rb-paper, #eef3f9);
+}
+
+.sct-mu .sct-ov-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sct-mu .sct-ov-leader-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sct-mu .sct-ov-leader-role {
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-mu .sct-ov-leader-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.sct-mu .sct-ov-leader-name a {
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct-mu .sct-ov-leader-line {
+  color: var(--rb-slate, #5b7290);
+  font-size: 0.8rem;
+}
+
+/* 05: the highlights section sits in the card without its own frame */
+.sct-mu .sct-ov-card.is-highlights .sct-hl {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+@container (max-width: 700px) {
+  .sct-mu .sct-ov-leaders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 460px) {
+  .sct-mu .sct-ov-tiles {
+    gap: 6px;
+  }
+
+  .sct-mu .sct-ov-tiles li {
+    padding: 10px 8px;
+  }
+
+  .sct-mu .sct-ov-num {
+    font-size: 1.5rem;
+  }
+
+  .sct-mu .sct-ov-leaders {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-mu .sct-ov-body {
+    padding: 14px 12px 16px;
+  }
+
+  .sct-mu .sct-ov-head {
+    padding: 10px 48px 12px 12px;
+  }
+}
+
+/* ==== Recap hero in team colors (mak, 2026-11-07: the forced blue was
+   "overkill ... should be using the team colors. Kinda like how the old
+   design did"). The previous scoreboard's paint: the away side and the home
+   side on a 100° diagonal with the navy between them and faint yard lines
+   (--rh-away / --rh-home are heroPairFills()). The crest panels take the
+   same fills, so each side reads as one color. */
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 64px),
+    linear-gradient(
+      100deg,
+      var(--rh-away, #1e3a5f) 0 40%,
+      transparent 40% 60%,
+      var(--rh-home, #1e3a5f) 60% 100%
+    ),
+    #0f1e33;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-bands {
+  background: linear-gradient(0deg, rgba(7, 18, 34, 0.45) 0%, transparent 38%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-topline {
+  background: linear-gradient(90deg, var(--rh-away) 0%, var(--rh-away) 40%, var(--mpp-gold-bright) 40%, var(--mpp-gold) 60%, var(--rh-home) 60%, var(--rh-home) 100%);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel.is-away .sct-mpp-panel-fill {
+  --fill: var(--rh-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel.is-home .sct-mpp-panel-fill {
+  --fill: var(--rh-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel-fill {
+  /* The fills arrive at 90% (heroPairFills); over the hero's navy, as the
+     halves are, not over the gold divider under the panel. */
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0, rgba(255, 255, 255, 0.04) 2px, transparent 2px, transparent 22px),
+    linear-gradient(var(--fill), var(--fill)),
+    #0f1e33;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-facts {
+  background: rgba(7, 18, 34, 0.35);
+}
+
+/* Phones: the sides stack, so the paint runs top-left to bottom-right. */
+@container (max-width: 760px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-hero.is-final {
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 64px),
+      linear-gradient(100deg, var(--rh-away, #1e3a5f) 0 47%, var(--rh-home, #1e3a5f) 53% 100%),
+      #0f1e33;
+  }
+}
+
+/* ==== Section title bars: one club's color under, the other's on the
+   accents (mak, 2026-11-07: "use one of the teams colors for the background
+   and the other for the icons/lines etc", as the title banner pairs navy
+   with gold; the split-color bars before it were rejected). --pm-bg is the
+   winner's scoreboard color, --pm-accent the other club's, lightened until it
+   reads (recapBarColors in recap-premium.ts); both sit on the page root. */
+.sct-mu.is-pm {
+  --pm-bar:
+    linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 88%, #000) 100%);
+}
+
+/* The accent: a rule under each bar, the slash, the step number. */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+.sct-mu.is-pm .sct-rb .sct-fp-head:first-child,
+.sct-mu.is-pm .sct-ov-head {
+  box-shadow: inset 0 -3px 0 var(--pm-accent, #f0c13b);
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title)::after,
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child::after,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head:first-child)::after {
+  background: linear-gradient(118deg, transparent 0 38%, var(--pm-accent, #d4af37) 38% 52%, transparent 52% 64%, var(--pm-accent, #f0c13b) 64% 76%, transparent 76%) !important;
+}
+
+.sct-mu.is-pm .sct-ov-slash {
+  background: linear-gradient(118deg, transparent 0 38%, var(--pm-accent, #d4af37) 38% 52%, transparent 52% 64%, var(--pm-accent, #f0c13b) 64% 76%, transparent 76%);
+}
+
+.sct-mu.is-pm .sct-ov-step b {
+  color: var(--pm-accent, #f0c13b);
+}
+
+/* The PPR switch's chosen format takes the accent too. */
+.sct-mu.is-pm .sct-rb .sct-fp-head .sct-fp-seg input:checked + span {
+  background: var(--pm-accent, #f0c13b);
+  color: var(--pm-bg, #071a35);
+}
+
+/* ==== Section bars in the Coaching page's style (mak, 2026-11-07: "use this
+   type of design for the headers seen here on the team pages", the Play
+   Calling / Formations & Tempo bars, .sct-cp-h3). A taller bar, an icon in an
+   outlined box at the left, faint stripes fading in on the right, two slanted
+   lines at the right end. In the recap's colors: --pm-bg under, --pm-accent
+   on the icon box and the lines. Icons come from addBarIcons() / BAR_ICON. */
+.sct-mu.is-pm {
+  --pm-bar:
+    linear-gradient(90deg, color-mix(in srgb, var(--pm-bg, #0b2345) 88%, #000) 30%, transparent 75%),
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.045) 0 14px, transparent 14px 38px),
+    linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) :is(h2.sct-rb-h2, h2.sct-h2) {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+.sct-mu.is-pm .sct-rb .sct-fp-head:first-child {
+  min-height: 58px;
+  padding: 9px 72px 9px 14px !important;
+  overflow: hidden;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head) :is(h2.sct-rb-h2, h2.sct-h2),
+.sct-mu.is-pm h2.sct-ov-h {
+  font-size: 1.3rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+.sct-mu.is-pm .sct-pm-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1.5px var(--pm-accent, #d4af37);
+  color: var(--pm-accent, #d4af37);
+}
+
+.sct-mu.is-pm .sct-pm-icon svg {
+  display: block;
+}
+
+/* The two slanted lines at the right end, in the accent (were the slash). */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title)::after,
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child::after,
+.sct-mu.is-pm .sct-rb :is(.sct-mu-ps-head, .sct-fp-head:first-child)::after,
+.sct-mu.is-pm .sct-ov-slash {
+  top: -30% !important;
+  right: 30px !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 3px !important;
+  height: 160% !important;
+  background: var(--pm-accent, #d4af37) !important;
+  box-shadow: 14px 0 0 color-mix(in srgb, var(--pm-accent, #d4af37) 55%, transparent);
+  transform: rotate(22deg);
+  opacity: 0.9;
+}
+
+/* No accent rule under the bar: the Coaching bars have none. */
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2, h2.sct-mu-story-title),
+.sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+.sct-mu.is-pm .sct-rb .sct-fp-head:first-child,
+.sct-mu.is-pm .sct-ov-head {
+  box-shadow: none;
+}
+
+/* The Overview's bars: icon box, then the step over the title. Since
+   2026-11-08 (mak) the same size as the other tabs' bars (Head-to-Head):
+   58px tall, 9px padding, the 1.3rem title, Game Recap's included. */
+.sct-mu.is-pm .sct-ov-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 9px 72px 9px 14px;
+  overflow: hidden;
+  background: var(--pm-bar);
+}
+
+.sct-mu.is-pm .sct-ov-head-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sct-mu.is-pm .sct-ov-card.is-recap h2.sct-ov-h {
+  font-size: 1.3rem !important;
+}
+
+@container (max-width: 460px) {
+  .sct-mu.is-pm .sct-pm-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sct-mu.is-pm .sct-ov-head,
+  .sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2),
+  .sct-mu.is-pm .sct-rb .sct-rb-section > h3.sct-rb-h3:first-child,
+  .sct-mu.is-pm .sct-rb .sct-mu-ps-head,
+  .sct-mu.is-pm .sct-rb .sct-fp-head:first-child {
+    padding-right: 56px !important;
+  }
+
+  .sct-mu.is-pm h2.sct-ov-h,
+  .sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-block) > :is(h2.sct-rb-h2, h2.sct-h2) {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Box Score tab (2026-11-08, box-score.ts): seven stacked sections, all
+ * tables. Team Stats and Advanced read NE | STAT | SEA; the player
+ * sections are one table per team, side by side where there is room.
+ * ------------------------------------------------------------------ */
+.sct-bx-sec + .sct-bx-sec {
+  margin-top: 24px;
+}
+
+/* Team Stats beside Passing, Rushing and Receiving (mak, 2026-11-08): one
+   row, the team table left and the three player sections stacked right.
+   In the narrower right column each team's table sits above the other's. */
+.sct-bx-row + .sct-bx-sec,
+.sct-bx-sec + .sct-bx-row,
+.sct-bx-col > .sct-bx-sec + .sct-bx-sec {
+  margin-top: 24px;
+}
+
+.sct-bx-row > .sct-bx-col + .sct-bx-col {
+  margin-top: 24px;
+}
+
+@media (min-width: 1000px) {
+  .sct-bx-row {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .sct-bx-row > .sct-bx-col + .sct-bx-col {
+    margin-top: 0;
+  }
+
+  .sct .sct-bx-row .sct-bx-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct .sct-bx-row .sct-bx-pair > .is-home:only-child {
+    grid-column: auto;
+  }
+}
+
+/* Side by side: the stat in the middle, each team's figure toward it. */
+:is(.sct, #sct-table-armour) table.sct-bx-team {
+  width: 100%;
+  max-width: 620px;
+  margin: 10px auto 0;
+  border: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team :is(th, td) {
+  padding: 7px 8px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--tp-ink, var(--rb-ink));
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-away,
+:is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-home {
+  width: 30%;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-away {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-home {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team th.sct-bx-stat {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team thead th {
+  border-top: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team thead th.is-away { color: var(--bx-away); }
+:is(.sct, #sct-table-armour) .sct-bx-team thead th.is-home { color: var(--bx-home); }
+
+:is(.sct, #sct-table-armour) .sct-bx-team tbody td {
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team td.is-better {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team td.is-away.is-better { color: var(--bx-away); }
+:is(.sct, #sct-table-armour) .sct-bx-team td.is-home.is-better { color: var(--bx-home); }
+
+:is(.sct, #sct-table-armour) .sct-bx-team tr.is-sub :is(th, td) {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-top-style: dotted;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-team tr.is-sub th.sct-bx-stat {
+  font-weight: 500;
+}
+
+/* Player sections: each team its own table. */
+.sct .sct-bx-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px 24px;
+  margin-top: 10px;
+}
+
+/* Two columns, away left and home right, even when one side has no table. */
+@media (min-width: 900px) {
+  .sct .sct-bx-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct .sct-bx-pair > .is-home:only-child {
+    grid-column: 2;
+  }
+}
+
+.sct .sct-bx-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.sct h3.sct-bx-h3 {
+  margin: 18px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct h3.sct-bx-h3:first-of-type {
+  margin-top: 10px !important;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bx-players {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players caption.sct-bx-cap {
+  padding: 0 0 6px;
+  caption-side: top;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-bx-chip {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  vertical-align: 1px;
+}
+
+.sct .sct-bx-chip.is-away { background: var(--bx-away); }
+.sct .sct-bx-chip.is-home { background: var(--bx-home); }
+
+:is(.sct, #sct-table-armour) .sct-bx-players :is(th, td) {
+  padding: 6px 8px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--tp-ink, var(--rb-ink));
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players thead th {
+  border-top: 2px solid var(--tp-ink, var(--rb-ink));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players thead abbr {
+  border: 0;
+  text-decoration: none;
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players .sct-bx-name {
+  text-align: left;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players thead .sct-bx-name {
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players .sct-bx-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-bx-players .sct-bx-name a:hover {
+  text-decoration: underline;
+}
+
+.sct .sct-bx-pos {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+@media (max-width: 600px) {
+  :is(.sct, #sct-table-armour) .sct-bx-team :is(th, td) {
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-away,
+  :is(.sct, #sct-table-armour) .sct-bx-team :is(th, td).is-home {
+    width: 27%;
+  }
+}
+
+/*
+ * Draft rail card heads (2027 NFL Draft Picks, Last N Drafts, Round 1 Picks)
+ * in the Contracts rail card style (mak, 2026-11-08: match "Cap Position"):
+ * white card, gold icon, navy 1.15rem title, 2px gold rule under it, inset
+ * by the card body's 16px gutter. Year heads keep their navy band.
+ */
+:is(.sct, #sct-table-armour) .sct-drp-card-head {
+  gap: 9px;
+  min-height: 0;
+  margin: 12px 16px 0;
+  padding: 0 0 8px;
+  overflow: visible;
+  border-bottom: 2px solid var(--drp-gold);
+  background: none;
+  color: var(--tp-ink, var(--drp-navy-900));
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-head .sct-drp-h3 {
+  color: var(--tp-ink, var(--drp-navy-900)) !important;
+  font-size: 1.15rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-drp-card-head .sct-drp-icon {
+  color: var(--drp-gold-bright);
+}
+
+/*
+ * News rail heads (Injury Watch, Next Game, Quick Links) in the Contracts
+ * rail card style (mak, 2026-11-08: "same for" these as the Draft rail):
+ * white card, gold icon, navy 1.15rem Title Case title, 2px gold rule under
+ * it, inset by a 16px gutter. The Week pill turns navy-on-white.
+ */
+:is(.sct, #sct-table-armour) .sct-nwp-head {
+  gap: 9px;
+  min-height: 0;
+  margin: 12px 16px 0;
+  padding: 0 0 8px;
+  overflow: visible;
+  border-bottom: 2px solid var(--nwp-gold);
+  background: none;
+  color: var(--tp-ink, var(--nwp-navy-900));
+}
+
+:is(.sct, #sct-table-armour) .sct-nwp-head .sct-nwp-h3 {
+  color: var(--tp-ink, var(--nwp-navy-900)) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-nwp-head .sct-nwp-icon {
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-nwp-head .sct-nwp-week {
+  color: var(--tp-ink, var(--nwp-navy-900));
+}
+
+/*
+ * Usage dashboard panel heads (Snap Counts & Playing Time, Target
+ * Distribution, Rushing Distribution) in the Contracts rail card style
+ * (mak, 2026-11-08): white, gold icon, navy 1.15rem title, 2px gold rule
+ * under it, inset by a 16px gutter. No navy band, no stripes, no icon tile.
+ */
+:is(.sct, #sct-table-armour) .sct-up-ph {
+  gap: 9px;
+  height: auto;
+  min-height: 0;
+  margin: 12px 16px 0;
+  padding: 0 0 8px;
+  overflow: visible;
+  border-bottom: 2px solid var(--up-gold);
+  background: none;
+  color: var(--tp-ink, var(--up-ink));
+}
+
+:is(.sct, #sct-table-armour) .sct-up-ph::before {
+  content: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-ph .sct-up-ph-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--tp-c-f0c13b, #f0c13b);
+}
+
+:is(.sct, #sct-table-armour) .sct-up-ph .sct-up-ph-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+:is(.sct, #sct-table-armour) .sct-up-ph .sct-up-ph-title {
+  color: var(--tp-ink, var(--up-ink)) !important;
+  font-size: 1.15rem !important;
+}
+
+/* ------------------------------------------------------------------
+ * Play-by-Play tab (2026-11-08, play-by-play.ts): scoring timeline,
+ * drive strips, then quarter -> drive (<details>) -> plays. Plain text
+ * for ordinary plays; small badges for scores, turnovers, sacks, big
+ * gains and penalties.
+ * ------------------------------------------------------------------ */
+.sct-pbp-sec + .sct-pbp-sec {
+  margin-top: 24px;
+}
+
+.sct .sct-pbp-team {
+  display: inline-block;
+  min-width: 34px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #5b6778;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.sct .sct-pbp-team.is-away { background: var(--pbp-away); }
+.sct .sct-pbp-team.is-home { background: var(--pbp-home); }
+
+.sct .sct-pbp-key {
+  margin: 8px 0 0 !important;
+  font-size: 12px;
+  color: var(--rb-slate);
+}
+
+.sct .sct-pbp-tally {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+/* 1. Scoring summary: a compact timeline. */
+.sct ol.sct-pbp-scores {
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct .sct-pbp-score {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: baseline;
+  margin: 0 !important;
+  padding: 9px 0 !important;
+  border-top: 1px solid var(--rb-line);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sct .sct-pbp-score::before {
+  content: none !important;
+}
+
+.sct .sct-pbp-when {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-slate);
+  white-space: nowrap;
+}
+
+.sct .sct-pbp-what a {
+  color: inherit;
+}
+
+/* 2. Drive overview: one strip per team, in game order. */
+.sct .sct-pbp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.sct p.sct-pbp-strip-name {
+  flex: 0 0 150px;
+  margin: 0 !important;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct ol.sct-pbp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct ol.sct-pbp-chips li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sct ol.sct-pbp-chips li::before {
+  content: none !important;
+}
+
+.sct a.sct-pbp-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--rb-line);
+  border-radius: 6px;
+  background: var(--rb-wash, #f3f5f8);
+  color: var(--rb-slate);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.sct-pbp-strip.is-away a.sct-pbp-chip.is-score {
+  border-color: var(--pbp-away);
+  background: var(--pbp-away);
+  color: #fff;
+}
+
+.sct-pbp-strip.is-home a.sct-pbp-chip.is-score {
+  border-color: var(--pbp-home);
+  background: var(--pbp-home);
+  color: #fff;
+}
+
+.sct a.sct-pbp-chip.is-turnover {
+  border-color: #c0392b;
+  background: #fdecea;
+  color: #a5281b;
+}
+
+.sct a.sct-pbp-chip:hover,
+.sct a.sct-pbp-chip:focus-visible {
+  outline: 2px solid var(--tp-ink, var(--rb-ink));
+  outline-offset: 1px;
+}
+
+/* 3. Full play-by-play. Dense game log (mak, 2026-11-09): one line per
+ * drive in aligned columns under one header row, slim quarter bands, the
+ * plays behind each drive's toggle. Phones fold each drive to two lines. */
+.sct .sct-pbp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 8px 0 6px;
+}
+
+.sct .sct-pbp-controls[hidden] {
+  display: none;
+}
+
+.sct .sct-pbp-filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--rb-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sct button.sct-pbp-btn,
+.sct button.sct-pbp-filter {
+  margin: 0;
+  padding: 4px 11px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: var(--tp-ink, var(--rb-ink));
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.sct button.sct-pbp-filter + button.sct-pbp-filter {
+  border-left: 1px solid var(--rb-line);
+}
+
+.sct button.sct-pbp-filter.is-on {
+  background: var(--rb-navy, #0b2447);
+  color: #fff;
+}
+
+.sct button.sct-pbp-btn {
+  border: 1px solid var(--rb-line);
+  border-radius: 6px;
+}
+
+.sct button.sct-pbp-btn:hover,
+.sct button.sct-pbp-filter:not(.is-on):hover {
+  background: var(--rb-wash, #f3f5f8);
+}
+
+.sct button.sct-pbp-btn:focus-visible,
+.sct button.sct-pbp-filter:focus-visible,
+.sct details.sct-pbp-drive > summary:focus-visible {
+  outline: 2px solid var(--tp-ink, var(--rb-ink));
+  outline-offset: -2px;
+}
+
+.sct .sct-pbp-q[hidden],
+.sct details.sct-pbp-drive[hidden],
+.sct .sct-pbp-play[hidden] {
+  display: none !important;
+}
+
+/* The shared column track: header row and every drive line. */
+.sct .sct-pbp-cols,
+.sct .sct-pbp-drow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 46px 68px 40px 52px 44px 50px 12px;
+  column-gap: 10px;
+  align-items: center;
+  line-height: 1.35;
+}
+
+.sct .sct-pbp-cols {
+  padding: 0 8px 4px;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct .sct-pbp-cols span:nth-child(n + 3) {
+  text-align: right;
+}
+
+.sct .sct-pbp-cols span:nth-child(4) {
+  text-align: left;
+}
+
+.sct h3.sct-pbp-qh {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 10px 0 0 !important;
+  padding: 4px 8px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--rb-line) !important;
+  background: var(--rb-wash, #f3f5f8) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  line-height: 1.4 !important;
+  text-transform: uppercase;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct h3.sct-pbp-qh span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-slate);
+}
+
+.sct details.sct-pbp-drive {
+  margin: 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct details.sct-pbp-drive > summary {
+  display: block;
+  padding: 5px 8px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.sct details.sct-pbp-drive > summary:hover {
+  background: var(--rb-wash, #f3f5f8);
+}
+
+.sct details.sct-pbp-drive > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sct .sct-pbp-drow::after {
+  content: "+";
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--rb-slate);
+  text-align: center;
+}
+
+.sct details.sct-pbp-drive[open] .sct-pbp-drow::after {
+  content: "−";
+}
+
+.sct .sct-pbp-drive-team .sct-pbp-team {
+  min-width: 38px;
+  font-size: 10px;
+}
+
+.sct b.sct-pbp-dres {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct details.sct-pbp-drive.is-score b.sct-pbp-dres {
+  font-weight: 800;
+}
+
+.sct details.sct-pbp-drive.is-turnover b.sct-pbp-dres {
+  color: #a5281b;
+}
+
+.sct .sct-pbp-dmeta {
+  display: contents;
+}
+
+.sct .sct-pbp-dc {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  color: var(--rb-slate);
+}
+
+.sct .sct-pbp-dc.is-from {
+  text-align: left;
+}
+
+.sct .sct-pbp-dc i {
+  display: none;
+  font-style: normal;
+}
+
+.sct .sct-pbp-drow .sct-pbp-tally {
+  font-size: 13px;
+  text-align: right;
+}
+
+.sct ol.sct-pbp-plays {
+  margin: 0 0 8px 8px !important;
+  padding: 0 0 0 12px !important;
+  border-left: 2px solid var(--rb-line);
+  list-style: none !important;
+}
+
+/* Inside an open drive: situation | play | score, one row per play. */
+.sct .sct-pbp-play {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: baseline;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  border-top: 1px dotted var(--rb-line);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-pbp-play::before {
+  content: none !important;
+}
+
+.sct .sct-pbp-play:first-child {
+  border-top: 0;
+}
+
+.sct .sct-pbp-sit {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-slate);
+}
+
+.sct .sct-pbp-play > .sct-pbp-tally {
+  grid-column: 3;
+}
+
+.sct .sct-pbp-play.is-quiet .sct-pbp-text {
+  color: var(--rb-slate);
+  font-style: italic;
+}
+
+.sct .sct-pbp-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+  vertical-align: 1px;
+  text-transform: uppercase;
+}
+
+.sct .sct-pbp-badge.is-score { background: #e6f4ea; color: #1e6b35; }
+.sct .sct-pbp-badge.is-turnover { background: #fdecea; color: #a5281b; }
+.sct .sct-pbp-badge.is-sack { background: #fff4e0; color: #8a5300; }
+.sct .sct-pbp-badge.is-big { background: #e8effa; color: #1d4b8f; }
+.sct .sct-pbp-badge.is-penalty { background: #f1f1f1; color: #555; }
+
+@media (max-width: 720px) {
+  .sct .sct-pbp-play {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sct .sct-pbp-sit {
+    grid-column: 1 / -1;
+  }
+
+  .sct .sct-pbp-play > .sct-pbp-tally {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .sct .sct-pbp-score {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sct .sct-pbp-when {
+    grid-column: 1 / -1;
+  }
+
+  .sct p.sct-pbp-strip-name {
+    flex-basis: 100%;
+  }
+
+  /* Phones: no header row; each drive is two lines, the figures carry units. */
+  .sct .sct-pbp-cols {
+    display: none;
+  }
+
+  .sct .sct-pbp-drow {
+    grid-template-columns: 38px minmax(0, 1fr) auto 12px;
+    column-gap: 8px;
+    row-gap: 0;
+  }
+
+  .sct .sct-pbp-drow .sct-pbp-tally {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .sct .sct-pbp-drow::after {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .sct .sct-pbp-dmeta {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 2 / -1;
+    grid-row: 2;
+    gap: 0 6px;
+  }
+
+  .sct .sct-pbp-dc {
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .sct .sct-pbp-dc + .sct-pbp-dc::before {
+    content: "·";
+    margin-right: 6px;
+  }
+
+  .sct .sct-pbp-dc i {
+    display: inline;
+  }
+}
+
+/* =========================================================================
+   Out of the outer container (mak, 2026-11-08, after the Depth Chart tab):
+   Situational Usage, Notable Usage Changes, Advanced & Fantasy Analysis
+   (Usage) and Situational Play Calling, Target & Backfield Tendencies
+   (Coaching) drop their framed card. The navy title bar stays as its own
+   rounded banner; the body sits on the page under it, its inner cards kept.
+   ========================================================================= */
+:is(.sct, #sct-table-armour) :is(.sct-us-prm.sct-us-sit, .sct-us-prm.sct-us-chg, .sct-us-prm.sct-us-fantasy, .sct-cpt-section.is-situational, .sct-cpt-section.is-targets) {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-us-sit, .sct-us-chg, .sct-us-fantasy) > .sct-us-prm-head,
+:is(.sct, #sct-table-armour) .sct-cpt-section:is(.is-situational, .is-targets) > .sct-cpt-head {
+  margin: 0 0 14px;
+  border-bottom: 0;
+  border-radius: 16px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-us-sit, .sct-us-chg, .sct-us-fantasy) > :not(.sct-us-prm-head),
+:is(.sct, #sct-table-armour) .sct-cpt-section:is(.is-situational, .is-targets) > .sct-cpt-body {
+  padding-right: 0;
+  padding-left: 0;
+  background: none;
+}
+
+/* =========================================================================
+   Coaching tab, de-duplicated (mak's review, 2026-11-08)
+   ========================================================================= */
+
+/* Formations & Tempo's one takeaway: the identity in words, no figures. */
+:is(.sct, #sct-table-armour) .sct-cp-identity {
+  margin: 12px 0 0;
+  padding: 11px 14px;
+  border-left: 3px solid var(--tp-c-d4af37, #d4af37);
+  border-radius: 0 10px 10px 0;
+  background: var(--tp-c-fbf7ea, #fbf7ea);
+  color: var(--tp-ink, #0b1634);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-identity-k {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--tp-c-8a6205, #8a6205);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Fourth-down decisions: one metric now, full width of its card. */
+:is(.sct, #sct-table-armour) .sct-cpt-metrics.is-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The one season table, inside the career section under the chart. */
+:is(.sct, #sct-table-armour) .sct-cc-chartbody > .sct-cs {
+  margin: 22px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-title {
+  margin: 0 0 10px !important;
+  color: var(--tp-ink, #0b1634);
+  font-size: 1.05rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-all {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-all:not(:checked) ~ .sct-cs-scroll .sct-cs-older,
+:is(.sct, #sct-table-armour) .sct-cs-all:not(:checked) ~ .sct-cs-more .sct-cs-more-hide,
+:is(.sct, #sct-table-armour) .sct-cs-all:checked ~ .sct-cs-more .sct-cs-more-show {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 10px 0 0;
+  padding: 0 14px;
+  border: 1px solid var(--tp-c-d3e0ef, #d3e0ef);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tp-ink, #0b1634);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-more:hover {
+  border-color: var(--tp-c-d4af37, #d4af37);
+}
+
+:is(.sct, #sct-table-armour) .sct-cs-all:focus-visible ~ .sct-cs-more {
+  outline: 2px solid var(--tp-c-d4af37, #d4af37);
+  outline-offset: 2px;
+}
+
+/* Fantasy Impact: each signal card carries its meaning, not its figures. */
+:is(.sct, #sct-table-armour) .sct-cf-trend-b {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--tp-c-3f556f, #3f556f);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+/* The Fantasy Bottom Line as one short synthesis. */
+:is(.sct, #sct-table-armour) .sct-cf-bl-grid.is-synth {
+  grid-template-columns: minmax(150px, 18%) minmax(0, 1fr);
+}
+
+:is(.sct, #sct-table-armour) .sct-cf-bl-synth {
+  margin: 0;
+  color: var(--tp-ink, #0b1634);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  :is(.sct, #sct-table-armour) .sct-cf-bl-grid.is-synth {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Outlook's Core Fantasy Pieces and Secondary Options, the same way (mak, 2026-11-08). */
+:is(.sct, #sct-table-armour) .sct-tfo-group {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group > .sct-tfo-group-head {
+  margin: 0 0 14px;
+  border-radius: 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-tfo-group > .sct-tfo-group-body {
+  padding-right: 0;
+  padding-left: 0;
+  background: none;
+}
+
+/* ------------------------------------------------------------------
+ * Fantasy tab (2026-11-08, fantasy-tab.ts): standouts, fantasy box score,
+ * usage by team, actual vs expected, one Redraft Command CTA. Every
+ * figure follows the page's scoring switch (data-pv-fmt regions).
+ * ------------------------------------------------------------------ */
+.sct .sct-fz + .sct-fz {
+  margin-top: 24px;
+}
+
+.sct .sct-fz-head .sct-mu-scoring {
+  margin: 0;
+}
+
+.sct p.sct-fz-sub {
+  margin: -6px 0 14px !important;
+  font-size: 14px;
+  color: var(--rb-slate);
+}
+
+/* 01 standouts */
+.sct .sct-fz-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 820px) {
+  .sct .sct-fz-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.sct .sct-fz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--fz-team, var(--rb-ink));
+  border-radius: 10px;
+  background: var(--rb-card, #fff);
+}
+
+.sct .sct-fz-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sct .sct-fz-card-face {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--sc-surface-soft, #eef2f7);
+}
+
+.sct .sct-fz-card-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sct .sct-fz-card-who {
+  min-width: 0;
+}
+
+.sct .sct-fz-card-who > p,
+.sct .sct-fz-card-who > h3 {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sct p.sct-fz-card-tag {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fz-team, var(--rb-slate));
+}
+
+.sct h3.sct-fz-card-name {
+  border: 0 !important;
+  background: none !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct p.sct-fz-card-meta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+.sct p.sct-fz-card-pts {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 !important;
+}
+
+.sct .sct-fz-card-num {
+  font-family: "Barlow Condensed", "Archivo", system-ui, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-fz-card-unit {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rb-slate);
+}
+
+.sct p.sct-fz-card-text {
+  margin: 0 !important;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+/* Tables (box score, usage, full xFP) */
+.sct .sct-fz-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-fz-table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table :is(th, td) {
+  padding: 7px 10px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--tp-ink, var(--rb-ink));
+  text-align: right;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table thead th {
+  border-top: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table thead th:first-child,
+:is(.sct, #sct-table-armour) .sct-fz-table th.sct-fz-player,
+:is(.sct, #sct-table-armour) .sct-fz-table .sct-fz-prod {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table abbr {
+  text-decoration: none;
+  border: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-pts {
+  font-weight: 800;
+  background: rgba(255, 163, 0, 0.1);
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-fin {
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-prod {
+  font-size: 13px;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-diff[data-adv="pos"] { color: #13804b; font-weight: 800; }
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-diff[data-adv="neg"] { color: #c0392b; font-weight: 800; }
+
+.sct-fz-list[data-fz="js"]:not(.is-open) tr.is-extra {
+  display: none;
+}
+
+.sct .sct-fz-more {
+  margin-top: 0;
+}
+
+/* 03 usage: two team tables */
+.sct .sct-fz-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px 24px;
+}
+
+@media (min-width: 900px) {
+  .sct .sct-fz-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sct h3.sct-fz-team-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px !important;
+  padding: 0 0 6px !important;
+  border: 0 !important;
+  border-bottom: 3px solid var(--fz-team) !important;
+  background: none !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct .sct-fz-crest {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-u {
+  min-width: 74px;
+}
+
+.sct .sct-fz-u-num {
+  display: block;
+  font-weight: 700;
+}
+
+.sct .sct-fz-u-bar {
+  display: block;
+  height: 4px;
+  margin: 3px 0 0 auto;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(to left, var(--fz-team) var(--w), var(--rb-line) var(--w));
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table td.sct-fz-u.is-none {
+  color: var(--rb-slate);
+}
+
+.sct p.sct-fz-note {
+  margin: 12px 0 0 !important;
+}
+
+/* 04 actual vs expected */
+.sct p.sct-fz-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0 0 10px !important;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--rb-slate);
+}
+
+.sct .sct-fz-key {
+  display: inline-block;
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  margin-left: 6px;
+}
+
+.sct .sct-fz-key:first-child {
+  margin-left: 0;
+}
+
+.sct .sct-fz-key.is-actual { background: var(--tp-ink, #0b2545); }
+.sct .sct-fz-key.is-expected { background: #b9c3d0; }
+
+.sct ol.sct-fz-xlist {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct li.sct-fz-x {
+  margin: 0 !important;
+  padding: 12px 0 !important;
+  border-top: 1px solid var(--rb-line);
+  list-style: none !important;
+}
+
+.sct li.sct-fz-x:first-child {
+  border-top: 0;
+  padding-top: 4px !important;
+}
+
+.sct .sct-fz-x-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sct .sct-fz-x-diff {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--rb-slate);
+}
+
+.sct .sct-fz-x-diff[data-adv="pos"] { color: #13804b; }
+.sct .sct-fz-x-diff[data-adv="neg"] { color: #c0392b; }
+
+.sct .sct-fz-x-verdict {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sct .sct-fz-x-bars {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0 0;
+}
+
+.sct .sct-fz-bar {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-slate);
+}
+
+.sct .sct-fz-bar-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--sc-surface-soft, #eef2f7);
+}
+
+.sct .sct-fz-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.25s ease;
+}
+
+.sct .sct-fz-bar.is-actual .sct-fz-bar-fill { background: var(--fz-team, var(--tp-ink, #0b2545)); }
+.sct .sct-fz-bar.is-expected .sct-fz-bar-fill { background: #b9c3d0; }
+
+.sct .sct-fz-bar-num {
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct p.sct-fz-x-why {
+  margin: 8px 0 0 !important;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--rb-slate);
+}
+
+.sct details.sct-fz-all {
+  margin: 12px 0 0;
+  border: 1px solid var(--rb-line);
+  border-radius: 8px;
+}
+
+.sct details.sct-fz-all > summary {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct details.sct-fz-all[open] > summary {
+  border-bottom: 1px solid var(--rb-line);
+}
+
+/* 05 the one CTA */
+.sct p.sct-fz-cta-eyebrow {
+  margin: 0 0 2px !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rb-gold, #ffa300);
+}
+
+/* Phones: player, points and finish on the first line, production under. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box thead th.sct-fz-prod {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box thead tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px 74px;
+  }
+
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px 74px;
+    grid-template-areas: "who pts fin" "prod prod prod";
+    border-top: 1px solid var(--rb-line);
+  }
+
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody :is(th, td) {
+    border-top: 0;
+  }
+
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody th { grid-area: who; }
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody td.sct-fz-pts { grid-area: pts; }
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody td.sct-fz-fin { grid-area: fin; }
+
+  :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody td.sct-fz-prod {
+    grid-area: prod;
+    padding-top: 0;
+    padding-left: 52px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-fz-list[data-fz="js"]:not(.is-open) table.sct-fz-table.is-box tbody tr.is-extra {
+    display: none;
+  }
+
+  .sct .sct-fz-long {
+    display: none;
+  }
+
+  .sct .sct-fz-bar {
+    grid-template-columns: 62px minmax(0, 1fr) 40px;
+    gap: 8px;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Betting tab, frozen market (2026-11-08, betting-market.ts): results
+ * cards, actual vs market-implied bars, open vs close, trends. Printed
+ * under the existing result panel and trends table.
+ * ------------------------------------------------------------------ */
+.sct .sct-bm-block {
+  margin-top: 24px;
+}
+
+.sct .sct-bm + .sct-bm {
+  margin-top: 24px;
+}
+
+.sct p.sct-bm-sub {
+  margin: -6px 0 14px !important;
+  font-size: 14px;
+  color: var(--rb-slate);
+}
+
+.sct .sct-bm-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .sct .sct-bm-cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+.sct .sct-bm-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--rb-line);
+  border-left: 4px solid var(--rb-slate);
+  border-radius: 10px;
+  background: var(--rb-card, #fff);
+}
+
+.sct .sct-bm-card.is-cover,
+.sct .sct-bm-card.is-ml { border-left-color: #13804b; }
+.sct .sct-bm-card.is-over { border-left-color: #c46a00; }
+.sct .sct-bm-card.is-under { border-left-color: #1d5fa8; }
+.sct .sct-bm-card.is-push { border-left-color: #8a94a3; }
+
+.sct .sct-bm-card > p {
+  margin: 0 !important;
+}
+
+.sct p.sct-bm-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct p.sct-bm-big {
+  margin-top: 4px !important;
+  font-family: "Barlow Condensed", "Archivo", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct p.sct-bm-line {
+  margin-top: 4px !important;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct p.sct-bm-line span {
+  font-weight: 500;
+  color: var(--rb-slate);
+}
+
+.sct p.sct-bm-text {
+  margin-top: 8px !important;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--rb-slate);
+}
+
+.sct p.sct-bm-note {
+  margin: 12px 0 0 !important;
+}
+
+/* 02 actual vs implied */
+.sct ul.sct-bm-implist {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct li.sct-bm-imp {
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  border-top: 1px solid var(--rb-line);
+  list-style: none !important;
+}
+
+.sct li.sct-bm-imp:first-child {
+  border-top: 0;
+  padding-top: 0 !important;
+}
+
+.sct .sct-bm-imp-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-bm-imp-diff { font-variant-numeric: tabular-nums; }
+.sct .sct-bm-imp-diff.is-pos { color: #13804b; }
+.sct .sct-bm-imp-diff.is-neg { color: #c0392b; }
+
+.sct .sct-bm-bars {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.sct .sct-bm-bar {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-slate);
+}
+
+.sct .sct-bm-bar > b {
+  font-size: 14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-bm-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--sc-surface-soft, #eef2f7);
+}
+
+.sct .sct-bm-fill {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+}
+
+.sct .sct-bm-bar.is-actual .sct-bm-fill { background: var(--bm-team, #0b2545); }
+.sct .sct-bm-bar.is-implied .sct-bm-fill { background: #b9c3d0; }
+
+.sct p.sct-bm-summary {
+  margin: 12px 0 0 !important;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+/* 03 + game tables */
+.sct .sct-bm-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bm-table {
+  width: 100%;
+  max-width: 560px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bm-table.is-games {
+  max-width: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table :is(th, td) {
+  padding: 8px 10px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--tp-ink, var(--rb-ink));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table thead th {
+  border-top: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table tbody th {
+  font-weight: 800;
+}
+
+.sct ul.sct-bm-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sct ul.sct-bm-moves li {
+  margin: 0 !important;
+  padding: 4px 10px !important;
+  border-radius: 999px;
+  background: var(--sc-surface-soft, #eef2f7);
+  font-size: 13px;
+  font-weight: 700;
+  list-style: none !important;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+/* 04 trends */
+.sct .sct-bm-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px 24px;
+}
+
+@media (min-width: 900px) {
+  .sct .sct-bm-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sct .sct-bm-team {
+  min-width: 0;
+}
+
+.sct h3.sct-bm-team-name {
+  margin: 0 0 10px !important;
+  padding: 0 0 6px !important;
+  border: 0 !important;
+  border-bottom: 3px solid var(--bm-team) !important;
+  background: none !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct .sct-bm-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.sct .sct-bm-tiles > div {
+  padding: 8px 10px;
+  border: 1px solid var(--rb-line);
+  border-radius: 8px;
+}
+
+.sct .sct-bm-tiles span {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct .sct-bm-tiles b {
+  display: block;
+  margin-top: 2px;
+  font-family: "Barlow Condensed", "Archivo", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct .sct-bm-chiprow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sct .sct-bm-chiplabel {
+  flex: 0 0 120px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct .sct-bm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sct .sct-bm-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: #8a94a3;
+}
+
+.sct .sct-bm-chip.is-w { background: #13804b; }
+.sct .sct-bm-chip.is-l { background: #c0392b; }
+.sct .sct-bm-chip.is-o { background: #c46a00; }
+.sct .sct-bm-chip.is-u { background: #1d5fa8; }
+
+.sct details.sct-bm-games {
+  margin-top: 12px;
+  border: 1px solid var(--rb-line);
+  border-radius: 8px;
+}
+
+.sct details.sct-bm-games > summary {
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--tp-ink, var(--rb-ink));
+}
+
+.sct details.sct-bm-games[open] > summary {
+  border-bottom: 1px solid var(--rb-line);
+}
+
+@media (max-width: 560px) {
+  .sct .sct-bm-bar {
+    grid-template-columns: 92px minmax(0, 1fr) 40px;
+    gap: 8px;
+  }
+
+  .sct .sct-bm-chiplabel {
+    flex-basis: 92px;
+  }
+}
+
+/* Game leaders in the sidebar under Game info (2026-11-08, recap-overview.ts
+   renderRecapOverviewParts): Game info's card, label and value rows; the
+   value is the name over a muted stat line. */
+.sct-rb .sct-rb-leaders .sct-rb-leader-name {
+  display: block;
+  font-weight: 700;
+}
+
+.sct-rb .sct-rb-leaders .sct-rb-leader-line {
+  display: block;
+  margin-top: 1px;
+  font-size: 13px;
+  color: var(--rb-slate);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================================
+   Coaching Career & Historical Performance, compact (mak's review,
+   2026-11-08): one card with rules between its parts instead of boxes in
+   boxes; slim timeline rows; the chart shorter, with a stat stack beside it
+   on wide columns; a denser season table. Append-only: it outranks the
+   .sct-cc-* / .sct-cs-* blocks above by order.
+   ========================================================================= */
+
+/* ---- header: shorter bar */
+:is(.sct, #sct-table-armour) .sct-cc .sct-us-prm-head {
+  min-height: 56px;
+  padding: 9px 18px;
+  gap: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc .sct-us-prm-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc .sct-us-prm-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- one body, three parts divided by rules */
+:is(.sct, #sct-table-armour) .sct-cc-body {
+  padding: 12px 16px 14px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-hist,
+:is(.sct, #sct-table-armour) .sct-cc-body > .sct-cs {
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--tp-c-e2eaf4, #e2eaf4);
+}
+
+/* ---- timeline: slim rows on a thin rail, no row boxes */
+:is(.sct, #sct-table-armour) .sct-cc-stops {
+  gap: 0;
+  padding-left: 22px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop {
+  grid-template-columns: 70px 92px minmax(0, 1fr) auto;
+  gap: 12px;
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--tp-c-eef2f7, #eef2f7);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop::before {
+  top: 0;
+  bottom: 0;
+  left: -15px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--tp-c-dbe4ef, #dbe4ef);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-node {
+  left: -15px;
+  width: 9px;
+  height: 9px;
+  border-width: 1.5px;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current {
+  border-color: var(--tp-c-eef2f7, #eef2f7);
+  border-radius: 8px;
+  background: var(--tp-c-fbf6e6, #fbf6e6);
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current .sct-cc-node {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  box-shadow: 0 0 0 2px var(--cp-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-years {
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 0;
+  background: none !important;
+  font-size: 0.98rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-club {
+  gap: 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-crest {
+  width: 22px;
+  height: 22px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-code {
+  font-size: 0.92rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-role {
+  color: var(--tp-c-3f556f, #3f556f);
+  font-size: 0.86rem;
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-stop.is-current .sct-cc-role {
+  color: var(--tp-ink, var(--cp-ink));
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-now {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--tp-c-f3e3ad, #f3e3ad);
+  color: var(--tp-c-8a6205, #8a6205);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---- chart + stat stack */
+:is(.sct, #sct-table-armour) .sct-cc-hist.has-sum {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(190px, 3fr);
+  gap: 18px;
+  align-items: start;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-tick,
+:is(.sct, #sct-table-armour) .sct-cc-year {
+  fill: #6b7d94;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-year.is-current {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-avg {
+  stroke: var(--tp-c-c9d6e6, #c9d6e6);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-seg {
+  stroke-width: 3;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill rect {
+  fill: var(--tp-c-f1f5fa, #f1f5fa);
+  stroke: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill text {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill.is-avg rect {
+  fill: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-pill.is-avg text {
+  fill: #8796aa;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout rect {
+  filter: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout .v {
+  font-size: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-callout .k {
+  font-size: 9.5px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin: 6px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-legend {
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-legend li {
+  gap: 5px;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw {
+  width: 14px;
+  height: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw.is-hc {
+  border-top-width: 3px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sw.is-hollow {
+  width: 8px;
+  height: 8px;
+  border-width: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-note {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #6b7a90;
+  font-size: 0.72rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-sum {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 2px 0 0 16px;
+  border-left: 1px solid var(--tp-c-e2eaf4, #e2eaf4);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--tp-c-eef2f7, #eef2f7);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv dt {
+  margin: 0;
+  color: #50657f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv dd {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv b {
+  --sc-font: var(--cp-display);
+  color: var(--tp-ink, var(--cp-navy-deep));
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv.is-peak b {
+  color: var(--cp-gold-text);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-kv dd span {
+  color: #6b7a90;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+/* ---- season table: denser */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-title {
+  margin: 0 0 8px !important;
+  font-size: 0.98rem !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-scroll {
+  border-color: var(--tp-c-e2eaf4, #e2eaf4);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-table {
+  min-width: 860px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-table :where(th, td) {
+  padding: 3px 8px;
+  font-size: 0.84rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-table thead th {
+  height: auto;
+  padding: 6px 8px;
+  background: var(--tp-c-f3f6fa, #f3f6fa);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-th-sub {
+  margin-top: 1px;
+  color: #7a8aa0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-row {
+  height: 28px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-year {
+  font-size: 0.86rem;
+}
+
+/* Secondary notes under the year: small, grey, inline, no pill. */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-win,
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-live {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: #7a8aa0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-crest {
+  width: 18px;
+  height: 18px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-td.is-team {
+  padding-left: 12px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-ppg {
+  font-size: 0.9rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-rank {
+  padding: 1px 8px;
+  font-size: 0.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-rank.is-window {
+  padding: 0;
+  background: none;
+  color: #6b7a90;
+  font-weight: 600;
+}
+
+/* Share, delta and bar on one line. */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-td.is-share {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-share {
+  display: inline-flex;
+  min-width: 58px;
+  margin: 0 6px 0 0;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-pct {
+  font-size: 0.84rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-delta {
+  font-size: 0.68rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-track {
+  display: inline-block;
+  width: 52px;
+  height: 5px;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-lb {
+  font-size: 0.86rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-gap td {
+  height: 24px;
+  padding: 2px 12px;
+  font-size: 0.66rem;
+}
+
+/* Frozen columns while the table scrolls: Season and Team always, PPG and
+   rank too on columns wide enough to leave the shares room. */
+:is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th).is-season {
+  width: 84px;
+  min-width: 84px;
+  max-width: 84px;
+  box-sizing: border-box;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th).is-team {
+  position: sticky;
+  left: 84px;
+  z-index: 2;
+  width: 76px;
+  min-width: 76px;
+  box-sizing: border-box;
+  background: inherit;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-table thead th.sct-cs-th {
+  background: var(--tp-c-f3f6fa, #f3f6fa);
+}
+
+@container premium (min-width: 700px) and (max-width: 1099px) {
+  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th).is-ppg {
+    position: sticky;
+    left: 160px;
+    z-index: 2;
+    width: 54px;
+    min-width: 54px;
+    box-sizing: border-box;
+    background: inherit;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th).is-rank {
+    position: sticky;
+    left: 214px;
+    z-index: 2;
+    width: 96px;
+    min-width: 96px;
+    box-sizing: border-box;
+    background: inherit;
+    box-shadow: inset -1px 0 0 var(--tp-c-e2eaf4, #e2eaf4);
+  }
+
+}
+
+/* ---- the show-all control as a text link; the note as a caption line */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-more {
+  min-height: 0;
+  margin: 8px 0 0;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--tp-c-244879, #244879);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-more:hover {
+  text-decoration: underline;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-more-show::after {
+  content: " →";
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-hint {
+  margin: 4px 0 0;
+  font-size: 0.66rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-note {
+  display: block;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #7a8aa0;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+/* ---- tiers: stat stack goes to a row above the chart under 1000px */
+@container premium (max-width: 999px) {
+  :is(.sct, #sct-table-armour) .sct-cc-hist.has-sum {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-sum {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0 14px;
+    padding: 0;
+    border-left: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kv {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kv dd {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@container premium (max-width: 899px) {
+  :is(.sct, #sct-table-armour) .sct-cc-body {
+    padding: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-stop {
+    grid-template-columns: 64px 84px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 4px 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-years {
+    font-size: 0.92rem;
+  }
+}
+
+@container premium (max-width: 599px) {
+  :is(.sct, #sct-table-armour) .sct-cc-stops {
+    padding-left: 18px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-stop {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "years team now" "role role role";
+    row-gap: 1px;
+    column-gap: 10px;
+    padding: 5px 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-stop::before,
+  :is(.sct, #sct-table-armour) .sct-cc-node {
+    left: -12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-years {
+    font-size: 0.9rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-now {
+    grid-area: now;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-role {
+    font-size: 0.8rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-sum {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kv b {
+    font-size: 1rem;
+  }
+}
+
+/* Fantasy Finishes by Season, and since the same day Play Calling,
+   Formations & Tempo, Situational Play Calling and Target & Backfield
+   Tendencies: the shared title bar with a subtitle (mak, 2026-11-08), at the
+   Coaching Career bar's compact height. */
+:is(.sct, #sct-table-armour) :is(.sct-cf-panel, .sct-cp-section, .sct-cpt-section) .sct-us-prm-head {
+  min-height: 56px;
+  padding: 9px 18px;
+  gap: 12px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-cf-panel, .sct-cp-section, .sct-cpt-section) .sct-us-prm-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-cf-panel, .sct-cp-section, .sct-cpt-section) .sct-us-prm-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==== Recap tab headers in the clubs' colors (mak, 2026-11-09: "the main
+   headers on each tab ... should use the team colors like how the section
+   headers do"). The shared premium tab header (.sct-up-head) keeps its shape;
+   on the recap its navy turns into --pm-bg (the winner's color) and its gold
+   (icon ring, rule, slanted lines) into --pm-accent (the other club's), the
+   pair the section bars wear (recapBarColors). */
+:is(.sct, #sct-table-armour).sct-mu.is-pm .sct-up-head.sct-mu-tabhead {
+  --up-gold: var(--pm-accent, #d4af37);
+  --up-head: linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pm .sct-up-head.sct-mu-tabhead::after {
+  box-shadow: 14px 0 0 color-mix(in srgb, var(--pm-accent, #d4af37) 55%, transparent);
+}
+
+/* The recap's tab bar in the same pair (mak, 2026-11-09, "same for the
+   tabs"): the active pill wears --pm-bg with a --pm-accent underline, and a
+   hovered pill picks up the accent on its border. Pages without the pair
+   (no --pm-bg) keep the navy and gold. */
+.sct.sct-mu.is-pm .sct-mu-tab.is-active,
+.sct.sct-mu.is-pm .sct-mu-tab[aria-selected="true"] {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+  box-shadow: inset 0 -3px 0 var(--pm-accent, #f0c13b), 0 3px 8px rgba(10, 35, 70, 0.18);
+}
+
+.sct.sct-mu.is-pm .sct-mu-tab:not(.is-active):not([aria-selected="true"]):hover {
+  border-color: var(--pm-accent, #9fb3cc);
 }
