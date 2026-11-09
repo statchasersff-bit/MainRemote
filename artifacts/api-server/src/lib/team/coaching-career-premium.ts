@@ -20,7 +20,7 @@
 import { escapeHtml } from "../render";
 import { getLeaguePpg, type TeamCoaching } from "./coaching";
 import { readStops, seasonOf, stepLogo, stopColors, surnameOf, timelineStepModel, type Stop, type TimelineStep } from "./coaching-render";
-import { ICON } from "./coaching-premium-tendencies";
+import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
 
 const e = escapeHtml;
 const f1 = (n: number) => String(Math.round(n * 10) / 10);
@@ -34,22 +34,37 @@ function currentStep(steps: TimelineStep[], season: number): TimelineStep | null
   return steps.find((s) => s.start <= season && season <= s.end) ?? null;
 }
 
+/**
+ * The role as one short line (mak's compact pass, 2026-11-08): clauses
+ * joined by a dot, "Assistant" shortened, a leading award year moved to the
+ * end ("2025 AP Assistant Coach of the Year" -> "AP Asst. Coach of the
+ * Year (2025)"). The stored wording stays in the row's title.
+ */
+export function compactRole(role: string): string {
+  return role
+    .split(/\s*;\s*/)
+    .map((part) => part.replace(/\bAssistant Coach of the Year\b/, "Asst. Coach of the Year").replace(/^(\d{4})\s+(.+)$/, "$2 ($1)"))
+    .join(" · ");
+}
+
 function stopRow(step: TimelineStep, current: boolean): string {
   const club = (code: string) => {
     const logo = stepLogo(code);
     return (
       `<span class="sct-cc-club">` +
-      (logo ? `<img class="sct-cc-crest" src="${e(logo)}" alt="" width="30" height="30" loading="lazy" decoding="async">` : "") +
+      (logo ? `<img class="sct-cc-crest" src="${e(logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
       `<span class="sct-cc-code">${e(code)}</span></span>`
     );
   };
+  const role = compactRole(step.role);
+  const full = step.full ?? (role !== step.role ? step.role : null);
   return (
-    `<li class="sct-cc-stop${current ? " is-current" : ""}"${current ? ` aria-current="step"` : ""}${step.full ? ` title="${e(step.full)}"` : ""}>` +
+    `<li class="sct-cc-stop${current ? " is-current" : ""}"${current ? ` aria-current="step"` : ""}${full ? ` title="${e(full)}"` : ""}>` +
     `<span class="sct-cc-node" aria-hidden="true"></span>` +
     `<span class="sct-cc-years">${e(step.years)}</span>` +
     `<span class="sct-cc-team">${step.codes.map(club).join(`<span class="sct-cc-slash" aria-hidden="true">/</span>`)}</span>` +
-    `<span class="sct-cc-sep" aria-hidden="true"></span>` +
-    `<span class="sct-cc-role">${e(step.role)}${current ? `<span class="sct-visually-hidden"> (current stop)</span>` : ""}</span>` +
+    `<span class="sct-cc-role">${e(role)}${current ? `<span class="sct-visually-hidden"> (current stop)</span>` : ""}</span>` +
+    (current ? `<span class="sct-cc-now" aria-hidden="true">Current</span>` : "") +
     `</li>`
   );
 }
@@ -80,7 +95,7 @@ function place(cands: Rect[], placed: Rect[], bounds: Rect): Rect {
 
 /** A rounded label: a pill (one word) or a callout (a figure and a word). */
 function box(r: Rect, cls: string, inner: string): string {
-  return `<g class="${cls}"><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="9"/>${inner}</g>`;
+  return `<g class="${cls}"><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="6"/>${inner}</g>`;
 }
 
 /**
@@ -89,10 +104,10 @@ function box(r: Rect, cls: string, inner: string): string {
  * narrow column instead of scaling down with the viewBox.
  */
 function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<string, number>, W: number, H: number, narrow: boolean): string {
-  const padL = 46;
-  const padR = narrow ? 84 : 104;
-  const padT = narrow ? 44 : 50;
-  const padB = 40;
+  const padL = 38;
+  const padR = narrow ? 64 : 70;
+  const padT = 30;
+  const padB = 30;
   const x0 = Math.min(...stops.map((s) => s.start));
   const x1 = Math.max(...stops.map((s) => s.end)) + 1;
   const leagueIn = Object.entries(league)
@@ -111,13 +126,13 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   let grid = "";
   for (let v = lo; v <= hi; v += step) {
     grid +=
-      `<line class="sct-cc-grid${v === lo ? " is-base" : ""}" x1="${padL}" x2="${W - padR + 40}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>` +
-      `<text class="sct-cc-tick" x="${padL - 10}" y="${f1(y(v))}" text-anchor="end" dominant-baseline="middle">${v}</text>`;
+      `<line class="sct-cc-grid${v === lo ? " is-base" : ""}" x1="${padL}" x2="${W - padR + 28}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>` +
+      `<text class="sct-cc-tick" x="${padL - 8}" y="${f1(y(v))}" text-anchor="end" dominant-baseline="middle">${v}</text>`;
   }
 
   // Year labels: each stop's first season and the last season on the line,
   // longer stints claiming their slot first; the current year reads bold.
-  const minGap = narrow ? 36 : 52;
+  const minGap = narrow ? 40 : 48;
   // The last season on the line always gets its label (it is the current year); then the stops' first seasons, longer stints first.
   const wanted = stops.filter((s) => s.start !== x1 - 1).map((s) => ({ yr: s.start, span: s.end - s.start + 1 }));
   wanted.push({ yr: x1 - 1, span: Infinity });
@@ -130,7 +145,7 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   const current = stops.find((s) => s.current);
   const years = slots
     .sort((a, b) => a.xx - b.xx)
-    .map((p) => `<text class="sct-cc-year${current && p.yr === current.end ? " is-current" : ""}" x="${f1(p.xx)}" y="${H - 12}" text-anchor="middle">${p.yr}</text>`)
+    .map((p) => `<text class="sct-cc-year${current && p.yr === current.end ? " is-current" : ""}" x="${f1(p.xx)}" y="${H - 8}" text-anchor="middle">${p.yr}</text>`)
     .join("");
 
   // The league average, one point per season at the season's midpoint, labeled at its end.
@@ -145,7 +160,7 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   let avg = "";
   if (pts.length >= 2 && avgEnd) {
     avg = `<polyline class="sct-cc-avg" points="${pts.join(" ")}"/>`;
-    const r = place([{ x: W - padR + 10, y: avgEnd.y - 14, w: 78, h: 28 }], placed, bounds);
+    const r = place([{ x: W - padR + 8, y: avgEnd.y - 9, w: 54, h: 18 }], placed, bounds);
     placed.push(r);
     avg += box(r, "sct-cc-pill is-avg", `<text x="${f1(r.x + r.w / 2)}" y="${f1(r.y + r.h / 2)}" text-anchor="middle" dominant-baseline="middle">NFL AVG</text>`);
   }
@@ -190,10 +205,10 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
         (d.rank ? ` · ${d.rank}` : "") +
         (league[String(d.year)] != null ? ` · NFL avg ${league[String(d.year)]!.toFixed(1)} (${d.ppg - league[String(d.year)]! >= 0 ? "+" : "−"}${Math.abs(d.ppg - league[String(d.year)]!).toFixed(1)})` : "");
       let pt = `<title>${e(label)}</title>`;
-      if (isLive) pt += `<circle class="sct-cc-ring" cx="${f1(d.px)}" cy="${f1(d.py)}" r="10"/>`;
+      if (isLive) pt += `<circle class="sct-cc-ring" cx="${f1(d.px)}" cy="${f1(d.py)}" r="8"/>`;
       pt += s.caller
-        ? `<circle class="sct-cc-dot${isLive ? " is-current" : ""}" cx="${f1(d.px)}" cy="${f1(d.py)}" r="${isLive ? 5 : 5.5}" style="--seg:${color}"/>`
-        : `<circle class="sct-cc-dot is-hollow" cx="${f1(d.px)}" cy="${f1(d.py)}" r="5.5" style="--seg:${color}"/>`;
+        ? `<circle class="sct-cc-dot${isLive ? " is-current" : ""}" cx="${f1(d.px)}" cy="${f1(d.py)}" r="${isLive ? 4 : 4.5}" style="--seg:${color}"/>`
+        : `<circle class="sct-cc-dot is-hollow" cx="${f1(d.px)}" cy="${f1(d.py)}" r="4.5" style="--seg:${color}"/>`;
       marks += `<g class="sct-cc-pt${isLive ? " is-current" : ""}" tabindex="0" role="img" aria-label="${e(label)}">${pt}</g>`;
     }
   }
@@ -201,37 +216,37 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   // Callouts first, since they matter most; era pills take what is left.
   let notes = "";
   if (peak) {
-    const w = narrow ? 104 : 118;
-    const h = 36;
+    const w = 84;
+    const h = 24;
     const r = place(
       [
-        { x: peak.px - w / 2, y: peak.py - h - 16, w, h },
-        { x: peak.px + 12, y: peak.py - h / 2, w, h },
-        { x: peak.px - w - 12, y: peak.py - h / 2, w, h },
-        { x: peak.px - w / 2, y: peak.py + 16, w, h },
+        { x: peak.px - w / 2, y: peak.py - h - 12, w, h },
+        { x: peak.px + 10, y: peak.py - h / 2, w, h },
+        { x: peak.px - w - 10, y: peak.py - h / 2, w, h },
+        { x: peak.px - w / 2, y: peak.py + 12, w, h },
       ],
       placed,
       bounds,
     );
     placed.push(r);
-    const stem = r.y + r.h <= peak.py ? `<line class="sct-cc-stem" x1="${f1(peak.px)}" y1="${f1(r.y + r.h)}" x2="${f1(peak.px)}" y2="${f1(peak.py - 7)}"/>` : "";
+    const stem = r.y + r.h <= peak.py ? `<line class="sct-cc-stem" x1="${f1(peak.px)}" y1="${f1(r.y + r.h)}" x2="${f1(peak.px)}" y2="${f1(peak.py - 6)}"/>` : "";
     notes +=
       stem +
       box(
         r,
         "sct-cc-callout is-peak",
-        `<text x="${f1(r.x + 12)}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${peak.ppg.toFixed(1)}</tspan><tspan class="k" dx="6">PEAK</tspan></text>`,
+        `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${peak.ppg.toFixed(1)}</tspan><tspan class="k" dx="5">PEAK</tspan></text>`,
       );
   }
   if (live && live !== peak) {
-    const w = narrow ? 134 : 150;
-    const h = 36;
+    const w = 104;
+    const h = 24;
     const r = place(
       [
-        { x: live.px + 14 - w, y: live.py + 18, w, h },
-        { x: live.px + 14 - w, y: live.py - h - 18, w, h },
-        { x: live.px - w - 14, y: live.py - h / 2, w, h },
-        { x: live.px + 14 - w, y: live.py + 60, w, h },
+        { x: live.px + 12 - w, y: live.py + 14, w, h },
+        { x: live.px + 12 - w, y: live.py - h - 14, w, h },
+        { x: live.px - w - 12, y: live.py - h / 2, w, h },
+        { x: live.px + 12 - w, y: live.py + 44, w, h },
       ],
       placed,
       bounds,
@@ -240,14 +255,14 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     notes += box(
       r,
       "sct-cc-callout is-current",
-      `<text x="${f1(r.x + 12)}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${live.ppg.toFixed(1)}</tspan><tspan class="k" dx="6">CURRENT</tspan></text>`,
+      `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${live.ppg.toFixed(1)}</tspan><tspan class="k" dx="5">CURRENT</tspan></text>`,
     );
   } else if (live && live === peak) {
     // One point is both: the peak box carries it, so say so in its own label.
     notes = notes.replace(">PEAK</tspan>", ">PEAK · CURRENT</tspan>");
   }
   // The club's code once per run of its stops, over the run's middle season.
-  const dotRects = segs.flatMap((g) => g.dots.map((d) => ({ x: d.px - 8, y: d.py - 8, w: 16, h: 16 })));
+  const dotRects = segs.flatMap((g) => g.dots.map((d) => ({ x: d.px - 6, y: d.py - 6, w: 12, h: 12 })));
   for (let i = 0; i < segs.length; i++) {
     const g = segs[i]!;
     if (i > 0 && segs[i - 1]!.s.code === g.s.code) continue;
@@ -255,16 +270,16 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     for (let j = i + 1; j < segs.length && segs[j]!.s.code === g.s.code; j++) run.push(segs[j]!);
     const dots = run.flatMap((r) => r.dots);
     const mid = dots[Math.floor((dots.length - 1) / 2)]!;
-    const w = 20 + g.s.code.length * 10;
-    const h = 26;
+    const w = 12 + g.s.code.length * 8;
+    const h = 18;
     const top = Math.min(...dots.map((d) => d.py));
     const bottom = Math.max(...dots.map((d) => d.py));
     const r = place(
       [
-        { x: mid.px - w / 2, y: top - h - 12, w, h },
-        { x: dots[0]!.px - w / 2, y: dots[0]!.py - h - 14, w, h },
-        { x: mid.px - w / 2, y: bottom + 12, w, h },
-        { x: dots[dots.length - 1]!.px - w / 2, y: dots[dots.length - 1]!.py + 14, w, h },
+        { x: mid.px - w / 2, y: top - h - 9, w, h },
+        { x: dots[0]!.px - w / 2, y: dots[0]!.py - h - 10, w, h },
+        { x: mid.px - w / 2, y: bottom + 9, w, h },
+        { x: dots[dots.length - 1]!.px - w / 2, y: dots[dots.length - 1]!.py + 10, w, h },
       ],
       [...placed, ...dotRects],
       bounds,
@@ -286,6 +301,37 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   );
 }
 
+/** The figures the chart used to carry in big callouts, as a short stat stack beside it. */
+function summary(c: TeamCoaching, stops: Stop[]): string {
+  let peak: { ppg: number; year: number; code: string; rank: string } | null = null;
+  let live: { ppg: number; year: number; rank: string; window: string | null } | null = null;
+  let called = 0;
+  for (const s of stops) {
+    for (const p of s.points) {
+      if (s.caller) {
+        called++;
+        if (!peak || p.ppg > peak.ppg) peak = { ppg: p.ppg, year: p.year, code: s.code, rank: p.rank };
+      }
+      if (s.current && p.year === s.end) live = { ppg: p.ppg, year: p.year, rank: p.rank, window: s.window ?? null };
+    }
+  }
+  const steps = c.playCaller.careerPath.map(timelineStepModel);
+  const now = currentStep(steps, seasonOf(c));
+  const item = (k: string, v: string, sub: string, cls = "") =>
+    `<div class="sct-cc-kv${cls ? ` ${cls}` : ""}"><dt>${e(k)}</dt><dd><b>${e(v)}</b>${sub ? `<span>${e(sub)}</span>` : ""}</dd></div>`;
+  // The live rank text can carry its window ("16th · 2026 thru Wk 8"): the ordinal is the figure, the window its note.
+  const ord = (t: string) => t.match(/^\d+(?:st|nd|rd|th)/)?.[0] ?? "";
+  const thru = live?.rank.match(/thru Wk \d+/i)?.[0] ?? "";
+  const items = [
+    peak ? item("Peak PPG", peak.ppg.toFixed(1), [`${peak.year} ${peak.code}`, ord(peak.rank)].filter(Boolean).join(" · "), "is-peak") : "",
+    live ? item("Current PPG", live.ppg.toFixed(1), `${live.year} · ${live.window || thru || "in-season"}`, "is-current") : "",
+    live && ord(live.rank) ? item(`${live.year} NFL rank`, ord(live.rank), /in window/.test(live.rank) ? "in his window" : "of 32") : "",
+    called ? item("Seasons calling", String(called), "plays, all stops") : "",
+    now ? item("Current stop", now.codes.join(" / "), now.years) : "",
+  ].join("");
+  return items ? `<dl class="sct-cc-sum" aria-label="Scoring summary">${items}</dl>` : "";
+}
+
 function chart(c: TeamCoaching, stops: Stop[]): string {
   const colors = stopColors(stops);
   const league = getLeaguePpg();
@@ -302,53 +348,48 @@ function chart(c: TeamCoaching, stops: Stop[]): string {
     (hasHollow ? `<li><i class="sct-cc-sw is-hollow"></i>Not the caller</li>` : "") +
     (Object.keys(league).length ? `<li><i class="sct-cc-sw is-avg"></i>NFL avg</li>` : "") +
     `</ul>`;
-  const rows = stops
-    .flatMap((s) =>
-      s.points.map(
-        (p) =>
-          `<tr><td>${p.year}${s.window ? ` (${e(s.window)})` : ""}</td><td>${e(s.code)}</td><td>${e(s.role)}</td>` +
-          `<td>${p.ppg.toFixed(1)}</td><td>${league[String(p.year)]?.toFixed(1) ?? "-"}</td><td>${e(p.rank)}</td><td>${s.caller ? "Yes" : "No"}</td></tr>`,
-      ),
-    )
-    .join("");
   const possessive = /s$/.test(surnameOf(c)) ? `${surnameOf(c)}'` : `${surnameOf(c)}'s`;
+  // One caption line under the chart: the key, then the note in small type
+  // (mak's compact pass, 2026-11-08; the boxed info strip is gone).
   return (
     `<figure class="sct-cc-chart" aria-label="${e(`${possessive} offenses by stop: points per game, ${x0}-${x1}`)}">` +
     `<div class="sct-cc-scroll" tabindex="0">` +
-    chartSvg(stops, colors, league, 1100, 330, false) +
-    chartSvg(stops, colors, league, 720, 290, true) +
+    chartSvg(stops, colors, league, 800, 250, false) +
+    chartSvg(stops, colors, league, 720, 240, true) +
     `</div>` +
+    `<figcaption class="sct-cc-cap">` +
     legend +
-    `<figcaption class="sct-cc-note"><span class="sct-cc-note-icon">${ICON["info"]}</span><span>${e(`Points per game by season, ${x0}-${x1}, one line per stop. The step between stops is the move.`)}</span></figcaption>` +
-    `<table class="sct-visually-hidden"><caption>Career scoring by stop</caption>` +
-    `<thead><tr><th scope="col">Season</th><th scope="col">Club</th><th scope="col">Role</th><th scope="col">PPG</th><th scope="col">NFL avg</th><th scope="col">Rank</th><th scope="col">Called plays</th></tr></thead>` +
-    `<tbody>${rows}</tbody></table>` +
+    `<span class="sct-cc-note">${e(`Points per game, ${x0}-${x1}, one line per stop.`)}</span>` +
+    `</figcaption>` +
     `</figure>`
   );
 }
 
 /* ------------------------------------------------------------------ public */
 
-export function renderCoachingCareerPremium(c: TeamCoaching): string {
+/**
+ * One card since mak's compact pass (2026-11-08): the header, then the
+ * stops, the chart with its stat stack, and the season table, divided by
+ * rules instead of each sitting in its own box.
+ */
+export function renderCoachingCareerPremium(c: TeamCoaching, seasonsHtml = ""): string {
   const stops = readStops(c);
   const rows = timeline(c);
   const points = stops.reduce((n, s) => n + s.points.length, 0);
   const chartHtml = points >= 2 ? chart(c, stops) : stops.length ? `<p class="sct-cc-empty">${e("One season on the line so far: the scoring history fills in as he calls more.")}</p>` : "";
   if (!rows && !chartHtml) return "";
   const possessive = /s$/.test(surnameOf(c)) ? `${surnameOf(c)}'` : `${surnameOf(c)}'s`;
+  const sum = points >= 2 ? summary(c, stops) : "";
   return (
     `<div class="sct-block sct-cp sct-cpt sct-cc" id="coaching-career-premium" data-sct-premium="coaching-career">` +
     `<section class="sct-cpt-section is-career">` +
-    `<header class="sct-cpt-head is-main">` +
-    `<span class="sct-cpt-head-icon">${HEADSET}</span>` +
-    `<span class="sct-cpt-head-rule"></span>` +
-    `<div class="sct-cpt-head-text"><h3 class="sct-cpt-h3">Coaching Career &amp; Historical Performance</h3>` +
-    `<p class="sct-cpt-dek">${e(`${possessive} stops, and how the offenses he called have scored and distributed the ball.`)}</p></div>` +
-    ICON["art"] +
-    `</header>` +
-    (rows ? `<div class="sct-cc-body">${rows}</div>` : "") +
+    usageStyleHead("Coaching Career & Historical Performance", HEADSET, `${possessive} stops and how his offenses scored.`) +
+    `<div class="sct-cc-body">` +
+    rows +
+    (chartHtml ? `<div class="sct-cc-hist${sum ? " has-sum" : ""}">${chartHtml}${sum}</div>` : "") +
+    seasonsHtml +
+    `</div>` +
     `</section>` +
-    (chartHtml ? `<section class="sct-cpt-section is-career-chart"><div class="sct-cc-chartbody">${chartHtml}</div></section>` : "") +
     `</div>`
   );
 }

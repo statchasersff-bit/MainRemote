@@ -17,7 +17,7 @@
  */
 
 import { escapeHtml } from "../render";
-import { premiumTabHead, premiumTabFrame } from "./premium-head";
+import { premiumTabHead } from "./premium-head";
 import { slotChip } from "../team-render";
 import {
   BADGE_FROM,
@@ -218,19 +218,19 @@ export function renderUsagePremium(view: UsageView, team: NflTeam): string {
   return (
     `<div class="sct-block sct-up" id="usage-premium" data-sct-premium="usage">` +
     // .sct-h2 as well: a section address promotes the panel's first .sct-h2 to the page's H1 (team-render.ts).
-    premiumTabFrame(
+    // No shared tab frame: the banner stands alone and the dashboard sits on
+    // the page under it (mak, 2026-11-08, as on the Depth Chart tab).
     premiumTabHead({
       icon: "usage",
       heading: `<h2 class="sct-h2 sct-up-h2">Snap Counts &amp; Player Usage</h2>`,
       dek:
         `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
         `Track which players are seeing the field, where the ball is going, and how their roles change throughout the season.`,
-    }),
+    }) +
       `<div class="sct-up-dash">` +
         `<div class="sct-up-col is-left">${snaps}</div>` +
         `<div class="sct-up-col is-right">${targets}${rushing}</div>` +
-        `</div>`,
-    ) +
+        `</div>` +
     `</div>`
   );
 }

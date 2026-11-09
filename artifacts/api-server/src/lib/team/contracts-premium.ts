@@ -278,7 +278,6 @@ function sheet(team: NflTeam, v: ContractsView): string {
     ICON.doc +
     `<h3 class="sct-ctp-h3" id="sct-ctp-sheet-h">${e(`${v.season} Contracts`)}</h3>` +
     `<span class="sct-ctp-head-sum">${e(sum)}</span>` +
-    `<span class="sct-ctp-slash" aria-hidden="true"></span>` +
     `</div>` +
     `<div class="sct-ctp-scroll" tabindex="0">` +
     `<table class="sct-ctp-table" data-sct-ct-table>` +

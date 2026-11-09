@@ -788,15 +788,17 @@ const XP_ICON = {
   arrow: `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 };
 
-/** The section's title bar: the Situational Usage header, with its own icon, title and explainer. */
+/**
+ * The section's title bar: the Rushing Direction header (mak, 2026-11-07),
+ * icon, title beside its explainer, stripes; its own icon, title and explainer.
+ */
 function xpHead(id: string, icon: string, title: string, sub: string): string {
   return (
-    `<header class="sct-us-prm-head is-sit">` +
+    `<header class="sct-us-prm-head">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
-    `<span class="sct-us-sit-rule" aria-hidden="true"></span>` +
-    `<div class="sct-us-sit-titles">` +
+    `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
-    `<p class="sct-us-sit-sub">${e(sub)}</p>` +
+    `<p class="sct-us-prm-sub">${e(sub)}</p>` +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`

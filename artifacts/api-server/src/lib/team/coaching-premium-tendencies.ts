@@ -21,7 +21,9 @@ import {
   formationsModel,
   rzFourthModel,
   scoreStateModel,
+  seasonOf,
   signedPts,
+  surnameOf,
   type FormationTile,
   type RzFourthModel,
   type ScoreStateRow,
@@ -64,6 +66,25 @@ function sectionHead(title: string, icon: string, sub?: string): string {
     (sub ? `<span class="sct-cpt-head-rule"></span>` : "") +
     `<div class="sct-cpt-head-text"><h3 class="sct-cpt-h3">${e(title)}</h3>${sub ? `<p class="sct-cpt-dek">${e(sub)}</p>` : ""}</div>` +
     (sub ? ICON["art"] : "") +
+    `</header>`
+  );
+}
+
+/**
+ * The Situational Usage title bar (mak, 2026-11-08: Formations & Personnel,
+ * Coaching Career and Season by Season "match that of Situational Usage"):
+ * gold-ringed icon tile, title beside its explainer, stripes on the right.
+ * Same markup as usage-situational-premium.ts, styled by `.sct-us-prm-head*`.
+ */
+export function usageStyleHead(title: string, icon: string, sub?: string, id?: string): string {
+  return (
+    `<header class="sct-us-prm-head">` +
+    `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
+    `<div class="sct-us-prm-titles">` +
+    `<h3 class="sct-us-prm-title"${id ? ` id="${id}"` : ""}>${e(title)}</h3>` +
+    (sub ? `<p class="sct-us-prm-sub">${e(sub)}</p>` : "") +
+    `</div>` +
+    `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`
   );
 }
@@ -133,7 +154,7 @@ function formations(c: TeamCoaching, team: NflTeam, view: UsageView | null): str
     : "";
   return section(
     "formations",
-    sectionHead("Formations & Personnel", "layers", m.sub),
+    usageStyleHead("Formations & Personnel", ICON["layers"]!, m.sub),
     split + (m.tiles.length ? `<ul class="sct-cpt-kpis">${m.tiles.map(formationTile).join("")}</ul>` : "") + note(m.note),
   );
 }
@@ -179,7 +200,8 @@ function metric(st: NonNullable<RzFourthModel["rz"]> | NonNullable<RzFourthModel
   } else {
     const f = st as NonNullable<RzFourthModel["fourth"]>;
     head = `<span class="sct-cpt-metric-change is-flat">${e(f.lines[0] ?? "")}</span>`;
-    lines = [f.priorDetail ? e(f.priorDetail) : "", e(`NFL average ${f.nflAvg}`), f.small ? `<span class="sct-cpt-caution">${e(f.lines[3] ?? "")}</span>` : ""];
+    // The small-sample caution moved under the section (mak, 2026-11-08).
+    lines = [f.priorDetail ? e(f.priorDetail) : "", e(`NFL average ${f.nflAvg}`)];
   }
   return (
     `<div class="sct-cpt-metric is-${kind}">` +
@@ -197,16 +219,32 @@ const ordinal = (n: number): string => {
   return `${n}${suffix}`;
 };
 
-function redZoneCard(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+/**
+ * Fourth-down decisions only (mak's review, 2026-11-08): the red-zone pass
+ * rate, its change and its rank were already in the Play Calling table, so
+ * the card keeps the go rate; the red-zone play count moved into that
+ * table's row. The card keeps its `is-rz` hook for the grid's styles.
+ */
+function fourthDownCard(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
   const m = rzFourthModel(c, team, view);
-  if (!m) return "";
+  if (!m?.fourth) return "";
   return card(
     "rz",
-    "Red zone and fourth down",
-    m.sub,
+    "Fourth-down decisions",
+    `Short fourth downs in opponent territory, ${seasonOf(c)} to date, with the snaps the rate is measured on.`,
     "crosshair",
-    `<div class="sct-cpt-metrics">${m.rz ? metric(m.rz, "rz", m.priorYear) : ""}${m.fourth ? metric(m.fourth, "fourth", m.priorYear) : ""}</div>` + note(m.context),
+    `<div class="sct-cpt-metrics is-one">${metric(m.fourth, "fourth", m.priorYear)}</div>`,
   );
+}
+
+/** Situational Play Calling's sample note: the fourth-down caution and who owns the call, under both cards. */
+function situationalNote(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+  const m = rzFourthModel(c, team, view);
+  const f = m?.fourth ?? null;
+  if (!f) return "";
+  const who = m!.context.split(";")[0] ?? "";
+  const small = f.small && f.count != null ? ` The fourth-down rate rests on ${f.count} snap${f.count === 1 ? "" : "s"}: a tendency to watch, not a settled one.` : "";
+  return note(`${who}.${small} Score-state rates count plays, and the play counts beside each bar are their samples.`);
 }
 
 /* ----------------------------------------------------------------- targets */
@@ -263,15 +301,23 @@ function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
 /* ------------------------------------------------------------------ public */
 
 export function renderCoachingPremiumTendencies(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
-  const form = formations(c, team, view);
-  const sit = scoreStateCard(c) + redZoneCard(c, team, view);
+  // Formations & Personnel is no longer mounted (mak, 2026-11-08): it
+  // repeated Formations & Tempo; its data note is the coaching footnote now.
+  const form = "";
+  void formations;
+  void sectionHead;
+  const sit = scoreStateCard(c) + fourthDownCard(c, team, view);
   const tgt = distributionCard(c) + backfieldCard(c, view);
   if (!form && !sit && !tgt) return "";
+  // Subtitled title bars, like Fantasy Finishes by Season (mak, 2026-11-08).
+  const last = surnameOf(c);
+  const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
+  const wk = c.tendencies.samples?.throughWeek;
   return (
     `<div class="sct-block sct-cp sct-cpt" id="coaching-premium-tendencies" data-sct-premium="coaching-tendencies">` +
     form +
-    (sit ? section("situational", sectionHead("Situational Play Calling", "bars"), `<div class="sct-cpt-grid">${sit}</div>`) : "") +
-    (tgt ? section("targets", sectionHead("Target & Backfield Tendencies", "target"), `<div class="sct-cpt-grid">${tgt}</div>`) : "") +
+    (sit ? section("situational", usageStyleHead("Situational Play Calling", ICON["bars"]!, `How the score and fourth down shape ${possessive} calls, ${seasonOf(c)}${wk ? ` through Week ${wk}` : ""}`), `<div class="sct-cpt-grid">${sit}</div>${situationalNote(c, team, view)}`) : "") +
+    (tgt ? section("targets", usageStyleHead("Target & Backfield Tendencies", ICON["target"]!, `Where ${possessive} targets go by position, and how much his lead back gets`), `<div class="sct-cpt-grid">${tgt}</div>`) : "") +
     `</div>`
   );
 }

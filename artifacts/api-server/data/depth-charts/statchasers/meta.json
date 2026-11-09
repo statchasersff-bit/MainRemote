@@ -1,14 +1,14 @@
 {
     "status": "success",
     "error": "",
-    "last_refreshed": "2026-11-03T04:27:31+00:00",
-    "last_refreshed_ts": 1793680051,
+    "last_refreshed": "2026-11-09T13:08:13+00:00",
+    "last_refreshed_ts": 1794229693,
     "teams_ok": 32,
     "teams_failed": [],
     "teams_kept": [],
     "push": {
         "status": "off",
         "message": "Not configured: set STATCHASERS_INGEST_SECRET (and the app origin) in wp-config.php.",
-        "at": "2026-11-03T04:27:31+00:00"
+        "at": "2026-11-09T13:08:13+00:00"
     }
 }

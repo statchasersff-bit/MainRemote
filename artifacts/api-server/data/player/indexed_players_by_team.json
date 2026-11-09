@@ -18,21 +18,10 @@
         "slug": "carson-beck",
         "team": "ARI",
         "position": "QB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "QB2"
-      },
-      {
-        "id": "3257",
-        "name": "Jacoby Brissett",
-        "slug": "jacoby-brissett",
-        "team": "ARI",
-        "position": "QB",
-        "depth_chart_order": 2,
-        "years_exp": 10,
-        "status": "Active",
-        "rank_label": "retained"
       }
     ],
     "RB": [
@@ -53,21 +42,21 @@
         "slug": "evan-hull",
         "team": "ARI",
         "position": "RB",
-        "depth_chart_order": 6,
+        "depth_chart_order": 2,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "RB3"
       },
       {
-        "id": "8122",
-        "name": "Zonovan Knight",
-        "slug": "zonovan-knight",
+        "id": "8143",
+        "name": "Jerome Ford",
+        "slug": "jerome-ford",
         "team": "ARI",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 3,
         "years_exp": 4,
         "status": "Active",
-        "rank_label": "RB3"
+        "rank_label": "RB4"
       },
       {
         "id": "4137",
@@ -75,10 +64,21 @@
         "slug": "james-conner",
         "team": "ARI",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 9,
         "status": "Inactive",
         "rank_label": "RB4"
+      },
+      {
+        "id": "8122",
+        "name": "Zonovan Knight",
+        "slug": "zonovan-knight",
+        "team": "ARI",
+        "position": "RB",
+        "depth_chart_order": 6,
+        "years_exp": 4,
+        "status": "Active",
+        "rank_label": "retained"
       },
       {
         "id": "13287",
@@ -304,13 +304,13 @@
         "rank_label": "RB"
       },
       {
-        "id": "8154",
-        "name": "Brian Robinson Jr.",
-        "slug": "brian-robinson-jr",
+        "id": "7608",
+        "name": "Khalil Herbert",
+        "slug": "khalil-herbert",
         "team": "ATL",
         "position": "RB",
-        "depth_chart_order": 4,
-        "years_exp": 4,
+        "depth_chart_order": 2,
+        "years_exp": 5,
         "status": "Active",
         "rank_label": "RB2"
       },
@@ -320,20 +320,20 @@
         "slug": "trey-sermon",
         "team": "ATL",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 3,
         "years_exp": 5,
         "status": "Inactive",
         "rank_label": "RB3"
       },
       {
-        "id": "7608",
-        "name": "Khalil Herbert",
-        "slug": "khalil-herbert",
+        "id": "8154",
+        "name": "Brian Robinson Jr.",
+        "slug": "brian-robinson-jr",
         "team": "ATL",
         "position": "RB",
-        "depth_chart_order": null,
-        "years_exp": 5,
-        "status": "Active",
+        "depth_chart_order": 4,
+        "years_exp": 4,
+        "status": "Inactive",
         "rank_label": "RB4"
       }
     ],
@@ -348,6 +348,17 @@
         "years_exp": 4,
         "status": "Active",
         "rank_label": "LWR"
+      },
+      {
+        "id": "12889",
+        "name": "Beaux Collins",
+        "slug": "beaux-collins",
+        "team": "ATL",
+        "position": "WR",
+        "depth_chart_order": 7,
+        "years_exp": 1,
+        "status": "Active",
+        "rank_label": "LWR2"
       },
       {
         "id": "8119",
@@ -394,17 +405,6 @@
         "rank_label": "SWR2"
       },
       {
-        "id": "12889",
-        "name": "Beaux Collins",
-        "slug": "beaux-collins",
-        "team": "ATL",
-        "position": "WR",
-        "depth_chart_order": 7,
-        "years_exp": 1,
-        "status": "Inactive",
-        "rank_label": "WR6"
-      },
-      {
         "id": "11474",
         "name": "Dylan Drummond",
         "slug": "dylan-drummond",
@@ -434,7 +434,7 @@
         "slug": "charlie-woerner",
         "team": "ATL",
         "position": "TE",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 6,
         "status": "Active",
         "rank_label": "TE2"
@@ -492,24 +492,24 @@
   "BAL": {
     "QB": [
       {
+        "id": "3257",
+        "name": "Jacoby Brissett",
+        "slug": "jacoby-brissett",
+        "team": "BAL",
+        "position": "QB",
+        "depth_chart_order": 1,
+        "years_exp": 10,
+        "status": "Active",
+        "rank_label": "QB"
+      },
+      {
         "id": "13350",
         "name": "Joe Fagnano",
         "slug": "joe-fagnano",
         "team": "BAL",
         "position": "QB",
-        "depth_chart_order": 1,
+        "depth_chart_order": 2,
         "years_exp": 0,
-        "status": "Active",
-        "rank_label": "QB"
-      },
-      {
-        "id": "11931",
-        "name": "Austin Reed",
-        "slug": "austin-reed",
-        "team": "BAL",
-        "position": "QB",
-        "depth_chart_order": 6,
-        "years_exp": 2,
         "status": "Active",
         "rank_label": "QB2"
       },
@@ -519,7 +519,7 @@
         "slug": "lamar-jackson",
         "team": "BAL",
         "position": "QB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 3,
         "years_exp": 8,
         "status": "Inactive",
         "rank_label": "retained"
@@ -530,7 +530,7 @@
         "slug": "tyler-huntley",
         "team": "BAL",
         "position": "QB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 6,
         "status": "Inactive",
         "rank_label": "retained"
@@ -709,17 +709,6 @@
     ],
     "K": [
       {
-        "id": "10937",
-        "name": "Jake Moody",
-        "slug": "jake-moody",
-        "team": "BAL",
-        "position": "K",
-        "depth_chart_order": null,
-        "years_exp": 3,
-        "status": "Active",
-        "rank_label": "K"
-      },
-      {
         "id": "12711",
         "name": "Tyler Loop",
         "slug": "tyler-loop",
@@ -728,6 +717,17 @@
         "depth_chart_order": 2,
         "years_exp": 1,
         "status": "Inactive",
+        "rank_label": "K1"
+      },
+      {
+        "id": "10937",
+        "name": "Jake Moody",
+        "slug": "jake-moody",
+        "team": "BAL",
+        "position": "K",
+        "depth_chart_order": null,
+        "years_exp": 3,
+        "status": "Active",
         "rank_label": "retained"
       }
     ],
@@ -834,7 +834,7 @@
         "slug": "joshua-palmer",
         "team": "BUF",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 7,
         "years_exp": 5,
         "status": "Active",
         "rank_label": "LWR2"
@@ -856,7 +856,7 @@
         "slug": "skyler-bell",
         "team": "BUF",
         "position": "WR",
-        "depth_chart_order": 6,
+        "depth_chart_order": 4,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "RWR2"
@@ -1011,7 +1011,7 @@
         "slug": "anthony-tyus-iii",
         "team": "CAR",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB3"
@@ -1022,7 +1022,7 @@
         "slug": "aj-dillon",
         "team": "CAR",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 6,
         "status": "Active",
         "rank_label": "RB4"
@@ -1267,7 +1267,7 @@
         "slug": "kyle-monangai",
         "team": "CHI",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 6,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB2"
@@ -1278,10 +1278,21 @@
         "slug": "roschon-johnson",
         "team": "CHI",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "RB3"
+      },
+      {
+        "id": "6918",
+        "name": "Salvon Ahmed",
+        "slug": "salvon-ahmed",
+        "team": "CHI",
+        "position": "RB",
+        "depth_chart_order": 3,
+        "years_exp": 6,
+        "status": "Active",
+        "rank_label": "RB4"
       },
       {
         "id": "8423",
@@ -1289,10 +1300,10 @@
         "slug": "brittain-brown",
         "team": "CHI",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 4,
         "status": "Inactive",
-        "rank_label": "RB4"
+        "rank_label": "retained"
       },
       {
         "id": "11299",
@@ -1300,7 +1311,7 @@
         "slug": "zavier-scott",
         "team": "CHI",
         "position": "RB",
-        "depth_chart_order": 6,
+        "depth_chart_order": 5,
         "years_exp": 3,
         "status": "Inactive",
         "rank_label": "retained"
@@ -1899,6 +1910,17 @@
         "rank_label": "TE2"
       },
       {
+        "id": "13580",
+        "name": "Carsen Ryan",
+        "slug": "carsen-ryan",
+        "team": "CLE",
+        "position": "TE",
+        "depth_chart_order": 5,
+        "years_exp": 0,
+        "status": "Active",
+        "rank_label": "TE3"
+      },
+      {
         "id": "13435",
         "name": "Joe Royer",
         "slug": "joe-royer",
@@ -1907,7 +1929,7 @@
         "depth_chart_order": 4,
         "years_exp": 0,
         "status": "Active",
-        "rank_label": "TE3"
+        "rank_label": "retained"
       }
     ],
     "K": [
@@ -2015,7 +2037,7 @@
         "slug": "george-pickens",
         "team": "DAL",
         "position": "WR",
-        "depth_chart_order": 2,
+        "depth_chart_order": 4,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "LWR"
@@ -2048,7 +2070,7 @@
         "slug": "jonathan-mingo",
         "team": "DAL",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 3,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "RWR2"
@@ -2059,7 +2081,7 @@
         "slug": "ryan-flournoy",
         "team": "DAL",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "SWR"
@@ -2070,7 +2092,7 @@
         "slug": "kavontae-turpin",
         "team": "DAL",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "SWR2"
@@ -2105,7 +2127,7 @@
         "slug": "luke-schoonmaker",
         "team": "DAL",
         "position": "TE",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "TE3"
@@ -2187,6 +2209,17 @@
         "rank_label": "RB2"
       },
       {
+        "id": "11644",
+        "name": "Cody Schrader",
+        "slug": "cody-schrader",
+        "team": "DEN",
+        "position": "RB",
+        "depth_chart_order": 4,
+        "years_exp": 2,
+        "status": "Active",
+        "rank_label": "RB3"
+      },
+      {
         "id": "8025",
         "name": "Adam Prentice",
         "slug": "adam-prentice",
@@ -2195,7 +2228,7 @@
         "depth_chart_order": 3,
         "years_exp": 5,
         "status": "Active",
-        "rank_label": "RB3"
+        "rank_label": "RB4"
       },
       {
         "id": "8208",
@@ -2203,20 +2236,9 @@
         "slug": "tyler-badie",
         "team": "DEN",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 6,
         "years_exp": 4,
         "status": "Inactive",
-        "rank_label": "RB4"
-      },
-      {
-        "id": "11644",
-        "name": "Cody Schrader",
-        "slug": "cody-schrader",
-        "team": "DEN",
-        "position": "RB",
-        "depth_chart_order": null,
-        "years_exp": 2,
-        "status": "Active",
         "rank_label": "retained"
       },
       {
@@ -2249,7 +2271,7 @@
         "slug": "liljordan-humphrey",
         "team": "DEN",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 6,
         "years_exp": 7,
         "status": "Active",
         "rank_label": "LWR2"
@@ -2271,8 +2293,19 @@
         "slug": "troy-franklin",
         "team": "DEN",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 2,
+        "status": "Active",
+        "rank_label": "RWR2"
+      },
+      {
+        "id": "12492",
+        "name": "Pat Bryant",
+        "slug": "pat-bryant",
+        "team": "DEN",
+        "position": "WR",
+        "depth_chart_order": 3,
+        "years_exp": 1,
         "status": "Active",
         "rank_label": "SWR"
       },
@@ -2282,21 +2315,10 @@
         "slug": "marvin-mims-jr",
         "team": "DEN",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "SWR2"
-      },
-      {
-        "id": "12492",
-        "name": "Pat Bryant",
-        "slug": "pat-bryant",
-        "team": "DEN",
-        "position": "WR",
-        "depth_chart_order": 7,
-        "years_exp": 1,
-        "status": "Inactive",
-        "rank_label": "WR6"
       },
       {
         "id": "1604",
@@ -2361,7 +2383,7 @@
         "slug": "caleb-lohner",
         "team": "DEN",
         "position": "TE",
-        "depth_chart_order": 6,
+        "depth_chart_order": 5,
         "years_exp": 1,
         "status": "Inactive",
         "rank_label": "retained"
@@ -2448,10 +2470,21 @@
         "slug": "jacob-saylors",
         "team": "DET",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "RB3"
+      },
+      {
+        "id": "12356",
+        "name": "Jabari Small",
+        "slug": "jabari-small",
+        "team": "DET",
+        "position": "RB",
+        "depth_chart_order": 5,
+        "years_exp": 2,
+        "status": "Active",
+        "rank_label": "RB4"
       },
       {
         "id": "8205",
@@ -2459,10 +2492,10 @@
         "slug": "isiah-pacheco",
         "team": "DET",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 4,
         "status": "Inactive",
-        "rank_label": "RB4"
+        "rank_label": "retained"
       }
     ],
     "WR": [
@@ -2660,7 +2693,7 @@
         "slug": "marshawn-lloyd",
         "team": "GB",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 5,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "RB2"
@@ -2671,7 +2704,7 @@
         "slug": "pierre-strong-jr",
         "team": "GB",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "RB3"
@@ -2682,7 +2715,7 @@
         "slug": "kaleb-johnson",
         "team": "GB",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB4"
@@ -2693,7 +2726,7 @@
         "slug": "chris-brooks",
         "team": "GB",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Inactive",
         "rank_label": "retained"
@@ -2818,7 +2851,7 @@
         "slug": "josh-whyle",
         "team": "GB",
         "position": "TE",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "TE3"
@@ -2840,7 +2873,7 @@
         "slug": "luke-musgrave",
         "team": "GB",
         "position": "TE",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "retained"
@@ -3080,15 +3113,26 @@
         "rank_label": "TE2"
       },
       {
+        "id": "7568",
+        "name": "Brevin Jordan",
+        "slug": "brevin-jordan",
+        "team": "HOU",
+        "position": "TE",
+        "depth_chart_order": 4,
+        "years_exp": 5,
+        "status": "Active",
+        "rank_label": "TE3"
+      },
+      {
         "id": "11599",
         "name": "Cade Stover",
         "slug": "cade-stover",
         "team": "HOU",
         "position": "TE",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 2,
         "status": "Active",
-        "rank_label": "TE3"
+        "rank_label": "retained"
       },
       {
         "id": "13307",
@@ -3098,17 +3142,6 @@
         "position": "TE",
         "depth_chart_order": 3,
         "years_exp": 0,
-        "status": "Active",
-        "rank_label": "retained"
-      },
-      {
-        "id": "7568",
-        "name": "Brevin Jordan",
-        "slug": "brevin-jordan",
-        "team": "HOU",
-        "position": "TE",
-        "depth_chart_order": 5,
-        "years_exp": 5,
         "status": "Active",
         "rank_label": "retained"
       }
@@ -3229,7 +3262,7 @@
         "slug": "deion-burks",
         "team": "IND",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "LWR2"
@@ -3251,7 +3284,7 @@
         "slug": "ashton-dulin",
         "team": "IND",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 7,
         "status": "Active",
         "rank_label": "RWR2"
@@ -3330,7 +3363,7 @@
         "slug": "drew-ogletree",
         "team": "IND",
         "position": "TE",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "TE3"
@@ -4169,17 +4202,6 @@
         "rank_label": "RB2"
       },
       {
-        "id": "13315",
-        "name": "Dean Connors",
-        "slug": "dean-connors",
-        "team": "LAR",
-        "position": "RB",
-        "depth_chart_order": 5,
-        "years_exp": 0,
-        "status": "Inactive",
-        "rank_label": "RB3"
-      },
-      {
         "id": "8195",
         "name": "Ronnie Rivers",
         "slug": "ronnie-rivers",
@@ -4187,6 +4209,17 @@
         "position": "RB",
         "depth_chart_order": 3,
         "years_exp": 4,
+        "status": "Active",
+        "rank_label": "RB3"
+      },
+      {
+        "id": "13315",
+        "name": "Dean Connors",
+        "slug": "dean-connors",
+        "team": "LAR",
+        "position": "RB",
+        "depth_chart_order": 5,
+        "years_exp": 0,
         "status": "Inactive",
         "rank_label": "RB4"
       },
@@ -4288,7 +4321,7 @@
         "slug": "tyler-higbee",
         "team": "LAR",
         "position": "TE",
-        "depth_chart_order": 2,
+        "depth_chart_order": 1,
         "years_exp": 10,
         "status": "Active",
         "rank_label": "TE"
@@ -4299,7 +4332,7 @@
         "slug": "colby-parkinson",
         "team": "LAR",
         "position": "TE",
-        "depth_chart_order": 1,
+        "depth_chart_order": 2,
         "years_exp": 6,
         "status": "Active",
         "rank_label": "TE2"
@@ -4476,7 +4509,7 @@
         "slug": "donte-thornton-jr",
         "team": "LV",
         "position": "WR",
-        "depth_chart_order": 10,
+        "depth_chart_order": 8,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "LWR2"
@@ -4498,7 +4531,7 @@
         "slug": "cody-white",
         "team": "LV",
         "position": "WR",
-        "depth_chart_order": 7,
+        "depth_chart_order": 4,
         "years_exp": 6,
         "status": "Active",
         "rank_label": "RWR2"
@@ -4520,7 +4553,7 @@
         "slug": "dareke-young",
         "team": "LV",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "SWR2"
@@ -4531,7 +4564,7 @@
         "slug": "malik-benson",
         "team": "LV",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 9,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "retained"
@@ -4653,7 +4686,7 @@
         "slug": "jaylen-wright",
         "team": "MIA",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 6,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "RB2"
@@ -4664,21 +4697,10 @@
         "slug": "kaytron-allen",
         "team": "MIA",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "RB3"
-      },
-      {
-        "id": "14026",
-        "name": "DJ Herman",
-        "slug": "dj-herman",
-        "team": "MIA",
-        "position": "RB",
-        "depth_chart_order": 4,
-        "years_exp": 0,
-        "status": "Active",
-        "rank_label": "RB4"
       },
       {
         "id": "11186",
@@ -4686,8 +4708,19 @@
         "slug": "carlos-washington-jr",
         "team": "MIA",
         "position": "RB",
-        "depth_chart_order": null,
+        "depth_chart_order": 4,
         "years_exp": 3,
+        "status": "Active",
+        "rank_label": "RB4"
+      },
+      {
+        "id": "14026",
+        "name": "DJ Herman",
+        "slug": "dj-herman",
+        "team": "MIA",
+        "position": "RB",
+        "depth_chart_order": 3,
+        "years_exp": 0,
         "status": "Active",
         "rank_label": "retained"
       },
@@ -4743,7 +4776,7 @@
         "slug": "jalen-tolbert",
         "team": "MIA",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 7,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "RWR2"
@@ -4800,7 +4833,7 @@
         "slug": "seydou-traore",
         "team": "MIA",
         "position": "TE",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "TE3"
@@ -4813,10 +4846,10 @@
         "slug": "zane-gonzalez",
         "team": "MIA",
         "position": "K",
-        "depth_chart_order": null,
+        "depth_chart_order": 1,
         "years_exp": 9,
         "status": "Active",
-        "rank_label": "K1"
+        "rank_label": "K"
       }
     ],
     "DEF": [
@@ -4898,7 +4931,7 @@
         "slug": "demond-claiborne",
         "team": "MIN",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 5,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "RB4"
@@ -4909,7 +4942,7 @@
         "slug": "max-bredeson",
         "team": "MIN",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "retained"
@@ -4933,7 +4966,7 @@
         "slug": "tai-felton",
         "team": "MIN",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "LWR2"
@@ -4950,12 +4983,23 @@
         "rank_label": "RWR"
       },
       {
+        "id": "2078",
+        "name": "Odell Beckham Jr.",
+        "slug": "odell-beckham-jr",
+        "team": "MIN",
+        "position": "WR",
+        "depth_chart_order": 5,
+        "years_exp": 12,
+        "status": "Active",
+        "rank_label": "RWR2"
+      },
+      {
         "id": "7049",
         "name": "Jauan Jennings",
         "slug": "jauan-jennings",
         "team": "MIN",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 6,
         "years_exp": 6,
         "status": "Active",
         "rank_label": "SWR"
@@ -4966,7 +5010,7 @@
         "slug": "myles-price",
         "team": "MIN",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "SWR2"
@@ -4979,17 +5023,6 @@
         "position": "WR",
         "depth_chart_order": 9,
         "years_exp": 0,
-        "status": "Active",
-        "rank_label": "WR6"
-      },
-      {
-        "id": "2078",
-        "name": "Odell Beckham Jr.",
-        "slug": "odell-beckham-jr",
-        "team": "MIN",
-        "position": "WR",
-        "depth_chart_order": null,
-        "years_exp": 12,
         "status": "Active",
         "rank_label": "retained"
       },
@@ -5132,7 +5165,7 @@
         "slug": "treveyon-henderson",
         "team": "NE",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 5,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB2"
@@ -5143,7 +5176,7 @@
         "slug": "corey-kiner",
         "team": "NE",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB3"
@@ -5154,7 +5187,7 @@
         "slug": "lan-larison",
         "team": "NE",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB4"
@@ -5165,7 +5198,7 @@
         "slug": "reggie-gilliam",
         "team": "NE",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 6,
         "status": "Inactive",
         "rank_label": "retained"
@@ -5189,10 +5222,32 @@
         "slug": "aj-brown",
         "team": "NE",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 5,
         "years_exp": 7,
         "status": "Active",
         "rank_label": "LWR"
+      },
+      {
+        "id": "12542",
+        "name": "Efton Chism III",
+        "slug": "efton-chism-iii",
+        "team": "NE",
+        "position": "WR",
+        "depth_chart_order": 3,
+        "years_exp": 1,
+        "status": "Active",
+        "rank_label": "LWR2"
+      },
+      {
+        "id": "4177",
+        "name": "Mack Hollins",
+        "slug": "mack-hollins",
+        "team": "NE",
+        "position": "WR",
+        "depth_chart_order": 2,
+        "years_exp": 9,
+        "status": "Active",
+        "rank_label": "RWR"
       },
       {
         "id": "12547",
@@ -5203,18 +5258,7 @@
         "depth_chart_order": 4,
         "years_exp": 1,
         "status": "Active",
-        "rank_label": "LWR2"
-      },
-      {
-        "id": "12542",
-        "name": "Efton Chism III",
-        "slug": "efton-chism-iii",
-        "team": "NE",
-        "position": "WR",
-        "depth_chart_order": 2,
-        "years_exp": 1,
-        "status": "Active",
-        "rank_label": "RWR"
+        "rank_label": "RWR2"
       },
       {
         "id": "9501",
@@ -5226,17 +5270,6 @@
         "years_exp": 3,
         "status": "Active",
         "rank_label": "SWR"
-      },
-      {
-        "id": "4177",
-        "name": "Mack Hollins",
-        "slug": "mack-hollins",
-        "team": "NE",
-        "position": "WR",
-        "depth_chart_order": 5,
-        "years_exp": 9,
-        "status": "Inactive",
-        "rank_label": "WR5"
       },
       {
         "id": "8121",
@@ -5268,7 +5301,7 @@
         "slug": "hunter-henry",
         "team": "NE",
         "position": "TE",
-        "depth_chart_order": 2,
+        "depth_chart_order": 1,
         "years_exp": 10,
         "status": "Active",
         "rank_label": "TE"
@@ -5279,7 +5312,7 @@
         "slug": "eli-raridon",
         "team": "NE",
         "position": "TE",
-        "depth_chart_order": 1,
+        "depth_chart_order": 2,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "TE2"
@@ -5350,17 +5383,6 @@
     ],
     "RB": [
       {
-        "id": "9757",
-        "name": "Kendre Miller",
-        "slug": "kendre-miller",
-        "team": "NO",
-        "position": "RB",
-        "depth_chart_order": 2,
-        "years_exp": 3,
-        "status": "Active",
-        "rank_label": "RB"
-      },
-      {
         "id": "4035",
         "name": "Alvin Kamara",
         "slug": "alvin-kamara",
@@ -5369,7 +5391,7 @@
         "depth_chart_order": 1,
         "years_exp": 9,
         "status": "Active",
-        "rank_label": "RB2"
+        "rank_label": "RB"
       },
       {
         "id": "13277",
@@ -5377,10 +5399,21 @@
         "slug": "cj-donaldson",
         "team": "NO",
         "position": "RB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 7,
         "years_exp": 0,
         "status": "Active",
-        "rank_label": "RB3"
+        "rank_label": "RB2"
+      },
+      {
+        "id": "8139",
+        "name": "Zamir White",
+        "slug": "zamir-white",
+        "team": "NO",
+        "position": "RB",
+        "depth_chart_order": 3,
+        "years_exp": 4,
+        "status": "Active",
+        "rank_label": "RB4"
       },
       {
         "id": "11579",
@@ -5388,7 +5421,7 @@
         "slug": "audric-estime",
         "team": "NO",
         "position": "RB",
-        "depth_chart_order": 4,
+        "depth_chart_order": 2,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "RB4"
@@ -5399,7 +5432,7 @@
         "slug": "travis-etienne-jr",
         "team": "NO",
         "position": "RB",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 5,
         "status": "Inactive",
         "rank_label": "retained"
@@ -5410,7 +5443,7 @@
         "slug": "ty-chandler",
         "team": "NO",
         "position": "RB",
-        "depth_chart_order": 6,
+        "depth_chart_order": 5,
         "years_exp": 4,
         "status": "Inactive",
         "rank_label": "retained"
@@ -5429,9 +5462,9 @@
         "rank_label": "LWR"
       },
       {
-        "id": "13420",
-        "name": "Bryce Lance",
-        "slug": "bryce-lance",
+        "id": "13281",
+        "name": "Jordyn Tyson",
+        "slug": "jordyn-tyson",
         "team": "NO",
         "position": "WR",
         "depth_chart_order": 3,
@@ -5440,9 +5473,9 @@
         "rank_label": "RWR"
       },
       {
-        "id": "13533",
-        "name": "Barion Brown",
-        "slug": "barion-brown",
+        "id": "13420",
+        "name": "Bryce Lance",
+        "slug": "bryce-lance",
         "team": "NO",
         "position": "WR",
         "depth_chart_order": 4,
@@ -5462,25 +5495,25 @@
         "rank_label": "SWR"
       },
       {
+        "id": "13533",
+        "name": "Barion Brown",
+        "slug": "barion-brown",
+        "team": "NO",
+        "position": "WR",
+        "depth_chart_order": 5,
+        "years_exp": 0,
+        "status": "Active",
+        "rank_label": "SWR2"
+      },
+      {
         "id": "11895",
         "name": "Mason Tipton",
         "slug": "mason-tipton",
         "team": "NO",
         "position": "WR",
-        "depth_chart_order": 8,
+        "depth_chart_order": 9,
         "years_exp": 2,
         "status": "Active",
-        "rank_label": "WR5"
-      },
-      {
-        "id": "13281",
-        "name": "Jordyn Tyson",
-        "slug": "jordyn-tyson",
-        "team": "NO",
-        "position": "WR",
-        "depth_chart_order": 9,
-        "years_exp": 0,
-        "status": "Inactive",
         "rank_label": "WR6"
       },
       {
@@ -5548,10 +5581,10 @@
         "slug": "charlie-smyth",
         "team": "NO",
         "position": "K",
-        "depth_chart_order": null,
+        "depth_chart_order": 1,
         "years_exp": 2,
         "status": "Active",
-        "rank_label": "K1"
+        "rank_label": "K"
       }
     ],
     "DEF": [
@@ -5598,7 +5631,7 @@
         "slug": "jaxson-dart",
         "team": "NYG",
         "position": "QB",
-        "depth_chart_order": 3,
+        "depth_chart_order": 4,
         "years_exp": 1,
         "status": "Inactive",
         "rank_label": "retained"
@@ -5611,7 +5644,7 @@
         "slug": "cam-skattebo",
         "team": "NYG",
         "position": "RB",
-        "depth_chart_order": 1,
+        "depth_chart_order": 7,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RB"
@@ -5622,7 +5655,7 @@
         "slug": "devin-singletary",
         "team": "NYG",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 1,
         "years_exp": 7,
         "status": "Active",
         "rank_label": "RB2"
@@ -5633,32 +5666,10 @@
         "slug": "gregory-desrosiers",
         "team": "NYG",
         "position": "RB",
-        "depth_chart_order": 7,
+        "depth_chart_order": 2,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "RB3"
-      },
-      {
-        "id": "4353",
-        "name": "Patrick Ricard",
-        "slug": "patrick-ricard",
-        "team": "NYG",
-        "position": "RB",
-        "depth_chart_order": 3,
-        "years_exp": 9,
-        "status": "Active",
-        "rank_label": "RB4"
-      },
-      {
-        "id": "11655",
-        "name": "Tyrone Tracy Jr.",
-        "slug": "tyrone-tracy-jr",
-        "team": "NYG",
-        "position": "RB",
-        "depth_chart_order": 5,
-        "years_exp": 2,
-        "status": "Inactive",
-        "rank_label": "retained"
       },
       {
         "id": "12738",
@@ -5666,9 +5677,31 @@
         "slug": "phil-mafah",
         "team": "NYG",
         "position": "RB",
-        "depth_chart_order": null,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
+        "rank_label": "RB4"
+      },
+      {
+        "id": "4353",
+        "name": "Patrick Ricard",
+        "slug": "patrick-ricard",
+        "team": "NYG",
+        "position": "RB",
+        "depth_chart_order": 4,
+        "years_exp": 9,
+        "status": "Active",
+        "rank_label": "retained"
+      },
+      {
+        "id": "11655",
+        "name": "Tyrone Tracy Jr.",
+        "slug": "tyrone-tracy-jr",
+        "team": "NYG",
+        "position": "RB",
+        "depth_chart_order": 6,
+        "years_exp": 2,
+        "status": "Inactive",
         "rank_label": "retained"
       }
     ],
@@ -5694,6 +5727,17 @@
         "years_exp": 0,
         "status": "Active",
         "rank_label": "RWR"
+      },
+      {
+        "id": "9497",
+        "name": "Jalin Hyatt",
+        "slug": "jalin-hyatt",
+        "team": "NYG",
+        "position": "WR",
+        "depth_chart_order": 8,
+        "years_exp": 3,
+        "status": "Active",
+        "rank_label": "RWR2"
       },
       {
         "id": "7090",
@@ -5726,7 +5770,7 @@
         "depth_chart_order": 5,
         "years_exp": 8,
         "status": "Inactive",
-        "rank_label": "WR5"
+        "rank_label": "WR6"
       },
       {
         "id": "6699",
@@ -5737,17 +5781,6 @@
         "depth_chart_order": 6,
         "years_exp": 7,
         "status": "Inactive",
-        "rank_label": "WR6"
-      },
-      {
-        "id": "9497",
-        "name": "Jalin Hyatt",
-        "slug": "jalin-hyatt",
-        "team": "NYG",
-        "position": "WR",
-        "depth_chart_order": null,
-        "years_exp": 3,
-        "status": "Active",
         "rank_label": "retained"
       },
       {
@@ -5902,7 +5935,7 @@
         "slug": "adonai-mitchell",
         "team": "NYJ",
         "position": "WR",
-        "depth_chart_order": 2,
+        "depth_chart_order": 1,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "LWR"
@@ -5924,7 +5957,7 @@
         "slug": "garrett-wilson",
         "team": "NYJ",
         "position": "WR",
-        "depth_chart_order": 1,
+        "depth_chart_order": 6,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "RWR"
@@ -5946,7 +5979,7 @@
         "slug": "omar-cooper-jr",
         "team": "NYJ",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "SWR"
@@ -5957,7 +5990,7 @@
         "slug": "isaiah-williams",
         "team": "NYJ",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "SWR2"
@@ -6118,15 +6151,26 @@
         "rank_label": "RB"
       },
       {
+        "id": "7561",
+        "name": "Elijah Mitchell",
+        "slug": "elijah-mitchell",
+        "team": "PHI",
+        "position": "RB",
+        "depth_chart_order": 2,
+        "years_exp": 5,
+        "status": "Active",
+        "rank_label": "RB2"
+      },
+      {
         "id": "12457",
         "name": "Jaydon Blue",
         "slug": "jaydon-blue",
         "team": "PHI",
         "position": "RB",
-        "depth_chart_order": 2,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
-        "rank_label": "RB2"
+        "rank_label": "RB3"
       },
       {
         "id": "9225",
@@ -6137,29 +6181,7 @@
         "depth_chart_order": 4,
         "years_exp": 3,
         "status": "Inactive",
-        "rank_label": "RB3"
-      },
-      {
-        "id": "8129",
-        "name": "Dameon Pierce",
-        "slug": "dameon-pierce",
-        "team": "PHI",
-        "position": "RB",
-        "depth_chart_order": 5,
-        "years_exp": 4,
-        "status": "Inactive",
         "rank_label": "RB4"
-      },
-      {
-        "id": "7561",
-        "name": "Elijah Mitchell",
-        "slug": "elijah-mitchell",
-        "team": "PHI",
-        "position": "RB",
-        "depth_chart_order": null,
-        "years_exp": 5,
-        "status": "Active",
-        "rank_label": "retained"
       },
       {
         "id": "11577",
@@ -6167,7 +6189,7 @@
         "slug": "will-shipley",
         "team": "PHI",
         "position": "RB",
-        "depth_chart_order": 6,
+        "depth_chart_order": 5,
         "years_exp": 2,
         "status": "Inactive",
         "rank_label": "retained"
@@ -6180,7 +6202,7 @@
         "slug": "dontayvion-wicks",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 6,
         "years_exp": 3,
         "status": "Active",
         "rank_label": "LWR"
@@ -6191,7 +6213,7 @@
         "slug": "devonta-smith",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 5,
         "years_exp": 5,
         "status": "Active",
         "rank_label": "RWR"
@@ -6202,7 +6224,7 @@
         "slug": "darius-cooper",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 1,
+        "depth_chart_order": 2,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RWR2"
@@ -6213,7 +6235,7 @@
         "slug": "makai-lemon",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 2,
+        "depth_chart_order": 1,
         "years_exp": 0,
         "status": "Active",
         "rank_label": "SWR"
@@ -6224,7 +6246,7 @@
         "slug": "elijah-moore",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 6,
+        "depth_chart_order": 4,
         "years_exp": 5,
         "status": "Active",
         "rank_label": "SWR2"
@@ -6235,7 +6257,7 @@
         "slug": "marquise-brown",
         "team": "PHI",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 7,
         "status": "Active",
         "rank_label": "WR6"
@@ -6619,17 +6641,6 @@
         "rank_label": "RB2"
       },
       {
-        "id": "11435",
-        "name": "Emanuel Wilson",
-        "slug": "emanuel-wilson",
-        "team": "SEA",
-        "position": "RB",
-        "depth_chart_order": 3,
-        "years_exp": 3,
-        "status": "Active",
-        "rank_label": "RB3"
-      },
-      {
         "id": "12048",
         "name": "George Holani",
         "slug": "george-holani",
@@ -6637,6 +6648,17 @@
         "position": "RB",
         "depth_chart_order": 4,
         "years_exp": 2,
+        "status": "Active",
+        "rank_label": "RB3"
+      },
+      {
+        "id": "11435",
+        "name": "Emanuel Wilson",
+        "slug": "emanuel-wilson",
+        "team": "SEA",
+        "position": "RB",
+        "depth_chart_order": 3,
+        "years_exp": 3,
         "status": "Active",
         "rank_label": "RB4"
       },
@@ -6681,7 +6703,7 @@
         "slug": "irvin-charles",
         "team": "SEA",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 4,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "LWR2"
@@ -6692,7 +6714,7 @@
         "slug": "rashid-shaheed",
         "team": "SEA",
         "position": "WR",
-        "depth_chart_order": 2,
+        "depth_chart_order": 5,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "RWR"
@@ -6703,7 +6725,7 @@
         "slug": "tory-horton",
         "team": "SEA",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 1,
         "status": "Active",
         "rank_label": "RWR2"
@@ -6714,10 +6736,21 @@
         "slug": "cooper-kupp",
         "team": "SEA",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 9,
         "status": "Active",
         "rank_label": "SWR"
+      },
+      {
+        "id": "13199",
+        "name": "Montorie Foster Jr.",
+        "slug": "montorie-foster-jr",
+        "team": "SEA",
+        "position": "WR",
+        "depth_chart_order": 8,
+        "years_exp": 1,
+        "status": "Active",
+        "rank_label": "SWR2"
       },
       {
         "id": "10867",
@@ -6728,7 +6761,7 @@
         "depth_chart_order": 6,
         "years_exp": 3,
         "status": "Inactive",
-        "rank_label": "WR6"
+        "rank_label": "retained"
       },
       {
         "id": "8223",
@@ -6736,7 +6769,7 @@
         "slug": "velus-jones-jr",
         "team": "SEA",
         "position": "WR",
-        "depth_chart_order": 6,
+        "depth_chart_order": null,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "retained"
@@ -6926,7 +6959,7 @@
         "slug": "mike-evans",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 1,
+        "depth_chart_order": 5,
         "years_exp": 12,
         "status": "Active",
         "rank_label": "LWR"
@@ -6937,19 +6970,19 @@
         "slug": "brandin-cooks",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 4,
+        "depth_chart_order": 3,
         "years_exp": 12,
         "status": "Active",
         "rank_label": "LWR2"
       },
       {
-        "id": "5872",
-        "name": "Deebo Samuel Sr.",
-        "slug": "deebo-samuel-sr",
+        "id": "3286",
+        "name": "Demarcus Robinson",
+        "slug": "demarcus-robinson",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 2,
-        "years_exp": 7,
+        "depth_chart_order": 1,
+        "years_exp": 10,
         "status": "Active",
         "rank_label": "RWR"
       },
@@ -6959,10 +6992,21 @@
         "slug": "jacob-cowing",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 6,
+        "depth_chart_order": 4,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "RWR2"
+      },
+      {
+        "id": "5872",
+        "name": "Deebo Samuel Sr.",
+        "slug": "deebo-samuel-sr",
+        "team": "SF",
+        "position": "WR",
+        "depth_chart_order": 8,
+        "years_exp": 7,
+        "status": "Active",
+        "rank_label": "SWR"
       },
       {
         "id": "12634",
@@ -6970,10 +7014,10 @@
         "slug": "jordan-watkins",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 2,
         "years_exp": 1,
         "status": "Active",
-        "rank_label": "SWR"
+        "rank_label": "SWR2"
       },
       {
         "id": "4950",
@@ -6981,19 +7025,8 @@
         "slug": "christian-kirk",
         "team": "SF",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 6,
         "years_exp": 8,
-        "status": "Active",
-        "rank_label": "SWR2"
-      },
-      {
-        "id": "3286",
-        "name": "Demarcus Robinson",
-        "slug": "demarcus-robinson",
-        "team": "SF",
-        "position": "WR",
-        "depth_chart_order": 7,
-        "years_exp": 10,
         "status": "Inactive",
         "rank_label": "retained"
       },
@@ -7689,13 +7722,13 @@
         "rank_label": "LWR"
       },
       {
-        "id": "6853",
-        "name": "Van Jefferson",
-        "slug": "van-jefferson",
+        "id": "13760",
+        "name": "Jaden Bradley",
+        "slug": "jaden-bradley",
         "team": "WAS",
         "position": "WR",
-        "depth_chart_order": 6,
-        "years_exp": 6,
+        "depth_chart_order": 9,
+        "years_exp": 0,
         "status": "Active",
         "rank_label": "LWR2"
       },
@@ -7705,19 +7738,19 @@
         "slug": "treylon-burks",
         "team": "WAS",
         "position": "WR",
-        "depth_chart_order": 3,
+        "depth_chart_order": 7,
         "years_exp": 4,
         "status": "Active",
         "rank_label": "RWR"
       },
       {
-        "id": "7587",
-        "name": "Dyami Brown",
-        "slug": "dyami-brown",
+        "id": "6853",
+        "name": "Van Jefferson",
+        "slug": "van-jefferson",
         "team": "WAS",
         "position": "WR",
         "depth_chart_order": 4,
-        "years_exp": 5,
+        "years_exp": 6,
         "status": "Active",
         "rank_label": "RWR2"
       },
@@ -7738,10 +7771,21 @@
         "slug": "luke-mccaffrey",
         "team": "WAS",
         "position": "WR",
-        "depth_chart_order": 5,
+        "depth_chart_order": 3,
         "years_exp": 2,
         "status": "Active",
         "rank_label": "SWR2"
+      },
+      {
+        "id": "7587",
+        "name": "Dyami Brown",
+        "slug": "dyami-brown",
+        "team": "WAS",
+        "position": "WR",
+        "depth_chart_order": 6,
+        "years_exp": 5,
+        "status": "Inactive",
+        "rank_label": "retained"
       },
       {
         "id": "5927",
@@ -7749,7 +7793,7 @@
         "slug": "terry-mclaurin",
         "team": "WAS",
         "position": "WR",
-        "depth_chart_order": 7,
+        "depth_chart_order": 5,
         "years_exp": 7,
         "status": "Inactive",
         "rank_label": "retained"

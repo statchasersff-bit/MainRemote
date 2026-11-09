@@ -84,9 +84,9 @@ export interface FantasySectionInput {
   } | null;
 }
 
-type Format = "ppr" | "half" | "std";
+export type Format = "ppr" | "half" | "std";
 const FORMATS: Format[] = ["ppr", "half", "std"];
-type Triple = Record<Format, number>;
+export type Triple = Record<Format, number>;
 
 const MINUS = "−";
 
@@ -804,6 +804,32 @@ export function renderFantasyNotes(input: FantasySectionInput): string {
 }
 
 /**
+ * The verdicts, start/sit decisions, the trade-calculator banner, stock up /
+ * stock down and in-game injuries, as H2 sections for the recap's Fantasy
+ * tab (fantasy-tab.ts). They moved there from the Stats & Fantasy tab when
+ * mak deleted that tab (2026-11-09); the ids (#verdicts, #decisions, #stock,
+ * #injuries) are unchanged.
+ */
+export function renderFantasyTakeaways(input: FantasySectionInput): string {
+  const rows = rowsOf(input).filter((r) => !isZero(r));
+  if (rows.length === 0) return "";
+  const { usage, verdicts, stockBlock, injuries } = fantasyNotes(input, rows, "h2");
+  const wrap = (html: string, id: string): string =>
+    html ? `<section class="sct-rb-section sct-fp sct-fp-moved" aria-labelledby="${id}" data-fp-notes>${html}</section>` : "";
+  const decisions = renderDecisions(input, usage, "h2");
+  const trade = verdicts
+    ? banner(
+        "Did this game change a player's trade value?",
+        "Compare players and evaluate a deal using current fantasy values and your league settings.",
+        input.links.tradeCalculator,
+        "Fantasy Football Trade Calculator",
+        "fantasy-trade-banner",
+      )
+    : "";
+  return wrap(verdicts, "verdicts") + wrap(decisions + trade, "decisions") + wrap(stockBlock, "stock") + wrap(injuries, "injuries");
+}
+
+/**
  * The Fantasy tab, in the build spec's order: jump links; fantasy points by
  * player (the format switch and the group tables) with the Redraft Command
  * callout under them; usage and expected points; verdicts; stock up, stock
@@ -901,7 +927,7 @@ const DECISION_MAX_GAP = 30;
  * in two pairs. Nothing for a playoff game or once the season is over: there
  * is no next week to decide.
  */
-function renderDecisions(input: FantasySectionInput, usage: Usage[]): string {
+function renderDecisions(input: FantasySectionInput, usage: Usage[], heading: "h2" | "h3" = "h3"): string {
   if (!input.countsInSeasonLong || !input.next) return "";
   const pool = usage
     .map((u) => ({ u, rate: u.row.ctx ? input.rosterRate(u.row.ctx.sleeperId) : null }))
@@ -938,7 +964,7 @@ function renderDecisions(input: FantasySectionInput, usage: Usage[]): string {
   if (chosen.length === 0) return "";
   const nextLabel = (u: Usage): string | null => input.next?.[u.row.p.team]?.label ?? null;
   return (
-    `<h3 class="sct-rb-h3" id="decisions">Start/Sit decisions</h3>` +
+    `<${heading} class="sct-rb-${heading}" id="decisions">Start/Sit decisions</${heading}>` +
     `<ul class="sct-fp-decisions">` +
     chosen
       .map(({ a, b, href }) => {
@@ -1047,4 +1073,59 @@ export function renderFantasyMatchups(game: ScoreboardGame, allowed: PointsAllow
     `</tbody></table></div>` +
     `<p class="sct-rb-note">Regular season, summed from each game's box score and scored with this page's rules.</p>`
   );
+}
+
+/* ------------------------------------------------- the Fantasy tab's lines */
+
+/** One QB/RB/WR/TE line, scored and judged against expectation, for the Fantasy tab (fantasy-tab.ts). */
+export interface FantasyLine {
+  name: string;
+  team: string;
+  pos: string | null;
+  qb: boolean;
+  stats: GamePlayer["stats"];
+  pts: Triple;
+  /** Expected points at the league's rates; null when the season is too thin to have rates. */
+  x: Triple | null;
+  over: Triple | null;
+  snapShare: number | null;
+  tgtShare: number | null;
+  carShare: number | null;
+  ctx: PlayerContext | null;
+}
+
+/**
+ * Every offensive line the Fantasy tab prints, from the same rows, scoring and
+ * xFP pass the section above uses (usageRows): one model, so the standouts,
+ * the box score, the usage tables and the xFP chart can never disagree.
+ */
+export function fantasyLines(input: FantasySectionInput): FantasyLine[] {
+  const rows = rowsOf(input).filter((r) => !isZero(r) && (r.group === "qb" || r.group === "flex"));
+  const usage = new Map(usageRows(input, rows).map((u) => [u.row.id, u]));
+  const totals: Record<string, { carries: number; targets: number }> = {
+    [input.game.away.abbr]: teamTotals(rows, input.game.away.abbr),
+    [input.game.home.abbr]: teamTotals(rows, input.game.home.abbr),
+  };
+  return rows
+    .map((row) => {
+      const u = usage.get(row.id) ?? null;
+      const t = totals[row.p.team] ?? { carries: 0, targets: 0 };
+      const snaps = row.ctx?.snaps ?? null;
+      const teamSnaps = row.ctx?.teamSnaps ?? null;
+      return {
+        name: row.p.name,
+        team: row.p.team,
+        pos: row.p.pos,
+        qb: row.group === "qb",
+        stats: row.p.stats,
+        pts: row.pts,
+        x: u?.x ?? null,
+        over: u?.over ?? null,
+        snapShare: snaps !== null && teamSnaps ? snaps / teamSnaps : null,
+        tgtShare: t.targets ? s(row.p.stats, "recTgt") / t.targets : null,
+        carShare: t.carries ? s(row.p.stats, "rushAtt") / t.carries : null,
+        ctx: row.ctx,
+      };
+    })
+    .sort((a, b) => b.pts.ppr - a.pts.ppr || a.name.localeCompare(b.name));
 }

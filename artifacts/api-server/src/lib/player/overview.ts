@@ -107,6 +107,19 @@ function sectionOpen(id: string, heading: string, cls = "", icon: keyof typeof I
 }
 const SECTION_END = `</div></section>`;
 
+/**
+ * A section with no visible header row (mak, 2026-11-07: "remove header row
+ * Career & Background"): the H2 stays for the outline and aria-labelledby,
+ * screen-reader only, and the cards start the section.
+ */
+function sectionOpenBare(id: string, heading: string, cls = ""): string {
+  return (
+    `<section class="scp-ox-sec scp-ovp-sec is-bare${cls ? ` ${cls}` : ""}" aria-labelledby="${id}">` +
+    `<h2 class="scp-sr" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
+    `<div class="scp-ovp-body">`
+  );
+}
+
 /** A tab every player page has: Stats, Game Log, Bio, News. */
 function tabHref(data: PlayerPageData, options: PlayerRenderOptions, seg: string): string {
   return `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/${seg}/${options.linkQuery ?? ""}`;
@@ -775,7 +788,7 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
       )
     : "";
   return (
-    sectionOpen("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg", "career") +
+    sectionOpenBare("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg") +
     `<div class="scp-ox-bgc-grid${highlights && background ? "" : " is-one"}">${highlights}${background}</div>` +
     `<p class="scp-ox-links">` +
     (statsHref ? more(statsHref, "Full career stats") : "") +

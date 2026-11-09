@@ -116,6 +116,18 @@ export interface GameOdds {
   total: number | null;
 }
 
+/**
+ * One player's line in one box-score category, as ESPN printed it: the raw
+ * strings by key ("completions/passingAttempts" -> "23/33"). The Box Score
+ * tab reads these so it prints the line a traditional box score prints.
+ */
+export interface SheetRow {
+  espnId: string;
+  name: string;
+  pos: string | null;
+  values: Record<string, string>;
+}
+
 export interface GameBoxscore {
   eventId: string;
   /** How many periods the line covers - 4, or 5 when the game went to overtime. */
@@ -126,6 +138,14 @@ export interface GameBoxscore {
   stats: Record<string, BoxTeamStats>;
   /** Every player with a line, team as the site's display code. Empty when ESPN sent none. */
   players: BoxPlayer[];
+  /**
+   * The team stat sheet as ESPN printed it, keyed by upstream abbreviation
+   * then stat name ("thirdDownEff" -> "5-16"). Optional: a box score parsed
+   * before it existed has none.
+   */
+  teamSheets?: Record<string, Record<string, string>>;
+  /** The player box score by category, keyed by display code then category ("passing"). */
+  playerSheets?: Record<string, Record<string, SheetRow[]>>;
   /** In the order they happened, team as the site's display code. */
   scoringPlays: ScoringPlay[];
   /** Every possession in order; empty when ESPN sent no drive chart. */
@@ -307,6 +327,49 @@ const PLAYER_KEYS: Record<string, Record<string, keyof PlayerGameStats>> = {
   interceptions: { interceptions: "defInt" },
 };
 
+function teamSheetsOf(payload: EspnSummary): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  for (const entry of payload.boxscore?.teams ?? []) {
+    const abbr = entry.team?.abbreviation?.trim().toUpperCase();
+    if (!abbr) continue;
+    const sheet: Record<string, string> = {};
+    // First value wins, as in statsOf: `interceptions` comes twice.
+    for (const st of entry.statistics ?? []) {
+      if (st.name && st.displayValue && !(st.name in sheet)) sheet[st.name] = st.displayValue;
+    }
+    out[abbr] = sheet;
+  }
+  return out;
+}
+
+function playerSheetsOf(payload: EspnSummary): Record<string, Record<string, SheetRow[]>> {
+  const out: Record<string, Record<string, SheetRow[]>> = {};
+  for (const side of payload.boxscore?.players ?? []) {
+    const abbr = side.team?.abbreviation?.trim();
+    if (!abbr) continue;
+    const team = (out[displayCode(abbr)] ??= {});
+    for (const category of side.statistics ?? []) {
+      const name = category.name ?? "";
+      const keys = category.keys ?? [];
+      if (!name || !keys.length) continue;
+      const rows: SheetRow[] = [];
+      for (const row of category.athletes ?? []) {
+        const id = row.athlete?.id;
+        const display = row.athlete?.displayName?.trim();
+        if (!id || !display || !row.stats?.length) continue;
+        const values: Record<string, string> = {};
+        keys.forEach((key, i) => {
+          const raw = row.stats?.[i];
+          if (raw !== undefined) values[key] = raw;
+        });
+        rows.push({ espnId: id, name: display, pos: row.athlete?.position?.abbreviation?.trim().toUpperCase() || null, values });
+      }
+      if (rows.length) team[name] = rows;
+    }
+  }
+  return out;
+}
+
 function playersOf(payload: EspnSummary): BoxPlayer[] {
   const byId = new Map<string, BoxPlayer>();
   for (const side of payload.boxscore?.players ?? []) {
@@ -486,6 +549,8 @@ function parse(eventId: string, payload: EspnSummary): GameBoxscore {
     lines,
     stats,
     players: playersOf(payload),
+    teamSheets: teamSheetsOf(payload),
+    playerSheets: playerSheetsOf(payload),
     scoringPlays: scoringPlaysOf(payload),
     drives: drivesOf(payload),
     odds: oddsOf(payload),

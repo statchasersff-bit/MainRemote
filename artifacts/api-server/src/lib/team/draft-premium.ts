@@ -182,7 +182,7 @@ function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | nul
     `<div class="sct-drp-year-head">` +
     `<span class="sct-drp-year-title">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-y${s.season}">${e(`${s.season} Draft`)}</h3></span>` +
     `<span class="sct-drp-year-sum">${e(`${s.picks.length} ${s.picks.length === 1 ? "pick" : "picks"} · ${firsts} in Round 1`)}</span>` +
-    `<span class="sct-drp-slash" aria-hidden="true"></span>` +
+    // No gold double slash on the year heads (mak, 2026-11-08: "remove the double lines").
     `</div>` +
     `<div class="sct-drp-scroll" tabindex="0">` +
     `<table class="sct-drp-table">` +
@@ -264,7 +264,7 @@ function capitalCard(team: NflTeam, c: DraftCapitalView): string {
     `<span class="sct-drp-stat"><b class="sct-drp-num">${n}</b> ${e(label)}</span>`;
   return (
     `<section class="sct-drp-card is-capital" aria-labelledby="sct-drp-cap-title">` +
-    `<div class="sct-drp-card-head">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-cap-title">${e(`${c.draftYear} NFL Draft Picks`)}</h3><span class="sct-drp-slash" aria-hidden="true"></span></div>` +
+    `<div class="sct-drp-card-head">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-cap-title">${e(`${c.draftYear} NFL Draft Picks`)}</h3></div>` +
     `<div class="sct-drp-card-body">` +
     `<p class="sct-drp-strip">${item(c.total, c.total === 1 ? "pick" : "picks")}${item(c.acquired, "acquired")}${item(c.sent.length, "sent away")}</p>` +
     `<p class="sct-drp-kicker">${e(capitalKicker(c))}</p>` +
@@ -319,7 +319,7 @@ function historyCard(h: DraftHistoryView): string {
   const kicker = historyKicker(h);
   return (
     `<section class="sct-drp-card is-history" aria-labelledby="sct-drp-hist-title">` +
-    `<div class="sct-drp-card-head">${ICON.bars}<h3 class="sct-drp-h3" id="sct-drp-hist-title">${e(`Last ${h.seasons.length} Drafts`)}</h3><span class="sct-drp-slash" aria-hidden="true"></span></div>` +
+    `<div class="sct-drp-card-head">${ICON.bars}<h3 class="sct-drp-h3" id="sct-drp-hist-title">${e(`Last ${h.seasons.length} Drafts`)}</h3></div>` +
     `<div class="sct-drp-card-body">` +
     `<p class="sct-drp-strip is-compact">${item(h.total, `picks, ${h.firstSeason}-${h.lastSeason}`)}${item(h.firstRounders, "in Round 1")}</p>` +
     (kicker ? `<p class="sct-drp-takeaway">${e(kicker)}</p>` : "") +
@@ -356,7 +356,7 @@ function roundOneCard(team: NflTeam, picks: DraftPick[]): string {
     : `<p class="sct-drp-r1-none">No Round 1 picks in these drafts.</p>`;
   return (
     `<section class="sct-drp-card is-r1" aria-labelledby="sct-drp-r1-title">` +
-    `<div class="sct-drp-card-head">${ICON.ribbon}<h3 class="sct-drp-h3" id="sct-drp-r1-title">Round 1 Picks</h3><span class="sct-drp-slash" aria-hidden="true"></span></div>` +
+    `<div class="sct-drp-card-head">${ICON.ribbon}<h3 class="sct-drp-h3" id="sct-drp-r1-title">Round 1 Picks</h3></div>` +
     `<div class="sct-drp-card-body is-flush">${body}</div>` +
     `</section>`
   );

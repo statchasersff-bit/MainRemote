@@ -246,6 +246,15 @@ function hueGap(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
+/** Teal sits below this hue and blue at or above it (see tooClose()). */
+const TEAL_BLUE_LINE = 195;
+
+/** True when one hue is teal and the other blue: two families, not one. */
+function acrossTealBlue(a: number, b: number): boolean {
+  const blueGreen = (h: number): boolean => h >= 150 && h <= 260;
+  return blueGreen(a) && blueGreen(b) && a < TEAL_BLUE_LINE !== b < TEAL_BLUE_LINE;
+}
+
 /**
  * Two colors a reader could mistake for one.
  *
@@ -255,6 +264,12 @@ function hueGap(a: number, b: number): number {
  * blue are far apart in RGB and still read as "the blue team" twice on a bar
  * chart, and the same goes for two reds or two teals. Two saturated colors
  * within 40 degrees of hue count as one color here, whatever their lightness.
+ *
+ * One line inside that window is a real border: teal and blue (mak,
+ * 2026-11-08). Miami's aqua, darkened for text, sits 27 degrees from New
+ * England's navy and read as one color, so the Dolphins were painted in their
+ * orange. Teal (below TEAL_BLUE_LINE) and blue (at or above it) are two
+ * families; two teals or two blues still clash.
  */
 export function tooClose(a: string, b: string): boolean {
   const x = rgb(a);
@@ -266,7 +281,7 @@ export function tooClose(a: string, b: string): boolean {
   if (!p || !q) return false;
   const chromatic = (c: { s: number; l: number }): boolean =>
     c.s >= 0.25 && c.l >= 0.1 && c.l <= 0.85;
-  return chromatic(p) && chromatic(q) && hueGap(p.h, q.h) <= 40;
+  return chromatic(p) && chromatic(q) && hueGap(p.h, q.h) <= 40 && !acrossTealBlue(p.h, q.h);
 }
 
 /** Which of a club's colors a side wears on one page. */

@@ -1,5 +1,5 @@
 {
- "builtAt": "2026-11-06T18:26:51.868Z",
+ "builtAt": "2026-11-09T13:00:35.218Z",
  "season": 2026,
  "week": 9,
  "players": {
@@ -77,7 +77,7 @@
   },
   "00-0034775": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "sf",
     "week": 9
    },
@@ -297,7 +297,7 @@
   },
   "00-0036884": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "car",
     "week": 9
    },
@@ -545,7 +545,7 @@
   },
   "00-0039808": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "ari",
     "week": 9
    },
@@ -1233,7 +1233,7 @@
   },
   "00-0040578": {
    "now": {
-    "kind": "exempt",
+    "kind": "active",
     "club": "atl",
     "week": 9
    },
@@ -1789,7 +1789,7 @@
   },
   "00-0037984": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "lar",
     "week": 9
    },
@@ -3697,7 +3697,7 @@
   },
   "00-0036906": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "atl",
     "week": 9
    },
@@ -3757,7 +3757,7 @@
   },
   "00-0037745": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "sea",
     "week": 9
    },
@@ -4845,7 +4845,7 @@
   },
   "00-0033868": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "lar",
     "week": 9
    },
@@ -4909,7 +4909,7 @@
   },
   "00-0033862": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "mia",
     "week": 9
    },
@@ -5273,7 +5273,7 @@
   },
   "00-0037267": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ari",
     "week": 9
    },
@@ -5549,15 +5549,11 @@
   },
   "00-0041131": {
    "now": {
-    "kind": "cut",
+    "kind": "active",
     "club": "cle",
     "week": 9
    },
-   "left": {
-    "kind": "waived",
-    "season": 2026,
-    "week": 9
-   }
+   "left": null
   },
   "00-0033541": {
    "now": {
@@ -6133,7 +6129,7 @@
   },
   "00-0039352": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "dal",
     "week": 9
    },
@@ -6237,7 +6233,7 @@
   },
   "00-0040021": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "nyg",
     "week": 9
    },
@@ -6269,7 +6265,7 @@
   },
   "00-0041537": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "dal",
     "week": 9
    },
@@ -6761,7 +6757,7 @@
   },
   "00-0038106": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "den",
     "week": 9
    },
@@ -6929,7 +6925,7 @@
   },
   "00-0040134": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "den",
     "week": 9
    },
@@ -7417,7 +7413,7 @@
   },
   "00-0037282": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "dal",
     "week": 9
    },
@@ -7461,7 +7457,7 @@
   },
   "00-0039018": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "det",
     "week": 9
    },
@@ -8849,7 +8845,7 @@
   },
   "00-0037258": {
    "now": {
-    "kind": "ir",
+    "kind": "cut",
     "club": "phi",
     "week": 9
    },
@@ -9029,7 +9025,7 @@
   },
   "00-0039433": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "kc",
     "week": 9
    },
@@ -10005,7 +10001,7 @@
   },
   "00-0033907": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "nyg",
     "week": 9
    },
@@ -10377,7 +10373,7 @@
   },
   "00-0037811": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "hou",
     "week": 9
    },
@@ -10457,7 +10453,7 @@
   },
   "00-0038580": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "atl",
     "week": 9
    },
@@ -11077,7 +11073,7 @@
   },
   "00-0037195": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "lar",
     "week": 9
    },
@@ -12765,7 +12761,7 @@
   },
   "00-0041534": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "lv",
     "week": 9
    },
@@ -13161,7 +13157,7 @@
   },
   "00-0038040": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "no",
     "week": 9
    },
@@ -13237,8 +13233,8 @@
   },
   "00-0039072": {
    "now": {
-    "kind": "cut",
-    "club": "phi",
+    "kind": "ps",
+    "club": "car",
     "week": 9
    },
    "left": null
@@ -16133,11 +16129,15 @@
   },
   "00-0038551": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "no",
     "week": 9
    },
-   "left": null
+   "left": {
+    "kind": "waived",
+    "season": 2026,
+    "week": 9
+   }
   },
   "00-0038566": {
    "now": {
@@ -16149,7 +16149,7 @@
   },
   "00-0038998": {
    "now": {
-    "kind": "cut",
+    "kind": "ps",
     "club": "nyg",
     "week": 9
    },
@@ -16237,7 +16237,7 @@
   },
   "00-0040125": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "no",
     "week": 9
    },
@@ -16309,7 +16309,7 @@
   },
   "00-0041029": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "no",
     "week": 9
    },
@@ -16825,7 +16825,7 @@
   },
   "00-0038938": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "nyg",
     "week": 9
    },
@@ -17713,7 +17713,7 @@
   },
   "00-0033555": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "ne",
     "week": 9
    },
@@ -18317,7 +18317,7 @@
   },
   "00-0040905": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "phi",
     "week": 9
    },
@@ -19749,7 +19749,7 @@
   },
   "00-0040904": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "sea",
     "week": 9
    },
@@ -20113,7 +20113,7 @@
   },
   "00-0036567": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "phi",
     "week": 9
    },
@@ -20121,7 +20121,7 @@
   },
   "00-0037826": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "atl",
     "week": 9
    },
@@ -22101,7 +22101,7 @@
   },
   "00-0036626": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "was",
     "week": 9
    },
@@ -22185,7 +22185,7 @@
   },
   "00-0037746": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "atl",
     "week": 9
    },
@@ -22309,7 +22309,7 @@
   },
   "00-0039906": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "was",
     "week": 9
    },

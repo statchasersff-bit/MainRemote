@@ -531,6 +531,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "arizona-cardinals-vs-seattle-seahawks/2026-week-9": {
+    "youtubeId": "de07dP1hlt8",
+    "title": "Arizona Cardinals vs. Seattle Seahawks Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-tampa-bay-buccaneers/2022-week-16": {
     "youtubeId": "-7Gl5GI9JSE",
     "title": "Tampa Bay Buccaneers vs. Arizona Cardinals | 2022 Week 16 Game Highlights",
@@ -673,6 +679,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "_ma7eTUBhQE",
     "title": "Atlanta Falcons vs. Cincinnati Bengals | 2022 Week 7 Game Highlights",
     "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-cincinnati-bengals/2026-week-9": {
+    "youtubeId": "IFMku2Sz3bA",
+    "title": "Cincinnati Bengals vs. Atlanta Falcons Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-cleveland-browns/2022-week-4": {
@@ -2277,6 +2289,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2024-10-27",
     "publisher": "NFL"
   },
+  "carolina-panthers-vs-denver-broncos/2026-week-9": {
+    "youtubeId": "owBZ7u9L6B8",
+    "title": "Denver Broncos vs. Carolina Panthers Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
+    "publisher": "NFL"
+  },
   "carolina-panthers-vs-detroit-lions/2022-week-16": {
     "youtubeId": "aILh26hthhk",
     "title": "Detroit Lions vs. Carolina Panthers | 2022 Week 16 Game Highlights",
@@ -3783,6 +3801,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2024-11-17",
     "publisher": "NFL"
   },
+  "cleveland-browns-vs-new-orleans-saints/2026-week-9": {
+    "youtubeId": "yidVkmPmxcU",
+    "title": "Cleveland Browns vs. New Orleans Saints Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
+    "publisher": "NFL"
+  },
   "cleveland-browns-vs-new-york-giants/2024-week-3": {
     "youtubeId": "zrrn0Glrn4Q",
     "title": "New York Giants vs. Cleveland Browns | 2024 Week 3 Game Highlights",
@@ -4021,6 +4045,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "J1tFQl8wv9g",
     "title": "Indianapolis Colts vs. Dallas Cowboys | 2022 Week 13 Game Highlights",
     "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-indianapolis-colts/2026-week-9": {
+    "youtubeId": "Wb-pcRK-LH8",
+    "title": "Dallas Cowboys vs. Indianapolis Colts Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "dallas-cowboys-vs-jacksonville-jaguars/2022-week-15": {
@@ -4987,6 +5017,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "xMdGq5ovdNw",
     "title": "Miami Dolphins vs Detroit Lions | 2022 Week 8 Game Highlights",
     "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-miami-dolphins/2026-week-9": {
+    "youtubeId": "cfpgrM5JfsQ",
+    "title": "Detroit Lions vs. Miami Dolphins Game Highlights | NFL 2026 Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "detroit-lions-vs-minnesota-vikings/2021-week-13": {
@@ -6777,6 +6813,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2023-10-01",
     "publisher": "NFL"
   },
+  "kansas-city-chiefs-vs-new-york-jets/2026-week-9": {
+    "youtubeId": "wlsz9L78_o8",
+    "title": "New York Jets vs. Kansas City Chiefs Game Highlights | NFL 2026 Season Week 9",
+    "uploadDate": "2026-11-08",
+    "publisher": "NFL"
+  },
   "kansas-city-chiefs-vs-philadelphia-eagles/2021-week-4": {
     "youtubeId": "MBMDSk6e1cs",
     "title": "Chiefs vs. Eagles Week 4 Highlights | NFL 2021",
@@ -7105,6 +7147,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "0ZNzDDf0AOw",
     "title": "San Francisco 49ers vs. Las Vegas Raiders | 2022 Week 17 Game Highlights",
     "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-san-francisco-49ers/2026-week-9": {
+    "youtubeId": "sNQJenFh30k",
+    "title": "Las Vegas Raiders vs. San Francisco 49ers Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "las-vegas-raiders-vs-seattle-seahawks/2022-week-12": {
@@ -7609,6 +7657,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "-FeGbNKn_qQ",
     "title": "Washington Commanders vs. Los Angeles Rams | 2023 Week 15 Game Highlights",
     "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-washington-commanders/2026-week-9": {
+    "youtubeId": "N9qwPsA9FI0",
+    "title": "Los Angeles Rams vs. Washington Commanders Game Highlights | NFL 2026 Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "miami-dolphins-vs-minnesota-vikings/2022-week-6": {
@@ -8443,6 +8497,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "youtubeId": "bfeNzEgvbQg",
     "title": "New York Giants vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 8",
     "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2026-week-9": {
+    "youtubeId": "znF3q5lZYC4",
+    "title": "New York Giants vs. Philadelphia Eagles Game Highlights | 2026 NFL Season Week 9",
+    "uploadDate": "2026-11-08",
     "publisher": "NFL"
   },
   "new-york-giants-vs-pittsburgh-steelers/2024-week-8": {

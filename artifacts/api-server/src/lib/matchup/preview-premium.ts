@@ -427,70 +427,141 @@ function startersCard(p: Preview): string {
 
 /**
  * Betting Outlook (mak's brief, 2026-11-06), under Fantasy Football Impact.
- * Model and rules in preview-betting.ts: the stored line (one book, never
- * named, never called a consensus), angles from the season numbers, records
- * against closing lines. No props (no data), no picks, no probabilities.
+ * Compacted 2026-11-07 (mak: "show the number once, explain its significance
+ * once, and let visitors expand"): three market tiles (current big, opened
+ * small, move), one Betting Form table (last-5 and season ATS / O/U plus the
+ * last-5 margin vs the spread), one Scoring Trends table (actual points vs
+ * the average closing O/U), ONE key insight, then each team's last five
+ * against the closing line behind a collapsed disclosure. One footer line.
+ * Model and rules in preview-betting.ts. No props, picks or provider names.
  */
+const recText = (r: { w: number; l: number; p: number }) => `${r.w}-${r.l}${r.p ? `-${r.p}` : ""}`;
+const ouText = (r: { o: number; u: number; p: number }) => `${r.o}-${r.u}${r.p ? `-${r.p}` : ""}`;
+const ATS_WORD = { w: "Covered", l: "Did not cover", p: "Push" } as const;
+const OU_WORD = { o: "Over", u: "Under", p: "Push" } as const;
+const handicapText = (n: number): string => (n === 0 ? "PK" : n > 0 ? `+${n}` : `−${Math.abs(n)}`);
+const signedOne = (n: number): string => (n > 0 ? `+${one(n)}` : n < 0 ? `−${one(Math.abs(n))}` : "0.0");
+/** A term with its definition on hover / long-press. */
+const term = (label: string, title: string): string => `<abbr title="${e(title)}">${e(label)}</abbr>`;
+const T_ATS = "Against the spread: covered (W), did not cover (L) or push (P), each game against its own closing spread";
+const T_OU = "Over/under: the final combined score against that game's closing total";
+
+function chip(kind: "ats" | "ou", v: "w" | "l" | "p" | "o" | "u", title: string): string {
+  return `<span class="sct-mpp-bo-chip" data-k="${kind}" data-v="${v}" title="${e(title)}">${v.toUpperCase()}</span>`;
+}
+
+function teamMark(s: PreviewSide, size = 18): string {
+  return s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">` : "";
+}
+
 function bettingCard(p: Preview): string {
   const b = bettingOutlook(p);
   const tr = p.trends;
   if (!b && !tr.away && !tr.home) return "";
-  const stamp =
-    b?.seenAt
-      ? new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(b.seenAt) + " ET"
-      : null;
+  const sides = [p.away, p.home].filter((s) => tr[s.key] && tr[s.key]!.recent.length);
+  const sec = (title: string, body: string) => `<div class="sct-mpp-bo-sec"><p class="sct-mpp-ff-h">${e(title)}</p>${body}</div>`;
+  const teamCell = (s: PreviewSide) => `<th scope="row"><span class="sct-mpp-bo-tm">${teamMark(s)}${e(code(s.team))}</span></th>`;
+
+  /* 1. Market: three tiles */
+  const stamp = b?.seenAt
+    ? new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(b.seenAt) + " ET"
+    : null;
+  const arrow = (dir: string | null) => (dir === "up" ? "↑" : dir === "down" ? "↓" : dir === "toward" ? "→" : "");
+  const tile = (m: NonNullable<typeof b>["market"][number]) =>
+    `<li class="sct-mpp-bo-tile"><span class="sct-mpp-bo-tl">${e(m.label)}</span>` +
+    (m.label === "Moneyline"
+      ? `<b class="sct-mpp-num is-ml">${m.current.split(" · ").map((x) => `<span>${e(x)}</span>`).join("")}</b>`
+      : `<b class="sct-mpp-num">${e(m.current)}</b>` +
+        `<span class="sct-mpp-bo-tsub">${m.open ? `Opened ${e(m.open)}` : "No opening line"}</span>` +
+        (m.move
+          ? `<span class="sct-mpp-bo-tmove"${m.dir ? ` data-dir="${m.dir}"` : ""}>${m.dir && m.dir !== "none" ? `<span aria-hidden="true">${arrow(m.dir)} </span>` : ""}${e(m.move)}</span>`
+          : "")) +
+    `</li>`;
   const market = b
-    ? `<div class="sct-mpp-bo-sec"><p class="sct-mpp-ff-h">Market Snapshot</p>` +
-      `<p class="sct-mpp-bo-src">One sportsbook's line, not a consensus${stamp ? ` · Updated ${e(stamp)}` : ""}</p>` +
-      `<table class="sct-mpp-bo-mkt"><caption class="sct-visually-hidden">Opening and current lines</caption>` +
-      `<thead><tr><th scope="col"><span class="sct-visually-hidden">Market</span></th><th scope="col">Open</th><th scope="col">Current</th><th scope="col">Move</th></tr></thead><tbody>` +
-      b.market
-        .map(
-          (m) =>
-            `<tr${m.label === "Moneyline" ? ` class="is-ml"` : ""}><th scope="row">${e(m.label)}</th>` +
-            `<td>${m.open ? e(m.open) : "-"}</td>` +
-            // Moneyline: one team's price per line, never split mid-price.
-            `<td><b class="sct-mpp-num">${m.label === "Moneyline" ? m.current.split(" · ").map((x) => `<span class="sct-mpp-bo-ml">${e(x)}</span>`).join("") : e(m.current)}</b></td>` +
-            `<td class="sct-mpp-bo-move">${m.move ? e(m.move) : "-"}</td></tr>`,
-        )
-        .join("") +
-      `</tbody></table></div>`
+    ? `<div class="sct-mpp-bo-sec"><ul class="sct-mpp-bo-tiles" aria-label="Current lines">${b.market.map(tile).join("")}</ul>` +
+      `<p class="sct-mpp-bo-src">One sportsbook's line, not a consensus${stamp ? ` · Updated ${e(stamp)}` : ""}</p></div>`
     : `<p class="sct-mpp-ff-none">No current line is available for this game.</p>`;
-  const angles = b?.angles.length
-    ? `<div class="sct-mpp-bo-sec"><p class="sct-mpp-ff-h">What the Numbers Suggest</p><ul class="sct-mpp-bo-angles">` +
-      b.angles
-        .map(
-          (a) =>
-            `<li><p class="sct-mpp-bo-ah"><span class="sct-mpp-bo-cat">${e(a.category)}</span>${e(a.headline)}</p>` +
-            `<p class="sct-mpp-bo-at">${e(a.text)}</p></li>`,
-        )
-        .join("") +
-      `</ul></div>`
+
+  /* 2. Betting Form: one table, both teams */
+  const form = sides.length
+    ? sec(
+        "Betting Form",
+        `<table class="sct-mpp-bo-tbl"><caption class="sct-visually-hidden">Betting records against the closing line</caption>` +
+          `<thead><tr><th scope="col">Team</th><th scope="col">${term("ATS", T_ATS)} L5</th><th scope="col">${term("O/U", T_OU)} L5</th>` +
+          `<th scope="col">${term("ATS", T_ATS)} season</th><th scope="col">${term("O/U", T_OU)} season</th>` +
+          `<th scope="col">${term("+/− L5", "Average final margin against the closing spread over the last five games")}</th></tr></thead><tbody>` +
+          sides
+            .map((s) => {
+              const t = tr[s.key]!;
+              return (
+                `<tr>${teamCell(s)}<td class="sct-mpp-num is-key">${recText(t.last5Ats)}</td><td class="sct-mpp-num is-key">${ouText(t.last5Ou)}</td>` +
+                `<td class="sct-mpp-num">${recText(t.ats)}</td><td class="sct-mpp-num">${ouText(t.ou)}</td>` +
+                `<td class="sct-mpp-num">${e(signedOne(t.recentAvg.vsSpread))}</td></tr>`
+              );
+            })
+            .join("") +
+          `</tbody></table>`,
+      )
     : "";
-  const rec = (r: { w: number; l: number; p: number }) => `${r.w}-${r.l}${r.p ? `-${r.p}` : ""}`;
-  const ou = (r: { o: number; u: number; p: number }) => `${r.o}-${r.u}${r.p ? `-${r.p}` : ""}`;
-  const trendCol = (s: PreviewSide) => {
-    const t = tr[s.key];
-    if (!t) return "";
-    const row = (value: string, label: string) => `<li><b class="sct-mpp-num">${e(value)}</b><span>${e(label)}</span></li>`;
-    const more =
-      row(`${rec(t.venueAts)} ATS`, `${t.venueAts.venue === "home" ? "At home" : "On the road"} · ${t.venueAts.games} games`) +
-      (t.roleAts && t.roleAts.games ? row(`${rec(t.roleAts)} ATS`, `As ${t.roleAts.role} · ${t.roleAts.games} games`) : "") +
-      row(`${ou(t.last5Ou)} O/U`, `Last ${t.last5Games} games`);
-    return (
-      `<div class="sct-mpp-bo-team is-${s.key}">` +
-      `<p class="sct-mpp-bo-tname">${s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async">` : ""}${e(s.team.nickname)}</p>` +
-      `<ul class="sct-mpp-bo-rec">${row(`${rec(t.ats)} ATS`, `Season · ${t.games} games`)}${row(`${rec(t.last5Ats)} ATS`, `Last ${t.last5Games} games`)}${row(`${ou(t.ou)} O/U`, `Season · ${t.games} games`)}</ul>` +
-      `<details class="sct-mpp-bo-more"><summary>View more trends<span class="sct-mpp-inj-chev" aria-hidden="true"></span></summary><ul class="sct-mpp-bo-rec">${more}</ul></details>` +
-      `</div>`
-    );
-  };
-  const trends =
-    tr.away || tr.home
-      ? `<div class="sct-mpp-bo-sec"><p class="sct-mpp-ff-h">Betting Trends</p>` +
-        `<div class="sct-mpp-bo-trends">${trendCol(p.away)}${trendCol(p.home)}</div>` +
-        `<p class="sct-mpp-keys-note">Records are against each game's closing line this regular season; pushes are the third number. O/U is over-under-push. Context, not a prediction.</p></div>`
-      : "";
+
+  /* 3. Scoring Trends: actual points vs the closing O/U, last 5 */
+  const scoring = sides.length
+    ? sec(
+        "Scoring Trends · Last 5",
+        `<table class="sct-mpp-bo-tbl"><caption class="sct-visually-hidden">Points per game over the last five games and the average closing over/under</caption>` +
+          `<thead><tr><th scope="col">Team</th><th scope="col">Scored</th><th scope="col">Allowed</th><th scope="col">Actual total</th>` +
+          `<th scope="col">${term("Avg closing O/U", "The average closing total (over/under line) of the same five games")}</th><th scope="col">Diff</th></tr></thead><tbody>` +
+          sides
+            .map((s) => {
+              const a = tr[s.key]!.recentAvg;
+              const d = Math.round((a.combined - a.total) * 10) / 10;
+              return (
+                `<tr>${teamCell(s)}<td class="sct-mpp-num">${one(a.scored)}</td><td class="sct-mpp-num">${one(a.allowed)}</td>` +
+                `<td class="sct-mpp-num is-key">${one(a.combined)}</td><td class="sct-mpp-num">${one(a.total)}</td>` +
+                `<td class="sct-mpp-num sct-mpp-bo-diff" data-dir="${d > 0 ? "up" : d < 0 ? "down" : "flat"}">${e(signedOne(d))}</td></tr>`
+              );
+            })
+            .join("") +
+          `</tbody></table>`,
+      )
+    : "";
+
+  /* 4. Key insight: one, or none */
+  const insight = b?.insight
+    ? `<div class="sct-mpp-bo-sec"><p class="sct-mpp-bo-key"><span class="sct-mpp-bo-cat">Key insight</span>${e(b.insight)}</p></div>`
+    : "";
+
+  /* 5. Recent results: collapsed per team */
+  const results = sides.length
+    ? sec(
+        "Recent Results",
+        sides
+          .map((s) => {
+            const t = tr[s.key]!;
+            return (
+              `<details class="sct-mpp-bo-games"><summary>${teamMark(s)}<span>${e(s.team.nickname)} · last ${t.recent.length} games</span><span class="sct-mpp-inj-chev" aria-hidden="true"></span></summary>` +
+              `<table class="sct-mpp-bo-gt"><caption class="sct-visually-hidden">${e(`${s.team.fullName} last ${t.recent.length} games against the closing line`)}</caption>` +
+              `<thead><tr><th scope="col">Wk</th><th scope="col">Opp</th><th scope="col">Final</th><th scope="col">Spread</th><th scope="col">${term("ATS", T_ATS)}</th><th scope="col">Total</th><th scope="col">${term("O/U", T_OU)}</th></tr></thead><tbody>` +
+              t.recent
+                .map((g) => {
+                  const wl = g.own > g.allowed ? "W" : g.own < g.allowed ? "L" : "T";
+                  return (
+                    `<tr><td>${g.week}</td><td>${g.home ? "vs" : "@"} ${e(g.oppCode)}</td>` +
+                    `<td class="sct-mpp-num">${wl} ${g.own}-${g.allowed}</td>` +
+                    `<td class="sct-mpp-num">${e(handicapText(g.handicap))}</td>` +
+                    `<td>${chip("ats", g.ats, `${ATS_WORD[g.ats]} by ${signedOne(g.vsSpread)}`)}<span class="sct-visually-hidden">${ATS_WORD[g.ats]}</span><small class="sct-mpp-bo-by">${e(signedOne(g.vsSpread))}</small></td>` +
+                    `<td class="sct-mpp-num">${g.total}</td>` +
+                    `<td>${chip("ou", g.ou, `${OU_WORD[g.ou]}: ${g.own + g.allowed} points`)}<span class="sct-visually-hidden">${OU_WORD[g.ou]}</span><small class="sct-mpp-bo-by">${g.own + g.allowed}</small></td></tr>`
+                  );
+                })
+                .join("") +
+              `</tbody></table></details>`
+            );
+          })
+          .join(""),
+      )
+    : "";
+
   return card(
     "is-betting",
     "pv-betting",
@@ -498,9 +569,11 @@ function bettingCard(p: Preview): string {
     `${pairOf(p)} Betting Outlook`,
     "Odds, context & trends",
     market +
-      angles +
-      trends +
-      `<p class="sct-mpp-bo-legal">For research only, not betting advice. Must be 21+ and in a legal jurisdiction to wager. Gambling problem? Call 1-800-GAMBLER.</p>`,
+      form +
+      scoring +
+      insight +
+      results +
+      `<p class="sct-mpp-bo-legal">Records use each game's closing line; pushes count. Context, not a prediction or betting advice. 21+ and legal jurisdictions only. Gambling problem? Call 1-800-GAMBLER.</p>`,
   );
 }
 

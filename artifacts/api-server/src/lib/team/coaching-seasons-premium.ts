@@ -18,12 +18,10 @@
 import { escapeHtml } from "../render";
 import type { TeamCoaching } from "./coaching";
 import { historyModel, leanOf, POS, readStops, stepLogo, stopColors, type HistoryRow, type Pos, type Print } from "./coaching-render";
-import { ICON } from "./coaching-premium-tendencies";
 
 const e = escapeHtml;
 
 const CALENDAR = `<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h2M8 17.5h2M12 17.5h2"/></g></svg>`;
-const BALL = `<svg class="sct-cs-ball" viewBox="0 0 120 80" width="120" height="80" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 62C26 24 70 6 108 18 94 56 50 74 12 62z"/><path d="M38 52l44-26"/><path d="M48 44l3 5M54 40l3 5M60 36l3 5M66 33l3 5M72 29l3 5"/></g></svg>`;
 
 const POS_LABEL: Record<Pos, string> = { WR: "WR share", RB: "RB share", TE: "TE share" };
 
@@ -56,7 +54,20 @@ function shareCell(p: Print | null, pos: Pos, lean: Pos | null, year: number): s
   );
 }
 
-export function renderCoachingSeasonsPremium(c: TeamCoaching): string {
+/** Seasons shown before "Show all": the recent history; the rest folds below it. */
+const RECENT = 5;
+
+/**
+ * The one historical table (mak's review, 2026-11-08): the career chart's
+ * hidden "Career scoring by stop" table and the separate "Season by Season"
+ * section repeated season, team, role, points per game and rank, so they
+ * are one table now, printed inside Coaching Career & Historical
+ * Performance under the chart. Newest season first; the latest RECENT
+ * seasons show and the rest sit behind a CSS-only "Show all" toggle (every
+ * row stays in the page). No Role column (the timeline above carries the
+ * roles); a season he did not call and a partial window stay labeled.
+ */
+export function renderSeasonHistoryTable(c: TeamCoaching): string {
   const stops = readStops(c);
   const m = historyModel(c, stops);
   if (!m) return "";
@@ -64,67 +75,62 @@ export function renderCoachingSeasonsPremium(c: TeamCoaching): string {
   const peakLb = Math.max(-1, ...m.rows.map((r) => r.p?.leadBack ?? -1));
   const peakPpg = Math.max(...m.rows.filter((r) => r.s.caller).map((r) => r.pt.ppg));
 
-  const chips = m.stats
-    .map((st) => `<li class="sct-cs-chip"><span class="sct-cs-chip-v">${e(st.value)}</span><span class="sct-cs-chip-l">${e(st.label)}</span></li>`)
-    .join("");
-
   const row = (r: HistoryRow): string => {
     const { s, pt, p } = r;
-    let html = "";
-    if (r.gapBefore) html += `<tr class="sct-cs-gap"><td colspan="9"><span class="sct-cs-gap-icon" aria-hidden="true">${CALENDAR}</span>${e(`${r.gapBefore} · Not calling plays`)}</td></tr>`;
     const logo = stepLogo(s.code);
-    const roleCell = r.groupStart
-      ? `<th scope="rowgroup" rowspan="${r.groupLen}" class="sct-cs-td is-role"><span class="sct-cs-role">${e(s.role)}</span><span class="sct-cs-role-years">${e(`(${r.groupYears})`)}</span>${s.caller ? "" : `<span class="sct-cs-role-note">not the caller</span>`}</th>`
-      : "";
     const lb = p?.leadBack ?? null;
-    html +=
-      `<tr class="sct-cs-row${r.live ? " is-current" : ""}${r.groupStart ? " is-stint-start" : ""}${s.caller ? "" : " is-notcaller"}${r.win ? " is-window" : ""}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
+    return (
+      `<tr class="sct-cs-row${r.live ? " is-current" : ""}${s.caller ? "" : " is-notcaller"}${r.win ? " is-window" : ""}" style="--seg:${colors.get(s.code) ?? "#0b1634"}">` +
       `<th scope="row" class="sct-cs-td is-season"><span class="sct-cs-year">${pt.year}</span>` +
-      (r.win ? `<span class="sct-cs-win">${e(r.win)}</span>` : "") +
+      (r.win ? `<span class="sct-cs-win" title="Partial season: only the weeks he called">${e(`${r.win} only`)}</span>` : "") +
+      (s.caller ? "" : `<span class="sct-cs-win">${e(`${s.role} · not calling`)}</span>`) +
       (r.live ? `<span class="sct-cs-live">In-season</span>` : "") +
       `</th>` +
       `<td class="sct-cs-td is-team"><span class="sct-cs-club">` +
       (logo ? `<img class="sct-cs-crest" src="${e(logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
       `<span class="sct-cs-code">${e(s.code)}</span></span></td>` +
-      roleCell +
       `<td class="sct-cs-td is-ppg"><span class="sct-cs-ppg${s.caller && pt.ppg === peakPpg ? " is-peak" : ""}">${e(pt.ppg.toFixed(1))}</span></td>` +
       `<td class="sct-cs-td is-rank">${rankPill(r.rankText)}</td>` +
       POS.map((pos) => shareCell(p, pos, r.lean, pt.year)).join("") +
       `<td class="sct-cs-td is-lb">` +
       (lb != null ? `<span class="sct-cs-lb${lb >= 65 ? " is-workhorse" : ""}${lb === peakLb && lb >= 0 ? " is-peak" : ""}">${lb}%</span>` : `<span class="sct-cs-none">–</span>`) +
       `</td>` +
-      `</tr>`;
-    return html;
+      `</tr>`
+    );
   };
-
+  // Newest first: a gap band ("2024 · Not calling plays") sat before the row
+  // after it, so in reverse it follows that row.
+  const gap = (r: HistoryRow): string =>
+    r.gapBefore ? `<tr class="sct-cs-gap"><td colspan="8"><span class="sct-cs-gap-icon" aria-hidden="true">${CALENDAR}</span>${e(`${r.gapBefore} · Not calling plays`)}</td></tr>` : "";
+  const newest = [...m.rows].reverse();
+  const recent = newest.slice(0, RECENT);
+  const older = newest.slice(RECENT);
+  const body = (rows: HistoryRow[]): string => rows.map((r) => row(r) + gap(r)).join("");
+  const id = `sct-cs-all-${e(c.playCaller.name.toLowerCase().replace(/[^a-z]+/g, "-"))}`;
   return (
-    `<div class="sct-block sct-cp sct-cpt sct-cs" id="coaching-seasons-premium" data-sct-premium="coaching-seasons">` +
-    `<section class="sct-cpt-section is-seasons" aria-labelledby="sct-cs-title">` +
-    `<header class="sct-cpt-head is-main is-seasons">` +
-    `<span class="sct-cpt-head-icon">${CALENDAR}</span>` +
-    `<span class="sct-cpt-head-rule"></span>` +
-    `<div class="sct-cpt-head-text"><h3 class="sct-cpt-h3" id="sct-cs-title">${e(`Season by Season Under ${m.last}, ${m.span}`)}</h3></div>` +
-    BALL +
-    `</header>` +
-    `<div class="sct-cs-body">` +
-    (chips ? `<ul class="sct-cs-chips">${chips}</ul>` : "") +
-    `<div class="sct-cs-scroll" tabindex="0" role="region" aria-label="${e(`Season by season under ${m.last}, ${m.span}`)}">` +
+    `<div class="sct-cs" id="coaching-seasons-premium" data-sct-premium="coaching-seasons">` +
+    `<h4 class="sct-cs-title" id="sct-cs-title">${e(`Season by Season, ${m.span}`)}</h4>` +
+    (older.length ? `<input type="checkbox" class="sct-cs-all" id="${id}">` : "") +
+    `<div class="sct-cs-scroll" tabindex="0" role="region" aria-labelledby="sct-cs-title">` +
     `<table class="sct-cs-table">` +
     `<thead><tr>` +
     `<th scope="col" class="sct-cs-th is-season">Season</th>` +
     `<th scope="col" class="sct-cs-th is-team">Team</th>` +
-    `<th scope="col" class="sct-cs-th is-role">Role / Tenure</th>` +
-    `<th scope="col" class="sct-cs-th is-ppg"><abbr title="Team offensive points per game over the weeks he called">Points/G</abbr></th>` +
+    `<th scope="col" class="sct-cs-th is-ppg"><abbr title="Team offensive points per game over the weeks he called">PPG</abbr></th>` +
     `<th scope="col" class="sct-cs-th is-rank"><abbr title="The offense's scoring rank among the 32 clubs; a windowed rank covers the weeks he called only">NFL rank</abbr></th>` +
-    `<th scope="col" class="sct-cs-th is-share">WR share<span class="sct-cs-th-sub">of targets (vs league)</span></th>` +
-    `<th scope="col" class="sct-cs-th is-share">RB share</th>` +
-    `<th scope="col" class="sct-cs-th is-share">TE share</th>` +
-    `<th scope="col" class="sct-cs-th is-lb">Lead back<span class="sct-cs-th-sub">% of carries + 2 × targets</span></th>` +
-    `</tr></thead><tbody>${m.rows.map(row).join("")}</tbody></table></div>` +
+    `<th scope="col" class="sct-cs-th is-share">WR target %<span class="sct-cs-th-sub" title="Points above or below the league average">vs lg</span></th>` +
+    `<th scope="col" class="sct-cs-th is-share">RB target %</th>` +
+    `<th scope="col" class="sct-cs-th is-share">TE target %</th>` +
+    `<th scope="col" class="sct-cs-th is-lb">Lead RB %<span class="sct-cs-th-sub" title="The lead back's share of the backfield's carries + 2 × targets">carries + 2×tgt</span></th>` +
+    `</tr></thead>` +
+    `<tbody class="sct-cs-recent">${body(recent)}</tbody>` +
+    (older.length ? `<tbody class="sct-cs-older">${body(older)}</tbody>` : "") +
+    `</table></div>` +
+    (older.length
+      ? `<label class="sct-cs-more" for="${id}"><span class="sct-cs-more-show">${e(`Show all ${m.rows.length} seasons`)}</span><span class="sct-cs-more-hide">Show recent seasons only</span></label>`
+      : "") +
     `<p class="sct-cs-hint" aria-hidden="true">Scroll sideways to see every column.</p>` +
-    `<p class="sct-cs-note"><span class="sct-cs-note-icon">${ICON["info"]}</span><span>${e(m.note)}</span></p>` +
-    `</div>` +
-    `</section>` +
+    `<p class="sct-cs-note">${e(m.note)}</p>` +
     `</div>`
   );
 }

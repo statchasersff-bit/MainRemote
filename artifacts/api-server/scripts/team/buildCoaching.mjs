@@ -383,10 +383,34 @@ async function seasonTendencies(season) {
  * league-wide positional ranks - is computed over that span only, so a
  * partial calling stop compares its weeks against the same weeks league-wide.
  */
+/**
+ * Each player's position IN THAT SEASON, from that season's roster file.
+ * stats_player_week carries the player's latest position, so a converted
+ * player is filed under his new one in every old season: N'Keal Harry, a
+ * Patriots wide receiver in 2019-20 and a tight end only from 2023, came
+ * out as New England's "TE1" for both years and moved his targets into the
+ * tight-end share (caught in mak's review, 2026-11-08).
+ */
+const rosterPosCache = new Map();
+async function rosterPositions(season) {
+  if (rosterPosCache.has(season)) return rosterPosCache.get(season);
+  const map = new Map();
+  try {
+    for await (const r of rows(`${NFLVERSE}/rosters/roster_${season}.csv`)) {
+      if (r.gsis_id && r.position && !map.has(r.gsis_id)) map.set(r.gsis_id, r.position);
+    }
+  } catch (err) {
+    console.warn(`roster_${season}.csv unavailable (${err.message}); falling back to the stats file's position`);
+  }
+  rosterPosCache.set(season, map);
+  return map;
+}
+
 async function seasonPlayers(season, window = null) {
   const clubs = new Map(); // club -> {posTargets, rbs: Map, topByPos: Map(pos -> {name, pts})}
   const leaguePts = new Map(); // `${pos}` -> Map(player_id -> pts)
   const regular = (r) => (r.season_type ?? r.game_type) === "REG";
+  const seasonPos = await rosterPositions(season);
   for await (const r of rows(`${NFLVERSE}/stats_player/stats_player_week_${season}.csv`)) {
     if (!regular(r) || !r.player_id) continue;
     if (window) {
@@ -395,7 +419,7 @@ async function seasonPlayers(season, window = null) {
     }
     const c = club(r.team);
     if (!c) continue;
-    const pos = r.position;
+    const pos = seasonPos.get(r.player_id) ?? r.position;
     const entry = ensure(clubs, c, () => ({
       posTargets: { WR: 0, TE: 0, RB: 0 },
       rbs: new Map(),
@@ -603,12 +627,14 @@ const SHIFT_COPY = {
     down: ["Less play-action.", () => `Fewer of the scheme's easiest explosive throws.`],
   },
   motionRate: {
-    up: ["More pre-snap motion.", (a, b, x) => `A more motion-heavy look than in ${x.priorSeason}.`],
-    down: ["Less pre-snap motion.", (a, b, x) => `A less motion-heavy look than in ${x.priorSeason}.`],
+    // What the move means for a fantasy roster, not the move again (mak's
+    // review, 2026-11-08); the tables already carry the figures.
+    up: ["More pre-snap motion.", () => `Motion shows the quarterback the coverage before the snap and frees receivers off the line: a quiet lift to short-area target efficiency.`],
+    down: ["Less pre-snap motion.", () => `Receivers win more against settled coverage, so efficiency leans on talent more than scheme.`],
   },
   shotgunRate: {
-    up: ["More shotgun.", () => `A more spread, dropback-first identity.`],
-    down: ["More under center.", () => `Under-center snaps travel with the run game and play-action.`],
+    up: ["More shotgun.", () => `More spread, dropback-first snaps: better for pass-catcher volume and for backs who catch passes.`],
+    down: ["More under center.", () => `Under-center snaps travel with the run game and play-action: better for an early-down back and downfield shots off the fake.`],
   },
   rzPassRate: {
     // A play-selection rate, not a touchdown forecast: the card's note carries

@@ -216,7 +216,9 @@ describe("one address per meeting", () => {
       ),
       "the H1 names the game, so it cannot compete with the pair's own page",
     );
-    assert.ok(h1[0].closest("header.sct-sbh"), "and it is inside the hero");
+    // In the scoreboard (previous design) or the premium banner (new design,
+    // recap-premium.ts) - whichever is served while mak compares, 2026-11-07.
+    assert.ok(h1[0].closest("header.sct-sbh, .sct-mpp.is-top .sct-mpp-banner"), "and it is inside the hero");
 
     // The pair page links only to games it does not own, so the page it
     // linked is canonical at its own address.
@@ -267,7 +269,7 @@ describe("the page follows its state", () => {
       // the page printing the same fixture twice, which is what merging them
       // was for.
       assert.equal(featured, null, "no separate Final card postgame");
-      assert.ok(doc.querySelector(".sct-sbh-score"), "the hero carries the score");
+      assert.ok(doc.querySelector(".sct-mpp-hero .sct-mpp-score"), "the hero carries the score");
     } else if (state === "upcoming") {
       // Same reasoning one step earlier: with no score to print, an "Up Next"
       // card is the hero's season, round, stadium and kickoff a second time,
@@ -368,17 +370,14 @@ describe("the page follows its state", () => {
 describe("links between the family", () => {
   test("the pair page links both hubs and both matchup hubs", async () => {
     const { doc } = await dom(CANON);
-    // The older layout lists them in .sct-pages; the recap layout in Keep
-    // exploring's team pills, away side first.
-    const hrefs = [...doc.querySelectorAll(".sct-pages a, .sct-ex-hubs a")]
+    // The older layout lists hubs and matchup hubs in .sct-pages; the recap
+    // links the two hubs from its hero (the "More on this game" team grid,
+    // with the matchup-hub links, was removed 2026-11-09).
+    const hrefs = [...doc.querySelectorAll(".sct-pages a, a.sct-mpp-hub")]
       .map((a) => a.getAttribute("href"))
+      .filter((h) => !h.endsWith("/matchups/"))
       .sort();
-    assert.deepEqual(hrefs, [
-      "/team/new-england-patriots/",
-      "/team/new-england-patriots/matchups/",
-      "/team/philadelphia-eagles/",
-      "/team/philadelphia-eagles/matchups/",
-    ]);
+    assert.deepEqual(hrefs, ["/team/new-england-patriots/", "/team/philadelphia-eagles/"]);
   });
 
   test("a team's matchups hub links every opponent to the canonical pair", async () => {
@@ -459,7 +458,7 @@ describe("the WordPress fragment", () => {
     assert.ok(["upcoming", "recently_completed", "historical"].includes(res.headers.get("x-matchup-state")));
     assert.match(res.headers.get("x-matchup-season"), /^2\d{3}$/);
     assert.ok(!/<h1\b/i.test(res.body), "the host page owns the H1");
-    assert.match(res.body, /<h2 class="sct-sbh-title"[^>]*data-sct-hero-heading>/, "the hero's H2 is marked for promotion");
+    assert.match(res.body, /<h2 class="(?:sct-sbh-title|sct-up-h2 sct-mpp-title|sct-visually-hidden sct-mpp-title)"[^>]*data-sct-hero-heading>/, "the hero's H2 is marked for promotion");
     // The islands allowed are the SportsEvent and, on a recap layout, the FAQ -
     // inert JSON the plugin lifts into the head and strips, not assets.
     const scripts = [...res.body.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
@@ -497,10 +496,9 @@ describe("fantasy tab tool links", () => {
 
   test("projections and trade calculator banners, at their final addresses", async () => {
     const { doc } = await dom(GAME);
-    assert.equal(
-      doc.querySelector('[data-cta="fantasy-projections-banner"]')?.getAttribute("href"),
-      `${RC}fantasy-football-projections`,
-    );
+    // The projections banner went with the Stats & Fantasy tab (2026-11-09);
+    // the trade banner moved to the Fantasy tab.
+    assert.equal(doc.querySelector('[data-cta="fantasy-projections-banner"]'), null);
     assert.equal(
       doc.querySelector('[data-cta="fantasy-trade-banner"]')?.getAttribute("href"),
       `${RC}fantasy-football-trade-calculator`,
@@ -549,8 +547,12 @@ describe("game leaders", () => {
         ],
       );
     }
+    // The recap's leaders are the Game leaders card in the rail (the old
+    // strip went with the previous design, 2026-11-09).
+    const rail = doc.querySelector(".sct-rb-leaders");
+    assert.ok(rail, "a played matchup carries the leaders card");
     const block = doc.querySelector('section.sct-ls[aria-label="Game leaders"]');
-    assert.ok(block, "a played matchup carries the leaders strip");
+    if (!block) return;
 
     const cards = [...block.querySelectorAll(".sct-ls-card")];
     assert.ok(cards.length > 0 && cards.length <= 4, `got ${cards.length} cards`);
@@ -943,7 +945,15 @@ describe("the upcoming page (premium design)", () => {
       if (bo) {
         if (ff) assert.equal(ff.nextElementSibling, bo, `${p}: under Fantasy Football Impact`);
         assert.doesNotMatch(bo.textContent, /draftkings|fanduel|espn|nflverse|consensus line|lock|best bet|guarantee|\d+% (chance|probability)/i, `${p}: betting copy`);
-        for (const span of bo.querySelectorAll(".sct-mpp-bo-rec span")) assert.match(span.textContent, /\d+ games/, `${p}: sample size`);
+        // Compacted (mak, 2026-11-07): one insight at most, no EPA, no form-chip
+        // strips, game tables collapsed by default, one footer line.
+        assert.ok(bo.querySelectorAll(".sct-mpp-bo-key").length <= 1, `${p}: one insight`);
+        assert.doesNotMatch(bo.querySelector(".sct-mpp-bo-key")?.textContent ?? "", /EPA/, `${p}: no EPA in the insight`);
+        assert.equal(bo.querySelector(".sct-mpp-bo-chips"), null, `${p}: no form strips`);
+        assert.equal(bo.querySelector("details.sct-mpp-bo-games[open]"), null, `${p}: results collapsed`);
+        assert.equal(bo.querySelectorAll(".sct-mpp-bo-legal").length, 1, `${p}: one footer`);
+        for (const c of bo.querySelectorAll(".sct-mpp-bo-chip")) assert.match(c.textContent, /^[WLPOU]$/, `${p}: chip letter`);
+        for (const t of bo.querySelectorAll(".sct-mpp-bo-gt tbody")) assert.ok(t.rows.length <= 5, `${p}: last 5 only`);
       }
       // The tail: FAQ (with its schema), then Next steps, right after the premium body.
       // (The lighter-design comparison, .sct-mpl, was removed 2026-11-06.)
@@ -964,22 +974,23 @@ describe("the postgame page", () => {
     if (!page) return;
     const { doc } = page;
 
-    const hero = doc.querySelector("header.sct-sbh[data-status=final]");
+    // The premium hero since 2026-11-07 (recap-premium.ts).
+    const hero = doc.querySelector("header.sct-mpp-hero[data-status=final]");
     assert.ok(hero, "the hero is laid out as a final");
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
 
-    const scores = [...hero.querySelectorAll(".sct-sbh-score")].map((n) =>
+    const scores = [...hero.querySelectorAll(".sct-mpp-score")].map((n) =>
       Number(n.textContent.trim()),
     );
     assert.equal(scores.length, 2, "two scores");
     for (const score of scores) assert.ok(Number.isFinite(score), "a real number");
 
     // Exactly one winner, and it is the bigger number.
-    const sides = [...hero.querySelectorAll(".sct-sbh-team")];
+    const sides = [...hero.querySelectorAll(".sct-mpp-ident")];
     const winners = sides.filter((s) => s.classList.contains("is-winner"));
     if (scores[0] !== scores[1]) {
       assert.equal(winners.length, 1, "one winner");
-      const won = Number(winners[0].querySelector(".sct-sbh-score").textContent);
+      const won = Number(winners[0].querySelector(".sct-mpp-score").textContent);
       assert.equal(won, Math.max(...scores), "the winner has the bigger score");
     } else {
       assert.equal(winners.length, 0, "a tie has no winner");
@@ -987,7 +998,7 @@ describe("the postgame page", () => {
 
     // Away first, home second.
     assert.ok(sides[0].classList.contains("is-away") && sides[1].classList.contains("is-home"));
-    assert.match(hero.querySelector(".sct-sbh-badge").textContent, /^Final(\/OT)?(, tie)?$/);
+    assert.match(hero.querySelector(".sct-mpp-badge").textContent, /^Final(\/OT)?(, tie)?$/);
   });
 
   test("the quarter line adds up to the score beside it", async () => {
@@ -1014,7 +1025,7 @@ describe("the postgame page", () => {
     }
 
     // And the totals are the same two numbers the hero printed.
-    const heroScores = [...page.doc.querySelectorAll(".sct-sbh-score")]
+    const heroScores = [...page.doc.querySelectorAll(".sct-mpp-score")]
       .map((n) => Number(n.textContent.trim()))
       .sort((x, y) => x - y);
     const lineTotals = rows
@@ -1120,7 +1131,7 @@ describe("the postgame page", () => {
       p.querySelector(".sct-mu-usage-team-name").textContent.trim(),
     );
     const hero = ["is-away", "is-home"].map((side) =>
-      page.doc.querySelector(`.sct-sbh-team.${side} .sct-sbh-name`)?.textContent.trim(),
+      page.doc.querySelector(`.sct-mpp-ident.${side} .sct-mpp-name`)?.textContent.trim(),
     );
     if (hero.every(Boolean)) {
       assert.deepEqual(names, hero.filter((name) => names.includes(name)), `panels ${names.join(", ")} vs hero ${hero.join(", ")}`);
@@ -1405,9 +1416,8 @@ describe("sortable stat tables", () => {
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
     const video = doc.querySelector("[data-mu-tab='recap'] .sct-hl");
     if (!video) return;
-    // One game-summary module: the story's last child, after its text.
-    assert.ok(video.parentElement.matches(".sct-mu-story"));
-    assert.ok(video.previousElementSibling.matches(".sct-mu-story-body, .sct-mu-keys"));
+    // The Overview's Game Highlights card holds it (2026-11-09: the only design).
+    assert.ok(video.closest(".sct-ov-card.is-highlights"));
     // Nothing plays here: the box is a link to YouTube in a new tab, no
     // iframe and no click-to-load button (2026-11-02).
     const link = video.querySelector("a.sct-hl-play[href^='https://www.youtube.com/watch?v='][target='_blank']");
@@ -1494,8 +1504,10 @@ describe("sortable stat tables", () => {
     const { doc, errors } = await hydrated("/nfl/new-england-patriots-vs-seattle-seahawks/");
     assert.deepEqual(errors, [], "the bundle threw while wiring the tables");
 
+    // The sortable player-stat tables went with the Stats & Fantasy tab
+    // (2026-11-09); the check runs wherever one is still printed.
     const table = doc.querySelector("table[data-sct-sortable]");
-    assert.ok(table, "a sortable table is on the page");
+    if (!table) return;
     assert.equal(table.getAttribute("data-sct-sort"), "js", "the bundle claimed it");
 
     const headers = [...table.querySelectorAll("thead th")];
@@ -1684,7 +1696,7 @@ async function pinnedGame(segment) {
   const res = await get(`${ARI_LAR}${segment}/`);
   if (res.status !== 200) return null;
   const doc = new JSDOM(res.body).window.document;
-  return doc.querySelector("header.sct-sbh[data-status=final]") ? { ...res, doc } : null;
+  return doc.querySelector("header.sct-mpp-hero[data-status=final]") ? { ...res, doc } : null;
 }
 
 describe("completed game tabs", () => {
@@ -1704,7 +1716,9 @@ describe("completed game tabs", () => {
       tabs.map((t) => [t.textContent, t.getAttribute("aria-controls")]),
       [
         ["Recap", "recap-tab"],
-        ["Stats & Fantasy", "fantasy-tab"],
+        ["Box Score", "box-score-tab"],
+        ["Play-by-Play", "pbp-tab"],
+        ["Fantasy", "fantasy-recap-tab"],
         ["Game flow", "game-flow-tab"],
         ["Head-to-head", "h2h-tab"],
         ["Betting", "betting-tab"],
@@ -1725,10 +1739,13 @@ describe("completed game tabs", () => {
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
     assert.equal(h1[0].closest("[data-mu-tab]"), null);
-    const hero = h1[0].closest("header.sct-sbh");
-    // The intro sentence sits between the scoreboard and the tab bar.
-    assert.ok(hero.nextElementSibling.matches("p.sct-mu-intro"));
-    const bar = hero.nextElementSibling.nextElementSibling;
+    // Both designs' tops sit in one wrapper while mak compares them
+    // (2026-11-07); the H1 is in the served design's top.
+    const top = h1[0].closest(".sct-mu-tops");
+    assert.ok(top, "the H1 is in the top");
+    // The intro sentence sits between the top and the tab bar.
+    assert.ok(top.nextElementSibling.matches("p.sct-mu-intro"));
+    const bar = top.nextElementSibling.nextElementSibling;
     assert.ok(bar.matches("[data-mu-tabbar]"));
     assert.ok(bar.nextElementSibling.matches(".sct-rb"));
 
@@ -1742,13 +1759,13 @@ describe("completed game tabs", () => {
     // Sections keep their ids inside their tab; outlook, FAQ and exploring sit
     // below them. The recap story is in the Recap tab's full-width lead, the
     // rest of that tab in its panel.
-    const inTab = { recap: "recap", why: "recap", verdicts: "fantasy", wp: "game-flow", h2h: "head-to-head", betting: "betting" };
+    const inTab = { recap: "recap", "team-stats": "box-score", "player-box": "box-score", verdicts: "fantasy-recap", wp: "game-flow", h2h: "head-to-head", betting: "betting" };
     for (const [id, tab] of Object.entries(inTab)) {
       const el = doc.getElementById(id);
       if (el) assert.equal(el.closest("[data-mu-tab]").getAttribute("data-mu-tab"), tab, `#${id} is in ${tab}`);
     }
     assert.ok(doc.getElementById("recap").closest(".sct-mu-lead"), "the story is in the full-width lead");
-    assert.equal(doc.getElementById("why").closest("[data-mu-tab]").id, "recap-tab");
+    assert.equal(doc.getElementById("team-stats").closest("[data-mu-tab]").id, "box-score-tab");
     for (const id of ["fantasy-outlook", "faq", "explore"]) {
       const el = doc.getElementById(id);
       if (el) assert.equal(el.closest("[data-mu-tab]"), null, `${id} is below the tabs`);
@@ -1766,14 +1783,16 @@ describe("completed game tabs", () => {
     assert.equal(plain.doc.querySelector("[data-sct-root]").getAttribute("data-mu-tabs"), "js");
     assert.deepEqual(active(plain.doc), ["recap"]);
     assert.equal(plain.doc.querySelector('[data-mu-tab-link="recap"]').getAttribute("aria-selected"), "true");
-    assert.equal(plain.doc.getElementById("fantasy-tab").hidden, true);
+    assert.equal(plain.doc.getElementById("fantasy-tab"), null, "Stats & Fantasy is gone");
+    assert.equal(plain.doc.getElementById("fantasy-recap-tab").hidden, true);
 
-    for (const [hash, tab] of [["#fantasy", "fantasy"], ["#game-flow", "game-flow"], ["#head-to-head", "head-to-head"], ["#betting", "betting"]]) {
+    // #fantasy (the deleted tab's hash) opens the Fantasy tab.
+    for (const [hash, tab] of [["#fantasy", "fantasy-recap"], ["#fantasy-recap", "fantasy-recap"], ["#game-flow", "game-flow"], ["#head-to-head", "head-to-head"], ["#betting", "betting"]]) {
       const page = await hydrated(`${WILD_CARD}${hash}`);
       if (page.doc.querySelector(`[data-mu-tab="${tab}"]`)) assert.deepEqual(active(page.doc), [tab], hash);
     }
     const inside = await hydrated(`${WILD_CARD}#verdicts`);
-    if (inside.doc.getElementById("verdicts")) assert.deepEqual(active(inside.doc), ["fantasy"]);
+    if (inside.doc.getElementById("verdicts")) assert.deepEqual(active(inside.doc), ["fantasy-recap"]);
 
     // A click switches in place and writes the tab's address.
     const tab = plain.doc.querySelector('[data-mu-tab-link="head-to-head"]');
@@ -1854,23 +1873,20 @@ describe("the Cardinals–Rams games", () => {
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
     assert.equal(h1[0].textContent, "Arizona Cardinals vs Los Angeles Rams Match Player Stats: Wild Card, 2021");
-    // The context line directly under the H1: round with its season (the
-    // kickoff's calendar year is the next one), the date, the final.
-    assert.equal(
-      h1[0].nextElementSibling.textContent,
-      "2021 Wild Card · January 17, 2022 · Rams 34, Cardinals 11",
-    );
-    assert.equal(h1[0].nextElementSibling.className, "sct-sbh-context");
-    const hero = h1[0].closest("header.sct-sbh");
-    assert.equal(hero.getAttribute("aria-labelledby"), h1[0].id);
-
-    assert.equal(hero.querySelector(".sct-sbh-round").textContent, "2021 NFC Wild Card");
+    // The H1 is visually hidden and its context line is gone (mak removed
+    // the title banner, 2026-11-09).
+    assert.ok(h1[0].classList.contains("sct-visually-hidden"));
+    assert.equal(doc.querySelector(".sct-mpp .sct-up-dek, .sct-mpp-banner"), null);
+    // The premium hero (recap-premium.ts, 2026-11-07) is in the HTML in either
+    // design while mak compares them.
+    const hero = doc.querySelector("header.sct-mpp-hero");
+    assert.equal(hero.querySelector(".sct-mpp-eyebrow").textContent, "Final2021 · NFC Wild Card");
     assert.deepEqual(
-      [...hero.querySelectorAll(".sct-sbh-score")].map((n) => n.getAttribute("aria-label")),
+      [...hero.querySelectorAll(".sct-mpp-score")].map((n) => n.getAttribute("aria-label")),
       ["Cardinals 11", "Rams 34"],
     );
-    assert.equal(hero.querySelector(".is-winner .sct-sbh-tag").textContent, "Won, advanced");
-    assert.equal(hero.querySelector("time").textContent, "Mon, Jan 17, 2022, 8:15 PM ET");
+    assert.equal(hero.querySelector(".is-winner .sct-mpp-won").textContent, "Won, advanced");
+    assert.match(hero.querySelector(".sct-mpp-facts").textContent, /Mon, Jan 17, 2022 · 8:15 PM ET/);
 
     assert.equal(
       doc.querySelector("title").textContent,
@@ -1890,7 +1906,8 @@ describe("the Cardinals–Rams games", () => {
       "Arizona Cardinals vs Los Angeles Rams match player stats from the Wild Card round of the 2021 NFL playoffs. " +
         "The Rams defeated the Cardinals 34–11 on January 17, 2022.",
     );
-    assert.ok(intro.previousElementSibling.classList.contains("sct-sbh"), "straight under the scoreboard");
+    // (Or under the previous header, while mak compares the two - 2026-11-07.)
+    assert.ok(intro.previousElementSibling.matches(".sct-mu-tops"), "straight under the top block");
 
     // In the served HTML, no script run: the head carries the SportsEvent.
     const ld = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
@@ -1904,7 +1921,7 @@ describe("the Cardinals–Rams games", () => {
     assert.equal(ld.awayTeam.name, "Arizona Cardinals");
     assert.equal(ld.location.name, "SoFi Stadium");
     assert.equal(ld.description, "Final: Los Angeles Rams 34, Arizona Cardinals 11.");
-    assert.match(body, /<h1 class="sct-sbh-title"/, "the H1 is in the source, not written by script");
+    assert.match(body, /<h1 class="(?:sct-sbh-title|sct-up-h2 sct-mpp-title|sct-visually-hidden sct-mpp-title)"/, "the H1 is in the source, not written by script");
 
     // The recap leads the Recap tab, full width above its two columns, headed
     // by an H2 with the score in it.
@@ -1920,8 +1937,9 @@ describe("the Cardinals–Rams games", () => {
       [...doc.querySelectorAll(selector)].map((h) => h.textContent);
     assert.deepEqual(
       // Section titles in Title Case, as on the player pages (mak, 2026-09-30).
+      // Team Stats lives on the Box Score tab since 2026-11-08.
       headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /Team Stats$|^Scoring/.test(h)),
-      ["Cardinals vs Rams Team Stats", "Scoring Summary"].filter(
+      ["Scoring Summary"].filter(
         (h) => h !== "Scoring Summary" || doc.querySelector("#sct-rb-scoring"),
       ),
     );
@@ -2020,15 +2038,15 @@ describe("the Cardinals–Rams games", () => {
     test(`${segment}: Cardinals away at SoFi, and the Cardinals won`, async () => {
       const page = await pinnedGame(segment);
       if (!page) return;
-      const hero = page.doc.querySelector("header.sct-sbh");
-      const away = hero.querySelector(".sct-sbh-team.is-away");
-      const home = hero.querySelector(".sct-sbh-team.is-home");
-      assert.equal(away.querySelector(".sct-sbh-name").textContent, "Arizona Cardinals");
-      assert.equal(home.querySelector(".sct-sbh-name").textContent, "Los Angeles Rams");
-      assert.equal(hero.querySelector(".sct-sbh-venue").textContent, "SoFi Stadium");
+      const hero = page.doc.querySelector("header.sct-mpp-hero");
+      const away = hero.querySelector(".sct-mpp-ident.is-away");
+      const home = hero.querySelector(".sct-mpp-ident.is-home");
+      assert.equal(away.querySelector(".sct-mpp-name").textContent, "Arizona Cardinals");
+      assert.equal(home.querySelector(".sct-mpp-name").textContent, "Los Angeles Rams");
+      assert.match(hero.querySelector(".sct-mpp-facts").textContent, /SoFi Stadium/);
       assert.ok(away.classList.contains("is-winner"), "Arizona won");
-      assert.equal(away.querySelector(".sct-sbh-score").textContent, String(arizona));
-      assert.equal(home.querySelector(".sct-sbh-score").textContent, String(rams));
+      assert.equal(away.querySelector(".sct-mpp-score").textContent, String(arizona));
+      assert.equal(home.querySelector(".sct-mpp-score").textContent, String(rams));
       assert.match(page.doc.querySelector("h1").textContent, /^Arizona Cardinals vs Los Angeles Rams Match Player Stats: Week \d+, 202\d$/);
     });
   }
@@ -2196,6 +2214,14 @@ describe("betting outlook math (mak, 2026-11-06)", () => {
     assert.equal(t.games, 3);
     assert.deepEqual({ w: t.venueAts.w, l: t.venueAts.l, p: t.venueAts.p, games: t.venueAts.games }, { w: 1, l: 1, p: 0, games: 2 });
     assert.equal(t.roleAts.games, 1, "an underdog only in week 1");
+    // Per-game rows, each against its own closing line (mak, 2026-11-07).
+    assert.deepEqual(t.recent.map((r) => [r.week, r.oppCode, r.handicap, r.ats, r.ou, r.vsSpread]), [
+      [1, "CHI", 3, "w", "o", 7],
+      [2, "CHI", -3, "p", "p", 0],
+      [3, "NE", -2.5, "l", "u", -19.5],
+    ]);
+    assert.equal(t.recentAvg.vsSpread, Math.round(((7 + 0 - 19.5) / 3) * 10) / 10);
+    assert.equal(t.recentAvg.combined, Math.round(((44 + 37 + 37) / 3) * 10) / 10);
     // Home-signed (negative = home favored): NE -2.5 to GB -1 is 3.5 toward GB.
     assert.equal(spreadText(-2.5, gb, ne), "NE \u22122.5");
     assert.equal(spreadText(1, gb, ne), "GB \u22121");
@@ -2205,3 +2231,227 @@ describe("betting outlook math (mak, 2026-11-06)", () => {
   });
 });
 
+
+/*
+ * The new design's Overview tab (mak, 2026-11-07: "What happened, why the
+ * winning team won, who made the difference, and how the game changed"),
+ * the only recap design since 2026-11-09. Built from the
+ * stored play-by-play story (data/matchup/game_story_<season>.json).
+ */
+describe("recap Overview tab (new design)", () => {
+  const PAGE = "/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/";
+
+  test("five cards in mak's order, the story told from the play-by-play", async () => {
+    const { doc } = await dom(PAGE);
+    const ov = doc.querySelector("[data-mu-tab='recap'] .sct-ov");
+    if (!ov) return; // no stored story for the game
+    assert.equal(doc.querySelectorAll("h1").length, 1, "still one H1");
+    assert.equal(doc.querySelector("#tab-recap").textContent, "Overview");
+    const steps = [...ov.querySelectorAll(".sct-ov-step")].map((p) => p.textContent.replace(/\s+/g, " ").trim());
+    assert.deepEqual(steps, [], "no step labels");
+    assert.equal(ov.querySelector("#sct-ov-recap").textContent, "Game Recap");
+    assert.equal(
+      ov.querySelector(".is-recap .sct-ov-headline strong").textContent,
+      "Seahawks rally past Patriots 13–10 behind a late touchdown and three interceptions",
+    );
+    const copy = ov.querySelector(".is-recap").textContent;
+    assert.match(copy, /Seattle lost Sam Darnold to an injury on the opening drive, and Drew Lock took over/);
+    assert.match(copy, /Drake Maye threw three interceptions in the fourth quarter, to Nehemiah Pritchett, Julian Love and Josh Jobe\./);
+    assert.match(copy, /Josh Jobe's end-zone interception in the final minute sealed the win\./);
+    const tiles = [...ov.querySelectorAll(".sct-ov-tiles li")].map((li) => li.textContent);
+    assert.deepEqual(tiles, ["+3Turnover margin", "5.9SEA yards/play", "10Q4 points"]);
+    assert.match(ov.querySelector(".is-why .sct-ov-copy").textContent, /overcame poor third-down efficiency \(2-for-11\), 19 fewer offensive plays/);
+    assert.ok(ov.querySelector(".is-swing svg.sct-ov-wp path.sct-ov-wp-line"), "the play-by-play chart");
+    const moments = [...ov.querySelectorAll(".sct-ov-moments b")].map((b) => b.textContent);
+    assert.deepEqual(moments, [
+      "Lock connects with Smith-Njigba for a 45-yard TD.",
+      "Myers makes the go-ahead field goal.",
+      "Jobe's late interception seals the victory.",
+    ]);
+    // Game leaders moved to the sidebar, directly under Game info (mak, 2026-11-08).
+    assert.equal(ov.querySelector(".sct-ov-leader"), null, "no leaders card in the Overview column");
+    const info = doc.querySelector(".sct-rb-aside .sct-rb-info:not(.sct-rb-leaders)");
+    const side = info.nextElementSibling;
+    assert.ok(side.classList.contains("sct-rb-leaders"), "leaders follow Game info");
+    assert.deepEqual([...side.querySelectorAll("dt")].map((n) => n.textContent), ["Passing", "Rushing", "Receiving", "Defense"]);
+    assert.match(side.textContent, /Game-sealing INT/);
+    assert.ok(ov.querySelector(".is-highlights .sct-hl"), "the highlights");
+  });
+
+  test("team stats and the scoring summary move to their own tabs", async () => {
+    const { doc } = await dom(PAGE);
+    if (!doc.querySelector(".sct-ov")) return;
+    assert.ok(doc.querySelector("[data-mu-tab='box-score'] #team-stats"), "Team Stats on Box Score");
+    assert.equal(doc.querySelector("#why"), null, "the old Team Stats table is gone");
+    assert.ok(doc.querySelector("[data-mu-tab='play-by-play'] #pbp-scoring"), "Scoring Summary on Play-by-Play");
+    assert.equal(doc.querySelector("#sct-rb-scoring"), null, "and not twice");
+    assert.equal(doc.querySelector(".sct-mu-lead[data-mu-tab='recap'] .sct-ls"), null, "no old lead");
+    // One design since 2026-11-09: no switch, no previous design.
+    assert.equal(doc.querySelector(".sct-mu-design-switch, .sct-sbh"), null, "no previous design");
+    assert.equal(doc.querySelector("#tab-recap").textContent, "Overview");
+  });
+
+  test("Play-by-Play tab: scoring summary, drive overview, every play (mak, 2026-11-08)", async () => {
+    const { doc } = await dom(PAGE);
+    const tab = doc.querySelector("[data-mu-tab='play-by-play']");
+    if (!tab) return; // no stored play-by-play for the game
+    assert.equal(doc.querySelector("#tab-play-by-play").textContent, "Play-by-Play");
+    assert.deepEqual([...tab.querySelectorAll(".sct-pbp-sec > h2")].map((h) => h.id), ["pbp-scoring", "pbp-drives", "pbp-full"]);
+    // Scoring summary: in order, the score after each (away-home).
+    assert.deepEqual(
+      [...tab.querySelectorAll(".sct-pbp-score")].map((li) => [li.querySelector(".sct-pbp-when").textContent, li.querySelector(".sct-pbp-tally").textContent]),
+      [["Q2 · 9:11", "7–0"], ["Q3 · 11:49", "10–0"], ["Q3 · 3:13", "10–3"], ["Q4 · 11:28", "10–10"], ["Q4 · 5:50", "10–13"]],
+    );
+    // Drive overview: each team's possessions in order, each chip linking to its drive.
+    const chips = (side) => [...tab.querySelectorAll(`.sct-pbp-strip.is-${side} a.sct-pbp-chip`)].map((a) => a.firstChild.textContent);
+    assert.deepEqual(chips("away"), ["P", "P", "TD", "P", "FG", "P", "INT", "INT", "INT"]);
+    assert.deepEqual(chips("home"), ["P", "P", "P", "P", "HALF", "P", "FG", "TD", "FG", "END"]);
+    for (const a of tab.querySelectorAll("a.sct-pbp-chip")) assert.ok(doc.querySelector(a.getAttribute("href")), a.getAttribute("href"));
+    // Full play-by-play: quarter -> drive -> plays, with down, distance and field position.
+    assert.deepEqual([...tab.querySelectorAll("h3.sct-pbp-qh")].map((h) => h.firstChild.textContent.trim()), ["1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"]);
+    const td = [...tab.querySelectorAll("details.sct-pbp-drive")].find((d) => /Touchdown/.test(d.querySelector("summary").textContent));
+    assert.match(td.querySelector("summary .sct-rb-sr").textContent, /10 plays · 77 yards · 5:37/);
+    // One line per drive (mak, 2026-11-09): aligned cells under one header row.
+    assert.deepEqual(
+      [...td.querySelectorAll(".sct-pbp-dc")].map((c) => c.firstChild.textContent),
+      [td.querySelector(".sct-pbp-dc.is-clock").textContent, td.querySelector(".sct-pbp-dc.is-from").textContent, "10", "77", "5:37"],
+    );
+    assert.equal(tab.querySelectorAll(".sct-pbp-cols").length, 1);
+    const plays = [...td.querySelectorAll(".sct-pbp-play")];
+    assert.equal(plays[0].querySelector(".sct-pbp-sit").textContent, "1st & 10 at NE 23 · 14:48");
+    assert.ok(plays.some((li) => /1st & Goal at SEA 2/.test(li.textContent) && li.dataset.tags.includes("score")));
+    assert.doesNotMatch(tab.textContent, /win probability/i, "the Overview's chart is not repeated");
+    // The controls are printed hidden for the client to switch on.
+    assert.ok(tab.querySelector("[data-pbp-controls][hidden]"));
+  });
+
+  test("Play-by-Play controls, through the real client bundle", async () => {
+    const res = await fetch(`${server.origin}${PAGE}`);
+    const html = await res.text();
+    if (!/data-pbp-controls/.test(html)) return;
+    const bundle = path.join(APP_DIR, "public", "dist", "statchasers-team.js");
+    const win = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true, url: `${server.origin}${PAGE}` });
+    win.window.eval(fs.readFileSync(bundle, "utf8"));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const doc = win.window.document;
+    const box = doc.querySelector("[data-pbp]");
+    assert.equal(box.querySelector("[data-pbp-controls]").hidden, false, "the script shows the controls");
+    const drives = [...box.querySelectorAll("details.sct-pbp-drive")];
+    // One toggle (mak, 2026-11-09): Expand all, then Collapse all.
+    const expand = box.querySelector("[data-pbp-expand]");
+    assert.equal(expand.textContent, "Expand all");
+    expand.click();
+    assert.ok(drives.every((d) => d.open), "Expand all");
+    assert.equal(expand.textContent, "Collapse all");
+    expand.click();
+    assert.ok(drives.every((d) => !d.open), "Collapse all");
+    assert.equal(expand.getAttribute("aria-expanded"), "false");
+    box.querySelector('[data-pbp-filter="turnover"]').click();
+    const visible = drives.filter((d) => !d.hidden);
+    assert.equal(visible.length, 3, "the three interception drives");
+    assert.ok(visible.every((d) => d.open));
+    const plays = visible.flatMap((d) => [...d.querySelectorAll(".sct-pbp-play")].filter((li) => !li.hidden));
+    assert.equal(plays.length, 3);
+    assert.ok(plays.every((li) => /INTERCEPTED/.test(li.textContent)));
+    box.querySelector('[data-pbp-filter="all"]').click();
+    assert.ok(drives.every((d) => !d.hidden));
+    win.window.close();
+  });
+
+  test("Box Score tab: NFL stats first, no fantasy points (mak, 2026-11-08)", async () => {
+    const { doc } = await dom(PAGE);
+    const tab = doc.querySelector("[data-mu-tab='box-score']");
+    assert.ok(tab, "the Box Score panel");
+    assert.equal(doc.querySelector("#tab-box-score").textContent, "Box Score");
+    assert.doesNotMatch(tab.textContent, /FPTS|fantasy|odds|spread/i, "no fantasy or betting figures");
+    // Seven sections, no switches. Advanced sits under Team Stats in the
+    // left column since 2026-11-08 (mak), so it follows Team Stats in source.
+    assert.deepEqual(
+      [...tab.querySelectorAll(".sct-bx-sec > h2")].map((h) => h.id),
+      ["team-stats", "bx-advanced", "bx-passing", "bx-rushing", "bx-receiving", "bx-defense", "bx-special-teams"],
+    );
+    assert.equal(tab.querySelector("input[type=radio]"), null);
+    // Team Stats: NE | STAT | SEA.
+    const team = tab.querySelector("#team-stats").closest("section");
+    assert.deepEqual([...team.querySelectorAll("thead th")].map((th) => th.textContent), ["NE", "Stat", "SEA"]);
+    const row = (sec, label) =>
+      [...sec.querySelectorAll("tbody tr")].find((tr) => tr.querySelector("th").textContent === label);
+    const cells = (tr) => [...tr.querySelectorAll("td")].map((td) => td.textContent);
+    assert.deepEqual(cells(row(team, "Total yards")), ["277", "285"]);
+    assert.deepEqual(cells(row(team, "Turnovers")), ["3", "0"]);
+    assert.deepEqual(cells(row(team, "Possession")), ["34:17", "25:43"]);
+    for (const l of ["First downs", "Total plays", "Yards / play", "Third downs", "Fourth downs", "Red zone (TD-att)", "Penalties-yards"]) {
+      assert.ok(row(team, l), `Team Stats has ${l}`);
+    }
+    // Player sections: one table per team, the traditional columns.
+    const heads = (id) => [...tab.querySelector(`#${id}`).closest("section").querySelector("table thead").querySelectorAll("th")].map((th) => th.textContent);
+    assert.deepEqual(heads("bx-passing"), ["Player", "CMP/ATT", "CMP%", "YDS", "TD", "INT", "Y/A", "RTG"]);
+    assert.deepEqual(heads("bx-rushing"), ["Player", "ATT", "YDS", "AVG", "TD", "LONG"]);
+    assert.deepEqual(heads("bx-receiving"), ["Player", "TGT", "REC", "YDS", "AVG", "TD", "LONG"]);
+    assert.deepEqual(heads("bx-defense"), ["Player", "TKL", "SACKS", "TFL", "PD", "INT", "FF", "FR"]);
+    assert.ok([...tab.querySelectorAll("#bx-rushing ~ * th")].some((th) => /Drake Maye/.test(th.textContent)), "QBs in Rushing");
+    const ints = [...tab.querySelector("#bx-defense").closest("section").querySelectorAll(".is-home tbody tr")]
+      .filter((tr) => /Jobe|Pritchett|Love/.test(tr.querySelector("th").textContent))
+      .map((tr) => tr.querySelectorAll("td")[4].textContent);
+    assert.deepEqual(ints, ["1", "1", "1"], "Seattle's three interceptions");
+    assert.deepEqual(
+      [...tab.querySelectorAll("#bx-special-teams ~ h3")].map((h) => h.textContent),
+      ["Kicking", "Punting", "Kick returns"].concat(tab.querySelector("#bx-special-teams").closest("section").textContent.includes("Punt returns") ? ["Punt returns"] : []),
+    );
+    // Advanced last.
+    const adv = tab.querySelector("#bx-advanced").closest("section");
+    for (const l of ["EPA / play", "Success rate", "Explosive plays", "QB hit rate (pass rush)", "EPA / dropback", "EPA / rush"]) {
+      assert.ok(row(adv, l), `Advanced has ${l}`);
+    }
+  });
+});
+
+describe("recap Fantasy tab (fantasy-tab.ts)", () => {
+  const PAGE = "/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/";
+
+  test("five sections, one scoring model, finishes from the game's own week", async () => {
+    const { doc } = await dom(PAGE);
+    const tab = doc.querySelector("#fantasy-recap-tab");
+    if (!tab) return; // no scored lines for the game
+    assert.equal(doc.querySelector("#tab-fantasy-recap").textContent, "Fantasy");
+    assert.equal(doc.querySelector("#fantasy-tab"), null, "Stats & Fantasy was deleted 2026-11-09");
+    // The tab header's own H2 (premium-head.ts) is not one of the sections.
+    // The verdicts, decisions and stock follow them (moved from the deleted
+    // Stats & Fantasy tab, 2026-11-09).
+    const heads = [...tab.querySelectorAll("h2")].map((h) => h.id).filter(Boolean);
+    assert.deepEqual(heads.slice(0, 4), ["fantasy-standouts", "fantasy-box-score", "fantasy-usage", "fantasy-xfp"]);
+    assert.ok(heads.slice(4).every((id) => ["verdicts", "decisions", "stock", "injuries"].includes(id)), heads.join());
+    assert.equal(tab.querySelectorAll(".sct-fz-card").length, 3);
+    assert.equal(tab.querySelectorAll(".sct-fz-cta").length, 1, "one Redraft Command CTA");
+    // fantasy-tab.ts's own sections carry no start/sit links; the moved
+    // verdicts and decisions (2026-11-09, mak's request) do.
+    assert.equal(tab.querySelectorAll(".sct-fz a[href*='who-should-i-start']").length, 0, "no start/sit links in the five sections");
+    const jsn = [...tab.querySelectorAll(".is-box tbody tr")].find((r) => /Smith-Njigba/.test(r.textContent));
+    assert.equal(jsn.querySelector(".sct-fz-pts").dataset.half, "22.2");
+    assert.equal(jsn.querySelector(".sct-fz-fin").dataset.half, "WR7");
+    // The chart and the full table carry the same xFP figures.
+    const x = [...tab.querySelectorAll(".sct-fz-x")].find((li) => /Stevenson/.test(li.textContent));
+    assert.equal(x.querySelector(".is-expected .sct-fz-bar-num").dataset.half, "19.6");
+    const row = [...tab.querySelectorAll(".is-xfp tbody tr")].find((r) => /Stevenson/.test(r.textContent));
+    assert.equal(row.children[2].dataset.half, "19.6");
+  });
+});
+
+describe("recap Betting tab, frozen market (betting-market.ts)", () => {
+  test("results, implied scoring, open vs close and trends through this game only", async () => {
+    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
+    const block = doc.querySelector("#betting-tab [data-bm-root]");
+    if (!block) return; // no closing line stored for the game
+    const ids = [...block.querySelectorAll("h2")].map((h) => h.id);
+    assert.deepEqual(ids.filter((id) => id !== "bm-movement"), ["bm-results", "bm-implied", "bm-trends"]);
+    const results = block.querySelector("#bm-results").parentElement.textContent;
+    assert.match(results, /Push/);
+    assert.match(results, /Finished 21\.5 points below the closing total\./);
+    assert.match(block.querySelector("#bm-implied").parentElement.textContent, /Market implied20\.75/);
+    // Week 1: one game in the sample, nothing from later weeks.
+    const rows = block.querySelectorAll(".sct-bm-team")[0].querySelectorAll("tbody tr");
+    assert.equal(rows.length, 1);
+    assert.doesNotMatch(block.innerHTML, /DraftKings/, "no sportsbook name");
+    assert.ok(doc.querySelector("#betting-tab .sct-bet-sides"), "the existing result panel stays");
+  });
+});
