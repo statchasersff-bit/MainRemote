@@ -10,7 +10,7 @@
 
 import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
-import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
+import { matchupHasHighlights, matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
 import { completedGameDescription, completedGameTitleCandidates } from "./game-seo";
 import { gameSeoFacts, scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
@@ -38,9 +38,18 @@ export const PREVIEW_TITLE_MAX = 82;
  * team names are what people search. The last candidate is written short
  * enough to fit for every pair.
  */
-export function fitMatchupTitle(candidates: string[]): string {
-  return fitTitle(candidates, MATCHUP_TITLE_MAX);
+export function fitMatchupTitle(candidates: string[], max: number = MATCHUP_TITLE_MAX): string {
+  return fitTitle(candidates, max);
 }
+
+/**
+ * A completed game's title, the pair page's and the dated page's: a soft
+ * seventy, not sixty (mak, 2026-11-11: "I'd rather have a slightly longer,
+ * descriptive title than remove useful search terms"). Google truncates the
+ * end of a long title; it does not penalize it, so "Highlights" and the year
+ * stay for every pair. MIRRORED in statchasers_matchup_completed_meta().
+ */
+export const COMPLETED_TITLE_MAX = 70;
 
 /** "Cardinals vs Chiefs" - the fallback when the full names leave no room. */
 function nicknames(data: MatchupData): string {
@@ -123,12 +132,13 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
       // no title header.
       title: fitMatchupTitle(
         game
-          ? scoreboardTitleCandidates(game)
+          ? scoreboardTitleCandidates(game, { highlights: matchupHasHighlights(data) })
           : [
-              `${short} Player Stats & Box Score, ${label} ${gameSeason}`,
-              `${short} Box Score, ${label} ${gameSeason}`,
-              `${short} Box Score, ${label}`,
+              `${short} Player Stats & Box Score | ${label}, ${gameSeason}`,
+              `${short} Player Stats & Box Score | ${label}`,
+              `${short} Box Score | ${label}`,
             ],
+        COMPLETED_TITLE_MAX,
       ),
       description: game
         ? scoreboardPageDescription(game)
@@ -185,13 +195,17 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
   if (lead) {
     const game = matchupScoreboardGame(data);
     const facts = game ? gameSeoFacts(game) : null;
-    const when = `(${lead.weekLabel}, ${lead.season})`;
     const scored = matchupScoreLine(data);
     return {
       title: fitMatchupTitle(
         facts
-          ? completedGameTitleCandidates(facts)
-          : [`${short} Match Player Stats & Box Score ${when}`, `${short} Match Player Stats ${when}`],
+          ? completedGameTitleCandidates({ ...facts, highlights: matchupHasHighlights(data) })
+          : [
+              `${short} Player Stats & Box Score | ${lead.weekLabel}, ${lead.season}`,
+              `${short} Player Stats & Box Score | ${lead.weekLabel}`,
+              `${short} Player Stats | ${lead.weekLabel}`,
+            ],
+        COMPLETED_TITLE_MAX,
       ),
       description: facts
         ? completedGameDescription(facts)

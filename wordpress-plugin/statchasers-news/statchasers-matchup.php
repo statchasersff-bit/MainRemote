@@ -857,23 +857,29 @@ function statchasers_matchup_game_meta( string $a, string $b, string $game, stri
 function statchasers_matchup_completed_meta( string $name_a, string $name_b, string $nick_a, string $nick_b, string $round, string $season, string $score = '' ): array {
 	$pair  = "$nick_a vs $nick_b";
 	$names = "$name_a vs $name_b";
-	$when  = '' !== $season ? "($round, $season)" : "($round)";
+	$when  = '' !== $season ? " | $round, $season" : " | $round";
+	$year  = '' !== $season ? " | $season" : '';
 
-	// The ladder, most descriptive first; the first within sixty is used, and
-	// the last rung fits every pair and every round.
-	$title = statchasers_matchup_fit_title(
+	// The ladder, most descriptive first; the first within a soft seventy
+	// (COMPLETED_TITLE_MAX in the API, mak 2026-11-11; was sixty) is used, and
+	// the last rung fits every pair and every round. The API's rungs without
+	// "Highlights": this side cannot see whether the page shows a video, so
+	// it never claims one.
+	$title = statchasers_fit_title(
 		array_values(
 			array_unique(
 				array(
-					"$pair Match Player Stats & Box Score $when",
-					"$pair Match Player Stats & Box Score ($round)",
-					"$pair Match Player Stats $when",
-					"$pair Match Player Stats ($round)",
+					"$pair Player Stats & Box Score$when",
+					"$pair Player Stats & Box Score | $round",
+					"$pair Player Stats & Box Score$year",
+					"$pair Player Stats$when",
+					"$pair Player Stats | $round",
 					"$pair Stats, $round",
-					"$pair Match Player Stats",
+					"$pair Player Stats",
 				)
 			)
-		)
+		),
+		70
 	);
 
 	// "Titans won 26-20." becomes "from the Titans' 26–20 win"; a tie or an

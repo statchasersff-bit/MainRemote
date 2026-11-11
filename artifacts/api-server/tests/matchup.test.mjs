@@ -226,7 +226,7 @@ describe("one address per meeting", () => {
     assert.ok(canonical.endsWith(href), "a dated page the pair page linked is its own canonical");
     assert.match(
       page.doc.querySelector("title").textContent,
-      new RegExp(`^(Patriots vs Eagles|Eagles vs Patriots) Match Player Stats( & Box Score)? \\(Week ${week}(, ${season})?\\)$`),
+      new RegExp(`^(Patriots vs Eagles|Eagles vs Patriots) Player Stats(, Box Score & Highlights| & Box Score)? \\| Week ${week}(, ${season})?$`),
       "the title carries the words the searches do",
     );
   });
@@ -1901,8 +1901,8 @@ describe("the Cardinals–Rams games", () => {
 
     assert.equal(
       doc.querySelector("title").textContent,
-      // The spec string with the year is 66 characters; the year goes first.
-      "Cardinals vs Rams Match Player Stats & Box Score (Wild Card)",
+      // A postseason page puts the round first (2026-11-11 ladder).
+      "Cardinals vs Rams Player Stats & Box Score | Wild Card, 2021",
     );
     assert.equal(
       doc.querySelector('meta[name="description"]').getAttribute("content"),

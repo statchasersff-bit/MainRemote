@@ -1397,6 +1397,11 @@ function renderGamePossessions(data: MatchupData): string {
   });
 }
 
+/** The page shows a highlights video, so its title may say "Highlights". */
+export function matchupHasHighlights(data: MatchupData): boolean {
+  return gameVideo(data) !== null;
+}
+
 function gameVideo(data: MatchupData): GameVideo | null {
   const meeting = data.featured;
   if (!meeting) return null;
