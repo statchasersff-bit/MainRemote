@@ -12384,6 +12384,35 @@ a.sct-ex-game:hover .sct-ex-line {
   line-height: 1.5;
 }
 
+/* The read (and the Betting tab's sub line) rides in the section's head row, on the same line as the title
+   and above its gold rule (mak, 2026-11-11: "move text ... into its header
+   row", then "on the same row"). Where both do not fit, the read wraps under
+   the title. */
+
+.sct-mu .sct-rb .sct-fp-head.sct-gfp-head {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  column-gap: 14px !important;
+  row-gap: 4px !important;
+}
+
+.sct-mu .sct-rb .sct-gfp-head > h2.sct-rb-h2 {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.sct-mu .sct-gfp-head p:is(.sct-gfp-read, .sct-bm-sub) {
+  flex: 1 1 280px;
+  min-width: 0;
+  margin: 0 !important;
+  color: var(--rb-slate) !important;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .sct-mu .sct-gfp-chip {
   display: inline-block;
   min-width: 34px;
@@ -12677,13 +12706,14 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct-mu .sct-gfp-vs-head {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 6px;
   color: var(--rb-ink);
   font-size: 14px;
   font-weight: 800;
 }
 
-.sct-mu .sct-gfp-vs-head span {
+.sct-mu .sct-gfp-vs-head > span:not(.sct-gfp-team) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -13045,23 +13075,8 @@ a.sct-ex-game:hover .sct-ex-line {
     scroll-margin-top: 80px;
   }
 
-  /* The Betting Outlook's market block takes what the header left out. */
-
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-implied {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-mpp-bo-implied li {
-    display: grid;
-    gap: 2px;
-    padding: 8px 10px;
-    border: 1px solid var(--mpp-border-light);
-    border-radius: 10px;
-    background: #fff;
-  }
+  /* The Betting Outlook's market block takes what the header left out
+     (the implied totals line: the compact Betting Outlook block below). */
 
   :is(.sct, #sct-table-armour) .sct-mpp-bo-note {
     display: inline;
@@ -13688,5 +13703,1348 @@ a.sct-ex-game:hover .sct-ex-line {
     clip: rect(0 0 0 0) !important;
     clip-path: inset(50%) !important;
     white-space: nowrap !important;
+  }
+}
+
+/* ==== Upcoming page: no inner boxes in Keys to the Game and Recent Form on
+   phones (mak, 2026-11-11: "on 560px and below views, remove the outer
+   containers ... keep the content and headers"). The three key boxes and the
+   two team boxes lose their frame, fill and team-colored top edge and sit
+   directly on the card; a hairline separates one from the next. The key's
+   number and kicker, its question, and each team's "Last 5" heading stay. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-keys .sct-mpp-key,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-keys .sct-mpp-key[data-side],
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-card.is-keys .sct-mpp-key:not([data-side]) {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-keys .sct-mpp-keys {
+    gap: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-keys .sct-mpp-key + .sct-mpp-key {
+    margin-top: 14px !important;
+    padding-top: 14px;
+    border-top: 1px solid var(--mpp-border-light);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-col,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-col.is-home {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+}
+
+/* ==== Upcoming page: compact Last 5 Games on phones (mak, 2026-11-11:
+   "Compact the mobile Last 5 Games card using the current design and
+   data"). formCard() in preview-premium.ts. Per team: the team row (logo,
+   name, record without the "Last 5:" the card title already says), five
+   equal tiles with result and opponent on one line and the score under it,
+   then Points scored and Points allowed side by side, each a label and bold
+   value over "season · difference". 8px between the three rows, one thin
+   divider and 12px either side of it between the teams, no dividers inside
+   the scoring rows. Above 560px none of this applies. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-cols {
+    gap: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-col + .sct-mpp-col {
+    padding-top: 12px;
+    border-top: 1px solid var(--mpp-border-light);
+  }
+
+  /* team row */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-colhead {
+    min-height: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-bottom: 0;
+    background: none;
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-colhead small {
+    color: var(--mpp-navy-950);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-rlab {
+    display: none;
+  }
+
+  /* game row: five equal tiles, "W · vs LV" over the score */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-games {
+    gap: 4px;
+    margin: 8px 0 !important;
+    padding: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-content: center;
+    justify-content: center;
+    justify-items: start;
+    column-gap: 0;
+    row-gap: 2px;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 42px;
+    padding: 5px 1px;
+    border-radius: 8px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  /* The result keeps its colored square (mak, 2026-11-11: "I liked how
+     before you color coded each container red as a loss and green if a
+     win"), smaller, on the opponent's line. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g b {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-right: 3px;
+    border-radius: 4px;
+    background: #8ea2bb;
+    color: #fff;
+    font-size: 0.6rem;
+    line-height: 1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g[data-wlt="W"] b {
+    background: var(--mpp-green);
+    color: #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g[data-wlt="L"] b {
+    background: var(--mpp-red);
+    color: #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g {
+    align-items: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g span {
+    margin: 0;
+    font-size: 0.66rem;
+    line-height: 1.1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-g small {
+    grid-column: 1 / -1;
+    justify-self: center;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  /* scoring row: two equal columns */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-trend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-t {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas: "k k v" "vs d d";
+    column-gap: 4px;
+    row-gap: 1px;
+    padding: 0;
+    border-top: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-k {
+    align-self: baseline;
+    font-size: 0.76rem;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-t b {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  /* The arrow stays (mak, 2026-11-11): it gives the direction, the color
+     whether that is good for the team ("−4.8" allowed is green, falling). */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-s {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-arr {
+    font-size: 0.85em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-vs {
+    justify-self: start;
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-d,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-t[data-tone] .sct-mpp-form-d {
+    justify-self: start;
+    min-width: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-form .sct-mpp-form-d::before {
+    content: "\00b7\00a0";
+    color: var(--mpp-muted);
+    font-weight: 400;
+  }
+}
+
+/* ==== Upcoming page: three links and notes off on phones (mak, 2026-11-11):
+   The Call's "Deciding between two players? Compare in Start/Sit" link, the
+   Fantasy Impact card's "Have a lineup decision? ... Open Start/Sit" box,
+   and the Injury Watch line "No other 5%+ rostered {Team} carry a
+   designation." Still printed and shown above 560px. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-call .sct-mpp-link,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-ff-cta,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-inj-foot {
+    display: none !important;
+  }
+}
+
+/* ==== Fantasy tab, 2026-11-11 (mak: six sections, verdicts and stock
+   merged, fewer Redraft Command blocks). Stock Down takes a red tag beside
+   Stock Up's green, Buy Low's blue and Sell High's amber; Next-Week
+   Decisions ends in one plain line with the two tools, no banner. */
+
+.sct-fp-tag.is-down {
+  background: #fde2e1;
+}
+
+.sct .sct-fp-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 14px 0 0 !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sct .sct-fp-decisions + .sct-fp-tools {
+  padding-top: 12px;
+  border-top: 1px solid var(--rb-line);
+}
+
+.sct a.sct-fp-tool {
+  color: var(--tp-ink, var(--rb-ink)) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-underline-offset: 3px;
+}
+
+/* ==== Upcoming page: the FAQ as a premium card (mak, 2026-11-11: the FAQ
+   "need[s] to have a similar design/style as the other sections"; later the
+   same day: at every width, "the same design as the rest of the page").
+   renderFaq() / faqH2() in preview-render.ts. The FAQ section takes the
+   cards' frame and white surface, its H2 becomes the dark bar (icon, text,
+   slanted lines) and each question is a row with a chevron, as Injury Watch.
+   On phones the bar reads the short "Fantasy Football FAQ" label; the full
+   text stays the heading, visually hidden. The FAQ sits outside .sct-mpp,
+   so the card tokens it needs are set on the section here. */
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-short {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq {
+  --mpp-head: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
+  --mpp-icon: #f0c13b;
+  --mpp-slash: linear-gradient(118deg, transparent 0 38%, #d4af37 38% 52%, transparent 52% 64%, #f0c13b 64% 76%, transparent 76%);
+  overflow: hidden;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #cbdbea;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff 0%, #f8fbff 100%);
+  box-shadow: 0 3px 8px rgba(10, 35, 70, 0.045), 0 9px 20px rgba(10, 35, 70, 0.055);
+}
+
+/* the card sits the cards' 16px gap under them, not the old tail's 76px */
+:is(.sct, #sct-table-armour) .sct-mpp + .sct-pv:has(> .sct-pv-sec.is-faq) {
+  margin-top: 0;
+  padding-top: 16px;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-pv-sec.is-faq {
+  --mpp-head:
+    linear-gradient(90deg, color-mix(in srgb, var(--pm-bg, #0b2345) 88%, #000) 30%, transparent 75%),
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.045) 0 14px, transparent 14px 38px),
+    linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+  --mpp-icon: var(--pm-accent, #f0c13b);
+  --mpp-slash: linear-gradient(118deg, transparent 0 38%, var(--pm-accent, #d4af37) 38% 52%, transparent 52% 64%, var(--pm-accent, #f0c13b) 64% 76%, transparent 76%);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq > .sct-pv-h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin: 0 !important;
+  padding: 6px 50px 6px 16px !important;
+  overflow: hidden;
+  border: 0 !important;
+  background: var(--mpp-head) !important;
+  color: #fff !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq > .sct-pv-h2::after {
+  display: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-ico {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--mpp-icon);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-slash {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background: var(--mpp-slash);
+  opacity: 0.9;
+}
+
+/* the questions: rows with a chevron, as Injury Watch */
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq {
+  margin: 0 !important;
+  border-top: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa {
+  border-bottom: 1px solid #e1e9f3;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa:last-child {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  color: #071a35;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa > summary::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin: 0 2px 0 auto;
+  border-right: 2px solid #5b7290;
+  border-bottom: 2px solid #5b7290;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa > summary:hover {
+  background: #f6f9fd;
+}
+
+:is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-qa > p {
+  margin: 0 !important;
+  padding: 0 16px 14px !important;
+  color: #334a68;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-full {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-short {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-pv-sec.is-faq .sct-pv-faq-short::before {
+    content: attr(data-short);
+  }
+}
+
+/* ==== Upcoming page: compact Player Battles on phones (mak, 2026-11-11:
+   "Compact the mobile Player Battles card into four groups with two rows
+   each"). battlesCard() in preview-premium.ts. Each battle's summary is a
+   four-column grid: offense | vs (muted text) | defense (wider, it often
+   holds two names) | chevron, surnames only, joined by " · ", wrapping at
+   320px; the injury badge stays beside its player. The kind label (left)
+   heads each group once, a thin line divides the groups. Photos, positions
+   and stat lines open underneath (.sct-mpp-bt-who, phone-only; the stats
+   list stays for screen readers). A phone-only "Offense / Defense" header
+   (.sct-mpp-bt-cols) sits over the columns. Replaces the earlier phone
+   face-off rows; above 560px nothing here applies. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-battles :is(.sct-mpp-bt-cols, .sct-mpp-bt-who) {
+  display: none !important;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles {
+    --bt-cols: minmax(0, 1fr) 22px minmax(0, 1.45fr) 14px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-cols {
+    order: 0;
+    display: grid !important;
+    grid-template-columns: var(--bt-cols);
+    column-gap: 8px;
+    margin: 0 !important;
+    padding: 10px 14px 2px !important;
+    color: var(--mpp-muted);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-cols > span:last-child {
+    grid-column: 3;
+  }
+
+  /* one divider per group: under each pair's second row (and a solo row) */
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] {
+    border-bottom: 1px solid var(--mpp-border-light);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="first"] {
+    border-bottom: 0;
+  }
+
+  /* the row */
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] .sct-mpp-bt-d > summary {
+    position: static;
+    display: grid;
+    grid-template-columns: var(--bt-cols);
+    grid-template-areas: "kind kind kind kind" "off vs def chev";
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    min-height: 44px;
+    padding: 11px 14px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="first"] .sct-mpp-bt-d > summary {
+    padding-bottom: 5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="second"] .sct-mpp-bt-d > summary {
+    padding-top: 5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] :is(.sct-mpp-bt-kind, .sct-mpp-bt-row) {
+    display: contents !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] .sct-mpp-bt-kind > span:first-child {
+    grid-area: kind;
+    margin-bottom: 6px;
+    color: var(--mpp-navy-700);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="second"] .sct-mpp-bt-kind > span:first-child {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] .sct-mpp-bt-kind .sct-mpp-inj-chev {
+    position: static;
+    grid-area: chev;
+    justify-self: end;
+    margin: 0 2px 0 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] .sct-mpp-bt-vs {
+    grid-area: vs;
+    display: inline;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--mpp-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+    text-transform: none;
+  }
+
+  /* each side: surnames in a line, " · " between, wrapping between players */
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-side {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 2px 0;
+    min-width: 0;
+    text-align: left;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-side.is-off {
+    grid-area: off;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-side.is-def {
+    grid-area: def;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-p {
+    display: block;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-p:not(:last-child)::after {
+    content: "\00b7";
+    margin: 0 5px;
+    color: var(--mpp-muted);
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-p > :is(.sct-mpp-face, .sct-mpp-facewrap),
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-pos {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-name {
+    display: inline;
+    color: var(--mpp-navy-950);
+    font-size: 0.86rem;
+    font-weight: 800;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt[data-pair] summary .sct-mpp-bt-name > .sct-mpp-badge {
+    position: static !important;
+    display: inline-block;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 0 0 3px !important;
+    padding: 1px 4px !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    vertical-align: 1px;
+  }
+
+  /* the expanded view: photo, full name and position, the stat line */
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-more {
+    padding: 0 14px 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who {
+    display: grid !important;
+    gap: 8px;
+    margin: 0 !important;
+    padding: 8px 0 0 !important;
+    border-top: 1px solid var(--mpp-border-light);
+    list-style: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who .sct-mpp-face {
+    width: 32px;
+    height: 32px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who-t {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who-t b {
+    color: var(--mpp-navy-950);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who-t small {
+    color: var(--mpp-muted);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-who-s {
+    grid-column: 2;
+    color: #4b6280;
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-stats {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-note {
+    margin-top: 8px !important;
+  }
+}
+
+/* ==== Game Flow live (mak, 2026-11-11): each timeline block is a button.
+   Hover keeps the title tooltip; a tap or click outlines the block and
+   fills one line under the legend, with a link to the drive's plays. */
+
+.sct-mu .sct-gfp-drive > button.sct-gfp-hit {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sct-mu .sct-gfp-drive > button.sct-gfp-hit:focus-visible {
+  outline: 2px solid var(--rb-ink, #0b2345);
+  outline-offset: 2px;
+}
+
+.sct-mu .sct-gfp-drive:has(> button[aria-pressed="true"]) {
+  z-index: 1;
+  box-shadow: 0 0 0 2px var(--rb-card, #fff), 0 0 0 4px var(--rb-ink, #0b2345);
+}
+
+.sct-mu p.sct-gfp-pick {
+  margin: 10px 0 0 !important;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--rb-wash, #f3f6fa);
+  color: var(--tp-ink, #0b2345);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.sct-mu p.sct-gfp-pick[hidden] {
+  display: none !important;
+}
+
+.sct-mu a.sct-gfp-pick-link {
+  margin-left: 6px;
+  color: var(--tp-ink, #0b2345) !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold, #d4af37);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+/* ==== Upcoming page: compact Betting Outlook on phones (mak, 2026-11-11).
+   bettingCard() in preview-premium.ts. At 560px and under: Spread, Total
+   and Moneyline in one strip (three equal columns, thin dividers, no tile
+   boxes), the opening line right under each value and no movement caption;
+   the implied totals on one line under the strip ("Implied points · NE 24.5
+   · DET 27"); the two tables kept, with less space over their headings and
+   tabular figures; the Key insight cut, its over/under streak on that
+   team's Recent Results row (.sct-mpp-bo-streak); the source and update
+   time leading the betting notice in one footer (.sct-mpp-bo-srclead).
+   Above 560px the phone-only pieces are hidden and nothing else changes. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-betting :is(.sct-mpp-bo-streak, .sct-mpp-bo-srclead) {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* the strip */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tiles {
+    gap: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile {
+    gap: 1px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile + .sct-mpp-bo-tile {
+    border-left: 1px solid var(--mpp-border-light);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile:first-child {
+    padding-left: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile:last-child {
+    padding-right: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile > b {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile > b.is-ml {
+    font-size: 0.84rem;
+    line-height: 1.25;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tsub {
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting :is(.sct-mpp-bo-tmove, .sct-mpp-bo-src) {
+    display: none !important;
+  }
+
+  /* implied totals, one line */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting p.sct-mpp-bo-implied {
+    display: block;
+    margin: 8px 0 0 !important;
+    padding: 6px 0 0 !important;
+    border-top: 1px solid var(--mpp-border-light);
+    color: var(--mpp-muted);
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting p.sct-mpp-bo-implied > span:not(.sct-mpp-bo-tl) {
+    color: #334a68;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting p.sct-mpp-bo-implied b {
+    color: var(--mpp-navy-950);
+    font-weight: 800;
+  }
+
+  /* sections: tighter over each heading */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-sec + .sct-mpp-bo-sec {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-sec > .sct-mpp-ff-h {
+    margin: 0 0 2px !important;
+  }
+
+  /* tables: figures line up */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting :is(.sct-mpp-bo-tbl, .sct-mpp-bo-gt) :is(th, td) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tbl thead th {
+    padding-top: 2px !important;
+    font-size: 0.56rem;
+    line-height: 1.2;
+    vertical-align: bottom;
+  }
+
+  /* the Key insight is cut */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-sec:has(> .sct-mpp-bo-key) {
+    display: none;
+  }
+
+  /* Recent Results: full-width rows, the streak at the right */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-games > summary {
+    min-height: 40px;
+    padding: 6px 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-streak {
+    display: inline-block;
+    margin-left: auto;
+    padding: 2px 6px;
+    border: 1px solid #f0dca8;
+    border-radius: 4px;
+    background: var(--mpp-amber-light);
+    color: var(--mpp-amber);
+    font-size: 0.66rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-streak[data-v="o"] {
+    border-color: #c4d8ef;
+    background: #e8f0fa;
+    color: var(--mpp-navy-700);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-games > summary .sct-mpp-inj-chev {
+    margin-left: auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-streak + .sct-mpp-inj-chev {
+    margin-left: 8px !important;
+  }
+
+  /* one footer */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-srclead {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-legal {
+    margin-top: 6px !important;
+    padding-top: 6px;
+    border-top: 1px solid var(--mpp-border-light);
+  }
+}
+
+/* The narrowest phones (360px and under): the opening line and the
+   Recent Results row with its streak stay on one line each. */
+
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tile {
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-tsub {
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-games > summary {
+    gap: 5px;
+    font-size: 0.74rem;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-streak {
+    padding: 1px 4px;
+    font-size: 0.6rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-betting .sct-mpp-bo-streak + .sct-mpp-inj-chev {
+    margin-left: 6px !important;
+  }
+}
+
+/* ==== Upcoming page: short banner on phones (mak, 2026-11-11: "Patriots
+   vs. Lions: Week 10 Game Preview" + its dek -> "Week 10 Game Preview" at
+   560px and under). banner() in preview-premium.ts: the H1 keeps its full
+   text in the source, visually hidden on phones; the short label is drawn
+   from data-short (aria-hidden, adds no text); the dek is hidden. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-banner .sct-mpp-title-short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-banner .sct-mpp-title-full {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-banner .sct-mpp-title-short {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-banner .sct-mpp-title-short::before {
+    content: attr(data-short);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-banner .sct-up-dek {
+    display: none !important;
+  }
+
+  /* A short rule under the title, as the player pages' section titles
+     ("... Game Log FAQ", .scp-ox-h2::after: 28 x 3px, 10px under the
+     text), in the page's club ink, gold without one (mak, 2026-11-11). */
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-banner :is(h1, h2).sct-mpp-title {
+    position: relative !important;
+    padding-bottom: 10px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-banner :is(h1, h2).sct-mpp-title::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--pm-ink, var(--sc-gold, #d4af37));
+  }
+}
+
+/* ==== Betting Trends, one recent-results table (mak, 2026-11-11): the
+   team cell spans its games; a heavier rule starts the second team. */
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-recent th.sct-bm-r-team {
+  white-space: nowrap;
+  font-weight: 800;
+  vertical-align: top;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-recent th.sct-bm-r-team i {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  border-radius: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-recent tbody tr.is-first:not(:first-child) > :is(th, td) {
+  border-top: 2px solid var(--rb-line, #d5dfeb);
+}
+
+/* A drive that ran into the next quarter (mak, 2026-11-11): a small tag
+   after its result, "Ends in Q4". */
+
+.sct span.sct-pbp-dspan {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border: 1px solid var(--rb-line, #d5dfeb);
+  border-radius: 999px;
+  color: var(--rb-slate);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* ==== Upcoming page: Redraft Command card under The Call on phones (mak,
+   2026-11-11). renderMatchupPreviewBody() prints it last in the rail; at
+   560px and under the main column and the rail dissolve into the layout's
+   one column (same 16px gap) and order places the card right after The
+   Call, everything else keeping its order: the main cards, then the rail.
+   Above 560px it stays at the foot of the rail. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > :is(.sct-mpp-main, .sct-mpp-rail) {
+    display: contents;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > :is(.sct-mpp-main, .sct-mpp-rail) > * {
+    order: 3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-main > :is(.is-compare, .is-call) {
+    order: 1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-rail > .sct-mpp-cta {
+    order: 2;
+  }
+}
+
+/* Phone wording for that card (mak, 2026-11-11): "Play Fantasy Football?"
+   ... "Explore Fantasy Tools". ctaRail() prints both versions; one shows. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-cta .sct-mpp-cta-m {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cta .sct-mpp-cta-d {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cta .sct-mpp-cta-m {
+    display: inline;
+  }
+}
+
+/* The card's button in StatChasers gold on phones whatever the clubs (mak,
+   2026-11-11: "make the button statchasers gold always"); the club-color
+   rule (.is-pvc .sct-mpp-cta-btn, --pm-accent) no longer reaches it there. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cta .sct-mpp-cta-btn,
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-cta .sct-mpp-cta-btn,
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-cta .sct-mpp-cta-btn:is(:hover, :focus-visible, :visited) {
+    background: linear-gradient(135deg, #d4af37 0%, #f0c13b 100%) !important;
+    color: #071a35 !important;
+  }
+}
+
+/* Its heading, copy and button centered on phones (mak, 2026-11-11). */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cta > p {
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cta > .sct-mpp-cta-btn {
+    justify-self: center;
+  }
+}
+
+/* The fantasy tools card's faint art on phones (mak, 2026-11-11), as the
+   premium tab headers' .sct-up-art: CTA_ART in preview-premium.ts, white at
+   low opacity on the right, behind the centered copy. Hidden above 560px. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-cta-art {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-cta {
+    position: relative;
+    overflow: hidden;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cta > .sct-mpp-cta-art {
+    position: absolute;
+    top: 50%;
+    right: -18px;
+    z-index: 0;
+    display: block;
+    width: 230px;
+    height: auto;
+    color: #fff;
+    opacity: 0.13;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-cta > :not(.sct-mpp-cta-art) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Game Flow team marks (mak, 2026-11-11): Offense by Half, Drive Efficiency
+   and Play Calling by Score head each side with the logo, nickname and code,
+   as the preview page's Team Comparison does. */
+
+.sct-mu .sct-gfp-team {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-areas: "logo name" "logo code";
+  align-items: center;
+  column-gap: 8px;
+  text-align: left;
+}
+
+.sct-mu .sct-gfp-team.is-end {
+  grid-template-areas: "name logo" "code logo";
+  text-align: right;
+}
+
+.sct-mu .sct-gfp-team > img,
+.sct-mu .sct-gfp-team > .sct-gfp-chip {
+  grid-area: logo;
+}
+
+.sct-mu .sct-gfp-team > img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.sct-mu .sct-gfp-team-name {
+  grid-area: name;
+  color: var(--tp-ink, #0b2345);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sct-mu .sct-gfp-team-code {
+  grid-area: code;
+  color: var(--rb-slate);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ==== Upcoming page: card heads in the recap Overview style (mak,
+   2026-11-11: Team Comparison, The Call, Keys to the Game, Recent Form,
+   Fantasy Football Impact and Betting Outlook "to be more like" Game Recap /
+   Why the X Won / How the Game Swung / Game Highlights, .sct-ov-head under
+   .is-pm). No dark bar, no stripes, no slanted lines: the icon in the club
+   ink (--hd-ink), a navy 1.15rem title, a 2px rule running from one club's
+   color into the other's accent (--hd-rule), inset to the card body's
+   gutter. The tag stays at the right in muted text and the scoring switch
+   takes its light, off-bar look. Covers the phone-only bars too (Injury
+   Watch, Player Battles, the rail cards) and the FAQ card. The desktop rail
+   heads (Head-to-Head, Game Conditions) are untouched. */
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc {
+  --hd-ink: var(--pm-ink, #d4af37);
+  --hd-rule: linear-gradient(90deg, var(--pm-bg, #0b2345) 0%, var(--pm-bg, #0b2345) 55%, var(--pm-accent, #f0c13b) 100%);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head,
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-card.is-fantasy .sct-mpp-head {
+  gap: 9px;
+  min-height: 0;
+  margin: 14px 16px 0;
+  padding: 0 0 8px;
+  overflow: visible;
+  border-bottom: 2px solid var(--hd-ink);
+  border-image: var(--hd-rule) 1;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none;
+  color: var(--tp-ink, #0b2345);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-icon {
+  display: inline-flex;
+  color: var(--hd-ink);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-h {
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0 !important;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-tag {
+  padding-right: 0;
+  color: var(--tp-muted, #5b6b80);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-slash {
+  display: none !important;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-ff-fmt {
+  margin-right: 0;
+  border-color: var(--mpp-border);
+  background: #f3f7fc;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-ff-fmt button {
+  color: var(--mpp-muted);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-ff-fmt button[aria-selected="true"] {
+  background: #0b3a7a;
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head .sct-mpp-ff-fmt button:focus-visible {
+  outline-color: #0b3a7a;
+}
+
+/* the FAQ card's head */
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-pv-sec.is-faq > .sct-pv-h2 {
+  gap: 9px;
+  min-height: 0;
+  margin: 14px 16px 4px !important;
+  padding: 0 0 8px !important;
+  overflow: visible;
+  border-bottom: 2px solid var(--hd-ink) !important;
+  border-image: var(--hd-rule) 1 !important;
+  background: none !important;
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: 1.15rem !important;
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-pv-sec.is-faq .sct-pv-faq-ico {
+  color: var(--hd-ink);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-pv-sec.is-faq .sct-pv-faq-slash {
+  display: none !important;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-head,
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-card.is-fantasy .sct-mpp-head {
+    margin: 12px 12px 0;
+    padding: 0 0 8px;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-pv-sec.is-faq > .sct-pv-h2 {
+    margin: 12px 12px 4px !important;
+  }
+
+  /* the rail cards' phone bars */
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-card > .sct-mpp-rail-h {
+    gap: 9px;
+    min-height: 0;
+    margin: 14px 0 12px !important;
+    padding: 0 0 8px !important;
+    overflow: visible;
+    border-bottom: 2px solid var(--hd-ink) !important;
+    border-image: var(--hd-rule) 1 !important;
+    background: none !important;
+    color: var(--tp-ink, #0b2345) !important;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-ico {
+    color: var(--hd-ink);
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-slash {
+    display: none !important;
+  }
+}
+
+/* ==== Upcoming page: the desktop rail in the recap sidebar style (mak,
+   2026-11-11: Head-to-Head, the two Injury Watch boxes and the two Player
+   Battles boxes "same" as the card heads above, i.e. the recap's Game Info /
+   Game Leaders cards, .sct-rb-rhead under .is-pm). Above 560px: the rail
+   cards show their icon (railBar(), until now phones only), the team boxes
+   take the cards' frame instead of the team-color top edge, and every title
+   is navy 1.15rem over the 2px --hd-rule, with no fill and no uppercase. The
+   logo stays as the team boxes' icon; counts stay at the right, muted. */
+
+@media (min-width: 561px) {
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-card {
+    padding: 14px 16px 14px;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-card > .sct-mpp-rail-h {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 12px !important;
+    padding: 0 0 8px !important;
+    border-bottom: 2px solid var(--hd-ink) !important;
+    border-image: var(--hd-rule) 1 !important;
+    color: var(--tp-ink, #0b2345) !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-card .sct-mpp-rail-ico {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--hd-ink);
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-card .sct-mpp-rail-slash {
+    display: none !important;
+  }
+
+  /* Injury Watch and Player Battles: one card per team */
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-rail :is(.sct-mpp-card.is-injuries, .sct-mpp-card.is-battles) .sct-mpp-col {
+    border: 1px solid var(--mpp-border);
+    border-radius: var(--mpp-radius);
+    background: linear-gradient(145deg, #fff 0%, #f7faff 100%);
+    box-shadow: var(--mpp-shadow);
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-rail :is(.sct-mpp-card.is-injuries, .sct-mpp-card.is-battles) .sct-mpp-colhead {
+    gap: 9px;
+    margin: 14px 16px 4px !important;
+    padding: 0 0 8px !important;
+    border-bottom: 2px solid var(--hd-ink);
+    border-image: var(--hd-rule) 1;
+    background: none;
+    color: var(--tp-ink, #0b2345);
+    font-size: 1.15rem;
+    line-height: 1.15;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-colhead span {
+    font-size: 1.15rem;
+    line-height: 1.15;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-rail :is(.sct-mpp-card.is-injuries, .sct-mpp-card.is-battles) .sct-mpp-colhead small {
+    color: var(--tp-muted, #5b6b80);
   }
 }

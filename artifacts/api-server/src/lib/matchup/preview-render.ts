@@ -25,14 +25,6 @@ import {
   type Verdict,
 } from "./preview";
 import type { Meeting } from "./matchup-data";
-import {
-  DYNASTY_COMMAND_URL,
-  LINEUP_OPTIMIZER_URL,
-  ROS_RANKINGS_URL,
-  START_SIT_URL,
-  TRADE_CALCULATOR_URL,
-  WAIVER_WIRE_URL,
-} from "./recap";
 
 export interface PreviewRenderContext {
   headingTag: "h1" | "h2";
@@ -60,20 +52,6 @@ const code = (t: NflTeam): string => t.code.toUpperCase();
 
 function h2(id: string, text: string): string {
   return `<h2 class="sct-h2 sct-pv-h2" id="${e(id)}">${e(text)}</h2>`;
-}
-
-/**
- * A compact contextual CTA after a section: one line of why, one link to the
- * tool that fits the section's intent. Nothing when the tool has no address.
- */
-function nextStep(id: string, title: string, body: string, href: string | null, label: string): string {
-  if (!href) return "";
-  return (
-    `<aside class="sct-pv-next" aria-label="${e(title)}">` +
-    `<p><b>${e(title)}</b>${body ? ` ${e(body)}` : ""}</p>` +
-    `<a href="${e(href)}" data-cta="${e(id)}">${e(label)} →</a>` +
-    `</aside>`
-  );
 }
 
 function playerLink(name: string): string {
@@ -127,18 +105,6 @@ const pairOf = (p: Preview): string => `${p.away.team.nickname} vs ${p.home.team
 // request on 2026-10-22; its picks still feed the FAQ through outlookPicks().
 
 /* ----------------------------------------------------- 6b. players to watch */
-
-/** The one Dynasty Command bridge, near the bottom. */
-function renderDynasty(p: Preview): string {
-  if (!DYNASTY_COMMAND_URL) return "";
-  return nextStep(
-    "preview-dynasty",
-    `Thinking beyond ${p.meeting.weekLabel}?`,
-    "See how these players are valued long term in Dynasty Command, including dynasty rankings, trade values and roster analysis.",
-    DYNASTY_COMMAND_URL,
-    "Open Dynasty Command",
-  );
-}
 
 /* ------------------------------------------------------------- 2. the call */
 
@@ -425,11 +391,31 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
   return items;
 }
 
+/**
+ * The FAQ's H2 with the premium cards' bar pieces (mak, 2026-11-11: the
+ * FAQ "need[s] to have a similar design/style as the other sections", then
+ * at every width, "the same design as the rest of the page"). The icon and
+ * the slanted lines are aria-hidden and show at every width; the short
+ * "Fantasy Football FAQ" label shows only at 560px and under, where the
+ * full text is visually hidden but stays the heading's text
+ * ([[seo-changes-need-approval]]).
+ */
+function faqH2(text: string): string {
+  return (
+    `<h2 class="sct-h2 sct-pv-h2" id="pv-faq">` +
+    `<span class="sct-pv-faq-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17.2v.01"/></g></svg></span>` +
+    `<span class="sct-pv-faq-full">${e(text)}</span>` +
+    `<span class="sct-pv-faq-short" data-short="Fantasy Football FAQ" aria-hidden="true"></span>` +
+    `<span class="sct-pv-faq-slash" aria-hidden="true"></span>` +
+    `</h2>`
+  );
+}
+
 function renderFaq(items: PreviewFaq[], p: Preview): string {
   if (!items.length) return "";
   return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-faq">` +
-    h2("pv-faq", `${pairOf(p)} Fantasy Football FAQ`) +
+    `<section class="sct-pv-sec is-faq" aria-labelledby="pv-faq">` +
+    faqH2(`${pairOf(p)} Fantasy Football FAQ`) +
     `<div class="sct-pv-faq">` +
     items.map((i) => `<details class="sct-pv-qa"><summary>${e(i.question)}</summary><p>${i.html}</p></details>`).join("") +
     `</div></section>`
@@ -453,38 +439,12 @@ export function previewFaqSchema(items: PreviewFaq[], embed: boolean): string {
 
 /* --------------------------------------------------------------- 10. footer */
 
-function renderFooter(p: Preview, ctx: PreviewRenderContext): string {
-  // "Next steps", grouped by what the reader wants to do (mak, 2026-10-05),
-  // then the two teams' pages. A tool without a confirmed address is left out.
-  const group = (title: string, links: Array<[string | null, string]>) => {
-    const live = links.filter((x): x is [string, string] => !!x[0]);
-    return live.length
-      ? `<div class="sct-pv-foot-group"><p class="sct-pv-foot-h">${e(title)}</p>` +
-          `<ul class="sct-pv-foot-links">${live.map(([href, label]) => `<li><a href="${e(href)}">${e(label)}</a></li>`).join("")}</ul></div>`
-      : "";
-  };
-  const teamLinks: Array<[string | null, string]> = [];
-  for (const s of [p.away, p.home]) {
-    teamLinks.push([ctx.hub(s.team), `${s.team.fullName} hub`]);
-    teamLinks.push([ctx.matchups(s.team), `All ${s.team.nickname} matchups`]);
-  }
-  teamLinks.push([ctx.fpaUrl, "Fantasy Points Allowed"]);
+function renderFooter(p: Preview): string {
+  // The Dynasty Command line and the "Next steps" links (tools by intent,
+  // then the two teams' pages) were removed at mak's request on 2026-11-11,
+  // at every width; only the legal line stays.
   return (
     `<footer class="sct-pv-foot">` +
-    `<p class="sct-pv-foot-title">Next steps</p>` +
-    `<div class="sct-pv-foot-groups">` +
-    group("For this week", [
-      [START_SIT_URL, "Fantasy Football Start/Sit Tool"],
-      [LINEUP_OPTIMIZER_URL, "Lineup Optimizer"],
-      [WAIVER_WIRE_URL, "Waiver Wire Scanner"],
-    ]) +
-    group("For roster moves", [
-      [TRADE_CALCULATOR_URL, "Fantasy Football Trade Calculator"],
-      [ROS_RANKINGS_URL, "Rest of Season Rankings"],
-    ]) +
-    group("For long-term value", [[DYNASTY_COMMAND_URL, "Dynasty Command"]]) +
-    group("Team pages", teamLinks) +
-    `</div>` +
     `<p class="sct-pv-legal">Betting lines are market numbers shown for reference and context, not betting advice. ` +
     `Stats are through Week ${p.usageThrough ?? p.meeting.week - 1} of the ${p.meeting.season} season. ` +
     `StatChasers is not affiliated with the NFL, its teams or any sportsbook.</p>` +
@@ -496,11 +456,11 @@ function renderFooter(p: Preview, ctx: PreviewRenderContext): string {
 
 /**
  * What follows the premium page (preview-premium.ts, the upcoming page since
- * mak approved it 2026-11-06 and had the old layer removed): the FAQ, the
- * Dynasty Command line and the Next steps footer, unchanged.
+ * mak approved it 2026-11-06 and had the old layer removed): the FAQ and the
+ * legal line (the Dynasty Command line and Next steps removed 2026-11-11).
  */
-export function renderPreviewTail(p: Preview, ctx: PreviewRenderContext, faq: PreviewFaq[]): string {
-  return `<div class="sct-pv">` + renderFaq(faq, p) + renderDynasty(p) + renderFooter(p, ctx) + `</div>`;
+export function renderPreviewTail(p: Preview, _ctx: PreviewRenderContext, faq: PreviewFaq[]): string {
+  return `<div class="sct-pv">` + renderFaq(faq, p) + renderFooter(p) + `</div>`;
 }
 
 /** Inline style tokens for the root: the two team fills. */

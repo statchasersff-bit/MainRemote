@@ -812,8 +812,20 @@ function bettingExtras(data: MatchupData, game: ScoreboardGame, options: Matchup
 function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
   const meeting = data.featured;
   if (!meeting) return "";
-  const std = seasonToDate(meeting.season, [game.away.abbr, game.home.abbr]);
+  // What each team brought into this game (mak, 2026-11-11, from a
+  // reviewer: a Week 2 recap showing Week 9 numbers mixes timelines). A
+  // playoff game counts the whole regular season. With nothing before it (a
+  // Week 1 game) the current season shows instead, labeled as such.
+  const before = meeting.seasonType === "post" ? 99 : meeting.week;
+  const entering = seasonToDate(meeting.season, [game.away.abbr, game.home.abbr], before);
+  const enteringBoth = entering && entering.teams[game.away.abbr] && entering.teams[game.home.abbr] ? entering : null;
+  const std = enteringBoth ?? seasonToDate(meeting.season, [game.away.abbr, game.home.abbr]);
   if (!std) return "";
+  const label = enteringBoth
+    ? meeting.seasonType === "post"
+      ? `Regular season entering the ${game.roundLabel} (through Week ${std.throughWeek})`
+      : `Season to date entering Week ${meeting.week} (through Week ${std.throughWeek})`
+    : `Current season to date (through Week ${std.throughWeek})`;
   const a = std.teams[game.away.abbr] ?? null;
   const h = std.teams[game.home.abbr] ?? null;
   const per = (t: TeamSeason | null, n: (t: TeamSeason) => number): number | null =>
@@ -847,7 +859,7 @@ function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
   const colors = heroPairColors(game.away.abbr, game.home.abbr);
   return (
     `<section class="sct-rb-section sct-mu-form" aria-labelledby="season-to-date">` +
-    `<h3 class="sct-rb-h3" id="season-to-date">${escapeHtml(`Season to date (through Week ${std.throughWeek})`)}</h3>` +
+    `<h3 class="sct-rb-h3" id="season-to-date">${escapeHtml(label)}</h3>` +
     renderStatCompare({
       caption: `Season to date, ${game.away.short} vs ${game.home.short}`,
       awayName: game.away.short,
@@ -1270,7 +1282,7 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
       countsInSeasonLong: !post,
       next: live ? next : null,
       injuries: notes.injuries ?? null,
-      links: { redraftCommand: REDRAFT_COMMAND_URL, projections: PROJECTIONS_URL, tradeCalculator: TRADE_CALCULATOR_URL },
+      links: { redraftCommand: REDRAFT_COMMAND_URL, projections: PROJECTIONS_URL, tradeCalculator: TRADE_CALCULATOR_URL, startSit: START_SIT_URL },
       allowed: allowedRanks(data, meeting.season),
     };
   }
@@ -1355,20 +1367,11 @@ function renderGamePlayByPlay(data: MatchupData): { lead: string; rest: string }
 }
 
 /**
- * Whether the rebuilt Game Flow prints under the current one. It is a
- * comparison for mak, not an approved design, so it stays out of production
- * unless SC_GAME_FLOW_COMPARE=1; SC_GAME_FLOW_COMPARE=0 hides it everywhere.
+ * The Game Flow tab (game-flow-premium.ts), from the stored play-by-play.
+ * Live since 2026-11-11 (mak approved the rebuild): where it prints it
+ * replaces the old play calling, possession results and drive list.
  */
-function gameFlowCompareOn(): boolean {
-  const flag = process.env["SC_GAME_FLOW_COMPARE"];
-  if (flag === "1") return true;
-  if (flag === "0") return false;
-  return process.env["NODE_ENV"] !== "production";
-}
-
-/** The rebuilt Game Flow (game-flow-premium.ts), from the same stored play-by-play. */
 function renderGameFlowComparison(data: MatchupData): string {
-  if (!gameFlowCompareOn()) return "";
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting || game.status !== "final") return "";
@@ -1552,8 +1555,13 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
   const sides = seasonSides(data)
     .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games, data.state.season)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
-  // The winner's next games follow, as their own card.
-  return renderBeforeAfter(game, sides, true) + renderExploreCard(winnerPath(data, game, options), true);
+  // A playoff game's path follows as its own card. A regular-season recap
+  // keeps only the adjacent games (mak, 2026-11-11: the upcoming schedule
+  // belongs on the team page, not a Week 2 recap).
+  return (
+    renderBeforeAfter(game, sides, true) +
+    (game.gameType === "playoff" ? renderExploreCard(winnerPath(data, game, options), true) : "")
+  );
 }
 
 /** The recap's VideoObject as an inert island for the plugin, or "". */
@@ -2268,7 +2276,7 @@ function statName(
     playerPhoto(row.player.id, "sct-mu-ps-photo", 32) +
     `<span class="sct-mu-ps-who">` +
     playerName(row.player.name, "sct-mu-ps-link") +
-    teamPosition(row.team?.code, row.position, "sct-mu-ps-meta") +
+    teamPosition(row.team?.code, row.position, "sct-mu-ps-meta", "position-first") +
     `</span>` +
     `</span>` +
     `</th>`
@@ -3843,8 +3851,10 @@ function recapTabs(
   const overview = overviewParts.main;
   const boxScore = renderGameBoxScore(data);
   const pbpParts = renderGamePlayByPlay(data);
-  // The rebuilt Game Flow, under the current one for comparison (mak, 2026-11-10).
+  // The rebuilt Game Flow (mak, 2026-11-10; live 2026-11-11). Where it
+  // prints, the old play calling + possessions block goes.
   const gameFlowNew = renderGameFlowComparison(data);
+  const possessionsOld = gameFlowNew ? "" : added.possessions;
   const playByPlay = pbpParts ? pbpParts.lead + pbpParts.rest : "";
   const fantasyRecap = renderGameFantasyTab(data);
   // The Scoring Summary prints on Play-by-Play when there is one, not twice.
@@ -3866,7 +3876,7 @@ function recapTabs(
           panel("fantasy-recap", fantasyTab) +
           // Team Stats moved into the Box Score tab (2026-11-08); without one
           // it opens Game flow.
-          panel("game-flow", (boxScore ? "" : own.why) + scoring + added.possessions, gameFlowNew) +
+          panel("game-flow", (boxScore ? "" : own.why) + scoring + possessionsOld, gameFlowNew) +
           panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
           panel("betting", added.bettingLead, added.betting)
         );
@@ -3882,7 +3892,7 @@ function recapTabs(
         panel("box-score", boxScore) +
         panel("play-by-play", pbpParts?.lead ?? "", pbpParts?.rest ?? "") +
         panel("fantasy-recap", fantasyTab) +
-        panel("game-flow", added.winProbability + added.possessions, gameFlowNew) +
+        panel("game-flow", added.winProbability + possessionsOld, gameFlowNew) +
         panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
         panel("betting", added.bettingLead, added.betting)
       );
@@ -3974,13 +3984,13 @@ function recapTabHead(id: RecapTabId, game: ScoreboardGame, overview: boolean): 
       icon: "fantasy",
       title: `${pair} Fantasy Recap`,
       phone: "Fantasy Recap",
-      dek: "The fantasy standouts, the fantasy box score, usage and opportunity, actual versus expected points, and the verdicts.",
+      dek: "The highlights, the fantasy box score, usage and opportunity, actual versus expected points, takeaways and next-week decisions.",
     },
     "game-flow": {
       icon: "flow",
       title: `${pair} Game Flow`,
       phone: "Game Flow",
-      dek: "Play calling and how each team's possessions ended, drive by drive.",
+      dek: "How the game unfolded, possession by possession, and how each offense called it.",
       art: "outlook",
     },
     "head-to-head": {

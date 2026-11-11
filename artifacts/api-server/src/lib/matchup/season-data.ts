@@ -124,8 +124,14 @@ export interface SeasonToDate {
  * season as it stands, not as it stood before this game. Null when neither
  * club has a stored game.
  */
-export function seasonToDate(season: number, clubs: string[]): SeasonToDate | null {
-  const regular = seasonGames(season).filter((g) => g.seasonType === "regular");
+/**
+ * `beforeWeek`: count only regular-season games before that week (a recap's
+ * "entering this game" view, mak 2026-11-11); omit it for every stored game.
+ */
+export function seasonToDate(season: number, clubs: string[], beforeWeek?: number): SeasonToDate | null {
+  const regular = seasonGames(season).filter(
+    (g) => g.seasonType === "regular" && (beforeWeek === undefined || g.week < beforeWeek),
+  );
   if (regular.length === 0) return null;
   const teams: Record<string, TeamSeason> = {};
   let through = 0;

@@ -1,8 +1,8 @@
 /**
- * The completed game's Fantasy tab (mak, 2026-11-08), exactly five sections:
+ * The completed game's Fantasy tab (mak, 2026-11-08; reordered 2026-11-11):
  *
- *   01 Fantasy Standouts      three player stories, not just the top three totals
- *                             (bare cards since 11-09: no heading or section box)
+ *   01 Fantasy Highlights     three cards: Top Scorer, Biggest Overperformer,
+ *                             Biggest Underperformer (bare, no heading or box)
  *   02 Fantasy Box Score      every QB/RB/WR/TE line: points, weekly finish, a
  *                             short production summary (the Box Score tab has the
  *                             full stat lines)
@@ -10,7 +10,9 @@
  *   04 Actual vs Expected     actual and expected points on one scale, a short
  *                             reason per player, the full xFP table behind
  *                             "Show all players"
- *   05 Redraft Command        one current-research call to action
+ *   05 Fantasy Takeaways & Stock Changes, 06 Next-Week Decisions: appended
+ *      by renderFantasyTakeaways (fantasy-section.ts). No Redraft Command
+ *      banner since 2026-11-11: the tools sit in one line in 06.
  *
  * One source for every figure: fantasyLines() (fantasy-section.ts) scores each
  * line with fantasy-points.ts and judges it with the same xFP pass the Stats &
@@ -193,7 +195,8 @@ function who(ctx: Ctx, line: FantasyLine): string {
   return (
     `<span class="sct-mu-ps-cell">${face(line, "sct-mu-ps-photo", 32)}<span class="sct-mu-ps-who">` +
     nameLink(ctx, line, "sct-player-link sct-mu-ps-link") +
-    teamPosition(line.team, line.pos, "sct-mu-ps-meta") +
+    // Position first, "RB · NE" (mak, 2026-11-11), across the Fantasy tab.
+    teamPosition(line.team, line.pos, "sct-mu-ps-meta", "position-first") +
     `</span></span>`
   );
 }
@@ -222,85 +225,40 @@ function section(id: string, title: string, body: string, opts: { slot?: boolean
 
 /* ------------------------------------------------------- 01 standouts */
 
-type StoryKind = "top" | "under" | "td" | "over" | "role-up" | "role-down" | "above" | "below" | "even";
+type StoryKind = "top" | "over" | "under";
 
 const STORY_LABEL: Record<StoryKind, string> = {
-  top: "Top Performer",
-  under: "Underperformed Opportunity",
-  td: "Touchdown-Driven Result",
-  over: "Beat Expected",
-  "role-up": "Expanded Role",
-  "role-down": "Reduced Role",
-  above: "Above Expected",
-  below: "Below Expected",
-  even: "In Line With Opportunity",
+  top: "Top Scorer",
+  over: "Biggest Overperformer",
+  under: "Biggest Underperformer",
 };
 
 interface Story {
   line: FantasyLine;
   kind: StoryKind;
-  /** The role change, when that is the story. */
-  role?: { metric: "snaps" | "targets"; now: number; before: number };
-}
-
-/** The season's average snap and target share before this game, from two or more logged games. */
-function priorShares(line: FantasyLine): { snaps: number | null; targets: number | null } {
-  const before = line.ctx?.before ?? [];
-  const avg = (values: Array<number | null>): number | null => {
-    const v = values.filter((x): x is number => x !== null);
-    return v.length >= 2 ? v.reduce((s, x) => s + x, 0) / v.length : null;
-  };
-  return { snaps: avg(before.map((g) => g.snapShare)), targets: avg(before.map((g) => g.targetShare)) };
-}
-
-function roleChange(line: FantasyLine): Story["role"] | null {
-  if (line.qb) return null;
-  const prior = priorShares(line);
-  const snap = line.snapShare !== null && prior.snaps !== null ? { metric: "snaps" as const, now: line.snapShare, before: prior.snaps } : null;
-  const tgt = line.tgtShare !== null && prior.targets !== null ? { metric: "targets" as const, now: line.tgtShare, before: prior.targets } : null;
-  const best = [snap, tgt]
-    .filter((c): c is NonNullable<typeof c> => c !== null && Math.abs(c.now - c.before) >= 0.2)
-    .sort((a, b) => Math.abs(b.now - b.before) - Math.abs(a.now - a.before))[0];
-  return best ?? null;
 }
 
 /**
- * The three most interesting performances, in PPR (the page's default): the
- * top scorer, the biggest shortfall on a real workload, the biggest result
- * above expectation (touchdown-driven or not), then a role change, then the
- * largest remaining gaps. A high total alone earns one slot, not three.
+ * The three highlight cards (mak, 2026-11-11), in PPR (the page's default):
+ * the top scorer, then the biggest result above expectation and the biggest
+ * below it on a real workload (5+ expected points), each a different player.
+ * A card with no candidate is left out.
  */
 export function pickStandouts(lines: FantasyLine[]): Story[] {
   const picked: Story[] = [];
   const has = (line: FantasyLine): boolean => picked.some((s) => s.line === line);
-  const add = (story: Story | null): void => {
-    if (story && picked.length < 3 && !has(story.line)) picked.push(story);
-  };
   const judged = lines.filter((l) => l.over !== null && l.x !== null);
 
   const top = lines[0];
-  if (top && top.pts.ppr >= 10) add({ line: top, kind: "top" });
+  if (top && top.pts.ppr > 0) picked.push({ line: top, kind: "top" });
+
+  const over = judged.filter((l) => l.over!.ppr > 0.5 && !has(l)).sort((a, b) => b.over!.ppr - a.over!.ppr)[0];
+  if (over) picked.push({ line: over, kind: "over" });
 
   const under = judged
-    .filter((l) => l.over!.ppr <= -4 && l.x!.ppr >= 8 && !has(l))
+    .filter((l) => l.over!.ppr < -0.5 && l.x!.ppr >= 5 && !has(l))
     .sort((a, b) => a.over!.ppr - b.over!.ppr)[0];
-  if (under) add({ line: under, kind: "under" });
-
-  const over = judged.filter((l) => l.over!.ppr >= 4 && !has(l)).sort((a, b) => b.over!.ppr - a.over!.ppr)[0];
-  if (over) add({ line: over, kind: touchdownPoints(over) >= over.over!.ppr ? "td" : "over" });
-
-  const role = lines
-    .filter((l) => !has(l) && (l.x?.ppr ?? 0) >= 5)
-    .map((l) => ({ l, r: roleChange(l) }))
-    .filter((c): c is { l: FantasyLine; r: NonNullable<Story["role"]> } => c.r !== null)
-    .sort((a, b) => Math.abs(b.r.now - b.r.before) - Math.abs(a.r.now - a.r.before))[0];
-  if (role) add({ line: role.l, kind: role.r.now > role.r.before ? "role-up" : "role-down", role: role.r });
-
-  for (const l of [...judged].sort((a, b) => Math.abs(b.over!.ppr) - Math.abs(a.over!.ppr))) {
-    if (has(l) || Math.abs(l.over!.ppr) < 2) continue;
-    add({ line: l, kind: l.over!.ppr > 0 ? "above" : "below" });
-  }
-  for (const l of lines) if (!has(l) && l.pts.ppr >= 5) add({ line: l, kind: "top" });
+  if (under) picked.push({ line: under, kind: "under" });
   return picked;
 }
 
@@ -308,6 +266,8 @@ function storyText(ctx: Ctx, story: Story): string {
   const { line } = story;
   const name = lastName(line.name);
   const team = ctx.input.section.game[sideOf(ctx.input, line.team)].short;
+  // No xFP figures here (mak, 2026-11-10): Actual vs Expected carries them;
+  // a highlight says what happened in a line.
   switch (story.kind) {
     case "top": {
       let text = gameLine(line);
@@ -315,27 +275,14 @@ function storyText(ctx: Ctx, story: Story): string {
       else if (!line.qb && (line.carShare ?? 0) >= 0.5) text += ` Handled ${pct(line.carShare)} of the ${team}' carries.`;
       return text;
     }
-    // No xFP figures here (mak, 2026-11-10): Actual vs Expected carries them;
-    // a highlight says what happened in a line.
+    case "over": {
+      const tds = touchdowns(line) + n(line.stats, "passTd");
+      return touchdownPoints(line) >= line.over!.ppr && tds > 0
+        ? `${plural(tds, "touchdown")} on ${opportunities(line)} lifted the day past the workload.`
+        : `${gameLine(line)} ${name} got more out of the workload than it usually returns.`;
+    }
     case "under":
       return `Despite ${opportunities(line)}, ${name} came up well short of what that workload is usually worth.`;
-    case "td": {
-      const tds = touchdowns(line) + n(line.stats, "passTd");
-      return `${plural(tds, "touchdown")} on ${opportunities(line)} made the day.`;
-    }
-    case "over":
-      return `${gameLine(line)} ${name} outplayed the workload without leaning on touchdowns.`;
-    case "role-up":
-    case "role-down": {
-      const r = story.role!;
-      const what = r.metric === "snaps" ? "of the snaps" : "of the targets";
-      return `Played to ${Math.round(r.now * 100)}% ${what} after averaging ${Math.round(r.before * 100)}% before this game. ${gameLine(line)}`;
-    }
-    case "above":
-    case "below":
-      return `${gameLine(line)} That is ${story.kind === "above" ? "more" : "less"} than ${opportunities(line)} usually produce.`;
-    default:
-      return gameLine(line);
   }
 }
 
@@ -346,7 +293,7 @@ function renderStandouts(ctx: Ctx, lines: FantasyLine[]): string {
     .map((story) => {
       const { line } = story;
       const finish = per((f) => ctx.finish(line, f));
-      const meta = per((f) => [line.team, line.pos ?? "", finish[f] ? `${finish[f]} weekly finish` : ""].filter(Boolean).join(" · "));
+      const meta = per((f) => [line.pos ?? "", line.team, finish[f] ? `${finish[f]} weekly finish` : ""].filter(Boolean).join(" · "));
       return (
         `<article class="sct-fz-card is-${story.kind}" style="--fz-team:${ink(ctx.input, line.team)}">` +
         `<div class="sct-fz-card-head">` +
@@ -551,21 +498,6 @@ function renderExpected(ctx: Ctx, lines: FantasyLine[]): string {
   return section("fantasy-xfp", "Actual vs Expected (xFP)", body, { slot: true });
 }
 
-/* ---------------------------------------------------- 05 redraft command */
-
-function renderResearch(ctx: Ctx): string {
-  return (
-    `<aside class="sct-mu-ps-cta sct-fz-cta" aria-label="Redraft Command">` +
-    `<div class="sct-mu-ps-cta-text">` +
-    `<p class="sct-fz-cta-eyebrow">Current tools</p>` +
-    `<p class="sct-mu-ps-cta-title">Research These Players for Your Next Matchup</p>` +
-    `<p class="sct-mu-ps-cta-sub">Explore current projections, player values, and lineup recommendations using your league settings.</p>` +
-    `</div>` +
-    `<a class="sct-mu-ps-cta-button" href="${e(ctx.input.redraftUrl)}" data-cta="fantasy-tab-redraft">Open Redraft Command →</a>` +
-    `</aside>`
-  );
-}
-
 /* ------------------------------------------------------------------ tab */
 
 const FORMAT_KEY: Record<Format, "ppr" | "half" | "standard"> = { ppr: "ppr", half: "half", std: "standard" };
@@ -600,7 +532,6 @@ export function renderFantasyTab(input: FantasyTabInput, lines: FantasyLine[]): 
     renderBoxScore(ctx, lines) +
     renderUsage(ctx, lines) +
     renderExpected(ctx, lines) +
-    renderResearch(ctx) +
     `</div>`
   );
 }

@@ -23,7 +23,8 @@ export function teamPosition(
   teamCode: string | null | undefined,
   position: string | null | undefined,
   className: string,
-  order: "team-first" | "position-first" = "team-first",
+  // Position first on every matchup tab (mak, 2026-11-11: "RB · NE").
+  order: "team-first" | "position-first" = "position-first",
 ): string {
   const pos = (position ?? "").trim();
   const code = (teamCode ?? "").trim().toUpperCase();

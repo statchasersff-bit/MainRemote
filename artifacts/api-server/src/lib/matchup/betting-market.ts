@@ -91,8 +91,11 @@ function signedPts(n: number): string {
 function section(id: string, title: string, body: string, sub = ""): string {
   return (
     `<section class="sct-rb-section sct-bm" aria-labelledby="${id}">` +
-    `<h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>` +
-    (sub ? `<p class="sct-rb-sub sct-bm-sub">${e(sub)}</p>` : "") +
+    // The sub sits in the head row beside the title (mak, 2026-11-11).
+    (sub
+      ? `<div class="sct-fp-head sct-gfp-head"><h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>` +
+        `<p class="sct-rb-sub sct-bm-sub">${e(sub)}</p></div>`
+      : `<h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>`) +
     body +
     `</section>`
   );
@@ -318,11 +321,15 @@ function chipList(letters: string[]): string {
   return `<span class="sct-bm-chips">${letters.map((l) => `<span class="sct-bm-chip is-${l.toLowerCase()}">${l}</span>`).join("")}</span>`;
 }
 
-/** "Last 2 meetings: Packers 1-1 ATS, overs 2-0." from the pair's priced meetings. */
-function seriesLine(input: BettingMarketInput): string {
+/**
+ * The pair's priced meetings as letters (up to six, newest first in the
+ * store): each side's ATS and the totals. Null under two meetings. Since
+ * 2026-11-11 these are two rows of the trends table, not a sentence.
+ */
+function meetingLetters(input: BettingMarketInput): { n: number; ats: Record<Side, string[]>; ou: string[] } | null {
   const { game } = input;
   const priced = (input.meetings ?? []).filter((g) => g.odds && g.odds.total !== null).slice(0, 6);
-  if (priced.length < 2) return "";
+  if (priced.length < 2) return null;
   const ats: Record<Side, string[]> = { away: [], home: [] };
   const ou: string[] = [];
   for (const g of priced) {
@@ -333,13 +340,7 @@ function seriesLine(input: BettingMarketInput): string {
     const t = againstTotal(g);
     if (t) ou.push(t === "over" ? "O" : t === "under" ? "U" : "P");
   }
-  const wins = (k: Side): number => ats[k].filter((x) => x === "W").length;
-  const lead: Side = wins("home") > wins("away") ? "home" : "away";
-  const o = ou.filter((x) => x === "O").length;
-  const u = ou.filter((x) => x === "U").length;
-  const p = ou.length - o - u;
-  const ouWord = o > u ? `overs ${o}${DASH}${u}` : u > o ? `unders ${u}${DASH}${o}` : `overs and unders ${o}${DASH}${u}`;
-  return `Last ${priced.length} meetings: ${game[lead].short} ${record(ats[lead], "W", "L")} ATS, ${ouWord}${p ? ` (${p} push${p === 1 ? "" : "es"})` : ""}.`;
+  return { n: priced.length, ats, ou };
 }
 
 function renderTrends(input: BettingMarketInput): string {
@@ -371,6 +372,15 @@ function renderTrends(input: BettingMarketInput): string {
         `${record(ats(l.filter((x) => (x.g.home === club(k) ? "home" : "away") === k)), "W", "L")} <small>${k === "home" ? "home" : "road"}</small>`,
     ],
   ];
+  // The head-to-head record against the lines (was a sentence under the
+  // tables until 2026-11-11): two rows here instead.
+  const met = meetingLetters(input);
+  if (met) {
+    rowsDef.push(
+      [`Last ${met.n} meetings ATS`, (_l, k) => record(met.ats[k], "W", "L")],
+      [`Last ${met.n} meetings O/U`, () => record(met.ou, "O", "U")],
+    );
+  }
   const table =
     `<div class="sct-bm-wrap"><table class="sct-bm-table is-trends">` +
     `<caption class="sct-rb-sr">${e(`Each team's ${game.seasonLabel} season against the closing lines ${through}`)}</caption>` +
@@ -388,27 +398,15 @@ function renderTrends(input: BettingMarketInput): string {
       .join("") +
     `</tbody></table></div>`;
 
-  // Streaks: the last five, oldest to newest, this game last.
-  const streaks =
-    `<div class="sct-bm-streaks">` +
-    `<p class="sct-bm-streaks-k">Last ${n}, oldest to newest <span>(this game last)</span></p>` +
-    SIDES.map((k, i) => {
-      const last = lists[i]!.slice(-n);
-      if (last.length === 0) return "";
-      return (
-        `<div class="sct-bm-streak"><span class="sct-bm-streak-team"><i style="background:${input.inks[k]}" aria-hidden="true"></i>${e(game[k].abbr)}</span>` +
-        `<span class="sct-bm-streak-k">ATS</span>${chipList(ats(last))}` +
-        `<span class="sct-bm-streak-k">O/U</span>${chipList(ous(last))}</div>`
-      );
-    }).join("") +
-    `</div>`;
-
-  const games = SIDES.map((k, i) => {
-    const list = lists[i]!;
-    if (list.length === 0) return "";
+  // Recent results (mak, 2026-11-11, from a reviewer: the "Last N" chips,
+  // the collapsed game-by-game tables and the meetings sentence told the same
+  // history three ways). One open table: each team's last games, oldest to
+  // newest, this game last, with the line, total and both results.
+  const recentRows = SIDES.map((k, i) => {
     const abbr = club(k);
-    const body = list
-      .map((x) => {
+    return lists[i]!
+      .slice(-n)
+      .map((x, at, all) => {
         const g = x.g;
         const home = g.home === abbr;
         const opp = home ? g.away : g.home;
@@ -417,8 +415,13 @@ function renderTrends(input: BettingMarketInput): string {
         const o = g.odds!;
         const lineNum = o.favorite === null || o.line === 0 ? "PK" : o.favorite === abbr ? `${MINUS}${trim(o.line)}` : `+${trim(o.line)}`;
         const wk = g.seasonType === "post" ? "Playoffs" : `Wk ${g.week}`;
+        const first = at === 0;
         return (
-          `<tr><td>${e(wk)}</td><td>${home ? "vs" : "@"} ${e(opp)}</td>` +
+          `<tr class="is-${k}${first ? " is-first" : ""}">` +
+          (first
+            ? `<th scope="rowgroup" rowspan="${all.length}" class="sct-bm-r-team"><i style="background:${input.inks[k]}" aria-hidden="true"></i>${e(abbr)}</th>`
+            : "") +
+          `<td>${e(wk)}</td><td>${home ? "vs" : "@"} ${e(opp)}</td>` +
           `<td>${us > them ? "W" : us < them ? "L" : "T"} ${us}${DASH}${them}</td>` +
           `<td>${e(lineNum)}</td><td><span class="sct-bm-chip is-${x.ats.toLowerCase()}">${x.ats}</span></td>` +
           `<td>${o.total !== null ? e(trim(o.total)) : "-"}</td>` +
@@ -426,24 +429,19 @@ function renderTrends(input: BettingMarketInput): string {
         );
       })
       .join("");
-    return (
-      `<div class="sct-bm-team">` +
-      `<h3 class="sct-bm-team-name" style="--bm-team:${input.inks[k]}">${e(game[k].name)}</h3>` +
-      `<div class="sct-bm-wrap"><table class="sct-bm-table is-games">` +
-      `<caption class="sct-rb-sr">${e(`${game[k].name} results against the closing lines ${through}`)}</caption>` +
-      `<thead><tr><th scope="col">Week</th><th scope="col">Opp</th><th scope="col">Final</th><th scope="col">Line</th><th scope="col">ATS</th><th scope="col">Total</th><th scope="col">O/U</th></tr></thead>` +
-      `<tbody>${body}</tbody></table></div></div>`
-    );
   }).join("");
+  const recent = recentRows
+    ? `<p class="sct-bm-streaks-k">Recent results, oldest to newest <span>(this game last)</span></p>` +
+      `<div class="sct-bm-wrap"><table class="sct-bm-table is-games is-recent">` +
+      `<caption class="sct-rb-sr">${e(`Each team's last ${n} results against the closing lines ${through}`)}</caption>` +
+      `<thead><tr><th scope="col">Team</th><th scope="col">Week</th><th scope="col">Opp</th><th scope="col">Final</th><th scope="col">Line</th><th scope="col">ATS</th><th scope="col">Total</th><th scope="col">O/U</th></tr></thead>` +
+      `<tbody>${recentRows}</tbody></table></div>`
+    : "";
 
-  const series = seriesLine(input);
   return section(
     "bm-trends",
     "Betting Trends",
-    table +
-      streaks +
-      `<details class="sct-bm-games"><summary>Game-by-game results</summary><div class="sct-bm-pair">${games}</div></details>` +
-      (series ? `<p class="sct-bm-series">${e(series)}</p>` : ""),
+    table + recent,
     `${game.seasonLabel} season ${through}, this game included. Nothing after it counts.`,
   );
 }

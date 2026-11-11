@@ -510,10 +510,14 @@ describe("fantasy tab tool links", () => {
     // The projections banner went with the Stats & Fantasy tab (2026-11-09);
     // the trade banner moved to the Fantasy tab.
     assert.equal(doc.querySelector('[data-cta="fantasy-projections-banner"]'), null);
-    assert.equal(
-      doc.querySelector('[data-cta="fantasy-trade-banner"]')?.getAttribute("href"),
-      `${RC}fantasy-football-trade-calculator`,
-    );
+    // Since 2026-11-11 the trade banner is one plain link in Next-Week
+    // Decisions, beside the Start/Sit tool.
+    assert.equal(doc.querySelector('[data-cta="fantasy-trade-banner"]'), null);
+    if (doc.querySelector("#decisions")) {
+      assert.equal(doc.querySelector('[data-cta="fantasy-trade"]')?.getAttribute("href"), `${RC}fantasy-football-trade-calculator`);
+      assert.equal(doc.querySelector('[data-cta="fantasy-startsit"]')?.getAttribute("href"), `${RC}who-should-i-start`);
+    }
+    assert.equal(doc.querySelectorAll('[data-cta="verdict-startsit"]').length, 0, "no per-player start/sit links");
     assert.equal(doc.querySelectorAll('a[href*="/launch/"]').length, 0, "nothing goes through the /launch/ redirect");
     for (const a of doc.querySelectorAll('[data-cta="verdict-startsit"]')) {
       assert.match(a.getAttribute("href"), /^https:\/\/statchasers\.com\/redraft-command\/who-should-i-start\/[a-z0-9-]+$/);
@@ -966,12 +970,14 @@ describe("the upcoming page (premium design)", () => {
         for (const c of bo.querySelectorAll(".sct-mpp-bo-chip")) assert.match(c.textContent, /^[WLPOU]$/, `${p}: chip letter`);
         for (const t of bo.querySelectorAll(".sct-mpp-bo-gt tbody")) assert.ok(t.rows.length <= 5, `${p}: last 5 only`);
       }
-      // The tail: FAQ (with its schema), then Next steps, right after the premium body.
+      // The tail: FAQ (with its schema), then the legal line, right after the premium body.
+      // The Dynasty Command line and Next steps were removed 2026-11-11 (mak).
       // (The lighter-design comparison, .sct-mpl, was removed 2026-11-06.)
       assert.equal(doc.querySelector(".sct-mpl"), null, "no lighter-design comparison");
       const tail = doc.querySelector(".sct-mpp:not(.is-top) + .sct-pv");
       assert.ok(tail?.querySelector("#pv-faq"), "the FAQ follows the cards");
-      assert.ok(tail.querySelector("footer.sct-pv-foot"), "Next steps");
+      assert.ok(tail.querySelector("footer.sct-pv-foot .sct-pv-legal"), "legal line");
+      assert.equal(tail.querySelector(".sct-pv-foot-title, .sct-pv-foot-groups, .sct-pv-next"), null, "no Next steps or Dynasty line");
       assert.ok([...doc.querySelectorAll('script[type="application/ld+json"]')].some((s) => s.textContent.includes('"FAQPage"')), "FAQ schema");
     }
     // Between seasons nothing is upcoming; otherwise a page must have been checked.
@@ -1245,7 +1251,9 @@ describe("the postgame page", () => {
     const page = await postgamePage();
     if (!page) return;
     assert.equal(page.doc.querySelector(".sct-mu-takeaways, .sct-mu-take"), null);
-    assert.ok(![...page.doc.querySelectorAll("h2")].some((h) => /Fantasy Takeaways/.test(h.textContent)));
+    // The Fantasy tab's merged verdicts and stock (mak, 2026-11-11) carry the
+    // title on #verdicts; the old standalone block stays gone.
+    assert.ok(![...page.doc.querySelectorAll("h2")].some((h) => /Fantasy Takeaways/.test(h.textContent) && h.id !== "verdicts"));
   });
 
   test("a position is named in its own color, and only the position", async () => {
@@ -2270,7 +2278,8 @@ describe("recap Overview tab (new design)", () => {
     assert.match(copy, /Drake Maye threw three interceptions in the fourth quarter, to Nehemiah Pritchett, Julian Love and Josh Jobe\./);
     assert.match(copy, /Josh Jobe's end-zone interception in the final minute sealed the win\./);
     const tiles = [...ov.querySelectorAll(".sct-ov-tiles li")].map((li) => li.textContent);
-    assert.deepEqual(tiles, ["+3Turnover margin", "5.9SEA yards/play", "10Q4 points"]);
+    // The why card argues from evidence the recap does not tell (2026-11-11).
+    assert.deepEqual(tiles, ["+3Turnover margin", "7.2SEA yards/dropback", "5/16NE third downs"]);
     assert.match(ov.querySelector(".is-why .sct-ov-copy").textContent, /overcame poor third-down efficiency \(2-for-11\), 19 fewer offensive plays/);
     assert.ok(ov.querySelector(".is-swing svg.sct-ov-wp path.sct-ov-wp-line"), "the play-by-play chart");
     const moments = [...ov.querySelectorAll(".sct-ov-moments b")].map((b) => b.textContent);
@@ -2302,7 +2311,7 @@ describe("recap Overview tab (new design)", () => {
     assert.equal(doc.querySelector("#tab-recap").textContent, "Overview");
   });
 
-  test("Fantasy verdicts: player-specific, no box score or xFP restated, four shown (mak, 2026-11-10)", async () => {
+  test("Fantasy takeaways: one call per player, no xFP restated, four shown (mak, 2026-11-10/11)", async () => {
     const { doc } = await dom(PAGE);
     const list = doc.querySelector("[data-mu-tab='fantasy-recap'] .sct-fp-vlist[data-fz-list]");
     if (!list) return; // no verdicts for the game
@@ -2312,10 +2321,28 @@ describe("recap Overview tab (new design)", () => {
     cards.forEach((c, at) => assert.equal(c.classList.contains("is-extra"), at >= 4, `card ${at}`));
     assert.equal(Boolean(list.querySelector(":scope > [data-fz-more]")), cards.length > 4, "the reveal button only when there are more");
     for (const c of cards) {
-      assert.match(c.querySelector(".sct-fp-meta").textContent, /^[A-Z]{2,3} · [A-Z]{1,2}$/, "meta is team and position only");
+      assert.match(c.querySelector(".sct-fp-meta").textContent, /^[A-Z]{1,2} · [A-Z]{2,3}$/, "meta is position then team only (2026-11-11)");
       const text = c.querySelector(".sct-fp-verdict").textContent;
       assert.doesNotMatch(text, /Bet on the role|expected/i, text);
+      assert.match(c.querySelector(".sct-fp-tag").textContent, /^. (Stock Up|Stock Down|Buy Low|Sell High)$/);
+      assert.equal(c.querySelector(".sct-fp-trend, .sct-fp-ss"), null, "no sparkline or start/sit link on a card");
     }
+  });
+
+  test("Game Flow timeline: a chosen block fills the detail line and opens its drive on Play-by-Play (mak, 2026-11-11)", async () => {
+    const { doc, window } = await hydrated(PAGE);
+    const button = doc.querySelector("[data-gfp] button[data-gfp-drive]");
+    if (!button) return; // no stored play-by-play for the game
+    button.click();
+    const pick = doc.querySelector("[data-gfp-pick]");
+    assert.equal(pick.hidden, false);
+    assert.equal(button.getAttribute("aria-pressed"), "true");
+    assert.equal(pick.querySelector("[data-gfp-pick-text]").textContent, button.dataset.tip);
+    const link = pick.querySelector("a[data-gfp-pick-link]");
+    assert.equal(link.getAttribute("href"), `#pbp-drive-${button.dataset.gfpDrive}`);
+    link.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    assert.equal(doc.querySelector(`#pbp-drive-${button.dataset.gfpDrive}`).open, true, "the drive opens");
+    assert.ok(!doc.querySelector("#pbp-tab").hidden, "on the Play-by-Play tab");
   });
 
   test("Game Flow rebuilt: five strategic sections under the current tab, counted from the play-by-play (mak, 2026-11-10)", async () => {
@@ -2323,15 +2350,21 @@ describe("recap Overview tab (new design)", () => {
     const tab = doc.querySelector("[data-mu-tab='game-flow']");
     const block = tab?.querySelector(":scope > .sct-gfp[data-gfp]");
     if (!block) return; // no stored play-by-play for the game
-    assert.ok(tab.querySelector(":scope > .sct-mu-flow-frame + .sct-gfp"), "the comparison sits under the current Game Flow container");
+    // The whole tab since 2026-11-11: no old play calling or possessions, no
+    // comparison flag; the timeline leads.
+    assert.equal(tab.querySelector("#possessions, .sct-pc-drives, .sct-gfp-flag"), null, "old Game Flow content gone");
+    assert.equal(block.querySelector(".sct-gfp-sec").querySelector("h2").id, "gf-timeline");
+    assert.ok(block.querySelector(".sct-gfp-drive > button[data-gfp-drive][data-tip]"), "timeline blocks are buttons");
+    assert.ok(block.querySelector("[data-gfp-pick][hidden] a[href^='#pbp-drive-']"), "detail line printed hidden");
+    assert.ok(![...block.querySelectorAll(".sct-gfp-vs-line span")].some((s) => s.textContent === "Scoring drives"), "no scoring-drives row");
     assert.deepEqual(
-      [...block.querySelectorAll(".sct-gfp-sec > h2")].map((h) => h.id),
+      [...block.querySelectorAll(".sct-gfp-sec > .sct-gfp-head > h2")].map((h) => h.id),
       ["gf-timeline", "gf-field", "gf-halves", "gf-efficiency", "gf-calling"],
     );
     // Each offense's points by half add up to its final score (10-13).
     const points = (side) =>
       [...block.querySelectorAll(`.sct-gfp-half.is-${side} tbody tr`)]
-        .find((tr) => tr.querySelector("th").textContent === "Points")
+        .find((tr) => tr.querySelector("th").textContent === "Offensive points")
         .querySelectorAll("td");
     const total = (side) => [...points(side)].reduce((t, td) => t + parseInt(td.textContent, 10), 0);
     assert.equal(total("away"), 10);
@@ -2478,13 +2511,20 @@ describe("recap Fantasy tab (fantasy-tab.ts)", () => {
     assert.ok(heads.slice(3).every((id) => ["verdicts", "decisions", "stock", "injuries"].includes(id)), heads.join());
     // The verdict cards stand bare, no section box (2026-11-09), under their
     // own "Fantasy verdicts" title bar (2026-11-10).
+    // Since 2026-11-11 the takeaways sit in a section card with the box
+    // score's head row, not bare.
     const verdictsH2 = tab.querySelector("h2#verdicts");
     if (verdictsH2) {
-      assert.ok(verdictsH2.parentElement.classList.contains("sct-fp-bare"));
-      assert.equal(verdictsH2.parentElement.tagName, "DIV", "no section card around the verdicts");
+      assert.ok(verdictsH2.parentElement.classList.contains("sct-mu-ps-head"));
+      assert.equal(verdictsH2.closest("section")?.classList.contains("sct-fp-takeaways"), true);
     }
     assert.equal(tab.querySelectorAll(".sct-fz-card").length, 3);
-    assert.equal(tab.querySelectorAll(".sct-fz-cta").length, 1, "one Redraft Command CTA");
+    assert.equal(tab.querySelectorAll(".sct-fz-cta, .sct-fp-cta").length, 0, "no Redraft Command banners (2026-11-11)");
+    assert.equal(tab.querySelector("#stock"), null, "stock merged into the takeaways (2026-11-11)");
+    assert.deepEqual(
+      [...tab.querySelectorAll(".sct-fz-card-tag")].map((t) => t.textContent),
+      ["Top Scorer", "Biggest Overperformer", "Biggest Underperformer"],
+    );
     // fantasy-tab.ts's own sections carry no start/sit links; the moved
     // verdicts and decisions (2026-11-09, mak's request) do.
     assert.equal(tab.querySelectorAll(".sct-fz a[href*='who-should-i-start']").length, 0, "no start/sit links in the five sections");
@@ -2509,15 +2549,19 @@ describe("recap Betting tab, frozen market (betting-market.ts)", () => {
     if (!doc.querySelector("#betting-tab [data-bm-root]")) return; // no closing line stored for the game
     const block = doc.querySelector("#betting-tab");
     assert.ok(block.querySelector(".sct-mu-bet-frame > .sct-tab-frame-body > .sct-rb-section > #bm-results"), "Odds and Results is inside the header's container");
-    const ids = [...block.querySelectorAll(".sct-rb-section > h2")].map((h) => h.id);
+    const ids = [...block.querySelectorAll(".sct-rb-section > h2, .sct-rb-section > .sct-gfp-head > h2")].map((h) => h.id);
     assert.deepEqual(ids.filter((id) => id !== "bm-movement"), ["bm-results", "bm-trends"]);
     const results = block.querySelector("#bm-results").parentElement.textContent;
     assert.match(results, /Push/);
     assert.match(results, /Under 44\.5 by 21\.5|Under [\d.]+ by 21\.5/);
     assert.match(results, /20\.75/, "market-implied points sit in the results section");
     // Week 1: one game in the sample, nothing from later weeks.
-    const rows = block.querySelectorAll(".sct-bm-team")[0].querySelectorAll("tbody tr");
-    assert.equal(rows.length, 1);
+    // One open recent-results table for both teams (2026-11-11): no chips,
+    // no collapsed per-team tables, no meetings sentence.
+    const recent = block.querySelectorAll("table.is-recent");
+    assert.equal(recent.length, 1);
+    assert.equal(recent[0].querySelectorAll("tbody tr").length, 2, "one game per team");
+    assert.equal(block.querySelector(".sct-bm-streak, details.sct-bm-games, .sct-bm-series"), null);
     assert.equal(block.querySelectorAll("table.is-trends").length, 1, "one two-team trends table");
     assert.doesNotMatch(block.innerHTML, /DraftKings/, "no sportsbook name");
     // The old result panel and season-trends table are gone (2026-11-09).
