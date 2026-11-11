@@ -445,6 +445,8 @@ const ID_ICON: Record<string, string> = {
   "fantasy-usage": "usage",
   "fantasy-xfp": "swing",
   verdicts: "star",
+  // Next-Week Decisions wears an icon like the other Fantasy tab heads (mak, 2026-11-11).
+  decisions: "calendar",
   "bm-results": "money",
   "bm-implied": "stats",
   "bm-movement": "swing",

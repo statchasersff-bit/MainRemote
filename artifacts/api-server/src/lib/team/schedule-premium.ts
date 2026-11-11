@@ -414,7 +414,7 @@ function pathCard(shape: SeasonShape, nextWeek: number | null): string {
     .join("");
   return (
     `<section class="sct-shp-rail-card is-path" aria-labelledby="sct-shp-path-h">` +
-    `<h3 class="sct-shp-rail-h" id="sct-shp-path-h">Season Path</h3>` +
+    `<h3 class="sct-shp-rail-h" id="sct-shp-path-h">${ICON.calendar}Season Path</h3>` +
     `<ol class="sct-shp-path">${cells}</ol>` +
     `<p class="sct-shp-legend" aria-hidden="true">` +
     `<span class="sct-shp-key" data-kind="home">Home</span><span class="sct-shp-key" data-kind="away">Away</span>` +
@@ -453,7 +453,7 @@ function slateCard(data: TeamPageData, schedule: TeamSchedule, shape: SeasonShap
   const neutral = shape.slate.length - shape.slateHome - shape.slateAway;
   return (
     `<section class="sct-shp-rail-card is-slate" aria-labelledby="sct-shp-slate-h">` +
-    `<h3 class="sct-shp-rail-h" id="sct-shp-slate-h">${e(`${team.division} Schedule`)}</h3>` +
+    `<h3 class="sct-shp-rail-h" id="sct-shp-slate-h">${ICON.trophy}${e(`${team.division} Schedule`)}</h3>` +
     (shape.slate.length
       ? `<ul class="sct-shp-slate">${rows}</ul>` +
         `<p class="sct-shp-caption">${e(`${shape.slateHome} home · ${shape.slateAway} away${neutral ? ` · ${neutral} neutral` : ""}`)}</p>`
@@ -466,7 +466,7 @@ function opponentsCard(team: NflTeam, shape: SeasonShape): string {
   const max = shape.divisions[0]?.count ?? 1;
   return (
     `<section class="sct-shp-rail-card is-opponents" aria-labelledby="sct-shp-opp-h">` +
-    `<h3 class="sct-shp-rail-h" id="sct-shp-opp-h">${e(`Who ${team.city} Plays`)}</h3>` +
+    `<h3 class="sct-shp-rail-h" id="sct-shp-opp-h">${ICON.pin}${e(`Who ${team.city} Plays`)}</h3>` +
     (shape.divisions.length
       ? `<dl class="sct-shp-bars is-light">` +
         shape.divisions
