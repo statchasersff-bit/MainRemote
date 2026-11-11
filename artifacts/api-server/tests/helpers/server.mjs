@@ -52,6 +52,9 @@ export async function startServer(env = {}, options = {}) {
       // Replit secret reaches this shell too, and would 403 every other suite.
       SC_EMBED_KEY: "",
       SC_BROWSER_PROXY: "",
+      // The readable stylesheets, not build.mjs's minified copies: suites
+      // assert on the rules' text. tests/minified-css.test.mjs turns it on.
+      SC_MINIFIED_CSS: "0",
       ...env,
       PORT: String(port),
       // Overridable, because the development-only surfaces - the preview

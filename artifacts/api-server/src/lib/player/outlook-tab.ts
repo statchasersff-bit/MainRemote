@@ -95,10 +95,6 @@ const one = (v: number): string => v.toFixed(1).replace(/^-/, MINUS);
 const signed = (v: number): string => `${v > 0 ? "+" : v < 0 ? MINUS : ""}${Math.abs(v).toFixed(1)}`;
 const pct = (v: number): string => `${v.toFixed(1)}%`;
 
-function a(href: string, text: string, attrs = ""): string {
-  return `<a href="${escapeHtml(href)}"${attrs}>${escapeHtml(text)}</a>`;
-}
-
 function open(id: string, heading: string, lede: string, extra = ""): string {
   return (
     `<section class="scp-ox-sec${extra}" aria-labelledby="${id}">` +
@@ -364,16 +360,6 @@ export function outlookShort(data: PlayerPageData): string | null {
   const m = model(data);
   if (!m || m.rank === null || !m.chips) return null;
   return `${bucket(m.pos, m.rank)}, ${m.chips[1].label.toLowerCase()}`;
-}
-
-/**
- * The News sidebar's snapshot (mak, 2026-10-05): the season tier ("QB2") and
- * the 1QB/12-team call ("Streamer"), the same two words outlookShort joins.
- */
-export function outlookSnapshot(data: PlayerPageData): { tier: string; call: string } | null {
-  const m = model(data);
-  if (!m || m.rank === null || !m.chips) return null;
-  return { tier: bucket(m.pos, m.rank), call: m.chips[1].label };
 }
 
 /** "QB2": the fantasy tier a rank sits in. */

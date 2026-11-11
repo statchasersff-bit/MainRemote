@@ -388,6 +388,9 @@ Search Console → URL Inspection → **More info** → **Page resources**.
 - [ ] On a team page: `team.css` and `dist/statchasers-team.js` load. These are
       separate handles from the news tool's, so a page mounting one enqueues
       only that one.
+- [ ] On a matchup pair or game page: `team.css`, then `matchup.css`, then
+      `dist/statchasers-team.js`. matchup.css (1.10.53) carries the matchup
+      pages' rules split out of team.css; a team hub must NOT load it.
 - [ ] Nothing render-critical is listed as blocked.
 
 The app serves its own permissive `robots.txt`; make sure the **WordPress**

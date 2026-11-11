@@ -21,7 +21,6 @@
 import { easternParts } from "../news-card";
 import { escapeHtml } from "../render";
 import {
-  ARROW,
   gameDateLine,
   gameMatchupHref,
   gameShortDate,
@@ -36,7 +35,7 @@ import { lastResult, nextGame, recordThrough, splitSchedule, type ScheduleGame, 
 import { seasonShape, type SeasonShape } from "./season-shape";
 import type { TeamPageData } from "./team-data";
 import type { NflTeam } from "./teams";
-import { premiumTabHead, premiumTabFrame } from "./premium-head";
+import { premiumTabHead } from "./premium-head";
 
 const e = escapeHtml;
 
@@ -505,10 +504,9 @@ export function renderSchedulePremium(data: TeamPageData, options: TeamRenderOpt
     : "";
   return (
     `<div class="sct-shp">` +
-    premiumTabFrame(
-      identity(data, schedule),
-      `<div class="sct-shp-featured">` + nextCard(data, schedule, options, now) + lastCard(data, schedule, options, now) + `</div>`,
-    ) +
+    // No outer frame since 2026-11-10 (mak): the header bar, then the Next / Last Game pair on its own.
+    identity(data, schedule) +
+    `<div class="sct-shp-featured">` + nextCard(data, schedule, options, now) + lastCard(data, schedule, options, now) + `</div>` +
     `<div class="sct-shp-layout${rail ? "" : " is-single"}">` +
     `<div class="sct-shp-main">${boards(data, schedule, options, now)}</div>` +
     rail +

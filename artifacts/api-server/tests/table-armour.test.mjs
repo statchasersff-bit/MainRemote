@@ -93,9 +93,9 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     assert.deepEqual(loose, [], "these lose to `.entry-content tr td` on an embedded page");
   });
 
-  test("every team.css selector naming a table carries the id-weight prefix", () => {
+  test("every team.css and matchup.css selector naming a table carries the id-weight prefix", () => {
     const roots = /\.sct-(?:hist|mu-linescore|mu-table|mu-ps-table|rb-table|us-table)\b(?!-)/;
-    const loose = selectors(read("team.css")).filter(
+    const loose = [...selectors(read("team.css")), ...selectors(read("matchup.css"))].filter(
       (s) => roots.test(s) && !s.startsWith(":is(.sct, #sct-table-armour) "),
     );
     assert.deepEqual(loose, [], "these lose to Divi's table rules on an embedded page");

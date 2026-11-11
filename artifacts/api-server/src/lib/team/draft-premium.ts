@@ -12,7 +12,7 @@
 import { headshotImg } from "../headshot-html";
 import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
 import { escapeHtml } from "../render";
-import { premiumTabHead, premiumTabFrame } from "./premium-head";
+import { premiumTabHead } from "./premium-head";
 import type { CategoryShare, DraftCapitalView, DraftHistoryView, DraftPick, DraftSeason, DraftStatusDoc, DraftView, PickStatus } from "./draft";
 import { CATEGORY_LABEL, collegeLogoFor, getDraftStatus, pickCategory, pickStatus } from "./draft";
 import { capitalKicker, collegeName, depthSlotCell, faceIdFor, historyKicker, nick, playerCell } from "./draft-render";
@@ -387,13 +387,12 @@ export function renderDraftPremium(team: NflTeam, view: DraftView, season: numbe
     (view.history ? historyCard(view.history) + roundOneCard(team, view.history.roundOnePicks) + methodNote() : "");
   return (
     `<div class="sct-drp" data-sct-draft-premium>` +
-    premiumTabFrame(
-      banner(team, view),
-      `<div class="sct-drp-layout${tables ? "" : " is-rail-only"}">` +
-        tables +
-        `<aside class="sct-drp-rail" aria-label="${e(`${team.nickname} draft capital and history summary`)}">${rail}</aside>` +
-        `</div>`,
-    ) +
+    // No outer frame since 2026-11-10 (mak): the header bar, then the tables and rail on their own.
+    banner(team, view) +
+    `<div class="sct-drp-layout${tables ? "" : " is-rail-only"}">` +
+    tables +
+    `<aside class="sct-drp-rail" aria-label="${e(`${team.nickname} draft capital and history summary`)}">${rail}</aside>` +
+    `</div>` +
     `</div>`
   );
 }

@@ -41,34 +41,22 @@ import { renderUsagePremium } from "./usage-premium-dashboard";
 import {
   baseLabel,
   surname,
-  trend,
-  type RunGap,
   type Trend,
   type UsagePlayer,
   type UsageRow,
   type UsageView,
   type UsageWeek,
-  type Zone,
 } from "./usage";
 import {
-  GAP_LABEL,
   TIER_LABEL,
-  ZONE_LABEL,
-  backfieldTakeaways,
-  bestGap,
-  bestZone,
   handcuffProjection,
   handcuffFantasyLine,
-  passNote,
   profileNote,
   rankLine,
   roleLine,
-  runNote,
   signalCopy,
   signed,
-  situationShare,
   usageTrends,
-  zoneOwner,
 } from "./usage-copy";
 
 const e = escapeHtml;
@@ -76,73 +64,10 @@ const e = escapeHtml;
 /** Escaped prose with **double asterisks** set in bold - the copy module's one bit of markup. */
 const md = (text: string) => e(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
-/* ------------------------------------------------------------------ color */
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  const n = parseInt(full, 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
-function rgbToHex([r, g, b]: [number, number, number]): string {
-  return `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
-}
-
-/** Relative luminance, 0 (black) to 1 (white). */
-function luminance(hex: string): number {
-  const [r, g, b] = hexToRgb(hex).map((v) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  }) as [number, number, number];
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-/** `hex` mixed toward white by `amount` (0–1). */
-function tint(hex: string, amount: number): string {
-  const [r, g, b] = hexToRgb(hex);
-  return rgbToHex([r + (255 - r) * amount, g + (255 - g) * amount, b + (255 - b) * amount]);
-}
-
-function distance(a: string, b: string): number {
-  const [r1, g1, b1] = hexToRgb(a);
-  const [r2, g2, b2] = hexToRgb(b);
-  return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
-}
-
-/** Ink that reads on `bg`. The coaching tab's coach card borrows it. */
-export function inkOn(bg: string): string {
-  return luminance(bg) > 0.4 ? "#0b1220" : "#ffffff";
-}
-
-const GOLD = "#d4af37";
-const GRAYS = ["#94a3b8", "#cbd5e1", "#e2e8f0"];
-
-/**
- * The segment palette: primary, a tint of it, secondary, a tint of that, the
- * StatChasers gold, then grays for depth.
- *
- * A secondary that cannot carry a segment - white (Colts, Jets), black
- * (Bengals), or near the primary - is swapped for a darkened tint of the
- * primary's complement in the house palette, so every club still gets four
- * distinguishable data colors.
- */
-export function segmentPalette(team: NflTeam): string[] {
-  const primary = team.primaryColor;
-  let secondary = team.secondaryColor;
-  const l = luminance(secondary);
-  if (l > 0.8 || l < 0.02 || distance(primary, secondary) < 90) secondary = "#475569";
-  return [primary, tint(primary, 0.45), secondary, tint(secondary, 0.45), GOLD, ...GRAYS];
-}
-
 /* ------------------------------------------------------------------- atoms */
 
 function num(value: string, extra = ""): string {
   return `<span class="sct-us-num${extra ? ` ${extra}` : ""}">${e(value)}</span>`;
-}
-
-function h3(text: string, id = ""): string {
-  return `<h3 class="sct-us-h3"${id ? ` id="${e(id)}"` : ""}>${e(text)}</h3>`;
 }
 
 export function playerLink(p: UsagePlayer, className: string): string {
@@ -151,8 +76,6 @@ export function playerLink(p: UsagePlayer, className: string): string {
     ? `<a class="${className} sct-player-link" href="${e(href)}" target="_top">${e(p.name)}</a>`
     : `<span class="${className}">${e(p.name)}</span>`;
 }
-
-const f1 = (v: number) => v.toFixed(1);
 
 /** "Weeks 6-8" / "Week 3" */
 export function weeksWords(weeks: number[]): string {
@@ -196,58 +119,6 @@ function tool(href: string | null, text: string, cta: string): string {
 function linkRow(items: string[], cls: string): string {
   const shown = items.filter(Boolean);
   return shown.length ? `<p class="${cls}">${shown.join(`<span aria-hidden="true"> · </span>`)}</p>` : "";
-}
-
-/* -------------------------------------------------------------- components */
-
-/**
- * The heading (promoted to the page's H1 at /usage/ with the address's
- * phrase, "{Team} Snap Counts & Player Usage ({season})"). No freshness chip
- * (mak, 2026-11-04) and no "{season} Regular Season · Through Week N" context
- * line (mak, 2026-11-05): the week is on the KPI cards and the snaps caption.
- */
-function header(_view: UsageView): string {
-  return `<div class="sct-us-head"><h2 class="sct-h2">Snap Counts &amp; Player Usage</h2></div>`;
-}
-
-/** The intro, in the brief's words (2026-11-05), with the club's nickname. */
-function intro(team: NflTeam): string {
-  return (
-    `<div class="sct-us-intro">` +
-    `<p>${e(
-      `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
-        `Track which players are seeing the field, where the ball is going, and how their roles change throughout the season.`,
-    )}</p>` +
-    `</div>`
-  );
-}
-
-/**
- * The four KPI cards under the intro: target leader, rushing leader, second
- * in targets, team pass attempts. Counts first, the player under them, the
- * share as the caption; a card with nothing to count is left out.
- */
-function kpis(view: UsageView): string {
-  const byTargets = view.all.filter((p) => p.targets > 0).sort((a, b) => b.targets - a.targets);
-  const byCarries = view.all.filter((p) => p.carries > 0).sort((a, b) => b.carries - a.carries);
-  const tgt = view.team.targets;
-  const share = (p: UsagePlayer) => (tgt ? `${f1((100 * p.targets) / tgt)}% team share` : "");
-  const card = (label: string, value: string, who: string, sub: string) =>
-    `<li class="sct-us-kpi">` +
-    `<span class="sct-us-kpi-label">${e(label)}</span>` +
-    `<span class="sct-us-kpi-value sct-us-num">${e(value)}</span>` +
-    `<span class="sct-us-kpi-name">${who}</span>` +
-    (sub ? `<span class="sct-us-kpi-sub">${e(sub)}</span>` : "") +
-    `</li>`;
-  const cards = [
-    byTargets[0] ? card("Target leader", String(byTargets[0].targets), playerLink(byTargets[0], "sct-us-kpi-link"), share(byTargets[0])) : "",
-    byCarries[0] ? card("Rushing leader", String(byCarries[0].carries), playerLink(byCarries[0], "sct-us-kpi-link"), "Rushing attempts") : "",
-    byTargets[1] ? card("Second in targets", String(byTargets[1].targets), playerLink(byTargets[1], "sct-us-kpi-link"), share(byTargets[1])) : "",
-    view.team.passAttempts
-      ? card("Team passing", String(view.team.passAttempts), e("Pass attempts"), `Through Week ${view.throughWeek}`)
-      : "",
-  ].filter(Boolean);
-  return cards.length ? `<ul class="sct-us-kpis">${cards.join("")}</ul>` : "";
 }
 
 /* ----------------------------------------------------------- snap counts */
@@ -343,68 +214,6 @@ export function snapCaption(w: SnapWindows, team: NflTeam): string {
 /** A view packed for the row's data attribute: "snaps|share|change". */
 export const packSnapView = (v: SnapView) => `${v.snaps}|${v.share ?? ""}|${v.change ?? ""}`;
 
-function snapTable(view: UsageView, team: NflTeam): string {
-  const win = snapWindows(view);
-  if (!win) return "";
-  const { games, last3, prior3, players, viewsOf: views } = win;
-
-  const rowsData = players
-    .map((p) => ({ p, v: views(p) }))
-    .sort((a, b) => (b.v["season"]!.share ?? 0) - (a.v["season"]!.share ?? 0) || b.v["season"]!.snaps - a.v["season"]!.snaps);
-
-  const pack = packSnapView;
-  const changeHtml = (c: number | null) =>
-    c == null
-      ? `<span class="sct-us-delta is-none">–</span>`
-      : c === 0
-        ? `<span class="sct-us-delta is-flat">0%</span>`
-        : `<span class="sct-us-delta is-${c > 0 ? "up" : "down"}">${e(`${signed(c, 0)}%`)}</span>`;
-  const rows = rowsData
-    .map(({ p, v }) => {
-      const s = v["season"]!;
-      const attrs = Object.entries(v)
-        .map(([k, val]) => ` data-v-${k}="${pack(val)}"`)
-        .join("");
-      return (
-        `<tr class="sct-us-snap-row" data-pos="${e(p.pos)}"${attrs}>` +
-        `<th scope="row" class="is-player"><span class="sct-us-who">${faceWell(p)}` +
-        `<span class="sct-us-who-text">${playerLink(p, "sct-us-board-name")}${slotChip(p.pos, true)}</span></span></th>` +
-        `<td class="is-count sct-us-snap-n">${e(String(s.snaps))}</td>` +
-        `<td class="sct-us-snap-pct">${shareTrack(s.share ?? 0, null)}</td>` +
-        `<td class="is-recent sct-us-snap-chg">${changeHtml(s.change)}</td>` +
-        `</tr>`
-      );
-    })
-    .join("");
-
-  const weekOptions = games.map((w) => `<option value="w${w}">Week ${w}</option>`).join("");
-  const caption = snapCaption(win, team);
-  void last3;
-  void prior3;
-  return (
-    `<div class="sct-us-card sct-us-snaps" data-sct-snaps>` +
-    // No sub line (mak, 2026-11-05); the method lives in the caption and the definitions.
-    h3("Snap Counts & Playing Time", "snap-counts") +
-    `<div class="sct-us-snap-controls" hidden>` +
-    `<div class="sct-us-switch" role="group" aria-label="Window">` +
-    `<button type="button" class="sct-us-switch-btn is-on" data-snap-view="season" aria-pressed="true">Season</button>` +
-    `<button type="button" class="sct-us-switch-btn" data-snap-view="last3" aria-pressed="false">Last 3</button>` +
-    `<label class="sct-us-switch-select"><span class="sct-us-sr">Week</span><select data-snap-week><option value="">Week…</option>${weekOptions}</select></label>` +
-    `</div>` +
-    `<label class="sct-us-switch-select"><span class="sct-us-sr">Position</span><select data-snap-pos>` +
-    `<option value="">All positions</option><option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option>` +
-    `</select></label>` +
-    `</div>` +
-    `<div class="sct-us-board-scroll"><table class="sct-us-board-table sct-us-snap-table">` +
-    `<thead><tr><th scope="col">Player</th><th scope="col" class="is-count">Snaps</th>` +
-    `<th scope="col"><abbr title="Offensive snaps over the team's offensive snaps in the window">Snap %</abbr></th>` +
-    `<th scope="col" class="is-recent"><abbr title="${e(caption)}">Change</abbr></th></tr></thead>` +
-    `<tbody>${rows}</tbody></table></div>` +
-    `<p class="sct-us-fine sct-us-snap-caption" data-snap-caption>${e(caption)}</p>` +
-    `</div>`
-  );
-}
-
 /* ------------------------------------------------------- share boards */
 
 /**
@@ -453,42 +262,11 @@ export function faceWell(p: UsagePlayer): string {
   return `<span class="sct-us-face" aria-hidden="true">${img ?? ""}</span>`;
 }
 
-/**
- * One track per row (mak's audit, 2026-11-02): the fill is the season share
- * and a tick marks the last-three share on the same scale, so a tick past
- * the fill reads "rising" and a tick inside it "fading". Both figures are
- * the rounded whole numbers the row prints.
- */
-function shareTrack(season: number, recent: number | null): string {
-  const fill = Math.max(0, Math.min(100, season));
-  const tick = recent == null ? null : Math.max(0, Math.min(100, recent));
-  return (
-    `<span class="sct-us-share">` +
-    `<span class="sct-us-track" aria-hidden="true">` +
-    `<span class="sct-us-gbar"><span style="width:${fill}%"></span></span>` +
-    (tick == null ? "" : `<i class="sct-us-tick" style="left:${tick}%"></i>`) +
-    `</span>` +
-    `<span class="sct-us-share-val">${season}%</span>` +
-    `</span>`
-  );
-}
-
 /** The move badge: last three minus season, in points, shown from 3 up. */
 export const BADGE_FROM = 3;
 
-function moveBadge(delta: number): string {
-  if (Math.abs(delta) < BADGE_FROM) return "";
-  const up = delta > 0;
-  return (
-    `<span class="sct-us-arrow is-${up ? "up" : "down"}" title="${e(`Last 3 weeks ${up ? "+" : "−"}${Math.abs(delta)} pts vs season share`)}">` +
-    `<span aria-hidden="true">${up ? "▲" : "▼"}</span><span class="sct-us-sr">${up ? "up" : "down"}</span>${Math.abs(delta)}</span>`
-  );
-}
-
 /** Rows shown by name; the rest fold into one "others" line. */
 export const BOARD_ROWS = 8;
-/** The fewest rows a board stacked beside the snaps table shows. */
-const BOARD_ROWS_MIN = 5;
 
 export interface BoardLine {
   p: UsagePlayer;
@@ -527,240 +305,6 @@ export function rushYardsOnCarries(p: UsagePlayer): number | null {
   return p.rushYards - (p.kneelYards ?? 0);
 }
 
-function board(kind: "targets" | "carries", view: UsageView, lines: BoardLine[], limit: number): string {
-  const isT = kind === "targets";
-  const count = (p: UsagePlayer) => (isT ? p.targets : p.carries);
-  if (lines.length === 0) return "";
-  // The conventional columns need a file that stores them (2026-11-05).
-  const conventional = isT ? view.all.some((p) => p.recYards != null) : view.all.some((p) => p.rushYards != null);
-  const named = lines.filter((l) => l.season > 0).slice(0, limit);
-  const others = lines.filter((l) => !named.includes(l));
-  const unit = isT ? "target" : "carry";
-  const cols = 4 + (conventional ? 2 : 0) + (isT ? 1 : 0);
-  const rows = named
-    .map(({ p, season, recent, delta }) => {
-      const air = p.airYardsShare == null ? "–" : `${Math.round(Math.max(0, p.airYardsShare))}%`;
-      const yds = isT ? p.recYards : rushYardsOnCarries(p);
-      const extra = !conventional
-        ? ""
-        : isT
-          ? `<td class="is-count">${e(String(p.receptions))}</td><td class="is-count">${e(yds == null ? "–" : String(yds))}</td>`
-          : `<td class="is-count">${e(yds == null ? "–" : String(yds))}</td><td class="is-count">${e(yds == null || !p.carries ? "–" : f1(yds / p.carries))}</td>`;
-      return (
-        `<tr>` +
-        `<th scope="row" class="is-player"><span class="sct-us-who">${faceWell(p)}` +
-        `<span class="sct-us-who-text">${playerLink(p, "sct-us-board-name")}${slotChip(p.pos, true)}</span></span></th>` +
-        `<td class="is-count">${e(String(count(p)))}</td>` +
-        extra +
-        `<td>${shareTrack(season, recent)}</td>` +
-        `<td class="is-recent">${recent == null ? "–" : `<span class="sct-us-recent-val">${recent}%</span>${delta == null ? "" : moveBadge(delta)}`}</td>` +
-        (isT ? `<td class="is-air">${e(air)}</td>` : "") +
-        `</tr>`
-      );
-    })
-    .join("");
-  const othersCount = others.reduce((s, l) => s + count(l.p), 0);
-  const othersRow = others.length
-    ? `<tr class="sct-us-board-more"><td colspan="${cols}">${e(
-        `+${others.length} ${others.length === 1 ? "other" : "others"} · ${othersCount} ${othersCount === 1 ? unit : `${unit === "carry" ? "carries" : "targets"}`}`,
-      )}</td></tr>`
-    : "";
-  const seasonTitle = isT
-    ? `Share of the team's targets through Week ${view.throughWeek}; the tick marks the last-3 share`
-    : `Share of the team's carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}; the tick marks the last-3 share`;
-  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
-  // No sub line under either board (mak, 2026-11-05): the targets-under-
-  // attempts and kneel-down notes live in the definitions block.
-  return (
-    `<div class="sct-us-board sct-us-card" id="${isT ? "targets" : "rushing"}">` +
-    h3(isT ? "Target Distribution" : "Rushing Distribution") +
-    `<div class="sct-us-board-scroll"><table class="sct-us-board-table">` +
-    `<thead><tr><th scope="col">Player</th><th scope="col" class="is-count">${isT ? "Tgt" : "Car"}</th>` +
-    (conventional
-      ? isT
-        ? `<th scope="col" class="is-count">Rec</th><th scope="col" class="is-count"><abbr title="Receiving yards">Yds</abbr></th>`
-        : `<th scope="col" class="is-count"><abbr title="Rushing yards on these carries">Yds</abbr></th><th scope="col" class="is-count"><abbr title="Yards per carry">YPC</abbr></th>`
-      : "") +
-    `<th scope="col"><abbr title="${e(seasonTitle)}">Season share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3 wk</abbr></th>` +
-    (isT ? `<th scope="col" class="is-air"><abbr title="Share of the team's air yards">Air yds</abbr></th>` : "") +
-    `</tr></thead><tbody>${rows}${othersRow}</tbody></table></div>` +
-    `</div>`
-  );
-}
-
-function shareBoards(view: UsageView): string {
-  const t = boardLines("targets", view);
-  const c = boardLines("carries", view);
-  // The boards stack beside the snaps table (2026-11-05), so their rows add
-  // up to its height: the rushing board names its own players (up to
-  // BOARD_ROWS), and the targets board takes the rows the snaps table has
-  // left - never fewer than BOARD_ROWS_MIN, never a player who rounds to 0%.
-  // The 11-02 "same count on both boards" rule was for the side-by-side
-  // layout; with no snaps on file it still decides.
-  const snapRows = snapPlayers(view).length;
-  const both = t.nameable > 0 && c.nameable > 0;
-  const shared = both ? Math.min(t.nameable, c.nameable) : Math.max(t.nameable, c.nameable);
-  const cLimit = snapRows > 0 ? c.nameable : shared;
-  const tLimit = snapRows > 0 ? Math.min(t.nonzero, Math.max(BOARD_ROWS_MIN, snapRows - cLimit)) : shared;
-  const html = board("targets", view, t.lines, tLimit) + board("carries", view, c.lines, cLimit);
-  return html ? `<div class="sct-us-boards">${html}</div>` : "";
-}
-
-/* ----------------------------------------------------------- situational */
-
-const SITUATIONS: Array<[keyof UsagePlayer["situation"], string]> = [
-  ["early", "Early downs"],
-  ["third", "Third down"],
-  ["rz", "Red zone"],
-  ["in10", "Inside the 10"],
-  ["twoMin", "Two-minute drill"],
-  ["trailing", "Trailing by 7+"],
-];
-
-/**
- * Situational Usage: how the backs split the room's carries + targets by
- * situation, each row carrying its sample (mak's brief, 2026-11-05: a 70%
- * share of ten opportunities must not look like 70% of a hundred), and the
- * takeaways in NFL terms beside it. The fantasy handoffs that used to close
- * this card live in the fantasy section now.
- */
-function backfield(view: UsageView, team: NflTeam): string {
-  const rbs = view.rbs.filter((p) => p.wopp > 0);
-  if (rbs.length === 0) return "";
-  const shown = rbs.slice(0, 3);
-  const totals = view.team.rbSituationTotals;
-  const grid =
-    `<div class="sct-us-grid" role="table" aria-label="Share of the running backs' carries plus targets, by situation" style="--us-cols:${shown.length}">` +
-    `<div class="sct-us-grow is-head" role="row"><span role="columnheader">Situation</span>` +
-    shown.map((p) => `<span role="columnheader">${e(surname(p.name))}</span>`).join("") +
-    `</div>` +
-    SITUATIONS.map(([key, label]) => {
-      const values = shown.map((p) => situationShare(view, p, key));
-      const max = Math.max(...values.map((v) => v ?? -1));
-      const n = totals[key];
-      return (
-        `<div class="sct-us-grow" role="row"><span class="sct-us-gsit" role="rowheader">${e(label)}` +
-        `<span class="sct-us-gn">${e(`${n} ${n === 1 ? "opportunity" : "opportunities"}`)}</span></span>` +
-        values
-          .map((v, i) => {
-            if (v == null) return `<span class="sct-us-gcell" role="cell">–</span>`;
-            const owner = v === max && v > 0;
-            return (
-              `<span class="sct-us-gcell${owner ? " is-owner" : ""}" role="cell" title="${e(`${shown[i]!.name}: ${shown[i]!.situation[key]} of ${n}`)}">` +
-              `<span class="sct-us-gbar"><span style="width:${v}%"></span></span>` +
-              `<span class="sct-us-gval">${v}%</span></span>`
-            );
-          })
-          .join("") +
-        `</div>`
-      );
-    }).join("") +
-    `</div>`;
-
-  const takeaways = backfieldTakeaways(view, team.nickname);
-  const takeawayHtml = takeaways.length
-    ? `<div class="sct-us-takeaways">` +
-      takeaways
-        .map((t) => `<p class="sct-us-takeaway">${t.lead ? `<strong>${e(t.lead)}</strong> ` : ""}${md(t.body)}</p>`)
-        .join("") +
-      `</div>`
-    : "";
-
-  return (
-    `<div class="sct-us-card" id="situational">` +
-    h3("Situational Usage") +
-    `<p class="sct-us-sub">${e(
-      "Each running back's share of the backs' carries + targets in the situation, with the number of opportunities it is measured on. Opportunities, not snaps: who was on the field comes from participation data, which is published after the season.",
-    )}</p>` +
-    `<div class="sct-us-bfrow">${grid}${takeawayHtml}</div>` +
-    `</div>`
-  );
-}
-
-const GAPS: RunGap[] = ["LE", "LT", "MID", "RT", "RE"];
-
-/** Rushing Direction: YPC and attempts per gap, with a bar for the attempt share. */
-function runDirection(view: UsageView): string {
-  const runs = view.team.runs;
-  const total = GAPS.reduce((s, g) => s + runs[g].att, 0);
-  if (total < 10) return "";
-  const best = bestGap(view);
-  const most = Math.max(1, ...GAPS.map((g) => runs[g].att));
-  const cells = GAPS.map((g) => {
-    const r = runs[g];
-    const share = Math.round((100 * r.att) / total);
-    return (
-      `<li class="sct-us-gap${g === best ? " is-best" : ""}">` +
-      num(r.ypc != null ? r.ypc.toFixed(1) : "–", "is-big") +
-      `<span class="sct-us-gap-att">${e(`${r.att} att · ${share}%`)}</span>` +
-      `<span class="sct-us-gap-bar" role="img" aria-label="${e(`${share}% of designed runs`)}"><span style="width:${Math.round((100 * r.att) / most)}%"></span></span>` +
-      `<span class="sct-us-label">${e(GAP_LABEL[g])}</span>` +
-      `</li>`
-    );
-  }).join("");
-  const note = runNote(view);
-  return (
-    `<div class="sct-us-card sct-us-run" id="run-direction">` +
-    h3("Rushing Direction") +
-    `<p class="sct-us-sub">${e(`Yards per carry and attempts by gap, designed runs only, through Week ${view.throughWeek}. "Middle" includes runs behind either guard. The bar is each gap's share of the ${total} attempts; the gold cell is the most efficient gap with at least 8% of them.`)}</p>` +
-    `<ul class="sct-us-gaps">${cells}</ul>` +
-    (note ? `<p class="sct-us-note">${md(note)}</p>` : "") +
-    `</div>`
-  );
-}
-
-const ZONES: Zone[][] = [
-  ["DL", "DM", "DR"],
-  ["SL", "SM", "SR"],
-];
-
-/** Passing Distribution: the primary passer's attempts by field zone, with coverage stated. */
-function passMap(view: UsageView): string {
-  const zones = view.team.zones;
-  const all = Object.values(zones).reduce((s, z) => s + (z?.att ?? 0), 0);
-  if (all < 20) return "";
-  const qb = view.qb;
-  const qbName = qb ? surname(qb.name) : "The offense";
-  const best = bestZone(view);
-  const maxShare = Math.max(...Object.values(zones).map((z) => z?.share ?? 0), 1);
-  const cell = (k: Zone) => {
-    const z = zones[k];
-    const share = z?.share ?? 0;
-    const owner = zoneOwner(view, k);
-    // Heat: a team-color tint weighted by volume. The gold zone overrides it.
-    const alpha = (0.05 + 0.3 * (share / maxShare)).toFixed(2);
-    return (
-      `<li class="sct-us-zone${k === best ? " is-best" : ""}"` +
-      (k === best ? "" : ` style="background:color-mix(in srgb, var(--team-primary) ${Math.round(Number(alpha) * 100)}%, var(--sc-surface))"`) +
-      `>` +
-      num(`${share}%`, "is-big") +
-      `<span class="sct-us-zone-ypa">${e(z?.ypa != null ? `${z.ypa.toFixed(1)} YPA · ${z?.att ?? 0} att` : "no attempts")}</span>` +
-      `<span class="sct-us-label">${e(ZONE_LABEL[k])}${owner ? ` · ${e(owner)}` : ""}</span>` +
-      `</li>`
-    );
-  };
-  const notes = passNote(view, qbName);
-  const mapped = view.team.passerZoneAttempts ?? all;
-  const attempts = qb?.passAttempts ?? null;
-  const coverage =
-    attempts != null && attempts > mapped
-      ? `${mapped} of ${qbName}'s ${attempts} pass attempts carry a charted location and depth; ${attempts - mapped} ${attempts - mapped === 1 ? "does" : "do"} not and ${attempts - mapped === 1 ? "is" : "are"} not mapped.`
-      : `All ${mapped} of ${qbName}'s pass attempts carry a charted location and depth. Attempts are as charted in the play-by-play; spikes and plays wiped out by penalty are not counted.`;
-  return (
-    `<div class="sct-us-card" id="passing">` +
-    h3("Passing Distribution") +
-    `<p class="sct-us-sub">${e(`Share of ${qbName}'s ${mapped} pass attempts and yards per attempt by field zone through Week ${view.throughWeek}.`)}</p>` +
-    `<div class="sct-us-field">` +
-    `<ul class="sct-us-zones">${ZONES[0]!.map(cell).join("")}</ul>` +
-    `<p class="sct-us-los"><span>Deep = 20+ air yards</span></p>` +
-    `<ul class="sct-us-zones">${ZONES[1]!.map(cell).join("")}</ul>` +
-    `</div>` +
-    notes.map((n) => `<p class="sct-us-note">${md(n)}</p>`).join("") +
-    `<p class="sct-us-fine">${e(coverage)}</p>` +
-    `</div>`
-  );
-}
-
 /* --------------------------------------------------------------- trends */
 
 /**
@@ -792,17 +336,26 @@ const XP_ICON = {
  * The section's title bar: the Rushing Direction header (mak, 2026-11-07),
  * icon, title beside its explainer, stripes; its own icon, title and explainer.
  */
-function xpHead(id: string, icon: string, title: string, sub: string): string {
+function xpHead(id: string, icon: string, title: string, sub: string, subTip = ""): string {
   return (
     `<header class="sct-us-prm-head">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
-    `<p class="sct-us-prm-sub">${e(sub)}</p>` +
+    `<p class="sct-us-prm-sub">${e(sub)}${subTip ? ` ${tip(subTip)}` : ""}</p>` +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`
   );
+}
+
+/**
+ * A small info mark whose text is the method behind a label (reviewer's
+ * critique, 2026-11-10: definitions moved out of the headers into tips). The
+ * same text is in "How to read this table" for touch screens.
+ */
+function tip(text: string): string {
+  return `<span class="sct-us-tip" tabindex="0" role="img" aria-label="${e(text)}" title="${e(text)}">${XP_ICON.info}</span>`;
 }
 
 /** A collapsed key ("How these numbers are counted", "How to read this table") as a soft note panel. */
@@ -890,10 +443,12 @@ function definitions(view: UsageView, team: NflTeam): string {
  * his expanded profile (mak's critique, 2026-11-03: a "+6 vs W3-5" beside a
  * "−7 vs W1" read as cherry-picked windows, when both were the one rule).
  */
-function delta(t: Trend, places: number): string {
+function delta(t: Trend, places: number, unit: "pp" | "/g"): string {
   if (t.delta == null || t.baseWeek == null) return "";
-  if (t.direction === "flat") return `<span class="sct-us-delta is-flat">steady</span>`;
-  return `<span class="sct-us-delta is-${t.direction}">${e(`${signed(t.delta, places)} last 3`)}</span>`;
+  if (t.direction === "flat") return `<span class="sct-us-delta is-flat">Steady</span>`;
+  const label = unit === "pp" ? `${signed(t.delta, places)} pp` : `${signed(t.delta, places)}/g`;
+  const spoken = unit === "pp" ? "percentage points" : "per game";
+  return `<span class="sct-us-delta is-${t.direction}" title="${e(`${signed(t.delta, places)} ${spoken}, last 3 games vs. the 3 before`)}">${e(label)}</span>`;
 }
 
 /** "Last three games W6-8, against W3-5": the player's own window, for his expanded profile. */
@@ -911,7 +466,7 @@ function windowLine(row: UsageRow): string {
  */
 function shareCell(value: number | null, t: Trend, places: number): string {
   if (value == null) return `<td class="sct-us-td">–</td>`;
-  const d = delta(t, places);
+  const d = delta(t, places, "pp");
   return `<td class="sct-us-td">${num(`${value.toFixed(places)}%`, "is-mid")}${d ? `<span class="sct-us-cap">${d}</span>` : ""}</td>`;
 }
 
@@ -923,14 +478,17 @@ function shareCell(value: number | null, t: Trend, places: number): string {
  * headline here, so it is not repeated under the name.
  */
 function roleCell(row: UsageRow): string {
-  const line = roleLine(row).replace(/,\s*\d+% of RB touches$/, "");
+  // The read sits in the role line now (reviewer's critique, 2026-11-10: a
+  // column of its own fragmented the row). "Stash" says what "handcuff" did.
+  const line = roleLine(row).replace(/,\s*\d+% of RB touches$/, "").replace(/\s*·\s*handcuff$/, "");
+  const read = `<span class="sct-us-tier is-${row.tier}" title="${e(tierHelp(row))}">${e(TIER_LABEL[row.tier])}</span>`;
   const slot = /^[A-Z]{1,3}\d+$/.test(row.role) && line.startsWith(row.role) ? row.role : "";
-  if (!slot) return `<span class="sct-us-role">${e(line)}</span>`;
+  if (!slot) return `<span class="sct-us-role">${e(line)} ${read}</span>`;
   const rest = line.slice(slot.length).replace(/^\s*[,·]\s*/, "");
   return (
     `<span class="sct-us-role">${slotChip(slot, true)}` +
     (rest ? ` <span>${e(rest)}</span>` : "") +
-    `</span>`
+    ` ${read}</span>`
   );
 }
 
@@ -948,19 +506,19 @@ type Band = "rb" | "rec" | "qb";
 const BAND: Record<Band, { name: string; metric: string; key: string; unit: string }> = {
   rb: {
     name: "Running backs",
-    metric: "Opportunity = weighted opportunities per active game (carries + 2 × targets), as a percentile of NFL RBs",
+    metric: "Opportunity = weighted opportunities per active game (carries + 2 × targets), as a percentile of all NFL RBs",
     key: "woppPerGame",
     unit: "pctile RB",
   },
   rec: {
     name: "Receivers",
-    metric: "Opportunity = target share, as a percentile of NFL WRs or TEs · WOPR = 1.5 × target share + 0.7 × air-yards share",
+    metric: "Opportunity = target share, as a percentile of all NFL WRs or TEs. The change beside it is in percentage points, last 3 games vs. the 3 before",
     key: "targetShare",
     unit: "pctile",
   },
   qb: {
     name: "Quarterback",
-    metric: "Opportunity = expected fantasy points per game, as a percentile of NFL QBs",
+    metric: "Opportunity = expected fantasy points (xFP) per game, as a percentile of all NFL QBs",
     key: "xfpPerGame",
     unit: "pctile QB",
   },
@@ -980,19 +538,17 @@ function opportunityCell(row: UsageRow): string {
   const band = BAND[bandOf(p)];
   const pct = p.pct[band.key] ?? null;
   const unit = band.unit === "pctile" ? `pctile ${p.pos}` : band.unit;
+  // One compact line under the percentile (reviewer's critique, 2026-11-10):
+  // the band's own stat, plus the target-share move for receivers. Touch
+  // share and WOPR live in the expanded profile.
   let native: string;
   if (p.pos === "WR" || p.pos === "TE") {
-    const d = p.targetShare == null ? "" : delta(row.ts, 1);
-    native =
-      (p.targetShare == null ? "" : e(`${p.targetShare.toFixed(1)}% targets`)) +
-      (p.wopr == null ? "" : `${p.targetShare == null ? "" : " · "}${e(`${p.wopr.toFixed(2)} WOPR`)}`) +
-      (d ? ` · ${d}` : "");
+    const d = p.targetShare == null ? "" : delta(row.ts, 1, "pp");
+    native = p.targetShare == null ? "" : e(`${p.targetShare.toFixed(1)}% target share`) + (d ? ` · ${d}` : "");
   } else if (p.pos === "RB") {
-    native =
-      (p.touchShare == null ? "" : e(`${p.touchShare}% of RB touches`)) +
-      (p.woppPerGame == null ? "" : `${p.touchShare == null ? "" : " · "}${e(`${p.woppPerGame.toFixed(1)} weighted opps/game`)}`);
+    native = p.woppPerGame == null ? "" : e(`${p.woppPerGame.toFixed(1)} weighted opp/g`);
   } else {
-    native = `every dropback${p.xfpPerGame == null ? "" : e(` · ${p.xfpPerGame.toFixed(1)} xFP/game`)}`;
+    native = p.xfpPerGame == null ? "" : e(`${p.xfpPerGame.toFixed(1)} xFP/game`);
   }
   const t = tone(pct);
   const label = pct == null ? "" : `${nth(pct)} percentile vs. NFL ${p.pos}s`;
@@ -1041,14 +597,6 @@ function tierHelp(row: UsageRow): string {
   }[row.tier];
 }
 
-function readCell(row: UsageRow): string {
-  return (
-    `<td class="sct-us-td is-read">` +
-    `<span class="sct-us-tier is-${row.tier}" title="${e(tierHelp(row))}">${e(TIER_LABEL[row.tier])}</span>` +
-    `</td>`
-  );
-}
-
 /**
  * Red-zone opportunities: the count, its move, and who leads the team. The
  * lead is the badge-worthy part, so on the leader's row a flat move yields
@@ -1056,7 +604,7 @@ function readCell(row: UsageRow): string {
  */
 function rzCell(row: UsageRow): string {
   const lead = row.rzCoLead ? "co-leads team" : row.leadsRz ? "leads team" : "";
-  const move = lead && row.rz.direction === "flat" ? "" : delta(row.rz, 0);
+  const move = lead && row.rz.direction === "flat" ? "" : delta(row.rz, 0, "/g");
   const parts = [move, lead ? `<span class="sct-us-leads">${lead}</span>` : ""].filter(Boolean);
   return (
     `<td class="sct-us-td">${num(String(row.player.rzTouches), "is-mid")}` +
@@ -1088,6 +636,7 @@ function metricsFor(row: UsageRow, view: UsageView): Metric[] {
   if (p.pos === "WR" || p.pos === "TE") {
     const adotTone = (p.adot ?? 0) >= 13.5 ? "cold" : "neutral";
     return [
+      { label: "WOPR", value: fmt(p.wopr, "", 2), pct: q.wopr ?? null },
       { label: "First-read share", value: fmt(p.firstReadShare, "%"), pct: q.firstReadShare ?? null },
       { label: "Air-yards share", value: fmt(p.airYardsShare, "%"), pct: q.airYardsShare ?? null },
       { label: "aDOT", value: fmt(p.adot), pct: q.adot ?? null, tone: adotTone },
@@ -1133,7 +682,7 @@ function detailRow(row: UsageRow, view: UsageView, id: string): string {
   const blocks = metrics
     .map((m) => {
       const t = m.tone ?? tone(m.pct);
-      const label = m.pct == null ? "" : `${m.pct}th percentile vs. NFL ${pos}s`;
+      const label = m.pct == null ? "" : `${nth(m.pct)} percentile vs. NFL ${pos}s`;
       return (
         `<li class="sct-us-metric">` +
         `<span class="sct-us-metric-top"><span class="sct-us-metric-label">${e(m.label)}</span>${num(m.value!)}</span>` +
@@ -1146,7 +695,7 @@ function detailRow(row: UsageRow, view: UsageView, id: string): string {
     .join("");
   return (
     `<tr class="sct-us-detail" id="${e(id)}" hidden>` +
-    `<td colspan="6" class="sct-us-td">` +
+    `<td colspan="5" class="sct-us-td">` +
     (rank ? `<span class="sct-us-lrank">${e(rank)}</span>` : "") +
     (windowLine(row) ? `<span class="sct-us-win">${e(windowLine(row))}</span>` : "") +
     `<ul class="sct-us-metrics">${blocks}</ul>` +
@@ -1176,7 +725,6 @@ function table(view: UsageView, team: NflTeam): string {
       `<span class="sct-us-who-text">${playerLink(p, "sct-us-name")}` +
       roleCell(row) +
       `</span></span></th>` +
-      readCell(row) +
       opportunityCell(row) +
       shareCell(p.snapShare, row.snap, 0) +
       rzCell(row) +
@@ -1190,9 +738,10 @@ function table(view: UsageView, team: NflTeam): string {
     .map(
       ({ band, rows }) =>
         `<tbody class="sct-us-band is-${band}">` +
-        `<tr class="sct-us-band-row"><th scope="colgroup" colspan="6" class="sct-us-td">` +
+        `<tr class="sct-us-band-row"><th scope="colgroup" colspan="5" class="sct-us-td">` +
         `<span class="sct-us-band-name">${e(BAND[band].name)}</span>` +
-        `<span class="sct-us-band-metric">${e(BAND[band].metric)}</span>` +
+        `<span class="sct-us-band-count">${rows.length} ${rows.length === 1 ? "player" : "players"}</span>` +
+        tip(BAND[band].metric) +
         `</th></tr>` +
         rows.map(rowHtml).join("") +
         `</tbody>`,
@@ -1203,14 +752,15 @@ function table(view: UsageView, team: NflTeam): string {
     `<table class="sct-us-table">` +
     `<thead><tr>` +
     `<th scope="col" class="sct-us-th"><span class="sct-us-sr">Profile</span></th>` +
-    `<th scope="col" class="sct-us-th">Player</th>` +
-    `<th scope="col" class="sct-us-th">Read</th>` +
-    `<th scope="col" class="sct-us-th">Opportunity</th>` +
-    `<th scope="col" class="sct-us-th">Snaps</th>` +
-    `<th scope="col" class="sct-us-th">Red zone</th>` +
+    `<th scope="col" class="sct-us-th">Player / Role</th>` +
+    `<th scope="col" class="sct-us-th">Opportunity${tip("A percentile against every NFL player at the same position, not a rank inside the team. Backs: weighted opportunities per active game. Receivers: target share. Quarterbacks: expected fantasy points per game.")}</th>` +
+    `<th scope="col" class="sct-us-th">Snap %${tip("Share of the offense's snaps, season to date. The change under it is in percentage points: the last 3 games' average against the 3 games before them.")}</th>` +
+    `<th scope="col" class="sct-us-th">RZ Opps${tip("Red-zone opportunities: carries + targets inside the opponent's 20, season to date. The change under it is per game: the last 3 games against the 3 before them.")}</th>` +
     `</tr>` +
-    `<tr class="sct-us-th-sub"><th class="sct-us-th" colspan="3"><span class="sct-us-sr">Window</span></th>` +
-    `<th class="sct-us-th" colspan="3">Season to date · a move is the last three games against the three before them</th>` +
+    `<tr class="sct-us-th-sub"><th class="sct-us-th" colspan="2"><span class="sct-us-sr">Units</span></th>` +
+    `<th class="sct-us-th">vs. NFL at position</th>` +
+    `<th class="sct-us-th">pp change, last 3 vs. prior 3</th>` +
+    `<th class="sct-us-th">carries + targets inside the 20</th>` +
     `</tr></thead>` +
     bands +
     `</table></div>`
@@ -1224,9 +774,11 @@ function legend(): string {
     ["flex", "Flex", "15–16% share or a committee lead - matchup-dependent"],
     ["volatile", "Volatile", "under 15% - deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
-    ["", "Opportunity", "the player's percentile among NFL players at his position on the band's metric: weighted opportunities per active game for backs, target share for receivers, expected fantasy points per game for the passer. The native stat sits under it - target share and WOPR (1.5 × target share + 0.7 × air-yards share) for receivers, share of the backfield's touches and weighted opportunities per game for backs"],
-    ["", "Moves", "every \"last 3\" is the last three games' average against the three games before them; the weeks that covers for a player are in his expanded profile"],
-    ["", "+ button", "opens the full advanced profile - league rank, first-read share, air-yards share, inside-10 carries, xFP/FPOE - with percentile bars vs. the league"],
+    ["", "Opportunity", "the player's percentile among every NFL player at his position, not a rank inside the team: weighted opportunities per active game (carries + 2 × targets) for backs, target share for receivers, expected fantasy points per game for the passer. The stat itself sits under it"],
+    ["", "Snap %", "share of the offense's snaps, season to date"],
+    ["", "RZ Opps", "red-zone opportunities: carries + targets inside the opponent's 20, season to date"],
+    ["", "Changes", "the last three games' average against the three games before them - in percentage points (pp) for snap % and target share, per game (/g) for RZ opps; \"Steady\" is a move too small to count. The weeks it covers for a player are in his expanded profile"],
+    ["", "+ button", "opens the full advanced profile with percentile bars vs. the league: league rank, xFP (expected fantasy points) and FPOE (points over expected) per game, WOPR (1.5 × target share + 0.7 × air-yards share), first-read share, air-yards share, touch share, inside-10 carries"],
   ];
   return xpKey(
     "",
@@ -1356,7 +908,8 @@ function fantasy(view: UsageView, team: NflTeam): string {
       "usage-fantasy-title",
       XP_ICON.star,
       "Advanced & Fantasy Analysis",
-      `The same ${team.nickname} usage read for fantasy football: each player's opportunity as a percentile at his position, a lineup read, and the advanced profile behind the + button - expected fantasy points (xFP), points over expected (FPOE), WOPR, first-read share and air-yards share, each as a percentile against the league.`,
+      "Player opportunities, usage trends and fantasy roles.",
+      `Opportunity is a percentile against every NFL player at the same position. The + button opens each player's advanced profile: xFP (expected fantasy points), FPOE (points over expected), WOPR, first-read share and air-yards share, each as a percentile against the league.`,
     ) +
     `<div class="sct-us-xp-body">` +
     tableHtml +
@@ -1399,9 +952,6 @@ export interface UsageSection {
   faq: Array<{ question: string; answer: string }>;
 }
 
-/** The original top-of-page renderers mak retired on 2026-11-05, kept callable for a restore. */
-export const RETIRED_USAGE_BLOCKS = { header, intro, snapTable, shareBoards, backfield, runDirection, passMap };
-
 export function renderUsageSection(
   view: UsageView | null,
   team: NflTeam,
@@ -1413,17 +963,13 @@ export function renderUsageSection(
     // The premium dashboard IS the top of the page since mak kept it
     // (2026-11-05, "remove the older version ... put our new version there"):
     // the heading, the intro, Snap Counts & Playing Time and the Target /
-    // Rushing Distribution boards, in one navy-and-gold module. The original
-    // header(), intro(), snapTable() and shareBoards() are unmounted, not
-    // deleted (RETIRED_USAGE_BLOCKS), and kpis() stays unmounted as before.
+    // Rushing Distribution boards, in one navy-and-gold module.
     renderUsagePremium(view, team) +
     // Situational Usage IS the premium dashboard since mak kept it
-    // (2026-11-05, "remove the older version"); the original backfield() card
-    // is unmounted, not deleted (RETIRED_USAGE_BLOCKS).
+    // (2026-11-05, "remove the older version").
     premiumSituational(view, team) +
     // Rushing Direction and Passing Distribution ARE the premium versions
-    // since mak kept them (2026-11-05, "remove older version"); the original
-    // runDirection() and passMap() cards are unmounted (RETIRED_USAGE_BLOCKS).
+    // since mak kept them (2026-11-05, "remove older version").
     premiumRunDirection(view) +
     premiumPassMap(view) +
     // Notable Usage Changes carries "How these numbers are counted" at its

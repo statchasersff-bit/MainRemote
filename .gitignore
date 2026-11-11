@@ -92,3 +92,6 @@ artifacts/api-server/data/img-cache/
 # Written by the production refresh (find-game-videos.mjs --live).
 artifacts/api-server/data/matchup/game-videos-live.json
 artifacts/api-server/data/matchup/game-videos-live-misses.json
+
+# Throwaway scratch scripts (lookup.tmp.mjs and the like); never source.
+*.tmp.mjs

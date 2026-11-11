@@ -266,21 +266,6 @@ function pprPpg(p: UsagePlayer): number | null {
 export type ScoringFormat = "ppr" | "half" | "std";
 export const SCORING_FORMATS: ScoringFormat[] = ["ppr", "half", "std"];
 
-/**
- * One figure in each scoring as attributes the page's switch reads (team.ts
- * wireScoring): ` data-ppr=".." data-half=".." data-std=".."`, or with a
- * name, ` data-tier-ppr=".."` and so on. The printed value stays PPR.
- */
-export function fmtData(values: Record<ScoringFormat, string | number>, name = ""): string {
-  const prefix = name ? `data-${name}-` : "data-";
-  return SCORING_FORMATS.map((f) => ` ${prefix}${f}="${String(values[f]).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")}"`).join("");
-}
-
-/** The same value computed per scoring, as a record. */
-export function perFormat<T>(fn: (f: ScoringFormat) => T): Record<ScoringFormat, T> {
-  return { ppr: fn("ppr"), half: fn("half"), std: fn("std") };
-}
-
 /** The usage feed's PPR per game taken down to half PPR or standard: a reception is 1, 0.5 or 0. */
 function formatPpg(p: UsagePlayer, format: ScoringFormat): number | null {
   const ppr = pprPpg(p);

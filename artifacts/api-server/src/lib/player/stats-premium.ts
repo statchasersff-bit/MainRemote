@@ -34,7 +34,7 @@ import {
   type Cell,
   type StatsPremiumModel,
 } from "./stats-tab";
-import { headArt, headIcon } from "./tab-head";
+import { headIcon } from "./tab-head";
 
 const DASH = "-";
 

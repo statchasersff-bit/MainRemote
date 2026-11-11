@@ -42,6 +42,15 @@ describe("the key", () => {
       "/embed/rookie-hit-rates/data",
       "/rookie-hit-rates",
       "/api/news",
+      // Express routes ignore case, so the lock has to as well.
+      "/EMBED/players.json",
+      "/Player/jacoby-brissett/",
+      "/TEAM",
+      "/API/news",
+      "/rankings",
+      "/rest-of-season-rankings",
+      "/rest-of-season-rankings/rb",
+      "/strength-of-schedule/rb",
     ]) {
       const res = await get(path);
       assert.equal(res.status, 403, path);
@@ -65,7 +74,7 @@ describe("the key", () => {
   });
 
   test("assets, the root page, /embed.js, health and the CSV downloads stay public", async () => {
-    for (const path of ["/player.css", "/sos.css", "/rookie-hit-rates.css", "/embed.js", "/", "/api/healthz", "/sos/download.csv"]) {
+    for (const path of ["/player.css", "/sos.css", "/rookie-hit-rates.css", "/embed.js", "/", "/api/healthz", "/sos/download.csv", "/rest-of-season-rankings/download.csv"]) {
       const res = await get(path);
       assert.notEqual(res.status, 403, path);
     }

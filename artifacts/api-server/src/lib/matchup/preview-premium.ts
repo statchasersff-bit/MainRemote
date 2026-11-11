@@ -23,7 +23,7 @@ import { escapeHtml } from "../render";
 import { headshotImg } from "../headshot-html";
 import { getPlayerProfileUrl } from "../team/links";
 import type { NflTeam } from "../team/teams";
-import { allowPhrase, ordinal, type Pos, type Preview, type PreviewSide } from "./preview";
+import { allowPhrase, ordinal, type Preview, type PreviewSide } from "./preview";
 import {
   favLine,
   implyRank,
@@ -31,7 +31,6 @@ import {
   weatherText,
   type PreviewRenderContext,
 } from "./preview-render";
-import { SLOTS, starters } from "./preview-starters";
 import { gameKeys, KEY_WORD } from "./preview-keys";
 import { BATTLE_WORD, type BattlePlayer } from "./preview-extras";
 import { teamComparison, type CompareCell } from "./preview-compare";
@@ -94,12 +93,6 @@ function card(hook: string, id: string, icon: string, title: string, tag: string
     `<div class="sct-mpp-body">${body}</div>` +
     `</section>`
   );
-}
-
-/** Quartile tone for a defense's points-allowed rank (1st = most allowed = softest). */
-function softTone(rank: number | null): string {
-  if (rank === null) return "mid";
-  return rank <= 8 ? "soft" : rank <= 16 ? "lean-soft" : rank <= 24 ? "lean-tough" : "tough";
 }
 
 /* --------------------------------------------------------------- hero */
@@ -387,41 +380,6 @@ function battlesCard(p: Preview): string {
 }
 
 /* ----------------------------------------------------------- starters */
-
-function startersCard(p: Preview): string {
-  const { away, home } = p;
-  if (!away.fpa || !home.fpa || !away.roster.length || !home.roster.length) return "";
-  const column = (s: PreviewSide, opp: PreviewSide) => {
-    const rows = SLOTS.flatMap(({ pos, n }) =>
-      starters(s.roster, pos, n).map((r, i) => {
-        const slot = n === 1 ? pos : `${pos}${i + 1}`;
-        const ppr = s.ppr[r.id];
-        const rank = opp.fpa!.byPos[pos].rank;
-        const st = (r.injuryStatus ?? "").toLowerCase();
-        const badge = st === "questionable" ? `<span class="sct-mpp-badge is-q" title="Questionable">Q</span>` : st === "doubtful" ? `<span class="sct-mpp-badge is-d" title="Doubtful">D</span>` : "";
-        return (
-          `<li class="sct-mpp-st">` +
-          `<span class="sct-mpp-slot" data-pos="${pos}">${e(slot)}</span>` +
-          face(r.id, s.key) +
-          `<span class="sct-mpp-st-id"><span class="sct-mpp-st-name">${playerLink(r.name)}${badge}</span>` +
-          `<span class="sct-mpp-pill" data-tone="${softTone(rank)}">${e(`${allowPhrase(rank)} vs ${pos}`)}</span></span>` +
-          `<span class="sct-mpp-st-pts"><b class="sct-mpp-num">${ppr ? one(ppr.ppg) : "-"}</b>` +
-          `<small>${ppr && ppr.posRank !== null ? `${pos}${ppr.posRank}` : "-"}</small></span>` +
-          `</li>`
-        );
-      }),
-    );
-    return (
-      `<div class="sct-mpp-col is-${s.key}">` +
-      `<p class="sct-mpp-colhead">` +
-      (s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
-      `<span>${e(s.team.nickname)} starters</span><small>vs ${e(code(opp.team))} defense</small></p>` +
-      `<ul class="sct-mpp-st-list" aria-label="${e(`${s.team.fullName} starters`)}">${rows.join("")}</ul>` +
-      `</div>`
-    );
-  };
-  return card("is-starters", "sct-mu-st-h", ICON.lineup, `${pairOf(p)} Starters vs the Defense`, `${p.meeting.season} season · PPR · PPG`, `<div class="sct-mpp-cols">${column(away, home)}${column(home, away)}</div>`);
-}
 
 /* ------------------------------------------------------ betting outlook */
 

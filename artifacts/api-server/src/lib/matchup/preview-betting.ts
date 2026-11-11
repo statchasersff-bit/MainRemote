@@ -198,9 +198,6 @@ export function spreadMove(open: number, now: number, away: NflTeam, home: NflTe
   return `${trim(Math.abs(d))} toward ${d < 0 ? code(home) : code(away)}`;
 }
 
-/** "+4.2", "-1.8", "0.0" for a margin against the spread. */
-export const vsText = (n: number): string => (n > 0 ? `+${n.toFixed(1)}` : n < 0 ? `−${Math.abs(n).toFixed(1)}` : "0.0");
-
 export function bettingOutlook(p: Preview): BettingOutlook | null {
   const { away, home, line } = p;
   if (!line || line.spread === null || line.total === null) return null;

@@ -34,7 +34,6 @@ import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, teamInk } from "./header";
-import { titleCase } from "./title-case";
 import { sectionHref } from "./sections";
 import { canonicalizeMatchupPair, gameSegment } from "../matchup/pair";
 import type { ScheduleGame } from "../team/schedule";
@@ -48,17 +47,11 @@ import {
   properNouns,
   sentenceCase,
   shortDay,
-  TYPE_LABEL,
   type FeedItem,
   type Impact,
-  type Outcome,
   type NewsContext,
   type NewsMate,
-  type WeekGroup,
 } from "./news-tab-data";
-
-/** Week groups shown open; older ones fold into a <details> (spec 4.9). */
-const OPEN_GROUPS = 6;
 /** Around-the-team: four compact cards, then "View all team news" (mak, 2026-10-23). */
 const TEAM_ITEMS = 4;
 

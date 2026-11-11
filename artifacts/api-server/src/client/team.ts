@@ -385,16 +385,21 @@ function wireTabs(root: HTMLElement): void {
  * stay hidden and every drive is a plain <details>.
  */
 function wirePlayByPlay(root: HTMLElement): void {
-  const box = root.querySelector<HTMLElement>("[data-pbp]");
-  if (!box) return;
+  const found = root.querySelector<HTMLElement>("[data-pbp]");
+  if (!found) return;
+  // A non-null binding, so the nested apply() keeps the narrowing.
+  const box: HTMLElement = found;
   const controls = box.querySelector<HTMLElement>("[data-pbp-controls]");
   const drives = Array.from(box.querySelectorAll<HTMLDetailsElement>("details.sct-pbp-drive"));
   if (!controls || drives.length === 0) return;
   controls.hidden = false;
+  const more = box.querySelector<HTMLElement>("[data-pbp-more]");
+  if (more) more.hidden = false;
 
-  // One Expand all / Collapse all toggle; its label follows the drives, so
-  // opening every drive by hand (or through a filter) flips it too.
-  const expand = controls.querySelector<HTMLButtonElement>("[data-pbp-expand]");
+  // One Expand all / Collapse all toggle (centered under the log); its label
+  // follows the drives, so opening every drive by hand (or through a filter)
+  // flips it too.
+  const expand = box.querySelector<HTMLButtonElement>("[data-pbp-expand]");
   const syncExpand = (): void => {
     if (!expand) return;
     const shown = drives.filter((d) => !d.hidden);
@@ -441,9 +446,6 @@ function wirePlayByPlay(root: HTMLElement): void {
     if (!d) return;
     if (d.hidden) apply("all");
     d.open = true;
-  }
-  for (const a of Array.from(box.querySelectorAll<HTMLAnchorElement>("a.sct-pbp-chip"))) {
-    a.addEventListener("click", () => setTimeout(openFromHash, 0));
   }
   window.addEventListener("hashchange", openFromHash);
   openFromHash();
@@ -898,7 +900,7 @@ function wireFantasyTabMore(root: HTMLElement): void {
   const lists = Array.from(root.querySelectorAll<HTMLElement>("[data-fz-list]"));
   const mark = (list: HTMLElement): void => {
     const shown = Number.parseInt(list.dataset["fzShown"] ?? "0", 10) || 0;
-    const rows = Array.from(list.querySelectorAll<HTMLTableRowElement>("tbody tr"));
+    const rows = Array.from(list.querySelectorAll<HTMLElement>("tbody tr, [data-fz-row]"));
     rows.forEach((row, at) => row.classList.toggle("is-extra", at >= shown));
   };
   for (const list of lists) {

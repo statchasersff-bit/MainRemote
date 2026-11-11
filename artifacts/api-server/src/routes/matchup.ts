@@ -20,7 +20,8 @@ import { fileURLToPath } from "node:url";
 import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
-import { canonicalUrl } from "../lib/request";
+import { canonicalUrl, publicOrigin } from "../lib/request";
+import { assetVersion } from "./embed";
 import { gamePath, matchupPath, matchupShare } from "../lib/matchup/matchup-render";
 import { getMatchupData } from "../lib/matchup/matchup-data";
 import { archivedGames } from "../lib/matchup/game-index";
@@ -221,6 +222,26 @@ router.get("/og/:file", (req, res) => {
   })();
 });
 
+/**
+ * The matchup stylesheet for a WordPress plugin too old to enqueue it.
+ *
+ * The matchup and game pages' rules left team.css for matchup.css (plugin
+ * 1.10.53 enqueues it after team.css). A plugin before that loads team.css
+ * alone, so its fetch - WordPress's own User-Agent, without the
+ * `X-SC-Matchup-Css` header 1.10.53 sends - gets the stylesheet as a <link> in
+ * front of the fragment, and the page keeps its styles whichever of the app
+ * and the plugin is deployed first. Every other caller (1.10.53, the tests, a
+ * browser) gets the bare fragment as before. Remove once 1.10.53 is live.
+ */
+let legacyStyleVersion: string | null = null;
+function legacyMatchupStyleLink(req: Request): string {
+  if (req.get("x-sc-matchup-css")) return "";
+  if (!/^WordPress\//.test(req.get("user-agent") ?? "")) return "";
+  legacyStyleVersion ??= assetVersion();
+  const href = `${publicOrigin(req)}/matchup.css?ver=${encodeURIComponent(legacyStyleVersion)}`;
+  return `<link rel="stylesheet" id="statchasers-matchup-css" href="${href}" media="all" />`;
+}
+
 /** The bare fragment for the WordPress plugin. Always embedded. */
 router.get("/embed/matchup/:pair", (req, res) => {
   void (async () => {
@@ -254,7 +275,8 @@ router.get("/embed/matchup/:pair", (req, res) => {
         res.status(404).type("text/plain").send("Unknown game");
         return;
       }
-      res.set("ETag", `W/"${result.version}"`);
+      const styleLink = legacyMatchupStyleLink(req);
+      res.set("ETag", `W/"${result.version}${styleLink ? "-css" : ""}"`);
       if (req.fresh) {
         res.status(304).end();
         return;
@@ -292,7 +314,7 @@ router.get("/embed/matchup/:pair", (req, res) => {
           game ? (result.pinnedIsCurrent ? "current" : "archived") : "",
         )
         .type("html")
-        .send(result.html);
+        .send(styleLink + result.html);
     } catch (err) {
       logger.error({ err, pair: parsed.pair.slug }, "Failed to render matchup fragment");
       res.status(503).type("text/plain").send("Matchup fragment unavailable");

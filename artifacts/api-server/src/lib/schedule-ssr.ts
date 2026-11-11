@@ -44,10 +44,6 @@ export interface ScheduleSsrResult {
 const FRAGMENT_CACHE_MAX = 128;
 const fragmentCache = new LruCache<ScheduleSsrResult>(FRAGMENT_CACHE_MAX);
 
-export function invalidateScheduleRenderCache(): void {
-  fragmentCache.clear();
-}
-
 function optionKey(season: number, options: ScheduleRenderOptions): string {
   return JSON.stringify([
     season,

@@ -1,23 +1,28 @@
 /**
- * The completed game's betting market, frozen to that game (mak, 2026-11-08).
- * Printed on the Betting tab UNDER the existing result panel and trends,
- * which are unchanged:
+ * The completed game's Betting tab (mak, 2026-11-08; consolidated 2026-11-09
+ * from a reviewer's critique: the old result panel, Betting Results and
+ * Actual vs Implied told the same outcome three times, and two trend blocks
+ * repeated the same records). Three sections, one fine print:
  *
- *   01 Betting Results        spread, total and (with a stored close) moneyline
- *   02 Actual vs Implied      each team's points against what the closing
- *                             spread and total implied (a market estimate)
- *   03 Opening vs Closing     one sportsbook's open and close, with the move
- *   04 Betting Trends         ATS and O/U through THIS game only: season,
- *                             the last five (or fewer), chips, game list
+ *   01 Game Results vs Closing Odds   spread, total and moneyline in one row,
+ *                                     then each team's actual vs implied points
+ *                                     on one scale and one sentence
+ *   02 Opening vs Closing Lines       one sportsbook's open and close with a
+ *                                     Movement column
+ *   03 Betting Trends                 one two-team table through THIS game:
+ *                                     season, last five, favorite / underdog /
+ *                                     venue splits; streak chips (oldest to
+ *                                     newest), game lists, the series line
  *
- * Player prop results (the brief's 05) are not built: no stored prop lines.
+ * Player prop results are not built: no stored prop lines.
  *
  * Grading uses the closing spread and total in the stored box score - the same
- * line the rest of the tab and every trend grade against - and the final score
- * with overtime. Opening lines and moneylines come from data/matchup/odds/
- * <season>.json (scripts/matchup/buildGameOdds.mjs, one book), and are shown
- * only when that file's close agrees with the box score's. A market neither
- * source has is left out. No sportsbook name is printed.
+ * line every trend grades against - and the final score with overtime. Opening
+ * lines and moneylines come from data/matchup/odds/<season>.json
+ * (scripts/matchup/buildGameOdds.mjs, one book), and are shown only when that
+ * file's close agrees with the box score's. A market neither source has is
+ * left out. No sportsbook name is printed. No final score either: the header
+ * has it.
  */
 
 import { escapeHtml } from "../render";
@@ -66,6 +71,8 @@ export interface BettingMarketInput {
   season: number;
   through: { seasonType: "regular" | "post"; week: number };
   inks: Record<Side, string>;
+  /** The pair's stored meetings with lines, newest first, this one included. */
+  meetings?: SeasonGame[];
 }
 
 function trim(n: number): string {
@@ -114,15 +121,14 @@ function trustedStore(input: BettingMarketInput, spread: number): StoredOdds | n
   return s.close.spread === spread && s.close.total === input.odds.total ? s : null;
 }
 
-/* ------------------------------------------------------- 01 results */
+/* ------------------------------------- 01 results vs closing odds */
 
-function card(kind: string, eyebrow: string, big: string, sub: string, text: string): string {
+function card(kind: string, eyebrow: string, big: string, line: string): string {
   return (
     `<div class="sct-bm-card is-${kind}">` +
     `<p class="sct-bm-eyebrow">${e(eyebrow)}</p>` +
     `<p class="sct-bm-big">${big}</p>` +
-    (sub ? `<p class="sct-bm-line">${sub}</p>` : "") +
-    `<p class="sct-bm-text">${e(text)}</p>` +
+    `<p class="sct-bm-line">${line}</p>` +
     `</div>`
   );
 }
@@ -131,50 +137,31 @@ function renderResults(input: BettingMarketInput, spread: number, store: StoredO
   const { game } = input;
   const result = scoreboardResult(game)!;
   const total = input.odds.total!;
-  const margin = result.home - result.away;
   const line = Math.abs(spread);
   const favSide: Side | null = spread < 0 ? "home" : spread > 0 ? "away" : null;
   const dogSide: Side | null = favSide ? (favSide === "home" ? "away" : "home") : null;
 
-  // Spread: the favorite's margin against the number.
-  let big: string;
-  let text: string;
-  let kind: string;
-  const sub = favSide && dogSide
-    ? `${e(game[favSide].abbr)} ${MINUS}${e(trim(line))} · ${e(game[dogSide].abbr)} +${e(trim(line))}`
-    : "Pick'em";
+  // Spread: the side that covered, at its own number.
+  let spreadCard: string;
   if (favSide && dogSide) {
     const favMargin = result[favSide] - result[dogSide];
     const cover = favMargin - line;
     if (cover === 0) {
-      big = "Push";
-      kind = "push";
-      text = `The ${game[favSide].short} won by exactly ${trim(line)} points. Neither side covered.`;
-    } else if (cover > 0) {
-      big = `${e(game[favSide].abbr)} covered`;
-      kind = "cover";
-      text = `The ${game[favSide].short} won by ${favMargin}, covering the ${trim(line)}-point spread by ${trim(cover)}.`;
+      spreadCard = card("push", "Spread", `${e(game[favSide].abbr)} ${MINUS}${e(trim(line))}`, "Push");
     } else {
-      big = `${e(game[dogSide].abbr)} covered`;
-      kind = "cover";
-      text =
-        favMargin < 0
-          ? `The ${game[dogSide].short} won outright as ${trim(line)}-point underdogs.`
-          : favMargin === 0
-            ? `The game ended tied, so the ${trim(line)}-point underdog ${game[dogSide].short} covered.`
-            : `The ${game[favSide].short} won by ${favMargin}, inside the ${trim(line)}-point spread.`;
+      const side = cover > 0 ? favSide : dogSide;
+      const num = side === favSide ? `${MINUS}${trim(line)}` : `+${trim(line)}`;
+      const extra = side === dogSide && favMargin < 0 ? ", won outright" : "";
+      spreadCard = card("cover", "Spread", `${e(game[side].abbr)} ${e(num)}`, `Covered by ${e(trim(Math.abs(cover)))}${extra}`);
     }
-  } else if (margin === 0) {
-    big = "Push";
-    kind = "push";
-    text = "A pick'em that ended tied. Neither side covered.";
   } else {
-    const w: Side = margin > 0 ? "home" : "away";
-    big = `${e(game[w].abbr)} covered`;
-    kind = "cover";
-    text = `A pick'em: the ${game[w].short} won by ${Math.abs(margin)} and covered.`;
+    const margin = result.home - result.away;
+    spreadCard =
+      margin === 0
+        ? card("push", "Spread", "Pick'em", "Push")
+        : card("cover", "Spread", `${e(game[margin > 0 ? "home" : "away"].abbr)} PK`, `Covered by ${Math.abs(margin)}`);
   }
-  const cards = [card(kind, "Spread result", big, sub, text)];
+  const cards = [spreadCard];
 
   const points = result.away + result.home;
   const off = Math.abs(points - total);
@@ -183,9 +170,8 @@ function renderResults(input: BettingMarketInput, spread: number, store: StoredO
     card(
       ou.toLowerCase(),
       "Game total",
-      e(ou),
-      `<b>${points}</b> scored <span>/ ${e(trim(total))} line</span>`,
-      ou === "Push" ? "Landed exactly on the closing total." : `Finished ${trim(off)} points ${ou === "Over" ? "above" : "below"} the closing total.`,
+      `${points} pts`,
+      ou === "Push" ? `Push on ${e(trim(total))}` : `${ou} ${e(trim(total))} by ${e(trim(off))}`,
     ),
   );
 
@@ -194,111 +180,111 @@ function renderResults(input: BettingMarketInput, spread: number, store: StoredO
   if (ml && ml.away !== null && ml.home !== null && result.winner) {
     const w = result.winner;
     const l: Side = w === "home" ? "away" : "home";
-    const price = ml[w]!;
     const favorite = ml[w]! < ml[l]!;
     cards.push(
       card(
         "ml",
         "Moneyline",
-        `${e(game[w].short)} won`,
-        `${e(game[w].abbr)} ${e(american(ml[w]!))} · ${e(game[l].abbr)} ${e(american(ml[l]!))}`,
-        favorite ? `The favorite won at ${american(price)}.` : `The underdog won outright at ${american(price)}.`,
+        `${e(game[w].abbr)} ${e(american(ml[w]!))}`,
+        `${favorite ? "Favorite" : "Underdog"} won <span>· ${e(game[l].abbr)} ${e(american(ml[l]!))}</span>`,
       ),
     );
   }
-  return section(
-    "bm-results",
-    "Betting Results",
-    `<div class="sct-bm-cards">${cards.join("")}</div>` +
-      `<p class="sct-rb-note sct-bm-note">Closing lines from one sportsbook, graded on the final score, overtime included.</p>`,
-  );
-}
 
-/* --------------------------------------------- 02 actual vs implied */
-
-function renderImplied(input: BettingMarketInput, spread: number): string {
-  const { game } = input;
-  const result = scoreboardResult(game)!;
-  const total = input.odds.total!;
+  // Actual vs market-implied: one bar per team, the implied figure a marker
+  // on the same scale, green / red only on the difference.
   const implied: Record<Side, number> = { home: (total - spread) / 2, away: (total + spread) / 2 };
   const scale = Math.max(1, ...SIDES.flatMap((k) => [implied[k], result[k]]));
   const w = (v: number): string => `${Math.max(0, Math.min(100, Math.round((v / scale) * 1000) / 10))}%`;
   const rows = SIDES.map((k) => {
     const diff = result[k] - implied[k];
     return (
-      `<li class="sct-bm-imp" style="--bm-team:${input.inks[k]}">` +
-      `<div class="sct-bm-imp-head"><span class="sct-bm-imp-name">${e(game[k].name)}</span>` +
-      `<span class="sct-bm-imp-diff is-${diff > 0 ? "pos" : diff < 0 ? "neg" : "even"}">${e(signedPts(diff))} pts</span></div>` +
-      `<div class="sct-bm-bars">` +
-      `<span class="sct-bm-bar is-actual"><span class="sct-bm-bar-label">Actual</span><span class="sct-bm-track"><span class="sct-bm-fill" style="width:${w(result[k])}"></span></span><b>${result[k]}</b></span>` +
-      `<span class="sct-bm-bar is-implied"><span class="sct-bm-bar-label">Market implied</span><span class="sct-bm-track"><span class="sct-bm-fill" style="width:${w(implied[k])}"></span></span><b>${e(trim(implied[k]))}</b></span>` +
-      `</div></li>`
+      `<li class="sct-bm-imp">` +
+      `<span class="sct-bm-imp-name"><i style="background:${input.inks[k]}" aria-hidden="true"></i>${e(game[k].name)}</span>` +
+      `<span class="sct-bm-imp-track" aria-hidden="true"><span class="sct-bm-imp-fill" style="width:${w(result[k])}"></span>` +
+      `<span class="sct-bm-imp-mark" style="width:${w(implied[k])}"></span></span>` +
+      `<span class="sct-bm-imp-num is-actual">${result[k]}</span>` +
+      `<span class="sct-bm-imp-num is-implied">${e(trim(implied[k]))}</span>` +
+      `<span class="sct-bm-imp-num is-diff is-${diff > 0 ? "pos" : diff < 0 ? "neg" : "even"}">${e(signedPts(diff))}</span>` +
+      `</li>`
     );
   }).join("");
   const diffs = SIDES.map((k) => result[k] - implied[k]);
+  const fantasy = `<a href="#fantasy-recap">Fantasy tab</a>`;
   const lead =
     diffs.every((d) => d < 0)
-      ? "Both offenses finished below market expectations."
+      ? `Both offenses finished below the market's expectation; the ${fantasy} has the player lines.`
       : diffs.every((d) => d > 0)
-        ? "Both offenses finished above market expectations."
+        ? `Both offenses beat the market's expectation; the ${fantasy} shows who cashed in.`
         : (() => {
             const hi: Side = diffs[0]! >= diffs[1]! ? "away" : "home";
             const lo: Side = hi === "away" ? "home" : "away";
-            return `The ${game[hi].short} beat their implied total; the ${game[lo].short} fell short of theirs.`;
+            return `${e(`The ${game[hi].short} beat their implied total and the ${game[lo].short} fell short of theirs;`)} the ${fantasy} has the player lines.`;
           })();
-  const points = result.away + result.home;
   return section(
-    "bm-implied",
-    "Actual vs Market-Implied Scoring",
-    `<ul class="sct-bm-implist">${rows}</ul>` +
-      `<p class="sct-bm-summary"><b>${e(lead)}</b> ${e(`The teams scored ${points} combined points against a closing total of ${trim(total)}.`)}</p>`,
-    "Market implied = what the closing spread and total imply for each team. A market estimate, not a StatChasers projection.",
+    "bm-results",
+    "Game Results vs Closing Odds",
+    `<div class="sct-bm-cards">${cards.join("")}</div>` +
+      `<div class="sct-bm-impbox">` +
+      `<div class="sct-bm-imp is-head" aria-hidden="true"><span>Actual vs market-implied points</span>` +
+      `<span class="sct-bm-imp-key"><i class="is-actual"></i>Actual <i class="is-implied"></i>Implied</span>` +
+      `<span class="sct-bm-imp-num">Actual</span><span class="sct-bm-imp-num">Implied</span><span class="sct-bm-imp-num">vs mkt</span></div>` +
+      `<ul class="sct-bm-implist" aria-label="Actual and market-implied points by team">${rows}</ul>` +
+      `</div>` +
+      `<p class="sct-bm-summary">${lead}</p>`,
   );
 }
 
-/* ------------------------------------------- 03 opening vs closing */
+/* ------------------------------------------- 02 opening vs closing */
 
 function renderMovement(input: BettingMarketInput, store: StoredOdds): string {
   const { game } = input;
   const { open, close } = store;
   const rows: string[] = [];
-  const moves: string[] = [];
+  const row = (market: string, o: string, c: string, move: string): string =>
+    `<tr><th scope="row">${e(market)}</th><td>${e(o)}</td><td>${e(c)}</td><td class="sct-bm-move">${e(move)}</td></tr>`;
   if (open.spread !== null && close.spread !== null) {
-    rows.push(`<tr><th scope="row">Spread</th><td>${e(spreadText(game, open.spread))}</td><td>${e(spreadText(game, close.spread))}</td></tr>`);
     const delta = close.spread - open.spread;
     // Home-signed: a rising number moved toward the away side.
-    moves.push(
-      delta === 0
-        ? "Spread: no change"
-        : `Spread: ${trim(Math.abs(delta))} pts toward ${delta > 0 ? game.away.abbr : game.home.abbr}`,
+    rows.push(
+      row(
+        "Spread",
+        spreadText(game, open.spread),
+        spreadText(game, close.spread),
+        delta === 0 ? "No change" : `${trim(Math.abs(delta))} pts toward ${delta > 0 ? game.away.abbr : game.home.abbr}`,
+      ),
     );
   }
   if (open.total !== null && close.total !== null) {
-    rows.push(`<tr><th scope="row">Total</th><td>${e(trim(open.total))}</td><td>${e(trim(close.total))}</td></tr>`);
     const delta = close.total - open.total;
-    moves.push(delta === 0 ? "Total: no change" : `Total: ${delta > 0 ? "up" : "down"} ${Math.abs(delta).toFixed(1)} pts`);
+    rows.push(
+      row("Total", trim(open.total), trim(close.total), delta === 0 ? "No change" : `${delta > 0 ? "Up" : "Down"} ${trim(Math.abs(delta))}`),
+    );
   }
   const ml = (m: StoredMarket): string | null =>
     m.moneyline.away !== null && m.moneyline.home !== null
       ? `${game.away.abbr} ${american(m.moneyline.away)} · ${game.home.abbr} ${american(m.moneyline.home)}`
       : null;
   if (ml(open) && ml(close)) {
-    rows.push(`<tr><th scope="row">Moneyline</th><td>${e(ml(open)!)}</td><td>${e(ml(close)!)}</td></tr>`);
+    // A lower home price = more money on the home side.
+    const before = open.moneyline.home!;
+    const after = close.moneyline.home!;
+    const toward = after < before ? game.home.abbr : after > before ? game.away.abbr : null;
+    rows.push(row("Moneyline", ml(open)!, ml(close)!, toward ? `Toward ${toward}` : "No change"));
   }
   if (rows.length === 0) return "";
   return section(
     "bm-movement",
     "Opening vs Closing Lines",
-    `<div class="sct-bm-wrap"><table class="sct-bm-table">` +
-      `<caption class="sct-rb-sr">Opening and closing lines at one sportsbook</caption>` +
-      `<thead><tr><th scope="col">Market</th><th scope="col">Open</th><th scope="col">Close</th></tr></thead>` +
-      `<tbody>${rows.join("")}</tbody></table></div>` +
-      (moves.length ? `<ul class="sct-bm-moves">${moves.map((m) => `<li>${e(m)}</li>`).join("")}</ul>` : ""),
-    "How the market changed before kickoff, at one sportsbook.",
+    `<div class="sct-bm-wrap"><table class="sct-bm-table is-move">` +
+      `<caption class="sct-rb-sr">Opening and closing lines at one sportsbook, with the movement</caption>` +
+      `<thead><tr><th scope="col">Market</th><th scope="col">Open</th><th scope="col">Close</th><th scope="col">Movement</th></tr></thead>` +
+      `<tbody>${rows.join("")}</tbody></table></div>`,
+    "One sportsbook's opening and closing lines. Its close matches the line graded above.",
   );
 }
 
-/* --------------------------------------------------- 04 trends */
+/* --------------------------------------------------- 03 trends */
 
 interface Graded {
   g: SeasonGame;
@@ -322,50 +308,114 @@ function graded(input: BettingMarketInput, club: string): Graded[] {
 }
 
 function record(letters: string[], a: string, b: string): string {
+  if (letters.length === 0) return DASH;
   const n = (l: string): number => letters.filter((x) => x === l).length;
   const p = n("P");
   return `${n(a)}${DASH}${n(b)}${p ? `${DASH}${p}` : ""}`;
 }
 
-function chips(letters: string[], label: string): string {
-  return (
-    `<div class="sct-bm-chiprow"><span class="sct-bm-chiplabel">${e(label)}</span>` +
-    `<span class="sct-bm-chips">${letters.map((l) => `<span class="sct-bm-chip is-${l.toLowerCase()}">${l}</span>`).join("")}</span></div>`
-  );
+function chipList(letters: string[]): string {
+  return `<span class="sct-bm-chips">${letters.map((l) => `<span class="sct-bm-chip is-${l.toLowerCase()}">${l}</span>`).join("")}</span>`;
+}
+
+/** "Last 2 meetings: Packers 1-1 ATS, overs 2-0." from the pair's priced meetings. */
+function seriesLine(input: BettingMarketInput): string {
+  const { game } = input;
+  const priced = (input.meetings ?? []).filter((g) => g.odds && g.odds.total !== null).slice(0, 6);
+  if (priced.length < 2) return "";
+  const ats: Record<Side, string[]> = { away: [], home: [] };
+  const ou: string[] = [];
+  for (const g of priced) {
+    for (const k of SIDES) {
+      const c = againstSpread(g, game[k].abbr);
+      if (c) ats[k].push(c === "cover" ? "W" : c === "fail" ? "L" : "P");
+    }
+    const t = againstTotal(g);
+    if (t) ou.push(t === "over" ? "O" : t === "under" ? "U" : "P");
+  }
+  const wins = (k: Side): number => ats[k].filter((x) => x === "W").length;
+  const lead: Side = wins("home") > wins("away") ? "home" : "away";
+  const o = ou.filter((x) => x === "O").length;
+  const u = ou.filter((x) => x === "U").length;
+  const p = ou.length - o - u;
+  const ouWord = o > u ? `overs ${o}${DASH}${u}` : u > o ? `unders ${u}${DASH}${o}` : `overs and unders ${o}${DASH}${u}`;
+  return `Last ${priced.length} meetings: ${game[lead].short} ${record(ats[lead], "W", "L")} ATS, ${ouWord}${p ? ` (${p} push${p === 1 ? "" : "es"})` : ""}.`;
 }
 
 function renderTrends(input: BettingMarketInput): string {
   const { game } = input;
   const through =
     input.through.seasonType === "post" ? "through this playoff game" : `through Week ${input.through.week}`;
-  const cards = SIDES.map((k) => {
-    const club = game[k].abbr;
-    const list = graded(input, club);
+  const lists = SIDES.map((k) => graded(input, game[k].abbr));
+  if (lists.every((l) => l.length === 0)) return "";
+  const n = Math.min(5, Math.max(...lists.map((l) => l.length)));
+
+  type Pick = (list: Graded[], k: Side) => string;
+  const ats = (list: Graded[]): string[] => list.map((x) => x.ats);
+  const ous = (list: Graded[]): string[] => list.map((x) => x.ou).filter((x): x is "O" | "U" | "P" => x !== null);
+  const club = (k: Side): string => game[k].abbr;
+  const rowsDef: Array<[string, Pick]> = [
+    ["Season ATS", (l) => record(ats(l), "W", "L")],
+    ["Season O/U (overs first)", (l) => record(ous(l), "O", "U")],
+    ...(n > 1 && lists.some((l) => l.length > n)
+      ? ([
+          [`Last ${n} ATS`, (l) => record(ats(l.slice(-n)), "W", "L")],
+          [`Last ${n} O/U`, (l) => record(ous(l.slice(-n)), "O", "U")],
+        ] as Array<[string, Pick]>)
+      : []),
+    ["ATS as favorite", (l, k) => record(ats(l.filter((x) => x.g.odds?.favorite === club(k))), "W", "L")],
+    ["ATS as underdog", (l, k) => record(ats(l.filter((x) => x.g.odds?.favorite && x.g.odds.favorite !== club(k))), "W", "L")],
+    [
+      "ATS at this game's venue",
+      (l, k) =>
+        `${record(ats(l.filter((x) => (x.g.home === club(k) ? "home" : "away") === k)), "W", "L")} <small>${k === "home" ? "home" : "road"}</small>`,
+    ],
+  ];
+  const table =
+    `<div class="sct-bm-wrap"><table class="sct-bm-table is-trends">` +
+    `<caption class="sct-rb-sr">${e(`Each team's ${game.seasonLabel} season against the closing lines ${through}`)}</caption>` +
+    `<thead><tr><th scope="col">Record</th>` +
+    SIDES.map((k) => `<th scope="col"><i style="background:${input.inks[k]}" aria-hidden="true"></i>${e(game[k].short)}</th>`).join("") +
+    `</tr></thead><tbody>` +
+    rowsDef
+      .map(([label, pick]) => {
+        const cells = SIDES.map((k, i) => {
+          const v = pick(lists[i]!, k);
+          return `<td>${v.startsWith(DASH) ? DASH : v.replace(/^([^<]+)/, (m) => e(m))}</td>`;
+        });
+        return `<tr><th scope="row">${e(label)}</th>${cells.join("")}</tr>`;
+      })
+      .join("") +
+    `</tbody></table></div>`;
+
+  // Streaks: the last five, oldest to newest, this game last.
+  const streaks =
+    `<div class="sct-bm-streaks">` +
+    `<p class="sct-bm-streaks-k">Last ${n}, oldest to newest <span>(this game last)</span></p>` +
+    SIDES.map((k, i) => {
+      const last = lists[i]!.slice(-n);
+      if (last.length === 0) return "";
+      return (
+        `<div class="sct-bm-streak"><span class="sct-bm-streak-team"><i style="background:${input.inks[k]}" aria-hidden="true"></i>${e(game[k].abbr)}</span>` +
+        `<span class="sct-bm-streak-k">ATS</span>${chipList(ats(last))}` +
+        `<span class="sct-bm-streak-k">O/U</span>${chipList(ous(last))}</div>`
+      );
+    }).join("") +
+    `</div>`;
+
+  const games = SIDES.map((k, i) => {
+    const list = lists[i]!;
     if (list.length === 0) return "";
-    const ats = list.map((x) => x.ats);
-    const ou = list.map((x) => x.ou).filter((x): x is "O" | "U" | "P" => x !== null);
-    const last = list.slice(-5);
-    const n = last.length;
-    const lastAts = last.map((x) => x.ats);
-    const lastOu = last.map((x) => x.ou).filter((x): x is "O" | "U" | "P" => x !== null);
-    const tiles =
-      `<div class="sct-bm-tiles">` +
-      `<div><span>Season ATS</span><b>${e(record(ats, "W", "L"))}</b></div>` +
-      `<div><span>Season O/U</span><b>${e(record(ou, "O", "U"))}</b></div>` +
-      (list.length > 1
-        ? `<div><span>Last ${n} ATS</span><b>${e(record(lastAts, "W", "L"))}</b></div>` +
-          `<div><span>Last ${n} O/U</span><b>${e(record(lastOu, "O", "U"))}</b></div>`
-        : "") +
-      `</div>`;
-    const games = list
+    const abbr = club(k);
+    const body = list
       .map((x) => {
         const g = x.g;
-        const home = g.home === club;
+        const home = g.home === abbr;
         const opp = home ? g.away : g.home;
         const us = home ? g.homeScore : g.awayScore;
         const them = home ? g.awayScore : g.homeScore;
         const o = g.odds!;
-        const lineNum = o.favorite === null || o.line === 0 ? "PK" : o.favorite === club ? `${MINUS}${trim(o.line)}` : `+${trim(o.line)}`;
+        const lineNum = o.favorite === null || o.line === 0 ? "PK" : o.favorite === abbr ? `${MINUS}${trim(o.line)}` : `+${trim(o.line)}`;
         const wk = g.seasonType === "post" ? "Playoffs" : `Wk ${g.week}`;
         return (
           `<tr><td>${e(wk)}</td><td>${home ? "vs" : "@"} ${e(opp)}</td>` +
@@ -377,43 +427,49 @@ function renderTrends(input: BettingMarketInput): string {
       })
       .join("");
     return (
-      `<div class="sct-bm-team" style="--bm-team:${input.inks[k]}">` +
-      `<h3 class="sct-bm-team-name">${e(game[k].name)}</h3>` +
-      tiles +
-      chips(lastAts, n === list.length && n < 5 ? "ATS form" : `ATS form, last ${n}`) +
-      chips(lastOu, n === list.length && n < 5 ? "O/U form" : `O/U form, last ${n}`) +
-      `<details class="sct-bm-games"><summary>Game-by-game results</summary>` +
+      `<div class="sct-bm-team">` +
+      `<h3 class="sct-bm-team-name" style="--bm-team:${input.inks[k]}">${e(game[k].name)}</h3>` +
       `<div class="sct-bm-wrap"><table class="sct-bm-table is-games">` +
       `<caption class="sct-rb-sr">${e(`${game[k].name} results against the closing lines ${through}`)}</caption>` +
       `<thead><tr><th scope="col">Week</th><th scope="col">Opp</th><th scope="col">Final</th><th scope="col">Line</th><th scope="col">ATS</th><th scope="col">Total</th><th scope="col">O/U</th></tr></thead>` +
-      `<tbody>${games}</tbody></table></div></details>` +
-      `</div>`
+      `<tbody>${body}</tbody></table></div></div>`
     );
   }).join("");
-  if (!cards) return "";
+
+  const series = seriesLine(input);
   return section(
     "bm-trends",
     "Betting Trends",
-    `<div class="sct-bm-pair">${cards}</div>` +
-      `<p class="sct-rb-note sct-bm-note">Against each game's closing line, oldest to newest, this game last. Pushes are counted separately.</p>`,
-    `${input.game.seasonLabel} season ${through}, this game included. Nothing after it counts.`,
+    table +
+      streaks +
+      `<details class="sct-bm-games"><summary>Game-by-game results</summary><div class="sct-bm-pair">${games}</div></details>` +
+      (series ? `<p class="sct-bm-series">${e(series)}</p>` : ""),
+    `${game.seasonLabel} season ${through}, this game included. Nothing after it counts.`,
   );
 }
 
 /* ------------------------------------------------------------------ all */
 
-/** The four sections, or "" without a final score and a closing spread and total. */
-export function renderBettingMarket(input: BettingMarketInput): string {
-  if (!scoreboardResult(input.game) || input.odds.total === null) return "";
+/**
+ * The same, in two parts: Odds and Results (`lead`), which the recap's
+ * Betting tab puts inside its header's container (mak, 2026-11-10), and
+ * the movement, trends and fine print that follow it (`rest`).
+ */
+export function renderBettingMarketParts(input: BettingMarketInput): { lead: string; rest: string } | null {
+  if (!scoreboardResult(input.game) || input.odds.total === null) return null;
   const spread = closeSpread(input);
-  if (spread === null) return "";
+  if (spread === null) return null;
   const store = trustedStore(input, spread);
-  return (
+  return {
+    lead: renderResults(input, spread, store),
+    rest:
     `<div class="sct-bm-block" data-bm-root>` +
-    renderResults(input, spread, store) +
-    renderImplied(input, spread) +
     (store ? renderMovement(input, store) : "") +
     renderTrends(input) +
-    `</div>`
-  );
+    `<div class="sct-bet-fine sct-bm-fine">` +
+    `<p>Results and trends are graded against each game's closing line, overtime included. Pushes are counted separately.</p>` +
+    `<p>21+. Gambling problem? Call 1-800-GAMBLER. Betting availability depends on your state.</p>` +
+    `</div>` +
+    `</div>`,
+  };
 }

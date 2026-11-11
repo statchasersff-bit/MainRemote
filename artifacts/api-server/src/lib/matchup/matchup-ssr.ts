@@ -18,7 +18,6 @@ import {
   matchupEventSchema,
   matchupFaqSchema,
   matchupRecapSchema,
-  matchupScoreboardGame,
   renderMatchupPage,
   type MatchupRenderOptions,
 } from "./matchup-render";

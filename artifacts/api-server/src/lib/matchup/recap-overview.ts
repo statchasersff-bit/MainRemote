@@ -28,7 +28,7 @@ import { readDataJson } from "../team/read-json";
 import type { BoxTeamStats } from "./boxscore";
 import type { GamePlayer, GamePlayers } from "./game-players";
 import type { LeaderPick } from "./leaders-strip";
-import { scoreboardResult, scoreboardTotal, type ScoreboardGame } from "./scoreboard-hero";
+import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { BAR_ICON } from "./recap-premium";
 
 const e = escapeHtml;
@@ -634,12 +634,6 @@ function card(label: string, id: string, title: string, body: string, extra = ""
   );
 }
 
-/** The Overview tab's five cards, or "" when the game has no stored story. */
-export function renderRecapOverview(input: OverviewInput): string {
-  const parts = renderRecapOverviewParts(input);
-  return parts.main;
-}
-
 /**
  * The Overview's cards with Game Leaders lifted out (mak, 2026-11-08): `main`
  * holds the other four cards, `leaders` the leaders as a sidebar card in Game
@@ -751,11 +745,6 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
       `</div>`,
     leaders: leadersAside,
   };
-}
-
-/** The final figure for a side, for callers that want it. */
-export function sideTotal(game: ScoreboardGame, s: Side): number | null {
-  return scoreboardTotal(game[s]);
 }
 
 export type { GamePlayer };

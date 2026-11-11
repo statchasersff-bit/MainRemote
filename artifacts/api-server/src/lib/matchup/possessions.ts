@@ -453,8 +453,9 @@ export function renderPossessions(input: PossessionsInput): string {
       `</div>`
     : "";
   return (
-    `<section class="sct-rb-section sct-pc" aria-labelledby="possessions">` +
-    `<h2 class="sct-rb-h2" id="possessions">Play calling and possessions</h2>` +
+    // No card or title of its own (mak, 2026-11-09): it sits inside the Game
+    // flow tab's container, under the tab header. The id stays as an anchor.
+    `<section class="sct-rb-section sct-pc is-bare" id="possessions" aria-label="Play calling and possessions">` +
     `<div class="sct-pc-row">${callingCard}${table}</div>` +
     noteList +
     driveChart +

@@ -24,7 +24,6 @@ import {
   gameDateLine,
   h2,
   injurySeverity,
-  matchupSide,
   networkDefs,
   networkHtml,
   playerName,
@@ -46,7 +45,6 @@ import { getPlayerSlugByName, loadRosterPct } from "../player/data";
 import { type DefenseLine } from "./fantasy-points";
 import { playerContexts, ratesFor } from "./fantasy-data";
 import {
-  renderFantasyMatchups,
   fantasyLines,
   renderFantasyTakeaways,
   topScorers,
@@ -55,8 +53,6 @@ import {
 } from "./fantasy-section";
 import { playerPhoto, teamPosition } from "./player-cell";
 import {
-  bettingSeason,
-  pointsAllowed,
   seasonToDate,
   storedMeetings,
   storedSeasons,
@@ -70,7 +66,7 @@ import { gameNotes, schemaVideo, type GameVideo } from "./game-notes";
 import { renderPossessions } from "./possessions";
 import { renderBoxScore } from "./box-score";
 import { renderFantasyTab } from "./fantasy-tab";
-import { loadGameOdds, renderBettingMarket } from "./betting-market";
+import { loadGameOdds, renderBettingMarketParts } from "./betting-market";
 import { renderWinProbability, winProbabilityModel } from "./win-probability";
 import type { ScoringPlay } from "./scoring-plays";
 import {
@@ -80,7 +76,6 @@ import {
   renderBeforeAfter,
   renderExploreCard,
   bettingEnabled,
-  renderBetting,
   renderExplore,
   renderHighlights,
   type BettingExtras,
@@ -115,7 +110,6 @@ import {
   pairPlan,
   pairColors as heroPairColors,
   renderScoreboardHero,
-  scoreboardHeading,
   scoreboardPageHeading,
   scoreboardResult,
   scoreboardSportsEvent,
@@ -160,7 +154,8 @@ import {
 import { renderMatchupPreviewBody, renderMatchupPreviewTop } from "./preview-premium";
 import { addBarIcons, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
 import { findGameStory, findGameStoryEntry, renderRecapOverviewParts } from "./recap-overview";
-import { loadGamePbp, renderPlayByPlay } from "./play-by-play";
+import { loadGamePbp, renderPlayByPlayParts } from "./play-by-play";
+import { renderGameFlowPremium } from "./game-flow-premium";
 import { pickLeaders } from "./leaders-strip";
 import type { Preview } from "./preview";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
@@ -796,7 +791,7 @@ function renderGameScoring(data: MatchupData): string {
 
 /* ------------------------------------------- stored seasons: extras */
 
-/** The Betting tab's extras: the pair's priced meetings and each club's season against the lines. */
+/** The Betting tab's extras: the pair's priced meetings. */
 function bettingExtras(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): BettingExtras | null {
   const meeting = data.featured;
   if (!meeting) return null;
@@ -806,10 +801,6 @@ function bettingExtras(data: MatchupData, game: ScoreboardGame, options: Matchup
   const seasons = storedSeasons(meeting.season - HISTORY_SEASONS, meeting.season);
   return {
     meetings: storedMeetings(seasons, away, home, { season: meeting.season, ...through }),
-    seasons: {
-      [away]: bettingSeason(meeting.season, away, through, "away"),
-      [home]: bettingSeason(meeting.season, home, through, "home"),
-    },
   };
 }
 
@@ -857,7 +848,6 @@ function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
   return (
     `<section class="sct-rb-section sct-mu-form" aria-labelledby="season-to-date">` +
     `<h3 class="sct-rb-h3" id="season-to-date">${escapeHtml(`Season to date (through Week ${std.throughWeek})`)}</h3>` +
-    `<p class="sct-rb-sub">${escapeHtml(`The ${meeting.season} regular season, from each game's box score.`)}</p>` +
     renderStatCompare({
       caption: `Season to date, ${game.away.short} vs ${game.home.short}`,
       awayName: game.away.short,
@@ -868,13 +858,6 @@ function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
     }) +
     `</section>`
   );
-}
-
-/** Points allowed by position for the Fantasy tab, with player positions from the dictionary. */
-function renderGameMatchups(data: MatchupData, game: ScoreboardGame): string {
-  const meeting = data.featured;
-  if (!meeting) return "";
-  return renderFantasyMatchups(game, pointsAllowed(meeting.season, [game.away.abbr, game.home.abbr], dictionaryPosition));
 }
 
 /** The two best PPR lines in the game, for the FAQ. */
@@ -1262,7 +1245,9 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
       for (const side of seasonSides(data)) {
         const after = side.games
           .filter((g) => g.status !== "final" && (g.kickoffMs ?? Infinity) > (meeting.kickoffMs ?? 0))
-          .sort((x, y) => (x.kickoffMs ?? 0) - (y.kickoffMs ?? 0))[0];
+          // A game with no kickoff yet (a late-season TBD) sorts last, not
+          // first: it was putting Week 17 ahead of Week 10 (2026-11-10).
+          .sort((x, y) => (x.kickoffMs ?? Infinity) - (y.kickoffMs ?? Infinity) || 0)[0];
         next[side.abbr] = after ? { label: after.weekLabel, opponent: after.opponent?.nickname ?? after.opponentName } : null;
       }
     }
@@ -1346,7 +1331,42 @@ function renderGameFantasyTab(data: MatchupData): string {
 }
 
 /** The Play-by-Play tab, from the stored nflverse plays; "" without them. */
-function renderGamePlayByPlay(data: MatchupData): string {
+function renderGamePlayByPlay(data: MatchupData): { lead: string; rest: string } | null {
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  if (!game || !meeting || game.status !== "final") return null;
+  const entry = findGameStoryEntry({
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+    home: game.home.abbr,
+    away: game.away.abbr,
+  });
+  if (!entry) return null;
+  return renderPlayByPlayParts({
+    game,
+    pbp: loadGamePbp(meeting.season, entry.id),
+    scoringPlays: data.boxscore?.scoringPlays ?? [],
+    playerUrl: getPlayerProfileUrl,
+    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+  });
+}
+
+/**
+ * Whether the rebuilt Game Flow prints under the current one. It is a
+ * comparison for mak, not an approved design, so it stays out of production
+ * unless SC_GAME_FLOW_COMPARE=1; SC_GAME_FLOW_COMPARE=0 hides it everywhere.
+ */
+function gameFlowCompareOn(): boolean {
+  const flag = process.env["SC_GAME_FLOW_COMPARE"];
+  if (flag === "1") return true;
+  if (flag === "0") return false;
+  return process.env["NODE_ENV"] !== "production";
+}
+
+/** The rebuilt Game Flow (game-flow-premium.ts), from the same stored play-by-play. */
+function renderGameFlowComparison(data: MatchupData): string {
+  if (!gameFlowCompareOn()) return "";
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting || game.status !== "final") return "";
@@ -1358,13 +1378,7 @@ function renderGamePlayByPlay(data: MatchupData): string {
     away: game.away.abbr,
   });
   if (!entry) return "";
-  return renderPlayByPlay({
-    game,
-    pbp: loadGamePbp(meeting.season, entry.id),
-    scoringPlays: data.boxscore?.scoringPlays ?? [],
-    playerUrl: getPlayerProfileUrl,
-    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
-  });
+  return renderGameFlowPremium({ game, pbp: loadGamePbp(meeting.season, entry.id) });
 }
 
 function renderGamePossessions(data: MatchupData): string {
@@ -1477,32 +1491,38 @@ function renderAddedSections(data: MatchupData, input: RecapBodyInput, options: 
     highlights: renderHighlights(game, gameVideo(data)),
     winProbability: renderGameWinProbability(data),
     possessions: renderGamePossessions(data),
-    betting: renderGameBetting(data, game, options),
+    ...(() => {
+      const b = renderGameBetting(data, game, options);
+      return { bettingLead: b?.lead ?? "", betting: b?.rest ?? "" };
+    })(),
     explore: renderGameExplore(data, input, options),
   };
 }
 
 /**
- * The Betting tab: the existing result panel and trends, then the frozen
- * market (betting-market.ts, mak 2026-11-08) under them, only where the
- * existing panel prints (a closing spread and total, the switch on).
+ * The Betting tab: three consolidated sections (betting-market.ts, mak
+ * 2026-11-09). The old result panel and season-trends table (renderBetting,
+ * recap-extras.ts) are unmounted: their figures live in betting-market's
+ * results and trends sections now. Printed only where that panel printed: a
+ * closing spread and total, the site-wide switch on.
  */
-function renderGameBetting(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): string {
+function renderGameBetting(
+  data: MatchupData,
+  game: ScoreboardGame,
+  options: MatchupRenderOptions,
+): { lead: string; rest: string } | null {
   const odds = data.boxscore?.odds ?? null;
-  const existing = renderBetting(game, odds, bettingExtras(data, game, options));
   const meeting = data.featured;
-  if (!existing || !odds || !meeting) return existing;
-  return (
-    existing +
-    renderBettingMarket({
-      game,
-      odds,
-      stored: loadGameOdds(meeting.season, data.boxscore?.eventId),
-      season: meeting.season,
-      through: { seasonType: meeting.seasonType, week: meeting.week },
-      inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
-    })
-  );
+  if (!odds || !meeting || !bettingEnabled() || odds.total === null) return null;
+  return renderBettingMarketParts({
+    game,
+    odds,
+    stored: loadGameOdds(meeting.season, data.boxscore?.eventId),
+    season: meeting.season,
+    through: { seasonType: meeting.seasonType, week: meeting.week },
+    inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+    meetings: bettingExtras(data, game, options)?.meetings ?? [],
+  });
 }
 
 /** The recap build spec's sections, one by one, for the tabs to place. */
@@ -1510,6 +1530,9 @@ interface AddedSections {
   highlights: string;
   winProbability: string;
   possessions: string;
+  /** Odds and Results, which sits inside the Betting tab's header container. */
+  bettingLead: string;
+  /** The rest of the Betting tab, after that container. */
   betting: string;
   explore: string;
 }
@@ -2218,13 +2241,6 @@ function renderGlance(data: MatchupData): string {
 }
 
 /* ------------------------------------------------------------ player stats */
-
-/** The team code a stat row belongs to, as a chip. */
-function statTeam(team: NflTeam | null): string {
-  return team
-    ? `<span class="sct-mu-ps-team">${escapeHtml(team.code.toUpperCase())}</span>`
-    : "";
-}
 
 
 /** The name cell every stat table shares: face, link, team and position. */
@@ -3086,12 +3102,6 @@ function mixHex(from: string, to: string, amount: number): string {
   return `#${channel(0)}${channel(1)}${channel(2)}`;
 }
 
-/** Rough relative luminance - enough to ask "is this ink too pale for white". */
-function luminance(hex: string): number {
-  const [r, g, b] = hexToRgb(hex);
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-}
-
 /**
  * Two colors a reader can tell apart, for the two sides of a comparison.
  *
@@ -3381,50 +3391,6 @@ function renderFantasy(data: MatchupData): string {
       `Fantasy points allowed per game, ${fpa.season} ${fpa.dataMode.toLowerCase()}, ${formatWord(fpa.format)} scoring. ` +
         `1st allows the most - a longer bar is a softer defense and a better matchup for the offense facing it.`,
     )}</p>` +
-    `</section>`
-  );
-}
-
-/**
- * Fantasy Matchups on a recap page, drawn in the same "Why won" design as
- * Season Form. Lower is better, as for any defense: the stingier unit takes
- * the emphasis and the longer bar. League ranks are left to the FPA tool.
- */
-function renderRecapFantasy(data: MatchupData): string {
-  if (!describesNow(data)) return "";
-  const fpa = data.fpa;
-  const { left: a, right: b, leftFpa, rightFpa } = sides(data);
-  if (!fpa || (!leftFpa && !rightFpa)) return "";
-
-  const rows: CompareRow[] = FANTASY_POSITIONS.map((position) => {
-    const l = leftFpa?.byPos?.[position] ?? null;
-    const r = rightFpa?.byPos?.[position] ?? null;
-    return {
-      label: `Points allowed to ${position}s`,
-      away: l ? l.fpa : null,
-      home: r ? r.fpa : null,
-      awayText: l ? l.fpa.toFixed(1) : "-",
-      homeText: r ? r.fpa.toFixed(1) : "-",
-      better: "lower",
-    };
-  });
-
-  const colors = heroPairColors(a.abbreviation, b.abbreviation);
-  return (
-    `<section class="sct-rb-section sct-mu-fantasy" aria-labelledby="sct-rb-fantasy">` +
-    `<h2 class="sct-rb-h2" id="sct-rb-fantasy">Fantasy Matchups</h2>` +
-    `<p class="sct-rb-sub">${escapeHtml(
-      `Fantasy points allowed per game by position, ${fpa.season} ${fpa.dataMode.toLowerCase()}, ` +
-        `${formatWord(fpa.format)} scoring.`,
-    )}</p>` +
-    renderStatCompare({
-      caption: `Fantasy points allowed per game, ${a.nickname} defense vs ${b.nickname} defense`,
-      awayName: a.nickname,
-      homeName: b.nickname,
-      awayInk: colors.away.ink,
-      homeInk: colors.home.ink,
-      rows,
-    }) +
     `</section>`
   );
 }
@@ -3817,8 +3783,9 @@ function recapTabs(
 ): { top: string; body: string; style: string[] } {
   const game = input.game;
   const present = new Set<RecapTabId>();
-  const panel = (id: RecapTabId, html: string): string => {
-    if (!html) return "";
+  // `after` follows the tab's frame rather than sitting inside it.
+  const panel = (id: RecapTabId, html: string, after = ""): string => {
+    if (!html && !after) return "";
     present.add(id);
     const [, , panelId] = RECAP_TABS.find(([t]) => t === id)!;
     // The tab's own hash is an anchor at the panel's top, so a plain link to
@@ -3833,9 +3800,31 @@ function recapTabs(
     // The Recap tab's header sits above both columns instead, at the full
     // width over the sidebar (mak, 2026-11-09): see `lead` below.
     const head = id === "recap" ? "" : recapTabHead(id, game, Boolean(overview));
+    // Game flow is one container (mak, 2026-11-09): the tab header on top,
+    // the play calling and possessions straight under it in the same card.
+    // The Rivalry tab the same (mak, 2026-11-10): the head-to-head drops its
+    // own card and sits in the tab header's container; the seasons to date
+    // follow it as their own card.
+    // Betting too (mak, 2026-11-10): Odds and Results inside the container,
+    // the line movement and trends as their own cards after it.
+    // And Play-by-Play (mak, 2026-11-10): the Scoring Summary inside it.
+    const framed =
+      (id === "game-flow" || id === "head-to-head" || id === "betting" || id === "play-by-play") && head && html;
+    const hook =
+      id === "game-flow"
+        ? "sct-mu-flow-frame"
+        : id === "betting"
+          ? "sct-mu-flow-frame sct-mu-h2h-frame sct-mu-bet-frame"
+          : id === "play-by-play"
+            ? "sct-mu-flow-frame sct-mu-h2h-frame sct-mu-pbp-frame"
+            : "sct-mu-flow-frame sct-mu-h2h-frame";
+    const body =
+      (framed
+        ? `<div class="sct-tab-frame ${hook}">${head}<div class="sct-tab-frame-body">${html}</div></div>`
+        : head + html) + after;
     return (
       `<section class="sct-mu-tabpanel${id === "recap" ? " is-active" : ""}" id="${panelId}" role="tabpanel" ` +
-      `aria-labelledby="tab-${id}" data-mu-tab="${id}">${anchor}${legacy}${head}${html}</section>`
+      `aria-labelledby="tab-${id}" data-mu-tab="${id}">${anchor}${legacy}${body}</section>`
     );
   };
 
@@ -3846,7 +3835,10 @@ function recapTabs(
   const overviewParts = renderOverview(data, input, added);
   const overview = overviewParts.main;
   const boxScore = renderGameBoxScore(data);
-  const playByPlay = renderGamePlayByPlay(data);
+  const pbpParts = renderGamePlayByPlay(data);
+  // The rebuilt Game Flow, under the current one for comparison (mak, 2026-11-10).
+  const gameFlowNew = renderGameFlowComparison(data);
+  const playByPlay = pbpParts ? pbpParts.lead + pbpParts.rest : "";
   const fantasyRecap = renderGameFantasyTab(data);
   // The Scoring Summary prints on Play-by-Play when there is one, not twice.
   const scoring = playByPlay ? "" : renderGameScoring(data);
@@ -3863,13 +3855,13 @@ function recapTabs(
         return (
           panel("recap", overview) +
           panel("box-score", boxScore) +
-          panel("play-by-play", playByPlay) +
+          panel("play-by-play", pbpParts?.lead ?? "", pbpParts?.rest ?? "") +
           panel("fantasy-recap", fantasyTab) +
           // Team Stats moved into the Box Score tab (2026-11-08); without one
           // it opens Game flow.
-          panel("game-flow", (boxScore ? "" : own.why) + scoring + added.possessions) +
-          panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
-          panel("betting", added.betting)
+          panel("game-flow", (boxScore ? "" : own.why) + scoring + added.possessions, gameFlowNew) +
+          panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
+          panel("betting", added.bettingLead, added.betting)
         );
       }
       return (
@@ -3881,11 +3873,11 @@ function recapTabs(
           (boxScore ? "" : own.why) + scoring || `<span class="sct-mu-anchor" aria-hidden="true"></span>`,
         ) +
         panel("box-score", boxScore) +
-        panel("play-by-play", playByPlay) +
+        panel("play-by-play", pbpParts?.lead ?? "", pbpParts?.rest ?? "") +
         panel("fantasy-recap", fantasyTab) +
-        panel("game-flow", added.winProbability + added.possessions) +
-        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
-        panel("betting", added.betting)
+        panel("game-flow", added.winProbability + added.possessions, gameFlowNew) +
+        panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
+        panel("betting", added.bettingLead, added.betting)
       );
       // Below the panels, on every tab, but under both columns at the full
       // width rather than beside the sidebar (mak, 2026-09-30): see `foot`.
@@ -4197,9 +4189,6 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     `</div>`
   );
 }
-
-/** The `data-state` attribute values, for CSS and tests. */
-export const MATCHUP_STATES = ["upcoming", "recently_completed", "historical"] as const;
 
 /* ------------------------------------------------------------ sharing */
 

@@ -60,6 +60,9 @@ const STATCHASERS_MATCHUP_ROUNDS = array(
  */
 const STATCHASERS_MATCHUP_GAME_SHAPE = '\d{4}-(?:week-\d{1,2}|postseason-week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl)';
 
+/** The matchup pages' own stylesheet, printed after team.css (see statchasers_matchup_enqueue_assets()). */
+const STATCHASERS_MATCHUP_STYLE_HANDLE = 'statchasers-matchup';
+
 const STATCHASERS_MATCHUP_CACHE_TTL  = 5 * MINUTE_IN_SECONDS;
 const STATCHASERS_MATCHUP_BACKUP_TTL = DAY_IN_SECONDS;
 const STATCHASERS_MATCHUP_TIMEOUT    = 8;
@@ -368,7 +371,12 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		$url,
 		array(
 			'timeout' => STATCHASERS_MATCHUP_TIMEOUT,
-			'headers' => array( 'Accept' => 'text/html' ),
+			// Says this plugin enqueues matchup.css itself, so the origin
+			// leaves out the <link> it prints for plugins before 1.10.53.
+			'headers' => array(
+				'Accept'           => 'text/html',
+				'X-SC-Matchup-Css' => '1',
+			),
 		)
 	);
 
@@ -454,7 +462,7 @@ function statchasers_matchup_shortcode(): string {
 	}
 
 	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
-	statchasers_team_enqueue_assets();
+	statchasers_matchup_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		return current_user_can( 'manage_options' )
@@ -663,17 +671,41 @@ function statchasers_matchup_shortcode_heading(): string {
 	);
 }
 
+/**
+ * The hub's assets, then the matchup pages' own stylesheet.
+ *
+ * matchup.css holds the rules only matchup and game pages use (split out of
+ * team.css in 1.10.53, so the 32 hubs stop downloading them). It depends on
+ * the team handle, so it always prints after team.css and the inline blocks
+ * riding on it, and it shares the build's version.
+ */
+function statchasers_matchup_enqueue_assets(): void {
+	statchasers_team_enqueue_assets();
+	if ( '' === statchasers_news_origin() ) {
+		return;
+	}
+	if ( ! wp_style_is( STATCHASERS_MATCHUP_STYLE_HANDLE, 'registered' ) ) {
+		wp_register_style(
+			STATCHASERS_MATCHUP_STYLE_HANDLE,
+			statchasers_public_origin() . '/matchup.css',
+			array( STATCHASERS_TEAM_HANDLE ),
+			statchasers_news_asset_version()
+		);
+	}
+	wp_enqueue_style( STATCHASERS_MATCHUP_STYLE_HANDLE );
+}
+
 /*
  * The hero's webfonts (Barlow, Barlow Condensed) ride on team.css as a
  * dependency - see statchasers_display_font_dependency() in
  * statchasers-assets.php - and the Google Fonts preconnect is shared there
- * too, so a matchup page enqueues the hub's assets and nothing more.
+ * too, so a matchup page enqueues the hub's assets and its own stylesheet.
  */
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {
 		if ( null !== statchasers_matchup_current() ) {
-			statchasers_team_enqueue_assets();
+			statchasers_matchup_enqueue_assets();
 		}
 	}
 );

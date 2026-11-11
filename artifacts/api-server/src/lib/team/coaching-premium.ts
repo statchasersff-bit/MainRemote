@@ -6,8 +6,8 @@
  * formation visual, and a bottom insight banner.
  *
  * Since 2026-11-05 ("keep the new designs") this IS the page's top block:
- * the original header, profile, KPI tiles and tendency tables are unmounted
- * in coaching-render.ts. The heading carries .sct-h2 so a section address
+ * the original header, profile, KPI tiles and tendency tables were deleted
+ * on 2026-11-10. The heading carries .sct-h2 so a section address
  * promotes it to the H1 (team-render.ts promoteHeading). Every number here is the
  * same row view the original tables draw (rowViews / changeText /
  * groupSentence from coaching-render.ts), so the two cannot disagree; no
@@ -16,12 +16,11 @@
  */
 
 import { escapeHtml } from "../render";
-import { premiumTabHead, premiumTabFrame } from "./premium-head";
+import { premiumTabHead } from "./premium-head";
 import { usageStyleHead } from "./coaching-premium-tendencies";
 import {
   FORMATIONS_NOTE,
   GROUPS,
-  IDENTITY_KEYS,
   KEEP_SUB,
   atEdge,
   changeText,
@@ -38,7 +37,8 @@ import {
   surnameOf,
   type RowView,
 } from "./coaching-render";
-import { getCoachingStaff, reliabilityRating, RELIABILITY_PCT, type TeamCoaching, type TendencyRow } from "./coaching";
+import { headshotImg } from "../headshot-html";
+import { coachPhoto, getCoachingStaff, reliabilityRating, type TeamCoaching, type TendencyRow } from "./coaching";
 import type { NflTeam } from "./teams";
 import type { UsageView } from "./usage";
 
@@ -69,10 +69,15 @@ const ICON: Record<string, string> = {
   /** The faint play diagram on the header's right. */
 };
 
-const KPI_ICON: Record<string, string> = { passRate: "pass", rzPassRate: "target", motionRate: "motion", pace: "clock" };
-const KPI_LABEL: Record<string, string> = { passRate: "Pass Rate", rzPassRate: "Red-Zone Pass Rate", motionRate: "Pre-Snap Motion", pace: "Neutral Pace" };
-
 /* --------------------------------------------------------------- overview */
+
+/** The card's continuity line: the shared sentence, "caller" spelled out, both clauses capitalized, no period. */
+function contNote(c: TeamCoaching, rating: ReturnType<typeof reliabilityRating>): string {
+  const base = relNote(c, rating)
+    .replace(/\.$/, "")
+    .replace(/^Same caller as (\d{4}) · strong baseline$/, "Same play-caller as $1 · strong historical baseline");
+  return base.replace(/ · (\w)/, (_m, ch: string) => ` · ${ch.toUpperCase()}`);
+}
 
 function profileCard(c: TeamCoaching, team: NflTeam): string {
   const [title] = c.playCaller.kicker.split(" · ");
@@ -84,21 +89,34 @@ function profileCard(c: TeamCoaching, team: NflTeam): string {
   const scheme = tree?.note ? schemeChip(tree.note) : null;
   const rating = reliabilityRating(c);
   const word = { HIGH: "High", MEDIUM: "Medium", LOW: "Low" }[rating];
-  const pct = RELIABILITY_PCT[rating];
+  // The club's own headshot beside the role and name (mak, 2026-11-10).
+  const photo = headshotImg({
+    src: coachPhoto(team.abbreviation, seasonOf(c), c.playCaller.name),
+    className: "sct-cp-face",
+    alt: c.playCaller.name,
+    variants: ["160", "256", "320"],
+    sizes: "80px",
+    loading: "lazy",
+  });
   return (
     `<div class="sct-cp-profile">` +
+    `<div class="sct-cp-who${photo ? " has-face" : ""}">` +
+    (photo ?? "") +
+    `<div class="sct-cp-who-text">` +
     `<p class="sct-cp-kicker">${e(role)}</p>` +
     `<p class="sct-cp-name">${e(c.playCaller.name)}</p>` +
+    `</div></div>` +
     `<p class="sct-cp-pills">` +
     `<span class="sct-cp-pill"${tree?.note ? ` title="${e(tree.note)}"` : ""}>${e(tree ? tree.tag : "No established tree")}</span>` +
     (scheme ? `<span class="sct-cp-pill" title="${e(tree?.note ?? "")}">${e(scheme)}</span>` : "") +
     `</p>` +
     `<p class="sct-cp-context">${e([under, stintLine(c, team)].filter(Boolean).join(" · "))}</p>` +
     `<div class="sct-cp-cont">` +
-    `<p class="sct-cp-cont-row"><span class="sct-cp-cont-label">Coaching Continuity</span>` +
-    `<span class="sct-cp-cont-status is-${rating.toLowerCase()}">${e(word)}</span></p>` +
-    `<span class="sct-cp-cont-bar" role="img" aria-label="${e(`Coaching continuity: ${word}`)}"><span style="width:${pct}%"></span></span>` +
-    `<p class="sct-cp-cont-note">${e(relNote(c, rating).replace(/\.$/, ""))}</p>` +
+    `<p class="sct-cp-cont-row"><span class="sct-cp-cont-label">Coaching continuity</span>` +
+    /* A dot and a word, not a bar (mak, 2026-11-10): the rating is qualitative, so nothing should read as a score. */
+    `<span class="sct-cp-cont-state is-${rating.toLowerCase()}"><span class="sct-cp-cont-dot" aria-hidden="true"></span>` +
+    `<span class="sct-cp-cont-status is-${rating.toLowerCase()}">${e(word)}</span> continuity</span></p>` +
+    `<p class="sct-cp-cont-note">${e(contNote(c, rating))}</p>` +
     `</div>` +
     `</div>`
   );
@@ -295,19 +313,17 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
     `<section class="sct-cp-section">${usageStyleHead(title, icon, sub)}<div class="sct-cp-section-body">${body}</div></section>`;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
-    premiumTabFrame(
-      premiumTabHead({
+    // No outer frame since 2026-11-10 (mak): the header bar, then the card on its own.
+    premiumTabHead({
         hook: "sct-cp-head",
         icon: "coaching",
         art: "coaching",
         heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
         dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
-      }),
+      }) +
       // The four KPI cards went 2026-11-08 (mak): pass rate, red-zone rate,
       // motion and pace all repeat in the tables below. Coach card only.
-      `<div class="sct-cp-overview is-coach-only">${profileCard(c, team)}</div>`,
-      { solo: true },
-    ) +
+      `<div class="sct-cp-overview is-coach-only">${profileCard(c, team)}</div>` +
     (calling.length
       ? section("Play Calling", ICON["play"]!, `How often ${last} calls a pass, by situation, ${season} vs ${priorYear}`, `<div class="sct-cp-split">${table(calling, c, team, priorYear, season, "Play Calling")}${takeaway(calling, team, priorYear, returning)}</div>`)
       : "") +

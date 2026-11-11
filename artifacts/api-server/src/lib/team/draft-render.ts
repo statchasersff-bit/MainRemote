@@ -28,8 +28,6 @@ export function nick(abbr: string): string {
 
 /* ------------------------------------------------------------- next draft */
 
-type Round = DraftCapitalView["rounds"][number];
-
 /** "Round 5", "Rounds 5-7", "Rounds 2 and 5", "Rounds 2, 5 and 7". */
 function roundList(rounds: number[]): string {
   if (rounds.length === 0) return "";

@@ -729,8 +729,8 @@ export async function buildUsage(season) {
 
   // `better`: which way is good for fantasy. "none" = percentile shown, tone neutral.
   const METRICS = {
-    WR: { firstReadShare: "up", airYardsShare: "up", adot: "none", ezTargets: "up", xfpPerGame: "up", fpoePerGame: "up", targetShare: "up", snapShare: "up" },
-    TE: { firstReadShare: "up", airYardsShare: "up", adot: "none", ezTargets: "up", xfpPerGame: "up", fpoePerGame: "up", targetShare: "up", snapShare: "up" },
+    WR: { wopr: "up", firstReadShare: "up", airYardsShare: "up", adot: "none", ezTargets: "up", xfpPerGame: "up", fpoePerGame: "up", targetShare: "up", snapShare: "up" },
+    TE: { wopr: "up", firstReadShare: "up", airYardsShare: "up", adot: "none", ezTargets: "up", xfpPerGame: "up", fpoePerGame: "up", targetShare: "up", snapShare: "up" },
     RB: { touchShare: "up", rzOppShare: "up", gzCarries: "up", targetShare: "up", xfpPerGame: "up", fpoePerGame: "up", yacPerAtt: "up", woppPerGame: "up" },
     QB: { gzCarries: "up", designedRunRate: "up", scrambleRate: "up", passAdot: "none", xfpPerGame: "up", fpoePerGame: "up", sackRate: "down" },
   };

@@ -128,14 +128,6 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
 
 /* ------------------------------------------------------------- bottom line */
 
-/** "↑ Shotgun" -> a green or red glyph with its label. */
-function signal(text: string): string {
-  const m = text.match(/^([↑↓])\s+(.+)$/);
-  if (!m) return `<span class="sct-cf-sig">${e(text)}</span>`;
-  const up = m[1] === "↑";
-  return `<span class="sct-cf-sig"><span class="sct-cf-sig-dir ${up ? "is-up" : "is-down"}" aria-hidden="true">${m[1]}</span><span class="sct-visually-hidden">${up ? "up" : "down"}</span> ${e(m[2])}</span>`;
-}
-
 /**
  * The Fantasy Bottom Line as one short synthesis (mak's review, 2026-11-08:
  * the old panel repeated continuity, the historical leans, red-zone passing

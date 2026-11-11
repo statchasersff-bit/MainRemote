@@ -280,17 +280,6 @@ export function latestInjury(nfl: NflInjuryEntry[]): NflInjuryEntry | null {
   return best;
 }
 
-/**
- * "Week 17", or "Preseason" for the week-0 entries.
- *
- * Week 0 is how the record files a preseason injury, and it was previously
- * rendered as nothing at all - the entry lost the one piece of timing it had.
- */
-export function injuryWhen(entry: NflInjuryEntry): string {
-  if (entry.week === undefined || entry.week === null) return "";
-  return entry.week === 0 ? "Preseason" : `Week ${entry.week}`;
-}
-
 export interface InjuryFaq {
   question: string;
   answer: string;
@@ -652,16 +641,6 @@ export function buildTimelineInsight(nfl: NflInjuryEntry[]): string {
     sentence += `${joinAnd(playedThrough)} ${plural ? "issues were" : "issue was"} played through`;
   }
   return sentence ? `${sentence}.` : "";
-}
-
-export function durabilityRiskLabel(score: number): {
-  word: string;
-  level: RiskLevel;
-} {
-  if (score >= 80) return { word: "Low", level: "low" };
-  if (score >= 60) return { word: "Moderate", level: "moderate" };
-  if (score >= 40) return { word: "Elevated", level: "moderate" };
-  return { word: "High", level: "high" };
 }
 
 export interface InjurySeasonRow {

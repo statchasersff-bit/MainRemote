@@ -20,13 +20,18 @@ function getClient(): Anthropic | null {
   return client;
 }
 
-/** True when an API key is configured, so ingest can decide whether to summarize. */
+/**
+ * Off unless SC_SUMMARIES=1 AND an API key is configured. Every call is paid,
+ * and the house rule is no ongoing model spend without mak's OK, so a key
+ * being present (it is set in the workspace for other work) is not consent.
+ */
 export function summariesEnabled(): boolean {
-  return Boolean(process.env["ANTHROPIC_API_KEY"]);
+  return process.env["SC_SUMMARIES"] === "1" && Boolean(process.env["ANTHROPIC_API_KEY"]);
 }
 
 /** Generate a <=100-char key-point synopsis for a headline, or null on failure. */
 export async function summarize(title: string): Promise<string | null> {
+  if (!summariesEnabled()) return null;
   const anthropic = getClient();
   if (!anthropic) return null;
 

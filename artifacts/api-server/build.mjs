@@ -2,9 +2,9 @@ import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { build as esbuild } from "esbuild";
+import { build as esbuild, transform } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -263,6 +263,8 @@ async function buildClient() {
   const css = await readFile(path.resolve(artifactDir, "public", "styles.css"));
   const teamJs = await readFile(path.join(outDir, "statchasers-team.js"));
   const teamCss = await readFile(path.resolve(artifactDir, "public", "team.css"));
+  // Matchup and game pages only, loaded after team.css (src/lib/hashed-assets.ts).
+  const matchupCss = await readFile(path.resolve(artifactDir, "public", "matchup.css"));
   const playerJs = await readFile(path.join(outDir, "statchasers-player.js"));
   const playerCss = await readFile(path.resolve(artifactDir, "public", "player.css"));
   const fpaJs = await readFile(path.join(outDir, "statchasers-fpa.js"));
@@ -296,6 +298,7 @@ async function buildClient() {
     .update(css)
     .update(teamJs)
     .update(teamCss)
+    .update(matchupCss)
     .update(playerJs)
     .update(playerCss)
     .update(fpaJs)
@@ -324,7 +327,38 @@ async function buildClient() {
     `${JSON.stringify({ version }, null, 2)}\n`,
   );
   console.log(`  client asset version: ${version}`);
+
+  // Minified copies of every hashed stylesheet. public/*.css stay the readable
+  // sources (and what development serves, so livereload edits land at once);
+  // app.ts serves these copies at the same URLs everywhere else. Hashed above
+  // from the sources, so a comment-only edit still busts caches. No target:
+  // nothing is lowered or prefixed, the rules ship as written.
+  const cssOut = path.join(outDir, "css");
+  await mkdir(cssOut, { recursive: true });
+  for (const name of HASHED_STYLESHEETS) {
+    const source = await readFile(path.resolve(artifactDir, "public", name), "utf8");
+    const { code } = await transform(source, { loader: "css", minify: true, logLevel: "warning" });
+    await writeFile(path.join(cssOut, name), code);
+  }
+  console.log(`  minified ${HASHED_STYLESHEETS.length} stylesheets into public/dist/css`);
 }
+
+/** The stylesheets hashed above, each minified into public/dist/css/<name>. */
+const HASHED_STYLESHEETS = [
+  "styles.css",
+  "team.css",
+  "matchup.css",
+  "player.css",
+  "fpa.css",
+  "rankings.css",
+  "schedule.css",
+  "player-stats.css",
+  "rb-handcuffs.css",
+  "sos.css",
+  "rookie-hit-rates.css",
+  "redraft-strategy.css",
+  "injury-impact.css",
+];
 
 Promise.all([buildAll(), buildClient()]).catch((err) => {
   console.error(err);

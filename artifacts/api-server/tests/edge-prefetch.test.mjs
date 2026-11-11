@@ -19,6 +19,7 @@ describe("edgeAssetUrls", () => {
     assert.ok(urls.includes("https://news.statchasers.com/dist/statchasers-team.js?ver=abc123"));
     assert.ok(urls.includes("https://news.statchasers.com/styles.css?ver=abc123"), "the news tool's sheet is styles.css");
     assert.ok(urls.includes("https://news.statchasers.com/injury-impact.css?ver=abc123"));
+    assert.ok(urls.includes("https://news.statchasers.com/matchup.css?ver=abc123"), "matchup.css has no bundle of its own");
     assert.ok(urls.every((u) => !u.includes("//team.css")), "no doubled slash after the origin");
   });
 });

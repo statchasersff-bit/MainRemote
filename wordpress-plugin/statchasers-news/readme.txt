@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.52
+Stable tag: 1.10.53
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.53 =
+* Matchup and game pages: their styles moved out of team.css into a new matchup.css (handle `statchasers-matchup`, enqueued after team.css with the same version), so the 32 team hubs no longer download them. Enqueued on exactly the pages that load the hub assets for a matchup (the shortcode and the pair-page wp_enqueue_scripts hook). The fragment request now sends `X-SC-Matchup-Css: 1`; without it the API prints the stylesheet itself in front of the fragment, so an older plugin keeps working against the new API. Purge the Rocket.net cache after uploading.
 
 = 1.10.52 =
 * Team hubs: clicking the Draft or Contracts tab no longer scrolls the window down to the panel. WP Rocket's "Delay JavaScript execution" was holding the team script back until the first click, so that click followed the tab's #draft link natively; the team script is now excluded from Delay JS and minify/combine (it has no dependencies and still loads deferred).

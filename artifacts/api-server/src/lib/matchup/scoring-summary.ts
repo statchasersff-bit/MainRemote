@@ -99,104 +99,6 @@ export function scoringSubtitle(game: ScoreboardGame, plays: ScoringPlay[]): str
 /** A sentence built from text and names; the full stop is not doubled after "Jr.". */
 type Part = string | { name: string };
 
-function yardsWord(n: number): string {
-  return n === 1 ? "1 yard" : `${n} yards`;
-}
-
-function playParts(play: ScoringPlay, teamShort: string): Part[] {
-  const { scorer, passer, yards } = play;
-  const y = yards ?? null;
-  switch (play.type) {
-    case "pass_td":
-      if (scorer && passer && y !== null) {
-        return [{ name: passer }, ` throws a ${y}-yard touchdown pass to `, { name: scorer }];
-      }
-      break;
-    case "rush_td":
-      if (scorer && y !== null) return [{ name: scorer }, ` runs it in from ${yardsWord(y)} out`];
-      break;
-    case "field_goal":
-      if (scorer && y !== null) return [{ name: scorer }, ` makes a ${y}-yard field goal`];
-      if (scorer) return [{ name: scorer }, " makes a field goal"];
-      return [`The ${teamShort} kick a field goal`];
-    case "int_return_td":
-    case "fumble_return_td":
-    case "punt_return_td":
-    case "kickoff_return_td": {
-      const what = {
-        int_return_td: "an interception",
-        fumble_return_td: "a fumble",
-        punt_return_td: "a punt",
-        kickoff_return_td: "a kickoff",
-      }[play.type];
-      if (scorer && play.type === "fumble_return_td" && y === 0) {
-        return [{ name: scorer }, " recovers a fumble in the end zone for a touchdown"];
-      }
-      if (scorer && y !== null) {
-        return [{ name: scorer }, ` returns ${what} ${yardsWord(y)} for a touchdown`];
-      }
-      break;
-    }
-    case "safety":
-      if (play.tackled) return ["Safety. ", { name: play.tackled }, " is tackled in the end zone"];
-      return [`The ${teamShort} are awarded a safety`];
-    case "other_td":
-      if (scorer && y !== null) return [{ name: scorer }, ` scores a ${y}-yard touchdown`];
-      break;
-  }
-  if (scorer) return [{ name: scorer }, " scores a touchdown"];
-  return [`The ${teamShort} score a touchdown`];
-}
-
-function patParts(play: ScoringPlay): Part[] | null {
-  const pat = play.pat;
-  if (!pat || !isTouchdown(play)) return null;
-  if (pat.type === "kick") {
-    if (pat.result === "failed") return ["Extra point missed"];
-    return pat.player ? [{ name: pat.player }, " adds the extra point"] : ["Extra point good"];
-  }
-  if (pat.result === "failed") return ["Two-point attempt fails"];
-  if (pat.type === "two_point_pass" && pat.passer && pat.player) {
-    return [{ name: pat.passer }, " finds ", { name: pat.player }, " for the two-point conversion"];
-  }
-  if (pat.player) return [{ name: pat.player }, " runs in the two-point conversion"];
-  return ["Two-point conversion good"];
-}
-
-function sentence(parts: Part[], url: (name: string) => string | null): string {
-  const html = parts
-    .map((part) => {
-      if (typeof part === "string") return escapeHtml(part);
-      const href = url(part.name);
-      return href
-        ? `<a class="sct-ss-link sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(part.name)}</a>`
-        : `<span class="sct-ss-name">${escapeHtml(part.name)}</span>`;
-    })
-    .join("");
-  const last = parts[parts.length - 1];
-  const lastText = typeof last === "string" ? last : last?.name ?? "";
-  return lastText.endsWith(".") ? html : `${html}.`;
-}
-
-/** The play alone (no try) as linked HTML, for the win-probability list. */
-export function playHtml(
-  play: ScoringPlay,
-  teamShort: string,
-  url: (name: string) => string | null,
-): string {
-  return sentence(playParts(play, teamShort), url);
-}
-
-/** The play and its try as plain text, for tests and the log. */
-export function playSentence(play: ScoringPlay, teamShort: string): string {
-  const plain = (parts: Part[]): string => {
-    const text = parts.map((p) => (typeof p === "string" ? p : p.name)).join("");
-    return text.endsWith(".") ? text : `${text}.`;
-  };
-  const pat = patParts(play);
-  return plain(playParts(play, teamShort)) + (pat ? ` ${plain(pat)}` : "");
-}
-
 /* ------------------------------------------------------ scorebook lines */
 
 /**
@@ -326,13 +228,6 @@ export function playShort(play: ScoringPlay, teamShort: string): string {
       return `${teamShort} safety`;
   }
   return scorer ? `${last(scorer)} ${yd}TD` : `${teamShort} TD`;
-}
-
-/** The scorebook line and its detail as plain text, for tests. */
-export function playLine(play: ScoringPlay, teamShort: string): { line: string; detail: string | null } {
-  const plain = (parts: Part[]): string => parts.map((p) => (typeof p === "string" ? p : p.name)).join("");
-  const detail = compactDetail(play);
-  return { line: plain(compactParts(play, teamShort)), detail: detail ? plain(detail) : null };
 }
 
 /* ----------------------------------------------------------------- table */

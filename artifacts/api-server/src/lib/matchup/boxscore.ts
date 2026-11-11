@@ -772,8 +772,3 @@ export function formatClock(seconds: number | null): string | null {
   return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-/** "Q1"…"Q4", then "OT" and "2OT" for anything past regulation. */
-export function periodLabel(index: number): string {
-  if (index < 4) return `Q${index + 1}`;
-  return index === 4 ? "OT" : `${index - 3}OT`;
-}

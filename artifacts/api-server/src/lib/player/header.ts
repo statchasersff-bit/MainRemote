@@ -176,24 +176,6 @@ export function lastName(name: string): string {
   return [...tail, last].join(" ");
 }
 
-/**
- * How wide a name sets in the header, in ems of its own font size.
- *
- * Measured in headless Chromium against Archivo 800 at 78% width: the longest
- * names on the site run 0.42–0.49em a character ("Marquez Valdes-Scantling" is
- * 10.75em, "Amon-Ra St. Brown" 8.34em). Half an em is the ceiling of that, so
- * the estimate errs wide and the name errs small rather than into the
- * scoreboard. player.css divides the column's width by this to cap the size.
- */
-function nameEm(text: string): string {
-  return (text.trim().length * 0.5 + 0.2).toFixed(2);
-}
-
-/** The word the name can least afford to break inside: where it may wrap. */
-function longestWord(name: string): string {
-  return name.trim().split(/\s+/).reduce((a, b) => (b.length > a.length ? b : a), "");
-}
-
 /* ------------------------------------------------------------ team ink */
 
 /** WCAG relative luminance of a #rrggbb color, or null for anything else. */

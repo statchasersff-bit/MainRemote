@@ -27,13 +27,10 @@ import { getTeamPostseason, getTeamSchedule, nextGame, type TeamSchedule } from 
 import { getTeamSnapshot, type TeamSnapshot } from "./snapshot";
 import { getTeamStats, type TeamStats } from "./stats";
 import {
-  depthPreview,
-  fantasyCornerstones,
   getTeamRoster,
   injuryWatch,
   rosterFetchedAt,
   type DepthChartEntry,
-  type SkillPosition,
   type TeamRoster,
 } from "./roster";
 import type { NflTeam } from "./teams";
@@ -42,6 +39,7 @@ import { usageVersion } from "./usage";
 import { efficiencyVersion } from "./efficiency";
 import { draftVersion, nextDraftYear } from "./draft";
 import { contractsVersion } from "./contracts";
+import { outlookVersion } from "./outlook";
 import {
   depthChartsVersion,
   getTeamDepthCharts,
@@ -72,8 +70,6 @@ export interface TeamPageData {
   newsUpdatedAtMs: number | null;
 
   roster: TeamRoster | null;
-  cornerstones: DepthChartEntry[];
-  depthChart: Record<SkillPosition, DepthChartEntry[]>;
   injuries: DepthChartEntry[];
   /** Epoch ms the roster/injury snapshot was pulled. 0 when there is none. */
   rosterFetchedAt: number;
@@ -233,8 +229,6 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     news,
     newsUpdatedAtMs,
     roster,
-    cornerstones: fantasyCornerstones(roster),
-    depthChart: depthPreview(roster),
     injuries: injuryWatch(roster),
     rosterFetchedAt: rosterFetchedAt(),
     depthCharts: getTeamDepthCharts(team.abbreviation),
@@ -293,6 +287,8 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     // The Contracts tab reads one committed file, rebuilt by hand after
     // signings and releases.
     contractsVersion(data.state.season),
+    // The Outlook tab reads one committed file, written by hand.
+    outlookVersion(),
     // The depth-charts plugin's push rewrites its file in place.
     depthChartsVersion(),
   ].join("-");

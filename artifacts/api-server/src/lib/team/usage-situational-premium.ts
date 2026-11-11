@@ -6,8 +6,8 @@
  * lead back's workload featured in gold.
  *
  * Since 2026-11-05 ("remove the older version") this IS the Situational
- * Usage section: the original card (backfield() in usage-render.ts) is
- * unmounted. Every number is that card's own: the same backs (the first three with weighted
+ * Usage section: the original card (backfield() in usage-render.ts) was
+ * deleted. Every number is that card's own: the same backs (the first three with weighted
  * opportunities), situationShare() for each cell, rbSituationTotals for the
  * samples, backfieldTakeaways() for the cards; nothing is computed twice.
  * Styles are `.sct-us-sit-*` in team.css, on the `.sct-us-prm` tokens.

@@ -36,13 +36,6 @@ export function currentRank(data: PlayerPageData): number | null {
   return row?.posFinishPpg ?? data.seasonRank ?? row?.posFinishTotal ?? data.seasonRankTotal ?? null;
 }
 
-/** Points per game over the season on the page, or null before he has played. */
-export function seasonPpg(data: PlayerPageData): number | null {
-  const stats = data.stats;
-  if (!stats || stats.gamesPlayed <= 0) return null;
-  return stats.ppg;
-}
-
 /** The club's next fixture, when the schedule has one. */
 export function nextGame(data: PlayerPageData): UpcomingGame | null {
   return (data.upcoming ?? [])[0] ?? null;

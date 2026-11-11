@@ -23,7 +23,9 @@ const built = JSON.parse(
 let server;
 
 before(async () => {
-  server = await startServer({ NODE_ENV: "production" }, { cwd: os.tmpdir() });
+  // The minified stylesheets on, as production serves them (the harness turns
+  // them off for the suites that read rules out of the readable sources).
+  server = await startServer({ NODE_ENV: "production", SC_MINIFIED_CSS: "1" }, { cwd: os.tmpdir() });
 });
 
 after(async () => {
@@ -41,6 +43,18 @@ describe("started from another directory", () => {
     const res = await fetch(`${server.origin}/player.css?ver=${built}`);
     assert.equal(res.status, 200);
     assert.equal(res.headers.get("cache-control"), "public, max-age=31536000, immutable");
+  });
+
+  test("the stylesheets are build.mjs's minified copies, at the same URLs", async () => {
+    for (const name of ["team.css", "matchup.css", "player.css", "styles.css"]) {
+      const res = await fetch(`${server.origin}/${name}?ver=${built}`);
+      assert.equal(res.status, 200, name);
+      assert.equal(res.headers.get("cache-control"), "public, max-age=31536000, immutable", name);
+      assert.match(res.headers.get("content-type") ?? "", /^text\/css/, name);
+      const body = await res.text();
+      assert.equal(body, fs.readFileSync(path.join(APP_DIR, "public", "dist", "css", name), "utf8"), name);
+      assert.ok(body.length < fs.statSync(path.join(APP_DIR, "public", name)).size, `${name} is smaller than its source`);
+    }
   });
 
   test("source maps are not published", async () => {

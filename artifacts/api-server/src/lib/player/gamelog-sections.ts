@@ -33,7 +33,6 @@
  */
 
 import fs from "node:fs";
-import { escapeHtml } from "../render";
 import { dataPath } from "../data-dir";
 import { getTeamByAbbreviation } from "../team/teams";
 import { storedSeason, type StoredGame } from "../matchup/boxscore";
@@ -42,7 +41,6 @@ import { nameKey } from "../matchup/game-players";
 import { getEntryPoints } from "./scoring";
 import { teamCode } from "./ranks";
 import { lastName, teamInk } from "./header";
-import { titleCase } from "./title-case";
 import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
 
@@ -69,14 +67,6 @@ const SCALES: Record<string, LadderScale> = {
   K: { max: 32, t1: 12, t2: 24 },
   RB: { max: 60, t1: 24, t2: 36 },
   WR: { max: 60, t1: 24, t2: 36 },
-};
-
-const POSITION_WORDS: Record<string, string> = {
-  QB: "quarterback",
-  RB: "running back",
-  WR: "wide receiver",
-  TE: "tight end",
-  K: "kicker",
 };
 
 export function ladderScale(pos: string): LadderScale | null {
@@ -186,22 +176,10 @@ const capWord = (n: number): string => {
 const joinAnd = (parts: string[]): string =>
   parts.length <= 1 ? (parts[0] ?? "") : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 
-const DASH = "–";
-
 /** One decimal, for points and rates. */
 const one = (v: number): string => v.toFixed(1);
 
-/** A percentage of track width to one decimal, without a trailing ".0". */
-const pctTrim = (v: number): string => {
-  const s = v.toFixed(1);
-  return s.endsWith(".0") ? s.slice(0, -2) : s;
-};
-
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MONTHS_FULL = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 /** The game's date in Eastern time, where the schedule lives. */
 function easternDate(ms: number): { y: number; m: number; d: number } {
@@ -360,11 +338,6 @@ export function layoutLadder(games: StoryGame[], scale: LadderScale): LadderLayo
   return { pins, avg };
 }
 
-/** The dots alone, for callers that do not draw the average. */
-export function layoutPins(games: StoryGame[], scale: LadderScale): Pin[] {
-  return layoutLadder(games, scale).pins;
-}
-
 /**
  * The finishes counted by tier, as the short summary that sits on the
  * heading's row (mak, 2026-10-22: "2 QB1 · 2 QB2 · 2 busts"). It replaced the
@@ -382,162 +355,6 @@ export function ladderSummary(games: StoryGame[], season: StorySeason, scale: La
   if (t2 > 0) parts.push(`${t2} ${pos}2`);
   if (bust > 0) parts.push(`${bust} bust${bust === 1 ? "" : "s"}`);
   return parts;
-}
-
-/** "Weekly finishes on a scale from QB1 to QB32: Week 3 QB4, …" best first. */
-function trackAriaLabel(
-  games: StoryGame[],
-  season: StorySeason,
-  scale: LadderScale,
-  avgRank: number | null,
-): string {
-  const ordered = [...games].sort((a, b) => a.rank - b.rank || a.week - b.week);
-  const list = ordered.map((g) => `Week ${g.week} ${season.pos}${g.rank}`).join(", ");
-  const avg = avgRank === null ? "" : ` Season average ${season.pos}${avgRank}.`;
-  return `Weekly finishes on a scale from ${season.pos}1 to ${season.pos}${scale.max}: ${list}.${avg}`;
-}
-
-/**
- * Section A. The spec's markup under the site's class armour: every class is
- * scp-gl-prefixed and every selector in player.css starts with `.scp`, for
- * the Divi reasons the header block documents; modifiers are `is-` flagged so
- * a theme's own `.best` or `.w` can never reach them.
- */
-export function renderLadderSection(games: StoryGame[], season: StorySeason): string {
-  const scale = SCALES[season.pos];
-  if (!scale || games.length === 0) return "";
-
-  const pos = season.pos;
-  const id = `gl-finishes-h${season.idSuffix}`;
-  const { band1, band2end } = bandEdges(scale);
-  const { pins, avg } = layoutLadder(games, scale);
-  const hasBelow = pins.some((p) => p.label === "below") || avg?.label === "below";
-
-  const labelCls = (label: Pin["label"]): string =>
-    (label === "below" ? " is-below" : "") + (label === "none" ? " is-nolabel" : "");
-
-  const pinHtml = pins
-    .map((pin) => {
-      const cls =
-        "scp-gl-pin" +
-        (pin.best ? " is-best" : "") +
-        (pin.games.length > 1 ? " is-multi" : "") +
-        labelCls(pin.label);
-      const weeks = pin.games
-        .map((g) => {
-          const at = g.homeAway === "away" ? "@" : "vs";
-          return `<span class="scp-gl-wk">${escapeHtml(`Wk ${g.week}`)} <small>${escapeHtml(`${at} ${g.opp.abbr}`)}</small></span>`;
-        })
-        .join("");
-      return (
-        `<div class="${cls}" style="left:${pctTrim(pin.x)}%"><i></i>` +
-        `<span><strong>${escapeHtml(`${pos}${pin.rank}`)}` +
-        (pin.games.length > 1 ? `<b>${escapeHtml(` ×${pin.games.length}`)}</b>` : "") +
-        `</strong>${weeks}` +
-        // The one colored dot says why it is colored (critique, 2026-10-29).
-        (pin.best ? `<em>Best week</em>` : "") +
-        `</span></div>`
-      );
-    })
-    .join("");
-
-  // Where he usually lands: a dashed line through the band at his mean finish,
-  // labeled like a dot and placed by the same collision pass. The headrow
-  // repeats the figure, so a label that found no room loses nothing.
-  const avgHtml = avg
-    ? `<div class="scp-gl-avg${labelCls(avg.label)}" style="left:${pctTrim(avg.x)}%" title="${escapeHtml(
-        `Season average finish: ${pos}${avg.rank}`,
-      )}"><i></i><span><strong>${escapeHtml(`${pos}${avg.rank}`)}</strong><span class="scp-gl-wk">Season avg</span></span></div>`
-    : "";
-
-  // Weeks whose labels found no room, named under the track instead.
-  const hidden = pins.filter((p) => p.label === "none").flatMap((p) => p.games);
-  const sparse = games.length >= 10;
-  const also =
-    !sparse && hidden.length
-      ? `<p class="scp-gl-also">${escapeHtml(
-          `Also: ${hidden.map((g) => `Wk ${g.week} (${pos}${g.rank})`).join(", ")}`,
-        )}</p>`
-      : "";
-
-  // The three tiers named above the band, each centered over its segment,
-  // with the cutoff ranks printed at the two seams and the axis ends stated
-  // (critique, 2026-10-29: a region needs its boundary values). The band
-  // itself carries hairline markers at the seams. One word for the bottom
-  // tier, "bust", here and in the counts.
-  const tiers =
-    `<div class="scp-gl-tiers" aria-hidden="true">` +
-    `<span class="is-k1" style="left:0;width:${pctTrim(band1)}%">${escapeHtml(`${pos}1`)}<small> range</small></span>` +
-    `<span class="is-k2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%">${escapeHtml(`${pos}2`)}<small> range</small></span>` +
-    `<span class="is-k3" style="left:${pctTrim(band2end)}%;width:${pctTrim(100 - band2end)}%">Bust<small> range</small></span>` +
-    `<b class="scp-gl-cut is-end is-lo" style="left:0">${escapeHtml(`${pos}1`)}</b>` +
-    `<b class="scp-gl-cut" style="left:${pctTrim(band1)}%">${escapeHtml(`${pos}${scale.t1}`)}</b>` +
-    `<b class="scp-gl-cut" style="left:${pctTrim(band2end)}%">${escapeHtml(`${pos}${scale.t2}`)}</b>` +
-    `<b class="scp-gl-cut is-end is-hi" style="left:100%">${escapeHtml(`${pos}${scale.max}`)}</b>` +
-    `</div>`;
-  const marks =
-    `<i class="scp-gl-mark" style="left:${pctTrim(band1)}%"></i>` +
-    `<i class="scp-gl-mark" style="left:${pctTrim(band2end)}%"></i>`;
-  const legend = sparse
-    ? `<p class="scp-gl-legend">${escapeHtml(
-        [...games]
-          .sort((a, b) => a.week - b.week)
-          .map((g) => `Wk ${g.week} ${pos}${g.rank}`)
-          .join(" · "),
-      )}</p>`
-    : "";
-
-  const summary = ladderSummary(games, season, scale)
-    .map((t) => `<span>${escapeHtml(t)}</span>`)
-    .join(`<i aria-hidden="true"> · </i>`);
-  const avgSummary = avg
-    ? `<i aria-hidden="true"> · </i><b class="scp-gl-avgsum">${escapeHtml(`Avg ${pos}${avg.rank}`)}</b>`
-    : "";
-
-  // The compact read (2026-11-04): the three tier counts as tiles with their
-  // shares, then the best week and the average in one line, and the ladder
-  // under them (mak kept it in view).
-  const n = games.length;
-  const t1 = games.filter((g) => g.rank <= scale.t1).length;
-  const t2 = games.filter((g) => g.rank > scale.t1 && g.rank <= scale.t2).length;
-  const bust = n - t1 - t2;
-  const share = (k: number): string => `${Math.round((k / n) * 100)}% of weeks`;
-  const tile = (count: number, label: string): string =>
-    `<div class="scp-gl-tile"><b>${count}</b><span>${escapeHtml(label)}</span><small>${escapeHtml(share(count))}</small></div>`;
-  const tiles =
-    `<div class="scp-gl-tiles">` +
-    tile(t1, `${pos}1 weeks`) +
-    tile(t2, `${pos}2 weeks`) +
-    tile(bust, `${pos}${scale.t2 + 1}+ weeks`) +
-    `</div>`;
-  // No "Best week ... · Average weekly finish ..." line (mak, 2026-11-04):
-  // the ladder marks the best week and the headrow carries the average.
-
-  return (
-    `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
-    `<div class="scp-gl-headrow">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Where his weeks finished"))}</h2>` +
-    `<p class="scp-gl-sum">${summary}${avgSummary}</p>` +
-    `</div>` +
-    tiles +
-    // The ladder itself, in view under the tiles (mak, 2026-11-04: "bring
-    // back the visual bar"); it folded behind a control for an hour.
-    `<figure class="scp-gl-ladder" style="margin:0">` +
-    tiers +
-    `<div class="scp-gl-track${hasBelow ? " has-below" : ""}" role="img" aria-label="${escapeHtml(
-      trackAriaLabel(games, season, scale, avg?.rank ?? null),
-    )}">` +
-    `<div class="scp-gl-band is-b1" style="width:${pctTrim(band1)}%"></div>` +
-    `<div class="scp-gl-band is-b2" style="left:${pctTrim(band1)}%;width:${pctTrim(band2end - band1)}%"></div>` +
-    marks +
-    avgHtml +
-    pinHtml +
-    `</div>` +
-    also +
-    legend +
-    `</figure>` +
-    `</section>`
-  );
 }
 
 /* ------------------------------------------------------------- stat lines */
@@ -822,94 +639,6 @@ export function buildBreakdownCards(
   return { cards, scale };
 }
 
-export function renderBreakdownSection(games: StoryGame[], season: StorySeason): string {
-  const built = buildBreakdownCards(games, season);
-  if (!built) return "";
-  const { cards: list } = built;
-  const pos = season.pos;
-  const id = `gl-breakdown-h${season.idSuffix}`;
-  const lead = list.filter((c) => c.lead);
-
-  const byline = (() => {
-    if (season.pastTense) {
-      const ms = season.updatedDateMs;
-      if (ms === null) return `Season summary.`;
-      const { y, m, d } = easternDate(ms);
-      const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      return (
-        `Season summary, updated <time datetime="${iso}">` +
-        escapeHtml(`${MONTHS_FULL[m]} ${d}, ${y}`) +
-        `</time>.`
-      );
-    }
-    // mak, 2026-10-02: no "Updated automatically after Week n" line.
-    if (!season.hasOverrides) return "";
-    const ms = season.updatedDateMs ?? Date.now();
-    const { y, m, d } = easternDate(ms);
-    const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    return (
-      `By the StatChasers staff. Updated <time datetime="${iso}">` +
-      escapeHtml(`${MONTHS_FULL[m]} ${d}, ${y}`) +
-      `</time> after Week ${season.updatedWeek}.`
-    );
-  })();
-
-  const card = (c: BreakdownCard): string => {
-      const { game } = c;
-      const cardCls = c.tier === "t12" ? " is-t12" : c.tier === "low" ? " is-low" : "";
-      const badgeCls = c.tier === "t12" ? "is-t12" : c.tier === "t24" ? "is-t24" : "is-low";
-      const scoreCls =
-        game.result.wlt === "W" ? " is-w" : game.result.wlt === "L" ? " is-l" : "";
-      const { headline, note } = c;
-      const at = game.homeAway === "away" ? "@" : "vs";
-
-      return (
-        `<article class="scp-gl-game${cardCls}">` +
-        `<div class="scp-gl-meta">` +
-        `<div class="scp-gl-when">${escapeHtml(`Week ${game.week}, ${c.date}`)}</div>` +
-        // Crest AFTER the name (mak, 2026-10-29): "vs Broncos" then the logo.
-        `<div class="scp-gl-opp">` +
-        `<span>${escapeHtml(`${at} ${game.opp.nickname}`)}</span>` +
-        (game.opp.logo
-          ? `<img class="scp-gl-opp-logo" src="${escapeHtml(game.opp.logo)}" alt="" aria-hidden="true" width="22" height="22" loading="lazy" decoding="async" />`
-          : "") +
-        `</div>` +
-        `<div class="scp-gl-score${scoreCls}">${escapeHtml(
-          `${game.result.wlt} ${game.result.teamScore}${DASH}${game.result.oppScore}`,
-        )}</div>` +
-        `</div>` +
-        `<div class="scp-gl-body">` +
-        `<h3 class="scp-gl-head">${escapeHtml(headline)}</h3>` +
-        `<p class="scp-gl-line">${escapeHtml(statLineFor(game, pos))}</p>` +
-        (note ? `<p class="scp-gl-note">${escapeHtml(note)}</p>` : "") +
-        `</div>` +
-        `<div class="scp-gl-fp"><b>${escapeHtml(one(game.pts))}</b>` +
-        `<span class="scp-gl-fbadge ${badgeCls}">${escapeHtml(`${pos}${game.rank}`)}</span></div>` +
-        `</article>`
-      );
-  };
-
-  let cards: string;
-  if (lead.length) {
-    const rest = list.filter((c) => !c.lead);
-    cards =
-      `<div class="scp-gl-games">${lead.map(card).join("")}</div>` +
-      `<details class="scp-gl-more"><summary>${escapeHtml(`Show all ${games.length} games`)}</summary>` +
-      `<div class="scp-gl-games">${rest.map(card).join("")}</div></details>`;
-  } else {
-    cards = `<div class="scp-gl-games">${list.map(card).join("")}</div>`;
-  }
-
-  return (
-    `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Game-by-game breakdown"))}</h2>` +
-    (byline ? `<p class="scp-gl-byline">${byline}</p>` : "") +
-    (lead.length ? `<p class="scp-gl-lede">${escapeHtml(`The ${lead.length} games that stood out, then the rest of the season.`)}</p>` : "") +
-    cards +
-    `</section>`
-  );
-}
-
 /* --------------------------------------------------- context from the store */
 
 interface WeekContext {
@@ -1070,7 +799,7 @@ const NICKNAME_CLUBS = new Set(["LAR", "LAC", "NYG", "NYJ"]);
  * position has no ladder, nothing was played, or no played week has a stored
  * box score to read the schedule facts from.
  */
-/** What renderGamelogStory() draws from: the played games with a stored box score, the season they sit in, and the team ink. */
+/** What buildGamelogStory() returns: the played games with a stored box score, the season they sit in, and the team ink. */
 export interface GamelogStory {
   games: StoryGame[];
   story: StorySeason;
@@ -1208,17 +937,4 @@ export function buildGamelogStory(
   };
 
   return { games, story, ink: teamInk(data.seasonTeam ?? data.team) };
-}
-
-export function renderGamelogStory(
-  data: PlayerPageData,
-  opts: { archive?: boolean } = {},
-): string {
-  const built = buildGamelogStory(data, opts);
-  if (!built) return "";
-  const { games, story, ink } = built;
-  const html =
-    renderLadderSection(games, story) + renderBreakdownSection(games, story);
-  if (!html) return "";
-  return `<div class="scp-ox scp-gl"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>`;
 }

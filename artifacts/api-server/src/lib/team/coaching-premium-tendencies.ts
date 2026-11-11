@@ -3,7 +3,7 @@
  * sections (mak's brief, 2026-11-05): Formations & Personnel, Situational
  * Play Calling, and Target & Backfield Tendencies, as one navy-and-gold
  * dashboard. Since 2026-11-05 ("keep the new designs") it IS sections 3-5
- * of the page: the originals are unmounted in coaching-render.ts.
+ * of the page: the originals were deleted on 2026-11-10.
  *
  * Every number is the model the original blocks draw (formationsModel,
  * scoreStateModel, rzFourthModel, distributionModel, backfieldModel in

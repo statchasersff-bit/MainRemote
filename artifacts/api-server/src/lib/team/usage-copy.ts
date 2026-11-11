@@ -14,7 +14,6 @@
 
 import {
   baseLabel,
-  ordinal,
   rbRankFor,
   surname,
   type RunGap,
@@ -55,97 +54,6 @@ export function art(n: number | string | null, cap = false): string {
 const POS_PLURAL: Record<string, string> = { QB: "QBs", RB: "RBs", WR: "WRs", TE: "TEs" };
 
 /* ------------------------------------------------------------ environment */
-
-export interface EnvCard {
-  label: string;
-  value: string;
-  rank: string;
-  good: boolean;
-  note: string;
-}
-
-export function environmentCards(view: UsageView, city = "The offense"): EnvCard[] {
-  const { env } = view.team;
-  const cards: EnvCard[] = [];
-  const good = (rank: number | null) => rank != null && rank <= 12;
-
-  if (env.proe.value != null && env.proe.rank != null) {
-    const v = env.proe.value;
-    const note =
-      v >= 3
-        ? "Throws more than situations call for, so there are more pass attempts to share."
-        : v <= -3
-          ? "Runs more than situations call for, so there are fewer pass attempts to share."
-          : v <= -1
-            ? "Slightly run-leaning for the situation, so target concentration matters more than pass volume."
-            : v >= 1
-              ? "Slightly pass-leaning for the situation, so target distribution matters more than pass volume."
-              : "Play-calling is near expectation, so target distribution matters more than pass volume.";
-    cards.push({ label: "Pass rate over expected", value: `${signed(v)}%`, rank: ordinal(env.proe.rank), good: good(env.proe.rank), note });
-  }
-
-  if (env.rzPassRate.value != null && env.rzPassRate.rank != null) {
-    const rank = env.rzPassRate.rank;
-    const ez = [...view.all].filter((p) => p.pos !== "QB").sort((a, b) => b.ezTargets - a.ezTargets)[0];
-    const rzLeader = view.rows.find((r) => r.leadsRz)?.player;
-    let note: string;
-    if (rank <= 10) {
-      note =
-        ez && ez.ezTargets > 0
-          ? `${city} throws often inside the 20; ${surname(ez.name)} leads the team with ${ez.ezTargets} end-zone target${ez.ezTargets === 1 ? "" : "s"}.`
-          : `${city} throws often inside the 20, so red-zone targets are live for the whole tree.`;
-    } else if (rank >= 23) {
-      // A team rate supports a team conclusion: fewer red-zone targets to go
-      // around. Who runs it in, and what that does to whom, is not in it.
-      note = `${city} runs inside the 20, passing on ${env.rzPassRate.value.toFixed(0)}% of red-zone plays, which limits the red-zone targets to go around.`;
-    } else {
-      note = rzLeader
-        ? `${city} is balanced inside the 20; ${surname(rzLeader.name)} leads the team with ${rzLeader.rzTouches} red-zone opportunities.`
-        : `${city} is balanced inside the 20.`;
-    }
-    cards.push({ label: "Red-zone pass rate", value: `${env.rzPassRate.value.toFixed(0)}%`, rank: ordinal(rank), good: good(rank), note });
-  }
-
-  if (env.pace.value != null && env.pace.rank != null) {
-    const rank = env.pace.rank;
-    const note =
-      rank <= 10
-        ? "Faster pace creates more potential volume when drives are sustained."
-        : rank >= 23
-          ? "Slower pace caps the potential play volume."
-          : "Seconds per play in neutral situations.";
-    cards.push({ label: "Neutral pace", value: `${env.pace.value.toFixed(1)}s`, rank: `${ordinal(rank)} fastest`, good: good(rank), note });
-  }
-
-  // Stands in for the spec's 11-personnel rate: personnel groupings come from
-  // participation data, which is published after the season. See buildUsage.mjs.
-  if (env.playsPerGame.value != null && env.playsPerGame.rank != null) {
-    const rank = env.playsPerGame.rank;
-    const note =
-      rank <= 10
-        ? "More plays means more opportunity to distribute."
-        : rank >= 23
-          ? "Fewer plays to go around, so shares matter more."
-          : "League-average volume, so shares decide it.";
-    cards.push({ label: "Qualifying plays/game", value: env.playsPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
-  }
-
-  if (env.xfpPerGame.value != null && env.xfpPerGame.rank != null) {
-    const rank = env.xfpPerGame.rank;
-    // A middle-of-the-league sentence too (mak, 2026-10-22): this card used to
-    // leave the caption blank outside the top and bottom eight, the only card
-    // in the row that did.
-    const note =
-      rank <= 8
-        ? "High overall opportunity value gives more than one starter room to pay off."
-        : rank >= 25
-          ? "Low overall opportunity value puts more pressure on players to command large shares."
-          : "Average opportunity value, so the split of it decides who pays off.";
-    cards.push({ label: "Team xFP/game", value: env.xfpPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
-  }
-
-  return cards;
-}
 
 /* --------------------------------------------------------------- backfield */
 
@@ -599,20 +507,6 @@ export function rankLine(p: UsagePlayer): string {
   if (p.pos === "WR" || p.pos === "TE") return `${p.pos}${rank} in target share, NFL`;
   if (p.pos === "RB") return `RB${rank} in weighted opps per active game, NFL`;
   return `QB${rank} in xFP/game, NFL`;
-}
-
-export function woprCaption(p: UsagePlayer): string {
-  const w = p.wopr ?? 0;
-  if (p.pos === "TE") {
-    if (w >= 0.45) return "elite for TE";
-    if (w >= 0.35) return "strong for TE";
-    if (w >= 0.25) return "streamer range";
-    return "below startable";
-  }
-  if (w >= 0.6) return "elite";
-  if (w >= 0.45) return "strong - elite at 0.60";
-  if (w >= 0.3) return "flex range";
-  return "below startable";
 }
 
 /* --------------------------------------------------------- profile notes */

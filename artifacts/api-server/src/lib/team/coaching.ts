@@ -242,6 +242,26 @@ export function getCoachingStaff(abbreviation: string, season: number): Coaching
   };
 }
 
+interface CoachPhotosDoc {
+  teams?: Record<string, { coaches?: Array<{ name?: string; image?: string | null }> }>;
+}
+
+const nameKey = (s: string): string => s.normalize("NFKD").toLowerCase().replace(/[^a-z]/g, "");
+
+/**
+ * The club's own headshot of a coach, from data/team/coach_photos_<season>.json
+ * (scripts/team/buildCoachPhotos.mjs, stored from each club's coaches page,
+ * 2026-11-10): a static.clubs.nfl.com URL the image route serves as
+ * /news-image/club/..., or null when the club lists no photo for him.
+ */
+export function coachPhoto(abbreviation: string, season: number, name: string): string | null {
+  const doc = readDataJson<CoachPhotosDoc>(dataPath("team", `coach_photos_${season}.json`));
+  const want = nameKey(name);
+  if (!want) return null;
+  const hit = doc?.teams?.[abbreviation.toLowerCase()]?.coaches?.find((c) => c.name && nameKey(c.name) === want);
+  return hit?.image ?? null;
+}
+
 /** One club's dossier, by lowercase abbreviation. Null = no section. */
 export function getTeamCoaching(
   abbreviation: string,
@@ -300,24 +320,4 @@ export function reliabilityRating(c: TeamCoaching): Reliability {
   if (prior >= 2) return "HIGH";
   if (prior === 1 || c.reliability.sameSchemeFamily) return "MEDIUM";
   return "LOW";
-}
-
-/** How full the meter draws, per rating. */
-export const RELIABILITY_PCT: Record<Reliability, number> = {
-  HIGH: 88,
-  MEDIUM: 55,
-  LOW: 22,
-};
-
-/**
- * The hook for the rest of the page: a team whose play-caller is new gets its
- * LOW rating surfaced as a caveat beside anything projecting from last
- * season. Null when the team has no coaching entry at all.
- */
-export function getCoachingReliability(
-  abbreviation: string,
-  season: number,
-): Reliability | null {
-  const c = getTeamCoaching(abbreviation, season);
-  return c ? reliabilityRating(c) : null;
 }

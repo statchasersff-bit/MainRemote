@@ -1,20 +1,17 @@
 /**
- * The premium comparison versions of Rushing Direction and Passing
- * Distribution (mak's brief, 2026-11-05, and the fidelity revision the same
- * day): the SAME data and the same copy as the current blocks in
- * usage-render.ts, presented as a dashboard - a navy gradient title bar with
- * a dimensional gold icon tile and stripes at its right, elevated cards with
- * a pill label, a large lead number and a share bar, the best cell in cream
- * and gold, an insight strip with the existing note bolded the way it
- * already is, and a quieter footnote.
+ * The premium Rushing Direction and Passing Distribution (mak's brief,
+ * 2026-11-05, and the fidelity revision the same day), the Usage tab's
+ * versions of both sections since mak kept them: a navy gradient title bar
+ * with a dimensional gold icon tile and stripes at its right, elevated cards
+ * with a pill label, a large lead number and a share bar, the best cell in
+ * cream and gold, an insight strip with the note bolded, and a quieter
+ * footnote.
  *
- * Rendered directly UNDER each current block while USAGE_PREMIUM_COMPARE is
- * on, so old and new sit on one page for comparison. Nothing here is a new
- * number: every figure is read from the view exactly as the current block
- * reads it. The deep card's field grid and route are a directional
- * illustration (the side is the zone's, the rise follows its share), not a
- * plot of where the throws went; the short card's bars are a motif whose
- * lead bar is the share, not a histogram.
+ * Nothing here is a new number: every figure is read from the view. The deep
+ * card's field grid and route are a directional illustration (the side is
+ * the zone's, the rise follows its share), not a plot of where the throws
+ * went; the short card's bars are a motif whose lead bar is the share, not a
+ * histogram.
  *
  * Headings use .sct-us-prm-title, not .sct-us-h3, so the tab's section list
  * (and the test that pins it) is unchanged.
@@ -27,9 +24,6 @@ import { escapeHtml as e } from "../render";
 import type { RunGap, UsageView, Zone } from "./usage";
 import { surname } from "./usage";
 import { bestGap, bestZone, GAP_LABEL, passNote, runNote, ZONE_LABEL, zoneOwner } from "./usage-copy";
-
-/** Flip off to drop the comparison blocks without touching the current ones. */
-export const USAGE_PREMIUM_COMPARE = true;
 
 const md = (text: string) => e(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
@@ -57,11 +51,6 @@ const ICON_INSIGHT =
   `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">` +
   `<path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V17h5v-1.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>` +
   `<path d="M10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` +
-  `</svg>`;
-
-const ICON_STAR =
-  `<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false">` +
-  `<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="currentColor"/>` +
   `</svg>`;
 
 /** The laurel on the best gap: two leaf arcs around the "#1 YPC" mark. */

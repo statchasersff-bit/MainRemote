@@ -62,7 +62,10 @@ function readCookie(req: Request, name: string): string | null {
  * pages. Matched by path so a static file or a route not listed here is never
  * caught by accident.
  */
-export function isProtectedPath(path: string): boolean {
+export function isProtectedPath(rawPath: string): boolean {
+  // Express matches routes case-insensitively, so /PLAYER/x is served by the
+  // /player route; compare the same way or the capitalized path walks past.
+  const path = rawPath.toLowerCase();
   // Not "/": the deployment's health check requests it, and a 403 there would
   // fail a deploy. It is the news page, the least of what this origin serves.
   if (path.startsWith("/embed/")) return true;
@@ -74,7 +77,15 @@ export function isProtectedPath(path: string): boolean {
   if (path === "/fpa") return true;
   if (path === "/player-stats" || path.startsWith("/player-stats/")) return true;
   if (path === "/rb-handcuff-rankings" || path.startsWith("/rb-handcuff-rankings/")) return true;
-  if (path === "/strength-of-schedule") return true;
+  if (path === "/strength-of-schedule" || path.startsWith("/strength-of-schedule/")) return true;
+  // The rankings boards; their CSV downloads stay public like the others.
+  if (path === "/rankings" || path === "/rankings/") return true;
+  if (
+    (path === "/rest-of-season-rankings" || path.startsWith("/rest-of-season-rankings/")) &&
+    !path.endsWith("/download.csv")
+  ) {
+    return true;
+  }
   if (path === "/rookie-hit-rates") return true;
   if (path === "/redraft-strategy") return true;
   if (path === "/injury-impact" || path === "/injury-database") return true;

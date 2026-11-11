@@ -9,7 +9,7 @@
  * for the years he was not calling, and the live season marked.
  *
  * Since 2026-11-05 ("remove the old version") this IS the season table:
- * the original (career() in coaching-render.ts) is unmounted. Every
+ * the original (career() in coaching-render.ts) was deleted. Every
  * number is the table's own model (historyModel in coaching-render.ts) and
  * the same stop colors; nothing is computed twice. Styles `.sct-cs-*` in
  * team.css on the premium tokens.
@@ -17,7 +17,7 @@
 
 import { escapeHtml } from "../render";
 import type { TeamCoaching } from "./coaching";
-import { historyModel, leanOf, POS, readStops, stepLogo, stopColors, type HistoryRow, type Pos, type Print } from "./coaching-render";
+import { historyModel, POS, readStops, stepLogo, stopColors, type HistoryRow, type Pos, type Print } from "./coaching-render";
 
 const e = escapeHtml;
 

@@ -314,10 +314,6 @@ export function seasonGames(season: number): number {
 /** A class is old enough for its Pro Bowl column after this many drafts. */
 export const PRO_BOWL_AGE = 3;
 
-/** Shares of the possible games that tint the Games bar green and amber. */
-export const REGULAR_RATE = 0.75;
-export const ROTATIONAL_RATE = 0.35;
-
 
 export interface DraftCapitalView {
   draftYear: number;
