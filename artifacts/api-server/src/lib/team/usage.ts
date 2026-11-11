@@ -419,7 +419,7 @@ export function buildUsageView(
  * the cards move with the data every week. A card with no qualifying player is
  * left out rather than filled with a weak one.
  */
-export function pickSignals(rows: UsageRow[]): Signal[] {
+function pickSignals(rows: UsageRow[]): Signal[] {
   const pool = rows.filter((r) => r.player.pos !== "QB" && r.tier !== "stash");
   const out: Signal[] = [];
   const used = new Set<UsageRow>();

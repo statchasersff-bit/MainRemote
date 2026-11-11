@@ -8,7 +8,7 @@
  * peak and current callouts, a legend and a methodology strip.
  *
  * Since 2026-11-05 ("remove the older version") this IS the section: the
- * original heading, timeline and chart are unmounted in coaching-render.ts
+ * original heading, timeline and chart were deleted on 2026-11-10
  * and only its season-by-season table follows. Every number is the
  * original's own model: readStops() and
  * stopColors() for the chart, timelineStepModel() for the rows, the league
@@ -20,7 +20,7 @@
 import { escapeHtml } from "../render";
 import { getLeaguePpg, type TeamCoaching } from "./coaching";
 import { readStops, seasonOf, stepLogo, stopColors, surnameOf, timelineStepModel, type Stop, type TimelineStep } from "./coaching-render";
-import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
+import { usageStyleHead } from "./coaching-premium-tendencies";
 
 const e = escapeHtml;
 const f1 = (n: number) => String(Math.round(n * 10) / 10);

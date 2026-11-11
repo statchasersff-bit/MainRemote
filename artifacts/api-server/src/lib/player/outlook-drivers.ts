@@ -434,9 +434,3 @@ export function outlookDrivers(
 
   return drivers.slice(0, 4);
 }
-
-/** The season the strip was measured from, for the section's stamp. */
-export function driverSeason(outlook: FantasyOutlook2026 | null): number | null {
-  const value = outlook?.keyStats?.season;
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}

@@ -322,18 +322,6 @@ export function figure(s: Stat): string {
   return `<span${toggle}>${escapeHtml(s.total)}</span>`;
 }
 
-function renderCell(cell: Cell): string {
-  const main = cell.main
-    .map((s, i) => (i ? `<i class="scp-st-dot"> · </i>` : "") + figure(s) + (s.unit ? ` <small>${escapeHtml(s.unit)}</small>` : ""))
-    .join("");
-  const sub = cell.sub.map((s) => `${figure(s)} ${escapeHtml(s.label)}`).join(" · ");
-  return (
-    `<div class="scp-st-cell"><dt>${escapeHtml(cell.label)}</dt><dd class="scp-st-cv">${main}</dd>` +
-    (sub ? `<dd class="scp-st-cs">${sub}</dd>` : "") +
-    `</div>`
-  );
-}
-
 /**
  * The first cell of every rail: games played, with starts under it. The
  * standard-stat audit (2026-11-04) put games started first among what the tab
@@ -432,33 +420,6 @@ function railCells(pos: string, t: Line): Cell[] {
   if (pos === "RB") return [gamesCell(t), ...runnerCells(t)];
   // Rushing is hidden for a receiver without a carry.
   return [gamesCell(t), ...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
-}
-
-function renderProduction(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string {
-  const row = c.focus;
-  if (!row) return "";
-  const t = row.line;
-  const cells = railCells(c.pos, t);
-
-  return (
-    // The toggle on the heading's row, right of it (mak, 2026-09-30).
-    sectionOpen(
-      STATS_LEAD_ID,
-      `${data.player.name} ${row.season} stats`,
-      (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
-      // The "Game log" link that rode this row beside the toggle is gone
-      // (mak, 2026-10-23); the tab strip above already reaches the Game Log.
-      `<div class="scp-st-headctl">` +
-        `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
-        `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
-        `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
-        `</div>` +
-        `</div>`,
-    ) +
-    // The Fantasy (PPR) block that sat beside the rail is gone (mak, 2026-10-22).
-    `<div class="scp-st-prodrow"><dl class="scp-st-rail">${cells.map(renderCell).join("")}</dl></div>` +
-    `</section>`
-  );
 }
 
 /* ---------------------------------------------------- section 2: advanced */
@@ -1061,68 +1022,6 @@ export function statsPremiumModel(data: PlayerPageData, inserts: { careerTable?:
   };
 }
 
-/* ------------------------------------------------------- section 3: chart */
-
-function renderChart(data: PlayerPageData, c: Career): string {
-  const rows = [...c.rows].sort((x, y) => x.season - y.season);
-  if (rows.length === 0) return "";
-  const pos = c.pos;
-  const ppg = (r: SeasonRow): number => (r.line.gp ? r.line.pts / r.line.gp : 0);
-  const max = Math.max(...rows.map(ppg));
-  const scale = Math.max(3, Math.ceil(max / 3) * 3);
-  const careerPpg = c.total.gp ? c.total.pts / c.total.gp : 0;
-  // Past seasons neutral, the latest finished season in the accent, the one in
-  // progress in the accent with a hatch (mak, 2026-09-30); no career-best mark.
-  const done = rows.filter((r) => !r.inProgress);
-  const latest = done.length ? done[done.length - 1]! : null;
-  const current = data.team?.code ?? "";
-  const n = rows.length;
-
-  const cols = rows
-    .map((r) => {
-      const v = ppg(r);
-      const h = v <= 0 ? 1 : Math.max(1, (v / scale) * 100);
-      const cls = r.inProgress ? " is-now" : latest && r.season === latest.season && n > 1 ? " is-last" : "";
-      return `<div class="scp-st-col${cls}"><b>${one(v)}</b><i style="height:${h.toFixed(1)}%"></i></div>`;
-    })
-    .join("");
-  // Under each bar: the year, the games, and the club (every bar, mak
-  // 2026-10-22; it used to print only where the club changed, on its own row).
-  const years = rows
-    .map((r) => {
-      const label = r.clubs.join("/") || DASH;
-      const cur = current && r.clubs.includes(current) ? ` class="is-cur"` : "";
-      return `<div><strong>${r.season}</strong><small>${r.line.gp} GP</small><em${cur}>${escapeHtml(label)}</em></div>`;
-    })
-    .join("");
-
-  const showAvg = n > 1;
-  const aria =
-    `${pos} fantasy points per game by season: ` +
-    rows.map((r) => `${r.season} ${one(ppg(r))}${r.inProgress ? " (in progress)" : ""}`).join(", ") +
-    (showAvg ? `. Career average ${one(careerPpg)}.` : ".");
-
-  const avgPos = Math.min(1, careerPpg / scale);
-  // The H2 is the SEO ladder's "{Name} Fantasy Football Stats" (mak,
-  // 2026-11-04): the fantasy layer under the NFL sections, named as such.
-  // The chart keeps its old title as its caption.
-  return (
-    sectionOpen("scp-st-arc-h", `${data.player.name} fantasy football stats`, "") +
-    `<figure class="scp-st-arc${showAvg ? " has-avg" : ""}" style="--scp-n:${n};--scp-avg:${avgPos.toFixed(4)}">` +
-    `<figcaption class="scp-st-arc-cap">Fantasy points per game, every season</figcaption>` +
-    // The scroller is the chart alone; client/player.ts opens it on the
-    // newest season. No legend under it (removed 2026-10-21).
-    `<div class="scp-st-arc-scroll" data-scp-arc>` +
-    `<div class="scp-st-plot${showAvg ? " has-avg" : ""}" role="img" aria-label="${escapeHtml(aria)}">` +
-    cols +
-    (showAvg ? `<span class="scp-st-avg" aria-hidden="true">Career avg<b>${one(careerPpg)}</b></span>` : "") +
-    `</div>` +
-    `<div class="scp-st-x" aria-hidden="true">${years}</div>` +
-    `</div>` +
-    `</figure></section>`
-  );
-}
-
 /* ------------------------------------------- section 5: read, rates, highs */
 
 /** A "starter" season by volume: the line a regular would clear. */
@@ -1249,33 +1148,6 @@ function redraftCard(data: PlayerPageData): RedraftCard {
   };
 }
 
-function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOptions): string {
-  const paragraphs = readParagraphs(data, c, options);
-  if (paragraphs.length === 0) return "";
-  const last = lastName(data.player.name);
-  const card = redraftCard(data);
-  const rc =
-    `<div class="scp-ox-panel is-rc"><h3>${escapeHtml(card.heading)}</h3>` +
-    `<p>${escapeHtml(card.body)}</p>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(card.href)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(card.cta)}</a>` +
-    `</div>`;
-
-  /* ---- career highs ---- */
-  const bests = careerHighs(c);
-
-  // The career-rate tiles that opened this section moved up to where the
-  // season snapshot strip was, and the byline is gone (mak, 2026-10-22).
-  return (
-    sectionOpen("scp-st-read-h", "What his career numbers say", "") +
-    `<div class="scp-ox-read">` +
-    `<div><div class="scp-ox-prose">${paragraphs.map((p) => `<p>${p}</p>`).join("")}</div></div>` +
-    `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${last} in Redraft Command`)}">${rc}</aside>` +
-    `</div>` +
-    bests +
-    `</section>`
-  );
-}
-
 /**
  * The career-rate tiles: career PPG, availability, top-12 weeks, weekly
  * swing. They opened "What his career numbers say" until 2026-10-22, when
@@ -1365,16 +1237,6 @@ function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
   return tiles;
 }
 
-function renderCareerRates(data: PlayerPageData, c: Career): string {
-  const tiles = careerRateTiles(data, c);
-  if (tiles.length === 0) return "";
-  return `<section class="scp-ox-sec scp-st-sec-rates" aria-label="Career rates"><div class="scp-st-rates">${tiles.map((t) => rate(t.value, t.title, t.caption)).join("")}</div></section>`;
-}
-
-function rate(value: string, title: string, caption: string): string {
-  return `<div class="scp-st-rate"><p class="scp-st-v">${escapeHtml(value)}</p><h3>${escapeHtml(title)}</h3><p>${escapeHtml(caption)}</p></div>`;
-}
-
 /**
  * Career highs as one strip (mak, 2026-09-30): the figure, a short label, and
  * the season it came in under it.
@@ -1419,24 +1281,6 @@ function careerHighItems(c: Career): HighItem[] {
   else if (pos === "RB") items.push({ v: whole(total.rushYd + total.recYd), label: "Career scrimmage yds", sub: span });
   else items.push({ v: whole(total.recYd), label: "Career rec yds", sub: span });
   return items;
-}
-
-function careerHighs(c: Career): string {
-  const items = careerHighItems(c);
-  if (items.length === 0) return "";
-  return (
-    `<h3 class="scp-st-bests-h">Career highs</h3>` +
-    `<ul class="scp-st-bests">` +
-    items
-      .map(
-        (i) =>
-          `<li><span class="scp-st-v">${escapeHtml(i.v)}</span>` +
-          `<span class="scp-st-bl">${escapeHtml(i.label)}</span>` +
-          `<span class="scp-st-bs">${escapeHtml(i.sub)}</span></li>`,
-      )
-      .join("") +
-    `</ul>`
-  );
 }
 
 /** The scoring rules, in the words the career table's caption points down to. */
@@ -1552,8 +1396,7 @@ export function renderStatsTabParts(
   // and the career-highs strip went the same way (mak: "remove the old
   // version"): the premium career block (career-premium.ts), which
   // player-render mounts after these parts, carries them from
-  // careerPremiumModel() below. renderChart, renderCareerRates and
-  // renderRead stay in this file unmounted; the model reads their builders.
+  // careerPremiumModel() below; the old renderers were deleted 2026-11-10.
   // Only the footer is still this function's.
   return {
     top: "",

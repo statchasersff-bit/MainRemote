@@ -337,8 +337,6 @@ export function playerPageMeta(
   canonical: string,
   section?: string,
 ): PlayerPageMeta {
-  const { player } = data;
-
   const scoped = section ? sectionMeta(data, section) : null;
   const own = scoped ?? profileMeta(data);
 

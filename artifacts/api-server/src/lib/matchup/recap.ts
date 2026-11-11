@@ -49,19 +49,6 @@ export const WAIVER_WIRE_URL: string | null =
   "https://statchasers.com/redraft-command/fantasy-football-waiver-wire-assistant";
 /** Confirmed by mak 2026-10-05 (the team hub footer); it also turns on the preview's Dynasty bridge. */
 export const DYNASTY_COMMAND_URL: string | null = "https://statchasers.com/dynasty-command/";
-/*
- * The usage report's bridges (mak, 2026-10-05). Redraft Command's nav also
- * links /redraft-command/fantasy-football-trade-finder and
- * /redraft-command/buy-low-sell-high-trade-targets; they stay null until mak
- * wants them on the page (the board would add a sentence to a usage FAQ
- * answer, see seo-changes-need-approval).
- */
-export const TRADE_FINDER_URL: string | null = null;
-export const BUY_LOW_SELL_HIGH_URL: string | null = null;
-/* Dynasty Command's tools, at the routes its app registers (2026-10-08). */
-export const DYNASTY_RANKINGS_URL: string | null = "https://statchasers.com/dynasty-command/dynasty-rankings";
-export const DYNASTY_TRADE_CALCULATOR_URL: string | null =
-  "https://statchasers.com/dynasty-command/dynasty-trade-calculator";
 export const DYNASTY_LEAGUE_ANALYZER_URL: string | null =
   "https://statchasers.com/dynasty-command/dynasty-league-analyzer";
 /** The handcuff rankings tool on statchasers.com, the waiver line's stand-in until WAIVER_WIRE_URL is set. */
@@ -126,12 +113,6 @@ interface Side {
   running: number[];
   total: number;
 }
-
-const NEXT_ROUND: Record<string, string> = {
-  "wild card": "Divisional Round",
-  "divisional round": "Conference Championship",
-  "conference championship": "Super Bowl",
-};
 
 const ORDINALS = ["first", "second", "third", "fourth"];
 
@@ -233,16 +214,6 @@ function angle(game: ScoreboardGame, w: Side, l: Side): string {
 }
 
 /* -------------------------------------------------------------------- dek */
-
-function destination(game: ScoreboardGame): string {
-  if (game.gameType !== "playoff") return "";
-  const round = roundOnly(game.roundLabel);
-  if (/super bowl/i.test(round)) {
-    return ` to win Super Bowl ${superBowlNumeral(Number(game.seasonLabel))}`;
-  }
-  const next = NEXT_ROUND[round.toLowerCase()];
-  return next ? ` to reach the ${next}` : "";
-}
 
 /**
  * The dek: how the game turned, in one sentence, then the yardage. The two

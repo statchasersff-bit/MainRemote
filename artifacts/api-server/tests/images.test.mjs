@@ -509,10 +509,11 @@ describe("team hub and player pages", () => {
     const hero = doc.querySelector("img.sct-tpb-logo");
     assert.ok(hero, "hero crest");
     assert.match(hero.getAttribute("src"), /^https:\/\/news\.statchasers\.com\/team-logos\/phi-[0-9a-f]{8}\.svg$/);
-    // Depth rows can carry an ESPN portrait when the depth chart names a
-    // player the Sleeper dictionary does not; those are printed as supplied.
     // Everything that WAS a Sleeper thumb is now a derivative on this origin.
-    const photos = [...doc.querySelectorAll("img.sct-player-photo, img.sct-depth-photo, img.sct-outlook-photo")];
+    // The hub's portraits today: the Outlook's players, the Draft tab's picks
+    // and the Contracts tab's faces (the old player/depth/outlook cards are
+    // gone, and with them sct-player-photo and sct-depth-photo).
+    const photos = [...doc.querySelectorAll("img.sct-tfo-photo, img.sct-drp-face-img, img.sct-ctp-face-img, img.sct-ctp-rel-face-img")];
     const ours = photos.filter((img) => img.getAttribute("src").includes("/news-image/"));
     assert.ok(ours.length > 0, "expected at least one derivative on the hub");
     for (const img of ours) {

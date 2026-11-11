@@ -23,7 +23,6 @@ import {
   allTimeAnswer,
   allTimeSummary,
   renderAllTimeTiles,
-  rivalryIntro,
   type RivalryInput,
   type RivalryTeam,
 } from "./rivalry";
@@ -738,13 +737,10 @@ export function renderHeadToHead(input: RecapBodyInput): string {
   const record = seriesRecord(input);
   const n = series.games.length;
 
-  // All-time first - the intro and four tiles - then the recent series.
+  // All-time first - the four tiles - then the recent series. No intro
+  // line over the tiles (mak, 2026-11-09).
   const [awaySide, homeSide] = rivalryTeams(input);
-  const top =
-    allTime && input.rivalry
-      ? subtitle(rivalryIntro(input.rivalry, allTime, awaySide, homeSide)) +
-        renderAllTimeTiles(allTime, awaySide, homeSide)
-      : "";
+  const top = allTime && input.rivalry ? renderAllTimeTiles(allTime, awaySide, homeSide) : "";
 
   const oldest = [...series.games].sort(
     (x, y) => (x.kickoff ?? "").localeCompare(y.kickoff ?? "") || x.season - y.season,

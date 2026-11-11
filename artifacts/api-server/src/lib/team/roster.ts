@@ -174,36 +174,6 @@ export function isOutDesignation(status: string | null | undefined): boolean {
 }
 
 /**
- * Designated players at a position who are NOT on the chart shown.
- *
- * The gap this fills: Sleeper demotes an injured player on its depth chart, so
- * a genuine WR1 on IR sits at WR6 and falls off a four-deep preview entirely -
- * the chart then shows somebody else first with nothing saying why, which reads
- * as a wrong chart to anyone who knows the roster. See INJURY_RANK_LIMIT below,
- * which exists for the same reason.
- *
- * `injuries` is Injury Watch's list rather than the raw roster because it is
- * already filtered to players worth naming: a WR7's hamstring did not move the
- * WR1 slot and does not belong under the chart.
- *
- * Shared by the chart and its FAQ so the two cannot disagree about who is
- * missing - they are the same claim in two registers.
- */
-export function sidelinedBehind<T extends Pick<DepthChartEntry, "name" | "position" | "injuryStatus">>(
-  injuries: readonly T[],
-  position: SkillPosition,
-  shown: readonly Pick<DepthChartEntry, "name">[],
-): T[] {
-  const visible = new Set(shown.map((entry) => entry.name));
-  return injuries.filter(
-    (entry) =>
-      entry.position === position &&
-      isOutDesignation(entry.injuryStatus) &&
-      !visible.has(entry.name),
-  );
-}
-
-/**
  * A display name folded the way search_full_name is, minus a generational
  * suffix: "Brian Robinson Jr." -> "brianrobinson". Same rule as nameMatchKey()
  * in lib/render.ts, kept here so this module stays import-free.
@@ -462,60 +432,6 @@ export function snapshotRosterIndex(): {
 export interface DepthChartEntry extends RosterPlayer {
   /** Display slot, e.g. "RB2" - Sleeper's order, not a ranking of our own. */
   slot: string;
-}
-
-/** How deep the condensed preview goes per position. */
-export const DEPTH_PREVIEW_LIMITS: Record<SkillPosition, number> = {
-  QB: 2,
-  RB: 3,
-  WR: 4,
-  TE: 2,
-};
-
-/** The condensed offense-only depth chart shown on the team page. */
-export function depthPreview(
-  roster: TeamRoster | null,
-): Record<SkillPosition, DepthChartEntry[]> {
-  const out = { QB: [], RB: [], WR: [], TE: [] } as Record<
-    SkillPosition,
-    DepthChartEntry[]
-  >;
-  if (!roster) return out;
-  for (const position of SKILL_POSITIONS) {
-    out[position] = roster.depthChart[position]
-      .slice(0, DEPTH_PREVIEW_LIMITS[position])
-      .map((player, i) => ({ ...player, slot: `${position}${i + 1}` }));
-  }
-  return out;
-}
-
-/**
- * The handful of players who decide a team's fantasy season: QB1, both backs,
- * the top two receivers and TE1.
- *
- * Taken straight off the depth chart rather than from any ranking - this app
- * has no ADP or projection data, and inventing an ordering to look authoritative
- * is exactly the thing not to do. RB2 and WR2 are dropped when the team does not
- * list one.
- */
-export function fantasyCornerstones(
-  roster: TeamRoster | null,
-): DepthChartEntry[] {
-  if (!roster) return [];
-  const wanted: Array<[SkillPosition, number]> = [
-    ["QB", 0],
-    ["RB", 0],
-    ["RB", 1],
-    ["WR", 0],
-    ["WR", 1],
-    ["TE", 0],
-  ];
-  const out: DepthChartEntry[] = [];
-  for (const [position, i] of wanted) {
-    const player = roster.depthChart[position][i];
-    if (player) out.push({ ...player, slot: `${position}${i + 1}` });
-  }
-  return out;
 }
 
 /**

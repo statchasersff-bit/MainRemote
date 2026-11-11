@@ -39,7 +39,7 @@
  */
 
 import { logger } from "./logger";
-import { escapeHtml, escapeJsonLd, safeUrl } from "./render";
+import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
 import { assetUrl } from "./asset-origin";
 import { easternParts } from "./news-card";
@@ -48,12 +48,11 @@ import { easternParts } from "./news-card";
 // the page are generated from one place. player-seo.ts imports nothing from
 // here - only a comment mentions it - so this does not close a cycle.
 import { playerPageMeta } from "./player-seo";
-import { getTeamByAbbreviation, type NflTeam } from "./team/teams";
+import type { NflTeam } from "./team/teams";
 import { teamHeaderColors, teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import {
   finishBadge,
   fpts,
-  keyStatSummary,
   gameLogColumns,
   RECEIVER_RUSH_COLUMNS,
   type LogColumn,
@@ -66,7 +65,6 @@ import { playerSearchIndex } from "./player/player-data";
 import { PPG_MIN_GAMES } from "./player/ranks";
 import type {
   DirectoryPlayer,
-  IndexedPlayer,
   PlayerDirectory,
   PlayerPageData,
 } from "./player/player-data";
@@ -77,19 +75,14 @@ import {
   type ScoringFormat,
 } from "./player/scoring";
 import type {
-  CareerSeasonStat,
   GameLogEntry,
 } from "./player/types";
-import { type RiskLevel } from "./player/injury";
 import { passerRating, type CareerStatRow } from "./player/stats-profile";
 import { canonicalizeMatchupPair } from "./matchup/pair";
-import { percentileWord } from "./player/fantasy-read";
-import type { OutlookBand } from "./player/types";
 import {
   headerKind,
   SECTION_KINDS,
   matchupBand,
-  OUTLOOK_SEASON,
   renderHero,
   teamInk,
   type MatchupBand,
@@ -221,11 +214,6 @@ export function profileHeading(playerName: string): string {
   return playerName;
 }
 
-/** The small line under the hub's H1: "RB, Atlanta Falcons". */
-export function profileSubtitle(data: PlayerPageData): string {
-  return [data.player.position, data.team?.fullName].filter(Boolean).join(", ");
-}
-
 /** The public heading for a section page, e.g. "George Pickens Injury Status". */
 export function sectionHeading(
   playerName: string,
@@ -261,9 +249,6 @@ const DEFAULT_FPA_PATH = "/fpa";
 
 /** This origin's own matchup pages. Same default the team hub uses. */
 const DEFAULT_MATCHUP_PREFIX = "/nfl/";
-
-/** The hub's arrow, for the one call-to-action this page has. */
-const ARROW = `<span class="scp-arrow" aria-hidden="true">&rarr;</span>`;
 
 /** Attribute-safe style declaration list, or "". */
 function styleAttr(parts: Array<string | null | false>): string {
@@ -340,106 +325,6 @@ function sectionHead(text: string, sub = "", aside = ""): string {
     `<div class="scp-sect scp-sect--row">` +
     `<div class="scp-sect-text">${text_}</div>${aside}</div>`
   );
-}
-
-/**
- * A question-and-answer block, with FAQPage markup on the standalone page.
- *
- * Shared by the Stats and Injury tabs because both answer the same SHAPE of
- * query - a question somebody typed, answered from numbers already rendered
- * above it - and two copies would drift on the one thing that matters here:
- * the schema, and whether it is safe to emit.
- *
- * Embedded, WordPress owns the document's schema and a second FAQPage inside
- * the host's article is a conflict rather than an enhancement - the same reason
- * this mount adds no canonical and no H1. So the fragment ships the same
- * questions as INERT DATA instead, and statchasers-player.php lifts them into
- * Rank Math's graph: the markup then arrives inside the one <script> the page
- * already prints, rather than as a second one competing with it.
- *
- * Data rather than the plugin re-reading the rendered HTML, because by then the
- * answers have been escaped for display and putting them back together means
- * un-escaping prose in PHP to feed a crawler. This is the array the answers
- * were built from, which is the thing the schema is supposed to be about.
- */
-function renderFaq(
-  items: Array<{ question: string; answer: string }>,
-  options: PlayerRenderOptions,
-  heading: string,
-  // Printed after `items` in the same block but left out of the FAQPage
-  // node and faqSink: adding questions to the schema is an SEO change, which
-  // mak approves separately.
-  visibleOnly: Array<{ question: string; answer: string }> = [],
-): string {
-  if (items.length === 0 && visibleOnly.length === 0) return "";
-
-  /*
-   * One question, one fold - the shape the team hubs use.
-   *
-   * These blocks were four questions with all four answers permanently open,
-   * which is a wall of restated prose at the bottom of a tab that has already
-   * said all of it in numbers. Folded, the QUESTIONS are the index: a reader
-   * scanning for the one they arrived with sees every question at once and
-   * opens the single answer they came for.
-   *
-   * Shut by default, and per question rather than one fold around the block -
-   * a single fold hides the questions too, which is the opposite of what an
-   * index is for. The answers stay in the DOM either way: a crawler reads the
-   * DOM rather than the open state, and the FAQPage node below is built from
-   * the same list, so nothing about the structured data depends on this.
-   *
-   * <h4> inside the <summary> so the questions keep their place in the page
-   * outline; the summary is the control, the heading is still the heading.
-   */
-  const body = [...items.map((entry) => ({ entry, cls: "" })), ...visibleOnly.map((entry) => ({ entry, cls: " is-visible-only" }))]
-    .map(
-      ({ entry, cls }) =>
-        `<details class="scp-faq-item${cls}">` +
-        `<summary class="scp-faq-q-row">` +
-        `<h4 class="scp-faq-q">${escapeHtml(entry.question)}</h4>` +
-        `</summary>` +
-        `<p class="scp-faq-a">${escapeHtml(entry.answer)}</p>` +
-        `</details>`,
-    )
-    .join("");
-
-  // Handed up to the page when it is collecting: four blocks each printing
-  // their own node put four FAQPages on the unsectioned profile, and a document
-  // with two is the case that gets the whole lot ignored rather than merged.
-  // sectionHead rather than a plain h3: on the team hubs this block closes the
-  // page under the same gold-ruled heading its other sections carry, and on
-  // the Stats tab here every sibling had the rule while the questions did not.
-  // Same level in the outline, same device on the screen.
-  const head = sectionHead(heading);
-
-  if (options.faqSink || items.length === 0) {
-    options.faqSink?.push(...items);
-    return head + `<div class="scp-faq">${body}</div>`;
-  }
-
-  const schema = options.embed
-    ? `<script type="application/json" class="scp-faq-data">` +
-      escapeJsonLd(
-        JSON.stringify(
-          items.map((entry) => ({ q: entry.question, a: entry.answer })),
-        ),
-      ) +
-      `</script>`
-    : `<script type="application/ld+json">` +
-      escapeJsonLd(
-        JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: items.map((entry) => ({
-            "@type": "Question",
-            name: entry.question,
-            acceptedAnswer: { "@type": "Answer", text: entry.answer },
-          })),
-        }),
-      ) +
-      `</script>`;
-
-  return head + `<div class="scp-faq">${body}</div>` + schema;
 }
 
 /**
@@ -788,19 +673,11 @@ function pageUrl(
  *   "What does it mean?" -> here.
  *
  * "277 passing yards" is a Stats fact; "strong passing volume" is this page.
- * Every phrase on this tab is still derived from a measured number - the
- * thresholds are in lib/player/fantasy-read.ts - and the numbers themselves
- * appear only as the evidence under a reading, never as the point.
+ * Every phrase on this tab is still derived from a measured number, and the
+ * numbers themselves appear only as the evidence under a reading, never as
+ * the point.
  */
 
-/**
- * The snapshot: tier, rate, role and direction, then one assembled sentence.
- *
- * Four readings rather than four totals. The sentence beneath is built from
- * clauses in fantasy-read.ts rather than written, so it cannot claim anything
- * the percentiles do not support, and it drops clauses instead of hedging when
- * the inputs are missing.
- */
 /**
  * The Overview's opening block: nothing, since the entity brief of
  * 2026-11-03. It carried the heading promoteHeading() turned into the host's
@@ -814,15 +691,6 @@ function renderFantasySnapshot(_data: PlayerPageData): string {
 }
 
 /* --------------------------------------------------------------------- bio */
-
-function renderList(items: unknown, className: string): string {
-  if (!Array.isArray(items) || items.length === 0) return "";
-  const rows = items
-    .filter((item): item is string => typeof item === "string" && item.trim() !== "")
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("");
-  return rows ? `<ul class="${className}">${rows}</ul>` : "";
-}
 
 /**
  * The bio, which is generated from the record rather than written.
@@ -1588,7 +1456,7 @@ function count(value: number): string {
 
 /* renderStatsSnapshot() - the Fantasy PPG / finish / per-game strip under the
    career chart - went 2026-10-22 (mak); the Stats tab's career-rate tiles sit
-   there now (stats-tab.ts renderCareerRates). */
+   there now (career-premium.ts). */
 
 /* statTable() - the two-column label/value table - went with the cards it was
    the inside of. Production is figure-over-label columns now, which reads as a
@@ -1819,41 +1687,6 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
     faq,
   };
 }
-
-/**
- * The Injury tab.
- *
- * Reordered around the question people actually arrive with. Somebody who
- * searches a player's name and the word "injury" wants three things, in this
- * order: is he hurt right now, is he playing, what happened. The career record
- * - the durability grade, the body-region tallies, the five-year timeline - is
- * what they want SECOND, and it used to be the whole tab with the current
- * designation filed one tab over under News.
- *
- * So the order is now:
- *
- *   1. current status, with this season's availability beside it
- *   2. the career record at a glance
- *   3. the availability profile - four readings, each with its record printed
- *   4. injuries by body part, as a table
- *   5. the history itself, one entry at a time, as real prose in the HTML
- *   6. the questions people type, answered from the record
- *
- * A note on the history, because it is the part that carries the most weight
- * and has the least behind it. Those records have no per-entry provenance -
- * no source, no URL, no retrieved-at - and the script that produced them
- * scraped a dev server of an app that is not in this repository. The page
- * therefore says what it can defend and nothing more: that it is a compiled
- * record, and when the file it came from was last written. See the note under
- * the timeline, and do not replace it with a source line until there is a
- * source to name.
- */
-
-const RISK_WORD: Record<RiskLevel, string> = {
-  low: "Low",
-  moderate: "Moderate",
-  high: "High",
-};
 
 /**
  * The Injury tab: its heading, mak's spec (lib/player/injury-tab.ts), and one

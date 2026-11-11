@@ -13,7 +13,7 @@
  * data-sct-hero-heading as before.
  *
  * The recap's sections below keep their markup; their premium dress (navy-bar
- * cards, rail cards, tabs) is CSS on `.sct-mu.is-pm` at the end of team.css.
+ * cards, rail cards, tabs) is CSS on `.sct-mu.is-pm` in matchup.css.
  */
 
 import { escapeHtml } from "../render";
@@ -273,7 +273,11 @@ const ID_ICON: Record<string, string> = {
   "bx-special-teams": "scoring",
   "bx-advanced": "swing",
   "pbp-scoring": "scoring",
-  "pbp-drives": "play",
+  "gf-timeline": "swing",
+  "gf-field": "target",
+  "gf-halves": "calendar",
+  "gf-efficiency": "stats",
+  "gf-calling": "play",
   "pbp-full": "calendar",
   "sct-rb-scoring": "scoring",
   usage: "target",
@@ -282,7 +286,6 @@ const ID_ICON: Record<string, string> = {
   "season-to-date": "calendar",
   betting: "money",
   "fantasy-outlook": "star",
-  "fantasy-standouts": "star",
   "fantasy-box-score": "stats",
   "fantasy-usage": "usage",
   "fantasy-xfp": "swing",

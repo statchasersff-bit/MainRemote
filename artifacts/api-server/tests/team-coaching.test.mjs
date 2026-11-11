@@ -97,7 +97,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.deepEqual([...cpt.querySelectorAll(".sct-cpt-h3, .sct-us-prm-title")].map((h) => h.textContent), ["Situational Play Calling", "Target & Backfield Tendencies"]);
     // Every section bar carries a subtitle, like Fantasy Finishes by Season (mak, 2026-11-08).
     for (const sec of [...cp.querySelectorAll(".sct-cp-section"), ...cpt.querySelectorAll(".sct-cpt-section")]) assert.ok(sec.querySelector(".sct-us-prm-head .sct-us-prm-sub")?.textContent, "subtitle in the bar");
-    // The original header, identity block, tendency tables and sections 3-5 are off the page (unmounted, not deleted).
+    // The original header, identity block, tendency tables and sections 3-5 are off the page (deleted 2026-11-10).
     for (const sel of [".sct-co-head", ".sct-co-grid.is-overview", ".sct-co-tend", ".sct-co-form", ".sct-co-situational", ".sct-co-targets", ".sct-co-table", ".sct-co-panel", ".sct-co-card", ".sct-co-dossier", ".sct-co-fptable", ".sct-co-fantasy", ".sct-co-bottom", "table.sct-co-finishes"]) {
       assert.equal(panel.querySelector(sel), null, `${sel} is gone`);
     }
@@ -130,8 +130,11 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.equal(card.querySelector(".sct-cp-name").textContent, "Josh McDaniels");
     assert.equal(card.querySelector(".sct-cp-context").textContent, "Under head coach Mike Vrabel · Third stint with New England");
     assert.deepEqual([...card.querySelectorAll(".sct-cp-pill")].map((t) => t.textContent), ["Belichick / Patriots lineage", "Erhardt-Perkins tree"]);
-    assert.equal(card.querySelector(".sct-cp-cont-label").textContent, "Coaching Continuity");
+    assert.equal(card.querySelector(".sct-cp-cont-label").textContent, "Coaching continuity");
     assert.equal(card.querySelector(".sct-cp-cont-status").textContent, "High");
+    // A dot and "High continuity", no bar (mak, 2026-11-10).
+    assert.equal(card.querySelector(".sct-cp-cont-state").textContent, "High continuity");
+    assert.equal(card.querySelector(".sct-cp-cont-bar"), null);
     assert.doesNotMatch(doc.querySelector("#coaching").textContent, /Tendency reliability/);
     // The timeline lives in the premium career block.
     assert.ok(doc.querySelectorAll("#coaching-career-premium .sct-cc-stop").length >= 5);
@@ -712,6 +715,6 @@ describe("design polish (mak, 2026-10-05)", () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const card = doc.querySelector("#coaching-premium .sct-cp-profile");
     assert.ok(!card.textContent.includes("McDaniels remains New England's offensive play-caller"));
-    assert.equal(card.querySelector(".sct-cp-cont-note").textContent, "Same caller as 2025 · strong baseline");
+    assert.equal(card.querySelector(".sct-cp-cont-note").textContent, "Same play-caller as 2025 · Strong historical baseline");
   });
 });

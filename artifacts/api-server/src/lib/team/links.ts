@@ -42,13 +42,6 @@ const TEMPLATES = {
   /** The team hub itself - the URL these pages are embedded at. */
   teamHub: template("SC_TEAM_HUB_URL_TEMPLATE", "/nfl/teams/{slug}/"),
   /**
-   * The league-wide depth charts tool. It has one address since the plugin's
-   * 1.7.0: the per-team routes (/nfl/nfl-depth-charts/fantasy/{slug}/) are
-   * gone, because the team's own depth chart is the hub section this link is
-   * printed on. `{slug}` is still accepted for an override that wants it.
-   */
-  depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/nfl-depth-charts/"),
-  /**
    * "View full NFL schedule": the league schedule page. The team's own schedule
    * is the hub's /schedule/ section, which is the page this link is printed on.
    * The old default, /nfl/schedule/{slug}/, was a guess at a page that never
@@ -70,7 +63,6 @@ const TEMPLATES = {
   tools: template("SC_TOOLS_URL", "/nfl/fantasy-football-tools/"),
   sos: template("SC_SOS_URL", "/nfl/fantasy-football-strength-of-schedule/"),
   fpa: template("SC_FPA_URL", "/nfl/fantasy-points-allowed-by-position/"),
-  news: template("SC_NEWS_URL", "/nfl/fantasy-football-player-news/"),
 } as const;
 
 /**
@@ -116,11 +108,6 @@ function teamValues(team: NflTeam): Record<string, string> {
 /** This team's hub page on statchasers.com. */
 export function getTeamHubUrl(team: NflTeam): string | null {
   return fill(TEMPLATES.teamHub, teamValues(team));
-}
-
-/** The full StatChasers depth chart for this team. */
-export function getTeamDepthChartUrl(team: NflTeam): string | null {
-  return fill(TEMPLATES.depthChart, teamValues(team));
 }
 
 /** The full StatChasers schedule for this team. */
@@ -184,9 +171,4 @@ export function getSOSUrl(team?: NflTeam): string | null {
 /** Fantasy Points Allowed tool. */
 export function getFPAUrl(team?: NflTeam): string | null {
   return fill(TEMPLATES.fpa, team ? teamValues(team) : {});
-}
-
-/** The main player-news page - where "view all news" goes. */
-export function getNewsUrl(): string | null {
-  return fill(TEMPLATES.news, {});
 }

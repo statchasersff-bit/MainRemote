@@ -1815,6 +1815,7 @@ $printed = statchasers_matchup_shortcode();
 is( substr_count( $printed, '<h1' ), 1, 'tool mode: the hero heading is the one H1' );
 is( false !== strpos( $printed, '<h1 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>' ), true, 'promoted in place, inside the hero' );
 is( false === strpos( $printed, 'sc-lo-hero' ), true, 'and no separate heading block above it' );
+is( ! empty( $GLOBALS['styles'][ STATCHASERS_TEAM_HANDLE ] ) && ! empty( $GLOBALS['styles'][ STATCHASERS_MATCHUP_STYLE_HANDLE ] ), true, 'a matchup page enqueues team.css and then matchup.css' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
 is( substr_count( statchasers_matchup_shortcode(), '<h1' ), 0, 'off: nothing promoted, the theme keeps its title' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';

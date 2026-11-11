@@ -16,12 +16,9 @@ import type { NflTeam } from "../team/teams";
 import type { StatRow, TeamStats } from "../team/stats";
 import { getPlayerProfileUrl } from "../team/links";
 import {
-  allowPhrase,
   rankWord,
   signedLine,
   type BoardRow,
-  type LeverageRow,
-  type Pos,
   type Preview,
   type PreviewSide,
   type SideKey,
@@ -59,7 +56,6 @@ export interface PreviewRenderContext {
 
 const e = escapeHtml;
 const one = (n: number): string => n.toFixed(1);
-const exact = (n: number): string => String(Math.round(n * 100) / 100);
 const code = (t: NflTeam): string => t.code.toUpperCase();
 
 function h2(id: string, text: string): string {
@@ -78,11 +74,6 @@ function nextStep(id: string, title: string, body: string, href: string | null, 
     `<a href="${e(href)}" data-cta="${e(id)}">${e(label)} →</a>` +
     `</aside>`
   );
-}
-
-/** The one-line subtitle under a section title. */
-function subline(text: string): string {
-  return `<p class="sct-pv-sub">${e(text)}</p>`;
 }
 
 function playerLink(name: string): string {
@@ -131,137 +122,11 @@ const pairOf = (p: Preview): string => `${p.away.team.nickname} vs ${p.home.team
 
 /* -------------------------------------------- 1b. fantasy outlook */
 
-/** "NE -3.5 · O/U 42.5" with the implied totals, or the conditions without a line. */
-function environment(p: Preview): { value: string; note: string | null } {
-  const { line, away, home } = p;
-  const weather = weatherText(p);
-  if (line && line.spread !== null && line.total !== null) {
-    return {
-      value: `${favLine(line.spread, away.team, home.team)} · O/U ${exact(line.total)}`,
-      note:
-        [
-          away.implied !== null && home.implied !== null
-            ? `Implied: ${code(away.team)} ${exact(away.implied)}, ${code(home.team)} ${exact(home.implied)}`
-            : null,
-          weather,
-        ]
-          .filter(Boolean)
-          .join(" · ") || null,
-    };
-  }
-  return { value: weather ?? "Conditions TBD", note: "No betting line posted yet" };
-}
-
 // The "Fantasy Outlook" section (best start / flex / fade, game environment,
 // the matchup read) that opened the body from 2026-10-05 was removed at mak's
 // request on 2026-10-22; its picks still feed the FAQ through outlookPicks().
 
 /* ----------------------------------------------------- 6b. players to watch */
-
-interface WatchItem {
-  name: string;
-  team: string;
-  pos: string;
-  tag: string;
-  why: string;
-}
-
-/** The next action a watch card points at, by why the player is on the list. */
-function watchAction(tag: string): { href: string | null; label: string } {
-  if (tag === "Injury beneficiary") return { href: WAIVER_WIRE_URL, label: "Check waivers" };
-  if (tag === "Tough matchup") return { href: TRADE_CALCULATOR_URL, label: "Weigh a trade" };
-  return { href: START_SIT_URL, label: "Compare in Start/Sit" };
-}
-
-/**
- * Three to five players where usage or injury context makes the matchup worth
- * a second look, picked from what the page already says: the injury
- * beneficiary, the leverage edge, the role/matchup conflict, the questionable
- * starter, then the toughest matchup.
- */
-function watchList(p: Preview): WatchItem[] {
-  const rows = [...p.board.away, ...p.board.home];
-  const rowOf = (name: string) => rows.find((r) => r.name === name) ?? null;
-  const teamOf = (r: LeverageRow) => code((r.side === "away" ? p.away : p.home).team);
-  const role = (r: LeverageRow) => r.roleStats.map((x) => `${x.v} ${x.k}`).join(", ");
-  const items: WatchItem[] = [];
-  const add = (x: WatchItem) => {
-    if (!items.some((i) => i.name === x.name)) items.push(x);
-  };
-  const b = p.injuryImpact?.beneficiary;
-  if (b) {
-    const metric = rowOf(b.name)?.metric;
-    add({ name: b.name, team: b.team, pos: b.pos, tag: "Injury beneficiary", why: `Steps into the work with ${b.because}${metric ? `, from a ${metric}` : ""}.` });
-  }
-  const read = p.leverageRead;
-  if (read?.edge) {
-    const r = read.edge;
-    add({ name: r.name, team: teamOf(r), pos: r.pos, tag: "Matchup edge", why: `${r.defense}, and he brings ${role(r)}.` });
-  }
-  if (read?.conflict) {
-    const r = read.conflict.row;
-    add({ name: r.name, team: teamOf(r), pos: r.pos, tag: read.conflict.text, why: `${r.defense}, against ${role(r)}.` });
-  }
-  const q = rows
-    .filter((r) => r.injury?.status === "Questionable" && r.ppg !== null)
-    .sort((x, y) => (y.ppg ?? 0) - (x.ppg ?? 0))[0];
-  if (q) {
-    add({
-      name: q.name,
-      team: q.team,
-      pos: q.pos,
-      tag: "Questionable",
-      why: `Listed Questionable${q.injury?.part ? ` (${q.injury.part.toLowerCase()})` : ""}; ${one(q.ppg!)} PPG${q.metric ? ` on a ${q.metric}` : ""} if he plays. Inactives post 90 minutes before kickoff.`,
-    });
-  }
-  if (read?.fade) {
-    const r = read.fade;
-    add({ name: r.name, team: teamOf(r), pos: r.pos, tag: "Tough matchup", why: `${r.defense}.` });
-  }
-  return items.slice(0, 5);
-}
-
-function renderWatchList(p: Preview): string {
-  const items = watchList(p);
-  if (items.length < 3) return "";
-  return (
-    `<section class="sct-pv-sec" aria-labelledby="pv-watch">` +
-    h2("pv-watch", "Players to Watch") +
-    `<ul class="sct-pv-watch">` +
-    items
-      .map(
-        (i) =>
-          `<li><p class="sct-pv-watch-top">${whoTag(i.name, i.team, i.pos)}<span class="sct-pv-watch-tag">${e(i.tag)}</span></p>` +
-          `<p class="sct-pv-watch-why">${e(i.why)}</p>` +
-          (() => {
-            const a = watchAction(i.tag);
-            return a.href ? `<a class="sct-pv-watch-act" href="${e(a.href)}" data-cta="preview-watch">${e(a.label)} →</a>` : "";
-          })() +
-          `</li>`,
-      )
-      .join("") +
-    `</ul>` +
-    rosterMoves() +
-    `</section>`
-  );
-}
-
-/** "Turn the matchup into a roster move": three compact links, no cards. */
-function rosterMoves(): string {
-  const links = [
-    [WAIVER_WIRE_URL, "Waiver Wire"],
-    [TRADE_CALCULATOR_URL, "Trade Calculator"],
-    [LINEUP_OPTIMIZER_URL, "Lineup Optimizer"],
-  ].filter((x): x is [string, string] => !!x[0]);
-  // The line names all three tools, so it waits until all three have addresses.
-  if (links.length < 3) return "";
-  return (
-    `<aside class="sct-pv-next is-links" aria-label="Roster moves">` +
-    `<p><b>Turn the matchup into a roster move.</b> Check waivers, compare a trade, or optimize your lineup in Redraft Command.</p>` +
-    `<ul>${links.map(([href, label]) => `<li><a href="${e(href)}" data-cta="preview-moves">${e(label)}</a></li>`).join("")}</ul>` +
-    `</aside>`
-  );
-}
 
 /** The one Dynasty Command bridge, near the bottom. */
 function renderDynasty(p: Preview): string {
@@ -373,10 +238,6 @@ function outlookPicks(p: Preview): { start: BoardRow | null; flex: BoardRow | nu
   };
 }
 
-function whoTag(name: string, team: string, pos: string): string {
-  return `${playerLink(name)} <span class="sct-pv-pos">${e(team)} · ${e(pos)}</span>`;
-}
-
 // Unmounted 2026-10-22 (mak): kept so the board can come back as it was.
 export function renderBoard(p: Preview): string {
   if (!p.board.away.length && !p.board.home.length) return "";
@@ -404,17 +265,6 @@ export function renderBoard(p: Preview): string {
 }
 
 /* ----------------------------------------------------------- 4. leverage */
-
-/** Starters per position in a 12-team league: the role bar's yardstick. */
-export const STARTERS: Record<Pos, number> = { QB: 12, RB: 24, WR: 36, TE: 12 };
-const ROLE_WORD = { strong: "Strong", solid: "Solid", light: "Light" } as const;
-
-export function roleTierOf(posRank: number | null, pos: Pos): keyof typeof ROLE_WORD {
-  if (posRank === null) return "light";
-  if (posRank <= STARTERS[pos] / 2) return "strong";
-  if (posRank <= STARTERS[pos]) return "solid";
-  return "light";
-}
 
 /* ----------------------------------------------------------- 5. snapshot */
 
@@ -463,7 +313,6 @@ export function previewFaq(p: Preview, ctx: PreviewRenderContext): PreviewFaq[] 
   const plain = (question: string, answer: string, extraHtml = "") =>
     items.push({ question, answer, html: e(answer) + extraHtml });
   const all = [...p.board.away, ...p.board.home];
-  const sideOf = (r: BoardRow) => (r.side === "away" ? away : home);
   const oppOf = (r: BoardRow) => (r.side === "away" ? home : away);
   const tag = (r: BoardRow) => `${r.name} (${r.team} ${r.pos === "DST" ? "D/ST" : r.pos})`;
   const list = (xs: string[]) => (xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);

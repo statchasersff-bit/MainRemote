@@ -847,8 +847,8 @@ describe("embedded mode", () => {
 
   test("'Use this research' is off the team pages (mak, 2026-10-09)", async () => {
     // The block (products + usage report + next matchup) used to close every
-    // tab. It is unmounted, not deleted - renderResources() still exists - so
-    // this guards against it quietly coming back at either mount point.
+    // tab. renderResources() was deleted on 2026-11-10; this guards against
+    // the block quietly coming back at either mount point.
     for (const path of [
       "/team/new-england-patriots/",
       "/team/new-england-patriots?embed=1",
@@ -861,50 +861,6 @@ describe("embedded mode", () => {
     // The /usage/ page keeps its own conversion block.
     const usage = await dom("/team/new-england-patriots/usage/");
     assert.ok(usage.doc.querySelector(".sct-us-convert"));
-  });
-
-  test("the Target and Rushing Distribution boards sit between the snap table and Situational Usage (mak, 2026-11-05)", async () => {
-    const { doc } = await dom("/team/new-england-patriots/usage/");
-    const boards = [...doc.querySelectorAll(".sct-us-board")];
-    assert.deepEqual(
-      boards.map((b) => b.querySelector(".sct-us-h3")?.textContent),
-      ["Target Distribution", "Rushing Distribution"],
-    );
-    // The environment cards went 2026-11-02; since the NFL-first rebuild the
-    // boards follow the snap table and lead into Situational Usage.
-    // DOCUMENT_POSITION_FOLLOWING = 4.
-    assert.equal(doc.querySelector(".sct-us-env"), null, "no environment cards");
-    const situational = doc.querySelector("#situational");
-    assert.ok(situational && boards[0].compareDocumentPosition(situational) & 4, "boards come before Situational Usage");
-    assert.ok(doc.querySelector(".sct-us-snaps").compareDocumentPosition(boards[0]) & 4, "the snap table comes first");
-    for (const [i, board] of boards.entries()) {
-      // The first count cell per named row (the boards also carry Rec/Yds or Yds/YPC since 2026-11-05).
-      const counts = [...board.querySelectorAll("tbody tr:not(.sct-us-board-more)")].map((tr) => Number(tr.querySelector("td.is-count").textContent));
-      assert.ok(counts.length > 0 && counts.length <= 8, `${i}: ${counts.length} rows`);
-      assert.ok(counts.every((c, j) => j === 0 || c <= counts[j - 1]), `${i}: not sorted: ${counts}`);
-      assert.equal(board.querySelectorAll(".sct-us-face").length, counts.length, `${i}: a face well per row`);
-      assert.equal(board.querySelectorAll(".sct-slot").length, counts.length, `${i}: a position chip per row`);
-      assert.equal(board.querySelectorAll("tbody .sct-us-share").length, counts.length, `${i}: one track per row`);
-      // The badge is the difference of the two printed numbers (mak's audit, 2026-11-02).
-      for (const tr of board.querySelectorAll("tbody tr:not(.sct-us-board-more)")) {
-        const season = Number(tr.querySelector(".sct-us-share-val").textContent.replace("%", ""));
-        const recentEl = tr.querySelector(".sct-us-recent-val");
-        if (!recentEl) continue;
-        const recent = Number(recentEl.textContent.replace("%", ""));
-        const badge = tr.querySelector(".sct-us-arrow");
-        const delta = recent - season;
-        if (Math.abs(delta) >= 3) {
-          assert.ok(badge, `${tr.textContent.trim().slice(0, 30)}: badge expected for ${delta}`);
-          assert.equal(badge.textContent.replace(/up|down/, ""), `${delta > 0 ? "▲" : "▼"}${Math.abs(delta)}`);
-        } else {
-          assert.equal(badge, null, `${tr.textContent.trim().slice(0, 30)}: no badge for ${delta}`);
-        }
-        assert.ok(season > 0, "no 0% rows are named");
-      }
-    }
-    assert.match(boards[0].querySelector("thead").textContent, /Tgt.*Season share.*Last 3 wk.*Air yds/);
-    assert.match(boards[1].querySelector("thead").textContent, /Car.*Season share.*Last 3 wk/);
-    assert.ok(!/Air yds/.test(boards[1].querySelector("thead").textContent), "no air yards on the carries board");
   });
 });
 

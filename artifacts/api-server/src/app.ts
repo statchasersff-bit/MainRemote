@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter, { assetVersion } from "./routes/embed";
-import { HASHED_ASSETS } from "./lib/hashed-assets";
+import { HASHED_ASSETS, HASHED_STYLESHEET_PATHS } from "./lib/hashed-assets";
 import teamRouter from "./routes/team";
 import { matchupRouter } from "./routes/matchup";
 import playerRouter from "./routes/player";
@@ -271,6 +271,7 @@ app.get(["/", "/index.html"], (req, res) => {
  */
 
 let builtAssetVersion: string | null = null;
+const HASHED_STYLESHEETS: ReadonlySet<string> = new Set(HASHED_STYLESHEET_PATHS);
 
 // The bundles' source maps are a build artifact for this workspace, not
 // something to publish: in production they 404 like any other unknown path.
@@ -282,34 +283,73 @@ app.use((req, res, next) => {
   next();
 });
 
+/** The caching headers for a public file at its URL path `rel`. */
+function setAssetHeaders(res: Response, rel: string): void {
+  // The team logo SVGs carry a content hash in their file name
+  // (scripts/images/team-logos.mjs), so each URL names one set of bytes
+  // for good - for the browser and for Cloudflare in front of this origin.
+  if (/^\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/.test(rel)) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    res.setHeader("Cloudflare-CDN-Cache-Control", "public, max-age=31536000");
+    return;
+  }
+  if (process.env["NODE_ENV"] !== "production") return;
+  if (HASHED_ASSETS.has(rel)) {
+    builtAssetVersion ??= assetVersion();
+    const ver = res.req?.query["ver"];
+    if (builtAssetVersion !== "0" && ver === builtAssetVersion) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      return;
+    }
+  }
+  // Any other stylesheet or bundle - no ver, a stale ver, a file the hash
+  // does not cover - is held for an hour rather than revalidated on every
+  // page view. An hour bounds how long the wrong bytes can stick after a
+  // deploy; the versioned URL above is what the plugin actually prints.
+  if (/\.(?:css|js)$/.test(rel)) {
+    res.setHeader("Cache-Control", "public, max-age=3600");
+  }
+}
+
+/**
+ * The hashed stylesheets, minified. build.mjs writes a copy of each into
+ * public/dist/css/; outside development it is what /team.css and the rest
+ * answer with, under exactly the headers the source would get. The sources in
+ * public/ stay readable and are what development serves, so a livereload edit
+ * shows at once. A copy that is missing falls through to the source.
+ * SC_MINIFIED_CSS=0 serves the sources anyway (the test harness does, since
+ * its suites read rules out of the stylesheets' text); =1 forces the copies.
+ */
+function minifiedCssEnabled(): boolean {
+  const raw = (process.env["SC_MINIFIED_CSS"] ?? "").trim().toLowerCase();
+  if (raw === "1" || raw === "true" || raw === "on") return true;
+  if (raw === "0" || raw === "false" || raw === "off") return false;
+  return process.env["NODE_ENV"] !== "development";
+}
+const minifiedCssDir = path.join(publicDir, "dist", "css");
+if (minifiedCssEnabled()) {
+  const serveMinified = express.static(minifiedCssDir, {
+    index: false,
+    setHeaders(res, filePath) {
+      setAssetHeaders(res as Response, `/${path.basename(filePath)}`);
+    },
+  });
+  app.use((req, res, next) => {
+    if (!HASHED_STYLESHEETS.has(req.path)) {
+      next();
+      return;
+    }
+    serveMinified(req, res, next);
+  });
+}
+
 app.use(
   express.static(publicDir, {
     setHeaders(res, filePath) {
-      const rel = `/${path.relative(publicDir, filePath).split(path.sep).join("/")}`;
-      // The team logo SVGs carry a content hash in their file name
-      // (scripts/images/team-logos.mjs), so each URL names one set of bytes
-      // for good - for the browser and for Cloudflare in front of this origin.
-      if (/^\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/.test(rel)) {
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        res.setHeader("Cloudflare-CDN-Cache-Control", "public, max-age=31536000");
-        return;
-      }
-      if (process.env["NODE_ENV"] !== "production") return;
-      if (HASHED_ASSETS.has(rel)) {
-        builtAssetVersion ??= assetVersion();
-        const ver = (res as Response).req?.query["ver"];
-        if (builtAssetVersion !== "0" && ver === builtAssetVersion) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-          return;
-        }
-      }
-      // Any other stylesheet or bundle - no ver, a stale ver, a file the hash
-      // does not cover - is held for an hour rather than revalidated on every
-      // page view. An hour bounds how long the wrong bytes can stick after a
-      // deploy; the versioned URL above is what the plugin actually prints.
-      if (/\.(?:css|js)$/.test(rel)) {
-        res.setHeader("Cache-Control", "public, max-age=3600");
-      }
+      setAssetHeaders(
+        res as Response,
+        `/${path.relative(publicDir, filePath).split(path.sep).join("/")}`,
+      );
     },
   }),
 );

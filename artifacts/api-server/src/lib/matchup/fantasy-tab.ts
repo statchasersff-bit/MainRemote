@@ -2,6 +2,7 @@
  * The completed game's Fantasy tab (mak, 2026-11-08), exactly five sections:
  *
  *   01 Fantasy Standouts      three player stories, not just the top three totals
+ *                             (bare cards since 11-09: no heading or section box)
  *   02 Fantasy Box Score      every QB/RB/WR/TE line: points, weekly finish, a
  *                             short production summary (the Box Score tab has the
  *                             full stat lines)
@@ -45,8 +46,8 @@ const MINUS = "−";
 const BOX_SHOWN = 12;
 /** Usage rows per team before "View full usage". */
 const USAGE_SHOWN = 6;
-/** Players on the Actual vs Expected chart. */
-const CHART_ROWS = 6;
+/** Actual vs Expected rows shown before "Show all players". */
+const XFP_SHOWN = 10;
 
 const e = escapeHtml;
 
@@ -303,28 +304,27 @@ export function pickStandouts(lines: FantasyLine[]): Story[] {
   return picked;
 }
 
-function storyText(ctx: Ctx, story: Story, f: Format): string {
+function storyText(ctx: Ctx, story: Story): string {
   const { line } = story;
   const name = lastName(line.name);
-  const over = line.over?.[f] ?? 0;
-  const abs = Math.abs(Math.round(over * 10) / 10).toFixed(1);
   const team = ctx.input.section.game[sideOf(ctx.input, line.team)].short;
   switch (story.kind) {
     case "top": {
       let text = gameLine(line);
       if (!line.qb && (line.tgtShare ?? 0) >= 0.25) text += ` Commanded ${pct(line.tgtShare)} of the ${team}' targets.`;
       else if (!line.qb && (line.carShare ?? 0) >= 0.5) text += ` Handled ${pct(line.carShare)} of the ${team}' carries.`;
-      else if (line.over && Math.abs(over) >= 2) text += ` ${abs} points ${over > 0 ? "above" : "below"} expected.`;
       return text;
     }
+    // No xFP figures here (mak, 2026-11-10): Actual vs Expected carries them;
+    // a highlight says what happened in a line.
     case "under":
-      return `Despite ${opportunities(line)}, ${name} finished ${abs} points below expected fantasy production.`;
+      return `Despite ${opportunities(line)}, ${name} came up well short of what that workload is usually worth.`;
     case "td": {
       const tds = touchdowns(line) + n(line.stats, "passTd");
-      return `${plural(tds, "touchdown")} on ${opportunities(line)} produced ${abs} more fantasy points than expected from the opportunity.`;
+      return `${plural(tds, "touchdown")} on ${opportunities(line)} made the day.`;
     }
     case "over":
-      return `${gameLine(line)} ${name} beat the opportunity by ${abs} points without leaning on touchdowns.`;
+      return `${gameLine(line)} ${name} outplayed the workload without leaning on touchdowns.`;
     case "role-up":
     case "role-down": {
       const r = story.role!;
@@ -333,7 +333,7 @@ function storyText(ctx: Ctx, story: Story, f: Format): string {
     }
     case "above":
     case "below":
-      return `${gameLine(line)} ${abs} points ${story.kind === "above" ? "above" : "below"} expected from ${opportunities(line)}.`;
+      return `${gameLine(line)} That is ${story.kind === "above" ? "more" : "less"} than ${opportunities(line)} usually produce.`;
     default:
       return gameLine(line);
   }
@@ -357,12 +357,15 @@ function renderStandouts(ctx: Ctx, lines: FantasyLine[]): string {
         `<p class="sct-fz-card-meta">${swap(meta)}</p>` +
         `</div></div>` +
         `<p class="sct-fz-card-pts">${swap(per((f) => line.pts[f].toFixed(1)), "sct-fz-card-num")}<span class="sct-fz-card-unit">fantasy points</span></p>` +
-        `<p class="sct-fz-card-text">${swap(per((f) => storyText(ctx, story, f)))}</p>` +
+        `<p class="sct-fz-card-text">${swap(per(() => storyText(ctx, story)))}</p>` +
         `</article>`
       );
     })
     .join("");
-  return section("fantasy-standouts", "Fantasy Standouts", `<div class="sct-fz-cards">${cards}</div>`, { slot: true });
+  // Bare cards, no section box, heading or scoring switch (mak, 2026-11-09).
+  // data-pv-fmt keeps them on the page's scoring switch; .sct-fz keeps the gap
+  // to the next section.
+  return `<div class="sct-fz sct-fz-cards" data-pv-fmt>${cards}</div>`;
 }
 
 /* ------------------------------------------------------ 02 box score */
@@ -495,64 +498,56 @@ function renderExpected(ctx: Ctx, lines: FantasyLine[]): string {
   const judged = lines.filter((l) => l.x && l.over && (l.x.ppr >= 3 || l.pts.ppr >= 5));
   const rates = ctx.input.section.rates;
   if (judged.length === 0 || !rates) return "";
-  const chart = [...judged].sort((a, b) => Math.abs(b.over!.ppr) - Math.abs(a.over!.ppr)).slice(0, CHART_ROWS);
-  // One scale for every bar in a format, from the biggest figure on the chart.
-  const scale = per((f) => Math.max(1, ...chart.flatMap((l) => [l.pts[f], l.x![f]])));
-  const width = (v: number, f: Format): string => String(Math.max(0, Math.round((v / scale[f]) * 1000) / 10));
-  const bar = (kind: "actual" | "expected", values: Triple): string =>
-    `<span class="sct-fz-bar is-${kind}">` +
-    `<span class="sct-fz-bar-label">${kind === "actual" ? "Actual" : "Expected"}</span>` +
-    `<span class="sct-fz-bar-track"><span class="sct-fz-bar-fill" style="width:${width(values.ppr, "ppr")}%"` +
-    FORMATS.map((f) => ` data-w-${f}="${width(values[f], f)}"`).join("") +
-    `></span></span>` +
-    swap(per((f) => values[f].toFixed(1)), "sct-fz-bar-num") +
-    `</span>`;
-  const items = chart
-    .map((l) => {
-      const adv = per((f) => verdictOf(l.over![f]) === "above" ? "pos" : verdictOf(l.over![f]) === "below" ? "neg" : "even");
+  // Compact leaderboard (mak, 2026-11-09): one actual-points bar per player
+  // with an xFP marker on the same scale, shared column heads, the reason
+  // behind each row's own toggle. Biggest gaps first; past XFP_SHOWN the rows
+  // wait behind "Show all players" (wireFantasyTabMore).
+  const rows = [...judged].sort(
+    (a, b) => Math.abs(b.over!.ppr) - Math.abs(a.over!.ppr) || b.pts.ppr - a.pts.ppr || a.name.localeCompare(b.name),
+  );
+  // One scale for every bar and marker in a format, from the biggest figure.
+  const scale = per((f) => Math.max(1, ...rows.flatMap((l) => [l.pts[f], l.x![f]])));
+  const width = (v: number, f: Format): string => String(Math.max(0, Math.min(100, Math.round((v / scale[f]) * 1000) / 10)));
+  const widths = (values: Triple): string =>
+    ` style="width:${width(values.ppr, "ppr")}%"` + FORMATS.map((f) => ` data-w-${f}="${width(values[f], f)}"`).join("");
+  const items = rows
+    .map((l, at) => {
+      const adv = per((f) => (verdictOf(l.over![f]) === "above" ? "pos" : verdictOf(l.over![f]) === "below" ? "neg" : "even"));
+      const advAttrs = ` data-adv="${adv.ppr}"` + FORMATS.map((f) => ` data-adv-${f}="${adv[f]}"`).join("");
       return (
-        `<li class="sct-fz-x" style="--fz-team:${ink(ctx.input, l.team)}">` +
-        `<div class="sct-fz-x-head">${who(ctx, l)}` +
-        `<span class="sct-fz-x-diff" data-adv="${adv.ppr}"${FORMATS.map((f) => ` data-adv-${f}="${adv[f]}"`).join("")}>` +
-        swap(per((f) => `${signed(l.over![f])} vs xFP`)) +
-        `<span class="sct-fz-x-verdict">${swap(per((f) => VERDICT_LABEL[verdictOf(l.over![f])]))}</span>` +
-        `</span></div>` +
-        `<div class="sct-fz-x-bars">${bar("actual", l.pts)}${bar("expected", l.x!)}</div>` +
+        `<li class="sct-fz-x${at >= XFP_SHOWN ? " is-extra" : ""}" data-fz-row>` +
+        `<details class="sct-fz-x-row"><summary class="sct-fz-x-sum">` +
+        `<span class="sct-fz-x-who">${who(ctx, l)}</span>` +
+        `<span class="sct-fz-x-track" aria-hidden="true">` +
+        `<span class="sct-fz-x-fill"${widths(l.pts)}></span>` +
+        `<span class="sct-fz-x-mark"${widths(l.x!)}></span>` +
+        `</span>` +
+        `<span class="sct-fz-x-num is-pts">${swap(per((f) => l.pts[f].toFixed(1)))}</span>` +
+        `<span class="sct-fz-x-num is-xfp">${swap(per((f) => l.x![f].toFixed(1)))}</span>` +
+        `<span class="sct-fz-x-num is-diff"${advAttrs}>${swap(per((f) => signed(l.over![f])))}` +
+        `<span class="sct-rb-sr"> ${swap(per((f) => VERDICT_LABEL[verdictOf(l.over![f])].toLowerCase()))}</span></span>` +
+        `<span class="sct-fz-x-chev" aria-hidden="true"></span>` +
+        `</summary>` +
+        `<div class="sct-fz-x-detail">` +
         `<p class="sct-fz-x-why">${swap(per((f) => reason(l, f)))}</p>` +
-        `</li>`
+        `<p class="sct-fz-x-opp">Opportunity: ${e(opportunities(l))}</p>` +
+        `</div></details></li>`
       );
     })
     .join("");
-
-  const full = [...judged]
-    .sort((a, b) => b.x!.ppr - a.x!.ppr || a.name.localeCompare(b.name))
-    .map(
-      (l) =>
-        `<tr><th scope="row" class="sct-fz-player">${who(ctx, l)}</th>` +
-        `<td class="sct-fz-pts"${fmtAttrs(per((f) => l.pts[f].toFixed(1)))}>${l.pts.ppr.toFixed(1)}</td>` +
-        `<td${fmtAttrs(per((f) => l.x![f].toFixed(1)))}>${l.x!.ppr.toFixed(1)}</td>` +
-        (() => {
-          const adv = per((f) => (l.over![f] > 0.05 ? "pos" : l.over![f] < -0.05 ? "neg" : "even"));
-          return (
-            `<td class="sct-fz-diff" data-adv="${adv.ppr}"${FORMATS.map((f) => ` data-adv-${f}="${adv[f]}"`).join("")}` +
-            `${fmtAttrs(per((f) => signed(l.over![f])))}>${signed(l.over!.ppr)}</td>`
-          );
-        })() +
-        `<td class="sct-fz-prod">${e(opportunities(l))}</td></tr>`,
-    )
-    .join("");
-
+  const hidden = rows.length - XFP_SHOWN;
   const body =
-    `<p class="sct-fz-legend" aria-hidden="true"><span class="sct-fz-key is-actual"></span>Actual <span class="sct-fz-key is-expected"></span>Expected (xFP)</p>` +
-    `<ol class="sct-fz-xlist">${items}</ol>` +
-    `<details class="sct-fz-all"><summary>Show all ${judged.length} players</summary>` +
-    `<div class="sct-fz-wrap"><table class="sct-fz-table is-xfp">` +
-    `<caption class="sct-rb-sr">Actual and expected fantasy points for every player with an opportunity</caption>` +
-    `<thead><tr><th scope="col">Player</th><th scope="col"><abbr title="Fantasy points">PTS</abbr></th>` +
-    `<th scope="col"><abbr title="Expected fantasy points">xFP</abbr></th>` +
-    `<th scope="col"><abbr title="Points over or under expected">vs xFP</abbr></th>` +
-    `<th scope="col" class="sct-fz-prod">Opportunity</th></tr></thead>` +
-    `<tbody>${full}</tbody></table></div></details>`;
+    `<div class="sct-fz-list sct-fz-xboard" data-fz-list data-fz-shown="${XFP_SHOWN}">` +
+    `<div class="sct-fz-x-heads" aria-hidden="true">` +
+    `<span class="sct-fz-x-h is-who">Player</span>` +
+    `<span class="sct-fz-x-h is-bar"><span class="sct-fz-key is-actual"></span>Actual <span class="sct-fz-key is-expected"></span>xFP</span>` +
+    `<span class="sct-fz-x-h is-num">FPTS</span><span class="sct-fz-x-h is-num">xFP</span><span class="sct-fz-x-h is-num">vs xFP</span>` +
+    `<span class="sct-fz-x-h"></span>` +
+    `</div>` +
+    `<ol class="sct-fz-xlist" aria-label="Actual and expected fantasy points, biggest gap first">${items}</ol>` +
+    (hidden > 0 ? moreButton(rows.length, `Show all ${rows.length} players`, "Show fewer players") : "") +
+    `</div>` +
+    `<p class="sct-fz-note">xFP is what a player's opportunities were worth at league-average rates. A gap measures scoring above or below that workload, not necessarily the quality of the performance.</p>`;
   return section("fantasy-xfp", "Actual vs Expected (xFP)", body, { slot: true });
 }
 

@@ -55,22 +55,6 @@ export function weeklyTier(rank: number | null | undefined): WeeklyTier | null {
   return "bust";
 }
 
-/**
- * The four finish tiers, as one hue in four monotone lightness steps.
- *
- * Validated rather than chosen: OKLCH lightness ascends 0.359 / 0.500 / 0.628 /
- * 0.754 in even steps, and the palest step still clears 2:1 against the white
- * surface these pages render on, which is the floor an ordinal ramp's light end
- * has to hold. Anchored on SC Blue so the page's data and the page's brand are
- * the same color.
- */
-export const TIER_FILL: Record<WeeklyTier, string> = {
-  pos1: "#0b3a7a",
-  pos2: "#2f63a8",
-  pos3: "#5a8cc4",
-  bust: "#8fb3da",
-};
-
 export function weeklyTierLabel(
   tier: WeeklyTier,
   position: string | null,
@@ -352,52 +336,6 @@ export interface KeyStat {
   decimal: boolean;
 }
 
-/** The four counting stats that matter for this position. */
-export function keyStatSummary(
-  entries: GameLogEntry[],
-  position: string | null,
-): KeyStat[] {
-  if (entries.length === 0) return [];
-  const gp = entries.filter((e) => hasParticipation(e.stats, position)).length || 1;
-  const row = (label: string, key: string, decimal = false): KeyStat => {
-    const total = sumStat(entries, key);
-    return { label, total, perGame: total / gp, decimal };
-  };
-
-  switch (position) {
-    case "QB":
-      return [
-        row("Pass YDS", "pass_yd"),
-        row("Pass TD", "pass_td", true),
-        row("Rush YDS", "rush_yd"),
-        row("INT", "pass_int", true),
-      ];
-    case "RB":
-      return [
-        row("Rush YDS", "rush_yd"),
-        row("Rush TD", "rush_td", true),
-        row("REC", "rec", true),
-        row("Rec YDS", "rec_yd"),
-      ];
-    case "WR":
-    case "TE":
-      return [
-        row("TGT", "rec_tgt", true),
-        row("REC", "rec", true),
-        row("Rec YDS", "rec_yd"),
-        row("Rec TD", "rec_td", true),
-      ];
-    case "K":
-      return [
-        row("FGM", "fgm", true),
-        row("FGA", "fga", true),
-        row("XPM", "xpm", true),
-      ];
-    default:
-      return [];
-  }
-}
-
 /**
  * How the game log turns one stat line into one cell.
  *
@@ -516,129 +454,6 @@ export interface RateStat {
   prose?: string;
 }
 
-/**
- * The per-game line that belongs above a game log.
- *
- * Rates rather than totals, because this sits on the tab that answers "what
- * does a week from this player look like" - the totals are the Stats tab's
- * question and are answered there. Over the games PLAYED, for the reason
- * computeGameLogStats() gives: per-game over weeks on a roster is a number
- * about availability wearing the clothes of a number about production.
- *
- * Returns [] for a position with no defined line, which is how the caller knows
- * to render nothing rather than a row of dashes.
- */
-export function perGameRates(
-  entries: GameLogEntry[],
-  position: string | null,
-): RateStat[] {
-  const played = entries.filter((e) => hasParticipation(e.stats, position));
-  const gp = played.length;
-  if (gp === 0) return [];
-
-  const per = (key: string): number => sumStat(played, key) / gp;
-  const share = (made: string, attempted: string): number => {
-    const att = sumStat(played, attempted);
-    return att > 0 ? (sumStat(played, made) / att) * 100 : 0;
-  };
-
-  switch (position) {
-    case "QB":
-      return [
-        { label: "Pass yds/g", value: per("pass_yd"), digits: 0, prose: "passing yards" },
-        {
-          label: "Pass TD/g",
-          value: per("pass_td"),
-          digits: 1,
-          prose: "passing touchdowns",
-        },
-        { label: "Cmp %", value: share("pass_cmp", "pass_att"), digits: 1, pct: true },
-        {
-          label: "Rush yds/g",
-          value: per("rush_yd"),
-          digits: 0,
-          prose: "rushing yards",
-        },
-      ];
-    case "RB":
-      return [
-        { label: "Carries/g", value: per("rush_att"), digits: 1, prose: "carries" },
-        {
-          label: "Rush yds/g",
-          value: per("rush_yd"),
-          digits: 1,
-          prose: "rushing yards",
-        },
-        { label: "Rec/g", value: per("rec"), digits: 1, prose: "receptions" },
-        {
-          label: "Rec yds/g",
-          value: per("rec_yd"),
-          digits: 1,
-          prose: "receiving yards",
-        },
-      ];
-    case "WR":
-    case "TE": {
-      const rec = sumStat(played, "rec");
-      return [
-        { label: "Targets/g", value: per("rec_tgt"), digits: 1, prose: "targets" },
-        { label: "Rec/g", value: per("rec"), digits: 1, prose: "receptions" },
-        {
-          label: "Rec yds/g",
-          value: per("rec_yd"),
-          digits: 1,
-          prose: "receiving yards",
-        },
-        {
-          label: "Yds/rec",
-          value: rec > 0 ? sumStat(played, "rec_yd") / rec : 0,
-          digits: 1,
-        },
-      ];
-    }
-    case "K":
-      return [
-        { label: "FG made/g", value: per("fgm"), digits: 1, prose: "field goals" },
-        { label: "FG %", value: share("fgm", "fga"), digits: 0, pct: true },
-        { label: "XP made/g", value: per("xpm"), digits: 1, prose: "extra points" },
-      ];
-    default:
-      return [];
-  }
-}
-
-/**
- * The trailing slice of a season, for the "last five games" read.
- *
- * Played games only and in played order, so "last five" means the last five he
- * was on the field for rather than the last five weeks on the calendar - a
- * player back from a three-week absence has played one game recently, not four.
- */
-export function recentGames(entries: GameLogEntry[], count: number): GameLogEntry[] {
-  return entries.filter((e) => e.game_status === "active").slice(-count);
-}
-
-/* -------------------------------------------------------------- trend and shape */
-
-/** Trailing mean over `window` entries, one value per entry. */
-export function rollingAverage(values: number[], window = 3): number[] {
-  return values.map((_, i) => {
-    const slice = values.slice(Math.max(0, i - window + 1), i + 1);
-    return slice.reduce((a, b) => a + b, 0) / slice.length;
-  });
-}
-
-export function rollingStatAverage(
-  entries: GameLogEntry[],
-  key: string,
-  window = 3,
-): number[] {
-  return rollingAverage(
-    entries.map((e) => statValue(e.stats, key)),
-    window,
-  );
-}
-
 export interface MomentumMetric {
   key: string;
   label: string;
@@ -648,45 +463,6 @@ export interface MomentumMetric {
   weight: number;
   /** Context only - shown, but not scored as the player's own usage. */
   context?: boolean;
-}
-
-/** The usage metrics whose direction actually describes this position's role. */
-export function positionMomentumMetrics(position: string | null): MomentumMetric[] {
-  if (position === "QB")
-    return [
-      { key: "pass_att", label: "Pass Att/G", pct: false, weight: 5 },
-      { key: "rush_att", label: "Rush Att/G", pct: false, weight: 3 },
-    ];
-  if (position === "RB")
-    return [
-      { key: "snap_share", label: "Snap Share", pct: true, weight: 4 },
-      { key: "rush_att", label: "Carries/G", pct: false, weight: 4 },
-      { key: "rec_tgt", label: "Targets/G", pct: false, weight: 2 },
-    ];
-  if (position === "WR" || position === "TE")
-    return [
-      { key: "target_share", label: "Target Share (Team)", pct: true, weight: 6 },
-      { key: "rec_tgt", label: "Targets/G", pct: false, weight: 2 },
-      { key: "team_pass_att", label: "Team Pass Att/G", pct: false, weight: 2, context: true },
-    ];
-  if (position === "K")
-    return [
-      { key: "fga", label: "FG Att/G", pct: false, weight: 5 },
-      { key: "fgm", label: "FG Made/G", pct: false, weight: 3 },
-      { key: "xpa", label: "XP Att/G", pct: false, weight: 2 },
-    ];
-  return [];
-}
-
-/** Mean of one stat over all entries, or over the last `count` of them. */
-export function metricAverage(
-  entries: GameLogEntry[],
-  key: string,
-  count?: number,
-): number {
-  const src = count ? entries.slice(-count) : entries;
-  if (src.length === 0) return 0;
-  return src.reduce((s, e) => s + statValue(e.stats, key), 0) / src.length;
 }
 
 export interface TdDependency {

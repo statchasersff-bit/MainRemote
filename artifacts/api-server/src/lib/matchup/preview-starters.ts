@@ -13,14 +13,6 @@
 import { isOutDesignation, type RosterPlayer } from "../team/roster";
 import type { Pos } from "./preview";
 
-/** Slots per position, in the order the card lists them. */
-export const SLOTS: Array<{ pos: Pos; n: number }> = [
-  { pos: "QB", n: 1 },
-  { pos: "RB", n: 2 },
-  { pos: "WR", n: 3 },
-  { pos: "TE", n: 1 },
-];
-
 /**
  * The starters at a position: Sleeper's depth order with the unavailable
  * skipped, so an Out RB1 hands his slot to the RB2 and the card never lists

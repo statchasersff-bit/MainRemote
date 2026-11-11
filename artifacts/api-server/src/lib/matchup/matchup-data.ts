@@ -20,7 +20,7 @@ import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-da
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
 import { isUpcomingFixture, pairInPreviewMode, type MatchupGameRef, type MatchupPair, type MeetingFacts } from "./pair";
-import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
+import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
 import { logger } from "../logger";

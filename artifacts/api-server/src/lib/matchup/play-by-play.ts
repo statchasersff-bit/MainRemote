@@ -1,11 +1,11 @@
 /**
  * The completed game's Play-by-Play tab (mak, 2026-11-08): exactly what
- * happened on every possession and play. Three sections, no more:
+ * happened on every possession and play. Two sections, no more (Drive
+ * Overview, a strip of outcome chips per team, removed 2026-11-10 at mak's
+ * request: it repeated the drives the full log already lists):
  *
  *   Scoring Summary     every score in order: quarter and clock, the team,
  *                       the play, the score after it (away-home)
- *   Drive Overview      each team's possessions as a strip of outcome chips,
- *                       in game order, each chip a link to its drive below
  *   Full Play-by-Play   quarter -> drive -> play: each drive a <details>
  *                       row (team, result, plays, yards, time), its plays
  *                       inside with down and distance, field position,
@@ -128,22 +128,22 @@ export function loadGamePbp(season: number, gameId: string): GamePbp | null {
 
 /* ------------------------------------------------------------- helpers */
 
-const RESULT: Record<PbpDriveResult, { chip: string; label: string }> = {
-  td: { chip: "TD", label: "Touchdown" },
-  fg: { chip: "FG", label: "Field goal" },
-  punt: { chip: "P", label: "Punt" },
-  int: { chip: "INT", label: "Interception" },
-  fumble: { chip: "FUM", label: "Fumble" },
-  turnover: { chip: "TO", label: "Turnover" },
-  downs: { chip: "DOWNS", label: "Turnover on downs" },
-  missed_fg: { chip: "MISS", label: "Missed field goal" },
-  safety: { chip: "SAF", label: "Safety" },
-  end_half: { chip: "HALF", label: "End of half" },
-  end_game: { chip: "END", label: "End of game" },
-  other: { chip: "-", label: "Other" },
+const RESULT: Record<PbpDriveResult, { label: string }> = {
+  td: { label: "Touchdown" },
+  fg: { label: "Field goal" },
+  punt: { label: "Punt" },
+  int: { label: "Interception" },
+  fumble: { label: "Fumble" },
+  turnover: { label: "Turnover" },
+  downs: { label: "Turnover on downs" },
+  missed_fg: { label: "Missed field goal" },
+  safety: { label: "Safety" },
+  end_half: { label: "End of half" },
+  end_game: { label: "End of game" },
+  other: { label: "Other" },
 };
 
-/** Which chip color a result wears: a score, a giveaway, or neither. */
+/** Which color a drive result wears: a score, a giveaway, or neither. */
 function tone(r: PbpDriveResult): "score" | "turnover" | "plain" {
   if (r === "td" || r === "fg") return "score";
   if (r === "int" || r === "fumble" || r === "turnover" || r === "downs" || r === "safety") return "turnover";
@@ -229,45 +229,7 @@ function scoringSection(game: ScoreboardGame, plays: ScoringPlay[], url: (name: 
   return section(
     "pbp-scoring",
     "Scoring summary",
-    `<p class="sct-pbp-key">${e(`Score shown ${game.away.abbr}–${game.home.abbr}.`)}</p><ol class="sct-pbp-scores">${rows}</ol>`,
-  );
-}
-
-function driveOverview(game: ScoreboardGame, pbp: GamePbp): string {
-  if (!pbp.drives.length) return "";
-  const strip = (side: Side) => {
-    const team = game[side];
-    const drives = pbp.drives.filter((d) => d.team === team.abbr);
-    if (!drives.length) return "";
-    return (
-      `<div class="sct-pbp-strip is-${side}">` +
-      `<p class="sct-pbp-strip-name">${chip(game, team.abbr)} ${e(team.short)}</p>` +
-      `<ol class="sct-pbp-chips">` +
-      drives
-        .map((d) => {
-          const r = RESULT[d.result];
-          const title =
-            `${quarterShort(d.qtr)} ${clockText(d.clock)} · ${r.label}` +
-            (d.plays !== null ? ` · ${d.plays} play${d.plays === 1 ? "" : "s"}` : "") +
-            (d.yards !== null ? `, ${d.yards} yards` : "");
-          return (
-            `<li><a class="sct-pbp-chip is-${tone(d.result)}" href="#pbp-drive-${d.n}" title="${e(title)}">` +
-            `${e(r.chip)}<span class="sct-rb-sr">${e(`, ${title}`)}</span></a></li>`
-          );
-        })
-        .join("") +
-      `</ol></div>`
-    );
-  };
-  const used = [...new Set(pbp.drives.map((d) => d.result))];
-  const legend = (Object.keys(RESULT) as PbpDriveResult[])
-    .filter((r) => used.includes(r))
-    .map((r) => `${RESULT[r].chip} = ${RESULT[r].label.toLowerCase()}`)
-    .join(" · ");
-  return section(
-    "pbp-drives",
-    "Drive overview",
-    strip("away") + strip("home") + `<p class="sct-pbp-key">${e(legend)}</p>`,
+    `<ol class="sct-pbp-scores">${rows}</ol>`,
   );
 }
 
@@ -309,8 +271,18 @@ function driveRow(game: ScoreboardGame, d: PbpDrive, plays: PbpPlay[]): string {
       );
     })
     .join("");
-  const cell = (cls: string, text: string, unit = "") =>
-    `<span class="sct-pbp-dc is-${cls}">${e(text)}${unit && text !== "-" ? `<i>${e(unit)}</i>` : ""}</span>`;
+  // Quarter cards (mak, 2026-11-09): the line keeps team, result, the
+  // drive's size and the score; when, where from and how long move into the
+  // open drive, above its plays.
+  const size = [
+    d.plays !== null ? `${d.plays} play${d.plays === 1 ? "" : "s"}` : null,
+    d.yards !== null ? `${signed(d.yards)} yds` : null,
+  ].filter(Boolean);
+  const info = [
+    clock ? `Started ${clock}` : null,
+    from ? `from ${from}` : null,
+    d.top ? `${clockText(d.top)} possession` : null,
+  ].filter(Boolean);
   return (
     `<details class="sct-pbp-drive is-${tone(d.result)}" id="pbp-drive-${d.n}" data-tags="${e(driveTags.join(" "))}">` +
     `<summary>` +
@@ -318,16 +290,11 @@ function driveRow(game: ScoreboardGame, d: PbpDrive, plays: PbpPlay[]): string {
     `<span class="sct-pbp-drow" aria-hidden="true">` +
     `<span class="sct-pbp-drive-team">${chip(game, d.team)}</span>` +
     `<b class="sct-pbp-dres">${e(r.label)}</b>` +
-    `<span class="sct-pbp-dmeta">` +
-    cell("clock", clock || "-") +
-    cell("from", d.start ? (d.start === "MID 50" ? "50" : d.start) : "-") +
-    cell("plays", d.plays !== null ? String(d.plays) : "-", d.plays === 1 ? " play" : " plays") +
-    cell("yds", signed(d.yards), " yds") +
-    cell("top", d.top ? clockText(d.top) : "-") +
-    `</span>` +
+    `<span class="sct-pbp-dsize">${e(size.join(" · "))}</span>` +
     `<span class="sct-pbp-tally${tally ? "" : " is-empty"}">${e(tally)}</span>` +
     `</span>` +
     `</summary>` +
+    (info.length ? `<p class="sct-pbp-dinfo">${e(info.join(" · "))}</p>` : "") +
     `<ol class="sct-pbp-plays">${items}</ol>` +
     `</details>`
   );
@@ -359,29 +326,27 @@ function fullSection(game: ScoreboardGame, pbp: GamePbp): string {
     .join("");
   const filter = (value: string, label: string, on = false) =>
     `<button type="button" class="sct-pbp-filter${on ? " is-on" : ""}" data-pbp-filter="${e(value)}" aria-pressed="${on}">${e(label)}</button>`;
+  // The filter sits in the section's title bar (mak, 2026-11-09); the one
+  // Expand all / Collapse all toggle sits centered under the log. Both are
+  // printed hidden and shown by the client.
   const controls =
-    `<div class="sct-pbp-controls" data-pbp-controls hidden>` +
-    `<div class="sct-pbp-filters" role="group" aria-label="Show drives">` +
+    `<div class="sct-pbp-filters" role="group" aria-label="Show drives" data-pbp-controls hidden>` +
     filter("all", "All drives", true) +
     filter("score", "Scoring") +
     filter("turnover", "Turnovers") +
     filter("major", "Major plays") +
-    `</div>` +
+    `</div>`;
+  const more =
+    `<div class="sct-pbp-more" data-pbp-more hidden>` +
     `<button type="button" class="sct-pbp-btn" data-pbp-expand aria-expanded="false">Expand all</button>` +
     `</div>`;
-  // One header row over every drive line (hidden on phones, where each
-  // cell carries its own unit instead).
-  const cols =
-    `<div class="sct-pbp-cols" aria-hidden="true">` +
-    `<span>Team</span><span>Result</span><span>Start</span><span>From</span>` +
-    `<span>Plays</span><span>Yds</span><span>Time</span><span>Score</span>` +
-    `</div>`;
-  return section(
-    "pbp-full",
-    "Full play-by-play",
-    controls + `<div class="sct-pbp-list" data-pbp-list>${cols}${groups}</div>` +
-      `<p class="sct-rb-note">Major plays are scores, turnovers, sacks and gains of 20+ yards. A drive is listed under the quarter it started in.</p>`,
-    "sct-pbp-full",
+  return (
+    `<section class="sct-rb-section sct-pbp-sec sct-pbp-full" aria-labelledby="pbp-full">` +
+    `<div class="sct-fp-head sct-pbp-head"><h2 class="sct-rb-h2" id="pbp-full">${e("Full play-by-play")}</h2>${controls}</div>` +
+    `<div class="sct-pbp-list" data-pbp-list><div class="sct-pbp-qgrid">${groups}</div></div>` +
+    more +
+    `<p class="sct-rb-note">Major plays are scores, turnovers, sacks and gains of 20+ yards. A drive is listed under the quarter it started in.</p>` +
+    `</section>`
   );
 }
 
@@ -393,13 +358,21 @@ export interface PlayByPlayInput {
   inks: Record<Side, string>;
 }
 
-/** The Play-by-Play tab's body, or "" without stored play-by-play. */
-export function renderPlayByPlay(input: PlayByPlayInput): string {
+/**
+ * The same, in two parts: the Scoring Summary (`lead`), which the recap's
+ * Play-by-Play tab puts inside its header's container (mak, 2026-11-10),
+ * and the drive strip and full play-by-play after it (`rest`, the
+ * [data-pbp] box client/team.ts wires). Each part carries the team inks.
+ */
+export function renderPlayByPlayParts(input: PlayByPlayInput): { lead: string; rest: string } | null {
   const { game, pbp } = input;
-  if (!pbp || !pbp.plays.length) return "";
-  const html =
-    scoringSection(game, input.scoringPlays, input.playerUrl) + driveOverview(game, pbp) + fullSection(game, pbp);
-  return html
-    ? `<div class="sct-pbp" data-pbp style="${e(`--pbp-away:${input.inks.away};--pbp-home:${input.inks.home}`)}">${html}</div>`
-    : "";
+  if (!pbp || !pbp.plays.length) return null;
+  const style = e(`--pbp-away:${input.inks.away};--pbp-home:${input.inks.home}`);
+  const scoring = scoringSection(game, input.scoringPlays, input.playerUrl);
+  const rest = fullSection(game, pbp);
+  if (!scoring && !rest) return null;
+  return {
+    lead: scoring ? `<div class="sct-pbp" style="${style}">${scoring}</div>` : "",
+    rest: rest ? `<div class="sct-pbp" data-pbp style="${style}">${rest}</div>` : "",
+  };
 }

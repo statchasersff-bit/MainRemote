@@ -30,7 +30,6 @@ import {
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
 import { dataModified, hubPersonNode, playerPageMeta, renderPlayerHeadTags } from "./player-seo";
-import { playerShareImage } from "./player/share-image";
 import { bioPersonNode } from "./player/bio-seo";
 import { injuryAnswer } from "./player/injury-tab";
 import { LruCache } from "./lru";

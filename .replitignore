@@ -17,3 +17,17 @@
 .cache/pnpm
 .config/chromium-headless
 .config/chromium
+
+# Derived caches, rebuilt on first request and recreated when missing
+# (lib/image-cache.ts, lib/matchup/og-image.ts). img-cache alone is ~1.3GB.
+artifacts/api-server/data/img-cache
+artifacts/api-server/data/og
+
+# Workspace-only tooling and credentials: a global npm install (~330MB) and the
+# GitHub CLI login (an auth token). Nothing in the deployment uses either.
+.config/npm
+.config/gh
+
+# Design references for briefs (~88MB) and the repo history; never read at runtime.
+attached_assets
+.git

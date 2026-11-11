@@ -17,13 +17,11 @@
  */
 import { gsisForSleeper, getDurability, getPlayerSlice } from "../injury-impact/data";
 import type { GmInjury, GmPlayer } from "../injury-impact/durability";
-import { classify, REGIONS, regionChips, riskModel, severityColor, type Region } from "../injury-impact/player";
+import { classify, regionChips, riskModel, severityColor, type Region } from "../injury-impact/player";
 import type { InjuryRow, PlayerSlice } from "../injury-impact/types";
 import { escapeHtml } from "../render";
 import { assetUrl } from "../asset-origin";
 import type { PlayerPageData } from "./player-data";
-import type { PlayerRenderOptions } from "../player-render";
-import { titleCase } from "./title-case";
 
 /* ------------------------------------------------------------- episodes */
 
@@ -293,19 +291,6 @@ export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
 
 const n1 = (v: number): string => v.toFixed(1);
 
-/** The ten-notch health bar (Redraft Command's "HP"): the score, in the tier's color, the tier named under it. */
-function renderHealth(gm: GmPlayer): string {
-  const color = TIER_COLOR[gm.tier.key];
-  const pct = Math.max(0, Math.min(100, gm.score));
-  return (
-    `<div class="scp-in-hp" role="img" aria-label="${escapeHtml(`Durability ${n1(gm.score)} of 100, ${gm.tier.name}`)}" style="--hp:${escapeHtml(color)}">` +
-    `<div class="scp-in-hp-head"><span class="scp-in-hp-k">HP</span><span class="scp-in-hp-v"><b>${n1(gm.score)}</b><small> / 100</small></span></div>` +
-    `<div class="scp-in-hp-bar"><span class="scp-in-hp-fill" style="width:${pct.toFixed(1)}%"></span><span class="scp-in-hp-gloss"></span><span class="scp-in-hp-notches"></span></div>` +
-    `<p class="scp-in-hp-tier">${escapeHtml(gm.tier.name)}</p>` +
-    `</div>`
-  );
-}
-
 const BOX: Record<string, [string, string]> = {
   P: ["g", "played"],
   X: ["r", "missed to injury"],
@@ -456,20 +441,6 @@ export function renderAvailGrid(
     ordered.map(row).join("") +
     more +
     legend +
-    `</div>`
-  );
-}
-
-function renderTiles(gm: GmPlayer): string {
-  const tile = (value: string | number, label: string, title?: string): string =>
-    `<div class="scp-in-dt"${title ? ` title="${escapeHtml(title)}"` : ""}><p class="scp-in-dt-v">${escapeHtml(String(value))}</p><p class="scp-in-dt-k">${escapeHtml(label)}</p></div>`;
-  const seasons = gm.seasonYears.length;
-  return (
-    `<div class="scp-in-dur-tiles">` +
-    tile(gm.major, "Major Injuries") +
-    tile(gm.soft, "Soft-Tissue Events") +
-    tile(gm.gmTot, "Games Missed", `Over ${seasons} season${seasons === 1 ? "" : "s"}`) +
-    tile(n1(gm.perYearRate), "Missed / Season") +
     `</div>`
   );
 }
@@ -723,44 +694,6 @@ function renderFigure(data: PlayerPageData, regions: RegionView[], worst: string
     `</div>` +
     renderLabels(figureLabels(regions), worst) +
     `</div>`
-  );
-}
-
-/**
- * The card: a reading order (Redraft Command, 2026-10-28). The signature at
- * the right - the figure, the durability bar, his status now and his career
- * availability - and the evidence at the left, top to bottom: the availability
- * grid with the four tiles beside it, the region pills worst first, then the
- * open region's record.
- */
-export function renderDurabilitySection(data: PlayerPageData, _options: PlayerRenderOptions = {}): string {
-  const m = durabilityModel(data);
-  if (!m) return "";
-  const { gm, regions, worst } = m;
-  const status = (data.designation?.injuryStatus ?? "").trim();
-  const tone = !status ? "good" : /^q/i.test(status) ? "mid" : "bad";
-  const current = { season: data.leagueSeason, week: data.leagueWeek };
-  const worstView = regions.find((r) => r.region.key === worst) ?? null;
-  const highlight = worstView ? regionLostWeeks(worstView.episodes) : null;
-  return (
-    `<section class="scp-ox-sec scp-in-dur-sec" aria-labelledby="scp-in-dur-h" data-scp-durability>` +
-    `<h2 class="scp-ox-h2" id="scp-in-dur-h">${escapeHtml(titleCase("Durability profile"))}</h2>` +
-    `<div class="scp-in-dur">` +
-    `<div class="scp-in-dur-side">` +
-    renderFigure(data, regions, worst) +
-    `<div class="scp-in-dur-sig">` +
-    renderHealth(gm) +
-    `<p class="scp-in-dur-status"><b class="is-${tone}">${escapeHtml(status || "Healthy")}</b><i aria-hidden="true"> • </i><b>${n1(gm.availPct)}%</b> career availability</p>` +
-    `</div></div>` +
-    `<div class="scp-in-dur-ev">` +
-    renderAvailGrid(gm, current, highlight) +
-    renderTiles(gm) +
-    `</div>` +
-    `<div class="scp-in-dur-reg">` +
-    renderPills(regions, worst) +
-    renderDetails(regions, worst) +
-    `</div>` +
-    `</div></section>`
   );
 }
 

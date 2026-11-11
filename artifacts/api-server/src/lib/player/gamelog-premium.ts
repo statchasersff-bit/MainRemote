@@ -26,7 +26,6 @@ import {
   ladderScale,
   ladderSummary,
   layoutLadder,
-  type StoryGame,
 } from "./gamelog-sections";
 import { titleCase } from "./title-case";
 import type { PlayerPageData } from "./player-data";

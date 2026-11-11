@@ -390,11 +390,6 @@ export function teamFill(abbr: string): string {
   return colors ? passing([colors.primary, colors.secondary], "#FFFFFF") : FALLBACK_COLOR;
 }
 
-/** A side's paint as the panel lays it: heroSideColor() at SIDE_ALPHA. */
-export function heroSideFill(abbr: string): string {
-  return rgba(heroSideColor(abbr));
-}
-
 /* ------------------------------------------------------------------- facts */
 
 /** Quarters plus overtime, or null when there is no line to add up. */
@@ -473,15 +468,6 @@ export function gameSeoFacts(game: ScoreboardGame): GameSeoFacts {
  */
 export function scoreboardPageHeading(game: ScoreboardGame): string {
   return completedGameHeading(gameSeoFacts(game), { round: true });
-}
-
-/** "Sep 14, 2026" - the kickoff's date in the Eastern calendar, or null. */
-export function scoreboardKickoffDate(game: ScoreboardGame): string | null {
-  if (!game.kickoff) return null;
-  const date = new Date(game.kickoff);
-  if (Number.isNaN(date.getTime())) return null;
-  const parts = easternParts(date);
-  return `${parts["month"]} ${parts["day"]}, ${parts["year"]}`;
 }
 
 /** "September 14, 2026" - the same date with the month written out, or null. */

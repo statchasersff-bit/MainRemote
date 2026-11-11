@@ -321,9 +321,6 @@ const ERAS: Record<string, { until: number; name: string; nickname: string; prim
   ],
 };
 
-/** The club's name in a season's era: "Oakland Raiders" for LV in 2018. */
-export const teamNameIn = (code: string, season: number): string => teamFor(code, season).name;
-
 function teamFor(code: string, season: number) {
   const team = getTeamByAbbreviation(code);
   const era = (ERAS[code] ?? []).find((e) => season <= e.until);

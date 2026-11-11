@@ -35,7 +35,7 @@ Outlooks are hand-written per season. There is nothing to flip until the new one
 - **`artifacts/api-server/data/player/fantasy_outlook_2027.json`:** write it. `scripts/player/buildFantasyOutlook2026.js` and `outlookPrep.js` are the 2026 pipeline, so copy and rename them.
 - **`artifacts/api-server/src/lib/player/data.ts:56`:** point `OUTLOOK_FILE` at the new file.
 - **`artifacts/api-server/src/lib/player/outlook-2026.ts`:** set `OUTLOOK_SEASON` to 2027. It drives the Outlook tab's wording (its title and H1 are evergreen since 2026-11-03: "{Name} Fantasy Outlook, Rankings & Projections" / "{Name} Fantasy Outlook").
-- **`artifacts/api-server/src/lib/team/outlook.ts`:** add the 32 team outlooks, each with `season: 2027` and an `updated:` date. The per-team `season: 2026` entries start at line 122.
+- **`artifacts/api-server/data/team/outlooks_2027.json`:** write the 32 team outlooks (copy `outlooks_2026.json`; same shape, `{ season, teams: { ne: {...}, ... } }` keyed by lowercase team code), each with `season: 2027` and an `updated:` date. The data moved out of `src/lib/team/outlook.ts` on 2026-11-10; that file keeps the types and the reader. Then set `OUTLOOK_SEASON` in `artifacts/api-server/src/lib/team/outlook.ts` to 2027. The file's mtime is in the team hub cache key, so a hand edit re-renders the hub on the next request.
 
 ### 2. August: FPA preseason mode
 

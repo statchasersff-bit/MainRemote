@@ -23,7 +23,6 @@ import {
   escapeHtml,
   escapeJsonLd,
   searchKey,
-  type NewsItem,
 } from "./render";
 import {
   easternParts,
@@ -63,15 +62,12 @@ import { renderStatsPremium } from "./team/stats-premium";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
   nameKey,
-  type DepthColumn,
   type DepthRow,
   type DepthView,
   type FootballSide,
-  type FootballSlot,
   type TeamDepthCharts,
 } from "./team/depth-charts";
 import { scheduleFaq } from "./team/schedule-faq";
-import { seasonShape } from "./team/season-shape";
 // The tab strip's headings and standfirsts come from the same two functions the
 // WordPress side mirrors, so the heading a click swaps in and the heading that
 // URL loads with are generated from one place. team-seo.ts imports nothing from
@@ -79,30 +75,20 @@ import { seasonShape } from "./team/season-shape";
 import { teamPageMeta } from "./team-seo";
 import type { TeamPageData } from "./team/team-data";
 import type {
-  HistorySeason,
-  PlayBalance,
   StatRow,
-  TeamStats,
 } from "./team/stats";
 import { ordinal } from "./team/stats";
-import { headshotImg } from "./headshot-html";
 import {
   isOutDesignation,
   nameKeysForTeam,
   playerForSearchKey,
   SKILL_POSITIONS,
-  type DepthChartEntry,
   type SkillPosition,
   type RosterPlayer,
 } from "./team/roster";
 import {
   isOnDate,
-  lastResult,
   nextGame,
-  recordThrough,
-  siteCounts,
-  splitSchedule,
-  upcomingGames,
   type ScheduleGame,
   type TeamSchedule,
 } from "./team/schedule";
@@ -111,13 +97,10 @@ import { scheduleItemList } from "./team/schedule-schema";
 import {
   canonicalizeMatchupPair,
   gameSegment,
-  isUpcomingFixture,
   meetingHasOwnAddress,
 } from "./matchup/pair";
 import {
-  DYNASTY_COMMAND_URL,
   RB_HANDCUFF_RANKINGS_URL,
-  REDRAFT_COMMAND_URL,
   ROS_RANKINGS_URL,
   START_SIT_URL,
   TRADE_CALCULATOR_URL,
@@ -845,13 +828,11 @@ function renderTeamStats(
   // This club's own last counted week, not the file's: on a bye, or with its
   // Monday game still to come, the club is a week behind the league.
   const effWeek = eff?.weeks?.length ? Math.max(...eff.weeks) : (effDoc?.throughWeek ?? 0);
-  const effThrough = effWeek ? ` · through Week ${effWeek}` : "";
   // Since the same day the whole tab reads that one file when the season has
   // it (stats.source === "file"), so every ladder carries the same week by
   // construction; the schedule-derived week is for a season the provider is
   // still serving.
   const liveWeek = stats.source === "file" && effWeek ? effWeek : statsThroughWeek(data);
-  const liveThrough = liveWeek ? ` · through Week ${liveWeek}` : "";
   const games =
     stats.gamesPlayed && stats.gamesPlayed > 0
       ? ` · ${stats.gamesPlayed} game${stats.gamesPlayed === 1 ? "" : "s"}`
@@ -1327,79 +1308,6 @@ function renderOutlook(
   // same day): team/outlook-premium.ts, on the same outlook and the same live
   // roster match. Its header carries the panel's H2.
   return renderOutlookPremium(data.team, outlook, live, data.state.regularSeasonUnderway);
-}
-
-/**
- * The four depth-chart starters, as photo cards.
- *
- * NOT CURRENTLY MOUNTED. This sat under the outlook on the Outlook tab and was
- * taken off it; nothing calls this today. It is kept rather than deleted
- * because the block is complete and correct and the page has already moved one
- * section between tabs this week - the cost of keeping it is a function nobody
- * calls, and the cost of deleting it is writing it again. If it is still
- * unmounted when the hub next settles, delete it along with the .sct-player
- * rules in team.css (all but .sct-player-link, which the news byline uses).
- */
-function renderCornerstones(data: TeamPageData): string {
-  if (data.cornerstones.length === 0) return "";
-
-  const cards = data.cornerstones
-    .map((player) => {
-      const href = getPlayerProfileUrl(player.name);
-      const cta = href
-        ? `<span class="sct-player-cta">View player ${ARROW}</span>`
-        : "";
-      return (
-        `<li class="sct-player">` +
-        (href
-          ? `<a class="sct-player-hit" href="${escapeHtml(href)}" target="_top"` +
-            ` aria-label="${escapeHtml(
-              [player.name, player.slot, injuryDetail(player)]
-                .filter(Boolean)
-                .join(", "),
-            )}"></a>`
-          : "") +
-        `<div class="sct-player-well">` +
-        // The well is a square of up to 200px: the three square derivatives
-        // cover it from 1x to 2x. A player with no photo keeps the bare well.
-        (headshotImg({
-          src: player.headshot,
-          className: "sct-player-photo",
-          alt: player.name,
-          variants: ["160", "256", "320"],
-          sizes: "200px",
-          width: 150,
-          height: 150,
-          loading: "lazy",
-        }) ?? "") +
-        // Pinned to the top-right corner of the photo rather than sitting in
-        // the body under the name: the status belongs to the face, and down
-        // there it pushed the name, slot and CTA around by a row height on
-        // exactly the cards that were already the busiest.
-        injuryBadge(player, "is-pinned") +
-        `</div>` +
-        `<div class="sct-player-body">` +
-        // Name first, position beneath it. The slot used to lead, which read as
-        // a label the card was filed under rather than as a fact about the
-        // player; with the photo above, the name is what the eye is looking
-        // for. Matches the hit link's aria-label, which already says
-        // "<name>, <slot>".
-        `<p class="sct-player-name">${escapeHtml(player.name)}</p>` +
-        slotChip(player.slot) +
-        cta +
-        `</div>` +
-        `</li>`
-      );
-    })
-    .join("");
-
-  return (
-    `<div class="sct-block">` +
-    h2("Fantasy Cornerstones") +
-    `<p class="sct-note">Depth-chart starters at the four fantasy positions.</p>` +
-    `<ul class="sct-players">${cards}</ul>` +
-    `</div>`
-  );
 }
 
 /* ------------------------------------------------------------- next game */
@@ -2148,48 +2056,6 @@ export function networkDefs(networks: Array<string | null>): string {
   );
 }
 
-/**
- * Where the game stands: the result once there is one, otherwise the kickoff.
- *
- * The column exists before the season does. A schedule that grows a result
- * column in Week 1 is a table that changes shape under the reader; one that
- * says something in August and "W 27-20" in September is the same table twice.
- * That is why the cell is never empty.
- *
- * What it says before kickoff is the time, not the word "Upcoming" - the
- * window is the thing a reader came to the column for. "TBD" is what it says
- * for a game the league has not given a window: the model has already refused
- * the feeds' placeholder, so there is no time here to print by mistake.
- */
-export function gameStatusCell(game: ScheduleGame): string {
-  if (game.result) {
-    const { outcome, teamScore, opponentScore } = game.result;
-    // An en dash between the scores, as a score line is set - the hyphen read
-    // as a subtraction next to a W.
-    return (
-      `<span class="sct-result" data-outcome="${outcome}">` +
-      `<span aria-hidden="true">${escapeHtml(`${outcome} ${teamScore}–${opponentScore}`)}</span>` +
-      `<span class="sct-visually-hidden">` +
-      `${outcome === "W" ? "Won" : outcome === "L" ? "Lost" : "Tied"} ${teamScore} to ${opponentScore}` +
-      `</span></span>`
-    );
-  }
-  if (game.status === "live") {
-    return `<span class="sct-sstatus" data-state="live">Live</span>`;
-  }
-  if (game.status === "postponed") {
-    return `<span class="sct-sstatus" data-state="postponed">Postponed</span>`;
-  }
-  if (game.status === "canceled") {
-    return `<span class="sct-sstatus" data-state="canceled">Canceled</span>`;
-  }
-  const kickoff =
-    game.kickoffMs !== null && game.timeConfirmed ? easternParts(game.kickoffMs).time : "TBD";
-  return (
-    `<span class="sct-sstatus" data-state="upcoming">${escapeHtml(kickoff)}</span>`
-  );
-}
-
 /** "vs" for a home or neutral game, "at" for a road game. */
 export function sideWord(game: ScheduleGame): "vs" | "at" {
   return game.site === "away" ? "at" : "vs";
@@ -2345,63 +2211,6 @@ function renderTails(sections: Section[]): string {
         `</div>`,
     )
     .join("");
-}
-
-/**
- * "Use this research": the page's conversion block (mak, 2026-10-05). The two
- * products first, then the two team pages a reader acts on next - this club's
- * usage report and its next matchup's preview. The tool directory it replaced
- * still lives in the Quick Links rail (resourceCards).
- *
- * NOT MOUNTED since 2026-10-09: mak asked for the block to come off the team
- * pages. Kept, like renderCornerstones, so putting it back is one line at
- * each of the two mount points in renderTeamPage (after the panels, before
- * renderTails). The Usage tab's own close ("Put this usage data to work")
- * still renders.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function renderResources(
-  data: TeamPageData,
-  options: TeamRenderOptions,
-  now: number,
-  scopedId?: string,
-): string {
-  const { team } = data;
-  const prefix = options.teamPathPrefix ?? "/team/";
-  const next = nextGame(data.schedule, now);
-  const preview = next ? matchupHref(team, next.opponent, options) : null;
-  // The Usage tab closes on its own conversion block ("Put this usage data
-  // to work"), so the shared one is hidden there by team.css and left out of
-  // the scoped /usage/ page.
-  if (scopedId === "usage") return "";
-  const cards: Array<{ href: string | null; title: string; body: string }> = [
-    { href: REDRAFT_COMMAND_URL, title: "Redraft Command", body: "Lineups, trades, waivers and projections for your league." },
-    { href: DYNASTY_COMMAND_URL, title: "Dynasty Command", body: "Dynasty values, trades and league analysis." },
-    { href: sectionPath(prefix, team.slug, "usage"), title: `${team.nickname} Snap Counts & Usage`, body: "Who is on the field and who gets the ball." },
-    { href: preview, title: `${team.nickname} Matchup Preview`, body: "This week's fantasy outlook." },
-  ];
-  return (
-    `<section class="sct-section" id="resources">` +
-    h2("Use this research") +
-    `<ul class="sct-resources">` +
-    cards
-      .filter((card) => card.href)
-      .map(
-        (card) =>
-          `<li class="sct-resource">` +
-          // Absolute tool URLs break out of a legacy frame; the hub's own
-          // root-relative pages stay plain anchors, like the tab nav and
-          // matchup links (a sandboxed preview frame blocks _top outright).
-          `<a class="sct-resource-link" href="${escapeHtml(card.href as string)}"${/^https?:/.test(card.href as string) ? ` target="_top"` : ""}>` +
-          `<span class="sct-resource-title">${escapeHtml(card.title)}</span>` +
-          `<span class="sct-resource-body">${escapeHtml(card.body)}</span>` +
-          `<span class="sct-resource-cta">Open ${ARROW}</span>` +
-          `</a></li>`,
-      )
-      .join("") +
-    `</ul>` +
-    `</section>`
-  );
 }
 
 /* ------------------------------------------------------------------- page */
