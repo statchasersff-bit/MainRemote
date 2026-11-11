@@ -50,7 +50,7 @@ import { renderNewsPremium } from "./team/news-premium";
 import { renderSchedulePremium } from "./team/schedule-premium";
 import { contractsFaq } from "./team/contracts-faq";
 import { draftFaq } from "./team/draft-faq";
-import { faqEntries, renderFaqBlock } from "./team/faq-block";
+import { faqEntries, faqHeading, renderFaqBlock } from "./team/faq-block";
 import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./team/usage";
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
@@ -1178,7 +1178,7 @@ function faqBlock(list: string, note = ""): string {
   if (!list) return "";
   return (
     `<div class="sct-block">` +
-    h2("Common Questions") +
+    faqHeading("Common Questions") +
     (note ? `<p class="sct-note">${escapeHtml(note)}</p>` : "") +
     list +
     `</div>`

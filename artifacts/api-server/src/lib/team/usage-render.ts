@@ -37,6 +37,7 @@ import {
 } from "../matchup/recap";
 import type { NflTeam } from "./teams";
 import { usageFaq, type UsageFaq } from "./usage-faq";
+import { faqHeading } from "./faq-block";
 import { renderUsagePremium } from "./usage-premium-dashboard";
 import {
   baseLabel,
@@ -981,7 +982,7 @@ export function renderUsageSection(
   const faq = usageFaq(view, team);
   const faqHtml = faq.length
     ? `<div class="sct-block">` +
-      `<h2 class="sct-h2">Common Questions</h2>` +
+      faqHeading("Common Questions") +
       `<div class="sct-faq">` +
       faq
         .map(
