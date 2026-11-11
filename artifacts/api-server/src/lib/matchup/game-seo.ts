@@ -40,6 +40,11 @@ export interface GameSeoFacts {
   /** The final, by side; null before the game is over or when it is unknown. */
   score: { away: number; home: number } | null;
   overtime: boolean;
+  /**
+   * The page shows the game's highlights video (gameVideo() in
+   * matchup-render.ts). Only then may the title say "Highlights".
+   */
+  highlights?: boolean;
 }
 
 /** "Titans vs Colts" - away then home, as the searches and the scoreboard read. */
@@ -93,26 +98,49 @@ function join(...parts: string[]): string {
 
 /**
  * The <title> ladder for a completed game, most descriptive first; the caller
- * takes the first that fits its budget (fitMatchupTitle, sixty characters).
+ * takes the first that fits its budget (COMPLETED_TITLE_MAX, a soft seventy
+ * since 2026-11-11; it was sixty).
  *
- * "Titans vs Colts Match Player Stats & Box Score (Week 6, 2026)" is the
- * target. The year goes first when it does not fit, then "& Box Score", then
- * the year again; the last rung fits every pair and every round. Nicknames
- * throughout: two full names spend up to 45 of the 60 on their own.
+ * "Giants vs Eagles Player Stats, Box Score & Highlights | 2026" is the
+ * target for the pair's page (mak, 2026-11-11: 245k impressions, 10 clicks at
+ * position 8.9 under "... Match Player Stats & Box Score (Week 9)"; lead with
+ * what the page has that Google's own scoreboard does not, drop the generic
+ * "Match"). "Highlights" only when the page shows the video; every pair fits
+ * it with the year in seventy. Without one the week takes the space:
+ * "Giants vs Eagles Player Stats & Box Score | Week 9, 2026".
+ *
+ * `dated` is the game's own address: two meetings of one pair in one season
+ * must not share a title, so the round comes before the highlights there, as
+ * it does in the postseason, where "Super Bowl" is the search. Nicknames
+ * throughout: two full names spend up to 45 of the 60 on their own. The
+ * H1 and the description keep "match player stats". Was "{pair} Match Player
+ * Stats & Box Score (Week N, YYYY)" from 2026-10-30.
  */
-export function completedGameTitleCandidates(f: GameSeoFacts): string[] {
+export function completedGameTitleCandidates(f: GameSeoFacts, options: { dated?: boolean } = {}): string[] {
   const pair = gameSeoPair(f);
-  const full = when(f);
-  const roundOnly = f.round ? `(${f.round})` : "";
+  const year = f.season !== null ? ` | ${f.season}` : "";
+  const round = f.round ? ` | ${f.round}` : "";
+  const roundYear = f.round && f.season !== null ? ` | ${f.round}, ${f.season}` : round || year;
+  const stats = `${pair} Player Stats & Box Score`;
+  const hl = `${pair} Player Stats, Box Score & Highlights`;
+  const highlights = (tail: string): string => (f.highlights ? `${hl}${tail}` : "");
+  const roundFirst = options.dated || f.postseason;
+  // Year-only rungs drop the round, which only the pair's regular-season
+  // page can afford; the round-first pages try every round rung before them.
+  const yearOnly = [highlights(year), `${stats}${year}`];
   const candidates = [
-    join(pair, "Match Player Stats & Box Score", full),
-    join(pair, "Match Player Stats & Box Score", roundOnly),
-    join(pair, "Match Player Stats", full),
-    join(pair, "Match Player Stats", roundOnly),
+    roundFirst ? highlights(roundYear) : highlights(year),
+    `${stats}${roundYear}`,
+    roundFirst ? highlights(round) : "",
+    `${stats}${round}`,
+    ...(roundFirst ? [] : yearOnly),
+    `${pair} Player Stats${roundYear}`,
+    `${pair} Player Stats${round}`,
     // "Buccaneers vs Commanders Stats, Conference Championship": the longest
     // nicknames with the longest round, still under sixty.
     f.round ? `${pair} Stats, ${f.round}` : "",
-    join(pair, "Match Player Stats"),
+    ...(roundFirst ? yearOnly : []),
+    `${pair} Player Stats`,
   ].filter((c) => c !== "");
   // One of each; a missing round or year collapses rungs into duplicates.
   return [...new Set(candidates)];

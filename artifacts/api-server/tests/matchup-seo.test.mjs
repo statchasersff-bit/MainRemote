@@ -58,22 +58,35 @@ const WEEK_6 = {
   overtime: false,
 };
 
-const title = (facts) => seo.fitTitle(seo.completedGameTitleCandidates(facts), seo.TITLE_MAX);
+const title = (facts) => seo.fitTitle(seo.completedGameTitleCandidates(facts), 70);
 
 describe("a completed regular-season game", () => {
-  test("the title leads with the match player stats, away then home", () => {
+  test("the title leads with player stats and box score, away then home, the week when no video", () => {
     const candidates = seo.completedGameTitleCandidates(WEEK_6);
-    assert.equal(candidates[0], "Titans vs Colts Match Player Stats & Box Score (Week 6, 2026)");
-    // 61 characters: one over the sixty budget, so the year goes first.
-    assert.equal(candidates[0].length, 61);
-    assert.equal(title(WEEK_6), "Titans vs Colts Match Player Stats & Box Score (Week 6)");
-    assert.ok(!/Fantasy/.test(candidates[0]), "fantasy no longer leads the title");
+    assert.equal(candidates[0], "Titans vs Colts Player Stats & Box Score | Week 6, 2026");
+    assert.equal(title(WEEK_6), "Titans vs Colts Player Stats & Box Score | Week 6, 2026");
+    assert.ok(!/Fantasy|Match/.test(candidates[0]), "neither fantasy nor the generic 'Match' leads the title");
+    assert.ok(!candidates.some((c) => /Highlights/.test(c)), "no Highlights without a video");
   });
 
-  test("a short pair carries the spec string whole", () => {
+  test("with a video the pair page wears mak's 2026-11-11 string", () => {
+    const giants = { name: "New York Giants", short: "Giants" };
+    const eagles = { name: "Philadelphia Eagles", short: "Eagles" };
+    const facts = { ...WEEK_6, away: giants, home: eagles, round: "Week 9", highlights: true };
+    assert.equal(title(facts), "Giants vs Eagles Player Stats, Box Score & Highlights | 2026");
+    // The game's own address keeps the week, so two meetings never share a title.
     assert.equal(
-      title({ ...WEEK_6, away: JETS, home: { name: "Los Angeles Rams", short: "Rams" } }),
-      "Jets vs Rams Match Player Stats & Box Score (Week 6, 2026)",
+      seo.fitTitle(seo.completedGameTitleCandidates(facts, { dated: true }), 70),
+      "Giants vs Eagles Player Stats, Box Score & Highlights | Week 9, 2026",
+    );
+  });
+
+  test("the longest pair with a video keeps Highlights and the year (soft 70, mak 2026-11-11)", () => {
+    const facts = { ...WEEK_6, away: BUCS, home: COMMANDERS, round: "Week 9", highlights: true };
+    assert.equal(title(facts), "Buccaneers vs Commanders Player Stats, Box Score & Highlights | 2026");
+    assert.equal(
+      title({ ...facts, away: { name: "Dallas Cowboys", short: "Cowboys" }, home: { name: "New York Giants", short: "Giants" } }),
+      "Cowboys vs Giants Player Stats, Box Score & Highlights | 2026",
     );
   });
 
@@ -119,7 +132,7 @@ describe("a completed regular-season game", () => {
 });
 
 describe("the ladders hold for every pair", () => {
-  test("the longest nicknames with the longest round still fit sixty", () => {
+  test("the longest nicknames with the longest round still fit seventy", () => {
     const facts = {
       ...WEEK_6,
       away: BUCS,
@@ -129,19 +142,19 @@ describe("the ladders hold for every pair", () => {
       season: 2025,
     };
     const fitted = title(facts);
-    assert.ok(fitted.length <= 60, fitted);
-    assert.equal(fitted, "Buccaneers vs Commanders Stats, Conference Championship");
-    // And a long regular-season pair keeps "Match Player Stats" and the year.
+    assert.ok(fitted.length <= 70, fitted);
+    assert.equal(fitted, "Buccaneers vs Commanders Player Stats | Conference Championship, 2025");
+    // And a long regular-season pair keeps the box score and the week.
     assert.equal(
       title({ ...WEEK_6, away: BUCS, home: COMMANDERS, round: "Week 18" }),
-      "Buccaneers vs Commanders Match Player Stats (Week 18, 2026)",
+      "Buccaneers vs Commanders Player Stats & Box Score | Week 18, 2026",
     );
   });
 
   test("the last title rung fits with no round and no year at all", () => {
     const bare = { ...WEEK_6, away: BUCS, home: COMMANDERS, round: null, season: null };
     const candidates = seo.completedGameTitleCandidates(bare);
-    assert.equal(candidates[candidates.length - 1], "Buccaneers vs Commanders Match Player Stats");
+    assert.equal(candidates[candidates.length - 1], "Buccaneers vs Commanders Player Stats");
     assert.equal(new Set(candidates).size, candidates.length, "no duplicate rungs");
   });
 
@@ -215,7 +228,7 @@ describe("the postseason", () => {
   };
 
   test("the round stands where the week would, with its season", () => {
-    assert.equal(title(WILD_CARD), "Cardinals vs Rams Match Player Stats & Box Score (Wild Card)");
+    assert.equal(title(WILD_CARD), "Cardinals vs Rams Player Stats & Box Score | Wild Card, 2021");
     assert.equal(seo.completedGameHeading(WILD_CARD, { round: true }), "Arizona Cardinals vs Los Angeles Rams Match Player Stats: Wild Card, 2021");
     assert.equal(seo.completedGameContext(WILD_CARD), "2021 Wild Card · January 17, 2022 · Rams 34, Cardinals 11");
     assert.match(seo.completedGameIntro(WILD_CARD), /^Arizona Cardinals vs Los Angeles Rams match player stats from the Wild Card round of the 2021 NFL playoffs\. /);
@@ -233,7 +246,7 @@ describe("the postseason", () => {
 describe("missing schedule data", () => {
   test("no week: the season stands in", () => {
     const facts = { ...WEEK_6, round: null };
-    assert.equal(title(facts), "Titans vs Colts Match Player Stats & Box Score (2026)");
+    assert.equal(title(facts), "Titans vs Colts Player Stats & Box Score | 2026");
     assert.equal(seo.completedGameContext(facts), "2026 season · October 18, 2026 · Titans 26, Colts 20");
     assert.match(seo.completedGameIntro(facts), /match player stats from the 2026 NFL season\. /);
     assert.match(seo.completedGameDescription(facts), /match player stats from the 2026 season: /);
@@ -247,7 +260,7 @@ describe("missing schedule data", () => {
 
   test("no week, no year, no date, no score: still a sentence and a title", () => {
     const facts = { ...WEEK_6, round: null, season: null, date: null, score: null };
-    assert.equal(title(facts), "Titans vs Colts Match Player Stats & Box Score");
+    assert.equal(title(facts), "Titans vs Colts Player Stats & Box Score");
     assert.equal(seo.completedGameHeading(facts, { round: true }), "Tennessee Titans vs Indianapolis Colts Match Player Stats");
     assert.equal(seo.completedGameContext(facts), "");
     assert.equal(seo.completedGameIntro(facts), "Tennessee Titans vs Indianapolis Colts match player stats.");

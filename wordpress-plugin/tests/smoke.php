@@ -1660,14 +1660,17 @@ $GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Match Player Stats: Super Bowl, 2025', 'a Super Bowl is headed by its round' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
-	'Patriots vs Eagles Match Player Stats (Super Bowl, 2025)',
-	'and titled by it: "{Away} vs {Home} Match Player Stats & Box Score ({round}, {year})" (2026-10-30), the box score dropped when the round is long'
+	'Patriots vs Eagles Player Stats & Box Score | Super Bowl, 2025',
+	'and titled by it: "{Away} vs {Home} Player Stats & Box Score | {round}, {year}" (2026-11-11, soft 70)'
 );
 
 // Every matchup title fits in 60 characters: all 496 pairs, every state, and
 // the longest game labels. Was 70 with the brand until 2026-10-08, when the
-// crawl still found 389 pair titles past what a results page shows.
-$longest = '';
+// crawl still found 389 pair titles past what a results page shows. A
+// completed game's title has a soft 70 since 2026-11-11 (mak), so the dated
+// game titles are measured against that.
+$longest      = '';
+$longest_game = '';
 foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 	foreach ( array_keys( statchasers_team_table() ) as $tb ) {
 		if ( $ta >= $tb ) {
@@ -1679,7 +1682,10 @@ foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 			statchasers_matchup_meta( $ta, $tb, 'historical', '2026' )['title'],
 		);
 		foreach ( array( '2026-week-18', '2025-conference-championship', '2025-divisional', '2025-postseason-week-4' ) as $g ) {
-			$titles[] = statchasers_matchup_game_meta( $ta, $tb, $g )['title'];
+			$t = statchasers_matchup_game_meta( $ta, $tb, $g )['title'];
+			if ( strlen( $t ) > strlen( $longest_game ) ) {
+				$longest_game = $t;
+			}
 		}
 		foreach ( $titles as $t ) {
 			if ( strlen( $t ) > strlen( $longest ) ) {
@@ -1689,9 +1695,10 @@ foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 	}
 }
 is( strlen( $longest ) <= 60, true, "no matchup title is over 60 characters (longest: $longest)" );
+is( strlen( $longest_game ) <= 70, true, "no completed game title is over 70 characters (longest: $longest_game)" );
 is(
 	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
-	'Dolphins vs Jets Match Player Stats & Box Score (Week 1)',
+	'Dolphins vs Jets Player Stats & Box Score | Week 1, 2026',
 	'no brand and nicknames, even when the full names would fit; the year goes first when the spec string runs to 62'
 );
 is(
@@ -1708,17 +1715,17 @@ is(
 // game's player stats, in either postgame state, mak's wording first.
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['title'],
-	'Browns vs Buccaneers Match Player Stats & Box Score (Week 2)',
+	'Browns vs Buccaneers Player Stats & Box Score | Week 2, 2026',
 	'season game: the spec wording is 66 characters for this pair, so the year goes first (60)'
 );
 is(
 	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['title'],
-	'Jets vs Rams Match Player Stats & Box Score (Week 2, 2026)',
+	'Jets vs Rams Player Stats & Box Score | Week 2, 2026',
 	'season game: the spec wording as written when it fits'
 );
 is(
 	statchasers_matchup_meta( 'tampa-bay-buccaneers', 'washington-commanders', 'historical', '2026', '', 'Week 18' )['title'],
-	'Buccaneers vs Commanders Match Player Stats (Week 18, 2026)',
+	'Buccaneers vs Commanders Player Stats & Box Score | Week 18, 2026',
 	'season game: the longest nicknames and round pass the year-less box-score rung too (65) and drop the box score'
 );
 $season_desc = statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['description'];

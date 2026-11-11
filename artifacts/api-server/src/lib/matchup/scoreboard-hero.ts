@@ -547,13 +547,16 @@ export function scoreboardKickoff(game: ScoreboardGame): KickoffText | null {
  * no score to put in it and the score clause goes. The caller fits the first
  * candidate that the length budget allows - see fitMatchupTitle().
  */
-export function scoreboardTitleCandidates(game: ScoreboardGame): string[] {
+export function scoreboardTitleCandidates(game: ScoreboardGame, options: { highlights?: boolean } = {}): string[] {
   // "Titans vs Colts Match Player Stats & Box Score (Week 6, 2026)" (the
   // Search Console brief of 2026-10-30): the words people type, in the order
   // they type them, with the fantasy analytics no longer leading. The ladder
   // is game-seo.ts's; the last rung fits every pair and every round. Was
   // "{Away} vs {Home} Player Stats & Box Score, Week N YYYY" from 2026-10-10.
-  return completedGameTitleCandidates(gameSeoFacts(game));
+  return completedGameTitleCandidates(
+    { ...gameSeoFacts(game), highlights: options.highlights === true },
+    { dated: true },
+  );
 }
 
 /**
