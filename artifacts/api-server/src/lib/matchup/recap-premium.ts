@@ -444,6 +444,7 @@ const ID_ICON: Record<string, string> = {
   "fantasy-box-score": "stats",
   "fantasy-usage": "usage",
   "fantasy-xfp": "swing",
+  verdicts: "star",
   "bm-results": "money",
   "bm-implied": "stats",
   "bm-movement": "swing",

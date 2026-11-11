@@ -250,8 +250,13 @@ function driveRow(game: ScoreboardGame, d: PbpDrive, plays: PbpPlay[]): string {
   const clock = clockText(d.clock);
   const scored = d.result === "td" || d.result === "fg" || d.result === "safety" || d.defScore;
   const tally = scored && d.away !== null && d.home !== null ? `${d.away}–${d.home}` : "";
+  // A drive that runs into the next quarter says where it ended (mak,
+  // 2026-11-11: a Q3 drive whose fumble was returned for a score in Q4).
+  const endQ = plays.reduce((q, p) => (p.q && d.qtr && p.q > q ? p.q : q), d.qtr ?? 0);
+  const spans = Boolean(d.qtr) && endQ > (d.qtr ?? 0);
   const spoken = [
     `${quarterShort(d.qtr)} ${clock}${from ? ` from ${from}` : ""}`.trim(),
+    spans ? `ended in ${quarterShort(endQ)}` : null,
     d.plays !== null ? `${d.plays} play${d.plays === 1 ? "" : "s"}` : null,
     d.yards !== null ? `${d.yards} yard${Math.abs(d.yards) === 1 ? "" : "s"}` : null,
     d.top ? clockText(d.top) : null,
@@ -289,7 +294,7 @@ function driveRow(game: ScoreboardGame, d: PbpDrive, plays: PbpPlay[]): string {
     `<span class="sct-rb-sr">${e(`${d.team} drive: ${r.label}${tally ? `, ${game.away.abbr} ${d.away}, ${game.home.abbr} ${d.home}` : ""}. ${spoken.join(" · ")}`)}</span>` +
     `<span class="sct-pbp-drow" aria-hidden="true">` +
     `<span class="sct-pbp-drive-team">${chip(game, d.team)}</span>` +
-    `<b class="sct-pbp-dres">${e(r.label)}</b>` +
+    `<b class="sct-pbp-dres">${e(r.label)}${spans ? ` <span class="sct-pbp-dspan">Ends in ${e(quarterShort(endQ))}</span>` : ""}</b>` +
     `<span class="sct-pbp-dsize">${e(size.join(" · "))}</span>` +
     `<span class="sct-pbp-tally${tally ? "" : " is-empty"}">${e(tally)}</span>` +
     `</span>` +

@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "updatedAt": "2026-11-11T14:37:36.888Z",
+ "updatedAt": "2026-11-11T20:41:03.037Z",
  "games": {
   "401873009": {
    "eventId": "401873009",
@@ -992,7 +992,7 @@
    "provider": "DraftKings",
    "spread": -2.5,
    "spreadOpen": -1.5,
-   "total": 41.5,
+   "total": 40.5,
    "totalOpen": 47.5,
    "moneyline": {
     "home": -142,
@@ -1004,7 +1004,7 @@
     "condition": "Cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873053": {
    "eventId": "401873053",
@@ -1018,12 +1018,12 @@
    "total": 51.5,
    "totalOpen": 48.5,
    "moneyline": {
-    "home": -155,
-    "away": 130
+    "home": -148,
+    "away": 124
    },
    "indoor": false,
    "weather": null,
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873054": {
    "eventId": "401873054",
@@ -1037,16 +1037,16 @@
    "total": 50.5,
    "totalOpen": 46.5,
    "moneyline": {
-    "home": 310,
-    "away": -395
+    "home": 340,
+    "away": -440
    },
    "indoor": false,
    "weather": {
     "tempF": 51,
-    "condition": "Mostly sunny",
+    "condition": "Intermittent clouds",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873055": {
    "eventId": "401873055",
@@ -1066,10 +1066,10 @@
    "indoor": true,
    "weather": {
     "tempF": 65,
-    "condition": "Cloudy",
+    "condition": "Mostly cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873056": {
    "eventId": "401873056",
@@ -1080,7 +1080,7 @@
    "provider": "DraftKings",
    "spread": 4.5,
    "spreadOpen": 4.5,
-   "total": 39.5,
+   "total": 40.5,
    "totalOpen": 38.5,
    "moneyline": {
     "home": 190,
@@ -1092,7 +1092,7 @@
     "condition": "Cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873057": {
    "eventId": "401873057",
@@ -1115,7 +1115,7 @@
     "condition": "Intermittent clouds",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873058": {
    "eventId": "401873058",
@@ -1138,7 +1138,7 @@
     "condition": "Mostly sunny",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873059": {
    "eventId": "401873059",
@@ -1158,10 +1158,10 @@
    "indoor": true,
    "weather": {
     "tempF": 48,
-    "condition": "Mostly sunny",
+    "condition": "Partly sunny",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873060": {
    "eventId": "401873060",
@@ -1170,21 +1170,21 @@
    "away": "min",
    "home": "gb",
    "provider": "DraftKings",
-   "spread": -3.5,
+   "spread": -3,
    "spreadOpen": -4.5,
-   "total": 41.5,
+   "total": 42.5,
    "totalOpen": 45.5,
    "moneyline": {
-    "home": -170,
-    "away": 142
+    "home": -162,
+    "away": 136
    },
    "indoor": false,
    "weather": {
     "tempF": 44,
-    "condition": "Intermittent clouds",
+    "condition": "Mostly cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873061": {
    "eventId": "401873061",
@@ -1204,10 +1204,10 @@
    "indoor": true,
    "weather": {
     "tempF": 74,
-    "condition": "Partly sunny",
+    "condition": "Mostly sunny",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873062": {
    "eventId": "401873062",
@@ -1227,10 +1227,10 @@
    "indoor": true,
    "weather": {
     "tempF": 66,
-    "condition": "Partly sunny",
+    "condition": "Mostly sunny",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873063": {
    "eventId": "401873063",
@@ -1239,7 +1239,7 @@
    "away": "sf",
    "home": "dal",
    "provider": "DraftKings",
-   "spread": 3.5,
+   "spread": 4.5,
    "spreadOpen": -1.5,
    "total": 55.5,
    "totalOpen": 52.5,
@@ -1249,11 +1249,11 @@
    },
    "indoor": true,
    "weather": {
-    "tempF": 56,
+    "tempF": 55,
     "condition": "Cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873064": {
    "eventId": "401873064",
@@ -1267,16 +1267,16 @@
    "total": 49.5,
    "totalOpen": 47.5,
    "moneyline": {
-    "home": -175,
-    "away": 145
+    "home": -180,
+    "away": 150
    },
    "indoor": false,
    "weather": {
-    "tempF": 39,
+    "tempF": 40,
     "condition": "Intermittent clouds",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873065": {
    "eventId": "401873065",
@@ -1290,16 +1290,16 @@
    "total": 38.5,
    "totalOpen": 48.5,
    "moneyline": {
-    "home": -218,
-    "away": 180
+    "home": -205,
+    "away": 170
    },
    "indoor": false,
    "weather": {
-    "tempF": 43,
+    "tempF": 46,
     "condition": "Partly cloudy",
     "precipPct": null
    },
-   "seenAt": 1794407856862
+   "seenAt": 1794429662957
   },
   "401873066": {
    "eventId": "401873066",

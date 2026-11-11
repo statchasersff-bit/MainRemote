@@ -451,6 +451,39 @@ function wirePlayByPlay(root: HTMLElement): void {
   openFromHash();
 }
 
+/**
+ * Game Flow's Drive Timeline (mak, 2026-11-11): choosing a possession block
+ * outlines it and fills the line under the legend with that drive and a link
+ * to its plays on the Play-by-Play tab, which opens the drive there.
+ */
+function wireGameFlowTimeline(root: HTMLElement): void {
+  for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-gfp]"))) {
+    const pick = box.querySelector<HTMLElement>("[data-gfp-pick]");
+    const text = pick?.querySelector<HTMLElement>("[data-gfp-pick-text]");
+    const link = pick?.querySelector<HTMLAnchorElement>("[data-gfp-pick-link]");
+    if (!pick || !text || !link) continue;
+    const buttons = Array.from(box.querySelectorAll<HTMLButtonElement>("button[data-gfp-drive]"));
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+        text.textContent = button.dataset["tip"] ?? "";
+        const target = root.querySelector<HTMLDetailsElement>(`#pbp-drive-${button.dataset["gfpDrive"]}`);
+        link.hidden = !target;
+        link.setAttribute("href", `#pbp-drive-${button.dataset["gfpDrive"]}`);
+        pick.hidden = false;
+      });
+    }
+    // Runs before the tab switcher's in-page link handler (it listens on the
+    // root): open the drive, showing every drive if a filter hid it.
+    link.addEventListener("click", () => {
+      const target = root.querySelector<HTMLDetailsElement>(link.getAttribute("href") ?? "");
+      if (!target) return;
+      if (target.hidden) root.querySelector<HTMLButtonElement>('[data-pbp-filter="all"]')?.click();
+      target.open = true;
+    });
+  }
+}
+
 function wireMatchupTabs(root: HTMLElement): void {
   const found = root.querySelector<HTMLElement>("[data-mu-tabbar]");
   if (!found) return;
@@ -1760,6 +1793,7 @@ function boot(): void {
     wireTabs(root);
     wireMatchupTabs(root);
     wirePlayByPlay(root);
+    wireGameFlowTimeline(root);
     wireSegTabs(root);
     wireRowFilters(root);
     wireSwitcher(root);

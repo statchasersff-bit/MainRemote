@@ -234,7 +234,7 @@ const WORD = ["no", "one", "two", "three", "four", "five", "six", "seven", "eigh
 const word = (n: number): string => WORD[n] ?? String(n);
 
 /** Same result in a row at the latest end of `recent` (pushes end it). */
-function streak(t: TeamTrends, k: "ats" | "ou"): { v: string; n: number } {
+export function streak(t: TeamTrends, k: "ats" | "ou"): { v: string; n: number } {
   const list = t.recent.map((g) => g[k]);
   const v = list[list.length - 1];
   let n = 0;

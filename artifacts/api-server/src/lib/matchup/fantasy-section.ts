@@ -71,7 +71,7 @@ export interface FantasySectionInput {
   /** Each side's next game after this one, when the season is still being played. */
   next: Record<string, { label: string; opponent: string } | null> | null;
   injuries: GameInjuryNotes | null;
-  links: { redraftCommand: string; projections: string; tradeCalculator: string };
+  links: { redraftCommand: string; projections: string; tradeCalculator: string; startSit: string };
   /**
    * What each of this game's two defenses allows per game by position, with
    * its league rank (1 = the most), from the Fantasy Points Allowed table when
@@ -317,6 +317,8 @@ interface Insight {
   score: number;
   signals: Signal[];
   takeaway: string;
+  /** The takeaway line for each lean ("" in a playoff game), for a card whose call comes from elsewhere. */
+  takeaways: Record<Lean, string>;
 }
 
 function lastNameOf(name: string): string {
@@ -374,12 +376,10 @@ function insightOf(input: FantasySectionInput, u: Usage, usage: Usage[]): Insigh
     const at = mates.indexOf(u);
     if (at === 0 && mates[1] && u.tgtShare - mates[1].tgtShare! >= 0.1) {
       add(2.2, "hold", `The clear first read: the next ${team} target was ${mates[1].row.p.name} at ${pct(mates[1].tgtShare)}.`);
-    } else if (at > 0 && mates[0]) {
-      const lead = mates[0];
-      const place = ["Second", "Third", "Fourth", "Fifth", "Sixth"][at - 1] ?? `No. ${at + 1}`;
-      add(1.6 + (at === 1 ? 0.4 : 0), "flex",
-        `${place} in the ${team} target order, behind ${lastNameOf(lead.row.p.name)} (${pct(lead.tgtShare)} to ${pct(u.tgtShare)}).`);
     }
+    // No "Fifth in the target order" line (mak, 2026-11-11, from a reviewer):
+    // a rank alone says nothing a manager can use; the snap share and role
+    // signals carry the story.
   }
 
   // Touchdown reliance.
@@ -450,7 +450,10 @@ function insightOf(input: FantasySectionInput, u: Usage, usage: Usage[]): Insigh
         : `Still a starter ${when}; treat the turnovers as noise unless they repeat.`,
   };
   const takeaway = lead && input.countsInSeasonLong ? TAKEAWAY[lead] : "";
-  return { score: sum(top.map((x) => x.weight)), signals: top, takeaway };
+  const takeaways = Object.fromEntries(
+    (Object.keys(TAKEAWAY) as Lean[]).map((l) => [l, input.countsInSeasonLong ? TAKEAWAY[l] : ""]),
+  ) as Record<Lean, string>;
+  return { score: sum(top.map((x) => x.weight)), signals: top, takeaway, takeaways };
 }
 
 function verdict(insight: Insight): string {
@@ -558,7 +561,7 @@ function average(values: Array<number | null>): number | null {
   return known.length ? sum(known) / known.length : null;
 }
 
-export function stockItems(usage: Usage[], team: string): StockItem[] {
+export function stockItems(usage: Usage[], team: string, teamShort = team): StockItem[] {
   const mine = usage.filter((u) => u.row.p.team === team && u.row.group === "flex");
   const items: StockItem[] = [];
   const add = (u: Usage, up: boolean, text: string): void => {
@@ -574,20 +577,21 @@ export function stockItems(usage: Usage[], team: string): StockItem[] {
     const nowLead = [...backs].sort((a, b) => b.snapShare! - a.snapShare!)[0]!;
     const priorLead = [...backs].sort((a, b) => (priorSnap(b) ?? 0) - (priorSnap(a) ?? 0))[0]!;
     if (nowLead !== priorLead && priorSnap(priorLead) !== null) {
-      add(nowLead, true, `led the backfield with ${pct(nowLead.snapShare)} of the snaps after trailing ${priorLead.row.p.name} before this game.`);
-      add(priorLead, false, `lost the backfield lead: ${pct(priorLead.snapShare)} of the snaps to ${nowLead.row.p.name}'s ${pct(nowLead.snapShare)}.`);
+      const carries = nowLead.carShare !== null && nowLead.carShare > 0 ? ` and ${pct(nowLead.carShare)} of the carries` : "";
+      add(nowLead, true, `Led the ${teamShort} with ${pct(nowLead.snapShare)} of the snaps${carries}, moving ahead of ${priorLead.row.p.name}.`);
+      add(priorLead, false, `Lost the backfield lead: ${pct(priorLead.snapShare)} of the snaps to ${nowLead.row.p.name}'s ${pct(nowLead.snapShare)}.`);
     }
   }
   for (const u of mine) {
     const before = priorSnap(u);
     if (u.snapShare !== null && before !== null) {
       const change = u.snapShare - before;
-      if (change >= 0.15) add(u, true, `played ${pct(u.snapShare)} of the snaps, up from a ${pct(before)} season average.`);
-      else if (change <= -0.15) add(u, false, `played ${pct(u.snapShare)} of the snaps, down from a ${pct(before)} season average.`);
+      if (change >= 0.15) add(u, true, `Played ${pct(u.snapShare)} of the snaps, up from a ${pct(before)} season average.`);
+      else if (change <= -0.15) add(u, false, `Played ${pct(u.snapShare)} of the snaps, down from a ${pct(before)} season average.`);
     }
     const tBefore = priorTgt(u);
     if (u.tgtShare !== null && tBefore !== null && u.tgtShare >= 0.25 && tBefore < 0.15) {
-      add(u, true, `took ${pct(u.tgtShare)} of the targets after averaging ${pct(tBefore)} before this game.`);
+      add(u, true, `Took ${pct(u.tgtShare)} of the targets after averaging ${pct(tBefore)} before this game.`);
     }
   }
   const ups = items.filter((i) => i.up);
@@ -623,33 +627,48 @@ function verdictPicks(
   }
   usage.filter((u) => Math.abs(u.over.ppr) >= 5).forEach(pick);
   const stock: Record<string, StockItem[]> = {
-    [game.away.abbr]: stockItems(usage, game.away.abbr),
-    [game.home.abbr]: stockItems(usage, game.home.abbr),
+    [game.away.abbr]: stockItems(usage, game.away.abbr, game.away.short),
+    [game.home.abbr]: stockItems(usage, game.home.abbr, game.home.short),
   };
   for (const items of Object.values(stock)) for (const item of items) pick(usage.find((u) => u.row.p.name === item.name));
   return { picked, stock };
 }
 
+/** A takeaway card's call: the move a manager makes, from the role change or the strongest signal. */
+type Call = "up" | "down" | "buy" | "sell";
+
+const CALL: Record<Call, { label: string; tag: string; arrow: string }> = {
+  up: { label: "Stock Up", tag: "strong", arrow: "▲" },
+  down: { label: "Stock Down", tag: "down", arrow: "▼" },
+  buy: { label: "Buy Low", tag: "unlucky", arrow: "▲" },
+  sell: { label: "Sell High", tag: "hot", arrow: "▼" },
+};
+
+/** The leans that are a change worth acting on; hold, flex and risk are not. */
+const CALL_OF: Partial<Record<Lean, Call>> = { up: "up", down: "down", buy: "buy", sell: "sell" };
+
 /**
- * Fantasy verdicts, stock up / stock down and in-game injuries: the parts of
- * the fantasy section that are about players rather than a table of points.
- * `heading` is the tag each block's title takes - h3 under the section's own
- * h2, or h2 where the blocks stand on their own in the matchup page's Fantasy
- * tab.
+ * Fantasy takeaways (mak, 2026-11-11: Fantasy Verdicts and Stock Up/Down
+ * merged, "only meaningful changes in role, opportunity, or outlook") and
+ * in-game injuries. One card per player whose role moved (the stock reading)
+ * or whose strongest signal calls for a move (insightOf: up, down, buy, sell);
+ * steady starters and quarterbacks with nothing new get no card. Each card is
+ * one paragraph: the role change, why it outweighs the score, the move.
+ * `heading` is the tag each block's title takes.
  */
 function fantasyNotes(
   input: FantasySectionInput,
   rows: Row[],
   heading: "h2" | "h3",
-): { usage: Usage[]; verdicts: string; stockBlock: string; injuries: string } {
+): { usage: Usage[]; takeaways: string; injuries: string } {
   const { game } = input;
   const colors = pairColors(game.away.abbr, game.home.abbr);
-  const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
   const cls = heading === "h2" ? "sct-rb-h2" : "sct-rb-h3";
   const usage = usageRows(input, rows);
-  const gameLabel = game.gameType === "playoff" ? shortRound(round) : game.roundLabel.replace(/^Week\s+/, "W");
 
   const { picked, stock } = verdictPicks(input, usage);
+  const stockOf = (name: string): StockItem | null =>
+    Object.values(stock).flat().find((i) => i.name === name) ?? null;
 
   const nameLink = (name: string): string => {
     const href = input.playerUrl(name);
@@ -658,76 +677,61 @@ function fantasyNotes(
       : escapeHtml(name);
   };
 
-  // Ranked by how much there is to say; a player with nothing particular to
-  // say gets no card. The first VERDICTS_SHOWN show, the rest wait behind a
-  // button (wireFantasyTabMore in client/team.ts).
-  const ranked = picked
-    .map((u) => ({ u, insight: insightOf(input, u, usage) }))
-    .filter((c) => c.insight.signals.length > 0)
-    .sort((a, b) => b.insight.score - a.insight.score);
-  const verdicts = ranked.length
-    ? `<${heading} class="${cls}" id="verdicts">Fantasy verdicts</${heading}>` +
+  const cards = picked
+    .map((u) => {
+      const insight = insightOf(input, u, usage);
+      const moved = stockOf(u.row.p.name);
+      const lead = insight.signals[0]?.lean;
+      const call: Call | undefined = moved ? (moved.up ? "up" : "down") : lead ? CALL_OF[lead] : undefined;
+      if (!call) return null;
+      const pts = u.row.pts;
+      const points =
+        `<span data-ppr="${pts.ppr.toFixed(1)}" data-half="${pts.half.toFixed(1)}" data-std="${pts.std.toFixed(1)}">` +
+        `${pts.ppr.toFixed(1)}</span>`;
+      // A role change leads and says why it outweighs the score; otherwise the
+      // two strongest signals. The move closes the paragraph either way.
+      const parts = moved
+        ? [
+            escapeHtml(moved.text),
+            `The role change matters more for future fantasy value than this game's ${points} points.`,
+            escapeHtml(insight.takeaways[call]),
+          ]
+        : [...insight.signals.map((x) => escapeHtml(x.text)), escapeHtml(insight.takeaways[call])];
+      return { u, call, html: parts.filter(Boolean).join(" "), score: (moved ? 10 : 0) + insight.score };
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null)
+    .sort((a, b) => b.score - a.score);
+
+  const takeaways = cards.length
+    ? `<div class="sct-mu-ps-head sct-fz-head"><${heading} class="${cls}" id="verdicts">Fantasy Takeaways &amp; Stock Changes</${heading}></div>` +
       `<div class="sct-fz-list sct-fp-vlist" data-fz-list data-fz-shown="${VERDICTS_SHOWN}">` +
       `<div class="sct-fp-cards">` +
-      ranked
-        .map(({ u, insight }, at) => {
+      cards
+        .map(({ u, call, html }, at) => {
           const p = u.row.p;
           const side = p.team === game.home.abbr ? "home" : "away";
-          const tag = tagOf(u);
-          const ss = u.row.ctx?.active ? input.startSitUrl(p.name) : null;
-          // The face beside the name and meta line (mak, 2026-11-02).
+          const c = CALL[call];
           const face = u.row.ctx ? playerPhoto(u.row.ctx.sleeperId, "sct-fp-card-face", 44) : "";
           return (
-            `<article class="sct-fp-card${face ? " has-face" : ""}${at >= VERDICTS_SHOWN ? " is-extra" : ""}" data-fz-row style="--rb-team:${colors[side].ink}">` +
+            `<article class="sct-fp-card sct-fp-take is-${call}${face ? " has-face" : ""}${at >= VERDICTS_SHOWN ? " is-extra" : ""}" data-fz-row style="--rb-team:${colors[side].ink}">` +
             `<div class="sct-fp-card-head">` +
             face +
             `<div class="sct-fp-card-text">` +
             `<h4 class="sct-fp-card-name">${nameLink(p.name)}` +
-            (tag ? ` <span class="sct-fp-tag is-${tag.kind}">${escapeHtml(tag.text)}</span>` : "") +
+            ` <span class="sct-fp-tag is-${c.tag}"><span aria-hidden="true">${c.arrow} </span>${escapeHtml(c.label)}</span>` +
             `</h4>` +
-            // Team and position only: the points and xFP live in the box
-            // score and Actual vs Expected (mak, 2026-11-10).
-            `<p class="sct-fp-meta">${escapeHtml(`${p.team} · ${p.pos ?? "-"}`)}</p>` +
+            `<p class="sct-fp-meta">${escapeHtml(`${p.pos ?? "-"} · ${p.team}`)}</p>` +
             `</div></div>` +
-            verdict(insight) +
-            trendBlock(u, gameLabel) +
-            (ss
-              ? `<a class="sct-fp-ss" href="${escapeHtml(ss)}" data-cta="verdict-startsit">${escapeHtml(`Start/Sit: ${p.name} →`)}</a>`
-              : "") +
+            `<p class="sct-fp-verdict">${html}</p>` +
             `</article>`
           );
         })
         .join("") +
       `</div>` +
-      (ranked.length > VERDICTS_SHOWN
+      (cards.length > VERDICTS_SHOWN
         ? `<button type="button" class="sct-mu-ps-toggle sct-fz-more" data-fz-more hidden aria-expanded="false" ` +
-          `data-more="Show ${ranked.length - VERDICTS_SHOWN} more verdicts" data-less="Show fewer verdicts">Show ${ranked.length - VERDICTS_SHOWN} more verdicts</button>`
+          `data-more="Show ${cards.length - VERDICTS_SHOWN} more takeaways" data-less="Show fewer takeaways">Show ${cards.length - VERDICTS_SHOWN} more takeaways</button>`
         : "") +
-      `</div>`
-    : "";
-
-  const stockBlock = Object.values(stock).some((i) => i.length)
-    ? `<${heading} class="${cls}" id="stock">Stock up, stock down</${heading}>` +
-      `<div class="sct-fp-stock">` +
-      (["away", "home"] as const)
-        .map((side) => {
-          const items = stock[game[side].abbr] ?? [];
-          if (items.length === 0) return "";
-          return (
-            `<div class="sct-fp-stock-card" style="--rb-team:${colors[side].ink}">` +
-            `<h4 class="sct-fp-team" style="color:${colors[side].ink}">${escapeHtml(game[side].name)}</h4><ul>` +
-            items
-              .map(
-                (i) =>
-                  `<li class="${i.up ? "is-up" : "is-down"}"><span aria-hidden="true">${i.up ? "▲" : "▼"}</span>` +
-                  `<span class="sct-rb-sr">${i.up ? "Stock up:" : "Stock down:"}</span> ` +
-                  `${nameLink(i.name)} ${escapeHtml(i.text)}</li>`,
-              )
-              .join("") +
-            `</ul></div>`
-          );
-        })
-        .join("") +
       `</div>`
     : "";
 
@@ -762,51 +766,44 @@ function fantasyNotes(
         : "")
     : "";
 
-  return { usage, verdicts, stockBlock, injuries };
+  return { usage, takeaways, injuries };
 }
 
 /**
- * The verdicts, start/sit decisions, the trade-calculator banner, stock up /
- * stock down and in-game injuries, as H2 sections for the recap's Fantasy
- * tab (fantasy-tab.ts). They moved there from the Stats & Fantasy tab when
- * mak deleted that tab (2026-11-09); the ids (#verdicts, #decisions, #stock,
- * #injuries) are unchanged.
+ * The Fantasy tab's closing sections (fantasy-tab.ts), mak 2026-11-11:
+ * Fantasy Takeaways & Stock Changes (#verdicts, the old verdicts and stock
+ * blocks merged), Next-Week Decisions (#decisions: the start/sit pairs and one
+ * compact tools row, no banners or per-player links) and in-game injuries.
  */
 export function renderFantasyTakeaways(input: FantasySectionInput): string {
   const rows = rowsOf(input).filter((r) => !isZero(r));
   if (rows.length === 0) return "";
-  const { usage, verdicts, stockBlock, injuries } = fantasyNotes(input, rows, "h2");
+  const { usage, takeaways, injuries } = fantasyNotes(input, rows, "h2");
   const wrap = (html: string, id: string): string =>
     html ? `<section class="sct-rb-section sct-fp sct-fp-moved" aria-labelledby="${id}" data-fp-notes>${html}</section>` : "";
-  const decisions = renderDecisions(input, usage, "h2");
-  const trade = verdicts
-    ? banner(
-        "Did this game change a player's trade value?",
-        "Compare players and evaluate a deal using current fantasy values and your league settings.",
-        input.links.tradeCalculator,
-        "Fantasy Football Trade Calculator",
-        "fantasy-trade-banner",
-      )
+  // A section card with the Fantasy Box Score's head row (mak, 2026-11-11;
+  // were bare cards under a title). The h2 keeps the #verdicts anchor;
+  // data-fp-notes drives the scoring swap.
+  const bare = takeaways
+    ? `<section class="sct-rb-section sct-fz sct-fp sct-fp-takeaways" aria-labelledby="verdicts" data-fp-notes>${takeaways}</section>`
     : "";
-  // The verdict cards stand bare, no section box (mak, 2026-11-09); the
-  // "Fantasy verdicts" title bar stays above them (mak, 2026-11-10). The h2
-  // carries the #verdicts anchor; data-fp-notes drives the scoring swap.
-  const bare = verdicts
-    ? `<div class="sct-fp sct-fp-moved sct-fp-bare" data-fp-notes>${verdicts}</div>`
-    : "";
-  return bare + wrap(decisions + trade, "decisions") + wrap(stockBlock, "stock") + wrap(injuries, "injuries");
+  return bare + wrap(renderNextWeek(input, usage), "decisions") + wrap(injuries, "injuries");
 }
 
-/** The navy call-to-action banner these sections close a block with. */
-function banner(title: string, sub: string, href: string, action: string, cta: string): string {
+/**
+ * Next-Week Decisions: the start/sit pairs, then one line with the two tools.
+ * Nothing for a playoff game or once the season is over.
+ */
+function renderNextWeek(input: FantasySectionInput, usage: Usage[]): string {
+  if (!input.countsInSeasonLong || !input.next) return "";
+  const pairs = decisionPairs(input, usage);
   return (
-    `<aside class="sct-mu-ps-cta sct-fp-cta" aria-label="${escapeHtml(action)}">` +
-    `<div class="sct-mu-ps-cta-text">` +
-    `<p class="sct-mu-ps-cta-title">${escapeHtml(title)}</p>` +
-    `<p class="sct-mu-ps-cta-sub">${escapeHtml(sub)}</p>` +
-    `</div>` +
-    `<a class="sct-mu-ps-cta-button" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(action)} →</a>` +
-    `</aside>`
+    `<h2 class="sct-rb-h2" id="decisions">Next-Week Decisions</h2>` +
+    pairs +
+    `<p class="sct-fp-tools">` +
+    `<a class="sct-fp-tool" href="${escapeHtml(input.links.startSit)}" data-cta="fantasy-startsit">Start/Sit Tool →</a>` +
+    `<a class="sct-fp-tool" href="${escapeHtml(input.links.tradeCalculator)}" data-cta="fantasy-trade">Trade Calculator →</a>` +
+    `</p>`
   );
 }
 
@@ -831,8 +828,7 @@ const DECISION_MAX_GAP = 30;
  * in two pairs. Nothing for a playoff game or once the season is over: there
  * is no next week to decide.
  */
-function renderDecisions(input: FantasySectionInput, usage: Usage[], heading: "h2" | "h3" = "h3"): string {
-  if (!input.countsInSeasonLong || !input.next) return "";
+function decisionPairs(input: FantasySectionInput, usage: Usage[]): string {
   const pool = usage
     .map((u) => ({ u, rate: u.row.ctx ? input.rosterRate(u.row.ctx.sleeperId) : null }))
     .filter(
@@ -868,7 +864,6 @@ function renderDecisions(input: FantasySectionInput, usage: Usage[], heading: "h
   if (chosen.length === 0) return "";
   const nextLabel = (u: Usage): string | null => input.next?.[u.row.p.team]?.label ?? null;
   return (
-    `<${heading} class="sct-rb-${heading}" id="decisions">Start/Sit decisions</${heading}>` +
     `<ul class="sct-fp-decisions">` +
     chosen
       .map(({ a, b, href }) => {

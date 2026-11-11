@@ -26,6 +26,7 @@ import { escapeHtml, searchKey } from "../render";
 import { dataPath } from "../data-dir";
 import { readDataJson } from "../team/read-json";
 import type { BoxTeamStats } from "./boxscore";
+import { playCalling } from "./possessions";
 import type { GamePlayer, GamePlayers } from "./game-players";
 import type { LeaderPick } from "./leaders-strip";
 import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
@@ -383,13 +384,20 @@ function recapParagraphs(f: Facts, input: OverviewInput, name: ReturnType<typeof
     }
   }
 
-  // When the game changed: the winner's biggest win-probability swing.
-  const swing = [...story.plays]
-    .filter((p) => p !== f.sealer && f.wwp(p.wpAfter) - f.wwp(p.wpBefore) >= 100)
-    .sort((a, b) => f.wwp(b.wpAfter) - f.wwp(b.wpBefore) - (f.wwp(a.wpAfter) - f.wwp(a.wpBefore)))[0];
+  // When the game changed: the winner's biggest win-probability swing. A
+  // swing that came with the winner already a heavy favorite (80%+) did not
+  // turn the game, it sealed it (mak, 2026-11-11: an 87% -> 98% fumble
+  // return is "the moment New England sealed the victory").
+  const swing = swingPlay(f, story);
   if (swing) {
     const line = describe(swing, f, name, "sentence");
-    if (line) first.push(`The game turned ${when(swing)}, when ${line}.`);
+    if (line) {
+      first.push(
+        f.wwp(swing.wpBefore) >= 800
+          ? `${f.W.city} sealed it ${when(swing)}, when ${line}.`
+          : `The game turned ${when(swing)}, when ${line}.`,
+      );
+    }
   }
 
   // The deciding factors: fourth-quarter takeaways, the go-ahead score, the sealer.
@@ -427,6 +435,23 @@ function recapParagraphs(f: Facts, input: OverviewInput, name: ReturnType<typeof
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** The winner's biggest win-probability swing (10+ points), the sealing takeaway aside. */
+function swingPlay(f: Facts, story: GameStory): StoryPlay | undefined {
+  return [...story.plays]
+    .filter((p) => p !== f.sealer && f.wwp(p.wpAfter) - f.wwp(p.wpBefore) >= 100)
+    .sort((a, b) => f.wwp(b.wpAfter) - f.wwp(b.wpBefore) - (f.wwp(a.wpAfter) - f.wwp(a.wpBefore)))[0];
+}
+
+/** The plays the Game Recap paragraphs name, which the why card leaves to it. */
+function toldInRecap(f: Facts, story: GameStory): Set<StoryPlay> {
+  return new Set([swingPlay(f, story), f.goAhead, f.sealer].filter((p): p is StoryPlay => Boolean(p)));
+}
+
+/** The winner's touchdown on defense: an interception or fumble returned for a score. */
+function defensiveTd(f: Facts, story: GameStory): StoryPlay | null {
+  return story.plays.find((p) => p.td && p.tdTeam === f.W.code && p.pos !== f.W.code && (p.int || p.fumble)) ?? null;
+}
+
 /** "a 45-yard", "an 82-yard", "an 11-yard". */
 export function aYards(n: number | null | undefined): string {
   const v = n ?? 0;
@@ -458,7 +483,13 @@ function describe(
     if (m && p === f.sealer) return `${who}'s late interception seals the victory`;
     return `${who} intercepts ${qb ?? "the pass"}${p.endZone ? " in the end zone" : ""}`;
   }
-  if (p.fumble) return `${p.def ?? "The defense"} recovers a fumble`;
+  if (p.fumble) {
+    // "the Patriots defense", so "New England sealed it ... when the Patriots
+    // defense returned a fumble" doesn't name the club twice.
+    const club = p.def === f.W.code ? `the ${f.W.nick} defense` : p.def === f.L.code ? `the ${f.L.nick} defense` : "the defense";
+    if (m) return `${p.def ?? "The defense"} ${p.td ? "returns a fumble for a TD" : "recovers a fumble"}`;
+    return `${club} ${p.td ? "returned a fumble for a touchdown" : "recovered a fumble"}`;
+  }
   if (p.fg === "made") {
     const k = nm(p.kicker, p.pos);
     const kick = p.kickDistance ? `${aYards(p.kickDistance)} field goal` : "a field goal";
@@ -488,11 +519,20 @@ function whyWon(f: Facts, input: OverviewInput, name: ReturnType<typeof nameReso
   const tiles: Array<[string, string]> = [];
   const to = ws && ls && ws.turnovers != null && ls.turnovers != null ? ls.turnovers - ws.turnovers : null;
   if (to !== null && to > 0) tiles.push([`+${to}`, "Turnover margin"]);
-  if (ws?.yardsPerPlay != null && ls?.yardsPerPlay != null && ws.yardsPerPlay > ls.yardsPerPlay) {
+  // The tiles follow the same evidence as the sentence (mak, 2026-11-11).
+  const wPlay = ws ? playCalling(ws) : null;
+  const lPlay = ls ? playCalling(ls) : null;
+  if (wPlay?.perDropback != null && lPlay?.perDropback != null && wPlay.perDropback - lPlay.perDropback >= 1.5) {
+    tiles.push([wPlay.perDropback.toFixed(1), `${f.W.code} yards/dropback`]);
+  } else if (ws?.yardsPerPlay != null && ls?.yardsPerPlay != null && ws.yardsPerPlay > ls.yardsPerPlay) {
     tiles.push([ws.yardsPerPlay.toFixed(1), `${f.W.code} yards/play`]);
   }
+  const lThird = ls?.thirdDown;
+  if (lThird && lThird.attempts >= 8 && lThird.made / lThird.attempts <= 0.34) {
+    tiles.push([`${lThird.made}/${lThird.attempts}`, `${f.L.code} third downs`]);
+  }
   const q = input.game[f.winner].quarters;
-  if (q && q.length >= 4) {
+  if (tiles.length < 3 && q && q.length >= 4) {
     const q4 = (q[3] ?? 0) + (input.game[f.winner].ot ?? 0);
     const second = (q[2] ?? 0) + q4;
     const lq = input.game[f.loser].quarters;
@@ -500,7 +540,9 @@ function whyWon(f: Facts, input: OverviewInput, name: ReturnType<typeof nameReso
     if (q4 >= 7 && q4 >= Math.max(...q.slice(0, 3))) tiles.push([String(q4), "Q4 points"]);
     else if (second >= 10 && loserSecond !== null && second > loserSecond) tiles.push([String(second), "2nd-half points"]);
   }
-  if (tiles.length < 3 && f.longTd) tiles.push([`${f.longTd.yds}`, f.longTd.type === "run" ? "Yard TD run" : "Yard TD pass"]);
+  if (tiles.length < 3 && f.longTd && !toldInRecap(f, input.story).has(f.longTd)) {
+    tiles.push([`${f.longTd.yds}`, f.longTd.type === "run" ? "Yard TD run" : "Yard TD pass"]);
+  }
   if (tiles.length < 3 && ws?.totalYards != null && ls?.totalYards != null && ws.totalYards > ls.totalYards) {
     tiles.push([String(ws.totalYards), `${f.W.code} total yards`]);
   }
@@ -513,10 +555,24 @@ function whyWon(f: Facts, input: OverviewInput, name: ReturnType<typeof nameReso
   if (ws?.totalYards != null && ls?.totalYards != null && ws.totalYards < ls.totalYards) overcame.push(`being outgained ${ls.totalYards}–${ws.totalYards}`);
   if (f.halftime && f.halftime.winner < f.halftime.loser) overcame.push(`a ${f.halftime.loser}–${f.halftime.winner} halftime deficit`);
 
+  // The evidence, never a play the Game Recap already tells (mak,
+  // 2026-11-11): efficiency, the other side's third downs, a defensive score.
+  const told = toldInRecap(f, input.story);
   const edges: string[] = [];
   if (to !== null && to > 0) edges.push(`a +${to} turnover margin`);
+  const wc = ws ? playCalling(ws) : null;
+  const lc = ls ? playCalling(ls) : null;
+  if (wc?.perDropback != null && lc?.perDropback != null && wc.perDropback - lc.perDropback >= 1.5) {
+    edges.push(`${wc.perDropback.toFixed(1)} yards per dropback to ${f.L.city}'s ${lc.perDropback.toFixed(1)}`);
+  }
+  const lt = ls?.thirdDown;
+  if (lt && lt.attempts >= 8 && lt.made / lt.attempts <= 0.34) {
+    edges.push(`a defense that held ${f.L.city} to ${lt.made}-for-${lt.attempts} on third down`);
+  }
+  const dTd = defensiveTd(f, input.story);
+  if (dTd) edges.push(dTd.int ? "an interception-return touchdown" : "a fumble-return touchdown");
   if (f.q4Int.length >= 2) edges.push(`${word(f.q4Int.length)} fourth-quarter interceptions`);
-  if (f.longTd) {
+  if (f.longTd && !told.has(f.longTd) && edges.length < 3) {
     const line = describe(f.longTd, f, name, "sentence");
     const qb = name(f.longTd.passer, f.W.code);
     const rec = name(f.longTd.receiver, f.W.code);
@@ -528,6 +584,7 @@ function whyWon(f: Facts, input: OverviewInput, name: ReturnType<typeof nameReso
   if (!edges.length && ws?.yardsPerPlay != null && ls?.yardsPerPlay != null && ws.yardsPerPlay > ls.yardsPerPlay) {
     edges.push(`${ws.yardsPerPlay.toFixed(1)} yards per play to ${ls.yardsPerPlay.toFixed(1)}`);
   }
+  edges.splice(3);
   const text = overcame.length && edges.length
     ? `${f.W.city} overcame ${join(overcame)} thanks to ${join(edges)}.`
     : edges.length

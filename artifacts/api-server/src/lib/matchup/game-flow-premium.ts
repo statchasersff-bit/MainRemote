@@ -7,12 +7,13 @@
  *                             lane per team, its width the time it took
  *   Field Position and Points where each drive started and what it was worth
  *   Offense by Half           each offense's first half against its second
- *   Drive Efficiency          points per drive, scoring rate, three-and-outs,
- *                             drive length, red zone
+ *   Drive Efficiency          points per drive, three-and-outs, drive
+ *                             length, red zone
  *   Play Calling by Score     pass rate leading, tied and trailing
  *
- * Printed UNDER the current Game Flow content as a comparison until mak
- * decides. Everything is counted from the stored nflverse play-by-play
+ * The whole Game Flow tab since 2026-11-11 (mak approved it after a second
+ * review: the timeline is the centerpiece; the old play-calling table,
+ * Possession Results and drive-by-drive list are gone where this prints). Everything is counted from the stored nflverse play-by-play
  * (data/matchup/pbp/<season>/<game id>.json): drives are its fixed drives,
  * each drive's score is the score when it ended, each play's score the score
  * after it. Pure: input in, HTML out.
@@ -49,6 +50,8 @@ interface FlowDrive {
   half: 1 | 2;
   redZone: boolean;
   defScore: boolean;
+  /** Points the OTHER side scored on this possession (a return touchdown); 0 otherwise. */
+  defPts: number;
   label: string;
 }
 
@@ -146,6 +149,7 @@ function buildModel(pbp: GamePbp): Model | null {
         plays: d.plays ?? 0,
         yards: d.yards ?? 0,
         points: d.defScore ? 0 : Math.max(0, after[side] - before[side]),
+        defPts: d.defScore ? Math.max(0, after[side === "away" ? "home" : "away"] - before[side === "away" ? "home" : "away"]) : 0,
         half: (d.qtr ?? 1) <= 2 ? 1 : 2,
         redZone: redZone.has(d.n),
         defScore: Boolean(d.defScore),
@@ -202,11 +206,28 @@ function chip(game: ScoreboardGame, side: Side): string {
   return `<span class="sct-gfp-chip is-${side}">${e(game[side].abbr)}</span>`;
 }
 
+/**
+ * A team's mark over its side of a two-team block: logo, nickname, code,
+ * the preview's Team Comparison head (mak, 2026-11-11). The home side
+ * mirrors (`end`).
+ */
+function teamMark(game: ScoreboardGame, side: Side, end = false): string {
+  const t = game[side];
+  return (
+    `<span class="sct-gfp-team is-${side}${end ? " is-end" : ""}">` +
+    (t.logoUrl ? `<img src="${e(t.logoUrl)}" alt="" width="28" height="28" loading="lazy" decoding="async">` : chip(game, side)) +
+    `<span class="sct-gfp-team-name">${e(t.short)}</span><span class="sct-gfp-team-code">${e(t.abbr)}</span>` +
+    `</span>`
+  );
+}
+
 function section(id: string, title: string, read: string, body: string): string {
   return (
     `<section class="sct-rb-section sct-gfp-sec" aria-labelledby="${id}">` +
-    `<h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>` +
+    // The read sits in the header bar under the title (mak, 2026-11-11).
+    `<div class="sct-fp-head sct-gfp-head"><h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>` +
     (read ? `<p class="sct-gfp-read">${e(read)}</p>` : "") +
+    `</div>` +
     body +
     `</section>`
   );
@@ -226,10 +247,14 @@ function timeline(game: ScoreboardGame, m: Model): string {
           (d.points ? `, ${d.points} pts` : "") +
           ` · ${plural(d.plays, "play")}, ${d.yards} yds, ${clockText(d.secs)}` +
           (d.start !== null ? ` · started ${spotText(d.start)}` : "");
+        // Each block is a button (mak, 2026-11-11: "details on hover or
+        // selection"): hover shows the title, a tap or click fills the line
+        // under the timeline and links to the drive's plays on Play-by-Play.
         return (
           `<li class="sct-gfp-drive is-${tone(d.result)}" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%" title="${e(tip)}">` +
+          `<button type="button" class="sct-gfp-hit" data-gfp-drive="${d.n}" data-tip="${e(tip)}" aria-pressed="false">` +
           (d.points && width > 2.4 ? `<span class="sct-gfp-pts" aria-hidden="true">${d.points}</span>` : "") +
-          `<span class="sct-rb-sr">${e(tip)}</span></li>`
+          `<span class="sct-rb-sr">${e(tip)}</span></button></li>`
         );
       })
       .join("");
@@ -256,7 +281,7 @@ function timeline(game: ScoreboardGame, m: Model): string {
   const h = scored("home");
   const read =
     `${game.away.short} scored on ${a.scores} of ${a.n} possessions, ${game.home.short} on ${h.scores} of ${h.n}. ` +
-    `Each block is one possession, as wide as the time it took.`;
+    `Each block is one possession, as wide as the time it took; select one for its details.`;
   return section(
     "gf-timeline",
     "Drive Timeline",
@@ -269,7 +294,10 @@ function timeline(game: ScoreboardGame, m: Model): string {
       `<li><span class="sct-gfp-key is-score" aria-hidden="true"></span>Scoring drive (points shown)</li>` +
       `<li><span class="sct-gfp-key is-turnover" aria-hidden="true"></span>Turnover</li>` +
       `<li><span class="sct-gfp-key is-plain" aria-hidden="true"></span>Punt or end of half</li>` +
-      `</ul>`,
+      `</ul>` +
+      // Filled by the client when a block is chosen; printed hidden.
+      `<p class="sct-gfp-pick" data-gfp-pick aria-live="polite" hidden>` +
+      `<span data-gfp-pick-text></span> <a class="sct-gfp-pick-link" href="#pbp-drive-1" data-gfp-pick-link>See every play →</a></p>`,
   );
 }
 
@@ -324,12 +352,18 @@ function fieldPosition(game: ScoreboardGame, m: Model): string {
   const read = avgs.length
     ? `Average start: ` +
       avgs.map(([s, v]) => `${game[s].short} ${spotText(Math.round(v)).replace(/^at /, "")}`).join(", ") +
-      `. Bars show points per drive from each starting zone.`
+      `. Bars show offensive points per drive from each starting zone.`
     : "";
   return section("gf-field", "Field Position and Points", read, `<ol class="sct-gfp-zones">${body}</ol>`);
 }
 
 /* --------------------------------------------------------- 3. by half */
+
+/** "a fumble-return touchdown", "an interception-return touchdown", "a return touchdown". */
+function returnWord(m: Model, side: Side, half?: 1 | 2): string {
+  const d = m.drives.find((x) => x.side !== side && x.defPts > 0 && (half === undefined || x.half === half));
+  return d?.result === "fumble" ? "a fumble-return touchdown" : d?.result === "int" ? "an interception-return touchdown" : "a return touchdown";
+}
 
 function byHalf(game: ScoreboardGame, m: Model): string {
   const stat = (side: Side, half: 1 | 2) => {
@@ -348,8 +382,10 @@ function byHalf(game: ScoreboardGame, m: Model): string {
   };
   const second = m.overtime ? "2nd half + OT" : "2nd half";
   const metrics: ReadonlyArray<[string, (s: ReturnType<typeof stat>) => string, (s: ReturnType<typeof stat>) => number | null]> = [
-    ["Points", (s) => String(s.pts), (s) => s.pts],
-    ["Points per drive", (s) => (s.ppd === null ? "-" : one(s.ppd)), (s) => s.ppd],
+    // Offense only (mak, 2026-11-11): a return touchdown is not the
+    // offense's, so the labels say so and the read names it.
+    ["Offensive points", (s) => String(s.pts), (s) => s.pts],
+    ["Offensive points per drive", (s) => (s.ppd === null ? "-" : one(s.ppd)), (s) => s.ppd],
     ["Yards per play", (s) => (s.ypp === null ? "-" : one(s.ypp)), (s) => s.ypp],
     ["Success rate", (s) => (s.sr === null ? "-" : pct(s.sr)), (s) => s.sr],
     ["Pass rate", (s) => (s.pass === null ? "-" : pct(s.pass)), () => null],
@@ -372,7 +408,7 @@ function byHalf(game: ScoreboardGame, m: Model): string {
       .join("");
     return (
       `<div class="sct-gfp-half is-${side}">` +
-      `<p class="sct-gfp-half-name">${chip(game, side)} ${e(game[side].short)}</p>` +
+      `<p class="sct-gfp-half-name">${teamMark(game, side)}</p>` +
       `<table class="sct-gfp-half-table"><thead><tr><th scope="col"><span class="sct-rb-sr">Stat</span></th>` +
       `<th scope="col">1st half</th><th scope="col">${e(second)}</th></tr></thead><tbody>${rows}</tbody></table>` +
       `</div>`
@@ -380,11 +416,22 @@ function byHalf(game: ScoreboardGame, m: Model): string {
   };
   const change = (side: Side) => stat(side, 2).pts - stat(side, 1).pts;
   const swing = SIDES.map((s) => [s, change(s)] as const).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]))[0]!;
+  // Points the side scored on the other team's possessions (return
+  // touchdowns), by half.
+  const returned = (side: Side, half: 1 | 2): number =>
+    m.drives.filter((d) => d.side !== side && d.half === half).reduce((t, d) => t + d.defPts, 0);
+  const extra = (side: Side): string => {
+    const parts = ([1, 2] as const)
+      .filter((h) => returned(side, h) > 0)
+      .map((h) => `${returnWord(m, side, h)} added ${returned(side, h)} in the ${h === 1 ? "first" : "second"} half`);
+    return parts.length ? `; ${parts.join(" and ")}` : "";
+  };
+  const sense = "Success: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th.";
   const read =
     swing[1] === 0
-      ? "Both offenses scored the same in each half as the other. Success: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th."
-      : `The biggest shift: ${game[swing[0]].short} scored ${Math.abs(swing[1])} ${swing[1] > 0 ? "more" : "fewer"} points after halftime. ` +
-        `Success: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th.`;
+      ? `Neither offense changed its scoring after halftime. ${sense}`
+      : `The biggest shift: the ${game[swing[0]].short}' offense scored ${Math.abs(swing[1])} ${swing[1] > 0 ? "more" : "fewer"} points after halftime` +
+        `${extra(swing[0])}. ${sense}`;
   return section("gf-halves", "Offense by Half", read, `<div class="sct-gfp-halves">${card("away")}${card("home")}</div>`);
 }
 
@@ -411,8 +458,9 @@ function efficiency(game: ScoreboardGame, m: Model): string {
   const h = stat("home");
   type Row = [string, number, number, (v: number) => string, boolean];
   const rows: Row[] = [
-    ["Points per drive", a.ppd, h.ppd, one, true],
-    ["Scoring drives", a.scoring, h.scoring, pct, true],
+    ["Offensive points per drive", a.ppd, h.ppd, one, true],
+    // No "Scoring drives" row (mak, 2026-11-11): the Drive Timeline's read
+    // already counts the scoring possessions.
     ["Three-and-outs", a.threeOut, h.threeOut, String, false],
     ["Plays per drive", a.plays, h.plays, one, true],
     ["Yards per drive", a.yards, h.yards, one, true],
@@ -432,12 +480,17 @@ function efficiency(game: ScoreboardGame, m: Model): string {
   };
   const rzText = (s: Side, x: ReturnType<typeof stat>) =>
     x.rz ? `${game[s].short} ${x.rzTd} TD${x.rzTd === 1 ? "" : "s"} on ${plural(x.rz, "trip")}` : `${game[s].short} never reached it`;
-  const read = `Red zone: ${rzText("away", a)}; ${rzText("home", h)}. End-of-half possessions are left out of the per-drive averages except points.`;
+  // Return touchdowns are not the offense's (mak, 2026-11-11): say so.
+  const notCounted = SIDES.filter((s) => m.drives.some((d) => d.side !== s && d.defPts > 0))
+    .map((s) => `${game[s].short}' ${returnWord(m, s).replace(/^an? /, "")}`);
+  const read =
+    `Red zone: ${rzText("away", a)}; ${rzText("home", h)}. End-of-half possessions are left out of the per-drive averages except points` +
+    (notCounted.length ? `; the ${notCounted.join(" and the ")} ${notCounted.length > 1 ? "are" : "is"} not counted.` : ".");
   return section(
     "gf-efficiency",
     "Drive Efficiency",
     read,
-    `<div class="sct-gfp-vs-head"><span>${chip(game, "away")} ${e(game.away.short)}</span><span>${e(game.home.short)} ${chip(game, "home")}</span></div>` +
+    `<div class="sct-gfp-vs-head">${teamMark(game, "away")}${teamMark(game, "home", true)}</div>` +
       `<ol class="sct-gfp-vs-list">${rows.map(bar).join("")}</ol>`,
   );
 }
@@ -469,7 +522,7 @@ function calling(game: ScoreboardGame, m: Model): string {
     }).join("");
     return (
       `<div class="sct-gfp-call">` +
-      `<p class="sct-gfp-half-name">${chip(game, side)} ${e(game[side].short)}</p>` +
+      `<p class="sct-gfp-half-name">${teamMark(game, side)}</p>` +
       `<ol class="sct-gfp-call-list">${rows}</ol>` +
       `</div>`
     );
@@ -519,8 +572,9 @@ export function renderGameFlowPremium(input: GameFlowPremiumInput): string {
   if (!m) return "";
   const g = input.game;
   return (
+    // The Game Flow tab itself since 2026-11-11 (mak approved the rebuild):
+    // the timeline leads, no comparison flag.
     `<div class="sct-gfp" data-gfp>` +
-    `<p class="sct-gfp-flag">New Game Flow design, for comparison with the version above</p>` +
     timeline(g, m) +
     fieldPosition(g, m) +
     byHalf(g, m) +
