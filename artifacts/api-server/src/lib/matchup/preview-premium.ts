@@ -66,16 +66,34 @@ const ICON = {
   tv: svg(`<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 21h8"/><path d="M9 2l3 4 3-4"/>`),
   venue: svg(`<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>`),
   weather: svg(`<path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7z"/>`),
+  h2h: svg(`<path d="M7 4L3 8l4 4"/><path d="M3 8h14"/><path d="M17 12l4 4-4 4"/><path d="M21 16H7"/>`),
 };
 
 /* ------------------------------------------------------------ helpers */
 
-function face(sleeperId: string | null, side: string, size = 40): string {
+function face(sleeperId: string | null, side: string, size = 40, tag: string | null = null): string {
   const img = sleeperId
     ? (headshotImg({ src: null, id: sleeperId, className: "sct-mpp-face-img", alt: "", variants: ["160"], width: size, height: size, loading: "lazy" }) ?? "")
     : "";
-  return `<span class="sct-mpp-face is-${side}" aria-hidden="true">${img}</span>`;
+  return withFaceTag(`<span class="sct-mpp-face is-${side}" aria-hidden="true">${img}</span>`, tag);
 }
+
+/**
+ * The injury tag on the photo's top-right corner, for phones (mak,
+ * 2026-11-11: at 560px and under "put the injury tags on top right of player
+ * image"). The photo clips its contents, so a tagged photo sits in a holder
+ * that carries a copy of the tag; CSS shows the copy and visually hides the
+ * inline tag on phones (screen readers keep reading the inline one), and
+ * hides the copy above 560px.
+ */
+function withFaceTag(faceHtml: string, tag: string | null): string {
+  if (!tag) return faceHtml;
+  return `<span class="sct-mpp-facewrap">${faceHtml}<span class="sct-mpp-ftag" data-status="${e(tag)}" aria-hidden="true">${e(tag)}</span></span>`;
+}
+
+/** The short tag a status line gets on the photo ("Q", "D", "IR", ...). */
+const statusTag = (status: string | null): string | null =>
+  status === "Questionable" ? "Q" : status === "Doubtful" ? "D" : null;
 
 function playerLink(name: string): string {
   const url = getPlayerProfileUrl(name);
@@ -83,11 +101,38 @@ function playerLink(name: string): string {
 }
 
 /** A card with the Schedule tab's navy bar: gold icon, the section's H2, a tag at the right, the gold slash. */
-function card(hook: string, id: string, icon: string, title: string, tag: string, body: string): string {
+/**
+ * A heading's text with a phone label (mak, 2026-11-11: at 560px and under
+ * "Patriots vs Lions Keys to the Game" reads "Keys to the Game"). The full
+ * text stays the H2's text in the source ([[seo-changes-need-approval]]);
+ * the short label is CSS-generated from data-short, so it adds no text to
+ * the heading, and the full text is only visually hidden on phones.
+ */
+function headText(full: string, short?: string): string {
+  return short
+    ? `<span class="sct-mpp-hfull">${e(full)}</span><span class="sct-mpp-hshort" data-short="${e(short)}" aria-hidden="true"></span>`
+    : e(full);
+}
+
+/**
+ * A rail card's title with the main cards' bar pieces (icon, slanted lines)
+ * for phones (mak, 2026-11-11: at 560px and under Game Conditions and
+ * Head-to-Head match the Fantasy / Betting bars). Both pieces are
+ * aria-hidden and CSS-hidden above 560px, so the heading's text and the
+ * desktop rail are unchanged.
+ */
+function railBar(icon: string): { lead: string; tail: string } {
+  return {
+    lead: `<span class="sct-mpp-rail-ico" aria-hidden="true">${icon}</span>`,
+    tail: `<span class="sct-mpp-rail-slash" aria-hidden="true"></span>`,
+  };
+}
+
+function card(hook: string, id: string, icon: string, title: string, tag: string, body: string, short?: string): string {
   return (
     `<section class="sct-mpp-card ${hook}" aria-labelledby="${e(id)}">` +
     `<div class="sct-mpp-head"><span class="sct-mpp-icon">${icon}</span>` +
-    `<h2 class="sct-mpp-h" id="${e(id)}">${e(title)}</h2>` +
+    `<h2 class="sct-mpp-h" id="${e(id)}">${headText(title, short)}</h2>` +
     (tag ? `<span class="sct-mpp-tag">${e(tag)}</span>` : "") +
     `<span class="sct-mpp-slash" aria-hidden="true"></span></div>` +
     `<div class="sct-mpp-body">${body}</div>` +
@@ -147,7 +192,7 @@ function hero(p: Preview, ctx: PreviewRenderContext): string {
     fact(ICON.weather, weather);
 
   return (
-    `<header class="sct-mpp-hero" aria-label="${e(`${p.away.team.fullName} at ${p.home.team.fullName}`)}">` +
+    `<header class="sct-mpp-hero is-teams" aria-label="${e(`${p.away.team.fullName} at ${p.home.team.fullName}`)}">` +
     `<div class="sct-mpp-decor" aria-hidden="true"><span class="sct-mpp-bands"></span><span class="sct-mpp-topline"></span></div>` +
     // No heading in the hero since 2026-11-06: the page's one H1 is the
     // visible preview banner under it ("Packers vs. Patriots: Week 9 Game
@@ -163,6 +208,53 @@ function hero(p: Preview, ctx: PreviewRenderContext): string {
     kpis +
     (facts ? `<ul class="sct-mpp-facts">${facts}<li class="sct-mpp-fact is-note">${e(lineNote(p))}</li></ul>` : "") +
     `</header>`
+  );
+}
+
+/**
+ * The phone header (mak, 2026-11-11: at 560px and under the five odds cards
+ * "take up more space than the teams themselves"). One white surface (the
+ * split club colors were removed the same day): one compact team row, each
+ * team block linking to its hub; kickoff + network and venue; spread and
+ * total as one full-width row linking to the
+ * Betting Outlook card, whose market block carries the rest (opening lines,
+ * moneyline, implied totals and ranks, the line note). CSS shows it and hides
+ * the full hero at 560px and under; above that it is display:none.
+ */
+function mobileHead(p: Preview, ctx: PreviewRenderContext): string {
+  const { away, home, meeting, line } = p;
+  const team = (s: PreviewSide) =>
+    `<a class="sct-mpp-mh-team is-${s.key}" href="${e(ctx.hub(s.team))}">` +
+    `<span class="sct-mpp-mh-logo" aria-hidden="true">${s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="38" height="38" loading="lazy" decoding="async">` : ""}</span>` +
+    `<span class="sct-mpp-mh-text"><span class="sct-mpp-mh-name">${e(s.team.fullName)}</span>` +
+    `<span class="sct-mpp-mh-rec">${e(s.record ?? "-")} · ${s.key === "home" ? "Home" : "Away"}<span class="sct-visually-hidden">, team hub</span></span></span>` +
+    `</a>`;
+  const when = [ctx.date.replace(/, \d{4}$/, ""), ctx.time, ctx.network].filter(Boolean).join(" · ");
+  const odds =
+    line && (line.spread !== null || line.total !== null)
+      ? // A full-width row under the strip: the lines left, the destination
+        // right (mak, 2026-11-11: "Betting → on the right so the destination
+        // is clear").
+        `<a class="sct-mpp-mh-odds" href="#pv-betting">` +
+        `<span class="sct-mpp-mh-odds-val">` +
+        [line.spread !== null ? favLine(line.spread, away.team, home.team) : null, line.total !== null ? `O/U ${exact(line.total)}` : null]
+          .filter(Boolean)
+          .map((x) => e(x as string))
+          .join(" · ") +
+        `</span><span class="sct-mpp-mh-odds-go">Betting<span aria-hidden="true"> →</span></span></a>`
+      : "";
+  return (
+    `<div class="sct-mpp-mh">` +
+    `<div class="sct-mpp-mh-band">` +
+    `<p class="sct-mpp-mh-week">${e(`${meeting.season} · ${meeting.weekLabel}`)}</p>` +
+    `<div class="sct-mpp-mh-row">${team(away)}<span class="sct-mpp-mh-at" aria-hidden="true">@</span>${team(home)}</div>` +
+    `</div>` +
+    `<div class="sct-mpp-mh-info">` +
+    (when ? `<p class="sct-mpp-mh-when">${e(when)}</p>` : "") +
+    (meeting.venue ? `<p class="sct-mpp-mh-venue">${e(meeting.venue)}</p>` : "") +
+    `</div>` +
+    odds +
+    `</div>`
   );
 }
 
@@ -247,6 +339,7 @@ function keysCard(p: Preview): string {
     `${keys.length} matchups to watch`,
     `<ol class="sct-mpp-keys">${items}</ol>` +
       `<p class="sct-mpp-keys-note">Season-to-date team stats. Ranks are among all 32 teams, 1st the best; for a defense, 1st allows the fewest.</p>`,
+    "Keys to the Game",
   );
 }
 
@@ -290,7 +383,7 @@ function formCard(p: Preview): string {
   };
   const body = column(p.away) + column(p.home);
   if (!body) return "";
-  return card("is-form", "pv-form", ICON.trend, `${pairOf(p)} Recent Form`, "Last five games", `<div class="sct-mpp-cols">${body}</div>`);
+  return card("is-form", "pv-form", ICON.trend, `${pairOf(p)} Recent Form`, "Last five games", `<div class="sct-mpp-cols">${body}</div>`, "Last 5 Games");
 }
 
 /* --------------------------------------------------------- player battles */
@@ -317,7 +410,7 @@ function battlesCard(p: Preview): string {
       height: 36,
       loading: "lazy",
     });
-    return `<span class="sct-mpp-face is-${side}" aria-hidden="true">${img ?? ""}</span>`;
+    return withFaceTag(`<span class="sct-mpp-face is-${side}" aria-hidden="true">${img ?? ""}</span>`, / \(Q\)$/.test(x.name) ? "Q" : null);
   };
   const people = (list: BattlePlayer[], cls: string, side: string) =>
     `<span class="sct-mpp-bt-side ${cls}">` +
@@ -340,6 +433,11 @@ function battlesCard(p: Preview): string {
       .filter((x) => x.stat)
       .map((x) => `<li><b>${playerLink(clean(x.name))}</b> ${e(x.stat)}</li>`)
       .join("");
+  const pairOfKind = (side: "away" | "home", kind: string): "first" | "second" | "solo" => {
+    const other = p.battles[side === "away" ? "home" : "away"];
+    if (!other.some((b) => b.kind === kind)) return "solo";
+    return side === "away" ? "first" : "second";
+  };
   const block = (o: PreviewSide, d: PreviewSide) => {
     const list = p.battles[o.key];
     if (!list.length) return "";
@@ -355,8 +453,12 @@ function battlesCard(p: Preview): string {
       list
         .map(
           (b) =>
-            `<li class="sct-mpp-bt" data-kind="${b.kind}"><details class="sct-mpp-bt-d"><summary>` +
-            `<span class="sct-mpp-bt-kind">${e(BATTLE_WORD[b.kind])}<span class="sct-mpp-inj-chev" aria-hidden="true"></span></span>` +
+            // data-pair: on phones the two offenses' battles of one kind
+            // share a row under one label (mak, 2026-11-11: "instead of
+            // writing Quarterback vs Pass Rush two times, just combine those
+            // rows"); "first" carries the label, "second" drops it.
+            `<li class="sct-mpp-bt" data-kind="${b.kind}" data-pair="${pairOfKind(o.key, b.kind)}"><details class="sct-mpp-bt-d"><summary>` +
+            `<span class="sct-mpp-bt-kind"><span>${e(BATTLE_WORD[b.kind])}</span><span class="sct-mpp-inj-chev" aria-hidden="true"></span></span>` +
             `<span class="sct-mpp-bt-row">${people(b.offense, "is-off", o.key)}<span class="sct-mpp-bt-vs" aria-label="against">vs</span>${people(b.defense, "is-def", d.key)}</span>` +
             `</summary><div class="sct-mpp-bt-more">` +
             `<ul class="sct-mpp-bt-stats">${stats(b.offense)}${stats(b.defense)}</ul>` +
@@ -371,8 +473,18 @@ function battlesCard(p: Preview): string {
   if (!body) return "";
   // No title bar or outer frame since 2026-11-06 (mak), like the Injury
   // Watch above it in the rail; named for assistive tech.
+  // Phones (mak, 2026-11-11, as the Injury Watch): one container under the
+  // main cards' bar, the two "Offense vs Defense" headings hidden and every
+  // battle in one list. The bar is CSS-hidden above 560px.
+  const count = p.battles.away.length + p.battles.home.length;
+  const bar =
+    `<div class="sct-mpp-head sct-mpp-bt-bar"><span class="sct-mpp-icon">${ICON.compare}</span>` +
+    `<p class="sct-mpp-h">Player Battles</p>` +
+    `<span class="sct-mpp-tag">${count} ${count === 1 ? "battle" : "battles"}</span>` +
+    `<span class="sct-mpp-slash" aria-hidden="true"></span></div>`;
   return (
     `<section class="sct-mpp-card is-battles" aria-label="${e(`${pairOf(p)} player battles`)}">` +
+    bar +
     `<div class="sct-mpp-body">${body}` +
     `<p class="sct-mpp-keys-note">Defensive numbers are regular-season totals. Depth-chart starters; players listed Out are skipped.</p></div>` +
     `</section>`
@@ -437,7 +549,20 @@ function bettingCard(p: Preview): string {
     `</li>`;
   const market = b
     ? `<div class="sct-mpp-bo-sec"><ul class="sct-mpp-bo-tiles" aria-label="Current lines">${b.market.map(tile).join("")}</ul>` +
-      `<p class="sct-mpp-bo-src">One sportsbook's line, not a consensus${stamp ? ` · Updated ${e(stamp)}` : ""}</p></div>`
+      // The hero's implied totals, ranks and line note, for phones, where
+      // the compact header leaves them out (mak, 2026-11-11).
+      (p.away.implied !== null && p.home.implied !== null
+        ? `<ul class="sct-mpp-bo-implied" aria-label="Implied team totals">` +
+          [p.away, p.home]
+            .map(
+              (s) =>
+                `<li><span class="sct-mpp-bo-tl">${e(`${code(s.team)} implied`)}</span><b class="sct-mpp-num">${e(exact(s.implied!))}</b>` +
+                `<span class="sct-mpp-bo-tsub">${e(implyRank(s.impliedRank, p.slateCount, p.meeting.week))}</span></li>`,
+            )
+            .join("") +
+          `</ul>`
+        : "") +
+      `<p class="sct-mpp-bo-src">One sportsbook's line, not a consensus${stamp ? ` · Updated ${e(stamp)}` : ""}<span class="sct-mpp-bo-note"> · ${e(lineNote(p))}</span></p></div>`
     : `<p class="sct-mpp-ff-none">No current line is available for this game.</p>`;
 
   /* 2. Betting Form: one table, both teams */
@@ -532,6 +657,7 @@ function bettingCard(p: Preview): string {
       insight +
       results +
       `<p class="sct-mpp-bo-legal">Records use each game's closing line; pushes count. Context, not a prediction or betting advice. 21+ and legal jurisdictions only. Gambling problem? Call 1-800-GAMBLER.</p>`,
+    "Betting Outlook",
   );
 }
 
@@ -559,7 +685,7 @@ function fantasyCard(p: Preview): string {
         im.takeaways
           .map(
             (t) =>
-              `<li class="sct-mpp-ff-item" data-kind="${t.kind}">${face(t.player.sleeperId, t.player.side, 52)}` +
+              `<li class="sct-mpp-ff-item" data-kind="${t.kind}">${face(t.player.sleeperId, t.player.side, 52, statusTag(t.player.status))}` +
               `<div class="sct-mpp-ff-body"><p class="sct-mpp-ff-top"><span class="sct-mpp-ff-name">${playerLink(t.player.name)}${badge(t.player.status)}</span>` +
               `<span class="sct-mpp-ff-kind">${e(TAKEAWAY_WORD[t.kind])}</span></p>` +
               `<p class="sct-mpp-ff-meta">${e(`${t.player.team} · ${t.player.pos} · ${one(t.player.ppg)} ${f.label}/G`)}</p>` +
@@ -575,7 +701,7 @@ function fantasyCard(p: Preview): string {
       .map(
         (pl) =>
           `<tr data-team="${e(pl.team)}" data-pos="${pl.pos}">` +
-          `<th scope="row"><span class="sct-mpp-ff-pl">${face(pl.sleeperId, pl.side, 28)}<span><span class="sct-mpp-ff-pname">${playerLink(pl.name)}${badge(pl.status)}</span>` +
+          `<th scope="row"><span class="sct-mpp-ff-pl">${face(pl.sleeperId, pl.side, 28, statusTag(pl.status))}<span><span class="sct-mpp-ff-pname">${playerLink(pl.name)}${badge(pl.status)}</span>` +
           // Team and position under the name, no column of their own (mak,
           // 2026-11-06); the rank joins them on phones, where its column hides.
           `<small class="sct-mpp-ff-sub2">${e(`${pl.pos} · ${pl.team}`)}` +
@@ -625,7 +751,7 @@ function fantasyCard(p: Preview): string {
   return (
     `<section class="sct-mpp-card is-fantasy" aria-labelledby="pv-fantasy" data-sct-seg-tabs>` +
     `<div class="sct-mpp-head"><span class="sct-mpp-icon">${ICON.lineup}</span>` +
-    `<h2 class="sct-mpp-h" id="pv-fantasy">${e(`${pairOf(p)} Fantasy Football Impact`)}</h2>` +
+    `<h2 class="sct-mpp-h" id="pv-fantasy">${headText(`${pairOf(p)} Fantasy Football Impact`, "Fantasy Impact")}</h2>` +
     `<div class="sct-mpp-ff-fmt" role="tablist" aria-label="Scoring format">${tabs}</div>` +
     `<span class="sct-mpp-slash" aria-hidden="true"></span></div>` +
     `<div class="sct-mpp-body">${body}</div>` +
@@ -731,9 +857,12 @@ function injuryCard(p: Preview): string {
                 // Collapsed by default (mak, 2026-11-06): the photo, name,
                 // position and designation; the note opens under them. Native
                 // <details>, so it works without script and from the keyboard.
-                `<li class="sct-mpp-inj"><details class="sct-mpp-inj-d"><summary>${face(r.sleeperId, s.key, 36)}` +
+                `<li class="sct-mpp-inj"><details class="sct-mpp-inj-d"><summary>${face(r.sleeperId, s.key, 36, r.chip)}` +
                 `<span class="sct-mpp-inj-top"><span class="sct-mpp-inj-name">${playerLink(r.name)}</span>` +
                 (r.pos ? `<span class="sct-mpp-slot" data-pos="${e(r.pos)}">${e(r.pos)}</span>` : "") +
+                // The team code, shown only on phones where both teams share
+                // one list (mak, 2026-11-11).
+                `<span class="sct-mpp-inj-team">${e(code(s.team))}</span>` +
                 // The short code keeps the row on one line in the rail; the full
                 // designation is the tag's title and accessible name.
                 `<span class="sct-mpp-status" data-status="${e(r.chip)}" title="${e(r.status)}" aria-label="${e(r.status)}">${e(r.chip)}</span></span>` +
@@ -749,8 +878,18 @@ function injuryCard(p: Preview): string {
   };
   // No title bar since 2026-11-06 (mak: "remove" the heading): the two team
   // columns sit straight in the rail, the section named for assistive tech.
+  // Phones (mak, 2026-11-11): one container under the main cards' bar, the
+  // two team headings hidden and both teams in one list. The bar is CSS-hidden
+  // above 560px, where the two team boxes keep their own headings.
+  const total = [p.away, p.home].reduce((n, s) => n + p.injuries[s.key].filter((r) => r.chip !== "OK").length, 0);
+  const bar =
+    `<div class="sct-mpp-head sct-mpp-inj-bar"><span class="sct-mpp-icon">${ICON.injury}</span>` +
+    `<p class="sct-mpp-h">Injury Watch</p>` +
+    `<span class="sct-mpp-tag">${total} designated</span>` +
+    `<span class="sct-mpp-slash" aria-hidden="true"></span></div>`;
   return (
     `<section class="sct-mpp-card is-injuries" aria-label="${e(`${pairOf(p)} injury report`)}">` +
+    bar +
     `<div class="sct-mpp-body"><div class="sct-mpp-cols">${column(p.away)}${column(p.home)}</div></div>` +
     `</section>`
   );
@@ -778,7 +917,7 @@ function conditionsRail(p: Preview): string {
       : `<p class="sct-mpp-cond-note">No weather concerns at kickoff.</p>`;
   return (
     `<section class="sct-mpp-rail-card sct-mpp-cond${c.impact ? " is-impact" : ""}" aria-label="Game conditions">` +
-    `<p class="sct-mpp-rail-h">Game Conditions</p>` +
+    `<p class="sct-mpp-rail-h">${railBar(ICON.weather).lead}<span class="sct-mpp-rail-t">Game Conditions</span>${railBar(ICON.weather).tail}</p>` +
     `<dl class="sct-mpp-cond-list">${rows.map(([k, v]) => `<div><dt>${e(k)}</dt><dd>${e(v)}</dd></div>`).join("")}</dl>` +
     note +
     `</section>`
@@ -803,7 +942,7 @@ function h2hRail(p: Preview, ctx: PreviewRenderContext): string {
     .join("");
   return (
     `<section class="sct-mpp-rail-card" aria-labelledby="pv-h2h">` +
-    `<h2 class="sct-mpp-rail-h" id="pv-h2h">${e(`${pairOf(p)} Head-to-Head`)}</h2>` +
+    `<h2 class="sct-mpp-rail-h" id="pv-h2h">${railBar(ICON.h2h).lead}<span class="sct-mpp-rail-t">${headText(`${pairOf(p)} Head-to-Head`, "Head-to-Head")}</span>${railBar(ICON.h2h).tail}</h2>` +
     `<div class="sct-mpp-h2h-top"><div><b class="sct-mpp-num">${e(h.record)}</b><span>Series since ${h.since}</span></div>` +
     (h.avgPoints !== null ? `<div><b class="sct-mpp-num">${one(h.avgPoints)}</b><span>Avg total</span></div>` : "") +
     `</div>` +
@@ -834,6 +973,7 @@ export function renderMatchupPreviewTop(p: Preview, ctx: PreviewRenderContext): 
     `<li aria-current="page">${e(`${p.away.team.nickname} at ${p.home.team.nickname}, ${p.meeting.weekLabel}`)}</li>` +
     `</ol></nav>` +
     hero(p, ctx) +
+    mobileHead(p, ctx) +
     `</div>`
   );
 }

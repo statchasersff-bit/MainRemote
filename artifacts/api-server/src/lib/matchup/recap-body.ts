@@ -505,7 +505,20 @@ export function renderStatCompare(opts: {
   awayInk: string;
   homeInk: string;
   rows: CompareRow[];
+  /** Club crests beside the column names (Season to Date, mak 2026-11-11). */
+  awayLogo?: string | null;
+  homeLogo?: string | null;
 }): string {
+  const crest = (url: string | null | undefined): string =>
+    url
+      ? `<img class="sct-rb-col-logo" src="${escapeHtml(url)}" alt="" width="24" height="24" loading="lazy" decoding="async" />`
+      : "";
+  const awayHead = opts.awayLogo
+    ? `<span class="sct-rb-col-team">${crest(opts.awayLogo)}${escapeHtml(opts.awayName)}</span>`
+    : escapeHtml(opts.awayName);
+  const homeHead = opts.homeLogo
+    ? `<span class="sct-rb-col-team">${escapeHtml(opts.homeName)}${crest(opts.homeLogo)}</span>`
+    : escapeHtml(opts.homeName);
   const value = (row: CompareRow, side: "away" | "home"): string => {
     const better = favored(row) === side;
     return (
@@ -548,9 +561,9 @@ export function renderStatCompare(opts: {
     `<table class="sct-rb-table" style="${escapeHtml(`--rb-away:${opts.awayInk};--rb-home:${opts.homeInk}`)}">` +
     `<caption class="sct-rb-sr">${escapeHtml(opts.caption)}</caption>` +
     `<thead><tr>` +
-    `<th scope="col" class="sct-rb-col-away">${escapeHtml(opts.awayName)}</th>` +
+    `<th scope="col" class="sct-rb-col-away">${awayHead}</th>` +
     `<th scope="col" class="sct-rb-col-stat">Stat</th>` +
-    `<th scope="col" class="sct-rb-col-home">${escapeHtml(opts.homeName)}</th>` +
+    `<th scope="col" class="sct-rb-col-home">${homeHead}</th>` +
     `</tr></thead>` +
     `<tbody>${body}</tbody>` +
     `</table>`
@@ -768,14 +781,15 @@ export function renderHeadToHead(input: RecapBodyInput): string {
   const rows =
     series.upcoming.map((g) => upcomingRow(input, g)).join("") +
     newest.map((g) => recentRow(input, g)).join("");
-  const since = n || rows ? `<h3 class="sct-rb-h3 sct-rb-since">${escapeHtml(`Since ${series.sinceSeason}`)}</h3>` : "";
+  // No "Since 2021" subhead (mak, 2026-11-11: "remove the text"); the
+  // summary line under it already reads "N meetings since 2021".
   const meetings = rows ? `<ul class="sct-rb-meetings">${rows}</ul>` : "";
 
   // id "h2h" is the "On this page" jump target.
   return section(
     "h2h",
     `${game.away.short} vs ${game.home.short} head-to-head`,
-    top + since + summary + meetings,
+    top + summary + meetings,
   );
 }
 
