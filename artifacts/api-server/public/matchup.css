@@ -10284,9 +10284,10 @@ a.sct-ex-game:hover .sct-ex-line {
    design did"). The previous scoreboard's paint: the away side and the home
    side on a 100° diagonal with the navy between them and faint yard lines
    (--rh-away / --rh-home are heroPairFills()). The crest panels take the
-   same fills, so each side reads as one color. */
+   same fills, so each side reads as one color. The upcoming hero (.is-teams) wears the
+   same paint since 2026-11-11. */
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) {
   background:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 64px),
     linear-gradient(
@@ -10298,23 +10299,23 @@ a.sct-ex-game:hover .sct-ex-line {
     #0f1e33;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-bands {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-bands {
   background: linear-gradient(0deg, rgba(7, 18, 34, 0.45) 0%, transparent 38%);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-topline {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-topline {
   background: linear-gradient(90deg, var(--rh-away) 0%, var(--rh-away) 40%, var(--mpp-gold-bright) 40%, var(--mpp-gold) 60%, var(--rh-home) 60%, var(--rh-home) 100%);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel.is-away .sct-mpp-panel-fill {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-panel.is-away .sct-mpp-panel-fill {
   --fill: var(--rh-away);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel.is-home .sct-mpp-panel-fill {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-panel.is-home .sct-mpp-panel-fill {
   --fill: var(--rh-home);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-panel-fill {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-panel-fill {
   /* The fills arrive at 90% (heroPairFills); over the hero's navy, as the
      halves are, not over the gold divider under the panel. */
   background:
@@ -10323,17 +10324,94 @@ a.sct-ex-game:hover .sct-ex-line {
     #0f1e33;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-hero.is-final .sct-mpp-facts {
+:is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) .sct-mpp-facts {
   background: rgba(7, 18, 34, 0.35);
 }
 
 @container (max-width: 760px) {
-  :is(.sct, #sct-table-armour) .sct-mpp-hero.is-final {
+  :is(.sct, #sct-table-armour) .sct-mpp-hero:is(.is-final, .is-teams) {
     background:
       repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 64px),
       linear-gradient(100deg, var(--rh-away, #1e3a5f) 0 47%, var(--rh-home, #1e3a5f) 53% 100%),
       #0f1e33;
   }
+}
+
+
+/* ==== Upcoming page in the clubs' colors (mak, 2026-11-11: "instead of
+   using this gold/blue theme throughout the pages, can you use a similar
+   color scheme logic as we do in the matchup recaps"). The recap's pair on
+   the page root (.sct-mu.is-pvc, matchup-render.ts): --pm-bg is the home
+   club's color under every dark bar (the away club's when none of the home
+   pairing's accents reads), --pm-accent the other club's on the icons and
+   lines over it, --pm-ink that club's ink for lines and icons on white. The hero takes the recap's paint above (.is-teams). */
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp {
+  --mpp-head:
+    linear-gradient(90deg, color-mix(in srgb, var(--pm-bg, #0b2345) 88%, #000) 30%, transparent 75%),
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.045) 0 14px, transparent 14px 38px),
+    linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+}
+
+/* The banner (shared premium tab header), as the recap's tab headers. */
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-up-head.sct-mpp-banner {
+  --up-gold: var(--pm-accent, #d4af37);
+  --up-head: linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-up-head.sct-mpp-banner::after {
+  box-shadow: 14px 0 0 color-mix(in srgb, var(--pm-accent, #d4af37) 55%, transparent);
+}
+
+/* Over the dark bars: the accent. */
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp :is(.sct-mpp-icon, .sct-mpp-bt-vs, .sct-mpp-key-n) {
+  color: var(--pm-accent, #f0c13b);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-slash {
+  background: linear-gradient(118deg, transparent 0 38%, var(--pm-accent, #d4af37) 38% 52%, transparent 52% 64%, var(--pm-accent, #f0c13b) 64% 76%, transparent 76%);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp :is(.sct-mpp-bt-vs, .sct-mpp-key-n) {
+  background: var(--pm-bg, #0b2345);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-cta {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--pm-bg, #0b2345) 82%, #000) 0%, var(--pm-bg, #0b2345) 55%, color-mix(in srgb, var(--pm-bg, #0b2345) 90%, #000) 100%);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-cta-btn {
+  background: var(--pm-accent, #f0c13b);
+  color: var(--pm-bg, #071a35) !important;
+}
+
+/* On white: the away club's ink. */
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-kpi-icon {
+  color: var(--pm-ink, #a8841c);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-rail-h {
+  border-bottom-color: var(--pm-ink, #d4af37);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-link {
+  box-shadow: inset 0 -2px 0 var(--pm-ink, #d4af37);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-key:not([data-side]) {
+  border-top-color: var(--pm-ink, #d4af37);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-bo-key {
+  border-left-color: var(--pm-ink, #d4af37);
+}
+
+:is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp-cond.is-impact {
+  border-color: color-mix(in srgb, var(--pm-ink, #d4af37) 45%, #fff);
+  box-shadow: inset 0 3px 0 var(--pm-ink, #d4af37), var(--mpp-shadow);
 }
 
 /* ==== Section title bars: one club's color under, the other's on the
@@ -12684,5 +12762,931 @@ a.sct-ex-game:hover .sct-ex-line {
   from {
     opacity: 0;
     transform: translateY(24px);
+  }
+}
+
+/* ==== Overview card heads in the Usage panel-head style (mak, 2026-11-11:
+   Game Recap, Why the X Won, How the Game Swung and Game Highlights wear the
+   team Usage tab's Snap Counts & Playing Time / Target Distribution heads,
+   .sct-up-ph): no colored bar, no stripes, no slanted lines, no icon box.
+   Gold icon, navy 1.15rem title, a 2px gold rule under it, inset to the
+   card body's gutter. Other tabs' bars are untouched. */
+
+.sct-mu.is-pm .sct-ov-head {
+  gap: 9px;
+  min-height: 0;
+  margin: 14px 18px 0;
+  padding: 0 0 8px;
+  overflow: visible;
+  border-bottom: 2px solid var(--pm-ink, #f0c13b);
+  border-image: var(--hd-rule) 1;
+  background: none;
+  box-shadow: none;
+  color: var(--tp-ink, #0b2345);
+}
+
+.sct-mu.is-pm .sct-ov-slash {
+  display: none !important;
+}
+
+.sct-mu.is-pm .sct-ov-head .sct-pm-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hd-ink);
+}
+
+.sct-mu.is-pm .sct-ov-head .sct-pm-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sct-mu.is-pm h2.sct-ov-h,
+.sct-mu.is-pm .sct-ov-card.is-recap h2.sct-ov-h {
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0 !important;
+}
+
+.sct-mu.is-pm .sct-ov-step {
+  color: var(--tp-muted, #5b6b80);
+}
+
+@container (max-width: 460px) {
+  .sct-mu.is-pm .sct-ov-head {
+    margin: 12px 12px 0;
+    padding: 0 0 8px !important;
+  }
+
+  .sct-mu.is-pm .sct-ov-head .sct-pm-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ==== Upcoming page: compact phone header (mak, 2026-11-11: "for 560px and
+   smaller ... the five betting cards take up more space than the teams
+   themselves"). preview-premium.ts mobileHead(): the week, one team row, each
+   team block a hub link; kickoff + network and venue, then
+   spread and total as one link to the Betting Outlook card (#pv-betting),
+   whose market block shows the implied totals, ranks and line note on phones
+   only. Above 560px the full hero shows and this block does not. Since a
+   later pass the same day it is one white surface (no split club colors):
+   dark names, gray week / records / venue, a plain gray @, logos in their
+   own colors, a thin neutral border and a hairline over the odds row. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-mh,
+:is(.sct, #sct-table-armour) .sct-mpp-bo-implied,
+:is(.sct, #sct-table-armour) .sct-mpp-bo-note {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-hero {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh {
+    display: block;
+    overflow: hidden;
+    border: 1px solid #dfe3e8;
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-band {
+    padding: 8px 8px 4px;
+    background: #fff;
+    color: var(--mpp-text);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp p.sct-mpp-mh-week {
+    margin: 0 0 4px !important;
+    color: var(--mpp-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-team {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 2px 0;
+    border-radius: 10px;
+    color: var(--mpp-text) !important;
+    text-decoration: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-team.is-home {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-team:focus-visible {
+    outline: 2px solid var(--mpp-text);
+    outline-offset: 1px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-logo {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-logo img {
+    display: block;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-text {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    color: var(--mpp-text);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-rec {
+    color: var(--mpp-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-at {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 20px;
+    color: #8a96a6;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-info {
+    display: grid;
+    gap: 2px;
+    padding: 4px 12px 8px;
+    background: #fff;
+    color: var(--mpp-text);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp p.sct-mpp-mh-when {
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp p.sct-mpp-mh-venue {
+    color: var(--mpp-muted);
+  }
+
+  /* The odds row: its own full-width tap target under the strip, a hairline
+     above it, the lines on the left and the destination on the right. */
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-odds {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-top: 1px solid #e8ebef;
+    background: #fff;
+    color: var(--mpp-text) !important;
+    text-decoration: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-odds-val {
+    font-family: "Barlow", var(--sc-font);
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-mh-odds-go {
+    flex: 0 0 auto;
+    color: var(--pm-ink, var(--mpp-navy-900));
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-odds:hover .sct-mpp-mh-odds-go,
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-odds:focus-visible .sct-mpp-mh-odds-go {
+    text-decoration: underline;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-odds:active {
+    background: var(--mpp-surface, #f8fbff);
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-mpp-mh-odds:focus-visible {
+    outline: 2px solid var(--pm-ink, var(--mpp-navy-900));
+    outline-offset: -2px;
+  }
+
+  /* The narrowest phones: a smaller crest buys the names a few pixels. */
+
+  @media (max-width: 360px) {
+    :is(.sct, #sct-table-armour) .sct-mpp-mh-logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    :is(.sct, #sct-table-armour) .sct-mpp-mh-logo img {
+      width: 24px;
+      height: 24px;
+    }
+
+    :is(.sct, #sct-table-armour) .sct-mpp-mh-name {
+      font-size: 0.8rem;
+    }
+
+    :is(.sct, #sct-table-armour) a.sct-mpp-mh-team {
+      gap: 5px;
+    }
+  }
+
+  /* The odds link lands on the Betting Outlook title with its bar in view. */
+
+  :is(.sct, #sct-table-armour) .sct-mpp h2.sct-mpp-h {
+    scroll-margin-top: 80px;
+  }
+
+  /* The Betting Outlook's market block takes what the header left out. */
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-implied {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-implied li {
+    display: grid;
+    gap: 2px;
+    padding: 8px 10px;
+    border: 1px solid var(--mpp-border-light);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-bo-note {
+    display: inline;
+  }
+}
+
+/* ==== Tab section heads in the Overview card-head style (mak, 2026-11-11:
+   first the Box Score sections, then Play-by-Play, Fantasy, Game flow,
+   Head-to-head and Betting "match Game Recap / Why the X Won"). No colored
+   bar, stripes or slanted lines; gold icon without its box, navy 1.15rem
+   title, 2px gold rule, inside the card's 18px gutter. A head row with
+   controls (Fantasy's PPR switch, the play-by-play filters) takes the same
+   rule. Left as bars: the tab banners, the FAQ and the play-by-play
+   Scoring Summary in the header container. */
+
+.sct-mu.is-pm .sct-rb .sct-rb-section:not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]):has(> :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child)) {
+  padding-top: 14px;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child) {
+  gap: 9px;
+  min-height: 0;
+  margin: 0 0 12px !important;
+  padding: 0 0 8px !important;
+  overflow: visible;
+  border: 0 !important;
+  border-bottom: 2px solid var(--pm-ink, #f0c13b) !important;
+  border-image: var(--hd-rule) 1 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--tp-ink, #0b2345) !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child),
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(.sct-mu-ps-head, .sct-fp-head:first-child) :is(h2.sct-rb-h2, h2.sct-h2) {
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0 !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child)::after {
+  content: none !important;
+  display: none !important;
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child) .sct-pm-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hd-ink);
+}
+
+.sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child) .sct-pm-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+@container (max-width: 640px) {
+  .sct-mu.is-pm .sct-rb .sct-rb-section:not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]):has(> :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child)) {
+    padding-top: 12px;
+  }
+
+  .sct-mu.is-pm .sct-rb :is(.sct-rb-section, .sct-fp-bare):not([aria-labelledby="faq"]):not([aria-labelledby="pbp-scoring"]) > :is(h2.sct-rb-h2, h3.sct-rb-h3:first-child, .sct-mu-ps-head, .sct-fp-head:first-child) {
+    margin: 0 0 10px !important;
+    padding: 0 0 8px !important;
+  }
+}
+
+/* Controls that sat on the navy bar, now on white (same change): the
+   play-by-play filter goes back to its light-surface look with a navy "on",
+   and the Fantasy scoring label reads muted ink. */
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head > .sct-pbp-filters {
+  border-color: var(--rb-line, #d5dfeb);
+  background: #fff;
+}
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head button.sct-pbp-filter {
+  background: #fff;
+  color: var(--tp-ink, #0b2345);
+}
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head button.sct-pbp-filter + button.sct-pbp-filter {
+  border-left-color: var(--rb-line, #d5dfeb);
+}
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head button.sct-pbp-filter.is-on {
+  background: #0b2345;
+  color: #fff;
+}
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head button.sct-pbp-filter:not(.is-on):hover {
+  background: var(--rb-wash, #f3f5f8);
+}
+
+.sct-mu.is-pm .sct-rb .sct-pbp-head button.sct-pbp-filter:focus-visible {
+  outline-color: #0b2345;
+}
+
+.sct-mu.is-pm .sct-rb .sct-mu-ps-head .sct-mu-scoring-legend {
+  color: var(--tp-muted, #5b6b80) !important;
+}
+
+/* Header colors from the matchup (mak, 2026-11-11: "why are we using gold
+   or gold/blue only? THESE should adjust based on the matchup/team colors").
+   Icons take --pm-ink, the pair's club color that reads on white (no red
+   where the clubs allow it); the rule under each title runs from the bar
+   club's color into the other club's accent. Gold stays the fallback on a
+   page without the pair. Covers the Overview cards, every tab's section
+   heads and the sidebar cards (Game Info, Game Leaders, Before and After,
+   Next Games). */
+
+.sct-mu.is-pm {
+  --hd-ink: var(--pm-ink, #f0c13b);
+  --hd-rule: linear-gradient(90deg, var(--pm-bg, #0b2345) 0%, var(--pm-bg, #0b2345) 55%, var(--pm-accent, #f0c13b) 100%);
+}
+
+.sct-mu.is-pm .sct-rb-rhead {
+  border-bottom: 2px solid var(--pm-ink, #d4af37);
+  border-image: var(--hd-rule) 1;
+}
+
+.sct-mu.is-pm .sct-rb-rhead-icon {
+  color: var(--hd-ink);
+}
+
+/* ==== Upcoming page: short card titles on phones (mak, 2026-11-11: at 560px
+   and under "Patriots vs Lions Keys to the Game" -> "Keys to the Game",
+   Recent Form -> "Last 5 Games", Fantasy Football Impact -> "Fantasy
+   Impact", Betting Outlook, Head-to-Head). headText() in preview-premium.ts:
+   the H2 keeps its full text in the source; on phones that text is visually
+   hidden (still read by screen readers) and the short label is drawn from
+   data-short, so it adds no text to the heading. */
+
+:is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-hshort {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-hfull {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-hshort {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-hshort::before {
+    content: attr(data-short);
+  }
+}
+
+/* ==== Upcoming page: the scoring switch on the title's row on phones (mak,
+   2026-11-11: "have PPR / Half / Standard on same row as the header text").
+   With the short "Fantasy Impact" label the two fit: the title no longer
+   claims the full first line (the 640px rule above), the switch tightens and
+   the slanted lines step aside for it. Where they still cannot fit, the
+   switch wraps under the title rather than overflow. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-right: 8px;
+    padding-left: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-h {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 1.05rem !important;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-ff-fmt {
+    margin: 0 0 0 auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-ff-fmt button {
+    min-height: 28px;
+    padding: 0 6px;
+    font-size: 0.7rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-slash {
+    display: none;
+  }
+  /* Below ~420px the row is a few pixels short; the bar's icon gives way so
+     the title and the switch keep one line down to 375px. */
+
+  @media (max-width: 420px) {
+    :is(.sct, #sct-table-armour) .sct-mpp-card.is-fantasy .sct-mpp-head .sct-mpp-icon {
+      display: none;
+    }
+  }
+}
+
+/* ==== Upcoming page: rail cards wear the main cards' bar on phones (mak,
+   2026-11-11: at 560px and under "Game Conditions" and "Head-to-Head" match
+   the Fantasy Impact / Betting Outlook headers). railBar() in
+   preview-premium.ts adds the icon and the slanted lines, hidden above
+   560px; on phones the title becomes the dark bar (--mpp-head, the clubs'
+   color under is-pvc) bleeding to the card's edges, the card takes the main
+   cards' white surface. */
+
+:is(.sct, #sct-table-armour) .sct-mpp :is(.sct-mpp-rail-ico, .sct-mpp-rail-slash) {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-rail-card {
+    overflow: hidden;
+    padding: 0 16px 14px;
+    background: linear-gradient(145deg, #fff 0%, var(--mpp-surface) 100%);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-rail-card > .sct-mpp-rail-h {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    margin: 0 -16px 14px !important;
+    padding: 6px 50px 6px 16px !important;
+    overflow: hidden;
+    border-bottom: 0 !important;
+    background: var(--mpp-head) !important;
+    color: #fff !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-rail-ico {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--mpp-gold-bright);
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-ico {
+    color: var(--pm-accent, #f0c13b);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp .sct-mpp-rail-slash {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 42px;
+    background: linear-gradient(118deg, transparent 0 38%, var(--mpp-gold) 38% 52%, transparent 52% 64%, var(--mpp-gold-bright) 64% 76%, transparent 76%);
+    opacity: 0.9;
+  }
+
+  :is(.sct, #sct-table-armour).sct-mu.is-pvc .sct-mpp .sct-mpp-rail-slash {
+    background: linear-gradient(118deg, transparent 0 38%, var(--pm-accent, #d4af37) 38% 52%, transparent 52% 64%, var(--pm-accent, #f0c13b) 64% 76%, transparent 76%);
+  }
+}
+
+/* One gap under the tab buttons on every tab (mak, 2026-11-11: "the gap
+   between each of the tab headers ... and the tab buttons should be the
+   same on each page/tab"). The 16px card stacking counted the zero-height
+   link anchors at the top of a panel as cards, so the banner after them
+   sat 16px lower (Box Score, Play-by-Play, Fantasy, Game flow,
+   Head-to-head) than on Overview and Betting, which have none. Leading
+   anchors and the first thing after them take no top margin; the panel's
+   own offset (Overview's 18px) is the gap everywhere. */
+
+.sct-mu.is-pm :is(.sct-rb-main, .sct-mu-lead) .sct-mu-tabpanel > .sct-mu-anchor:first-child,
+.sct-mu.is-pm :is(.sct-rb-main, .sct-mu-lead) .sct-mu-tabpanel > .sct-mu-anchor:first-child + *,
+.sct-mu.is-pm :is(.sct-rb-main, .sct-mu-lead) .sct-mu-tabpanel > .sct-mu-anchor:first-child + .sct-mu-anchor + * {
+  margin-top: 0 !important;
+}
+
+/* ==== Upcoming page: one Injury Watch container on phones (mak, 2026-11-11:
+   "put these two sections into one container ... remove the headers ... and
+   just show a combined list for both teams"). injuryCard() prints a bar in
+   the main cards' style (hidden above 560px) and a team code on each row
+   (likewise); on phones the card regains its frame, the two team boxes lose
+   theirs and their headings, and the rows run as one list, away team first. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-inj-bar,
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-inj-team {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries {
+    overflow: hidden;
+    border: 1px solid var(--mpp-border);
+    border-radius: var(--mpp-radius);
+    background: linear-gradient(145deg, #fff 0%, var(--mpp-surface) 100%);
+    box-shadow: var(--mpp-shadow);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-inj-bar {
+    display: flex;
+    border-radius: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-inj-bar .sct-mpp-h {
+    color: #fff !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-inj-bar .sct-mpp-tag {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-injuries .sct-mpp-cols {
+    gap: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-col,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-col.is-home {
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-colhead {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-injuries .sct-mpp-inj-team {
+    display: inline;
+    color: var(--mpp-muted);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* The last gold defaults on the recap in the pair's color too (mak,
+   2026-11-11: the "Why the X Won" stat tiles' top edge, and the short bar
+   under subheads such as "Possession Results" and "Since 2021"). Both take
+   --hd-ink, the color the section icons wear. */
+
+.sct-mu.is-pm .sct-ov-tiles li {
+  border-top-color: var(--hd-ink);
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-h3:not(.sct-rb-aside .sct-rb-h3)::after {
+  background: var(--hd-ink);
+}
+
+/* ==== Upcoming page: one Player Battles container on phones (mak,
+   2026-11-11, "do the same thing" as the Injury Watch). battlesCard() prints
+   a bar in the main cards' style, hidden above 560px; on phones the card
+   regains its frame, the two team boxes and lists dissolve (display:
+   contents) and the battles interleave by kind (order), the away offense's
+   battle then the home offense's under ONE label ("just combine those
+   rows"): data-pair="second" drops its label and the divider between the
+   two goes. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-bar {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles {
+    overflow: hidden;
+    border: 1px solid var(--mpp-border);
+    border-radius: var(--mpp-radius);
+    background: linear-gradient(145deg, #fff 0%, var(--mpp-surface) 100%);
+    box-shadow: var(--mpp-shadow);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-bar {
+    display: flex;
+    border-radius: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-bar .sct-mpp-h {
+    color: #fff !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-rail .sct-mpp-card.is-battles .sct-mpp-bt-bar .sct-mpp-tag {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-body {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles :is(.sct-mpp-bt-block, .sct-mpp-bt-list) {
+    display: contents !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-colhead {
+    display: none !important;
+  }
+
+  /* Kind by kind, away offense first. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-kind="qbRush"] { order: 1; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-kind="tackles"] { order: 3; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-kind="receiver"] { order: 5; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-kind="run"] { order: 7; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-block.is-home .sct-mpp-bt[data-kind="qbRush"] { order: 2; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-block.is-home .sct-mpp-bt[data-kind="tackles"] { order: 4; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-block.is-home .sct-mpp-bt[data-kind="receiver"] { order: 6; }
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt-block.is-home .sct-mpp-bt[data-kind="run"] { order: 8; }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-keys-note {
+    order: 20;
+    padding: 0 12px;
+  }
+
+  /* Every battle row divided, except inside a pair. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt,
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt:last-child {
+    border-bottom: 1px solid var(--mpp-border-light);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="first"] {
+    border-bottom: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="first"] .sct-mpp-bt-d > summary {
+    padding-bottom: 6px;
+  }
+
+  /* Rows with a label keep the same right edge as the pair's second row,
+     whose chevron sits beside it, so the two face-offs line up. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt:not([data-pair="second"]) .sct-mpp-bt-row {
+    padding-right: 14px;
+  }
+
+  /* The pair's second battle: no label; its chevron rides at the right of
+     its face-off row. */
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="second"] .sct-mpp-bt-d > summary {
+    position: relative;
+    padding-top: 6px;
+    padding-right: 26px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="second"] .sct-mpp-bt-kind > span:first-child {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt[data-pair="second"] .sct-mpp-bt-kind {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    margin-top: -6px;
+  }
+}
+
+/* Rivalry tab (mak, 2026-11-11: "I dont like the gap/horizontal line
+   directly above" the all-time tiles). The section heads rule above must
+   not reach the visually hidden H2s (#h2h, #bm-results) or pad their
+   sections; and the tiles lose their 3px ink rule, so they start right
+   under the Rivalry header like the meetings below them. */
+
+.sct-mu.is-pm .sct-rb .sct-rb-section:is([aria-labelledby="h2h"], [aria-labelledby="bm-results"]) {
+  padding-top: 0 !important;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-section:is([aria-labelledby="h2h"], [aria-labelledby="bm-results"]) > h2.sct-rb-h2 {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  border-image: none !important;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-alltime {
+  border-top: 0;
+}
+
+.sct-mu.is-pm .sct-rb .sct-rb-alltime .sct-rb-at {
+  padding-top: 0;
+}
+
+/* Season to Date: each club's crest beside its column name (mak,
+   2026-11-11), outside edges, as the scoreboard sets them. */
+
+.sct-rb .sct-rb-col-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+}
+
+.sct-rb .sct-rb-col-home .sct-rb-col-team {
+  justify-content: flex-end;
+}
+
+.sct-rb img.sct-rb-col-logo {
+  flex: none;
+  display: block;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  object-fit: contain;
+}
+
+/* ==== Matchup pages on phones: 15px under the site header (mak, 2026-11-11:
+   "about a 15px gap all together"). On statchasers.com the gap was the Divi
+   page container's 58px top padding plus our root's 16px (74px above the
+   breadcrumb). Only the container that holds a matchup root is touched
+   (:has), so other pages keep the theme's spacing; the site header itself is
+   not styled, and it is static on phones (not fixed), so nothing slides
+   under it. Checked by injecting these rules into the live page at 320-430px:
+   15px at every width, 600px unchanged, mobile menu still opens over the
+   page. */
+
+@media (max-width: 560px) {
+  #main-content > .container:has(> #content-area .entry-content > .sct.sct-mu) {
+    padding-top: 15px !important;
+  }
+
+  #main-content .entry-content > .sct.sct-mu {
+    padding-top: 0 !important;
+  }
+}
+
+/* Player Battles on phones: the battle label centered over its face-offs
+   (mak, 2026-11-11); its chevron keeps the right edge. */
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt:not([data-pair="second"]) .sct-mpp-bt-d > summary {
+    position: relative;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt:not([data-pair="second"]) .sct-mpp-bt-kind {
+    justify-content: center;
+    padding: 0 18px;
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-card.is-battles .sct-mpp-bt:not([data-pair="second"]) .sct-mpp-bt-kind .sct-mpp-inj-chev {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+  }
+}
+
+/* ==== Upcoming page: injury tags on the photo on phones (mak, 2026-11-11:
+   at 560px and under "put the injury tags on top right of player image").
+   face() / withFaceTag() in preview-premium.ts wrap a tagged photo in
+   .sct-mpp-facewrap with a copy of the tag (.sct-mpp-ftag, aria-hidden).
+   Above 560px the copy is hidden and the inline tags stay as they were; on
+   phones the copy rides the photo's top-right corner and the inline tag is
+   visually hidden (still read by screen readers). Injury Watch, Player
+   Battles and Fantasy Impact (takeaways and the starters table). */
+
+:is(.sct, #sct-table-armour) .sct-mpp-facewrap {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bt-p .sct-mpp-facewrap {
+  align-self: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-ftag {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-ftag {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--mpp-amber-light);
+    box-shadow: 0 0 0 2px #fff;
+    color: var(--mpp-amber);
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ftag[data-status="D"] {
+    background: #ffe6d5;
+    color: #a4430e;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-ftag:is([data-status="O"], [data-status="IR"], [data-status="PUP"], [data-status="SUS"]) {
+    background: var(--mpp-red-light);
+    color: var(--mpp-red);
+  }
+
+  /* The inline tags the corner copy replaces: out of sight, not out of the
+     accessibility tree. */
+  :is(.sct, #sct-table-armour) .sct-mpp-inj-top > .sct-mpp-status,
+  :is(.sct, #sct-table-armour) :is(.sct-mpp-bt-name, .sct-mpp-ff-name, .sct-mpp-ff-pname) > .sct-mpp-badge {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
   }
 }

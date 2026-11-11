@@ -20,6 +20,7 @@ import { escapeHtml } from "../render";
 import {
   contrastRatio,
   heroPairColors,
+  NEUTRAL_SIDE,
   teamColors,
   tooClose,
   heroPairFills,
@@ -165,7 +166,8 @@ export function renderRecapPremiumTop(input: RecapTopInput): string {
   const tie = result !== null && result.winner === null;
   const eyebrow = `${game.seasonLabel} · ${game.roundLabel}`;
   const joiner = game.venue?.neutral ? "vs" : "at";
-  const fills = heroPairFills(game.away.abbr, game.home.abbr);
+  // No red half where the club has another color (mak, 2026-11-11).
+  const fills = previewHeroFills(game.away.abbr, game.home.abbr);
   return (
     `<div class="sct-mpp is-top is-final">` +
     `<nav class="sct-mpp-crumbs" aria-label="Breadcrumb"><ol>` +
@@ -212,18 +214,54 @@ function mix(hex: string, to: string, amount: number): string {
 /**
  * The new design's section bars (mak, 2026-11-07: "use one of the teams
  * colors for the background and the other for the icons/lines", as the title
- * banner pairs navy with gold). The background is the winner's scoreboard
- * color (the home side's on a tie), which already passes AA under white
- * text; the accent is the other club's primary or secondary, lightened in
- * steps until it reads at 3:1 against that background and is not the same
- * hue, else gold.
+ * banner pairs navy with gold). Since 2026-11-11 (mak: "try to avoid using
+ * red (or any brighter colors) as the main/primary colors for the headers")
+ * the recap takes the upcoming page's ranking, previewBarColors(): no red
+ * under the bars where either club has another color that carries white
+ * text, the winner leading when that is a tie (the home side on a tied game).
  */
-export function recapBarColors(game: ScoreboardGame): { bg: string; accent: string } {
+export function recapBarColors(game: ScoreboardGame): { bg: string; accent: string; ink: string } {
   const result = scoreboardResult(game);
-  const lead: Side = result?.winner ?? "home";
+  const away = game.away.abbr;
+  const home = game.home.abbr;
+  // The page wears the hero's own pair (mak, 2026-11-11: "why is our header
+  // using dark blue and red for the team colors while the headers and tabs
+  // on the page are not matching"). The two halves of the scoreboard
+  // (previewSideColors, what the hero paints): the half that is not red goes
+  // under the bars and the active tab, the winner's when both qualify; the
+  // other half is the accent (red allowed there, mak's "Red OK as accent
+  // only"). Both halves red: the house navy under, the winner's red on top.
+  const sides = previewSideColors(away, home);
+  const winner: Side = result?.winner ?? "home";
+  const loser: Side = winner === "home" ? "away" : "home";
+  const okBg = (c: string): boolean => !isRed(c) && contrastRatio(c, "#ffffff") >= 4.5;
+  const lead: Side | null = okBg(sides[winner]) ? winner : okBg(sides[loser]) ? loser : null;
+  const bg = lead ? sides[lead] : HOUSE_NAVY;
+  const other: Side = lead === null ? winner : lead === "home" ? "away" : "home";
+  let accent = sides[other];
+  // A different hue is enough for rings and lines (red on the clash slate).
+  if (tooClose(accent, bg)) {
+    // The hero half is the bar's own hue: the club's other color, else gold.
+    const p = teamColors[(other === "home" ? home : away).toUpperCase()];
+    accent =
+      (p ? [p.primary, p.secondary] : []).find((c) => /^#[0-9a-f]{6}$/i.test(c) && !tooClose(c, bg) && contrastRatio(c, bg) >= 2) ??
+      GOLD_ACCENT;
+  }
+  // Icons and lines on white: the accent half, else the bar half.
+  const ink = [sides[other], bg].find((c) => contrastRatio(c, "#ffffff") >= 3) ?? bg;
+  return { bg, accent, ink };
+}
+
+/**
+ * The bar pair for any two clubs, `lead` under and the other on the accents.
+ * The recap leads with the winner; the upcoming page, with no result yet,
+ * leads with the home side (mak, 2026-11-11: the upcoming pages take the
+ * recap's color logic instead of the navy and gold).
+ */
+export function pairBarColors(away: string, home: string, lead: Side): { bg: string; accent: string } {
   const other: Side = lead === "home" ? "away" : "home";
-  const bg = heroPairColors(game.away.abbr, game.home.abbr)[lead];
-  const palette = teamColors[game[other].abbr.toUpperCase()];
+  const bg = heroPairColors(away, home)[lead];
+  const palette = teamColors[(other === "home" ? home : away).toUpperCase()];
   const candidates = palette ? [palette.primary, palette.secondary] : [];
   // The least-lightened color wins: the secondary as it is beats the
   // primary washed out (Commanders gold over burgundy-pink).
@@ -234,8 +272,125 @@ export function recapBarColors(game: ScoreboardGame): { bg: string; accent: stri
       if (contrastRatio(c, bg) >= 3) return { bg, accent: c };
     }
   }
-  return { bg, accent: "#f0c13b" };
+  return { bg, accent: GOLD_ACCENT };
 }
+
+/** A red: hue within 10° (25° on the blue side) of pure red, saturated enough to read as red; oranges (CLE, CIN) are not. */
+function isRed(hex: string): boolean {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.replace("#", "").slice(i - 1, i + 1), 16) / 255) as [number, number, number];
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  if (max === 0 || d / max < 0.4 || max !== r) return false;
+  const hue = ((((g - b) / d) % 6) + 6) % 6 * 60;
+  return hue <= 10 || hue >= 335;
+}
+
+/**
+ * The upcoming page's bar pair (mak, 2026-11-11: "try to avoid using red,
+ * especially as the main color if it is possible"). Every color of both
+ * clubs is a candidate background (white text at 4.5:1), the other club's
+ * colors candidate accents (3:1 over it, lightened in steps as the recap's
+ * are). Ranked: no red under the bars first, then a real club accent over
+ * gold, then no red accent, then `prefer` (the home club by default) leading.
+ */
+export function previewBarColors(away: string, home: string, prefer: Side = "home"): { bg: string; accent: string; lead: Side; ink: string } {
+  const hex = (c: string | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
+  const colorsOf = (abbr: string): string[] => {
+    const p = teamColors[abbr.toUpperCase()];
+    return p ? [p.primary, p.secondary].filter(hex) : [];
+  };
+  let best: { bg: string; accent: string; lead: Side; score: number } | null = null;
+  for (const lead of ["home", "away"] as Side[]) {
+    const leadAbbr = lead === "home" ? home : away;
+    const otherAbbr = lead === "home" ? away : home;
+    // The hero's pick for the side only when it is one of the club's own
+    // shades (not the neutral slate a clash falls back to).
+    const heroPick = heroPairColors(away, home)[lead];
+    const bgs = [...(heroPick === NEUTRAL_SIDE ? [] : [heroPick]), ...colorsOf(leadAbbr)].filter(
+      (c, i, all) => hex(c) && all.indexOf(c) === i && contrastRatio(c, "#ffffff") >= 4.5,
+    );
+    for (const bg of bgs) {
+      let accent: string | null = null;
+      let accentRed = false;
+      const usable = colorsOf(otherAbbr)
+        .filter((c) => !tooClose(c, bg))
+        .sort((a, b) => Number(isRed(a)) - Number(isRed(b)));
+      search: for (let step = 0; step <= 6; step += 1) {
+        for (const base of usable) {
+          const c = mix(base, "#ffffff", step * 0.1);
+          if (contrastRatio(c, bg) >= 3) {
+            accent = c;
+            accentRed = isRed(base);
+            break search;
+          }
+        }
+      }
+      const score =
+        (isRed(bg) ? 0 : 8) + (accent ? 4 : 0) + (accent && !accentRed ? 2 : 0) + (lead === prefer ? 1 : 0);
+      if (!best || score > best.score) best = { bg, accent: accent ?? GOLD_ACCENT, lead, score };
+    }
+  }
+  let pick = best ? { bg: best.bg, accent: best.accent, lead: best.lead } : { ...pairBarColors(away, home, "home"), lead: "home" as Side };
+  // Both clubs only have red, or colors too light for white text (ATL/ARI,
+  // KC/TB): the house navy goes under the bars instead (mak, 2026-11-11,
+  // "avoid using red (or any brighter colors) as the main/primary colors"),
+  // with the first non-red club color that reads on it on the accents.
+  if (isRed(pick.bg)) {
+    // The preferred club (the recap's winner) leads the accent search.
+    const leadAbbr = prefer === "home" ? home : away;
+    const otherAbbr = prefer === "home" ? away : home;
+    const accent =
+      [...colorsOf(leadAbbr), ...colorsOf(otherAbbr)].find((c) => !isRed(c) && contrastRatio(c, HOUSE_NAVY) >= 3) ?? GOLD_ACCENT;
+    pick = { bg: HOUSE_NAVY, accent, lead: prefer };
+  }
+  // Lines and icons on white: the accent club's colors first, then the bar
+  // color, the first one that is not red and reads at 3:1 on white.
+  const otherAbbr = pick.lead === "home" ? away : home;
+  const inks = [heroPairColors(away, home)[pick.lead === "home" ? "away" : "home"], ...colorsOf(otherAbbr), pick.bg].filter((c) => c !== NEUTRAL_SIDE);
+  const ink =
+    inks.find((c) => hex(c) && !isRed(c) && contrastRatio(c, "#ffffff") >= 3) ??
+    inks.find((c) => hex(c) && contrastRatio(c, "#ffffff") >= 3) ??
+    pick.bg;
+  return { ...pick, ink };
+}
+
+/**
+ * The upcoming hero's two fills: heroPairFills(), except a side the clash
+ * rule turned red takes the club's non-red color when it carries white text
+ * and still stands apart from the other half by lightness (Patriots navy
+ * beside Lions blue; mak, 2026-11-11, "avoid using red").
+ */
+export function previewHeroFills(away: string, home: string): Record<Side, string> {
+  const out = previewSideColors(away, home);
+  const alpha = (hex: string): string => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.replace("#", "").slice(i - 1, i + 1), 16));
+    return `rgba(${r}, ${g}, ${b}, 0.9)`;
+  };
+  return { away: alpha(out.away), home: alpha(out.home) };
+}
+
+/** Each side's solid color on the upcoming page (hero halves, side markers). */
+export function previewSideColors(away: string, home: string): Record<Side, string> {
+  const picks = heroPairColors(away, home);
+  const out: Record<Side, string> = { ...picks };
+  for (const side of ["away", "home"] as Side[]) {
+    if (!isRed(picks[side])) continue;
+    const other = out[side === "home" ? "away" : "home"];
+    const p = teamColors[(side === "home" ? home : away).toUpperCase()];
+    const swap = (p ? [p.primary, p.secondary] : []).find(
+      (c) => /^#[0-9a-f]{6}$/i.test(c) && !isRed(c) && contrastRatio(c, "#ffffff") >= 4.5 && contrastRatio(c, other) >= 2,
+    );
+    if (swap) out[side] = swap;
+  }
+  return out;
+}
+
+/** The accent when neither of the other club's colors reads over the bars. */
+export const GOLD_ACCENT = "#f0c13b";
+
+/** Under the bars when neither club has a non-red color that carries white text. */
+export const HOUSE_NAVY = "#0b2345";
 
 /* -------------------------------------------------- section bar icons */
 

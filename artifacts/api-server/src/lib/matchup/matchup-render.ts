@@ -152,7 +152,7 @@ import {
   type RecapBodyInput,
 } from "./recap-body";
 import { renderMatchupPreviewBody, renderMatchupPreviewTop } from "./preview-premium";
-import { addBarIcons, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
+import { addBarIcons, previewBarColors, previewHeroFills, previewSideColors, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
 import { findGameStory, findGameStoryEntry, renderRecapOverviewParts } from "./recap-overview";
 import { loadGamePbp, renderPlayByPlayParts } from "./play-by-play";
 import { renderGameFlowPremium } from "./game-flow-premium";
@@ -855,6 +855,8 @@ function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
       awayInk: colors.away.ink,
       homeInk: colors.home.ink,
       rows,
+      awayLogo: game.away.logoUrl,
+      homeLogo: game.home.logoUrl,
     }) +
     `</section>`
   );
@@ -4094,6 +4096,33 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
   const rootStyle = styleAttr([
     ...(tabs?.style ?? []),
     ...(pv ? previewStyle(pv) : []),
+    // The upcoming page in the recap's color logic (mak, 2026-11-11: "instead
+    // of using this gold/blue theme ... use a similar color scheme logic as
+    // we do in the matchup recaps"): the hero's two fills, the home club's
+    // color under the bars and the away club's on their accents, and the away
+    // club's ink for lines on white.
+    ...(pv && data.preview
+      ? (() => {
+          const away = data.preview.away.team.code.toUpperCase();
+          const home = data.preview.home.team.code.toUpperCase();
+          const fills = previewHeroFills(away, home);
+          // The pair with no red under the bars where the clubs allow it
+          // (mak, 2026-11-11), home leading on a tie (previewBarColors).
+          const bar = previewBarColors(away, home);
+          const sides = previewSideColors(away, home);
+          return [
+            // Side markers follow the hero's non-red choice (overrides
+            // previewStyle's --pv-* above).
+            `--pv-away:${sides.away}`,
+            `--pv-home:${sides.home}`,
+            `--rh-away:${fills.away}`,
+            `--rh-home:${fills.home}`,
+            `--pm-bg:${bar.bg}`,
+            `--pm-accent:${bar.accent}`,
+            `--pm-ink:${bar.ink}`,
+          ];
+        })()
+      : []),
     // The premium hero's team fills on a completed game, as the upcoming
     // page's previewStyle sets them (recap-premium.ts).
     ...(tabs && data.featured
@@ -4102,15 +4131,15 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
           `--pv-home:${matchupColors(data.pair)(data.featured.home)}`,
           // The two clubs' fills, as the scoreboard paints them, for the new
           // design's hero and section title bars (mak, 2026-11-07).
-          `--rh-away:${heroPairFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).away}`,
-          `--rh-home:${heroPairFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).home}`,
+          `--rh-away:${previewHeroFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).away}`,
+          `--rh-home:${previewHeroFills(data.featured.away.code.toUpperCase(), data.featured.home.code.toUpperCase()).home}`,
           // One club's color under the section bars, the other's on their
           // accents (mak, 2026-11-07; recapBarColors).
           ...(() => {
             const g = matchupScoreboardGame(data);
             if (!g) return [];
             const bar = recapBarColors(g);
-            return [`--pm-bg:${bar.bg}`, `--pm-accent:${bar.accent}`];
+            return [`--pm-bg:${bar.bg}`, `--pm-accent:${bar.accent}`, `--pm-ink:${bar.ink}`];
           })(),
         ]
       : []),
@@ -4173,7 +4202,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
           renderMeetings(data, options);
 
   return (
-    `<div class="sct sct-mu${tabs ? " is-pm" : ""}${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
+    `<div class="sct sct-mu${tabs ? " is-pm" : ""}${pv ? " is-pvc" : ""}${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
     ` data-matchup="${escapeHtml(data.pair.slug)}"` +
     ` data-matchup-state="${data.matchupState}"` +
     ` data-postgame="${isPostgame(data) ? "1" : "0"}"` +

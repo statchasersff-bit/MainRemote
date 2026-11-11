@@ -188,7 +188,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.equal(text(doc.querySelector(".sct-rb-h2h-run")), "Rams have won the last 3");
     assert.equal(doc.querySelector(".sct-rb-tiles"), null, "the letter strip is gone (mak, 2026-11-02)");
     assert.equal(doc.querySelector(".sct-rb-legend"), null);
-    assert.equal(text(doc.querySelector(".sct-rb-since")), "Since 2021");
+    assert.equal(doc.querySelector(".sct-rb-since"), null, "no Since subhead (mak, 2026-11-11)");
   });
 
   test("one meetings list: upcoming first, then recent newest first, winner first, this game unlinked", () => {

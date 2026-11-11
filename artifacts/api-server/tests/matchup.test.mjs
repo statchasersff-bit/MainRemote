@@ -2027,7 +2027,7 @@ describe("the Cardinals–Rams games", () => {
         ["34\u20130", "2018"],
       ],
     );
-    assert.equal(top.querySelector("h3.sct-rb-since").textContent, "Since 2021");
+    assert.equal(top.querySelector("h3.sct-rb-since"), null, "no Since subhead (mak, 2026-11-11)");
     const questions = faq.mainEntity.map((q) => q.name);
     const at = questions.indexOf("What is the all-time Cardinals vs Rams record?");
     assert.ok(at > 0, "the all-time question is asked");
