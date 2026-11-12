@@ -343,7 +343,7 @@ function xpHead(id: string, icon: string, title: string, sub: string, subTip = "
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
-    `<p class="sct-us-prm-sub">${e(sub)}${subTip ? ` ${tip(subTip)}` : ""}</p>` +
+    `<p class="sct-us-prm-sub"><span class="sct-us-prm-sub-text">${e(sub)}</span>${subTip ? ` ${tip(subTip)}` : ""}</p>` +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`
