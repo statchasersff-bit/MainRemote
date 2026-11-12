@@ -134,10 +134,14 @@ function innerPanel(kind: string, icon: string, title: string, sub: string, list
   );
 }
 
-/** A navy section band: icon, title, one-line subtitle, gold corner. */
-function band(icon: string, title: string, sub: string): string {
+/**
+ * A navy section band: icon, title, one-line subtitle, gold corner.
+ * `phoneOff`: the whole band is hidden at 560px and under (mak, 2026-11-12:
+ * Efficiency, Pass Protection & Pass Rush, Possession & Discipline).
+ */
+function band(icon: string, title: string, sub: string, phoneOff = false): string {
   return (
-    `<div class="sct-sp-band"><span class="sct-sp-ico">${icon}</span>` +
+    `<div class="sct-sp-band${phoneOff ? " is-phone-off" : ""}"><span class="sct-sp-ico">${icon}</span>` +
     `<h2 class="sct-sp-band-title">${e(title)}</h2><p class="sct-sp-band-sub">${e(sub)}</p>` +
     `<span class="sct-sp-band-gold" aria-hidden="true"></span></div>`
   );
@@ -149,7 +153,10 @@ function mix(title: string, caption: string, b: PlayBalance): string {
   const run = b.rushPct.toFixed(1);
   return (
     `<section class="sct-sp-mix">` +
-    `<div class="sct-sp-mix-head"><span class="sct-sp-ico">${ICON.play}</span><h3 class="sct-sp-mix-title">${e(title)}</h3></div>` +
+    // The caption again, in the head row: shown at 560px and under only, where
+    // the legend's copy is kept for screen readers alone (mak, 2026-11-12).
+    `<div class="sct-sp-mix-head"><span class="sct-sp-ico">${ICON.play}</span><h3 class="sct-sp-mix-title">${e(title)}</h3>` +
+    `<span class="sct-sp-mix-head-cap" aria-hidden="true">${e(caption)}</span></div>` +
     `<span class="sct-sp-mix-bar" aria-hidden="true"><span class="sct-sp-mix-pass" style="${e(`width:${pass}%`)}"></span><span class="sct-sp-mix-run" style="${e(`width:${run}%`)}"></span></span>` +
     `<p class="sct-sp-mix-legend"><span class="sct-sp-mix-key" data-kind="pass">Pass ${e(pass)}%</span><span class="sct-sp-mix-key" data-kind="run">Run ${e(run)}%</span>` +
     `<span class="sct-sp-mix-caption">${e(caption)}</span></p>` +
@@ -244,15 +251,15 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
   if (overview) sections.push(`<div class="sct-sp-grid">${overview}</div>`);
   if (efficiency)
     sections.push(
-      band(ICON.chart, "Efficiency", "Per play, how well each side performs: expected points, success and explosive rates, and yards per play, attempt and carry. 1st is best on either side.") +
+      band(ICON.chart, "Efficiency", "Per play, how well each side performs: expected points, success and explosive rates, and yards per play, attempt and carry. 1st is best on either side.", true) +
         `<div class="sct-sp-grid">${efficiency}</div>`,
     );
   if (passRush)
     sections.push(
-      band(ICON.lines, "Pass Protection & Pass Rush", "Blitzes faced and sent, what each cost, time to throw, and the sacks at both ends. Blitz rate and time to throw rank most to least.") +
+      band(ICON.lines, "Pass Protection & Pass Rush", "Blitzes faced and sent, what each cost, time to throw, and the sacks at both ends. Blitz rate and time to throw rank most to least.", true) +
         `<div class="sct-sp-grid">${passRush}</div>`,
     );
-  if (possession) sections.push(band(ICON.hourglass, "Possession & Discipline", "What each side does with the football: turnover margin, takeaways and giveaways, fourth downs and penalties.") + possession);
+  if (possession) sections.push(band(ICON.hourglass, "Possession & Discipline", "What each side does with the football: turnover margin, takeaways and giveaways, fourth downs and penalties.", true) + possession);
   if (pace || mixes)
     sections.push(
       band(ICON.play, "Pace & Play Style", `How often the ${team.nickname} run and pass, and how many snaps there are to go round. Ranks are most to least, with no better end.`) +

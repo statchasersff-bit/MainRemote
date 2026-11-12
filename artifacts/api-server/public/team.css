@@ -18781,28 +18781,34 @@ ul.sct-faq-list li {
 @media (max-width: 560px) {
   /* Draft year tables on phones wear the 2027 NFL Draft Picks card (mak,
      2026-11-10): white card, gold icon, navy title over a 2px gold rule,
-     the pick count as the strip under it, the table in an inset bordered
-     box like the round ledger. Desktop keeps the navy year band. */
+     the pick count as the strip under it, the table inset to the head's
+     gutter (its own bordered box removed 2026-11-12). Desktop keeps the navy year band. */
   :is(.sct, #sct-table-armour) .sct-drp-year {
     background: var(--drp-surface);
   }
 
+  /* 2026-11-12 (mak): the pick count moved up into the title row, right
+     aligned, and the gold rule runs under the whole row. On the narrowest
+     phones, if the two cannot share a line, the count drops under the title,
+     still right aligned. */
   :is(.sct, #sct-table-armour) .sct-drp-year-head {
     flex-wrap: wrap;
-    gap: 0;
+    align-items: center;
+    gap: 4px 10px;
     min-height: 0;
     margin: 12px 16px 0;
-    padding: 0;
+    padding: 0 0 8px;
     overflow: visible;
+    border-bottom: 2px solid var(--drp-gold);
     background: none;
     color: var(--tp-ink, var(--drp-navy-900));
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-year-title {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    align-self: center;
     gap: 9px;
-    padding: 0 0 8px;
-    border-bottom: 2px solid var(--drp-gold);
+    padding: 0;
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-year-head .sct-drp-h3 {
@@ -18815,17 +18821,22 @@ ul.sct-faq-list li {
   }
 
   :is(.sct, #sct-table-armour) .sct-drp-year-sum {
-    margin: 10px 0 0;
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 0 0 0 auto;
     padding: 0;
     color: var(--tp-ink, var(--drp-text));
     font-size: 0.82rem;
     font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
   }
 
+  /* 2026-11-12 (mak): no box of its own inside the year card. */
   :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-scroll {
     margin: 10px 16px 14px;
-    border: 1px solid var(--drp-border);
-    border-radius: 10px;
+    border: 0;
+    border-radius: 0;
   }
 }
 
@@ -19206,5 +19217,634 @@ ul.sct-faq-list li {
     padding-left: 12px;
     border-left-color: var(--prm-line);
     color: var(--tp-muted, var(--prm-muted));
+  }
+}
+
+/* Usage tab at 560px and under (mak, 2026-11-12): the explainer lines under
+   the banner and each section title, and the two fine-print notes, are cut.
+   The Fantasy header keeps its info tip; only its text goes. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-head .sct-up-dek,
+  :is(.sct, #sct-table-armour) :is(.sct-us-prm-run, .sct-us-prm-pass, .sct-us-sit, .sct-us-chg) > .sct-us-prm-head .sct-us-prm-sub,
+  :is(.sct, #sct-table-armour) .sct-us-fantasy > .sct-us-prm-head .sct-us-prm-sub-text,
+  :is(.sct, #sct-table-armour) .sct-us-sit > .sct-us-sit-fine,
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-fine {
+    display: none !important;
+  }
+}
+
+/* Coaching page and Draft tab at 560px and under (mak, 2026-11-12): the
+   banner deks, the continuity line, section and card explainers, and the
+   footnotes are cut. The targets section keeps its explainer (not asked). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) :is(.sct-cp-head, .sct-drp-hero) .sct-up-dek,
+  :is(.sct, #sct-table-armour) .sct-cp-cont,
+  :is(.sct, #sct-table-armour) :is(.sct-cp-section, .sct-cpt-section.is-situational, .sct-cpt-section.is-career, .sct-cf-panel) > .sct-us-prm-head .sct-us-prm-sub,
+  :is(.sct, #sct-table-armour) .sct-cp-form-note,
+  :is(.sct, #sct-table-armour) .sct-cp > .sct-cp-foot,
+  :is(.sct, #sct-table-armour) .sct-cpt-card-sub,
+  :is(.sct, #sct-table-armour) .sct-cpt-section.is-situational .sct-cpt-note,
+  :is(.sct, #sct-table-armour) .sct-cs > :is(.sct-cs-hint, .sct-cs-note),
+  :is(.sct, #sct-table-armour) .sct-cf-head .sct-cf-sub {
+    display: none !important;
+  }
+}
+
+/* Stats tab at 560px and under (mak, 2026-11-12): the Efficiency, Pass
+   Protection & Pass Rush and Possession & Discipline bands are cut whole
+   (their explainers were already off on phones). Pace & Play Style and
+   Season History keep theirs. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-sp-band.is-phone-off {
+    display: none !important;
+  }
+}
+
+/* Usage tab at 560px and under (mak, 2026-11-12): the closing "Usage data
+   becomes much more useful..." tool cards are cut. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-fantasy .sct-us-convert {
+    display: none !important;
+  }
+}
+
+/* Draft: the 2027 picks and Last 5 Drafts cards' counts sit in their head
+   rows on phones (mak, 2026-11-12), right aligned like the year heads' pick counts; when the
+   title and counts cannot share a line, the counts drop under the title,
+   still right aligned and above the gold rule. The body strip stays in the
+   page for screen readers only. Desktop keeps the strip. */
+:is(.sct, #sct-table-armour) .sct-drp-head-sum {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card:is(.is-capital, .is-history) .sct-drp-card-head {
+    flex-wrap: wrap;
+    gap: 4px 9px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card:is(.is-capital, .is-history) .sct-drp-head-sum {
+    display: block;
+    flex: 0 0 auto;
+    margin-left: auto;
+    color: var(--tp-ink, var(--drp-text));
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card:is(.is-capital, .is-history) .sct-drp-strip {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Draft: the 2027 picks card's kicker ("Extra capital in Round 6...") and its
+   compensatory-picks footnote are cut at 560px and under (mak, 2026-11-12). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital :is(.sct-drp-kicker, .sct-drp-foot) {
+    display: none !important;
+  }
+}
+
+/* Draft year heads at 560px and under (mak, 2026-11-12): the pick count
+   alone, without " · N in Round 1". */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year-r1 {
+    display: none !important;
+  }
+}
+
+/* Draft: the Last 5 Drafts takeaway ("58% of picks spent on ...") is cut at
+   560px and under (mak, 2026-11-12). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history .sct-drp-takeaway {
+    display: none !important;
+  }
+}
+
+/* Situational Usage at 560px and under (mak, 2026-11-12): every column fits
+   the screen, no sideways scroll. The matrix drops its 560px row minimum,
+   the situation icons and the header swatches (the bar colors and column
+   order carry the back), and runs smaller type and slimmer bars. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-matrix {
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row {
+    grid-template-columns: minmax(0, 1.25fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    padding: 9px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row.is-head {
+    min-height: 0;
+    padding: 9px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-th {
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-th.is-player {
+    font-size: 0.72rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-sw,
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-icon {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-label {
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-n {
+    font-size: 0.68rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-cell {
+    gap: 5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-pct {
+    font-size: 1.05rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-track {
+    height: 7px;
+  }
+}
+
+/* Situational Usage under 360px: a little tighter still, so the backs'
+   names fit their columns on a 320px phone. */
+@media (max-width: 359px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row,
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row.is-head {
+    grid-template-columns: minmax(0, 1.1fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-th.is-player {
+    font-size: 0.66rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-pct {
+    font-size: 0.98rem;
+  }
+}
+
+/* Stats Play Mix cards at 560px and under (mak, 2026-11-12): the caption
+   ("Play distribution faced on defense.") sits in the title row, right
+   aligned, wrapping onto a second line beside the title when it must. The legend's copy stays for screen readers only. */
+.sct .sct-sp-mix-head-cap {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .sct .sct-sp-mix-head {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .sct .sct-sp-mix-title {
+    flex: 0 0 auto;
+  }
+
+  .sct .sct-sp-mix-head-cap {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    margin-left: auto;
+    color: var(--sp-muted);
+    font-size: 0.7rem;
+    font-weight: 400;
+    line-height: 1.3;
+    text-align: right;
+  }
+
+  .sct .sct-sp-mix-legend .sct-sp-mix-caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Play Mix under 360px: beside the title the caption would run four lines,
+   so it drops under the title, still right aligned. */
+@media (max-width: 359px) {
+  .sct .sct-sp-mix-head {
+    flex-wrap: wrap;
+    gap: 2px 8px;
+  }
+
+  .sct .sct-sp-mix-head-cap {
+    flex: 1 1 100%;
+  }
+}
+
+/* Usage dashboard tables at 560px and under (mak, 2026-11-12): no box of
+   their own inside the panel card. Snap Counts, Target Distribution and
+   Rushing Distribution sit straight on the card, still scrolling sideways
+   when they must. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-scroll {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Passing Distribution zone cards at 560px and under (mak, 2026-11-12):
+   stacked, centered: the share, the art under it, the zone pill, then the
+   "13.3 YPA · 19 att" line. The wrappers step aside (display: contents) so
+   the four pieces order as flex items of the card. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone :is(.sct-us-prm-card-top, .sct-us-prm-zone-row, .sct-us-prm-zone-text) {
+    display: contents;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-big {
+    order: 1;
+    justify-content: center;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-art {
+    order: 2;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    width: min(100%, 180px);
+    margin: 0 auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-art > * {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-bars {
+    justify-content: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-arc {
+    height: auto;
+    aspect-ratio: 120 / 70;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-pill {
+    order: 3;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-line {
+    order: 4;
+    margin: 0 !important;
+  }
+}
+
+/* Passing Distribution at 560px and under (mak, 2026-11-12): three zone
+   cards to a row (deep left/middle/right, then short), tightened to fit:
+   smaller share, padding and pill, labels free to wrap. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone {
+    gap: 6px;
+    min-height: 0;
+    padding: 10px 6px 9px;
+    border-radius: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-big .sct-us-num {
+    font-size: 1.45rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-art {
+    width: 100%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone :is(.sct-us-prm-arc, .sct-us-prm-bars) {
+    min-height: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-bars {
+    height: 44px;
+    gap: 3px;
+    padding: 0 1px 3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-pill {
+    max-width: 100%;
+    padding: 2px 6px;
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-pass .sct-us-prm-zone .sct-us-prm-line {
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+}
+
+/* Draft tables at 560px and under (mak, 2026-11-12): the Rd / Pick (and
+   Round 1 Picks' Year / Pick) headers in the same type as Pos, College and
+   Status, not the larger numeral style. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp .sct-drp-th.is-num {
+    font-size: 0.68rem !important;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  /* Player in the same weight as the rest (it ran 700). */
+  :is(.sct, #sct-table-armour) .sct-drp .sct-drp-th.is-player {
+    font-weight: 800 !important;
+  }
+}
+
+/* Draft Status column wording (mak, 2026-11-12): "IR" for injured reserve,
+   "ATL practice squad" without "now on", at 560px and under. The full text
+   stays for screen readers. */
+:is(.sct, #sct-table-armour) .sct-drp-st-short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-st-short {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-st-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Draft: the Last 5 Drafts position chart at 560px and under (mak,
+   2026-11-12): no "All picks" title and no box of its own inside the card;
+   the bars sit on the card body's gutter like the tables. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history .sct-drp-shares-title {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-history .sct-drp-shares {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): no player photos;
+   the name starts the cell. Round 1 Picks keeps its photos. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-face {
+    display: none !important;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): the College
+   column shows the logo alone. The name stays for screen readers, and a
+   school with no logo keeps its name on screen. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-college:has(.sct-drp-crest-img) .sct-drp-college-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Draft: the phone "Left" badge (a move between seasons with no reason on
+   the rosters) wears the Waived / Released tone at 560px and under
+   (mak, 2026-11-12). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-badge[data-phone-tone="cut"] {
+    background: var(--tp-c-e6edf6, #e6edf6);
+    color: var(--tp-ink, var(--drp-navy-900));
+  }
+}
+
+/* Draft: the 2027 picks card's round list at 560px and under (mak,
+   2026-11-12): no box of its own inside the card; the rows sit on the card
+   body's gutter, R1 under the title's icon. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital .sct-drp-ledger {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-card.is-capital .sct-drp-lrow {
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): Pos and College
+   centered, heads and cells. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year :is(.sct-drp-th, .sct-drp-td):is(.is-pos, .is-college) {
+    text-align: center !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-college {
+    justify-content: center;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): the College head
+   reads "Col". The word stays in the page for screen readers; the short
+   form is drawn here with empty alt text so it is not read twice. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-th.is-college::after {
+    content: "Col" / "";
+  }
+}
+
+/* Draft tables at 560px and under (mak, 2026-11-12): the Rd / Pick (and
+   Round 1 Picks' Year / Pick) figures in the player names' type, 13.12px
+   at 700, digits still tabular. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp .sct-drp-td.is-num {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): every column on
+   screen, no sideways scroll. The table drops its 540px floor and the
+   columns their minimums, runs to the card's edges (12px end padding),
+   tightens the cell padding, and lets names and status lines wrap; the
+   status badge is a little smaller. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-scroll {
+    margin: 10px 0 12px;
+    overflow-x: visible;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table {
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :where(th, td) {
+    padding: 0 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(th, td):first-child {
+    padding-left: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(th, td):last-child {
+    padding-right: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.is-num, .is-pos, .is-status) {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table .is-player {
+    width: auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-td {
+    height: 44px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.sct-player-link, .sct-dr-name) {
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-badge {
+    padding: 2px 5px;
+    border-radius: 6px;
+    font-size: 0.56rem;
+    letter-spacing: 0.03em;
+    white-space: normal;
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-status-sub {
+    white-space: normal;
+  }
+}
+
+/* Draft year tables at 400px and under: a step tighter, so the longest
+   single words ("Quintayvious", "Washington", "Unrostered") still leave
+   every column on screen down to 320px. */
+@media (max-width: 400px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :where(th, td) {
+    padding: 0 3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(th, td):first-child {
+    padding-left: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(th, td):last-child {
+    padding-right: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-th {
+    letter-spacing: 0.02em !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.sct-player-link, .sct-dr-name),
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-td.is-num {
+    font-size: 0.74rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-badge {
+    padding: 2px 4px;
+    font-size: 0.52rem;
+    letter-spacing: 0.02em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-status-sub {
+    font-size: 0.64rem;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): a status cell is
+   two rows at most, the badge and one line under it. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-badge,
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-status-sub {
+    white-space: nowrap;
+  }
+}
+
+/* Draft year tables at 560px and under (mak, 2026-11-12): the spare width
+   is shared by Pos, Col and Status rather than all left to Player, so no
+   gap opens after a short name. Player takes what remains. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.sct-drp-th, .sct-drp-td).is-pos {
+    width: 14%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.sct-drp-th, .sct-drp-td).is-college {
+    width: 12%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-drp-year .sct-drp-table :is(.sct-drp-th, .sct-drp-td).is-status {
+    width: 22%;
   }
 }

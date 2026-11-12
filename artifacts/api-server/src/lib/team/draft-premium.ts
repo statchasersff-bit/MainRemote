@@ -146,14 +146,53 @@ function tone(status: PickStatus): string {
   }
 }
 
+/**
+ * The status wording for 560px and under (mak, 2026-11-12): "Injured
+ * reserve" reads "IR", "practice squad" "PS" (2026-11-12, so a status
+ * cell stays two rows), and the leading "now" goes: "now on ATL practice
+ * squad" reads "with ATL" (the club alone), "now with SF" "with SF", "now a free
+ * agent" "free agent"; "Not on a roster" reads "Unrostered". Null when the
+ * phone text is the same as the full one.
+ */
+function phoneStatusText(text: string): string | null {
+  const short = text
+    .replace(/^now on ([A-Z]{2,4}) .+$/, "with $1")
+    .replace(/^now (?:on |a )?/, "")
+    .replace(/injured reserve/gi, "IR")
+    .replace(/practice squad/gi, "PS")
+    .replace(/^not on a roster$/i, "Unrostered");
+  return short === text ? null : short;
+}
+
+/** The full text, plus its phone wording when it differs; team.css shows one or the other. */
+function statusText(text: string, phone: string | null = phoneStatusText(text)): string {
+  if (!phone || phone === text) return e(text);
+  return `<span class="sct-drp-st-full">${e(text)}</span><span class="sct-drp-st-short" aria-hidden="true">${e(phone)}</span>`;
+}
+
+/**
+ * A player who left between seasons with no reason on the rosters reads
+ * "Practice squad / with ARI" (their standing with the new club). On phones
+ * it takes the departed rows' shape instead (mak, 2026-11-12): a neutral
+ * "Left" badge over the club they are with now, "with ARI" (2026-11-12:
+ * the club alone, not "ARI practice squad"). Null for every other row.
+ */
+function phoneMoved(status: PickStatus): { sub: string } | null {
+  const m = status.sub?.match(/^with ([A-Z]{2,4})$/);
+  if (!m) return null;
+  const club = m[1]!;
+  return { sub: `with ${club}` };
+}
+
 function statusCell(status: PickStatus): string {
   const label = status.label === "-" ? "" : status.label;
+  const moved = phoneMoved(status);
   return (
     `<span class="sct-drp-status">` +
     (label
-      ? `<span class="sct-drp-badge" data-tone="${tone(status)}" data-status="${e(status.key)}">${e(label)}</span>`
+      ? `<span class="sct-drp-badge" data-tone="${tone(status)}"${moved ? ` data-phone-tone="cut"` : ""} data-status="${e(status.key)}">${statusText(label, moved ? "Left" : undefined)}</span>`
       : `<span class="sct-drp-none">-</span>`) +
-    (status.sub ? `<span class="sct-drp-status-sub">${e(status.sub)}</span>` : "") +
+    (status.sub ? `<span class="sct-drp-status-sub">${statusText(status.sub, moved ? moved.sub : undefined)}</span>` : "") +
     `</span>`
   );
 }
@@ -181,7 +220,8 @@ function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | nul
     `<section class="sct-drp-year" aria-labelledby="sct-drp-y${s.season}">` +
     `<div class="sct-drp-year-head">` +
     `<span class="sct-drp-year-title">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-y${s.season}">${e(`${s.season} Draft`)}</h3></span>` +
-    `<span class="sct-drp-year-sum">${e(`${s.picks.length} ${s.picks.length === 1 ? "pick" : "picks"} · ${firsts} in Round 1`)}</span>` +
+    // The Round 1 count is its own span so phones can drop it (mak, 2026-11-12).
+    `<span class="sct-drp-year-sum">${e(`${s.picks.length} ${s.picks.length === 1 ? "pick" : "picks"}`)}<span class="sct-drp-year-r1">${e(` · ${firsts} in Round 1`)}</span></span>` +
     // No gold double slash on the year heads (mak, 2026-11-08: "remove the double lines").
     `</div>` +
     `<div class="sct-drp-scroll" tabindex="0">` +
@@ -192,7 +232,8 @@ function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | nul
     `<th scope="col" class="sct-drp-th is-num">Pick</th>` +
     `<th scope="col" class="sct-drp-th is-player">Player</th>` +
     `<th scope="col" class="sct-drp-th is-pos">Pos</th>` +
-    `<th scope="col" class="sct-drp-th is-college">College</th>` +
+    // Reads "Col" at 560px and under (team.css draws it; mak, 2026-11-12).
+    `<th scope="col" class="sct-drp-th is-college"><span class="sct-drp-st-full">College</span></th>` +
     `<th scope="col" class="sct-drp-th is-status">Status</th>` +
     `</tr></thead>` +
     `<tbody>${rows}</tbody>` +
@@ -264,7 +305,11 @@ function capitalCard(team: NflTeam, c: DraftCapitalView): string {
     `<span class="sct-drp-stat"><b class="sct-drp-num">${n}</b> ${e(label)}</span>`;
   return (
     `<section class="sct-drp-card is-capital" aria-labelledby="sct-drp-cap-title">` +
-    `<div class="sct-drp-card-head">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-cap-title">${e(`${c.draftYear} NFL Draft Picks`)}</h3></div>` +
+    `<div class="sct-drp-card-head">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-cap-title">${e(`${c.draftYear} NFL Draft Picks`)}</h3>` +
+    // The pick count again, in the head row: shown at 560px and under only,
+    // where the strip below is kept for screen readers alone (mak, 2026-11-12;
+    // acquired / sent away cut from it the same day).
+    `<span class="sct-drp-head-sum" aria-hidden="true">${e(`${c.total} ${c.total === 1 ? "pick" : "picks"}`)}</span></div>` +
     `<div class="sct-drp-card-body">` +
     `<p class="sct-drp-strip">${item(c.total, c.total === 1 ? "pick" : "picks")}${item(c.acquired, "acquired")}${item(c.sent.length, "sent away")}</p>` +
     `<p class="sct-drp-kicker">${e(capitalKicker(c))}</p>` +
@@ -319,7 +364,10 @@ function historyCard(h: DraftHistoryView): string {
   const kicker = historyKicker(h);
   return (
     `<section class="sct-drp-card is-history" aria-labelledby="sct-drp-hist-title">` +
-    `<div class="sct-drp-card-head">${ICON.bars}<h3 class="sct-drp-h3" id="sct-drp-hist-title">${e(`Last ${h.seasons.length} Drafts`)}</h3></div>` +
+    `<div class="sct-drp-card-head">${ICON.bars}<h3 class="sct-drp-h3" id="sct-drp-hist-title">${e(`Last ${h.seasons.length} Drafts`)}</h3>` +
+    // The strip again, in the head row: shown at 560px and under only, where
+    // the strip below is kept for screen readers alone (mak, 2026-11-12).
+    `<span class="sct-drp-head-sum" aria-hidden="true">${e(`${h.total} picks · ${h.firstRounders} in Round 1`)}</span></div>` +
     `<div class="sct-drp-card-body">` +
     `<p class="sct-drp-strip is-compact">${item(h.total, `picks, ${h.firstSeason}-${h.lastSeason}`)}${item(h.firstRounders, "in Round 1")}</p>` +
     (kicker ? `<p class="sct-drp-takeaway">${e(kicker)}</p>` : "") +
