@@ -1,6 +1,6 @@
 {
   "draftYear": 2027,
-  "builtAt": "2026-11-09T13:00:28.817Z",
+  "builtAt": "2026-11-13T15:10:46.750Z",
   "slots": 224,
   "teams": {
     "ari": {
@@ -60,6 +60,10 @@
           "from": null
         },
         {
+          "round": 2,
+          "from": "jax"
+        },
+        {
           "round": 3,
           "from": null
         },
@@ -117,7 +121,7 @@
         },
         {
           "round": 6,
-          "to": "sf"
+          "to": "ind"
         }
       ]
     },
@@ -125,10 +129,6 @@
       "holds": [
         {
           "round": 1,
-          "from": null
-        },
-        {
-          "round": 2,
           "from": null
         },
         {
@@ -142,6 +142,10 @@
         {
           "round": 5,
           "from": null
+        },
+        {
+          "round": 5,
+          "from": "ten"
         },
         {
           "round": 6,
@@ -158,8 +162,12 @@
       ],
       "sent": [
         {
+          "round": 2,
+          "to": "ten"
+        },
+        {
           "round": 7,
-          "to": "ind"
+          "to": "kc"
         }
       ]
     },
@@ -550,6 +558,10 @@
         },
         {
           "round": 4,
+          "from": "kc"
+        },
+        {
+          "round": 4,
           "from": "sf"
         },
         {
@@ -557,12 +569,16 @@
           "from": null
         },
         {
-          "round": 7,
-          "from": null
+          "round": 5,
+          "from": "kc"
+        },
+        {
+          "round": 6,
+          "from": "bal"
         },
         {
           "round": 7,
-          "from": "buf"
+          "from": null
         }
       ],
       "sent": [
@@ -578,14 +594,6 @@
     },
     "jax": {
       "holds": [
-        {
-          "round": 1,
-          "from": null
-        },
-        {
-          "round": 2,
-          "from": null
-        },
         {
           "round": 3,
           "from": null
@@ -604,6 +612,14 @@
         }
       ],
       "sent": [
+        {
+          "round": 1,
+          "to": "phi"
+        },
+        {
+          "round": 2,
+          "to": "atl"
+        },
         {
           "round": 6,
           "to": "nyg"
@@ -629,23 +645,27 @@
           "from": "lar"
         },
         {
-          "round": 4,
-          "from": null
-        },
-        {
-          "round": 5,
-          "from": null
-        },
-        {
           "round": 6,
           "from": "atl"
         },
         {
           "round": 6,
           "from": "sf"
+        },
+        {
+          "round": 7,
+          "from": "buf"
         }
       ],
       "sent": [
+        {
+          "round": 4,
+          "to": "ind"
+        },
+        {
+          "round": 5,
+          "to": "ind"
+        },
         {
           "round": 6,
           "to": "nyj"
@@ -747,6 +767,10 @@
           "from": null
         },
         {
+          "round": 3,
+          "from": "min"
+        },
+        {
           "round": 4,
           "from": null
         },
@@ -820,10 +844,6 @@
         },
         {
           "round": 3,
-          "from": null
-        },
-        {
-          "round": 3,
           "from": "phi"
         },
         {
@@ -848,6 +868,10 @@
         }
       ],
       "sent": [
+        {
+          "round": 3,
+          "to": "lv"
+        },
         {
           "round": 4,
           "to": "car"
@@ -1045,6 +1069,10 @@
           "from": null
         },
         {
+          "round": 1,
+          "from": "jax"
+        },
+        {
           "round": 2,
           "from": null
         },
@@ -1187,10 +1215,6 @@
           "from": null
         },
         {
-          "round": 6,
-          "from": "bal"
-        },
-        {
           "round": 7,
           "from": "kc"
         }
@@ -1258,6 +1282,10 @@
           "from": null
         },
         {
+          "round": 2,
+          "from": "buf"
+        },
+        {
           "round": 3,
           "from": null
         },
@@ -1270,10 +1298,6 @@
           "from": "chi"
         },
         {
-          "round": 5,
-          "from": null
-        },
-        {
           "round": 6,
           "from": null
         },
@@ -1282,7 +1306,12 @@
           "from": null
         }
       ],
-      "sent": []
+      "sent": [
+        {
+          "round": 5,
+          "to": "buf"
+        }
+      ]
     },
     "was": {
       "holds": [
