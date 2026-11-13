@@ -1,10 +1,10 @@
 {
  "season": 2026,
- "fromWeek": 10,
+ "fromWeek": 11,
  "throughWeek": 17,
  "minGameProj": 8,
  "source": "Sleeper weekly projections (max single-game PPR); team and slug from data/player/players.json",
- "builtAt": "2026-11-09T12:59:44.738Z",
+ "builtAt": "2026-11-13T15:09:48.870Z",
  "players": [
   {
    "id": "4984",
@@ -13,9 +13,9 @@
    "team": "BUF",
    "position": "QB",
    "maxProj": {
-    "ppr": 29.7,
-    "half": 29.7,
-    "std": 29.7
+    "ppr": 26.8,
+    "half": 26.8,
+    "std": 26.8
    }
   },
   {
@@ -25,21 +25,9 @@
    "team": "JAX",
    "position": "QB",
    "maxProj": {
-    "ppr": 24.3,
-    "half": 24.3,
-    "std": 24.3
-   }
-  },
-  {
-   "id": "4046",
-   "name": "Patrick Mahomes",
-   "slug": "patrick-mahomes",
-   "team": "KC",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 23.8,
-    "half": 23.8,
-    "std": 23.8
+    "ppr": 24,
+    "half": 24,
+    "std": 24
    }
   },
   {
@@ -61,9 +49,9 @@
    "team": "SF",
    "position": "QB",
    "maxProj": {
-    "ppr": 23.3,
-    "half": 23.3,
-    "std": 23.3
+    "ppr": 23.2,
+    "half": 23.2,
+    "std": 23.2
    }
   },
   {
@@ -85,33 +73,9 @@
    "team": "WAS",
    "position": "QB",
    "maxProj": {
-    "ppr": 22.9,
-    "half": 22.9,
-    "std": 22.9
-   }
-  },
-  {
-   "id": "4881",
-   "name": "Lamar Jackson",
-   "slug": "lamar-jackson",
-   "team": "BAL",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 22.6,
-    "half": 22.6,
-    "std": 22.6
-   }
-  },
-  {
-   "id": "1166",
-   "name": "Kirk Cousins",
-   "slug": "kirk-cousins",
-   "team": "LV",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 22.2,
-    "half": 22.2,
-    "std": 22.2
+    "ppr": 23.1,
+    "half": 23.1,
+    "std": 23.1
    }
   },
   {
@@ -121,9 +85,21 @@
    "team": "GB",
    "position": "QB",
    "maxProj": {
-    "ppr": 21.7,
-    "half": 21.7,
-    "std": 21.7
+    "ppr": 22.1,
+    "half": 22.1,
+    "std": 22.1
+   }
+  },
+  {
+   "id": "4046",
+   "name": "Patrick Mahomes",
+   "slug": "patrick-mahomes",
+   "team": "KC",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 21.6,
+    "half": 21.6,
+    "std": 21.6
    }
   },
   {
@@ -133,9 +109,9 @@
    "team": "CHI",
    "position": "QB",
    "maxProj": {
-    "ppr": 21.6,
-    "half": 21.6,
-    "std": 21.6
+    "ppr": 21.5,
+    "half": 21.5,
+    "std": 21.5
    }
   },
   {
@@ -145,9 +121,33 @@
    "team": "DET",
    "position": "QB",
    "maxProj": {
-    "ppr": 20.8,
-    "half": 20.8,
-    "std": 20.8
+    "ppr": 21.3,
+    "half": 21.3,
+    "std": 21.3
+   }
+  },
+  {
+   "id": "3294",
+   "name": "Dak Prescott",
+   "slug": "dak-prescott",
+   "team": "DAL",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 20.7,
+    "half": 20.7,
+    "std": 20.7
+   }
+  },
+  {
+   "id": "1166",
+   "name": "Kirk Cousins",
+   "slug": "kirk-cousins",
+   "team": "MIN",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 20.6,
+    "half": 20.6,
+    "std": 20.6
    }
   },
   {
@@ -157,33 +157,9 @@
    "team": "NO",
    "position": "QB",
    "maxProj": {
-    "ppr": 20.7,
-    "half": 20.7,
-    "std": 20.7
-   }
-  },
-  {
-   "id": "9228",
-   "name": "Bryce Young",
-   "slug": "bryce-young",
-   "team": "CAR",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 20.4,
-    "half": 20.4,
-    "std": 20.4
-   }
-  },
-  {
-   "id": "421",
-   "name": "Matthew Stafford",
-   "slug": "matthew-stafford",
-   "team": "LAR",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 20,
-    "half": 20,
-    "std": 20
+    "ppr": 20.5,
+    "half": 20.5,
+    "std": 20.5
    }
   },
   {
@@ -193,16 +169,16 @@
    "team": "HOU",
    "position": "QB",
    "maxProj": {
-    "ppr": 19.9,
-    "half": 19.9,
-    "std": 19.9
+    "ppr": 20.3,
+    "half": 20.3,
+    "std": 20.3
    }
   },
   {
-   "id": "5849",
-   "name": "Kyler Murray",
-   "slug": "kyler-murray",
-   "team": "MIN",
+   "id": "9228",
+   "name": "Bryce Young",
+   "slug": "bryce-young",
+   "team": "CAR",
    "position": "QB",
    "maxProj": {
     "ppr": 19.7,
@@ -217,21 +193,9 @@
    "team": "DEN",
    "position": "QB",
    "maxProj": {
-    "ppr": 19.6,
-    "half": 19.6,
-    "std": 19.6
-   }
-  },
-  {
-   "id": "3294",
-   "name": "Dak Prescott",
-   "slug": "dak-prescott",
-   "team": "DAL",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 19.5,
-    "half": 19.5,
-    "std": 19.5
+    "ppr": 19.4,
+    "half": 19.4,
+    "std": 19.4
    }
   },
   {
@@ -241,69 +205,21 @@
    "team": "NYJ",
    "position": "QB",
    "maxProj": {
-    "ppr": 18.9,
-    "half": 18.9,
-    "std": 18.9
+    "ppr": 19.1,
+    "half": 19.1,
+    "std": 19.1
    }
   },
   {
-   "id": "6011",
-   "name": "Gardner Minshew II",
-   "slug": "gardner-minshew-ii",
-   "team": "ARI",
+   "id": "13269",
+   "name": "Fernando Mendoza",
+   "slug": "fernando-mendoza",
+   "team": "LV",
    "position": "QB",
    "maxProj": {
-    "ppr": 18.6,
-    "half": 18.6,
-    "std": 18.6
-   }
-  },
-  {
-   "id": "11559",
-   "name": "Michael Penix Jr.",
-   "slug": "michael-penix-jr",
-   "team": "ATL",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 18.1,
-    "half": 18.1,
-    "std": 18.1
-   }
-  },
-  {
-   "id": "11565",
-   "name": "J.J. McCarthy",
-   "slug": "jj-mccarthy",
-   "team": "NYG",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 17.9,
-    "half": 17.9,
-    "std": 17.9
-   }
-  },
-  {
-   "id": "6797",
-   "name": "Justin Herbert",
-   "slug": "justin-herbert",
-   "team": "LAC",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 17.9,
-    "half": 17.9,
-    "std": 17.9
-   }
-  },
-  {
-   "id": "4943",
-   "name": "Sam Darnold",
-   "slug": "sam-darnold",
-   "team": "SEA",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 17.8,
-    "half": 17.8,
-    "std": 17.8
+    "ppr": 18.3,
+    "half": 18.3,
+    "std": 18.3
    }
   },
   {
@@ -313,33 +229,21 @@
    "team": "MIA",
    "position": "QB",
    "maxProj": {
+    "ppr": 18.1,
+    "half": 18.1,
+    "std": 18.1
+   }
+  },
+  {
+   "id": "11559",
+   "name": "Michael Penix Jr.",
+   "slug": "michael-penix-jr",
+   "team": "ATL",
+   "position": "QB",
+   "maxProj": {
     "ppr": 17.7,
     "half": 17.7,
     "std": 17.7
-   }
-  },
-  {
-   "id": "4892",
-   "name": "Baker Mayfield",
-   "slug": "baker-mayfield",
-   "team": "TB",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 17.6,
-    "half": 17.6,
-    "std": 17.6
-   }
-  },
-  {
-   "id": "12522",
-   "name": "Cam Ward",
-   "slug": "cam-ward",
-   "team": "TEN",
-   "position": "QB",
-   "maxProj": {
-    "ppr": 17,
-    "half": 17,
-    "std": 17
    }
   },
   {
@@ -349,45 +253,81 @@
    "team": "PIT",
    "position": "QB",
    "maxProj": {
-    "ppr": 16.9,
-    "half": 16.9,
-    "std": 16.9
+    "ppr": 17.5,
+    "half": 17.5,
+    "std": 17.5
    }
   },
   {
-   "id": "11557",
-   "name": "Joe Milton",
-   "slug": "joe-milton",
-   "team": "PHI",
+   "id": "4943",
+   "name": "Sam Darnold",
+   "slug": "sam-darnold",
+   "team": "SEA",
    "position": "QB",
    "maxProj": {
-    "ppr": 16.6,
-    "half": 16.6,
-    "std": 16.6
+    "ppr": 17.4,
+    "half": 17.4,
+    "std": 17.4
    }
   },
   {
-   "id": "12524",
-   "name": "Shedeur Sanders",
-   "slug": "shedeur-sanders",
-   "team": "CLE",
+   "id": "11565",
+   "name": "J.J. McCarthy",
+   "slug": "jj-mccarthy",
+   "team": "NYG",
    "position": "QB",
    "maxProj": {
-    "ppr": 15.3,
-    "half": 15.3,
-    "std": 15.3
+    "ppr": 17.3,
+    "half": 17.3,
+    "std": 17.3
    }
   },
   {
-   "id": "5870",
-   "name": "Daniel Jones",
-   "slug": "daniel-jones",
-   "team": "IND",
+   "id": "4892",
+   "name": "Baker Mayfield",
+   "slug": "baker-mayfield",
+   "team": "TB",
    "position": "QB",
    "maxProj": {
-    "ppr": 14.6,
-    "half": 14.6,
-    "std": 14.6
+    "ppr": 17.1,
+    "half": 17.1,
+    "std": 17.1
+   }
+  },
+  {
+   "id": "6797",
+   "name": "Justin Herbert",
+   "slug": "justin-herbert",
+   "team": "LAC",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 17,
+    "half": 17,
+    "std": 17
+   }
+  },
+  {
+   "id": "421",
+   "name": "Matthew Stafford",
+   "slug": "matthew-stafford",
+   "team": "LAR",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 16.8,
+    "half": 16.8,
+    "std": 16.8
+   }
+  },
+  {
+   "id": "13272",
+   "name": "Carson Beck",
+   "slug": "carson-beck",
+   "team": "ARI",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 16.7,
+    "half": 16.7,
+    "std": 16.7
    }
   },
   {
@@ -397,9 +337,45 @@
    "team": "CLE",
    "position": "QB",
    "maxProj": {
-    "ppr": 13.7,
-    "half": 13.7,
-    "std": 13.7
+    "ppr": 16.5,
+    "half": 16.5,
+    "std": 16.5
+   }
+  },
+  {
+   "id": "12522",
+   "name": "Cam Ward",
+   "slug": "cam-ward",
+   "team": "TEN",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 16.2,
+    "half": 16.2,
+    "std": 16.2
+   }
+  },
+  {
+   "id": "11557",
+   "name": "Joe Milton",
+   "slug": "joe-milton",
+   "team": "PHI",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 16,
+    "half": 16,
+    "std": 16
+   }
+  },
+  {
+   "id": "12494",
+   "name": "Kyle McCord",
+   "slug": "kyle-mccord",
+   "team": "MIA",
+   "position": "QB",
+   "maxProj": {
+    "ppr": 13.8,
+    "half": 13.8,
+    "std": 13.8
    }
   },
   {
@@ -409,21 +385,21 @@
    "team": "BAL",
    "position": "QB",
    "maxProj": {
-    "ppr": 13.5,
-    "half": 13.5,
-    "std": 13.5
+    "ppr": 13.7,
+    "half": 13.7,
+    "std": 13.7
    }
   },
   {
-   "id": "3161",
-   "name": "Carson Wentz",
-   "slug": "carson-wentz",
-   "team": "MIN",
+   "id": "5870",
+   "name": "Daniel Jones",
+   "slug": "daniel-jones",
+   "team": "IND",
    "position": "QB",
    "maxProj": {
-    "ppr": 13,
-    "half": 13,
-    "std": 13
+    "ppr": 12.7,
+    "half": 12.7,
+    "std": 12.7
    }
   },
   {
@@ -433,21 +409,9 @@
    "team": "DET",
    "position": "RB",
    "maxProj": {
-    "ppr": 27.8,
-    "half": 25.3,
-    "std": 22.8
-   }
-  },
-  {
-   "id": "4034",
-   "name": "Christian McCaffrey",
-   "slug": "christian-mccaffrey",
-   "team": "SF",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 23,
-    "half": 21,
-    "std": 19
+    "ppr": 27.4,
+    "half": 24.9,
+    "std": 22.4
    }
   },
   {
@@ -457,9 +421,21 @@
    "team": "KC",
    "position": "RB",
    "maxProj": {
-    "ppr": 23,
-    "half": 21.2,
-    "std": 19.4
+    "ppr": 23.2,
+    "half": 21.3,
+    "std": 19.5
+   }
+  },
+  {
+   "id": "4034",
+   "name": "Christian McCaffrey",
+   "slug": "christian-mccaffrey",
+   "team": "SF",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 22.8,
+    "half": 20.9,
+    "std": 18.9
    }
   },
   {
@@ -469,21 +445,9 @@
    "team": "ATL",
    "position": "RB",
    "maxProj": {
-    "ppr": 22.4,
-    "half": 20.7,
-    "std": 19.1
-   }
-  },
-  {
-   "id": "6813",
-   "name": "Jonathan Taylor",
-   "slug": "jonathan-taylor",
-   "team": "IND",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 19.6,
-    "half": 18.6,
-    "std": 17.6
+    "ppr": 22.2,
+    "half": 20.5,
+    "std": 18.8
    }
   },
   {
@@ -493,69 +457,9 @@
    "team": "DAL",
    "position": "RB",
    "maxProj": {
-    "ppr": 18.8,
-    "half": 17.5,
-    "std": 16.3
-   }
-  },
-  {
-   "id": "8150",
-   "name": "Kyren Williams",
-   "slug": "kyren-williams",
-   "team": "LAR",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 18.8,
-    "half": 17.3,
-    "std": 15.8
-   }
-  },
-  {
-   "id": "7594",
-   "name": "Chuba Hubbard",
-   "slug": "chuba-hubbard",
-   "team": "CAR",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 18.7,
-    "half": 17.3,
-    "std": 16
-   }
-  },
-  {
-   "id": "11584",
-   "name": "Bucky Irving",
-   "slug": "bucky-irving",
-   "team": "TB",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 18.6,
-    "half": 17.1,
-    "std": 15.6
-   }
-  },
-  {
-   "id": "12527",
-   "name": "Ashton Jeanty",
-   "slug": "ashton-jeanty",
-   "team": "LV",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 18.4,
-    "half": 16,
-    "std": 13.6
-   }
-  },
-  {
-   "id": "6790",
-   "name": "D'Andre Swift",
-   "slug": "dandre-swift",
-   "team": "CHI",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 18.4,
-    "half": 17,
-    "std": 15.6
+    "ppr": 20,
+    "half": 18.7,
+    "std": 17.4
    }
   },
   {
@@ -565,9 +469,69 @@
    "team": "BUF",
    "position": "RB",
    "maxProj": {
-    "ppr": 18,
-    "half": 17.1,
+    "ppr": 19.5,
+    "half": 18.8,
+    "std": 18.1
+   }
+  },
+  {
+   "id": "11584",
+   "name": "Bucky Irving",
+   "slug": "bucky-irving",
+   "team": "TB",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 19.3,
+    "half": 17.8,
     "std": 16.3
+   }
+  },
+  {
+   "id": "6790",
+   "name": "D'Andre Swift",
+   "slug": "dandre-swift",
+   "team": "CHI",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 19,
+    "half": 17.7,
+    "std": 16.3
+   }
+  },
+  {
+   "id": "6813",
+   "name": "Jonathan Taylor",
+   "slug": "jonathan-taylor",
+   "team": "IND",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 18.8,
+    "half": 17.7,
+    "std": 16.5
+   }
+  },
+  {
+   "id": "7594",
+   "name": "Chuba Hubbard",
+   "slug": "chuba-hubbard",
+   "team": "CAR",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 18.4,
+    "half": 16.9,
+    "std": 15.3
+   }
+  },
+  {
+   "id": "8150",
+   "name": "Kyren Williams",
+   "slug": "kyren-williams",
+   "team": "LAR",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 17.9,
+    "half": 16.3,
+    "std": 14.8
    }
   },
   {
@@ -577,69 +541,9 @@
    "team": "BAL",
    "position": "RB",
    "maxProj": {
-    "ppr": 17.7,
-    "half": 17.1,
-    "std": 16.4
-   }
-  },
-  {
-   "id": "5850",
-   "name": "Josh Jacobs",
-   "slug": "josh-jacobs",
-   "team": "GB",
-   "position": "RB",
-   "maxProj": {
     "ppr": 16.8,
-    "half": 15.3,
-    "std": 13.8
-   }
-  },
-  {
-   "id": "9224",
-   "name": "Chase Brown",
-   "slug": "chase-brown",
-   "team": "CIN",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 16.7,
-    "half": 14.7,
-    "std": 12.7
-   }
-  },
-  {
-   "id": "8228",
-   "name": "Jaylen Warren",
-   "slug": "jaylen-warren",
-   "team": "PIT",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 16.6,
-    "half": 15.1,
-    "std": 13.6
-   }
-  },
-  {
-   "id": "12490",
-   "name": "Bhayshul Tuten",
-   "slug": "bhayshul-tuten",
-   "team": "JAX",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 16.2,
-    "half": 15,
-    "std": 13.8
-   }
-  },
-  {
-   "id": "4866",
-   "name": "Saquon Barkley",
-   "slug": "saquon-barkley",
-   "team": "PHI",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 14.3,
-    "half": 13.3,
-    "std": 12.2
+    "half": 16.1,
+    "std": 15.5
    }
   },
   {
@@ -649,9 +553,69 @@
    "team": "DEN",
    "position": "RB",
    "maxProj": {
-    "ppr": 14.1,
-    "half": 12.8,
-    "std": 11.5
+    "ppr": 16.8,
+    "half": 15.5,
+    "std": 14.3
+   }
+  },
+  {
+   "id": "12490",
+   "name": "Bhayshul Tuten",
+   "slug": "bhayshul-tuten",
+   "team": "JAX",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 16.5,
+    "half": 15.3,
+    "std": 14
+   }
+  },
+  {
+   "id": "8228",
+   "name": "Jaylen Warren",
+   "slug": "jaylen-warren",
+   "team": "PIT",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 16.3,
+    "half": 14.9,
+    "std": 13.4
+   }
+  },
+  {
+   "id": "5850",
+   "name": "Josh Jacobs",
+   "slug": "josh-jacobs",
+   "team": "GB",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 16.3,
+    "half": 14.8,
+    "std": 13.2
+   }
+  },
+  {
+   "id": "9224",
+   "name": "Chase Brown",
+   "slug": "chase-brown",
+   "team": "CIN",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 15.8,
+    "half": 13.8,
+    "std": 11.8
+   }
+  },
+  {
+   "id": "4866",
+   "name": "Saquon Barkley",
+   "slug": "saquon-barkley",
+   "team": "PHI",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 15.6,
+    "half": 14.5,
+    "std": 13.4
    }
   },
   {
@@ -661,9 +625,21 @@
    "team": "MIA",
    "position": "RB",
    "maxProj": {
-    "ppr": 13.8,
+    "ppr": 15.4,
+    "half": 14.6,
+    "std": 13.8
+   }
+  },
+  {
+   "id": "12527",
+   "name": "Ashton Jeanty",
+   "slug": "ashton-jeanty",
+   "team": "LV",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 15.1,
     "half": 13,
-    "std": 12.2
+    "std": 11
    }
   },
   {
@@ -673,33 +649,9 @@
    "team": "TEN",
    "position": "RB",
    "maxProj": {
-    "ppr": 13.5,
-    "half": 12.5,
-    "std": 11.5
-   }
-  },
-  {
-   "id": "8132",
-   "name": "Tyler Allgeier",
-   "slug": "tyler-allgeier",
-   "team": "ARI",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 13.2,
-    "half": 11.6,
-    "std": 10
-   }
-  },
-  {
-   "id": "7611",
-   "name": "Rhamondre Stevenson",
-   "slug": "rhamondre-stevenson",
-   "team": "NE",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 12.6,
-    "half": 11,
-    "std": 9.4
+    "ppr": 14.1,
+    "half": 13.1,
+    "std": 12.2
    }
   },
   {
@@ -709,21 +661,45 @@
    "team": "NYG",
    "position": "RB",
    "maxProj": {
-    "ppr": 12.4,
-    "half": 11.5,
-    "std": 10.5
+    "ppr": 13.8,
+    "half": 12.8,
+    "std": 11.8
    }
   },
   {
-   "id": "12512",
-   "name": "Quinshon Judkins",
-   "slug": "quinshon-judkins",
-   "team": "CLE",
+   "id": "9753",
+   "name": "Zach Charbonnet",
+   "slug": "zach-charbonnet",
+   "team": "SEA",
    "position": "RB",
    "maxProj": {
-    "ppr": 12.3,
-    "half": 11.4,
-    "std": 10.4
+    "ppr": 13.5,
+    "half": 12.6,
+    "std": 11.7
+   }
+  },
+  {
+   "id": "8132",
+   "name": "Tyler Allgeier",
+   "slug": "tyler-allgeier",
+   "team": "ARI",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 13.1,
+    "half": 11.6,
+    "std": 10.1
+   }
+  },
+  {
+   "id": "8155",
+   "name": "Breece Hall",
+   "slug": "breece-hall",
+   "team": "NYJ",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 12.6,
+    "half": 11.2,
+    "std": 9.9
    }
   },
   {
@@ -733,8 +709,44 @@
    "team": "HOU",
    "position": "RB",
    "maxProj": {
-    "ppr": 12,
-    "half": 11,
+    "ppr": 12.6,
+    "half": 11.6,
+    "std": 10.6
+   }
+  },
+  {
+   "id": "8408",
+   "name": "Jordan Mason",
+   "slug": "jordan-mason",
+   "team": "MIN",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 12.3,
+    "half": 11.8,
+    "std": 11.2
+   }
+  },
+  {
+   "id": "7611",
+   "name": "Rhamondre Stevenson",
+   "slug": "rhamondre-stevenson",
+   "team": "NE",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 12.3,
+    "half": 10.8,
+    "std": 9.3
+   }
+  },
+  {
+   "id": "12512",
+   "name": "Quinshon Judkins",
+   "slug": "quinshon-judkins",
+   "team": "CLE",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 11.9,
+    "half": 10.9,
     "std": 9.9
    }
   },
@@ -745,45 +757,21 @@
    "team": "ARI",
    "position": "RB",
    "maxProj": {
-    "ppr": 11.8,
+    "ppr": 11.7,
     "half": 10.6,
-    "std": 9.4
+    "std": 9.6
    }
   },
   {
-   "id": "11576",
-   "name": "Braelon Allen",
-   "slug": "braelon-allen",
-   "team": "NYJ",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 11.5,
-    "half": 10.4,
-    "std": 9.3
-   }
-  },
-  {
-   "id": "4199",
-   "name": "Aaron Jones Sr.",
-   "slug": "aaron-jones-sr",
-   "team": "MIN",
+   "id": "11586",
+   "name": "Blake Corum",
+   "slug": "blake-corum",
+   "team": "LAR",
    "position": "RB",
    "maxProj": {
     "ppr": 11.2,
-    "half": 10.1,
-    "std": 8.9
-   }
-  },
-  {
-   "id": "12507",
-   "name": "Omarion Hampton",
-   "slug": "omarion-hampton",
-   "team": "LAC",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 11.2,
-    "half": 10.2,
-    "std": 9.2
+    "half": 10.6,
+    "std": 10
    }
   },
   {
@@ -799,111 +787,15 @@
    }
   },
   {
-   "id": "9753",
-   "name": "Zach Charbonnet",
-   "slug": "zach-charbonnet",
-   "team": "SEA",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 11.1,
-    "half": 10.1,
-    "std": 9.1
-   }
-  },
-  {
-   "id": "8136",
-   "name": "Rachaad White",
-   "slug": "rachaad-white",
-   "team": "WAS",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 10.9,
-    "half": 9.8,
-    "std": 8.7
-   }
-  },
-  {
    "id": "11655",
    "name": "Tyrone Tracy Jr.",
    "slug": "tyrone-tracy-jr",
    "team": "NYG",
    "position": "RB",
    "maxProj": {
-    "ppr": 10.7,
-    "half": 9.9,
-    "std": 9.1
-   }
-  },
-  {
-   "id": "8408",
-   "name": "Jordan Mason",
-   "slug": "jordan-mason",
-   "team": "MIN",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 10.6,
-    "half": 10.2,
-    "std": 9.7
-   }
-  },
-  {
-   "id": "8155",
-   "name": "Breece Hall",
-   "slug": "breece-hall",
-   "team": "NYJ",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 10.2,
-    "half": 9,
-    "std": 7.7
-   }
-  },
-  {
-   "id": "6130",
-   "name": "Devin Singletary",
-   "slug": "devin-singletary",
-   "team": "NYG",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 10.1,
-    "half": 9.2,
-    "std": 8.3
-   }
-  },
-  {
-   "id": "6806",
-   "name": "J.K. Dobbins",
-   "slug": "jk-dobbins",
-   "team": "DEN",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 9.7,
-    "half": 8.8,
-    "std": 7.9
-   }
-  },
-  {
-   "id": "13286",
-   "name": "Jadarian Price",
-   "slug": "jadarian-price",
-   "team": "SEA",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 9.7,
-    "half": 9.1,
-    "std": 8.5
-   }
-  },
-  {
-   "id": "7021",
-   "name": "Rico Dowdle",
-   "slug": "rico-dowdle",
-   "team": "PIT",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 9.6,
-    "half": 8.6,
-    "std": 7.6
+    "ppr": 10.9,
+    "half": 10.1,
+    "std": 9.3
    }
   },
   {
@@ -913,45 +805,21 @@
    "team": "HOU",
    "position": "RB",
    "maxProj": {
-    "ppr": 9.6,
-    "half": 8.8,
-    "std": 8
+    "ppr": 10.7,
+    "half": 9.9,
+    "std": 9.1
    }
   },
   {
-   "id": "11586",
-   "name": "Blake Corum",
-   "slug": "blake-corum",
-   "team": "LAR",
+   "id": "4199",
+   "name": "Aaron Jones Sr.",
+   "slug": "aaron-jones-sr",
+   "team": "MIN",
    "position": "RB",
    "maxProj": {
-    "ppr": 9.3,
-    "half": 8.8,
-    "std": 8.3
-   }
-  },
-  {
-   "id": "12469",
-   "name": "Dylan Sampson",
-   "slug": "dylan-sampson",
-   "team": "CLE",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 9,
-    "half": 7.8,
-    "std": 6.6
-   }
-  },
-  {
-   "id": "11647",
-   "name": "Kimani Vidal",
-   "slug": "kimani-vidal",
-   "team": "LAC",
-   "position": "RB",
-   "maxProj": {
-    "ppr": 8.7,
-    "half": 7.8,
-    "std": 6.9
+    "ppr": 10.6,
+    "half": 9.5,
+    "std": 8.5
    }
   },
   {
@@ -961,33 +829,141 @@
    "team": "ARI",
    "position": "RB",
    "maxProj": {
-    "ppr": 8.7,
-    "half": 7.8,
-    "std": 7
+    "ppr": 10.4,
+    "half": 9.4,
+    "std": 8.5
    }
   },
   {
-   "id": "4663",
-   "name": "Austin Ekeler",
-   "slug": "austin-ekeler",
+   "id": "12507",
+   "name": "Omarion Hampton",
+   "slug": "omarion-hampton",
+   "team": "LAC",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 10,
+    "half": 9.2,
+    "std": 8.4
+   }
+  },
+  {
+   "id": "12469",
+   "name": "Dylan Sampson",
+   "slug": "dylan-sampson",
+   "team": "CLE",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 9.3,
+    "half": 8,
+    "std": 6.7
+   }
+  },
+  {
+   "id": "7021",
+   "name": "Rico Dowdle",
+   "slug": "rico-dowdle",
+   "team": "PIT",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 9.2,
+    "half": 8.2,
+    "std": 7.2
+   }
+  },
+  {
+   "id": "11576",
+   "name": "Braelon Allen",
+   "slug": "braelon-allen",
+   "team": "NYJ",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 9,
+    "half": 8.1,
+    "std": 7.2
+   }
+  },
+  {
+   "id": "6130",
+   "name": "Devin Singletary",
+   "slug": "devin-singletary",
+   "team": "NYG",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 9,
+    "half": 8.2,
+    "std": 7.4
+   }
+  },
+  {
+   "id": "8136",
+   "name": "Rachaad White",
+   "slug": "rachaad-white",
    "team": "WAS",
    "position": "RB",
    "maxProj": {
-    "ppr": 8.4,
-    "half": 7.6,
-    "std": 6.9
+    "ppr": 8.9,
+    "half": 7.7,
+    "std": 6.5
    }
   },
   {
-   "id": "12533",
-   "name": "Jacory Croskey-Merritt",
-   "slug": "jacory-croskey-merritt",
-   "team": "WAS",
+   "id": "13286",
+   "name": "Jadarian Price",
+   "slug": "jadarian-price",
+   "team": "SEA",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 8.7,
+    "half": 7.9,
+    "std": 7.1
+   }
+  },
+  {
+   "id": "12534",
+   "name": "Kyle Monangai",
+   "slug": "kyle-monangai",
+   "team": "CHI",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 8.3,
+    "half": 7.8,
+    "std": 7.4
+   }
+  },
+  {
+   "id": "6806",
+   "name": "J.K. Dobbins",
+   "slug": "jk-dobbins",
+   "team": "DEN",
    "position": "RB",
    "maxProj": {
     "ppr": 8.1,
-    "half": 7.6,
-    "std": 7.1
+    "half": 7.2,
+    "std": 6.3
+   }
+  },
+  {
+   "id": "11647",
+   "name": "Kimani Vidal",
+   "slug": "kimani-vidal",
+   "team": "LAC",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 8.1,
+    "half": 7.3,
+    "std": 6.5
+   }
+  },
+  {
+   "id": "12489",
+   "name": "RJ Harvey",
+   "slug": "rj-harvey",
+   "team": "DEN",
+   "position": "RB",
+   "maxProj": {
+    "ppr": 8.1,
+    "half": 6.9,
+    "std": 5.8
    }
   },
   {
@@ -997,21 +973,9 @@
    "team": "SEA",
    "position": "WR",
    "maxProj": {
-    "ppr": 26.8,
-    "half": 22.9,
-    "std": 19
-   }
-  },
-  {
-   "id": "9493",
-   "name": "Puka Nacua",
-   "slug": "puka-nacua",
-   "team": "LAR",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 23.6,
-    "half": 19.7,
-    "std": 15.8
+    "ppr": 26.4,
+    "half": 22.5,
+    "std": 18.5
    }
   },
   {
@@ -1021,9 +985,21 @@
    "team": "DAL",
    "position": "WR",
    "maxProj": {
-    "ppr": 20.9,
-    "half": 17.2,
-    "std": 13.5
+    "ppr": 21.8,
+    "half": 18.1,
+    "std": 14.4
+   }
+  },
+  {
+   "id": "6794",
+   "name": "Justin Jefferson",
+   "slug": "justin-jefferson",
+   "team": "MIN",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 21.4,
+    "half": 18,
+    "std": 14.7
    }
   },
   {
@@ -1034,8 +1010,8 @@
    "position": "WR",
    "maxProj": {
     "ppr": 20.7,
-    "half": 17.2,
-    "std": 13.9
+    "half": 17.1,
+    "std": 13.8
    }
   },
   {
@@ -1045,33 +1021,9 @@
    "team": "CIN",
    "position": "WR",
    "maxProj": {
-    "ppr": 20.1,
-    "half": 17,
-    "std": 13.8
-   }
-  },
-  {
-   "id": "6794",
-   "name": "Justin Jefferson",
-   "slug": "justin-jefferson",
-   "team": "MIN",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 19.4,
-    "half": 16.3,
-    "std": 13.3
-   }
-  },
-  {
-   "id": "8112",
-   "name": "Drake London",
-   "slug": "drake-london",
-   "team": "ATL",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 19.3,
-    "half": 16.3,
-    "std": 13.2
+    "ppr": 20.2,
+    "half": 16.9,
+    "std": 13.7
    }
   },
   {
@@ -1081,117 +1033,21 @@
    "team": "GB",
    "position": "WR",
    "maxProj": {
-    "ppr": 19.2,
-    "half": 16.7,
-    "std": 14.1
-   }
-  },
-  {
-   "id": "2216",
-   "name": "Mike Evans",
-   "slug": "mike-evans",
-   "team": "SF",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 19.2,
+    "ppr": 19.1,
     "half": 16.6,
     "std": 14
    }
   },
   {
-   "id": "7569",
-   "name": "Nico Collins",
-   "slug": "nico-collins",
-   "team": "HOU",
+   "id": "8112",
+   "name": "Drake London",
+   "slug": "drake-london",
+   "team": "ATL",
    "position": "WR",
    "maxProj": {
-    "ppr": 19.1,
-    "half": 16.2,
-    "std": 13.3
-   }
-  },
-  {
-   "id": "8144",
-   "name": "Chris Olave",
-   "slug": "chris-olave",
-   "team": "NO",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 18.6,
-    "half": 15.5,
-    "std": 12.5
-   }
-  },
-  {
-   "id": "9997",
-   "name": "Zay Flowers",
-   "slug": "zay-flowers",
-   "team": "BAL",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 18.1,
-    "half": 15.1,
-    "std": 12.1
-   }
-  },
-  {
-   "id": "11632",
-   "name": "Malik Nabers",
-   "slug": "malik-nabers",
-   "team": "NYG",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 17.9,
-    "half": 14.9,
-    "std": 11.9
-   }
-  },
-  {
-   "id": "10232",
-   "name": "Michael Wilson",
-   "slug": "michael-wilson",
-   "team": "ARI",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 17.2,
-    "half": 14.4,
-    "std": 11.6
-   }
-  },
-  {
-   "id": "2133",
-   "name": "Davante Adams",
-   "slug": "davante-adams",
-   "team": "LAR",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 17.1,
-    "half": 14.6,
-    "std": 12
-   }
-  },
-  {
-   "id": "6801",
-   "name": "Tee Higgins",
-   "slug": "tee-higgins",
-   "team": "CIN",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 17.1,
-    "half": 14.5,
-    "std": 11.9
-   }
-  },
-  {
-   "id": "8146",
-   "name": "Garrett Wilson",
-   "slug": "garrett-wilson",
-   "team": "NYJ",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 17,
-    "half": 14,
-    "std": 11.1
+    "ppr": 18.8,
+    "half": 15.7,
+    "std": 12.7
    }
   },
   {
@@ -1201,45 +1057,81 @@
    "team": "GB",
    "position": "WR",
    "maxProj": {
-    "ppr": 17,
-    "half": 14.3,
-    "std": 11.7
+    "ppr": 18.7,
+    "half": 15.8,
+    "std": 12.9
    }
   },
   {
-   "id": "10229",
-   "name": "Rashee Rice",
-   "slug": "rashee-rice",
-   "team": "KC",
+   "id": "8144",
+   "name": "Chris Olave",
+   "slug": "chris-olave",
+   "team": "NO",
    "position": "WR",
    "maxProj": {
-    "ppr": 17,
-    "half": 14.2,
-    "std": 11.5
-   }
-  },
-  {
-   "id": "9487",
-   "name": "Parker Washington",
-   "slug": "parker-washington",
-   "team": "JAX",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 16.9,
-    "half": 14.5,
+    "ppr": 18.2,
+    "half": 15.2,
     "std": 12.2
    }
   },
   {
-   "id": "4983",
-   "name": "DJ Moore",
-   "slug": "dj-moore",
-   "team": "BUF",
+   "id": "11632",
+   "name": "Malik Nabers",
+   "slug": "malik-nabers",
+   "team": "NYG",
    "position": "WR",
    "maxProj": {
-    "ppr": 16.7,
-    "half": 14.2,
-    "std": 11.7
+    "ppr": 18,
+    "half": 14.8,
+    "std": 11.6
+   }
+  },
+  {
+   "id": "7569",
+   "name": "Nico Collins",
+   "slug": "nico-collins",
+   "team": "HOU",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 17.5,
+    "half": 14.9,
+    "std": 12.2
+   }
+  },
+  {
+   "id": "6801",
+   "name": "Tee Higgins",
+   "slug": "tee-higgins",
+   "team": "CIN",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 17.4,
+    "half": 14.8,
+    "std": 12.1
+   }
+  },
+  {
+   "id": "9997",
+   "name": "Zay Flowers",
+   "slug": "zay-flowers",
+   "team": "BAL",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 17.4,
+    "half": 14.4,
+    "std": 11.5
+   }
+  },
+  {
+   "id": "2133",
+   "name": "Davante Adams",
+   "slug": "davante-adams",
+   "team": "LAR",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 17,
+    "half": 14.5,
+    "std": 12
    }
   },
   {
@@ -1249,21 +1141,57 @@
    "team": "CHI",
    "position": "WR",
    "maxProj": {
-    "ppr": 16.4,
-    "half": 13.6,
-    "std": 10.7
+    "ppr": 16.8,
+    "half": 13.9,
+    "std": 11.1
    }
   },
   {
-   "id": "11646",
-   "name": "Jalen Coker",
-   "slug": "jalen-coker",
-   "team": "CAR",
+   "id": "8146",
+   "name": "Garrett Wilson",
+   "slug": "garrett-wilson",
+   "team": "NYJ",
    "position": "WR",
    "maxProj": {
-    "ppr": 16,
-    "half": 13.5,
+    "ppr": 16.7,
+    "half": 13.8,
     "std": 10.9
+   }
+  },
+  {
+   "id": "9487",
+   "name": "Parker Washington",
+   "slug": "parker-washington",
+   "team": "JAX",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 16.5,
+    "half": 14.2,
+    "std": 11.9
+   }
+  },
+  {
+   "id": "2216",
+   "name": "Mike Evans",
+   "slug": "mike-evans",
+   "team": "SF",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 16.4,
+    "half": 14.2,
+    "std": 12
+   }
+  },
+  {
+   "id": "9493",
+   "name": "Puka Nacua",
+   "slug": "puka-nacua",
+   "team": "LAR",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 15.9,
+    "half": 12.9,
+    "std": 9.9
    }
   },
   {
@@ -1273,21 +1201,21 @@
    "team": "CAR",
    "position": "WR",
    "maxProj": {
-    "ppr": 15.8,
+    "ppr": 15.9,
     "half": 13.2,
     "std": 10.6
    }
   },
   {
-   "id": "13279",
-   "name": "Carnell Tate",
-   "slug": "carnell-tate",
-   "team": "TEN",
+   "id": "10229",
+   "name": "Rashee Rice",
+   "slug": "rashee-rice",
+   "team": "KC",
    "position": "WR",
    "maxProj": {
-    "ppr": 15.3,
-    "half": 12.5,
-    "std": 9.6
+    "ppr": 15.4,
+    "half": 12.8,
+    "std": 10.1
    }
   },
   {
@@ -1297,21 +1225,9 @@
    "team": "PHI",
    "position": "WR",
    "maxProj": {
-    "ppr": 14.7,
-    "half": 12.3,
-    "std": 9.9
-   }
-  },
-  {
-   "id": "11635",
-   "name": "Ladd McConkey",
-   "slug": "ladd-mcconkey",
-   "team": "LAC",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 14.6,
-    "half": 12.2,
-    "std": 9.8
+    "ppr": 14.9,
+    "half": 12.5,
+    "std": 10.1
    }
   },
   {
@@ -1321,21 +1237,9 @@
    "team": "NE",
    "position": "WR",
    "maxProj": {
-    "ppr": 14.5,
-    "half": 12.1,
-    "std": 9.7
-   }
-  },
-  {
-   "id": "7526",
-   "name": "Jaylen Waddle",
-   "slug": "jaylen-waddle",
-   "team": "DEN",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 14.3,
-    "half": 11.8,
-    "std": 9.2
+    "ppr": 14.8,
+    "half": 12.4,
+    "std": 9.9
    }
   },
   {
@@ -1345,21 +1249,57 @@
    "team": "DAL",
    "position": "WR",
    "maxProj": {
-    "ppr": 14,
-    "half": 11.5,
-    "std": 9
+    "ppr": 14.8,
+    "half": 12.3,
+    "std": 9.8
    }
   },
   {
-   "id": "2449",
-   "name": "Stefon Diggs",
-   "slug": "stefon-diggs",
-   "team": "WAS",
+   "id": "11646",
+   "name": "Jalen Coker",
+   "slug": "jalen-coker",
+   "team": "CAR",
    "position": "WR",
    "maxProj": {
-    "ppr": 13.7,
-    "half": 11.5,
-    "std": 9.2
+    "ppr": 14.8,
+    "half": 12.4,
+    "std": 10
+   }
+  },
+  {
+   "id": "11635",
+   "name": "Ladd McConkey",
+   "slug": "ladd-mcconkey",
+   "team": "LAC",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 14.7,
+    "half": 12.3,
+    "std": 9.9
+   }
+  },
+  {
+   "id": "4983",
+   "name": "DJ Moore",
+   "slug": "dj-moore",
+   "team": "BUF",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 14.6,
+    "half": 12.4,
+    "std": 10.2
+   }
+  },
+  {
+   "id": "7526",
+   "name": "Jaylen Waddle",
+   "slug": "jaylen-waddle",
+   "team": "DEN",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 14.4,
+    "half": 11.8,
+    "std": 9.3
    }
   },
   {
@@ -1369,9 +1309,21 @@
    "team": "CHI",
    "position": "WR",
    "maxProj": {
-    "ppr": 13.2,
-    "half": 11,
-    "std": 8.9
+    "ppr": 13.4,
+    "half": 11.3,
+    "std": 9.2
+   }
+  },
+  {
+   "id": "2449",
+   "name": "Stefon Diggs",
+   "slug": "stefon-diggs",
+   "team": "WAS",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 13.4,
+    "half": 11.2,
+    "std": 9.1
    }
   },
   {
@@ -1381,69 +1333,21 @@
    "team": "DET",
    "position": "WR",
    "maxProj": {
-    "ppr": 12.8,
-    "half": 10.9,
-    "std": 9.1
+    "ppr": 13.3,
+    "half": 11.4,
+    "std": 9.6
    }
   },
   {
-   "id": "10213",
-   "name": "Tre Tucker",
-   "slug": "tre-tucker",
-   "team": "LV",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 12.3,
-    "half": 10.5,
-    "std": 8.8
-   }
-  },
-  {
-   "id": "8126",
-   "name": "Wan'Dale Robinson",
-   "slug": "wandale-robinson",
+   "id": "13279",
+   "name": "Carnell Tate",
+   "slug": "carnell-tate",
    "team": "TEN",
    "position": "WR",
    "maxProj": {
-    "ppr": 12.2,
-    "half": 9.9,
-    "std": 7.5
-   }
-  },
-  {
-   "id": "12514",
-   "name": "Emeka Egbuka",
-   "slug": "emeka-egbuka",
-   "team": "TB",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 11.7,
-    "half": 9.6,
-    "std": 7.5
-   }
-  },
-  {
-   "id": "8134",
-   "name": "Khalil Shakir",
-   "slug": "khalil-shakir",
-   "team": "BUF",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 11.7,
-    "half": 9.6,
-    "std": 7.6
-   }
-  },
-  {
-   "id": "11624",
-   "name": "Xavier Worthy",
-   "slug": "xavier-worthy",
-   "team": "KC",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 11.7,
-    "half": 9.7,
-    "std": 7.8
+    "ppr": 13.2,
+    "half": 10.7,
+    "std": 8.2
    }
   },
   {
@@ -1453,33 +1357,57 @@
    "team": "NO",
    "position": "WR",
    "maxProj": {
-    "ppr": 11.5,
-    "half": 9.5,
-    "std": 7.5
+    "ppr": 11.8,
+    "half": 9.6,
+    "std": 7.4
    }
   },
   {
-   "id": "5947",
-   "name": "Jakobi Meyers",
-   "slug": "jakobi-meyers",
-   "team": "JAX",
+   "id": "13346",
+   "name": "Denzel Boston",
+   "slug": "denzel-boston",
+   "team": "CLE",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 11.5,
+    "half": 9.9,
+    "std": 8.3
+   }
+  },
+  {
+   "id": "12514",
+   "name": "Emeka Egbuka",
+   "slug": "emeka-egbuka",
+   "team": "TB",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 11.4,
+    "half": 9.3,
+    "std": 7.2
+   }
+  },
+  {
+   "id": "13298",
+   "name": "KC Concepcion Jr.",
+   "slug": "kc-concepcion-jr",
+   "team": "CLE",
    "position": "WR",
    "maxProj": {
     "ppr": 11.3,
-    "half": 9.4,
-    "std": 7.6
+    "half": 9.2,
+    "std": 7.1
    }
   },
   {
-   "id": "5846",
-   "name": "DK Metcalf",
-   "slug": "dk-metcalf",
-   "team": "PIT",
+   "id": "8134",
+   "name": "Khalil Shakir",
+   "slug": "khalil-shakir",
+   "team": "BUF",
    "position": "WR",
    "maxProj": {
     "ppr": 11.2,
-    "half": 9.4,
-    "std": 7.6
+    "half": 9.2,
+    "std": 7.3
    }
   },
   {
@@ -1495,27 +1423,27 @@
    }
   },
   {
-   "id": "13346",
-   "name": "Denzel Boston",
-   "slug": "denzel-boston",
-   "team": "CLE",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 11.1,
-    "half": 9.6,
-    "std": 8.1
-   }
-  },
-  {
-   "id": "5872",
-   "name": "Deebo Samuel Sr.",
-   "slug": "deebo-samuel-sr",
-   "team": "SF",
+   "id": "5846",
+   "name": "DK Metcalf",
+   "slug": "dk-metcalf",
+   "team": "PIT",
    "position": "WR",
    "maxProj": {
     "ppr": 11,
-    "half": 9.1,
-    "std": 7.2
+    "half": 9,
+    "std": 7.1
+   }
+  },
+  {
+   "id": "8126",
+   "name": "Wan'Dale Robinson",
+   "slug": "wandale-robinson",
+   "team": "TEN",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.9,
+    "half": 8.7,
+    "std": 6.5
    }
   },
   {
@@ -1525,117 +1453,9 @@
    "team": "MIA",
    "position": "WR",
    "maxProj": {
-    "ppr": 10.9,
-    "half": 9,
-    "std": 7
-   }
-  },
-  {
-   "id": "13298",
-   "name": "KC Concepcion Jr.",
-   "slug": "kc-concepcion-jr",
-   "team": "CLE",
-   "position": "WR",
-   "maxProj": {
     "ppr": 10.8,
-    "half": 8.7,
-    "std": 6.7
-   }
-  },
-  {
-   "id": "1479",
-   "name": "Keenan Allen",
-   "slug": "keenan-allen",
-   "team": "IND",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10.6,
-    "half": 8.4,
-    "std": 6.1
-   }
-  },
-  {
-   "id": "9500",
-   "name": "Josh Downs",
-   "slug": "josh-downs",
-   "team": "IND",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10.4,
-    "half": 8.4,
-    "std": 6.4
-   }
-  },
-  {
-   "id": "12492",
-   "name": "Pat Bryant",
-   "slug": "pat-bryant",
-   "team": "DEN",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10.2,
-    "half": 8.4,
-    "std": 6.7
-   }
-  },
-  {
-   "id": "4037",
-   "name": "Chris Godwin Jr.",
-   "slug": "chris-godwin-jr",
-   "team": "TB",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10,
-    "half": 8,
-    "std": 6
-   }
-  },
-  {
-   "id": "5045",
-   "name": "Courtland Sutton",
-   "slug": "courtland-sutton",
-   "team": "DEN",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10,
-    "half": 8.3,
-    "std": 6.6
-   }
-  },
-  {
-   "id": "13274",
-   "name": "Germie Bernard",
-   "slug": "germie-bernard",
-   "team": "PIT",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 10,
-    "half": 8.1,
-    "std": 6.1
-   }
-  },
-  {
-   "id": "11625",
-   "name": "Adonai Mitchell",
-   "slug": "adonai-mitchell",
-   "team": "NYJ",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 9.7,
-    "half": 8,
-    "std": 6.3
-   }
-  },
-  {
-   "id": "8142",
-   "name": "Alec Pierce",
-   "slug": "alec-pierce",
-   "team": "IND",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 9.7,
-    "half": 8.2,
-    "std": 6.7
+    "half": 8.8,
+    "std": 6.8
    }
   },
   {
@@ -1645,21 +1465,81 @@
    "team": "MIN",
    "position": "WR",
    "maxProj": {
-    "ppr": 9.6,
-    "half": 8.2,
+    "ppr": 10.5,
+    "half": 9,
+    "std": 7.5
+   }
+  },
+  {
+   "id": "12492",
+   "name": "Pat Bryant",
+   "slug": "pat-bryant",
+   "team": "DEN",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.5,
+    "half": 8.7,
+    "std": 6.9
+   }
+  },
+  {
+   "id": "10213",
+   "name": "Tre Tucker",
+   "slug": "tre-tucker",
+   "team": "LV",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.4,
+    "half": 8.9,
+    "std": 7.4
+   }
+  },
+  {
+   "id": "5947",
+   "name": "Jakobi Meyers",
+   "slug": "jakobi-meyers",
+   "team": "JAX",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.3,
+    "half": 8.6,
+    "std": 6.9
+   }
+  },
+  {
+   "id": "13296",
+   "name": "Caleb Douglas",
+   "slug": "caleb-douglas",
+   "team": "MIA",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.2,
+    "half": 8.5,
     "std": 6.8
    }
   },
   {
-   "id": "8121",
-   "name": "Romeo Doubs",
-   "slug": "romeo-doubs",
-   "team": "NE",
+   "id": "5045",
+   "name": "Courtland Sutton",
+   "slug": "courtland-sutton",
+   "team": "DEN",
    "position": "WR",
    "maxProj": {
-    "ppr": 9.5,
-    "half": 8,
-    "std": 6.5
+    "ppr": 10.2,
+    "half": 8.5,
+    "std": 6.7
+   }
+  },
+  {
+   "id": "5872",
+   "name": "Deebo Samuel Sr.",
+   "slug": "deebo-samuel-sr",
+   "team": "SF",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 10.2,
+    "half": 8.5,
+    "std": 6.8
    }
   },
   {
@@ -1669,8 +1549,20 @@
    "team": "DAL",
    "position": "WR",
    "maxProj": {
-    "ppr": 9.1,
-    "half": 7.3,
+    "ppr": 9.9,
+    "half": 8,
+    "std": 6.2
+   }
+  },
+  {
+   "id": "13274",
+   "name": "Germie Bernard",
+   "slug": "germie-bernard",
+   "team": "PIT",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 9.7,
+    "half": 7.6,
     "std": 5.5
    }
   },
@@ -1681,45 +1573,69 @@
    "team": "BUF",
    "position": "WR",
    "maxProj": {
-    "ppr": 8.8,
-    "half": 7.3,
-    "std": 5.9
+    "ppr": 9.7,
+    "half": 8.1,
+    "std": 6.6
    }
   },
   {
-   "id": "13301",
-   "name": "Antonio Williams",
-   "slug": "antonio-williams",
-   "team": "WAS",
+   "id": "11625",
+   "name": "Adonai Mitchell",
+   "slug": "adonai-mitchell",
+   "team": "NYJ",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 9.6,
+    "half": 8,
+    "std": 6.4
+   }
+  },
+  {
+   "id": "4037",
+   "name": "Chris Godwin Jr.",
+   "slug": "chris-godwin-jr",
+   "team": "TB",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 9.6,
+    "half": 7.6,
+    "std": 5.6
+   }
+  },
+  {
+   "id": "9500",
+   "name": "Josh Downs",
+   "slug": "josh-downs",
+   "team": "KC",
    "position": "WR",
    "maxProj": {
     "ppr": 8.7,
     "half": 7.2,
-    "std": 5.7
+    "std": 5.6
    }
   },
   {
-   "id": "3634",
-   "name": "Kalif Raymond",
-   "slug": "kalif-raymond",
-   "team": "CHI",
+   "id": "13297",
+   "name": "Reggie Virgil",
+   "slug": "reggie-virgil",
+   "team": "ARI",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 8.6,
+    "half": 7,
+    "std": 5.5
+   }
+  },
+  {
+   "id": "13294",
+   "name": "Makai Lemon",
+   "slug": "makai-lemon",
+   "team": "PHI",
    "position": "WR",
    "maxProj": {
     "ppr": 8.5,
-    "half": 6.9,
-    "std": 5.3
-   }
-  },
-  {
-   "id": "13296",
-   "name": "Caleb Douglas",
-   "slug": "caleb-douglas",
-   "team": "MIA",
-   "position": "WR",
-   "maxProj": {
-    "ppr": 8.4,
-    "half": 7,
-    "std": 5.6
+    "half": 6.8,
+    "std": 5
    }
   },
   {
@@ -1729,21 +1645,33 @@
    "team": "LAC",
    "position": "WR",
    "maxProj": {
-    "ppr": 8.3,
-    "half": 6.9,
-    "std": 5.6
+    "ppr": 8.4,
+    "half": 7.1,
+    "std": 5.7
    }
   },
   {
-   "id": "11630",
-   "name": "Roman Wilson",
-   "slug": "roman-wilson",
-   "team": "PIT",
+   "id": "13301",
+   "name": "Antonio Williams",
+   "slug": "antonio-williams",
+   "team": "WAS",
    "position": "WR",
    "maxProj": {
     "ppr": 8.2,
-    "half": 6.8,
-    "std": 5.4
+    "half": 6.7,
+    "std": 5.3
+   }
+  },
+  {
+   "id": "3634",
+   "name": "Kalif Raymond",
+   "slug": "kalif-raymond",
+   "team": "CHI",
+   "position": "WR",
+   "maxProj": {
+    "ppr": 8.2,
+    "half": 6.6,
+    "std": 5.1
    }
   },
   {
@@ -1753,9 +1681,9 @@
    "team": "LV",
    "position": "TE",
    "maxProj": {
-    "ppr": 20.6,
-    "half": 17.3,
-    "std": 13.9
+    "ppr": 19.9,
+    "half": 16.6,
+    "std": 13.3
    }
   },
   {
@@ -1765,9 +1693,9 @@
    "team": "ARI",
    "position": "TE",
    "maxProj": {
-    "ppr": 20.6,
-    "half": 16.6,
-    "std": 12.5
+    "ppr": 18.4,
+    "half": 14.7,
+    "std": 11.1
    }
   },
   {
@@ -1777,21 +1705,9 @@
    "team": "SF",
    "position": "TE",
    "maxProj": {
-    "ppr": 16.5,
-    "half": 13.7,
-    "std": 11
-   }
-  },
-  {
-   "id": "1466",
-   "name": "Travis Kelce",
-   "slug": "travis-kelce",
-   "team": "KC",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 14.3,
-    "half": 11.9,
-    "std": 9.5
+    "ppr": 15.7,
+    "half": 13.1,
+    "std": 10.6
    }
   },
   {
@@ -1802,8 +1718,20 @@
    "position": "TE",
    "maxProj": {
     "ppr": 13.6,
-    "half": 11.1,
+    "half": 11,
     "std": 8.7
+   }
+  },
+  {
+   "id": "5844",
+   "name": "T.J. Hockenson",
+   "slug": "tj-hockenson",
+   "team": "MIN",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 13.3,
+    "half": 10.7,
+    "std": 8.1
    }
   },
   {
@@ -1827,6 +1755,18 @@
    "maxProj": {
     "ppr": 13,
     "half": 10.7,
+    "std": 8.3
+   }
+  },
+  {
+   "id": "1466",
+   "name": "Travis Kelce",
+   "slug": "travis-kelce",
+   "team": "KC",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 13,
+    "half": 10.7,
     "std": 8.4
    }
   },
@@ -1837,9 +1777,9 @@
    "team": "IND",
    "position": "TE",
    "maxProj": {
-    "ppr": 12.8,
+    "ppr": 12.9,
     "half": 9.9,
-    "std": 7.1
+    "std": 7
    }
   },
   {
@@ -1849,9 +1789,9 @@
    "team": "CHI",
    "position": "TE",
    "maxProj": {
-    "ppr": 12.5,
+    "ppr": 12.6,
     "half": 10.1,
-    "std": 7.6
+    "std": 7.7
    }
   },
   {
@@ -1861,33 +1801,9 @@
    "team": "CLE",
    "position": "TE",
    "maxProj": {
-    "ppr": 12.3,
-    "half": 10.1,
-    "std": 7.9
-   }
-  },
-  {
-   "id": "10236",
-   "name": "Dalton Kincaid",
-   "slug": "dalton-kincaid",
-   "team": "BUF",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 12.2,
-    "half": 10,
-    "std": 7.8
-   }
-  },
-  {
-   "id": "5844",
-   "name": "T.J. Hockenson",
-   "slug": "tj-hockenson",
-   "team": "MIN",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 12,
+    "ppr": 11.6,
     "half": 9.6,
-    "std": 7.2
+    "std": 7.5
    }
   },
   {
@@ -1897,9 +1813,21 @@
    "team": "PHI",
    "position": "TE",
    "maxProj": {
-    "ppr": 11.9,
-    "half": 10,
-    "std": 8.1
+    "ppr": 11.4,
+    "half": 9.5,
+    "std": 7.6
+   }
+  },
+  {
+   "id": "10236",
+   "name": "Dalton Kincaid",
+   "slug": "dalton-kincaid",
+   "team": "BUF",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 11,
+    "half": 9,
+    "std": 7.1
    }
   },
   {
@@ -1909,33 +1837,21 @@
    "team": "JAX",
    "position": "TE",
    "maxProj": {
-    "ppr": 11.7,
-    "half": 9.5,
-    "std": 7.4
+    "ppr": 10.5,
+    "half": 8.5,
+    "std": 6.5
    }
   },
   {
-   "id": "7002",
-   "name": "Juwan Johnson",
-   "slug": "juwan-johnson",
-   "team": "NO",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 11.7,
-    "half": 9.6,
-    "std": 7.5
-   }
-  },
-  {
-   "id": "7600",
-   "name": "Pat Freiermuth",
-   "slug": "pat-freiermuth",
-   "team": "PIT",
+   "id": "8210",
+   "name": "Chig Okonkwo",
+   "slug": "chig-okonkwo",
+   "team": "WAS",
    "position": "TE",
    "maxProj": {
     "ppr": 10.5,
-    "half": 8.6,
-    "std": 6.7
+    "half": 8.5,
+    "std": 6.5
    }
   },
   {
@@ -1951,15 +1867,15 @@
    }
   },
   {
-   "id": "3271",
-   "name": "Tyler Higbee",
-   "slug": "tyler-higbee",
-   "team": "LAR",
+   "id": "7002",
+   "name": "Juwan Johnson",
+   "slug": "juwan-johnson",
+   "team": "NO",
    "position": "TE",
    "maxProj": {
-    "ppr": 10,
+    "ppr": 9.9,
     "half": 8.1,
-    "std": 6.3
+    "std": 6.4
    }
   },
   {
@@ -1969,20 +1885,44 @@
    "team": "NE",
    "position": "TE",
    "maxProj": {
-    "ppr": 9.8,
-    "half": 7.9,
+    "ppr": 9.7,
+    "half": 7.8,
     "std": 6
    }
   },
   {
-   "id": "8210",
-   "name": "Chig Okonkwo",
-   "slug": "chig-okonkwo",
-   "team": "WAS",
+   "id": "3271",
+   "name": "Tyler Higbee",
+   "slug": "tyler-higbee",
+   "team": "LAR",
    "position": "TE",
    "maxProj": {
-    "ppr": 9.6,
-    "half": 7.8,
+    "ppr": 9.4,
+    "half": 7.5,
+    "std": 5.6
+   }
+  },
+  {
+   "id": "2505",
+   "name": "Darren Waller",
+   "slug": "darren-waller",
+   "team": "CAR",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 9.2,
+    "half": 7.7,
+    "std": 6.1
+   }
+  },
+  {
+   "id": "7553",
+   "name": "Kyle Pitts Sr.",
+   "slug": "kyle-pitts-sr",
+   "team": "ATL",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 9.2,
+    "half": 7.6,
     "std": 5.9
    }
   },
@@ -1993,9 +1933,9 @@
    "team": "HOU",
    "position": "TE",
    "maxProj": {
-    "ppr": 9.6,
-    "half": 7.6,
-    "std": 5.5
+    "ppr": 9.1,
+    "half": 7.1,
+    "std": 5.2
    }
   },
   {
@@ -2005,32 +1945,20 @@
    "team": "DAL",
    "position": "TE",
    "maxProj": {
-    "ppr": 9.4,
-    "half": 7.5,
-    "std": 5.6
-   }
-  },
-  {
-   "id": "7553",
-   "name": "Kyle Pitts Sr.",
-   "slug": "kyle-pitts-sr",
-   "team": "ATL",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 9.4,
-    "half": 7.8,
-    "std": 6.2
-   }
-  },
-  {
-   "id": "12498",
-   "name": "Mason Taylor",
-   "slug": "mason-taylor",
-   "team": "NYJ",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 9.1,
+    "ppr": 8.9,
     "half": 7.1,
+    "std": 5.4
+   }
+  },
+  {
+   "id": "11603",
+   "name": "AJ Barner",
+   "slug": "aj-barner",
+   "team": "SEA",
+   "position": "TE",
+   "maxProj": {
+    "ppr": 8.5,
+    "half": 6.8,
     "std": 5.1
    }
   },
@@ -2041,69 +1969,21 @@
    "team": "LV",
    "position": "TE",
    "maxProj": {
-    "ppr": 8.9,
-    "half": 7.1,
-    "std": 5.2
+    "ppr": 8.5,
+    "half": 6.7,
+    "std": 4.9
    }
   },
   {
-   "id": "5012",
-   "name": "Mark Andrews",
-   "slug": "mark-andrews",
-   "team": "BAL",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 8.8,
-    "half": 6.9,
-    "std": 5
-   }
-  },
-  {
-   "id": "11603",
-   "name": "AJ Barner",
-   "slug": "aj-barner",
-   "team": "SEA",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 8.7,
-    "half": 7,
-    "std": 5.3
-   }
-  },
-  {
-   "id": "2505",
-   "name": "Darren Waller",
-   "slug": "darren-waller",
-   "team": "CAR",
+   "id": "7600",
+   "name": "Pat Freiermuth",
+   "slug": "pat-freiermuth",
+   "team": "PIT",
    "position": "TE",
    "maxProj": {
     "ppr": 8.4,
-    "half": 7,
-    "std": 5.6
-   }
-  },
-  {
-   "id": "8111",
-   "name": "Cade Otton",
-   "slug": "cade-otton",
-   "team": "TB",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 8.2,
-    "half": 6.4,
-    "std": 4.7
-   }
-  },
-  {
-   "id": "8172",
-   "name": "Greg Dulcich",
-   "slug": "greg-dulcich",
-   "team": "MIA",
-   "position": "TE",
-   "maxProj": {
-    "ppr": 8,
-    "half": 6.4,
-    "std": 4.7
+    "half": 6.8,
+    "std": 5.4
    }
   }
  ]

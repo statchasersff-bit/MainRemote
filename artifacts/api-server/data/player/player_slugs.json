@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-09T12:58:58.281Z",
+  "generated_at": "2026-11-13T15:08:55.252Z",
   "moves": [],
   "players": {
     "1": {
@@ -13168,7 +13168,10 @@
       "slug": "damon-bankston"
     },
     "13957": {
-      "slug": "kenny-fletcher"
+      "slug": "kenny-fletcher-jr",
+      "previous": [
+        "kenny-fletcher"
+      ]
     },
     "13962": {
       "slug": "cameron-dorner"
@@ -13413,5 +13416,6 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  }
+  },
+  "migrated_at": "2026-11-13T15:08:57.147Z"
 }
