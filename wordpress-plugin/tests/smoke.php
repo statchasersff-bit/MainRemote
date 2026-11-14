@@ -1107,6 +1107,10 @@ is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar sha
  * without which a Divi Builder page's own container rule outweighs this one.
  */
 $mobile = statchasers_tool_mobile_gutter_css();
+// The theme's 58px over the team header on a phone (mak, 2026-11-14).
+$team_top = statchasers_team_mobile_top_css();
+is( false !== strpos( $team_top, '@media (max-width:560px)' ), true, 'the team top gap closes on phones only' );
+is( false !== strpos( $team_top, '#main-content .container:has(.sct-tpb){padding-top:0!important}' ), true, 'and only on a container holding the team header' );
 is( false !== strpos( $mobile, '@media (max-width:980px)' ), true, 'the gutter rule starts where the full-width rule stops' );
 is( false !== strpos( $mobile, 'width:100%!important;max-width:100%!important' ), true, 'the content column takes the screen' );
 is( 2, substr_count( $mobile, 'env(safe-area-inset' ), 'and a sideways phone still clears its notch' );

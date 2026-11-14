@@ -319,6 +319,8 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
         icon: "coaching",
         art: "coaching",
         heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
+        // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+        phoneTitle: "Offensive Coaching & Scheme",
         dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
       }) +
       // The four KPI cards went 2026-11-08 (mak): pass rate, red-zone rate,

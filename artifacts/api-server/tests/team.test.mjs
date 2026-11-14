@@ -3060,6 +3060,59 @@ describe("team colors (mak, 2026-11-05: the hub wears the team's palette)", () =
   }
 });
 
+describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () => {
+  test("the Outlook keeps its heading's words and adds the short phone title; the stamp marks its season part", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const head = doc.querySelector("#outlook-premium .sct-up-head");
+    assert.match(head.querySelector("h2.sct-tfo-title").textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/, "the heading is unchanged");
+    assert.ok(head.querySelector(".sct-up-head-text.has-phone-title"), "the phone title is wired");
+    assert.match(head.querySelector("p.sct-up-m-title[aria-hidden=true]").textContent, /^\d{4} Fantasy Outlook$/);
+    const stamp = head.querySelector(".sct-tfo-stamp");
+    assert.match(stamp.querySelector(".sct-tfo-stamp-season").textContent, /NFL Season/);
+    assert.equal(stamp.querySelectorAll(".sct-tfo-stamp-season").length, 2, "the season and its separator");
+    assert.match(stamp.querySelector(".sct-tfo-stamp-when").textContent, /Written before Week 1|Preseason outlook/);
+  });
+
+  test("long prose is cut between sentences, never reworded", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const outlook = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "outlooks_2026.json"), "utf8")).teams.ne;
+    const ledes = [...doc.querySelectorAll("#outlook-premium .sct-tfo-lede")].map((p) => p.textContent);
+    assert.ok(ledes.length >= 1);
+    assert.equal(ledes.join(" "), outlook.summary.replace(/\s+/g, " "), "the summary's words, in order");
+    for (const p of ledes.slice(0, -1)) assert.match(p, /[.!?]["\u201d\u2019)]?$/, "each cut ends a sentence");
+    const card = doc.querySelector("#outlook-premium .sct-tfo-card");
+    const notes = [...card.querySelectorAll(".sct-tfo-note")].map((p) => p.textContent);
+    const name = card.querySelector(".sct-tfo-name").textContent;
+    const src = outlook.groups.flatMap((g) => g.players).find((pl) => pl.name === name);
+    assert.equal(notes.join(" "), src.note.replace(/\s+/g, " "));
+    assert.doesNotMatch(notes.join("|"), /\b(?:A\.J|St|Jr|No)\.\|/, "no cut after an abbreviation");
+  });
+
+  test("the header names each fact for the phone summary, and every tab banner has a short phone title", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const kpis = [...doc.querySelectorAll(".sct-tpb-stats .sct-tpb-kpi")].map((li) => li.getAttribute("data-kpi"));
+    assert.deepEqual(kpis, ["record", "standing", "head-coach", "bye"]);
+    for (const section of ["usage", "coaching", "news", "depth-chart", "schedule"]) {
+      const { doc: d } = await dom(`/team/new-england-patriots/${section}/`);
+      const t = d.querySelector(".sct-up-head-text.has-phone-title .sct-up-m-title");
+      assert.ok(t && t.textContent.trim().length > 3, `${section} has a phone title`);
+      assert.doesNotMatch(t.textContent, /New England|Patriots/, `${section}'s phone title does not repeat the club`);
+    }
+  });
+
+  test("the stylesheet's compact pass: theme gap, header grid, 44px tabs, phones only", async () => {
+    const css = (await get("/team.css")).body;
+    const at = css.indexOf("PHONES, compact pass");
+    assert.ok(at > 0, "the block is there");
+    const block = css.slice(at);
+    assert.match(block, /@media \(max-width: 560px\) \{\s*#main-content \.container:has\(\.sct-tpb\) \{\s*padding-top: 0 !important;/, "the theme's 58px goes, only over the team header");
+    assert.match(block, /"badge identity actions"/, "crest, name and switcher share one row");
+    assert.match(block, /\.sct-tpb-season \{\s*display: none !important;/, "no season bar");
+    assert.match(block, /\.sct-nav-link\.is-active:hover \{\s*min-height: 44px !important;/, "44px tabs");
+    assert.match(block, /\.sct-tfo-stamp \.sct-tfo-stamp-season \{\s*display: none !important;/, "the stamp drops the repeated season");
+  });
+});
+
 describe("the Fantasy Outlook tab (mak's brief, 2026-11-05; the old block removed the same day)", () => {
   test("the premium block is the tab: its header carries the panel's H2, the outlook's words, groups and cards", async () => {
     const { doc } = await dom("/team/new-england-patriots");

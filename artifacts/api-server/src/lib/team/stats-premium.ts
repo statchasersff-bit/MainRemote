@@ -203,11 +203,14 @@ function history(input: StatsPremiumInput): string {
     })
     .join("");
   const span = seasons[seasons.length - 1]?.season;
+  // The wrapper is the phone card (the recap card design, mak 2026-11-14); unstyled above 560px.
   return (
+    `<div class="sct-sp-history">` +
     band(ICON.calendar, "Season History", `Key team statistics over the last ${seasons.length} seasons, each ranked against the 32 teams of its own year.`) +
     `<div class="sct-sp-h-scroll"><table class="sct-sp-h">` +
     `<caption class="sct-visually-hidden">${e(`Team production by season${span ? ` back to ${span}` : ""}, with each figure's NFL rank for that season. Green cells rank in the top ten, red cells in the bottom ten.`)}</caption>` +
-    `<thead>${head}</thead><tbody>${body}</tbody></table></div>`
+    `<thead>${head}</thead><tbody>${body}</tbody></table></div>` +
+    `</div>`
   );
 }
 

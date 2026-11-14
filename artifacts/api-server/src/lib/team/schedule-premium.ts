@@ -42,6 +42,11 @@ const e = escapeHtml;
 /* ------------------------------------------------------------------ icons */
 
 const ICON = {
+  // The Season Snapshot's title icon: phones only (the recap card head); the dark desktop card has none.
+  chart:
+    `<svg class="sct-shp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
+    `<path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` +
+    `</svg>`,
   clipboard:
     `<svg class="sct-shp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
     `<rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>` +
@@ -100,7 +105,9 @@ function pendingCell(game: ScheduleGame): string {
   if (game.status === "postponed") return `<span class="sct-shp-state" data-state="postponed">Postponed</span>`;
   if (game.status === "canceled") return `<span class="sct-shp-state" data-state="canceled">Canceled</span>`;
   const kickoff = game.kickoffMs !== null && game.timeConfirmed ? easternParts(game.kickoffMs).time : "TBD";
-  return `<span class="sct-shp-state${kickoff === "TBD" ? " is-tbd" : ""}" data-state="upcoming">${e(kickoff)}</span>`;
+  // "9:30 AM" holds together when the phone table wraps the time; only " ET" drops to a second line.
+  const shown = kickoff.replace(/^(\d{1,2}:\d{2} [AP]M)( .+)$/, (_, clock: string, zone: string) => `<span class="sct-shp-clock">${e(clock)}</span>${e(zone)}`);
+  return `<span class="sct-shp-state${kickoff === "TBD" ? " is-tbd" : ""}" data-state="upcoming">${shown === kickoff ? e(kickoff) : shown}</span>`;
 }
 
 /** "AT" / "VS" with the gold rule, and "neutral site" read out where it applies. */
@@ -114,9 +121,15 @@ function siteMark(game: ScheduleGame): string {
 function opponentCell(game: ScheduleGame, options: TeamRenderOptions): string {
   const shown = game.opponent?.fullName ?? game.opponentName;
   const hub = teamHubHref(game.opponent, options);
+  // Both forms ship: the full name, and the code ("SEA") that replaces it at 560px and under.
+  // The code is aria-hidden; the full name stays readable to screen readers at every width.
+  const code = game.opponent?.code;
+  const label = code
+    ? `<span class="sct-shp-opp-full">${e(shown)}</span><span class="sct-shp-opp-code" aria-hidden="true">${e(code)}</span>`
+    : e(shown);
   const name = hub
-    ? `<a class="sct-shp-opp-name" href="${e(hub)}">${e(shown)}</a>`
-    : `<span class="sct-shp-opp-name">${e(shown)}</span>`;
+    ? `<a class="sct-shp-opp-name" href="${e(hub)}">${label}</a>`
+    : `<span class="sct-shp-opp-name">${label}</span>`;
   return `<span class="sct-shp-opp">${siteMark(game)}${crest(game.opponent, 24, "sct-shp-opp-logo")}${name}</span>`;
 }
 
@@ -145,6 +158,8 @@ function identity(data: TeamPageData, schedule: TeamSchedule): string {
     icon: "schedule",
     art: "schedule",
     heading: `<h2 class="sct-h2 sct-up-h2 sct-shp-title">${e(`${team.fullName} Schedule`)}</h2>`,
+    // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+    phoneTitle: `${schedule.season} Schedule`,
     // A standing description like the other tabs' (mak, 2026-11-06), in
     // place of the season / record / division / bye / updated line.
     dek: `Every ${team.nickname} game of the ${schedule.season} season, with dates, kickoff times, TV, venues and results.`,
@@ -244,6 +259,15 @@ function sectionHead(icon: string, id: string, title: string, range: string): st
   );
 }
 
+/**
+ * The phone-only line under a board's title, in the recap cards' legend style
+ * ("Patriots win probability, play by play"): "Patriots results, weeks 1–9".
+ * Hidden above 560px, where the range sits at the head's right instead.
+ */
+function legend(text: string): string {
+  return text ? `<p class="sct-shp-board-legend">${e(text)}</p>` : "";
+}
+
 function rangeOf(games: ScheduleGame[]): string {
   if (!games.length) return "";
   const first = games[0] as ScheduleGame;
@@ -257,7 +281,8 @@ function linkCell(team: NflTeam, game: ScheduleGame, schedule: TeamSchedule, opt
   if (!href) return `<td class="sct-shp-td is-view"></td>`;
   return (
     `<td class="sct-shp-td is-view"><a class="sct-shp-view" href="${e(href)}">` +
-    `${game.status === "final" ? "View recap" : "View matchup"} <span class="sct-shp-arrow" aria-hidden="true">&rarr;</span></a></td>`
+    // The words drop to screen-reader-only at 560px and under; the arrow alone is the link there.
+    `<span class="sct-shp-view-label">${game.status === "final" ? "View recap" : "View matchup"} </span><span class="sct-shp-arrow" aria-hidden="true">&rarr;</span></a></td>`
   );
 }
 
@@ -301,7 +326,7 @@ function byeRow(week: number, columns: number): string {
 function table(kind: "results" | "remaining", caption: string, rows: string[]): string {
   const head =
     kind === "results"
-      ? `<th scope="col" class="is-week">Wk</th><th scope="col" class="is-opp">Opponent</th><th scope="col" class="is-date">Date</th><th scope="col" class="is-result">Result</th><th scope="col" class="is-record">Record</th><th scope="col" class="is-view"><span class="sct-visually-hidden">Game page</span></th>`
+      ? `<th scope="col" class="is-week">Wk</th><th scope="col" class="is-opp">Opponent</th><th scope="col" class="is-date">Date</th><th scope="col" class="is-result">Result</th><th scope="col" class="is-record"><span class="sct-shp-long">Record</span><span class="sct-shp-short" aria-hidden="true">Rec</span></th><th scope="col" class="is-view"><span class="sct-visually-hidden">Game page</span></th>`
       : `<th scope="col" class="is-week">Wk</th><th scope="col" class="is-opp">Opponent</th><th scope="col" class="is-date">Date</th><th scope="col" class="is-time">Time</th><th scope="col" class="is-tv">TV</th><th scope="col" class="is-venue">Venue</th><th scope="col" class="is-view"><span class="sct-visually-hidden">Game page</span></th>`;
   return (
     `<div class="sct-shp-scroll" tabindex="0">` +
@@ -334,6 +359,7 @@ function boards(data: TeamPageData, schedule: TeamSchedule, options: TeamRenderO
   const resultsBlock =
     `<section class="sct-shp-board" aria-labelledby="sct-shp-results-h">` +
     sectionHead(ICON.clipboard, "sct-shp-results-h", `${team.fullName} Results`, rangeOf(results)) +
+    legend(results.length ? `${team.nickname} results, ${rangeOf(results).toLowerCase()}` : "") +
     (resultRows.length
       ? table("results", `${team.fullName} ${schedule.season} results: week, opponent, date, result, record after the game.`, resultRows)
       : `<p class="sct-shp-board-empty">${e(`No ${schedule.season} games have been played yet.`)}</p>`) +
@@ -341,6 +367,7 @@ function boards(data: TeamPageData, schedule: TeamSchedule, options: TeamRenderO
   const remainingBlock =
     `<section class="sct-shp-board" aria-labelledby="sct-shp-remaining-h">` +
     sectionHead(ICON.calendar, "sct-shp-remaining-h", `${team.fullName} Remaining Schedule`, rangeOf(remaining)) +
+    legend(remaining.length ? `${team.nickname} games to come, ${rangeOf(remaining).toLowerCase()}` : "") +
     (remainingRows.length
       ? table("remaining", `${team.fullName} ${schedule.season} remaining schedule: week, opponent, date, kickoff, network, venue.`, remainingRows)
       : `<p class="sct-shp-board-empty">${e(`The ${schedule.season} regular season is complete.`)}</p>`) +
@@ -387,7 +414,7 @@ function snapshotCard(shape: SeasonShape): string {
     `</div>`;
   return (
     `<section class="sct-shp-snap" aria-labelledby="sct-shp-snap-h">` +
-    `<h3 class="sct-shp-snap-h" id="sct-shp-snap-h">${e(`${shape.season} Season Snapshot`)}</h3>` +
+    `<h3 class="sct-shp-snap-h" id="sct-shp-snap-h">${ICON.chart}${e(`${shape.season} Season Snapshot`)}</h3>` +
     `<dl class="sct-shp-snap-grid">` +
     cells.map(([label, value]) => `<div class="sct-shp-snap-cell"><dd class="sct-shp-snap-value sct-shp-num">${e(value)}</dd><dt class="sct-shp-snap-label">${e(label)}</dt></div>`).join("") +
     // The bye fills the grid's open square (mak, 2026-11-06); with a Neutral
