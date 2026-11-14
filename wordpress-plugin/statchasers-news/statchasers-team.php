@@ -338,7 +338,25 @@ function statchasers_team_enqueue_assets(): void {
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_header_layer_css() );
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_mobile_gutter_css() );
+		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_team_mobile_top_css() );
 	}
+}
+
+/**
+ * No theme gap above the team header on a phone (mak, 2026-11-14).
+ *
+ * Divi pads `#main-content .container` 58px at the top of a standard page;
+ * with the tool's own 16px the hub started 74px under the site menu on a
+ * 375px screen. The same fix the player pages have had since 11-05
+ * (statchasers_player_mobile_top_css), scoped by `:has()` to a container
+ * holding the team header, because this handle also rides on pages without
+ * one. team.css carries the identical rule, so the gap closes on an API
+ * deploy even before this zip goes up.
+ *
+ * @return string
+ */
+function statchasers_team_mobile_top_css(): string {
+	return '@media (max-width:560px){#main-content .container:has(.sct-tpb){padding-top:0!important}}';
 }
 
 /**

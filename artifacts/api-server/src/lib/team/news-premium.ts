@@ -324,6 +324,8 @@ export function renderNewsPremium(data: TeamPageData, now: number): string {
         icon: "news",
         art: "news",
         heading: `<h2 class="sct-h2 sct-up-h2 sct-nwp-h2">${e(`Latest ${team.nickname} News`)}</h2>`,
+        // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+        phoneTitle: "Latest News",
         dek: `The latest ${team.nickname} reports and updates, newest first.`,
       }) +
       `<div class="sct-nwp-layout${news.length < 3 ? " is-thin" : ""}">` +

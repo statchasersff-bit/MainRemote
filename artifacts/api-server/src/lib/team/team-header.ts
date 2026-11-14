@@ -61,7 +61,9 @@ export function renderTeamHeader(input: TeamHeaderInput): string {
   const kpis = facts
     .map(
       (f) =>
-        `<li class="sct-tpb-kpi">` +
+        // data-kpi names the fact for the phone summary, which ranks Record
+        // and Standing over Head Coach and Bye (team.css, 2026-11-14).
+        `<li class="sct-tpb-kpi" data-kpi="${e(f.label.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">` +
         `<span class="sct-tpb-kpi-icon">${KPI_ICON[f.label] ?? KPI_ICON["Standing"]}</span>` +
         `<span class="sct-tpb-kpi-div" aria-hidden="true"></span>` +
         `<span class="sct-tpb-kpi-text"><span class="sct-tpb-kpi-label">${e(f.label)}</span><span class="sct-tpb-kpi-value">${e(f.value)}</span></span>` +

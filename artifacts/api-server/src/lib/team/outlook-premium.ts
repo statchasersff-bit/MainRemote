@@ -31,6 +31,7 @@ import type { RosterPlayer } from "./roster";
 import type { NflTeam } from "./teams";
 import { injuryBadge, slotChip } from "../team-render";
 import { premiumTabHead } from "./premium-head";
+import { paragraphs } from "./prose";
 
 const e = escapeHtml;
 
@@ -76,10 +77,18 @@ function header(team: NflTeam, outlook: TeamOutlook, underway: boolean): string 
     // The panel's heading (.sct-h2, its gold rule suppressed by the shared
     // header), printed on a section page too.
     heading: `<h2 class="sct-h2 sct-up-h2 sct-tfo-title">${e(`${team.fullName} Fantasy Football Outlook & Stats ${outlook.season}`)}</h2>`,
+    // Phones show this in the heading's place (mak, 2026-11-14: the team
+    // header above already names the club); the heading itself, the page's
+    // H1 on the live site, keeps every word for search and screen readers.
+    phoneTitle: `${outlook.season} Fantasy Outlook`,
     dekClass: "sct-tfo-stamp",
+    // The season part repeats the team header's season line, so phones
+    // drop it with its separator (.sct-tfo-stamp-season, team.css).
     dekHtml:
-      `<span>${e(`${outlook.season} NFL Season`)}</span>` +
-      stamp.map((s) => `<span class="sct-tfo-stamp-sep" aria-hidden="true">·</span><span>${e(s)}</span>`).join(""),
+      `<span class="sct-tfo-stamp-season">${e(`${outlook.season} NFL Season`)}</span>` +
+      stamp
+        .map((s, i) => `<span class="sct-tfo-stamp-sep${i === 0 ? " sct-tfo-stamp-season" : ""}" aria-hidden="true">·</span><span${i === 0 ? ` class="sct-tfo-stamp-when"` : ""}>${e(s)}</span>`)
+        .join(""),
   });
 }
 
@@ -151,7 +160,7 @@ function card(player: OutlookPlayer, live: RosterPlayer | null, team: NflTeam): 
     (player.stats.length ? `<ul class="sct-tfo-kpis" aria-label="${e(`${player.name} figures`)}">${player.stats.map(kpi).join("")}</ul>` : "") +
     `</div>` +
     (player.thesis ? `<p class="sct-tfo-thesis">${e(player.thesis)}</p>` : "") +
-    `<p class="sct-tfo-note">${e(player.note)}</p>` +
+    paragraphs(player.note).map((t) => `<p class="sct-tfo-note">${e(t)}</p>`).join("") +
     `</li>`
   );
 }
@@ -190,7 +199,7 @@ export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: 
     `<section class="sct-tfo-intro">` +
     header(team, outlook, underway) +
     `<div class="sct-tfo-overview">` +
-    `<p class="sct-tfo-lede">${e(outlook.summary)}</p>` +
+    paragraphs(outlook.summary).map((t) => `<p class="sct-tfo-lede">${e(t)}</p>`).join("") +
     strip(outlook.facts) +
     `</div>` +
     `</section>` +

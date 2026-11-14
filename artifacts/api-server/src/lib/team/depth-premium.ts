@@ -73,6 +73,8 @@ function banner(data: TeamPageData, tabs: string): string {
       // The view buttons sit in the band (mak, 2026-11-06), in place of the art.
       actionsHtml: tabs,
       heading: `<h2 class="sct-h2 sct-up-h2 sct-dpp-title">${e(`${team.fullName} Depth Chart`)}</h2>`,
+      // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+      phoneTitle: "Depth Chart",
       // A standing description like the other tabs' (mak, 2026-11-06), not
       // the generated sentence naming starters it replaced.
       dek: `Starters and backups for the ${team.nickname} offense, defense and special teams, plus the fantasy depth chart for the skill positions.`,

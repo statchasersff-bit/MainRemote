@@ -223,6 +223,8 @@ export function renderUsagePremium(view: UsageView, team: NflTeam): string {
     premiumTabHead({
       icon: "usage",
       heading: `<h2 class="sct-h2 sct-up-h2">Snap Counts &amp; Player Usage</h2>`,
+      // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+      phoneTitle: "Snap Counts & Player Usage",
       dek:
         `Explore how the ${team.nickname} distribute offensive snaps, targets, rushing attempts, and red-zone opportunities. ` +
         `Track which players are seeing the field, where the ball is going, and how their roles change throughout the season.`,

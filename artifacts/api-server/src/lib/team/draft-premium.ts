@@ -66,6 +66,8 @@ function banner(team: NflTeam, view: DraftView): string {
       icon: "draft",
       art: "draft",
       heading: `<h2 class="sct-h2 sct-up-h2 sct-drp-title">${e(`${team.nickname} Draft Picks & History`)}</h2>`,
+      // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
+      phoneTitle: "Draft Picks & History",
       dek: sub,
     })
   );
