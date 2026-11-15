@@ -441,19 +441,23 @@
             "cells": [
               {
                 "text": "QB18 · Bridgewater",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Teddy Bridgewater"
               },
               {
                 "text": "RB12 · Davis",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Davis"
               },
               {
                 "text": "WR19 · Chosen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Robbie Chosen"
               },
               {
                 "text": "TE54 · Thomas",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ian Thomas"
               }
             ]
           },
@@ -463,19 +467,23 @@
             "cells": [
               {
                 "text": "QB28 · Darnold",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB36 · Hubbard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR18 · Moore",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "DJ Moore"
               },
               {
                 "text": "TE45 · Tremble",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tommy Tremble"
               }
             ]
           },
@@ -485,19 +493,23 @@
             "cells": [
               {
                 "text": "QB2 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB11 · Cook",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "James Cook"
               },
               {
                 "text": "WR42 · Diggs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE15 · Kincaid",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Kincaid"
               }
             ]
           },
@@ -507,19 +519,23 @@
             "cells": [
               {
                 "text": "QB2 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB8 · Cook",
-                "tone": "good"
+                "tone": "good",
+                "name": "James Cook"
               },
               {
                 "text": "WR37 · Shakir",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Khalil Shakir"
               },
               {
                 "text": "TE30 · Kincaid",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dalton Kincaid"
               }
             ]
           },
@@ -529,19 +545,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB6 · Cook",
-                "tone": "good"
+                "tone": "good",
+                "name": "James Cook"
               },
               {
                 "text": "WR36 · Shakir",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Khalil Shakir"
               },
               {
                 "text": "TE20 · Kincaid",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Kincaid"
               }
             ]
           }
@@ -553,19 +573,23 @@
             "cells": [
               {
                 "text": "QB28 · Darnold",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB36 · Hubbard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR18 · Moore",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "DJ Moore"
               },
               {
                 "text": "TE45 · Tremble",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tommy Tremble"
               }
             ]
           },
@@ -575,19 +599,23 @@
             "cells": [
               {
                 "text": "QB2 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB11 · Cook",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "James Cook"
               },
               {
                 "text": "WR42 · Diggs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE15 · Kincaid",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Kincaid"
               }
             ]
           },
@@ -597,19 +625,23 @@
             "cells": [
               {
                 "text": "QB2 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB8 · Cook",
-                "tone": "good"
+                "tone": "good",
+                "name": "James Cook"
               },
               {
                 "text": "WR37 · Shakir",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Khalil Shakir"
               },
               {
                 "text": "TE30 · Kincaid",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dalton Kincaid"
               }
             ]
           },
@@ -619,19 +651,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB6 · Cook",
-                "tone": "good"
+                "tone": "good",
+                "name": "James Cook"
               },
               {
                 "text": "WR36 · Shakir",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Khalil Shakir"
               },
               {
                 "text": "TE20 · Kincaid",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Kincaid"
               }
             ]
           },
@@ -642,19 +678,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB10 · Cook",
-                "tone": "good"
+                "tone": "good",
+                "name": "James Cook"
               },
               {
                 "text": "WR39 · Shakir",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Khalil Shakir"
               },
               {
                 "text": "TE10 · Kincaid",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Kincaid"
               }
             ]
           }
@@ -1086,19 +1126,23 @@
             "cells": [
               {
                 "text": "QB30 · Wilson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zach Wilson"
               },
               {
                 "text": "RB29 · Carter",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Carter"
               },
               {
                 "text": "WR50 · Moore",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Elijah Moore"
               },
               {
                 "text": "TE36 · Griffin",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ryan Griffin"
               }
             ]
           },
@@ -1108,19 +1152,23 @@
             "cells": [
               {
                 "text": "QB34 · Wilson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zach Wilson"
               },
               {
                 "text": "RB40 · Carter",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Carter"
               },
               {
                 "text": "WR21 · Wilson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Garrett Wilson"
               },
               {
                 "text": "TE16 · Conklin",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Conklin"
               }
             ]
           },
@@ -1131,19 +1179,23 @@
             "cells": [
               {
                 "text": "QB20 · Brissett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jacoby Brissett"
               },
               {
                 "text": "RB23 · Allgeier",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Allgeier"
               },
               {
                 "text": "WR15 · Wilson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Wilson"
               },
               {
                 "text": "TE1 · McBride",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey McBride"
               }
             ]
           }
@@ -1539,19 +1591,23 @@
             "cells": [
               {
                 "text": "QB25 · Sanders",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Shedeur Sanders"
               },
               {
                 "text": "RB33 · Judkins",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Quinshon Judkins"
               },
               {
                 "text": "WR35 · Jeudy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jerry Jeudy"
               },
               {
                 "text": "TE7 · Fannin",
-                "tone": "good"
+                "tone": "good",
+                "name": "Harold Fannin Jr."
               }
             ]
           },
@@ -1562,19 +1618,23 @@
             "cells": [
               {
                 "text": "QB24 · Penix",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Penix Jr."
               },
               {
                 "text": "RB3 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Bijan Robinson"
               },
               {
                 "text": "WR14 · London",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Drake London"
               },
               {
                 "text": "TE22 · Pitts",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kyle Pitts"
               }
             ]
           }
@@ -1935,19 +1995,23 @@
             "cells": [
               {
                 "text": "QB29 · Jackson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Lamar Jackson"
               },
               {
                 "text": "RB12 · Henry",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Derrick Henry"
               },
               {
                 "text": "WR12 · Flowers",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Zay Flowers"
               },
               {
                 "text": "TE25 · Andrews",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mark Andrews"
               }
             ]
           }
@@ -2312,19 +2376,23 @@
             "cells": [
               {
                 "text": "QB11 · Young",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Bryce Young"
               },
               {
                 "text": "RB11 · Hubbard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR13 · McMillan",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tetairoa McMillan"
               },
               {
                 "text": "TE18 · Waller",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Darren Waller"
               }
             ]
           }
@@ -2792,19 +2860,23 @@
             "cells": [
               {
                 "text": "QB10 · Goff",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB13 · Williams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jamaal Williams"
               },
               {
                 "text": "WR7 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Amon-Ra St. Brown"
               },
               {
                 "text": "TE2 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -2814,19 +2886,23 @@
             "cells": [
               {
                 "text": "QB7 · Goff",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB10 · Gibbs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jahmyr Gibbs"
               },
               {
                 "text": "WR3 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Amon-Ra St. Brown"
               },
               {
                 "text": "TE1 · LaPorta",
-                "tone": "good"
+                "tone": "good",
+                "name": "Sam LaPorta"
               }
             ]
           },
@@ -2836,19 +2912,23 @@
             "cells": [
               {
                 "text": "QB6 · Goff",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB1 · Gibbs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jahmyr Gibbs"
               },
               {
                 "text": "WR3 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Amon-Ra St. Brown"
               },
               {
                 "text": "TE8 · LaPorta",
-                "tone": "good"
+                "tone": "good",
+                "name": "Sam LaPorta"
               }
             ]
           },
@@ -2858,19 +2938,23 @@
             "cells": [
               {
                 "text": "QB5 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Caleb Williams"
               },
               {
                 "text": "RB15 · Swift",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "D'Andre Swift"
               },
               {
                 "text": "WR34 · Moore",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "DJ Moore"
               },
               {
                 "text": "TE12 · Loveland",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Colston Loveland"
               }
             ]
           },
@@ -2881,19 +2965,23 @@
             "cells": [
               {
                 "text": "QB21 · Williams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Caleb Williams"
               },
               {
                 "text": "RB8 · Swift",
-                "tone": "good"
+                "tone": "good",
+                "name": "D'Andre Swift"
               },
               {
                 "text": "WR11 · Burden",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Luther Burden III"
               },
               {
                 "text": "TE12 · Loveland",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Colston Loveland"
               }
             ]
           }
@@ -3412,19 +3500,23 @@
             "cells": [
               {
                 "text": "QB25 · Dalton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Andy Dalton"
               },
               {
                 "text": "RB13 · Mixon",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR18 · Boyd",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Boyd"
               },
               {
                 "text": "TE19 · Eifert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Eifert"
               }
             ]
           },
@@ -3434,19 +3526,23 @@
             "cells": [
               {
                 "text": "QB25 · Burrow",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB30 · Bernard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Giovani Bernard"
               },
               {
                 "text": "WR28 · Higgins",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tee Higgins"
               },
               {
                 "text": "TE30 · Sample",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Drew Sample"
               }
             ]
           },
@@ -3456,19 +3552,23 @@
             "cells": [
               {
                 "text": "QB8 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB4 · Mixon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR5 · Chase",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE19 · Uzomah",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "C.J. Uzomah"
               }
             ]
           },
@@ -3478,19 +3578,23 @@
             "cells": [
               {
                 "text": "QB4 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB10 · Mixon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR11 · Chase",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE21 · Hurst",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hayden Hurst"
               }
             ]
           },
@@ -3500,19 +3604,23 @@
             "cells": [
               {
                 "text": "QB25 · Burrow",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB6 · Mixon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR11 · Chase",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE26 · Hudson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tanner Hudson"
               }
             ]
           },
@@ -3522,19 +3630,23 @@
             "cells": [
               {
                 "text": "QB3 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB10 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chase Brown"
               },
               {
                 "text": "WR1 · Chase",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE13 · Gesicki",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Gesicki"
               }
             ]
           },
@@ -3544,19 +3656,23 @@
             "cells": [
               {
                 "text": "QB29 · Burrow",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB7 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chase Brown"
               },
               {
                 "text": "WR4 · Chase",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE37 · Fant",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Noah Fant"
               }
             ]
           }
@@ -3568,19 +3684,23 @@
             "cells": [
               {
                 "text": "QB4 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB10 · Mixon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR11 · Chase",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE21 · Hurst",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hayden Hurst"
               }
             ]
           },
@@ -3590,19 +3710,23 @@
             "cells": [
               {
                 "text": "QB25 · Burrow",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB6 · Mixon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR11 · Chase",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE26 · Hudson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tanner Hudson"
               }
             ]
           },
@@ -3612,19 +3736,23 @@
             "cells": [
               {
                 "text": "QB3 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB10 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chase Brown"
               },
               {
                 "text": "WR1 · Chase",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE13 · Gesicki",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Gesicki"
               }
             ]
           },
@@ -3634,19 +3762,23 @@
             "cells": [
               {
                 "text": "QB29 · Burrow",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB7 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chase Brown"
               },
               {
                 "text": "WR4 · Chase",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ja'Marr Chase"
               },
               {
                 "text": "TE37 · Fant",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Noah Fant"
               }
             ]
           },
@@ -3657,19 +3789,23 @@
             "cells": [
               {
                 "text": "QB2 · Burrow",
-                "tone": "good"
+                "tone": "good",
+                "name": "Joe Burrow"
               },
               {
                 "text": "RB19 · Brown",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chase Brown"
               },
               {
                 "text": "WR6 · Higgins",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tee Higgins"
               },
               {
                 "text": "TE14 · Gesicki",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Gesicki"
               }
             ]
           }
@@ -4157,19 +4293,23 @@
             "cells": [
               {
                 "text": "QB22 · Winston",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jameis Winston"
               },
               {
                 "text": "RB31 · Barber",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Peyton Barber"
               },
               {
                 "text": "WR9 · Evans",
-                "tone": "good"
+                "tone": "good",
+                "name": "Mike Evans"
               },
               {
                 "text": "TE14 · Howard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "O.J. Howard"
               }
             ]
           },
@@ -4179,19 +4319,23 @@
             "cells": [
               {
                 "text": "QB4 · Jackson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Lamar Jackson"
               },
               {
                 "text": "RB25 · Edwards",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Gus Edwards"
               },
               {
                 "text": "WR30 · Flowers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zay Flowers"
               },
               {
                 "text": "TE14 · Andrews",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mark Andrews"
               }
             ]
           },
@@ -4201,19 +4345,23 @@
             "cells": [
               {
                 "text": "QB1 · Jackson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Lamar Jackson"
               },
               {
                 "text": "RB4 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Derrick Henry"
               },
               {
                 "text": "WR25 · Flowers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zay Flowers"
               },
               {
                 "text": "TE6 · Andrews",
-                "tone": "good"
+                "tone": "good",
+                "name": "Mark Andrews"
               }
             ]
           },
@@ -4223,19 +4371,23 @@
             "cells": [
               {
                 "text": "QB20 · Jackson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Lamar Jackson"
               },
               {
                 "text": "RB8 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Derrick Henry"
               },
               {
                 "text": "WR7 · Flowers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Zay Flowers"
               },
               {
                 "text": "TE16 · Andrews",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mark Andrews"
               }
             ]
           },
@@ -4246,19 +4398,23 @@
             "cells": [
               {
                 "text": "QB18 · Watson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Deshaun Watson"
               },
               {
                 "text": "RB22 · Judkins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Quinshon Judkins"
               },
               {
                 "text": "WR22 · Boston",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Denzel Boston"
               },
               {
                 "text": "TE5 · Fannin",
-                "tone": "good"
+                "tone": "good",
+                "name": "Harold Fannin Jr."
               }
             ]
           }
@@ -4840,19 +4996,23 @@
             "cells": [
               {
                 "text": "QB9 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB15 · Carson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chris Carson"
               },
               {
                 "text": "WR16 · Lockett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Lockett"
               },
               {
                 "text": "TE30 · Vannett",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nick Vannett"
               }
             ]
           },
@@ -4862,19 +5022,23 @@
             "cells": [
               {
                 "text": "QB3 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB12 · Carson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chris Carson"
               },
               {
                 "text": "WR13 · Lockett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Lockett"
               },
               {
                 "text": "TE23 · Hollister",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jacob Hollister"
               }
             ]
           },
@@ -4884,19 +5048,23 @@
             "cells": [
               {
                 "text": "QB6 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB19 · Carson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chris Carson"
               },
               {
                 "text": "WR7 · Metcalf",
-                "tone": "good"
+                "tone": "good",
+                "name": "DK Metcalf"
               },
               {
                 "text": "TE38 · Hollister",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jacob Hollister"
               }
             ]
           },
@@ -4906,19 +5074,23 @@
             "cells": [
               {
                 "text": "QB15 · Lawrence",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Trevor Lawrence"
               },
               {
                 "text": "RB18 · Ogunbowale",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dare Ogunbowale"
               },
               {
                 "text": "WR21 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Marvin Jones"
               },
               {
                 "text": "TE38 · O'Shaughnessy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "James O'Shaughnessy"
               }
             ]
           },
@@ -4928,19 +5100,23 @@
             "cells": [
               {
                 "text": "QB6 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB12 · Williams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Javonte Williams"
               },
               {
                 "text": "WR5 · Pickens",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Pickens"
               },
               {
                 "text": "TE5 · Ferguson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jake Ferguson"
               }
             ]
           }
@@ -4952,19 +5128,23 @@
             "cells": [
               {
                 "text": "QB3 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB12 · Carson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chris Carson"
               },
               {
                 "text": "WR13 · Lockett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Lockett"
               },
               {
                 "text": "TE23 · Hollister",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jacob Hollister"
               }
             ]
           },
@@ -4974,19 +5154,23 @@
             "cells": [
               {
                 "text": "QB6 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB19 · Carson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chris Carson"
               },
               {
                 "text": "WR7 · Metcalf",
-                "tone": "good"
+                "tone": "good",
+                "name": "DK Metcalf"
               },
               {
                 "text": "TE38 · Hollister",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jacob Hollister"
               }
             ]
           },
@@ -4996,19 +5180,23 @@
             "cells": [
               {
                 "text": "QB15 · Lawrence",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Trevor Lawrence"
               },
               {
                 "text": "RB18 · Ogunbowale",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dare Ogunbowale"
               },
               {
                 "text": "WR21 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Marvin Jones"
               },
               {
                 "text": "TE38 · O'Shaughnessy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "James O'Shaughnessy"
               }
             ]
           },
@@ -5018,19 +5206,23 @@
             "cells": [
               {
                 "text": "QB6 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB12 · Williams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Javonte Williams"
               },
               {
                 "text": "WR5 · Pickens",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Pickens"
               },
               {
                 "text": "TE5 · Ferguson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jake Ferguson"
               }
             ]
           },
@@ -5041,19 +5233,23 @@
             "cells": [
               {
                 "text": "QB7 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB5 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Javonte Williams"
               },
               {
                 "text": "WR2 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE29 · Ferguson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jake Ferguson"
               }
             ]
           }
@@ -5426,19 +5622,23 @@
             "cells": [
               {
                 "text": "QB16 · Nix",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Bo Nix"
               },
               {
                 "text": "RB31 · Harvey",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "RJ Harvey"
               },
               {
                 "text": "WR33 · Waddle",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jaylen Waddle"
               },
               {
                 "text": "TE37 · Engram",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Evan Engram"
               }
             ]
           }
@@ -5882,19 +6082,23 @@
             "cells": [
               {
                 "text": "QB26 · Murray",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kyler Murray"
               },
               {
                 "text": "RB18 · Conner",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "James Conner"
               },
               {
                 "text": "WR52 · Brown",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Marquise Brown"
               },
               {
                 "text": "TE7 · McBride",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey McBride"
               }
             ]
           },
@@ -5904,19 +6108,23 @@
             "cells": [
               {
                 "text": "QB10 · Murray",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyler Murray"
               },
               {
                 "text": "RB11 · Conner",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "James Conner"
               },
               {
                 "text": "WR30 · Harrison",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Marvin Harrison Jr."
               },
               {
                 "text": "TE2 · McBride",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey McBride"
               }
             ]
           },
@@ -5926,19 +6134,23 @@
             "cells": [
               {
                 "text": "QB16 · Brissett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jacoby Brissett"
               },
               {
                 "text": "RB48 · Carter",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Carter"
               },
               {
                 "text": "WR10 · Wilson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Michael Wilson"
               },
               {
                 "text": "TE1 · McBride",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey McBride"
               }
             ]
           },
@@ -5949,19 +6161,23 @@
             "cells": [
               {
                 "text": "QB9 · Goff",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB1 · Gibbs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jahmyr Gibbs"
               },
               {
                 "text": "WR8 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "Amon-Ra St. Brown"
               },
               {
                 "text": "TE7 · LaPorta",
-                "tone": "good"
+                "tone": "good",
+                "name": "Sam LaPorta"
               }
             ]
           }
@@ -6514,19 +6730,23 @@
             "cells": [
               {
                 "text": "QB24 · Mariota",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Marcus Mariota"
               },
               {
                 "text": "RB16 · Henry",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Derrick Henry"
               },
               {
                 "text": "WR28 · Davis",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Corey Davis"
               },
               {
                 "text": "TE34 · Smith",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jonnu Smith"
               }
             ]
           },
@@ -6536,19 +6756,23 @@
             "cells": [
               {
                 "text": "QB9 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB2 · Jones",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR24 · Adams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE21 · Graham",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jimmy Graham"
               }
             ]
           },
@@ -6558,19 +6782,23 @@
             "cells": [
               {
                 "text": "QB2 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB5 · Jones",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR1 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE4 · Tonyan",
-                "tone": "good"
+                "tone": "good",
+                "name": "Robert Tonyan"
               }
             ]
           },
@@ -6580,19 +6808,23 @@
             "cells": [
               {
                 "text": "QB5 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB11 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR2 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE40 · Deguara",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Josiah Deguara"
               }
             ]
           },
@@ -6602,19 +6834,23 @@
             "cells": [
               {
                 "text": "QB13 · Rodgers",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB9 · Jones",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR34 · Lazard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Lazard"
               },
               {
                 "text": "TE20 · Tonyan",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Robert Tonyan"
               }
             ]
           },
@@ -6624,19 +6860,23 @@
             "cells": [
               {
                 "text": "QB5 · Love",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB37 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR25 · Reed",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jayden Reed"
               },
               {
                 "text": "TE28 · Kraft",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tucker Kraft"
               }
             ]
           },
@@ -6646,19 +6886,23 @@
             "cells": [
               {
                 "text": "QB17 · Love",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB6 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR29 · Reed",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jayden Reed"
               },
               {
                 "text": "TE10 · Kraft",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tucker Kraft"
               }
             ]
           },
@@ -6668,19 +6912,23 @@
             "cells": [
               {
                 "text": "QB15 · Love",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB13 · Jacobs",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR37 · Doubs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Romeo Doubs"
               },
               {
                 "text": "TE24 · Kraft",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tucker Kraft"
               }
             ]
           }
@@ -6692,19 +6940,23 @@
             "cells": [
               {
                 "text": "QB13 · Rodgers",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB9 · Jones",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR34 · Lazard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Lazard"
               },
               {
                 "text": "TE20 · Tonyan",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Robert Tonyan"
               }
             ]
           },
@@ -6714,19 +6966,23 @@
             "cells": [
               {
                 "text": "QB5 · Love",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB37 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR25 · Reed",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jayden Reed"
               },
               {
                 "text": "TE28 · Kraft",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tucker Kraft"
               }
             ]
           },
@@ -6736,19 +6992,23 @@
             "cells": [
               {
                 "text": "QB17 · Love",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB6 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR29 · Reed",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jayden Reed"
               },
               {
                 "text": "TE10 · Kraft",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tucker Kraft"
               }
             ]
           },
@@ -6758,19 +7018,23 @@
             "cells": [
               {
                 "text": "QB15 · Love",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB13 · Jacobs",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR37 · Doubs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Romeo Doubs"
               },
               {
                 "text": "TE24 · Kraft",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tucker Kraft"
               }
             ]
           },
@@ -6781,19 +7045,23 @@
             "cells": [
               {
                 "text": "QB3 · Love",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jordan Love"
               },
               {
                 "text": "RB43 · Lloyd",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "MarShawn Lloyd"
               },
               {
                 "text": "WR3 · Watson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian Watson"
               },
               {
                 "text": "TE8 · Kraft",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tucker Kraft"
               }
             ]
           }
@@ -7185,19 +7453,23 @@
             "cells": [
               {
                 "text": "QB21 · Stroud",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "C.J. Stroud"
               },
               {
                 "text": "RB31 · Marks",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Woody Marks"
               },
               {
                 "text": "WR8 · Collins",
-                "tone": "good"
+                "tone": "good",
+                "name": "Nico Collins"
               },
               {
                 "text": "TE10 · Schultz",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -7208,19 +7480,23 @@
             "cells": [
               {
                 "text": "QB8 · Stroud",
-                "tone": "good"
+                "tone": "good",
+                "name": "C.J. Stroud"
               },
               {
                 "text": "RB29 · Marks",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Woody Marks"
               },
               {
                 "text": "WR26 · Collins",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nico Collins"
               },
               {
                 "text": "TE21 · Schultz",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Schultz"
               }
             ]
           }
@@ -7776,19 +8052,23 @@
             "cells": [
               {
                 "text": "QB25 · Rivers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Philip Rivers"
               },
               {
                 "text": "RB7 · Gordon",
-                "tone": "good"
+                "tone": "good",
+                "name": "Melvin Gordon"
               },
               {
                 "text": "WR13 · Allen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Keenan Allen"
               },
               {
                 "text": "TE10 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Hunter Henry"
               }
             ]
           },
@@ -7798,19 +8078,23 @@
             "cells": [
               {
                 "text": "QB9 · Herbert",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Herbert"
               },
               {
                 "text": "RB26 · Ekeler",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Austin Ekeler"
               },
               {
                 "text": "WR13 · Allen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Keenan Allen"
               },
               {
                 "text": "TE12 · Henry",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hunter Henry"
               }
             ]
           },
@@ -7820,19 +8104,23 @@
             "cells": [
               {
                 "text": "QB14 · Hurts",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB33 · Scott",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Boston Scott"
               },
               {
                 "text": "WR31 · Smith",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "DeVonta Smith"
               },
               {
                 "text": "TE8 · Goedert",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dallas Goedert"
               }
             ]
           },
@@ -7842,19 +8130,23 @@
             "cells": [
               {
                 "text": "QB3 · Hurts",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB15 · Sanders",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Miles Sanders"
               },
               {
                 "text": "WR6 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "A.J. Brown"
               },
               {
                 "text": "TE12 · Goedert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dallas Goedert"
               }
             ]
           },
@@ -7864,19 +8156,23 @@
             "cells": [
               {
                 "text": "QB21 · Minshew",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Gardner Minshew"
               },
               {
                 "text": "RB31 · Moss",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zack Moss"
               },
               {
                 "text": "WR13 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE32 · Granson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kylen Granson"
               }
             ]
           },
@@ -7886,19 +8182,23 @@
             "cells": [
               {
                 "text": "QB25 · Richardson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Anthony Richardson"
               },
               {
                 "text": "RB12 · Taylor",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR35 · Downs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Josh Downs"
               },
               {
                 "text": "TE60 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -7908,19 +8208,23 @@
             "cells": [
               {
                 "text": "QB18 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Daniel Jones"
               },
               {
                 "text": "RB4 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR18 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE4 · Warren",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyler Warren"
               }
             ]
           }
@@ -7932,19 +8236,23 @@
             "cells": [
               {
                 "text": "QB3 · Hurts",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB15 · Sanders",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Miles Sanders"
               },
               {
                 "text": "WR6 · Brown",
-                "tone": "good"
+                "tone": "good",
+                "name": "A.J. Brown"
               },
               {
                 "text": "TE12 · Goedert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dallas Goedert"
               }
             ]
           },
@@ -7954,19 +8262,23 @@
             "cells": [
               {
                 "text": "QB21 · Minshew",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Gardner Minshew"
               },
               {
                 "text": "RB31 · Moss",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zack Moss"
               },
               {
                 "text": "WR13 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE32 · Granson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kylen Granson"
               }
             ]
           },
@@ -7976,19 +8288,23 @@
             "cells": [
               {
                 "text": "QB25 · Richardson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Anthony Richardson"
               },
               {
                 "text": "RB12 · Taylor",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR35 · Downs",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Josh Downs"
               },
               {
                 "text": "TE60 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -7998,19 +8314,23 @@
             "cells": [
               {
                 "text": "QB18 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Daniel Jones"
               },
               {
                 "text": "RB4 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR18 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE4 · Warren",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyler Warren"
               }
             ]
           },
@@ -8021,19 +8341,23 @@
             "cells": [
               {
                 "text": "QB26 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Daniel Jones"
               },
               {
                 "text": "RB9 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR34 · Allen",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Keenan Allen"
               },
               {
                 "text": "TE11 · Warren",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Warren"
               }
             ]
           }
@@ -8461,19 +8785,23 @@
             "cells": [
               {
                 "text": "QB4 · Mayfield",
-                "tone": "good"
+                "tone": "good",
+                "name": "Baker Mayfield"
               },
               {
                 "text": "RB13 · Irving",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Bucky Irving"
               },
               {
                 "text": "WR14 · Evans",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Evans"
               },
               {
                 "text": "TE14 · Otton",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cade Otton"
               }
             ]
           },
@@ -8483,19 +8811,23 @@
             "cells": [
               {
                 "text": "QB4 · Lawrence",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trevor Lawrence"
               },
               {
                 "text": "RB10 · Etienne",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Etienne"
               },
               {
                 "text": "WR27 · Washington",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Parker Washington"
               },
               {
                 "text": "TE23 · Strange",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brenton Strange"
               }
             ]
           },
@@ -8506,19 +8838,23 @@
             "cells": [
               {
                 "text": "QB10 · Lawrence",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trevor Lawrence"
               },
               {
                 "text": "RB15 · Tuten",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Bhayshul Tuten"
               },
               {
                 "text": "WR18 · Washington",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Parker Washington"
               },
               {
                 "text": "TE20 · Strange",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brenton Strange"
               }
             ]
           }
@@ -9204,19 +9540,23 @@
             "cells": [
               {
                 "text": "QB21 · Smith",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Alex Smith"
               },
               {
                 "text": "RB17 · Ware",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Spencer Ware"
               },
               {
                 "text": "WR18 · Hill",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9226,19 +9566,23 @@
             "cells": [
               {
                 "text": "QB4 · Smith",
-                "tone": "good"
+                "tone": "good",
+                "name": "Alex Smith"
               },
               {
                 "text": "RB4 · Hunt",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR13 · Hill",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9248,19 +9592,23 @@
             "cells": [
               {
                 "text": "QB1 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB12 · Hunt",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR1 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9270,19 +9618,23 @@
             "cells": [
               {
                 "text": "QB7 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB38 · Williams",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Damien Williams"
               },
               {
                 "text": "WR32 · Hill",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9292,19 +9644,23 @@
             "cells": [
               {
                 "text": "QB4 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB22 · Edwards-Helaire",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Clyde Edwards-Helaire"
               },
               {
                 "text": "WR2 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9314,19 +9670,23 @@
             "cells": [
               {
                 "text": "QB4 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB19 · Williams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Darrel Williams"
               },
               {
                 "text": "WR6 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE2 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9336,19 +9696,23 @@
             "cells": [
               {
                 "text": "QB1 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB20 · McKinnon",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jerick McKinnon"
               },
               {
                 "text": "WR27 · Smith-Schuster",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "JuJu Smith-Schuster"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9358,19 +9722,23 @@
             "cells": [
               {
                 "text": "QB8 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB15 · Pacheco",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Isiah Pacheco"
               },
               {
                 "text": "WR27 · Rice",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rashee Rice"
               },
               {
                 "text": "TE3 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9380,19 +9748,23 @@
             "cells": [
               {
                 "text": "QB12 · Mahomes",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB31 · Hunt",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR33 · Worthy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Xavier Worthy"
               },
               {
                 "text": "TE5 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9402,19 +9774,23 @@
             "cells": [
               {
                 "text": "QB11 · Mahomes",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB30 · Hunt",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR40 · Rice",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rashee Rice"
               },
               {
                 "text": "TE3 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           }
@@ -9426,19 +9802,23 @@
             "cells": [
               {
                 "text": "QB1 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB20 · McKinnon",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jerick McKinnon"
               },
               {
                 "text": "WR27 · Smith-Schuster",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "JuJu Smith-Schuster"
               },
               {
                 "text": "TE1 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9448,19 +9828,23 @@
             "cells": [
               {
                 "text": "QB8 · Mahomes",
-                "tone": "good"
+                "tone": "good",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB15 · Pacheco",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Isiah Pacheco"
               },
               {
                 "text": "WR27 · Rice",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rashee Rice"
               },
               {
                 "text": "TE3 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9470,19 +9854,23 @@
             "cells": [
               {
                 "text": "QB12 · Mahomes",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB31 · Hunt",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR33 · Worthy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Xavier Worthy"
               },
               {
                 "text": "TE5 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9492,19 +9880,23 @@
             "cells": [
               {
                 "text": "QB11 · Mahomes",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB30 · Hunt",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR40 · Rice",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rashee Rice"
               },
               {
                 "text": "TE3 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -9515,19 +9907,23 @@
             "cells": [
               {
                 "text": "QB14 · Mahomes",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Patrick Mahomes"
               },
               {
                 "text": "RB2 · Walker",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kenneth Walker III"
               },
               {
                 "text": "WR48 · Worthy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Xavier Worthy"
               },
               {
                 "text": "TE6 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           }
@@ -9997,19 +10393,23 @@
             "cells": [
               {
                 "text": "QB15 · Tagovailoa",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tua Tagovailoa"
               },
               {
                 "text": "RB25 · Mostert",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Raheem Mostert"
               },
               {
                 "text": "WR2 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE23 · Gesicki",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mike Gesicki"
               }
             ]
           },
@@ -10019,19 +10419,23 @@
             "cells": [
               {
                 "text": "QB11 · Tagovailoa",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tua Tagovailoa"
               },
               {
                 "text": "RB5 · Mostert",
-                "tone": "good"
+                "tone": "good",
+                "name": "Raheem Mostert"
               },
               {
                 "text": "WR2 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE33 · Smythe",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Durham Smythe"
               }
             ]
           },
@@ -10041,19 +10445,23 @@
             "cells": [
               {
                 "text": "QB21 · Tagovailoa",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tua Tagovailoa"
               },
               {
                 "text": "RB5 · Achane",
-                "tone": "good"
+                "tone": "good",
+                "name": "De'Von Achane"
               },
               {
                 "text": "WR18 · Hill",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE4 · Smith",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonnu Smith"
               }
             ]
           },
@@ -10063,19 +10471,23 @@
             "cells": [
               {
                 "text": "QB25 · Tagovailoa",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tua Tagovailoa"
               },
               {
                 "text": "RB5 · Achane",
-                "tone": "good"
+                "tone": "good",
+                "name": "De'Von Achane"
               },
               {
                 "text": "WR24 · Waddle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jaylen Waddle"
               },
               {
                 "text": "TE33 · Waller",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Darren Waller"
               }
             ]
           },
@@ -10086,19 +10498,23 @@
             "cells": [
               {
                 "text": "QB27 · Herbert",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Justin Herbert"
               },
               {
                 "text": "RB30 · Hampton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Omarion Hampton"
               },
               {
                 "text": "WR70 · McConkey",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ladd McConkey"
               },
               {
                 "text": "TE35 · Gadsden",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Oronde Gadsden II"
               }
             ]
           }
@@ -10662,19 +11078,23 @@
             "cells": [
               {
                 "text": "QB12 · Goff",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB1 · Gurley",
-                "tone": "good"
+                "tone": "good",
+                "name": "Todd Gurley"
               },
               {
                 "text": "WR25 · Kupp",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cooper Kupp"
               },
               {
                 "text": "TE35 · Higbee",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10684,19 +11104,23 @@
             "cells": [
               {
                 "text": "QB7 · Goff",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB3 · Gurley",
-                "tone": "good"
+                "tone": "good",
+                "name": "Todd Gurley"
               },
               {
                 "text": "WR11 · Woods",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Robert Woods"
               },
               {
                 "text": "TE22 · Everett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Gerald Everett"
               }
             ]
           },
@@ -10706,19 +11130,23 @@
             "cells": [
               {
                 "text": "QB13 · Goff",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB14 · Gurley",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Todd Gurley"
               },
               {
                 "text": "WR4 · Kupp",
-                "tone": "good"
+                "tone": "good",
+                "name": "Cooper Kupp"
               },
               {
                 "text": "TE8 · Higbee",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10728,19 +11156,23 @@
             "cells": [
               {
                 "text": "QB19 · Goff",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jared Goff"
               },
               {
                 "text": "RB36 · Henderson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Darrell Henderson"
               },
               {
                 "text": "WR14 · Woods",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Robert Woods"
               },
               {
                 "text": "TE17 · Higbee",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10750,19 +11182,23 @@
             "cells": [
               {
                 "text": "QB6 · Stafford",
-                "tone": "good"
+                "tone": "good",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB27 · Henderson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Darrell Henderson"
               },
               {
                 "text": "WR1 · Kupp",
-                "tone": "good"
+                "tone": "good",
+                "name": "Cooper Kupp"
               },
               {
                 "text": "TE14 · Higbee",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10772,19 +11208,23 @@
             "cells": [
               {
                 "text": "QB32 · Stafford",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB35 · Akers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cam Akers"
               },
               {
                 "text": "WR23 · Kupp",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cooper Kupp"
               },
               {
                 "text": "TE6 · Higbee",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10794,19 +11234,23 @@
             "cells": [
               {
                 "text": "QB15 · Stafford",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB7 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR4 · Nacua",
-                "tone": "good"
+                "tone": "good",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE23 · Higbee",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10816,19 +11260,23 @@
             "cells": [
               {
                 "text": "QB19 · Stafford",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB7 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR26 · Nacua",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE39 · Parkinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Colby Parkinson"
               }
             ]
           },
@@ -10838,19 +11286,23 @@
             "cells": [
               {
                 "text": "QB3 · Stafford",
-                "tone": "good"
+                "tone": "good",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB9 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR1 · Nacua",
-                "tone": "good"
+                "tone": "good",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE17 · Parkinson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Colby Parkinson"
               }
             ]
           }
@@ -10862,19 +11314,23 @@
             "cells": [
               {
                 "text": "QB32 · Stafford",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB35 · Akers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cam Akers"
               },
               {
                 "text": "WR23 · Kupp",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cooper Kupp"
               },
               {
                 "text": "TE6 · Higbee",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10884,19 +11340,23 @@
             "cells": [
               {
                 "text": "QB15 · Stafford",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB7 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR4 · Nacua",
-                "tone": "good"
+                "tone": "good",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE23 · Higbee",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Higbee"
               }
             ]
           },
@@ -10906,19 +11366,23 @@
             "cells": [
               {
                 "text": "QB19 · Stafford",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB7 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR26 · Nacua",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE39 · Parkinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Colby Parkinson"
               }
             ]
           },
@@ -10928,19 +11392,23 @@
             "cells": [
               {
                 "text": "QB3 · Stafford",
-                "tone": "good"
+                "tone": "good",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB9 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR1 · Nacua",
-                "tone": "good"
+                "tone": "good",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE17 · Parkinson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Colby Parkinson"
               }
             ]
           },
@@ -10951,19 +11419,23 @@
             "cells": [
               {
                 "text": "QB13 · Stafford",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matthew Stafford"
               },
               {
                 "text": "RB6 · Williams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyren Williams"
               },
               {
                 "text": "WR4 · Nacua",
-                "tone": "good"
+                "tone": "good",
+                "name": "Puka Nacua"
               },
               {
                 "text": "TE26 · Higbee",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyler Higbee"
               }
             ]
           }
@@ -11466,19 +11938,23 @@
             "cells": [
               {
                 "text": "QB11 · Cousins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB16 · Cook",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalvin Cook"
               },
               {
                 "text": "WR4 · Jefferson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE16 · Conklin",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Conklin"
               }
             ]
           },
@@ -11488,19 +11964,23 @@
             "cells": [
               {
                 "text": "QB21 · Wilson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Russell Wilson"
               },
               {
                 "text": "RB20 · Murray",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Latavius Murray"
               },
               {
                 "text": "WR20 · Jeudy",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jerry Jeudy"
               },
               {
                 "text": "TE12 · Dulcich",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Greg Dulcich"
               }
             ]
           },
@@ -11510,19 +11990,23 @@
             "cells": [
               {
                 "text": "QB26 · Carr",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Derek Carr"
               },
               {
                 "text": "RB9 · Kamara",
-                "tone": "good"
+                "tone": "good",
+                "name": "Alvin Kamara"
               },
               {
                 "text": "WR90 · Shaheed",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rashid Shaheed"
               },
               {
                 "text": "TE17 · Johnson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Juwan Johnson"
               }
             ]
           },
@@ -11532,19 +12016,23 @@
             "cells": [
               {
                 "text": "QB14 · Darnold",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB22 · Walker",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kenneth Walker III"
               },
               {
                 "text": "WR2 · Smith-Njigba",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jaxon Smith-Njigba"
               },
               {
                 "text": "TE14 · Barner",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "AJ Barner"
               }
             ]
           },
@@ -11555,19 +12043,23 @@
             "cells": [
               {
                 "text": "QB5 · Cousins",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB14 · Jeanty",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Ashton Jeanty"
               },
               {
                 "text": "WR19 · Tucker",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tre Tucker"
               },
               {
                 "text": "TE3 · Bowers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Brock Bowers"
               }
             ]
           }
@@ -11993,19 +12485,23 @@
             "cells": [
               {
                 "text": "QB9 · Stroud",
-                "tone": "good"
+                "tone": "good",
+                "name": "C.J. Stroud"
               },
               {
                 "text": "RB32 · Singletary",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR12 · Collins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Nico Collins"
               },
               {
                 "text": "TE10 · Schultz",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -12015,19 +12511,23 @@
             "cells": [
               {
                 "text": "QB18 · Stroud",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "C.J. Stroud"
               },
               {
                 "text": "RB17 · Mixon",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Joe Mixon"
               },
               {
                 "text": "WR23 · Collins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Nico Collins"
               },
               {
                 "text": "TE20 · Schultz",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -12038,19 +12538,23 @@
             "cells": [
               {
                 "text": "QB22 · Willis",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Malik Willis"
               },
               {
                 "text": "RB25 · Gordon",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ollie Gordon II"
               },
               {
                 "text": "WR40 · Washington",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Malik Washington"
               },
               {
                 "text": "TE30 · Dulcich",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Greg Dulcich"
               }
             ]
           }
@@ -12529,19 +13033,23 @@
             "cells": [
               {
                 "text": "QB31 · Haskins",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dwayne Haskins"
               },
               {
                 "text": "RB23 · Peterson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Adrian Peterson"
               },
               {
                 "text": "WR37 · McLaurin",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Terry McLaurin"
               },
               {
                 "text": "TE38 · Sprinkle",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jeremy Sprinkle"
               }
             ]
           },
@@ -12551,19 +13059,23 @@
             "cells": [
               {
                 "text": "QB8 · Cousins",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB11 · Cook",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalvin Cook"
               },
               {
                 "text": "WR1 · Jefferson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE2 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12573,19 +13085,23 @@
             "cells": [
               {
                 "text": "QB24 · Cousins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB38 · Mattison",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Alexander Mattison"
               },
               {
                 "text": "WR23 · Addison",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Addison"
               },
               {
                 "text": "TE4 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12595,19 +13111,23 @@
             "cells": [
               {
                 "text": "QB9 · Darnold",
-                "tone": "good"
+                "tone": "good",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB14 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR2 · Jefferson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE34 · Hockenson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12617,19 +13137,23 @@
             "cells": [
               {
                 "text": "QB32 · McCarthy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "J.J. McCarthy"
               },
               {
                 "text": "RB36 · Mason",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jordan Mason"
               },
               {
                 "text": "WR21 · Jefferson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE26 · Hockenson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "T.J. Hockenson"
               }
             ]
           }
@@ -12641,19 +13165,23 @@
             "cells": [
               {
                 "text": "QB8 · Cousins",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB11 · Cook",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalvin Cook"
               },
               {
                 "text": "WR1 · Jefferson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE2 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12663,19 +13191,23 @@
             "cells": [
               {
                 "text": "QB24 · Cousins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB38 · Mattison",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Alexander Mattison"
               },
               {
                 "text": "WR23 · Addison",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jordan Addison"
               },
               {
                 "text": "TE4 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12685,19 +13217,23 @@
             "cells": [
               {
                 "text": "QB9 · Darnold",
-                "tone": "good"
+                "tone": "good",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB14 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR2 · Jefferson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE34 · Hockenson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12707,19 +13243,23 @@
             "cells": [
               {
                 "text": "QB32 · McCarthy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "J.J. McCarthy"
               },
               {
                 "text": "RB36 · Mason",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jordan Mason"
               },
               {
                 "text": "WR21 · Jefferson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE26 · Hockenson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "T.J. Hockenson"
               }
             ]
           },
@@ -12730,19 +13270,23 @@
             "cells": [
               {
                 "text": "QB30 · Murray",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kyler Murray"
               },
               {
                 "text": "RB24 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR25 · Jefferson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Justin Jefferson"
               },
               {
                 "text": "TE9 · Hockenson",
-                "tone": "good"
+                "tone": "good",
+                "name": "T.J. Hockenson"
               }
             ]
           }
@@ -13474,19 +14018,23 @@
             "cells": [
               {
                 "text": "QB15 · Brady",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tom Brady"
               },
               {
                 "text": "RB9 · Blount",
-                "tone": "good"
+                "tone": "good",
+                "name": "LeGarrette Blount"
               },
               {
                 "text": "WR14 · Edelman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Julian Edelman"
               },
               {
                 "text": "TE10 · Bennett",
-                "tone": "good"
+                "tone": "good",
+                "name": "Martellus Bennett"
               }
             ]
           },
@@ -13496,19 +14044,23 @@
             "cells": [
               {
                 "text": "QB3 · Brady",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tom Brady"
               },
               {
                 "text": "RB13 · Lewis",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dion Lewis"
               },
               {
                 "text": "WR15 · Cooks",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brandin Cooks"
               },
               {
                 "text": "TE2 · Gronkowski",
-                "tone": "good"
+                "tone": "good",
+                "name": "Rob Gronkowski"
               }
             ]
           },
@@ -13518,19 +14070,23 @@
             "cells": [
               {
                 "text": "QB14 · Brady",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tom Brady"
               },
               {
                 "text": "RB7 · White",
-                "tone": "good"
+                "tone": "good",
+                "name": "James White"
               },
               {
                 "text": "WR20 · Edelman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Julian Edelman"
               },
               {
                 "text": "TE11 · Gronkowski",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Rob Gronkowski"
               }
             ]
           },
@@ -13540,19 +14096,23 @@
             "cells": [
               {
                 "text": "QB12 · Brady",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tom Brady"
               },
               {
                 "text": "RB18 · White",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "James White"
               },
               {
                 "text": "WR7 · Edelman",
-                "tone": "good"
+                "tone": "good",
+                "name": "Julian Edelman"
               },
               {
                 "text": "TE54 · Watson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Benjamin Watson"
               }
             ]
           },
@@ -13562,19 +14122,23 @@
             "cells": [
               {
                 "text": "QB15 · Newton",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cam Newton"
               },
               {
                 "text": "RB42 · White",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "James White"
               },
               {
                 "text": "WR53 · Meyers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jakobi Meyers"
               },
               {
                 "text": "TE62 · Izzo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ryan Izzo"
               }
             ]
           },
@@ -13584,19 +14148,23 @@
             "cells": [
               {
                 "text": "QB18 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mac Jones"
               },
               {
                 "text": "RB14 · Harris",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Damien Harris"
               },
               {
                 "text": "WR29 · Meyers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jakobi Meyers"
               },
               {
                 "text": "TE10 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Hunter Henry"
               }
             ]
           },
@@ -13606,19 +14174,23 @@
             "cells": [
               {
                 "text": "QB17 · Carr",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Derek Carr"
               },
               {
                 "text": "RB3 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR3 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE28 · Moreau",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Foster Moreau"
               }
             ]
           },
@@ -13628,19 +14200,23 @@
             "cells": [
               {
                 "text": "QB31 · Garoppolo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB9 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR13 · Adams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE36 · Mayer",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Mayer"
               }
             ]
           },
@@ -13650,19 +14226,23 @@
             "cells": [
               {
                 "text": "QB2 · Maye",
-                "tone": "good"
+                "tone": "good",
+                "name": "Drake Maye"
               },
               {
                 "text": "RB21 · Henderson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "TreVeyon Henderson"
               },
               {
                 "text": "WR17 · Diggs",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE9 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Hunter Henry"
               }
             ]
           }
@@ -13674,19 +14254,23 @@
             "cells": [
               {
                 "text": "QB18 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mac Jones"
               },
               {
                 "text": "RB14 · Harris",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Damien Harris"
               },
               {
                 "text": "WR29 · Meyers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jakobi Meyers"
               },
               {
                 "text": "TE10 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Hunter Henry"
               }
             ]
           },
@@ -13696,19 +14280,23 @@
             "cells": [
               {
                 "text": "QB17 · Carr",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Derek Carr"
               },
               {
                 "text": "RB3 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR3 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE28 · Moreau",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Foster Moreau"
               }
             ]
           },
@@ -13718,19 +14306,23 @@
             "cells": [
               {
                 "text": "QB31 · Garoppolo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB9 · Jacobs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Jacobs"
               },
               {
                 "text": "WR13 · Adams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE36 · Mayer",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Mayer"
               }
             ]
           },
@@ -13740,19 +14332,23 @@
             "cells": [
               {
                 "text": "QB2 · Maye",
-                "tone": "good"
+                "tone": "good",
+                "name": "Drake Maye"
               },
               {
                 "text": "RB21 · Henderson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "TreVeyon Henderson"
               },
               {
                 "text": "WR17 · Diggs",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE9 · Henry",
-                "tone": "good"
+                "tone": "good",
+                "name": "Hunter Henry"
               }
             ]
           },
@@ -13763,19 +14359,23 @@
             "cells": [
               {
                 "text": "QB4 · Maye",
-                "tone": "good"
+                "tone": "good",
+                "name": "Drake Maye"
               },
               {
                 "text": "RB17 · Stevenson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Rhamondre Stevenson"
               },
               {
                 "text": "WR24 · Douglas",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "DeMario Douglas"
               },
               {
                 "text": "TE15 · Henry",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hunter Henry"
               }
             ]
           }
@@ -14339,19 +14939,23 @@
             "cells": [
               {
                 "text": "QB2 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB3 · Elliott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ezekiel Elliott"
               },
               {
                 "text": "WR10 · Cooper",
-                "tone": "good"
+                "tone": "good",
+                "name": "Amari Cooper"
               },
               {
                 "text": "TE11 · Witten",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jason Witten"
               }
             ]
           },
@@ -14361,19 +14965,23 @@
             "cells": [
               {
                 "text": "QB30 · Dalton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Andy Dalton"
               },
               {
                 "text": "RB9 · Elliott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ezekiel Elliott"
               },
               {
                 "text": "WR15 · Cooper",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Amari Cooper"
               },
               {
                 "text": "TE11 · Schultz",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -14383,19 +14991,23 @@
             "cells": [
               {
                 "text": "QB7 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB7 · Elliott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Ezekiel Elliott"
               },
               {
                 "text": "WR19 · Lamb",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE3 · Schultz",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -14405,19 +15017,23 @@
             "cells": [
               {
                 "text": "QB19 · Prescott",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB8 · Pollard",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tony Pollard"
               },
               {
                 "text": "WR5 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE10 · Schultz",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -14427,19 +15043,23 @@
             "cells": [
               {
                 "text": "QB17 · Herbert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Justin Herbert"
               },
               {
                 "text": "RB26 · Ekeler",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Austin Ekeler"
               },
               {
                 "text": "WR8 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Keenan Allen"
               },
               {
                 "text": "TE22 · Everett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Gerald Everett"
               }
             ]
           },
@@ -14449,19 +15069,23 @@
             "cells": [
               {
                 "text": "QB8 · Hurts",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB2 · Barkley",
-                "tone": "good"
+                "tone": "good",
+                "name": "Saquon Barkley"
               },
               {
                 "text": "WR20 · Brown",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "A.J. Brown"
               },
               {
                 "text": "TE27 · Goedert",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dallas Goedert"
               }
             ]
           },
@@ -14471,19 +15095,23 @@
             "cells": [
               {
                 "text": "QB26 · Shough",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyler Shough"
               },
               {
                 "text": "RB46 · Kamara",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Alvin Kamara"
               },
               {
                 "text": "WR6 · Olave",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chris Olave"
               },
               {
                 "text": "TE8 · Johnson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Juwan Johnson"
               }
             ]
           }
@@ -14495,19 +15123,23 @@
             "cells": [
               {
                 "text": "QB19 · Prescott",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB8 · Pollard",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tony Pollard"
               },
               {
                 "text": "WR5 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE10 · Schultz",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dalton Schultz"
               }
             ]
           },
@@ -14517,19 +15149,23 @@
             "cells": [
               {
                 "text": "QB17 · Herbert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Justin Herbert"
               },
               {
                 "text": "RB26 · Ekeler",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Austin Ekeler"
               },
               {
                 "text": "WR8 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Keenan Allen"
               },
               {
                 "text": "TE22 · Everett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Gerald Everett"
               }
             ]
           },
@@ -14539,19 +15175,23 @@
             "cells": [
               {
                 "text": "QB8 · Hurts",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB2 · Barkley",
-                "tone": "good"
+                "tone": "good",
+                "name": "Saquon Barkley"
               },
               {
                 "text": "WR20 · Brown",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "A.J. Brown"
               },
               {
                 "text": "TE27 · Goedert",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dallas Goedert"
               }
             ]
           },
@@ -14561,19 +15201,23 @@
             "cells": [
               {
                 "text": "QB26 · Shough",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyler Shough"
               },
               {
                 "text": "RB46 · Kamara",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Alvin Kamara"
               },
               {
                 "text": "WR6 · Olave",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chris Olave"
               },
               {
                 "text": "TE8 · Johnson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Juwan Johnson"
               }
             ]
           },
@@ -14584,19 +15228,23 @@
             "cells": [
               {
                 "text": "QB12 · Shough",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tyler Shough"
               },
               {
                 "text": "RB28 · Kamara",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Alvin Kamara"
               },
               {
                 "text": "WR9 · Olave",
-                "tone": "good"
+                "tone": "good",
+                "name": "Chris Olave"
               },
               {
                 "text": "TE17 · Johnson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Juwan Johnson"
               }
             ]
           }
@@ -15128,19 +15776,23 @@
             "cells": [
               {
                 "text": "QB7 · Smith",
-                "tone": "good"
+                "tone": "good",
+                "name": "Alex Smith"
               },
               {
                 "text": "RB4 · Hunt",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kareem Hunt"
               },
               {
                 "text": "WR7 · Hill",
-                "tone": "good"
+                "tone": "good",
+                "name": "Tyreek Hill"
               },
               {
                 "text": "TE2 · Kelce",
-                "tone": "good"
+                "tone": "good",
+                "name": "Travis Kelce"
               }
             ]
           },
@@ -15150,19 +15802,23 @@
             "cells": [
               {
                 "text": "QB15 · Trubisky",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mitchell Trubisky"
               },
               {
                 "text": "RB11 · Cohen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tarik Cohen"
               },
               {
                 "text": "WR40 · Robinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE8 · Burton",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey Burton"
               }
             ]
           },
@@ -15172,19 +15828,23 @@
             "cells": [
               {
                 "text": "QB26 · Trubisky",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mitchell Trubisky"
               },
               {
                 "text": "RB24 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR8 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE70 · Horsted",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jesper Horsted"
               }
             ]
           },
@@ -15194,19 +15854,23 @@
             "cells": [
               {
                 "text": "QB28 · Foles",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nick Foles"
               },
               {
                 "text": "RB14 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR9 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE6 · Graham",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jimmy Graham"
               }
             ]
           },
@@ -15216,19 +15880,23 @@
             "cells": [
               {
                 "text": "QB34 · Dalton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Andy Dalton"
               },
               {
                 "text": "RB21 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR66 · Robinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE33 · Kmet",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cole Kmet"
               }
             ]
           }
@@ -15240,19 +15908,23 @@
             "cells": [
               {
                 "text": "QB15 · Trubisky",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Mitchell Trubisky"
               },
               {
                 "text": "RB11 · Cohen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tarik Cohen"
               },
               {
                 "text": "WR40 · Robinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE8 · Burton",
-                "tone": "good"
+                "tone": "good",
+                "name": "Trey Burton"
               }
             ]
           },
@@ -15262,19 +15934,23 @@
             "cells": [
               {
                 "text": "QB26 · Trubisky",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mitchell Trubisky"
               },
               {
                 "text": "RB24 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR8 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE70 · Horsted",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jesper Horsted"
               }
             ]
           },
@@ -15284,19 +15960,23 @@
             "cells": [
               {
                 "text": "QB28 · Foles",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nick Foles"
               },
               {
                 "text": "RB14 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR9 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE6 · Graham",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jimmy Graham"
               }
             ]
           },
@@ -15306,19 +15986,23 @@
             "cells": [
               {
                 "text": "QB34 · Dalton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Andy Dalton"
               },
               {
                 "text": "RB21 · Montgomery",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "David Montgomery"
               },
               {
                 "text": "WR66 · Robinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Allen Robinson"
               },
               {
                 "text": "TE33 · Kmet",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cole Kmet"
               }
             ]
           },
@@ -15329,19 +16013,23 @@
             "cells": [
               {
                 "text": "QB31 · Winston",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jameis Winston"
               },
               {
                 "text": "RB20 · Skattebo",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cam Skattebo"
               },
               {
                 "text": "WR10 · Nabers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Malik Nabers"
               },
               {
                 "text": "TE2 · Likely",
-                "tone": "good"
+                "tone": "good",
+                "name": "Isaiah Likely"
               }
             ]
           }
@@ -15935,19 +16623,23 @@
             "cells": [
               {
                 "text": "QB5 · Luck",
-                "tone": "good"
+                "tone": "good",
+                "name": "Andrew Luck"
               },
               {
                 "text": "RB21 · Mack",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Marlon Mack"
               },
               {
                 "text": "WR14 · Hilton",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "T.Y. Hilton"
               },
               {
                 "text": "TE4 · Ebron",
-                "tone": "good"
+                "tone": "good",
+                "name": "Eric Ebron"
               }
             ]
           },
@@ -15957,19 +16649,23 @@
             "cells": [
               {
                 "text": "QB23 · Brissett",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jacoby Brissett"
               },
               {
                 "text": "RB22 · Mack",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Marlon Mack"
               },
               {
                 "text": "WR52 · Pascal",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zach Pascal"
               },
               {
                 "text": "TE15 · Doyle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jack Doyle"
               }
             ]
           },
@@ -15979,19 +16675,23 @@
             "cells": [
               {
                 "text": "QB20 · Rivers",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Philip Rivers"
               },
               {
                 "text": "RB6 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR42 · Hilton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "T.Y. Hilton"
               },
               {
                 "text": "TE27 · Burton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Trey Burton"
               }
             ]
           },
@@ -16001,19 +16701,23 @@
             "cells": [
               {
                 "text": "QB13 · Wentz",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Carson Wentz"
               },
               {
                 "text": "RB1 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR17 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE26 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -16023,19 +16727,23 @@
             "cells": [
               {
                 "text": "QB24 · Ryan",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matt Ryan"
               },
               {
                 "text": "RB36 · Taylor",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR19 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE28 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -16045,19 +16753,23 @@
             "cells": [
               {
                 "text": "QB27 · Young",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Bryce Young"
               },
               {
                 "text": "RB31 · Hubbard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR3 · Thielen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Adam Thielen"
               },
               {
                 "text": "TE24 · Hurst",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hayden Hurst"
               }
             ]
           },
@@ -16067,19 +16779,23 @@
             "cells": [
               {
                 "text": "QB28 · Young",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Bryce Young"
               },
               {
                 "text": "RB16 · Hubbard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR50 · Thielen",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Adam Thielen"
               },
               {
                 "text": "TE30 · Tremble",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tommy Tremble"
               }
             ]
           }
@@ -16091,19 +16807,23 @@
             "cells": [
               {
                 "text": "QB13 · Wentz",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Carson Wentz"
               },
               {
                 "text": "RB1 · Taylor",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR17 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE26 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -16113,19 +16833,23 @@
             "cells": [
               {
                 "text": "QB24 · Ryan",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Matt Ryan"
               },
               {
                 "text": "RB36 · Taylor",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jonathan Taylor"
               },
               {
                 "text": "WR19 · Pittman",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Michael Pittman"
               },
               {
                 "text": "TE28 · Alie-Cox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mo Alie-Cox"
               }
             ]
           },
@@ -16135,19 +16859,23 @@
             "cells": [
               {
                 "text": "QB27 · Young",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Bryce Young"
               },
               {
                 "text": "RB31 · Hubbard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR3 · Thielen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Adam Thielen"
               },
               {
                 "text": "TE24 · Hurst",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Hayden Hurst"
               }
             ]
           },
@@ -16157,19 +16885,23 @@
             "cells": [
               {
                 "text": "QB28 · Young",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Bryce Young"
               },
               {
                 "text": "RB16 · Hubbard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Chuba Hubbard"
               },
               {
                 "text": "WR50 · Thielen",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Adam Thielen"
               },
               {
                 "text": "TE30 · Tremble",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tommy Tremble"
               }
             ]
           },
@@ -16180,19 +16912,23 @@
             "cells": [
               {
                 "text": "QB17 · Smith",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Geno Smith"
               },
               {
                 "text": "RB18 · Allen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Braelon Allen"
               },
               {
                 "text": "WR16 · Wilson",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Garrett Wilson"
               },
               {
                 "text": "TE28 · Sadiq",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kenyon Sadiq"
               }
             ]
           }
@@ -16564,19 +17300,23 @@
             "cells": [
               {
                 "text": "QB28 · Hurts",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jalen Hurts"
               },
               {
                 "text": "RB38 · Barkley",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Saquon Barkley"
               },
               {
                 "text": "WR43 · Lemon",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Makai Lemon"
               },
               {
                 "text": "TE19 · Goedert",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dallas Goedert"
               }
             ]
           }
@@ -17212,19 +17952,23 @@
             "cells": [
               {
                 "text": "QB1 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB33 · Montgomery",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Ty Montgomery"
               },
               {
                 "text": "WR2 · Nelson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jordy Nelson"
               },
               {
                 "text": "TE36 · Cook",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jared Cook"
               }
             ]
           },
@@ -17234,19 +17978,23 @@
             "cells": [
               {
                 "text": "QB29 · Rodgers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB32 · Williams",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jamaal Williams"
               },
               {
                 "text": "WR14 · Adams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE38 · Bennett",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Martellus Bennett"
               }
             ]
           },
@@ -17256,19 +18004,23 @@
             "cells": [
               {
                 "text": "QB6 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB24 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR3 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE12 · Graham",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jimmy Graham"
               }
             ]
           },
@@ -17278,19 +18030,23 @@
             "cells": [
               {
                 "text": "QB3 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB14 · Pollard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tony Pollard"
               },
               {
                 "text": "WR1 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE9 · Ferguson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jake Ferguson"
               }
             ]
           },
@@ -17300,19 +18056,23 @@
             "cells": [
               {
                 "text": "QB32 · Prescott",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB23 · Dowdle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Rico Dowdle"
               },
               {
                 "text": "WR8 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE25 · Ferguson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jake Ferguson"
               }
             ]
           }
@@ -17324,19 +18084,23 @@
             "cells": [
               {
                 "text": "QB29 · Rodgers",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB32 · Williams",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jamaal Williams"
               },
               {
                 "text": "WR14 · Adams",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE38 · Bennett",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Martellus Bennett"
               }
             ]
           },
@@ -17346,19 +18110,23 @@
             "cells": [
               {
                 "text": "QB6 · Rodgers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB24 · Jones",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Jones"
               },
               {
                 "text": "WR3 · Adams",
-                "tone": "good"
+                "tone": "good",
+                "name": "Davante Adams"
               },
               {
                 "text": "TE12 · Graham",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jimmy Graham"
               }
             ]
           },
@@ -17368,19 +18136,23 @@
             "cells": [
               {
                 "text": "QB3 · Prescott",
-                "tone": "good"
+                "tone": "good",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB14 · Pollard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tony Pollard"
               },
               {
                 "text": "WR1 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE9 · Ferguson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jake Ferguson"
               }
             ]
           },
@@ -17390,19 +18162,23 @@
             "cells": [
               {
                 "text": "QB32 · Prescott",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dak Prescott"
               },
               {
                 "text": "RB23 · Dowdle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Rico Dowdle"
               },
               {
                 "text": "WR8 · Lamb",
-                "tone": "good"
+                "tone": "good",
+                "name": "CeeDee Lamb"
               },
               {
                 "text": "TE25 · Ferguson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jake Ferguson"
               }
             ]
           },
@@ -17413,19 +18189,23 @@
             "cells": [
               {
                 "text": "QB19 · Rodgers",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Aaron Rodgers"
               },
               {
                 "text": "RB13 · Warren",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jaylen Warren"
               },
               {
                 "text": "WR36 · Metcalf",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "DK Metcalf"
               },
               {
                 "text": "TE16 · Freiermuth",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Pat Freiermuth"
               }
             ]
           }
@@ -17798,19 +18578,23 @@
             "cells": [
               {
                 "text": "QB25 · Darnold",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Sam Darnold"
               },
               {
                 "text": "RB27 · Wilson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Emanuel Wilson"
               },
               {
                 "text": "WR1 · Smith-Njigba",
-                "tone": "good"
+                "tone": "good",
+                "name": "Jaxon Smith-Njigba"
               },
               {
                 "text": "TE23 · Barner",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "AJ Barner"
               }
             ]
           }
@@ -18491,19 +19275,23 @@
             "cells": [
               {
                 "text": "QB2 · Ryan",
-                "tone": "good"
+                "tone": "good",
+                "name": "Matt Ryan"
               },
               {
                 "text": "RB6 · Freeman",
-                "tone": "good"
+                "tone": "good",
+                "name": "Devonta Freeman"
               },
               {
                 "text": "WR6 · Jones",
-                "tone": "good"
+                "tone": "good",
+                "name": "Julio Jones"
               },
               {
                 "text": "TE38 · Hooper",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Austin Hooper"
               }
             ]
           },
@@ -18513,19 +19301,23 @@
             "cells": [
               {
                 "text": "QB33 · Beathard",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "C.J. Beathard"
               },
               {
                 "text": "RB8 · Hyde",
-                "tone": "good"
+                "tone": "good",
+                "name": "Carlos Hyde"
               },
               {
                 "text": "WR31 · Goodwin",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Marquise Goodwin"
               },
               {
                 "text": "TE19 · Kittle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18535,19 +19327,23 @@
             "cells": [
               {
                 "text": "QB33 · Mullens",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nick Mullens"
               },
               {
                 "text": "RB26 · Breida",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Matt Breida"
               },
               {
                 "text": "WR65 · Bourne",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Kendrick Bourne"
               },
               {
                 "text": "TE3 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18557,19 +19353,23 @@
             "cells": [
               {
                 "text": "QB14 · Garoppolo",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB25 · Mostert",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Raheem Mostert"
               },
               {
                 "text": "WR31 · Samuel",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Deebo Samuel Sr."
               },
               {
                 "text": "TE2 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18579,19 +19379,23 @@
             "cells": [
               {
                 "text": "QB34 · Mullens",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Nick Mullens"
               },
               {
                 "text": "RB32 · Wilson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jeff Wilson"
               },
               {
                 "text": "WR35 · Aiyuk",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Brandon Aiyuk"
               },
               {
                 "text": "TE19 · Kittle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18601,19 +19405,23 @@
             "cells": [
               {
                 "text": "QB17 · Garoppolo",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB26 · Mitchell",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Elijah Mitchell"
               },
               {
                 "text": "WR3 · Samuel",
-                "tone": "good"
+                "tone": "good",
+                "name": "Deebo Samuel Sr."
               },
               {
                 "text": "TE4 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18623,19 +19431,23 @@
             "cells": [
               {
                 "text": "QB25 · Garoppolo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB2 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR15 · Aiyuk",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brandon Aiyuk"
               },
               {
                 "text": "TE3 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18645,19 +19457,23 @@
             "cells": [
               {
                 "text": "QB6 · Purdy",
-                "tone": "good"
+                "tone": "good",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB1 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR14 · Aiyuk",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brandon Aiyuk"
               },
               {
                 "text": "TE5 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18667,19 +19483,23 @@
             "cells": [
               {
                 "text": "QB13 · Purdy",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB41 · Mason",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jordan Mason"
               },
               {
                 "text": "WR24 · Jennings",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jauan Jennings"
               },
               {
                 "text": "TE3 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18689,19 +19509,23 @@
             "cells": [
               {
                 "text": "QB23 · Purdy",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB1 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR33 · Jennings",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jauan Jennings"
               },
               {
                 "text": "TE13 · Kittle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "George Kittle"
               }
             ]
           }
@@ -18713,19 +19537,23 @@
             "cells": [
               {
                 "text": "QB25 · Garoppolo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jimmy Garoppolo"
               },
               {
                 "text": "RB2 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR15 · Aiyuk",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brandon Aiyuk"
               },
               {
                 "text": "TE3 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18735,19 +19563,23 @@
             "cells": [
               {
                 "text": "QB6 · Purdy",
-                "tone": "good"
+                "tone": "good",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB1 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR14 · Aiyuk",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brandon Aiyuk"
               },
               {
                 "text": "TE5 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18757,19 +19589,23 @@
             "cells": [
               {
                 "text": "QB13 · Purdy",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB41 · Mason",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jordan Mason"
               },
               {
                 "text": "WR24 · Jennings",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jauan Jennings"
               },
               {
                 "text": "TE3 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18779,19 +19615,23 @@
             "cells": [
               {
                 "text": "QB23 · Purdy",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB1 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR33 · Jennings",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jauan Jennings"
               },
               {
                 "text": "TE13 · Kittle",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "George Kittle"
               }
             ]
           },
@@ -18802,19 +19642,23 @@
             "cells": [
               {
                 "text": "QB6 · Purdy",
-                "tone": "good"
+                "tone": "good",
+                "name": "Brock Purdy"
               },
               {
                 "text": "RB4 · McCaffrey",
-                "tone": "good"
+                "tone": "good",
+                "name": "Christian McCaffrey"
               },
               {
                 "text": "WR28 · Evans",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Mike Evans"
               },
               {
                 "text": "TE4 · Kittle",
-                "tone": "good"
+                "tone": "good",
+                "name": "George Kittle"
               }
             ]
           }
@@ -19244,19 +20088,23 @@
             "cells": [
               {
                 "text": "QB23 · Cousins",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kirk Cousins"
               },
               {
                 "text": "RB3 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Bijan Robinson"
               },
               {
                 "text": "WR5 · London",
-                "tone": "good"
+                "tone": "good",
+                "name": "Drake London"
               },
               {
                 "text": "TE15 · Pitts",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Kyle Pitts"
               }
             ]
           },
@@ -19266,19 +20114,23 @@
             "cells": [
               {
                 "text": "QB33 · Penix",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Michael Penix Jr."
               },
               {
                 "text": "RB2 · Robinson",
-                "tone": "good"
+                "tone": "good",
+                "name": "Bijan Robinson"
               },
               {
                 "text": "WR19 · London",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Drake London"
               },
               {
                 "text": "TE2 · Pitts",
-                "tone": "good"
+                "tone": "good",
+                "name": "Kyle Pitts"
               }
             ]
           },
@@ -19289,19 +20141,23 @@
             "cells": [
               {
                 "text": "QB34 · Mayfield",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Baker Mayfield"
               },
               {
                 "text": "RB7 · Irving",
-                "tone": "good"
+                "tone": "good",
+                "name": "Bucky Irving"
               },
               {
                 "text": "WR35 · Egbuka",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Emeka Egbuka"
               },
               {
                 "text": "TE34 · Otton",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Cade Otton"
               }
             ]
           }
@@ -19849,19 +20705,23 @@
             "cells": [
               {
                 "text": "QB21 · Allen",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB39 · McCoy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "LeSean McCoy"
               },
               {
                 "text": "WR35 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Zay Jones"
               },
               {
                 "text": "TE41 · Croom",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Jason Croom"
               }
             ]
           },
@@ -19871,19 +20731,23 @@
             "cells": [
               {
                 "text": "QB6 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB32 · Singletary",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR20 · Brown",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "John Brown"
               },
               {
                 "text": "TE32 · Knox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -19893,19 +20757,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB31 · Singletary",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR3 · Diggs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE37 · Knox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -19915,19 +20783,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB18 · Singletary",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR7 · Diggs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE11 · Knox",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -19937,19 +20809,23 @@
             "cells": [
               {
                 "text": "QB28 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Daniel Jones"
               },
               {
                 "text": "RB26 · Tracy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyrone Tracy Jr."
               },
               {
                 "text": "WR6 · Nabers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Malik Nabers"
               },
               {
                 "text": "TE37 · Johnson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Theo Johnson"
               }
             ]
           }
@@ -19961,19 +20837,23 @@
             "cells": [
               {
                 "text": "QB6 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB32 · Singletary",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR20 · Brown",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "John Brown"
               },
               {
                 "text": "TE32 · Knox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -19983,19 +20863,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB31 · Singletary",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR3 · Diggs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE37 · Knox",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -20005,19 +20889,23 @@
             "cells": [
               {
                 "text": "QB1 · Allen",
-                "tone": "good"
+                "tone": "good",
+                "name": "Josh Allen"
               },
               {
                 "text": "RB18 · Singletary",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Devin Singletary"
               },
               {
                 "text": "WR7 · Diggs",
-                "tone": "good"
+                "tone": "good",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE11 · Knox",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Dawson Knox"
               }
             ]
           },
@@ -20027,19 +20915,23 @@
             "cells": [
               {
                 "text": "QB28 · Jones",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Daniel Jones"
               },
               {
                 "text": "RB26 · Tracy",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Tyrone Tracy Jr."
               },
               {
                 "text": "WR6 · Nabers",
-                "tone": "good"
+                "tone": "good",
+                "name": "Malik Nabers"
               },
               {
                 "text": "TE37 · Johnson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Theo Johnson"
               }
             ]
           },
@@ -20050,19 +20942,23 @@
             "cells": [
               {
                 "text": "QB23 · Ward",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Cam Ward"
               },
               {
                 "text": "RB16 · Pollard",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Tony Pollard"
               },
               {
                 "text": "WR37 · Robinson",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Wan'Dale Robinson"
               },
               {
                 "text": "TE40 · Helm",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Gunnar Helm"
               }
             ]
           }
@@ -20435,19 +21331,23 @@
             "cells": [
               {
                 "text": "QB15 · Daniels",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Jayden Daniels"
               },
               {
                 "text": "RB26 · White",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Rachaad White"
               },
               {
                 "text": "WR17 · Diggs",
-                "tone": "plain"
+                "tone": "plain",
+                "name": "Stefon Diggs"
               },
               {
                 "text": "TE31 · Okonkwo",
-                "tone": "bad"
+                "tone": "bad",
+                "name": "Chig Okonkwo"
               }
             ]
           }

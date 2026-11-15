@@ -122,13 +122,142 @@ function ribbon(item: NewsItem, team: NflTeam): string {
   return `<span class="sct-nwp-ribbon">${icon}<span class="sct-nwp-ribbon-text">${e(text)}</span></span>`;
 }
 
-/** The feed's stamp (category · date, refined client-side), under this prefix. */
-function stamp(item: NewsItem): string {
+/**
+ * A publisher's name as a reader knows it, for the phone meta line
+ * ("INJURY · 5h ago · Pro Football Talk"). Labels not listed print as the
+ * feed has them.
+ */
+const SOURCE_NAMES: Record<string, string> = {
+  rotowire: "RotoWire",
+  profootballtalk: "Pro Football Talk",
+  "cbs sports": "CBS Sports",
+  "yahoo sports": "Yahoo Sports",
+  "dynasty command": "Dynasty Command",
+};
+
+export function sourceName(label: string): string {
+  return SOURCE_NAMES[label.toLowerCase()] ?? label;
+}
+
+/**
+ * The feed's stamp (category · date, refined client-side), under this prefix.
+ * Since 2026-11-15 (mak, phone feed) the publisher rides at the end of it
+ * as .sct-nwp-meta-src, shown on phones only, where the byline's source is
+ * hidden; the time asks for the compact relative form ("5h ago") on phones.
+ */
+function stamp(item: NewsItem, team: NflTeam): string {
   const ts = itemTimestamp(item);
-  if (ts === null) return `<p class="sct-nwp-news-meta"><span class="sct-nwp-news-kicker">${e(newsKicker(item))}</span></p>`;
+  const src =
+    `<span class="sct-nwp-meta-src"><span class="sct-nwp-dot" aria-hidden="true"></span>` +
+    // The club's own site by its nickname ("Patriots"): the full name would
+    // push the line to two.
+    `${e(publisher(item, team).official ? team.nickname : sourceName(publisher(item, team).label))}</span>`;
+  if (ts === null) return `<p class="sct-nwp-news-meta"><span class="sct-nwp-news-kicker">${e(newsKicker(item))}</span>${src}</p>`;
   // The shared stamp under this prefix: .sct-nwp-news-meta, -news-kicker,
   // -dot, -news-time, so the original's rules do not reach in.
-  return newsStamp(item, ts, "sct-nwp");
+  return newsStamp(item, ts, "sct-nwp")
+    .replace("<time ", "<time data-ts-compact-phone ")
+    .replace(/<\/p>$/, `${src}</p>`);
+}
+
+/* ------------------------------------------------------- same-event coverage */
+
+/**
+ * Stories that cover one event (mak, 2026-11-15: "multiple reports about a
+ * player being placed on injured reserve"). Two stories are the same event
+ * when they name the same player, ran within EVENT_WINDOW_MS of each other,
+ * and their headlines share at least two content words once the player's
+ * and the club's names, and filler, are set aside. Sharing a player alone
+ * never groups: two Josh Allen milestone stories twelve minutes apart are
+ * two stories. Groups chain (A~B, B~C), in feed order.
+ */
+const EVENT_WINDOW_MS = 12 * 3600_000;
+
+const STOP = new Set(
+  (
+    "a an and are as at be been but by for from has have he his in into is it its of on or that the this to " +
+    "was were will with after before vs about over up out new now says say said per report reports reportedly " +
+    "nfl week game games team season his her their they what why how who when where could would should can " +
+    "more most latest update news first ahead"
+  ).split(" "),
+);
+
+function stem(word: string): string {
+  for (const suffix of ["ation", "ing", "able", "ed", "es", "s", "e"]) {
+    if (word.endsWith(suffix) && word.length - suffix.length >= 3) return word.slice(0, -suffix.length);
+  }
+  return word;
+}
+
+function eventWords(item: NewsItem, team: NflTeam): Set<string> {
+  const skip = new Set(
+    `${item.playerName ?? ""} ${team.fullName} ${team.nickname} ${team.abbreviation}`
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean),
+  );
+  const text = splitHeadline(item)
+    .toLowerCase()
+    .replace(/&#?\w+;/g, " ")
+    .replace(/injured reserve/g, " ir ")
+    .replace(/\bdealt\b/g, "deal");
+  const words = text.split(/[^a-z0-9]+/).filter((w) => w && !STOP.has(w) && !skip.has(w));
+  return new Set(words.map(stem));
+}
+
+/** Feed-order groups: [primary, ...same-event stories], every story in exactly one. */
+export function sameEventGroups(news: NewsItem[], team: NflTeam): NewsItem[][] {
+  const parent = news.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
+  const words = news.map((item) => eventWords(item, team));
+  for (let i = 0; i < news.length; i++) {
+    const a = news[i]!;
+    const who = (a.playerName ?? "").trim().toLowerCase();
+    const ta = itemTimestamp(a);
+    if (!who || ta === null) continue;
+    for (let j = i + 1; j < news.length; j++) {
+      const b = news[j]!;
+      const tb = itemTimestamp(b);
+      if ((b.playerName ?? "").trim().toLowerCase() !== who || tb === null) continue;
+      if (Math.abs(ta - tb) > EVENT_WINDOW_MS) continue;
+      let shared = 0;
+      for (const w of words[i]!) if (words[j]!.has(w)) shared++;
+      if (shared >= 2) parent[find(j)] = find(i);
+    }
+  }
+  const groups = new Map<number, NewsItem[]>();
+  news.forEach((item, i) => {
+    const root = find(i);
+    const g = groups.get(root);
+    if (g) g.push(item);
+    else groups.set(root, [item]);
+  });
+  return [...groups.values()];
+}
+
+/**
+ * The other sources under the primary story, phones only: each keeps its
+ * link, publisher and headline. On wider screens the same stories stand as
+ * their own cards in feed order, as before.
+ */
+function alsoList(items: NewsItem[], team: NflTeam): string {
+  const rows = items
+    .map((item) => {
+      const link = safeUrl(item.link);
+      const text =
+        `<span class="sct-nwp-also-src">${e(sourceName(publisher(item, team).label))}</span>` +
+        `<span class="sct-nwp-also-title">${e(splitHeadline(item))}</span>`;
+      return link
+        ? `<li><a class="sct-nwp-also-link" href="${e(link)}" target="_blank" rel="noopener noreferrer">${text}</a></li>`
+        : `<li><span class="sct-nwp-also-link">${text}</span></li>`;
+    })
+    .join("");
+  return (
+    `<div class="sct-nwp-also">` +
+    `<p class="sct-nwp-also-head">${e(`Also covered by ${items.length} more ${items.length === 1 ? "source" : "sources"}`)}</p>` +
+    `<ul class="sct-nwp-also-list">${rows}</ul>` +
+    `</div>`
+  );
 }
 
 function media(item: NewsItem, featured: boolean): string {
@@ -149,7 +278,7 @@ function media(item: NewsItem, featured: boolean): string {
   return img ?? `<span class="sct-nwp-photo-empty" aria-hidden="true"></span>`;
 }
 
-function card(item: NewsItem, team: NflTeam, featured: boolean): string {
+function card(item: NewsItem, team: NflTeam, featured: boolean, also: NewsItem[] = [], dup = false): string {
   const link = safeUrl(item.link);
   const headline = e(splitHeadline(item));
   const name = (item.playerName ?? "").trim();
@@ -157,16 +286,20 @@ function card(item: NewsItem, team: NflTeam, featured: boolean): string {
   const heading = link
     ? `<h4 class="sct-nwp-title"><a class="sct-nwp-link" href="${e(link)}" target="_blank" rel="noopener noreferrer">${headline}</a></h4>`
     : `<h4 class="sct-nwp-title">${headline}</h4>`;
+  // The player is the story's subject, not its author: on phones the line
+  // carries a small person mark and the source moves up to the meta line.
   const byline =
     `<p class="sct-nwp-byline">` +
-    (name ? playerName(name, "sct-nwp-player") : "") +
+    (name
+      ? `<span class="sct-nwp-subject"><span class="sct-visually-hidden">Player: </span>${playerName(name, "sct-nwp-player")}</span>`
+      : "") +
     `<span class="sct-nwp-source">${e(who.label)}</span>` +
     `</p>`;
   const cta = link
     ? `<p class="sct-nwp-cta"><a class="sct-nwp-more" href="${e(link)}" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">Read report ${ARROW}</a></p>`
     : "";
   return (
-    `<article class="sct-nwp-card${featured ? " is-featured" : ""}">` +
+    `<article class="sct-nwp-card${featured ? " is-featured" : ""}${dup ? " is-dup" : ""}">` +
     `<div class="sct-nwp-well">` +
     media(item, featured) +
     (featured ? "" : ribbon(item, team)) +
@@ -178,10 +311,11 @@ function card(item: NewsItem, team: NflTeam, featured: boolean): string {
     (featured && team.logo
       ? `<img class="sct-nwp-watermark" src="${e(team.logo)}" alt="" width="160" height="160" loading="lazy" decoding="async" aria-hidden="true">`
       : "") +
-    stamp(item) +
+    stamp(item, team) +
     heading +
     byline +
     cta +
+    (also.length ? alsoList(also, team) : "") +
     `</div>` +
     `</article>`
   );
@@ -297,10 +431,22 @@ export function renderNewsPremium(data: TeamPageData, now: number): string {
   const [lead, ...rest] = news;
   const shown = rest.slice(0, TEAM_NEWS_VISIBLE - 1);
   const folded = rest.slice(TEAM_NEWS_VISIBLE - 1);
+  // Same-event coverage (mak, 2026-11-15): on phones the later stories of an
+  // event sit as source links under its first story, and their own cards
+  // (still in the markup, feed order kept) are hidden there.
+  const alsoOf = new Map<NewsItem, NewsItem[]>();
+  const dups = new Set<NewsItem>();
+  for (const [first, ...more] of sameEventGroups(news, team)) {
+    if (!first || more.length === 0) continue;
+    alsoOf.set(first, more);
+    for (const m of more) dups.add(m);
+  }
+  const one = (item: NewsItem, featured: boolean): string =>
+    card(item, team, featured, alsoOf.get(item) ?? [], dups.has(item));
   const grid = (items: NewsItem[]): string =>
-    items.length ? `<div class="sct-nwp-grid">${items.map((item) => card(item, team, false)).join("")}</div>` : "";
+    items.length ? `<div class="sct-nwp-grid">${items.map((item) => one(item, false)).join("")}</div>` : "";
   const feed = lead
-    ? card(lead, team, true) +
+    ? one(lead, true) +
       grid(shown) +
       (folded.length
         ? `<details class="sct-nwp-more">` +

@@ -296,7 +296,10 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.equal(rows.length, 6);
     const keys = ["early", "third", "rz", "in10", "twoMin", "trailing"];
     rows.forEach((r, i) => {
-      assert.equal(r.querySelector(".sct-us-sit-n").textContent, `${ne.rbSituationTotals[keys[i]]} opportunities`);
+      // The full words, without the "opp." phones paint in their place (2026-11-15).
+      const n = r.querySelector(".sct-us-sit-n").cloneNode(true);
+      n.querySelectorAll(".sct-us-sit-short").forEach((x) => x.remove());
+      assert.equal(n.textContent, `${ne.rbSituationTotals[keys[i]]} opportunities`);
     });
     assert.match(doc.querySelector("#situational .sct-us-sit-fine").textContent, /Opportunities, not snaps/);
     const cards = [...doc.querySelectorAll("#situational .sct-us-sit-card")];

@@ -45,6 +45,8 @@ export interface TendencyRow {
 export interface FinishCell {
   text: string;
   tone: "good" | "bad" | "plain";
+  /** The player's full name ("Tom Brady"); the text keeps the surname. Since 2026-11-15 (buildCoaching.mjs, backfillFinishNames.mjs). */
+  name?: string;
 }
 
 export interface BarRow {

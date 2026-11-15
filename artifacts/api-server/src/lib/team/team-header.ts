@@ -39,6 +39,12 @@ export interface TeamHeaderInput {
   /** The team switcher's markup (teamSwitcher()). */
   switcher: string;
   tabs: NavItem[];
+  /**
+   * The player pages' search box (renderPlayerSearch), printed first inside
+   * the header block, above the hero (mak, 2026-11-15). Phones show it in
+   * place of the switcher pill; team.css hides it on desktop.
+   */
+  search?: string;
 }
 
 const svg = (body: string): string =>
@@ -66,7 +72,9 @@ export function renderTeamHeader(input: TeamHeaderInput): string {
         `<li class="sct-tpb-kpi" data-kpi="${e(f.label.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">` +
         `<span class="sct-tpb-kpi-icon">${KPI_ICON[f.label] ?? KPI_ICON["Standing"]}</span>` +
         `<span class="sct-tpb-kpi-div" aria-hidden="true"></span>` +
-        `<span class="sct-tpb-kpi-text"><span class="sct-tpb-kpi-label">${e(f.label)}</span><span class="sct-tpb-kpi-value">${e(f.value)}</span></span>` +
+        // data-phone is the label phones print (team.css, 2026-11-15): sentence
+        // case, "Bye week" for Bye, instead of all caps.
+        `<span class="sct-tpb-kpi-text"><span class="sct-tpb-kpi-label" data-phone="${e(f.label === "Bye" ? "Bye week" : f.label.charAt(0) + f.label.slice(1).toLowerCase())}">${e(f.label)}</span><span class="sct-tpb-kpi-value">${e(f.value)}</span></span>` +
         `</li>`,
     )
     .join("");
@@ -104,6 +112,7 @@ export function renderTeamHeader(input: TeamHeaderInput): string {
     : "";
   return (
     `<div class="sct-tpb">` +
+    (input.search ?? "") +
     `<header class="sct-tpb-hero">` +
     // The decoration is clipped in its own wrapper, never the hero: an open
     // switcher drops below the hero and a clipped hero would cut it off. The
