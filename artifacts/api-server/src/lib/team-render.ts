@@ -56,6 +56,7 @@ import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric }
 import { renderUsageSection } from "./team/usage-render";
 import { renderOutlookPremium } from "./team/outlook-premium";
 import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
+import { renderPlayerSearch } from "./player-render";
 import { renderTeamHeader } from "./team/team-header";
 import { statsFaq } from "./team/stats-faq";
 import { renderStatsPremium } from "./team/stats-premium";
@@ -125,6 +126,12 @@ export interface TeamRenderOptions {
   teamPathPrefix?: string;
   /** Carried onto switcher links so embed mode stays embed mode. */
   linkQuery?: string;
+  /**
+   * Where a player result in the search above the header points (mak,
+   * 2026-11-15: the player pages' search box on the team pages). Defaults to
+   * this app's own /player/; the embed route passes SC_PLAYER_PATH_PREFIX.
+   */
+  playerPathPrefix?: string;
   /** Rendered for testability; the page cache keys on the data, not on this. */
   now?: number;
   /**
@@ -468,6 +475,15 @@ function teamHeader(data: TeamPageData, options: TeamRenderOptions, tabs: Sectio
       updatedMs: data.newsUpdatedAtMs,
       switcher: teamSwitcher(data.team, options),
       tabs: items,
+      // The player pages' search box (mak, 2026-11-15: "instead of the Teams
+      // dropdown pill, use a search box above the header like the NFL player
+      // profile pages"): the profiles' widget and island, so players and
+      // clubs both answer it. Phones only (team.css); desktop keeps the pill.
+      search: renderPlayerSearch({
+        playerPathPrefix: options.playerPathPrefix ?? "/player/",
+        teamPathPrefix: options.teamPathPrefix ?? "/team/",
+        linkQuery: options.linkQuery ?? "",
+      }),
     })
   );
 }

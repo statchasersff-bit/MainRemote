@@ -209,7 +209,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         ? `<th scope="col" class="is-num">Rec</th><th scope="col" class="is-num"><abbr title="Receiving yards">Yds</abbr></th>`
         : `<th scope="col" class="is-num"><abbr title="Rushing yards on these carries">Yds</abbr></th><th scope="col" class="is-num"><abbr title="Yards per carry">YPC</abbr></th>`
       : "") +
-    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Season </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3 wk</abbr></th>` +
+    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Season </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3<span class="sct-up-th-wk"> wk</span></abbr></th>` +
     (isT ? `<th scope="col" class="is-num is-air"><abbr title="Share of the team's air yards">Air yds</abbr></th>` : "") +
     `</tr></thead><tbody>${rows}${othersRow}</tbody></table></div>` +
     `</div></section>`

@@ -18,6 +18,8 @@ import { escapeHtml } from "../render";
 import {
   backfieldModel,
   distributionModel,
+  finishRows,
+  finishStop,
   formationsModel,
   rzFourthModel,
   scoreStateModel,
@@ -104,17 +106,6 @@ function card(kind: string, title: string, sub: string, icon: string, body: stri
   );
 }
 
-/** The inset takeaway: gold icon, TAKEAWAY kicker, the bold read, a muted supporting line. */
-function takeaway(line: string, context: string): string {
-  return (
-    `<div class="sct-cpt-take"><span class="sct-cpt-take-icon">${ICON["target"]}</span>` +
-    `<div class="sct-cpt-take-text"><span class="sct-cpt-take-kicker">Takeaway</span>` +
-    `<p class="sct-cpt-take-h">${e(line)}</p>` +
-    (context ? `<p class="sct-cpt-take-b">${e(context)}</p>` : "") +
-    `</div></div>`
-  );
-}
-
 /** A compact methodology note with the info glyph. */
 function note(text: string): string {
   return `<p class="sct-cpt-note"><span class="sct-cpt-note-icon">${ICON["info"]}</span><span>${e(text)}</span></p>`;
@@ -182,11 +173,12 @@ function scoreStateCard(c: TeamCoaching): string {
     "Play-calling by score state",
     m.sub,
     "bars",
-    `<div class="sct-cpt-rows">${m.rows.map(scoreRow).join("")}</div>` + (m.verdict ? takeaway(m.verdict, m.context) : ""),
+    // No takeaway since the review of 2026-11-15: the rows show the trailing gap themselves.
+    `<div class="sct-cpt-rows">${m.rows.map(scoreRow).join("")}</div>`,
   );
 }
 
-function metric(st: NonNullable<RzFourthModel["rz"]> | NonNullable<RzFourthModel["fourth"]>, kind: "rz" | "fourth", priorYear: string): string {
+function metric(st: NonNullable<RzFourthModel["rz"]> | NonNullable<RzFourthModel["fourth"]>, kind: "rz" | "fourth", priorYear: string, season?: number): string {
   let head = "";
   let lines: string[] = [];
   if (kind === "rz") {
@@ -209,6 +201,32 @@ function metric(st: NonNullable<RzFourthModel["rz"]> | NonNullable<RzFourthModel
     `<span class="sct-cpt-metric-value">${e(st.value)}</span>` +
     head +
     `<ul class="sct-cpt-metric-lines">${lines.filter(Boolean).map((l) => `<li>${l}</li>`).join("")}</ul>` +
+    (kind === "fourth" && season ? fourthTiles(st as NonNullable<RzFourthModel["fourth"]>, priorYear, season) : "") +
+    `</div>`
+  );
+}
+
+/**
+ * Phones' fourth-down layout (mak, 2026-11-15): three tiles, this season's
+ * go rate leading with its sample ("3 of 3"), then last season's and the
+ * NFL average, over one short definition line whose full wording stays for
+ * screen readers and on hover. team.css shows it at 560px and under, in
+ * place of the stacked metric above; same model, no new figures.
+ */
+function fourthTiles(f: NonNullable<RzFourthModel["fourth"]>, priorYear: string, season: number): string {
+  const priorN = f.priorDetail?.match(/: (\d+ of \d+)/)?.[1] ?? "";
+  const nowN = f.count != null && f.count > 0 && f.went != null ? `${f.went} of ${f.count}` : "No snaps yet";
+  const tile = (cls: string, k: string, v: string, n: string) =>
+    `<li class="sct-cpt-4d-tile${cls}"><span class="sct-cpt-4d-k">${e(k)}</span><b class="sct-cpt-4d-v">${e(v)}</b>${n ? `<span class="sct-cpt-4d-n">${e(n)}</span>` : ""}</li>`;
+  const full = "Go rate on fourth-and-2 or less in opponent territory.";
+  return (
+    `<div class="sct-cpt-4d">` +
+    `<ul class="sct-cpt-4d-tiles">` +
+    tile(" is-now", `${season} go rate`, f.rate, nowN) +
+    (f.prior && f.prior !== "-" ? tile("", `${priorYear} go rate`, f.prior, priorN) : "") +
+    (f.nflAvg ? tile("", "NFL average", f.nflAvg, "") : "") +
+    `</ul>` +
+    `<p class="sct-cpt-4d-def" title="${e(full)}"><span aria-hidden="true">4th-and-2 or less · Opponent territory</span><span class="sct-visually-hidden">${e(full)}</span></p>` +
     `</div>`
   );
 }
@@ -233,7 +251,7 @@ function fourthDownCard(c: TeamCoaching, team: NflTeam, view: UsageView | null):
     "Fourth-down decisions",
     `Short fourth downs in opponent territory, ${seasonOf(c)} to date, with the snaps the rate is measured on.`,
     "crosshair",
-    `<div class="sct-cpt-metrics is-one">${metric(m.fourth, "fourth", m.priorYear)}</div>`,
+    `<div class="sct-cpt-metrics is-one">${metric(m.fourth, "fourth", m.priorYear, seasonOf(c))}</div>`,
   );
 }
 
@@ -268,7 +286,15 @@ function distributionCard(c: TeamCoaching): string {
       );
     })
     .join("");
-  return card("dist", m.title, m.sub, "target", `<div class="sct-cpt-rows">${rows}</div>` + takeaway(m.line, m.context));
+  // No takeaway since the review of 2026-11-15: it repeated the gold row. The
+  // title carries the window, since the split is an average of every season
+  // he called from 2016 on (the builder's distSeasons: the finishes history
+  // plus this season) while the season table under Coaching Career prints
+  // one season per row; phones hide the subtitle that says so.
+  const years = [...finishRows(c).map((r) => Number(finishStop(r).year)).filter((y) => y > 0), seasonOf(c)];
+  const first = Math.min(...years);
+  const title = /seasons since/.test(m.sub) && first < seasonOf(c) ? `${m.title}, ${first}-${seasonOf(c)}` : m.title;
+  return card("dist", title, m.sub, "target", `<div class="sct-cpt-rows">${rows}</div>`);
 }
 
 function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
@@ -285,6 +311,9 @@ function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
     )
     .join("");
   const labels = m.bars.map((bar) => `<span class="sct-cpt-col-label${bar.current ? " is-current" : ""}">${e(bar.label)}</span>`).join("");
+  // No takeaway and no read (mak, 2026-11-15: the "No stable concentration
+  // pattern" line is gone at every width); the subtitle is the builder's
+  // definition of the bars again.
   return card(
     "back",
     m.title,
@@ -293,8 +322,7 @@ function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
     `<div class="sct-cpt-chart" role="img" aria-label="${e(`Lead back share by season: ${m.caption}`)}">` +
       `<div class="sct-cpt-chart-plot">${cols}</div>` +
       `<div class="sct-cpt-chart-labels">${labels}</div>` +
-      `</div>` +
-      takeaway(m.line, m.context),
+      `</div>`,
   );
 }
 

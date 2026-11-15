@@ -303,10 +303,13 @@ const CHIP_NAMES: Record<string, string> = {
  * These rates are denominator-sensitive, and this is where a reader finds out
  * why ours differs from another site's.
  */
-export function rowLabel(row: TendencyRow, id: string): string {
-  if (!row.def) return `<span class="sct-co-tlabel">${e(row.label)}</span>`;
+export function rowLabel(row: TendencyRow, id: string, short?: string): string {
+  // `short` is the phone label (team.css prints it from data-short); the
+  // full name stays the element's text and heads the definition popover.
+  const ds = short && short !== row.label ? ` data-short="${e(short)}"` : "";
+  if (!row.def) return `<span class="sct-co-tlabel"${ds}>${e(row.label)}</span>`;
   return (
-    `<button type="button" class="sct-co-tlabel is-def" popovertarget="${e(id)}"` +
+    `<button type="button" class="sct-co-tlabel is-def" popovertarget="${e(id)}"${ds}` +
     ` title="How this is counted">${e(row.label)}</button>` +
     `<div class="sct-co-def" id="${e(id)}" popover>` +
     `<p class="sct-co-def-head">${e(row.label)}` +

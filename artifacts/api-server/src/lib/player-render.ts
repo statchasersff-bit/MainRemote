@@ -444,7 +444,7 @@ function ordinal(n: number): string {
  * is still a destination from a profile, where there is no roster to filter,
  * and the card heading on the index is still a link to the hub either way.
  */
-function renderPlayerSearch(
+export function renderPlayerSearch(
   options: PlayerRenderOptions,
   mode: { clubsFilter?: boolean } = {},
 ): string {

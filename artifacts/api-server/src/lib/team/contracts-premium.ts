@@ -454,7 +454,7 @@ function deadCard(v: ContractsView): string {
   const lead =
     v.deadTotal === null
       ? featured("Contracts on the books", String(v.players.length), "")
-      : featured("On the books", e(money(v.deadTotal)), rankBadge(v.deadRank, "more-is-bad"), "Dead money the cap page carries this season, before any release in the scenario");
+      : featured("On the books", e(money(v.deadTotal)), rankBadge(v.deadRank, "more-is-bad", true), "Dead money the cap page carries this season, before any release in the scenario");
   const reconcile =
     v.deadTotal !== null && n && Math.abs(v.deadTotal - itemized) >= 0.05
       ? `<p class="sct-ctp-card-dek">${e(`${money(itemized)} across the ${n} names below. ${money(v.deadTotal - itemized)} is carried without a name on the cap page.`)}</p>`

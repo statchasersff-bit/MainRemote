@@ -11,7 +11,7 @@
  */
 
 import { escapeHtml } from "../render";
-import { rosterPlayer } from "./contracts-render";
+import { rosterPlayer, shortName } from "./contracts-render";
 import { getPlayerProfileUrl } from "./links";
 import type { NflTeam } from "./teams";
 import { getTeamByAbbreviation } from "./teams";
@@ -97,11 +97,18 @@ export function historyKicker(h: DraftHistoryView): string {
   return `${pct}% of picks spent on ${label}.`;
 }
 
+/**
+ * The pick's name. `data-short` carries "J. Smith" (mak, 2026-11-15): on
+ * phones team.ts's fitDraftNames() swaps it in for a name that would wrap
+ * onto a second line, and only for that name.
+ */
 export function playerCell(pick: DraftPick): string {
   const href = getPlayerProfileUrl(pick.name);
+  const short = shortName(pick.name);
+  const attr = short !== pick.name ? ` data-short="${e(short)}"` : "";
   return href
-    ? `<a class="sct-dr-name sct-player-link" href="${e(href)}" target="_top">${e(pick.name)}</a>`
-    : `<span class="sct-dr-name">${e(pick.name)}</span>`;
+    ? `<a class="sct-dr-name sct-player-link" href="${e(href)}" target="_top"${attr}>${e(pick.name)}</a>`
+    : `<span class="sct-dr-name"${attr}>${e(pick.name)}</span>`;
 }
 
 /**

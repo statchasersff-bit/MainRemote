@@ -21,6 +21,7 @@
  * never a set of empty cards.
  */
 
+import { shortName } from "./contracts-render";
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
 import { slotChip } from "../team-render";
@@ -71,11 +72,15 @@ function num(value: string, extra = ""): string {
   return `<span class="sct-us-num${extra ? ` ${extra}` : ""}">${e(value)}</span>`;
 }
 
-export function playerLink(p: UsagePlayer, className: string): string {
+export function playerLink(p: UsagePlayer, className: string, withShort = false): string {
   const href = getPlayerPageUrl(p.slug);
+  // `data-short` ("R. Stevenson"): on phones team.ts's fitDraftNames() paints
+  // it in place of a name that would wrap (2026-11-15, the fantasy table).
+  const short = withShort ? shortName(p.name) : p.name;
+  const attr = short !== p.name ? ` data-short="${e(short)}"` : "";
   return href
-    ? `<a class="${className} sct-player-link" href="${e(href)}" target="_top">${e(p.name)}</a>`
-    : `<span class="${className}">${e(p.name)}</span>`;
+    ? `<a class="${className} sct-player-link" href="${e(href)}" target="_top"${attr}>${e(p.name)}</a>`
+    : `<span class="${className}"${attr}>${e(p.name)}</span>`;
 }
 
 /** "Weeks 6-8" / "Week 3" */
@@ -466,9 +471,31 @@ function windowLine(row: UsageRow): string {
  * number, a delta and a trail were three ways of saying the same thing.
  */
 function shareCell(value: number | null, t: Trend, places: number): string {
-  if (value == null) return `<td class="sct-us-td">–</td>`;
+  if (value == null) return `<td class="sct-us-td is-snap">–</td>`;
   const d = delta(t, places, "pp");
-  return `<td class="sct-us-td">${num(`${value.toFixed(places)}%`, "is-mid")}${d ? `<span class="sct-us-cap">${d}</span>` : ""}</td>`;
+  return `<td class="sct-us-td is-snap">${num(`${value.toFixed(places)}%`, "is-mid")}${d ? `<span class="sct-us-cap">${d}</span>` : ""}</td>`;
+}
+
+/**
+ * The three column tips, shared by the desktop thead and the phone rows'
+ * per-band head (mak, 2026-11-15, second phone pass: the labels once per
+ * position group instead of in every row).
+ */
+const COL_TIP = {
+  opp: "A percentile against every NFL player at the same position, not a rank inside the team. Backs: weighted opportunities per active game. Receivers: target share. Quarterbacks: expected fantasy points per game.",
+  snap: "Share of the offense's snaps, season to date. The change under it is in percentage points: the last 3 games' average against the 3 games before them.",
+  rz: "Red-zone opportunities: carries + targets inside the opponent's 20, season to date. The change under it is per game: the last 3 games against the 3 before them.",
+};
+
+/** The phone column head under each band row; hidden wherever the thead shows. */
+function phoneHead(): string {
+  return (
+    `<tr class="sct-us-mhead">` +
+    `<td class="sct-us-td is-opp">Opportunity${tip(`${COL_TIP.opp} Shown as a percentile (63rd = ahead of 63% of the position).`)}</td>` +
+    `<td class="sct-us-td is-snap">Snap Share${tip(COL_TIP.snap)}</td>` +
+    `<td class="sct-us-td is-rz">RZ Opps${tip(COL_TIP.rz)}</td>` +
+    `</tr>`
+  );
 }
 
 /**
@@ -539,17 +566,24 @@ function opportunityCell(row: UsageRow): string {
   const band = BAND[bandOf(p)];
   const pct = p.pct[band.key] ?? null;
   const unit = band.unit === "pctile" ? `pctile ${p.pos}` : band.unit;
+  // "pctile" and the position apart, so a phone row can drop the position
+  // its band heading already names.
+  const unitHtml = e(unit).replace(/^pctile (\w+)$/, `pctile<span class="sct-us-unit-pos"> $1</span>`);
   // One compact line under the percentile (reviewer's critique, 2026-11-10):
   // the band's own stat, plus the target-share move for receivers. Touch
   // share and WOPR live in the expanded profile.
   let native: string;
   if (p.pos === "WR" || p.pos === "TE") {
     const d = p.targetShare == null ? "" : delta(row.ts, 1, "pp");
-    native = p.targetShare == null ? "" : e(`${p.targetShare.toFixed(1)}% target share`) + (d ? ` · ${d}` : "");
+    native =
+      p.targetShare == null
+        ? ""
+        : `<span class="sct-us-cap-stat">${e(`${p.targetShare.toFixed(1)}% target share`)}</span>` +
+          (d ? `<span class="sct-us-cap-sep"> · </span>${d}` : "");
   } else if (p.pos === "RB") {
-    native = p.woppPerGame == null ? "" : e(`${p.woppPerGame.toFixed(1)} weighted opp/g`);
+    native = p.woppPerGame == null ? "" : `<span class="sct-us-cap-stat">${e(`${p.woppPerGame.toFixed(1)} weighted opp/g`)}</span>`;
   } else {
-    native = p.xfpPerGame == null ? "" : e(`${p.xfpPerGame.toFixed(1)} xFP/game`);
+    native = p.xfpPerGame == null ? "" : `<span class="sct-us-cap-stat">${e(`${p.xfpPerGame.toFixed(1)} xFP/game`)}</span>`;
   }
   const t = tone(pct);
   const label = pct == null ? "" : `${nth(pct)} percentile vs. NFL ${p.pos}s`;
@@ -557,7 +591,7 @@ function opportunityCell(row: UsageRow): string {
     `<td class="sct-us-td is-opp">` +
     (pct == null
       ? num("–", "is-lead")
-      : `${num(nth(pct), "is-lead")}<span class="sct-us-unit">${e(unit)}</span>` +
+      : `${num(nth(pct), "is-lead")}<span class="sct-us-unit">${unitHtml}</span>` +
         `<span class="sct-us-pbar is-${t}" role="img" aria-label="${e(label)}" title="${e(label)}"><span style="width:${Math.max(3, pct)}%"></span></span>`) +
     (native ? `<span class="sct-us-cap">${native}</span>` : "") +
     `</td>`
@@ -608,8 +642,8 @@ function rzCell(row: UsageRow): string {
   const move = lead && row.rz.direction === "flat" ? "" : delta(row.rz, 0, "/g");
   const parts = [move, lead ? `<span class="sct-us-leads">${lead}</span>` : ""].filter(Boolean);
   return (
-    `<td class="sct-us-td">${num(String(row.player.rzTouches), "is-mid")}` +
-    (parts.length ? `<span class="sct-us-cap">${parts.join(" · ")}</span>` : "") +
+    `<td class="sct-us-td is-rz">${num(String(row.player.rzTouches), "is-mid")}` +
+    (parts.length ? `<span class="sct-us-cap">${parts.join(`<span class="sct-us-cap-sep"> · </span>`)}</span>` : "") +
     `</td>`
   );
 }
@@ -723,7 +757,7 @@ function table(view: UsageView, team: NflTeam): string {
       ` aria-label="${e(`Show ${p.name}'s advanced profile`)}"><span aria-hidden="true">+</span></button></td>` +
       // The headshot well the Targets/Carries boards use (mak, 2026-11-03).
       `<th scope="row" class="sct-us-td is-player"><span class="sct-us-who">${faceWell(p)}` +
-      `<span class="sct-us-who-text">${playerLink(p, "sct-us-name")}` +
+      `<span class="sct-us-who-text">${playerLink(p, "sct-us-name", true)}` +
       roleCell(row) +
       `</span></span></th>` +
       opportunityCell(row) +
@@ -744,6 +778,7 @@ function table(view: UsageView, team: NflTeam): string {
         `<span class="sct-us-band-count">${rows.length} ${rows.length === 1 ? "player" : "players"}</span>` +
         tip(BAND[band].metric) +
         `</th></tr>` +
+        phoneHead() +
         rows.map(rowHtml).join("") +
         `</tbody>`,
     )
@@ -754,9 +789,9 @@ function table(view: UsageView, team: NflTeam): string {
     `<thead><tr>` +
     `<th scope="col" class="sct-us-th"><span class="sct-us-sr">Profile</span></th>` +
     `<th scope="col" class="sct-us-th">Player / Role</th>` +
-    `<th scope="col" class="sct-us-th">Opportunity${tip("A percentile against every NFL player at the same position, not a rank inside the team. Backs: weighted opportunities per active game. Receivers: target share. Quarterbacks: expected fantasy points per game.")}</th>` +
-    `<th scope="col" class="sct-us-th">Snap %${tip("Share of the offense's snaps, season to date. The change under it is in percentage points: the last 3 games' average against the 3 games before them.")}</th>` +
-    `<th scope="col" class="sct-us-th">RZ Opps${tip("Red-zone opportunities: carries + targets inside the opponent's 20, season to date. The change under it is per game: the last 3 games against the 3 before them.")}</th>` +
+    `<th scope="col" class="sct-us-th">Opportunity${tip(COL_TIP.opp)}</th>` +
+    `<th scope="col" class="sct-us-th">Snap %${tip(COL_TIP.snap)}</th>` +
+    `<th scope="col" class="sct-us-th">RZ Opps${tip(COL_TIP.rz)}</th>` +
     `</tr>` +
     `<tr class="sct-us-th-sub"><th class="sct-us-th" colspan="2"><span class="sct-us-sr">Units</span></th>` +
     `<th class="sct-us-th">vs. NFL at position</th>` +

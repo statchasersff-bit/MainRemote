@@ -447,6 +447,7 @@ router.get("/embed/team/:slug", (req, res) => {
         embed: true,
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
+        playerPathPrefix: (process.env["SC_PLAYER_PATH_PREFIX"] ?? "/player/").trim(),
         section: section(req),
         // `?h1=1` - the host has emptied its own page title, so the panel's
         // heading becomes the page's <h1>. Same contract as routes/player.ts.

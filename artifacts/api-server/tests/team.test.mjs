@@ -1513,10 +1513,11 @@ describe("the preview switcher never leaves the pane", () => {
     // and not the bar: it carries no code, and the plugin strips it before the
     // markup is printed. Same exemption, and same exactness, as the asset guard
     // above.
-    const withoutIsland = endpoint.body.replace(
-      /<script type="application\/json" class="sct-faq-data">.*?<\/script>/gs,
-      "",
-    );
+    // The player search's roster island (2026-11-15) is the same kind of
+    // thing: inert JSON the search box reads, no code.
+    const withoutIsland = endpoint.body
+      .replace(/<script type="application\/json" class="sct-faq-data">.*?<\/script>/gs, "")
+      .replace(/<script type="application\/json" data-scp-roster>.*?<\/script>/gs, "");
     assert.ok(!/<link\b/i.test(endpoint.body));
     assert.ok(!/<script\b/i.test(withoutIsland));
 
@@ -2944,6 +2945,30 @@ describe("draft tab", () => {
 });
 
 describe("news tab (mak's brief, 2026-11-05: news2.png; the old column and rail removed the same day)", () => {
+  test("phones (mak, 2026-11-15): one meta line with the publisher, same-event coverage folded under its first story, nothing dropped", async () => {
+    const { doc } = await dom("/team/new-england-patriots/news/");
+    const neu = doc.getElementById("news").querySelector(".sct-nwp");
+    const cards = [...neu.querySelectorAll("article.sct-nwp-card")];
+    for (const card of cards) {
+      const src = card.querySelector(".sct-nwp-news-meta .sct-nwp-meta-src");
+      assert.ok(src && src.textContent.trim().length > 1, "the publisher rides on the meta line");
+    }
+    // Every story hidden on phones as a repeat is linked, by URL, from the
+    // "Also covered by" list of a story that stays; the list never names a
+    // story that is not a repeat, and no story is a repeat of itself.
+    const dupLinks = cards.filter((c) => c.classList.contains("is-dup")).map((c) => c.querySelector(".sct-nwp-link")?.getAttribute("href"));
+    const alsoLinks = [...neu.querySelectorAll(".sct-nwp-also-link")].map((a) => a.getAttribute("href"));
+    assert.deepEqual([...alsoLinks].sort(), [...dupLinks].sort());
+    for (const also of neu.querySelectorAll(".sct-nwp-also")) {
+      assert.ok(!also.closest(".sct-nwp-card").classList.contains("is-dup"));
+      assert.match(also.querySelector(".sct-nwp-also-head").textContent, /^Also covered by \d+ more sources?$/);
+    }
+    // The player is marked as the subject, not printed as an author.
+    for (const p of neu.querySelectorAll(".sct-nwp-byline .sct-nwp-player")) {
+      assert.ok(p.closest(".sct-nwp-subject"), "the player sits in the subject mark");
+    }
+  });
+
   test("the feed in order, the first story featured, the rest folded at ten, the rail beside it", async () => {
     const { doc } = await dom("/team/new-england-patriots/news/");
     const panel = doc.getElementById("news");

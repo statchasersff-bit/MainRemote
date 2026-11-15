@@ -18,6 +18,8 @@
    5. height reporting to a parent frame, for the legacy iframe mount.
  */
 
+import { wirePlayerSearch } from "./player-search";
+
 const ROOT_SELECTOR = "[data-sct-root]";
 
 /* -------------------------------------------------------------- tabs ---- */
@@ -722,6 +724,79 @@ function fitSnapNames(root: HTMLElement): void {
   }
 }
 
+/**
+ * Draft tables on phones (mak, 2026-11-15): a name that would wrap onto a
+ * second line shows as "J. Smith" first; only a name that still does not
+ * fit then wraps. Each name is measured in full; one that breaks across
+ * lines gets the short form painted (aria-hidden) with the full name kept
+ * for screen readers. Swapping one name can narrow its column and make
+ * another wrap, so it re-measures until nothing changes (three passes cap).
+ */
+function fitDraftNames(root: HTMLElement): void {
+  const names = (): HTMLElement[] =>
+    Array.from(
+      root.querySelectorAll<HTMLElement>(
+        // The Usage fantasy table's names too (2026-11-15).
+        ".sct-drp-table .sct-dr-name[data-short], .sct-us-table .sct-us-name[data-short]",
+      ),
+    );
+  const full = (n: HTMLElement): void => {
+    if (n.dataset["full"] === undefined) return;
+    n.textContent = n.dataset["full"];
+    delete n.dataset["full"];
+  };
+  const shorten = (n: HTMLElement): void => {
+    const name = n.textContent ?? "";
+    n.dataset["full"] = name;
+    const shown = document.createElement("span");
+    shown.setAttribute("aria-hidden", "true");
+    shown.textContent = n.dataset["short"] ?? name;
+    const heard = document.createElement("span");
+    heard.className = "sct-visually-hidden";
+    heard.textContent = name;
+    n.replaceChildren(shown, heard);
+  };
+  const wraps = (n: HTMLElement): boolean => {
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    const tops = new Set(Array.from(range.getClientRects()).map((r) => Math.round(r.top)));
+    return tops.size > 1;
+  };
+  const fit = (): void => {
+    const all = names();
+    for (const n of all) full(n);
+    if (typeof window.matchMedia !== "function" || !window.matchMedia(PHONE_QUERY).matches) return;
+    for (let pass = 0; pass < 3; pass++) {
+      const tight = all.filter((n) => n.dataset["full"] === undefined && n.offsetParent !== null && wraps(n));
+      if (!tight.length) break;
+      for (const n of tight) shorten(n);
+    }
+  };
+  let frame = 0;
+  const schedule = (): void => {
+    if (typeof requestAnimationFrame !== "function") return fit();
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(fit);
+  };
+  fit();
+  window.addEventListener("resize", schedule, { passive: true });
+  void document.fonts?.ready.then(schedule);
+  // The Draft tab is a hash panel, hidden at boot: measure again when its
+  // tables are laid out (opened) or change width.
+  if (typeof ResizeObserver !== "function") return;
+  const seen = new WeakMap<Element, number>();
+  const ro = new ResizeObserver((entries) => {
+    let changed = false;
+    for (const entry of entries) {
+      const w = Math.round(entry.contentRect.width);
+      if (seen.get(entry.target) !== w) changed = true;
+      seen.set(entry.target, w);
+    }
+    if (changed) schedule();
+  });
+  for (const table of Array.from(root.querySelectorAll(".sct-drp-table, .sct-us-table"))) ro.observe(table.parentElement ?? table);
+}
+
 /* ----------------------------------------------------------- switcher ---- */
 
 function wireSwitcher(root: HTMLElement): void {
@@ -791,7 +866,14 @@ function wireTimestamps(root: HTMLElement): void {
     for (const stamp of stamps) {
       const ts = Number(stamp.getAttribute("data-ts"));
       if (!Number.isFinite(ts) || ts <= 0) continue;
-      const label = relativeLabel(ts, now, stamp.hasAttribute("data-ts-compact"));
+      // `data-ts-compact-phone`: compact on phones only (the News tab's meta
+      // line, 2026-11-15: "INJURY · 5h ago · Pro Football Talk").
+      const compact =
+        stamp.hasAttribute("data-ts-compact") ||
+        (stamp.hasAttribute("data-ts-compact-phone") &&
+          typeof window.matchMedia === "function" &&
+          window.matchMedia(PHONE_QUERY).matches);
+      const label = relativeLabel(ts, now, compact);
       if (!label) continue;
       // The absolute form moves into the tooltip rather than being discarded -
       // "3 hours ago" is easier to read, the exact time is still available, and
@@ -938,6 +1020,29 @@ function wireSortableTables(root: HTMLElement): void {
  * once this has run, so without the bundle every row shows and no dead
  * button does. Sorting the table opens it, since a sort can lift a hidden row.
  */
+/**
+ * Coaching career chart (mak, 2026-11-15): touchscreens never show an SVG
+ * <title>, so a tapped, clicked or keyboard-focused point writes its season
+ * line (the point's aria-label) into the readout under the chart and is
+ * marked selected. Phones show the readout (team.css); the points stay
+ * focusable everywhere.
+ */
+function wireCareerChart(root: HTMLElement): void {
+  for (const fig of Array.from(root.querySelectorAll<HTMLElement>(".sct-cc-chart"))) {
+    const out = fig.querySelector<HTMLElement>(".sct-cc-readout");
+    if (!out) continue;
+    const pick = (target: EventTarget | null): void => {
+      const pt = (target as Element | null)?.closest?.(".sct-cc-pt");
+      if (!pt) return;
+      for (const p of Array.from(fig.querySelectorAll(".sct-cc-pt.is-picked"))) p.classList.remove("is-picked");
+      pt.classList.add("is-picked");
+      out.textContent = pt.getAttribute("aria-label") ?? "";
+    };
+    fig.addEventListener("click", (event) => pick(event.target));
+    fig.addEventListener("focusin", (event) => pick(event.target));
+  }
+}
+
 function wirePlayerStatsMore(root: HTMLElement): void {
   for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-ps-more]"))) {
     const block = button.closest<HTMLElement>(".sct-mu-ps-block");
@@ -1830,6 +1935,9 @@ function boot(): void {
     wireSegTabs(root);
     wireRowFilters(root);
     wireSwitcher(root);
+    // The player pages' search box above the header (2026-11-15): ships
+    // hidden, revealed and driven by the same module the profiles use.
+    wirePlayerSearch(root);
     wireHeroLead(root);
     wireTimestamps(root);
     wireSortableTables(root);
@@ -1838,11 +1946,13 @@ function boot(): void {
     wireFantasyFormat(root);
     wireHighlights(root);
     wirePlayerStatsMore(root);
+    wireCareerChart(root);
     wireFantasyTabMore(root);
     wireUsageDetail(root);
     wireUsageProfiles(root);
     wireSnapTables(root);
     fitSnapNames(root);
+    fitDraftNames(root);
     wireDepthViews(root);
     wireCutScenario(root);
     wireBarHeight(root);

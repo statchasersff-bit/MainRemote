@@ -9074,8 +9074,6 @@ ul.sct-faq-list li {
 
   .sct .sct-tpb .sct-nav-list {
     min-height: 52px;
-    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
-    mask-image: linear-gradient(90deg, #000 92%, transparent);
   }
 }
 
@@ -11114,10 +11112,7 @@ ul.sct-faq-list li {
     height: 44px;
   }
 
-  .sct .sct-sp-h-scroll {
-    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
-    mask-image: linear-gradient(90deg, #000 94%, transparent);
-  }
+  /* No fade at the history table's right edge (mak, 2026-11-15: removed). */
 }
 
 /* =========================================================================
@@ -12038,19 +12033,19 @@ ul.sct-faq-list li {
   font-size: 1rem;
 }
 
-/* Cap Position: the rank sits to the left of its figure, on the figure's line,
+/* Cap Position and Dead Money (2026-11-15): the rank sits to the left of its figure, on the figure's line,
    in the featured box and in the rows alike (mak, 2026-11-15, all widths). */
-:is(.sct, #sct-table-armour) .sct-ctp-card.is-position .sct-ctp-feature {
+:is(.sct, #sct-table-armour) .sct-ctp-card:is(.is-position, .is-dead) .sct-ctp-feature {
   grid-template-columns: minmax(0, 1fr) auto auto;
   grid-template-areas: "label rank value";
 }
 
-:is(.sct, #sct-table-armour) .sct-ctp-card.is-position .sct-ctp-feature-rank {
+:is(.sct, #sct-table-armour) .sct-ctp-card:is(.is-position, .is-dead) .sct-ctp-feature-rank {
   margin-top: 0;
 }
 
 /* ...and its figure is the size of the row figures under it (mak, 2026-11-15). */
-:is(.sct, #sct-table-armour) .sct-ctp-card.is-position .sct-ctp-feature-value {
+:is(.sct, #sct-table-armour) .sct-ctp-card:is(.is-position, .is-dead) .sct-ctp-feature-value {
   font-size: 1rem;
 }
 
@@ -12369,11 +12364,7 @@ ul.sct-faq-list li {
     padding: 10px 12px 12px;
   }
 
-  /* A fade at the sheet's right edge says there is more to scroll to. */
-  :is(.sct, #sct-table-armour) .sct-ctp-scroll {
-    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
-    mask-image: linear-gradient(90deg, #000 94%, transparent);
-  }
+  /* No fade at the sheet's right edge (mak, 2026-11-15: removed). */
 }
 
 /* Phones: the count strip on Cap Position, Flexibility and Dead Money sits on the title
@@ -12489,6 +12480,23 @@ ul.sct-faq-list li {
 
   :is(.sct, #sct-table-armour) .sct-dpp-row[data-pos="TE"] .sct-dpp-pos {
     color: var(--sct-pos-te) !important;
+  }
+}
+
+/* Phones: the Usage page's player names carry no standing line under them.
+   The site-wide .sct-player-link border ran the width of the block the name
+   sits in (110px under an 81px "Drake Maye"), so it read as a rule through
+   the table. Hover underlines the name itself, as on Contracts and the
+   Depth Chart (mak, 2026-11-15). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) :is(.sct-up-name, .sct-us-name, .sct-us-trend-name, .sct-us-signal-name).sct-player-link {
+    border-bottom: 0 !important;
+    text-decoration: none;
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-up-name, .sct-us-name, .sct-us-trend-name, .sct-us-signal-name).sct-player-link:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--sc-gold);
   }
 }
 
@@ -15046,11 +15054,7 @@ ul.sct-faq-list li {
     grid-template-columns: repeat(auto-fill, minmax(16px, 1fr));
   }
 
-  /* A fade at the board's right edge says there is more to scroll to. */
-  :is(.sct, #sct-table-armour) .sct-shp-scroll {
-    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
-    mask-image: linear-gradient(90deg, #000 94%, transparent);
-  }
+  /* No fade at the board's right edge (mak, 2026-11-15: removed). */
 }
 
 /* The Results and Remaining tables' opponent column: the full name gives
@@ -17788,6 +17792,35 @@ ul.sct-faq-list li {
 }
 
 @media (max-width: 560px) {
+  /* Depth Chart on phones: each card only as wide as its widest name needs
+     (~170px; "M. Wishnowsky", "G. Van Roten" with its arrow), not the 213px
+     the 960px sheet gave it, and a tighter right padding (mak, 2026-11-15).
+     40px POS + 4 x 170px + 4 x 10px gaps + 28px row padding = 788px. */
+  :is(.sct, #sct-table-armour) .sct-dpp-inner:not(.is-fan) {
+    min-width: 788px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-card {
+    padding-right: 5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dpp-more .sct-dpp-cells.is-loose > .sct-dpp-card {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  /* Depth Chart on phones: the chart's rows and the "Also listed" cards
+     15% smaller, everything inside them together (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-dpp-inner,
+  :is(.sct, #sct-table-armour) .sct-dpp-more .sct-dpp-cells {
+    zoom: 0.85;
+  }
+
+  /* Depth Chart on phones: no NEW chip beside a newly listed name (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-dpp-new {
+    display: none !important;
+  }
+
   /* Depth Chart on phones: the heading alone, no "Starters and backups for
      the {Team} offense, defense and special teams..." under it (mak, 2026-11-15). */
   :is(.sct, #sct-table-armour) .sct-dpp-hero .sct-up-dek {
@@ -19900,6 +19933,189 @@ ul.sct-faq-list li {
   }
 }
 
+/* The three read cards under the situational table ("Stevenson's
+   Workload", "Third-Down Specialist", "If Stevenson Misses Time") at 560px
+   and under (mak, 2026-11-15): no icon; the title starts the head. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-card-icon {
+    display: none !important;
+  }
+
+  /* The card titles at the body's size (14.4px, was 19.2px), still bold
+     (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-card-title {
+    font-size: 0.9rem !important;
+    line-height: 1.35 !important;
+  }
+
+  /* No icon beside the Rushing Direction and Passing Distribution notes
+     ("66% of runs have gone inside...", "Maye keeps 85% of throws...");
+     the note starts the line (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-us-prm:is(.sct-us-prm-run, .sct-us-prm-pass) .sct-us-prm-insight-icon {
+    display: none !important;
+  }
+
+  /* Nor beside the Handcuff note in the fantasy section ("Handcuff: if
+     Stevenson misses time..."): the text starts the line (2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-us-handcuff .sct-us-prm-insight-icon {
+    display: none !important;
+  }
+
+  /* Those notes in one weight and one color: no bold, darker figures
+     (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-us-prm:is(.sct-us-prm-run, .sct-us-prm-pass) .sct-us-prm-insight :is(strong, b) {
+    color: inherit !important;
+    font-weight: inherit !important;
+  }
+}
+
+/* Target and Rushing Distribution at 560px and under (mak, 2026-11-15: "why
+   is there such a big gap in the last 3 column"): the Share bar is hidden on
+   phones (.sct-us-gbar), but its cell kept the 96px floor it holds for the
+   bar, so the value sat at the left of an empty column and read as a gap
+   before Last 3. The column takes its value's width, right-aligned under a
+   right-aligned head, as Snap Counts' Snap % does. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up-board .sct-up-table .is-bar {
+    min-width: 0;
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-board .sct-up-table .sct-up-bar {
+    justify-content: flex-end;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-board .sct-up-table .sct-up-bar-val {
+    flex: 0 0 auto;
+  }
+}
+
+/* Target and Rushing Distribution at 560px and under (mak, 2026-11-15): no
+   "▲ up 9%" change pill in the Last 3 wk cell; the recent share stands alone. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up-move {
+    display: none !important;
+  }
+}
+
+/* Rushing Direction at 560px and under (mak, 2026-11-15): the Passing
+   Distribution cards' design. Five compact centered cards: the interior
+   three (left tackle, middle, right tackle) on the first row, the two ends
+   on the second. Each card: the YPC,
+   the share bar as its art, the gap pill, then "25 att · 12%". The footer
+   row (YPC / ATT again) and the "#1 YPC" laurel go; the best gap keeps its
+   tinted card, as the best pass zone does. The card's top wrapper steps
+   aside (display: contents) so the pieces order as flex items of the card. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gaps {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 0;
+    padding: 10px 6px 9px;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  /* Top row: left tackle, middle, right tackle. Under it the two edges,
+     left end and right end (mak, 2026-11-15). The list stays in line order
+     (LE, LT, middle, RT, RE) for screen readers; only the paint moves. */
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap:is(:first-child, :nth-child(5)) {
+    grid-column: span 3;
+    order: 1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-card-top {
+    display: contents;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-big {
+    order: 1;
+    justify-content: center;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-big .sct-us-num {
+    font-size: 1.45rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-big .sct-us-num::after {
+    content: " YPC";
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-bar {
+    order: 2;
+    width: 100%;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-bar > b {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-bar-track {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-pill {
+    order: 3;
+    max-width: 100%;
+    margin: 0;
+    padding: 2px 6px;
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap .sct-us-prm-line {
+    order: 4;
+    margin: 0 !important;
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gap :is(.sct-us-prm-meta, .sct-us-prm-laurel) {
+    display: none !important;
+  }
+
+  /* The cell the passing zones wear on phones: white on a hairline, 8px
+     corners, the best gap outlined in gold, the pill untinted. These beat
+     the flat-list rules further down (which strip the run tiles to rows). */
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-body ul.sct-us-prm-gaps {
+    gap: 8px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gaps > .sct-us-prm-card.sct-us-prm-gap,
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gaps > .sct-us-prm-card.sct-us-prm-gap.is-best {
+    padding: 10px 6px 9px !important;
+    border: 1px solid var(--sct-us-flat-line) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gaps > .sct-us-prm-card.sct-us-prm-gap.is-best {
+    border-color: var(--tp-c-d4af37, #d4af37) !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-prm-run .sct-us-prm-gaps > .sct-us-prm-card.sct-us-prm-gap .sct-us-prm-pill {
+    background: #f1f3f6 !important;
+    box-shadow: none !important;
+  }
+}
+
 /* Draft tables at 560px and under (mak, 2026-11-12): the Rd / Pick (and
    Round 1 Picks' Year / Pick) headers in the same type as Pos, College and
    Status, not the larger numeral style. */
@@ -21657,6 +21873,14 @@ ul.sct-faq-list li {
   }
 }
 
+/* ...and "Last 3 wk" reads "Last 3" (mak, 2026-11-15); " wk" stays in the
+   markup and the abbr title. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up-table .sct-up-th-wk {
+    display: none;
+  }
+}
+
 @media (max-width: 560px) {
   :is(.sct, #sct-table-armour) .sct-cp-th-tick {
     display: none;
@@ -21805,5 +22029,3101 @@ ul.sct-faq-list li {
 
   :is(.sct, #sct-table-armour) .sct-block.sct-cpt.sct-cf > .sct-cf-bl {
     padding: 14px 16px 16px !important;
+  }
+}
+
+/* Coaching tendencies pace change: "1.5 seconds faster" reads "1.5s faster"
+   at 560px and under (mak, 2026-11-15). */
+:is(.sct, #sct-table-armour) .sct-cp-chg-short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-chg-long {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-chg-short {
+    display: inline;
+  }
+}
+
+/* Coaching tendencies tables (Play Calling, Formations & Tempo) at 560px and
+   under (mak, 2026-11-15): no bold, and the value cells - prior, current,
+   change and rank - in one font, size, weight and style. The rank keeps its
+   pill. The Metric column (name and sub-label) keeps its own styling (mak,
+   same day: "undo the font change" there). */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table tbody :is(td, td .sct-cp-change, td .sct-cp-chg-long, td .sct-cp-chg-short, td .sct-cp-rank, td b, td strong) {
+    font-family: var(--cp-body, Inter, system-ui, -apple-system, sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table tbody :is(td, td .sct-cp-change) {
+    color: var(--tp-ink, #0e1a2f) !important;
+  }
+}
+
+/* Coaching tendencies table heads at 560px and under (mak, 2026-11-15): the
+   sub-lines under 2025, 2026 and Change (play-caller, "Current", "vs 2025")
+   are cut; the column heads read 2025, 2026, Change. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table thead .sct-cp-th-sub {
+    display: none !important;
+  }
+}
+
+/* Coaching review pass (mak, 2026-11-15, all widths): the Offensive
+   Identity strip (four tiles and one sentence) above Play Calling, the
+   folded Career History, and the single Fantasy Implications paragraph. */
+:is(.sct, #sct-table-armour) .sct-cp-id-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-id-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--cp-line);
+  border-top: 3px solid var(--cp-gold);
+  border-radius: 10px;
+  background: var(--cp-surface-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-id-v {
+  color: var(--tp-ink, var(--cp-navy-deep));
+  font-family: var(--cp-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-id-k {
+  color: var(--tp-ink, var(--cp-ink));
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-id-chg {
+  color: var(--cp-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-id-line {
+  margin: 12px 0 0;
+  color: var(--tp-ink, var(--cp-ink));
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+@container premium (max-width: 699px) {
+  :is(.sct, #sct-table-armour) .sct-cp-id-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more {
+  margin: 0 0 14px;
+  border: 1px solid var(--cp-line);
+  border-radius: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more-q {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 14px;
+  color: var(--tp-ink, var(--cp-navy-deep));
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more-q::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more-chev {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--cp-muted);
+  transition: transform 0.18s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more[open] .sct-cc-more-chev {
+  transform: rotate(180deg);
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more-q:focus-visible {
+  outline: 2px solid var(--cp-gold);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-more > .sct-cc-stops {
+  margin: 0 14px 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cf-impl {
+  margin: 0 0 16px;
+  color: var(--tp-ink, #0b1634);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* =========================================================================
+   Team profile header on phones (mak, 2026-11-15 brief): more identity and
+   polish, not more height. White page, the crest on a soft team-tinted disc
+   , the name the focal point at 22px/800 across the full row under a
+   small division line, a small "Teams" pill. 11-15 later: tightened
+   (mak: "users should hit the first coaching card faster"): 42px crest on
+   a 50px disc, no gaps between the stacked lines, panel ~20% shorter. The four facts become one
+   scoreboard panel: the record big in the club's base color beside the
+   standing, then a hairline and one quiet "Head coach · Bye" row. One team
+   accent: a 3px bar down the panel's edge, echoed by the active tab's
+   underline. --team-base always reads on white (7:1+ with white, palette.ts)
+   so it carries text; --team-accent only draws bars. No gradients, no colored
+   band. Overrides the earlier phone header rules; desktop is untouched.
+   ========================================================================= */
+@media (max-width: 560px) {
+  /* ---- the identity row: crest | division line + switcher / name */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-inner {
+    grid-template-columns: 50px minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "badge eyebrow actions"
+      "badge title title"
+      "stats stats stats"
+      "updated updated updated" !important;
+    column-gap: 10px !important;
+    row-gap: 0 !important;
+    align-items: center !important;
+    padding: 0 var(--sct-gutter) 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-identity {
+    display: contents !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-badge {
+    grid-area: badge;
+    align-self: center;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--team-base, var(--sc-navy, #0b1634)) 7%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-base, var(--sc-navy, #0b1634)) 10%, #fff);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-badge::before {
+    content: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-logo-circle,
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-logo {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-eyebrow {
+    grid-area: eyebrow;
+    align-self: end;
+    margin: 0 !important;
+    color: var(--sct-m-muted) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    line-height: 1.2 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-title {
+    grid-area: title;
+    align-self: start;
+    margin: 0 !important;
+    color: var(--tp-ink, var(--sct-m-text)) !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.4px !important;
+  }
+
+  /* The switcher: smaller and quieter, beside the division line. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-actions {
+    grid-area: actions;
+    align-self: end;
+    justify-self: end;
+    margin: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-switch-summary {
+    min-height: 26px !important;
+    padding: 0 8px 0 10px !important;
+    border: 1px solid var(--sct-m-line) !important;
+    color: var(--sct-m-muted) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+
+  /* ---- the scoreboard panel */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats {
+    grid-area: stats;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-end;
+    gap: 0 14px !important;
+    margin: 8px 0 0 !important;
+    padding: 7px 12px 6px 13px !important;
+    border: 0 !important;
+    border-left: 3px solid var(--team-accent, var(--sc-gold, #d4af37)) !important;
+    border-radius: 4px 10px 10px 4px !important;
+    background: color-mix(in srgb, var(--team-base, var(--sc-navy, #0b1634)) 4%, #fff) !important;
+    box-shadow: none !important;
+    overflow: visible;
+  }
+
+  /* The line break and hairline between the two headline figures and the
+     metadata row: a full-width flex item between them. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats::before {
+    content: "";
+    order: 3;
+    flex: 0 0 100%;
+    height: 1px;
+    margin: 5px 0 4px;
+    background: color-mix(in srgb, var(--team-base, var(--sc-navy, #0b1634)) 12%, #fff);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi,
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi:is(:nth-child(odd), [data-kpi="record"], [data-kpi="bye"], [data-kpi="head-coach"], [data-kpi="standing"]) {
+    grid-column: auto !important;
+    min-width: 0;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    text-align: left;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi[data-kpi="record"] {
+    order: 1 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi[data-kpi="standing"] {
+    order: 2 !important;
+    flex: 1 1 0;
+    padding-left: 14px !important;
+    border-left: 1px solid color-mix(in srgb, var(--team-base, var(--sc-navy, #0b1634)) 12%, #fff) !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi[data-kpi="head-coach"] {
+    order: 4 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-stats > .sct-tpb-kpi[data-kpi="bye"] {
+    order: 5 !important;
+  }
+
+  /* Record and standing: the figure over a small caps label. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi:is([data-kpi="record"], [data-kpi="standing"]) .sct-tpb-kpi-text {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-start;
+    gap: 1px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi[data-kpi="record"] .sct-tpb-kpi-value {
+    color: var(--team-base, var(--sct-m-text)) !important;
+    font-family: "Barlow", var(--sc-font) !important;
+    font-size: 21px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.2px !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi[data-kpi="standing"] .sct-tpb-kpi-value {
+    color: var(--tp-ink, var(--sct-m-text)) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi:is([data-kpi="record"], [data-kpi="standing"]) .sct-tpb-kpi-label {
+    color: var(--sct-m-muted) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    line-height: 1.2 !important;
+    text-transform: uppercase;
+  }
+
+  /* Head coach and bye: one quiet row, label then value, the panel's 16px
+     column gap between them (a gap, not a dot: when a long coach name sends
+     Bye to its own line, nothing dangles at that line's start). */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi:is([data-kpi="head-coach"], [data-kpi="bye"]) .sct-tpb-kpi-text {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: baseline;
+    gap: 5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi:is([data-kpi="head-coach"], [data-kpi="bye"]) .sct-tpb-kpi-label {
+    color: var(--sct-m-muted) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.3 !important;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi:is([data-kpi="head-coach"], [data-kpi="bye"]) .sct-tpb-kpi-value {
+    color: var(--tp-ink, var(--sct-m-text)) !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-updated {
+    margin: 3px 0 0 2px !important;
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ---- the tabs, tied to the header: closer, the club accent underline */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-navigation {
+    margin-top: 2px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-nav-link.is-active::after {
+    background: var(--team-accent, var(--sct-m-ink)) !important;
+  }
+}
+
+/* The narrowest phones: the pill keeps only its caret, the name steps down
+   a point. */
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-switch-summary {
+    width: 26px !important;
+    padding: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-title {
+    font-size: 21px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi[data-kpi="record"] .sct-tpb-kpi-value {
+    font-size: 19.5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi[data-kpi="standing"] .sct-tpb-kpi-value {
+    font-size: 12px !important;
+  }
+}
+
+/* Phone-only short labels (mak, 2026-11-15): wider screens print the long
+   form, phones the short one. */
+:is(.sct, #sct-table-armour) :is(.sct-cp-kicker-short, .sct-cp-context-short, .sct-cp-id-short) {
+  display: none;
+}
+
+/* Coaching top at 560px and under (mak, 2026-11-15, compact pass): the
+   coordinator card as a tight horizontal profile (52px headshot left of
+   the eyebrow and name; the small lineage pills and the one-line context
+   run full width under it), a compact Offensive Identity (data tiles, not mini cards),
+   12px between the page's cards, and the team header's labels in
+   sentence case instead of all caps. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) :is(.sct-cp-kicker, .sct-cp-context, .sct-cp-id-long) {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-short {
+    display: inline;
+  }
+
+  /* Coordinator card: the photo spans the rows, everything else stacks right. */
+  :is(.sct, #sct-table-armour) .sct-cp > .sct-cp-overview {
+    margin: 0 0 12px !important;
+    padding: 12px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-profile {
+    display: grid !important;
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 2px;
+    align-items: start;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-profile :is(.sct-cp-who, .sct-cp-who-text) {
+    display: contents !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-profile img.sct-cp-face {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+    width: 52px !important;
+    height: 52px !important;
+    border-width: 2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-profile > :not(.sct-cp-who),
+  :is(.sct, #sct-table-armour) .sct-cp-who-text > * {
+    grid-column: 2;
+  }
+
+  /* The pills and the context line run the card's full width, under the
+     photo (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-cp-profile > :is(.sct-cp-pills, .sct-cp-context-short) {
+    grid-column: 1 / -1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-profile > .sct-cp-pills {
+    margin-top: 10px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-kicker-short {
+    display: block;
+    margin: 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-name {
+    margin: 0 !important;
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-pills {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 4px !important;
+    margin: 4px 0 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-pill {
+    min-height: 0 !important;
+    padding: 2px 7px !important;
+    border: 1px solid var(--tp-c-e6ebf2, #e6ebf2) !important;
+    border-radius: 999px !important;
+    background: var(--tp-c-f6f8fb, #f6f8fb) !important;
+    color: var(--sct-m-muted, #5b6b80) !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-context-short {
+    display: block;
+    margin: 4px 0 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  /* Rhythm: 12px between the page's cards, tighter title rows inside them. */
+  :is(.sct, #sct-table-armour) :is(.sct-cp-section, .sct-cpt-section, .sct-cf) {
+    margin: 0 0 12px !important;
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-cp-section, .sct-cpt-section) > .sct-us-prm-head {
+    margin: 10px 4px 8px !important;
+  }
+
+  /* Offensive Identity: compact data tiles. */
+  :is(.sct, #sct-table-armour) .sct-cp-id-tiles {
+    gap: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-tile {
+    gap: 0;
+    padding: 7px 10px;
+    border-top-width: 2px;
+    border-radius: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-v {
+    font-size: 1.3rem;
+    line-height: 1.15;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-k {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-chg {
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-id-line {
+    margin: 8px 0 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  /* Team header: sentence-case labels from data-phone, not all caps. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi .sct-tpb-kpi-label[data-phone] {
+    font-size: 0 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-kpi .sct-tpb-kpi-label[data-phone]::after {
+    content: attr(data-phone);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+}
+
+/* =========================================================================
+   The player pages' search box, above the team header (mak, 2026-11-15:
+   "instead of using the Teams dropdown pill, please use a search box above
+   the header like we do for the nfl player profile pages"). The same widget
+   (renderPlayerSearch + client/player-search.ts); its rules ported from
+   player.css, scoped to the team root, with the profile's phone sizing.
+   Phones only: on desktop the box stays hidden and the Teams dropdown
+   remains; on phones the box replaces the pill.
+   ========================================================================= */
+:is(.sct, #sct-table-armour) .scp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:is(.sct, #sct-table-armour) .scp-search {
+  position: relative;
+    margin: 24px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .scp-search[hidden] {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-field {
+  position: relative;
+  display: block;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--sc-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+    pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--tp-ink, var(--sc-ink));
+  font-family: inherit;
+    font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  appearance: none;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-input::placeholder {
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-input:hover {
+  border-color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-input:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 2px;
+  border-color: var(--sc-muted-strong);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+    max-height: 444px;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-panel[hidden] {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-opt {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 10px;
+  border-radius: var(--sc-radius-xs);
+  color: var(--tp-ink, var(--sc-ink));
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) button.scp-search-opt {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+    text-align: left;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-face {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-shot {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+    object-fit: cover;
+  object-position: 50% 8%;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+    border-radius: 999px;
+  background: var(--sc-surface);
+  box-shadow: 0 0 0 1.5px var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-who {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-opt.is-active {
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-opt:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: -2px;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-name {
+  overflow: hidden;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-pos {
+  color: var(--sc-muted);
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-pos[data-pos="QB"] {
+  color: var(--sct-pos-qb);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-pos[data-pos="RB"] {
+  color: var(--sct-pos-rb);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-pos[data-pos="WR"] {
+  color: var(--sct-pos-wr);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-pos[data-pos="TE"] {
+  color: var(--sct-pos-te);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-mark {
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-opt[data-kind="team"] .scp-search-face {
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-kind {
+  color: var(--sc-muted);
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-dot {
+  color: var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .scp-search-club {
+  color: var(--sc-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+:is(.sct, #sct-table-armour) .scp-search-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--sc-muted);
+  font-size: 13px;
+}
+
+@media (min-width: 561px) {
+  :is(.sct, #sct-table-armour) .scp-search {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Inside the edge-to-edge header block, so it takes the page gutter back.
+     Above the sticky tab strip (z-index 30): the results open over it. */
+  :is(.sct, #sct-table-armour) .sct-tpb > .scp-search {
+    z-index: 40;
+    margin: 0 var(--sct-gutter) 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .scp-search-input {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #d5dbe2;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  :is(.sct, #sct-table-armour) .scp-search-icon {
+    left: 13px;
+    width: 15px;
+    height: 15px;
+  }
+
+  /* The box replaces the Teams pill: the identity row closes up to two
+     columns, crest and name. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-actions {
+    display: none !important;
+  }
+
+  /* "Last updated" sits under the team name, beside the crest (mak,
+     2026-11-15), above the scoreboard panel. */
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-inner {
+    grid-template-columns: 50px minmax(0, 1fr) !important;
+    grid-template-areas:
+      "badge eyebrow"
+      "badge title"
+      "badge updated"
+      "stats stats" !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-tpb .sct-tpb-updated {
+    align-self: start;
+    margin: 1px 0 0 !important;
+  }
+}
+
+/* Coaching Play Calling and Formations & Tempo tables at 560px and under
+   (mak, 2026-11-15): a compact stats table. Fixed columns with the metric widest, short metric
+   names (data-short; the full name stays the button's text and heads its
+   definition popover), right-aligned tabular figures, tight cells, the
+   sample line and rank kept small. The red-zone gold row keeps its accent
+   and pill. The section header above is untouched. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed;
+  }
+
+  /* Figures get fixed widths that fit "+9.0%"; the metric column takes the rest. */
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(2),
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(3) { width: 58px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(4) { width: 72px; }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody th, tbody td) {
+    padding: 7px 6px !important;
+    line-height: 1.25 !important;
+    vertical-align: middle;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody th, tbody td):first-child {
+    padding-left: 10px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody td):last-child {
+    padding-right: 10px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th:not(:first-child), tbody td) {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .is-change {
+    min-width: 0 !important;
+  }
+
+  /* Short metric names, at the metric column's own weight. */
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-co-tlabel[data-short] {
+    font-size: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-co-tlabel[data-short]::after {
+    content: attr(data-short);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-co-tlabel {
+    padding: 0 !important;
+    text-align: left;
+  }
+
+  /* Sample sizes: one small line under the name. */
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-cp-sub {
+    margin: 1px 0 0;
+    font-size: 10.5px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Change: the figure, the rank tucked under it, right-aligned; no dumbbell. */
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-cp-db {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-cp-chg {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-cp-chg-v {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-cp-rank {
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    line-height: 16px !important;
+  }
+}
+
+/* The narrowest phones: the figure columns trim to their numbers so the
+   short metric names stay on one line. */
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(2),
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(3) { width: 50px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) thead th:nth-child(4) { width: 58px; }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody th, tbody td) {
+    padding-right: 4px !important;
+    padding-left: 4px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody th, tbody td):first-child {
+    padding-left: 8px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) :is(thead th, tbody td):last-child {
+    padding-right: 8px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table:is(.is-play-calling, .is-formations-tempo) .sct-co-tlabel[data-short]::after {
+    font-size: 13.5px;
+  }
+}
+
+/* Coaching Formation Profile at 560px and under (mak, 2026-11-15, compact
+   pass): tight spacing under the Formations & Tempo table. The donut and
+   its legend give way to the segmented bar (.sct-cp-seg) below. Header
+   untouched. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-section .sct-cp-split {
+    gap: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-section .sct-cp-form {
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 8px 10px 2px !important;
+    row-gap: 6px !important;
+  }
+
+  /* No "Formation Profile (2026)" title on phones (mak, 2026-11-15). */
+  :is(.sct, #sct-table-armour) .sct-cp-form .sct-cp-form-title {
+    display: none !important;
+  }
+}
+
+/* Fourth-down tiles: phones only (shown in the block below). */
+:is(.sct, #sct-table-armour) .sct-cpt-4d {
+  display: none;
+}
+
+/* Coaching Score State and Fourth-Down Decisions at 560px and under (mak,
+   2026-11-15, compact pass). Card headers untouched. Score State: tighter
+   rows on the existing hairline dividers, 7px bars, the play count right
+   under its bar, tabular figures. Fourth down: three small tiles (this
+   season leading, with its "3 of 3" sample; last season; NFL average) over
+   one short definition line, in place of the stacked metric. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-rows {
+    margin: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row {
+    row-gap: 3px !important;
+    padding: 6px 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-track {
+    height: 7px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row-n {
+    margin-top: -1px;
+    font-size: 11.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row-val {
+    gap: 6px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score :is(.sct-cpt-row-val b, .sct-cpt-badge) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row-val b {
+    min-width: 4.6em;
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-badge {
+    min-width: 4.4em;
+    text-align: center;
+  }
+
+  /* Fourth down: tiles replace the stacked metric. */
+  :is(.sct, #sct-table-armour) .sct-cpt-metric.is-fourth > :is(.sct-cpt-metric-label, .sct-cpt-metric-value, .sct-cpt-metric-change, .sct-cpt-metric-lines) {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-metric.is-fourth {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tiles {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    margin: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--tp-c-e6ebf2, #e6ebf2);
+    border-radius: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile.is-now {
+    border-top: 2px solid var(--cpt-gold, var(--cp-gold));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-k {
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-v {
+    color: var(--tp-ink, #0b1634);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile.is-now .sct-cpt-4d-v {
+    font-size: 20px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-n {
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-def {
+    margin: 6px 0 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}
+
+/* The narrowest phones: Score State labels stay on one line, fourth-down
+   tiles share the width evenly so their labels fit. */
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row-label {
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-row-val b {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-score .sct-cpt-badge {
+    min-width: 3.8em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile {
+    padding: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-k {
+    font-size: 10.5px;
+  }
+}
+
+/* =========================================================================
+   Usage tables on phones (mak, 2026-11-15): rows ~44px, 28px headshots, the
+   player column wider, one reading order. Snap Counts: Player takes 53% (was
+   46%) from Snaps and Change, so "Romeo Dou..." reads whole; Snap % leads
+   (bold ink), Change follows (smaller, its color kept, not heavy), the raw
+   snap total is secondary (regular weight, muted). Target and Rushing
+   Distribution: a name holds one line ("R. Stevenson" wrapped to 56px rows).
+   ========================================================================= */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-table tbody :is(td, th) {
+    height: 44px;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-table .sct-us-face {
+    width: 28px !important;
+    height: 28px !important;
+    flex-basis: 28px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-table .sct-up-name {
+    white-space: nowrap;
+  }
+
+  /* Snap Counts: the columns */
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-player {
+    width: 53%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-num {
+    width: 14%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-bar {
+    width: 17%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-chg {
+    width: 16%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table thead th {
+    letter-spacing: 0.02em !important;
+  }
+
+  /* The narrower Change column: head and figures share one right edge, 4px
+     in, so "CHANGE" clears the card's edge. */
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table :is(thead th, tbody td).is-chg {
+    padding-right: 4px !important;
+  }
+
+  /* Snap Counts: the hierarchy */
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table tbody td.is-num {
+    color: var(--sc-muted, #64748b) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table tbody .sct-up-bar-val {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table tbody .sct-us-delta {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* Formation Profile segmented bar: phones only (no donut there). */
+:is(.sct, #sct-table-armour) .sct-cp-seg {
+  display: none;
+}
+
+/* Formation Profile at 560px and under (mak, 2026-11-15: "remove the donut
+   chart"): Shotgun and Under Center as figures over one segmented bar, the
+   team color for shotgun and the muted series color for under center, the
+   NFL average as a tick on the bar and one quiet line. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-form .sct-cp-donut-wrap {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg {
+    display: block;
+    grid-area: donut;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-figs {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 6px;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-figs b {
+    margin-right: 3px;
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-figs .is-sg b {
+    color: var(--cp-navy-deep);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-figs .is-under {
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-figs .is-under b {
+    color: var(--tp-ink, #0b1634);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-bar {
+    position: relative;
+    display: flex;
+    height: 10px;
+    border-radius: 999px;
+    overflow: visible;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-sg {
+    display: block;
+    flex: none;
+    border-radius: 999px 0 0 999px;
+    background: var(--cp-navy-deep);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-under {
+    display: block;
+    flex: 1 1 auto;
+    margin-left: 2px;
+    border-radius: 0 999px 999px 0;
+    background: var(--cp-blue);
+    opacity: 0.55;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-avg {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--tp-ink, #0b1634);
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-seg-note {
+    margin: 7px 0 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12px;
+    line-height: 1.3;
+  }
+}
+
+/* Target Distribution at 560px and under (mak, 2026-11-15): the Score
+   State treatment. Label, share with its NFL figure and the gap badge on
+   one row, a 7px bar under them, tight rows on the hairline dividers. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-rows {
+    margin: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row {
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    grid-template-areas: "label val n" "bar bar bar" !important;
+    column-gap: 8px !important;
+    row-gap: 5px !important;
+    padding: 7px 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row-label {
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-track {
+    height: 7px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-mark {
+    top: -3px;
+    bottom: -3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row-val {
+    gap: 6px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row-val b {
+    min-width: 2.6em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row-avg {
+    min-width: 4.4em;
+    font-size: 11.5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-row-n {
+    text-align: right !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-card.is-dist .sct-cpt-badge {
+    min-width: 3.4em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+
+/* Below 360px (no headshots there) Change needs its width back: "CHANGE"
+   and "-52%" were clipped at 15%. */
+@media (max-width: 359px) {
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-player {
+    width: 46%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-num {
+    width: 14%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-bar {
+    width: 19%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-snaps .sct-up-snap-table .is-chg {
+    width: 21%;
+  }
+}
+
+/* Usage filters on phones (mak, 2026-11-15: "compact the filters"): the
+   Season / Last 3 / Week switch and the position menu share one row where
+   they fit (375px and up), tighter padding and type; the active period keeps
+   its navy fill. At the narrowest widths the row wraps whole controls onto
+   a second line rather than squeezing them. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-controls {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    margin: 0 0 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-seg {
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding: 2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-seg-btn {
+    padding: 5px 9px;
+    font-size: 0.74rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-seg-select select,
+  :is(.sct, #sct-table-armour) .sct-up .sct-up-select select {
+    padding: 5px 6px 5px 8px;
+    font-size: 0.74rem;
+  }
+}
+
+/* =========================================================================
+   Situational Usage matrix on phones (mak, 2026-11-15 brief; the section
+   header is untouched). Rows ~40px (were 54px): tighter padding, the label
+   over a small "221 opp." line, the "2-min drill" short form so no label
+   wraps; 4px bars under tabular percentages; three equal player columns
+   whose surname heads hold one line (full name in the title / aria-label).
+   Short forms (.sct-us-sit-short) paint on phones only; the full words stay
+   in the accessibility tree. Desktop keeps the long forms.
+   ========================================================================= */
+.sct-us-sit-short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-short {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row,
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row.is-head {
+    grid-template-columns: minmax(0, 1.3fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+    column-gap: 10px;
+    padding: 6px 10px;
+  }
+
+  /* Clear room between the situation and the first back's column (mak,
+     2026-11-15: "too close"): 8px past the 10px column gap. */
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row > :first-child {
+    padding-right: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row.is-head {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-th.is-player {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-label {
+    font-size: 0.82rem;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-n {
+    font-size: 0.66rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-cell {
+    gap: 3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-pct {
+    font-size: 0.98rem;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-track {
+    height: 4px;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 359px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row,
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-row.is-head {
+    grid-template-columns: minmax(0, 1.15fr) repeat(var(--sit-cols, 3), minmax(0, 1fr));
+    column-gap: 6px;
+    padding: 6px 8px;
+  }
+
+  /* Under 360px the longest labels ("Inside the 10", "Trailing by 7+") do
+     not fit the situation column on one line: they wrap rather than run
+     under the first percentage. */
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-label {
+    font-size: 0.76rem;
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-pct {
+    font-size: 0.92rem;
+  }
+}
+
+/* Career chart: phone drawings and the tap readout are phones-only. */
+:is(.sct, #sct-table-armour) .sct-cc-svg.is-phone,
+:is(.sct, #sct-table-armour) .sct-cc-readout,
+:is(.sct, #sct-table-armour) .sct-cc-kpis {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cc-hit {
+  fill: transparent;
+}
+
+/* Coaching Career & Historical Performance at 560px and under (mak,
+   2026-11-15). Header untouched. The body reads KPI row (Peak PPG, Current
+   PPG, NFL rank, then one meta line), the chart drawn to the screen's
+   width (no scroll, no clipped 2026; peak, club changes and current
+   annotated; no line across a season he did not call), a tap readout
+   under it, then the closed Career History, then the season table. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cc-body {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body > .sct-cc-kpis { order: 1; }
+  :is(.sct, #sct-table-armour) .sct-cc-body > .sct-cc-hist { order: 2; }
+  :is(.sct, #sct-table-armour) .sct-cc-body > .sct-cc-more { order: 3; }
+  :is(.sct, #sct-table-armour) .sct-cc-body > :not(.sct-cc-kpis, .sct-cc-hist, .sct-cc-more) { order: 4; }
+
+  /* KPI row: three figures, labels quiet, no boxes. */
+  :is(.sct, #sct-table-armour) .sct-cc-kpis {
+    display: block;
+    margin: 0 0 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi {
+    min-width: 0;
+    padding: 0 8px;
+    border-left: 1px solid var(--tp-c-e6ebf2, #e6ebf2);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi dt {
+    margin: 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi dd {
+    display: flex;
+    flex-direction: column;
+    margin: 2px 0 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi b {
+    color: var(--tp-ink, var(--cp-navy-deep));
+    font-family: var(--cp-display);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi.is-peak b {
+    color: var(--cp-gold-text);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-kpi dd span {
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-meta {
+    margin: 6px 0 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  /* Chart: the phone drawing, full width, the stat stack gone (the KPI row carries it). */
+  :is(.sct, #sct-table-armour) .sct-cc-hist,
+  :is(.sct, #sct-table-armour) .sct-cc-hist.has-sum {
+    display: block !important;
+    margin: 0 !important;
+    padding: 4px 0 0 !important;
+    border-top: 1px solid var(--tp-c-e2eaf4, #e2eaf4);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-hist .sct-cc-sum {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-chart {
+    margin: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-scroll {
+    overflow: visible !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg:is(.is-wide, .is-narrow) {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone-s {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone :is(.sct-cc-tick, .sct-cc-year) {
+    font-size: 10.5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone .sct-cc-unit {
+    fill: #6b7d94;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone .sct-cc-pill text {
+    font-size: 9.5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone .sct-cc-callout .v {
+    font-size: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone .sct-cc-callout .k {
+    font-size: 8.5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-pt {
+    cursor: pointer;
+    outline: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-pt.is-picked .sct-cc-dot,
+  :is(.sct, #sct-table-armour) .sct-cc-pt:focus-visible .sct-cc-dot {
+    stroke: var(--cp-gold, #d4af37);
+    stroke-width: 2.5px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-readout {
+    display: block;
+    margin: 2px 0 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  /* Legend: one compact block, no methodology line. */
+  :is(.sct, #sct-table-armour) .sct-cc-cap {
+    margin: 4px 0 0 !important;
+    padding: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-cap .sct-cc-note {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-legend {
+    gap: 2px 9px !important;
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Career History: under the chart, closed. */
+  :is(.sct, #sct-table-armour) .sct-cc-body > .sct-cc-more {
+    margin: 10px 0 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body > .sct-cc-more ~ * {
+    margin-top: 12px;
+  }
+}
+
+@media (min-width: 401px) and (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone-s {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-phone-m {
+    display: block !important;
+    min-width: 0 !important;
+  }
+}
+
+/* Coaching Season by Season at 560px and under (mak, 2026-11-15): no
+   frozen columns; Season and Team scroll with the rest of the table. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th):is(.is-season, .is-team, .is-ppg, .is-rank) {
+    position: static !important;
+    left: auto !important;
+    box-shadow: none !important;
+  }
+}
+
+/* =========================================================================
+   Situational Usage analysis on phones (mak, 2026-11-15 brief; headers
+   untouched): the three paragraph cards give way to .sct-us-pa
+   (usage-situational-premium.ts phoneAnalysis), the same numbers as figures,
+   bars and one line each, on hairlines rather than cards. The injury
+   scenario folds: one line by default, observed vs modeled and the full
+   paragraph when opened. Desktop keeps the paragraph cards.
+   ========================================================================= */
+.sct-us-pa {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-sit-cards {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-sit .sct-us-pa {
+    display: block;
+    margin: 4px 0 0;
+    color: var(--tp-ink, var(--sc-ink, #0f1722));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-block {
+    margin: 0;
+    padding: 9px 2px;
+    border-top: 1px solid var(--sct-us-flat-line, #e6ecf5);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-title {
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: var(--tp-ink, var(--sc-ink, #0f1722)) !important;
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+    line-height: 1.3 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-title::after {
+    content: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-meta {
+    margin: 1px 0 6px !important;
+    color: var(--sc-muted, #64748b);
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-take {
+    margin: 6px 0 0 !important;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  /* Workload: figures in a 3-up grid, hairline-separated, no boxes. */
+  :is(.sct, #sct-table-armour) .sct-us-pa-tiles {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0 6px;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tile {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tile + .sct-us-pa-tile {
+    padding-left: 6px;
+    border-left: 1px solid var(--sct-us-flat-line, #e6ecf5);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-val {
+    margin: 0;
+    font-family: "Barlow", var(--sc-font);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-lab {
+    margin: 1px 0 0;
+    color: var(--sc-muted, #64748b);
+    font-size: 0.66rem;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-sub {
+    display: block;
+    font-weight: 400;
+  }
+
+  /* Role: name | 4px bar | share, the lead back's row in full ink. */
+  :is(.sct, #sct-table-armour) .sct-us-pa-bars {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-bar {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr) 38px;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--sc-muted, #64748b);
+    font-size: 0.82rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-bar.is-lead {
+    color: var(--tp-ink, var(--sc-ink, #0f1722));
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-track {
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--tp-c-e3eaf3, #e3eaf3);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-track > .sct-us-sit-fill {
+    display: block;
+    height: 100%;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-pct {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Scenario: a 44px+ summary row with a caret; the model inside. */
+  :is(.sct, #sct-table-armour) .sct-us-pa-sum {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin: -4px 0;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-sum::-webkit-details-marker {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-sum-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-sum-line {
+    color: var(--sc-muted, #64748b);
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-caret {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-right: 2px solid var(--sc-muted, #64748b);
+    border-bottom: 2px solid var(--sc-muted, #64748b);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 150ms ease;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-block[open] .sct-us-pa-caret {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-proj {
+    display: grid;
+    gap: 4px;
+    margin: 6px 0 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-proj-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.84rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-proj-row dt {
+    color: var(--sc-muted, #64748b);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-proj-row dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tag {
+    margin-left: 6px;
+    color: var(--sc-muted, #64748b);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tag.is-modeled {
+    font-style: italic;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-full,
+  :is(.sct, #sct-table-armour) .sct-us-pa-note {
+    margin: 8px 0 0 !important;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-note {
+    color: var(--sc-muted, #64748b);
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 359px) {
+  :is(.sct, #sct-table-armour) .sct-us-pa-bar {
+    grid-template-columns: 72px minmax(0, 1fr) 34px;
+  }
+
+  /* Five figures in ~54px each: the labels may take two lines. */
+  :is(.sct, #sct-table-armour) .sct-us-pa-lab {
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tiles {
+    gap: 0 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-tile + .sct-us-pa-tile {
+    padding-left: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-pa-val {
+    font-size: 1.05rem;
+  }
+}
+
+/* Season list: phones only (the table everywhere else). */
+:is(.sct, #sct-table-armour) .sct-csp {
+  display: none;
+}
+
+/* Coaching Season by Season at 560px and under (mak, 2026-11-15): the
+   table gives way to a season list. Each row is season and team (with
+   "Through Week 9" / "Wks 1-8 only" under it), PPG, NFL rank and a
+   chevron; tapping opens the WR / RB / TE target shares with their league
+   gap and the lead back's share. A season he did not call is one muted
+   line. Five seasons, then the existing Show all control. The current
+   season wears a thin accent bar only. Header untouched. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-scroll,
+  :is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-hint {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp {
+    display: block;
+    border-top: 1px solid var(--tp-c-e2eaf4, #e2eaf4);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cs-all:not(:checked) ~ .sct-csp .sct-csp-older {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-csp-head, .sct-csp-sum) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px 78px 18px;
+    align-items: center;
+    column-gap: 6px;
+    padding: 0 4px 0 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-head {
+    height: 28px;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--tp-c-e2eaf4, #e2eaf4);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-head > span:nth-child(n + 2),
+  :is(.sct, #sct-table-armour) .sct-csp-sum > :is(.sct-csp-ppg, .sct-csp-rank) {
+    text-align: right;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-row {
+    border-bottom: 1px solid var(--tp-c-eef2f7, #eef2f7);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-sum {
+    min-height: 46px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-row.is-flat .sct-csp-sum {
+    cursor: default;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-sum::-webkit-details-marker {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-sum:focus-visible {
+    outline: 2px solid var(--cp-gold, #d4af37);
+    outline-offset: -2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-season {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-yr {
+    color: var(--tp-ink, #0b1634);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-yr b {
+    margin-right: 2px;
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-note {
+    overflow: hidden;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-ppg {
+    color: var(--tp-ink, #0b1634);
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-rank .sct-cs-rank {
+    padding: 1px 6px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-rank .sct-cs-rank-w {
+    display: none;
+  }
+
+  /* Chevron: a small rotated border, down when closed, up when open. */
+  :is(.sct, #sct-table-armour) .sct-csp-chev {
+    justify-self: center;
+    width: 7px;
+    height: 7px;
+    margin-top: -3px;
+    border-right: 1.75px solid var(--sct-m-muted, #8796aa);
+    border-bottom: 1.75px solid var(--sct-m-muted, #8796aa);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-chev.is-none {
+    visibility: hidden;
+  }
+
+  :is(.sct, #sct-table-armour) details.sct-csp-row[open] .sct-csp-chev {
+    margin-top: 3px;
+    transform: rotate(-135deg);
+  }
+
+  /* The current season: a thin accent bar, no fill. */
+  :is(.sct, #sct-table-armour) .sct-csp-row.is-current {
+    box-shadow: inset 3px 0 0 var(--cp-gold, #d4af37);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-row.is-current .sct-csp-note {
+    color: var(--cp-gold-text, #7a5c0e);
+    font-weight: 600;
+  }
+
+  /* Seasons he did not call: muted. */
+  :is(.sct, #sct-table-armour) .sct-csp-row.is-notcaller :is(.sct-csp-yr, .sct-csp-ppg) {
+    color: var(--sct-m-muted, #5b6b80);
+  }
+
+  /* Gap years: one quiet line. */
+  :is(.sct, #sct-table-armour) .sct-csp-gaprow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--tp-c-eef2f7, #eef2f7);
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-gap-yr {
+    font-style: normal;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Details: the shares and the lead back, two by two. */
+  :is(.sct, #sct-table-armour) .sct-csp-detail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+    margin: 0;
+    padding: 2px 8px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-kv {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-kv dt {
+    margin: 0;
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-kv dd {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-kv b {
+    color: var(--tp-ink, #0b1634);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-kv.is-lean b {
+    color: var(--cp-gold-text, #7a5c0e);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-gap {
+    color: var(--sct-m-muted, #5b6b80);
+    font-size: 11px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Season list on the narrowest phones: slimmer figure columns, the note may wrap. */
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) :is(.sct-csp-head, .sct-csp-sum) {
+    grid-template-columns: minmax(0, 1fr) 44px 62px 14px;
+    column-gap: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-csp-note {
+    white-space: normal;
+  }
+}
+
+/* =========================================================================
+   The Usage fantasy table (Advanced & Fantasy Analysis) on phones (mak,
+   2026-11-15). First pass: under 560px each player is one two-level row,
+   identity on top, Opportunity / Snap Share / RZ Opps below, hairlines
+   between players. Second pass ("polish, don't reinvent"): the three labels
+   print ONCE per position group (tr.sct-us-mhead under the band row, with
+   the column tips) instead of in every row; 32px faces; rows ~20% shorter;
+   percentiles as bare "63rd" (the head's tip defines them); every move under
+   its figure in one style - ink with a small arrow, "Steady" muted, units
+   kept (pp / /g) - never graded green or red; the read is sentence case,
+   muted, behind its colored dot; the + is a quiet ring inside a 44px target.
+   The table markup, bands, order, toggles and the expanded profile are the
+   desktop's own; only the display changes. Desktop never shows .sct-us-mhead.
+   ========================================================================= */
+:is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-mhead {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-scroll {
+    overflow: visible;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp table.sct-us-table:not(.variations),
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tbody,
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-band-row,
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-band-row > th {
+    display: block;
+    width: auto;
+    min-width: 0;
+  }
+
+  /* The thead goes to screen readers only. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-band-row > th {
+    padding: 8px 12px;
+  }
+
+  /* One grid for the group head and every row, so values sit under their
+     heading. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table :is(tr.sct-us-row, tr.sct-us-mhead) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 10px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-mhead {
+    padding-top: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--prm-line, var(--sc-hairline));
+    background: var(--tp-c-f7f9fd, #f7f9fd);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-mhead > td {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--prm-muted, var(--sc-muted));
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-mhead .sct-us-tip {
+    margin-left: 3px;
+    vertical-align: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-mhead .sct-us-tip svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row {
+    position: relative;
+    row-gap: 5px;
+    padding-top: 8px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--prm-line, var(--sc-hairline));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tbody.sct-us-band tr.sct-us-row:last-child {
+    border-bottom: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row > :is(td, th) {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row:hover :where(th, td) {
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row > th.is-player {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+    padding-right: 36px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row > td:is(.is-opp, .is-snap, .is-rz) {
+    grid-row: 2;
+  }
+
+  /* The + : a quiet ring, a 44px target around it. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-row > td.is-toggle {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: auto;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-toggle {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--prm-muted, var(--sc-muted));
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-toggle > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--prm-line-2, var(--sc-border));
+    border-radius: 50%;
+    line-height: 1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-toggle[aria-expanded="true"] {
+    background: none;
+    color: var(--tp-ink, var(--sc-navy));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-toggle[aria-expanded="true"] > span {
+    border-color: var(--tp-ink, var(--sc-navy));
+  }
+
+  /* Identity: a 32px face, the name, the role quieter. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-who {
+    gap: 9px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-face {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-who-text {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-name {
+    font-size: 0.92rem;
+    line-height: 1.2;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-role {
+    flex-wrap: wrap;
+    gap: 1px 7px;
+    margin-top: 1px;
+    font-size: 0.7rem;
+    letter-spacing: 0;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  /* The read: sentence case, muted, its color only in the dot. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-role .sct-us-tier {
+    gap: 4px;
+    color: var(--prm-muted, var(--sc-muted));
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table th.is-player .sct-us-role .sct-us-tier::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-tier.is-set::before { background: var(--us-green); }
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-tier.is-starter::before { background: var(--us-blue); }
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-tier.is-flex::before { background: var(--sc-muted-strong); }
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-tier.is-volatile::before { background: var(--us-red); }
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-tier.is-stash::before { background: var(--us-amber); }
+
+  /* The figures. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-mlab,
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-unit,
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table td.is-opp .sct-us-pbar {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-num.is-lead,
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-num.is-mid {
+    font-size: 1.1rem;
+  }
+
+  /* Under each number, in one style: the stat, then its move. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table td > .sct-us-cap {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.7rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-cap-sep {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-cap > :is(.sct-us-cap-stat, .sct-us-delta, .sct-us-leads) {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-cap > .sct-us-delta {
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta {
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta:is(.is-up, .is-down) {
+    color: var(--tp-ink, var(--sc-ink));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta.is-flat {
+    color: var(--prm-muted, var(--sc-muted));
+    font-weight: 600;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta:is(.is-up, .is-down)::before {
+    margin-right: 3px;
+    color: var(--prm-muted, var(--sc-muted));
+    font-size: 0.75em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta.is-up::before {
+    content: "▲";
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-delta.is-down::before {
+    content: "▼";
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table .sct-us-cap > .sct-us-leads {
+    color: var(--tp-ink, var(--sc-ink));
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* The expanded profile under its row, full width. */
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-detail:not([hidden]),
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-detail:not([hidden]) > td {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-detail[hidden]:where(.sct:not([data-sct-usage="js"]) *),
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-detail[hidden]:where(.sct:not([data-sct-usage="js"]) *) > td {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-xp .sct-us-table tr.sct-us-detail > td {
+    padding: 12px;
+    border-bottom: 1px solid var(--prm-line, var(--sc-hairline));
+  }
+}
+
+/* =========================================================================
+   News tab on phones (mak, 2026-11-15: "a clean, compact, premium mobile
+   sports news feed"). Under 560px every story, the lead included, is one
+   row under a hairline: an 80 x 60 thumbnail (4:3, cover, the club crest in
+   the empty well), then one meta line "INJURY · 5h ago · Pro Football Talk",
+   the headline at 15px semibold, and the player the story is about behind a
+   small person mark (the subject, never the author). No ribbon, no corner
+   mark, no Read report link, no cards. Same-event coverage folds under the
+   first story as "Also covered by N more sources" links (sameEventGroups()
+   in news-premium.ts); those stories' own cards are hidden here only. The
+   tab header, the rail cards and the fold button are untouched.
+   ========================================================================= */
+:is(.sct, #sct-table-armour) .sct-nwp-meta-src,
+:is(.sct, #sct-table-armour) .sct-nwp-also {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-dup {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-grid {
+    display: block !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card:is(.is-featured, :not(.is-featured)):not(.is-dup) {
+    display: grid !important;
+    grid-template-columns: 80px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: start;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 12px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--sct-m-line, var(--nwp-border)) !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured {
+    padding-top: 4px !important;
+  }
+
+  /* The rows run on from the lead: no layout gap between them. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured + .sct-nwp-grid {
+    margin-top: -16px !important;
+  }
+
+  /* The thumbnail: one size and shape for every story. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-well,
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured .sct-nwp-well {
+    position: relative;
+    width: 80px !important;
+    height: 60px !important;
+    min-height: 0 !important;
+    aspect-ratio: 4 / 3 !important;
+    border-radius: 6px !important;
+    overflow: hidden;
+    background: var(--tp-c-eef1f4, #eef1f4);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-photo,
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-photo-empty {
+    position: absolute !important;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-photo-empty {
+    background: var(--tp-c-eef1f4, #eef1f4);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-photo-empty::after {
+    background-size: 46%;
+    opacity: 0.22;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card :is(.sct-nwp-ribbon, .sct-nwp-corner, .sct-nwp-watermark, .sct-nwp-cta) {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-body,
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured .sct-nwp-body {
+    gap: 4px;
+    min-width: 0;
+    padding: 0 !important;
+  }
+
+  /* One meta line: category · time · publisher. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-news-meta {
+    flex-wrap: wrap;
+    gap: 0;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.3;
+    text-transform: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-news-kicker {
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--nwp-team-navy, var(--tp-ink, var(--nwp-navy-900)));
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-dot {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-dot::before {
+    content: "·";
+    margin: 0 5px;
+    color: var(--nwp-muted);
+  }
+
+  /* Older than a week the stamp is a date; the clock time goes. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-news-time {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-meta-src {
+    display: inline;
+    font-weight: 500;
+  }
+
+  /* A long publisher drops to its own line without a leading dot. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-news-meta > time,
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-meta-src {
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-title,
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured .sct-nwp-title {
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-weight: 600;
+    line-height: 1.33 !important;
+    letter-spacing: 0;
+  }
+
+  /* The subject: the player, behind a person mark; the byline's source is
+     on the meta line now. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-source {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-byline:not(:has(.sct-nwp-subject)) {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-byline {
+    font-size: 0.74rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-subject {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-subject::before {
+    content: "";
+    flex: none;
+    width: 11px;
+    height: 11px;
+    background: var(--nwp-muted);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4.5'/%3E%3Cpath d='M3 21c0-5 4-8 9-8s9 3 9 8z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4.5'/%3E%3Cpath d='M3 21c0-5 4-8 9-8s9 3 9 8z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-player {
+    display: inline-block;
+    padding: 4px 0;
+    margin: -4px 0;
+  }
+
+  /* Same-event coverage under the first story. */
+  :is(.sct, #sct-table-armour) .sct-nwp-also {
+    position: relative;
+    z-index: 2;
+    display: block;
+    margin: 4px 0 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-head {
+    margin: 0;
+    color: var(--nwp-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-list > li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-list > li::before {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-link {
+    display: block;
+    padding: 6px 0;
+    border-top: 1px dashed var(--sct-m-line, var(--nwp-border));
+    color: var(--tp-ink, var(--nwp-navy-900));
+    font-size: 0.8rem;
+    line-height: 1.3;
+    text-decoration: none;
+    border-bottom: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-list > li:first-child .sct-nwp-also-link {
+    margin-top: 3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-src {
+    display: block;
+    color: var(--nwp-muted);
+    font-size: 0.66rem;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-also-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  :is(.sct, #sct-table-armour) a.sct-nwp-also-link:hover .sct-nwp-also-title {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-nwp-card:is(.is-featured, :not(.is-featured)) {
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-nwp-card .sct-nwp-well,
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured .sct-nwp-well {
+    width: 72px !important;
+    height: 54px !important;
+  }
+}
+
+/* Team pages at 560px and under (mak, 2026-11-15): an 8px outer gutter
+   (was 16px) and 12px inside every section card. Standalone page: the
+   wrapper pads 8px. Embedded on WordPress: the plugin's #main-content
+   already pads 4px at <=980px, so the wrapper adds 4px to make 8. Team
+   pages only ([data-team], not the matchup tool's .sct-mu). The cards that
+   sat at 14-18px inside come to 12px; their header bars are untouched. */
+@media (max-width: 560px) {
+  .sct.sct[data-team]:not(.sct-mu) {
+    --sct-gutter: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .sct.sct.is-embed[data-team]:not(.sct-mu) {
+    --sct-gutter: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  /* 12px inside: the cards that were wider-set. */
+  :is(.sct, #sct-table-armour)[data-team] :is(
+      .sct-cpt-section .sct-cpt-card,
+      .sct-us-signal,
+      .sct-us-prm-insight.sct-us-handcuff,
+      .sct-tfo-bl,
+      .sct-drp-method,
+      .sct-ct-how,
+      .sct-block:has(> .sct-faq)
+    ) {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  :is(.sct, #sct-table-armour)[data-team] :is(.sct-drp-card-body, .sct-nwp-rail-body, .sct-nwp-tiles) {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  /* Coaching's situational and target cards: their own phone rule set 16px. */
+  :is(.sct, #sct-table-armour)[data-team] .sct-cpt-section:is(.is-situational, .is-targets) .sct-cpt-grid > .sct-cpt-card {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  /* The FAQ heading runs edge to edge by cancelling the block's padding; it
+     cancels 12px now, so it looks exactly as before. */
+  :is(.sct, #sct-table-armour)[data-team] .sct-block:has(> .sct-faq) > .sct-h2 {
+    margin-right: -12px !important;
+    margin-left: -12px !important;
+  }
+}
+
+/* Fantasy Finishes list: phones only (the table everywhere else). */
+:is(.sct, #sct-table-armour) .sct-cfp {
+  display: none;
+}
+
+/* Coaching Fantasy Finishes by Season at 560px and under (mak, 2026-11-15,
+   third pass): every position in view, no sideways scroll. One row per
+   season: "2016 NE" over the role ("OC", "HC · Wks 1-8", "Thru Wk 9"),
+   then the QB / RB1 / WR1 / TE1 rank pills (same tiers and colors, one
+   size) and a chevron; tapping opens the player behind each finish. Rows
+   about 42px on hairline dividers; the in-season row keeps a thin accent.
+   Header untouched. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cf-panel .sct-cf-scroll {
+    display: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp {
+    display: block;
+    border-top: 1px solid var(--cf-border, #e2eaf4);
+  }
+
+  :is(.sct, #sct-table-armour) :is(.sct-cfp-head, .sct-cfp-sum) {
+    display: grid;
+    grid-template-columns: minmax(58px, 1fr) repeat(4, 46px) 14px;
+    align-items: center;
+    column-gap: 4px;
+    padding: 0 2px 0 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-head {
+    height: 28px;
+    border-bottom: 1px solid var(--cf-border, #e2eaf4);
+    color: var(--cf-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-head > span:nth-child(n + 2):not(:last-child),
+  :is(.sct, #sct-table-armour) .sct-cfp-cell {
+    text-align: center;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-row {
+    border-bottom: 1px solid var(--cf-border-light, #eef2f7);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-sum {
+    min-height: 42px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-sum::-webkit-details-marker {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-sum:focus-visible {
+    outline: 2px solid var(--cf-gold, #d4af37);
+    outline-offset: -2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-stop {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-yr {
+    color: var(--tp-ink, #0b1634);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-yr b {
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-role {
+    overflow: hidden;
+    color: var(--cf-muted, #5b6b80);
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-row.is-current {
+    box-shadow: inset 3px 0 0 var(--cf-gold);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-row.is-current .sct-cfp-role {
+    color: var(--tp-c-7a5c0e, #7a5c0e);
+  }
+
+  /* Pills: one size, centered in their column. */
+  :is(.sct, #sct-table-armour) .sct-cfp-cell .sct-cf-pill {
+    box-sizing: border-box;
+    width: 44px !important;
+    min-width: 0 !important;
+    padding: 1px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Chevron: down closed, up open. */
+  :is(.sct, #sct-table-armour) .sct-cfp-chev {
+    justify-self: center;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-right: 1.75px solid #8796aa;
+    border-bottom: 1.75px solid #8796aa;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-row[open] .sct-cfp-chev {
+    margin-top: 3px;
+    transform: rotate(-135deg);
+  }
+
+  /* Details: the player behind each finish, one per line (full names fit). */
+  :is(.sct, #sct-table-armour) .sct-cfp-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+    margin: 0;
+    padding: 0 8px 10px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-kv {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-kv dt {
+    flex: none;
+    width: 30px;
+    margin: 0;
+    color: var(--cf-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-kv dd {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--tp-ink, #0b1634);
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-rk {
+    color: var(--cf-muted, #5b6b80);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* The narrowest phones: slimmer pill columns so all four still fit. */
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) :is(.sct-cfp-head, .sct-cfp-sum) {
+    grid-template-columns: minmax(54px, 1fr) repeat(4, 42px) 12px;
+    column-gap: 3px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-cell .sct-cf-pill {
+    width: 41px !important;
+    font-size: 11.5px !important;
+  }
+
+}
+
+
+/* Fantasy Finishes list: Show all (phones only; the checkbox drives it, as
+   in Season by Season). */
+:is(.sct, #sct-table-armour) .sct-cfp-all {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cfp-more {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cfp-all:not(:checked) ~ .sct-cfp .sct-cfp-older,
+  :is(.sct, #sct-table-armour) .sct-cfp-all:not(:checked) ~ .sct-cfp-more .sct-cfp-more-hide,
+  :is(.sct, #sct-table-armour) .sct-cfp-all:checked ~ .sct-cfp-more .sct-cfp-more-show {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-more {
+    display: inline-block;
+    margin: 8px 0 0;
+    padding: 2px 0;
+    color: var(--tp-c-244879, #244879);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-more-show::after {
+    content: " →";
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cfp-all:focus-visible ~ .sct-cfp-more {
+    outline: 2px solid var(--cf-gold, #d4af37);
+    outline-offset: 2px;
   }
 }

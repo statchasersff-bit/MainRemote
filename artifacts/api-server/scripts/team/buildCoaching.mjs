@@ -61,6 +61,10 @@ const CLUBS = Object.keys(NICKNAMES);
 /* -------------------------------------------------------------------- CSV */
 
 let cacheDir = null;
+/** For importers (backfillFinishNames.mjs): read CSVs from a local cache dir. */
+export const setCacheDir = (dir) => {
+  cacheDir = dir;
+};
 
 function splitCsv(line) {
   const out = [];
@@ -160,7 +164,7 @@ const cap = (t) => t[0].toUpperCase() + t.slice(1);
 const ordWord = (n) => ORDINAL_WORDS[n] ?? ordinal(n);
 const signed = (v, places = 1) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(places).replace(/\.0$/, "")}`;
 const SUFFIXES = new Set(["Jr.", "Jr", "Sr.", "Sr", "II", "III", "IV", "V"]);
-const lastName = (name) => {
+export const lastName = (name) => {
   const parts = name.split(" ").filter((p) => !SUFFIXES.has(p));
   return parts[parts.length - 1] ?? name;
 };
@@ -406,7 +410,7 @@ async function rosterPositions(season) {
   return map;
 }
 
-async function seasonPlayers(season, window = null) {
+export async function seasonPlayers(season, window = null) {
   const clubs = new Map(); // club -> {posTargets, rbs: Map, topByPos: Map(pos -> {name, pts})}
   const leaguePts = new Map(); // `${pos}` -> Map(player_id -> pts)
   const regular = (r) => (r.season_type ?? r.game_type) === "REG";
@@ -1036,6 +1040,9 @@ function composeEntry({
       return {
         text: `${pos}${t.rank} · ${lastName(t.name)}`,
         tone: finishTone(pos, t.rank),
+        // The full name, for the phones' expanded season rows (2026-11-15);
+        // the text keeps the surname the tables print.
+        name: t.name,
       };
     });
     return { stop: `${stopName(stop)} ${yr}`, context: w ? `${stop.role} · ${windowLabel(w)}` : stop.role, cells };
@@ -1054,6 +1061,7 @@ function composeEntry({
         return {
           text: `${pos}${t.rank} · ${lastName(t.name)}`,
           tone: finishTone(pos, t.rank),
+          name: t.name,
         };
       }),
     });
