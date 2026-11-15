@@ -62,10 +62,18 @@ function shortName(name: string): string {
  * last name with the position beside it, on one line (mak, 2026-11-06:
  * not the name over a position row). The full name stays in the link for
  * screen readers and crawlers, visually hidden, with a title on hover.
+ *
+ * Both visible forms are printed (mak, 2026-11-14): the full name and the
+ * short one. CSS shows the short one by default; in the Snap Counts table on
+ * phones the full name shows, and team.ts's fitSnapNames() switches a row to
+ * the short form only when its full name would be cut off.
  */
 function who(p: UsagePlayer): string {
   const href = getPlayerPageUrl(p.slug);
-  const label = `<span aria-hidden="true">${e(shortName(p.name))}</span><span class="sct-visually-hidden">${e(p.name)}</span>`;
+  const label =
+    `<span class="sct-up-nm is-full" aria-hidden="true">${e(p.name)}</span>` +
+    `<span class="sct-up-nm is-short" aria-hidden="true">${e(shortName(p.name))}</span>` +
+    `<span class="sct-visually-hidden">${e(p.name)}</span>`;
   const name = href
     ? `<a class="sct-up-name sct-player-link" href="${e(href)}" target="_top" title="${e(p.name)}">${label}</a>`
     : `<span class="sct-up-name" title="${e(p.name)}">${label}</span>`;
@@ -201,7 +209,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         ? `<th scope="col" class="is-num">Rec</th><th scope="col" class="is-num"><abbr title="Receiving yards">Yds</abbr></th>`
         : `<th scope="col" class="is-num"><abbr title="Rushing yards on these carries">Yds</abbr></th><th scope="col" class="is-num"><abbr title="Yards per carry">YPC</abbr></th>`
       : "") +
-    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}">Season share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3 wk</abbr></th>` +
+    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Season </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3 wk</abbr></th>` +
     (isT ? `<th scope="col" class="is-num is-air"><abbr title="Share of the team's air yards">Air yds</abbr></th>` : "") +
     `</tr></thead><tbody>${rows}${othersRow}</tbody></table></div>` +
     `</div></section>`

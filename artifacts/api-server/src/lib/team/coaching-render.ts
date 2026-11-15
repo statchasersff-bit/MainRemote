@@ -333,12 +333,12 @@ export function num(text: string): number | null {
 export function changeText(row: TendencyRow, v: RowView): string {
   if (v.change.dir === "flat") return "steady";
   if (v.delta == null) return v.change.text;
-  // A rate's change is in percentage points (60.5% to 58% is -2.5 pp, not
-  // -2.5%), and pace is written out with no arrow beside the seconds (mak's
+  // A rate's change prints with "%" (60.5% to 58% is -2.5%; mak, 2026-11-15:
+  // no "pp" on the coaching page), and pace is written out with no arrow beside the seconds (mak's
   // review, 2026-11-08: an up arrow next to "faster" read as ambiguous).
   const size = Math.abs(v.delta).toFixed(1);
   if (row.key === "pace" || row.invert) return `${size} ${size === "1.0" ? "second" : "seconds"} ${v.delta > 0 ? "faster" : "slower"}`;
-  return `${v.delta > 0 ? "+" : "−"}${size} pp`;
+  return `${v.delta > 0 ? "+" : "−"}${size}%`;
 }
 
 /** The brief's two groups (2026-11-05); fourth down moves to Situational Play Calling. */
@@ -397,7 +397,7 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
     .map(({ row, v }) => {
       const d = v.delta as number;
-      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
       const phrase = MOVE_PHRASE[row.key as string]!(d > 0, pts);
       return numbers ? phrase : phrase.replace(/ \([^)]*\)$/, "");
     });
@@ -450,7 +450,7 @@ function identityParagraph(
       .slice(0, n)
       .map(({ row, v }) => {
         const d = v.delta as number;
-        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)} pp`;
+        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
         return MOVE_PHRASE[row.key as string]!(d > 0, pts);
       });
   const calling = pick(GROUPS[0]!.keys, 2);

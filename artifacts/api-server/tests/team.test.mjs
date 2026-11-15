@@ -634,6 +634,10 @@ describe("embedded mode", () => {
     assert.equal(page.status, 200, "the section page still renders");
   });
 
+  /** A depth row's name: the full spelling, where a brief one rides alongside. */
+  const rowName = (row) =>
+    (row.querySelector(".sct-depth-name-long") ?? row.querySelector(".sct-depth-name")).textContent.trim();
+
   test("the Depth Chart tab is the football chart first, the fantasy chart last", async () => {
     const { doc } = await dom("/team/new-england-patriots/depth-chart/");
     const snapshot = JSON.parse(
@@ -3109,7 +3113,7 @@ describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () 
     assert.match(block, /"badge identity actions"/, "crest, name and switcher share one row");
     assert.match(block, /\.sct-tpb-season \{\s*display: none !important;/, "no season bar");
     assert.match(block, /\.sct-nav-link\.is-active:hover \{\s*min-height: 44px !important;/, "44px tabs");
-    assert.match(block, /\.sct-tfo-stamp \.sct-tfo-stamp-season \{\s*display: none !important;/, "the stamp drops the repeated season");
+    assert.match(block, /\.sct-tfo-stamp \{\s*display: none !important;/, "no stamp on phones (mak, 2026-11-14)");
   });
 });
 

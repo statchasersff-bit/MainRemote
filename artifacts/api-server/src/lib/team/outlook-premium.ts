@@ -30,7 +30,7 @@ import type { OutlookFact, OutlookGroup, OutlookPlayer, TeamOutlook } from "./ou
 import type { RosterPlayer } from "./roster";
 import type { NflTeam } from "./teams";
 import { injuryBadge, slotChip } from "../team-render";
-import { premiumTabHead } from "./premium-head";
+import { PREMIUM_HEAD_ICON, premiumTabHead } from "./premium-head";
 import { paragraphs } from "./prose";
 
 const e = escapeHtml;
@@ -198,6 +198,10 @@ export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: 
     // the banner its header, like the groups under it (mak, 2026-11-06).
     `<section class="sct-tfo-intro">` +
     header(team, outlook, underway) +
+    // The card's title on phones only (mak, 2026-11-14: "should be called
+    // Preseason Outlook"), where the banner's heading is visually hidden.
+    // aria-hidden like the old phone titles: the H2 above names the section.
+    `<p class="sct-tfo-m-head" aria-hidden="true"><span class="sct-tfo-m-icon">${PREMIUM_HEAD_ICON.outlook}</span><span class="sct-tfo-m-title">Preseason Outlook</span></p>` +
     `<div class="sct-tfo-overview">` +
     paragraphs(outlook.summary).map((t) => `<p class="sct-tfo-lede">${e(t)}</p>`).join("") +
     strip(outlook.facts) +

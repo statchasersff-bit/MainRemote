@@ -64,11 +64,26 @@ export const STATUS_WORD: Record<string, string> = {
 export const RANK_TOP_THIRD = 11;
 export const RANK_BOTTOM_THIRD = 22;
 
-export function playerCell(p: ContractLine): string {
+export function playerCell(p: ContractLine, withShort = false): string {
   const href = getPlayerProfileUrl(p.name);
+  const short = withShort ? shortName(p.name) : null;
+  const attr = short && short !== p.name ? ` data-short="${e(short)}"` : "";
   return href
-    ? `<a class="sct-ct-name sct-player-link" href="${e(href)}" target="_top">${e(p.name)}</a>`
-    : `<span class="sct-ct-name">${e(p.name)}</span>`;
+    ? `<a class="sct-ct-name sct-player-link" href="${e(href)}" target="_top"${attr}>${e(p.name)}</a>`
+    : `<span class="sct-ct-name"${attr}>${e(p.name)}</span>`;
+}
+
+/**
+ * First initial and last name ("Christian Gonzalez" -> "C. Gonzalez", "Dan
+ * Moore Jr." -> "D. Moore Jr."), the contracts sheet's phone label (mak,
+ * 2026-11-15). A first name already written as initials ("A.J.") stays.
+ */
+export function shortName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length < 2) return name;
+  const first = parts[0]!;
+  if (first.includes(".")) return name;
+  return `${first.charAt(0)}. ${parts.slice(1).join(" ")}`;
 }
 
 /**
