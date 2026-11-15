@@ -1054,9 +1054,9 @@ export function playerName(name: string, className: string, label?: string): str
  * a single-word name, or an abbreviation that would not actually be shorter.
  * The cell still clips those; there is simply no better spelling to offer.
  */
-function briefName(name: string): string | null {
+function briefName(name: string, longerThan = 20): string | null {
   const full = name.trim();
-  if (full.length <= 20) return null;
+  if (full.length <= longerThan) return null;
 
   const gap = full.indexOf(" ");
   if (gap <= 0) return null;
@@ -1663,8 +1663,8 @@ export function resourceCards(team: NflTeam): ResourceCard[] {
  * span is aria-hidden, and the long one is only ever hidden visually - so a
  * screen reader reads "Rhamondre Stevenson" at every width, once.
  */
-function depthName(player: { name: string }): string {
-  const brief = briefName(player.name);
+function depthName(player: { name: string }, every = false): string {
+  const brief = briefName(player.name, every ? 0 : 20);
   if (!brief) return playerName(player.name, "sct-depth-name");
   return playerName(
     player.name,
@@ -1936,7 +1936,9 @@ function renderDepthChart(
     formation: depthFormationText,
     grades: (view) => depthGradeUnits(data, view),
     experience: (name) => depthExperience(team, name),
-    name: depthName,
+    // Every name carries its brief form, not only the long ones: a phone
+    // shows "D. Maye" down the whole chart (mak, 2026-11-15).
+    name: (player) => depthName(player, true),
     movement: depthMovement,
     badge: (row) => injuryBadge(row, "sct-dpp-tag"),
     sidelined: (row) => isOutDesignation(row.injuryStatus),

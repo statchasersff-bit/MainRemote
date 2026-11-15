@@ -155,13 +155,30 @@ function card(h: DepthPremiumHelpers, row: DepthRow, options: { starter?: boolea
 
 /* ----------------------------------------------------------------- matrix */
 
-function slotRow(h: DepthPremiumHelpers, slot: FootballSlot): string {
+/**
+ * The printed label of each slot: a position the side lists more than once
+ * is numbered in chart order (WR1, WR2, WR3; TE1, TE2 in a two-TE base),
+ * one listed once keeps its abbreviation (mak, 2026-11-15, all widths).
+ */
+function slotLabels(slots: FootballSlot[]): string[] {
+  const total = new Map<string, number>();
+  for (const slot of slots) total.set(slot.pos, (total.get(slot.pos) ?? 0) + 1);
+  const seen = new Map<string, number>();
+  return slots.map((slot) => {
+    if ((total.get(slot.pos) ?? 0) < 2) return slot.pos;
+    const n = (seen.get(slot.pos) ?? 0) + 1;
+    seen.set(slot.pos, n);
+    return `${slot.pos}${n}`;
+  });
+}
+
+function slotRow(h: DepthPremiumHelpers, slot: FootballSlot, label: string = slot.pos): string {
   const shown = slot.rows.slice(0, COLUMNS.length);
   const cells = shown.map((row, i) => card(h, row, { starter: i === 0 })).join("");
   const blanks = COLUMNS.length - shown.length;
   return (
     `<div class="sct-dpp-row" data-pos="${e(slot.pos)}" data-slot="${e(slot.key)}">` +
-    `<h4 class="sct-dpp-pos"><span class="sct-dpp-pos-name">${e(slot.pos)}</span><span class="sct-visually-hidden"> - ${e(slot.label)}</span></h4>` +
+    `<h4 class="sct-dpp-pos"><span class="sct-dpp-pos-name">${e(label)}</span><span class="sct-visually-hidden"> - ${e(slot.label)}</span></h4>` +
     `<ol class="sct-dpp-cells">${cells}${blanks > 0 ? `<li class="sct-dpp-blank" aria-hidden="true"></li>`.repeat(blanks) : ""}</ol>` +
     `</div>`
   );
@@ -169,6 +186,7 @@ function slotRow(h: DepthPremiumHelpers, slot: FootballSlot): string {
 
 function footballPanel(data: TeamPageData, h: DepthPremiumHelpers, side: FootballSide): string {
   const { team } = data;
+  const labels = slotLabels(side.slots);
   const overflow = side.slots.flatMap((slot) =>
     slot.rows.slice(COLUMNS.length).map((row) => card(h, row, { slot: `${slot.pos}${row.rank}` })),
   );
@@ -184,7 +202,7 @@ function footballPanel(data: TeamPageData, h: DepthPremiumHelpers, side: Footbal
     `<div class="sct-dpp-head" aria-hidden="true"><span class="sct-dpp-head-pos">Pos</span>` +
     COLUMNS.map((label) => `<span>${label}</span>`).join("") +
     `</div>` +
-    side.slots.map((slot) => slotRow(h, slot)).join("") +
+    side.slots.map((slot, i) => slotRow(h, slot, labels[i])).join("") +
     `</div>` +
     `</div>` +
     (overflow.length

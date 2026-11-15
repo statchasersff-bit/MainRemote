@@ -689,6 +689,39 @@ function wireBarHeight(root: HTMLElement): void {
   void document.fonts?.ready.then(fit);
 }
 
+/**
+ * Snap Counts & Playing Time on phones (mak, 2026-11-14): names print in
+ * full, and only a name that would be cut off in its cell falls back to
+ * "D. Maye". The CSS shows the full form when the name has no `is-tight`;
+ * this measures each one with the full form showing and marks the ones that
+ * overflow. Re-run on resize, font load and when the view re-renders rows.
+ */
+const PHONE_QUERY = "(max-width: 560px)";
+
+function fitSnapNames(root: HTMLElement): void {
+  const fit = (): void => {
+    const names = Array.from(root.querySelectorAll<HTMLElement>(".sct-up-snaps .sct-up-name"));
+    for (const n of names) n.classList.remove("is-tight");
+    if (typeof window.matchMedia !== "function" || !window.matchMedia(PHONE_QUERY).matches) return;
+    for (const n of names) {
+      if (n.scrollWidth > n.clientWidth + 1) n.classList.add("is-tight");
+    }
+  };
+  let frame = 0;
+  const schedule = (): void => {
+    if (typeof requestAnimationFrame !== "function") return fit();
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(fit);
+  };
+  fit();
+  window.addEventListener("resize", schedule, { passive: true });
+  void document.fonts?.ready.then(schedule);
+  if (typeof MutationObserver !== "function") return;
+  for (const body of Array.from(root.querySelectorAll<HTMLElement>(".sct-up-snaps tbody"))) {
+    new MutationObserver(schedule).observe(body, { childList: true });
+  }
+}
+
 /* ----------------------------------------------------------- switcher ---- */
 
 function wireSwitcher(root: HTMLElement): void {
@@ -1809,6 +1842,7 @@ function boot(): void {
     wireUsageDetail(root);
     wireUsageProfiles(root);
     wireSnapTables(root);
+    fitSnapNames(root);
     wireDepthViews(root);
     wireCutScenario(root);
     wireBarHeight(root);

@@ -94,14 +94,19 @@ const ICON = {
  * top eleven and the bottom eleven are colored by whether more is good,
  * the middle ten stay neutral.
  */
-function rankBadge(rank: number | null, sense: "more-is-good" | "more-is-bad" | "neutral" = "neutral"): string {
+function rankBadge(
+  rank: number | null,
+  sense: "more-is-good" | "more-is-bad" | "neutral" = "neutral",
+  short = false,
+): string {
   if (rank === null) return "";
   let tone = "neutral";
   if (sense !== "neutral" && rank <= RANK_TOP_THIRD) tone = sense === "more-is-good" ? "good" : "bad";
   if (sense !== "neutral" && rank >= RANK_BOTTOM_THIRD) tone = sense === "more-is-good" ? "bad" : "good";
   return (
-    `<span class="sct-ctp-rank" data-tone="${tone}"><span class="sct-ctp-num">${e(ordinal(rank))}</span> of 32` +
-    `<span class="sct-visually-hidden"> clubs</span></span>`
+    `<span class="sct-ctp-rank" data-tone="${tone}"><span class="sct-ctp-num">${e(ordinal(rank))}</span>` +
+    (short ? `<span class="sct-visually-hidden"> of 32 clubs</span>` : ` of 32<span class="sct-visually-hidden"> clubs</span>`) +
+    `</span>`
   );
 }
 
@@ -243,7 +248,7 @@ function row(team: NflTeam, p: ContractLine, scenario: boolean, doc: WorthDoc | 
     ` data-post-save="${p.june1Save}" data-post-dead="${p.june1Dead}"${p.cutEstimated ? ` data-est="1"` : ""}>` +
     pick +
     `<th scope="row" class="sct-ctp-td is-player" data-sort="${e(sortName(p.name))}">` +
-    `<span class="sct-ctp-player">${face(team, p, 30, "sct-ctp-face")}<span class="sct-ctp-who">${playerCell(p)}${statusBadge(p)}</span></span>` +
+    `<span class="sct-ctp-player">${face(team, p, 30, "sct-ctp-face")}<span class="sct-ctp-who">${playerCell(p, true)}${statusBadge(p)}</span></span>` +
     `</th>` +
     `<td class="sct-ctp-td is-pos" data-sort="${e(p.position)}"><span class="sct-ctp-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span></td>` +
     `<td class="sct-ctp-td is-num is-cap" data-sort="${p.capNumber}"><abbr class="sct-ctp-fig" title="${e(capTitle)}">${e(money(p.capNumber))}</abbr></td>` +
@@ -345,8 +350,8 @@ function capPositionCard(v: ContractsView): string {
   const n = v.players.length;
   const lead =
     v.capSpace === null
-      ? featured(`${v.season} cap committed`, e(money(v.committed)), rankBadge(v.committedRank), "Every cap number on the sheet, summed")
-      : featured(`${v.season} cap space`, e(money(v.capSpace)), rankBadge(v.capSpaceRank, "more-is-good"), "Room under the cap on the cap page today");
+      ? featured(`${v.season} cap committed`, e(money(v.committed)), rankBadge(v.committedRank, "neutral", true), "Every cap number on the sheet, summed")
+      : featured(`${v.season} cap space`, e(money(v.capSpace)), rankBadge(v.capSpaceRank, "more-is-good", true), "Room under the cap on the cap page today");
   const rows: CardRow[] = [
     v.liabilities !== null
       ? {
@@ -356,7 +361,7 @@ function capPositionCard(v: ContractsView): string {
           title: "The club's total cap liabilities on the cap page: every contract, dead money and reserve lists",
         }
       : { label: "Cap commitments", value: e(money(v.committed)), sub: "Every contract on the sheet, summed", title: "Every cap number on the sheet, summed" },
-    { label: "Top-51 total", value: e(money(v.top51)), rank: rankBadge(v.top51Rank), title: "The 51 largest cap numbers, summed: the offseason accounting rule" },
+    { label: "Top-51 total", value: e(money(v.top51)), rank: rankBadge(v.top51Rank, "neutral", true), title: "The 51 largest cap numbers, summed: the offseason accounting rule" },
   ];
   return (
     `<section class="sct-ctp-card is-position" aria-labelledby="sct-ctp-pos-h">` +

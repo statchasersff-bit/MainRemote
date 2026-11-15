@@ -186,7 +186,7 @@ function table(
         `<td class="sct-cp-td is-prior">${e(row.prior)}</td>` +
         `<td class="sct-cp-td is-now">${e(v.current)}</td>` +
         `<td class="sct-cp-td is-change"><span class="sct-cp-chg">${dumbbell(row, v, priorYear, season)}` +
-        `<span class="sct-cp-change is-${v.change.dir}">${e(chg)}</span>${rank}</span></td>` +
+        `<span class="sct-cp-chg-v"><span class="sct-cp-change is-${v.change.dir}">${e(chg)}</span>${rank}</span></span></td>` +
         `</tr>`
       );
     })
@@ -198,7 +198,7 @@ function table(
     `<th scope="col">Metric</th>` +
     `<th scope="col" class="is-prior">${e(priorYear)}<span class="sct-cp-th-sub">${e(callerLast || "Prior season")}</span></th>` +
     `<th scope="col" class="is-now">${season}<span class="sct-cp-th-sub">Current</span></th>` +
-    `<th scope="col">Change<span class="sct-cp-th-sub">vs ${e(priorYear)} · Tick = NFL Avg</span></th>` +
+    `<th scope="col">Change<span class="sct-cp-th-sub">vs ${e(priorYear)}<span class="sct-cp-th-tick"> · Tick = NFL Avg</span></span></th>` +
     `</tr></thead><tbody>${rows}</tbody></table></div>`
   );
 }

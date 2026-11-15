@@ -165,7 +165,7 @@ describe("the tendencies tables", () => {
       assert.deepEqual(heads, ["Metric", "2025Brady", "2026Current", "Changevs 2025 · Tick = NFL Avg"]);
       for (const el of g.querySelectorAll(".sct-cp-change")) {
         // Percentage points for a rate, pace in words with no arrow (mak's review, 2026-11-08).
-        assert.match(el.textContent, /^(steady|-|[+−]\d+\.\d pp|\d+\.\d seconds? (faster|slower))$/);
+        assert.match(el.textContent, /^(steady|-|[+−]\d+\.\d%|\d+\.\d seconds? (faster|slower))$/);
       }
       for (const tick of g.querySelectorAll(".sct-cp-db-avg")) assert.match(tick.getAttribute("title"), /^NFL avg /);
       assert.ok(g.querySelectorAll("tr.is-notable").length <= 1, "at most one gold row per group");
