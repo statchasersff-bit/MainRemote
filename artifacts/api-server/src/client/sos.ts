@@ -22,6 +22,7 @@
  */
 
 import { wireFrameHeight } from "./enhance";
+import { afterNextPaint, compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-scsos-root]";
 
@@ -103,8 +104,24 @@ function wireSort(root: HTMLElement): (key: string, dir: Dir) => void {
   original.forEach((row, i) => (row.dataset["i"] = String(i)));
   let state: SortState | null = null;
 
+  // Two frames per sort (INP audit, 2026-11-15): the header says the new sort
+  // inside the tap; the rows, which re-lay out the whole board, follow after
+  // that frame has painted. The latest sort wins if two taps land in between.
+  let pending = 0;
   const apply = (next: SortState | null) => {
     state = next;
+    for (const h of headers) {
+      const on = next !== null && h.dataset["key"] === next.key;
+      h.setAttribute("aria-sort", on ? (next!.dir === "asc" ? "ascending" : "descending") : "none");
+      h.classList.toggle("is-sorted", on);
+    }
+    const token = ++pending;
+    afterNextPaint(() => {
+      if (token === pending) order(next);
+    });
+  };
+
+  const order = (next: SortState | null) => {
     let rows = original.slice();
     if (next) {
       const index = headers.findIndex((h) => h.dataset["key"] === next.key);
@@ -119,16 +136,14 @@ function wireSort(root: HTMLElement): (key: string, dir: Dir) => void {
         const cmp =
           typeof av === "number" && typeof bv === "number"
             ? av - bv
-            : String(av).localeCompare(String(bv));
+            : compareText(String(av), String(bv));
         return cmp * factor || Number(a.dataset["i"]) - Number(b.dataset["i"]);
       });
     }
-    for (const row of rows) body.appendChild(row);
-    for (const h of headers) {
-      const on = next !== null && h.dataset["key"] === next.key;
-      h.setAttribute("aria-sort", on ? (next!.dir === "asc" ? "ascending" : "descending") : "none");
-      h.classList.toggle("is-sorted", on);
-    }
+    // One insertion of the whole run rather than one per row.
+    const run = document.createDocumentFragment();
+    for (const row of rows) run.appendChild(row);
+    body.appendChild(run);
   };
 
   for (const header of headers) {
@@ -171,10 +186,14 @@ function wireCards(root: HTMLElement, sortBy: (key: string, dir: Dir) => void, n
       if (!row) return;
       root.querySelectorAll(".is-focus").forEach((el) => el.classList.remove("is-focus"));
       row.classList.add("is-focus");
-      // Let the re-sorted rows settle before scrolling to the target.
-      window.setTimeout(
-        () => row.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" }),
-        60,
+      // Let the re-sorted rows settle before scrolling to the target. The
+      // rows move after the next paint (see wireSort), and this is queued
+      // behind that, so the scroll always reads the new order.
+      afterNextPaint(() =>
+        window.setTimeout(
+          () => row.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" }),
+          60,
+        ),
       );
       window.clearTimeout(clear);
       clear = window.setTimeout(() => row.classList.remove("is-focus"), 2400);
@@ -473,7 +492,7 @@ function wireFind(root: HTMLElement, names: BoardNames): void {
     const q = bigrams(query);
     const nearest = rows
       .map((r) => ({ r, score: nearness(q, r.grams) }))
-      .sort((a, b) => b.score - a.score || a.r.name.localeCompare(b.r.name))
+      .sort((a, b) => b.score - a.score || compareText(a.r.name, b.r.name))
       .slice(0, SUGGEST);
     status.append(`No ${noun} named "${raw.trim()}". Closest: `);
     nearest.forEach(({ r }, i) => {

@@ -373,6 +373,7 @@ require_once __DIR__ . '/stubs-rankmath.php';
 require_once "$dir/statchasers-assets.php";
 require_once "$dir/statchasers-bdp-assets.php";
 require_once "$dir/statchasers-host-css.php";
+require_once "$dir/statchasers-perf.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";
@@ -448,6 +449,26 @@ if ( 'main' === $group ) {
 	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'embed/injury-impact', 'embed/injury-impact/data/player/x', 'embed/injury-impact/data/analysis/x', 'api/x/accounts', '' ) as $no_path ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
+	echo "\n";
+}
+
+if ( 'main' === $group ) {
+	echo "tool bundles out of WP Rocket's Delay JS\n";
+	$src = 'https://news.statchasers.com/dist/statchasers-player.js?ver=f64d50ab7a46';
+	$tag = "<script data-wp-strategy=\"defer\" defer id=\"statchasers-player-js\" src=\"$src\"></script>\n";
+	$out = statchasers_perf_script_tag( $tag, 'statchasers-player', $src );
+	is( false !== strpos( $out, 'data-no-defer="1" data-cfasync="false" nowprocket src="' . $src ), true, 'a tool bundle is marked for every optimizer' );
+	is( substr_count( $out, 'nowprocket' ), 1, 'once' );
+	is( statchasers_perf_script_tag( $out, 'statchasers-player', $src ), $out, 'a marked tag is left alone (the team bundle marks itself)' );
+	$jq = 'https://statchasers.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1';
+	$jq_tag = "<script id=\"jquery-core-js\" src=\"$jq\"></script>\n";
+	is( statchasers_perf_script_tag( $jq_tag, 'jquery-core', $jq ), $jq_tag, 'theme and core scripts are not touched' );
+	$map = 'https://news.statchasers.com/dist/statchasers-player.js.map';
+	is( statchasers_perf_is_bundle( $map ), false, 'a source map is not a bundle' );
+	is( statchasers_perf_is_bundle( 'https://evil.example/x/dist/statchasers-x.js/y.js' ), false, 'the path must end in the bundle' );
+	is( statchasers_perf_is_bundle( 'https://news.statchasers.com/dist/statchasers-rb-handcuffs.js?ver=1' ), true, 'every tool bundle qualifies, query string or not' );
+	is( statchasers_perf_rocket_exclusions( array( '/keep-me.js' ) ), array( '/keep-me.js', '/dist/statchasers-' ), "WP Rocket's own lists gain the bundle path and keep theirs" );
+	is( statchasers_perf_rocket_exclusions( null ), array( '/dist/statchasers-' ), 'and survive a non-array' );
 	echo "\n";
 }
 

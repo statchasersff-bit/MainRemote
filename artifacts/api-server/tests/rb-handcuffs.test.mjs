@@ -567,7 +567,10 @@ describe("the bundle", () => {
       input.value = String(value);
       input.dispatchEvent(new window.Event("input", { bubbles: true }));
     };
-    return { window, doc, errors, fetched, click, names, slide };
+    // A header sort moves its rows one painted frame after the tap (INP
+    // audit, 2026-11-15: schedule-work.ts afterNextPaint).
+    const frame = () => new Promise((r) => window.requestAnimationFrame(() => window.setTimeout(r, 0)));
+    return { window, doc, errors, fetched, click, names, slide, frame };
   }
 
   test("wires up without errors and shows the controls", async () => {
@@ -616,14 +619,18 @@ describe("the bundle", () => {
   });
 
   test("sorting: text A–Z first, numbers highest first, and back", async () => {
-    const { doc, click, names } = await mount();
+    const { doc, click, names, frame } = await mount();
     click(doc.querySelector('th[data-sort="name"] .rbh-sort'));
+    assert.equal(doc.querySelector('th[data-sort="name"]').getAttribute("aria-sort"), "ascending", "the header says so at once");
+    await frame();
     const az = names();
     assert.deepEqual(az, [...az].sort((a, b) => a.localeCompare(b)));
     click(doc.querySelector('th[data-sort="name"] .rbh-sort'));
+    await frame();
     assert.deepEqual(names(), [...az].reverse());
 
     click(doc.querySelector('th[data-sort="score"] .rbh-sort'));
+    await frame();
     const scores = [...doc.querySelectorAll("tr.rbh-row")].map((r) => Number(r.dataset.score));
     assert.deepEqual(scores, [...scores].sort((a, b) => b - a));
     assert.equal(doc.querySelector('th[data-sort="score"]').getAttribute("aria-sort"), "descending");

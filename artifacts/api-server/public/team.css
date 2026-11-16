@@ -17624,63 +17624,6 @@ ul.sct-faq-list li {
     background: var(--sct-m-ink) !important;
   }
 
-  /* ---- News: the stories under the lead as rows, a thumbnail at the left */
-  :is(.sct, #sct-table-armour) .sct-nwp-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 0 !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) {
-    display: grid !important;
-    grid-template-columns: 104px minmax(0, 1fr) !important;
-    gap: 12px !important;
-    align-items: start;
-    margin: 0 !important;
-    padding: 12px 0 !important;
-    border: 0 !important;
-    border-top: 1px solid var(--sct-m-line) !important;
-    border-radius: 0 !important;
-    background: none !important;
-    box-shadow: none !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-well {
-    width: 104px !important;
-    height: 70px !important;
-    aspect-ratio: auto !important;
-    border-radius: 6px !important;
-    overflow: hidden;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-well::before,
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-well::after,
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-cta {
-    display: none !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-body {
-    padding: 0 !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card:not(.is-featured) .sct-nwp-title {
-    margin: 2px 0 0 !important;
-    font-size: 15px !important;
-    line-height: 1.3 !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured {
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: none !important;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured .sct-nwp-well {
-    border-radius: 8px !important;
-    overflow: hidden;
-  }
-
   /* ---- Stats, Draft, Contracts: the inner panels lose their card */
   :is(.sct, #sct-table-armour) :is(.sct-sp-panel, .sct-sp-mix) {
     padding: 0 !important;
@@ -25125,5 +25068,36 @@ ul.sct-faq-list li {
   :is(.sct, #sct-table-armour) .sct-cfp-all:focus-visible ~ .sct-cfp-more {
     outline: 2px solid var(--cf-gold, #d4af37);
     outline-offset: 2px;
+  }
+}
+
+/* =========================================================================
+   Phones: every tab starts the same distance under the tab strip (mak,
+   2026-11-15). That distance is the panel's own top padding (16px). At
+   560px and under the tab title is visually hidden and most tabs hide the
+   dek too, so their banner is an empty box that still carried a 12px margin
+   plus its parent's flex gap (Usage, Coaching, Stats +12, News +26, Draft
+   +28, Contracts +38 with its frame). Those banners leave the flow here,
+   with the title still in the DOM for search and screen readers. Schedule
+   (dek shown) and Depth Chart (view buttons shown) keep their banner; the
+   Depth Chart buttons lose the two stacked 12px top margins that sat under
+   the hidden title. If a tab ever shows its dek on phones again, take its
+   banner out of this list.
+   ========================================================================= */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) :is(.sct-us > .sct-up > .sct-up-head, .sct-cp-head, .sct-sp-hero, .sct-nwp-hero, .sct-drp-hero),
+  :is(.sct, #sct-table-armour) .sct-ctp > .sct-tab-frame {
+    position: absolute !important;
+    margin: 0 !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-up-head .sct-up-head-actions,
+  :is(.sct, #sct-table-armour) .sct-up-head .sct-up-head-actions .sct-dpp-tabs {
+    margin-top: 0 !important;
+  }
+
+  /* News: the lead story is the first row; no row padding above it. */
+  :is(.sct, #sct-table-armour) .sct-nwp-card.is-featured:not(.is-dup):is(.is-featured) {
+    padding-top: 0 !important;
   }
 }

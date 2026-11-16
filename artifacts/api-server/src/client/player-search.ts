@@ -30,6 +30,7 @@
  */
 
 import { searchKey } from "../lib/render";
+import { afterNextPaint } from "./schedule-work";
 
 /** How many results the panel shows. More than this is a list, not an answer. */
 const LIMIT = 8;
@@ -560,7 +561,19 @@ export function wirePlayerSearch(root: HTMLElement): void {
   input.addEventListener("input", update);
 
   input.addEventListener("focus", () => {
-    if (input.value.trim() !== "") update();
+    if (input.value.trim() !== "") {
+      update();
+      return;
+    }
+    // The roster is parsed in a task after the focus has painted, so it is
+    // ready before the first key instead of being done INSIDE the first key
+    // (~80ms of a throttled phone's first keystroke; INP audit, 2026-11-15).
+    // A reader who types faster than that still gets it on demand above.
+    if (!entries) {
+      afterNextPaint(() => {
+        if (!entries) entries = parseRoster(island);
+      });
+    }
   });
 
   input.addEventListener("keydown", (event) => {

@@ -36,6 +36,7 @@ import {
 } from "../lib/rb-handcuffs/recompute";
 import { barBand, handcuffType, offenseLabel, starterLoadLabel, tierFor } from "../lib/rb-handcuffs/model";
 import { icon } from "../lib/rb-handcuffs/icons";
+import { afterNextPaint, compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-rbh-root]";
 const MAX_COMPARE = 3;
@@ -210,8 +211,23 @@ function sortValue(row: HTMLTableRowElement, key: string): number | string | nul
   }
 }
 
+/** The headers' half of a sort: which column reads as sorted, and which way. */
+function markSortHeaders(board: Board): void {
+  const { sortKey, sortDesc } = board;
+  for (const th of Array.from(board.root.querySelectorAll<HTMLTableCellElement>(".rbh-table thead th[data-sort]"))) {
+    const on = th.dataset["sort"] === sortKey;
+    th.setAttribute("aria-sort", on ? (sortDesc ? "descending" : "ascending") : "none");
+    th.classList.toggle("is-sorted", on);
+  }
+}
+
 /** Put the rows in the current sort, each followed by its detail row. */
 function sortRows(board: Board): void {
+  orderRows(board);
+  markSortHeaders(board);
+}
+
+function orderRows(board: Board): void {
   const { sortKey, sortDesc } = board;
   const rows = [...board.rows];
   rows.sort((a, b) => {
@@ -223,22 +239,33 @@ function sortRows(board: Board): void {
     const cmp =
       typeof left === "number" && typeof right === "number"
         ? left - right
-        : String(left).localeCompare(String(right));
+        : compareText(String(left), String(right));
     return sortDesc ? -cmp : cmp;
   });
+  // One insertion of the whole run rather than two per row.
+  const run = document.createDocumentFragment();
   for (const row of rows) {
     const detail = detailFor(row);
-    board.body.appendChild(row);
-    if (detail) board.body.appendChild(detail);
+    run.appendChild(row);
+    if (detail) run.appendChild(detail);
   }
+  board.body.appendChild(run);
   // Zebra by position, not by :nth-child, which would count the detail rows.
   rows.forEach((row, i) => row.classList.toggle("is-alt", i % 2 === 1));
+}
 
-  for (const th of Array.from(board.root.querySelectorAll<HTMLTableCellElement>(".rbh-table thead th[data-sort]"))) {
-    const on = th.dataset["sort"] === sortKey;
-    th.setAttribute("aria-sort", on ? (sortDesc ? "descending" : "ascending") : "none");
-    th.classList.toggle("is-sorted", on);
-  }
+/**
+ * A header tap, in two frames (INP audit, 2026-11-15): the header shows the
+ * new sort inside the tap and paints; the rows, which re-lay out the whole
+ * board, move after that frame. The latest sort wins if taps land in between.
+ */
+let pendingSort = 0;
+function sortFromTap(board: Board): void {
+  markSortHeaders(board);
+  const token = ++pendingSort;
+  afterNextPaint(() => {
+    if (token === pendingSort) orderRows(board);
+  });
 }
 
 /**
@@ -262,7 +289,7 @@ function wireSorting(board: Board): void {
         // highest first.
         board.sortDesc = !(key === "rank" || TEXT_KEYS.has(key));
       }
-      sortRows(board);
+      sortFromTap(board);
     });
   }
 }

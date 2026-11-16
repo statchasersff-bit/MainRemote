@@ -19,6 +19,7 @@
  */
 
 import { wirePlayerSearch } from "./player-search";
+import { afterNextPaint, compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-sct-root]";
 
@@ -136,10 +137,10 @@ function wireTabs(root: HTMLElement): void {
     panel.setAttribute("tabindex", "0");
   }
 
-  function select(id: string, focusPanel: boolean): void {
+  /** The strip's half of a switch: which link reads as the chosen one. */
+  function markLinks(id: string): void {
     for (const tab of tabs) {
       const on = tab.id === id;
-      tab.panel.classList.toggle("is-active", on);
       tab.link.classList.toggle("is-active", on);
       if (mixed) {
         if (on) tab.link.setAttribute("aria-current", "true");
@@ -150,10 +151,46 @@ function wireTabs(root: HTMLElement): void {
         tab.link.tabIndex = on ? 0 : -1;
       }
     }
+  }
+
+  /** The panels' half: the expensive one (a panel can hold 1,000+ elements). */
+  function showPanel(id: string, focusPanel: boolean): void {
+    for (const tab of tabs) tab.panel.classList.toggle("is-active", tab.id === id);
     if (focusPanel) {
       const current = tabs.find((tab) => tab.id === id);
       current?.panel.focus({ preventScroll: true });
     }
+  }
+
+  function select(id: string, focusPanel: boolean): void {
+    markLinks(id);
+    showPanel(id, focusPanel);
+  }
+
+  /**
+   * A switch the reader asked for, in two frames (INP audit, 2026-11-15).
+   * The link turns active inside the tap and paints at once; the panel swap,
+   * the heading and the address follow in a task after that frame. Revealing
+   * a panel lays all of it out - 300-600ms on a throttled phone for Draft and
+   * Contracts - and the old handler did that, plus a forced layout from
+   * focus(), plus GA4's pushState hook, before the tap showed anything. Only
+   * the latest choice is applied if the reader taps again in between.
+   */
+  let pending = 0;
+  function choose(tab: { id: string; link: HTMLAnchorElement }, then: () => void, focusPanel: boolean): void {
+    active = tab.id;
+    markLinks(tab.id);
+    const token = ++pending;
+    afterNextPaint(() => {
+      if (token !== pending) return;
+      showPanel(tab.id, focusPanel);
+      setHeading(
+        tab.link.dataset["sctHeading"] ?? "",
+        tab.link.dataset["sctLead"] ?? "",
+        tab.link.dataset["scTitle"] ?? "",
+      );
+      then();
+    });
   }
 
   /** The tab the URL asks for, or the first one. */
@@ -283,14 +320,7 @@ function wireTabs(root: HTMLElement): void {
       }
       event.preventDefault();
       event.stopPropagation();
-      active = tab.id;
-      select(tab.id, true);
-      setHeading(
-        link.dataset["sctHeading"] ?? "",
-        link.dataset["sctLead"] ?? "",
-        link.dataset["scTitle"] ?? "",
-      );
-      writeUrl(tabUrl(link), "push");
+      choose(tab, () => writeUrl(tabUrl(link), "push"), true);
     },
     true,
   );
@@ -301,6 +331,7 @@ function wireTabs(root: HTMLElement): void {
     const id = fromHash();
     if (id === active) return;
     active = id;
+    pending += 1;
     select(id, false);
   });
 
@@ -323,15 +354,8 @@ function wireTabs(root: HTMLElement): void {
 
     event.preventDefault();
     const tab = tabs[next]!;
-    active = tab.id;
-    select(tab.id, false);
     tab.link.focus();
-    setHeading(
-      tab.link.dataset["sctHeading"] ?? "",
-      tab.link.dataset["sctLead"] ?? "",
-      tab.link.dataset["scTitle"] ?? "",
-    );
-    writeUrl(tabUrl(tab.link), "replace");
+    choose(tab, () => writeUrl(tabUrl(tab.link), "replace"), false);
   });
 
   /**
@@ -344,6 +368,7 @@ function wireTabs(root: HTMLElement): void {
    * heading captured at load.
    */
   window.addEventListener("popstate", () => {
+    pending += 1;
     const path = location.pathname;
     const hashed = location.hash.replace(/^#/, "");
     const id = tabs.some((tab) => tab.id === hashed) ? hashed : fromPath(path);
@@ -497,8 +522,18 @@ function wireMatchupTabs(root: HTMLElement): void {
   if (tabs.length === 0) return;
 
   let active = "recap";
-  function select(id: string): void {
+  /** The bar's half of a switch: cheap, and what the tap should see at once. */
+  function markTabs(id: string): void {
     active = id;
+    for (const tab of tabs) {
+      const on = tab.dataset["muTabLink"] === id;
+      tab.classList.toggle("is-active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.tabIndex = on ? 0 : -1;
+    }
+  }
+  /** The panels' half: revealing one lays out all of it (Box Score ~1,200 elements). */
+  function showPanels(id: string): void {
     // For the CSS: the sidebar shows on Recap and Fantasy only.
     root.dataset["muActive"] = id;
     for (const panel of panels) {
@@ -506,14 +541,12 @@ function wireMatchupTabs(root: HTMLElement): void {
       panel.classList.toggle("is-active", on);
       panel.hidden = !on;
     }
-    for (const tab of tabs) {
-      const on = tab.dataset["muTabLink"] === id;
-      tab.classList.toggle("is-active", on);
-      tab.setAttribute("aria-selected", on ? "true" : "false");
-      tab.tabIndex = on ? 0 : -1;
-    }
-    reveal();
     score();
+  }
+  function select(id: string): void {
+    markTabs(id);
+    showPanels(id);
+    reveal();
   }
 
   /** Keep the chosen tab in view where the list scrolls (phones). */
@@ -569,25 +602,46 @@ function wireMatchupTabs(root: HTMLElement): void {
     }
   }
 
+  /**
+   * The tab view event, sent after the switch has painted. gtag() runs Google
+   * Tag Manager's whole dataLayer pipeline synchronously; inside the click it
+   * measured 100-190ms of a tab tap on a throttled phone (INP audit,
+   * 2026-11-15). Same event, same parameters, a frame later.
+   */
   function track(id: string): void {
     const label = tabs.find((t) => t.dataset["muTabLink"] === id)?.textContent ?? id;
-    const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
-    try {
-      if (typeof w.gtag === "function") w.gtag("event", "recap_tab_view", { tab_name: label });
-      else if (Array.isArray(w.dataLayer)) w.dataLayer.push({ event: "recap_tab_view", tab_name: label });
-      root.dispatchEvent(new CustomEvent("recap_tab_view", { bubbles: true, detail: { tab: label } }));
-    } catch {
-      // Analytics must never break the tabs.
-    }
+    afterNextPaint(() => {
+      const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+      try {
+        if (typeof w.gtag === "function") w.gtag("event", "recap_tab_view", { tab_name: label });
+        else if (Array.isArray(w.dataLayer)) w.dataLayer.push({ event: "recap_tab_view", tab_name: label });
+        root.dispatchEvent(new CustomEvent("recap_tab_view", { bubbles: true, detail: { tab: label } }));
+      } catch {
+        // Analytics must never break the tabs.
+      }
+    });
   }
 
+  /**
+   * A switch the reader asked for, in two frames: the tab lights up (and the
+   * strip scrolls it into view) inside the tap; the panel, the hash, the
+   * scroll to the scoreboard and the analytics event follow after that frame
+   * has painted. Only the latest tap is applied if two land in between.
+   */
+  let pending = 0;
   function activate(id: string, focus = false): void {
     if (id === active) return;
-    select(id);
-    writeHash(id);
-    toPanelTop(id);
-    track(id);
+    markTabs(id);
+    reveal();
     if (focus) tabs.find((t) => t.dataset["muTabLink"] === id)?.focus();
+    const token = ++pending;
+    afterNextPaint(() => {
+      if (token !== pending) return;
+      showPanels(id);
+      writeHash(id);
+      toPanelTop(id);
+      track(id);
+    });
   }
 
   // The score line: shown while the scoreboard, which is on every tab, is
@@ -660,6 +714,7 @@ function wireMatchupTabs(root: HTMLElement): void {
     const hit = resolve(link.getAttribute("href") ?? "");
     if (!hit) return;
     event.preventDefault();
+    pending += 1;
     if (hit.tab !== active) {
       select(hit.tab);
       track(hit.tab);
@@ -671,6 +726,7 @@ function wireMatchupTabs(root: HTMLElement): void {
   window.addEventListener("hashchange", () => {
     const hit = resolve(location.hash);
     if (!hit) return;
+    pending += 1;
     if (hit.tab !== active) select(hit.tab);
     if (hit.target) hit.target.scrollIntoView();
   });
@@ -947,6 +1003,8 @@ function wireSortableTables(root: HTMLElement): void {
       table.querySelectorAll<HTMLTableCellElement>("thead th"),
     );
     if (!body || headers.length === 0) continue;
+    // One table, one sort in flight: the latest header tap wins.
+    let pending = 0;
 
     headers.forEach((header, index) => {
       // An action column (Start/Sit) has nothing to sort on.
@@ -972,6 +1030,19 @@ function wireSortableTables(root: HTMLElement): void {
       if (sorted === "descending") descending = false;
 
       button.addEventListener("click", () => {
+        // The header's new state paints with the tap; the rows are read and
+        // moved after that frame (INP audit, 2026-11-15).
+        for (const other of headers) other.setAttribute("aria-sort", "none");
+        header.setAttribute("aria-sort", descending ? "descending" : "ascending");
+        const desc = descending;
+        descending = !descending;
+        const token = ++pending;
+        afterNextPaint(() => {
+          if (token === pending) reorder(desc);
+        });
+      });
+
+      const reorder = (descending: boolean): void => {
         const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>("tr"));
         // The server's order, to fall back on for rows with nothing to compare
         // and to break ties with - otherwise a column of equal values
@@ -993,21 +1064,19 @@ function wireSortableTables(root: HTMLElement): void {
             order = descending ? right - left : left - right;
           } else {
             order = descending
-              ? String(right).localeCompare(String(left))
-              : String(left).localeCompare(String(right));
+              ? compareText(String(right), String(left))
+              : compareText(String(left), String(right));
           }
           return order !== 0 ? order : (original.get(a) ?? 0) - (original.get(b) ?? 0);
         });
 
         empty.sort((a, b) => (original.get(a) ?? 0) - (original.get(b) ?? 0));
 
-        for (const row of valued) body.appendChild(row);
-        for (const row of empty) body.appendChild(row);
-
-        for (const other of headers) other.setAttribute("aria-sort", "none");
-        header.setAttribute("aria-sort", descending ? "descending" : "ascending");
-        descending = !descending;
-      });
+        const run = document.createDocumentFragment();
+        for (const row of valued) run.appendChild(row);
+        for (const row of empty) run.appendChild(row);
+        body.appendChild(run);
+      };
     });
 
     table.dataset["sctSort"] = "js";
@@ -1089,11 +1158,15 @@ function wireFantasyTabMore(root: HTMLElement): void {
     });
   }
   if (lists.length === 0) return;
-  // After wireScoring's own listeners have re-sorted the rows.
+  // After wireScoring's own listeners have re-sorted the rows. A table sort
+  // moves its rows after the next paint (wireSortableTables), and this is
+  // queued behind that, so the marks follow the new order.
   root.addEventListener("change", (event) => {
     const target = event.target as HTMLInputElement | null;
     if (!target || target.type !== "radio") return;
-    for (const list of lists) mark(list);
+    afterNextPaint(() => {
+      for (const list of lists) mark(list);
+    });
   });
 }
 
@@ -1409,6 +1482,7 @@ function wireContractSort(block: HTMLElement): void {
   const tbody = table?.tBodies[0];
   if (!table || !tbody) return;
   const heads = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th"));
+  let pending = 0;
   for (const th of heads) {
     const button = th.querySelector<HTMLButtonElement>("[data-sct-ct-sort]");
     if (!button) continue;
@@ -1425,17 +1499,26 @@ function wireContractSort(block: HTMLElement): void {
       th.setAttribute("aria-sort", dir);
       th.classList.add("is-sorted");
       const sign = dir === "descending" ? -1 : 1;
-      const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr[data-sct-ct-row]")).map((tr, i) => ({
-        tr,
-        i,
-        v: tr.cells[index]?.dataset["sort"] ?? "",
-      }));
-      rows.sort((a, b) => {
-        if (a.v === "" || b.v === "") return a.v === b.v ? a.i - b.i : a.v === "" ? 1 : -1;
-        const cmp = numeric ? Number(a.v) - Number(b.v) : a.v.localeCompare(b.v);
-        return cmp === 0 ? a.i - b.i : cmp * sign;
+      // The header above paints with the tap; the rows move after that frame
+      // (INP audit, 2026-11-15). Read the rows THEN, so the tie-break order
+      // is the one on screen when they move, exactly as before.
+      const token = ++pending;
+      afterNextPaint(() => {
+        if (token !== pending) return;
+        const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr[data-sct-ct-row]")).map((tr, i) => ({
+          tr,
+          i,
+          v: tr.cells[index]?.dataset["sort"] ?? "",
+        }));
+        rows.sort((a, b) => {
+          if (a.v === "" || b.v === "") return a.v === b.v ? a.i - b.i : a.v === "" ? 1 : -1;
+          const cmp = numeric ? Number(a.v) - Number(b.v) : compareText(a.v, b.v);
+          return cmp === 0 ? a.i - b.i : cmp * sign;
+        });
+        const run = document.createDocumentFragment();
+        for (const { tr } of rows) run.appendChild(tr);
+        tbody.appendChild(run);
       });
-      for (const { tr } of rows) tbody.appendChild(tr);
     });
   }
 }
