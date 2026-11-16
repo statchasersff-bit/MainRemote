@@ -1813,9 +1813,14 @@ describe("completed game tabs", () => {
     const inside = await hydrated(`${WILD_CARD}#verdicts`);
     if (inside.doc.getElementById("verdicts")) assert.deepEqual(active(inside.doc), ["fantasy-recap"]);
 
-    // A click switches in place and writes the tab's address.
+    // A click switches in place and writes the tab's address. The tab lights
+    // up inside the click; the panel and the address follow one painted frame
+    // later (INP audit, 2026-11-15: schedule-work.ts afterNextPaint).
+    const frame = () => new Promise((r) => plain.window.requestAnimationFrame(() => plain.window.setTimeout(r, 0)));
     const tab = plain.doc.querySelector('[data-mu-tab-link="head-to-head"]');
     tab.dispatchEvent(new plain.window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    assert.equal(tab.getAttribute("aria-selected"), "true", "the tab says so at once");
+    await frame();
     assert.deepEqual(active(plain.doc), ["head-to-head"]);
     assert.equal(plain.window.location.hash, "#head-to-head");
     assert.equal(plain.doc.querySelector('[data-mu-tab-link="head-to-head"]').getAttribute("tabindex"), "0");
@@ -1824,8 +1829,10 @@ describe("completed game tabs", () => {
     const list = plain.doc.querySelector("[role=tablist]");
     tab.focus();
     list.dispatchEvent(new plain.window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await frame();
     assert.equal(plain.doc.activeElement.getAttribute("data-mu-tab-link"), active(plain.doc)[0]);
     list.dispatchEvent(new plain.window.KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    await frame();
     assert.deepEqual(active(plain.doc), ["recap"]);
     assert.equal(plain.window.location.hash, "#recap");
   });

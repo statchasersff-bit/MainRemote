@@ -317,6 +317,22 @@ export function formatAbsoluteDate(ms: number): string {
   return `${month} ${get("day")}, ${get("year")} ${get("hour")}:${get("minute")} ${dayPeriod} ET`;
 }
 
+/**
+ * The card's date, as formatAbsoluteDate prints it ("Nov 5, 2026 3:46 PM ET"),
+ * in pieces the phone layout can drop: under 560px the year and the zone are
+ * hidden and the time gets a leading dot, so it reads "Nov 5 · 3:46 PM"
+ * (styles.css). The text content is unchanged, and a relative label written by
+ * the client replaces all of it.
+ */
+export function cardDateHtml(ms: number): string {
+  const m = /^(\w+ \d+)(, \d{4}) (\d+:\d{2} [AP]M)( ET)$/.exec(formatAbsoluteDate(ms));
+  if (!m) return escapeHtml(formatAbsoluteDate(ms));
+  return (
+    `${escapeHtml(m[1]!)}<span class="sc-ts-year">${escapeHtml(m[2]!)}</span> ` +
+    `<span class="sc-ts-time">${escapeHtml(m[3]!)}</span><span class="sc-ts-zone">${escapeHtml(m[4]!)}</span>`
+  );
+}
+
 /** Epoch-ms for an item, preferring the pre-parsed column. */
 export function itemTimestamp(item: NewsItem): number | null {
   if (typeof item.pubDateMs === "number" && !Number.isNaN(item.pubDateMs)) {
@@ -456,7 +472,7 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
 
   const ts = itemTimestamp(item);
   const timeHtml = ts
-    ? `<time class="sc-chip" datetime="${escapeHtml(new Date(ts).toISOString())}" data-ts="${ts}">${escapeHtml(formatAbsoluteDate(ts))}</time>`
+    ? `<time class="sc-chip" datetime="${escapeHtml(new Date(ts).toISOString())}" data-ts="${ts}">${cardDateHtml(ts)}</time>`
     : "";
 
   // Only the first few cards are in the first viewport (EAGER_CARDS); the

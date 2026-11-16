@@ -107,6 +107,17 @@ export function faqHeading(tab: FaqTab, name: string): string {
 }
 
 /**
+ * The heading's icon tile, shown on phones only (player.css, mak 2026-11-15:
+ * the player tabs on phones in the team pages' design, whose FAQ card heads
+ * with this "?" tile). Decorative and empty of text, so the heading's words,
+ * its textContent and the FAQPage node are unchanged.
+ */
+const FAQ_ICON =
+  `<span class="scp-faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" focusable="false">` +
+  `<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">` +
+  `<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6v.6"/><path d="M12 17h.01"/></g></svg></span>`;
+
+/**
  * The FAQ section: an H2, then one fold per question, the first open. The
  * answers go to the page's FAQPage node word for word through faqSink.
  */
@@ -122,7 +133,7 @@ export function renderFaqSection(
   const id = `scp-faq-${tab}-h`;
   return (
     `<section class="scp-ox-sec scp-tab-faq" aria-labelledby="${id}" data-faq-tab="${tab}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(faqHeading(tab, data.player.name)))}</h2>` +
+    `<h2 class="scp-ox-h2" id="${id}">${FAQ_ICON}${escapeHtml(titleCase(faqHeading(tab, data.player.name)))}</h2>` +
     `<div class="scp-ox-faq${extraClass ? ` ${extraClass}` : ""}">` +
     items.map((f, i) => `<details${i === 0 ? " open" : ""}><summary>${escapeHtml(f.q)}</summary><p>${f.html}</p></details>`).join("") +
     `</div></section>`

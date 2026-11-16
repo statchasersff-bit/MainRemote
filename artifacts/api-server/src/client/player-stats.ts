@@ -31,6 +31,7 @@
  */
 
 import { wireFrameHeight } from "./enhance";
+import { compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-sca-root]";
 
@@ -164,7 +165,7 @@ function sortBy(root: HTMLElement, header: HTMLTableCellElement, descending: boo
     const cmp =
       typeof left === "number" && typeof right === "number"
         ? left - right
-        : String(left).localeCompare(String(right));
+        : compareText(String(left), String(right));
     return descending ? -cmp : cmp;
   });
 

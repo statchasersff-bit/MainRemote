@@ -25,6 +25,7 @@
  */
 
 import { wireFrameHeight } from "./enhance";
+import { compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-scf-root]";
 
@@ -84,8 +85,8 @@ function wireSortableTable(root: HTMLElement): void {
           return descending ? right - left : left - right;
         }
         return descending
-          ? String(right).localeCompare(String(left))
-          : String(left).localeCompare(String(right));
+          ? compareText(String(right), String(left))
+          : compareText(String(left), String(right));
       });
 
       for (const row of rows) body.appendChild(row);

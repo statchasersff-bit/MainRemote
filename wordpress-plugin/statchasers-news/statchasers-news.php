@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule, the NFL depth charts, the injury risk analysis and the injury database. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.54
+ * Version:           1.10.55
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.54';
+const STATCHASERS_NEWS_VERSION       = '1.10.55';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -86,6 +86,8 @@ require_once __DIR__ . '/statchasers-h1.php';
 require_once __DIR__ . '/statchasers-bdp-assets.php';
 // Divi Supreme's and TablePress's, the same way.
 require_once __DIR__ . '/statchasers-host-css.php';
+// Every tool bundle kept out of WP Rocket's Delay JS (INP audit, 2026-11-15).
+require_once __DIR__ . '/statchasers-perf.php';
 
 /**
  * The NFL Depth Charts tool (depth-charts/): the former standalone

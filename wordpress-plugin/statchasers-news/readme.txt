@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.54
+Stable tag: 1.10.55
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.55 =
+* Interaction speed (INP audit, 2026-11-15): every StatChasers tool script (player pages, SOS, RB handcuffs, FPA, rankings, schedule, advanced stats, rookie hit rates, redraft strategy, injury impact) is now excluded from WP Rocket's "Delay JavaScript execution" and minify/combine, as the team script has been since 1.10.52. Delayed, each one waited for the reader's first tap and then ran in one burst with jQuery, Divi and Google Analytics, and the sort buttons and tab controls it builds did not exist until then. The scripts have no dependencies and still load deferred. This shortens that burst; it does not remove the first-tap wait, which is WP Rocket's Delay JS setting (see the audit). New file statchasers-perf.php. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading, or cached pages keep the delayed tags.
 
 = 1.10.54 =
 * Team hubs on phones (560px and under): Divi's 58px of padding above the page content is removed, so the team header starts 16px under the site menu instead of 74px. Scoped to a container holding the team header; wider screens keep the theme's spacing. team.css carries the same rule, so the API deploy closes the gap on its own.

@@ -15048,3 +15048,11 @@ a.sct-ex-game:hover .sct-ex-line {
     color: var(--tp-muted, #5b6b80);
   }
 }
+
+/* Phones (mak, 2026-11-15): no breadcrumb over the hero at 560px and under;
+   the page opens on the hero. The BreadcrumbList JSON-LD is untouched. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-crumbs {
+    display: none !important;
+  }
+}

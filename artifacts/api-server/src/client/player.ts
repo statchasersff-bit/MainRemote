@@ -36,6 +36,7 @@
 import { wireFrameHeight, wireTabs, wireTimestamps } from "./enhance";
 import { wirePlayerDirectory } from "./player-index";
 import { wirePlayerSearch } from "./player-search";
+import { compareText, sliceClock } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-scp-root]";
 
@@ -233,8 +234,8 @@ function wireSortableLog(root: HTMLElement): void {
             return descending ? right - left : left - right;
           }
           return descending
-            ? String(right).localeCompare(String(left))
-            : String(left).localeCompare(String(right));
+            ? compareText(String(right), String(left))
+            : compareText(String(left), String(right));
         });
 
         place(playable);
@@ -914,7 +915,17 @@ function isUniform(r: number, g: number, b: number): boolean {
   return h >= 8 && h <= 42;
 }
 
-function keyBackdrop(a: Uint8ClampedArray, W: number, H: number): void {
+/*
+ * The pixel passes below are time-sliced (INP audit, 2026-11-15): together
+ * they were one 120-170ms task on a throttled phone, run when the base image
+ * loads - right when a reader is likely to tap. Each loop now checks a clock
+ * every few thousand pixels and yields once its slice is spent, so a tap
+ * waits at most a slice. Same operations, same order, same pixels.
+ */
+const SLICE_CHECK = 4096;
+
+async function keyBackdrop(a: Uint8ClampedArray, W: number, H: number): Promise<void> {
+  const clock = sliceClock();
   const corners = [0, W - 1, (H - 1) * W, H * W - 1].map((p) => p * 4);
   const bg = [0, 1, 2].map((k) => corners.reduce((sum, i) => sum + a[i + k]!, 0) / corners.length);
   const dist = (p: number): number => {
@@ -925,7 +936,9 @@ function keyBackdrop(a: Uint8ClampedArray, W: number, H: number): void {
   const stack: number[] = [];
   for (let x = 0; x < W; x += 1) stack.push(x, (H - 1) * W + x);
   for (let y = 0; y < H; y += 1) stack.push(y * W, y * W + W - 1);
+  let steps = 0;
   while (stack.length) {
+    if (++steps % SLICE_CHECK === 0 && clock.due()) await clock.next();
     const p = stack.pop()!;
     if (cleared[p] || dist(p) > BACKDROP_TOLERANCE) continue;
     cleared[p] = 1;
@@ -937,6 +950,7 @@ function keyBackdrop(a: Uint8ClampedArray, W: number, H: number): void {
     if (p < W * (H - 1)) stack.push(p + W);
   }
   for (let p = 0; p < W * H; p += 1) {
+    if (p % SLICE_CHECK === 0 && clock.due()) await clock.next();
     if (cleared[p]) continue;
     const x = p % W;
     const touches = (x > 0 && cleared[p - 1]) || (x < W - 1 && cleared[p + 1]) || (p >= W && cleared[p - W]) || (p < W * (H - 1) && cleared[p + W]);
@@ -1014,11 +1028,13 @@ function renderFigure(src: string, primaryHex: string, secondaryHex: string, num
     x.drawImage(img, 0, 0);
     const data = x.getImageData(0, 0, FIG_W, FIG_H);
     const a = data.data;
-    keyBackdrop(a, FIG_W, FIG_H);
+    await keyBackdrop(a, FIG_W, FIG_H);
     const pantsTop = FIG_H * PANTS_TOP;
     const pantsBottom = FIG_H * PANTS_BOTTOM;
     const shadeAt = new Float32Array(FIG_W * FIG_H);
+    const clock = sliceClock();
     for (let p = 0; p < FIG_W * FIG_H; p += 1) {
+      if (p % SLICE_CHECK === 0 && clock.due()) await clock.next();
       const i = p * 4;
       const r = a[i]! / 255;
       const g = a[i + 1]! / 255;
@@ -1046,6 +1062,7 @@ function renderFigure(src: string, primaryHex: string, secondaryHex: string, num
       }
       const mean = cnt ? sum / cnt : 1;
       for (let p = 0; p < FIG_W * FIG_H; p += 1) {
+        if (p % SLICE_CHECK === 0 && clock.due()) await clock.next();
         const i = p * 4;
         const alpha = n[i + 3]! / 255;
         if (!alpha || !shadeAt[p]) continue;
@@ -1070,7 +1087,13 @@ async function paintFigure(figure: HTMLElement): Promise<void> {
   const img = figure.querySelector<HTMLImageElement>("img");
   if (!img || figure.dataset["painted"]) return;
   figure.dataset["painted"] = "1";
-  const base = img.getAttribute("src") ?? "";
+  // A host image optimizer (WP Rocket's LazyLoad) can swap the base render's
+  // src for a 0x0 SVG placeholder and park the real address in
+  // data-lazy-src. Recoloring the placeholder painted an empty canvas over
+  // the figure - and spent a long task on it - so read the real one.
+  const src = img.getAttribute("src") ?? "";
+  const lazy = img.getAttribute("data-lazy-src") ?? "";
+  const base = lazy && (src === "" || src.startsWith("data:")) ? lazy : src;
   const primary = figure.getAttribute("data-primary") ?? "#4b5563";
   const secondary = figure.getAttribute("data-secondary") ?? "#9ca3af";
   const number = figure.getAttribute("data-number") ?? "";

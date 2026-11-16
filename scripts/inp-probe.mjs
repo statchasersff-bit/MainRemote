@@ -19,7 +19,20 @@
 //   --cpu=N       override the CPU throttle rate
 //   --block=pat,..  Network.setBlockedURLs patterns (A/B a script's cost)
 //   --css=<file>  inject this CSS after load (A/B a stylesheet rule)
+//   --nodelay     rewrite the live document so WP Rocket's "Delay JavaScript
+//                 execution" is undone (scripts load as authored): A/B for it
+//   --undelay=<keyword>  un-delay only the scripts containing <keyword>: what
+//                 adding it to WP Rocket's Delay JS exclusions would do
+//   --serve=<substring>=<file>,...  answer any request whose URL contains
+//                 <substring> with a local file (test a rebuilt bundle or
+//                 stylesheet on the live page before deploying it)
+//   --eval=<js>   evaluate an expression after load (and --css) and print it
+//   --long        list the longest individual scripts of the whole run
+//   --after=<js>  evaluate an expression after the clicks and print it (check
+//                 the interactions still did what they should)
 //   --json        print the raw JSON report only
+//   --trace       record a devtools timeline trace across the clicks and print
+//                 style recalc (elements touched) / layout / paint per click
 //
 // Reads CHROMIUM from the environment; defaults to the Replit binary. Run with
 // the Bash sandbox OFF (Chromium's children die inside it). Lab numbers on
@@ -44,6 +57,15 @@ const cpu = Number(opt("cpu") ?? (mobile ? 4 : 1));
 const blocked = (opt("block") ?? "").split(",").filter(Boolean);
 const cssFile = opt("css");
 const jsonOnly = rest.includes("--json");
+const traceOn = rest.includes("--trace");
+const noDelay = rest.includes("--nodelay");
+// --undelay=<keyword>: un-delay only the scripts whose tag or inline body
+// contains the keyword - what a WP Rocket Delay JS exclusion of it would do.
+const unDelay = opt("undelay");
+const serves = (opt("serve") ?? "").split(",").filter(Boolean).map((p) => {
+  const i = p.lastIndexOf("=");
+  return { match: p.slice(0, i), file: p.slice(i + 1) };
+});
 
 const port = 9600 + Math.floor(Math.random() * 300);
 const chrome = spawn(
@@ -83,6 +105,7 @@ const pending = new Map();
 const events = [];
 ws.onmessage = (m) => {
   const msg = JSON.parse(m.data);
+  if (msg.method === "Fetch.requestPaused") { void onPaused(msg.params); return; }
   if (msg.id && pending.has(msg.id)) {
     pending.get(msg.id)(msg);
     pending.delete(msg.id);
@@ -108,7 +131,17 @@ const OBSERVE = `(() => {
     if (c.length) s += '.' + c.join('.');
     return s;
   };
-  window.__inp = { ev: [], loaf: [], lt: [] };
+  window.__inp = { ev: [], loaf: [], lt: [], raf: [] };
+  // Main-thread time from the event to just after the next frame: input
+  // delay + every handler + style/layout/paint. Unlike Event Timing it does
+  // not wait on compositor presentation, which headless software rendering
+  // sometimes withholds for seconds; read the two together.
+  for (const type of ['pointerdown', 'pointerup', 'click', 'keydown', 'input']) {
+    addEventListener(type, (e) => {
+      const t0 = e.timeStamp;
+      requestAnimationFrame(() => setTimeout(() => window.__inp.raf.push({ type, target: d(e.target), t: t0, dur: performance.now() - t0 }), 0));
+    }, { capture: true });
+  }
   try {
     new PerformanceObserver((l) => { for (const e of l.getEntries()) if (e.interactionId) window.__inp.ev.push({
       name: e.name, id: e.interactionId, start: e.startTime, dur: e.duration,
@@ -127,6 +160,51 @@ const OBSERVE = `(() => {
   } catch (e) {}
 })();`;
 
+async function onPaused(p) {
+  try {
+    const hit = serves.find((s) => p.request.url.includes(s.match));
+    if (hit) {
+      const body = readFileSync(hit.file);
+      const type = hit.file.endsWith(".css") ? "text/css" : "application/javascript";
+      await send("Fetch.fulfillRequest", { requestId: p.requestId, responseCode: 200,
+        responseHeaders: [{ name: "content-type", value: type }, { name: "access-control-allow-origin", value: "*" }],
+        body: body.toString("base64") });
+      return;
+    }
+    if (unDelay && p.resourceType === "Document" && p.responseStatusCode) {
+      const r = await send("Fetch.getResponseBody", { requestId: p.requestId });
+      let html = r.base64Encoded ? Buffer.from(r.body, "base64").toString("utf8") : r.body;
+      html = html.replace(/<script type="text\/rocketlazyloadscript"([^>]*)>([\s\S]*?)<\/script>/g, (m0, a, body) =>
+        (a + body).includes(unDelay)
+          ? "<script" + a.replace(/data-rocket-type=/g, "type=").replace(/data-rocket-src=/g, "src=") + ">" + body + "</script>"
+          : m0);
+      await send("Fetch.fulfillRequest", { requestId: p.requestId, responseCode: p.responseStatusCode,
+        responseHeaders: (p.responseHeaders || []).filter((h) => !/content-(length|encoding)/i.test(h.name)),
+        body: Buffer.from(html).toString("base64") });
+      return;
+    }
+    if (noDelay && p.resourceType === "Document" && p.responseStatusCode) {
+      const r = await send("Fetch.getResponseBody", { requestId: p.requestId });
+      let html = r.base64Encoded ? Buffer.from(r.body, "base64").toString("utf8") : r.body;
+      html = html
+        .replace(/<script type="text\/rocketlazyloadscript"([^>]*)>/g, (m0, a) =>
+          "<script" + a.replace(/data-rocket-type=/g, "type=").replace(/data-rocket-src=/g, "src=") + ">")
+        .replace(/RocketLazyLoadScripts\.run\(\)/g, "void 0");
+      await send("Fetch.fulfillRequest", { requestId: p.requestId, responseCode: p.responseStatusCode,
+        responseHeaders: (p.responseHeaders || []).filter((h) => !/content-(length|encoding)/i.test(h.name)),
+        body: Buffer.from(html).toString("base64") });
+      return;
+    }
+    await send("Fetch.continueRequest", { requestId: p.requestId });
+  } catch (e) {
+    try { await send("Fetch.continueRequest", { requestId: p.requestId }); } catch {}
+  }
+}
+
+const patterns = [];
+if (noDelay || unDelay) patterns.push({ urlPattern: "*", resourceType: "Document", requestStage: "Response" });
+for (const s of serves) patterns.push({ urlPattern: `*${s.match}*`, requestStage: "Request" });
+if (patterns.length) await send("Fetch.enable", { patterns });
 await send("Page.enable");
 await send("Runtime.enable");
 await send("Network.enable");
@@ -167,6 +245,8 @@ if (cssFile) {
   await sleep(500);
 }
 const domSize = await evaluate("document.getElementsByTagName('*').length");
+const evalExpr = opt("eval");
+if (evalExpr) console.log("  eval:", JSON.stringify(await evaluate(evalExpr)));
 const sheetRules = await evaluate(`(() => { let n = 0; for (const s of document.styleSheets) { try { n += s.cssRules.length; } catch (e) {} } return n; })()`);
 
 const tap = async (x, y) => {
@@ -182,8 +262,28 @@ const tap = async (x, y) => {
   }
 };
 
+const traceEvents = [];
+if (traceOn) {
+  await send("Tracing.start", { categories: "devtools.timeline,disabled-by-default-devtools.timeline", transferMode: "ReportEvents" });
+}
 const done = [];
 for (const raw of clicks) {
+  // "type:<css>=<text>" focuses the field and types the text one key at a time.
+  const typed = raw.match(/^type:(.+?)=(.*)$/);
+  if (typed) {
+    const ok = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(typed[1])}); if (!el) return false; el.scrollIntoView({ block: 'center' }); el.focus(); return true; })()`);
+    if (!ok) { done.push({ sel: raw, missing: true }); continue; }
+    await sleep(500);
+    for (const ch of typed[2]) {
+      const at = await evaluate("performance.now()");
+      await send("Input.dispatchKeyEvent", { type: "keyDown", key: ch, text: ch, unmodifiedText: ch });
+      await send("Input.dispatchKeyEvent", { type: "keyUp", key: ch });
+      done.push({ sel: `${raw} [${ch}]`, at });
+      await sleep(180);
+    }
+    await sleep(1200);
+    continue;
+  }
   const m = raw.match(/^(.*?)\s+@(\d+)$/);
   const sel = m ? m[1] : raw;
   const nth = m ? Number(m[2]) : 0;
@@ -209,6 +309,27 @@ for (const raw of clicks) {
   done.push({ sel: raw, at: before });
 }
 await sleep(1000);
+const afterExpr = opt("after");
+if (afterExpr) console.log("  after:", JSON.stringify(await evaluate(afterExpr)));
+let traceSummary = [];
+if (traceOn) {
+  await send("Tracing.end");
+  for (let i = 0; i < 100 && !events.some((e) => e.method === "Tracing.tracingComplete"); i++) await sleep(200);
+  for (const e of events) if (e.method === "Tracing.dataCollected") traceEvents.push(...e.params.value);
+  if (opt("trace-out")) (await import("node:fs")).writeFileSync(opt("trace-out"), JSON.stringify({ traceEvents }));
+  const main = traceEvents.filter((e) => e.ph === "X" && ["UpdateLayoutTree", "Layout", "Paint", "PrePaint", "Layerize", "EventDispatch", "FunctionCall", "ParseHTML", "RecalculateStyles", "RasterTask", "ImageDecodeTask", "Decode Image", "GPUTask"].includes(e.name));
+  const inputs = traceEvents.filter((e) => e.name === "EventDispatch" && e.args?.data?.type === "click").sort((a, b) => a.ts - b.ts);
+  traceSummary = inputs.map((c, i) => {
+    const endTs = inputs[i + 1] ? inputs[i + 1].ts - 200000 : Infinity;
+    const win = main.filter((e) => e.ts >= c.ts - 300000 && e.ts < Math.min(c.ts + 1200000, endTs));
+    const sum = (n) => Math.round(win.filter((e) => e.name === n).reduce((a, e) => a + (e.dur || 0), 0) / 1000);
+    const styles = win.filter((e) => e.name === "UpdateLayoutTree").sort((a, b) => b.dur - a.dur).slice(0, 3)
+      .map((e) => `${Math.round(e.dur / 1000)}ms/${e.args?.elementCount ?? "?"}el`);
+    const layouts = win.filter((e) => e.name === "Layout").sort((a, b) => b.dur - a.dur).slice(0, 2)
+      .map((e) => `${Math.round(e.dur / 1000)}ms/${e.args?.beginData?.dirtyObjects ?? "?"}of${e.args?.beginData?.totalObjects ?? "?"}`);
+    return `click ${i + 1}: style ${sum("UpdateLayoutTree")}ms [${styles.join(", ")}]  layout ${sum("Layout")}ms [${layouts.join(", ")}]  prepaint ${sum("PrePaint")}ms  paint ${sum("Paint")}ms  layerize ${sum("Layerize")}ms  raster ${sum("RasterTask")}ms  decode ${sum("ImageDecodeTask") + sum("Decode Image")}ms  gpu ${sum("GPUTask")}ms`;
+  });
+}
 const data = await evaluate("JSON.stringify(window.__inp)");
 const rep = JSON.parse(data || '{"ev":[],"loaf":[]}');
 
@@ -223,8 +344,10 @@ const interactions = [...byId.values()].sort((a, b) => a.start - b.start).map((e
   const frames = rep.loaf.filter((f) => f.start < end && f.start + f.dur > e.start - 50);
   const scripts = frames.flatMap((f) => f.scripts).filter((s) => s.dur >= 5).sort((a, b) => b.dur - a.dur).slice(0, 6);
   const click = [...done].reverse().find((c) => c.at && c.at <= e.start + 5);
+  const raf = Math.round(Math.max(0, ...rep.raf.filter((r) => r.t >= e.start - 120 && r.t <= e.start + e.dur).map((r) => r.dur)));
   return {
     click: click?.sel ?? "(load)",
+    raf,
     target: e.target,
     event: e.name,
     inp: Math.round(e.dur),
@@ -244,21 +367,35 @@ const topLoad = Object.entries(
     return acc;
   }, {}),
 ).sort((a, b) => b[1] - a[1]).slice(0, 10);
+// Taps whose main-thread cost was over budget but whose Event Timing entry
+// never arrived (or arrived small) still get reported from the rAF metric.
+for (const c of done.filter((d) => d.at)) {
+  const next = done.find((d) => d.at && d.at > c.at)?.at ?? Infinity;
+  const mine = rep.raf.filter((r) => r.t >= c.at - 5 && r.t < next);
+  if (!mine.length || interactions.some((i) => i.click === c.sel)) continue;
+  interactions.push({ click: c.sel, raf: Math.round(Math.max(...mine.map((r) => r.dur))), target: mine[0].target, event: "(raf only)", inp: 0, inputDelay: 0, processing: 0, presentation: 0, frameStyleLayout: 0, scripts: [] });
+}
+const longScripts = rep.loaf.flatMap((f) => f.scripts.map((sc) => ({ ...sc, at: Math.round(f.start) })))
+  .filter((sc) => sc.dur >= 30).sort((a, b) => b.dur - a.dur).slice(0, 12)
+  .map((sc) => `${sc.dur}ms @${sc.at} ${sc.type}:${(sc.inv || "").slice(0, 60)} ${sc.fn || ""} ${sc.src.split("/").pop()}${sc.forced ? " forced=" + sc.forced : ""}`);
 const report = {
-  url, mode, cpu, dcl, domSize, sheetRules,
+  url, mode, cpu, longScripts, dcl, domSize, sheetRules,
   missing: done.filter((d) => d.missing).map((d) => d.sel),
   inp: Math.max(0, ...interactions.map((i) => i.inp)),
+  rafWorst: Math.max(0, ...interactions.map((i) => i.raf)),
   interactions,
   longFrames: rep.loaf.length, totalBlocking: loadBlocking, scriptTimeBySource: topLoad,
 };
 if (jsonOnly) console.log(JSON.stringify(report, null, 1));
 else {
   console.log(`${url} [${mode} cpu x${cpu}] DOM ${domSize} nodes, ${sheetRules} CSS rules, DCL ${dcl}ms`);
-  console.log(`  long frames ${report.longFrames}, blocking ${loadBlocking}ms; worst interaction ${report.inp}ms`);
+  console.log(`  long frames ${report.longFrames}, blocking ${loadBlocking}ms; worst interaction ${report.inp}ms (main-thread to next frame: ${report.rafWorst}ms)`);
   if (report.missing.length) console.log("  not found:", report.missing.join(" | "));
   for (const i of interactions)
-    console.log(`  ${String(i.inp).padStart(4)}ms  delay ${String(i.inputDelay).padStart(3)} proc ${String(i.processing).padStart(3)} pres ${String(i.presentation).padStart(3)} (style/layout ${i.frameStyleLayout})  ${i.event} ${i.target}  <- ${i.click}` +
+    console.log(`  ${String(i.inp).padStart(4)}ms raf ${String(i.raf).padStart(4)}  delay ${String(i.inputDelay).padStart(3)} proc ${String(i.processing).padStart(3)} pres ${String(i.presentation).padStart(3)} (style/layout ${i.frameStyleLayout})  ${i.event} ${i.target}  <- ${i.click}` +
       (i.scripts.length ? "\n        " + i.scripts.map((s) => `${s.dur}ms ${s.type}:${(s.inv || "").slice(0, 50)} ${s.src.split("/").pop()}${s.forced ? ` forced=${s.forced}` : ""}`).join("\n        ") : ""));
+  for (const t of traceSummary) console.log("  trace " + t);
+  if (rest.includes("--long")) for (const l of longScripts) console.log("  long " + l);
   console.log("  script time by source:", topLoad.map(([k, v]) => `${k.split("/").pop() || k} ${v}ms`).join(", "));
 }
 ws.close();

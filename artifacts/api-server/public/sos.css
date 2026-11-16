@@ -2458,3 +2458,26 @@ body.scsos-page {
     padding: 6px 9px 5px;
   }
 }
+
+/* ------------------------------------------------- rendering cost (INP) ---
+   INP audit, 2026-11-15 (docs/INP-AUDIT.md): with the premium board under
+   the original, this page carries two 32-team boards (~6,000 elements), and
+   every frame - a sort, an FAQ toggle - paid to style, lay out and paint
+   both, 140-230ms on a throttled phone. The premium board's table and the
+   FAQ start below the fold on every width, so the browser may skip
+   rendering them while they are off screen. Nothing changes when they are
+   on screen: they stay in the DOM, the accessibility tree and find-in-page,
+   and neither holds anything that draws outside its own box (the shell's
+   table scrolls inside its own scroller; the board's popovers sit OUTSIDE
+   the shell, in the board's header, which is not contained, because a
+   contained box would clip them). The size is only a placeholder until each
+   has rendered once; `auto` then keeps the real one. Checked pixel-for-pixel
+   against the live sheet at 412px and 1366px, popovers open. */
+.scsos-pm-shell {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1500px;
+}
+.scsos-faq {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1300px;
+}

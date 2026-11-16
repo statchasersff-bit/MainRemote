@@ -939,3 +939,245 @@ body {
     min-width: 0;
   }
 }
+
+/* =========================================================================
+   Phones, 560px and under (mak, 2026-11-15): a compact news feed.
+   - Revised the same day ("premium first, compact second"): every story
+     keeps its card (rounded, soft shadow, gray-blue ground, team-tinted
+     photo square with its accent strip, team watermark) at phone sizes:
+     12px padding, 10px between cards, an 84px square (76px at 360 and
+     under), no fixed card height. Category, then a small time pill, the
+     navy headline, the team, two lines of summary; no "Read article" line.
+   - The date drops its year and zone here (cardDateHtml in lib/render.ts);
+     a relative label ("17h ago") from the client is untouched.
+   - Filters: search across the full width, then Team and Category side by
+     side; their labels stay for screen readers only (the controls read
+     "All teams" / "All categories").
+   ========================================================================= */
+@media (max-width: 560px) {
+  /* ---- filters */
+  .sc-toolbar {
+    margin: 0 0 6px;
+  }
+
+  .sc-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .sc-filters[hidden] {
+    display: none;
+  }
+
+  .sc-filter {
+    flex: none;
+    gap: 0;
+    min-width: 0;
+  }
+
+  .sc-filters > .sc-filter:first-child,
+  .sc-filter-status {
+    grid-column: 1 / -1;
+  }
+
+  .sc-filter-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sc-filter-input,
+  .sc-team-trigger,
+  .sc-filter-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    /* 16px keeps iOS from zooming the page when a control takes focus. */
+    font-size: 16px;
+  }
+
+  .sc-filter-input {
+    padding-left: 14px;
+  }
+
+  .sc-filter-select {
+    padding-left: 14px;
+    text-overflow: ellipsis;
+  }
+
+  .sc-team-trigger {
+    min-width: 0;
+    gap: 6px;
+    padding-left: 12px;
+  }
+
+  /* Team is the left control now: open its panel to the right. */
+  .sc-team-panel {
+    right: auto;
+    left: 0;
+  }
+
+  .sc-filter-status {
+    order: 0;
+    margin: 0;
+    font-size: 0.8rem;
+  }
+
+  /* ---- the list: the premium cards, at phone proportions */
+  .news-list {
+    gap: 10px;
+    min-height: calc(
+      (165px * var(--sc-reserved-rows, 4)) + (10px * (var(--sc-reserved-rows, 4) - 1))
+    );
+  }
+
+  /* The photo floats so the copy, once past it, runs the card's full width
+     (a flow root, not a grid): full summaries without a tall narrow column. */
+  .sc-card,
+  .sc-card:hover {
+    display: flow-root;
+    min-height: 0;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(15, 39, 71, 0.10);
+    box-shadow:
+      0 6px 16px rgba(15, 39, 71, 0.08),
+      0 2px 5px rgba(15, 39, 71, 0.04);
+    transform: none;
+  }
+
+  .sc-card-x,
+  .sc-card-x:hover {
+    box-shadow:
+      inset 3px 0 0 0 rgba(11, 31, 58, 0.55),
+      0 6px 16px rgba(15, 39, 71, 0.08),
+      0 2px 5px rgba(15, 39, 71, 0.04);
+  }
+
+  /* The team-tinted square with its accent strip, smaller. */
+  .sc-card-media {
+    float: left;
+    flex: none;
+    width: 84px;
+    height: 84px;
+    margin: 0 12px 4px 0;
+    border-radius: 11px;
+  }
+
+  .sc-card-body {
+    display: block;
+    position: static;
+    padding: 0;
+    overflow: visible;
+    min-width: 0;
+  }
+
+  /* The team watermark stays, scaled to the card (clipped by its corner). */
+  .sc-card-body::before {
+    right: -18px;
+    bottom: -24px;
+    width: 124px;
+    height: 124px;
+  }
+
+  /* Category and a refined time pill on one line: "INJURY  (Nov 5 · 3:46 PM)". */
+  .sc-card-toprow {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px 8px;
+    margin: 0 0 5px;
+    line-height: 1.3;
+  }
+
+  .sc-card-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+
+  .sc-card-label-x {
+    min-width: 0;
+    max-width: 100%;
+    letter-spacing: 0;
+  }
+
+  /* inline-block, not the desktop inline-flex: as flex items the date's
+     pieces lose the space before "· 3:46 PM". */
+  .sc-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  .sc-ts-year,
+  .sc-ts-zone {
+    display: none;
+  }
+
+  .sc-ts-time::before {
+    content: "· ";
+  }
+
+  .sc-card-name {
+    font-size: 1.02rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+
+  .sc-card-player {
+    margin: 4px 0 0;
+    font-size: 0.76rem;
+  }
+
+  .sc-card-summary {
+    margin: 5px 0 0;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    /* The whole summary on phones (mak, 2026-11-15: "a lot of text is
+       getting truncated"); desktop keeps its two-line clamp. */
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    /* Always starts under the photo: beside a short headline it would begin
+       in the narrow column and break mid-sentence onto the full width. */
+    clear: left;
+    padding-top: 2px;
+  }
+
+  /* No "Read article" line on phones (mak, 2026-11-15): the headline's
+     stretched link already makes the whole card the link. */
+  .sc-card-cta {
+    display: none;
+  }
+}
+
+/* The narrowest phones: a 76px square buys the copy room. */
+@media (max-width: 360px) {
+  .sc-card,
+  .sc-card:hover {
+    padding: 11px;
+  }
+
+  .sc-card-media {
+    width: 76px;
+    height: 76px;
+    margin-right: 10px;
+    border-radius: 10px;
+  }
+
+  .sc-card-name {
+    font-size: 0.98rem;
+  }
+}

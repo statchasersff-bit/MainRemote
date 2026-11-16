@@ -2508,6 +2508,10 @@ describe("team section URLs", () => {
     draft.dispatchEvent(click);
     assert.equal(themeSawIt, 0, "the click never reached the link's or the document's own handlers");
     assert.equal(click.defaultPrevented, true, "the browser's own jump to #draft is cancelled too");
+    assert.ok(draft.classList.contains("is-active"), "the tab lights up inside the click");
+    // The panel, heading and address follow one painted frame later (INP
+    // audit, 2026-11-15: schedule-work.ts afterNextPaint).
+    await new Promise((r) => window.requestAnimationFrame(() => window.setTimeout(r, 0)));
 
     assert.equal(
       window.location.pathname + window.location.hash,
@@ -3321,9 +3325,13 @@ describe("contracts tab", () => {
     const nums = () =>
       [...table.querySelectorAll("tbody tr")].map((tr) => tr.querySelector(".is-apy").dataset.sort).filter((v) => v !== "");
     const sortedDesc = (a) => a.every((v, i) => i === 0 || Number(a[i - 1]) >= Number(v));
+    // The header changes inside the press; the rows move one painted frame
+    // later (INP audit, 2026-11-15: schedule-work.ts afterNextPaint).
+    const frame = () => new Promise((r) => window.requestAnimationFrame(() => window.setTimeout(r, 0)));
     apy.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(apy.getAttribute("aria-sort"), "descending");
     assert.equal(table.querySelector("thead th.is-cap").getAttribute("aria-sort"), null);
+    await frame();
     assert.ok(sortedDesc(nums()), "APY largest first");
     // Unpriced rows sit at the bottom.
     const tail = [...table.querySelectorAll("tbody tr")].slice(-1)[0].querySelector(".is-apy").dataset.sort;
@@ -3331,10 +3339,12 @@ describe("contracts tab", () => {
     if (blanks) assert.equal(tail, "");
     apy.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(apy.getAttribute("aria-sort"), "ascending");
+    await frame();
     assert.ok(sortedDesc([...nums()].reverse()), "APY smallest first");
     const player = table.querySelector("thead th.is-player");
     player.querySelector("[data-sct-ct-sort]").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
     assert.equal(player.getAttribute("aria-sort"), "ascending");
+    await frame();
     const keys = [...table.querySelectorAll("tbody tr .is-player")].map((th) => th.dataset.sort);
     assert.deepEqual(keys, [...keys].sort((a, b) => a.localeCompare(b)));
     assert.deepEqual(errors, []);
