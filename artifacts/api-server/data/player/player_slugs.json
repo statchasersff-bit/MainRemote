@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-13T15:08:55.252Z",
+  "generated_at": "2026-11-16T13:42:22.397Z",
   "moves": [],
   "players": {
     "1": {
@@ -2611,9 +2611,9 @@
       "slug": "breshad-perriman"
     },
     "2334": {
-      "slug": "phillip-dorsett-ii",
+      "slug": "phillip-dorsett",
       "previous": [
-        "phillip-dorsett"
+        "phillip-dorsett-ii"
       ]
     },
     "2341": {
@@ -12300,6 +12300,9 @@
         "montorie-foster"
       ]
     },
+    "13200": {
+      "slug": "max-hurleman"
+    },
     "13202": {
       "slug": "dalevon-campbell"
     },
@@ -13417,5 +13420,5 @@
       "slug": "washington-commanders"
     }
   },
-  "migrated_at": "2026-11-13T15:08:57.147Z"
+  "migrated_at": "2026-11-16T13:42:22.585Z"
 }

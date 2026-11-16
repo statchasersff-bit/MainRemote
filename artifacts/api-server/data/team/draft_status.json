@@ -1,5 +1,5 @@
 {
- "builtAt": "2026-11-13T15:11:58.391Z",
+ "builtAt": "2026-11-16T13:46:09.184Z",
  "season": 2026,
  "week": 10,
  "players": {
@@ -297,7 +297,7 @@
   },
   "00-0036884": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "car",
     "week": 10
    },
@@ -485,7 +485,7 @@
   },
   "00-0038600": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "det",
     "week": 10
    },
@@ -797,7 +797,7 @@
   },
   "00-0034357": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ten",
     "week": 10
    },
@@ -1789,7 +1789,7 @@
   },
   "00-0037984": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "lar",
     "week": 10
    },
@@ -2137,7 +2137,7 @@
   },
   "00-0033891": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ari",
     "week": 10
    },
@@ -2697,7 +2697,7 @@
   },
   "00-0040192": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "buf",
     "week": 10
    },
@@ -3261,7 +3261,7 @@
   },
   "00-0038536": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ten",
     "week": 10
    },
@@ -3273,7 +3273,7 @@
   },
   "00-0038587": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "atl",
     "week": 10
    },
@@ -3285,7 +3285,7 @@
   },
   "00-0039342": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "car",
     "week": 10
    },
@@ -3885,9 +3885,9 @@
   },
   "00-0038941": {
    "now": {
-    "kind": "cut",
-    "club": "lv",
-    "week": 7
+    "kind": "ps",
+    "club": "lar",
+    "week": 10
    },
    "left": null
   },
@@ -3901,7 +3901,7 @@
   },
   "00-0038395": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "pit",
     "week": 10
    },
@@ -4397,7 +4397,7 @@
   },
   "00-0036298": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "ind",
     "week": 10
    },
@@ -4553,9 +4553,9 @@
   },
   "00-0038095": {
    "now": {
-    "kind": "cut",
-    "club": "gb",
-    "week": 4
+    "kind": "ps",
+    "club": "sea",
+    "week": 10
    },
    "left": null
   },
@@ -4913,7 +4913,7 @@
   },
   "00-0033862": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "mia",
     "week": 10
    },
@@ -5553,7 +5553,7 @@
   },
   "00-0041131": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "cle",
     "week": 10
    },
@@ -5793,7 +5793,7 @@
   },
   "00-0036361": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "sea",
     "week": 10
    },
@@ -7417,7 +7417,7 @@
   },
   "00-0037282": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "dal",
     "week": 10
    },
@@ -9029,7 +9029,7 @@
   },
   "00-0039433": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "kc",
     "week": 10
    },
@@ -10285,7 +10285,7 @@
   },
   "00-0036973": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "no",
     "week": 10
    },
@@ -10381,7 +10381,7 @@
   },
   "00-0037811": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "hou",
     "week": 10
    },
@@ -11041,7 +11041,7 @@
   },
   "00-0038090": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "gb",
     "week": 10
    },
@@ -12449,7 +12449,7 @@
   },
   "00-0037842": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "dal",
     "week": 10
    },
@@ -12541,7 +12541,7 @@
   },
   "00-0039075": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "lar",
     "week": 10
    },
@@ -12893,7 +12893,7 @@
   },
   "00-0034825": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "ind",
     "week": 10
    },
@@ -13853,7 +13853,7 @@
   },
   "00-0037004": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "ari",
     "week": 10
    },
@@ -15641,7 +15641,7 @@
   },
   "00-0040734": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "ne",
     "week": 10
    },
@@ -16325,7 +16325,7 @@
   },
   "00-0041390": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "no",
     "week": 10
    },
@@ -17325,7 +17325,7 @@
   },
   "00-0036924": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "ten",
     "week": 10
    },
@@ -17473,7 +17473,7 @@
   },
   "00-0038389": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "dal",
     "week": 10
    },
@@ -17685,7 +17685,7 @@
   },
   "00-0041120": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "nyj",
     "week": 10
    },
@@ -17849,7 +17849,7 @@
   },
   "00-0036387": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "mia",
     "week": 10
    },
@@ -17909,7 +17909,7 @@
   },
   "00-0036271": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ind",
     "week": 10
    },
@@ -18881,7 +18881,7 @@
   },
   "00-0040678": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "pit",
     "week": 10
    },
@@ -21013,7 +21013,7 @@
   },
   "00-0039754": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "min",
     "week": 10
    },
@@ -21497,7 +21497,7 @@
   },
   "00-0039034": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "ten",
     "week": 10
    },
@@ -21525,7 +21525,7 @@
   },
   "00-0038589": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "gb",
     "week": 10
    },
@@ -22369,7 +22369,7 @@
   },
   "00-0039381": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ten",
     "week": 10
    },
