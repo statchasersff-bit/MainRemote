@@ -31,12 +31,17 @@ import type { GamePlayer, GamePlayers } from "./game-players";
 import type { LeaderPick } from "./leaders-strip";
 import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { BAR_ICON } from "./recap-premium";
+import type { GameOdds } from "./boxscore";
+import type { PbpDrive } from "./play-by-play";
+import { composeRecap, factsHash, recapFacts, resolver, type TeamRecord } from "./recap-narrative";
 
 const e = escapeHtml;
 
 /* --------------------------------------------------------------- store */
 
 export interface StoryPlay {
+  /** nflverse's play_id; absent in a store built before 2026-11-17. */
+  playId?: number | null;
   qtr: number;
   clock: string | null;
   elapsed: number;
@@ -57,6 +62,10 @@ export interface StoryPlay {
   rusher: string | null;
   interceptor: string | null;
   kicker: string | null;
+  /** On a lost fumble, the club that fumbled (nflverse fumbled_1_team); absent in an older store. */
+  fumbleTeam?: string | null;
+  /** On a sack, who made it (nflverse spelling); absent in an older store. */
+  sacker?: string | null;
   /** Home win probability before and after, per mille. */
   wpBefore: number;
   wpAfter: number;
@@ -70,6 +79,8 @@ export interface StoryInjury {
   qtr: number | null;
   clock: string | null;
   teamDrive?: number | null;
+  /** The play it happened on (nflverse play_id). The only evidence two injuries share a play. */
+  playId?: number | null;
   returned: boolean;
 }
 
@@ -89,6 +100,8 @@ export interface GameStory {
   adv?: Record<string, StoryAdvanced>;
   /** Forced fumbles, which the box score does not carry; absent in an older store. */
   ff?: ForcedFumble[];
+  /** Club -> nflverse spelling ("A.St. Brown") -> ESPN athlete id; absent in an older store. */
+  ids?: Record<string, Record<string, string>>;
 }
 
 interface StoryDoc {
@@ -124,6 +137,29 @@ export function findGameStoryEntry(game: {
   return null;
 }
 
+/* ------------------------------------------------------ written recaps */
+
+interface WrittenRecap {
+  headline: string;
+  paragraphs: string[];
+  /** factsHash() of the evidence it was written from. */
+  hash: string;
+  model: string;
+  writtenAt: string;
+}
+
+/**
+ * A stored, fact-checked recap for the game, or null. Null too when the
+ * evidence has changed since it was written (a stat correction, a rebuilt
+ * story store): the page then shows the engine's own text until the writer
+ * runs again, never prose about numbers that are no longer true.
+ */
+function storedRecap(season: number, gameId: string, hash: string): WrittenRecap | null {
+  const doc = readDataJson<{ games: Record<string, WrittenRecap> }>(dataPath("matchup", `recap_prose_${season}.json`));
+  const hit = doc?.games?.[gameId];
+  return hit && hit.hash === hash && hit.paragraphs?.length ? hit : null;
+}
+
 /* --------------------------------------------------------------- input */
 
 export interface OverviewInput {
@@ -141,6 +177,12 @@ export interface OverviewInput {
   highlights: string;
   /** Inline style for each side's team ink: "--ov-away:#..;--ov-home:#..". */
   inks: { away: string; home: string };
+  /** The recap narrative's extra evidence (recap-narrative.ts, 2026-11-17); all optional. */
+  gameId?: string;
+  drives?: PbpDrive[] | null;
+  odds?: GameOdds | null;
+  records?: { away: TeamRecord | null; home: TeamRecord | null };
+  divisional?: boolean;
 }
 
 type Side = "away" | "home";
@@ -158,27 +200,11 @@ const join = (parts: string[]): string =>
  * "D.Lock" (nflverse) to the box score's "Drew Lock": same club, same first
  * initial, same last name. Unmatched, the store's spelling with a space.
  */
-function nameResolver(players: GamePlayers) {
-  const list = Object.values(players);
+function nameResolver(players: GamePlayers, ids?: GameStory["ids"]) {
+  const r = resolver(players, ids);
   return (abbr: string | null, team: string | null): { full: string; last: string } | null => {
-    if (!abbr) return null;
-    const dot = abbr.indexOf(".");
-    const initial = dot > 0 ? abbr.slice(0, dot).toLowerCase() : "";
-    const last = dot > 0 ? abbr.slice(dot + 1) : abbr;
-    const lastKey = searchKey(last).replace(/[^a-z]/g, "");
-    const hit = list.find((p) => {
-      if (team && p.team !== team) return false;
-      const key = searchKey(p.name).replace(/\s+(jr|sr|ii|iii|iv|v)\.?$/, "");
-      const parts = key.split(/\s+/);
-      const first = parts[0] ?? "";
-      const rest = parts.slice(1).join("").replace(/[^a-z]/g, "");
-      return rest === lastKey && (!initial || first.startsWith(initial.replace(/[^a-z]/g, "").slice(0, 1)));
-    });
-    if (hit) {
-      const parts = hit.name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV|V)$/, "").split(/\s+/);
-      return { full: hit.name, last: parts.slice(1).join(" ") || hit.name };
-    }
-    return { full: abbr.replace(".", ". "), last };
+    const hit = r(abbr, team);
+    return hit ? { full: hit.full, last: hit.last } : null;
   };
 }
 
@@ -700,20 +726,39 @@ function card(label: string, id: string, title: string, body: string, extra = ""
 export function renderRecapOverviewParts(input: OverviewInput): { main: string; leaders: string } {
   const f = facts(input);
   if (!f) return { main: "", leaders: "" };
-  const name = nameResolver(input.players);
+  const name = nameResolver(input.players, input.story.ids);
   const link = (full: string) => {
     const url = input.playerUrl(full);
     return url ? `<a href="${e(url)}">${e(full)}</a>` : e(full);
   };
 
-  // 01
-  const paras = recapParagraphs(f, input, name);
+  // 01: the narrative engine (recap-narrative.ts, 2026-11-17); the older
+  // fixed-sequence copy stays as the fallback for a game it cannot tell.
+  const narrativeInput = {
+    seed: input.gameId ?? `${input.game.away.abbr}-${input.game.home.abbr}-${input.game.kickoff ?? ""}`,
+    game: input.game,
+    story: input.story,
+    stats: input.stats,
+    players: input.players,
+    city: input.city,
+    drives: input.drives ?? null,
+    odds: input.odds ?? null,
+    records: input.records,
+    divisional: input.divisional,
+  };
+  // The written recap (scripts/matchup/writeRecaps.mjs), checked against the
+  // facts and stored, wins while the evidence it was written from is unchanged.
+  const packet = input.gameId ? recapFacts(narrativeInput, input.gameId) : null;
+  const written = packet ? storedRecap(input.story.season, packet.gameId, factsHash(packet)) : null;
+  const told = written ?? (packet ? packet.draft : composeRecap(narrativeInput));
+  const paras = told?.paragraphs.length ? told.paragraphs : recapParagraphs(f, input, name);
+  const head = told?.paragraphs.length ? told.headline : headline(f, input);
   const recap = card(
     "",
     "sct-ov-recap",
     "Game Recap",
     // The headline opens the card body in bold (mak 11-08), not the H2.
-    `<p class="sct-ov-copy sct-ov-headline"><strong>${e(headline(f, input))}</strong></p>` +
+    `<p class="sct-ov-copy sct-ov-headline"><strong>${e(head)}</strong></p>` +
       paras.map((p) => `<p class="sct-ov-copy">${e(p)}</p>`).join(""),
     "is-recap", BAR_ICON["recap"],
   );

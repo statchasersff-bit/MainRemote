@@ -301,9 +301,9 @@ describe("a sweep", () => {
     assert.equal(rows[0].quoted_text, "Is the deal done?");
     assert.equal(rows[0].news_item_id, `x-${ID.quote}`);
     // Categorised through the shared classifier, not an X-only one: "passed his
-    // physical ... and will practice" is a practice note, and nothing in it
-    // claims an injury.
-    assert.equal(rows[0].category, "practice");
+    // physical ... and will practice" is a participation note, which files
+    // under Injury now that there is no Practice label (2026-11-17).
+    assert.equal(rows[0].category, "injury");
   });
 
   test("a failing profile is recorded against it, not thrown", async () => {

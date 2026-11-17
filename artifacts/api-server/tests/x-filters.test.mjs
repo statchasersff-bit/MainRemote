@@ -55,7 +55,7 @@ const ITEMS = [
     team: "tb",
     source: "Dynasty Command",
     sourceType: "wire",
-    category: "practice",
+    category: "performance",
   },
   {
     id: "x-1",
@@ -98,7 +98,7 @@ const ITEMS = [
     team: "min",
     source: "Dynasty Command",
     sourceType: "wire",
-    category: "practice",
+    category: "performance",
   },
 ];
 
@@ -217,11 +217,11 @@ describe("the source filter", () => {
     choose("scFilterCategory", "injury");
     assert.equal(visible().length, 1);
 
-    choose("scFilterCategory", "practice");
-    const practice = visible();
+    choose("scFilterCategory", "performance");
+    const performance = visible();
     // One wire row and one wire row - the category is not an X-only concept.
-    assert.equal(practice.length, 2);
-    assert.ok(practice.every((li) => li.dataset.source === "news"));
+    assert.equal(performance.length, 2);
+    assert.ok(performance.every((li) => li.dataset.source === "news"));
   });
 
   test("filters combine, and clearing them brings everything back", async () => {
@@ -238,13 +238,11 @@ describe("the source filter", () => {
     assert.equal(visible().length, ITEMS.length);
   });
 
-  test("the count the reader is shown matches what is on screen", async () => {
-    const { doc, visible, choose } = await mount();
+  test("no result count is shown while filtering", async () => {
+    const { doc, choose } = await mount();
     choose("scFilterSource", "x");
-    assert.equal(
-      doc.querySelector(".sc-filter-status").textContent,
-      `${visible().length} of ${ITEMS.length} updates`,
-    );
+    assert.equal(doc.querySelector(".sc-filter-status"), null);
+    assert.ok(!/ of \d+ updates/.test(doc.body.textContent));
   });
 
   test("an X card shows its reporter and links to the post", async () => {
@@ -269,10 +267,10 @@ describe("the source filter", () => {
     const { doc } = await mount();
     const cards = [...doc.querySelectorAll(".sc-card-item")];
     const card = cards.find((li) => li.dataset.source === "news");
-    // "Practice", from ITEMS[0].category - the label is the item's own
+    // "Performance", from ITEMS[0].category - the label is the item's own
     // category, not a fixed string every card shares. This used to read
     // "Player News" on all of them.
-    assert.equal(card.querySelector(".sc-card-label").textContent, "Practice");
+    assert.equal(card.querySelector(".sc-card-label").textContent, "Performance");
     assert.equal(card.querySelector(".sc-card-label-x"), null);
 
     // And it really does vary between cards, which is the whole point.

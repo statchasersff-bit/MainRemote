@@ -322,7 +322,7 @@ describe("what kind of news it is", () => {
     [ORIGINAL.full_text, "injury"],
     ["The Bears are signing OL Mason Smith to a two-year deal", "transaction"],
     ["Full participant in practice today, no injury designation", "injury"],
-    ["Everyone was on the field for the walkthrough", "practice"],
+    ["Everyone was on the field for the walkthrough", "injury"],
     ["He has been named the starter for Week 3", "depth-chart"],
     ["Teams are believed to have interest in a trade", "transaction"],
     ["A solid waiver wire add this week", "fantasy"],
@@ -334,10 +334,20 @@ describe("what kind of news it is", () => {
     ["Done for season", "status"],
     ["Feels on track for Week 1", "status"],
     // Participation. A bare `practice` missed the -ing form, which is the
-    // shape the wire files most of these in.
-    ["Not practicing Wednesday", "practice"],
-    ["Takes part in 7-on-7 drills", "practice"],
-    ["Had a rest day Tuesday", "practice"],
+    // shape the wire files most of these in. There is no Practice label any
+    // more (2026-11-17): a participation note is the injury report, so Injury.
+    ["Not practicing Wednesday", "injury"],
+    ["Takes part in 7-on-7 drills", "injury"],
+    ["Had a rest day Tuesday", "injury"],
+    // In-game stat lines: Performance, including the one that says
+    // "scrimmage", which the participation rule used to claim.
+    ["Rushed 19 times for 82 yards in Sunday's 24-19 win over Miami", "performance"],
+    ["Caught five of six targets for 40 yards and a touchdown", "performance"],
+    ["Notches 11 tackles in Week 8", "performance"],
+    ["Makes both field-goal attempts", "performance"],
+    ["Racks up 90 scrimmage yards Sunday", "performance"],
+    // An availability note that names the game is not a stat line.
+    ["Back in Sunday's game", "other"],
     // Role notes, which read as depth chart rather than as nothing.
     ["Still Dallas' clear TE1", "depth-chart"],
     ["Embracing complementary role", "depth-chart"],

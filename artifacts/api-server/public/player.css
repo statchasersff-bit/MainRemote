@@ -1434,7 +1434,6 @@ button.scp-search-opt {
 .scp .scp-nw .scp-nw-cat.is-game { background: var(--scp-ph-ink); color: #fff; }
 .scp .scp-nw .scp-nw-cat.is-injury { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
 .scp .scp-nw .scp-nw-cat.is-status { background: var(--scp-ph-mid-soft); color: var(--scp-ph-mid); }
-.scp .scp-nw .scp-nw-cat.is-prac { background: var(--tp-c-e6f0fa, #e6f0fa); color: var(--tp-c-1f4e8c, #1f4e8c); }
 .scp .scp-nw .scp-nw-cat.is-role { background: #efe6fa; color: #5b2d8f; }
 .scp .scp-nw .scp-nw-cat:is(.is-move, .is-deal) { background: var(--scp-ph-gold-soft); color: var(--tp-c-8a6414, #8a6414); }
 

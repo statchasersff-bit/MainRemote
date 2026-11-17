@@ -69,6 +69,16 @@ async function get(pathname) {
   return { status: res.status, headers: res.headers, body: await res.text() };
 }
 
+/** The stored written recap for a game, or null (data/matchup/recap_prose_<season>.json). */
+function writtenRecap(id) {
+  try {
+    const doc = JSON.parse(fs.readFileSync(new URL(`../data/matchup/recap_prose_${id.slice(0, 4)}.json`, import.meta.url), "utf8"));
+    return doc.games?.[id] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function dom(pathname) {
   const res = await get(pathname);
   assert.equal(res.status, 200, `${pathname} should be 200`);
@@ -2276,14 +2286,18 @@ describe("recap Overview tab (new design)", () => {
     const steps = [...ov.querySelectorAll(".sct-ov-step")].map((p) => p.textContent.replace(/\s+/g, " ").trim());
     assert.deepEqual(steps, [], "no step labels");
     assert.equal(ov.querySelector("#sct-ov-recap").textContent, "Game Recap");
-    assert.equal(
-      ov.querySelector(".is-recap .sct-ov-headline strong").textContent,
-      "Seahawks rally past Patriots 13–10 behind a late touchdown and three interceptions",
-    );
+    // The written recap (scripts/matchup/writeRecaps.mjs, 2026-11-17) when one
+    // is stored for the game's current evidence; the engine's text otherwise.
     const copy = ov.querySelector(".is-recap").textContent;
-    assert.match(copy, /Seattle lost Sam Darnold to an injury on the opening drive, and Drew Lock took over/);
-    assert.match(copy, /Drake Maye threw three interceptions in the fourth quarter, to Nehemiah Pritchett, Julian Love and Josh Jobe\./);
-    assert.match(copy, /Josh Jobe's end-zone interception in the final minute sealed the win\./);
+    const stored = writtenRecap("2026_01_NE_SEA");
+    if (stored) {
+      assert.equal(ov.querySelector(".is-recap .sct-ov-headline strong").textContent, stored.headline);
+    } else {
+      assert.match(copy, /Seattle lost Sam Darnold to an injury on the opening drive/);
+    }
+    assert.match(copy, /Darnold/);
+    assert.match(copy, /Smith-Njigba/);
+    assert.doesNotMatch(copy, /\u2014/, "no em dashes");
     const tiles = [...ov.querySelectorAll(".sct-ov-tiles li")].map((li) => li.textContent);
     // The why card argues from evidence the recap does not tell (2026-11-11).
     assert.deepEqual(tiles, ["+3Turnover margin", "7.2SEA yards/dropback", "5/16NE third downs"]);
@@ -2303,6 +2317,24 @@ describe("recap Overview tab (new design)", () => {
     assert.deepEqual([...side.querySelectorAll("dt")].map((n) => n.textContent), ["Passing", "Rushing", "Receiving", "Defense"]);
     assert.match(side.textContent, /Game-sealing INT/);
     assert.ok(ov.querySelector(".is-highlights .sct-hl"), "the highlights");
+  });
+
+  test("the recap reads the story, not a scoreboard: Patriots at Lions, 2026 week 10 (2026-11-17)", async () => {
+    const { doc } = await dom("/nfl/detroit-lions-vs-new-england-patriots/2026-week-10/");
+    const card = doc.querySelector(".sct-ov .is-recap");
+    if (!card) return; // no stored story
+    const copy = card.textContent;
+    const stored = writtenRecap("2026_10_NE_DET");
+    if (stored) assert.equal(card.querySelector(".sct-ov-headline strong").textContent, stored.headline);
+    // Names resolve by stable id: never nflverse's "A.St. Brown".
+    assert.match(copy, /Amon-Ra St\. Brown/);
+    assert.doesNotMatch(copy, /A\. St\. Brown/);
+    // Both injuries came on one play, and only the play id says so.
+    assert.match(copy, /Hutchinson/);
+    assert.match(copy, /same play/);
+    const words = [...card.querySelectorAll(".sct-ov-copy:not(.sct-ov-headline)")].map((p) => p.textContent).join(" ").split(/\s+/).length;
+    assert.ok(words >= 180 && words <= 265, `${words} words`);
+    assert.doesNotMatch(copy, /\u2014/, "no em dashes");
   });
 
   test("team stats and the scoring summary move to their own tabs", async () => {

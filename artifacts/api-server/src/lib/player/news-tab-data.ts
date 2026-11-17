@@ -28,13 +28,12 @@ import { loadGameLogs, loadIndexedSlugs } from "./data";
 import { teamCode } from "./ranks";
 import type { GameLogEntry, Player } from "./types";
 
-export type NewsType = "game" | "status" | "prac" | "transaction" | "contract" | "depth" | "analysis";
+export type NewsType = "game" | "status" | "transaction" | "contract" | "depth" | "analysis";
 export type Impact = "up" | "flat" | "down";
 
 export const TYPE_LABEL: Record<NewsType, string> = {
   game: "Game recap",
   status: "Status",
-  prac: "Practice",
   transaction: "Transaction",
   contract: "Contract",
   depth: "Depth chart",
@@ -512,7 +511,7 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
 export function typeOf(item: NewsItem): NewsType {
   const c = item.category ?? "other";
   if (c === "injury" || c === "status") return "status";
-  if (c === "practice") return "prac";
+  if (c === "performance") return "game";
   if (c === "transaction") return /\b(contract|extension|extend|restructur|guarantee|re-?work)/i.test(`${item.title} ${item.summary ?? ""}`) ? "contract" : "transaction";
   if (c === "depth-chart") return "depth";
   if (c === "recap") return "game";
@@ -530,14 +529,14 @@ function ruleTake(ctx: NewsContext, type: NewsType, group: WeekGroup): { take: s
   const e = group.week !== null ? ctx.log.find((x) => x.week === group.week) : undefined;
   const final = g?.status === "final";
   const active = e && (e.game_status ?? "active") === "active" && e.stats;
-  if (final && active && (type === "status" || type === "prac" || type === "analysis" || type === "game")) {
+  if (final && active && (type === "status" || type === "analysis" || type === "game")) {
     const fin = e!.pos_rank;
     return {
       take: `He played in Week ${group.week}: ${one(ctx.points(e!))} ${ctx.scoring} points${fin ? `, ${ctx.pos === "RB" ? "an" : "a"} ${ctx.pos}${fin} finish` : ""}.`,
       impact: type === "game" ? recapImpact(ctx.pos, fin, ctx.points(e!), seasonAvg(ctx)) : "flat",
     };
   }
-  if (final && !active && (type === "status" || type === "prac")) {
+  if (final && !active && type === "status") {
     return { take: `He did not play in Week ${group.week}.`, impact: "down" };
   }
   if (type === "status") {
@@ -550,7 +549,6 @@ function ruleTake(ctx: NewsContext, type: NewsType, group: WeekGroup): { take: s
       ? { take: "A preseason health note; his Week 1 availability is what matters for fantasy.", impact: "flat" }
       : { take: "An offseason health note; watch for it again when practice reports start.", impact: "flat" };
   }
-  if (type === "prac") return { take: "Practice and camp notes are context; his usage in games is what moves his value.", impact: "flat" };
   if (type === "transaction") return { take: "A roster move: watch how it changes his snaps and targets in the next game.", impact: "flat" };
   if (type === "contract") return { take: "Contract news: his fantasy value still comes from his role on the field.", impact: "flat" };
   if (type === "depth") return { take: "A depth-chart change: his role drives his value, and the Outlook tab has the full picture.", impact: "flat" };
@@ -561,9 +559,9 @@ const HURT_WORDS = /\b(out|ir|injur|questionable|doubtful|dnp|did not practice|s
 
 /** A wire or club item's tag and read (mak, 2026-10-05). */
 function itemOutcome(type: NewsType, impact: Impact, text: string): Outcome {
-  if (type === "status" || type === "prac") {
-    if (impact === "down" || (type === "status" && HURT_WORDS.test(text))) return { tag: "Injury", label: "Injury-driven" };
-    return type === "status" ? { tag: "Status", label: "Neutral" } : { tag: "Practice", label: "Neutral" };
+  if (type === "status") {
+    if (impact === "down" || HURT_WORDS.test(text)) return { tag: "Injury", label: "Injury-driven" };
+    return { tag: "Status", label: "Neutral" };
   }
   if (type === "depth" || type === "transaction") return { tag: "Role change", label: impact === "down" ? "Role concern" : "Neutral" };
   return { tag: "News", label: impact === "up" ? "Solid starter result" : impact === "down" ? "Role concern" : "Neutral" };
