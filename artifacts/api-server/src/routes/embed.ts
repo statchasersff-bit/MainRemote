@@ -1,8 +1,9 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { renderNewsFragment } from "../lib/ssr";
+import { renderNewsFragment, renderNewsRailFragment, type RailFragmentOptions } from "../lib/ssr";
+import { clampRailLimit, clampRailPages } from "../lib/news-rail";
 import { DEFAULT_PAGE_SIZE } from "../lib/render";
 import { MAX_LIMIT } from "../lib/news-query";
 import { publicOrigin } from "../lib/request";
@@ -230,6 +231,21 @@ function fragmentOptions(req: Parameters<typeof publicOrigin>[0]) {
 }
 
 /**
+ * The rail's options: rows per page (3-10, default 6), pages to step
+ * through (1-10, default 5), the optional heading text, and the same origin and browser endpoint the full feed uses.
+ */
+function railOptions(req: Request, base: ReturnType<typeof fragmentOptions>): RailFragmentOptions {
+  const heading = String(req.query["heading_text"] ?? "").trim().slice(0, 80);
+  return {
+    limit: clampRailLimit(req.query["limit"]),
+    pages: clampRailPages(req.query["pages"]),
+    ...(base.origin !== undefined ? { origin: base.origin } : {}),
+    ...(base.apiBase ? { apiBase: base.apiBase } : {}),
+    ...(heading ? { heading } : {}),
+  };
+}
+
+/**
  * GET /embed/ssr - the tool, server-rendered, as a bare HTML fragment.
  *
  * This is the endpoint that makes the WordPress plugin possible: the plugin
@@ -241,7 +257,11 @@ router.get("/embed/ssr", async (req, res) => {
   const options = fragmentOptions(req);
 
   try {
-    const html = await renderNewsFragment(options);
+    // layout=rail: the compact sidebar view (lib/news-rail.ts, 2026-11-17).
+    // Anything else is the full feed, exactly as before.
+    const html = String(req.query["layout"] ?? "") === "rail"
+      ? await renderNewsRailFragment(railOptions(req, options))
+      : await renderNewsFragment(options);
     res
       .set("Cache-Control", "public, max-age=60")
       .json({

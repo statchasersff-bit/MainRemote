@@ -19,6 +19,7 @@ export const HASHED_ASSET_NAMES: readonly string[] = [
   "rookie-hit-rates",
   "redraft-strategy",
   "injury-impact",
+  "news-rail",
 ];
 
 /**
