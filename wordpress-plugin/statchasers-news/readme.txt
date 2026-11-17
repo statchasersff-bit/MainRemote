@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.55
+Stable tag: 1.10.56
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.56 =
+* News rail: a compact sidebar mode for the news shortcode, `[statchasers_news layout="rail"]`, for the homepage. Six recent stories per page with Prev / Next paging (five pages; `limit="3"`-`"10"` rows per page, `pages="1"`-`"10"`, `heading_text` to retitle it): player headshot with the team crest on its corner, the headline (three lines at most), and one meta line (category, team, date; the full timestamp on hover). The whole row opens the original article. It loads its own small stylesheet and script (news-rail.css, statchasers-news-rail.js) and never the full feed's, and refreshes its stories every ten minutes like the full feed. Without `layout="rail"` the shortcode is the full feed, exactly as before. New file statchasers-news-rail.php. Needs the API deploy that serves news-rail.css. Clear WP Rocket's cache (mobile included) and purge Rocket.net after adding it to a page.
 
 = 1.10.55 =
 * Interaction speed (INP audit, 2026-11-15): every StatChasers tool script (player pages, SOS, RB handcuffs, FPA, rankings, schedule, advanced stats, rookie hit rates, redraft strategy, injury impact) is now excluded from WP Rocket's "Delay JavaScript execution" and minify/combine, as the team script has been since 1.10.52. Delayed, each one waited for the reader's first tap and then ran in one burst with jQuery, Divi and Google Analytics, and the sort buttons and tab controls it builds did not exist until then. The scripts have no dependencies and still load deferred. This shortens that burst; it does not remove the first-tap wait, which is WP Rocket's Delay JS setting (see the audit). New file statchasers-perf.php. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading, or cached pages keep the delayed tags.
