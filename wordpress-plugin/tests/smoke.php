@@ -478,6 +478,12 @@ if ( 'bdp' === $group ) {
 	exit( $fail ? 1 : 0 );
 }
 
+if ( 'newsrail' === $group ) {
+	require __DIR__ . '/smoke-news-rail.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 if ( 'hostcss' === $group ) {
 	require __DIR__ . '/smoke-hostcss.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
@@ -2222,7 +2228,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

@@ -152,6 +152,14 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-news.js"),
   });
 
+  // The compact news rail ([statchasers_news layout="rail"], 2026-11-17): its
+  // own small bundle, so a page with only the rail never loads the full feed's.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/news-rail.ts")],
+    outfile: path.join(outDir, "statchasers-news-rail.js"),
+  });
+
   // The team hub's enhancement bundle. Separate from the news bundle because
   // the two mount independently: a WordPress page with the news shortcode on it
   // should not download the team hub's code, and vice versa.
@@ -293,6 +301,8 @@ async function buildClient() {
   const rdsCss = await readFile(path.resolve(artifactDir, "public", "redraft-strategy.css"));
   const scinJs = await readFile(path.join(outDir, "statchasers-injury-impact.js"));
   const scinCss = await readFile(path.resolve(artifactDir, "public", "injury-impact.css"));
+  const railJs = await readFile(path.join(outDir, "statchasers-news-rail.js"));
+  const railCss = await readFile(path.resolve(artifactDir, "public", "news-rail.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -319,6 +329,8 @@ async function buildClient() {
     .update(rdsCss)
     .update(scinJs)
     .update(scinCss)
+    .update(railJs)
+    .update(railCss)
     .digest("hex")
     .slice(0, 12);
 
@@ -358,6 +370,7 @@ const HASHED_STYLESHEETS = [
   "rookie-hit-rates.css",
   "redraft-strategy.css",
   "injury-impact.css",
+  "news-rail.css",
 ];
 
 Promise.all([buildAll(), buildClient()]).catch((err) => {

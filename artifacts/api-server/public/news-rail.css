@@ -1,0 +1,274 @@
+/*
+ * The compact news rail: [statchasers_news layout="rail"] (lib/news-rail.ts,
+ * mak 2026-11-17: Prev / Next paging, no View All link). Every rule is scoped under .sc-rail, so this sheet cannot
+ * reach the full Fantasy Feed, and a page with only the rail never loads the
+ * full feed's styles.css.
+ *
+ * Host defence first (Divi styles bare elements; see the team sheet's notes):
+ * one-class resets via :where(), level with the component rules below, which
+ * then win on source order.
+ */
+.sc-rail :where(h2, h3, p, ol, li, a, time, span, img, nav, b, abbr) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  list-style: none;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  text-decoration: none;
+  box-shadow: none;
+  background: none;
+}
+
+.sc-rail {
+  --sc-rail-navy: #07142f;
+  --sc-rail-gold: #d4af37;
+  --sc-rail-gold-dark: #9a741c;
+  --sc-rail-muted: #64748b;
+  --sc-rail-line: #e8ebf0;
+  --sc-rail-soft: #f7f9fc;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--sc-rail-line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(7, 20, 47, 0.04), 0 8px 24px rgba(7, 20, 47, 0.06);
+  overflow: hidden;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--sc-rail-navy);
+  text-align: left;
+}
+.sc-rail *, .sc-rail *::before, .sc-rail *::after { box-sizing: border-box; }
+
+/* ---- head: the title with the house gold rule under it, as the player
+   pages' section titles draw it (.scp-ox-h2 in player.css: 17px navy 800,
+   a 28px x 3px rounded gold bar 10px beneath). Not a full-width underline. */
+.sc-rail-head {
+  padding: 16px 18px 13px;
+  border-bottom: 1px solid var(--sc-rail-line);
+  background: linear-gradient(180deg, #fff 0%, var(--sc-rail-soft) 100%);
+}
+.sc-rail .sc-rail-title {
+  position: relative;
+  display: block;
+  padding-bottom: 10px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--sc-rail-navy);
+}
+.sc-rail .sc-rail-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-rail-gold);
+}
+
+/* ---- rows */
+.sc-rail .sc-rail-list { display: block; }
+.sc-rail .sc-rail-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 11px 18px;
+  border-top: 1px solid var(--sc-rail-line);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.sc-rail .sc-rail-item:first-child { border-top: 0; }
+/* The whole row is one target: hover tint, and a gold ring when the
+   headline link inside it has keyboard focus. */
+.sc-rail .sc-rail-item:hover,
+.sc-rail .sc-rail-item:focus-within { background: var(--sc-rail-soft); }
+.sc-rail .sc-rail-item:has(.sc-rail-link:focus-visible) { box-shadow: inset 0 0 0 3px var(--sc-rail-gold); }
+
+/* The photo plus its club crest, which sits over the bottom-right corner
+   (outside the tile's rounded clip, so it is never cut off). Bare logo with a
+   soft shadow, no disc, as on the matchup boards' crests. */
+.sc-rail .sc-rail-avatar {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 52px;
+}
+.sc-rail .sc-rail-crest {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 1px 2px rgba(7, 20, 47, 0.35));
+  pointer-events: none;
+}
+
+/* The thumbnail: the full feed's team-tinted tile, at rail size. */
+.sc-rail .sc-rail-thumb {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(212, 175, 55, 0.2), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--sc-rail-team, #123b73) 58%, #000) 0%,
+      color-mix(in srgb, var(--sc-rail-team, #0b1f3a) 34%, #000) 100%);
+}
+.sc-rail .sc-rail-thumb::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--sc-rail-gold), transparent);
+}
+.sc-rail .sc-rail-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center top;
+}
+.sc-rail .sc-rail-photo-fallback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: url("/statchasers-logo-on-dark.png") no-repeat center / 64%;
+  opacity: 0.92;
+}
+
+.sc-rail .sc-rail-body { min-width: 0; }
+.sc-rail .sc-rail-headline {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.38;
+  color: var(--sc-rail-navy);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sc-rail .sc-rail-link,
+.sc-rail .sc-rail-link:visited {
+  color: var(--sc-rail-navy);
+  text-decoration: none;
+}
+/* The whole row is the target; the headline stays the link's accessible name. */
+.sc-rail .sc-rail-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.sc-rail .sc-rail-item:hover .sc-rail-link {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-rail-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.sc-rail .sc-rail-link:focus-visible { outline: none; }
+/* Fallback ring for browsers without :has(). */
+@supports not selector(:has(*)) {
+  .sc-rail .sc-rail-link:focus-visible::after {
+    outline: 3px solid var(--sc-rail-gold);
+    outline-offset: -3px;
+  }
+}
+
+/* The meta line: CATEGORY · TEAM · date, one editorial line (mak,
+   2026-11-17). Plain inline text in one size, weight and line height, so the
+   pieces share a baseline; only the color separates the category (a quiet
+   gold) from the team and date (muted blue-gray). Each piece is nowrap and
+   carries the separator after it, so a narrow column wraps between pieces
+   and a wrapped line always starts with text, never with a dot. */
+.sc-rail .sc-rail-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: #64748b;
+}
+.sc-rail .sc-rail-m { display: inline; white-space: nowrap; }
+.sc-rail .sc-rail-m:not(:last-child)::after {
+  content: "\00B7";
+  display: inline-block;
+  margin: 0 3px 0 6px;
+  color: #b6bfcc;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sc-rail .sc-rail-cat {
+  color: #8a6614;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.sc-rail .sc-rail-team { letter-spacing: 0.03em; cursor: default; }
+
+/* Rows off the shown page. The row's own display:grid would otherwise beat
+   the browser's [hidden] rule. */
+.sc-rail .sc-rail-item[hidden] { display: none; }
+
+/* ---- pager: Prev / Page 1 of 5 / Next */
+.sc-rail .sc-rail-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--sc-rail-line);
+  background: var(--sc-rail-soft);
+}
+.sc-rail .sc-rail-pager button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid var(--sc-rail-line);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(7, 20, 47, 0.05);
+  font: 700 13px/1 "Inter", system-ui, sans-serif;
+  color: var(--sc-rail-navy);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.sc-rail .sc-rail-pager button span { color: var(--sc-rail-gold-dark); font-size: 16px; line-height: 1; }
+.sc-rail .sc-rail-pager button:hover:not([disabled]) { border-color: var(--sc-rail-gold); background: #fdf8e8; }
+.sc-rail .sc-rail-pager button:focus-visible { outline: 3px solid var(--sc-rail-gold); outline-offset: 2px; }
+.sc-rail .sc-rail-pager button[disabled] { opacity: 0.4; cursor: default; box-shadow: none; }
+.sc-rail .sc-rail-count { font-size: 12.5px; color: var(--sc-rail-muted); white-space: nowrap; }
+.sc-rail .sc-rail-count b { font-weight: 800; color: var(--sc-rail-navy); }
+
+/* ---- phones: the rail stacks full width under the rankings */
+@media (max-width: 560px) {
+  .sc-rail { border-radius: 14px; }
+  .sc-rail-head { padding: 14px 14px 10px; }
+  .sc-rail .sc-rail-item { padding: 10px 14px; gap: 11px; }
+  .sc-rail .sc-rail-headline { font-size: 14.5px; }
+  .sc-rail .sc-rail-pager { padding: 10px 12px; }
+  .sc-rail .sc-rail-pager button { min-height: 40px; padding: 8px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-rail .sc-rail-item, .sc-rail .sc-rail-pager button { transition: none; }
+}

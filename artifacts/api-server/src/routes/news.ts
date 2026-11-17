@@ -4,6 +4,7 @@ import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { dataDirStatus } from "../lib/data-dir";
 import { imageCacheStatus } from "../lib/image-cache";
 import { imageVersionsStatus, stampImageVersions } from "../lib/image-versions";
+import { fillRailPhotos } from "../lib/rail-photos";
 import { invalidateNewsReadCache, listNews, newsReadCacheStatus } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
@@ -1587,10 +1588,14 @@ router.get("/news", (req, res) => {
     try {
       // Shared with the server-side renderer so the JSON the browser refreshes
       // with is the same shape - including the resolved `team` - that SSR used.
-      const items = await listNews({
+      let items = await listNews({
         ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
         search,
       });
+      // photos=1 (the news rail's refresh): copies with ESPN headshots for
+      // players the wire sent bare. Without it the response is exactly the
+      // full feed's, untouched.
+      if (req.query["photos"] === "1") items = fillRailPhotos(items);
       // Current knowledge only; unknown faces resolve in the background.
       await stampImageVersions(items, 0);
 

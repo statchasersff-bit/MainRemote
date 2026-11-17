@@ -63,6 +63,8 @@ const STATCHASERS_NEWS_OPTION_INSTALLED      = 'statchasers_news_installed_versi
 // rather than carrying a copy apiece, and while function declarations hoist
 // within a file they do not hoist across an include that has not run yet.
 require_once __DIR__ . '/statchasers-assets.php';
+// The news shortcode's compact rail mode (layout="rail"): its arguments.
+require_once __DIR__ . '/statchasers-news-rail.php';
 require_once __DIR__ . '/statchasers-proxy.php';
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
@@ -199,6 +201,12 @@ function statchasers_public_origin(): string {
  * @return array{limit:int,page_size:int,heading:int,heading_text:string}
  */
 function statchasers_news_args( array $atts ): array {
+	// layout="rail": the compact sidebar view (2026-11-17). Read before
+	// shortcode_atts so its own row default (6) applies when no limit is given.
+	if ( statchasers_news_is_rail( $atts ) ) {
+		return statchasers_news_rail_args( $atts );
+	}
+
 	$atts = shortcode_atts(
 		array(
 			'limit'        => 250,
@@ -277,23 +285,34 @@ function statchasers_news_fetch( array $args ): ?array {
 		return '' === $cached['html'] ? null : $cached;
 	}
 
-	$query = array(
-		'limit'     => $args['limit'],
-		'page_size' => $args['page_size'],
-		'heading'   => $args['heading'],
-		// So Core Web Vitals measured inside the tool are attributed to the
-		// page being ranked rather than to the API origin.
-		'page_url'  => statchasers_news_canonical_guess(),
-	);
-
-	foreach ( array( 'heading_text', 'player_url', 'team_url', 'related' ) as $optional ) {
-		if ( '' !== $args[ $optional ] ) {
-			$query[ $optional ] = $args[ $optional ];
+	if ( isset( $args['layout'] ) && 'rail' === $args['layout'] ) {
+		$query = array(
+			'layout' => 'rail',
+			'limit'  => $args['limit'],
+			'pages'  => $args['pages'],
+		);
+		if ( '' !== $args['heading_text'] ) {
+			$query['heading_text'] = $args['heading_text'];
 		}
-	}
+	} else {
+		$query = array(
+			'limit'     => $args['limit'],
+			'page_size' => $args['page_size'],
+			'heading'   => $args['heading'],
+			// So Core Web Vitals measured inside the tool are attributed to the
+			// page being ranked rather than to the API origin.
+			'page_url'  => statchasers_news_canonical_guess(),
+		);
 
-	if ( '' !== $args['vitals'] ) {
-		$query['vitals_endpoint'] = $args['vitals'];
+		foreach ( array( 'heading_text', 'player_url', 'team_url', 'related' ) as $optional ) {
+			if ( '' !== $args[ $optional ] ) {
+				$query[ $optional ] = $args[ $optional ];
+			}
+		}
+
+		if ( '' !== $args['vitals'] ) {
+			$query['vitals_endpoint'] = $args['vitals'];
+		}
 	}
 
 	$url = add_query_arg( array_map( 'rawurlencode', $query ), $origin . '/embed/ssr' );
@@ -434,6 +453,78 @@ function statchasers_news_enqueue_assets(): void {
 }
 
 /**
+ * The rail's own stylesheet and small bundle. A page that shows only the
+ * rail loads these and never the full feed's styles.css or
+ * statchasers-news.js. Same font dependency and version as the full feed.
+ */
+function statchasers_news_rail_enqueue_assets(): void {
+	if ( '' === statchasers_news_origin() ) {
+		return;
+	}
+	$version = statchasers_news_asset_version();
+
+	if ( ! wp_style_is( STATCHASERS_NEWS_RAIL_HANDLE, 'registered' ) ) {
+		wp_register_style(
+			STATCHASERS_NEWS_RAIL_HANDLE,
+			statchasers_public_origin() . '/news-rail.css',
+			statchasers_font_dependency(),
+			$version
+		);
+	}
+	if ( ! wp_script_is( STATCHASERS_NEWS_RAIL_HANDLE, 'registered' ) ) {
+		wp_register_script(
+			STATCHASERS_NEWS_RAIL_HANDLE,
+			statchasers_public_origin() . '/dist/statchasers-news-rail.js',
+			array(),
+			$version,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+	}
+	wp_enqueue_style( STATCHASERS_NEWS_RAIL_HANDLE );
+	wp_enqueue_script( STATCHASERS_NEWS_RAIL_HANDLE );
+}
+
+/**
+ * Which layouts of the shortcode the current post's content uses:
+ * array{full:bool, rail:bool}. So the <head> enqueue loads the full feed's
+ * assets only where a full feed is, and the rail's only where a rail is.
+ *
+ * @return array{full:bool,rail:bool}
+ */
+function statchasers_news_post_layouts(): array {
+	$found = array(
+		'full' => false,
+		'rail' => false,
+	);
+	if ( ! is_singular() ) {
+		return $found;
+	}
+	$post = get_post();
+	if ( ! $post instanceof WP_Post ) {
+		return $found;
+	}
+	$content = (string) $post->post_content;
+	if ( ! has_shortcode( $content, STATCHASERS_NEWS_SHORTCODE ) ) {
+		return $found;
+	}
+	if ( preg_match_all( '/' . get_shortcode_regex( array( STATCHASERS_NEWS_SHORTCODE ) ) . '/', $content, $matches, PREG_SET_ORDER ) ) {
+		foreach ( $matches as $m ) {
+			$atts = shortcode_parse_atts( isset( $m[3] ) ? $m[3] : '' );
+			$atts = is_array( $atts ) ? $atts : array();
+			if ( statchasers_news_is_rail( $atts ) ) {
+				$found['rail'] = true;
+			} else {
+				$found['full'] = true;
+			}
+		}
+	}
+	return $found;
+}
+
+/**
  * Does the current request render the shortcode anywhere in post content?
  *
  * Used to enqueue the stylesheet during wp_enqueue_scripts (i.e. in <head>,
@@ -460,7 +551,13 @@ add_action(
 		if ( ! statchasers_news_post_has_shortcode() ) {
 			return;
 		}
-		statchasers_news_enqueue_assets();
+		$layouts = statchasers_news_post_layouts();
+		if ( $layouts['full'] ) {
+			statchasers_news_enqueue_assets();
+		}
+		if ( $layouts['rail'] ) {
+			statchasers_news_rail_enqueue_assets();
+		}
 	}
 );
 
@@ -496,6 +593,23 @@ function statchasers_news_shortcode( $atts = array() ): string {
 
 	$args = statchasers_news_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_news_fetch( $args );
+
+	if ( isset( $args['layout'] ) && 'rail' === $args['layout'] ) {
+		// The compact rail: its own assets only. Idempotent, like the full feed's.
+		statchasers_news_rail_enqueue_assets();
+		if ( null === $data ) {
+			// No render and no backup: a mount the rail bundle fills from the API.
+			return sprintf(
+				'<div class="sc-rail-mount" data-sc-rail-mount="1" data-sc-origin="%1$s" data-sc-limit="%2$d" data-sc-pages="%3$d"%4$s></div>',
+				esc_attr( statchasers_public_origin() ),
+				(int) $args['limit'],
+				(int) $args['pages'],
+				'' !== $args['heading_text'] ? ' data-sc-heading="' . esc_attr( $args['heading_text'] ) . '"' : ''
+			);
+		}
+		/** This filter is documented below. */
+		return (string) apply_filters( 'statchasers_news_fragment_html', $data['html'], $args );
+	}
 
 	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_news_enqueue_assets();

@@ -27,6 +27,8 @@ import {
 import { ensureTeams } from "./teams";
 import { pageMeta, renderHeadTags, type PageMeta } from "./seo";
 import { contentVersion, ensureFreshness } from "./freshness";
+import { renderNewsRail } from "./news-rail";
+import { fillRailPhotos } from "./rail-photos";
 import { logger } from "./logger";
 import {
   imageVersionsEpoch,
@@ -175,6 +177,69 @@ export async function renderNewsFragment(
   }
   renderCache.set(key, html);
 
+  return html;
+}
+
+export interface RailFragmentOptions {
+  limit: number;
+  pages: number;
+  origin?: string;
+  apiBase?: string;
+  heading?: string;
+}
+
+/**
+ * The compact rail (lib/news-rail.ts) as a fragment, for
+ * `[statchasers_news layout="rail"]`. Same items as the full feed: when a
+ * full-feed render already holds this content version's list, the rail takes
+ * its first rows from it rather than reading the archive again; otherwise it
+ * reads only the rows it shows. Cached on the same terms as the full fragment
+ * (content version, headshot epoch, options).
+ */
+export async function renderNewsRailFragment(options: RailFragmentOptions): Promise<string> {
+  await ensureTeams();
+  await ensureFreshness();
+  const key = JSON.stringify([
+    "rail",
+    contentVersion(),
+    imageVersionsEpoch(),
+    options.limit,
+    options.pages,
+    options.origin ?? "",
+    options.apiBase ?? "",
+    options.heading ?? "",
+  ]);
+  const hit = renderCache.get(key);
+  if (hit !== undefined) return hit;
+
+  const version = contentVersion();
+  const total = options.limit * options.pages;
+  let items: NewsItem[] | undefined;
+  for (const [k, v] of itemsCache) {
+    const [ver, limit] = JSON.parse(k) as [string, number];
+    if (ver === version && limit >= total) {
+      items = v.slice(0, total);
+      break;
+    }
+  }
+  if (!items) items = await listNews({ limit: total });
+  // Copies with ESPN headshots for players the wire sent bare (lib/rail-photos.ts).
+  items = fillRailPhotos(items);
+  await stampImageVersions(items, IMAGE_VERSION_BUDGET_MS);
+
+  const html = renderNewsRail(items, {
+    limit: options.limit,
+    pages: options.pages,
+    renderedMs: Date.now(),
+    ...(options.origin !== undefined ? { origin: options.origin } : {}),
+    ...(options.apiBase ? { apiBase: options.apiBase } : {}),
+    ...(options.heading ? { heading: options.heading } : {}),
+  });
+  if (renderCache.size >= RENDER_CACHE_MAX) {
+    const oldest = renderCache.keys().next();
+    if (!oldest.done) renderCache.delete(oldest.value);
+  }
+  renderCache.set(key, html);
   return html;
 }
 
