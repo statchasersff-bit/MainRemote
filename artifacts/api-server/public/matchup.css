@@ -5055,34 +5055,6 @@ a.sct-ex-game:hover .sct-ex-line {
   --sct-gutter: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sct-mu:has(.sct-rb):not([data-theme="light"]) {
-    --rb-ink: var(--tp-c-e8edf4, #e8edf4);
-    --rb-slate: #9aa6b6;
-    --rb-line: var(--tp-c-26364d, #26364d);
-    --rb-paper: var(--tp-c-0b1627, #0b1627);
-    --rb-card: var(--tp-c-12213a, #12213a);
-    --rb-green: #5fd08e;
-    --rb-red: #ff8a80;
-    --rb-link: var(--tp-c-9fc0ff, #9fc0ff);
-    --mu-ink-away: var(--mu-ink-away-dark, var(--tp-c-e8edf4, #e8edf4));
-    --mu-ink-home: var(--mu-ink-home-dark, var(--tp-c-e8edf4, #e8edf4));
-    --sc-navy: var(--tp-c-e8edf4, #e8edf4);
-    --sc-ink: var(--tp-c-e8edf4, #e8edf4);
-    --sc-muted: #9aa6b6;
-    --sc-muted-strong: #9aa6b6;
-    --sc-hairline: var(--tp-c-26364d, #26364d);
-    --sc-border: var(--tp-c-26364d, #26364d);
-    --sc-surface: var(--tp-c-12213a, #12213a);
-    --sc-surface-soft: var(--tp-c-0b1627, #0b1627);
-    background: var(--rb-paper);
-    color-scheme: dark;
-  }
-
-  :root:not([data-theme="light"]) body.sct-page:not(.is-embed):has(.sct-rb) {
-    background: var(--tp-c-0b1627, #0b1627);
-  }
-}
 
 :root[data-theme="dark"] .sct-mu:has(.sct-rb),
 .sct-mu[data-theme="dark"]:has(.sct-rb) {
@@ -5710,29 +5682,6 @@ a.sct-ex-game:hover .sct-ex-line {
   --pv-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sct-mu:not([data-theme="light"]) {
-    --pv-ink: var(--tp-c-e8edf4, #e8edf4);
-    --pv-muted: #9aa6b6;
-    --pv-muted-strong: #9aa6b6;
-    --pv-line: var(--tp-c-26364d, #26364d);
-    --pv-border: var(--tp-c-26364d, #26364d);
-    --pv-card: var(--tp-c-12213a, #12213a);
-    --pv-soft: var(--tp-c-0b1627, #0b1627);
-    --pv-green: #5fd08e;
-    --pv-green-bg: #12301f;
-    --pv-amber: #ffc861;
-    --pv-amber-bg: var(--tp-c-33270d, #33270d);
-    --pv-red: #ff8a80;
-    --pv-red-bg: #3a1714;
-    --pv-gray-bg: var(--tp-c-1d2c44, #1d2c44);
-    --pv-link: var(--tp-c-9fc0ff, #9fc0ff);
-  }
-  :root:not([data-theme="light"]) .sct-mu:not([data-theme="light"]) .sct-pv {
-    background: var(--pv-soft);
-    color-scheme: dark;
-  }
-}
 
 :root[data-theme="dark"] .sct-mu,
 .sct-mu[data-theme="dark"] {
@@ -6118,10 +6067,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-verdict.is-q { background: var(--tp-c-fde68a, #fde68a); color: #5c3d06; }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sct-mu:not([data-theme="light"]) :is(.sct, #sct-table-armour) .sct-pv-verdict.is-start,
-  :root:not([data-theme="light"]) .sct-mu:not([data-theme="light"]):is(.sct, #sct-table-armour) .sct-pv-verdict.is-start { background: rgba(111, 211, 220, 0.14); color: #6fd3dc; }
-}
 
 :root[data-theme="dark"] :is(.sct, #sct-table-armour) .sct-pv-verdict.is-start,
 .sct-mu[data-theme="dark"]:is(.sct, #sct-table-armour) .sct-pv-verdict.is-start { background: rgba(111, 211, 220, 0.14); color: #6fd3dc; }
@@ -9936,11 +9881,6 @@ a.sct-ex-game:hover .sct-ex-line {
   background: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sct-mu.is-pm {
-    --pm-border: #2a3d5c;
-  }
-}
 
 :root[data-theme="dark"] .sct-mu.is-pm {
   --pm-border: #2a3d5c;
@@ -12874,7 +12814,10 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 @media (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-mpp-hero {
+  /* Upcoming hero only: a recap's score hero (.is-final) has no phone
+     header to stand in for it, so it stays (mak, 2026-11-16: recap pages
+     "dont have a header" on phones). */
+  :is(.sct, #sct-table-armour) .sct-mpp-hero:not(.is-final) {
     display: none;
   }
 
