@@ -1,5 +1,5 @@
 /**
- * What kind of news an item is: injury, transaction, practice, and so on.
+ * What kind of news an item is: injury, transaction, performance, and so on.
  *
  * DERIVED at read time, never stored. That is the same call the archive already
  * makes about a wire row's team (see the team_abbr comment in the schema): this
@@ -17,7 +17,7 @@
 export const NEWS_CATEGORIES = [
   "injury",
   "transaction",
-  "practice",
+  "performance",
   "depth-chart",
   "status",
   "recap",
@@ -36,7 +36,7 @@ export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
 export const CATEGORY_LABELS: Record<NewsCategory, string> = {
   injury: "Injury",
   transaction: "Transaction",
-  practice: "Practice",
+  performance: "Performance",
   "depth-chart": "Depth Chart",
   status: "Status",
   recap: "Recap",
@@ -84,7 +84,26 @@ const RULES: Array<{ category: NewsCategory; pattern: RegExp }> = [
       /\b(sign\w*|re-sign\w*|agree\w* to (?:terms|a deal)|contract|extension|trade[ds]?|trading|traded|acquir\w*|waiv\w*\b(?! wire)|releas\w*|cut\b|claim\w*|activat\w*|promot\w*|elevat\w*|designat\w* to return|restructur\w*|franchise tag|tender\w*|(?:on|reach\w+|agree\w+ to|close to)(?: an?| the| his)? deal\b|deal worth|per source|draft(?:ed|ing)?|roster move|transactions?\b|practice squad|added to the roster|visit\w* with|(?:draws?|drawing) interest|interest from|reach\w* (?:an )?understanding|ineligible|open to playing for)\b/i,
   },
   {
-    category: "practice",
+    // In-game stat lines (mak, 2026-11-17): "Rushed 19 times for 82 yards",
+    // "Caught five of six targets", "Notched 11 tackles", "Made both field-goal
+    // attempts". Before this rule they had no home and filled "other", and the
+    // one that said "scrimmage yards" was filed under the old Practice label.
+    //
+    // Below injury, so a stat line that names a body part ("Kincaid (chest)
+    // left in the third quarter") keeps the label a manager acts on, and below
+    // transaction so an elevation that mentions the game stays a move. Above
+    // the practice-participation rule so "scrimmage yards" is a game, not a
+    // scrimmage.
+    category: "performance",
+    pattern:
+      /\b(rushe[ds] (?:\w+ times|for|\d)|carried the ball|carries for|(?:caught|secured|brought in|hauled in|reeled in|snagged|corralled) (?:all|both|\w+ of|his|her|one|two|three|four|five|six|seven|eight|nine|ten|\d+)|catch(?:es)? for \d|targets? for|(?:lone|only|sole) target|without a target|(?:no|any) targets?|completed \w+ of \w+|passes for \d|(?:passing|rushing|receiving|scrimmage|all-purpose) (?:yards|touchdowns?|tds?)|\d+ (?:yards|tackles)|tackles? \(|(?:\w+ )?tackles\b|\d+(?:\.\d)? sacks?|passes defensed|pick-six|field-goal (?:attempts?|tries)|field goals?\b|extra-point|pats\b|kickoffs? for|punts? for|100-yard|300-yard|career[- ]high|season[- ]high|career[- ](?:best|day)|in (?:sunday|monday|thursday|saturday|friday)['\u2019]s (?:\d+-\d+ )?(?:overtime |ot )?(?:win|loss|victory|defeat|rout)|week \d+ (?:win|loss|victory|defeat))/i,
+  },
+  {
+    // Practice participation. There is no Practice label any more (mak,
+    // 2026-11-17): a participation note is the injury report in daily form, so
+    // it reads as Injury. The rule stays its own entry because its vocabulary is
+    // nothing like the injury rule's.
+    category: "injury",
     pattern:
       // `practic\w*`, not `practice`: "Not practicing Wednesday" is the single
       // most common shape the wire files a participation note in, and a bare

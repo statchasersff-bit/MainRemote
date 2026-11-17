@@ -18,6 +18,8 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { logger } from "../lib/logger";
+import { requireIngestSecret } from "../lib/ingest-auth";
+import { factsHash, renderedFacts } from "../lib/matchup/recap-narrative";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl, publicOrigin } from "../lib/request";
@@ -195,6 +197,22 @@ async function sendMatchupPage(
  * are not WordPress. Drawn once and kept on disk; see og-image.ts.
  */
 const OG_FILE = /^([a-z0-9-]+?)-vs-([a-z0-9-]+?)-(\d{4}-(?:week-\d{1,2}|postseason-week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl))\.png$/;
+
+/**
+ * The recap facts packet for one game, for the offline writer
+ * (scripts/matchup/writeRecaps.mjs). Guarded like every write: the packet is
+ * internal working data, not a public page. It holds what the last render
+ * of the game's page computed, so the writer requests the page first.
+ */
+router.get("/api/recap-facts/:gameId", (req, res) => {
+  if (!requireIngestSecret(req, res)) return;
+  const facts = renderedFacts(String(req.params["gameId"] ?? ""));
+  if (!facts) {
+    res.status(404).json({ ok: false, error: "no packet: render the game's page first" });
+    return;
+  }
+  res.json({ ok: true, hash: factsHash(facts), facts });
+});
 
 router.get("/og/:file", (req, res) => {
   void (async () => {

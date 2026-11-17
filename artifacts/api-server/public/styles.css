@@ -540,13 +540,6 @@ body {
     width: 20px;
     height: 20px;
   }
-  .sc-filter-status {
-    /* The controls own the row, so the count wraps onto its own line beneath
-       them instead of sitting to their left. */
-    order: 1;
-    flex: 1 1 100%;
-    margin: 0;
-  }
   .sc-card-body {
     padding: 14px 16px 15px 22px;
   }
@@ -589,12 +582,18 @@ body {
   min-width: 0;
 }
 
+/* Visually hidden at every width: the controls speak for themselves, but the
+   labels still name them for screen readers. */
 .sc-filter-label {
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .sc-filter-input,
@@ -616,6 +615,18 @@ body {
 
 .sc-filter-input {
   width: 220px;
+}
+
+/* Desktop: the search box takes whatever the dropdowns leave, so the filter
+   row runs the full width of the cards beneath it. */
+@media (min-width: 641px) {
+  .sc-filters > .sc-filter:first-child {
+    flex: 1 1 220px;
+  }
+
+  .sc-filters > .sc-filter:first-child .sc-filter-input {
+    width: 100%;
+  }
 }
 
 .sc-filter-input:focus-visible,
@@ -765,21 +776,6 @@ body {
 .sc-team-option.is-current {
   background: var(--gold-bg);
   font-weight: 800;
-}
-
-/* Result count. Empty until the reader actually filters, so it takes no room
-   on a first load. */
-.sc-filter-status {
-  /* Last in the markup, first on the row: `order` puts the count on the left
-     and the auto right margin pushes the controls to the right edge. */
-  order: -1;
-  margin: 0 auto 9px 0;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
-.sc-filter-status:empty {
-  display: none;
 }
 
 /* Shown only when the filters exclude everything. */
@@ -976,21 +972,8 @@ body {
     min-width: 0;
   }
 
-  .sc-filters > .sc-filter:first-child,
-  .sc-filter-status {
+  .sc-filters > .sc-filter:first-child {
     grid-column: 1 / -1;
-  }
-
-  .sc-filter-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
   }
 
   .sc-filter-input,
@@ -1024,12 +1007,6 @@ body {
   .sc-team-panel {
     right: auto;
     left: 0;
-  }
-
-  .sc-filter-status {
-    order: 0;
-    margin: 0;
-    font-size: 0.8rem;
   }
 
   /* ---- the list: the premium cards, at phone proportions */

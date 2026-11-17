@@ -459,7 +459,6 @@ describe("filters", () => {
     assert.equal(visible().length, pageSize, "should be back to a full page");
     assert.equal(doc.querySelector(".sc-no-matches").hidden, true);
     assert.equal(doc.querySelector(".news-list").style.display, "");
-    assert.equal(doc.querySelector(".sc-filter-status").textContent, "");
   });
 
   test("filtering never writes to the URL", async () => {
@@ -479,7 +478,6 @@ describe("filters", () => {
 
     assert.equal(historyWrites, 0, "filters must not write history");
     assert.equal(window.location.href, urlBefore, "URL must not change");
-    assert.ok(doc.querySelector(".sc-filter-status").textContent.length > 0);
   });
 });
 

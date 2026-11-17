@@ -108,7 +108,6 @@ function finishPill(pos: string, fin: string | null): string {
 function category(i: FeedItem): { key: string; label: string } {
   if (i.type === "game") return { key: "game", label: "Game recap" };
   if (i.type === "status") return i.outcome.tag === "Injury" ? { key: "injury", label: "Injury" } : { key: "status", label: "Status" };
-  if (i.type === "prac") return { key: "prac", label: "Practice" };
   if (i.type === "depth") return { key: "role", label: "Role change" };
   if (i.type === "transaction") return { key: "move", label: "Transaction" };
   if (i.type === "contract") return { key: "deal", label: "Contract" };
@@ -199,7 +198,7 @@ function context(data: PlayerPageData, options: PlayerRenderOptions): NewsContex
 /* --------------------------------------------------- section 3: teammates */
 
 const TEAM_LABEL: Record<string, string> = {
-  practice: "Practice",
+  performance: "Performance",
   "depth-chart": "Depth chart",
   recap: "Game recap",
   preview: "Preview",
@@ -426,7 +425,6 @@ function nwpFilters(items: FeedItem[]): string {
     ["all", "All", true],
     ["game", "Games", types.has("game")],
     ["status", "Status", types.has("status")],
-    ["prac", "Practice", types.has("prac")],
     ["moves", "Moves", MOVES.some((t) => types.has(t))],
   ];
   const shown = buttons.filter(([, , on]) => on);

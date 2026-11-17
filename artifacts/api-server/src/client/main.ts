@@ -210,23 +210,8 @@ class NewsWidget {
     this.paintFilterState(included.size);
   }
 
-  /** Result count, empty state and pager visibility for the current filters. */
+  /** Empty state and pager visibility for the current filters. */
   private paintFilterState(count: number): void {
-    const filtering =
-      this.teamFilter !== "" ||
-      this.playerQuery !== "" ||
-      this.sourceFilter !== "" ||
-      this.accountFilter !== "" ||
-      this.categoryFilter !== "";
-
-    const status = this.root.querySelector<HTMLElement>(".sc-filter-status");
-    if (status) {
-      // Silent until the reader actually filters - a permanent "122 of 122" is
-      // noise, and it would make the live region announce on every render.
-      status.textContent = filtering
-        ? `${count} of ${this.allItems.length} updates`
-        : "";
-    }
 
     const empty = this.root.querySelector<HTMLElement>(".sc-no-matches");
     if (empty) empty.hidden = count > 0;

@@ -742,16 +742,21 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting || game.status !== "final") return none;
-  const story = findGameStory({
+  const entry = findGameStoryEntry({
     season: meeting.season,
     week: meeting.week,
     seasonType: meeting.seasonType,
     home: game.home.abbr,
     away: game.away.abbr,
   });
-  if (!story) return none;
+  if (!entry) return none;
+  const story = entry.story;
   const players = gamePlayers(data);
   const fantasy = fantasyInput(data);
+  // The narrative's extra evidence: drives, the closing line, the records.
+  const sides = seasonSides(data);
+  const sideOf = (abbr: string) => sides.find((x) => x.abbr === abbr) ?? null;
+  const thisGame = sides[0]?.games.find((g) => g.gameId === entry.id) ?? null;
   const sleeperOf = (id: string): string | null => {
     const name = players[id]?.name ?? "";
     return fantasy?.contexts[id]?.sleeperId ?? dictionaryId(name) ?? rosterId(name);
@@ -770,7 +775,43 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
     },
     highlights: added.highlights,
     inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
+    gameId: entry.id,
+    drives: loadGamePbp(meeting.season, entry.id)?.drives ?? null,
+    odds: data.boxscore?.odds ?? null,
+    records:
+      meeting.seasonType === "regular"
+        ? { away: recordThrough(sideOf(game.away.abbr)?.games, meeting.week), home: recordThrough(sideOf(game.home.abbr)?.games, meeting.week) }
+        : undefined,
+    divisional: thisGame?.divisional ?? false,
   });
+}
+
+/**
+ * A club's regular-season record and streak through one week, from its own
+ * schedule. Null unless every game through that week has a result: a record
+ * the data cannot vouch for is left out of the recap.
+ */
+function recordThrough(games: ScheduleGame[] | undefined, week: number): { wins: number; losses: number; ties: number; streak: number } | null {
+  if (!games) return null;
+  const list = games.filter((g) => g.seasonType === "regular" && g.week <= week).sort((a, b) => a.week - b.week);
+  if (!list.length || list.some((g) => !g.result) || list[list.length - 1]!.week !== week) return null;
+  let wins = 0;
+  let losses = 0;
+  let ties = 0;
+  for (const g of list) {
+    if (g.result!.outcome === "W") wins += 1;
+    else if (g.result!.outcome === "L") losses += 1;
+    else ties += 1;
+  }
+  let streak = 0;
+  const lastOutcome = list[list.length - 1]!.result!.outcome;
+  if (lastOutcome !== "T") {
+    for (const g of [...list].reverse()) {
+      if (g.result!.outcome !== lastOutcome) break;
+      streak += 1;
+    }
+  }
+  return { wins, losses, ties, streak: lastOutcome === "W" ? streak : -streak };
 }
 
 /**

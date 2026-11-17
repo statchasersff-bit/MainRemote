@@ -165,7 +165,7 @@ describe("game recaps (spec 4.5, 4.6)", () => {
 describe("wire items and the lead", () => {
   test("types come from the archive's category; contract words make a contract", () => {
     assert.equal(d.typeOf({ category: "injury", title: "x" }), "status");
-    assert.equal(d.typeOf({ category: "practice", title: "x" }), "prac");
+    assert.equal(d.typeOf({ category: "performance", title: "x" }), "game");
     assert.equal(d.typeOf({ category: "transaction", title: "Signs two-year extension" }), "contract");
     assert.equal(d.typeOf({ category: "transaction", title: "Released by club" }), "transaction");
     assert.equal(d.typeOf({ category: "depth-chart", title: "x" }), "depth");
@@ -277,15 +277,15 @@ describe("rendered", () => {
     // Three stories: nothing to filter.
     assert.equal(doc.querySelector("[data-scp-news-filter]"), null);
     const signed = news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction", { summary: "Brissett reworked his deal. The move clears cap room for the club." });
-    const extra = [signed, news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice")];
+    const extra = [signed, news("p", "2026-07-08T23:00:00Z", "Expected to start", "status")];
     const moved = render(state({ news: extra })).window.document;
-    assert.deepEqual([...moved.querySelectorAll(".scp-nwp-filters button")].map((b) => b.textContent), ["All", "Games", "Practice", "Moves"]);
+    assert.deepEqual([...moved.querySelectorAll(".scp-nwp-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "Moves"]);
     const move = moved.querySelector('.scp-nwp-card[data-group="moves"]');
     assert.equal(move.dataset.type, "contract", "a restructure is a contract item");
     assert.equal(move.querySelector(".scp-nwp-news-kicker").textContent, "Contract");
     assert.equal(move.querySelector(".scp-nwp-sum").textContent, "Brissett reworked his deal.", "one sentence on the card");
     assert.ok(move.querySelector(".scp-nwp-byline a"), "a report names its source");
-    const noMoves = render(state({ news: [news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice"), news("s", "2026-07-09T23:00:00Z", "Expected to start", "status")] })).window.document;
+    const noMoves = render(state({ news: [news("p", "2026-07-08T23:00:00Z", "Works with teammates", "status"), news("s", "2026-07-09T23:00:00Z", "Expected to start", "status")] })).window.document;
     assert.equal(noMoves.querySelector('[data-f="moves"]'), null);
     // A move newer than the latest recap outranks it for the featured spot.
     const traded = news("t2", "2026-09-29T21:00:00Z", "Traded to the Giants", "transaction");
@@ -311,7 +311,7 @@ describe("rendered", () => {
     const bundle = path.join(APP_DIR, "public", "dist", "statchasers-player.js");
     assert.ok(fs.existsSync(bundle), "pnpm test builds the bundle first");
     const extra = [
-      news("p", "2026-07-08T23:00:00Z", "Works with teammates", "practice"),
+      news("p", "2026-07-08T23:00:00Z", "Expected to start", "status"),
       news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction"),
     ];
     const dom = render(state({ news: extra }));
@@ -319,8 +319,8 @@ describe("rendered", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     const doc = dom.window.document;
     const shown = () => [...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => !i.hidden).map((i) => i.dataset.type);
-    doc.querySelector('[data-f="prac"]').click();
-    assert.deepEqual(shown(), ["prac"]);
+    doc.querySelector('[data-f="status"]').click();
+    assert.deepEqual(shown(), ["status"]);
     assert.equal(doc.querySelector("#scp-nw-empty").hidden, true);
     doc.querySelector('[data-f="moves"]').click();
     assert.deepEqual(shown(), ["contract"]);

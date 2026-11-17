@@ -945,9 +945,6 @@ export function renderFilters(items: NewsItem[], origin = ""): string {
           "sc-filter-account",
         )
       : "") +
-    // Announces the result count to screen readers as the filters change, and
-    // gives everyone else a plain "showing N of M" they can trust.
-    `<p class="sc-filter-status" role="status"></p>` +
     `</div>`
   );
 }

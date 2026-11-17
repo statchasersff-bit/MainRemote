@@ -30,7 +30,17 @@
  *          dropbacks on which this club's passer was sacked or hit
  *          (qb_hit or sack), the pass rush the other club generated;
  *   ff     forced fumbles, which the box score does not carry:
- *          [{ team, player }] with the player as nflverse spells him.
+ *          [{ team, player }] with the player as nflverse spells him;
+ *   ids    (2026-11-17) every player the game's rows name, by club, as
+ *          nflverse spells him -> ESPN athlete id, from the *_player_id
+ *          columns and nflverse's players.csv (gsis_id -> espn_id). The
+ *          recap resolves names by this id first and falls back to name
+ *          and club only when a player is missing from it.
+ *
+ * Plays and injuries carry nflverse's play_id (`playId`), so the recap can
+ * tell when an injury came on a play it names. A shared clock is not
+ * evidence of a shared play; only the id is. Plays also name the sacker
+ * (`sacker`, nflverse spelling) on a sack.
  *
  * Beside it, one file per game for the Play-by-Play tab (2026-11-08):
  * data/matchup/pbp/<season>/<game id>.json, so a page loads only its own
@@ -328,7 +338,68 @@ function advanced(rs) {
   return out;
 }
 
+/** gsis_id -> ESPN athlete id, from nflverse's players.csv (plain CSV). */
+async function espnIds() {
+  const url = "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv";
+  const cached = cacheDir ? path.join(cacheDir, "players.csv") : null;
+  let text;
+  if (cached && fs.existsSync(cached)) text = fs.readFileSync(cached, "utf8");
+  else {
+    const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(5 * 60_000) });
+    if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+    text = await res.text();
+  }
+  const lines = text.split(/\r?\n/);
+  const header = splitCsv(lines[0]);
+  const gi = header.indexOf("gsis_id");
+  const ei = header.indexOf("espn_id");
+  const out = new Map();
+  for (const line of lines.slice(1)) {
+    if (!line) continue;
+    const f = splitCsv(line);
+    const g = str(f[gi]);
+    const e = str(f[ei]);
+    if (g && e) out.set(g, e.replace(/\.0$/, ""));
+  }
+  return out;
+}
+
+/** The player columns a row can name, as [name column, id column]. */
+const PLAYER_COLS = [
+  "passer", "receiver", "rusher", "interception", "kicker", "sack", "half_sack_1", "half_sack_2",
+  "solo_tackle_1", "solo_tackle_2", "assist_tackle_1", "assist_tackle_2", "tackle_for_loss_1",
+  "qb_hit_1", "qb_hit_2", "forced_fumble_player_1", "fumbled_1", "fumble_recovery_1",
+  "pass_defense_1", "pass_defense_2", "punter", "kickoff_returner", "punt_returner", "lateral_receiver",
+].map((c) => [`${c}_player_name`, `${c}_player_id`]);
+
+/** Which club a named player was on, for a row: the offense or the defense. */
+const OFFENSE_COLS = new Set(["passer", "receiver", "rusher", "kicker", "punter", "fumbled_1", "lateral_receiver", "kickoff_returner"]);
+
+function gameIds(rs, espn) {
+  const out = {};
+  for (const r of rs) {
+    for (const [nameCol, idCol] of PLAYER_COLS) {
+      const nm = str(r[nameCol]);
+      const gsis = str(r[idCol]);
+      if (!nm || !gsis) continue;
+      const base = nameCol.replace(/_player_name$/, "");
+      const espnId = espn.get(gsis);
+      if (!espnId) continue;
+      // Returners and recoverers can be on either side; the column with a
+      // _team twin says which, else offense/defense by the column.
+      const teamCol = { fumbled_1: "fumbled_1_team", fumble_recovery_1: "fumble_recovery_1_team", forced_fumble_player_1: "forced_fumble_player_1_team", solo_tackle_1: "solo_tackle_1_team", solo_tackle_2: "solo_tackle_2_team", assist_tackle_1: "assist_tackle_1_team", assist_tackle_2: "assist_tackle_2_team" }[base];
+      let team = teamCol ? club(r[teamCol]) : null;
+      // Kickoffs list the receiving club as posteam; punts the punting club.
+      if (!team) team = OFFENSE_COLS.has(base) ? club(r.posteam) : club(r.defteam);
+      if (!team) continue;
+      (out[team] ??= {})[nm] = espnId;
+    }
+  }
+  return out;
+}
+
 async function buildSeason(season) {
+  const espn = await espnIds();
   const games = new Map();
   for await (const r of rows(`${NFLVERSE}/play_by_play_${season}.csv.gz`)) {
     const id = r.game_id;
@@ -389,7 +460,7 @@ async function buildSeason(season) {
         const team = club(m[1]);
         // The injured player's club's possession number, when it had the ball.
         const teamDrive = team === pos ? (drivesOf.get(pos)?.size ?? null) : null;
-        injuries.push({ team, player: m[2], qtr, clock, teamDrive, returned: false });
+        injuries.push({ team, player: m[2], qtr, clock, teamDrive, playId: num(r.play_id), returned: false });
       }
       for (const m of desc.matchAll(RETURNED)) {
         const hit = injuries.find((x) => x.team === club(m[1]) && x.player === m[2]);
@@ -419,6 +490,7 @@ async function buildSeason(season) {
       if (!(int || fumble || td || fg || explosive || swing)) continue;
       if (/No Play/.test(desc) && !int && !fumble && !td) continue;
       plays.push({
+        playId: num(r.play_id),
         qtr,
         clock,
         elapsed: Math.round(3600 - (num(r.game_seconds_remaining) ?? 0)),
@@ -441,6 +513,10 @@ async function buildSeason(season) {
         rusher: str(r.rusher_player_name),
         interceptor: str(r.interception_player_name),
         kicker: str(r.kicker_player_name),
+        sacker: r.sack === "1" ? str(r.sack_player_name) ?? str(r.half_sack_1_player_name) : null,
+        // Who lost the ball on a lost fumble: on punts and kickoffs nflverse's
+        // posteam is the kicking club, while the fumble is usually the returner's.
+        fumbleTeam: fumble ? club(r.fumbled_1_team) : null,
         wpBefore: pm(hwp),
         wpAfter: pm(after),
         homeScore: num(r.total_home_score),
@@ -450,7 +526,7 @@ async function buildSeason(season) {
     const pbpDir = path.join(OUT_DIR, "pbp", String(season));
     fs.mkdirSync(pbpDir, { recursive: true });
     fs.writeFileSync(path.join(pbpDir, `${id}.json`), JSON.stringify(playByPlay(rs, g)) + "\n");
-    out[id] = { season: g.season, week: g.week, seasonType: g.seasonType, home: g.home, away: g.away, homeFinal, awayFinal, wp, plays, injuries, adv: advanced(rs), ff: forcedFumbles(rs) };
+    out[id] = { season: g.season, week: g.week, seasonType: g.seasonType, home: g.home, away: g.away, homeFinal, awayFinal, wp, plays, injuries, adv: advanced(rs), ff: forcedFumbles(rs), ids: gameIds(rs, espn) };
   }
   const file = path.join(OUT_DIR, `game_story_${season}.json`);
   fs.writeFileSync(file, JSON.stringify({ season, source: "nflverse play_by_play", builtAt: new Date().toISOString(), games: out }) + "\n");
