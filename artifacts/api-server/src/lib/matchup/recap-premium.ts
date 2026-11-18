@@ -295,10 +295,44 @@ function isRed(hex: string): boolean {
  * gold, then no red accent, then `prefer` (the home club by default) leading.
  */
 export function previewBarColors(away: string, home: string, prefer: Side = "home"): { bg: string; accent: string; lead: Side; ink: string } {
+  const first = pickBarColors(away, home, prefer, false);
+  // Only a pair that would land on the house navy reaches for the clubs'
+  // dark third colors (mak, 2026-11-18), so every pair that already wears
+  // its clubs' colors keeps exactly the pair it had.
+  if (first.bg !== HOUSE_NAVY) return first;
+  const second = pickBarColors(away, home, prefer, true);
+  return second.bg !== HOUSE_NAVY ? second : first;
+}
+
+/**
+ * Each club's dark third color, for clubs whose primary and secondary are
+ * both red, or too light to carry white text (mak, 2026-11-18: "add each
+ * club's dark third color"). The official club shades. Used only under the
+ * header bars, and only where previewBarColors() would otherwise fall back
+ * to the house navy. Chiefs, Commanders and 49ers have no dark non-red club
+ * color (the 49ers' black is trim, not a club color), so their pairings with
+ * each other stay on the navy.
+ */
+export const TEAM_DARK_COLORS: Record<string, string> = {
+  ARI: "#000000", // Cardinals black
+  ATL: "#000000", // Falcons black
+  CAR: "#101820", // Panthers black
+  LAC: "#002A5E", // Chargers navy
+  MIA: "#005778", // Dolphins marine blue (dark teal)
+  TB: "#34302B", // Buccaneers pewter
+};
+
+function pickBarColors(away: string, home: string, prefer: Side, withDark: boolean): { bg: string; accent: string; lead: Side; ink: string } {
   const hex = (c: string | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
   const colorsOf = (abbr: string): string[] => {
     const p = teamColors[abbr.toUpperCase()];
     return p ? [p.primary, p.secondary].filter(hex) : [];
+  };
+  // Under the bars only: a dark color would never read as an accent over
+  // another club's dark bar.
+  const bgColorsOf = (abbr: string): string[] => {
+    const dark = withDark ? TEAM_DARK_COLORS[abbr.toUpperCase()] : undefined;
+    return [...colorsOf(abbr), ...(hex(dark) ? [dark] : [])];
   };
   let best: { bg: string; accent: string; lead: Side; score: number } | null = null;
   for (const lead of ["home", "away"] as Side[]) {
@@ -307,7 +341,7 @@ export function previewBarColors(away: string, home: string, prefer: Side = "hom
     // The hero's pick for the side only when it is one of the club's own
     // shades (not the neutral slate a clash falls back to).
     const heroPick = heroPairColors(away, home)[lead];
-    const bgs = [...(heroPick === NEUTRAL_SIDE ? [] : [heroPick]), ...colorsOf(leadAbbr)].filter(
+    const bgs = [...(heroPick === NEUTRAL_SIDE ? [] : [heroPick]), ...bgColorsOf(leadAbbr)].filter(
       (c, i, all) => hex(c) && all.indexOf(c) === i && contrastRatio(c, "#ffffff") >= 4.5,
     );
     for (const bg of bgs) {

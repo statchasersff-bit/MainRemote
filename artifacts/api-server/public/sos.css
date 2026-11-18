@@ -2019,19 +2019,6 @@ body.scsos-page {
   box-shadow: 0 4px 12px rgba(8, 35, 70, 0.05), 0 12px 24px rgba(8, 35, 70, 0.05);
 }
 
-/* A hint that the grid goes on: the right edge fades where it scrolls. */
-.scsos-pm-shell::after {
-  content: "";
-  position: absolute;
-  top: 11px;
-  right: 11px;
-  bottom: 11px;
-  width: 36px;
-  border-radius: 0 10px 10px 0;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 100%);
-  pointer-events: none;
-}
-
 .scsos-pm-scroll {
   width: 100%;
   overflow-x: auto;
@@ -2329,6 +2316,107 @@ body.scsos-page {
 
 /* ---- the tiers, by the column the block has */
 
+/* Desktop: the whole grid in one view, no sideways scroll (mak, 11-17).
+   A fixed layout over the full width: the identity and rank columns take
+   set widths and the 19 tiles share what is left (about 46px each in the
+   live 1280px column). Below 1024px the grid scrolls as before. */
+@container scsospm (min-width: 1024px) {
+  /* On the shell: a container query cannot style its own container. */
+  .scsos-pm-shell {
+    --pm-first-w: 148px;
+    --pm-team-w: 54px;
+    --pm-rank-w: 46px;
+    --pm-playoff-w: 58px;
+  }
+
+  .scsos-pm.is-team-board .scsos-pm-shell {
+    --pm-first-w: 88px;
+  }
+
+  :is(.scsos, #scsos-armour) table.scsos-pm-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th {
+    padding: 6px 2px;
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-first {
+    padding-left: 10px;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-week,
+  :is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-wk,
+  :is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-rank {
+    min-width: 0;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-rank {
+    width: var(--pm-rank-w);
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th.is-playoff {
+    width: var(--pm-playoff-w);
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-rank {
+    padding: 2px;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table tbody td.scsos-pm-wk {
+    padding: 2px 1px;
+  }
+
+  .scsos-pm-badge {
+    min-width: 0;
+    padding: 0 6px;
+  }
+
+  .scsos-pm-cell {
+    padding: 3px 1px;
+  }
+
+  .scsos-pm-opp {
+    font-size: 11.5px;
+    letter-spacing: 0;
+  }
+
+  .scsos-pm-afpa {
+    font-size: 10.5px;
+  }
+}
+
+/* A narrower desktop column (a laptop): tighter still, so it still fits. */
+@container scsospm (min-width: 1024px) and (max-width: 1180px) {
+  .scsos-pm-shell {
+    --pm-first-w: 128px;
+    --pm-team-w: 48px;
+    --pm-rank-w: 40px;
+    --pm-playoff-w: 52px;
+  }
+
+  .scsos-pm.is-team-board .scsos-pm-shell {
+    --pm-first-w: 80px;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-pm-table thead th {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .scsos-pm-opp {
+    font-size: 10.5px;
+  }
+
+  .scsos-pm-afpa {
+    font-size: 10px;
+  }
+}
+
 @container scsospm (max-width: 1100px) {
   .scsos-pm-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2388,12 +2476,6 @@ body.scsos-page {
 
   .scsos-pm-shell {
     padding: 7px;
-  }
-
-  .scsos-pm-shell::after {
-    top: 7px;
-    right: 7px;
-    bottom: 7px;
   }
 }
 

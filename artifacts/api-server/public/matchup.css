@@ -7420,13 +7420,25 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-mpp-key-copy {
-  flex: 1 1 auto;
   color: #334a68;
   font-size: 0.86rem;
   line-height: 1.5;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-key-focus {
+/* Why the key could decide the game, and the side the numbers favor (mak's
+   2026-11-18 brief), in place of the old Focus tags. The edge row keeps their
+   look: a small uppercase label and one pill, ruled off at the card's foot. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-why {
+  flex: 1 1 auto;
+  margin-top: 6px !important;
+  color: var(--mpp-text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-key-edge {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -7436,7 +7448,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border-top: 1px solid var(--mpp-border-light);
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-key-focus b {
+:is(.sct, #sct-table-armour) .sct-mpp-key-edge b {
   margin-right: 2px;
   color: var(--mpp-muted);
   font-size: 0.64rem;
@@ -7445,7 +7457,7 @@ a.sct-ex-game:hover .sct-ex-line {
   text-transform: uppercase;
 }
 
-:is(.sct, #sct-table-armour) .sct-mpp-key-focus span {
+:is(.sct, #sct-table-armour) .sct-mpp-key-edge span {
   padding: 2px 8px;
   border-radius: 999px;
   background: #edf3fa;
@@ -14997,5 +15009,92 @@ a.sct-ex-game:hover .sct-ex-line {
 @media (max-width: 560px) {
   :is(.sct, #sct-table-armour) .sct-mpp-crumbs {
     display: none !important;
+  }
+}
+
+/* ==== Upcoming page, editorial pass (mak's 2026-11-18 preview brief) ====
+   The Game Preview card (preview-narrative.ts) leads the page: headline,
+   four to six short paragraphs, then the projected-script meter under its
+   own small label. Betting tiles are line movement only (two tiles), a thin
+   head-to-head is one line, and on phones the Injury Watch comes before
+   Fantasy Impact. */
+
+:is(.sct, #sct-table-armour) .sct-mpp-pv-copy {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-pv-copy .sct-mpp-copy {
+  margin: 0 !important;
+  color: #26395a;
+  font-size: 0.95rem;
+  line-height: 1.62;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-pv-head {
+  margin-bottom: 10px !important;
+  text-wrap: balance;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-pv-script {
+  margin: 4px 0 2px !important;
+  padding-top: 12px;
+  border-top: 1px solid var(--mpp-border-light);
+  color: var(--mpp-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-bo-tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-thin {
+  margin: 0 !important;
+  color: #334a68;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-h2h-thin a {
+  color: var(--pm-ink, var(--mpp-navy-900));
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-mpp-status[data-status="?"] {
+  background: #eef2f7;
+  color: #475a74;
+}
+
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-main > .is-keys {
+    order: 3;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-rail > .is-injuries {
+    order: 4;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-main > .is-fantasy {
+    order: 5;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-rail > .is-battles {
+    order: 6;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-main > :is(.is-form, .is-betting) {
+    order: 7;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-layout > .sct-mpp-rail > :is(.sct-mpp-cond, .sct-mpp-rail-card) {
+    order: 8;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mpp-pv-copy .sct-mpp-copy {
+    font-size: 0.92rem;
   }
 }

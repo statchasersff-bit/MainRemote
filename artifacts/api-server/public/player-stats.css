@@ -175,7 +175,7 @@ body.sca-page {
 .sca-h1-underline {
   width: 140px;
   height: 4px;
-  margin: 18px 0 22px;
+  margin: 14px 0 18px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--sc-gold-deep), var(--sc-gold), var(--sc-gold-soft));
 }
@@ -183,15 +183,18 @@ body.sca-page {
 /* The hero's description. Embedded under the plugin's hero this block is
    dropped and its words are the hero's lead; under a theme title it stays,
    sized as that description rather than as fine print. */
+/* One short paragraph (11-18 brief): 16-17px, 1.55 leading, nothing under
+   it - the panel's own top padding is the whole gap to the filters. */
 .sca-intro {
-  margin: 0 0 32px;
+  margin: 0;
 }
 
 .sca-intro p {
-  margin: 0 0 8px;
+  margin: 0;
+  max-width: 1040px;
   color: var(--sc-muted-strong);
-  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
-  line-height: 1.7;
+  font-size: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
+  line-height: 1.55;
 }
 
 .sca-copy > p {
@@ -211,9 +214,15 @@ body.sca-page {
 }
 
 .sca-body > .sca-section:first-child {
-  margin-top: 32px;
+  margin-top: 24px;
   padding-top: 0;
   border-top: 0;
+}
+
+/* Leaders to the table's line of facts: ~32px with the rule, not 72. */
+.sca-body > .sca-stats {
+  margin-top: 16px;
+  padding-top: 16px;
 }
 
 /* The copy after the table is one run of reading, not two more panels: its
@@ -329,8 +338,13 @@ body.sca-page {
 .sca-panel {
   position: relative;
   z-index: 5;
-  padding-top: 25px;
+  padding-top: 24px;
   border-bottom: 1px solid var(--sc-border);
+}
+
+/* Embedded, the site hero above already ends on 6-10px of its own padding. */
+.sca.is-embed .sca-panel {
+  padding-top: 16px;
 }
 
 .sca-controls {
@@ -339,6 +353,7 @@ body.sca-page {
   align-items: center;
   gap: 8px 10px;
   padding: 0 0 14px;
+  --sca-ctl-h: 40px;
 }
 
 /* `display: flex` beats the UA's [hidden] rule, and these controls must stay
@@ -359,8 +374,8 @@ body.sca-page {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
-  padding: 0 12px;
+  height: var(--sca-ctl-h, 40px);
+  padding: 0 14px;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-xs);
   background: var(--sc-surface);
@@ -482,7 +497,7 @@ body.sca-page {
 .sca-mode {
   display: inline-flex;
   align-items: center;
-  height: 34px;
+  height: var(--sca-ctl-h, 40px);
   padding: 3px;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-xs);
@@ -492,7 +507,7 @@ body.sca-page {
 .sca-mode-btn {
   height: 100%;
   margin: 0;
-  padding: 0 11px;
+  padding: 0 13px;
   border: 0;
   border-radius: 5px;
   background: none;
@@ -563,94 +578,53 @@ body.sca-page {
 
 /*
  * One row while everything fits: WR Stats, season, Totals / Per Game, More
- * Filters, then search to the end. Narrower than that, search
- * takes a row of its own, full width, on top, and every filter stays together
- * on the row under it, More Filters pushed out to the right end (and, below
- * that, see the next block).
+ * Filters, then search into the rest. When the row runs out (about 610px),
+ * search wraps onto its own full-width row underneath - the natural wrap,
+ * no reordering.
  *
- * 610px is what one row needs: the four buttons (470px, with More Filters
- * wearing its count badge), search at its 100px floor, and four 10px gaps.
+ * A phone (11-18 brief): two even columns - Position | Season, then
+ * Totals / Per Game | More Filters, then search across both. Every control
+ * is as wide as its column, so none is narrower than its label.
  */
-@container sca (max-width: 610px) {
-  .sca-search {
-    order: -1;
-    flex-basis: 100%;
-  }
-
-  .sca-filters > .sca-menu:last-of-type {
-    margin-left: auto;
-  }
-}
-
-/*
- * Narrower still, the four filters no longer fit one row (470px of buttons
- * and three 10px gaps). The position menu moves up to the left of search,
- * which grows into the rest of that row; season, Totals / Per Game and More
- * Filters (still at the right end) make the row under it. A zero-height,
- * full-width break item ordered after the top row starts the next; its line
- * adds a second row gap, which the top row gives back with a negative margin.
- */
-.sca-controls::before {
-  content: none;
-}
-
-@container sca (max-width: 500px) {
-  .sca-controls::before {
-    content: "";
-    order: -1;
-    flex: 0 0 100%;
-    height: 0;
-  }
-
-  .sca-controls > [data-sca-positions] {
-    order: -3;
-    margin-bottom: -8px;
-  }
-
-  .sca-search {
-    order: -2;
-    flex: 1 1 0;
-    margin-bottom: -8px;
-  }
-}
-
-/* A phone: season, Totals / Per Game and More Filters no longer share a row
-   (378px of them with More Filters' count, in a 342px column at 390px), so
-   the season menu moves up beside the position menu, left of search, and
-   Totals / Per Game and More Filters make the row under them. The buttons tighten a little so search keeps its room, and
-   every row is centered rather than pushed to the edges. */
-@container sca (max-width: 400px) {
+@container sca (max-width: 560px) {
   .sca-controls {
-    column-gap: 8px;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .sca-filters > .sca-menu:last-of-type {
-    margin-left: 0;
+  .sca-controls > .sca-menu,
+  .sca-filters > .sca-menu {
+    min-width: 0;
   }
 
-  .sca-controls > [data-sca-positions] {
-    order: -4;
+  .sca-controls .sca-menu-btn {
+    width: 100%;
+    justify-content: space-between;
   }
 
-  .sca-controls > [data-sca-seasons] {
-    order: -3;
-    margin-bottom: -8px;
-  }
-
-  .sca-menu-btn {
-    padding: 0 9px;
+  .sca-mode {
+    display: flex;
   }
 
   .sca-mode-btn {
-    padding: 0 8px;
+    flex: 1 1 0;
+    padding: 0 6px;
+  }
+
+  .sca-search {
+    grid-column: 1 / -1;
   }
 }
 
 .sca-search input {
   width: 100%;
-  height: 34px;
-  padding: 0 12px;
+  height: var(--sca-ctl-h, 40px);
+  padding: 0 12px 0 34px;
+  /* A magnifier, drawn in the background so the input stays one element. */
+  background: var(--sc-surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l3.5 3.5'/%3E%3C/svg%3E")
+    no-repeat 12px 50%;
 }
 
 .sca-num input:focus,
@@ -679,7 +653,7 @@ body.sca-page {
 .sca-view {
   flex: 0 0 auto;
   margin: 0;
-  padding: 11px 0 9px;
+  padding: 8px 0 9px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -727,7 +701,7 @@ body.sca-page {
 
 .sca-leader {
   --sca-la: var(--sc-gold);
-  --sca-face: 56px;
+  --sca-face: 52px;
   --sca-lname: 15px;
   position: relative;
   display: flex;
@@ -737,7 +711,8 @@ body.sca-page {
   background: #fff;
   border: 1px solid #d6e0ed;
   border-radius: 15px;
-  box-shadow: 0 4px 14px rgba(12, 35, 75, 0.1);
+  /* Settled on the page rather than floating over it (11-18 brief). */
+  box-shadow: 0 1px 2px rgba(12, 35, 75, 0.05), 0 3px 10px rgba(12, 35, 75, 0.05);
 }
 
 /* The header: icon well, title, and a diagonal stripe at the right edge. */
@@ -746,8 +721,9 @@ body.sca-page {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 56px;
-  padding: 8px 42px 8px 10px;
+  /* Every header the same height whether its title takes one line or two. */
+  min-height: 48px;
+  padding: 7px 40px 7px 10px;
   overflow: hidden;
   background: linear-gradient(110deg, #081a3a 0%, #0b3167 75%, #0b3a7a 100%);
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--sca-la) 55%, transparent);
@@ -764,15 +740,17 @@ body.sca-page {
   pointer-events: none;
 }
 
+/* The stripes keep the card's color, a step quieter than they were. */
 .sca-leader-head::before {
   right: 2px;
-  width: 14px;
+  width: 12px;
+  opacity: 0.85;
 }
 
 .sca-leader-head::after {
-  right: 24px;
-  width: 4px;
-  opacity: 0.45;
+  right: 22px;
+  width: 3px;
+  opacity: 0.35;
 }
 
 .sca-leader-icon {
@@ -780,9 +758,9 @@ body.sca-page {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   background: linear-gradient(145deg, #1d4f92 0%, #133a72 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   color: var(--sca-la);
@@ -790,8 +768,8 @@ body.sca-page {
 
 .sca-leader-icon svg {
   display: block;
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
 }
 
 .sca-leader-cat {
@@ -799,9 +777,9 @@ body.sca-page {
   padding: 0;
   min-width: 0;
   color: #fff;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   overflow-wrap: break-word;
@@ -835,7 +813,7 @@ body.sca-page {
   align-items: center;
   gap: 6px 8px;
   margin: 0;
-  padding: 14px 16px 13px;
+  padding: 11px 14px 10px;
   line-height: 1;
 }
 
@@ -849,15 +827,41 @@ body.sca-page {
   font-variant-numeric: tabular-nums;
 }
 
+/* What the figure counts: "/G" on a per-game leader, "season" on a rate
+   card while Per Game is on. Set against the figure, small. */
+.sca-leader-unit {
+  margin-left: -6px;
+  align-self: flex-end;
+  padding-bottom: 2px;
+  color: #52647f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sca-leader-unit.is-season {
+  display: none;
+  margin-left: -2px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.is-per-game .sca-leader-unit.is-season {
+  display: inline;
+}
+
+/* The other reading of the figure: quieter than the figure, never a rival. */
 .sca-leader-note {
   display: inline-flex;
   align-items: center;
-  padding: 5px 11px;
+  margin-left: auto;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: #e9eff7;
-  color: #52647f;
-  font-size: 12.5px;
-  font-weight: 650;
+  background: #eef2f7;
+  color: #5d6f8a;
+  font-size: 11.5px;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -869,8 +873,8 @@ body.sca-page {
   align-items: center;
   column-gap: 12px;
   margin-top: auto;
-  min-height: 84px;
-  padding: 12px 14px;
+  min-height: 72px;
+  padding: 10px 14px;
   border-top: 1px solid #e3e9f2;
 }
 
@@ -1031,6 +1035,37 @@ body.sca-page {
 .sca-scroll {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* The sideways-scroll cues, set by the bundle (updateScrollCues()). */
+.sca-scroll-wrap {
+  position: relative;
+}
+
+.sca-scroll-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  width: 32px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.92));
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.sca-scroll-wrap.has-more::after {
+  opacity: 1;
+}
+
+/* Once the table has moved, the pinned names cast an edge over the columns
+   sliding under them, so the boundary reads. */
+.sca-scroll-wrap.is-scrolled .sca-th-player,
+.sca-scroll-wrap.is-scrolled .sca-player {
+  box-shadow: 6px 0 8px -6px rgba(11, 22, 52, 0.28);
 }
 
 /* On a screen with room for it, the table scrolls inside its own box so the
@@ -1089,6 +1124,8 @@ body.sca-page {
   position: sticky;
   top: var(--sca-band-h);
   z-index: 2;
+  padding-top: 8px;
+  padding-bottom: 7px;
   background: var(--sca-head);
   border-bottom: 2px solid rgba(11, 22, 52, 0.14);
   color: var(--sc-muted-strong);
@@ -1153,6 +1190,38 @@ body.sca-page {
   color: var(--sc-navy);
 }
 
+.sca-sort:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* A sortable column says so on hover, with a faint double arrow; the sorted
+   one keeps its own arrow. */
+th[aria-sort="none"] .sca-sort:hover::after {
+  content: "\2195";
+  opacity: 0.45;
+}
+
+/* The column definitions (showTip() in the bundle). Fixed to the window, so
+   the table's own scroller cannot clip it. */
+.sca-tip {
+  position: fixed;
+  z-index: 40;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 8px 10px;
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-navy);
+  box-shadow: 0 8px 24px rgba(11, 22, 52, 0.22);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  pointer-events: none;
+}
+
 th[aria-sort="descending"] .sca-sort::after {
   content: "\2193";
 }
@@ -1180,9 +1249,13 @@ th[aria-sort="ascending"] .sca-sort::after {
   background: var(--sca-hover);
 }
 
-.sca-cell.is-missing,
+/* A dash is "no figure", and must not read as a zero. The old selector
+   (.sca-cell.is-missing) named a class no cell carries, so dashes printed in
+   full ink; this one matches what renderCell() writes. */
+.sca-table td.is-missing,
 .sca-score.is-missing {
-  color: #cbd5e1;
+  color: #8a99ad;
+  font-weight: 500;
 }
 
 /* The pinned cells: # and Player stay put while the table scrolls sideways. */
@@ -1291,106 +1364,54 @@ th[aria-sort="ascending"] .sca-sort::after {
 
 /* ----------------------------------------------------------- narrow tiers */
 
+/*
+ * Under five across (11-18 brief): one swipeable rail instead of a 3 + 2 or
+ * 2 + 2 + 1 grid - every card the same size, one row high, the next card
+ * peeking in from the right edge to say there is more. About 3.4 cards on a
+ * small laptop or big tablet, 2.3 on a tablet, one and a bit on a phone.
+ */
 @container sca (max-width: 1060px) {
   .sca-leader-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 36px) / 3.4);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 0;
+    /* Room for the cards' shadow, which the scroller would otherwise clip. */
+    padding: 2px 2px 8px;
+    margin: -2px -2px -8px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .sca-leader {
+    scroll-snap-align: start;
   }
 }
 
 @container sca (max-width: 760px) {
   .sca-leader-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: calc((100% - 24px) / 2.3);
+  }
+}
+
+@container sca (max-width: 560px) {
+  .sca-leader-row {
+    grid-auto-columns: 80%;
     gap: 10px;
   }
 }
 
-/* Two narrow columns on a phone: the same three parts, scaled down. */
-@container sca (max-width: 520px) {
-  .sca-leader {
-    --sca-face: 40px;
-    --sca-lname: 12.5px;
-    border-radius: 12px;
-  }
-
-  .sca-leader-head {
-    gap: 8px;
-    min-height: 46px;
-    padding: 6px 30px 6px 8px;
-  }
-
-  .sca-leader-head::before {
-    width: 10px;
-  }
-
-  .sca-leader-head::after {
-    right: 18px;
-    width: 3px;
-  }
-
-  .sca-leader-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-  }
-
-  .sca-leader-icon svg {
-    width: 17px;
-    height: 17px;
-  }
-
-  .sca-leader-cat {
-    font-size: 11px;
-    letter-spacing: 0.03em;
-  }
-
-  .sca-leader-fig {
-    gap: 5px 6px;
-    padding: 11px 10px 10px;
-  }
-
-  .sca-leader-num {
-    font-size: 22px;
-  }
-
-  .sca-leader-note {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
-  .sca-leader-who {
-    column-gap: 8px;
-    min-height: 0;
-    padding: 9px 10px;
-  }
-
-  .sca-leader-id {
-    gap: 3px;
-    padding-left: 8px;
-  }
-
-
-  .sca-leader-meta {
-    font-size: 10.5px;
-  }
-}
-
-/* Too narrow for two: one column. */
-@container sca (max-width: 330px) {
+/* No scrollbar where a finger does the scrolling; the peek says swipe. */
+@media (hover: none) {
   .sca-leader-row {
-    grid-template-columns: minmax(0, 1fr);
+    scrollbar-width: none;
   }
 
-  .sca-leader {
-    --sca-face: 48px;
-    --sca-lname: 14px;
-  }
-
-  .sca-leader-cat {
-    font-size: 12px;
-  }
-
-  .sca-leader-num {
-    font-size: 26px;
+  .sca-leader-row::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -1519,6 +1540,8 @@ th[aria-sort="ascending"] .sca-sort::after {
    column lost its gold and the banner its pale blue. The order below still
    decides between them - sorted beats score beats plain. */
 .sca .sca-table .sca-head th {
+  padding-top: 8px;
+  padding-bottom: 7px;
   color: var(--sc-muted-strong) !important;
 }
 

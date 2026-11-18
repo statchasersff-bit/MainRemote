@@ -38,7 +38,7 @@ describe("news rail (layout=rail)", () => {
     assert.ok(rows(html) <= 30, "five pages of six");
     assert.ok(visibleRows(html) <= 6, "only the first page shows");
     assert.match(html, /data-sc-limit="6" data-sc-pages="5"/);
-    if (rows(html) > 6) assert.match(html, /<nav class="sc-rail-pager"[^>]*>.*Page <b>1<\/b> of \d+/);
+    if (rows(html) > 6) assert.match(html, /<nav class="sc-rail-pager"[^>]*>.*Page <b>1<\/b><\/span>/);
     assert.doesNotMatch(html, /View All|sc-rail-all/, "no View All link (mak, 2026-11-17)");
     assert.match(html, /class="sc-rail-thumb"/);
     // One meta line, CATEGORY · TEAM · date (mak, 2026-11-17): category first,
@@ -54,13 +54,14 @@ describe("news rail (layout=rail)", () => {
     }
   });
 
-  test("every page's rows are in the HTML, shown without the script; pages=1 has no pager", async () => {
+  test("every printed page's rows are in the HTML, shown without the script; pages=1 prints one page and Next loads the rest", async () => {
     const html = await fragment("layout=rail");
     if (rows(html) <= 6) return;
     assert.match(html, /<noscript><style>[^<]*sc-rail-item\[hidden\]/, "without the script every row shows");
     const one = await fragment("layout=rail&pages=1");
     assert.ok(rows(one) <= 6);
-    assert.doesNotMatch(one, /sc-rail-pager/);
+    assert.match(one, /data-sc-more="1"/);
+    assert.match(one, /class="sc-rail-next" data-dir="1" aria-label/, "Next is live on page 1");
   });
 
   test("a story the wire sent without a photo gets the player's ESPN headshot when one is known", async () => {
@@ -106,11 +107,45 @@ describe("news rail (layout=rail)", () => {
       assert.equal(doc.querySelector(".sc-rail-prev").disabled, true);
       doc.querySelector(".sc-rail-next").click();
       assert.deepEqual(shownPage(), ["2", "2", "2"]);
-      assert.match(doc.querySelector(".sc-rail-count").textContent, /Page 2 of/);
+      assert.match(doc.querySelector(".sc-rail-count").textContent, /^Page 2$/);
       doc.querySelector(".sc-rail-prev").click();
       assert.deepEqual(shownPage(), ["1", "1", "1"]);
     } finally {
       // The bundle's intervals live on this window; closing it clears them.
+      window.close();
+    }
+  });
+
+  test("Next past the printed pages loads the next stories from the feed on demand", async () => {
+    const html = await fragment("layout=rail&limit=3&pages=1");
+    if (!/data-sc-more="1"/.test(html)) return; // the archive here has no second page
+    const dom = new JSDOM(`<!doctype html><body>${html}</body>`, { runScripts: "outside-only", pretendToBeVisual: true });
+    const { window } = dom;
+    const asked = [];
+    try {
+      // The real API, through the page's own origin attribute.
+      window.fetch = async (url, init) => {
+        asked.push(String(url));
+        const res = await fetch(url, init);
+        return { ok: res.ok, json: () => res.json() };
+      };
+      window.eval(fs.readFileSync(`${APP_DIR}/public/dist/statchasers-news-rail.js`, "utf8"));
+      const doc = window.document;
+      for (let i = 0; i < 50 && doc.querySelector(".sc-rail")?.dataset.scRailReady !== "1"; i += 1) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      assert.equal(doc.querySelectorAll(".sc-rail-item").length, 3, "one printed page");
+      assert.equal(doc.querySelector(".sc-rail-next").disabled, false, "Next is live: the feed goes further");
+      doc.querySelector(".sc-rail-next").click();
+      for (let i = 0; i < 200 && doc.querySelector(".sc-rail-count")?.textContent !== "Page 2"; i += 1) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      assert.ok(asked.some((u) => /\/api\/news\?limit=6&photos=1$/.test(u)), `asked for the next page: ${asked.join(", ")}`);
+      assert.equal(doc.querySelectorAll(".sc-rail-item").length, 6, "a second page of stories arrived");
+      assert.equal(doc.querySelector(".sc-rail-count").textContent, "Page 2");
+      const shown = [...doc.querySelectorAll(".sc-rail-item")].filter((li) => !li.hidden).map((li) => li.dataset.page);
+      assert.deepEqual(shown, ["2", "2", "2"]);
+    } finally {
       window.close();
     }
   });

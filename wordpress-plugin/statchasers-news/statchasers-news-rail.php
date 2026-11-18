@@ -4,8 +4,10 @@
  *
  *   [statchasers_news layout="rail" limit="6"]
  *
- * Six stories a page with Prev / Next paging, five pages by default; no
- * View All link (mak, 2026-11-17).
+ * Six stories a page with Prev / Next paging and no View All link (mak,
+ * 2026-11-17). `pages` (default 5) is how many pages are printed into the
+ * HTML; Next past them loads older stories on demand, as far back as the
+ * feed goes.
  *
  * A sidebar view of the same feed - same /embed/ssr endpoint, same caching -
  * with its own stylesheet and small bundle (news-rail.css,
@@ -25,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 const STATCHASERS_NEWS_RAIL_DEFAULT = 6;
 const STATCHASERS_NEWS_RAIL_MIN     = 3;
 const STATCHASERS_NEWS_RAIL_MAX     = 10;
-/** Pages a reader can step through with Prev / Next (default 5, 1 = no pager, up to 10). */
+/** Pages printed into the HTML (default 5, 1-10); Next loads further pages on demand. */
 const STATCHASERS_NEWS_RAIL_PAGES_DEFAULT = 5;
 const STATCHASERS_NEWS_RAIL_PAGES_MAX     = 10;
 /** The rail's own stylesheet and bundle (public/news-rail.css, dist/statchasers-news-rail.js). */

@@ -870,7 +870,7 @@ describe("the upcoming page (premium design)", () => {
         if (/^(Questionable|Doubtful)$/i.test(status)) assert.doesNotMatch(copy, /is open|With him out/, `${p}: ${status} written as out`);
       }
       await assertPremiumHero(hero);
-      assert.ok(doc.querySelector(".sct-mpp.is-top > nav.sct-mpp-crumbs [aria-current=page]"), "the breadcrumb");
+      assert.equal(doc.querySelector(".sct-mpp.is-top nav.sct-mpp-crumbs"), null, "no visible breadcrumb (mak, 2026-11-18)");
       // Nothing of the old layer is left.
       for (const old of [".sct-pv-hero", ".sct-pv-lb", ".sct-pv-cmp", ".sct-pv-inj-card", ".sct-mu-starters", ".sct-mu-last", ".sct-pv-cta", ".sct-cp-flag"]) {
         assert.equal(doc.querySelector(old), null, `${p}: ${old}`);
@@ -882,11 +882,30 @@ describe("the upcoming page (premium design)", () => {
         assert.equal(h.tagName, "H2", id);
         assert.ok(h.closest(".sct-mpp-card"), id);
       }
-      // Keys to the Game (mak, 2026-11-06): right under The Call, one to three
-      // keys of different kinds, each a question over figures with their ranks.
+      // The Game Preview (mak's 2026-11-18 brief): the written preview and the
+      // projected-script meter in one card, first in the main column.
+      const call = doc.querySelector(".sct-mpp-card.is-call");
+      if (call) {
+        assert.equal(call.parentElement.firstElementChild, call, `${p}: the Game Preview leads`);
+        assert.equal(call.querySelector("h2")?.textContent, "Game Preview");
+        const paras = call.querySelectorAll(".sct-mpp-pv-copy > p");
+        if (call.querySelector(".sct-mpp-pv-head")) {
+          assert.ok(paras.length >= 2, `${p}: preview paragraphs`);
+          const text = [...paras].map((x) => x.textContent).join(" ");
+          assert.doesNotMatch(text, /\u2014|undefined|NaN/, `${p}: preview copy`);
+        }
+      }
+      // The rail opens with the injuries (availability before fantasy calls).
+      const rail = doc.querySelector(".sct-mpp-rail");
+      if (rail?.querySelector(".is-injuries")) assert.ok(rail.firstElementChild.classList.contains("is-injuries"), `${p}: injuries lead the rail`);
+      // Keys to the Game (mak, 2026-11-06): under Team Comparison since
+      // 2026-11-18, one to three keys of different kinds, each a question over
+      // figures with their ranks, why it matters, and no Focus tags.
       const keys = doc.querySelector(".sct-mpp-card.is-keys");
       if (keys) {
-        assert.equal(keys.previousElementSibling?.classList.contains("is-call"), true, "under The Call");
+        assert.ok(keys.previousElementSibling?.matches(".is-compare, .is-call"), "under Team Comparison");
+        assert.equal(keys.querySelector(".sct-mpp-key-focus"), null, "no Focus tags");
+        for (const k of keys.querySelectorAll(".sct-mpp-key")) assert.ok(k.querySelector(".sct-mpp-key-why")?.textContent.length > 20, "why it matters");
         assert.equal(keys.querySelector("h2")?.id, "pv-keys");
         const items = [...keys.querySelectorAll(".sct-mpp-key")];
         assert.ok(items.length >= 1 && items.length <= 3, `${items.length} keys`);
@@ -918,7 +937,18 @@ describe("the upcoming page (premium design)", () => {
           assert.ok(d && !d.open && d.querySelector("summary .sct-mpp-bt-pos"), "collapsed face-off");
         }
         const receiver = battles.querySelector('.sct-mpp-bt[data-kind="receiver"] .sct-mpp-bt-note');
-        if (receiver) assert.match(receiver.textContent, /not a set matchup/);
+        if (receiver) assert.match(receiver.textContent, /not a (set matchup|charted assignment)/);
+        // The best three at most (mak's 2026-11-18 brief), positions checked:
+        // no defensive back in the pass rush, no corner on a tight end.
+        assert.ok(battles.querySelectorAll(".sct-mpp-bt").length <= 3, `${p}: at most three battles`);
+        for (const b of battles.querySelectorAll('.sct-mpp-bt[data-kind="qbRush"] .is-def .sct-mpp-bt-pos')) {
+          assert.doesNotMatch(b.textContent, /^(CB|S|SAF|FS|SS|DB)$/, `${p}: a defensive back in the pass rush`);
+        }
+        for (const b of battles.querySelectorAll('.sct-mpp-bt[data-kind="receiver"]')) {
+          if (b.querySelector(".is-off .sct-mpp-bt-pos")?.textContent === "TE") {
+            assert.equal([...b.querySelectorAll(".is-def .sct-mpp-bt-pos")].some((x) => x.textContent === "CB"), false, `${p}: corner on a tight end`);
+          }
+        }
       }
       // Team Comparison replaces Team Matchup and the Game Snapshot rail card
       // (mak, 2026-11-06): NFL stats only, every value with a 32-team rank, an
@@ -927,10 +957,9 @@ describe("the upcoming page (premium design)", () => {
       assert.equal(doc.querySelector(".sct-mpp-dvp"), null, `${p}: no Points Allowed by Position card`);
       const cmp = doc.querySelector(".sct-mpp-card.is-compare");
       if (cmp) {
-        // First in the main column, above The Call (mak, 2026-11-06).
-        assert.equal(cmp.parentElement.firstElementChild, cmp, `${p}: Team Comparison leads`);
-        const call = doc.querySelector(".sct-mpp-card.is-call");
-        if (call) assert.equal(cmp.nextElementSibling, call, `${p}: The Call follows it`);
+        // Under the Game Preview since 2026-11-18 (it led until then).
+        if (call) assert.equal(call.nextElementSibling, cmp, `${p}: Team Comparison follows the preview`);
+        else assert.equal(cmp.parentElement.firstElementChild, cmp, `${p}: Team Comparison leads`);
         assert.equal(cmp.querySelector("h2#pv-snap")?.textContent, "Team Comparison");
         const tabs = [...cmp.querySelectorAll('[role="tab"]')];
         assert.ok(tabs.length >= 2 && tabs[0].textContent === "Offense", `${p}: tabs`);

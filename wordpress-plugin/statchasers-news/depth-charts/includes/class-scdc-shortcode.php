@@ -279,6 +279,50 @@ class SCDC_Shortcode {
 		return untrailingslashit( esc_url_raw( $origin ) );
 	}
 
+	/**
+	 * Player pages the rows can link to, as team abbreviation => { name => slug }.
+	 *
+	 * Read from the StatChasers plugin's cached copy of the indexed-player list
+	 * (the same /embed/players.json rows that create the /nfl/players/<slug>/
+	 * pages), so a name links only when its page exists. Transients only, never
+	 * a request: a page view must not wait on the app. An empty map (no parent
+	 * plugin, cache cold) leaves every name as plain text.
+	 *
+	 * @return array<string,array<string,string>>
+	 */
+	public static function player_pages() {
+		$rows = get_transient( 'sc_player_roster' );
+		if ( ! is_array( $rows ) ) {
+			$rows = get_transient( 'sc_player_roster_bak' );
+		}
+		$map = array();
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			$team = isset( $row['team'] ) ? strtoupper( (string) $row['team'] ) : '';
+			$name = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+			$slug = isset( $row['slug'] ) ? sanitize_title( (string) $row['slug'] ) : '';
+			if ( '' === $team || '' === $name || '' === $slug ) {
+				continue;
+			}
+			$map[ $team ][ $name ] = $slug;
+		}
+		/**
+		 * Filters the player pages the depth chart links to.
+		 *
+		 * @param array<string,array<string,string>> $map Team => { name => slug }.
+		 */
+		return (array) apply_filters( 'scdc_player_pages', $map );
+	}
+
+	/**
+	 * Where player pages live, with a trailing slash.
+	 *
+	 * @return string
+	 */
+	private static function player_base() {
+		$path = defined( 'STATCHASERS_PLAYER_PATH' ) ? (string) constant( 'STATCHASERS_PLAYER_PATH' ) : 'nfl/players';
+		return trailingslashit( home_url( '/' . trim( $path, '/' ) . '/' ) );
+	}
+
 	public function render( $atts = array() ) {
 		// Fallback when nothing has been cached yet.
 		if ( ! SCDC_Store::has_data() ) {
@@ -314,9 +358,20 @@ class SCDC_Shortcode {
 				data-last-updated="<?php echo esc_attr( $last_updated ); ?>"
 				data-season="<?php echo esc_attr( (string) SCDC_Teams::season() ); ?>"
 				data-teams="<?php echo esc_attr( $this->teams_json() ); ?>"
+				data-player-base="<?php echo esc_url( self::player_base() ); ?>"
 			>
 				<div class="scdc-loading"><?php esc_html_e( 'Loading depth charts…', 'statchasers-depth-charts' ); ?></div>
 			</div>
+			<?php
+			$pages = self::player_pages();
+			if ( ! empty( $pages ) ) {
+				// A JSON island rather than an attribute: ~20 KB that would
+				// otherwise be entity-escaped. HEX_TAG keeps "</script>" out.
+				echo '<script type="application/json" class="scdc-player-pages">'
+					. wp_json_encode( $pages, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+					. '</script>';
+			}
+			?>
 		</div>
 		<?php
 		return (string) ob_get_clean();

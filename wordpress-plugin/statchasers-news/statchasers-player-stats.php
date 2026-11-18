@@ -380,6 +380,14 @@ function statchasers_player_stats_enqueue_assets(): void {
 	wp_enqueue_style( STATCHASERS_PLAYER_STATS_HANDLE );
 	wp_enqueue_script( STATCHASERS_PLAYER_STATS_HANDLE );
 
+	// This page's hero only (UI brief, 2026-11-18): this handle is enqueued on
+	// no other page, so the site-wide hero rules in Divi's custom CSS stay
+	// as they are everywhere else. A tighter lead (1.55 leading on the shorter
+	// intro) and, on a phone, a 26-30px H1 instead of the site's 20-24px.
+	// Two classes plus !important, because the site rules are one class with
+	// !important.
+	wp_add_inline_style( STATCHASERS_PLAYER_STATS_HANDLE, statchasers_player_stats_hero_css() );
+
 	if ( statchasers_player_stats_wants_full_width() ) {
 		wp_add_inline_style( STATCHASERS_PLAYER_STATS_HANDLE, statchasers_team_full_width_css() );
 	}
@@ -685,6 +693,19 @@ function statchasers_player_stats_shortcode_heading(): string {
 	}
 
 	return statchasers_page_heading_html( statchasers_player_stats_h1(), statchasers_player_stats_lead() );
+}
+
+/**
+ * Page-scoped adjustments to the generated hero above the stats table.
+ *
+ * @return string CSS.
+ */
+function statchasers_player_stats_hero_css(): string {
+	return '.sc-lo-hero.sc-lo-hero--generated .sc-lo-hero__lead{max-width:1040px!important;line-height:1.55!important}' .
+		'@media (max-width:640px){' .
+			'.sc-lo-hero.sc-lo-hero--generated .sc-lo-hero__h1{font-size:clamp(26px,7.2vw,30px)!important;line-height:1.18!important}' .
+			'.sc-lo-hero.sc-lo-hero--generated .sc-lo-hero__lead{line-height:1.55!important}' .
+		'}';
 }
 
 /** The hero's description - the table's intro as one paragraph - or ''. */

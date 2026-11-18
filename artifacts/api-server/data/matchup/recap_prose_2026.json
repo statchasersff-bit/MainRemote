@@ -61,18 +61,18 @@
    "checked": "house checks + checker agent"
   },
   "2026_10_SF_DAL": {
-   "headline": "McCaffrey's 223 yards carry 49ers past Cowboys 46–40 in shootout",
+   "headline": "McCaffrey's 223 yards carry 49ers past Cowboys 46–40",
    "paragraphs": [
-    "San Francisco averaged 9.4 yards per play and needed nearly all of it. The 49ers led 38–19 early in the fourth quarter, watched Dallas rally, and held on for a 46–40 win over the Cowboys on Sunday as Christian McCaffrey gained 223 yards from scrimmage and scored three times.",
-    "Dak Prescott threw two touchdown passes to George Pickens in the first half, but Brock Purdy's 74-yard scoring pass to McCaffrey late in the second quarter gave the 49ers a 17–16 halftime lead. San Francisco then broke the game open with big plays: Kaelon Black's 25-yard touchdown run early in the third quarter and Deebo Samuel Sr.'s 70-yard touchdown run midway through it.",
-    "Malik Mustapha intercepted Prescott late in the third quarter, and the 49ers followed with a 12-play, 90-yard drive that McCaffrey finished with a 16-yard run for a 38–19 lead. Dallas scored the next 13 points on Prescott's touchdown passes to Pickens and Ryan Flournoy, but McCaffrey answered on the next possession with a 66-yard touchdown catch.",
-    "Purdy completed 22 of 28 passes for 389 yards and three touchdowns, and San Francisco did not turn the ball over. Prescott threw for 343 yards and five touchdowns, three to Pickens, who caught 11 passes for 145 yards.",
-    "Prescott's 1-yard touchdown pass to CeeDee Lamb with 47 seconds left made it 46–40, and Dallas got the ball back at its 9 with nine seconds to go, but Flournoy fumbled after a catch and the 49ers recovered. San Francisco improved to 8-1 with its second straight win."
+    "The Dallas Cowboys had scored 13 straight points to pull within 38–32 late in the fourth quarter when Brock Purdy found Christian McCaffrey for a 66-yard touchdown on the second play of the next drive, and the San Francisco 49ers held on for a 46–40 win on Sunday. McCaffrey finished with 223 yards from scrimmage and three touchdowns.",
+    "The lead changed hands three times in the first half. Purdy hit Deebo Samuel Sr. for an 11-yard touchdown, Dak Prescott found George Pickens for scores of 35 and 39 yards, and McCaffrey's 74-yard touchdown catch late in the second quarter sent San Francisco to halftime ahead 17–16.",
+    "San Francisco pulled away when Kaelon Black ran 25 yards for a touchdown early in the third quarter and Samuel broke a 70-yard touchdown run midway through it. After Malik Mustapha intercepted Prescott late in the quarter, the 49ers went 90 yards in 12 plays, and McCaffrey's 16-yard run early in the fourth made it 38–19.",
+    "Purdy completed 22 of 28 passes for 389 yards and three touchdowns, and San Francisco averaged 9.4 yards per play. Prescott answered with 343 yards and five touchdown passes, three of them to Pickens, who caught 11 passes for 145 yards. The last, a 1-yard throw to CeeDee Lamb with 47 seconds left, made it 46–40.",
+    "San Francisco did not turn the ball over despite being sacked five times, and Ryan Flournoy's fumble after a catch with 2 seconds left ended Dallas' final possession. The 49ers improved to 8-1 with their second straight win; Dallas fell to 4-6."
    ],
-   "hash": "c12736a94126c15b",
+   "hash": "4fe682cde860e983",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:44.952Z",
-   "words": 255,
+   "writtenAt": "2026-11-18T05:55:13.750Z",
+   "words": 260,
    "checked": "house checks + checker agent"
   },
   "2026_01_ARI_LAC": {
@@ -1567,16 +1567,16 @@
   "2026_08_ARI_DAL": {
    "headline": "Cardinals rally from 14 down, beat Cowboys 33–30 in overtime",
    "paragraphs": [
-    "Arizona trailed by 14 in the first half and was still behind in the final minute, but Gardner Minshew II drove the Cardinals 80 yards for the tying touchdown and Chad Ryland won it with a 42-yard field goal in overtime. The Cardinals, 7-point underdogs, beat the Dallas Cowboys 33–30 on Sunday.",
-    "A mistake put Arizona behind early. Shemar James intercepted Jacoby Brissett late in the first quarter, and Javonte Williams scored from 2 yards two plays later. Dak Prescott's 9-yard touchdown pass to Ryan Flournoy made it 14–0, and Dallas led 14–3 at halftime.",
-    "Tyler Allgeier started the comeback. His 63-yard touchdown run late in the third quarter cut the lead to 17–10 on the way to 147 rushing yards on 11 carries. After Prescott's 5-yard touchdown run made it 24–10 early in the fourth quarter, Minshew threw touchdown passes to Allgeier and then to Trey McBride from 14 yards, pulling Arizona within 27–24 with 2:16 left.",
-    "Brandon Aubrey's 41-yard field goal, his third of the game, made it 30–24, and Minshew answered again. He hit Michael Wilson for 21 and 27 yards on the final drive and then for a 13-yard touchdown with 10 seconds left. In overtime, the Cowboys went backward on their possession and punted, and Arizona went 44 yards for Ryland's winner with 2:58 left.",
-    "Wilson caught eight passes for 111 yards. Arizona outgained Dallas 467 yards to 261 and held the Cowboys to 3.6 yards per play. The Cardinals improved to 3-5."
+    "Gardner Minshew II threw a 13-yard touchdown pass to Michael Wilson with 10 seconds left in regulation, and Chad Ryland's 42-yard field goal in overtime finished the Arizona Cardinals' 33–30 win over the Dallas Cowboys on Sunday. Arizona closed as a 7-point underdog and trailed 14–0 in the first half.",
+    "Shemar James intercepted Jacoby Brissett late in the first quarter, setting up Javonte Williams' 2-yard touchdown run, and Dak Prescott's 9-yard touchdown pass to Ryan Flournoy made it 14–0 midway through the second. The Cardinals still trailed 17–3 when Tyler Allgeier broke a 63-yard touchdown run late in the third quarter.",
+    "Dallas led 27–17 after Brandon Aubrey's 35-yard field goal with 3:58 to play. Minshew hit Trey McBride for a 14-yard touchdown, Aubrey answered from 41 yards with 1:14 left, and Minshew then drove Arizona 80 yards in eight plays, finding Wilson for gains of 21 and 27 yards before the tying score. After Dallas went three-and-out in overtime, Ryland's kick came with 2:58 left.",
+    "Allgeier ran for 147 yards on 11 carries and caught five passes for 44 yards, including a 5-yard touchdown early in the fourth quarter. Minshew completed 17 of 23 passes for 188 yards and threw all three Arizona touchdown passes; Brissett was 10 of 23 for 119 yards. Arizona outgained Dallas 467 to 261, and the Cowboys averaged 3.6 yards per play.",
+    "Dallas sacked Arizona quarterbacks five times and took the ball away twice, but Arizona outscored it 33–16 after the 14–0 start, with 20 points in the fourth quarter. Both teams are 3-5."
    ],
-   "hash": "8c7f868eb5d5f280",
+   "hash": "36619e48dac963aa",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:27.535Z",
-   "words": 248,
+   "writtenAt": "2026-11-18T05:55:12.080Z",
+   "words": 259,
    "checked": "house checks + checker agent"
   },
   "2026_08_ATL_TB": {
@@ -1731,16 +1731,16 @@
   "2026_08_PHI_WAS": {
    "headline": "Commanders score 27 straight to beat Eagles 27–10",
    "paragraphs": [
-    "Philadelphia scored 10 points in the first quarter and none after that. The Washington Commanders answered with 27 unanswered points, including four Drew Stevens field goals, and beat the Eagles 27–10 in a division game on Sunday night.",
-    "The Eagles' early lead came off a Washington mistake. Chig Okonkwo fumbled after a catch, and Saquon Barkley scored from 3 yards three plays later to make it 10–0. Stevens started the reply with a 56-yard field goal, and Jayden Daniels led an 11-play, 89-yard drive that ended with an 8-yard touchdown pass to Stefon Diggs midway through the second quarter. Stevens' 39-yarder with 23 seconds left gave Washington a 13–10 halftime lead.",
-    "Philadelphia's offense never recovered. Eagles quarterbacks were sacked five times, and the Eagles averaged 3.9 yards per play even though they held the ball for 33:31. Barkley ran 13 times for 30 yards. Tanner McKee fumbled on a sack late in the third quarter, and Washington turned it into Stevens' 25-yard field goal after Daniels hit Treylon Burks for 53 yards.",
-    "Stevens added a 42-yarder with 3:48 left, and Rasul Douglas then intercepted McKee, the second Philadelphia turnover that led to Washington points. Rachaad White broke a 33-yard run and scored from 1 yard with 1:55 to play to complete the scoring.",
-    "Daniels threw for 217 yards and a touchdown, and Burks caught three passes for 81 yards. Washington improved to 2-4-1 with the division win."
+    "The Philadelphia Eagles scored the first 10 points on Sunday night and none after that, and the Washington Commanders came back for a 27–10 division win. Drew Stevens kicked four field goals, and Washington sacked Philadelphia quarterbacks five times and forced two second-half turnovers that led to a field goal and a touchdown.",
+    "Jake Elliott made a 40-yard field goal for Philadelphia, and after the Eagles recovered Chig Okonkwo's fumble, Saquon Barkley scored on a 3-yard run. Stevens answered with a 56-yard field goal late in the first quarter, Jayden Daniels tied it midway through the second with an 8-yard touchdown pass to Stefon Diggs at the end of an 89-yard drive, and Stevens' 39-yarder with 23 seconds left in the half put Washington ahead 13–10 for good.",
+    "The Eagles averaged 3.9 yards per play, converted five of 15 third downs and got 30 yards on 13 carries from Barkley. Late in the third quarter, Tanner McKee fumbled on a sack and Washington recovered; Daniels found Treylon Burks for 53 yards on the ensuing drive, and Stevens kicked a 25-yard field goal for a 16–10 lead.",
+    "Stevens added a 42-yarder late in the fourth quarter, and Rasul Douglas intercepted McKee on Philadelphia's next possession. Rachaad White broke a 33-yard run and scored from 1 yard out with 1:55 left.",
+    "Daniels completed 16 of 29 passes for 217 yards and a touchdown without an interception, and Washington did not turn the ball over after its first-quarter fumble. The Commanders moved to 2-4-1. Philadelphia fell to 2-6 and has lost six straight."
    ],
-   "hash": "b0d55067acc53a29",
+   "hash": "2a0dcf8bd4222835",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:32.987Z",
-   "words": 237,
+   "writtenAt": "2026-11-18T05:55:12.083Z",
+   "words": 260,
    "checked": "house checks + checker agent"
   },
   "2026_08_NE_MIA": {
@@ -1833,18 +1833,18 @@
    "checked": "house checks + checker agent"
   },
   "2026_09_DAL_IND": {
-   "headline": "Lamb's 195 yards, Williams' late score lift Cowboys past Colts 27–23",
+   "headline": "Cowboys answer Colts' late field goal, win 27–23 in Indianapolis",
    "paragraphs": [
-    "Spencer Shrader had just kicked Indianapolis in front with a 50-yard field goal with 1:41 left when Dak Prescott found Ryan Flournoy for 46 yards on the next snap. Javonte Williams finished the 65-yard drive with a 1-yard run with 1:10 to play, and the Dallas Cowboys beat the Colts 27–23 on Sunday.",
-    "Dallas recovered from an early mistake to build a 17–7 halftime lead. Prescott fumbled on a sack in the first quarter, and Seth McGowan turned the short field into a 2-yard touchdown run. Prescott answered with touchdown passes to Jake Ferguson, at the end of a 15-play drive, and to CeeDee Lamb from 44 yards out with 28 seconds left in the half.",
-    "Shrader and Brandon Aubrey traded third-quarter field goals, and from 20–10 Indianapolis scored 13 unanswered points. Daniel Jones hit Ashton Dulin for a 55-yard touchdown late in the quarter, Shrader tied it with a 59-yard field goal midway through the fourth, and his 50-yarder put the Colts ahead. Before the tie, Lamb fumbled after a 48-yard catch, and Jonathan Taylor fumbled right back.",
-    "Lamb caught 10 passes for 195 yards, Prescott threw for 335 yards and Williams ran for 101. Dallas outgained Indianapolis 508 to 271 and averaged 7.2 yards per play, while the Colts converted three of 13 third downs.",
-    "The Cowboys overcame two lost fumbles and the loss of Ferguson to an injury in the third quarter, and Caleb Downs ended the Colts' last chance by intercepting Jones in the final minute. Indianapolis fell to 2-7 with its fifth straight loss."
+    "Spencer Shrader's 50-yard field goal gave the Indianapolis Colts a 23–20 lead with 1:41 to play on Sunday, and the Dallas Cowboys needed four plays to take it back. Dak Prescott found Ryan Flournoy for 46 yards on the first snap of the drive, Javonte Williams ran in from 1 yard with 1:10 left, and Dallas held on for a 27–23 win.",
+    "The Cowboys led 17–7 at halftime. Prescott fumbled on a sack in the first quarter, setting up Seth McGowan's 2-yard touchdown run, but he answered with a 10-yard touchdown pass to Jake Ferguson early in the second quarter and a 44-yard scoring pass to CeeDee Lamb just before halftime.",
+    "Indianapolis scored the next 13 points after Dallas went up 20–10 late in the third quarter. Daniel Jones hit Ashton Dulin for a 55-yard touchdown, and Shrader tied the game with a 59-yard field goal midway through the fourth. In between, Lamb lost a fumble after a 48-yard catch, and Jonathan Taylor gave the ball back on Indianapolis' next possession.",
+    "Lamb finished with 10 catches for 195 yards, and Prescott threw for 335 yards and two touchdowns without an interception. Dallas outgained Indianapolis 508 to 271 and averaged 7.2 yards per play, while the Colts converted three of 13 third downs.",
+    "Caleb Downs intercepted Jones with 41 seconds left to end Indianapolis' final drive. Dallas overcame two lost fumbles and the loss of Ferguson to an injury late in the third quarter to improve to 4-5. The Colts fell to 2-7 with their fifth straight loss."
    ],
-   "hash": "b95d04ea6270ae24",
+   "hash": "f772f36165aa19f3",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:36.334Z",
-   "words": 259,
+   "writtenAt": "2026-11-18T05:55:13.306Z",
+   "words": 257,
    "checked": "house checks + checker agent"
   },
   "2026_09_DEN_CAR": {
@@ -1953,18 +1953,18 @@
    "checked": "house checks + checker agent"
   },
   "2026_09_NYG_PHI": {
-   "headline": "Reese sacks Eagles three times as Giants win 19–11 in Philadelphia",
+   "headline": "Arvell Reese sacks Eagles three times as Giants win 19–11",
    "paragraphs": [
-    "The New York Giants sacked Philadelphia quarterback Joe Milton seven times, three of them by Arvell Reese, and scored 13 unanswered points after halftime in a 19–11 division win over the Eagles on Sunday.",
-    "Points were scarce on both sides, with 14 punts between the teams. Dominic Zvada kicked field goals of 53 and 49 yards in the first quarter, but Saquon Barkley's 3-yard touchdown run gave Philadelphia an 8–6 lead that held through a scoreless second quarter.",
-    "After J.J. McCarthy was hurt early in the third quarter, Jameis Winston threw the go-ahead touchdown, a 5-yard pass to Isaiah Likely late in the quarter that capped a 14-play, 76-yard drive. McCarthy returned. Zvada added field goals of 38 and 49 yards in the fourth to make it 19–8.",
-    "Zvada finished four of four. Neither offense found much room; the Giants averaged 3.8 yards per play and were sacked six times, two of them by Zack Baun. Philadelphia was worse, at 3.3 yards per play, with five conversions on 18 third downs. Milton threw for 169 yards and ran for 64, while Barkley gained 22 yards on 13 carries.",
-    "Jake Elliott's 45-yard field goal cut the gap to 19–11 with 2:00 left, and the Eagles' final possession, which began at their own 5, ended on downs. New York improved to 5-2-1 with its second straight win."
+    "The New York Giants did not reach the end zone until late in the third quarter, and that touchdown and four Dominic Zvada field goals were enough for a 19–11 division win over the Philadelphia Eagles. Philadelphia was sacked seven times, three of them by Arvell Reese.",
+    "Zvada made field goals of 53 and 49 yards in the first quarter before Saquon Barkley's 3-yard touchdown run late in the quarter put Philadelphia ahead 8–6. In a scoreless second quarter, the teams lost fumbles on back-to-back possessions, the second when Joe Milton lost the ball on a sack, and neither turnover led to points.",
+    "New York went ahead to stay late in the third quarter, when Jameis Winston threw a 5-yard touchdown pass to Isaiah Likely to finish a 14-play, 76-yard drive. Zvada added a 38-yarder midway through the fourth quarter and a 49-yarder late in it, the second after a 4-yard drive that started at the Philadelphia 35.",
+    "Philadelphia managed 220 yards and 3.3 yards per play and converted five of 18 third downs. Milton completed 18 of 34 passes for 169 yards and ran for 64, while Barkley gained 22 yards on 13 carries. New York was held to 243 yards and 3.8 yards per play, and Zack Baun sacked the Giants twice.",
+    "Jake Elliott's 45-yard field goal with 2:00 left made it 19–11, and the Eagles' last possession, which began at their own 5, ended on downs. The Giants improved to 5-2-1 with their second straight win. Philadelphia fell to 2-7 and has lost seven straight."
    ],
-   "hash": "715b934be5cd7065",
+   "hash": "a54a557b10066ba5",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:39.807Z",
-   "words": 225,
+   "writtenAt": "2026-11-18T05:55:13.726Z",
+   "words": 258,
    "checked": "house checks + checker agent"
   },
   "2026_09_NYJ_KC": {
@@ -2146,7 +2146,37 @@
    "writtenAt": "2026-11-17T02:10:44.954Z",
    "words": 250,
    "checked": "house checks + checker agent"
+  },
+  "2026_07_DAL_PHI": {
+   "headline": "Javonte Williams runs for 155 as Cowboys beat Eagles 38–21",
+   "paragraphs": [
+    "The Dallas Cowboys and Philadelphia Eagles traded the lead six times through three quarters on Monday night before Dallas scored the final 18 points and won 38–21. The Cowboys did not turn the ball over or allow a sack.",
+    "Neither side held a lead for long in the first half. Saquon Barkley and Dameon Pierce ran for Philadelphia touchdowns, and Dak Prescott answered each with a scoring pass, a 9-yarder to CeeDee Lamb and a 21-yarder to George Pickens. Brandon Aubrey's 27-yard field goal with 3 seconds left sent Dallas to halftime ahead 20–14.",
+    "Philadelphia went back in front midway through the third quarter when Tanner McKee found Makai Lemon for a 4-yard touchdown at the end of a 17-play, 84-yard drive. Prescott's second touchdown pass to Lamb, from 16 yards late in the quarter, put Dallas ahead 28–21, and Aubrey and Javonte Williams added the rest in the fourth.",
+    "Williams carried 25 times for 155 yards and a touchdown, including a 34-yard run early in the fourth quarter, and Dallas finished with 204 rushing yards and eight conversions on 13 third downs. Prescott completed 15 of 27 passes for 212 yards and three touchdowns, and Aubrey made all three of his field goal attempts.",
+    "DeMarvion Overshown intercepted McKee midway through the fourth quarter, and Philadelphia's last possession ended on downs. The Eagles also lost Pierce and Moro Ojomo to injuries in the fourth, and neither returned. Dallas moved to 3-4 with the division win, while Philadelphia fell to 2-5 and has lost five straight."
+   ],
+   "hash": "b7af039f96fec18d",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-18T05:55:11.976Z",
+   "words": 255,
+   "checked": "house checks + checker agent"
+  },
+  "2026_10_LAC_BAL": {
+   "headline": "Underdog Chargers run past Ravens 23–20 in Baltimore",
+   "paragraphs": [
+    "Justin Herbert threw for only 129 yards, but the Los Angeles Chargers ran for 160 and did not turn the ball over in a 23–20 win over the Baltimore Ravens on Monday night. The Ravens had closed as 3.5-point favorites.",
+    "Herbert ran 22 yards for a touchdown early in the first quarter, and Cameron Dicker's 38-yard field goal made it 10–0. After Derrick Henry's 2-yard touchdown run early in the second quarter, Del'Shawn Phillips intercepted Jacoby Brissett, and Los Angeles turned it into a 13-play drive that ended with Omarion Hampton's 1-yard touchdown run with 2:00 left in the half. Riley Patterson's 26-yard field goal made it 17–10 at halftime.",
+    "Dicker added field goals of 34 yards midway through the third quarter and 35 yards at the start of the fourth for a 23–13 lead. Henry's 1-yard run early in the fourth pulled Baltimore within 23–20 at the end of a 71-yard drive, but the Ravens did not score again.",
+    "Brissett completed 33 of 49 passes for 340 yards, and Mark Andrews caught all eight of his targets for 82 yards, but Baltimore ran for 16 yards on 15 carries; Henry scored twice while gaining 10 yards on 10 attempts. Hampton carried 22 times for 105 yards, and Tre' Harris caught five passes for 86 yards.",
+    "Zay Flowers fumbled after a 15-yard catch with 2:11 left, and Los Angeles recovered. The Chargers converted only two of 13 third downs, but they forced two turnovers without committing one and improved to 1-8. Baltimore fell to 4-6 and has lost five straight."
+   ],
+   "hash": "7a1a6fd822d02b3e",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-18T05:55:13.736Z",
+   "words": 260,
+   "checked": "house checks + checker agent"
   }
  },
- "updatedAt": "2026-11-17T02:10:45.508Z"
+ "updatedAt": "2026-11-18T05:55:13.750Z"
 }

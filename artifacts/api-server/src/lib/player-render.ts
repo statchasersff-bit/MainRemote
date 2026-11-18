@@ -2196,6 +2196,46 @@ function directoryBand(row: DirectoryPlayer): string {
   return finishBadge(standing.rank, row.position)?.tier ?? "idle";
 }
 
+/**
+ * Rows a club card shows before "Show all" (mak, 2026-11-18). The fold is drawn
+ * by the server, so the first paint is already the short card and nothing
+ * shifts when the client arrives.
+ *
+ * The rows it keeps are the club's top five by season fantasy points, not the
+ * first five of the position-grouped list (which was all quarterbacks and
+ * backs). They stay in the grouped order, so opening the card only adds rows
+ * around them and nothing already on screen moves.
+ */
+const DIRECTORY_FOLD = 5;
+
+/**
+ * Season fantasy points, the fold's ranking. A total rather than a rate,
+ * because a rate over one game (a backup's spot start) would outrank a
+ * starter's whole season.
+ */
+function directorySeasonPoints(row: DirectoryPlayer): number {
+  const standing = row.standing;
+  if (!standing) return 0;
+  return standing.measure === "ppg" ? standing.value * standing.games : standing.value;
+}
+
+/**
+ * Indexes of the rows the folded card shows: the top DIRECTORY_FOLD by season
+ * points, kickers last, ties to the earlier row. Shared rule with the
+ * client's re-fold.
+ */
+function directoryFoldSet(rows: DirectoryPlayer[]): Set<number> {
+  return new Set(
+    rows
+      // Kickers only fill a card short of skill players: a team's top five
+      // should be the names a reader drafts, not its kicker.
+      .map((row, i) => ({ i, k: row.position === "K" ? 1 : 0, pts: directorySeasonPoints(row) }))
+      .sort((a, b) => a.k - b.k || b.pts - a.pts || a.i - b.i)
+      .slice(0, DIRECTORY_FOLD)
+      .map((entry) => entry.i),
+  );
+}
+
 /** `QB14` over `17.2 ppg`, or the dash for a player who has not played. */
 function renderDirectoryStanding(row: DirectoryPlayer): string {
   const standing = row.standing;
@@ -2208,11 +2248,17 @@ function renderDirectoryStanding(row: DirectoryPlayer): string {
   // Lowercase, because the pill above it is the loud half of this pair and two
   // shouting lines read as two facts rather than as one.
   const unit = standing.measure === "ppg" ? "ppg" : "pts";
+  // "pts" and "ppg" sit in one column, so the hover says which is which: a
+  // season total for a player under the games minimum, a rate for the rest.
+  const unitTitle =
+    standing.measure === "ppg"
+      ? "Fantasy points per game this season"
+      : `Total fantasy points this season (under ${PPG_MIN_GAMES} games played)`;
 
   return (
     `<span class="scp-dir-stand">` +
     `<b class="scp-dir-rank">${escapeHtml(`${row.position}${standing.rank}`)}</b>` +
-    `<span class="scp-dir-value">${escapeHtml(num(standing.value))} ${escapeHtml(unit)}</span>` +
+    `<span class="scp-dir-value" title="${escapeHtml(unitTitle)}">${escapeHtml(num(standing.value))} ${escapeHtml(unit)}</span>` +
     `</span>`
   );
 }
@@ -2221,6 +2267,8 @@ function renderDirectoryRow(
   row: DirectoryPlayer,
   options: PlayerIndexOptions,
   lead = false,
+  beyond = false,
+  top = false,
 ): string {
   const prefix = options.playerPathPrefix ?? "/player/";
   const query = options.linkQuery ?? "";
@@ -2236,7 +2284,14 @@ function renderDirectoryRow(
     // The first row of a position run inside this card. It takes a hairline
     // above it, which is as much grouping as a card this size can carry
     // without turning into five sections with five headings.
-    `${lead ? " data-lead" : ""}>` +
+    `${lead ? " data-lead" : ""}` +
+    // Outside the club's top DIRECTORY_FOLD: folded away until the card is
+    // expanded. Still in the markup, so every profile link is in the page.
+    `${beyond ? " data-beyond" : ""}` +
+    // The first row the folded card shows, which drops its top hairline.
+    `${top ? " data-top" : ""}` +
+    // Season points, which the client re-folds by when a chip filters.
+    ` data-pts="${escapeHtml(directorySeasonPoints(row).toFixed(1))}">` +
     `<a class="scp-dir-row" href="${escapeHtml(`${prefix}${row.slug}/${query}`)}" target="_top">` +
     `<span class="scp-dir-face">` +
     // 38 to match the well in the stylesheet, so the box the browser reserves
@@ -2313,6 +2368,9 @@ function renderDirectoryClub(
   // opening from a club with three names on it a reader has heard of.
   const scoring = ordered.filter((row) => directoryBand(row) !== "idle").length;
 
+  const foldSet = directoryFoldSet(ordered);
+  const firstKept = Math.min(...foldSet);
+
   const items = ordered
     .map((row, i) => {
       // A position run opens wherever this row's position differs from the one
@@ -2321,27 +2379,43 @@ function renderDirectoryClub(
       const previous = i > 0 ? ordered[i - 1] : undefined;
       const lead =
         i > 0 && positionOrder(row.position) !== positionOrder(previous?.position);
-      return renderDirectoryRow(row, options, lead);
+      const kept = foldSet.has(i);
+      const top = kept && i === firstKept;
+      return renderDirectoryRow(row, options, lead, !kept, top);
     })
     .join("");
 
+  // The way to the rest of the card. The client rewrites the label as the
+  // position chips change what "all" means; this is the whole-roster label.
+  const more =
+    ordered.length > DIRECTORY_FOLD
+      ? `<button type="button" class="scp-dir-more" data-scp-dir-more aria-expanded="false">` +
+        `<span data-scp-dir-more-label>Show all ${ordered.length} players</span>` +
+        `<svg class="scp-dir-more-icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" /></svg>` +
+        `</button>`
+      : "";
+
   return (
-    `<section class="scp-dir-club" data-scp-club` +
+    `<section class="scp-dir-club" data-scp-club${more ? " data-folded" : ""}` +
     ` data-team="${escapeHtml(team?.code ?? "FA")}"${style}>` +
     `<header class="scp-dir-club-head">` +
     mark +
     `<h2 class="scp-dir-club-name">${heading}</h2>` +
     // Both halves are updated by the client as the chips filter; the server's
     // values are the whole roster, which is what it is before anything is.
-    `<span class="scp-dir-club-count">` +
+    // The title is the hover answer to "17 of 24 what?"; the hidden words make
+    // a screen reader say the whole sentence. Neither carries a number, so the
+    // client's recount as the chips filter never leaves them stale.
+    `<span class="scp-dir-club-count" title="Players with fantasy points this season, of players listed">` +
     `<b data-scp-club-scoring>${scoring}</b>` +
     `<span class="scp-dir-club-of"> of <b data-scp-club-count>${ordered.length}</b></span>` +
-    `<span class="scp-visually-hidden"> players scoring this season</span>` +
+    `<span class="scp-visually-hidden"> players listed have scored fantasy points this season</span>` +
     `</span>` +
     `</header>` +
     `<ul class="scp-dir-list" data-scp-dir-list data-grouped>` +
     items +
     `</ul>` +
+    more +
     `</section>`
   );
 }
@@ -2430,6 +2504,9 @@ function renderDirectoryNote(data: PlayerDirectory, shown: number): string {
     escapeHtml(
       `ranked by ${season}${SCORING_SHORT[data.format]} ${measured}${through}`,
     ) +
+    // The team badges' key, said once here rather than in thirty-two tooltips
+    // a phone cannot open.
+    `<span class="scp-dir-note-key"> ${DOT} Team badge: players scoring of players listed</span>` +
     `</p>`
   );
 }
@@ -2472,6 +2549,9 @@ function renderPlayerDirectory(
     `</div>` +
     renderDirectoryNote(data, data.rows.length) +
     `<div class="scp-dir" data-scp-dir>${clubs}</div>` +
+    // Without the script there is no button to press, so nothing is folded.
+    `<noscript><style>.scp-dir-club .scp-dir-item[data-beyond]{display:list-item !important}` +
+    `.scp-dir-more{display:none !important}</style></noscript>` +
     // The client unhides this when a filter matches nobody. It is in the
     // markup rather than built on demand so the string lives with the rest of
     // the page's words instead of inside a bundle.

@@ -72,7 +72,11 @@ function normalizeName(name) {
 
 function buildSlug(fullName) {
   if (!fullName) return '';
+  // Fold accents first (Peña -> pena): the strip below would drop the letter
+  // outright and move the page (2026-11-18, trebor-pena -> trebor-pea).
   return fullName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[''`´‘’‚‛]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')

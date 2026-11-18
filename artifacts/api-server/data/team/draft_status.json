@@ -1,7 +1,7 @@
 {
- "builtAt": "2026-11-16T13:46:09.184Z",
+ "builtAt": "2026-11-18T05:34:25.869Z",
  "season": 2026,
- "week": 10,
+ "week": 11,
  "players": {
   "00-0033875": {
    "now": {
@@ -15,7 +15,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -79,7 +79,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -123,7 +123,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -131,7 +131,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -151,7 +151,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -199,7 +199,7 @@
    "now": {
     "kind": "retired",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -227,7 +227,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -283,7 +283,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -299,7 +299,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -351,7 +351,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -435,7 +435,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -443,7 +443,7 @@
    "now": {
     "kind": "ps",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -455,7 +455,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -463,7 +463,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -471,7 +471,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -485,9 +485,9 @@
   },
   "00-0038600": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -495,7 +495,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -503,7 +503,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -511,7 +511,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -523,7 +523,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -531,7 +531,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -539,7 +539,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -547,7 +547,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -555,7 +555,7 @@
    "now": {
     "kind": "pup",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -563,7 +563,7 @@
    "now": {
     "kind": "ps",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -571,7 +571,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -591,7 +591,7 @@
    "now": {
     "kind": "ps",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -599,7 +599,7 @@
    "now": {
     "kind": "ps",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -607,7 +607,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -615,7 +615,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -623,7 +623,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -631,7 +631,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -639,7 +639,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -647,7 +647,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -655,7 +655,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -663,7 +663,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -671,7 +671,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -679,7 +679,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -687,7 +687,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -695,7 +695,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -703,7 +703,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -711,7 +711,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -719,7 +719,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -791,7 +791,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -799,7 +799,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -835,7 +835,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -927,7 +927,7 @@
    "now": {
     "kind": "ir",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -935,7 +935,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -943,7 +943,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1047,7 +1047,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -1079,7 +1079,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1131,7 +1131,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -1147,7 +1147,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1163,7 +1163,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1207,7 +1207,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1259,7 +1259,7 @@
    "now": {
     "kind": "ps",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1315,7 +1315,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1363,7 +1363,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1371,7 +1371,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1387,7 +1387,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1395,7 +1395,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1403,7 +1403,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1447,7 +1447,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1475,7 +1475,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1511,7 +1511,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1519,7 +1519,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -1559,7 +1559,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1567,7 +1567,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -1575,7 +1575,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1583,7 +1583,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1591,7 +1591,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1607,7 +1607,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -1615,7 +1615,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1623,7 +1623,7 @@
    "now": {
     "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -1635,7 +1635,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1647,7 +1647,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1655,7 +1655,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1679,7 +1679,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1719,7 +1719,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1727,7 +1727,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1735,7 +1735,7 @@
    "now": {
     "kind": "ps",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1743,7 +1743,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1751,7 +1751,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1759,7 +1759,7 @@
    "now": {
     "kind": "ps",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1767,7 +1767,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1775,7 +1775,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1783,7 +1783,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1803,7 +1803,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1815,7 +1815,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1823,7 +1823,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1831,7 +1831,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1839,7 +1839,7 @@
    "now": {
     "kind": "ps",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1867,7 +1867,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1875,7 +1875,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1883,7 +1883,7 @@
    "now": {
     "kind": "ps",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1891,7 +1891,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1899,7 +1899,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1907,7 +1907,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1927,7 +1927,7 @@
    "now": {
     "kind": "ir",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -1951,7 +1951,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1959,7 +1959,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1967,7 +1967,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1975,7 +1975,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1983,7 +1983,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1991,7 +1991,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -1999,7 +1999,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2007,7 +2007,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2015,7 +2015,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2031,7 +2031,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2039,7 +2039,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2047,7 +2047,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2055,7 +2055,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2063,7 +2063,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2071,7 +2071,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2079,7 +2079,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2087,7 +2087,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2095,7 +2095,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2103,7 +2103,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2111,7 +2111,7 @@
    "now": {
     "kind": "ps",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2119,7 +2119,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -2131,15 +2131,15 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0033891": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2147,7 +2147,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2183,7 +2183,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2191,7 +2191,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2199,7 +2199,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2207,7 +2207,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2215,7 +2215,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2223,7 +2223,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2251,7 +2251,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2267,7 +2267,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2275,7 +2275,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2319,7 +2319,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -2359,7 +2359,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2367,7 +2367,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -2379,7 +2379,7 @@
    "now": {
     "kind": "retired",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2387,7 +2387,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2403,7 +2403,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2431,7 +2431,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2463,7 +2463,7 @@
    "now": {
     "kind": "ps",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2471,7 +2471,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2479,7 +2479,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2487,7 +2487,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2495,7 +2495,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -2507,7 +2507,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2515,7 +2515,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2531,7 +2531,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2539,7 +2539,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2547,7 +2547,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2563,7 +2563,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -2583,7 +2583,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2591,7 +2591,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2599,7 +2599,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2607,7 +2607,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2615,7 +2615,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2631,7 +2631,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2639,7 +2639,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2647,7 +2647,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -2659,7 +2659,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2667,7 +2667,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2675,7 +2675,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2683,7 +2683,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2691,7 +2691,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2699,7 +2699,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2707,7 +2707,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2715,7 +2715,7 @@
    "now": {
     "kind": "nfi",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2723,7 +2723,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2731,7 +2731,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2739,7 +2739,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2747,7 +2747,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2755,7 +2755,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2763,7 +2763,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2771,7 +2771,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2779,7 +2779,7 @@
    "now": {
     "kind": "ir",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2795,7 +2795,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2803,7 +2803,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2811,7 +2811,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -2831,7 +2831,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2863,7 +2863,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -2875,7 +2875,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2883,7 +2883,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2903,7 +2903,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2951,7 +2951,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -2967,7 +2967,7 @@
    "now": {
     "kind": "retired",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3019,7 +3019,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3035,7 +3035,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3079,7 +3079,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3095,7 +3095,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3103,7 +3103,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3111,7 +3111,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3175,7 +3175,7 @@
    "now": {
     "kind": "pup",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3211,7 +3211,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -3231,7 +3231,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3239,7 +3239,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -3263,7 +3263,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -3287,7 +3287,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3295,7 +3295,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3303,7 +3303,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3311,7 +3311,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3319,7 +3319,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3327,7 +3327,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3343,7 +3343,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3351,7 +3351,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3359,7 +3359,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3367,7 +3367,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3375,7 +3375,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3383,7 +3383,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3391,7 +3391,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3411,7 +3411,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3419,7 +3419,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3427,7 +3427,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3435,7 +3435,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3443,7 +3443,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3451,7 +3451,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3459,7 +3459,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3467,7 +3467,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3511,7 +3511,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -3571,7 +3571,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3623,7 +3623,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3631,7 +3631,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3639,7 +3639,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3655,7 +3655,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3679,7 +3679,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3695,7 +3695,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3739,7 +3739,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3747,7 +3747,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3755,7 +3755,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3775,7 +3775,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3783,7 +3783,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3831,7 +3831,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3847,7 +3847,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3863,7 +3863,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3879,7 +3879,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3895,7 +3895,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3923,7 +3923,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -3931,7 +3931,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3939,7 +3939,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3947,7 +3947,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3955,7 +3955,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3963,7 +3963,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3971,7 +3971,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3979,7 +3979,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3987,7 +3987,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -3995,7 +3995,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4003,7 +4003,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4019,7 +4019,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4027,7 +4027,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4035,7 +4035,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4043,7 +4043,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4051,7 +4051,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4059,7 +4059,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4067,7 +4067,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4075,7 +4075,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4083,7 +4083,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4119,7 +4119,7 @@
    "now": {
     "kind": "ps",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4143,7 +4143,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -4199,7 +4199,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4291,7 +4291,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4375,7 +4375,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4383,7 +4383,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4399,7 +4399,7 @@
    "now": {
     "kind": "ir",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4407,7 +4407,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -4419,7 +4419,7 @@
    "now": {
     "kind": "retired",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4435,7 +4435,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4455,7 +4455,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4491,7 +4491,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4527,7 +4527,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4535,7 +4535,7 @@
    "now": {
     "kind": "ir",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4543,7 +4543,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -4563,7 +4563,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4583,7 +4583,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4591,7 +4591,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4599,15 +4599,15 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0038576": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4615,7 +4615,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4623,7 +4623,7 @@
    "now": {
     "kind": "ir",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4643,7 +4643,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4651,7 +4651,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4659,7 +4659,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4679,7 +4679,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -4691,7 +4691,7 @@
    "now": {
     "kind": "ir",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4699,7 +4699,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4719,7 +4719,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4747,7 +4747,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4755,7 +4755,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4763,7 +4763,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4771,7 +4771,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4779,7 +4779,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4787,7 +4787,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4795,7 +4795,7 @@
    "now": {
     "kind": "ir",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4803,7 +4803,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4811,7 +4811,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4819,7 +4819,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4827,7 +4827,7 @@
    "now": {
     "kind": "ir",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4835,7 +4835,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4843,7 +4843,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4865,9 +4865,9 @@
   },
   "00-0033885": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -4913,9 +4913,9 @@
   },
   "00-0033862": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -4939,7 +4939,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -4955,7 +4955,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -5055,7 +5055,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5095,7 +5095,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5125,9 +5125,9 @@
   },
   "00-0036232": {
    "now": {
-    "kind": "none",
-    "club": null,
-    "week": null
+    "kind": "ps",
+    "club": "ind",
+    "week": 11
    },
    "left": null
   },
@@ -5155,7 +5155,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -5187,7 +5187,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5195,7 +5195,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5203,7 +5203,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -5235,7 +5235,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5279,7 +5279,7 @@
    "now": {
     "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5311,7 +5311,7 @@
    "now": {
     "kind": "ps",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5355,7 +5355,7 @@
    "now": {
     "kind": "ir",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -5419,7 +5419,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5575,7 +5575,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5583,7 +5583,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5663,7 +5663,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5671,7 +5671,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5731,7 +5731,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5739,7 +5739,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5747,7 +5747,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5787,7 +5787,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5807,7 +5807,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -5823,7 +5823,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5867,7 +5867,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5875,7 +5875,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5883,7 +5883,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5911,7 +5911,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5947,7 +5947,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5963,7 +5963,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5971,7 +5971,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5979,7 +5979,7 @@
    "now": {
     "kind": "ir",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5987,7 +5987,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -5995,7 +5995,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -6007,7 +6007,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -6043,7 +6043,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6051,7 +6051,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6059,7 +6059,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -6071,7 +6071,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6099,7 +6099,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -6111,7 +6111,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6127,7 +6127,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6135,7 +6135,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6143,7 +6143,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -6155,7 +6155,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6163,7 +6163,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6179,7 +6179,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6187,7 +6187,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6195,15 +6195,15 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0040586": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6211,7 +6211,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6219,7 +6219,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6239,7 +6239,7 @@
    "now": {
     "kind": "ps",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -6263,7 +6263,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6271,7 +6271,7 @@
    "now": {
     "kind": "ir",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6279,7 +6279,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6287,7 +6287,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6295,7 +6295,7 @@
    "now": {
     "kind": "ir",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6303,7 +6303,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6311,7 +6311,7 @@
    "now": {
     "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6319,7 +6319,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6399,7 +6399,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -6411,7 +6411,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6427,7 +6427,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6495,7 +6495,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6503,7 +6503,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6575,7 +6575,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6603,7 +6603,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6639,7 +6639,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6647,7 +6647,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6655,7 +6655,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6663,7 +6663,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -6715,7 +6715,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6735,7 +6735,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6743,7 +6743,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -6763,7 +6763,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6787,7 +6787,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6795,7 +6795,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6815,7 +6815,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6835,7 +6835,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6843,7 +6843,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6851,7 +6851,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6859,7 +6859,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6867,7 +6867,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6875,7 +6875,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6883,7 +6883,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6891,7 +6891,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6899,7 +6899,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -6907,7 +6907,7 @@
    "now": {
     "kind": "pup",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6915,7 +6915,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6923,7 +6923,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6931,7 +6931,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6939,7 +6939,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6947,7 +6947,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6955,7 +6955,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6963,7 +6963,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6971,7 +6971,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6979,7 +6979,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6987,7 +6987,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -6995,7 +6995,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7003,7 +7003,7 @@
    "now": {
     "kind": "ps",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7011,7 +7011,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7019,7 +7019,7 @@
    "now": {
     "kind": "ps",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7167,7 +7167,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -7179,7 +7179,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7203,7 +7203,7 @@
    "now": {
     "kind": "ps",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7219,7 +7219,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -7263,7 +7263,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7279,7 +7279,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7331,7 +7331,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7339,7 +7339,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7347,7 +7347,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7355,7 +7355,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -7363,7 +7363,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7371,7 +7371,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7387,7 +7387,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7395,7 +7395,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7411,7 +7411,7 @@
    "now": {
     "kind": "pup",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7419,7 +7419,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7427,7 +7427,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7435,7 +7435,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -7455,7 +7455,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7463,7 +7463,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7471,7 +7471,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7479,7 +7479,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7487,7 +7487,7 @@
    "now": {
     "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7531,7 +7531,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7539,7 +7539,7 @@
    "now": {
     "kind": "nfi",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7547,7 +7547,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7555,7 +7555,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7563,7 +7563,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7571,7 +7571,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7579,7 +7579,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7587,7 +7587,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7595,7 +7595,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7603,7 +7603,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7623,7 +7623,7 @@
    "now": {
     "kind": "ps",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7631,7 +7631,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7639,7 +7639,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7647,7 +7647,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7655,7 +7655,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7663,7 +7663,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7671,7 +7671,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7735,7 +7735,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7795,7 +7795,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7823,7 +7823,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -7835,7 +7835,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7883,7 +7883,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7967,7 +7967,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -7991,7 +7991,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8035,7 +8035,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8043,7 +8043,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8071,7 +8071,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8087,7 +8087,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8115,7 +8115,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8163,7 +8163,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8191,15 +8191,15 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0037098": {
    "now": {
-    "kind": "cut",
-    "club": "phi",
-    "week": 1
+    "kind": "ps",
+    "club": "ind",
+    "week": 11
    },
    "left": null
   },
@@ -8239,7 +8239,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8247,7 +8247,7 @@
    "now": {
     "kind": "ps",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -8259,7 +8259,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -8295,7 +8295,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -8403,7 +8403,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8459,7 +8459,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -8591,7 +8591,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8691,7 +8691,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -8731,7 +8731,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -8739,7 +8739,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -8767,7 +8767,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8775,7 +8775,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8783,7 +8783,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8791,7 +8791,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -8803,7 +8803,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8811,7 +8811,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8827,7 +8827,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8835,7 +8835,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8863,7 +8863,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8871,7 +8871,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -8883,7 +8883,7 @@
    "now": {
     "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -8895,7 +8895,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8903,7 +8903,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8911,7 +8911,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8919,7 +8919,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8927,7 +8927,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8935,7 +8935,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8943,7 +8943,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8951,7 +8951,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8971,7 +8971,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8979,7 +8979,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8987,7 +8987,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -8995,7 +8995,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9003,7 +9003,7 @@
    "now": {
     "kind": "ps",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -9015,7 +9015,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9023,7 +9023,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9031,7 +9031,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -9055,7 +9055,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9063,7 +9063,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9071,7 +9071,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9079,7 +9079,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9087,7 +9087,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9103,7 +9103,7 @@
    "now": {
     "kind": "ir",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9131,7 +9131,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9139,7 +9139,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9147,7 +9147,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9155,7 +9155,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9163,7 +9163,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9171,7 +9171,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9179,7 +9179,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9187,7 +9187,7 @@
    "now": {
     "kind": "ps",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -9199,7 +9199,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9243,7 +9243,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9291,7 +9291,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9375,7 +9375,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9391,7 +9391,7 @@
    "now": {
     "kind": "retired",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9399,7 +9399,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9427,7 +9427,7 @@
    "now": {
     "kind": "pup",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9471,7 +9471,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9479,7 +9479,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9487,7 +9487,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9507,7 +9507,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9523,7 +9523,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9547,7 +9547,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9555,7 +9555,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -9563,7 +9563,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9583,7 +9583,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -9603,7 +9603,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9611,7 +9611,7 @@
    "now": {
     "kind": "ir",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9619,7 +9619,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9627,7 +9627,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9635,7 +9635,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9651,7 +9651,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9675,7 +9675,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9683,7 +9683,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9691,7 +9691,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -9703,7 +9703,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9711,7 +9711,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9719,7 +9719,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9727,7 +9727,7 @@
    "now": {
     "kind": "ps",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9735,7 +9735,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9743,7 +9743,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9763,7 +9763,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9783,7 +9783,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9791,7 +9791,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -9803,7 +9803,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9811,7 +9811,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9819,7 +9819,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9827,7 +9827,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9835,7 +9835,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9855,7 +9855,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9863,7 +9863,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9871,7 +9871,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9879,7 +9879,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9887,7 +9887,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9895,7 +9895,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9903,7 +9903,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9911,7 +9911,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9919,7 +9919,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9927,7 +9927,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9935,7 +9935,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9943,7 +9943,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9951,7 +9951,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9959,7 +9959,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9967,7 +9967,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9975,7 +9975,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -9983,7 +9983,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10009,9 +10009,9 @@
   },
   "00-0033907": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10071,7 +10071,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10111,7 +10111,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10119,7 +10119,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10135,7 +10135,7 @@
    "now": {
     "kind": "ir",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10159,7 +10159,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10187,7 +10187,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10203,7 +10203,7 @@
    "now": {
     "kind": "ir",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10211,7 +10211,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -10279,7 +10279,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10287,7 +10287,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10307,7 +10307,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10315,7 +10315,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10343,7 +10343,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10359,7 +10359,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10367,7 +10367,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10375,15 +10375,15 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0037811": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10411,7 +10411,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10419,7 +10419,7 @@
    "now": {
     "kind": "ir",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10427,7 +10427,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10435,7 +10435,7 @@
    "now": {
     "kind": "ir",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -10447,7 +10447,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10455,7 +10455,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10471,7 +10471,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10479,7 +10479,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10487,7 +10487,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -10499,7 +10499,7 @@
    "now": {
     "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10523,7 +10523,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10539,7 +10539,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10547,7 +10547,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10555,7 +10555,7 @@
    "now": {
     "kind": "ps",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10583,7 +10583,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10603,7 +10603,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10611,7 +10611,7 @@
    "now": {
     "kind": "ir",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10619,7 +10619,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10627,7 +10627,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10635,7 +10635,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -10647,7 +10647,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10655,7 +10655,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10663,7 +10663,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10671,7 +10671,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10679,7 +10679,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10687,7 +10687,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10695,7 +10695,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10703,7 +10703,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10711,7 +10711,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10719,7 +10719,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10727,7 +10727,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10735,7 +10735,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10743,7 +10743,7 @@
    "now": {
     "kind": "ir",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10751,7 +10751,7 @@
    "now": {
     "kind": "ir",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10759,7 +10759,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10767,7 +10767,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10847,7 +10847,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -10867,7 +10867,7 @@
    "now": {
     "kind": "ps",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10907,7 +10907,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10927,7 +10927,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10947,7 +10947,7 @@
    "now": {
     "kind": "ir",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10955,7 +10955,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10971,7 +10971,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10979,7 +10979,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -10999,7 +10999,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11019,7 +11019,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11035,7 +11035,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11051,7 +11051,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11059,7 +11059,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11067,7 +11067,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11091,7 +11091,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11107,7 +11107,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11115,7 +11115,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11123,7 +11123,7 @@
    "now": {
     "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11131,7 +11131,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11163,7 +11163,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11171,7 +11171,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11179,7 +11179,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11187,7 +11187,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11195,7 +11195,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11203,7 +11203,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11227,7 +11227,7 @@
    "now": {
     "kind": "ir",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11235,7 +11235,7 @@
    "now": {
     "kind": "pup",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11243,7 +11243,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11251,7 +11251,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11259,7 +11259,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11267,7 +11267,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11275,7 +11275,7 @@
    "now": {
     "kind": "ir",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11283,7 +11283,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11299,7 +11299,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11307,7 +11307,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11315,7 +11315,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11323,7 +11323,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11331,7 +11331,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11355,7 +11355,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -11363,7 +11363,7 @@
    "now": {
     "kind": "ps",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11399,7 +11399,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11455,7 +11455,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -11475,7 +11475,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11483,15 +11483,15 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0035282": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -11519,7 +11519,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11527,7 +11527,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11551,7 +11551,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -11571,7 +11571,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11579,7 +11579,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11587,7 +11587,7 @@
    "now": {
     "kind": "ir",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11607,7 +11607,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11679,7 +11679,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11687,7 +11687,7 @@
    "now": {
     "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11695,7 +11695,7 @@
    "now": {
     "kind": "ir",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -11707,7 +11707,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11723,7 +11723,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11731,7 +11731,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11739,7 +11739,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11747,7 +11747,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11755,7 +11755,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -11767,7 +11767,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11787,7 +11787,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11795,7 +11795,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11803,7 +11803,7 @@
    "now": {
     "kind": "ps",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11811,7 +11811,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11819,7 +11819,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11827,7 +11827,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11835,7 +11835,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11863,7 +11863,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11871,7 +11871,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11879,7 +11879,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11887,7 +11887,7 @@
    "now": {
     "kind": "ps",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11895,7 +11895,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11903,15 +11903,15 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0040212": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11919,7 +11919,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11927,7 +11927,7 @@
    "now": {
     "kind": "ps",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11935,7 +11935,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11943,7 +11943,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11951,7 +11951,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11959,7 +11959,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11967,7 +11967,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11975,7 +11975,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11983,7 +11983,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -11991,7 +11991,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12083,7 +12083,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12103,7 +12103,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12131,7 +12131,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12165,9 +12165,9 @@
   },
   "00-0035663": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -12207,7 +12207,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12215,7 +12215,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12223,7 +12223,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12255,7 +12255,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -12279,7 +12279,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -12351,7 +12351,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12375,7 +12375,7 @@
    "now": {
     "kind": "ps",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -12395,7 +12395,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12427,7 +12427,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12449,9 +12449,9 @@
   },
   "00-0037842": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12459,7 +12459,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -12467,7 +12467,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -12479,7 +12479,7 @@
    "now": {
     "kind": "ps",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12517,9 +12517,9 @@
   },
   "00-0039076": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12639,7 +12639,7 @@
    "now": {
     "kind": "ir",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12771,7 +12771,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12871,7 +12871,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12895,7 +12895,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -12987,7 +12987,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13007,7 +13007,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13023,7 +13023,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -13083,7 +13083,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13091,7 +13091,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13107,7 +13107,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13115,7 +13115,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13139,7 +13139,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13147,7 +13147,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -13159,7 +13159,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13167,7 +13167,7 @@
    "now": {
     "kind": "ps",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13199,7 +13199,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -13211,7 +13211,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13219,7 +13219,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13227,7 +13227,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13235,7 +13235,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13243,7 +13243,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13251,7 +13251,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13291,7 +13291,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13299,7 +13299,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13307,7 +13307,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13315,7 +13315,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13323,7 +13323,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13331,7 +13331,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13359,7 +13359,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13367,7 +13367,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13375,7 +13375,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13383,7 +13383,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13391,7 +13391,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13399,7 +13399,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13407,7 +13407,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13415,7 +13415,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13443,7 +13443,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13451,7 +13451,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13459,7 +13459,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13467,7 +13467,7 @@
    "now": {
     "kind": "ir",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13475,7 +13475,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13483,7 +13483,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13491,7 +13491,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13499,7 +13499,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13507,7 +13507,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13515,7 +13515,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13523,7 +13523,7 @@
    "now": {
     "kind": "ps",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13567,7 +13567,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13595,7 +13595,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -13607,7 +13607,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13623,7 +13623,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13663,7 +13663,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13679,7 +13679,7 @@
    "now": {
     "kind": "ir",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13687,7 +13687,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13731,7 +13731,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13747,7 +13747,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13763,7 +13763,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13819,7 +13819,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13827,7 +13827,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -13839,7 +13839,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13855,7 +13855,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13895,7 +13895,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13911,7 +13911,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13931,7 +13931,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13939,7 +13939,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13955,7 +13955,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13963,7 +13963,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13971,7 +13971,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -13979,7 +13979,7 @@
    "now": {
     "kind": "ir",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -13987,7 +13987,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14011,7 +14011,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14019,7 +14019,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14027,7 +14027,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14035,7 +14035,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14043,7 +14043,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14051,7 +14051,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14059,7 +14059,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14067,7 +14067,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14075,7 +14075,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14083,7 +14083,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14091,7 +14091,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14099,7 +14099,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14107,7 +14107,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14115,7 +14115,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14123,7 +14123,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14131,7 +14131,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14139,7 +14139,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14147,7 +14147,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14155,7 +14155,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14163,7 +14163,7 @@
    "now": {
     "kind": "ps",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14171,7 +14171,7 @@
    "now": {
     "kind": "ps",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14299,7 +14299,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14307,7 +14307,7 @@
    "now": {
     "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14315,7 +14315,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14367,7 +14367,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -14419,7 +14419,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -14471,7 +14471,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14487,7 +14487,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -14507,7 +14507,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14515,7 +14515,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -14523,7 +14523,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14539,7 +14539,7 @@
    "now": {
     "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14547,7 +14547,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14555,7 +14555,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14599,7 +14599,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14631,7 +14631,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14639,7 +14639,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14647,7 +14647,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14667,7 +14667,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14711,7 +14711,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14727,7 +14727,7 @@
    "now": {
     "kind": "ir",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -14739,7 +14739,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14747,7 +14747,7 @@
    "now": {
     "kind": "ir",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14755,7 +14755,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14763,7 +14763,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14779,7 +14779,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14795,7 +14795,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14835,7 +14835,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -14847,7 +14847,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14863,7 +14863,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14871,7 +14871,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14879,7 +14879,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14887,7 +14887,7 @@
    "now": {
     "kind": "ir",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14895,7 +14895,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14903,7 +14903,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14919,7 +14919,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14927,7 +14927,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14935,7 +14935,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14943,7 +14943,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14951,7 +14951,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14959,7 +14959,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14967,7 +14967,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14975,7 +14975,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -14983,7 +14983,7 @@
    "now": {
     "kind": "ir",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15019,7 +15019,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15075,7 +15075,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15147,7 +15147,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15159,7 +15159,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -15167,7 +15167,7 @@
    "now": {
     "kind": "ps",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15191,7 +15191,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15203,7 +15203,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15215,7 +15215,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15275,7 +15275,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15311,7 +15311,7 @@
    "now": {
     "kind": "ps",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15335,7 +15335,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15351,7 +15351,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15359,7 +15359,7 @@
    "now": {
     "kind": "ir",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -15379,7 +15379,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15447,7 +15447,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15459,7 +15459,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15467,7 +15467,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15475,7 +15475,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -15495,7 +15495,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15503,7 +15503,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15531,7 +15531,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15563,7 +15563,7 @@
    "now": {
     "kind": "retired",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -15575,7 +15575,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15607,7 +15607,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15615,7 +15615,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -15683,7 +15683,7 @@
    "now": {
     "kind": "ps",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15835,7 +15835,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15843,7 +15843,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -15851,7 +15851,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15859,7 +15859,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -15939,7 +15939,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15979,7 +15979,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15987,7 +15987,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -15995,7 +15995,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16003,7 +16003,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16023,7 +16023,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16031,7 +16031,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16039,7 +16039,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16075,7 +16075,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16083,7 +16083,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -16095,7 +16095,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16103,7 +16103,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16111,7 +16111,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16119,7 +16119,7 @@
    "now": {
     "kind": "ir",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16127,7 +16127,7 @@
    "now": {
     "kind": "ps",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -16139,7 +16139,7 @@
    "now": {
     "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -16151,7 +16151,7 @@
    "now": {
     "kind": "pup",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16159,7 +16159,7 @@
    "now": {
     "kind": "ps",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16167,7 +16167,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16187,7 +16187,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16195,7 +16195,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16203,7 +16203,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16211,7 +16211,7 @@
    "now": {
     "kind": "ps",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16219,7 +16219,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16227,7 +16227,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16247,7 +16247,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16255,7 +16255,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16263,7 +16263,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16271,7 +16271,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16279,7 +16279,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16287,7 +16287,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16295,7 +16295,7 @@
    "now": {
     "kind": "ps",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16303,7 +16303,7 @@
    "now": {
     "kind": "ir",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16311,7 +16311,7 @@
    "now": {
     "kind": "ps",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16319,7 +16319,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16327,7 +16327,7 @@
    "now": {
     "kind": "ir",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16335,7 +16335,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16343,7 +16343,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16351,7 +16351,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16359,7 +16359,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16367,7 +16367,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16375,7 +16375,7 @@
    "now": {
     "kind": "ps",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16383,7 +16383,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16391,7 +16391,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16431,7 +16431,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16455,7 +16455,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16479,7 +16479,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -16491,7 +16491,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16575,7 +16575,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16591,7 +16591,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16679,7 +16679,7 @@
    "now": {
     "kind": "ps",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16723,7 +16723,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16731,7 +16731,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -16739,7 +16739,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16747,7 +16747,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16755,7 +16755,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16763,7 +16763,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16771,7 +16771,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16779,7 +16779,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16787,7 +16787,7 @@
    "now": {
     "kind": "retired",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16819,7 +16819,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16827,7 +16827,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16835,7 +16835,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16843,7 +16843,7 @@
    "now": {
     "kind": "ps",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -16887,7 +16887,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16895,7 +16895,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16903,7 +16903,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16911,7 +16911,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16919,7 +16919,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16935,7 +16935,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16943,7 +16943,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16951,7 +16951,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16959,7 +16959,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16967,7 +16967,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16975,7 +16975,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16983,7 +16983,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16991,7 +16991,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -16999,7 +16999,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17007,7 +17007,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17015,7 +17015,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17023,7 +17023,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17031,7 +17031,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17039,7 +17039,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17047,7 +17047,7 @@
    "now": {
     "kind": "ir",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17139,7 +17139,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17163,7 +17163,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17179,7 +17179,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -17197,9 +17197,9 @@
   },
   "00-0035698": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17215,7 +17215,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17247,7 +17247,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17287,7 +17287,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17295,7 +17295,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17303,7 +17303,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17319,7 +17319,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17339,7 +17339,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17347,7 +17347,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17355,7 +17355,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17375,7 +17375,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17395,7 +17395,7 @@
    "now": {
     "kind": "active",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17403,7 +17403,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17411,7 +17411,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17419,7 +17419,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17427,7 +17427,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17435,7 +17435,7 @@
    "now": {
     "kind": "ir",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17443,7 +17443,7 @@
    "now": {
     "kind": "ir",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17451,7 +17451,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17459,7 +17459,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17473,9 +17473,9 @@
   },
   "00-0038389": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -17487,7 +17487,7 @@
    "now": {
     "kind": "active",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17495,7 +17495,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17515,7 +17515,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17531,7 +17531,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17551,7 +17551,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17559,7 +17559,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17575,7 +17575,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17583,7 +17583,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17591,7 +17591,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17599,7 +17599,7 @@
    "now": {
     "kind": "ir",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17607,7 +17607,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17615,7 +17615,7 @@
    "now": {
     "kind": "ir",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17623,7 +17623,7 @@
    "now": {
     "kind": "pup",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17631,7 +17631,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17639,7 +17639,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17647,7 +17647,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17655,7 +17655,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17663,7 +17663,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17671,7 +17671,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17679,7 +17679,7 @@
    "now": {
     "kind": "ir",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17687,7 +17687,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17715,7 +17715,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17771,7 +17771,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17779,7 +17779,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17787,7 +17787,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17803,7 +17803,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17849,9 +17849,9 @@
   },
   "00-0036387": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17859,7 +17859,7 @@
    "now": {
     "kind": "ir",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17875,7 +17875,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17883,7 +17883,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17909,9 +17909,9 @@
   },
   "00-0036271": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "ind",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -17939,7 +17939,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17947,7 +17947,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -17975,7 +17975,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18011,7 +18011,7 @@
    "now": {
     "kind": "ir",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -18023,7 +18023,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -18035,7 +18035,7 @@
    "now": {
     "kind": "active",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -18047,7 +18047,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18067,7 +18067,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18075,7 +18075,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18083,7 +18083,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18091,7 +18091,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18107,7 +18107,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18115,7 +18115,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18123,7 +18123,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18131,7 +18131,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18139,7 +18139,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18147,7 +18147,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18155,7 +18155,7 @@
    "now": {
     "kind": "ir",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18171,7 +18171,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18179,7 +18179,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18187,7 +18187,7 @@
    "now": {
     "kind": "ir",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18207,7 +18207,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18215,7 +18215,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18223,7 +18223,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18231,7 +18231,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18239,7 +18239,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18247,7 +18247,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18255,7 +18255,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18263,7 +18263,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18291,7 +18291,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18299,7 +18299,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18307,7 +18307,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18315,7 +18315,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18323,15 +18323,15 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
   "00-0040905": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18339,7 +18339,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18347,7 +18347,7 @@
    "now": {
     "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18355,7 +18355,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18379,7 +18379,7 @@
    "now": {
     "kind": "ir",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18387,7 +18387,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -18447,7 +18447,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18455,7 +18455,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18491,7 +18491,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18591,7 +18591,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18639,7 +18639,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18647,7 +18647,7 @@
    "now": {
     "kind": "ps",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18655,7 +18655,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18663,7 +18663,7 @@
    "now": {
     "kind": "ps",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -18671,7 +18671,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18711,7 +18711,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18719,7 +18719,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18735,7 +18735,7 @@
    "now": {
     "kind": "ir",
     "club": "nyg",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18743,7 +18743,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18767,7 +18767,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18775,7 +18775,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -18787,7 +18787,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18795,7 +18795,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18803,7 +18803,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18819,7 +18819,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18827,7 +18827,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18835,7 +18835,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18843,7 +18843,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18851,7 +18851,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18859,7 +18859,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18867,7 +18867,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18883,7 +18883,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18899,7 +18899,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18907,7 +18907,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18915,7 +18915,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18923,7 +18923,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18931,7 +18931,7 @@
    "now": {
     "kind": "pup",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18939,7 +18939,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18947,7 +18947,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18955,7 +18955,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18963,7 +18963,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18971,7 +18971,7 @@
    "now": {
     "kind": "ir",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18979,7 +18979,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18987,7 +18987,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -18995,7 +18995,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19003,7 +19003,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19011,7 +19011,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19027,7 +19027,7 @@
    "now": {
     "kind": "ir",
     "club": "bal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19099,7 +19099,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19179,7 +19179,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19195,7 +19195,7 @@
    "now": {
     "kind": "active",
     "club": "ari",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19211,7 +19211,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19219,7 +19219,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19267,7 +19267,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19295,7 +19295,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19311,7 +19311,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19327,7 +19327,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19375,7 +19375,7 @@
    "now": {
     "kind": "active",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19391,7 +19391,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19399,7 +19399,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19415,7 +19415,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -19423,7 +19423,7 @@
    "now": {
     "kind": "active",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -19431,7 +19431,7 @@
    "now": {
     "kind": "ps",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -19455,7 +19455,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19555,7 +19555,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -19675,7 +19675,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -19779,7 +19779,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19799,7 +19799,7 @@
    "now": {
     "kind": "retired",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19827,7 +19827,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19843,7 +19843,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -19871,7 +19871,7 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -19891,7 +19891,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19907,7 +19907,7 @@
    "now": {
     "kind": "ir",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -19915,7 +19915,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19951,7 +19951,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19959,7 +19959,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -19987,7 +19987,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20007,7 +20007,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -20027,7 +20027,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20035,7 +20035,7 @@
    "now": {
     "kind": "exempt",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20043,7 +20043,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20059,7 +20059,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20067,7 +20067,7 @@
    "now": {
     "kind": "ir",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20103,7 +20103,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20111,7 +20111,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20119,15 +20119,15 @@
    "now": {
     "kind": "active",
     "club": "den",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
   "00-0036567": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20163,7 +20163,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20171,7 +20171,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20179,7 +20179,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20203,7 +20203,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20211,7 +20211,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20239,7 +20239,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20247,7 +20247,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20255,7 +20255,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20263,7 +20263,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20279,7 +20279,7 @@
    "now": {
     "kind": "ps",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20287,7 +20287,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20295,7 +20295,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20303,7 +20303,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20311,7 +20311,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20319,7 +20319,7 @@
    "now": {
     "kind": "pup",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20327,7 +20327,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20335,7 +20335,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20343,7 +20343,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20351,7 +20351,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20359,7 +20359,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20367,7 +20367,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20375,7 +20375,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20383,7 +20383,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20391,7 +20391,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20399,7 +20399,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20407,7 +20407,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20415,7 +20415,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20423,7 +20423,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20439,7 +20439,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20447,7 +20447,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20455,7 +20455,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20463,7 +20463,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20471,7 +20471,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20479,7 +20479,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20487,7 +20487,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20495,7 +20495,7 @@
    "now": {
     "kind": "active",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20523,7 +20523,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20539,7 +20539,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20559,7 +20559,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20575,7 +20575,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20607,7 +20607,7 @@
    "now": {
     "kind": "ps",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20627,7 +20627,7 @@
    "now": {
     "kind": "ir",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20635,7 +20635,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20643,7 +20643,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20659,7 +20659,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20667,7 +20667,7 @@
    "now": {
     "kind": "active",
     "club": "lv",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -20679,7 +20679,7 @@
    "now": {
     "kind": "ps",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20699,7 +20699,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20707,7 +20707,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20763,7 +20763,7 @@
    "now": {
     "kind": "retired",
     "club": "phi",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20771,7 +20771,7 @@
    "now": {
     "kind": "ps",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -20783,7 +20783,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20803,7 +20803,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20827,7 +20827,7 @@
    "now": {
     "kind": "active",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20835,7 +20835,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20843,7 +20843,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20851,7 +20851,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20871,7 +20871,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20879,7 +20879,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20899,7 +20899,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20907,7 +20907,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20915,7 +20915,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20923,7 +20923,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20931,7 +20931,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20939,7 +20939,7 @@
    "now": {
     "kind": "ir",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20967,7 +20967,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20975,7 +20975,7 @@
    "now": {
     "kind": "ps",
     "club": "hou",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -20983,7 +20983,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20991,7 +20991,7 @@
    "now": {
     "kind": "ir",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -20999,7 +20999,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21007,15 +21007,15 @@
    "now": {
     "kind": "ps",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0039754": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "released",
@@ -21027,7 +21027,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21035,7 +21035,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21043,7 +21043,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21051,7 +21051,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21059,7 +21059,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21067,7 +21067,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21075,7 +21075,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21083,7 +21083,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21091,7 +21091,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21099,7 +21099,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21107,7 +21107,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21115,7 +21115,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21123,7 +21123,7 @@
    "now": {
     "kind": "active",
     "club": "tb",
-    "week": 9
+    "week": 11
    },
    "left": null
   },
@@ -21243,7 +21243,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -21271,7 +21271,7 @@
    "now": {
     "kind": "active",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21303,7 +21303,7 @@
    "now": {
     "kind": "active",
     "club": "kc",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21351,7 +21351,7 @@
    "now": {
     "kind": "ir",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21371,7 +21371,7 @@
    "now": {
     "kind": "active",
     "club": "lac",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21415,7 +21415,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -21427,7 +21427,7 @@
    "now": {
     "kind": "active",
     "club": "det",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -21447,7 +21447,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21463,7 +21463,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21479,7 +21479,7 @@
    "now": {
     "kind": "active",
     "club": "min",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -21489,9 +21489,9 @@
   },
   "00-0037312": {
    "now": {
-    "kind": "cut",
+    "kind": "ps",
     "club": "phi",
-    "week": 5
+    "week": 11
    },
    "left": null
   },
@@ -21499,7 +21499,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21507,7 +21507,7 @@
    "now": {
     "kind": "ps",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -21519,7 +21519,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21555,7 +21555,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21563,7 +21563,7 @@
    "now": {
     "kind": "ir",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21571,7 +21571,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21579,7 +21579,7 @@
    "now": {
     "kind": "active",
     "club": "nyj",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -21603,7 +21603,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21611,7 +21611,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21619,7 +21619,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21627,7 +21627,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21635,7 +21635,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21643,7 +21643,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21651,7 +21651,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21659,7 +21659,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21667,7 +21667,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21675,7 +21675,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21683,7 +21683,7 @@
    "now": {
     "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21691,7 +21691,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21699,7 +21699,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21707,7 +21707,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21715,7 +21715,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21723,7 +21723,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21731,7 +21731,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21739,7 +21739,7 @@
    "now": {
     "kind": "active",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21747,7 +21747,7 @@
    "now": {
     "kind": "ir",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21755,7 +21755,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21771,7 +21771,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21779,7 +21779,7 @@
    "now": {
     "kind": "active",
     "club": "cin",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21839,7 +21839,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21855,7 +21855,7 @@
    "now": {
     "kind": "ps",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21875,7 +21875,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21919,7 +21919,7 @@
    "now": {
     "kind": "active",
     "club": "chi",
-    "week": 9
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -21931,7 +21931,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -21971,7 +21971,7 @@
    "now": {
     "kind": "active",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22011,7 +22011,7 @@
    "now": {
     "kind": "active",
     "club": "no",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -22031,7 +22031,7 @@
    "now": {
     "kind": "ps",
     "club": "car",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22099,7 +22099,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22115,7 +22115,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22123,7 +22123,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22131,7 +22131,7 @@
    "now": {
     "kind": "ir",
     "club": "sf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22187,7 +22187,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -22207,7 +22207,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22215,7 +22215,7 @@
    "now": {
     "kind": "active",
     "club": "dal",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22223,7 +22223,7 @@
    "now": {
     "kind": "ir",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "waived",
@@ -22235,7 +22235,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22263,7 +22263,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22291,7 +22291,7 @@
    "now": {
     "kind": "ps",
     "club": "pit",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22299,7 +22299,7 @@
    "now": {
     "kind": "active",
     "club": "jax",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22307,7 +22307,7 @@
    "now": {
     "kind": "ps",
     "club": "buf",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22315,7 +22315,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22323,7 +22323,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22331,7 +22331,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22339,7 +22339,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22347,7 +22347,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22355,7 +22355,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22363,15 +22363,15 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
   "00-0039381": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "ten",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22379,7 +22379,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22387,7 +22387,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22395,7 +22395,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22403,7 +22403,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22411,7 +22411,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22419,7 +22419,7 @@
    "now": {
     "kind": "ir",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22427,7 +22427,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22435,7 +22435,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22443,7 +22443,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22451,7 +22451,7 @@
    "now": {
     "kind": "active",
     "club": "mia",
-    "week": 10
+    "week": 11
    },
    "left": {
     "kind": "traded",
@@ -22463,7 +22463,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   },
@@ -22471,7 +22471,7 @@
    "now": {
     "kind": "active",
     "club": "was",
-    "week": 10
+    "week": 11
    },
    "left": null
   }

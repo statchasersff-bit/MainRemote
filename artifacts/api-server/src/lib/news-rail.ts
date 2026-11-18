@@ -44,6 +44,13 @@ export const RAIL_DEFAULT_PAGES = 5;
 export const RAIL_MIN_PAGES = 1;
 export const RAIL_MAX_PAGES = 10;
 
+/**
+ * How far back Next can go: /api/news answers at most this many stories
+ * (MAX_LIMIT in lib/news-query.ts; repeated here because this module also
+ * runs in the browser, which must not import the database layer).
+ */
+export const RAIL_FEED_MAX = 250;
+
 function clampInt(value: unknown, fallback: number, min: number, max: number): number {
   const n = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(n)) return fallback;
@@ -181,14 +188,21 @@ export function railPageCount(count: number, perPage: number): number {
   return Math.max(1, Math.ceil(count / Math.max(1, perPage)));
 }
 
-/** The pager: Previous, "Page 1 of 5", Next. Buttons, not links: paging never changes the URL. */
-export function renderRailPager(page: number, pages: number): string {
-  if (pages <= 1) return "";
+/**
+ * The pager: Prev, "Page 3", Next. Buttons, not links: paging never changes
+ * the URL. Next stays live past the last printed page while the feed has
+ * more (`more`): the client then loads the next stories on demand (mak,
+ * 2026-11-17: "keep going as far back as the feed goes"), so there is no
+ * "of N".
+ */
+export function renderRailPager(page: number, loadedPages: number, more = false): string {
+  if (loadedPages <= 1 && !more) return "";
+  const nextOff = page >= loadedPages && !more;
   return (
     `<nav class="sc-rail-pager" aria-label="More news">` +
     `<button type="button" class="sc-rail-prev" data-dir="-1"${page <= 1 ? " disabled" : ""} aria-label="Previous news page"><span aria-hidden="true">&lsaquo;</span> Prev</button>` +
-    `<span class="sc-rail-count" aria-live="polite">Page <b>${page}</b> of ${pages}</span>` +
-    `<button type="button" class="sc-rail-next" data-dir="1"${page >= pages ? " disabled" : ""} aria-label="Next news page">Next <span aria-hidden="true">&rsaquo;</span></button>` +
+    `<span class="sc-rail-count" aria-live="polite">Page <b>${page}</b></span>` +
+    `<button type="button" class="sc-rail-next" data-dir="1"${nextOff ? " disabled" : ""} aria-label="Next news page">Next <span aria-hidden="true">&rsaquo;</span></button>` +
     `</nav>`
   );
 }
@@ -204,16 +218,18 @@ export function renderNewsRail(items: NewsItem[], options: RailOptions): string 
   const shown = items.slice(0, options.limit * options.pages);
   const heading = options.heading?.trim() || "Latest Fantasy News";
   const pages = railPageCount(shown.length, options.limit);
+  // A full set of printed pages means the feed may well go further back.
+  const more = shown.length >= options.limit * options.pages && shown.length < RAIL_FEED_MAX;
   return (
     `<section class="sc-rail" aria-label="${escapeHtml(heading)}" data-sc-rail="1"` +
-    ` data-sc-limit="${options.limit}" data-sc-pages="${options.pages}"` +
+    ` data-sc-limit="${options.limit}" data-sc-pages="${options.pages}" data-sc-more="${more ? 1 : 0}"` +
     (origin ? ` data-sc-origin="${escapeHtml(origin)}"` : "") +
     (options.apiBase ? ` data-sc-api="${escapeHtml(options.apiBase)}"` : "") +
     (options.renderedMs ? ` data-sc-rendered="${options.renderedMs}"` : "") +
     ` data-sc-sig="${escapeHtml(railSignature(shown))}">` +
     `<div class="sc-rail-head"><h2 class="sc-rail-title">${escapeHtml(heading)}</h2></div>` +
     `<ol class="sc-rail-list">${renderRailItems(shown, origin, options.limit, 1)}</ol>` +
-    renderRailPager(1, pages) +
+    renderRailPager(1, pages, more) +
     // Without the rail's script there is no pager to press: show every row.
     (pages > 1 ? `<noscript><style>.sc-rail .sc-rail-item[hidden]{display:grid!important}.sc-rail .sc-rail-pager{display:none!important}</style></noscript>` : "") +
     `</section>`

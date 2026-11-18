@@ -216,39 +216,99 @@ details[open] > summary > .rbh-chev {
 
 .rbh-panel {
   display: grid;
-  gap: 14px;
-  margin: 0 0 16px;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+/* The page's opening sentence (moved in from the WordPress page, 11-18). */
+.rbh-intro {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sc-muted-strong);
 }
 
 .rbh-updated {
+  margin-top: -4px;
   font-size: 12px;
   color: var(--sc-muted);
 }
 
 .rbh-weights {
   display: grid;
-  gap: 14px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .rbh-weights[hidden] {
   display: none;
 }
 
-.rbh-hint {
-  font-size: 12px;
-  color: var(--sc-muted);
-}
-
 .rbh-alloc {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .rbh-alloc-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 2px 12px;
+  white-space: nowrap;
+}
+
+.rbh-alloc-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.rbh-how-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: var(--sc-radius-xs);
+  cursor: pointer;
+}
+
+.rbh-how-btn:hover {
+  background: var(--sc-surface-sink);
+  color: var(--sc-ink);
+}
+
+.rbh-how-btn[aria-expanded="true"] > .rbh-chev {
+  transform: rotate(180deg);
+}
+
+.rbh-how {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-how[hidden] {
+  display: none;
+}
+
+.rbh-how a {
+  color: var(--sc-navy);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .rbh-reset {
@@ -275,7 +335,7 @@ details[open] > summary > .rbh-chev {
 .rbh-alloc-bar {
   display: flex;
   gap: 3px;
-  height: 14px;
+  height: 12px;
   padding: 2px;
   border-radius: 999px;
   background: var(--sc-surface-sink);
@@ -304,25 +364,6 @@ details[open] > summary > .rbh-chev {
   background: var(--rbh-gold);
 }
 
-.rbh-alloc-keys {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  font-size: 11px;
-  color: var(--sc-muted-strong);
-}
-
-.rbh-alloc-key {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rbh-alloc-key strong {
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-ink);
-}
-
 .rbh-dot {
   display: inline-block;
   width: 8px;
@@ -334,13 +375,13 @@ details[open] > summary > .rbh-chev {
 .rbh-sliders {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .rbh-slider {
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 9px 12px 8px;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-sm);
   background: var(--sc-surface-soft);
@@ -358,6 +399,14 @@ details[open] > summary > .rbh-chev {
   --rbh-accent: var(--rbh-gold);
 }
 
+/* Category and title share one block: the category word sits above the
+   title, tight, so the card spends no extra row on it. */
+.rbh-slider-name {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
 .rbh-slider-cat {
   display: flex;
   align-items: center;
@@ -365,16 +414,16 @@ details[open] > summary > .rbh-chev {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.12em;
+  line-height: 1.3;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
 .rbh-slider-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 4px;
 }
 
 .rbh-slider-title {
@@ -386,8 +435,8 @@ details[open] > summary > .rbh-chev {
 
 .rbh-slider-pct {
   flex: none;
-  min-width: 46px;
-  padding: 4px 8px;
+  min-width: 44px;
+  padding: 4px 7px;
   border-radius: var(--sc-radius-xs);
   background: var(--rbh-accent);
   color: #fff;
@@ -398,9 +447,11 @@ details[open] > summary > .rbh-chev {
   text-align: center;
 }
 
+/* The description sits right under the title; the space it does not fill
+   goes above the range (margin-top: auto), so the ranges line up across a
+   row of cards. */
 .rbh-slider-desc {
-  margin-top: 4px;
-  min-height: 2.8em;
+  margin: 3px 0 6px;
   font-size: 11px;
   line-height: 1.4;
   color: var(--sc-muted-strong);
@@ -418,13 +469,23 @@ details[open] > summary > .rbh-chev {
   appearance: none;
   display: block;
   width: 100%;
-  height: 16px;
-  margin: 10px 0 0;
+  height: 20px;
+  margin: auto 0 0;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
+  touch-action: pan-y;
 }
+
+/* A finger needs more than a 20px strip; the track stays the same, only the
+   hit area grows. */
+@media (pointer: coarse) {
+  .rbh-slider input[type="range"] {
+    height: 28px;
+  }
+}
+
 
 .rbh-slider input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
@@ -479,26 +540,40 @@ details[open] > summary > .rbh-chev {
   box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--rbh-accent);
 }
 
+/* A slim line, not a card (11-18): the status on the left, the button on
+   the right. */
 .rbh-apply {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface-soft);
+  gap: 8px 12px;
+  flex-wrap: wrap;
 }
 
 .rbh-status {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
   min-width: 0;
   line-height: 1.3;
 }
 
 .rbh-status-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   font-weight: 700;
+}
+
+.rbh-status-main::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
 }
 
 .rbh-status-main.is-ok {
@@ -514,7 +589,7 @@ details[open] > summary > .rbh-chev {
 }
 
 .rbh-status-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--sc-muted);
 }
 
@@ -538,8 +613,9 @@ details[open] > summary > .rbh-chev {
 
 .rbh-rerank {
   flex: none;
-  min-width: 150px;
-  padding: 10px 16px;
+  min-width: 140px;
+  min-height: 36px;
+  padding: 8px 16px;
   border: 1px solid var(--sc-navy);
   background: var(--sc-navy);
   color: #fff;
@@ -558,9 +634,12 @@ details[open] > summary > .rbh-chev {
 
 /* -------------------------------------------------------- the reference */
 
+/* Under the table since 11-18. */
 .rbh-reference {
   display: grid;
   gap: 6px;
+  margin-top: 20px;
+  scroll-margin-top: 80px;
 }
 
 .rbh-accordions {
@@ -1472,9 +1551,48 @@ a.rbh-best-name:hover {
 /* 640+: the app's `sm`. The sliders and cards go three across, the table
    goes fixed-layout, and Note is a word again. */
 @container rbh (min-width: 640px) {
-  .rbh-sliders,
   .rbh-pillars {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Tablet: one card per row, but laid out sideways - name and
+     description on the left, the range on the right - so a full-width card
+     is barely taller than a phone's and nothing is squeezed. */
+  .rbh-slider {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 40%);
+    grid-template-rows: auto auto;
+    column-gap: 24px;
+    align-items: center;
+  }
+
+  /* The head's two halves go to the two columns: the name over the
+     description on the left, the percentage over the range on the right. */
+  .rbh-slider-head {
+    display: contents;
+  }
+
+  .rbh-slider-name {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .rbh-slider-pct {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .rbh-slider-desc {
+    grid-column: 1;
+    grid-row: 2;
+    margin-bottom: 0;
+  }
+
+  .rbh-slider input[type="range"] {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
   }
 
   .rbh-badge-grid {
@@ -1609,13 +1727,48 @@ a.rbh-best-name:hover {
     padding-left: 10px;
   }
 
+  .rbh-how-btn > .rbh-icon:first-child {
+    display: none;
+  }
+
+  /* Phones: the status stacks into two short lines so the button keeps
+     its place on the right. */
   .rbh-apply {
+    flex-wrap: nowrap;
+  }
+
+  .rbh-status {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   .rbh-rerank {
     min-width: 0;
+    padding: 8px 12px;
+  }
+}
+
+/* Desktop: three cards across, each a column again. */
+@container rbh (min-width: 960px) {
+  .rbh-sliders {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rbh-slider {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .rbh-slider-head {
+    display: flex;
+  }
+
+  .rbh-slider-desc {
+    margin-bottom: 6px;
+  }
+
+  .rbh-slider input[type="range"] {
+    margin: auto 0 0;
   }
 }
 

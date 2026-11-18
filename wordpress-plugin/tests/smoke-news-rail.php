@@ -19,7 +19,7 @@ require_once dirname( __DIR__ ) . '/statchasers-news/statchasers-news-rail.php';
 $rail = statchasers_news_rail_args( array( 'layout' => 'rail' ) );
 is( array( $rail['layout'], $rail['limit'], $rail['pages'] ), array( 'rail', 6, 5 ), 'news rail: six rows a page, five pages' );
 is( array_key_exists( 'all_url', $rail ), false, 'news rail: no View All link (mak, 2026-11-17)' );
-is( statchasers_news_rail_args( array( 'layout' => 'rail', 'pages' => '1' ) )['pages'], 1, 'news rail: pages="1" is six stories with no pager' );
+is( statchasers_news_rail_args( array( 'layout' => 'rail', 'pages' => '1' ) )['pages'], 1, 'news rail: pages="1" prints one page (Next loads more on demand)' );
 is( statchasers_news_rail_args( array( 'layout' => 'rail', 'pages' => '40' ) )['pages'], 10, 'news rail: pages capped at 10' );
 is( statchasers_news_rail_args( array( 'layout' => 'rail', 'pages' => '0' ) )['pages'], 1, 'news rail: pages floored at 1' );
 is( statchasers_news_rail_args( array( 'layout' => 'rail', 'pages' => 'x' ) )['pages'], 5, 'news rail: a non-number pages is the default' );

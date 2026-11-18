@@ -7,14 +7,16 @@
  *     every minute. The server prints an absolute time, because the page the
  *     rail sits on can be served from the edge for days;
  *   - paging: Prev / Next step through the pages the server already printed
- *     (every row is in the HTML; rows off the shown page carry `hidden`);
+ *     (every row is in the HTML; rows off the shown page carry `hidden`),
+ *     and Next past the last of them loads the next stories from /api/news
+ *     on demand, as far back as the feed goes (RAIL_FEED_MAX);
  *   - the rows themselves, refreshed from the same /api/news the full feed
  *     polls, on the same ten-minute rhythm and on returning to the tab. A
  *     copy rendered more than ten minutes ago refreshes once on load, so an
  *     edge-cached homepage does not open on yesterday's stories.
  */
 
-import { railPageCount, railRelativeLabel, railSignature, renderRailItems, renderRailPager, renderNewsRail } from "../lib/news-rail";
+import { RAIL_FEED_MAX, railPageCount, railRelativeLabel, railSignature, renderRailItems, renderRailPager, renderNewsRail } from "../lib/news-rail";
 import type { NewsItem } from "../lib/render";
 
 const REFRESH_MS = 10 * 60 * 1000;
@@ -37,6 +39,59 @@ class Rail {
   private root: HTMLElement;
   private lastRefresh = 0;
   private page = 1;
+  private loading = false;
+
+  /** Whether the feed may hold stories older than the printed rows. */
+  private get more(): boolean {
+    return this.root.dataset["scMore"] === "1";
+  }
+  private set more(value: boolean) {
+    this.root.dataset["scMore"] = value ? "1" : "0";
+  }
+
+  private get rowCount(): number {
+    return this.root.querySelectorAll(".sc-rail-item").length;
+  }
+
+  /** Fetch the newest `total` stories (rail photos filled), or null on any failure. */
+  private async fetchItems(total: number): Promise<NewsItem[] | null> {
+    try {
+      const res = await fetch(this.apiUrl(`/api/news?limit=${total}&photos=1`), { headers: { Accept: "application/json" } });
+      if (!res.ok) return null;
+      const data = (await res.json()) as { items?: NewsItem[] };
+      return (data.items ?? []).slice(0, total);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Next past the printed pages: load one more page of stories, then show it. */
+  private async loadMore(): Promise<void> {
+    if (this.loading) return;
+    this.loading = true;
+    const next = this.root.querySelector<HTMLButtonElement>(".sc-rail-next");
+    if (next) {
+      next.disabled = true;
+      next.setAttribute("aria-busy", "true");
+    }
+    const total = Math.min(RAIL_FEED_MAX, (this.pageCount + 1) * this.limit);
+    const items = await this.fetchItems(total);
+    this.loading = false;
+    if (items && items.length > this.rowCount) {
+      const list = this.root.querySelector(".sc-rail-list");
+      if (list) {
+        list.innerHTML = renderRailItems(items, this.origin, this.limit, this.page);
+        this.root.dataset["scSig"] = railSignature(items);
+      }
+      this.more = items.length >= total && total < RAIL_FEED_MAX;
+      this.show(this.page + 1, 1);
+      updateTimes(this.root);
+      return;
+    }
+    // Nothing older (or the request failed): the end of the feed for now.
+    if (items) this.more = false;
+    this.show(this.page, 1);
+  }
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -75,7 +130,7 @@ class Rail {
       li.hidden = Number(li.dataset["page"]) !== this.page;
     });
     const old = this.root.querySelector(".sc-rail-pager");
-    const html = renderRailPager(this.page, pages);
+    const html = renderRailPager(this.page, pages, this.more);
     if (old) old.outerHTML = html;
     else if (html) this.root.querySelector(".sc-rail-list")?.insertAdjacentHTML("afterend", html);
     if (focus) {
@@ -91,6 +146,10 @@ class Rail {
       const btn = (event.target as Element | null)?.closest<HTMLButtonElement>(".sc-rail-pager button[data-dir]");
       if (!btn || btn.disabled) return;
       const dir = Number(btn.dataset["dir"]);
+      if (dir > 0 && this.page >= this.pageCount) {
+        void this.loadMore();
+        return;
+      }
       this.show(this.page + dir, dir);
       updateTimes(this.root);
     });
@@ -99,12 +158,10 @@ class Rail {
   async refresh(): Promise<void> {
     this.lastRefresh = Date.now();
     try {
-      const total = this.limit * this.pagesWanted;
-      const res = await fetch(this.apiUrl(`/api/news?limit=${total}&photos=1`), { headers: { Accept: "application/json" } });
-      if (!res.ok) return;
-      const data = (await res.json()) as { items?: NewsItem[] };
-      const items = (data.items ?? []).slice(0, total);
-      if (!items.length) return;
+      // Everything already loaded, so a reader deep in the list keeps it.
+      const total = Math.min(RAIL_FEED_MAX, Math.max(this.limit * this.pagesWanted, this.rowCount));
+      const items = await this.fetchItems(total);
+      if (!items || !items.length) return;
       const sig = railSignature(items);
       if (sig === this.root.dataset["scSig"]) return;
 
@@ -133,6 +190,7 @@ class Rail {
         // The reader stays on the page they were reading.
         list.innerHTML = renderRailItems(items, this.origin, this.limit, this.page);
         this.root.dataset["scSig"] = sig;
+        this.more = items.length >= total && total < RAIL_FEED_MAX;
         this.show(this.page);
       }
       updateTimes(this.root);

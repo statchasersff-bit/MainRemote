@@ -25101,3 +25101,133 @@ ul.sct-faq-list li {
     padding-top: 0 !important;
   }
 }
+
+/*
+ * Vertical space above the content (mak, 2026-11-18): "the most obvious
+ * waste of vertical space is between the navigation and your statistics" -
+ * at 1728x893 the first Usage row started at 819px on statchasers.com.
+ * Desktop and tablet only; phones keep their own spacing. Measured live
+ * before: 88px over the header (Divi 58 + ours 30), hero 253, strip 69
+ * (Divi's list padding, below), 64px under the tabs, banner 105.
+ */
+
+/* Divi pads every list in the content area `0 0 23px 1em` through an id
+   selector: on the live page the tab strip carried 23px of blank under the
+   tabs and a 16px indent (strip 69px). Same armour as player.css's. */
+.sct .sct-tpb .sct-nav-list {
+  margin: 0 !important;
+  padding: 6px 8px !important;
+}
+
+@media (min-width: 561px) {
+  /* 24px between the site header and the team header (was 88). The phone
+     rule (0) is statchasers_team_mobile_top_css(), mirrored above. */
+  #main-content .container:has(.sct-tpb) {
+    padding-top: 24px !important;
+  }
+
+  .sct.sct.is-embed {
+    padding-top: 0;
+  }
+
+  /* The header, a little tighter: same crest, name and four facts. */
+  .sct.sct .sct-tpb-inner {
+    row-gap: 8px;
+    padding-top: 16px;
+    padding-bottom: 12px;
+  }
+
+  .sct.sct .sct-tpb-kpi {
+    min-height: 64px;
+    padding: 10px 14px;
+  }
+
+  .sct.sct .sct-tpb-logo-circle {
+    width: 132px;
+    height: 132px;
+  }
+
+  .sct.sct .sct-tpb-logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* The tab strip: 50px (was 58 here, 69 live). */
+  .sct.sct .sct-tpb .sct-nav-list {
+    min-height: 50px;
+  }
+
+  .sct.sct .sct-tpb .sct-nav-link {
+    min-height: 38px;
+  }
+
+  .sct.sct .sct-tpb-navigation {
+    margin-top: 10px;
+  }
+
+  /* 28px from the tab strip to the open tab's banner (was 64): 12 under the
+     header block + 16 over the section. Every tab the same, so the banners
+     still start at one height (team-hub-design-standard, 11-05). */
+  .sct.sct .sct-tpb {
+    margin-bottom: 12px;
+  }
+
+  .sct.sct .sct-tpb + .sct-section,
+  .sct.sct .sct-section.is-active {
+    padding-top: 16px;
+  }
+
+  /* The tab banner: ~84px (was 105), same title, dek, icon and art. */
+  :is(.sct, #sct-table-armour).sct .sct-up-head {
+    min-height: 72px;
+    padding: 11px 22px;
+    margin-bottom: 14px;
+  }
+
+  :is(.sct, #sct-table-armour).sct .sct-up-h2 {
+    font-size: 1.6rem !important;
+  }
+
+  :is(.sct, #sct-table-armour).sct .sct-up-dek {
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+}
+
+/*
+ * "Last updated" under the team switcher (mak, 2026-11-18), above 560px.
+ * Phones keep it under the team name (11-15): the switcher is not shown
+ * there. The identity spans the switcher's two rows on a wide header, so the
+ * header loses the line it used to take under the facts.
+ */
+@media (min-width: 561px) {
+  @container tpb (min-width: 950px) {
+    .sct.sct .sct-tpb-inner {
+      grid-template-areas:
+        "badge identity actions"
+        "badge identity updated"
+        "badge stats stats";
+      grid-template-rows: auto 1fr auto;
+    }
+
+    /* Centered under the switcher (mak, 2026-11-18): the column is as wide
+       as the wider of the two, the switcher. */
+    .sct.sct .sct-tpb-updated {
+      align-self: start;
+      justify-self: center;
+      text-align: center;
+    }
+  }
+
+  @container tpb (min-width: 650px) and (max-width: 949px) {
+    .sct.sct .sct-tpb-inner {
+      grid-template-areas: "badge identity" "badge actions" "badge updated" "badge stats";
+    }
+  }
+
+  @container tpb (max-width: 649px) {
+    .sct.sct .sct-tpb-inner {
+      grid-template-areas: "badge identity" "actions actions" "updated updated" "stats stats";
+    }
+  }
+}

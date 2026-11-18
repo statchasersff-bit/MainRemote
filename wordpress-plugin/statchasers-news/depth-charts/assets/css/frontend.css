@@ -351,8 +351,6 @@
 	--prm-rule: #dbe6f2;
 	--prm-up: #087a42;
 	--prm-down: #c73940;
-	--prm-new-bg: #e3edff;
-	--prm-new-ink: #1d4ed8;
 	--prm-shadow: 0 1px 2px rgba(11, 35, 69, 0.04), 0 8px 24px rgba(11, 35, 69, 0.07);
 	--prm-cols: 5;
 
@@ -383,7 +381,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	margin-bottom: 14px;
+	margin-bottom: 12px;
 }
 .scdc-prm-tabs {
 	display: inline-flex;
@@ -395,8 +393,8 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 9px;
-	height: 46px;
-	padding: 0 20px;
+	height: 44px;
+	padding: 0 18px;
 	border: 1px solid var(--prm-border);
 	border-radius: 11px;
 	background: linear-gradient(180deg, #ffffff 0%, #e9f0f9 100%);
@@ -436,32 +434,29 @@
 .scdc-prm-tab.is-active svg {
 	color: var(--prm-gold-bright);
 }
+/* The count is a quiet caption, not a control: no box of its own. */
 .scdc-prm-count {
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	height: 36px;
-	padding: 0 14px;
-	border: 1px solid var(--prm-border);
-	border-radius: 9px;
-	background: var(--prm-surface);
-	color: var(--prm-ink);
+	color: var(--prm-muted);
 	font-size: 13px;
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
 .scdc-prm-count b {
 	font-weight: 700;
+	color: var(--prm-ink);
 }
 
 /* ---- Toolbar: Search | Position | Team | Export ---- */
 .scdc-prm-toolbar {
 	display: grid;
-	grid-template-columns: minmax(0, 1.75fr) minmax(0, 0.9fr) minmax(0, 1.05fr) auto;
-	gap: 12px;
+	grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr) minmax(0, 1.1fr) auto;
+	gap: 10px;
 	align-items: center;
-	margin-bottom: 14px;
+	margin-bottom: 10px;
 }
 .scdc-prm-field {
 	min-width: 0;
@@ -482,9 +477,12 @@
 	width: 19px;
 	height: 19px;
 }
-.scdc-prm-input {
+/* Two classes deep on purpose: the host theme styles bare text inputs
+   (Divi: padding 2px), which put the magnifier on top of the placeholder. */
+.scdc-prm .scdc-prm-input {
 	width: 100%;
 	height: 44px;
+	margin: 0;
 	padding: 0 14px 0 44px;
 	border: 1px solid var(--prm-border);
 	border-radius: 11px;
@@ -540,67 +538,128 @@
 .scdc-prm-select .scdc-cs-list {
 	border-radius: 11px;
 }
-.scdc-prm-field-export {
-	padding-left: 12px;
-	border-left: 1px solid var(--prm-border);
-}
+/* Export is secondary to the filters: outlined, same height and radius. */
 .scdc-prm-export {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 9px;
+	gap: 8px;
 	width: 100%;
 	height: 44px;
-	padding: 0 22px;
-	border: 1px solid var(--prm-navy-dark);
+	padding: 0 18px;
+	border: 1px solid var(--prm-border);
 	border-radius: 11px;
-	background: linear-gradient(180deg, #163f78 0%, #0b2345 100%);
-	color: #ffffff;
+	background: #ffffff;
+	color: var(--prm-navy-deep);
 	font-size: 14px;
 	font-weight: 700;
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
-	box-shadow: 0 4px 12px rgba(11, 35, 69, 0.28);
+	box-shadow: 0 1px 2px rgba(11, 35, 69, 0.04);
 }
 .scdc-prm-export svg {
-	width: 18px;
-	height: 18px;
-	color: var(--prm-gold-bright);
+	width: 17px;
+	height: 17px;
+	color: var(--prm-navy);
 }
 .scdc-prm-export:hover {
-	background: linear-gradient(180deg, #1b4a8a 0%, #0e2c57 100%);
+	border-color: var(--prm-navy);
+	background: var(--prm-bg);
 }
 .scdc-prm-export:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 
-/* ---- Fantasy notice ---- */
-.scdc-prm-notice {
+/* ---- Context row: one quiet line, gold accent only on the left edge ----
+   What the current view's order means, a disclosure for the details, and
+   the marker key on the right. */
+.scdc-prm-info {
+	margin: 0 0 14px;
+	padding: 0 0 0 10px;
+	border-left: 3px solid var(--prm-gold-bright);
+	color: var(--prm-muted);
+	font-size: 13px;
+	line-height: 1.45;
+}
+.scdc-prm-info-line {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 10px;
+	min-height: 24px;
+}
+.scdc-prm-info-icon {
+	flex: 0 0 auto;
+	display: inline-flex;
+	color: var(--prm-gold);
+}
+.scdc-prm-info-icon svg {
+	width: 15px;
+	height: 15px;
+}
+.scdc-prm .scdc-prm-info-text {
+	flex: 0 1 auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	color: var(--prm-ink);
+	font-size: 13px;
+}
+.scdc-prm .scdc-prm-info-more {
+	flex: 0 0 auto;
+	margin: 0;
+	padding: 2px 0;
+	border: 0;
+	background: none;
+	color: var(--prm-navy);
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: var(--prm-gold);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+.scdc-prm .scdc-prm-info-more:hover {
+	color: var(--prm-navy-deep);
+}
+.scdc-prm .scdc-prm-info-more:focus-visible {
+	outline: 2px solid var(--prm-gold-bright);
+	outline-offset: 2px;
+	border-radius: 3px;
+}
+.scdc-prm .scdc-prm-legend {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	min-height: 40px;
-	margin: 0 0 16px;
-	padding: 8px 14px;
-	border: 1px solid #e6c766;
-	border-radius: 10px;
-	background: linear-gradient(180deg, #fffaea 0%, #fdf2cc 100%);
-	color: var(--prm-ink);
-	font-size: 13.5px;
+	gap: 14px;
+	margin: 0 0 0 auto;
+	padding: 0;
+	list-style: none;
+	font-size: 12px;
+	color: var(--prm-muted);
+	white-space: nowrap;
 }
-.scdc-prm-notice svg {
-	width: 18px;
-	height: 18px;
-	flex: 0 0 auto;
-	color: #d4a017;
-}
-.scdc-prm-notice p {
+.scdc-prm .scdc-prm-legend li {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
 	margin: 0;
+	padding: 0;
+	list-style: none;
 }
-.scdc-prm-notice strong {
-	font-weight: 700;
+.scdc-prm-info-detail {
+	max-width: 760px;
+	padding: 6px 0 2px;
+}
+.scdc-prm-info-detail[hidden] {
+	display: none;
+}
+.scdc-prm .scdc-prm-info-detail p {
+	margin: 0 0 4px;
+	padding: 0;
+	font-size: 13px;
+	color: var(--prm-muted);
 }
 
 /* ---- Team cards ---- */
@@ -614,7 +673,7 @@
 	position: relative;
 	overflow: hidden;
 	min-width: 0;
-	padding: 16px 20px 16px;
+	padding: 14px 20px 14px;
 	border: 1px solid var(--prm-border);
 	border-radius: 16px;
 	background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
@@ -646,8 +705,8 @@
 .scdc-prm-team {
 	display: flex;
 	align-items: center;
-	gap: 14px;
-	margin-bottom: 14px;
+	gap: 12px;
+	margin-bottom: 12px;
 	padding-right: 110px;
 	min-width: 0;
 }
@@ -656,8 +715,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 54px;
-	height: 54px;
+	width: 50px;
+	height: 50px;
 	border: 1px solid var(--prm-border);
 	border-radius: 12px;
 	background: var(--prm-surface);
@@ -676,7 +735,7 @@
 .scdc-prm-team-bar {
 	flex: 0 0 auto;
 	width: 3px;
-	height: 46px;
+	height: 42px;
 	border-radius: 2px;
 	background: var(--prm-gold-bright);
 }
@@ -792,8 +851,8 @@
 	display: flex;
 	align-items: center;
 	gap: 5px;
-	height: 26px;
-	padding: 0 4px 0 2px;
+	min-height: 26px;
+	padding: 3px 4px 3px 2px;
 	border-radius: 6px;
 	min-width: 0;
 	transition: background-color 0.12s;
@@ -828,19 +887,46 @@
 	color: var(--prm-faint);
 	font-variant-numeric: tabular-nums;
 }
-.scdc-prm-name {
-	flex: 0 1 auto;
+/* A name that does not fit wraps to a second line rather than losing its
+   end to an ellipsis; the full name is also in the title for hover. The
+   labels sit inline after it (.scdc-prm-who), so they follow the last word. */
+.scdc-prm-who {
+	flex: 1 1 auto;
 	min-width: 0;
+	line-height: 1.25;
+}
+.scdc-prm-who > .scdc-prm-new,
+.scdc-prm-who > .scdc-prm-badge {
+	margin-left: 5px;
+	vertical-align: 1px;
+}
+.scdc-prm-name {
 	font-size: 14px;
 	font-weight: 600;
-	line-height: 1.2;
+	line-height: 1.25;
 	color: var(--prm-ink);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	overflow-wrap: anywhere;
+}
+/* A name with a player page is a link that still reads as the name: the
+   underline arrives on hover, and keyboard focus gets the gold ring.
+   Two classes deep, because the host theme colors bare links. */
+.scdc-prm a.scdc-prm-name {
+	color: var(--prm-ink);
+	text-decoration: none;
+	border-radius: 3px;
+}
+.scdc-prm a.scdc-prm-name:hover {
+	color: var(--prm-navy);
+	text-decoration: underline;
+	text-decoration-color: var(--prm-gold);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+.scdc-prm a.scdc-prm-name:focus-visible {
+	outline: 2px solid var(--prm-gold-bright);
+	outline-offset: 2px;
 }
 .scdc-prm-badge {
-	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
 	height: 18px;
@@ -852,9 +938,22 @@
 	text-transform: uppercase;
 	line-height: 1;
 }
-.scdc-prm-badge-new {
-	background: var(--prm-new-bg);
-	color: var(--prm-new-ink);
+/* "New": a small outlined label in the card's own navy, quieter than the
+   status badges, which carry more weight. */
+.scdc-prm-new {
+	display: inline-flex;
+	align-items: center;
+	height: 16px;
+	padding: 0 5px;
+	border: 1px solid var(--prm-border);
+	border-radius: 4px;
+	background: #ffffff;
+	color: var(--prm-navy);
+	font-size: 9.5px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	line-height: 1;
 }
 /* Status badges (Q/D and O/IR/PUP/SUS), classes from STATUS_BADGE. */
 .scdc-badge-warn { background: #fef3c7; color: #b45309; }
@@ -926,18 +1025,43 @@
 @container (max-width: 760px) {
 	.scdc-prm-top {
 		flex-wrap: wrap;
-	}
-	.scdc-prm-tabs {
-		overflow-x: auto;
-		padding: 2px;
-		margin: -2px;
-		scrollbar-width: none;
-	}
-	.scdc-prm-tabs::-webkit-scrollbar {
-		display: none;
+		row-gap: 8px;
 	}
 	.scdc-prm-count {
 		margin-left: auto;
+	}
+	/* The key drops under the explanation instead of squeezing it. */
+	.scdc-prm .scdc-prm-legend {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+}
+/* Phones: all four views stay on screen as a 2 x 2 grid of full-size
+   buttons, rather than a strip that scrolls two of them out of sight. */
+@container (max-width: 600px) {
+	.scdc-prm-tabs {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 6px;
+		width: 100%;
+	}
+	.scdc-prm-tab {
+		justify-content: center;
+	}
+	.scdc-prm-count {
+		margin-left: 0;
+	}
+	/* Keep the explanation on the icon's line. */
+	.scdc-prm .scdc-prm-info-text {
+		flex: 1 1 0;
+	}
+	.scdc-prm .scdc-prm-info-more {
+		flex: 0 0 calc(100% - 25px);
+		margin-left: 25px;
+		text-align: left;
+	}
+	.scdc-prm .scdc-prm-legend {
+		margin-left: 25px;
 	}
 }
 @container (max-width: 700px) {
@@ -956,13 +1080,14 @@
 	}
 	.scdc-prm-field-export {
 		grid-column: 1 / -1;
-		padding-left: 0;
-		border-left: 0;
+	}
+	.scdc-prm-export {
+		height: 40px;
 	}
 	.scdc-prm-tab {
-		height: 42px;
-		padding: 0 12px;
-		font-size: 13px;
+		height: 44px;
+		padding: 0 10px;
+		font-size: 13.5px;
 		gap: 7px;
 	}
 	.scdc-prm-tab svg {
@@ -998,7 +1123,10 @@
 		padding: 12px 14px 12px;
 	}
 	.scdc-prm-name {
-		font-size: 13px;
+		font-size: 13.5px;
+	}
+	.scdc-prm-row {
+		min-height: 28px;
 	}
 	.scdc-prm-col {
 		padding: 0 8px;
@@ -1015,4 +1143,23 @@
 	.scdc-prm-grid[data-cols] .scdc-prm-cols {
 		--c: 1;
 	}
+}
+
+/* Narrowest phones: the two filters take a row each, so "All positions"
+   and "All teams" are never cut to "All p..." */
+@container (max-width: 360px) {
+	.scdc-prm-toolbar {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* ---- Host page: the gap between the page's intro and the tool ----
+   On statchasers.com the intro (H1, gold rule, lead) is a Divi code module
+   directly above the module holding this shortcode, and Divi's module margin
+   (2.75% of the row, about 39px) plus the intro's own 10px bottom padding
+   left a 49px hole above the view buttons. 18px here makes it 28px on
+   desktop and 24px on a phone (where the intro pads 6px). Only the module
+   immediately before the tool is touched. */
+.et_pb_module:has(+ .et_pb_module .scdc-page) {
+	margin-bottom: 18px !important;
 }

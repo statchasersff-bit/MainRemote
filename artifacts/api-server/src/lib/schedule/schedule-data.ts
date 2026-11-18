@@ -1125,11 +1125,14 @@ function normalize(
       : row.location;
 
   const finalFromFeed = row.awayScore !== null && row.homeScore !== null;
-  const isFinal = live
-    ? live.completed || (live.state === "post" && live.awayScore !== null)
-    : finalFromFeed;
+  // A feed final wins over a layer entry that never saw the whistle: a week
+  // closes in the feed and is not asked for again, so an entry saved before
+  // kickoff stays "pre" for good (2026-11-18: DAL @ PHI Week 7 sat as an
+  // upcoming 0-0 and its dated page 404'd).
+  const liveFinal = live ? live.completed || (live.state === "post" && live.awayScore !== null) : false;
+  const isFinal = liveFinal || finalFromFeed;
   const status: GameStatus =
-    live?.state === "in"
+    live?.state === "in" && !finalFromFeed
       ? "live"
       : isFinal
         ? "final"
@@ -1138,7 +1141,7 @@ function normalize(
           : live?.statusName === "STATUS_CANCELED"
             ? "canceled"
             : "scheduled";
-  const useLiveScore = live !== undefined && (status === "live" || status === "final");
+  const useLiveScore = live !== undefined && (status === "live" || liveFinal);
 
   const kickoff = resolveKickoff(row, live, status);
 

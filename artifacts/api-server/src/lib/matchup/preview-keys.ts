@@ -23,7 +23,8 @@
 
 import type { StatRow, TeamStats } from "../team/stats";
 import type { Preview, PreviewSide } from "./preview";
-import { starters } from "./preview-starters";
+import { depthTop, starters } from "./preview-starters";
+import { PENDING } from "./availability";
 
 export type KeyKind = "passing" | "rushing" | "pressure" | "turnovers" | "thirdDown" | "injury";
 
@@ -34,7 +35,14 @@ export interface GameKey {
   question: string;
   /** Plain text, every figure from the stats rows. */
   copy: string;
-  focus: string[];
+  /**
+   * Why it could decide the game (mak's 2026-11-18 brief: "explain why each
+   * matchup matters"), read against the projected script: who is favored and
+   * what a win in this phase does for each side. No new figures.
+   */
+  why: string;
+  /** The side the numbers favor in this phase, or null when they are even. */
+  edge: "away" | "home" | null;
   score: number;
 }
 
@@ -62,9 +70,13 @@ function place(r: StatRow): string {
   return label.startsWith("T-") ? `tied for ${label.slice(2)}` : label;
 }
 
-/** The rank in words: "2nd in the NFL", "6th-fewest", "tied for 6th-most". */
+/**
+ * The rank in words, always out of 32 (mak's 2026-11-18 brief: "28th-fewest"
+ * is hard to read): "8th of 32" for an offense, "28th of 32 defenses" for a
+ * defense. 1st is the best in both, which the card's note says once.
+ */
 function rankIn(r: StatRow, mode: "nfl" | "fewest" | "most" | "lowest"): string {
-  return mode === "nfl" ? `${place(r)} in the NFL` : `${place(r)}-${mode}`;
+  return mode === "fewest" || mode === "lowest" ? `${place(r)} of 32 defenses` : `${place(r)} of 32`;
 }
 
 /** A true minus sign on a negative figure (the house rule for numbers). */
@@ -81,10 +93,17 @@ function gap(a: StatRow, b: StatRow): number {
   return Math.abs(a.rank! - b.rank!) + extreme(a.rank!) + extreme(b.rank!);
 }
 
+/** The favored side by the line, or null for a pick'em or no line. */
+function favoriteOf(p: Preview): PreviewSide | null {
+  const spread = p.line?.spread ?? null;
+  if (spread === null || Math.abs(spread) < 2.5) return null;
+  return spread < 0 ? p.home : p.away;
+}
+
 const nick = (s: PreviewSide): string => `the ${s.team.nickname}`;
 const Nick = (s: PreviewSide): string => `The ${s.team.nickname}`;
 
-function passing(o: PreviewSide, d: PreviewSide): GameKey | null {
+function passing(p: Preview, o: PreviewSide, d: PreviewSide): GameKey | null {
   const yds = row(o.stats, "off-pass-yards");
   const allowed = row(d.stats, "def-pass-yards");
   if (!yds || !allowed) return null;
@@ -105,10 +124,21 @@ function passing(o: PreviewSide, d: PreviewSide): GameKey | null {
     `. ${Nick(d)} allow ${num(allowed.value)} passing yards a game (${rankIn(allowed, "fewest")})` +
     (ypaAllowed ? ` and ${num(ypaAllowed.value)} per attempt (${rankIn(ypaAllowed, "fewest")})` : "") +
     `.`;
-  return { kind: "passing", side: o.key, question, copy, focus: ["Protection", "Coverage", "Explosive passes"], score: gap(yds, allowed) };
+  const fav = favoriteOf(p);
+  const passer = qb ?? `the ${o.team.nickname} quarterback`;
+  const why = offenseEdge
+    ? fav === o
+      ? `If ${passer} moves the ball early, the ${d.team.nickname} have to chase points through the air, the script that suits a favorite.`
+      : fav === d
+        ? `Chunk plays through the air are the most realistic way for the ${o.team.nickname} to keep pace as underdogs.`
+        : `The passing game is where the ${o.team.nickname} hold the clearest edge, so ${passer}'s efficiency could swing a close game.`
+    : fav === d
+      ? `If the ${d.team.nickname} coverage holds, the ${o.team.nickname} have little else to lean on when they fall behind.`
+      : `Holding ${passer} under his usual output is the ${d.team.nickname} defense's best way to control the game.`;
+  return { kind: "passing", side: o.key, question, copy, why, edge: offenseEdge ? o.key : d.key, score: gap(yds, allowed) };
 }
 
-function rushing(o: PreviewSide, d: PreviewSide): GameKey | null {
+function rushing(p: Preview, o: PreviewSide, d: PreviewSide): GameKey | null {
   const yds = row(o.stats, "off-rush-yards");
   const allowed = row(d.stats, "def-rush-yards");
   if (!yds || !allowed) return null;
@@ -122,10 +152,19 @@ function rushing(o: PreviewSide, d: PreviewSide): GameKey | null {
     `. ${Nick(d)} allow ${num(allowed.value)} rushing yards a game (${rankIn(allowed, "fewest")})` +
     (ypcAllowed ? ` and ${num(ypcAllowed.value)} a carry (${rankIn(ypcAllowed, "fewest")})` : "") +
     `.`;
-  return { kind: "rushing", side: o.key, question, copy, focus: ["Run efficiency", "Early downs", "Offensive balance"], score: gap(yds, allowed) };
+  const fav = favoriteOf(p);
+  const qb = starters(o.roster, "QB", 1)[0]?.name ?? `the ${o.team.nickname} quarterback`;
+  const why = offenseEdge
+    ? fav === o
+      ? `A productive ${o.team.nickname} run game protects a lead and shortens the game, forcing the ${d.team.nickname} into a pass-heavy script.`
+      : fav === d
+        ? `Running the ball keeps the ${d.team.nickname} offense on the sideline, the underdog's best way to keep this close.`
+        : `Winning on the ground lets the ${o.team.nickname} stay on schedule and control the clock.`
+    : `If the ${d.team.nickname} take the run away, the ${o.team.nickname} lean on ${qb} in obvious passing downs.`;
+  return { kind: "rushing", side: o.key, question, copy, why, edge: offenseEdge ? o.key : d.key, score: gap(yds, allowed) };
 }
 
-function pressure(o: PreviewSide, d: PreviewSide): GameKey | null {
+function pressure(p: Preview, o: PreviewSide, d: PreviewSide): GameKey | null {
   const allowed = row(o.stats, "sacks-allowed");
   const sacks = row(d.stats, "sacks-made");
   if (!allowed || !sacks) return null;
@@ -135,11 +174,16 @@ function pressure(o: PreviewSide, d: PreviewSide): GameKey | null {
     : `Can the ${o.team.nickname} line hold up against the ${d.team.nickname} pass rush?`;
   const copy =
     `${Nick(d)} have ${num(sacks.value)} sacks (${rankIn(sacks, "most")}). ` +
-    `${Nick(o)} have allowed ${num(allowed.value)} (${rankIn(allowed, "fewest")}).`;
-  return { kind: "pressure", side: o.key, question, copy, focus: ["Pass rush", "Protection", "Third-and-long"], score: gap(allowed, sacks) };
+    `${Nick(o)} have allowed ${num(allowed.value)} (${rankIn(allowed, "nfl")}).`;
+  void p;
+  const qb = starters(o.roster, "QB", 1)[0]?.name ?? `the ${o.team.nickname} quarterback`;
+  const why = lineEdge
+    ? `If ${qb} has a clean pocket, the ${d.team.nickname} have to send extra rushers to get pressure, which opens room behind them.`
+    : `Sacks end drives: pressure on ${qb} turns third downs into punts and keeps the ${o.team.nickname} out of scoring range.`;
+  return { kind: "pressure", side: o.key, question, copy, why, edge: lineEdge ? o.key : d.key, score: gap(allowed, sacks) };
 }
 
-function turnovers(a: PreviewSide, h: PreviewSide): GameKey | null {
+function turnovers(p: Preview, a: PreviewSide, h: PreviewSide): GameKey | null {
   const ma = row(a.stats, "turnover-margin");
   const mh = row(h.stats, "turnover-margin");
   if (!ma || !mh) return null;
@@ -152,17 +196,25 @@ function turnovers(a: PreviewSide, h: PreviewSide): GameKey | null {
     `. ${Nick(worse)} are ${num(mw.value)} (${rankIn(mw, "nfl")})` +
     (giveaways ? ` with ${num(giveaways.value)} giveaways (${rankIn(giveaways, "nfl")})` : "") +
     `.`;
+  const fav = favoriteOf(p);
+  const why =
+    fav === worse
+      ? `Giveaways are the quickest way for the ${worse.team.nickname} to let an underdog stay in the game.`
+      : fav === better
+        ? `Short fields from takeaways would let the ${better.team.nickname} turn a favorable spot into a comfortable one.`
+        : `In an evenly priced game, one extra possession can be the difference.`;
   return {
     kind: "turnovers",
     side: null,
     question: `Can ${nick(worse)} protect the football?`,
     copy,
-    focus: ["Giveaways", "Takeaways", "Field position"],
+    why,
+    edge: mb.rank! === mw.rank! ? null : better.key,
     score: gap(ma, mh),
   };
 }
 
-function thirdDown(o: PreviewSide, d: PreviewSide): GameKey | null {
+function thirdDown(p: Preview, o: PreviewSide, d: PreviewSide): GameKey | null {
   const conv = row(o.stats, "off-third-down");
   const allowed = row(d.stats, "def-third-down");
   if (!conv || !allowed) return null;
@@ -173,31 +225,43 @@ function thirdDown(o: PreviewSide, d: PreviewSide): GameKey | null {
   const copy =
     `${Nick(o)} convert ${num(conv.value)} of third downs (${rankIn(conv, "nfl")}). ` +
     `${Nick(d)} allow ${num(allowed.value)} (${rankIn(allowed, "lowest")}).`;
-  return { kind: "thirdDown", side: o.key, question, copy, focus: ["Third downs", "Drive length", "Time of possession"], score: gap(conv, allowed) };
+  void p;
+  const why = offenseEdge
+    ? `Third-down conversions extend ${o.team.nickname} drives and keep the ${d.team.nickname} offense on the sideline, so getting off the field is the ${d.team.nickname} defense's first job.`
+    : `Stalled third downs mean punts and short drives, which leaves the ${o.team.nickname} defense on the field.`;
+  return { kind: "thirdDown", side: o.key, question, copy, why, edge: offenseEdge ? o.key : d.key, score: gap(conv, allowed) };
 }
 
 /** A starting QB, RB1, WR1, WR2 or TE listed Out or Doubtful. */
 function injury(p: Preview, s: PreviewSide): GameKey | null {
+  // The full-health starters (depthTop), so an absence is visible: starters()
+  // has already handed an Out or pending player's slot to his replacement.
   const core = new Set(
     [
-      ...starters(s.roster, "QB", 1),
-      ...starters(s.roster, "RB", 1),
-      ...starters(s.roster, "WR", 2),
-      ...starters(s.roster, "TE", 1),
+      ...depthTop(s.roster, "QB", 1),
+      ...depthTop(s.roster, "RB", 1),
+      ...depthTop(s.roster, "WR", 2),
+      ...depthTop(s.roster, "TE", 1),
     ].map((r) => r.name),
   );
   const hit = p.injuries[s.key]
-    .filter((r) => (r.chip === "O" || r.chip === "D") && core.has(r.name))
+    .filter((r) => (r.chip === "O" || r.chip === "D" || r.status === PENDING) && core.has(r.name))
     .sort((x, y) => (x.pos === "QB" ? -1 : 0) - (y.pos === "QB" ? -1 : 0) || (y.ppg ?? 0) - (x.ppg ?? 0))[0];
   if (!hit) return null;
+  const pending = hit.status === PENDING;
   return {
     kind: "injury",
     side: s.key,
-    // Out is settled; Doubtful is not, so the question stays conditional.
-    question: hit.chip === "O" ? `How do ${nick(s)} cover for ${hit.name}?` : `Can ${nick(s)} cover if ${hit.name} sits?`,
-    copy: `${hit.name} (${hit.pos}) is listed ${hit.status} for ${p.meeting.weekLabel}. ${hit.fallout}`.trim(),
-    focus: ["Depth", "Snap share", hit.pos === "QB" ? "Game plan" : "Target share"],
-    score: hit.pos === "QB" ? 28 : 14,
+    // Out is settled; Doubtful and pending are not, so the question stays conditional.
+    question: hit.chip === "O" ? `How do ${nick(s)} cover for ${hit.name}?` : pending ? `Will ${hit.name} be back for ${nick(s)}?` : `Can ${nick(s)} cover if ${hit.name} sits?`,
+    // The fallout already opens with the pending note when there is one.
+    copy: (pending ? hit.fallout : `${hit.name} (${hit.pos}) is listed ${hit.status} for ${p.meeting.weekLabel}. ${hit.fallout}`).trim(),
+    why:
+      hit.pos === "QB"
+        ? `A quarterback change reshapes the whole ${s.team.nickname} game plan, not one position.`
+        : `Who fills the role decides where the ${s.team.nickname}' touches go, for the game plan and for fantasy lineups.`,
+    edge: null,
+    score: hit.pos === "QB" ? 28 : pending ? 18 : 14,
   };
 }
 
@@ -205,15 +269,15 @@ function injury(p: Preview, s: PreviewSide): GameKey | null {
 export function gameKeys(p: Preview, max = 3): GameKey[] {
   const { away, home } = p;
   const all = [
-    passing(away, home),
-    passing(home, away),
-    rushing(away, home),
-    rushing(home, away),
-    pressure(away, home),
-    pressure(home, away),
-    turnovers(away, home),
-    thirdDown(away, home),
-    thirdDown(home, away),
+    passing(p, away, home),
+    passing(p, home, away),
+    rushing(p, away, home),
+    rushing(p, home, away),
+    pressure(p, away, home),
+    pressure(p, home, away),
+    turnovers(p, away, home),
+    thirdDown(p, away, home),
+    thirdDown(p, home, away),
     injury(p, away),
     injury(p, home),
   ].filter((k): k is GameKey => k !== null);

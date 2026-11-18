@@ -156,45 +156,71 @@ function pct(weight: number): number {
   return Math.round(weight * 100);
 }
 
+/** "Backfield Opportunity 35%, Path to Opportunity 45%, Player Quality 20%". MIRRORS allocationLabel() in the bundle. */
+function allocationLabel(): string {
+  return `Model allocation: ${PILLARS.map((p) => `${p.title} ${pct(DEFAULT_WEIGHTS[p.key])}%`).join(", ")}`;
+}
+
+/**
+ * "How rankings work": the method in four sentences, next to the controls it
+ * explains. The full factor list and the badge guide stay in the Model
+ * Reference under the table; this points there. The text is in the HTML
+ * either way - the toggle is the bundle's, like the rest of the weights.
+ */
+function renderHow(board: HandcuffBoard): string {
+  return (
+    `<div class="rbh-how" id="rbh-how" data-rbh-how hidden>` +
+    `<p>Each backup's handcuff score blends three pillar scores at the weights set here, then ranks` +
+    ` that blend against every backup on the board as a percentile, so 90 means near the top of the pool.` +
+    ` Backfield Opportunity and Path to Opportunity are measured on the ${board.statsSeason} season;` +
+    ` Player Quality on each back's last six games played, never week 18.</p>` +
+    `<p>Weights must total 100%. Move a slider, then Re-rank Players to rescore the table; Reset returns` +
+    ` the StatChasers defaults. The factors behind each pillar and the badge definitions are in the` +
+    ` <a href="#rbh-model-ref" data-rbh-ref-link>Model Reference</a> below the rankings.</p>` +
+    `</div>`
+  );
+}
+
 /**
  * The weight model: an allocation bar, the three pillar sliders and the
  * Re-rank button. `hidden` until the bundle wires it - every input here
  * re-ranks rows already on the page, and without the bundle it is a form that
  * does nothing.
+ *
+ * 11-18 (mak): compacted so the table comes up sooner. The percentage legend
+ * under the bar is gone - each slider card carries its own percentage - so
+ * the bar names its split through aria-label instead; the status is a slim
+ * line beside the button rather than a card of its own.
  */
-function renderWeights(): string {
+function renderWeights(board: HandcuffBoard): string {
   const segments = PILLARS.map(
     (p) =>
       `<span class="rbh-alloc-seg is-${p.accent}" data-rbh-seg="${p.key}"` +
-      ` style="width:${pct(DEFAULT_WEIGHTS[p.key])}%"></span>`,
-  ).join("");
-
-  const keys = PILLARS.map(
-    (p) =>
-      `<span class="rbh-alloc-key"><span class="rbh-dot is-${p.accent}"></span>` +
-      `<span>${escapeHtml(p.title)}</span>` +
-      ` <strong data-rbh-key="${p.key}">${pct(DEFAULT_WEIGHTS[p.key])}%</strong></span>`,
+      ` title="${escapeHtml(p.title)}" style="width:${pct(DEFAULT_WEIGHTS[p.key])}%"></span>`,
   ).join("");
 
   const sliders = PILLARS.map((p) => renderSlider(p)).join("");
 
   return (
     `<div class="rbh-weights" data-rbh-weights hidden>` +
-    `<p class="rbh-hint">Adjust how much each scoring pillar impacts the final handcuff ranking.</p>` +
     `<div class="rbh-alloc">` +
     `<div class="rbh-alloc-head">` +
-    `<span class="rbh-label">Model Allocation</span>` +
+    `<span class="rbh-label" id="rbh-alloc-label">Model Allocation</span>` +
+    `<span class="rbh-alloc-tools">` +
+    `<button type="button" class="rbh-how-btn" data-rbh-how-toggle aria-expanded="false" aria-controls="rbh-how">` +
+    `${icon("info", "rbh-icon")}How rankings work${icon("chevron", "rbh-chev")}</button>` +
     `<button type="button" class="rbh-reset" data-rbh-reset disabled>Reset</button>` +
+    `</span>` +
     `</div>` +
-    `<div class="rbh-alloc-bar">${segments}</div>` +
-    `<div class="rbh-alloc-keys">${keys}</div>` +
+    renderHow(board) +
+    `<div class="rbh-alloc-bar" role="img" data-rbh-alloc aria-label="${escapeHtml(allocationLabel())}">${segments}</div>` +
     `</div>` +
     `<div class="rbh-sliders">${sliders}</div>` +
     `<div class="rbh-apply">` +
-    `<div class="rbh-status" data-rbh-status aria-live="polite">` +
+    `<p class="rbh-status" data-rbh-status aria-live="polite">` +
     `<span class="rbh-status-main is-ok">Model balanced</span>` +
     `<span class="rbh-status-sub">No unsaved changes</span>` +
-    `</div>` +
+    `</p>` +
     `<button type="button" class="rbh-rerank" data-rbh-apply disabled>Re-rank Players</button>` +
     `</div>` +
     `</div>`
@@ -206,9 +232,11 @@ function renderSlider(p: Pillar): string {
   const id = `rbh-w-${p.key}`;
   return (
     `<div class="rbh-slider is-${p.accent}">` +
-    `<div class="rbh-slider-cat"><span class="rbh-dot is-${p.accent}"></span>${escapeHtml(p.category)}</div>` +
     `<div class="rbh-slider-head">` +
+    `<span class="rbh-slider-name">` +
+    `<span class="rbh-slider-cat"><span class="rbh-dot is-${p.accent}"></span>${escapeHtml(p.category)}</span>` +
     `<label class="rbh-slider-title" for="${id}">${escapeHtml(p.title)}</label>` +
+    `</span>` +
     `<output class="rbh-slider-pct" for="${id}" data-rbh-out="${p.key}">${value}%</output>` +
     `</div>` +
     `<p class="rbh-slider-desc">${escapeHtml(p.description)}</p>` +
@@ -281,7 +309,7 @@ function renderBadgeGuide(): string {
 /** The model reference: two accordions that work with scripting off. */
 function renderReference(board: HandcuffBoard): string {
   return (
-    `<div class="rbh-reference">` +
+    `<div class="rbh-reference" id="rbh-model-ref">` +
     `<p class="rbh-label">Model Reference</p>` +
     `<div class="rbh-accordions">` +
     `<details class="rbh-accordion">` +
@@ -297,10 +325,23 @@ function renderReference(board: HandcuffBoard): string {
   );
 }
 
+/**
+ * The page's opening sentence. It lived in the WordPress page under the H1
+ * until 11-18; it is printed here so the season comes from the board rather
+ * than from text typed into the page.
+ */
+export function handcuffIntro(board: HandcuffBoard): string {
+  return (
+    `Rank the best fantasy football RB handcuffs for ${board.season}. Customize backfield opportunity,` +
+    ` path to opportunity, and player quality to find high-upside backups.`
+  );
+}
+
 function renderPanel(board: HandcuffBoard): string {
   const updated = formatDate(board.updatedAt);
   return (
     `<div class="rbh-panel">` +
+    `<p class="rbh-intro">${escapeHtml(handcuffIntro(board))}</p>` +
     (updated && board.updatedAt
       ? `<p class="rbh-updated">Depth charts and injury report as of ` +
         `<time datetime="${escapeHtml(board.updatedAt)}">${escapeHtml(updated)}</time>` +
@@ -308,8 +349,7 @@ function renderPanel(board: HandcuffBoard): string {
         (board.statusFresh ? "" : ` · injury statuses are out of date and not counted`) +
         `</p>`
       : "") +
-    renderWeights() +
-    renderReference(board) +
+    renderWeights(board) +
     `</div>`
   );
 }
@@ -693,6 +733,9 @@ export function renderHandcuffPage(
     renderPanel(board) +
     renderLegend(board) +
     renderTable(board, options) +
+    // The model reference under the rankings since 11-18: the table comes
+    // first, and "How rankings work" by the sliders links down here.
+    renderReference(board) +
     renderBest(board, options) +
     renderFaq(board, options) +
     `</div>`

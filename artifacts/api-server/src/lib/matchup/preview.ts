@@ -29,8 +29,9 @@ import { getTeamCoaching, type TeamCoaching } from "../team/coaching";
 import { loadRosterPct } from "../player/data";
 import type { MatchupData, Meeting } from "./matchup-data";
 import { impliedTotals, type Forecast, type GameLine, type WeekLines } from "./game-lines";
-import { battlesFor, defendersVersion, gameConditions, teamForm, type Battle, type BattleSide, type Conditions, type TeamForm } from "./preview-extras";
+import { battlesFor, pickBattles, defendersVersion, gameConditions, teamForm, type Battle, type BattleSide, type Conditions, type TeamForm } from "./preview-extras";
 import { starters } from "./preview-starters";
+import { gameRoster, isNextGame, notExpected, PENDING } from "./availability";
 import { depthChartsVersion, nameKey } from "../team/depth-charts";
 import { teamTrends, type TeamTrends } from "./preview-betting";
 import type { ScheduleGame } from "../schedule/schedule-data";
@@ -168,6 +169,12 @@ export interface Preview {
   away: PreviewSide;
   home: PreviewSide;
   meeting: Meeting;
+  /**
+   * This is both clubs' next game (mak's 2026-11-18 brief): last week's
+   * workloads, starts and designations describe it. A game further out gets
+   * the season-level storylines only (preview-narrative.ts).
+   */
+  nextGame: boolean;
   line: GameLine | null;
   /** Implied totals across the week, for the rank labels. */
   slateCount: number;
@@ -292,6 +299,7 @@ function isOut(status: string | null | undefined): boolean {
 }
 
 function chipCode(status: string): string {
+  if (status === PENDING) return "?";
   if (status === "Questionable") return "Q";
   if (status === "Doubtful") return "D";
   if (status === "Out") return "O";
@@ -430,7 +438,11 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       fpaFormats: fpaFormatsFor(team),
       stats: page.stats,
       record: page.profile?.record ?? null,
-      roster: page.roster?.players ?? [],
+      // Game-specific designations (availability.ts, mak 2026-11-18): a
+      // Sleeper "Out" left over from last week is not this week's status.
+      roster: gameRoster(team, season, meeting.week, page.roster?.players ?? [], {
+        nextGame: isNextGame(page.schedule?.games, meeting.week, meeting.seasonType),
+      }),
       ppr: {},
     };
   };
@@ -439,6 +451,8 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     stats: s.stats,
     usage: s.usage?.players ?? [],
     qb: starters(s.roster, "QB", 1)[0]?.name ?? null,
+    rb: starters(s.roster, "RB", 1)[0]?.name ?? null,
+    unavailable: new Set(s.roster.filter((r) => notExpected(r.injuryStatus)).map((r) => nameKey(r.name))),
     ids: Object.fromEntries(
       [
         ...(s.usage?.players ?? []).filter((u) => u.sleeperId).map((u) => [nameKey(u.name), u.sleeperId!] as const),
@@ -668,6 +682,9 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     away,
     home,
     meeting,
+    nextGame:
+      isNextGame(pageFor(meeting.away).schedule?.games, meeting.week, meeting.seasonType) &&
+      isNextGame(pageFor(meeting.home).schedule?.games, meeting.week, meeting.seasonType),
     line,
     slateCount: slate.length,
     forecast: inputs.forecast,
@@ -692,7 +709,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       away: teamForm(pageFor(away.team).schedule?.games),
       home: teamForm(pageFor(home.team).schedule?.games),
     },
-    battles: { away: battlesFor(battleSide(away), battleSide(home), season), home: battlesFor(battleSide(home), battleSide(away), season) },
+    battles: pickBattles(battlesFor(battleSide(away), battleSide(home), season), battlesFor(battleSide(home), battleSide(away), season)),
     conditions: gameConditions(found, inputs.forecast),
     lineSeenMs,
     checks,
@@ -920,7 +937,7 @@ function buildCall(
   // Data check: the script never credits volume to a player listed out.
   const topBy = (side: PreviewSide, pos: Pos[]) =>
     facts
-      .filter((f) => f.side === side.key && pos.includes(f.p.pos) && !isOut(f.injury?.injuryStatus))
+      .filter((f) => f.side === side.key && pos.includes(f.p.pos) && !notExpected(f.injury?.injuryStatus))
       .sort((x, y) => y.ppg - x.ppg)[0]?.p ?? null;
 
   // 1. The market.
@@ -1193,12 +1210,16 @@ function injuryRows(
           ? `No fantasy fallout while ${starter.name} starts.`
           : `${absent ? "With him out" : "If he sits"}, downgrade every ${side.team.nickname} pass catcher until the backup proves otherwise.`;
     }
+    // A designation that is not confirmed for this game says so first
+    // (availability.ts): what happened last week, and that this week's
+    // status is not out yet.
+    const note = (r as RosterPlayer & { availability?: { note: string | null } }).availability?.note ?? null;
     return {
       status,
       chip: chipCode(status),
       name: r.name,
       pos: r.position,
-      fallout: (fallout + practice + timing).trim(),
+      fallout: ((note ? `${note} ` : "") + fallout + (note ? "" : practice) + timing).trim(),
       rostered: owned(r.id),
       impact,
       beneficiary,

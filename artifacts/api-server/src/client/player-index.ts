@@ -6,7 +6,8 @@
  * the server sent, grouped by club and ordered within it. Nothing here fetches
  * and nothing here renders a row.
  *
- * It adds three things:
+ * It adds four things (the fourth, 2026-11-18: each card folds after five
+ * rows behind a "Show all" button; see syncFold()):
  *
  *   1. the position chips, which the server ships hidden for the reason
  *      renderPlayerSearch() ships its box hidden - a control with no script
@@ -51,7 +52,15 @@ interface Club {
   scoring: HTMLElement | null;
   /** The muted half: how many are listed at all. */
   count: HTMLElement | null;
+  /** "Show all 24 players" - absent on a card short enough to need none. */
+  more: HTMLButtonElement | null;
+  moreLabel: HTMLElement | null;
+  /** The reader opened this card. Kept across filter changes. */
+  expanded: boolean;
 }
+
+/** Rows a card shows before its "Show all"; the server folds at the same 5. */
+const FOLD = 5;
 
 /**
  * Drop an image the CDN has no file for.
@@ -105,6 +114,9 @@ export function wirePlayerDirectory(root: HTMLElement): void {
     items: Array.from(club.querySelectorAll<HTMLElement>(".scp-dir-item")),
     scoring: club.querySelector<HTMLElement>("[data-scp-club-scoring]"),
     count: club.querySelector<HTMLElement>("[data-scp-club-count]"),
+    more: club.querySelector<HTMLButtonElement>("[data-scp-dir-more]"),
+    moreLabel: club.querySelector<HTMLElement>("[data-scp-dir-more-label]"),
+    expanded: false,
   }));
 
   const total = root.querySelector<HTMLElement>("[data-scp-dir-count]");
@@ -122,6 +134,49 @@ export function wirePlayerDirectory(root: HTMLElement): void {
   /** Whether this card is one the club filter is letting through. */
   const inScope = (entry: Club): boolean => club === null || entry.code === club;
 
+  /**
+   * The card's fold and its button. One club on screen is a reader who asked
+   * for that roster, so it opens whole and the button goes.
+   */
+  /**
+   * The folded card's rows over what the chips let through: the top FOLD by
+   * season points (data-pts), kickers last, ties to the earlier row - the server's rule
+   * (directoryFoldSet), so "QB" keeps the club's best five quarterbacks.
+   */
+  const refold = (matched: HTMLElement[]): void => {
+    const keep = new Set(
+      matched
+        .map((item, i) => ({
+          item,
+          i,
+          k: item.dataset["pos"] === "K" ? 1 : 0,
+          pts: Number(item.dataset["pts"] ?? 0) || 0,
+        }))
+        .sort((a, b) => a.k - b.k || b.pts - a.pts || a.i - b.i)
+        .slice(0, FOLD)
+        .map((entry) => entry.item),
+    );
+    let first = true;
+    for (const item of matched) {
+      const kept = keep.has(item);
+      item.toggleAttribute("data-beyond", !kept);
+      item.toggleAttribute("data-top", kept && first);
+      if (kept) first = false;
+    }
+  };
+
+  const syncFold = (entry: Club, visible: number): void => {
+    const foldable = visible > FOLD && club === null;
+    const open = !foldable || entry.expanded;
+    entry.root.toggleAttribute("data-folded", !open);
+    if (!entry.more) return;
+    entry.more.hidden = !foldable;
+    entry.more.setAttribute("aria-expanded", open ? "true" : "false");
+    if (entry.moreLabel) {
+      entry.moreLabel.textContent = open ? "Show fewer" : `Show all ${visible} players`;
+    }
+  };
+
   const apply = (): void => {
     const all = position === "all";
     let shown = 0;
@@ -135,12 +190,14 @@ export function wirePlayerDirectory(root: HTMLElement): void {
       }
       let visible = 0;
       let scoring = 0;
+      const matched: HTMLElement[] = [];
       for (const item of entry.items) {
         const match = all || item.dataset["pos"] === position;
         // `hidden` rather than a class: the row is a link, and a link that is
         // merely invisible is still in the tab order and still read aloud.
         item.hidden = !match;
         if (!match) continue;
+        matched.push(item);
         visible += 1;
         // The same rule the server counted by - directoryBand()'s one band for
         // "nothing to show", read off the row rather than recomputed here.
@@ -151,6 +208,8 @@ export function wirePlayerDirectory(root: HTMLElement): void {
       entry.root.hidden = visible === 0;
       if (entry.scoring) entry.scoring.textContent = String(scoring);
       if (entry.count) entry.count.textContent = String(visible);
+      refold(matched);
+      syncFold(entry, visible);
       // The position rules divide runs of positions. Filtered to one position
       // there are no runs, so the first rule would be a line under the header
       // dividing nothing.
@@ -231,6 +290,19 @@ export function wirePlayerDirectory(root: HTMLElement): void {
     syncChips();
     apply();
   };
+
+  for (const entry of clubs) {
+    const button = entry.more;
+    if (!button) continue;
+    button.addEventListener("click", () => {
+      entry.expanded = !entry.expanded;
+      apply();
+      // Folding a long card can leave the reader below it; bring its header back.
+      if (!entry.expanded && entry.root.getBoundingClientRect().top < 0) {
+        entry.root.scrollIntoView({ block: "start" });
+      }
+    });
+  }
 
   for (const chip of chips) {
     chip.addEventListener("click", () => {

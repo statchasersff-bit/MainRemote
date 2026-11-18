@@ -196,9 +196,12 @@ function wireSorting(root: HTMLElement): void {
     button.type = "button";
     button.className = "sca-sort";
     while (th.firstChild) button.appendChild(th.firstChild);
+    // The column's definition moves to data-tip, shown by showTip() on
+    // hover, keyboard focus and a tap - a native title is mouse-only and
+    // never reaches a phone.
     const title = th.getAttribute("title");
     if (title) {
-      button.title = title;
+      button.dataset["tip"] = title;
       th.removeAttribute("title");
     }
     th.appendChild(button);
@@ -359,6 +362,66 @@ function applyView(root: HTMLElement): void {
     if (!shown.has(g)) hidden.add(`g${g}`);
   }
   setHidden(root, hidden);
+  updateScrollCues(root);
+}
+
+/* ------------------------------------------------------- column definitions */
+
+let tipSeq = 0;
+let tipTimer = 0;
+
+/** The one tooltip a root uses, created on first need. */
+function tipEl(root: HTMLElement): HTMLElement {
+  let tip = root.querySelector<HTMLElement>(":scope > .sca-tip");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.className = "sca-tip";
+    tip.id = `sca-tip-${++tipSeq}`;
+    tip.setAttribute("role", "tooltip");
+    tip.hidden = true;
+    root.appendChild(tip);
+  }
+  return tip;
+}
+
+function showTip(root: HTMLElement, button: HTMLElement): void {
+  const text = button.dataset["tip"];
+  if (!text) return;
+  const tip = tipEl(root);
+  tip.textContent = text;
+  tip.hidden = false;
+  button.setAttribute("aria-describedby", tip.id);
+  // Fixed to the viewport, under the header cell, kept inside the window.
+  const box = button.getBoundingClientRect();
+  const width = tip.offsetWidth;
+  const left = Math.max(8, Math.min(window.innerWidth - width - 8, box.left + box.width / 2 - width / 2));
+  tip.style.left = `${Math.round(left)}px`;
+  tip.style.top = `${Math.round(box.bottom + 8)}px`;
+}
+
+function hideTip(root: HTMLElement): void {
+  window.clearTimeout(tipTimer);
+  const tip = root.querySelector<HTMLElement>(":scope > .sca-tip");
+  if (!tip || tip.hidden) return;
+  tip.hidden = true;
+  root.querySelector(`[aria-describedby="${tip.id}"]`)?.removeAttribute("aria-describedby");
+}
+
+/* ----------------------------------------------------------- scroll cues */
+
+/**
+ * The sideways-scroll cues on the table's wrap: `has-more` while columns
+ * remain off to the right (an edge fade), `is-scrolled` once the reader has
+ * moved off the left edge (a shadow on the pinned names). Reads three numbers
+ * and toggles two classes - no layout writes, so it is cheap on every frame.
+ */
+function updateScrollCues(root: HTMLElement): void {
+  const wrap = root.querySelector<HTMLElement>("[data-sca-scroll]");
+  const scroller = wrap?.querySelector<HTMLElement>(".sca-scroll");
+  if (!wrap || !scroller) return;
+  const max = scroller.scrollWidth - scroller.clientWidth;
+  wrap.classList.toggle("has-more", scroller.scrollLeft < max - 2);
+  wrap.classList.toggle("is-scrolled", scroller.scrollLeft > 2);
 }
 
 /* ------------------------------------------------------------------ menus */
@@ -429,6 +492,15 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
   // season opens on its own defaults, the multi-season table tighter ones.
   const search =
     root.querySelector<HTMLInputElement>(`[data-sca-filters] input[name="search"]`)?.value ?? "";
+  // So is the column the reader sorted by: every season of a position has
+  // the same columns, so the sort is put back on the new table.
+  const sorted = root.querySelector<HTMLTableCellElement>(".sca-head th.is-sorted");
+  const sortDescending = sorted?.getAttribute("aria-sort") !== "ascending";
+  // The new table already arrives in the default order (grade, descending).
+  const sortKey =
+    sorted && !(sorted.hasAttribute("data-sort-default") && sortDescending)
+      ? sorted.dataset["key"] ?? null
+      : null;
 
   for (const selector of SWAPPABLE) {
     const live = root.querySelector(selector);
@@ -450,6 +522,11 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
   applyView(root);
   applyMode(root);
   applyFilters(root);
+  if (sortKey) {
+    const th = root.querySelector<HTMLTableCellElement>(`.sca-head th[data-key="${CSS.escape(sortKey)}"]`);
+    if (th) sortBy(root, th, sortDescending);
+  }
+  updateScrollCues(root);
   return true;
 }
 
@@ -474,6 +551,7 @@ function wire(root: HTMLElement): void {
   enhance(root);
   applyView(root);
   applyFilters(root);
+  updateScrollCues(root);
 
   // One menu open at a time. `toggle` does not bubble, so this listens in
   // the capture phase.
@@ -494,7 +572,62 @@ function wire(root: HTMLElement): void {
     closeMenus(root, target?.closest("details.sca-menu") ?? null);
   });
 
+  // The view tabs: Left/Right (and Home/End) move between them and open the
+  // one reached, as a tab strip does.
   root.addEventListener("keydown", (event) => {
+    const view = (event.target as Element | null)?.closest<HTMLButtonElement>("[data-sca-sections] [data-view]");
+    if (!view || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    const all = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-sca-sections] [data-view]"));
+    const at = all.indexOf(view);
+    const next =
+      event.key === "Home" ? all[0]
+      : event.key === "End" ? all[all.length - 1]
+      : all[(at + (event.key === "ArrowRight" ? 1 : -1) + all.length) % all.length];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+    root.dataset["view"] = next.dataset["view"] ?? "";
+    applyView(root);
+  });
+
+  // Column definitions: hover and keyboard focus show one, leaving hides it.
+  root.addEventListener("mouseover", (event) => {
+    const button = (event.target as Element | null)?.closest<HTMLElement>(".sca-sort[data-tip]");
+    if (button) showTip(root, button);
+  });
+  root.addEventListener("mouseout", (event) => {
+    const button = (event.target as Element | null)?.closest(".sca-sort[data-tip]");
+    const to = (event as MouseEvent).relatedTarget as Node | null;
+    if (button && !(to && button.contains(to))) hideTip(root);
+  });
+  root.addEventListener("focusin", (event) => {
+    const button = (event.target as Element | null)?.closest<HTMLElement>(".sca-sort[data-tip]");
+    if (button) showTip(root, button);
+  });
+  root.addEventListener("focusout", (event) => {
+    if ((event.target as Element | null)?.closest(".sca-sort[data-tip]")) hideTip(root);
+  });
+  // Scrolling anywhere (the page or the table) moves the header out from
+  // under a fixed tip, so it goes. The same capture listener keeps the
+  // table's scroll cues current - scroll does not bubble, capture sees it.
+  let cueFrame = 0;
+  document.addEventListener(
+    "scroll",
+    (event) => {
+      hideTip(root);
+      const target = event.target as Element | null;
+      if (target instanceof Element && target.matches(".sca-scroll") && root.contains(target) && !cueFrame) {
+        cueFrame = requestAnimationFrame(() => {
+          cueFrame = 0;
+          updateScrollCues(root);
+        });
+      }
+    },
+    { capture: true, passive: true },
+  );
+
+  root.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideTip(root);
     if (event.key !== "Escape") return;
     const menu = (event.target as Element | null)?.closest<HTMLDetailsElement>("details.sca-menu[open]");
     if (!menu) return;
@@ -533,6 +666,13 @@ function wire(root: HTMLElement): void {
       const th = sort.closest<HTMLTableCellElement>("th");
       if (!th) return;
       const current = th.getAttribute("aria-sort");
+      // On a touchscreen there is no hover: a tap sorts and shows what the
+      // column is for a moment.
+      if ((event as PointerEvent).pointerType === "touch" && sort.dataset["tip"]) {
+        showTip(root, sort);
+        window.clearTimeout(tipTimer);
+        tipTimer = window.setTimeout(() => hideTip(root), 2600);
+      }
       // A fresh column opens descending - biggest first, which is what a
       // reader sorting by "Targets" wants - and a second click flips it.
       sortBy(root, th, current !== "descending");
@@ -601,6 +741,7 @@ function wire(root: HTMLElement): void {
       if (next === width) return;
       width = next;
       fixSpans(root);
+      updateScrollCues(root);
     }).observe(root);
   }
 

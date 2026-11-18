@@ -94,13 +94,16 @@ export function statsPageCopy(position: StatsPosition, season: number): StatsPag
   };
 }
 
-/** The two paragraphs under the H1. */
+/**
+ * The paragraph under the H1. Short on purpose (mak's UI brief, 2026-11-18):
+ * one or two lines above the tools, the longer explanation lives in the
+ * sections under the table. Visible copy only - the meta description is
+ * statsPageCopy()'s and did not change.
+ */
 export function introCopy(season: number): string[] {
   return [
-    `Compare ${season} NFL player stats for quarterbacks, running backs, wide receivers and tight ends.`,
-    `View passing, rushing, receiving, fantasy football and advanced stats including targets, ` +
-      `target share, air yards, snap share, yards per route run, red-zone usage and StatChasers ` +
-      `player grades.`,
+    `Explore ${season} NFL player stats, fantasy points, and advanced metrics. ` +
+      `Compare passing, rushing, receiving, efficiency, and player usage across every position.`,
   ];
 }
 

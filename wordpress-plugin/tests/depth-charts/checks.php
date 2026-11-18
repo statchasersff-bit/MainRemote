@@ -270,6 +270,22 @@ check( 'fantasypros: the five position tables parse', array( 'QB', 'RB', 'WR', '
 check( 'fantasypros: RB order and ids', isset( $fp['RB'][1] ) && 'James Cook III' === $fp['RB'][0]['name'] && '22958' === $fp['RB'][0]['id'] && 2 === $fp['RB'][1]['rank'] );
 check( 'fantasypros: WR1 is DJ Moore', 'DJ Moore' === $first( $fp['WR'] ?? array() ) );
 
+// ------------------------------------------------------------ 3b. player links
+
+$GLOBALS['wp_transients']['sc_player_roster'] = array(
+	array( 'slug' => 'josh-allen', 'name' => 'Josh Allen', 'team' => 'BUF' ),
+	array( 'slug' => 'josh-allen-2', 'name' => 'Josh Allen', 'team' => 'JAX' ),
+	array( 'slug' => '', 'name' => 'No Slug', 'team' => 'BUF' ),
+);
+$pages = SCDC_Shortcode::player_pages();
+check( 'player links: namesakes stay apart by team', isset( $pages['BUF']['Josh Allen'], $pages['JAX']['Josh Allen'] ) && 'josh-allen-2' === $pages['JAX']['Josh Allen'], wp_json_encode( $pages ) );
+check( 'player links: a row without a slug is dropped', ! isset( $pages['BUF']['No Slug'] ) );
+unset( $GLOBALS['wp_transients']['sc_player_roster'] );
+$GLOBALS['wp_transients']['sc_player_roster_bak'] = array( array( 'slug' => 'dj-moore', 'name' => 'DJ Moore', 'team' => 'BUF' ) );
+check( 'player links: the backup list stands in when the cache is cold', 'dj-moore' === ( SCDC_Shortcode::player_pages()['BUF']['DJ Moore'] ?? '' ) );
+unset( $GLOBALS['wp_transients']['sc_player_roster_bak'] );
+check( 'player links: no list, no links', array() === SCDC_Shortcode::player_pages() );
+
 // ------------------------------------------------------------------ 4. hub
 
 add_filter( 'scdc_nfl_article_count', function () { return 0; } );

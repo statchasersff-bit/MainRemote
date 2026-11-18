@@ -311,7 +311,7 @@ describe("the pages", () => {
     assert.equal(doc.querySelector("h1").textContent, "2026 NFL Player Stats & Fantasy Football Stats");
     assert.equal(doc.querySelectorAll("h1").length, 1);
     assert.equal(doc.querySelector(".sca-hero"), null, "no heading block over the table");
-    assert.match(doc.querySelector(".sca-intro").textContent, /^Compare 2026 NFL player stats for quarterbacks/);
+    assert.match(doc.querySelector(".sca-intro").textContent, /^Explore 2026 NFL player stats, fantasy points, and advanced metrics\. Compare passing/);
     const finished = await page("/player-stats?season=2025");
     assert.equal(
       doc.querySelector('link[rel="canonical"]').getAttribute("href"),
@@ -473,7 +473,7 @@ describe("the pages", () => {
     const meta = JSON.parse(html.match(/<script type="application\/json" class="sca-page-data">(.*?)<\/script>/)[1]);
     assert.deepEqual(Object.keys(meta), ["title", "h1", "description", "lead"]);
     // The intro, as the plugin's hero description.
-    assert.match(meta.lead, /^Compare 2026 NFL player stats for quarterbacks.* player grades\.$/);
+    assert.match(meta.lead, /^Explore 2026 NFL player stats.* across every position\.$/);
     assert.equal(meta.h1, "2026 NFL Wide Receiver Stats & Fantasy Football Stats");
     const faq = JSON.parse(html.match(/<script type="application\/json" class="sca-faq-data">(.*?)<\/script>/)[1]);
     assert.equal(faq.length, 12);

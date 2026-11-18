@@ -364,6 +364,36 @@ describe("player header", () => {
     assert.equal(h.querySelector(".scp-ptag-status"), null, "no Active beside an Out");
   });
 
+  test("a roster designation (IR, PUP, suspended) swaps start/sit for the injury status and notes it on the strip", () => {
+    // UI brief, 2026-11-18: no player-specific rule, no return date.
+    const withInjury = (status, part = null) =>
+      header(state({ designation: { injuryStatus: status, injuryBodyPart: part }, injury: { summary: { totalMissed: 0 } } }));
+    const ir = withInjury("IR", "Elbow");
+    const second = ir.querySelector(".scp-pbtn--white");
+    assert.equal(text(second), "Brissett's injury status");
+    assert.match(second.getAttribute("href"), /\/jacoby-brissett\/injury\/$/);
+    assert.equal(second.getAttribute("data-cta"), "injury-header-overview");
+    assert.ok(ir.querySelector(".scp-pstrip"), "the club's next game still shows");
+    assert.equal(text(ir.querySelector(".scp-pstrip-note-full")), "On injured reserve (elbow)");
+    assert.equal(text(ir.querySelector(".scp-pstrip-note-short")), "On IR");
+    assert.equal(text(withInjury("PUP").querySelector(".scp-pstrip-note-full")), "On the PUP list");
+    assert.equal(text(withInjury("Sus").querySelector(".scp-pstrip-note-full")), "Suspended");
+    // One game's status keeps the question: "Out" this week is still a sit.
+    const out = withInjury("Out", "Ankle");
+    assert.equal(text(out.querySelector(".scp-pbtn--white")), "Should I start Brissett?");
+    assert.equal(out.querySelector(".scp-pstrip-note"), null);
+    assert.equal(render.startSitHref(state({ designation: { injuryStatus: "IR" } }), {}), "");
+    assert.notEqual(render.startSitHref(state({ designation: { injuryStatus: "Out" } }), {}), "");
+  });
+
+  test("the rank's tooltip names its basis: per game, or total points before four games", () => {
+    const title = (d) => header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) abbr").getAttribute("title");
+    assert.equal(title(state()), "2026 position rank by PPR fantasy points per game");
+    const early = state({ production: [{ season: 2026, posFinishPpg: null, posFinishTotal: 40 }], seasonRank: null, seasonRankTotal: 40 });
+    assert.equal(text(header(early).querySelector(".scp-pboard .scp-pstat:nth-child(2) b")), "QB40");
+    assert.match(title(early), /^2026 position rank by total PPR fantasy points/);
+  });
+
   test("a designation with no injury record is a pill, not a link", () => {
     const h = header(state({ designation: { injuryStatus: "Questionable" }, injury: null }));
     const pill = h.querySelector(".scp-ptag-inj");

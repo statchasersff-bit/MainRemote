@@ -357,8 +357,47 @@
 		IR: { label: "IR", cls: "scdc-badge-out" },
 		PUP: { label: "PUP", cls: "scdc-badge-out" },
 		SUSP: { label: "SUS", cls: "scdc-badge-out" },
-		SUS: { label: "SUS", cls: "scdc-badge-out" }
+		SUS: { label: "SUS", cls: "scdc-badge-out" },
+		"IR-R": { label: "IR-R", cls: "scdc-badge-out" },
+		NFI: { label: "NFI", cls: "scdc-badge-out" }
 	};
+
+	// ---- Designations ----
+	// Two gaps in the cached file, closed here at render time:
+	//  1. Footballguys sometimes leaves the designation inside the name
+	//     ("James Conner (IR-R)"). It is split back out into `status`.
+	//  2. The Fantasy columns come from FantasyPros, which publishes no
+	//     designations, so an injured-reserve player ranked RB3 there showed
+	//     no badge at all. Each FAN_* row borrows the designation the same
+	//     team's position column carries for the same name. Nothing is
+	//     inferred: a name the team column does not list keeps no badge.
+	var NAME_STATUS = /\s*\((IR-R|IR|PUP|NFI|SUSP?|O|Q|D)\)\s*$/i;
+	var FAN_SOURCE = { FAN_QB: "QB", FAN_RB: "RB", FAN_WR: "WR", FAN_TE: "TE", FAN_K: "K" };
+	function normalizeDesignations(teams) {
+		teams.forEach(function (t) {
+			var positions = t.positions && typeof t.positions === "object" ? t.positions : {};
+			Object.keys(positions).forEach(function (key) {
+				(Array.isArray(positions[key]) ? positions[key] : []).forEach(function (p) {
+					var m = p && typeof p.name === "string" ? NAME_STATUS.exec(p.name) : null;
+					if (!m) return;
+					p.name = p.name.slice(0, m.index);
+					if (!p.status) p.status = m[1].toUpperCase();
+				});
+			});
+			Object.keys(FAN_SOURCE).forEach(function (fanKey) {
+				var fan = positions[fanKey];
+				var team = positions[FAN_SOURCE[fanKey]];
+				if (!Array.isArray(fan) || !Array.isArray(team)) return;
+				var byName = {};
+				team.forEach(function (p) {
+					if (p && p.name && p.status) byName[normNameKey(p.name)] = p.status;
+				});
+				fan.forEach(function (p) {
+					if (p && p.name && !p.status && byName[normNameKey(p.name)]) p.status = byName[normNameKey(p.name)];
+				});
+			});
+		});
+	}
 
 	// ---- Search suggestions ----
 
@@ -649,6 +688,7 @@
 			return a.team.name.localeCompare(b.team.name);
 		});
 		optimizeImagery(teams, ctx.imageOrigin);
+		normalizeDesignations(teams);
 
 		// Bidirectional team <-> slug maps built from the loaded data.
 		var abbrToSlug = {};
@@ -734,6 +774,7 @@
 
 		var browser = renderBrowser(root, {
 			teams: teams,
+			lastUpdated: ctx.lastUpdated,
 			initial: resolveSlugs(parseHash()),
 			// A view, team or position change records the new state in the
 			// fragment (a new history entry); typing in the search box does not.
@@ -782,6 +823,27 @@
 
 	// Position headings: the Fantasy tab's are spelled out already;
 	// the other tabs' single-code labels get their full names here.
+	// The context line under the toolbar, per view: a short line that is
+	// always visible and a longer one behind "How to read this".
+	var VIEW_INFO = {
+		fantasy: {
+			short: "Ranked by fantasy value, which can differ from the team's official depth chart.",
+			long: "The Fantasy view orders each team's quarterbacks, running backs, receivers, tight ends and kickers by expert consensus fantasy value, so a backup can sit above a starter. Switch to Offense for the team's own depth order. Injury designations (Q, O, IR, PUP) come from the team's depth chart."
+		},
+		offense: {
+			short: "Each offensive position in the team's depth order: 01 is the starter.",
+			long: "Offense lists every offensive position in the team's depth order: 01 is the starter, then the backups in order."
+		},
+		defense: {
+			short: "Each defensive position in the team's depth order: 01 is the starter.",
+			long: "Defense lists every defensive position in the team's depth order: 01 is the starter, then the backups in order."
+		},
+		special: {
+			short: "Kickers, punters, snappers and return men in the team's depth order.",
+			long: "Special Teams lists the kicker, punter, long snapper and return men in the team's depth order: 01 is the first choice."
+		}
+	};
+
 	var PRM_HEADING = {
 		QB: "Quarterbacks", RB: "Running Backs", WR: "Wide Receivers", TE: "Tight Ends",
 		LT: "Left Tackles", LG: "Left Guards", C: "Centers", RG: "Right Guards", RT: "Right Tackles",
@@ -793,43 +855,93 @@
 		return col.label.length > 4 ? col.label : PRM_HEADING[code] || col.label;
 	}
 
-	function prmPlayerRow(player) {
+	// ---- Player page links ----
+	// The server prints the player pages that exist as team => { name => slug }
+	// (a JSON island beside the root). A row links when its team and
+	// normalized name match one; anything else stays plain text, so a link
+	// never points at a page that is not there or at a namesake on another team.
+	var playerPages = {};
+	var playerBase = "";
+	function loadPlayerPages(root) {
+		var island = root.parentNode ? root.parentNode.querySelector("script.scdc-player-pages") : null;
+		var raw = island ? jsonFromText(island.textContent) : null;
+		playerBase = root.getAttribute("data-player-base") || "";
+		playerPages = {};
+		if (!raw || !playerBase) return;
+		Object.keys(raw).forEach(function (team) {
+			var names = raw[team];
+			if (!names || typeof names !== "object") return;
+			var byKey = {};
+			Object.keys(names).forEach(function (name) {
+				if (typeof names[name] === "string" && names[name]) byKey[normNameKey(name)] = names[name];
+			});
+			playerPages[team] = byKey;
+		});
+	}
+	function jsonFromText(text) {
+		try {
+			var parsed = JSON.parse(text);
+			return parsed && typeof parsed === "object" ? parsed : null;
+		} catch (e) {
+			return null;
+		}
+	}
+	function playerHref(teamAbbr, name) {
+		var team = playerPages[teamAbbr];
+		var slug = team ? team[normNameKey(name)] : null;
+		return slug ? playerBase + encodeURIComponent(slug) + "/" : null;
+	}
+
+	// What an arrow means depends on the view: in Fantasy it is a change in
+	// fantasy rank, everywhere else a change in the team's depth order. Both
+	// compare with the previous data refresh.
+	function movementText(dir, tab) {
+		var what = tab === "fantasy" ? "fantasy order" : "the depth chart";
+		return (dir === "up" ? "Moved up in " : "Moved down in ") + what + " since the previous update";
+	}
+
+	function prmPlayerRow(player, tab, teamAbbr) {
 		var children = [];
 		var move = el("span", { class: "scdc-prm-move" });
-		if (player.movement === "up") {
-			move.className += " is-up";
-			move.innerHTML = PRM_ICON.up;
-			move.appendChild(el("span", { class: "scdc-prm-sr", text: "Moved up in the depth chart." }));
-		} else if (player.movement === "down") {
-			move.className += " is-down";
-			move.innerHTML = PRM_ICON.down;
-			move.appendChild(el("span", { class: "scdc-prm-sr", text: "Moved down in the depth chart." }));
+		if (player.movement === "up" || player.movement === "down") {
+			var text = movementText(player.movement, tab);
+			move.className += player.movement === "up" ? " is-up" : " is-down";
+			move.innerHTML = player.movement === "up" ? PRM_ICON.up : PRM_ICON.down;
+			move.setAttribute("title", text);
+			move.appendChild(el("span", { class: "scdc-prm-sr", text: text + "." }));
 		}
 		children.push(move);
 
 		var rankText = String(player.rank);
 		if (rankText.length < 2) rankText = "0" + rankText;
 		children.push(el("span", { class: "scdc-prm-rank", text: rankText }));
-		children.push(el("span", { class: "scdc-prm-name", text: player.name, title: player.name }));
-
+		// Name and its labels share one inline box, so a long name wraps and
+		// its labels follow the last word instead of hanging off the far edge.
+		var href = playerHref(teamAbbr, player.name);
+		var who = el("span", { class: "scdc-prm-who" }, [
+			href
+				? el("a", { class: "scdc-prm-name", href: href, text: player.name, title: player.name })
+				: el("span", { class: "scdc-prm-name", text: player.name, title: player.name })
+		]);
 		if (player.movement === "new") {
-			children.push(el("span", { class: "scdc-prm-badge scdc-prm-badge-new", text: "NEW", title: "Newly listed on this depth chart" }));
+			who.appendChild(el("span", { class: "scdc-prm-new", text: "New", title: "Newly listed since the previous update" }));
 		}
 		if (player.status) {
 			var known = STATUS_BADGE[String(player.status).toUpperCase()];
-			children.push(
+			who.appendChild(
 				el("span", {
 					class: "scdc-prm-badge " + (known ? known.cls : "scdc-badge-out"),
 					text: known ? known.label : player.status
 				})
 			);
 		}
+		children.push(who);
 		var row = el("div", { class: "scdc-prm-row", role: "listitem" }, children);
 		if (player.id) row.setAttribute("data-id", String(player.id));
 		return row;
 	}
 
-	function prmPositionGroup(team, col) {
+	function prmPositionGroup(team, col, tab) {
 		var players = getPlayers(team, col.key);
 		var headId = "scdc-prm-h-" + team.team.abbr.toLowerCase() + "-" + col.key.toLowerCase();
 		var head = el("div", { class: "scdc-prm-col-head" }, [
@@ -839,14 +951,16 @@
 		var rule = el("div", { class: "scdc-prm-col-rule", "aria-hidden": "true" });
 		var list;
 		if (players.length) {
-			list = el("div", { class: "scdc-prm-list", role: "list", "aria-labelledby": headId }, players.map(prmPlayerRow));
+			list = el("div", { class: "scdc-prm-list", role: "list", "aria-labelledby": headId }, players.map(function (p) {
+				return prmPlayerRow(p, tab, team.team.abbr);
+			}));
 		} else {
 			list = el("div", { class: "scdc-prm-list is-empty", text: "-" });
 		}
 		return el("div", { class: "scdc-prm-col" }, [head, rule, list]);
 	}
 
-	function prmTeamCard(team, columns) {
+	function prmTeamCard(team, columns, tab) {
 		var logo;
 		if (team.team.logo) {
 			logo = el("img", imgProps({ src: team.team.logo, alt: "", width: "40", height: "40", loading: "lazy" }));
@@ -870,7 +984,7 @@
 			])
 		]);
 		var cols = el("div", { class: "scdc-prm-cols" }, columns.map(function (col) {
-			return prmPositionGroup(team, col);
+			return prmPositionGroup(team, col, tab);
 		}));
 		var card = el("article", { class: "scdc-prm-card", "data-team": team.team.abbr }, [head, cols]);
 		card.appendChild(el("span", { class: "scdc-prm-corner", "aria-hidden": "true" }));
@@ -994,16 +1108,54 @@
 			])
 		);
 
-		// ---- Fantasy notice ----
-		var notice = el("div", { class: "scdc-prm-notice", role: "note" });
-		notice.innerHTML = PRM_ICON.info;
-		notice.appendChild(
-			el("p", {}, [
-				el("strong", { text: "Fantasy view" }),
-				document.createTextNode(" prioritizes fantasy value and may differ from official team depth charts.")
-			])
-		);
+		// ---- Context row: what this view's order means + the marker key ----
+		// One quiet line under the toolbar. The full explanation (including
+		// what the arrows compare against) sits behind a disclosure button.
+		var infoId = "scdc-prm-info-" + Math.random().toString(36).slice(2, 8);
+		var infoIcon = el("span", { class: "scdc-prm-info-icon", "aria-hidden": "true" });
+		infoIcon.innerHTML = PRM_ICON.info;
+		var infoText = el("p", { class: "scdc-prm-info-text" });
+		var infoMore = el("button", {
+			type: "button",
+			class: "scdc-prm-info-more",
+			"aria-expanded": "false",
+			"aria-controls": infoId,
+			text: "How to read this"
+		});
+		var infoDetail = el("div", { class: "scdc-prm-info-detail", id: infoId });
+		infoDetail.hidden = true;
+		infoMore.addEventListener("click", function () {
+			var open = infoMore.getAttribute("aria-expanded") !== "true";
+			infoMore.setAttribute("aria-expanded", open ? "true" : "false");
+			infoDetail.hidden = !open;
+		});
+		var keyUp = el("span", { class: "scdc-prm-move is-up", "aria-hidden": "true" });
+		keyUp.innerHTML = PRM_ICON.up;
+		var keyDown = el("span", { class: "scdc-prm-move is-down", "aria-hidden": "true" });
+		keyDown.innerHTML = PRM_ICON.down;
+		var legend = el("ul", { class: "scdc-prm-legend", "aria-label": "Marker key" }, [
+			el("li", {}, [keyUp, "Up"]),
+			el("li", {}, [keyDown, "Down"]),
+			el("li", {}, [el("span", { class: "scdc-prm-new", "aria-hidden": "true", text: "New" }), "Newly listed"])
+		]);
+		var notice = el("div", { class: "scdc-prm-info", role: "note" }, [
+			el("div", { class: "scdc-prm-info-line" }, [infoIcon, infoText, infoMore, legend]),
+			infoDetail
+		]);
 		prm.appendChild(notice);
+
+		function syncInfo() {
+			var info = VIEW_INFO[state.tab];
+			infoText.textContent = info.short;
+			infoDetail.innerHTML = "";
+			infoDetail.appendChild(el("p", { text: info.long }));
+			var moves =
+				"Arrows and New labels compare each player's spot with the previous data refresh; the charts refresh daily." +
+				(state.tab === "fantasy" ? " Here they follow fantasy rank, not the team's depth chart." : "") +
+				" A player with no earlier listing to compare against gets no marker." +
+				(shared.lastUpdated ? " Last updated " + shared.lastUpdated + "." : "");
+			infoDetail.appendChild(el("p", { text: moves }));
+		}
 
 		var body = el("div", { class: "scdc-prm-body" });
 		prm.appendChild(body);
@@ -1045,7 +1197,7 @@
 		var cardCache = {};
 		function cardFor(team, columns) {
 			var key = state.tab + "|" + state.position + "|" + team.team.abbr;
-			if (!cardCache[key]) cardCache[key] = prmTeamCard(team, columns);
+			if (!cardCache[key]) cardCache[key] = prmTeamCard(team, columns, state.tab);
 			return cardCache[key];
 		}
 
@@ -1061,7 +1213,7 @@
 			var columns = currentColumns();
 			var visible = currentVisible();
 
-			notice.style.display = state.tab === "fantasy" ? "" : "none";
+			syncInfo();
 			exportBtn.disabled = !visible.length;
 
 			var count = 0;
@@ -1140,6 +1292,7 @@
 			// server's slugs.
 			teams: jsonAttr(root, "data-teams", {})
 		};
+		loadPlayerPages(root);
 
 		fetch(endpoint, { credentials: "same-origin" })
 			.then(function (res) {

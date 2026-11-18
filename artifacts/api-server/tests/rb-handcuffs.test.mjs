@@ -451,6 +451,30 @@ describe("the pages", () => {
     assert.equal(doc.querySelectorAll(".rbh-badge-card").length, 7);
   });
 
+  test("11-18 layout: intro from the board, no percentage legend, reference under the table", async () => {
+    const { doc } = await page("/rb-handcuff-rankings");
+    const intro = doc.querySelector(".rbh-panel .rbh-intro").textContent;
+    assert.equal(
+      intro,
+      `Rank the best fantasy football RB handcuffs for ${BOARD.season}. Customize backfield opportunity, path to opportunity, and player quality to find high-upside backups.`,
+    );
+    assert.ok(doc.querySelector(".rbh-updated time"), "the freshness line stays");
+    assert.equal(doc.querySelectorAll(".rbh-alloc-keys, [data-rbh-key]").length, 0, "legend removed");
+    const bar = doc.querySelector("[data-rbh-alloc]");
+    assert.equal(bar.getAttribute("role"), "img");
+    assert.equal(
+      bar.getAttribute("aria-label"),
+      "Model allocation: Backfield Opportunity 35%, Path to Opportunity 45%, Player Quality 20%",
+    );
+    assert.equal(doc.querySelectorAll(".rbh-slider .rbh-slider-pct").length, 3, "each card keeps its percentage");
+    // The reference comes after the table, and the how-to panel links to it.
+    const ref = doc.querySelector("#rbh-model-ref");
+    const table = doc.querySelector(".rbh-table-card");
+    assert.ok(table.compareDocumentPosition(ref) & 4, "Model Reference follows the table");
+    assert.ok(!doc.querySelector(".rbh-panel #rbh-model-ref"));
+    assert.equal(doc.querySelector("[data-rbh-how] a").getAttribute("href"), "#rbh-model-ref");
+  });
+
   test("player names link to this app's player pages", async () => {
     const { doc } = await page("/rb-handcuff-rankings");
     const link = doc.querySelector("tr.rbh-row a.rbh-name");
@@ -616,6 +640,27 @@ describe("the bundle", () => {
     click(doc.querySelector("[data-rbh-reset]"));
     click(doc.querySelector("[data-rbh-apply]"));
     assert.deepEqual(names(), before, "the defaults give back the table that was sent");
+  });
+
+  test("the allocation bar's label follows the sliders; How rankings work toggles", async () => {
+    const { doc, click, slide } = await mount();
+    slide("playerQualityWeight", 30);
+    slide("pathToWorkloadWeight", 35);
+    assert.equal(
+      doc.querySelector("[data-rbh-alloc]").getAttribute("aria-label"),
+      "Model allocation: Backfield Opportunity 35%, Path to Opportunity 35%, Player Quality 30%",
+    );
+    assert.equal(doc.querySelector('[data-rbh-seg="playerQualityWeight"]').style.width, "30%");
+    const how = doc.querySelector("[data-rbh-how-toggle]");
+    const panel = doc.querySelector("[data-rbh-how]");
+    assert.ok(panel.hidden);
+    click(how);
+    assert.ok(!panel.hidden);
+    assert.equal(how.getAttribute("aria-expanded"), "true");
+    click(panel.querySelector("[data-rbh-ref-link]"));
+    assert.ok(doc.querySelector("#rbh-model-ref details").open, "the link opens the first accordion");
+    click(how);
+    assert.ok(panel.hidden);
   });
 
   test("sorting: text A–Z first, numbers highest first, and back", async () => {

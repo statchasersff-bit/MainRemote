@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-16",
+  "builtAt": "2026-11-18",
   "throughWeek": 10,
   "definitions": {
     "play": "regular-season pass or run, not a two-point try, with an EPA value",
@@ -36,27 +36,27 @@
         "plays": 634,
         "dropbacks": 410,
         "rushes": 224,
-        "chartedDropbacks": 386,
+        "chartedDropbacks": 410,
         "epaPlay": {
-          "value": -0.07,
-          "rank": 22,
+          "value": -0.05,
+          "rank": 23,
           "tied": true,
-          "pct": 32
+          "pct": 29
         },
         "epaDropback": {
-          "value": -0.07,
+          "value": -0.05,
           "rank": 24,
           "tied": false,
           "pct": 26
         },
         "epaRush": {
           "value": -0.06,
-          "rank": 14,
-          "tied": false,
-          "pct": 58
+          "rank": 15,
+          "tied": true,
+          "pct": 55
         },
         "successRate": {
-          "value": 42.6,
+          "value": 43.1,
           "rank": 13,
           "tied": false,
           "pct": 61
@@ -92,22 +92,22 @@
           "pct": 23
         },
         "blitzRate": {
-          "value": 26.9,
-          "rank": 28,
-          "tied": true,
-          "pct": 13
+          "value": 26.3,
+          "rank": 30,
+          "tied": false,
+          "pct": 6
         },
         "epaVsBlitz": {
-          "value": -0.2,
-          "rank": 28,
-          "tied": false,
-          "pct": 13
+          "value": -0.17,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "epaVsFourMan": {
-          "value": 0.05,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
+          "value": 0,
+          "rank": 24,
+          "tied": false,
+          "pct": 26
         },
         "timeToThrow": {
           "value": 2.65,
@@ -126,36 +126,36 @@
         "plays": 604,
         "dropbacks": 318,
         "rushes": 286,
-        "chartedDropbacks": 290,
+        "chartedDropbacks": 318,
         "epaPlay": {
-          "value": 0.1,
-          "rank": 30,
+          "value": 0.09,
+          "rank": 29,
           "tied": true,
-          "pct": 6
+          "pct": 10
         },
         "epaDropback": {
-          "value": 0.28,
+          "value": 0.25,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaRush": {
-          "value": -0.1,
+          "value": -0.08,
           "rank": 10,
           "tied": true,
           "pct": 71
         },
         "successRate": {
-          "value": 44.4,
-          "rank": 23,
+          "value": 44.5,
+          "rank": 24,
           "tied": false,
-          "pct": 29
+          "pct": 26
         },
         "explosiveRate": {
           "value": 13.4,
-          "rank": 22,
+          "rank": 21,
           "tied": true,
-          "pct": 32
+          "pct": 35
         },
         "yardsPerPlay": {
           "value": 5.66,
@@ -182,28 +182,28 @@
           "pct": 0
         },
         "blitzRate": {
-          "value": 34.1,
-          "rank": 12,
+          "value": 33.3,
+          "rank": 13,
           "tied": false,
-          "pct": 65
+          "pct": 61
         },
         "epaVsBlitz": {
-          "value": 0.29,
-          "rank": 30,
+          "value": 0.2,
+          "rank": 28,
           "tied": false,
-          "pct": 6
+          "pct": 13
         },
         "epaVsFourMan": {
-          "value": 0.24,
-          "rank": 31,
+          "value": 0.28,
+          "rank": 32,
           "tied": false,
-          "pct": 3
+          "pct": 0
         },
         "timeToThrow": {
           "value": 2.8,
-          "rank": 20,
+          "rank": 21,
           "tied": true,
-          "pct": 39
+          "pct": 35
         },
         "sacks": {
           "value": 21,
@@ -287,30 +287,30 @@
         "plays": 588,
         "dropbacks": 331,
         "rushes": 257,
-        "chartedDropbacks": 283,
+        "chartedDropbacks": 331,
         "epaPlay": {
-          "value": -0.11,
-          "rank": 27,
-          "tied": true,
-          "pct": 16
+          "value": -0.09,
+          "rank": 28,
+          "tied": false,
+          "pct": 13
         },
         "epaDropback": {
-          "value": -0.19,
+          "value": -0.15,
           "rank": 29,
-          "tied": false,
+          "tied": true,
           "pct": 10
         },
         "epaRush": {
           "value": -0.01,
-          "rank": 9,
+          "rank": 10,
           "tied": true,
-          "pct": 74
+          "pct": 71
         },
         "successRate": {
-          "value": 42,
-          "rank": 15,
-          "tied": false,
-          "pct": 55
+          "value": 41.8,
+          "rank": 17,
+          "tied": true,
+          "pct": 48
         },
         "explosiveRate": {
           "value": 12.8,
@@ -321,7 +321,7 @@
         "yardsPerPlay": {
           "value": 5.49,
           "rank": 11,
-          "tied": true,
+          "tied": false,
           "pct": 68
         },
         "yardsPerPassAttempt": {
@@ -343,19 +343,19 @@
           "pct": 10
         },
         "blitzRate": {
-          "value": 36.7,
-          "rank": 3,
-          "tied": true,
-          "pct": 94
+          "value": 34.7,
+          "rank": 6,
+          "tied": false,
+          "pct": 84
         },
         "epaVsBlitz": {
-          "value": -0.1,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "value": -0.11,
+          "rank": 24,
+          "tied": false,
+          "pct": 26
         },
         "epaVsFourMan": {
-          "value": -0.2,
+          "value": -0.18,
           "rank": 30,
           "tied": false,
           "pct": 6
@@ -377,36 +377,36 @@
         "plays": 634,
         "dropbacks": 382,
         "rushes": 252,
-        "chartedDropbacks": 344,
+        "chartedDropbacks": 382,
         "epaPlay": {
-          "value": 0.02,
+          "value": 0.03,
           "rank": 20,
-          "tied": false,
+          "tied": true,
           "pct": 39
         },
         "epaDropback": {
           "value": 0.08,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "rank": 23,
+          "tied": false,
+          "pct": 29
         },
         "epaRush": {
-          "value": -0.07,
-          "rank": 17,
+          "value": -0.05,
+          "rank": 16,
           "tied": true,
-          "pct": 48
+          "pct": 52
         },
         "successRate": {
-          "value": 44.6,
-          "rank": 24,
-          "tied": true,
-          "pct": 26
+          "value": 44.3,
+          "rank": 23,
+          "tied": false,
+          "pct": 29
         },
         "explosiveRate": {
           "value": 13.4,
-          "rank": 22,
+          "rank": 21,
           "tied": true,
-          "pct": 32
+          "pct": 35
         },
         "yardsPerPlay": {
           "value": 5.57,
@@ -433,28 +433,28 @@
           "pct": 19
         },
         "blitzRate": {
-          "value": 25.6,
-          "rank": 23,
+          "value": 25.4,
+          "rank": 24,
           "tied": false,
-          "pct": 29
+          "pct": 26
         },
         "epaVsBlitz": {
-          "value": -0.02,
-          "rank": 12,
+          "value": -0.01,
+          "rank": 13,
           "tied": true,
-          "pct": 65
+          "pct": 61
         },
         "epaVsFourMan": {
-          "value": 0.1,
-          "rank": 20,
-          "tied": false,
-          "pct": 39
+          "value": 0.13,
+          "rank": 23,
+          "tied": true,
+          "pct": 29
         },
         "timeToThrow": {
           "value": 2.83,
-          "rank": 16,
+          "rank": 18,
           "tied": false,
-          "pct": 52
+          "pct": 45
         },
         "sacks": {
           "value": 21,
@@ -521,7 +521,7 @@
       }
     },
     "bal": {
-      "games": 9,
+      "games": 10,
       "weeks": [
         1,
         2,
@@ -531,242 +531,243 @@
         6,
         7,
         8,
-        9
+        9,
+        10
       ],
       "offense": {
-        "plays": 526,
-        "dropbacks": 289,
-        "rushes": 237,
+        "plays": 591,
+        "dropbacks": 339,
+        "rushes": 252,
         "chartedDropbacks": 289,
         "epaPlay": {
-          "value": -0.02,
-          "rank": 16,
-          "tied": true,
-          "pct": 52
+          "value": 0,
+          "rank": 15,
+          "tied": false,
+          "pct": 55
         },
         "epaDropback": {
           "value": 0.04,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "epaRush": {
-          "value": -0.08,
-          "rank": 16,
+          "value": -0.06,
+          "rank": 15,
           "tied": true,
-          "pct": 52
+          "pct": 55
         },
         "successRate": {
-          "value": 44.1,
+          "value": 44,
           "rank": 12,
           "tied": false,
           "pct": 65
         },
         "explosiveRate": {
-          "value": 13.5,
+          "value": 13.7,
           "rank": 11,
           "tied": false,
           "pct": 68
         },
         "yardsPerPlay": {
-          "value": 5.49,
-          "rank": 11,
+          "value": 5.46,
+          "rank": 12,
           "tied": true,
-          "pct": 68
+          "pct": 65
         },
         "yardsPerPassAttempt": {
-          "value": 7.46,
-          "rank": 13,
+          "value": 7.37,
+          "rank": 14,
           "tied": false,
-          "pct": 61
+          "pct": 58
         },
         "yardsPerCarry": {
-          "value": 4.68,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
-        },
-        "passerRating": {
-          "value": 93.9,
-          "rank": 13,
-          "tied": false,
-          "pct": 61
-        },
-        "blitzRate": {
-          "value": 34.6,
+          "value": 4.49,
           "rank": 9,
           "tied": false,
           "pct": 74
         },
-        "epaVsBlitz": {
-          "value": 0.09,
-          "rank": 11,
+        "passerRating": {
+          "value": 91.4,
+          "rank": 17,
           "tied": false,
-          "pct": 68
+          "pct": 48
         },
-        "epaVsFourMan": {
-          "value": 0.01,
-          "rank": 23,
-          "tied": false,
-          "pct": 29
-        },
-        "timeToThrow": {
-          "value": 2.94,
+        "blitzRate": {
+          "value": 34.6,
           "rank": 7,
           "tied": false,
           "pct": 81
         },
-        "sacks": {
-          "value": 23,
-          "rank": 17,
+        "epaVsBlitz": {
+          "value": 0.1,
+          "rank": 7,
           "tied": true,
-          "pct": 48
-        }
-      },
-      "defense": {
-        "plays": 549,
-        "dropbacks": 326,
-        "rushes": 223,
-        "chartedDropbacks": 326,
-        "epaPlay": {
-          "value": 0.01,
+          "pct": 81
+        },
+        "epaVsFourMan": {
+          "value": 0.02,
+          "rank": 22,
+          "tied": true,
+          "pct": 32
+        },
+        "timeToThrow": {
+          "value": 3.02,
+          "rank": 4,
+          "tied": true,
+          "pct": 90
+        },
+        "sacks": {
+          "value": 25,
           "rank": 18,
           "tied": true,
           "pct": 45
+        }
+      },
+      "defense": {
+        "plays": 603,
+        "dropbacks": 353,
+        "rushes": 250,
+        "chartedDropbacks": 326,
+        "epaPlay": {
+          "value": 0.02,
+          "rank": 19,
+          "tied": false,
+          "pct": 42
         },
         "epaDropback": {
-          "value": 0.07,
+          "value": 0.06,
           "rank": 19,
           "tied": true,
           "pct": 42
         },
         "epaRush": {
-          "value": -0.07,
-          "rank": 17,
+          "value": -0.05,
+          "rank": 16,
           "tied": true,
-          "pct": 48
+          "pct": 52
         },
         "successRate": {
-          "value": 44.3,
-          "rank": 22,
-          "tied": false,
-          "pct": 32
+          "value": 43.9,
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "explosiveRate": {
-          "value": 11.7,
-          "rank": 12,
+          "value": 12.3,
+          "rank": 14,
           "tied": false,
-          "pct": 65
+          "pct": 58
         },
         "yardsPerPlay": {
-          "value": 5.37,
+          "value": 5.36,
           "rank": 18,
-          "tied": true,
+          "tied": false,
           "pct": 45
         },
         "yardsPerPassAttempt": {
-          "value": 7.59,
+          "value": 7.56,
           "rank": 22,
           "tied": false,
           "pct": 32
         },
         "yardsPerCarry": {
-          "value": 3.61,
-          "rank": 4,
-          "tied": false,
-          "pct": 90
+          "value": 3.74,
+          "rank": 5,
+          "tied": true,
+          "pct": 87
         },
         "passerRating": {
-          "value": 96.1,
+          "value": 95.6,
           "rank": 22,
           "tied": false,
           "pct": 32
         },
         "blitzRate": {
           "value": 33.4,
-          "rank": 14,
+          "rank": 12,
           "tied": false,
-          "pct": 58
+          "pct": 65
         },
         "epaVsBlitz": {
-          "value": -0.06,
+          "value": -0.04,
           "rank": 9,
           "tied": false,
           "pct": 74
         },
         "epaVsFourMan": {
-          "value": 0.16,
+          "value": 0.14,
           "rank": 25,
           "tied": true,
           "pct": 23
         },
         "timeToThrow": {
-          "value": 2.81,
-          "rank": 18,
-          "tied": true,
-          "pct": 45
+          "value": 2.85,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "sacks": {
-          "value": 17,
-          "rank": 23,
-          "tied": true,
-          "pct": 29
+          "value": 19,
+          "rank": 22,
+          "tied": false,
+          "pct": 32
         }
       },
       "box": {
         "own": {
-          "gamesPlayed": 9,
-          "plays": 535,
-          "playsPerGame": 59.44444444444444,
-          "passPlays": 270,
-          "passRate": 50.467289719626166,
-          "pointsPerGame": 21,
-          "yardsPerGame": 326.22222222222223,
-          "yardsPerPlay": 5.48785046728972,
-          "passYardsPerGame": 188.44444444444446,
-          "rushYardsPerGame": 137.77777777777777,
-          "yardsPerPassAttempt": 7.4574898785425106,
-          "yardsPerRushAttempt": 4.679245283018868,
-          "passerRating": 93.88495276653171,
-          "thirdDownPct": 37.83783783783784,
-          "fourthDownPct": 30,
-          "firstDownsPerGame": 17.555555555555557,
-          "passAttemptsPerGame": 27.444444444444443,
-          "rushAttemptsPerGame": 29.444444444444443,
+          "gamesPlayed": 10,
+          "plays": 601,
+          "playsPerGame": 60.1,
+          "passPlays": 321,
+          "passRate": 53.41098169717138,
+          "pointsPerGame": 20.9,
+          "yardsPerGame": 328.3,
+          "yardsPerPlay": 5.462562396006655,
+          "passYardsPerGame": 202.7,
+          "rushYardsPerGame": 125.6,
+          "yardsPerPassAttempt": 7.371621621621622,
+          "yardsPerRushAttempt": 4.485714285714286,
+          "passerRating": 91.35698198198199,
+          "thirdDownPct": 38.21138211382114,
+          "fourthDownPct": 36.36363636363637,
+          "firstDownsPerGame": 18,
+          "passAttemptsPerGame": 29.6,
+          "rushAttemptsPerGame": 28,
           "passingTouchdowns": 10,
-          "rushingTouchdowns": 11,
-          "sacks": 23,
+          "rushingTouchdowns": 13,
+          "sacks": 25,
           "takeaways": 9,
-          "giveaways": 11,
-          "turnoverMargin": -2,
-          "penaltyYardsPerGame": 59.888888888888886
+          "giveaways": 13,
+          "turnoverMargin": -4,
+          "penaltyYardsPerGame": 58.4
         },
         "opponent": {
-          "gamesPlayed": 9,
-          "plays": 553,
-          "playsPerGame": 61.44444444444444,
-          "passPlays": 304,
-          "passRate": 54.97287522603978,
-          "pointsPerGame": 26.22222222222222,
-          "yardsPerGame": 329.6666666666667,
-          "yardsPerPlay": 5.365280289330922,
-          "passYardsPerGame": 229.77777777777777,
-          "rushYardsPerGame": 99.88888888888889,
-          "yardsPerPassAttempt": 7.585365853658536,
-          "yardsPerRushAttempt": 3.610441767068273,
-          "passerRating": 96.1164343786295,
-          "thirdDownPct": 38.983050847457626,
-          "fourthDownPct": 64.28571428571429,
-          "firstDownsPerGame": 19.555555555555557,
-          "passAttemptsPerGame": 31.88888888888889,
-          "rushAttemptsPerGame": 27.666666666666668,
+          "gamesPlayed": 10,
+          "plays": 607,
+          "playsPerGame": 60.7,
+          "passPlays": 324,
+          "passRate": 53.37726523887974,
+          "pointsPerGame": 25.9,
+          "yardsPerGame": 325.4,
+          "yardsPerPlay": 5.3607907742998355,
+          "passYardsPerGame": 219.5,
+          "rushYardsPerGame": 105.9,
+          "yardsPerPassAttempt": 7.560655737704918,
+          "yardsPerRushAttempt": 3.7420494699646643,
+          "passerRating": 95.60792349726776,
+          "thirdDownPct": 36.6412213740458,
+          "fourthDownPct": 68.75,
+          "firstDownsPerGame": 19.1,
+          "passAttemptsPerGame": 30.5,
+          "rushAttemptsPerGame": 28.3,
           "passingTouchdowns": 12,
-          "rushingTouchdowns": 12,
-          "sacks": 17,
-          "takeaways": 11,
+          "rushingTouchdowns": 14,
+          "sacks": 19,
+          "takeaways": 13,
           "giveaways": 9,
-          "turnoverMargin": 2,
-          "penaltyYardsPerGame": 46.888888888888886
+          "turnoverMargin": 4,
+          "penaltyYardsPerGame": 45.2
         }
       }
     },
@@ -787,30 +788,30 @@
         "plays": 551,
         "dropbacks": 295,
         "rushes": 256,
-        "chartedDropbacks": 273,
+        "chartedDropbacks": 295,
         "epaPlay": {
-          "value": 0.17,
+          "value": 0.14,
           "rank": 3,
-          "tied": false,
+          "tied": true,
           "pct": 94
         },
         "epaDropback": {
-          "value": 0.26,
+          "value": 0.22,
           "rank": 4,
           "tied": false,
           "pct": 90
         },
         "epaRush": {
-          "value": 0.06,
+          "value": 0.05,
           "rank": 3,
           "tied": false,
           "pct": 94
         },
         "successRate": {
           "value": 47.7,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
+          "rank": 6,
+          "tied": true,
+          "pct": 84
         },
         "explosiveRate": {
           "value": 16.2,
@@ -843,19 +844,19 @@
           "pct": 81
         },
         "blitzRate": {
-          "value": 40.3,
+          "value": 39.3,
           "rank": 2,
           "tied": false,
           "pct": 97
         },
         "epaVsBlitz": {
-          "value": 0.06,
-          "rank": 13,
-          "tied": true,
-          "pct": 61
+          "value": 0.04,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "epaVsFourMan": {
-          "value": 0.44,
+          "value": 0.36,
           "rank": 1,
           "tied": false,
           "pct": 100
@@ -877,30 +878,30 @@
         "plays": 570,
         "dropbacks": 374,
         "rushes": 196,
-        "chartedDropbacks": 326,
+        "chartedDropbacks": 374,
         "epaPlay": {
-          "value": -0.02,
+          "value": -0.01,
+          "rank": 10,
+          "tied": true,
+          "pct": 71
+        },
+        "epaDropback": {
+          "value": 0.02,
           "rank": 11,
           "tied": true,
           "pct": 68
         },
-        "epaDropback": {
-          "value": 0.02,
-          "rank": 12,
-          "tied": true,
-          "pct": 65
-        },
         "epaRush": {
-          "value": -0.1,
+          "value": -0.08,
           "rank": 10,
           "tied": true,
           "pct": 71
         },
         "successRate": {
-          "value": 44.2,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 43.9,
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "explosiveRate": {
           "value": 13.2,
@@ -922,9 +923,9 @@
         },
         "yardsPerCarry": {
           "value": 3.97,
-          "rank": 12,
+          "rank": 13,
           "tied": false,
-          "pct": 65
+          "pct": 61
         },
         "passerRating": {
           "value": 87,
@@ -933,22 +934,22 @@
           "pct": 71
         },
         "blitzRate": {
-          "value": 37.4,
-          "rank": 6,
+          "value": 35.6,
+          "rank": 8,
           "tied": false,
-          "pct": 84
+          "pct": 77
         },
         "epaVsBlitz": {
-          "value": 0,
-          "rank": 16,
-          "tied": false,
-          "pct": 52
+          "value": -0.01,
+          "rank": 13,
+          "tied": true,
+          "pct": 61
         },
         "epaVsFourMan": {
-          "value": 0.09,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
+          "value": 0.06,
+          "rank": 13,
+          "tied": true,
+          "pct": 61
         },
         "timeToThrow": {
           "value": 2.91,
@@ -1037,7 +1038,7 @@
         "plays": 586,
         "dropbacks": 380,
         "rushes": 206,
-        "chartedDropbacks": 346,
+        "chartedDropbacks": 380,
         "epaPlay": {
           "value": 0.03,
           "rank": 11,
@@ -1051,16 +1052,16 @@
           "pct": 52
         },
         "epaRush": {
-          "value": -0.03,
-          "rank": 12,
-          "tied": false,
-          "pct": 65
+          "value": -0.01,
+          "rank": 10,
+          "tied": true,
+          "pct": 71
         },
         "successRate": {
           "value": 41.8,
-          "rank": 18,
-          "tied": false,
-          "pct": 45
+          "rank": 17,
+          "tied": true,
+          "pct": 48
         },
         "explosiveRate": {
           "value": 13.8,
@@ -1082,9 +1083,9 @@
         },
         "yardsPerCarry": {
           "value": 4.1,
-          "rank": 16,
+          "rank": 17,
           "tied": true,
-          "pct": 52
+          "pct": 48
         },
         "passerRating": {
           "value": 90.1,
@@ -1093,28 +1094,28 @@
           "pct": 42
         },
         "blitzRate": {
-          "value": 26.9,
-          "rank": 28,
-          "tied": true,
-          "pct": 13
+          "value": 28.2,
+          "rank": 26,
+          "tied": false,
+          "pct": 19
         },
         "epaVsBlitz": {
-          "value": -0.16,
+          "value": -0.14,
           "rank": 26,
           "tied": false,
           "pct": 19
         },
         "epaVsFourMan": {
-          "value": 0.24,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "value": 0.18,
+          "rank": 6,
+          "tied": false,
+          "pct": 84
         },
         "timeToThrow": {
           "value": 2.84,
-          "rank": 15,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "sacks": {
           "value": 29,
@@ -1127,30 +1128,30 @@
         "plays": 577,
         "dropbacks": 349,
         "rushes": 228,
-        "chartedDropbacks": 306,
+        "chartedDropbacks": 349,
         "epaPlay": {
-          "value": -0.01,
-          "rank": 14,
+          "value": 0.01,
+          "rank": 16,
           "tied": true,
-          "pct": 58
+          "pct": 52
         },
         "epaDropback": {
           "value": 0.05,
-          "rank": 15,
+          "rank": 17,
           "tied": true,
-          "pct": 55
+          "pct": 48
         },
         "epaRush": {
-          "value": -0.1,
-          "rank": 10,
+          "value": -0.07,
+          "rank": 12,
           "tied": true,
-          "pct": 71
+          "pct": 65
         },
         "successRate": {
-          "value": 43.3,
-          "rank": 14,
-          "tied": false,
-          "pct": 58
+          "value": 42.5,
+          "rank": 12,
+          "tied": true,
+          "pct": 65
         },
         "explosiveRate": {
           "value": 9.7,
@@ -1183,22 +1184,22 @@
           "pct": 68
         },
         "blitzRate": {
-          "value": 35.6,
+          "value": 33,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
+        },
+        "epaVsBlitz": {
+          "value": -0.03,
           "rank": 10,
           "tied": false,
           "pct": 71
         },
-        "epaVsBlitz": {
-          "value": -0.01,
-          "rank": 15,
-          "tied": false,
-          "pct": 55
-        },
         "epaVsFourMan": {
-          "value": 0.13,
-          "rank": 22,
-          "tied": false,
-          "pct": 32
+          "value": 0.1,
+          "rank": 21,
+          "tied": true,
+          "pct": 35
         },
         "timeToThrow": {
           "value": 2.78,
@@ -1209,7 +1210,7 @@
         "sacks": {
           "value": 15,
           "rank": 30,
-          "tied": false,
+          "tied": true,
           "pct": 6
         }
       },
@@ -1290,27 +1291,27 @@
         "chartedDropbacks": 354,
         "epaPlay": {
           "value": 0.04,
-          "rank": 9,
-          "tied": true,
-          "pct": 74
+          "rank": 10,
+          "tied": false,
+          "pct": 71
         },
         "epaDropback": {
-          "value": 0.09,
-          "rank": 13,
+          "value": 0.08,
+          "rank": 14,
           "tied": true,
-          "pct": 61
+          "pct": 58
         },
         "epaRush": {
-          "value": -0.04,
+          "value": -0.02,
           "rank": 13,
           "tied": false,
           "pct": 61
         },
         "successRate": {
           "value": 47,
-          "rank": 8,
+          "rank": 9,
           "tied": false,
-          "pct": 77
+          "pct": 74
         },
         "explosiveRate": {
           "value": 11.9,
@@ -1326,9 +1327,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.4,
-          "rank": 14,
+          "rank": 13,
           "tied": false,
-          "pct": 58
+          "pct": 61
         },
         "yardsPerCarry": {
           "value": 4.22,
@@ -1349,16 +1350,16 @@
           "pct": 100
         },
         "epaVsBlitz": {
-          "value": 0.11,
-          "rank": 8,
-          "tied": true,
-          "pct": 77
+          "value": 0.09,
+          "rank": 9,
+          "tied": false,
+          "pct": 74
         },
         "epaVsFourMan": {
           "value": 0.08,
-          "rank": 15,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "timeToThrow": {
           "value": 3.03,
@@ -1379,28 +1380,28 @@
         "rushes": 169,
         "chartedDropbacks": 299,
         "epaPlay": {
-          "value": -0.06,
-          "rank": 7,
-          "tied": true,
-          "pct": 81
+          "value": -0.03,
+          "rank": 8,
+          "tied": false,
+          "pct": 77
         },
         "epaDropback": {
-          "value": -0.05,
-          "rank": 7,
-          "tied": true,
-          "pct": 81
+          "value": -0.02,
+          "rank": 8,
+          "tied": false,
+          "pct": 77
         },
         "epaRush": {
-          "value": -0.09,
-          "rank": 13,
+          "value": -0.07,
+          "rank": 12,
           "tied": true,
-          "pct": 61
+          "pct": 65
         },
         "successRate": {
-          "value": 39.5,
-          "rank": 4,
-          "tied": true,
-          "pct": 90
+          "value": 40.2,
+          "rank": 6,
+          "tied": false,
+          "pct": 84
         },
         "explosiveRate": {
           "value": 14.5,
@@ -1428,33 +1429,33 @@
         },
         "passerRating": {
           "value": 93.1,
-          "rank": 18,
+          "rank": 19,
           "tied": false,
-          "pct": 45
+          "pct": 42
         },
         "blitzRate": {
           "value": 37.1,
-          "rank": 7,
+          "rank": 6,
           "tied": false,
-          "pct": 81
+          "pct": 84
         },
         "epaVsBlitz": {
-          "value": -0.04,
-          "rank": 11,
-          "tied": false,
-          "pct": 68
+          "value": 0.01,
+          "rank": 15,
+          "tied": true,
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": -0.07,
+          "value": -0.05,
           "rank": 4,
-          "tied": false,
+          "tied": true,
           "pct": 90
         },
         "timeToThrow": {
           "value": 2.84,
-          "rank": 13,
+          "rank": 15,
           "tied": true,
-          "pct": 61
+          "pct": 55
         },
         "sacks": {
           "value": 26,
@@ -1537,27 +1538,27 @@
         "plays": 546,
         "dropbacks": 365,
         "rushes": 181,
-        "chartedDropbacks": 321,
+        "chartedDropbacks": 365,
         "epaPlay": {
-          "value": 0.18,
+          "value": 0.16,
           "rank": 2,
           "tied": false,
           "pct": 97
         },
         "epaDropback": {
-          "value": 0.3,
+          "value": 0.27,
           "rank": 3,
           "tied": false,
           "pct": 94
         },
         "epaRush": {
-          "value": -0.08,
-          "rank": 16,
+          "value": -0.06,
+          "rank": 15,
           "tied": true,
-          "pct": 52
+          "pct": 55
         },
         "successRate": {
-          "value": 51.5,
+          "value": 50.7,
           "rank": 2,
           "tied": false,
           "pct": 97
@@ -1595,17 +1596,17 @@
         "blitzRate": {
           "value": 27.4,
           "rank": 27,
-          "tied": false,
+          "tied": true,
           "pct": 16
         },
         "epaVsBlitz": {
-          "value": 0.12,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
+          "value": 0.21,
+          "rank": 3,
+          "tied": true,
+          "pct": 94
         },
         "epaVsFourMan": {
-          "value": 0.31,
+          "value": 0.28,
           "rank": 3,
           "tied": false,
           "pct": 94
@@ -1627,30 +1628,30 @@
         "plays": 545,
         "dropbacks": 349,
         "rushes": 196,
-        "chartedDropbacks": 313,
+        "chartedDropbacks": 349,
         "epaPlay": {
           "value": 0,
-          "rank": 16,
+          "rank": 14,
           "tied": true,
-          "pct": 52
+          "pct": 58
         },
         "epaDropback": {
           "value": 0.02,
-          "rank": 12,
+          "rank": 11,
           "tied": true,
-          "pct": 65
+          "pct": 68
         },
         "epaRush": {
           "value": -0.03,
-          "rank": 26,
+          "rank": 25,
           "tied": true,
-          "pct": 19
+          "pct": 23
         },
         "successRate": {
           "value": 43.7,
-          "rank": 15,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "explosiveRate": {
           "value": 14.5,
@@ -1683,22 +1684,22 @@
           "pct": 61
         },
         "blitzRate": {
-          "value": 17.9,
+          "value": 16.9,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaVsBlitz": {
-          "value": -0.02,
-          "rank": 12,
+          "value": 0.01,
+          "rank": 15,
           "tied": true,
-          "pct": 65
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": 0.05,
-          "rank": 12,
+          "value": 0.02,
+          "rank": 9,
           "tied": false,
-          "pct": 65
+          "pct": 74
         },
         "timeToThrow": {
           "value": 2.95,
@@ -1788,30 +1789,30 @@
         "plays": 611,
         "dropbacks": 397,
         "rushes": 214,
-        "chartedDropbacks": 351,
+        "chartedDropbacks": 397,
         "epaPlay": {
-          "value": -0.08,
-          "rank": 24,
-          "tied": false,
-          "pct": 26
+          "value": -0.05,
+          "rank": 23,
+          "tied": true,
+          "pct": 29
         },
         "epaDropback": {
-          "value": -0.01,
+          "value": 0.01,
           "rank": 22,
           "tied": false,
           "pct": 32
         },
         "epaRush": {
-          "value": -0.19,
+          "value": -0.15,
           "rank": 26,
-          "tied": true,
+          "tied": false,
           "pct": 19
         },
         "successRate": {
-          "value": 41.4,
-          "rank": 22,
+          "value": 41.2,
+          "rank": 24,
           "tied": false,
-          "pct": 32
+          "pct": 26
         },
         "explosiveRate": {
           "value": 10.6,
@@ -1839,33 +1840,33 @@
         },
         "passerRating": {
           "value": 91.6,
-          "rank": 17,
+          "rank": 16,
           "tied": false,
-          "pct": 48
+          "pct": 52
         },
         "blitzRate": {
-          "value": 35,
-          "rank": 8,
+          "value": 33.8,
+          "rank": 10,
           "tied": false,
-          "pct": 77
+          "pct": 71
         },
         "epaVsBlitz": {
-          "value": -0.1,
+          "value": -0.03,
+          "rank": 19,
+          "tied": true,
+          "pct": 42
+        },
+        "epaVsFourMan": {
+          "value": 0.02,
           "rank": 22,
           "tied": true,
           "pct": 32
         },
-        "epaVsFourMan": {
-          "value": 0.04,
-          "rank": 21,
-          "tied": true,
-          "pct": 35
-        },
         "timeToThrow": {
           "value": 2.84,
-          "rank": 15,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "sacks": {
           "value": 42,
@@ -1878,36 +1879,36 @@
         "plays": 627,
         "dropbacks": 377,
         "rushes": 250,
-        "chartedDropbacks": 335,
+        "chartedDropbacks": 377,
         "epaPlay": {
-          "value": -0.02,
-          "rank": 11,
+          "value": -0.01,
+          "rank": 10,
           "tied": true,
-          "pct": 68
+          "pct": 71
         },
         "epaDropback": {
-          "value": -0.02,
+          "value": 0,
           "rank": 9,
           "tied": false,
           "pct": 74
         },
         "epaRush": {
           "value": -0.03,
-          "rank": 26,
+          "rank": 25,
           "tied": true,
-          "pct": 19
+          "pct": 23
         },
         "successRate": {
-          "value": 41.6,
-          "rank": 10,
-          "tied": false,
-          "pct": 71
+          "value": 41.1,
+          "rank": 8,
+          "tied": true,
+          "pct": 77
         },
         "explosiveRate": {
           "value": 13.4,
-          "rank": 22,
+          "rank": 21,
           "tied": true,
-          "pct": 32
+          "pct": 35
         },
         "yardsPerPlay": {
           "value": 5.16,
@@ -1934,22 +1935,22 @@
           "pct": 74
         },
         "blitzRate": {
-          "value": 24.2,
-          "rank": 28,
+          "value": 27.3,
+          "rank": 20,
           "tied": false,
-          "pct": 13
+          "pct": 39
         },
         "epaVsBlitz": {
-          "value": -0.15,
+          "value": -0.12,
           "rank": 5,
           "tied": false,
           "pct": 87
         },
         "epaVsFourMan": {
-          "value": 0.02,
-          "rank": 10,
-          "tied": true,
-          "pct": 71
+          "value": 0.05,
+          "rank": 12,
+          "tied": false,
+          "pct": 65
         },
         "timeToThrow": {
           "value": 2.93,
@@ -2039,36 +2040,36 @@
         "plays": 656,
         "dropbacks": 422,
         "rushes": 234,
-        "chartedDropbacks": 368,
+        "chartedDropbacks": 422,
         "epaPlay": {
-          "value": 0.11,
+          "value": 0.1,
           "rank": 7,
           "tied": false,
           "pct": 81
         },
         "epaDropback": {
-          "value": 0.17,
+          "value": 0.15,
           "rank": 7,
           "tied": false,
           "pct": 81
         },
         "epaRush": {
           "value": 0.01,
-          "rank": 6,
+          "rank": 7,
           "tied": true,
-          "pct": 84
+          "pct": 81
         },
         "successRate": {
-          "value": 46.5,
-          "rank": 9,
+          "value": 47.1,
+          "rank": 8,
           "tied": false,
-          "pct": 74
+          "pct": 77
         },
         "explosiveRate": {
           "value": 11.4,
-          "rank": 21,
+          "rank": 22,
           "tied": false,
-          "pct": 35
+          "pct": 32
         },
         "yardsPerPlay": {
           "value": 5.59,
@@ -2095,28 +2096,28 @@
           "pct": 74
         },
         "blitzRate": {
-          "value": 32.3,
-          "rank": 15,
-          "tied": false,
-          "pct": 55
-        },
-        "epaVsBlitz": {
-          "value": 0.01,
+          "value": 30.6,
           "rank": 17,
-          "tied": true,
+          "tied": false,
           "pct": 48
         },
-        "epaVsFourMan": {
-          "value": 0.24,
-          "rank": 5,
+        "epaVsBlitz": {
+          "value": 0.07,
+          "rank": 11,
           "tied": true,
+          "pct": 68
+        },
+        "epaVsFourMan": {
+          "value": 0.19,
+          "rank": 5,
+          "tied": false,
           "pct": 87
         },
         "timeToThrow": {
           "value": 2.81,
-          "rank": 20,
+          "rank": 21,
           "tied": false,
-          "pct": 39
+          "pct": 35
         },
         "sacks": {
           "value": 15,
@@ -2129,18 +2130,18 @@
         "plays": 629,
         "dropbacks": 366,
         "rushes": 263,
-        "chartedDropbacks": 331,
+        "chartedDropbacks": 366,
         "epaPlay": {
-          "value": 0.14,
+          "value": 0.12,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaDropback": {
-          "value": 0.23,
-          "rank": 31,
-          "tied": false,
-          "pct": 3
+          "value": 0.2,
+          "rank": 30,
+          "tied": true,
+          "pct": 6
         },
         "epaRush": {
           "value": 0.01,
@@ -2149,9 +2150,9 @@
           "pct": 3
         },
         "successRate": {
-          "value": 46.4,
+          "value": 46.6,
           "rank": 28,
-          "tied": false,
+          "tied": true,
           "pct": 13
         },
         "explosiveRate": {
@@ -2168,9 +2169,9 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.78,
-          "rank": 24,
+          "rank": 25,
           "tied": false,
-          "pct": 26
+          "pct": 23
         },
         "yardsPerCarry": {
           "value": 5.22,
@@ -2191,16 +2192,16 @@
           "pct": 10
         },
         "epaVsBlitz": {
-          "value": 0.11,
-          "rank": 24,
+          "value": 0.22,
+          "rank": 29,
           "tied": false,
-          "pct": 26
+          "pct": 10
         },
         "epaVsFourMan": {
           "value": 0.21,
-          "rank": 29,
-          "tied": true,
-          "pct": 10
+          "rank": 30,
+          "tied": false,
+          "pct": 6
         },
         "timeToThrow": {
           "value": 2.92,
@@ -2291,25 +2292,25 @@
         "rushes": 206,
         "chartedDropbacks": 306,
         "epaPlay": {
-          "value": -0.02,
+          "value": -0.01,
           "rank": 16,
           "tied": true,
           "pct": 52
         },
         "epaDropback": {
-          "value": 0.01,
+          "value": 0.02,
           "rank": 20,
-          "tied": false,
+          "tied": true,
           "pct": 39
         },
         "epaRush": {
-          "value": -0.07,
-          "rank": 15,
+          "value": -0.05,
+          "rank": 14,
           "tied": false,
-          "pct": 55
+          "pct": 58
         },
         "successRate": {
-          "value": 38.7,
+          "value": 38.9,
           "rank": 28,
           "tied": false,
           "pct": 13
@@ -2346,27 +2347,27 @@
         },
         "blitzRate": {
           "value": 30.4,
-          "rank": 21,
+          "rank": 19,
           "tied": false,
-          "pct": 35
+          "pct": 42
         },
         "epaVsBlitz": {
-          "value": -0.22,
-          "rank": 29,
-          "tied": false,
-          "pct": 10
+          "value": -0.17,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "epaVsFourMan": {
-          "value": 0.1,
-          "rank": 14,
+          "value": 0.09,
+          "rank": 15,
           "tied": false,
-          "pct": 58
+          "pct": 55
         },
         "timeToThrow": {
           "value": 2.98,
-          "rank": 5,
+          "rank": 6,
           "tied": false,
-          "pct": 87
+          "pct": 84
         },
         "sacks": {
           "value": 11,
@@ -2381,13 +2382,13 @@
         "rushes": 225,
         "chartedDropbacks": 382,
         "epaPlay": {
-          "value": -0.01,
+          "value": 0,
           "rank": 14,
           "tied": true,
           "pct": 58
         },
         "epaDropback": {
-          "value": 0,
+          "value": 0.01,
           "rank": 10,
           "tied": false,
           "pct": 71
@@ -2399,16 +2400,16 @@
           "pct": 13
         },
         "successRate": {
-          "value": 41,
-          "rank": 8,
-          "tied": true,
-          "pct": 77
+          "value": 40.9,
+          "rank": 7,
+          "tied": false,
+          "pct": 81
         },
         "explosiveRate": {
           "value": 11.9,
-          "rank": 13,
+          "rank": 12,
           "tied": false,
-          "pct": 61
+          "pct": 65
         },
         "yardsPerPlay": {
           "value": 5.17,
@@ -2436,14 +2437,14 @@
         },
         "blitzRate": {
           "value": 33.5,
-          "rank": 13,
+          "rank": 11,
           "tied": false,
-          "pct": 61
+          "pct": 68
         },
         "epaVsBlitz": {
-          "value": -0.13,
+          "value": -0.09,
           "rank": 6,
-          "tied": true,
+          "tied": false,
           "pct": 84
         },
         "epaVsFourMan": {
@@ -2539,27 +2540,27 @@
         "plays": 581,
         "dropbacks": 333,
         "rushes": 248,
-        "chartedDropbacks": 299,
+        "chartedDropbacks": 333,
         "epaPlay": {
-          "value": 0.12,
+          "value": 0.11,
           "rank": 6,
           "tied": false,
           "pct": 84
         },
         "epaDropback": {
-          "value": 0.21,
+          "value": 0.18,
           "rank": 5,
           "tied": false,
           "pct": 87
         },
         "epaRush": {
-          "value": 0,
-          "rank": 8,
-          "tied": false,
-          "pct": 77
+          "value": 0.01,
+          "rank": 7,
+          "tied": true,
+          "pct": 81
         },
         "successRate": {
-          "value": 49.1,
+          "value": 48.9,
           "rank": 3,
           "tied": false,
           "pct": 94
@@ -2584,9 +2585,9 @@
         },
         "yardsPerCarry": {
           "value": 4.59,
-          "rank": 9,
+          "rank": 8,
           "tied": false,
-          "pct": 74
+          "pct": 77
         },
         "passerRating": {
           "value": 106,
@@ -2595,28 +2596,28 @@
           "pct": 87
         },
         "blitzRate": {
-          "value": 35.8,
-          "rank": 5,
+          "value": 34.5,
+          "rank": 8,
           "tied": false,
-          "pct": 87
+          "pct": 77
         },
         "epaVsBlitz": {
-          "value": 0.23,
-          "rank": 3,
+          "value": 0.26,
+          "rank": 2,
           "tied": false,
-          "pct": 94
+          "pct": 97
         },
         "epaVsFourMan": {
-          "value": 0.17,
-          "rank": 9,
+          "value": 0.14,
+          "rank": 11,
           "tied": true,
-          "pct": 74
+          "pct": 68
         },
         "timeToThrow": {
           "value": 2.82,
-          "rank": 18,
+          "rank": 19,
           "tied": true,
-          "pct": 45
+          "pct": 42
         },
         "sacks": {
           "value": 21,
@@ -2629,7 +2630,7 @@
         "plays": 569,
         "dropbacks": 387,
         "rushes": 182,
-        "chartedDropbacks": 351,
+        "chartedDropbacks": 387,
         "epaPlay": {
           "value": 0.04,
           "rank": 22,
@@ -2637,22 +2638,22 @@
           "pct": 32
         },
         "epaDropback": {
-          "value": 0.12,
+          "value": 0.11,
           "rank": 24,
           "tied": false,
           "pct": 26
         },
         "epaRush": {
-          "value": -0.12,
-          "rank": 8,
+          "value": -0.1,
+          "rank": 7,
           "tied": true,
-          "pct": 77
+          "pct": 81
         },
         "successRate": {
-          "value": 42.9,
-          "rank": 13,
+          "value": 43.6,
+          "rank": 15,
           "tied": false,
-          "pct": 61
+          "pct": 55
         },
         "explosiveRate": {
           "value": 12.8,
@@ -2674,39 +2675,39 @@
         },
         "yardsPerCarry": {
           "value": 3.95,
-          "rank": 10,
+          "rank": 11,
           "tied": false,
-          "pct": 71
+          "pct": 68
         },
         "passerRating": {
           "value": 94.6,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
-        },
-        "blitzRate": {
-          "value": 27.1,
           "rank": 20,
           "tied": false,
           "pct": 39
         },
-        "epaVsBlitz": {
-          "value": 0.05,
+        "blitzRate": {
+          "value": 27.9,
           "rank": 19,
-          "tied": true,
+          "tied": false,
           "pct": 42
         },
-        "epaVsFourMan": {
-          "value": 0.21,
-          "rank": 29,
+        "epaVsBlitz": {
+          "value": 0.01,
+          "rank": 15,
           "tied": true,
-          "pct": 10
+          "pct": 55
+        },
+        "epaVsFourMan": {
+          "value": 0.15,
+          "rank": 28,
+          "tied": false,
+          "pct": 13
         },
         "timeToThrow": {
           "value": 2.81,
-          "rank": 18,
-          "tied": true,
-          "pct": 45
+          "rank": 20,
+          "tied": false,
+          "pct": 39
         },
         "sacks": {
           "value": 32,
@@ -2790,30 +2791,30 @@
         "plays": 607,
         "dropbacks": 397,
         "rushes": 210,
-        "chartedDropbacks": 360,
+        "chartedDropbacks": 397,
         "epaPlay": {
           "value": 0.01,
-          "rank": 12,
-          "tied": true,
-          "pct": 65
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "epaDropback": {
-          "value": 0.15,
-          "rank": 8,
-          "tied": true,
-          "pct": 77
+          "value": 0.12,
+          "rank": 9,
+          "tied": false,
+          "pct": 74
         },
         "epaRush": {
-          "value": -0.26,
+          "value": -0.21,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "successRate": {
-          "value": 40.5,
-          "rank": 27,
-          "tied": false,
-          "pct": 16
+          "value": 40.4,
+          "rank": 26,
+          "tied": true,
+          "pct": 19
         },
         "explosiveRate": {
           "value": 12.5,
@@ -2823,9 +2824,9 @@
         },
         "yardsPerPlay": {
           "value": 5.46,
-          "rank": 13,
-          "tied": false,
-          "pct": 61
+          "rank": 12,
+          "tied": true,
+          "pct": 65
         },
         "yardsPerPassAttempt": {
           "value": 7.68,
@@ -2846,22 +2847,22 @@
           "pct": 77
         },
         "blitzRate": {
-          "value": 35.3,
-          "rank": 7,
+          "value": 38,
+          "rank": 3,
           "tied": false,
-          "pct": 81
+          "pct": 94
         },
         "epaVsBlitz": {
-          "value": 0.11,
-          "rank": 8,
+          "value": 0.07,
+          "rank": 11,
           "tied": true,
-          "pct": 77
+          "pct": 68
         },
         "epaVsFourMan": {
-          "value": 0.24,
-          "rank": 5,
+          "value": 0.17,
+          "rank": 7,
           "tied": true,
-          "pct": 87
+          "pct": 81
         },
         "timeToThrow": {
           "value": 2.58,
@@ -2871,39 +2872,39 @@
         },
         "sacks": {
           "value": 25,
-          "rank": 19,
+          "rank": 18,
           "tied": true,
-          "pct": 42
+          "pct": 45
         }
       },
       "defense": {
         "plays": 651,
         "dropbacks": 403,
         "rushes": 248,
-        "chartedDropbacks": 367,
+        "chartedDropbacks": 403,
         "epaPlay": {
-          "value": -0.06,
+          "value": -0.04,
           "rank": 7,
-          "tied": true,
+          "tied": false,
           "pct": 81
         },
         "epaDropback": {
-          "value": -0.05,
+          "value": -0.03,
           "rank": 7,
-          "tied": true,
+          "tied": false,
           "pct": 81
         },
         "epaRush": {
-          "value": -0.08,
-          "rank": 15,
+          "value": -0.05,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "successRate": {
           "value": 43.8,
-          "rank": 18,
+          "rank": 19,
           "tied": false,
-          "pct": 45
+          "pct": 42
         },
         "explosiveRate": {
           "value": 11.2,
@@ -2925,9 +2926,9 @@
         },
         "yardsPerCarry": {
           "value": 4.04,
-          "rank": 14,
+          "rank": 15,
           "tied": false,
-          "pct": 58
+          "pct": 55
         },
         "passerRating": {
           "value": 79,
@@ -2936,28 +2937,28 @@
           "pct": 87
         },
         "blitzRate": {
-          "value": 34.9,
-          "rank": 11,
-          "tied": false,
-          "pct": 68
+          "value": 35.2,
+          "rank": 9,
+          "tied": true,
+          "pct": 74
         },
         "epaVsBlitz": {
-          "value": -0.13,
-          "rank": 6,
-          "tied": true,
-          "pct": 84
+          "value": -0.07,
+          "rank": 7,
+          "tied": false,
+          "pct": 81
         },
         "epaVsFourMan": {
-          "value": 0,
-          "rank": 8,
+          "value": 0.03,
+          "rank": 10,
           "tied": true,
-          "pct": 77
+          "pct": 71
         },
         "timeToThrow": {
           "value": 2.84,
-          "rank": 13,
+          "rank": 15,
           "tied": true,
-          "pct": 61
+          "pct": 55
         },
         "sacks": {
           "value": 29,
@@ -3040,30 +3041,30 @@
         "plays": 551,
         "dropbacks": 350,
         "rushes": 201,
-        "chartedDropbacks": 308,
+        "chartedDropbacks": 350,
         "epaPlay": {
-          "value": 0.04,
+          "value": 0.05,
           "rank": 9,
-          "tied": true,
+          "tied": false,
           "pct": 74
         },
         "epaDropback": {
-          "value": 0.15,
+          "value": 0.14,
           "rank": 8,
-          "tied": true,
+          "tied": false,
           "pct": 77
         },
         "epaRush": {
-          "value": -0.15,
+          "value": -0.12,
           "rank": 24,
           "tied": false,
           "pct": 26
         },
         "successRate": {
-          "value": 41.9,
-          "rank": 16,
+          "value": 41.7,
+          "rank": 20,
           "tied": true,
-          "pct": 52
+          "pct": 39
         },
         "explosiveRate": {
           "value": 13.8,
@@ -3096,22 +3097,22 @@
           "pct": 84
         },
         "blitzRate": {
-          "value": 24,
-          "rank": 30,
-          "tied": false,
-          "pct": 6
+          "value": 27.4,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "epaVsBlitz": {
-          "value": 0.37,
-          "rank": 1,
-          "tied": false,
-          "pct": 100
+          "value": 0.21,
+          "rank": 3,
+          "tied": true,
+          "pct": 94
         },
         "epaVsFourMan": {
           "value": 0.17,
-          "rank": 9,
+          "rank": 7,
           "tied": true,
-          "pct": 74
+          "pct": 81
         },
         "timeToThrow": {
           "value": 2.92,
@@ -3130,27 +3131,27 @@
         "plays": 576,
         "dropbacks": 358,
         "rushes": 218,
-        "chartedDropbacks": 312,
+        "chartedDropbacks": 358,
         "epaPlay": {
           "value": 0.01,
-          "rank": 18,
+          "rank": 16,
           "tied": true,
-          "pct": 45
+          "pct": 52
         },
         "epaDropback": {
-          "value": 0.05,
-          "rank": 15,
+          "value": 0.04,
+          "rank": 14,
           "tied": true,
-          "pct": 55
+          "pct": 58
         },
         "epaRush": {
-          "value": -0.06,
-          "rank": 19,
+          "value": -0.05,
+          "rank": 16,
           "tied": true,
-          "pct": 42
+          "pct": 52
         },
         "successRate": {
-          "value": 41,
+          "value": 41.1,
           "rank": 8,
           "tied": true,
           "pct": 77
@@ -3175,39 +3176,39 @@
         },
         "yardsPerCarry": {
           "value": 3.98,
-          "rank": 13,
+          "rank": 14,
           "tied": false,
-          "pct": 61
+          "pct": 58
         },
         "passerRating": {
           "value": 92.9,
           "rank": 17,
-          "tied": false,
+          "tied": true,
           "pct": 48
         },
         "blitzRate": {
-          "value": 24.7,
+          "value": 24.6,
+          "rank": 26,
+          "tied": false,
+          "pct": 19
+        },
+        "epaVsBlitz": {
+          "value": 0.17,
           "rank": 25,
           "tied": true,
           "pct": 23
         },
-        "epaVsBlitz": {
-          "value": 0.19,
-          "rank": 26,
-          "tied": true,
-          "pct": 19
-        },
         "epaVsFourMan": {
-          "value": 0.02,
-          "rank": 10,
-          "tied": true,
-          "pct": 71
+          "value": 0,
+          "rank": 7,
+          "tied": false,
+          "pct": 81
         },
         "timeToThrow": {
           "value": 2.8,
-          "rank": 20,
+          "rank": 21,
           "tied": true,
-          "pct": 39
+          "pct": 35
         },
         "sacks": {
           "value": 33,
@@ -3291,30 +3292,30 @@
         "plays": 628,
         "dropbacks": 366,
         "rushes": 262,
-        "chartedDropbacks": 341,
+        "chartedDropbacks": 366,
         "epaPlay": {
-          "value": -0.14,
-          "rank": 29,
+          "value": -0.11,
+          "rank": 30,
           "tied": true,
-          "pct": 10
+          "pct": 6
         },
         "epaDropback": {
-          "value": -0.24,
-          "rank": 31,
-          "tied": true,
-          "pct": 3
+          "value": -0.19,
+          "rank": 32,
+          "tied": false,
+          "pct": 0
         },
         "epaRush": {
-          "value": 0.01,
+          "value": 0.02,
           "rank": 6,
-          "tied": true,
+          "tied": false,
           "pct": 84
         },
         "successRate": {
-          "value": 41.7,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
+          "value": 42.4,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "explosiveRate": {
           "value": 10.4,
@@ -3347,28 +3348,28 @@
           "pct": 0
         },
         "blitzRate": {
-          "value": 32,
-          "rank": 17,
+          "value": 30.9,
+          "rank": 15,
           "tied": false,
-          "pct": 48
+          "pct": 55
         },
         "epaVsBlitz": {
-          "value": -0.13,
-          "rank": 25,
+          "value": -0.19,
+          "rank": 31,
           "tied": false,
-          "pct": 23
+          "pct": 3
         },
         "epaVsFourMan": {
-          "value": -0.26,
+          "value": -0.2,
           "rank": 31,
           "tied": false,
           "pct": 3
         },
         "timeToThrow": {
           "value": 2.82,
-          "rank": 18,
+          "rank": 19,
           "tied": true,
-          "pct": 45
+          "pct": 42
         },
         "sacks": {
           "value": 26,
@@ -3381,7 +3382,7 @@
         "plays": 585,
         "dropbacks": 334,
         "rushes": 251,
-        "chartedDropbacks": 297,
+        "chartedDropbacks": 334,
         "epaPlay": {
           "value": 0.04,
           "rank": 22,
@@ -3389,7 +3390,7 @@
           "pct": 32
         },
         "epaDropback": {
-          "value": 0.07,
+          "value": 0.06,
           "rank": 19,
           "tied": true,
           "pct": 42
@@ -3401,10 +3402,10 @@
           "pct": 3
         },
         "successRate": {
-          "value": 42.2,
-          "rank": 12,
+          "value": 41.9,
+          "rank": 11,
           "tied": false,
-          "pct": 65
+          "pct": 68
         },
         "explosiveRate": {
           "value": 14.5,
@@ -3437,28 +3438,28 @@
           "pct": 13
         },
         "blitzRate": {
-          "value": 20.5,
+          "value": 21,
           "rank": 31,
           "tied": false,
           "pct": 3
         },
         "epaVsBlitz": {
-          "value": 0.1,
-          "rank": 23,
-          "tied": false,
-          "pct": 29
+          "value": 0.01,
+          "rank": 15,
+          "tied": true,
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": 0.14,
-          "rank": 23,
+          "value": 0.1,
+          "rank": 21,
           "tied": true,
-          "pct": 29
+          "pct": 35
         },
         "timeToThrow": {
           "value": 2.89,
-          "rank": 8,
+          "rank": 9,
           "tied": true,
-          "pct": 77
+          "pct": 74
         },
         "sacks": {
           "value": 22,
@@ -3541,29 +3542,29 @@
         "plays": 533,
         "dropbacks": 285,
         "rushes": 248,
-        "chartedDropbacks": 248,
+        "chartedDropbacks": 285,
         "epaPlay": {
-          "value": 0.16,
-          "rank": 4,
-          "tied": false,
-          "pct": 90
+          "value": 0.14,
+          "rank": 3,
+          "tied": true,
+          "pct": 94
         },
         "epaDropback": {
-          "value": 0.31,
+          "value": 0.28,
           "rank": 2,
           "tied": false,
           "pct": 97
         },
         "epaRush": {
           "value": -0.01,
-          "rank": 9,
+          "rank": 10,
           "tied": true,
-          "pct": 74
+          "pct": 71
         },
         "successRate": {
-          "value": 48,
+          "value": 47.7,
           "rank": 6,
-          "tied": false,
+          "tied": true,
           "pct": 84
         },
         "explosiveRate": {
@@ -3597,19 +3598,19 @@
           "pct": 94
         },
         "blitzRate": {
-          "value": 31,
-          "rank": 19,
+          "value": 29.5,
+          "rank": 21,
           "tied": false,
-          "pct": 42
+          "pct": 35
         },
         "epaVsBlitz": {
-          "value": 0.1,
-          "rank": 10,
+          "value": 0.15,
+          "rank": 5,
           "tied": false,
-          "pct": 71
+          "pct": 87
         },
         "epaVsFourMan": {
-          "value": 0.35,
+          "value": 0.34,
           "rank": 2,
           "tied": false,
           "pct": 97
@@ -3631,36 +3632,36 @@
         "plays": 523,
         "dropbacks": 334,
         "rushes": 189,
-        "chartedDropbacks": 291,
+        "chartedDropbacks": 334,
         "epaPlay": {
-          "value": -0.12,
+          "value": -0.09,
           "rank": 4,
           "tied": false,
           "pct": 90
         },
         "epaDropback": {
-          "value": -0.09,
+          "value": -0.07,
           "rank": 5,
           "tied": false,
           "pct": 87
         },
         "epaRush": {
-          "value": -0.16,
+          "value": -0.14,
           "rank": 2,
-          "tied": true,
+          "tied": false,
           "pct": 97
         },
         "successRate": {
-          "value": 40.7,
-          "rank": 7,
-          "tied": false,
-          "pct": 81
+          "value": 41.1,
+          "rank": 8,
+          "tied": true,
+          "pct": 77
         },
         "explosiveRate": {
           "value": 12.2,
-          "rank": 14,
+          "rank": 13,
           "tied": false,
-          "pct": 58
+          "pct": 61
         },
         "yardsPerPlay": {
           "value": 5.44,
@@ -3687,22 +3688,22 @@
           "pct": 81
         },
         "blitzRate": {
-          "value": 31.3,
+          "value": 30.8,
           "rank": 15,
           "tied": false,
           "pct": 55
         },
         "epaVsBlitz": {
-          "value": -0.29,
-          "rank": 2,
-          "tied": true,
-          "pct": 97
+          "value": -0.24,
+          "rank": 3,
+          "tied": false,
+          "pct": 94
         },
         "epaVsFourMan": {
-          "value": -0.04,
-          "rank": 6,
+          "value": 0.01,
+          "rank": 8,
           "tied": false,
-          "pct": 84
+          "pct": 77
         },
         "timeToThrow": {
           "value": 2.72,
@@ -3712,9 +3713,9 @@
         },
         "sacks": {
           "value": 17,
-          "rank": 23,
+          "rank": 24,
           "tied": true,
-          "pct": 29
+          "pct": 26
         }
       },
       "box": {
@@ -3791,15 +3792,15 @@
         "plays": 547,
         "dropbacks": 327,
         "rushes": 220,
-        "chartedDropbacks": 289,
+        "chartedDropbacks": 327,
         "epaPlay": {
-          "value": 0.14,
+          "value": 0.13,
           "rank": 5,
           "tied": false,
           "pct": 87
         },
         "epaDropback": {
-          "value": 0.18,
+          "value": 0.17,
           "rank": 6,
           "tied": false,
           "pct": 84
@@ -3812,9 +3813,9 @@
         },
         "successRate": {
           "value": 48.4,
-          "rank": 5,
+          "rank": 4,
           "tied": false,
-          "pct": 87
+          "pct": 90
         },
         "explosiveRate": {
           "value": 16.1,
@@ -3847,22 +3848,22 @@
           "pct": 90
         },
         "blitzRate": {
-          "value": 29.1,
-          "rank": 25,
-          "tied": false,
-          "pct": 23
+          "value": 28.4,
+          "rank": 24,
+          "tied": true,
+          "pct": 26
         },
         "epaVsBlitz": {
-          "value": 0.16,
-          "rank": 4,
+          "value": 0.14,
+          "rank": 6,
           "tied": false,
-          "pct": 90
+          "pct": 84
         },
         "epaVsFourMan": {
-          "value": 0.15,
-          "rank": 12,
-          "tied": false,
-          "pct": 65
+          "value": 0.17,
+          "rank": 7,
+          "tied": true,
+          "pct": 81
         },
         "timeToThrow": {
           "value": 2.73,
@@ -3881,27 +3882,27 @@
         "plays": 566,
         "dropbacks": 351,
         "rushes": 215,
-        "chartedDropbacks": 303,
+        "chartedDropbacks": 351,
         "epaPlay": {
-          "value": -0.1,
-          "rank": 6,
-          "tied": false,
-          "pct": 84
+          "value": -0.08,
+          "rank": 5,
+          "tied": true,
+          "pct": 87
         },
         "epaDropback": {
-          "value": -0.07,
+          "value": -0.06,
           "rank": 6,
           "tied": false,
           "pct": 84
         },
         "epaRush": {
-          "value": -0.15,
+          "value": -0.12,
           "rank": 4,
           "tied": true,
           "pct": 90
         },
         "successRate": {
-          "value": 39.2,
+          "value": 39.4,
           "rank": 3,
           "tied": false,
           "pct": 94
@@ -3926,9 +3927,9 @@
         },
         "yardsPerCarry": {
           "value": 3.74,
-          "rank": 6,
-          "tied": false,
-          "pct": 84
+          "rank": 5,
+          "tied": true,
+          "pct": 87
         },
         "passerRating": {
           "value": 77.4,
@@ -3937,34 +3938,34 @@
           "pct": 90
         },
         "blitzRate": {
-          "value": 27.4,
-          "rank": 18,
+          "value": 26.8,
+          "rank": 23,
           "tied": false,
-          "pct": 45
+          "pct": 29
         },
         "epaVsBlitz": {
-          "value": 0.06,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": -0.02,
+          "rank": 11,
+          "tied": true,
+          "pct": 68
         },
         "epaVsFourMan": {
-          "value": -0.02,
-          "rank": 7,
+          "value": -0.06,
+          "rank": 3,
           "tied": false,
-          "pct": 81
+          "pct": 94
         },
         "timeToThrow": {
           "value": 2.82,
-          "rank": 17,
+          "rank": 19,
           "tied": false,
-          "pct": 48
+          "pct": 42
         },
         "sacks": {
           "value": 17,
-          "rank": 23,
+          "rank": 24,
           "tied": true,
-          "pct": 29
+          "pct": 26
         }
       },
       "box": {
@@ -4025,7 +4026,7 @@
       }
     },
     "lac": {
-      "games": 8,
+      "games": 9,
       "weeks": [
         1,
         2,
@@ -4034,30 +4035,31 @@
         5,
         6,
         8,
-        9
+        9,
+        10
       ],
       "offense": {
-        "plays": 496,
-        "dropbacks": 295,
-        "rushes": 201,
+        "plays": 550,
+        "dropbacks": 322,
+        "rushes": 228,
         "chartedDropbacks": 295,
         "epaPlay": {
-          "value": -0.24,
+          "value": -0.17,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaDropback": {
-          "value": -0.24,
-          "rank": 31,
-          "tied": true,
-          "pct": 3
-        },
-        "epaRush": {
-          "value": -0.25,
+          "value": -0.17,
           "rank": 31,
           "tied": false,
           "pct": 3
+        },
+        "epaRush": {
+          "value": -0.18,
+          "rank": 30,
+          "tied": true,
+          "pct": 6
         },
         "successRate": {
           "value": 35.1,
@@ -4066,31 +4068,31 @@
           "pct": 0
         },
         "explosiveRate": {
-          "value": 10.7,
-          "rank": 25,
+          "value": 11.5,
+          "rank": 21,
           "tied": false,
-          "pct": 23
+          "pct": 35
         },
         "yardsPerPlay": {
-          "value": 4.68,
+          "value": 4.75,
           "rank": 28,
           "tied": false,
           "pct": 13
         },
         "yardsPerPassAttempt": {
-          "value": 6.65,
+          "value": 6.68,
           "rank": 23,
           "tied": false,
           "pct": 29
         },
         "yardsPerCarry": {
-          "value": 4.09,
-          "rank": 18,
+          "value": 4.17,
+          "rank": 15,
           "tied": false,
-          "pct": 45
+          "pct": 55
         },
         "passerRating": {
-          "value": 70.6,
+          "value": 71.8,
           "rank": 30,
           "tied": false,
           "pct": 6
@@ -4102,174 +4104,174 @@
           "pct": 3
         },
         "epaVsBlitz": {
-          "value": -0.05,
+          "value": -0.04,
           "rank": 21,
           "tied": false,
           "pct": 35
         },
         "epaVsFourMan": {
-          "value": -0.3,
+          "value": -0.23,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "timeToThrow": {
-          "value": 2.8,
-          "rank": 21,
-          "tied": true,
-          "pct": 35
+          "value": 2.85,
+          "rank": 15,
+          "tied": false,
+          "pct": 55
         },
         "sacks": {
-          "value": 31,
-          "rank": 30,
+          "value": 33,
+          "rank": 31,
           "tied": false,
-          "pct": 6
+          "pct": 3
         }
       },
       "defense": {
-        "plays": 473,
-        "dropbacks": 255,
-        "rushes": 218,
+        "plays": 538,
+        "dropbacks": 305,
+        "rushes": 233,
         "chartedDropbacks": 255,
         "epaPlay": {
-          "value": 0,
+          "value": 0.01,
           "rank": 16,
           "tied": true,
           "pct": 52
         },
         "epaDropback": {
-          "value": 0.06,
-          "rank": 18,
-          "tied": false,
-          "pct": 45
+          "value": 0.05,
+          "rank": 17,
+          "tied": true,
+          "pct": 48
         },
         "epaRush": {
-          "value": -0.06,
-          "rank": 19,
+          "value": -0.04,
+          "rank": 20,
           "tied": true,
-          "pct": 42
+          "pct": 39
         },
         "successRate": {
-          "value": 44,
-          "rank": 19,
+          "value": 43.7,
+          "rank": 16,
           "tied": true,
-          "pct": 42
+          "pct": 52
         },
         "explosiveRate": {
-          "value": 13.3,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 13.6,
+          "rank": 24,
+          "tied": true,
+          "pct": 26
         },
         "yardsPerPlay": {
-          "value": 5.65,
+          "value": 5.6,
           "rank": 25,
           "tied": false,
           "pct": 23
         },
         "yardsPerPassAttempt": {
-          "value": 7.92,
-          "rank": 26,
+          "value": 7.75,
+          "rank": 24,
           "tied": false,
-          "pct": 19
+          "pct": 26
         },
         "yardsPerCarry": {
-          "value": 4.07,
-          "rank": 16,
+          "value": 3.89,
+          "rank": 8,
           "tied": false,
-          "pct": 52
+          "pct": 77
         },
         "passerRating": {
-          "value": 95.9,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 92.9,
+          "rank": 17,
+          "tied": true,
+          "pct": 48
         },
         "blitzRate": {
           "value": 24.7,
           "rank": 25,
-          "tied": true,
+          "tied": false,
           "pct": 23
         },
         "epaVsBlitz": {
-          "value": -0.05,
-          "rank": 10,
-          "tied": false,
-          "pct": 71
+          "value": -0.02,
+          "rank": 11,
+          "tied": true,
+          "pct": 68
         },
         "epaVsFourMan": {
           "value": 0.08,
-          "rank": 16,
+          "rank": 17,
           "tied": true,
-          "pct": 52
+          "pct": 48
         },
         "timeToThrow": {
-          "value": 2.8,
-          "rank": 20,
-          "tied": true,
-          "pct": 39
+          "value": 2.9,
+          "rank": 8,
+          "tied": false,
+          "pct": 77
         },
         "sacks": {
-          "value": 13,
-          "rank": 31,
+          "value": 15,
+          "rank": 30,
           "tied": true,
-          "pct": 3
+          "pct": 6
         }
       },
       "box": {
         "own": {
-          "gamesPlayed": 8,
-          "plays": 498,
-          "playsPerGame": 62.25,
-          "passPlays": 274,
-          "passRate": 55.02008032128514,
-          "pointsPerGame": 15.125,
-          "yardsPerGame": 291.625,
-          "yardsPerPlay": 4.684738955823293,
-          "passYardsPerGame": 177.125,
-          "rushYardsPerGame": 114.5,
-          "yardsPerPassAttempt": 6.6460905349794235,
-          "yardsPerRushAttempt": 4.089285714285714,
-          "passerRating": 70.58470507544583,
-          "thirdDownPct": 34.21052631578947,
-          "fourthDownPct": 25,
-          "firstDownsPerGame": 16.375,
-          "passAttemptsPerGame": 30.375,
-          "rushAttemptsPerGame": 28,
+          "gamesPlayed": 9,
+          "plays": 552,
+          "playsPerGame": 61.333333333333336,
+          "passPlays": 294,
+          "passRate": 53.26086956521739,
+          "pointsPerGame": 16,
+          "yardsPerGame": 291.1111111111111,
+          "yardsPerPlay": 4.746376811594203,
+          "passYardsPerGame": 171.55555555555554,
+          "rushYardsPerGame": 119.55555555555556,
+          "yardsPerPassAttempt": 6.681992337164751,
+          "yardsPerRushAttempt": 4.170542635658915,
+          "passerRating": 71.75127713920818,
+          "thirdDownPct": 32.28346456692913,
+          "fourthDownPct": 33.333333333333336,
+          "firstDownsPerGame": 16.22222222222222,
+          "passAttemptsPerGame": 29,
+          "rushAttemptsPerGame": 28.666666666666668,
           "passingTouchdowns": 7,
-          "rushingTouchdowns": 4,
-          "sacks": 31,
-          "takeaways": 12,
+          "rushingTouchdowns": 6,
+          "sacks": 33,
+          "takeaways": 14,
           "giveaways": 19,
-          "turnoverMargin": -7,
-          "penaltyYardsPerGame": 67.5
+          "turnoverMargin": -5,
+          "penaltyYardsPerGame": 63.333333333333336
         },
         "opponent": {
-          "gamesPlayed": 8,
-          "plays": 486,
-          "playsPerGame": 60.75,
-          "passPlays": 246,
-          "passRate": 50.617283950617285,
-          "pointsPerGame": 27.375,
-          "yardsPerGame": 343.25,
-          "yardsPerPlay": 5.650205761316872,
-          "passYardsPerGame": 221.25,
-          "rushYardsPerGame": 122,
-          "yardsPerPassAttempt": 7.918454935622318,
-          "yardsPerRushAttempt": 4.066666666666666,
-          "passerRating": 95.87804005722461,
-          "thirdDownPct": 34.343434343434346,
-          "fourthDownPct": 71.42857142857143,
-          "firstDownsPerGame": 19.5,
-          "passAttemptsPerGame": 29.125,
-          "rushAttemptsPerGame": 30,
+          "gamesPlayed": 9,
+          "plays": 552,
+          "playsPerGame": 61.333333333333336,
+          "passPlays": 297,
+          "passRate": 53.80434782608695,
+          "pointsPerGame": 26.555555555555557,
+          "yardsPerGame": 343.6666666666667,
+          "yardsPerPlay": 5.603260869565218,
+          "passYardsPerGame": 233.44444444444446,
+          "rushYardsPerGame": 110.22222222222223,
+          "yardsPerPassAttempt": 7.74822695035461,
+          "yardsPerRushAttempt": 3.8901960784313725,
+          "passerRating": 92.87825059101652,
+          "thirdDownPct": 35.13513513513514,
+          "fourthDownPct": 75,
+          "firstDownsPerGame": 19.77777777777778,
+          "passAttemptsPerGame": 31.333333333333332,
+          "rushAttemptsPerGame": 28.333333333333332,
           "passingTouchdowns": 13,
-          "rushingTouchdowns": 11,
-          "sacks": 13,
+          "rushingTouchdowns": 13,
+          "sacks": 15,
           "takeaways": 19,
-          "giveaways": 12,
-          "turnoverMargin": 7,
-          "penaltyYardsPerGame": 74.5
+          "giveaways": 14,
+          "turnoverMargin": 5,
+          "penaltyYardsPerGame": 71.22222222222223
         }
       }
     },
@@ -4291,7 +4293,7 @@
         "plays": 664,
         "dropbacks": 392,
         "rushes": 272,
-        "chartedDropbacks": 364,
+        "chartedDropbacks": 392,
         "epaPlay": {
           "value": 0.07,
           "rank": 8,
@@ -4301,7 +4303,7 @@
         "epaDropback": {
           "value": 0.1,
           "rank": 10,
-          "tied": true,
+          "tied": false,
           "pct": 71
         },
         "epaRush": {
@@ -4311,10 +4313,10 @@
           "pct": 87
         },
         "successRate": {
-          "value": 48.6,
-          "rank": 4,
+          "value": 48.2,
+          "rank": 5,
           "tied": false,
-          "pct": 90
+          "pct": 87
         },
         "explosiveRate": {
           "value": 12.7,
@@ -4336,33 +4338,33 @@
         },
         "yardsPerCarry": {
           "value": 4.62,
-          "rank": 8,
+          "rank": 7,
           "tied": false,
-          "pct": 77
+          "pct": 81
         },
         "passerRating": {
           "value": 92.7,
-          "rank": 16,
+          "rank": 15,
           "tied": false,
-          "pct": 52
+          "pct": 55
         },
         "blitzRate": {
-          "value": 30.5,
+          "value": 30.1,
           "rank": 20,
           "tied": false,
           "pct": 39
         },
         "epaVsBlitz": {
-          "value": 0.03,
-          "rank": 16,
+          "value": 0.02,
+          "rank": 15,
           "tied": false,
-          "pct": 52
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": 0.08,
-          "rank": 15,
+          "value": 0.14,
+          "rank": 11,
           "tied": true,
-          "pct": 55
+          "pct": 68
         },
         "timeToThrow": {
           "value": 2.7,
@@ -4381,21 +4383,21 @@
         "plays": 577,
         "dropbacks": 350,
         "rushes": 227,
-        "chartedDropbacks": 326,
+        "chartedDropbacks": 350,
         "epaPlay": {
-          "value": -0.15,
+          "value": -0.11,
           "rank": 3,
           "tied": false,
           "pct": 94
         },
         "epaDropback": {
-          "value": -0.13,
+          "value": -0.09,
           "rank": 3,
           "tied": false,
           "pct": 94
         },
         "epaRush": {
-          "value": -0.18,
+          "value": -0.15,
           "rank": 1,
           "tied": false,
           "pct": 100
@@ -4403,7 +4405,7 @@
         "successRate": {
           "value": 39.5,
           "rank": 4,
-          "tied": true,
+          "tied": false,
           "pct": 90
         },
         "explosiveRate": {
@@ -4426,9 +4428,9 @@
         },
         "yardsPerCarry": {
           "value": 3.92,
-          "rank": 8,
+          "rank": 9,
           "tied": false,
-          "pct": 77
+          "pct": 74
         },
         "passerRating": {
           "value": 79.4,
@@ -4437,22 +4439,22 @@
           "pct": 84
         },
         "blitzRate": {
-          "value": 28.8,
-          "rank": 17,
+          "value": 28,
+          "rank": 18,
           "tied": false,
-          "pct": 48
+          "pct": 45
         },
         "epaVsBlitz": {
-          "value": -0.02,
-          "rank": 12,
+          "value": 0.01,
+          "rank": 15,
           "tied": true,
-          "pct": 65
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": -0.11,
-          "rank": 2,
+          "value": -0.15,
+          "rank": 1,
           "tied": false,
-          "pct": 97
+          "pct": 100
         },
         "timeToThrow": {
           "value": 2.76,
@@ -4542,30 +4544,30 @@
         "plays": 603,
         "dropbacks": 377,
         "rushes": 226,
-        "chartedDropbacks": 338,
+        "chartedDropbacks": 377,
         "epaPlay": {
-          "value": -0.03,
-          "rank": 18,
+          "value": -0.02,
+          "rank": 20,
           "tied": true,
-          "pct": 45
+          "pct": 39
         },
         "epaDropback": {
           "value": 0.08,
-          "rank": 15,
-          "tied": false,
-          "pct": 55
+          "rank": 14,
+          "tied": true,
+          "pct": 58
         },
         "epaRush": {
-          "value": -0.22,
+          "value": -0.18,
           "rank": 30,
-          "tied": false,
+          "tied": true,
           "pct": 6
         },
         "successRate": {
-          "value": 41.5,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 41.8,
+          "rank": 17,
+          "tied": true,
+          "pct": 48
         },
         "explosiveRate": {
           "value": 12.6,
@@ -4598,22 +4600,22 @@
           "pct": 65
         },
         "blitzRate": {
-          "value": 29.6,
-          "rank": 23,
-          "tied": false,
-          "pct": 29
+          "value": 28.4,
+          "rank": 24,
+          "tied": true,
+          "pct": 26
         },
         "epaVsBlitz": {
-          "value": 0.14,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "value": 0.08,
+          "rank": 10,
+          "tied": false,
+          "pct": 71
         },
         "epaVsFourMan": {
-          "value": 0.08,
-          "rank": 15,
-          "tied": true,
-          "pct": 55
+          "value": 0.06,
+          "rank": 19,
+          "tied": false,
+          "pct": 42
         },
         "timeToThrow": {
           "value": 2.9,
@@ -4632,27 +4634,27 @@
         "plays": 609,
         "dropbacks": 337,
         "rushes": 272,
-        "chartedDropbacks": 315,
+        "chartedDropbacks": 337,
         "epaPlay": {
-          "value": 0.1,
-          "rank": 30,
+          "value": 0.09,
+          "rank": 29,
           "tied": true,
-          "pct": 6
+          "pct": 10
         },
         "epaDropback": {
-          "value": 0.2,
+          "value": 0.18,
           "rank": 29,
           "tied": false,
           "pct": 10
         },
         "epaRush": {
-          "value": -0.04,
+          "value": -0.03,
           "rank": 25,
-          "tied": false,
+          "tied": true,
           "pct": 23
         },
         "successRate": {
-          "value": 48.3,
+          "value": 48.1,
           "rank": 32,
           "tied": false,
           "pct": 0
@@ -4688,22 +4690,22 @@
           "pct": 6
         },
         "blitzRate": {
-          "value": 27.3,
-          "rank": 19,
+          "value": 28.2,
+          "rank": 17,
           "tied": false,
-          "pct": 42
+          "pct": 48
         },
         "epaVsBlitz": {
-          "value": 0.05,
-          "rank": 19,
+          "value": 0.01,
+          "rank": 15,
           "tied": true,
-          "pct": 42
+          "pct": 55
         },
         "epaVsFourMan": {
-          "value": 0.25,
-          "rank": 32,
+          "value": 0.26,
+          "rank": 31,
           "tied": false,
-          "pct": 0
+          "pct": 3
         },
         "timeToThrow": {
           "value": 3,
@@ -4792,36 +4794,36 @@
         "plays": 506,
         "dropbacks": 292,
         "rushes": 214,
-        "chartedDropbacks": 255,
+        "chartedDropbacks": 292,
         "epaPlay": {
-          "value": -0.09,
+          "value": -0.06,
           "rank": 25,
-          "tied": true,
+          "tied": false,
           "pct": 23
         },
         "epaDropback": {
-          "value": -0.05,
+          "value": -0.02,
           "rank": 23,
           "tied": false,
           "pct": 29
         },
         "epaRush": {
-          "value": -0.13,
-          "rank": 21,
+          "value": -0.11,
+          "rank": 22,
           "tied": true,
-          "pct": 35
+          "pct": 32
         },
         "successRate": {
-          "value": 37.9,
+          "value": 38.1,
           "rank": 29,
           "tied": false,
           "pct": 10
         },
         "explosiveRate": {
           "value": 11.3,
-          "rank": 22,
+          "rank": 23,
           "tied": false,
-          "pct": 32
+          "pct": 29
         },
         "yardsPerPlay": {
           "value": 5,
@@ -4848,22 +4850,22 @@
           "pct": 16
         },
         "blitzRate": {
-          "value": 32.2,
-          "rank": 16,
+          "value": 31.2,
+          "rank": 14,
           "tied": false,
-          "pct": 52
+          "pct": 58
         },
         "epaVsBlitz": {
-          "value": -0.01,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
+          "value": -0.05,
+          "rank": 22,
+          "tied": false,
+          "pct": 32
         },
         "epaVsFourMan": {
-          "value": -0.04,
-          "rank": 26,
+          "value": -0.02,
+          "rank": 25,
           "tied": false,
-          "pct": 19
+          "pct": 23
         },
         "timeToThrow": {
           "value": 3.04,
@@ -4882,29 +4884,29 @@
         "plays": 508,
         "dropbacks": 271,
         "rushes": 237,
-        "chartedDropbacks": 246,
+        "chartedDropbacks": 271,
         "epaPlay": {
           "value": 0.07,
-          "rank": 25,
+          "rank": 26,
           "tied": true,
-          "pct": 23
+          "pct": 19
         },
         "epaDropback": {
-          "value": 0.18,
+          "value": 0.16,
           "rank": 28,
           "tied": false,
           "pct": 13
         },
         "epaRush": {
-          "value": -0.05,
-          "rank": 22,
+          "value": -0.04,
+          "rank": 20,
           "tied": true,
-          "pct": 32
+          "pct": 39
         },
         "successRate": {
-          "value": 47.2,
+          "value": 47,
           "rank": 30,
-          "tied": false,
+          "tied": true,
           "pct": 6
         },
         "explosiveRate": {
@@ -4921,15 +4923,15 @@
         },
         "yardsPerPassAttempt": {
           "value": 7.84,
-          "rank": 25,
+          "rank": 26,
           "tied": false,
-          "pct": 23
+          "pct": 19
         },
         "yardsPerCarry": {
           "value": 3.94,
-          "rank": 9,
+          "rank": 10,
           "tied": false,
-          "pct": 74
+          "pct": 71
         },
         "passerRating": {
           "value": 107.5,
@@ -4938,34 +4940,34 @@
           "pct": 3
         },
         "blitzRate": {
-          "value": 22.8,
+          "value": 22.1,
           "rank": 30,
           "tied": false,
           "pct": 6
         },
         "epaVsBlitz": {
-          "value": 0.45,
-          "rank": 32,
-          "tied": false,
-          "pct": 0
+          "value": 0.17,
+          "rank": 25,
+          "tied": true,
+          "pct": 23
         },
         "epaVsFourMan": {
-          "value": 0.19,
-          "rank": 28,
-          "tied": false,
-          "pct": 13
+          "value": 0.14,
+          "rank": 25,
+          "tied": true,
+          "pct": 23
         },
         "timeToThrow": {
           "value": 2.87,
-          "rank": 11,
+          "rank": 12,
           "tied": true,
-          "pct": 68
+          "pct": 65
         },
         "sacks": {
           "value": 13,
-          "rank": 31,
-          "tied": true,
-          "pct": 3
+          "rank": 32,
+          "tied": false,
+          "pct": 0
         }
       },
       "box": {
@@ -5042,27 +5044,27 @@
         "plays": 509,
         "dropbacks": 300,
         "rushes": 209,
-        "chartedDropbacks": 264,
+        "chartedDropbacks": 300,
         "epaPlay": {
-          "value": -0.14,
+          "value": -0.1,
           "rank": 29,
-          "tied": true,
+          "tied": false,
           "pct": 10
         },
         "epaDropback": {
-          "value": -0.08,
+          "value": -0.06,
           "rank": 25,
           "tied": false,
           "pct": 23
         },
         "epaRush": {
-          "value": -0.21,
+          "value": -0.17,
           "rank": 29,
           "tied": false,
           "pct": 10
         },
         "successRate": {
-          "value": 37.1,
+          "value": 37.3,
           "rank": 30,
           "tied": false,
           "pct": 6
@@ -5098,22 +5100,22 @@
           "pct": 26
         },
         "blitzRate": {
-          "value": 33,
-          "rank": 12,
-          "tied": true,
-          "pct": 65
+          "value": 33.7,
+          "rank": 11,
+          "tied": false,
+          "pct": 68
         },
         "epaVsBlitz": {
-          "value": -0.33,
+          "value": -0.2,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaVsFourMan": {
-          "value": 0,
-          "rank": 24,
-          "tied": false,
-          "pct": 26
+          "value": 0.04,
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "timeToThrow": {
           "value": 2.87,
@@ -5132,30 +5134,30 @@
         "plays": 534,
         "dropbacks": 308,
         "rushes": 226,
-        "chartedDropbacks": 271,
+        "chartedDropbacks": 308,
         "epaPlay": {
-          "value": -0.16,
+          "value": -0.13,
           "rank": 1,
-          "tied": true,
+          "tied": false,
           "pct": 100
         },
         "epaDropback": {
-          "value": -0.18,
+          "value": -0.14,
           "rank": 1,
           "tied": false,
           "pct": 100
         },
         "epaRush": {
-          "value": -0.13,
+          "value": -0.1,
           "rank": 7,
-          "tied": false,
+          "tied": true,
           "pct": 81
         },
         "successRate": {
-          "value": 37.6,
-          "rank": 1,
+          "value": 38.6,
+          "rank": 2,
           "tied": false,
-          "pct": 100
+          "pct": 97
         },
         "explosiveRate": {
           "value": 10.9,
@@ -5188,28 +5190,28 @@
           "pct": 100
         },
         "blitzRate": {
-          "value": 73.1,
+          "value": 72.1,
           "rank": 1,
           "tied": false,
           "pct": 100
         },
         "epaVsBlitz": {
-          "value": -0.21,
+          "value": -0.16,
           "rank": 4,
           "tied": false,
           "pct": 90
         },
         "epaVsFourMan": {
-          "value": -0.09,
-          "rank": 3,
+          "value": -0.12,
+          "rank": 2,
           "tied": false,
-          "pct": 94
+          "pct": 97
         },
         "timeToThrow": {
           "value": 2.88,
-          "rank": 10,
+          "rank": 11,
           "tied": false,
-          "pct": 71
+          "pct": 68
         },
         "sacks": {
           "value": 37,
@@ -5293,24 +5295,24 @@
         "plays": 599,
         "dropbacks": 364,
         "rushes": 235,
-        "chartedDropbacks": 328,
+        "chartedDropbacks": 364,
         "epaPlay": {
-          "value": 0.01,
+          "value": 0.02,
           "rank": 12,
           "tied": true,
           "pct": 65
         },
         "epaDropback": {
-          "value": 0.1,
-          "rank": 10,
+          "value": 0.09,
+          "rank": 11,
           "tied": true,
-          "pct": 71
+          "pct": 68
         },
         "epaRush": {
-          "value": -0.13,
-          "rank": 21,
+          "value": -0.11,
+          "rank": 22,
           "tied": true,
-          "pct": 35
+          "pct": 32
         },
         "successRate": {
           "value": 44.4,
@@ -5338,33 +5340,33 @@
         },
         "yardsPerCarry": {
           "value": 4.1,
-          "rank": 16,
+          "rank": 17,
           "tied": true,
-          "pct": 52
+          "pct": 48
         },
         "passerRating": {
           "value": 93.2,
-          "rank": 15,
+          "rank": 14,
           "tied": false,
-          "pct": 55
+          "pct": 58
         },
         "blitzRate": {
-          "value": 29.9,
-          "rank": 22,
+          "value": 30.5,
+          "rank": 18,
           "tied": false,
-          "pct": 32
+          "pct": 45
         },
         "epaVsBlitz": {
-          "value": 0.04,
-          "rank": 15,
+          "value": 0,
+          "rank": 17,
           "tied": false,
-          "pct": 55
+          "pct": 48
         },
         "epaVsFourMan": {
-          "value": 0.24,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
+          "value": 0.16,
+          "rank": 10,
+          "tied": false,
+          "pct": 71
         },
         "timeToThrow": {
           "value": 3.15,
@@ -5374,45 +5376,45 @@
         },
         "sacks": {
           "value": 25,
-          "rank": 19,
+          "rank": 18,
           "tied": true,
-          "pct": 42
+          "pct": 45
         }
       },
       "defense": {
         "plays": 597,
         "dropbacks": 355,
         "rushes": 242,
-        "chartedDropbacks": 321,
+        "chartedDropbacks": 355,
         "epaPlay": {
-          "value": 0.07,
-          "rank": 25,
-          "tied": true,
-          "pct": 23
-        },
-        "epaDropback": {
-          "value": 0.16,
-          "rank": 26,
-          "tied": true,
-          "pct": 19
-        },
-        "epaRush": {
-          "value": -0.06,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
-        },
-        "successRate": {
-          "value": 44.6,
-          "rank": 24,
-          "tied": true,
-          "pct": 26
-        },
-        "explosiveRate": {
-          "value": 13.6,
+          "value": 0.06,
           "rank": 25,
           "tied": false,
           "pct": 23
+        },
+        "epaDropback": {
+          "value": 0.13,
+          "rank": 25,
+          "tied": false,
+          "pct": 23
+        },
+        "epaRush": {
+          "value": -0.04,
+          "rank": 20,
+          "tied": true,
+          "pct": 39
+        },
+        "successRate": {
+          "value": 44.6,
+          "rank": 25,
+          "tied": false,
+          "pct": 23
+        },
+        "explosiveRate": {
+          "value": 13.6,
+          "rank": 24,
+          "tied": true,
+          "pct": 26
         },
         "yardsPerPlay": {
           "value": 5.71,
@@ -5439,22 +5441,22 @@
           "pct": 23
         },
         "blitzRate": {
-          "value": 36.4,
+          "value": 35.2,
           "rank": 9,
-          "tied": false,
+          "tied": true,
           "pct": 74
         },
         "epaVsBlitz": {
-          "value": 0.12,
-          "rank": 25,
-          "tied": false,
-          "pct": 23
-        },
-        "epaVsFourMan": {
-          "value": 0.16,
+          "value": 0.17,
           "rank": 25,
           "tied": true,
           "pct": 23
+        },
+        "epaVsFourMan": {
+          "value": 0.13,
+          "rank": 23,
+          "tied": true,
+          "pct": 29
         },
         "timeToThrow": {
           "value": 2.79,
@@ -5543,30 +5545,30 @@
         "plays": 588,
         "dropbacks": 384,
         "rushes": 204,
-        "chartedDropbacks": 341,
+        "chartedDropbacks": 384,
         "epaPlay": {
-          "value": -0.07,
+          "value": -0.04,
           "rank": 22,
-          "tied": true,
+          "tied": false,
           "pct": 32
         },
         "epaDropback": {
-          "value": 0,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 0.02,
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "epaRush": {
-          "value": -0.2,
-          "rank": 28,
-          "tied": false,
-          "pct": 13
+          "value": -0.16,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "successRate": {
-          "value": 41.2,
-          "rank": 23,
+          "value": 40.8,
+          "rank": 25,
           "tied": false,
-          "pct": 29
+          "pct": 23
         },
         "explosiveRate": {
           "value": 9.7,
@@ -5599,16 +5601,16 @@
           "pct": 45
         },
         "blitzRate": {
-          "value": 32.8,
-          "rank": 14,
+          "value": 30.7,
+          "rank": 16,
           "tied": false,
-          "pct": 58
+          "pct": 52
         },
         "epaVsBlitz": {
-          "value": -0.11,
-          "rank": 24,
+          "value": -0.09,
+          "rank": 23,
           "tied": false,
-          "pct": 26
+          "pct": 29
         },
         "epaVsFourMan": {
           "value": 0.07,
@@ -5625,7 +5627,7 @@
         "sacks": {
           "value": 23,
           "rank": 17,
-          "tied": true,
+          "tied": false,
           "pct": 48
         }
       },
@@ -5633,7 +5635,7 @@
         "plays": 568,
         "dropbacks": 333,
         "rushes": 235,
-        "chartedDropbacks": 299,
+        "chartedDropbacks": 333,
         "epaPlay": {
           "value": 0.04,
           "rank": 22,
@@ -5642,18 +5644,18 @@
         },
         "epaDropback": {
           "value": 0.07,
-          "rank": 19,
+          "rank": 21,
           "tied": true,
-          "pct": 42
+          "pct": 35
         },
         "epaRush": {
-          "value": -0.01,
+          "value": 0,
           "rank": 29,
-          "tied": false,
+          "tied": true,
           "pct": 10
         },
         "successRate": {
-          "value": 45.2,
+          "value": 45.6,
           "rank": 26,
           "tied": false,
           "pct": 19
@@ -5689,22 +5691,22 @@
           "pct": 29
         },
         "blitzRate": {
-          "value": 36.5,
-          "rank": 8,
+          "value": 36.9,
+          "rank": 7,
           "tied": false,
-          "pct": 77
+          "pct": 81
         },
         "epaVsBlitz": {
-          "value": 0.03,
-          "rank": 18,
+          "value": 0.02,
+          "rank": 21,
           "tied": false,
-          "pct": 45
+          "pct": 35
         },
         "epaVsFourMan": {
-          "value": 0.14,
-          "rank": 23,
+          "value": 0.09,
+          "rank": 19,
           "tied": true,
-          "pct": 29
+          "pct": 42
         },
         "timeToThrow": {
           "value": 2.79,
@@ -5795,28 +5797,28 @@
         "rushes": 237,
         "chartedDropbacks": 341,
         "epaPlay": {
-          "value": 0.01,
+          "value": 0.02,
           "rank": 12,
           "tied": true,
           "pct": 65
         },
         "epaDropback": {
           "value": 0.09,
-          "rank": 13,
+          "rank": 11,
           "tied": true,
-          "pct": 61
+          "pct": 68
         },
         "epaRush": {
-          "value": -0.1,
+          "value": -0.08,
           "rank": 19,
           "tied": true,
           "pct": 42
         },
         "successRate": {
-          "value": 41,
-          "rank": 25,
+          "value": 41.5,
+          "rank": 22,
           "tied": false,
-          "pct": 23
+          "pct": 32
         },
         "explosiveRate": {
           "value": 12.5,
@@ -5850,20 +5852,20 @@
         },
         "blitzRate": {
           "value": 34.3,
-          "rank": 10,
+          "rank": 9,
           "tied": false,
-          "pct": 71
+          "pct": 74
         },
         "epaVsBlitz": {
-          "value": -0.01,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
+          "value": 0.01,
+          "rank": 16,
+          "tied": false,
+          "pct": 52
         },
         "epaVsFourMan": {
-          "value": 0.16,
+          "value": 0.14,
           "rank": 11,
-          "tied": false,
+          "tied": true,
           "pct": 68
         },
         "timeToThrow": {
@@ -5885,28 +5887,28 @@
         "rushes": 210,
         "chartedDropbacks": 327,
         "epaPlay": {
-          "value": -0.03,
-          "rank": 9,
+          "value": -0.01,
+          "rank": 10,
           "tied": true,
-          "pct": 74
+          "pct": 71
         },
         "epaDropback": {
-          "value": 0.01,
-          "rank": 11,
-          "tied": false,
-          "pct": 68
-        },
-        "epaRush": {
-          "value": -0.09,
+          "value": 0.03,
           "rank": 13,
-          "tied": true,
+          "tied": false,
           "pct": 61
         },
+        "epaRush": {
+          "value": -0.07,
+          "rank": 12,
+          "tied": true,
+          "pct": 65
+        },
         "successRate": {
-          "value": 42.1,
-          "rank": 11,
-          "tied": false,
-          "pct": 68
+          "value": 42.5,
+          "rank": 12,
+          "tied": true,
+          "pct": 65
         },
         "explosiveRate": {
           "value": 12.7,
@@ -5945,16 +5947,16 @@
           "pct": 90
         },
         "epaVsBlitz": {
-          "value": -0.08,
+          "value": -0.05,
           "rank": 8,
           "tied": false,
           "pct": 77
         },
         "epaVsFourMan": {
-          "value": 0.08,
-          "rank": 16,
+          "value": 0.09,
+          "rank": 19,
           "tied": true,
-          "pct": 52
+          "pct": 42
         },
         "timeToThrow": {
           "value": 2.7,
@@ -5964,9 +5966,9 @@
         },
         "sacks": {
           "value": 17,
-          "rank": 23,
+          "rank": 24,
           "tied": true,
-          "pct": 29
+          "pct": 26
         }
       },
       "box": {
@@ -6044,27 +6046,27 @@
         "plays": 590,
         "dropbacks": 358,
         "rushes": 232,
-        "chartedDropbacks": 310,
+        "chartedDropbacks": 358,
         "epaPlay": {
           "value": -0.01,
-          "rank": 15,
-          "tied": false,
-          "pct": 55
+          "rank": 16,
+          "tied": true,
+          "pct": 52
         },
         "epaDropback": {
-          "value": 0.05,
-          "rank": 17,
-          "tied": false,
-          "pct": 48
+          "value": 0.03,
+          "rank": 18,
+          "tied": true,
+          "pct": 45
         },
         "epaRush": {
-          "value": -0.1,
+          "value": -0.08,
           "rank": 19,
           "tied": true,
           "pct": 42
         },
         "successRate": {
-          "value": 44.7,
+          "value": 44.9,
           "rank": 10,
           "tied": false,
           "pct": 71
@@ -6089,9 +6091,9 @@
         },
         "yardsPerCarry": {
           "value": 4.16,
-          "rank": 15,
+          "rank": 16,
           "tied": false,
-          "pct": 55
+          "pct": 52
         },
         "passerRating": {
           "value": 96.4,
@@ -6100,64 +6102,64 @@
           "pct": 74
         },
         "blitzRate": {
-          "value": 27.7,
-          "rank": 26,
+          "value": 27.1,
+          "rank": 29,
           "tied": false,
-          "pct": 19
+          "pct": 10
         },
         "epaVsBlitz": {
-          "value": 0.01,
-          "rank": 17,
+          "value": -0.03,
+          "rank": 19,
           "tied": true,
-          "pct": 48
+          "pct": 42
         },
         "epaVsFourMan": {
-          "value": 0.14,
-          "rank": 13,
-          "tied": false,
-          "pct": 61
+          "value": 0.08,
+          "rank": 16,
+          "tied": true,
+          "pct": 52
         },
         "timeToThrow": {
           "value": 2.95,
-          "rank": 6,
+          "rank": 7,
           "tied": false,
-          "pct": 84
+          "pct": 81
         },
         "sacks": {
           "value": 32,
-          "rank": 31,
+          "rank": 30,
           "tied": false,
-          "pct": 3
+          "pct": 6
         }
       },
       "defense": {
         "plays": 614,
         "dropbacks": 334,
         "rushes": 280,
-        "chartedDropbacks": 312,
+        "chartedDropbacks": 334,
         "epaPlay": {
           "value": 0.07,
-          "rank": 25,
-          "tied": true,
-          "pct": 23
-        },
-        "epaDropback": {
-          "value": 0.16,
           "rank": 26,
           "tied": true,
           "pct": 19
         },
+        "epaDropback": {
+          "value": 0.15,
+          "rank": 27,
+          "tied": false,
+          "pct": 16
+        },
         "epaRush": {
-          "value": -0.05,
-          "rank": 22,
+          "value": -0.04,
+          "rank": 20,
           "tied": true,
-          "pct": 32
+          "pct": 39
         },
         "successRate": {
-          "value": 46.7,
-          "rank": 29,
-          "tied": false,
-          "pct": 10
+          "value": 46.6,
+          "rank": 28,
+          "tied": true,
+          "pct": 13
         },
         "explosiveRate": {
           "value": 11.6,
@@ -6190,28 +6192,28 @@
           "pct": 16
         },
         "blitzRate": {
-          "value": 38.8,
+          "value": 38,
           "rank": 5,
           "tied": false,
           "pct": 87
         },
         "epaVsBlitz": {
-          "value": 0.19,
-          "rank": 26,
-          "tied": true,
-          "pct": 19
+          "value": 0.15,
+          "rank": 24,
+          "tied": false,
+          "pct": 26
         },
         "epaVsFourMan": {
-          "value": 0.12,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "value": 0.14,
+          "rank": 25,
+          "tied": true,
+          "pct": 23
         },
         "timeToThrow": {
           "value": 2.89,
-          "rank": 8,
+          "rank": 9,
           "tied": true,
-          "pct": 77
+          "pct": 74
         },
         "sacks": {
           "value": 23,
@@ -6296,19 +6298,19 @@
         "rushes": 188,
         "chartedDropbacks": 355,
         "epaPlay": {
-          "value": -0.15,
-          "rank": 31,
-          "tied": false,
-          "pct": 3
+          "value": -0.11,
+          "rank": 30,
+          "tied": true,
+          "pct": 6
         },
         "epaDropback": {
-          "value": -0.14,
+          "value": -0.09,
           "rank": 28,
           "tied": false,
           "pct": 13
         },
         "epaRush": {
-          "value": -0.16,
+          "value": -0.13,
           "rank": 25,
           "tied": false,
           "pct": 23
@@ -6351,21 +6353,21 @@
         },
         "blitzRate": {
           "value": 35.5,
-          "rank": 6,
+          "rank": 5,
           "tied": false,
-          "pct": 84
+          "pct": 87
         },
         "epaVsBlitz": {
-          "value": -0.17,
-          "rank": 27,
+          "value": -0.12,
+          "rank": 25,
           "tied": false,
-          "pct": 16
+          "pct": 23
         },
         "epaVsFourMan": {
-          "value": -0.14,
-          "rank": 27,
+          "value": -0.1,
+          "rank": 28,
           "tied": false,
-          "pct": 16
+          "pct": 13
         },
         "timeToThrow": {
           "value": 2.9,
@@ -6392,22 +6394,22 @@
           "pct": 13
         },
         "epaDropback": {
-          "value": 0.15,
-          "rank": 25,
+          "value": 0.14,
+          "rank": 26,
           "tied": false,
-          "pct": 23
+          "pct": 19
         },
         "epaRush": {
           "value": 0,
-          "rank": 30,
-          "tied": false,
-          "pct": 6
+          "rank": 29,
+          "tied": true,
+          "pct": 10
         },
         "successRate": {
           "value": 43.7,
-          "rank": 15,
+          "rank": 16,
           "tied": true,
-          "pct": 55
+          "pct": 52
         },
         "explosiveRate": {
           "value": 13.1,
@@ -6417,9 +6419,9 @@
         },
         "yardsPerPlay": {
           "value": 5.37,
-          "rank": 18,
-          "tied": true,
-          "pct": 45
+          "rank": 19,
+          "tied": false,
+          "pct": 42
         },
         "yardsPerPassAttempt": {
           "value": 7.17,
@@ -6446,22 +6448,22 @@
           "pct": 32
         },
         "epaVsBlitz": {
-          "value": 0.35,
+          "value": 0.3,
           "rank": 31,
-          "tied": false,
+          "tied": true,
           "pct": 3
         },
         "epaVsFourMan": {
           "value": 0.08,
-          "rank": 16,
+          "rank": 17,
           "tied": true,
-          "pct": 52
+          "pct": 48
         },
         "timeToThrow": {
           "value": 2.87,
-          "rank": 11,
+          "rank": 12,
           "tied": true,
-          "pct": 68
+          "pct": 65
         },
         "sacks": {
           "value": 16,
@@ -6544,21 +6546,21 @@
         "plays": 549,
         "dropbacks": 350,
         "rushes": 199,
-        "chartedDropbacks": 314,
+        "chartedDropbacks": 350,
         "epaPlay": {
-          "value": -0.03,
-          "rank": 18,
+          "value": -0.01,
+          "rank": 16,
           "tied": true,
-          "pct": 45
+          "pct": 52
         },
         "epaDropback": {
-          "value": -0.1,
+          "value": -0.07,
           "rank": 26,
           "tied": true,
           "pct": 19
         },
         "epaRush": {
-          "value": 0.11,
+          "value": 0.09,
           "rank": 1,
           "tied": false,
           "pct": 100
@@ -6566,7 +6568,7 @@
         "successRate": {
           "value": 41.9,
           "rank": 16,
-          "tied": true,
+          "tied": false,
           "pct": 52
         },
         "explosiveRate": {
@@ -6600,22 +6602,22 @@
           "pct": 32
         },
         "blitzRate": {
-          "value": 31.2,
-          "rank": 18,
+          "value": 28.9,
+          "rank": 22,
           "tied": false,
-          "pct": 45
+          "pct": 32
         },
         "epaVsBlitz": {
-          "value": -0.26,
-          "rank": 31,
-          "tied": false,
-          "pct": 3
+          "value": -0.17,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "epaVsFourMan": {
-          "value": -0.03,
-          "rank": 25,
+          "value": -0.04,
+          "rank": 26,
           "tied": false,
-          "pct": 23
+          "pct": 19
         },
         "timeToThrow": {
           "value": 2.75,
@@ -6634,30 +6636,30 @@
         "plays": 549,
         "dropbacks": 362,
         "rushes": 187,
-        "chartedDropbacks": 318,
+        "chartedDropbacks": 362,
         "epaPlay": {
-          "value": -0.02,
-          "rank": 11,
+          "value": -0.01,
+          "rank": 10,
           "tied": true,
-          "pct": 68
+          "pct": 71
         },
         "epaDropback": {
-          "value": 0.05,
-          "rank": 15,
+          "value": 0.04,
+          "rank": 14,
           "tied": true,
-          "pct": 55
+          "pct": 58
         },
         "epaRush": {
-          "value": -0.14,
-          "rank": 6,
-          "tied": false,
-          "pct": 84
+          "value": -0.12,
+          "rank": 4,
+          "tied": true,
+          "pct": 90
         },
         "successRate": {
-          "value": 43.7,
-          "rank": 15,
-          "tied": true,
-          "pct": 55
+          "value": 43.5,
+          "rank": 14,
+          "tied": false,
+          "pct": 58
         },
         "explosiveRate": {
           "value": 10.4,
@@ -6679,9 +6681,9 @@
         },
         "yardsPerCarry": {
           "value": 3.65,
-          "rank": 5,
+          "rank": 4,
           "tied": false,
-          "pct": 87
+          "pct": 90
         },
         "passerRating": {
           "value": 90.6,
@@ -6690,22 +6692,22 @@
           "pct": 58
         },
         "blitzRate": {
-          "value": 27,
+          "value": 27.1,
           "rank": 21,
           "tied": false,
           "pct": 35
         },
         "epaVsBlitz": {
-          "value": 0.2,
-          "rank": 28,
+          "value": 0.26,
+          "rank": 30,
           "tied": false,
-          "pct": 13
+          "pct": 6
         },
         "epaVsFourMan": {
-          "value": -0.13,
-          "rank": 1,
-          "tied": false,
-          "pct": 100
+          "value": -0.05,
+          "rank": 4,
+          "tied": true,
+          "pct": 90
         },
         "timeToThrow": {
           "value": 2.71,
@@ -6795,30 +6797,30 @@
         "plays": 609,
         "dropbacks": 338,
         "rushes": 271,
-        "chartedDropbacks": 316,
+        "chartedDropbacks": 338,
         "epaPlay": {
-          "value": -0.03,
-          "rank": 18,
+          "value": -0.02,
+          "rank": 20,
           "tied": true,
-          "pct": 45
+          "pct": 39
         },
         "epaDropback": {
-          "value": 0.1,
-          "rank": 10,
+          "value": 0.09,
+          "rank": 11,
           "tied": true,
-          "pct": 71
+          "pct": 68
         },
         "epaRush": {
-          "value": -0.19,
-          "rank": 26,
+          "value": -0.16,
+          "rank": 27,
           "tied": true,
-          "pct": 19
+          "pct": 16
         },
         "successRate": {
           "value": 41.7,
-          "rank": 19,
+          "rank": 20,
           "tied": true,
-          "pct": 42
+          "pct": 39
         },
         "explosiveRate": {
           "value": 12.6,
@@ -6846,27 +6848,27 @@
         },
         "passerRating": {
           "value": 93.7,
+          "rank": 13,
+          "tied": false,
+          "pct": 61
+        },
+        "blitzRate": {
+          "value": 37,
+          "rank": 4,
+          "tied": false,
+          "pct": 90
+        },
+        "epaVsBlitz": {
+          "value": 0.1,
+          "rank": 7,
+          "tied": true,
+          "pct": 81
+        },
+        "epaVsFourMan": {
+          "value": 0.1,
           "rank": 14,
           "tied": false,
           "pct": 58
-        },
-        "blitzRate": {
-          "value": 36.7,
-          "rank": 3,
-          "tied": true,
-          "pct": 94
-        },
-        "epaVsBlitz": {
-          "value": 0.14,
-          "rank": 5,
-          "tied": true,
-          "pct": 87
-        },
-        "epaVsFourMan": {
-          "value": 0.05,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
         },
         "timeToThrow": {
           "value": 2.92,
@@ -6885,30 +6887,30 @@
         "plays": 584,
         "dropbacks": 357,
         "rushes": 227,
-        "chartedDropbacks": 318,
+        "chartedDropbacks": 357,
         "epaPlay": {
-          "value": -0.11,
+          "value": -0.08,
           "rank": 5,
-          "tied": false,
+          "tied": true,
           "pct": 87
         },
         "epaDropback": {
-          "value": -0.11,
+          "value": -0.08,
           "rank": 4,
           "tied": false,
           "pct": 90
         },
         "epaRush": {
-          "value": -0.12,
-          "rank": 8,
-          "tied": true,
-          "pct": 77
+          "value": -0.09,
+          "rank": 9,
+          "tied": false,
+          "pct": 74
         },
         "successRate": {
-          "value": 38.4,
-          "rank": 2,
+          "value": 38,
+          "rank": 1,
           "tied": false,
-          "pct": 97
+          "pct": 100
         },
         "explosiveRate": {
           "value": 7.9,
@@ -6941,22 +6943,22 @@
           "pct": 94
         },
         "blitzRate": {
-          "value": 24.8,
-          "rank": 24,
+          "value": 24.1,
+          "rank": 27,
           "tied": false,
-          "pct": 26
+          "pct": 16
         },
         "epaVsBlitz": {
-          "value": -0.29,
+          "value": -0.27,
           "rank": 2,
-          "tied": true,
+          "tied": false,
           "pct": 97
         },
         "epaVsFourMan": {
-          "value": -0.05,
-          "rank": 5,
+          "value": -0.04,
+          "rank": 6,
           "tied": false,
-          "pct": 87
+          "pct": 84
         },
         "timeToThrow": {
           "value": 2.94,
@@ -7045,15 +7047,15 @@
         "plays": 528,
         "dropbacks": 296,
         "rushes": 232,
-        "chartedDropbacks": 261,
+        "chartedDropbacks": 296,
         "epaPlay": {
-          "value": 0.22,
+          "value": 0.19,
           "rank": 1,
           "tied": false,
           "pct": 100
         },
         "epaDropback": {
-          "value": 0.36,
+          "value": 0.31,
           "rank": 1,
           "tied": false,
           "pct": 100
@@ -7101,19 +7103,19 @@
           "pct": 97
         },
         "blitzRate": {
-          "value": 29.5,
-          "rank": 24,
+          "value": 28.7,
+          "rank": 23,
           "tied": false,
-          "pct": 26
+          "pct": 29
         },
         "epaVsBlitz": {
-          "value": 0.32,
-          "rank": 2,
+          "value": 0.42,
+          "rank": 1,
           "tied": false,
-          "pct": 97
+          "pct": 100
         },
         "epaVsFourMan": {
-          "value": 0.3,
+          "value": 0.27,
           "rank": 4,
           "tied": false,
           "pct": 90
@@ -7121,7 +7123,7 @@
         "timeToThrow": {
           "value": 3.02,
           "rank": 4,
-          "tied": false,
+          "tied": true,
           "pct": 90
         },
         "sacks": {
@@ -7135,30 +7137,30 @@
         "plays": 555,
         "dropbacks": 354,
         "rushes": 201,
-        "chartedDropbacks": 300,
+        "chartedDropbacks": 354,
         "epaPlay": {
-          "value": -0.03,
+          "value": -0.02,
           "rank": 9,
-          "tied": true,
+          "tied": false,
           "pct": 74
         },
         "epaDropback": {
-          "value": 0.03,
+          "value": 0.04,
           "rank": 14,
-          "tied": false,
+          "tied": true,
           "pct": 58
         },
         "epaRush": {
-          "value": -0.15,
-          "rank": 4,
-          "tied": true,
-          "pct": 90
+          "value": -0.13,
+          "rank": 3,
+          "tied": false,
+          "pct": 94
         },
         "successRate": {
-          "value": 44,
-          "rank": 19,
-          "tied": true,
-          "pct": 42
+          "value": 44.1,
+          "rank": 22,
+          "tied": false,
+          "pct": 32
         },
         "explosiveRate": {
           "value": 8.6,
@@ -7191,28 +7193,28 @@
           "pct": 55
         },
         "blitzRate": {
-          "value": 30.7,
+          "value": 28.8,
           "rank": 16,
           "tied": false,
           "pct": 52
         },
         "epaVsBlitz": {
-          "value": 0.01,
-          "rank": 17,
+          "value": 0.1,
+          "rank": 23,
           "tied": false,
-          "pct": 48
+          "pct": 29
         },
         "epaVsFourMan": {
-          "value": 0,
-          "rank": 8,
+          "value": 0.03,
+          "rank": 10,
           "tied": true,
-          "pct": 77
+          "pct": 71
         },
         "timeToThrow": {
           "value": 2.84,
-          "rank": 13,
+          "rank": 15,
           "tied": true,
-          "pct": 61
+          "pct": 55
         },
         "sacks": {
           "value": 16,
@@ -7297,27 +7299,27 @@
         "rushes": 262,
         "chartedDropbacks": 293,
         "epaPlay": {
-          "value": -0.11,
+          "value": -0.08,
           "rank": 27,
-          "tied": true,
+          "tied": false,
           "pct": 16
         },
         "epaDropback": {
-          "value": -0.2,
-          "rank": 30,
-          "tied": false,
-          "pct": 6
+          "value": -0.15,
+          "rank": 29,
+          "tied": true,
+          "pct": 10
         },
         "epaRush": {
-          "value": -0.01,
+          "value": 0,
           "rank": 9,
-          "tied": true,
+          "tied": false,
           "pct": 74
         },
         "successRate": {
-          "value": 40.7,
+          "value": 40.4,
           "rank": 26,
-          "tied": false,
+          "tied": true,
           "pct": 19
         },
         "explosiveRate": {
@@ -7352,18 +7354,18 @@
         },
         "blitzRate": {
           "value": 33.4,
-          "rank": 11,
+          "rank": 12,
           "tied": false,
-          "pct": 68
+          "pct": 65
         },
         "epaVsBlitz": {
-          "value": -0.23,
-          "rank": 30,
-          "tied": false,
-          "pct": 6
+          "value": -0.17,
+          "rank": 27,
+          "tied": true,
+          "pct": 16
         },
         "epaVsFourMan": {
-          "value": -0.19,
+          "value": -0.16,
           "rank": 29,
           "tied": false,
           "pct": 10
@@ -7387,28 +7389,28 @@
         "rushes": 180,
         "chartedDropbacks": 334,
         "epaPlay": {
-          "value": -0.16,
-          "rank": 1,
-          "tied": true,
-          "pct": 100
+          "value": -0.12,
+          "rank": 2,
+          "tied": false,
+          "pct": 97
         },
         "epaDropback": {
-          "value": -0.17,
+          "value": -0.12,
           "rank": 2,
           "tied": false,
           "pct": 97
         },
         "epaRush": {
-          "value": -0.16,
-          "rank": 2,
+          "value": -0.12,
+          "rank": 4,
           "tied": true,
-          "pct": 97
+          "pct": 90
         },
         "successRate": {
-          "value": 39.9,
-          "rank": 6,
+          "value": 40.1,
+          "rank": 5,
           "tied": false,
-          "pct": 84
+          "pct": 87
         },
         "explosiveRate": {
           "value": 11.5,
@@ -7447,7 +7449,7 @@
           "pct": 97
         },
         "epaVsBlitz": {
-          "value": -0.38,
+          "value": -0.29,
           "rank": 1,
           "tied": false,
           "pct": 100
@@ -7466,9 +7468,9 @@
         },
         "sacks": {
           "value": 17,
-          "rank": 23,
+          "rank": 24,
           "tied": true,
-          "pct": 29
+          "pct": 26
         }
       },
       "box": {
@@ -7545,36 +7547,36 @@
         "plays": 506,
         "dropbacks": 321,
         "rushes": 185,
-        "chartedDropbacks": 278,
+        "chartedDropbacks": 321,
         "epaPlay": {
-          "value": -0.09,
-          "rank": 25,
-          "tied": true,
-          "pct": 23
+          "value": -0.07,
+          "rank": 26,
+          "tied": false,
+          "pct": 19
         },
         "epaDropback": {
-          "value": -0.1,
+          "value": -0.07,
           "rank": 26,
           "tied": true,
           "pct": 19
         },
         "epaRush": {
-          "value": -0.08,
-          "rank": 16,
-          "tied": true,
-          "pct": 52
+          "value": -0.07,
+          "rank": 18,
+          "tied": false,
+          "pct": 45
         },
         "successRate": {
-          "value": 41.1,
-          "rank": 24,
+          "value": 41.3,
+          "rank": 23,
           "tied": false,
-          "pct": 26
+          "pct": 29
         },
         "explosiveRate": {
           "value": 10.9,
-          "rank": 24,
+          "rank": 25,
           "tied": false,
-          "pct": 26
+          "pct": 23
         },
         "yardsPerPlay": {
           "value": 4.94,
@@ -7601,28 +7603,28 @@
           "pct": 19
         },
         "blitzRate": {
-          "value": 22.3,
+          "value": 23.1,
           "rank": 32,
           "tied": false,
           "pct": 0
         },
         "epaVsBlitz": {
-          "value": 0.08,
-          "rank": 12,
+          "value": -0.01,
+          "rank": 18,
           "tied": false,
-          "pct": 65
+          "pct": 45
         },
         "epaVsFourMan": {
-          "value": -0.15,
-          "rank": 28,
+          "value": -0.08,
+          "rank": 27,
           "tied": false,
-          "pct": 13
+          "pct": 16
         },
         "timeToThrow": {
           "value": 2.8,
-          "rank": 21,
-          "tied": true,
-          "pct": 35
+          "rank": 22,
+          "tied": false,
+          "pct": 32
         },
         "sacks": {
           "value": 14,
@@ -7635,30 +7637,30 @@
         "plays": 593,
         "dropbacks": 341,
         "rushes": 252,
-        "chartedDropbacks": 304,
+        "chartedDropbacks": 341,
         "epaPlay": {
           "value": 0.09,
           "rank": 29,
-          "tied": false,
+          "tied": true,
           "pct": 10
         },
         "epaDropback": {
-          "value": 0.22,
+          "value": 0.2,
           "rank": 30,
-          "tied": false,
+          "tied": true,
           "pct": 6
         },
         "epaRush": {
-          "value": -0.08,
+          "value": -0.06,
           "rank": 15,
-          "tied": true,
+          "tied": false,
           "pct": 55
         },
         "successRate": {
-          "value": 47.6,
-          "rank": 31,
-          "tied": false,
-          "pct": 3
+          "value": 47,
+          "rank": 30,
+          "tied": true,
+          "pct": 6
         },
         "explosiveRate": {
           "value": 14.7,
@@ -7680,9 +7682,9 @@
         },
         "yardsPerCarry": {
           "value": 4.06,
-          "rank": 15,
+          "rank": 16,
           "tied": false,
-          "pct": 55
+          "pct": 52
         },
         "passerRating": {
           "value": 98.6,
@@ -7691,22 +7693,22 @@
           "pct": 26
         },
         "blitzRate": {
-          "value": 24.3,
-          "rank": 27,
+          "value": 23.8,
+          "rank": 28,
           "tied": false,
-          "pct": 16
+          "pct": 13
         },
         "epaVsBlitz": {
-          "value": 0.26,
+          "value": 0.3,
+          "rank": 31,
+          "tied": true,
+          "pct": 3
+        },
+        "epaVsFourMan": {
+          "value": 0.18,
           "rank": 29,
           "tied": false,
           "pct": 10
-        },
-        "epaVsFourMan": {
-          "value": 0.16,
-          "rank": 25,
-          "tied": true,
-          "pct": 23
         },
         "timeToThrow": {
           "value": 2.95,
@@ -7797,34 +7799,34 @@
         "rushes": 202,
         "chartedDropbacks": 351,
         "epaPlay": {
-          "value": -0.03,
+          "value": -0.01,
+          "rank": 16,
+          "tied": true,
+          "pct": 52
+        },
+        "epaDropback": {
+          "value": 0.03,
           "rank": 18,
           "tied": true,
           "pct": 45
         },
-        "epaDropback": {
-          "value": 0.03,
-          "rank": 19,
-          "tied": false,
-          "pct": 42
-        },
         "epaRush": {
-          "value": -0.13,
+          "value": -0.1,
           "rank": 21,
-          "tied": true,
+          "tied": false,
           "pct": 35
         },
         "successRate": {
-          "value": 42.5,
-          "rank": 14,
+          "value": 42.3,
+          "rank": 15,
           "tied": false,
-          "pct": 58
+          "pct": 55
         },
         "explosiveRate": {
           "value": 11,
-          "rank": 23,
+          "rank": 24,
           "tied": false,
-          "pct": 29
+          "pct": 26
         },
         "yardsPerPlay": {
           "value": 5.23,
@@ -7852,27 +7854,27 @@
         },
         "blitzRate": {
           "value": 33,
-          "rank": 12,
-          "tied": true,
-          "pct": 65
+          "rank": 13,
+          "tied": false,
+          "pct": 61
         },
         "epaVsBlitz": {
           "value": 0.06,
           "rank": 13,
-          "tied": true,
+          "tied": false,
           "pct": 61
         },
         "epaVsFourMan": {
           "value": 0.04,
-          "rank": 21,
+          "rank": 20,
           "tied": true,
-          "pct": 35
+          "pct": 39
         },
         "timeToThrow": {
           "value": 2.83,
-          "rank": 17,
+          "rank": 18,
           "tied": false,
-          "pct": 48
+          "pct": 45
         },
         "sacks": {
           "value": 21,
@@ -7888,21 +7890,21 @@
         "chartedDropbacks": 373,
         "epaPlay": {
           "value": 0.03,
-          "rank": 21,
-          "tied": false,
-          "pct": 35
+          "rank": 20,
+          "tied": true,
+          "pct": 39
         },
         "epaDropback": {
-          "value": 0.08,
-          "rank": 22,
+          "value": 0.07,
+          "rank": 21,
           "tied": true,
-          "pct": 32
+          "pct": 35
         },
         "epaRush": {
-          "value": -0.05,
-          "rank": 22,
+          "value": -0.04,
+          "rank": 20,
           "tied": true,
-          "pct": 32
+          "pct": 39
         },
         "successRate": {
           "value": 45.8,
@@ -7930,15 +7932,15 @@
         },
         "yardsPerCarry": {
           "value": 3.96,
-          "rank": 11,
+          "rank": 12,
           "tied": false,
-          "pct": 68
+          "pct": 65
         },
         "passerRating": {
           "value": 95.5,
-          "rank": 20,
+          "rank": 21,
           "tied": false,
-          "pct": 39
+          "pct": 35
         },
         "blitzRate": {
           "value": 42.4,
@@ -7947,7 +7949,7 @@
           "pct": 94
         },
         "epaVsBlitz": {
-          "value": 0.08,
+          "value": 0.07,
           "rank": 22,
           "tied": false,
           "pct": 32
@@ -7966,9 +7968,9 @@
         },
         "sacks": {
           "value": 18,
-          "rank": 22,
+          "rank": 23,
           "tied": false,
-          "pct": 32
+          "pct": 29
         }
       },
       "box": {

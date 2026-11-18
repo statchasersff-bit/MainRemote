@@ -356,7 +356,10 @@ function statchasers_team_enqueue_assets(): void {
  * @return string
  */
 function statchasers_team_mobile_top_css(): string {
-	return '@media (max-width:560px){#main-content .container:has(.sct-tpb){padding-top:0!important}}';
+	// Wider screens 24px rather than Divi's 58 (mak, 2026-11-18), again
+	// mirrored in team.css.
+	return '@media (max-width:560px){#main-content .container:has(.sct-tpb){padding-top:0!important}}' .
+		'@media (min-width:561px){#main-content .container:has(.sct-tpb){padding-top:24px!important}}';
 }
 
 /**

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T13:45:03.819Z",
+  "generated_at": "2026-11-18T05:32:28.568Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -47,7 +47,7 @@
     },
     "DAL": {
       "rb1": "Javonte Williams",
-      "rb2": "Israel Abanikanda",
+      "rb2": null,
       "rb3": null
     },
     "DEN": {
@@ -419,14 +419,6 @@
       "name": "Isaiah Davis",
       "team": "NYJ",
       "sleeperId": "11571",
-      "age": 24,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "israel abanikanda": {
-      "name": "Israel Abanikanda",
-      "team": "DAL",
-      "sleeperId": "9227",
       "age": 24,
       "injuryStatus": null,
       "status": "Active"

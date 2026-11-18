@@ -107,6 +107,50 @@ export function designationSeverity(status: string | null | undefined): string {
 }
 
 /**
+ * A designation that takes a player off the active roster for longer than one
+ * game: injured reserve, the PUP or NFI lists, a suspension, did not report.
+ * Returned as the words a sentence uses ("injured reserve"), or null.
+ *
+ * Different from "Out", which is one game's status and still leaves a
+ * start/sit question to ask. With one of these the question answers itself,
+ * so the header says where he stands instead (UI brief, 2026-11-18). Read off
+ * the same designation the pill prints, never off a player name, and with no
+ * return date: the feed does not have one and the page does not guess.
+ */
+export function rosterDesignation(data: PlayerPageData): string | null {
+  const key = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim().toLowerCase();
+  if (!key) return null;
+  if (/^ir\b/.test(key) || key.includes("injured reserve")) return "injured reserve";
+  if (/^pup\b/.test(key) || key.includes("physically unable")) return "the PUP list";
+  if (/^nfi\b/.test(key) || key.includes("non-football")) return "the non-football injury list";
+  if (/^sus/.test(key)) return "suspended";
+  if (/^dnr\b/.test(key)) return "did not report";
+  return null;
+}
+
+/**
+ * The strip's short form of the note, for a header too narrow to keep the
+ * long one and "View matchup" on one line: "On IR", "Suspended".
+ */
+function rosterNoteShort(data: PlayerPageData): string {
+  const words = rosterDesignation(data);
+  if (!words) return "";
+  if (words === "injured reserve") return "On IR";
+  if (words === "the PUP list") return "On PUP";
+  if (words === "the non-football injury list") return "On NFI";
+  return words[0]!.toUpperCase() + words.slice(1);
+}
+
+/** "On injured reserve (elbow)", "Suspended": the strip's factual note. */
+function rosterNote(data: PlayerPageData): string {
+  const words = rosterDesignation(data);
+  if (!words) return "";
+  const part = (data.designation?.injuryBodyPart ?? "").trim().toLowerCase();
+  const lead = words === "suspended" || words === "did not report" ? words[0]!.toUpperCase() + words.slice(1) : `On ${words}`;
+  return part && words !== "suspended" && words !== "did not report" ? `${lead} (${part})` : lead;
+}
+
+/**
  * Suffixes that belong to the surname rather than standing as one.
  *
  * "Odell Beckham Jr." splits after Odell, not after Beckham: a hero reading
@@ -350,8 +394,15 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
 
   const season = data.production.find((row) => row.season === data.season);
   // By points per game where that rank exists, by points scored until it does.
-  const rank =
-    season?.posFinishPpg ?? data.seasonRank ?? season?.posFinishTotal ?? data.seasonRankTotal;
+  const ppgRank = season?.posFinishPpg ?? data.seasonRank;
+  const rank = ppgRank ?? season?.posFinishTotal ?? data.seasonRankTotal;
+  // The rank's own basis, in its tooltip: until he has played four games
+  // there is no per-game rank and the figure is his rank by points scored
+  // (UI brief, 2026-11-18: the tooltip said "per game" either way).
+  const rankTitle =
+    ppgRank != null
+      ? `${data.season} position rank by ${SCORING_SHORT[format]} fantasy points per game`
+      : `${data.season} position rank by total ${SCORING_SHORT[format]} fantasy points (per-game rank from four games played)`;
   const pos = player.position ?? "";
   const ranked = played && pos && rank != null;
 
@@ -366,7 +417,7 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
     {
       value: ranked ? `${pos}${rank}` : DASH,
       unit: ranked ? "" : "rank",
-      title: "Position rank by fantasy points per game",
+      title: rankTitle,
     },
     // Sleeper's redraft pool - see scripts/player/buildRosterPct.mjs.
     {
@@ -711,7 +762,11 @@ export function renderHero(
   }
   const specRow = spec.length
     ? `<p class="scp-pspec">` +
-      spec.map(([v, t]) => `<span class="scp-pspec-i" title="${escapeHtml(t)}">${escapeHtml(v)}</span>`).join(sep) +
+      // The draft pick is marked so a narrower hero can drop it (it is on
+      // the Bio tab) rather than wrap the line (UI brief, 2026-11-18).
+      spec
+        .map(([v, t]) => `<span class="scp-pspec-i${t.startsWith("Drafted") ? " is-draft" : ""}" title="${escapeHtml(t)}">${escapeHtml(v)}</span>`)
+        .join(sep) +
       `</p>`
     : "";
 
@@ -770,7 +825,15 @@ export function renderHero(
   // Start/sit while there is a week to start him in; before Week 1, or once
   // the schedule has run out, the question is the season rather than a week.
   let second = "";
-  if (team && next && !seasonNotStarted(data)) {
+  const injuryHref = sectionHref(data, options, "injury");
+  if (rosterDesignation(data) && injuryHref) {
+    // On IR (or PUP, suspended...): "Should I start him?" answers itself, so
+    // the button opens his injury status instead.
+    second =
+      `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(injuryHref)}" target="_top"` +
+      ` data-cta="injury-header-${cta}" data-scp-cta="injury-header">` +
+      `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.question}</span>${escapeHtml(`${possessive(last)} injury status`)}</a>`;
+  } else if (team && next && !seasonNotStarted(data) && !rosterDesignation(data)) {
     const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(player.slug)}`;
     second =
       `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(href)}"` +
@@ -810,7 +873,7 @@ export function renderHero(
  * button and the Overview's phone link (mak, 2026-11-05) share it.
  */
 export function startSitHref(data: PlayerPageData, options: PlayerRenderOptions): string {
-  if (!data.team || !headerFixture(data) || seasonNotStarted(data)) return "";
+  if (!data.team || !headerFixture(data) || seasonNotStarted(data) || rosterDesignation(data)) return "";
   return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
 }
 
@@ -838,6 +901,17 @@ function matchupStrip(data: PlayerPageData, extras: HeroExtras = {}): string {
       (when ? `<span class="scp-pstrip-when">${escapeHtml(when)}</span>` : "") +
       (band && game.matchup
         ? `<span class="scp-mchip ${band.cls}">${escapeHtml(`${ordinal(game.matchup.rank)} vs. ${game.matchup.position}s, ${band.word}`)}</span>`
+        : "") +
+      // The club's next game is still the club's next game; say plainly that
+      // he is not on the active roster for it (no return date - see
+      // rosterDesignation()).
+      // Both forms printed; player.css shows the short one under 1100px.
+      // The short one is aria-hidden, so a screen reader hears the note once.
+      (rosterNote(data)
+        ? `<span class="scp-pstrip-note">` +
+          `<span class="scp-pstrip-note-full">${escapeHtml(rosterNote(data))}</span>` +
+          `<span class="scp-pstrip-note-short" aria-hidden="true">${escapeHtml(rosterNoteShort(data))}</span>` +
+          `</span>`
         : "") +
       (extras.matchupHref
         ? `<a class="scp-pstrip-link" href="${escapeHtml(extras.matchupHref)}" target="_top">View matchup<span aria-hidden="true">${ICON.arrow}</span></a>`

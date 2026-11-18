@@ -506,11 +506,14 @@ function statchasers_player_enqueue_assets(): void {
  * page, and on a 390px screen that left 76px of white between the site's
  * header and the player card (58px of theme plus the card's own top margin,
  * which the app trims to 10px at the same width). Player pages only - it
- * rides on the player handle - and only at 560px and under, the width the
- * compact phone header takes over; the desktop page keeps the theme's air.
+ * rides on the player handle. Phones get none; wider screens 24px.
  */
 function statchasers_player_mobile_top_css(): string {
-	return '@media (max-width:560px){#main-content .container{padding-top:0!important}}';
+	// Desktop and tablet (UI brief, 2026-11-18): 24px rather than Divi's 58px,
+	// the app dropping the search's own 24px margin at the same widths, so the
+	// search sits ~24px under the site header instead of 82px.
+	return '@media (max-width:560px){#main-content .container{padding-top:0!important}}' .
+		'@media (min-width:561px){#main-content .container{padding-top:24px!important}}';
 }
 
 /**

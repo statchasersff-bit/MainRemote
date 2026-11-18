@@ -495,6 +495,7 @@ function renderLeaderBody(
   position: StatsPosition,
   options: StatsRenderOptions,
   className: string,
+  unit: string,
 ): string {
   const row = leader.player;
   // The leaders are the first thing on the page, so the photos are not lazy:
@@ -525,6 +526,10 @@ function renderLeaderBody(
     `<div class="${className}">` +
     `<p class="sca-leader-fig">` +
     `<span class="sca-leader-num">${escapeHtml(leader.figure || "-")}</span>` +
+    // What the figure counts, so a card never passes a per-game figure off as
+    // a season total (or the reverse). Outside .sca-leader-num, which stays
+    // the bare figure.
+    unit +
     (leader.note ? `<span class="sca-leader-note">${escapeHtml(leader.note)}</span>` : "") +
     `</p>` +
     `<div class="sca-leader-who">` +
@@ -561,8 +566,19 @@ function renderLeader(card: LeaderCard, position: StatsPosition, options: StatsR
     `</span>` +
     `<p class="sca-leader-cat">${escapeHtml(card.title)}</p>` +
     `</div>` +
-    renderLeaderBody(card.total, position, options, card.perGame ? "sca-leader-total" : "sca-leader-body") +
-    (card.perGame ? renderLeaderBody(card.perGame, position, options, "sca-leader-pg") : "") +
+    renderLeaderBody(
+      card.total,
+      position,
+      options,
+      card.perGame ? "sca-leader-total" : "sca-leader-body",
+      // A rate (target share) has no per-game reading: while Per Game is on,
+      // the card says it is still the season's figure rather than changing
+      // its meaning silently.
+      card.perGame ? "" : `<span class="sca-leader-unit is-season">season</span>`,
+    ) +
+    (card.perGame
+      ? renderLeaderBody(card.perGame, position, options, "sca-leader-pg", `<span class="sca-leader-unit">/G</span>`)
+      : "") +
     `</article>`
   );
 }
@@ -799,12 +815,17 @@ function renderTable(table: StatsTable, options: StatsRenderOptions): string {
   return (
     `<section class="sca-section sca-stats" aria-label="Player stats">` +
     `<div class="sca-meta">${meta}</div>` +
+    // The wrap carries the sideways-scroll cues (an edge fade while columns
+    // remain to the right, a shadow on the pinned names once scrolled); the
+    // bundle sets them, so without it the table is exactly as before.
+    `<div class="sca-scroll-wrap" data-sca-scroll>` +
     `<div class="sca-scroll">` +
     `<table class="sca-table" data-sca-table>` +
     `<caption class="sca-sr-only">${escapeHtml(caption)}</caption>` +
     renderHead(table) +
     `<tbody>${body}</tbody>` +
     `</table>` +
+    `</div>` +
     `</div>` +
     `<div class="sca-foot">` +
     `<span><span data-sca-count>${shown}</span> player${shown === 1 ? "" : "s"}` +

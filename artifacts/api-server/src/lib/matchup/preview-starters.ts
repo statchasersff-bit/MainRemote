@@ -7,10 +7,14 @@
  * Starters are Sleeper's depth order on the roster the preview already holds
  * (QB1, RB1-2, WR1-3, TE1); a player designated Out, IR or the like is
  * replaced by the next man up, and a Questionable or Doubtful starter keeps
- * his slot (the card badges him).
+ * his slot (the card badges him). Since 2026-11-18 the statuses are the
+ * game's own (availability.ts): a player who missed the club's last game and
+ * has no designation yet for this one ("Pending") is not counted as the
+ * expected starter either; the man who replaced him is.
  */
 
-import { isOutDesignation, type RosterPlayer } from "../team/roster";
+import type { RosterPlayer } from "../team/roster";
+import { notExpected } from "./availability";
 import type { Pos } from "./preview";
 
 /**
@@ -20,7 +24,19 @@ import type { Pos } from "./preview";
  */
 export function starters(roster: RosterPlayer[], pos: Pos, n: number): RosterPlayer[] {
   return roster
-    .filter((r) => r.position === pos && !isOutDesignation(r.injuryStatus))
+    .filter((r) => r.position === pos && !notExpected(r.injuryStatus))
+    .sort((a, b) => (a.depthOrder ?? 99) - (b.depthOrder ?? 99) || (a.searchRank ?? 9999) - (b.searchRank ?? 9999))
+    .slice(0, n);
+}
+
+/**
+ * The depth chart's top N at a position, available or not: who the club
+ * would start at full health. For "who is missing" questions (Keys to the
+ * Game's injury key), where starters() would already have skipped him.
+ */
+export function depthTop(roster: RosterPlayer[], pos: Pos, n: number): RosterPlayer[] {
+  return roster
+    .filter((r) => r.position === pos)
     .sort((a, b) => (a.depthOrder ?? 99) - (b.depthOrder ?? 99) || (a.searchRank ?? 9999) - (b.searchRank ?? 9999))
     .slice(0, n);
 }

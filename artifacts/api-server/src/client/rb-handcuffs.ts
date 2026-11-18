@@ -42,6 +42,11 @@ const ROOT_SELECTOR = "[data-rbh-root]";
 const MAX_COMPARE = 3;
 const WEIGHT_KEYS = ["contingentUpsideWeight", "pathToWorkloadWeight", "playerQualityWeight"] as const;
 type WeightKey = (typeof WEIGHT_KEYS)[number];
+const PILLAR_TITLES: Record<WeightKey, string> = {
+  contingentUpsideWeight: "Backfield Opportunity",
+  pathToWorkloadWeight: "Path to Opportunity",
+  playerQualityWeight: "Player Quality",
+};
 
 /* ---------------------------------------------------------------- helpers */
 
@@ -128,12 +133,20 @@ function paintWeights(board: Board): void {
   for (const key of WEIGHT_KEYS) {
     const out = board.root.querySelector(`[data-rbh-out="${key}"]`);
     if (out) out.textContent = `${values[key]}%`;
-    const legend = board.root.querySelector(`[data-rbh-key="${key}"]`);
-    if (legend) legend.textContent = `${values[key]}%`;
     const seg = board.root.querySelector<HTMLElement>(`[data-rbh-seg="${key}"]`);
     if (seg) seg.style.width = `${values[key]}%`;
     const input = board.root.querySelector<HTMLElement>(`[data-rbh-weight="${key}"]`);
     if (input) input.style.setProperty("--rbh-fill", `${values[key]}%`);
+  }
+
+  // The bar has no legend since 11-18 (each card shows its own percentage), so
+  // it names its split for assistive tech. MIRRORS allocationLabel().
+  const bar = board.root.querySelector("[data-rbh-alloc]");
+  if (bar) {
+    bar.setAttribute(
+      "aria-label",
+      `Model allocation: ${WEIGHT_KEYS.map((key) => `${PILLAR_TITLES[key]} ${values[key]}%`).join(", ")}`,
+    );
   }
 
   const status = board.root.querySelector("[data-rbh-status]");
@@ -672,6 +685,23 @@ function wire(root: HTMLElement): void {
         costWeight: 0,
       });
       paintWeights(board);
+      return;
+    }
+
+    const how = target.closest<HTMLButtonElement>("[data-rbh-how-toggle]");
+    if (how) {
+      const panel = root.querySelector<HTMLElement>("[data-rbh-how]");
+      const open = how.getAttribute("aria-expanded") !== "true";
+      how.setAttribute("aria-expanded", String(open));
+      if (panel) panel.hidden = !open;
+      return;
+    }
+
+    // "Model Reference" in that panel: open its first accordion on the way
+    // down, so the link lands on the explanation and not on two shut rows.
+    if (target.closest("[data-rbh-ref-link]")) {
+      const first = root.querySelector<HTMLDetailsElement>("#rbh-model-ref details");
+      if (first) first.open = true;
       return;
     }
 

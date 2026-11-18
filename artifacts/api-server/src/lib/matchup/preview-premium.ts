@@ -31,7 +31,9 @@ import {
   weatherText,
   type PreviewRenderContext,
 } from "./preview-render";
+import { PENDING } from "./availability";
 import { gameKeys, KEY_WORD } from "./preview-keys";
+import { composePreview } from "./preview-narrative";
 import { BATTLE_WORD, type BattlePlayer } from "./preview-extras";
 import { teamComparison, type CompareCell } from "./preview-compare";
 import { fantasyImpact, FORMATS, TAKEAWAY_WORD, type FantasyImpact } from "./preview-fantasy";
@@ -299,12 +301,26 @@ function banner(p: Preview, ctx: PreviewRenderContext): string {
 
 /* --------------------------------------------------------------- call */
 
+/**
+ * The Game Preview (mak's 2026-11-18 brief): the written preview from
+ * preview-narrative.ts over The Call's projected-script meter, one section
+ * rather than two explaining the same game. Falls back to The Call's own
+ * thesis and short read when the engine has nothing to tell.
+ */
 function callCard(p: Preview): string {
-  if (!p.call) return "";
-  const pos = 50 + p.call.lean * 45;
+  const story = composePreview(p);
+  if (!p.call && !story) return "";
+  const pos = p.call ? 50 + p.call.lean * 45 : 50;
+  const lead = story
+    ? `<p class="sct-mpp-thesis sct-mpp-pv-head">${e(story.headline)}</p>` +
+      `<div class="sct-mpp-pv-copy" data-storylines="${e(story.storylines.join(" "))}">${story.paragraphs.map((x) => `<p class="sct-mpp-copy">${e(x)}</p>`).join("")}</div>`
+    : `<p class="sct-mpp-thesis">${e(p.call!.thesis)}.</p><p class="sct-mpp-copy">${e(p.call!.paragraph)}</p>`;
+  if (!p.call) {
+    return card("is-call", "pv-call", ICON.call, "Game Preview", p.meeting.weekLabel, lead);
+  }
   const body =
-    `<p class="sct-mpp-thesis">${e(p.call.thesis)}.</p>` +
-    `<p class="sct-mpp-copy">${e(p.call.paragraph)}</p>` +
+    lead +
+    `<p class="sct-mpp-pv-script">Projected script</p>` +
     `<div class="sct-mpp-meter" aria-hidden="true"><span class="sct-mpp-meter-track"></span><span class="sct-mpp-meter-dot" style="left:${pos.toFixed(1)}%"></span></div>` +
     `<div class="sct-mpp-meter-labels" aria-hidden="true"><span>${e(code(p.away.team))} controls</span><span>Competitive</span><span>${e(code(p.home.team))} controls</span></div>` +
     `<p class="sct-visually-hidden">${e(p.call.leanText)}</p>` +
@@ -312,7 +328,7 @@ function callCard(p: Preview): string {
       ? `<details class="sct-mpp-why"><summary>Why?</summary><p>${e(p.call.detail)}</p></details>`
       : "") +
     (START_SIT_URL ? `<a class="sct-mpp-link" href="${e(START_SIT_URL)}">Deciding between two players? Compare in Start/Sit →</a>` : "");
-  return card("is-call", "pv-call", ICON.call, "The Call", "Game script", body);
+  return card("is-call", "pv-call", ICON.call, "Game Preview", p.meeting.weekLabel, body);
 }
 
 /* ---------------------------------------------------- keys to the game */
@@ -332,7 +348,12 @@ function keysCard(p: Preview): string {
         `<p class="sct-mpp-key-kick"><span class="sct-mpp-key-n">${String(i + 1).padStart(2, "0")}</span>${e(KEY_WORD[k.kind])}</p>` +
         `<h3 class="sct-mpp-key-q">${e(k.question)}</h3>` +
         `<p class="sct-mpp-key-copy">${e(k.copy)}</p>` +
-        `<p class="sct-mpp-key-focus"><b>Focus</b>${k.focus.map((f) => `<span>${e(f)}</span>`).join("")}</p>` +
+        // Why it could decide the game, and who the numbers favor (mak's
+        // 2026-11-18 brief), where the generic Focus tags used to sit.
+        `<p class="sct-mpp-key-why">${e(k.why)}</p>` +
+        (k.edge
+          ? `<p class="sct-mpp-key-edge" data-side="${k.edge}"><b>Edge</b><span>${e((k.edge === "away" ? p.away : p.home).team.nickname)}</span></p>`
+          : "") +
         `</li>`,
     )
     .join("");
@@ -343,7 +364,7 @@ function keysCard(p: Preview): string {
     `${pairOf(p)} Keys to the Game`,
     `${keys.length} matchups to watch`,
     `<ol class="sct-mpp-keys">${items}</ol>` +
-      `<p class="sct-mpp-keys-note">Season-to-date team stats. Ranks are among all 32 teams, 1st the best; for a defense, 1st allows the fewest.</p>`,
+      `<p class="sct-mpp-keys-note">Season-to-date team stats. Ranks are out of 32 teams, 1st the best; for a defense, 1st allows the fewest.</p>`,
     "Keys to the Game",
   );
 }
@@ -368,12 +389,15 @@ function formCard(p: Preview): string {
     const trend = (label: string, recent: number, season: number, lowerIsBetter: boolean) => {
       const diff = recent - season;
       const tone = Math.abs(diff) < 1 ? "even" : (diff < 0) === lowerIsBetter ? "up" : "down";
-      const arrow = Math.abs(diff) < 1 ? "" : diff > 0 ? "▲" : "▼";
+      // Better or worse in words (mak's 2026-11-18 brief): fewer points
+      // allowed is an improvement, so a falling number can be good news and
+      // an arrow alone read it the wrong way.
+      const verdict = tone === "even" ? "Steady" : tone === "up" ? "Better" : "Worse";
       return (
         `<li class="sct-mpp-form-t" data-tone="${tone}"><span class="sct-mpp-form-k">${e(label)}</span>` +
         `<b class="sct-mpp-num">${one(recent)}</b><span class="sct-mpp-form-s">${e(`last ${f.games.length}`)}</span>` +
         `<span class="sct-mpp-form-vs">${e(`${one(season)} season`)}</span>` +
-        `<span class="sct-mpp-form-d sct-mpp-num">${arrow ? `<span class="sct-mpp-form-arr">${arrow} </span>` : ""}${e(`${diff >= 0 ? "+" : "−"}${one(Math.abs(diff))}`)}</span></li>`
+        `<span class="sct-mpp-form-d sct-mpp-num">${e(`${diff >= 0 ? "+" : "−"}${one(Math.abs(diff))}`)} <span class="sct-mpp-form-arr">${verdict}</span></span></li>`
       );
     };
     return (
@@ -557,18 +581,17 @@ function bettingCard(p: Preview): string {
     ? new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(b.seenAt) + " ET"
     : null;
   const arrow = (dir: string | null) => (dir === "up" ? "↑" : dir === "down" ? "↓" : dir === "toward" ? "→" : "");
+  // Line movement, not the line again (mak's 2026-11-18 brief: the header
+  // already carries the current spread, total and moneyline): each tile leads
+  // with how the number moved since it opened, open and current under it.
+  // The moneyline has no opening price here, so it stays in the header only.
   const tile = (m: NonNullable<typeof b>["market"][number]) =>
-    `<li class="sct-mpp-bo-tile"><span class="sct-mpp-bo-tl">${e(m.label)}</span>` +
-    (m.label === "Moneyline"
-      ? `<b class="sct-mpp-num is-ml">${m.current.split(" · ").map((x) => `<span>${e(x)}</span>`).join("")}</b>`
-      : `<b class="sct-mpp-num">${e(m.current)}</b>` +
-        `<span class="sct-mpp-bo-tsub">${m.open ? `Opened ${e(m.open)}` : "No opening line"}</span>` +
-        (m.move
-          ? `<span class="sct-mpp-bo-tmove"${m.dir ? ` data-dir="${m.dir}"` : ""}>${m.dir && m.dir !== "none" ? `<span aria-hidden="true">${arrow(m.dir)} </span>` : ""}${e(m.move)}</span>`
-          : "")) +
+    `<li class="sct-mpp-bo-tile"><span class="sct-mpp-bo-tl">${e(`${m.label} movement`)}</span>` +
+    `<b class="sct-mpp-num"${m.dir ? ` data-dir="${m.dir}"` : ""}>${m.dir && m.dir !== "none" ? `<span aria-hidden="true">${arrow(m.dir)} </span>` : ""}${e(m.move ?? "No opening line")}</b>` +
+    `<span class="sct-mpp-bo-tsub">${m.open ? `Opened ${e(m.open)} · Now ${e(m.current)}` : `Now ${e(m.current)}`}</span>` +
     `</li>`;
   const market = b
-    ? `<div class="sct-mpp-bo-sec"><ul class="sct-mpp-bo-tiles" aria-label="Current lines">${b.market.map(tile).join("")}</ul>` +
+    ? `<div class="sct-mpp-bo-sec"><ul class="sct-mpp-bo-tiles" aria-label="Line movement">${b.market.filter((m) => m.label !== "Moneyline").map(tile).join("")}</ul>` +
       // The implied totals on one line under the strip, for phones, where
       // the compact header leaves them out (mak, 2026-11-11: "Implied points
       // · NE 24.5 · DET 27"; the weekly ranks stay with the desktop hero).
@@ -723,7 +746,10 @@ function fantasyCard(p: Preview): string {
               `<li class="sct-mpp-ff-item" data-kind="${t.kind}">${face(t.player.sleeperId, t.player.side, 52, statusTag(t.player.status))}` +
               `<div class="sct-mpp-ff-body"><p class="sct-mpp-ff-top"><span class="sct-mpp-ff-name">${playerLink(t.player.name)}${badge(t.player.status)}</span>` +
               `<span class="sct-mpp-ff-kind">${e(TAKEAWAY_WORD[t.kind])}</span></p>` +
-              `<p class="sct-mpp-ff-meta">${e(`${t.player.pos} · ${t.player.team} · ${one(t.player.ppg)} ${f.label}/G`)}</p>` +
+              // "Fantasy PPG" for quarterbacks, whose points barely move with
+              // reception scoring (mak's 2026-11-18 brief); the format's own
+              // name for everyone else.
+              `<p class="sct-mpp-ff-meta">${e(`${t.player.pos} · ${t.player.team} · ${one(t.player.ppg)} ${t.player.pos === "QB" ? "Fantasy PPG" : `${f.label} PPG`}`)}</p>` +
               `<p class="sct-mpp-ff-text">${e(t.text)}</p></div></li>`,
           )
           .join("") +
@@ -872,6 +898,11 @@ function compareCard(p: Preview): string {
 
 /* ------------------------------------------------------------ injuries */
 
+/** A designation in words; "Pending" (availability.ts) says what is pending. */
+function statusLabel(status: string, p: Preview): string {
+  return status === PENDING ? `${p.meeting.weekLabel} status not set yet` : status;
+}
+
 function injuryCard(p: Preview): string {
   const column = (s: PreviewSide) => {
     const rows = p.injuries[s.key];
@@ -900,7 +931,7 @@ function injuryCard(p: Preview): string {
                 `<span class="sct-mpp-inj-team">${e(code(s.team))}</span>` +
                 // The short code keeps the row on one line in the rail; the full
                 // designation is the tag's title and accessible name.
-                `<span class="sct-mpp-status" data-status="${e(r.chip)}" title="${e(r.status)}" aria-label="${e(r.status)}">${e(r.chip)}</span></span>` +
+                `<span class="sct-mpp-status" data-status="${e(r.chip)}" title="${e(statusLabel(r.status, p))}" aria-label="${e(statusLabel(r.status, p))}">${e(r.chip)}</span></span>` +
                 `<span class="sct-mpp-inj-chev" aria-hidden="true"></span></summary>` +
                 `<p class="sct-mpp-inj-note">${e(r.fallout)}</p></details></li>`,
             )
@@ -953,7 +984,11 @@ function conditionsRail(p: Preview): string {
     ? `<p class="sct-mpp-cond-note">Indoors: weather is not a factor.</p>`
     : c.impact
       ? `<p class="sct-mpp-cond-impact"><b>Game impact</b>${e(c.impact)}</p>`
-      : `<p class="sct-mpp-cond-note">No weather concerns at kickoff.</p>`;
+      : c.windMph !== null && c.precipPct !== null
+        ? `<p class="sct-mpp-cond-note">No weather concerns at kickoff: wind and rain are below the levels that affect play.</p>`
+        : // Without a wind and rain forecast there is nothing to clear the
+          // game on (mak's 2026-11-18 brief), so the card says what it lacks.
+          `<p class="sct-mpp-cond-note">Wind and rain forecasts are not available yet.</p>`;
   return (
     `<section class="sct-mpp-rail-card sct-mpp-cond${c.impact ? " is-impact" : ""}" aria-label="Game conditions">` +
     `<p class="sct-mpp-rail-h">${railBar(ICON.weather).lead}<span class="sct-mpp-rail-t">Game Conditions</span>${railBar(ICON.weather).tail}</p>` +
@@ -979,6 +1014,22 @@ function h2hRail(p: Preview, ctx: PreviewRenderContext): string {
       );
     })
     .join("");
+  // A thin or old series reads as one line (mak's 2026-11-18 brief: "keep
+  // concise when the historical sample is small, old or not predictive"):
+  // one meeting, or none in the last two seasons.
+  const newest = h.games[0]!;
+  const thin = h.games.length === 1 || newest.season < p.meeting.season - 2;
+  if (thin) {
+    const s = newest.score!;
+    return (
+      `<section class="sct-mpp-rail-card is-thin" aria-labelledby="pv-h2h">` +
+      `<h2 class="sct-mpp-rail-h" id="pv-h2h">${railBar(ICON.h2h).lead}<span class="sct-mpp-rail-t">${headText(`${pairOf(p)} Head-to-Head`, "Head-to-Head")}</span>${railBar(ICON.h2h).tail}</h2>` +
+      `<p class="sct-mpp-h2h-thin">Last met in <a href="${e(ctx.game(newest))}">${e(`${newest.season} ${newest.weekLabel}`)}</a>: ` +
+      `${e(`${code(newest.away)} ${s.away}, ${code(newest.home)} ${s.home}`)}. ` +
+      `${e(`Series since ${h.since}: ${h.record}`)}${h.games.length === 1 ? " in one meeting" : ""}.</p>` +
+      `</section>`
+    );
+  }
   return (
     `<section class="sct-mpp-rail-card" aria-labelledby="pv-h2h">` +
     `<h2 class="sct-mpp-rail-h" id="pv-h2h">${railBar(ICON.h2h).lead}<span class="sct-mpp-rail-t">${headText(`${pairOf(p)} Head-to-Head`, "Head-to-Head")}</span>${railBar(ICON.h2h).tail}</h2>` +
@@ -1044,15 +1095,14 @@ function ctaRail(ctx: PreviewRenderContext): string {
 
 /* ---------------------------------------------------------------- page */
 
-/** The breadcrumb over the hero, then the hero: the page's top. */
+/**
+ * The hero: the page's top. The visible breadcrumb over it ("StatChasers /
+ * NFL Matchups / Cardinals at Chiefs, Week 11") was removed at mak's request,
+ * 2026-11-18; the page's BreadcrumbList schema is untouched.
+ */
 export function renderMatchupPreviewTop(p: Preview, ctx: PreviewRenderContext): string {
   return (
     `<div class="sct-mpp is-top">` +
-    `<nav class="sct-mpp-crumbs" aria-label="Breadcrumb"><ol>` +
-    `<li><a href="${e(ctx.breadcrumbRoot)}">StatChasers</a></li>` +
-    `<li>NFL Matchups</li>` +
-    `<li aria-current="page">${e(`${p.away.team.nickname} at ${p.home.team.nickname}, ${p.meeting.weekLabel}`)}</li>` +
-    `</ol></nav>` +
     hero(p, ctx) +
     mobileHead(p, ctx) +
     `</div>`
@@ -1065,8 +1115,12 @@ export function renderMatchupPreviewBody(p: Preview, ctx: PreviewRenderContext, 
     `<div class="sct-mpp" data-sct-matchup-premium>` +
     banner(p, ctx) +
     `<div class="sct-mpp-layout">` +
-    `<div class="sct-mpp-main">${compareCard(p)}${callCard(p)}${keysCard(p)}${formCard(p)}${fantasyCard(p)}${bettingCard(p)}</div>` +
-    `<aside class="sct-mpp-rail" aria-label="Game facts">${conditionsRail(p)}${h2hRail(p, ctx)}${injuryCard(p)}${battlesCard(p)}${ctaRail(ctx)}</aside>` +
+    // The order of mak's 2026-11-18 brief: the written preview first, then
+    // the comparison, the keys, form, fantasy and betting; in the rail the
+    // injuries lead (availability before fantasy decisions), then the player
+    // battles, conditions and the head-to-head.
+    `<div class="sct-mpp-main">${callCard(p)}${compareCard(p)}${keysCard(p)}${formCard(p)}${fantasyCard(p)}${bettingCard(p)}</div>` +
+    `<aside class="sct-mpp-rail" aria-label="Game facts">${injuryCard(p)}${battlesCard(p)}${conditionsRail(p)}${h2hRail(p, ctx)}${ctaRail(ctx)}</aside>` +
     `</div>` +
     `</div>` +
     tail

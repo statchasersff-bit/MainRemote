@@ -224,15 +224,21 @@ function wireCompactNames(root: HTMLElement, names: BoardNames): void {
   const table = scroll?.querySelector<HTMLTableElement>("table[data-kind='player']");
   if (!scroll || !table || typeof ResizeObserver === "undefined") return;
 
+  // On desktop the grid is a fixed layout that never overflows, so a full
+  // name that would be cut off in its column counts as "would scroll" too.
+  const clipped = () =>
+    Array.from(table.querySelectorAll<HTMLElement>(".scsos-pm-player")).some((a) => a.scrollWidth > a.clientWidth + 1);
+
   let fullWidth = 0;
   const measure = () => {
     const available = scroll.clientWidth;
     const compact = root.classList.contains("is-compact");
-    if (!compact && table.scrollWidth > available + 1) {
-      fullWidth = table.scrollWidth;
+    if (!compact && (table.scrollWidth > available + 1 || clipped())) {
+      fullWidth = Math.max(table.scrollWidth, available + 1);
       root.classList.add("is-compact");
     } else if (compact && fullWidth && available >= fullWidth) {
       root.classList.remove("is-compact");
+      if (table.scrollWidth > available + 1 || clipped()) root.classList.add("is-compact");
     }
   };
   measure();
