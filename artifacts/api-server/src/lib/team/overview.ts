@@ -21,6 +21,7 @@
 import { escapeHtml, searchKey } from "../render";
 import { headshotImg } from "../headshot-html";
 import { loadGameLogs, loadPlayers } from "../player/data";
+import { getEntryPoints } from "../player/scoring";
 import type { GameLogEntry } from "../player/types";
 import type { TeamPageData } from "./team-data";
 import type { NflTeam } from "./teams";
@@ -307,6 +308,10 @@ function totals(rows: GameLogEntry[], club: string): { games: number; t: Record<
     if (!s || !(s.gp ?? s.off_snp ?? s.pts_ppr)) continue;
     games += 1;
     for (const [k, v] of Object.entries(s)) if (typeof v === "number") t[k] = (t[k] ?? 0) + v;
+    // Fantasy points through the player pages' own scorer, so the overview's
+    // PPR/G follows whatever totals policy they follow (house scoring via
+    // SC_SCORING_TOTALS once the scoring work lands; Sleeper's pts_ppr today).
+    t.fantasyPpr = (t.fantasyPpr ?? 0) + getEntryPoints(row.stats, "ppr");
   }
   return { games, t };
 }
@@ -350,7 +355,7 @@ export function contributors(data: TeamPageData, view: UsageView | null): Contri
     if (!rows?.length) continue;
     const { games, t } = totals(rows, club);
     if (games === 0) continue;
-    out.push({ player, games, ppr: t.pts_ppr ?? 0, t, usage: usageById.get(player.id) ?? null });
+    out.push({ player, games, ppr: t.fantasyPpr ?? 0, t, usage: usageById.get(player.id) ?? null });
   }
   const qb = out
     .filter((c) => c.player.position === "QB")
