@@ -127,6 +127,17 @@ router.get("/data/health", (_req, res) => {
  * viewable). Diagnostic JSON: noindex, not linked from any page.
  */
 router.get("/scoring/audit", (req, res) => {
+  // Access (release gate, 2026-11-19): everything this returns is already on
+  // the public player pages (per-game stats and totals), but it is a
+  // diagnostic, not a product surface. In production it answers only with
+  // SC_AUDIT_KEY (header x-sc-audit-key or ?key=), and 404s when no key is
+  // configured; development and tests are open.
+  const key = process.env["SC_AUDIT_KEY"]?.trim();
+  const given = String(req.get("x-sc-audit-key") ?? req.query["key"] ?? "");
+  if (key ? given !== key : process.env["NODE_ENV"] === "production") {
+    res.status(404).set("Cache-Control", "no-store").set("X-Robots-Tag", "noindex").json({ error: "not found" });
+    return;
+  }
   const slug = String(req.query["player"] ?? "").trim();
   const season = Number(req.query["season"]);
   const player = slug ? getPlayerBySlug(slug) : null;
