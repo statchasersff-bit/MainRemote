@@ -274,6 +274,9 @@ export interface Side {
   passerRating: number | null;
   thirdDownPct: number | null;
   fourthDownPct: number | null;
+  /** The 4th-down denominators (efficiency file only, since 2026-11-19). */
+  fourthDownConversions?: number;
+  fourthDownAttempts?: number;
   firstDownsPerGame: number | null;
   passAttemptsPerGame: number | null;
   rushAttemptsPerGame: number | null;

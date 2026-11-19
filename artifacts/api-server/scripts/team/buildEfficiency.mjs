@@ -106,6 +106,8 @@ const EXPLOSIVE_PASS = 15;
 const EXPLOSIVE_RUSH = 10;
 const BLITZ_RUSHERS = 5;
 /** The yardage rows' snaps: what a box score counts as a play from scrimmage. */
+/** Snaps that make a red-zone trip (see the trip rule in the play loop). */
+const RZ_SNAPS = new Set(["pass", "run", "field_goal", "qb_spike"]);
 const BOX_PLAY_TYPES = new Set(["pass", "run", "qb_kneel", "qb_spike"]);
 
 /* -------------------------------------------------------------------- CSV */
@@ -262,6 +264,13 @@ function boxSide(s, games, points, penaltyYards, takeaways, giveaways) {
     passerRating: passerRating(s),
     thirdDownPct: pct(s.thirdConv, s.thirdFail),
     fourthDownPct: pct(s.fourthConv, s.fourthFail),
+    // The denominators behind the two down rates (Phase 3 readiness,
+    // 2026-11-19): a 4th-down rate rests on about a dozen tries, and the
+    // Stats tab prints them beside it.
+    thirdDownConversions: s.thirdConv,
+    thirdDownAttempts: s.thirdConv + s.thirdFail,
+    fourthDownConversions: s.fourthConv,
+    fourthDownAttempts: s.fourthConv + s.fourthFail,
     firstDownsPerGame: per(s.firstDowns, games),
     passAttemptsPerGame: per(s.attempts, games),
     rushAttemptsPerGame: per(s.carries, games),
@@ -556,10 +565,12 @@ async function build(season) {
         if (wk > throughWeek) throughWeek = wk;
       }
     }
-    if (r.play_type !== "pass" && r.play_type !== "run") continue;
-    // Red-zone trips: a drive with a pass or run snapped at the opponent's 20
-    // or closer; a touchdown when the drive's result is a touchdown.
-    {
+    // Red-zone trips: a drive with a scrimmage snap at the opponent's 20 or
+    // closer: a pass, run, field-goal try or spike (so a drive that reaches
+    // the 18 and kicks is a trip; until 2026-11-19 only passes and runs
+    // counted and those were missed). Kneel-only drives (victory formation)
+    // are not trips. A touchdown when the drive's result is a touchdown.
+    if (RZ_SNAPS.has(r.play_type)) {
       const yl = num(r.yardline_100);
       const dk = `${r.game_id}:${r.fixed_drive}`;
       if (!drives.has(dk)) drives.set(dk, { o, d, rz: false, td: false });
@@ -567,6 +578,7 @@ async function build(season) {
       if (yl !== null && yl <= 20) dr.rz = true;
       if (r.fixed_drive_result === "Touchdown") dr.td = true;
     }
+    if (r.play_type !== "pass" && r.play_type !== "run") continue;
     const epa = num(r.epa);
     if (epa === null) continue;
     tally(teams[o].offense.tally, r, epa);
@@ -736,7 +748,7 @@ async function build(season) {
       yardsPerCarry: "rushing yards over rushing attempts, scrambles and kneels included",
       passerRating: "the NFL passer rating formula over the same attempts",
       sacks: "count: the offense's taken, the defense's made",
-      redZoneTdRate: "touchdowns over red-zone trips; a trip is a drive with a pass or run snapped at the opponent's 20 or closer (two-point tries excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
+      redZoneTdRate: "touchdowns over red-zone trips; a trip is a drive with a pass, run, field-goal try or spike snapped at the opponent's 20 or closer (two-point tries and kneel-only drives excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
       recent: "the club's last three completed regular-season games: points per game for and against (final scores), EPA per play and success rate on the same plays as the EPA rows",
       ranks: "offense descending, defense ascending; blitz rate and time to throw most to least on both sides; sacks the other way round (offense ascending, defense descending); ties share a rank; percentile = (32 - rank) / 31",
     },

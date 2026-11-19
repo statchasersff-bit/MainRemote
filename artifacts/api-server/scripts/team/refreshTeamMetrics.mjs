@@ -73,15 +73,20 @@ export async function refreshTeamMetrics(season, cacheArg = null) {
     const efficiencyFile = path.join(stage, `efficiency_${season}.json`);
     const ef = JSON.parse(fs.readFileSync(efficiencyFile, "utf8")).snapshot;
     const why = snapshotMismatch(u, c) ?? snapshotMismatch(u, ef);
-    if (why) throw new Error(`snapshots disagree (${why}): usage ${JSON.stringify(u)} vs coaching ${JSON.stringify(c)}`);
+    if (why) throw new Error(`snapshots disagree (${why}): usage ${JSON.stringify(u)} vs coaching ${JSON.stringify(c)} vs efficiency ${JSON.stringify(ef)}`);
 
     // Both staged and in agreement: move them in, each by rename within
     // data/team so a reader never sees a half-written file.
-    for (const f of [usageFile, coachingFile, efficiencyFile]) {
+    // Two phases (Phase 3 readiness, 2026-11-19): every copy lands beside
+    // its target first, and only then are the three renamed in, back to back,
+    // so the window in which the files can disagree is three renames, not
+    // three copies. A failed copy publishes nothing.
+    const moves = [usageFile, coachingFile, efficiencyFile].map((f) => {
       const dest = path.join(DATA, path.basename(f));
       fs.copyFileSync(f, `${dest}.tmp`);
-      fs.renameSync(`${dest}.tmp`, dest);
-    }
+      return dest;
+    });
+    for (const dest of moves) fs.renameSync(`${dest}.tmp`, dest);
     console.log(`  team metrics ${season}: published usage + coaching + efficiency, through Week ${u.throughWeek} (${u.fingerprint})`);
     return u;
   } finally {

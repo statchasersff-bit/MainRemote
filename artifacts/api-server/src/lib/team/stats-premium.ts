@@ -408,7 +408,7 @@ function recentForm(input: StatsPremiumInput): string {
       )
       .join("") +
     `</tbody></table></div>` +
-    `<p class="sct-sp-fine">${e(`Last three completed games: ${r.offPlays} offensive and ${r.defPlays} defensive plays. Three games is a small sample; an arrow marks a gap of 3+ points, 0.05 EPA or 3 percentage points, ▲ better and ▼ worse.`)}</p>` +
+    `<p class="sct-sp-fine">${e(`Last three completed games: ${r.offPlays} offensive and ${r.defPlays} defensive plays. Three games is a small sample: an arrow only marks a gap of 3+ points, 0.05 EPA or 3 percentage points (▲ better, ▼ worse) and is a description, not a test of whether the change is real.`)}</p>` +
     `</section>`
   );
 }
@@ -431,7 +431,7 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
   const passRush =
     innerPanel("passrush", ICON.helmet, "Pass Protection", "What the offense faced", input.passRush.offense.filter((r) => !/sacks/i.test(r.key)), input) +
     innerPanel("passrush", ICON.rush, "Pass Rush", "What the defense sent", input.passRush.defense.filter((r) => !/sacks/i.test(r.key)), input);
-  const discipline = innerPanel("possession", ICON.warning, "Discipline", "Team totals", input.possession.filter((r) => r.key === "turnover-margin" || r.key === "penalty-yards"), input);
+  const discipline = innerPanel("possession", ICON.warning, "Discipline", "Team totals", input.possession.filter((r) => r.key === "turnover-margin" || r.key === "penalty-yards").map((r) => d.rows.get(r.key)?.row ?? r), input);
   const pace = innerPanel("pace", ICON.layers, "Snaps & Attempts", "Ranked most to least, no better end", input.pace.filter((r) => !/-td$/.test(r.key)), input);
   const mixes =
     (input.balance ? mix("Play Mix (Offense)", "Box-score split: pass attempts and sacks vs. rushing attempts (scrambles and kneels count as runs).", input.balance) : "") +
@@ -448,7 +448,7 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     history(input);
   const how =
     `<details class="sct-sp-how"><summary>How these are measured</summary>` +
-    `<p>${e(`Every figure is ${season} regular season${d.throughWeek ? `, completed games through Week ${d.throughWeek}` : ""}, from the play-by-play (the same games as the Usage and Coaching tabs). Ranks are among all 32 teams on the value as printed: equal figures share a rank (T-). "NFL" is the average of the 32 teams' values. On every scale bar right is better; snaps, attempts, blitz rate and time to throw rank most to least and have no better end.`)}</p>` +
+    `<p>${e(`Every figure is ${season} regular season${d.throughWeek ? `, completed games through Week ${d.throughWeek}` : ""}, from the play-by-play (the same games as the Usage and Coaching tabs). Ranks are among all 32 teams on the value as printed: equal figures share a rank (T-). "NFL" is the average of the 32 teams' values (each team counts once). Season totals (touchdowns, sacks, takeaways, giveaways, turnover margin) are shown, ranked and averaged per game, because teams past their bye have played one game fewer; the total is under the label. On every scale bar right is better; snaps, attempts, blitz rate and time to throw rank most to least and have no better end.`)}</p>` +
     `<p>${e("EPA per play is expected points added per pass or run (two-point tries excluded); success rate is the share of plays with positive EPA; explosive plays are 15+ yards on a dropback or 10+ on a run. Red-zone TD % is touchdowns over drives that ran a play at the opponent's 20 or closer. Play Mix is the box-score split, so a scramble counts as a run there and as a pass in the Coaching tab's pass rate.")}</p>` +
     `</details>`;
   const head = premiumTabHead({
@@ -457,7 +457,9 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     art: "stats",
     heading,
     phoneTitle: `${season} Team Stats`,
-    dek: `${team.fullName} ${season} offense and defense, ranked against all 32 teams${d.throughWeek ? `, through Week ${d.throughWeek}` : ""}${d.games ? ` (${d.games} games)` : ""}.`,
+    // League snapshot week and the club's own games, said apart: at Week 10
+    // a club past its bye has played 9.
+    dek: `${team.fullName} ${season} offense and defense, ranked against all 32 teams.${d.throughWeek ? ` League data through Week ${d.throughWeek}` : ""}${d.games ? `${d.throughWeek ? ";" : ""} ${team.nickname} games played: ${d.games}` : ""}${d.throughWeek || d.games ? "." : ""}`,
   });
   return (
     `<div class="sct-sp is-dash">` +
