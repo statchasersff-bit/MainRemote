@@ -122,6 +122,11 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     `<section class="sct-cf-panel" aria-labelledby="sct-cf-fin-h">` +
     // The intro rides in the title bar as its subtitle, like Coaching Career's (mak, 2026-11-08).
     usageStyleHead("Fantasy Finishes by Season", ICON["bars"]!, `Where ${possessive} QB1, RB1, WR1 and TE1 finished in PPR fantasy scoring`, "sct-cf-fin-h") +
+    // Newest first and five seasons then Show all at every width (Team Pages
+    // Phase 2, 2026-11-19), the Season by Season rule; the checkbox precedes
+    // both renderings so one toggle opens the table's older rows and the
+    // phone list's.
+    (phoneOlder.length ? `<input type="checkbox" class="sct-cfp-all" id="${allId}">` : "") +
     `<div class="sct-cf-scroll" tabindex="0" role="region" aria-label="${e(`Positional fantasy finishes under the ${team.nickname} play-caller`)}">` +
     `<table class="sct-cf-table">` +
     `<thead><tr>` +
@@ -130,10 +135,10 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     `<th scope="col" class="sct-cf-th is-fin">RB1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">WR1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">TE1</th>` +
-    `</tr></thead><tbody>${rows.map(finishRow).join("")}</tbody></table></div>` +
-    // Phones: the season list in place of the table (team.css), newest
-    // first, five seasons then a CSS-only Show all.
-    (phoneOlder.length ? `<input type="checkbox" class="sct-cfp-all" id="${allId}">` : "") +
+    `</tr></thead><tbody>${phoneRecent.map(finishRow).join("")}</tbody>` +
+    (phoneOlder.length ? `<tbody class="sct-cf-older">${phoneOlder.map(finishRow).join("")}</tbody>` : "") +
+    `</table></div>` +
+    // Phones: the season list in place of the table (team.css).
     `<div class="sct-cfp">` +
     `<div class="sct-cfp-head" aria-hidden="true"><span>Season</span><span>QB</span><span>RB1</span><span>WR1</span><span>TE1</span><span></span></div>` +
     `<div class="sct-cfp-recent">${phoneRecent.map(phoneFinishRow).join("")}</div>` +
@@ -142,9 +147,9 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     (phoneOlder.length
       ? `<label class="sct-cfp-more" for="${allId}"><span class="sct-cfp-more-show">${e(`Show all ${rows.length} seasons`)}</span><span class="sct-cfp-more-hide">Show recent seasons only</span></label>`
       : "") +
-    `<p class="sct-cf-note"><span class="sct-cf-note-icon" aria-hidden="true">${ICON["info"]}</span><span>${e(`PPR positional finishes. Partial-season rows rank only the games ${last} called. Historical outcomes, not projections.`)}</span></p>` +
-    `<details class="sct-cf-how"><summary class="sct-cf-how-q"><span class="sct-cf-how-icon" aria-hidden="true">${CALC}</span>How finishes are calculated<span class="sct-cf-chev" aria-hidden="true">${CHEVRON}</span></summary>` +
-    `<p class="sct-cf-how-a">${e(c.finishes.note)}</p></details>` +
+    // The note and the method were the same sentence twice; one disclosure.
+    `<details class="sct-cf-how"><summary class="sct-cf-how-q"><span class="sct-cf-how-icon" aria-hidden="true">${CALC}</span>${e("PPR positional finishes: how they are calculated")}<span class="sct-cf-chev" aria-hidden="true">${CHEVRON}</span></summary>` +
+    `<p class="sct-cf-how-a">${e(`Historical outcomes, not projections. ${c.finishes.note}`)}</p></details>` +
     `</section>`
   );
 }

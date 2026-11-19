@@ -21,6 +21,7 @@ import type { CoachingStaffEntry, TeamCoaching, TendencyRow } from "./coaching";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import { surname, type UsageView } from "./usage";
 import { possessive } from "../player/title-case";
+import { rowView } from "./coaching-render";
 import type { FaqItem } from "./faq-block";
 
 /* ---------------------------------------------------------------- helpers */
@@ -63,13 +64,13 @@ interface RowNums {
  * block - the same source the tendencies table draws its current column
  * from, so the FAQ cannot quote a number the table does not show.
  */
-function rowNums(row: TendencyRow | undefined, view: UsageView | null): RowNums {
+function rowNums(row: TendencyRow | undefined, view: UsageView | null, season?: number): RowNums {
   if (!row) return { prior: null, current: null, nflAvg: null, rank: null };
-  const env = row.feed && view ? view.team.env[row.feed] : undefined;
-  const current = env?.value != null ? Math.round(env.value * 10) / 10 : num(row.current);
-  const m = row.change.text.match(/(\d+)(?:st|nd|rd|th) in NFL/);
-  const rank = env?.rank ?? (m ? Number(m[1]) : null);
-  return { prior: row.priorNum ?? num(row.prior), current, nflAvg: num(row.nflAvg), rank };
+  // The table's own numbers (Team Pages Phase 2, 2026-11-19): both seasons
+  // from the coaching file and the rank over the same 32 offenses, so an
+  // answer can never quote a figure or rank the table does not show.
+  const v = rowView(row, view, season);
+  return { prior: num(row.prior), current: num(row.current), nflAvg: num(row.nflAvg), rank: v.rank };
 }
 
 /** "above", "slightly above", "in line with", ... for a rate against its league average. */
@@ -160,7 +161,7 @@ export function coachingFaq(
   while (called.has(season - stint)) stint += 1;
 
   const row = (key: string) => c.tendencies.rows.find((r) => r.key === key);
-  const nums = (key: string) => rowNums(row(key), view);
+  const nums = (key: string) => rowNums(row(key), view, season);
   // A fourth-down move on fewer than 15 opportunities is not a headline
   // change (mak's coaching brief, 2026-11-05); its own question states the sample.
   const smallFourth = (c.tendencies.samples?.fourthShortAll ?? 15) < 15;
@@ -168,7 +169,7 @@ export function coachingFaq(
   const shiftDir = (key: string): "up" | "down" | null => {
     const r = row(key);
     if (!r) return null;
-    const n = rowNums(r, view);
+    const n = rowNums(r, view, season);
     if (n.prior != null && n.current != null) {
       const d = n.current - n.prior;
       if (r.invert) return d < 0 ? "up" : "down";
@@ -624,11 +625,21 @@ export function coachingFaq(
       : `The ${prior} column on this page is a reference for what changed, not a baseline to project from. The ${season} sample${wk ? `, through Week ${wk},` : ""} is the signal.`,
   );
 
-  // The brief keeps 12-16. The motion question goes first when the list runs
-  // long: the scheme answer already quotes the motion rate.
-  if (out.length > 16) {
-    const at = out.findIndex((q) => /pre-snap motion/.test(q.question));
-    if (at >= 0) out.splice(at, 1);
-  }
-  return out.slice(0, 16);
+  // Trimmed to the questions with distinct answers (mak, Team Pages Phase 2,
+  // 2026-11-19): the rest restated one table row ("How often do the Patriots
+  // use play action?") or another answer (who calls plays / who is the
+  // coordinator; RB targets / WR or TE; the fantasy paragraph above). The
+  // page's FAQPage is built from this list, so it still matches what shows.
+  const DROP = [
+    /^Who calls plays for /,
+    /^Are the .* a pass-heavy offense /,
+    /^How often do the .* use play action\?/,
+    /^How often do the .* pass in the red zone\?/,
+    /^Does .* target running backs often\?/,
+    /^How does the .* offense change when trailing\?/,
+    /^How fast do the .* play on offense\?/,
+    /^How often do the .* use pre-snap motion\?/,
+    /^What does .* offense mean for fantasy football\?/,
+  ];
+  return out.filter((q) => !DROP.some((re) => re.test(q.question)));
 }

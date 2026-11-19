@@ -25690,3 +25690,269 @@ ul.sct-faq-list li {
 :is(.sct, #sct-table-armour) .sct-ovw-status {
   font-size: 0.7rem;
 }
+
+/* =========================================================================
+   Coaching: Team Pages Phase 2 (2026-11-19, docs/TEAM-COACHING-PHASE2-
+   ASSESSMENT.md). One Offensive Tendencies table (group rows, NFL avg +
+   rank column), the measurement notes in one disclosure, fourth-down tiles
+   at every width (the stacked desktop metric is gone), Fantasy Finishes
+   five seasons then Show all at every width.
+   ========================================================================= */
+
+/* Group rows: "Play Calling" / "Formations & Tempo" inside the one table. */
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies tr.sct-cp-group-row th {
+  padding: 10px 14px 6px !important;
+  border-bottom: 1px solid var(--tp-c-e6ebf2, #e6ebf2) !important;
+  background: var(--tp-c-f6f8fb, #f6f8fb) !important;
+  color: var(--tp-c-244879, #244879) !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  text-align: left !important;
+  text-transform: uppercase;
+}
+
+/* The NFL column: average over its rank. */
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .is-nfl {
+  text-align: right;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-avg {
+  display: block;
+  color: var(--tp-ink, #0b1634);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+  display: block;
+  margin-top: 1px;
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* "How these are measured": the legend, the rank population and the
+   not-charted note, folded. */
+:is(.sct, #sct-table-armour) .sct-cp-how {
+  margin: 10px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--tp-c-e6ebf2, #e6ebf2);
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-how > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 0;
+  color: var(--tp-c-244879, #244879);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-how > p {
+  margin: 4px 0 8px;
+  padding: 0;
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* Fourth down: the tiles are the card's body at every width. */
+:is(.sct, #sct-table-armour) .sct-cpt-4d {
+  display: block;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-tiles {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--tp-c-e6ebf2, #e6ebf2);
+  border-radius: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-tile.is-now {
+  border-top: 2px solid var(--cpt-gold, var(--cp-gold, #d4af37));
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-k {
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-v {
+  color: var(--tp-ink, #0b1634);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-tile.is-now .sct-cpt-4d-v {
+  font-size: 1.45rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-n {
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-cpt-4d-def {
+  margin: 8px 0 0;
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.78rem;
+}
+
+/* Fantasy Finishes: older seasons fold at every width. */
+:is(.sct, #sct-table-armour) .sct-cfp-all:not(:checked) ~ .sct-cf-scroll .sct-cf-older,
+:is(.sct, #sct-table-armour) .sct-cfp-all:not(:checked) ~ .sct-cfp-more .sct-cfp-more-hide,
+:is(.sct, #sct-table-armour) .sct-cfp-all:checked ~ .sct-cfp-more .sct-cfp-more-show {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-cfp-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin: 6px 0 0;
+  padding: 2px 0;
+  color: var(--tp-c-244879, #244879);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-cfp-more-show::after {
+  content: " →";
+}
+
+:is(.sct, #sct-table-armour) .sct-cfp-all:focus-visible ~ .sct-cfp-more {
+  outline: 2px solid var(--cf-gold, #d4af37);
+  outline-offset: 2px;
+}
+
+/* Phones: the NFL column narrows to its figures; the rank's direction
+   ("highest", "fastest") stays in the cell's title and the disclosure. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(2),
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(3) { width: 54px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(4) { width: 62px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(5) { width: 50px; }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-dir {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies tr.sct-cp-group-row th {
+    padding: 8px 10px 5px !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tiles {
+    gap: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile {
+    padding: 7px 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cpt-4d-tile.is-now .sct-cpt-4d-v {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(2),
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(3) { width: 46px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(4) { width: 54px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(5) { width: 40px; }
+}
+
+/* Coaching Phase 2, desktop density: the NFL cell reads "60%  14th highest"
+   on one line, and the rows tighten, so nine rows plus two group rows sit in
+   about the height the five-row Play Calling table and its tiles took. */
+@media (min-width: 561px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-avg,
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+    margin-left: 8px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies tbody tr:not(.sct-cp-group-row) :is(th, td) {
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+  }
+}
+
+/* Coaching Phase 2, tablet widths (the premium container at 900px and
+   under): the fifth column must not push the table past its box, so the NFL
+   cell stacks again and drops the direction word (it stays in the cell's
+   title and in "How these are measured"). */
+@container premium (max-width: 900px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-avg,
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+    display: block;
+    margin-left: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-dir {
+    display: none;
+  }
+
+  /* The bar gives up width so the metric names keep to two lines. */
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-db {
+    flex-basis: 84px;
+    width: 84px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .is-metric {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 360px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(2),
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(3) { width: 44px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(4) { width: 52px; }
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead th:nth-child(5) { width: 44px; }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+    font-size: 0.66rem;
+  }
+}
+
+/* Coaching Phase 2: the metric names open their definitions, so they are
+   buttons and get a 24px-tall hit area without moving the row. */
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-co-tlabel.is-def {
+  display: inline-block;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  margin-top: -4px;
+  margin-bottom: -4px;
+}
+
+/* The career block's season "Show all" link: a 32px row, like Fantasy Finishes'. */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}

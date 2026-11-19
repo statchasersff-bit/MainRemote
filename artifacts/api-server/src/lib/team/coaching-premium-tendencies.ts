@@ -25,6 +25,7 @@ import {
   scoreStateModel,
   seasonOf,
   signedPts,
+  ptsLabel,
   surnameOf,
   type FormationTile,
   type RzFourthModel,
@@ -123,7 +124,7 @@ function formationTile(t: FormationTile): string {
     `<span class="sct-cpt-kpi-label">${e(t.label)}</span>` +
     `<span class="sct-cpt-kpi-value">${e(t.value)}</span>` +
     // A difference from the league, not a grade: neutral ink whichever way it points.
-    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${signedPts(t.gap)}% vs NFL avg ${t.avg}`)}</span>` : "") +
+    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${ptsLabel(t.gap)} vs NFL avg ${t.avg}`)}</span>` : "") +
     `</div></li>`
   );
 }
@@ -171,7 +172,7 @@ function scoreStateCard(c: TeamCoaching): string {
   return card(
     "score",
     "Play-calling by score state",
-    m.sub,
+    `${m.sub} Differences are percentage points against leading by 7+.`,
     "bars",
     // No takeaway since the review of 2026-11-15: the rows show the trailing gap themselves.
     `<div class="sct-cpt-rows">${m.rows.map(scoreRow).join("")}</div>`,
@@ -201,7 +202,7 @@ function metric(st: NonNullable<RzFourthModel["rz"]> | NonNullable<RzFourthModel
     `<span class="sct-cpt-metric-value">${e(st.value)}</span>` +
     head +
     `<ul class="sct-cpt-metric-lines">${lines.filter(Boolean).map((l) => `<li>${l}</li>`).join("")}</ul>` +
-    (kind === "fourth" && season ? fourthTiles(st as NonNullable<RzFourthModel["fourth"]>, priorYear, season) : "") +
+    (kind === "fourth" && season ? "" : "") +
     `</div>`
   );
 }
@@ -251,7 +252,10 @@ function fourthDownCard(c: TeamCoaching, team: NflTeam, view: UsageView | null):
     "Fourth-down decisions",
     `Short fourth downs in opponent territory, ${seasonOf(c)} to date, with the snaps the rate is measured on.`,
     "crosshair",
-    `<div class="sct-cpt-metrics is-one">${metric(m.fourth, "fourth", m.priorYear, seasonOf(c))}</div>`,
+    // One rendering at every width (Team Pages Phase 2, 2026-11-19): the
+    // tiles carry this season's rate and sample, last season's and the NFL
+    // average, which the stacked desktop metric printed a second time.
+    fourthTiles(m.fourth, m.priorYear, seasonOf(c)),
   );
 }
 
@@ -281,7 +285,7 @@ function distributionCard(c: TeamCoaching): string {
         (row.nfl != null ? `<span class="sct-cpt-mark" style="left:${pct(row.nfl)}"></span>` : "") +
         `</span>` +
         `<span class="sct-cpt-row-val"><b>${e(`${row.pct}%`)}</b><span class="sct-cpt-row-avg">${e(`NFL ${row.nfl}%`)}</span></span>` +
-        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(`${signedPts(d)}%`)}</span></span>` +
+        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(ptsLabel(d))}</span></span>` +
         `</div>`
       );
     })
@@ -294,7 +298,11 @@ function distributionCard(c: TeamCoaching): string {
   const years = [...finishRows(c).map((r) => Number(finishStop(r).year)).filter((y) => y > 0), seasonOf(c)];
   const first = Math.min(...years);
   const title = /seasons since/.test(m.sub) && first < seasonOf(c) ? `${m.title}, ${first}-${seasonOf(c)}` : m.title;
-  return card("dist", title, m.sub, "target", `<div class="sct-cpt-rows">${rows}</div>`);
+  // Each season counts once in the average, the current one included while
+  // it is still being played (the builder's unweighted mean of season
+  // shares); the league line is averaged over the same seasons.
+  const weighting = years.length > 1 ? ` Each season counts equally, ${seasonOf(c)} included${c.tendencies.samples?.throughWeek ? ` through Week ${c.tendencies.samples.throughWeek}` : ""}; differences are percentage points.` : " Differences are percentage points.";
+  return card("dist", title, m.sub + weighting, "target", `<div class="sct-cpt-rows">${rows}</div>`);
 }
 
 function backfieldCard(c: TeamCoaching, view: UsageView | null): string {

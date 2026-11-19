@@ -264,6 +264,23 @@ export function coachPhoto(abbreviation: string, season: number, name: string): 
   return hit?.image ?? null;
 }
 
+/**
+ * Every club's numeric current value for one tendency row, from this file
+ * (Phase 2, 2026-11-19): the population a league rank is taken over. Same
+ * builder, same definition, same weeks for all 32, which is what makes the
+ * rank comparable; the usage file's figures for the same names are not used
+ * here because that builder defines red-zone and pass plays differently.
+ */
+export function leagueTendencyValues(season: number, key: string): number[] {
+  const out: number[] = [];
+  for (const entry of Object.values(getCoachingDoc(season)?.teams ?? {})) {
+    const row = entry.tendencies?.rows?.find((r) => r.key === key);
+    const m = row?.current.replace(/−/g, "-").match(/-?\d+(?:\.\d+)?/);
+    if (m) out.push(Number(m[0]));
+  }
+  return out;
+}
+
 /** One club's dossier, by lowercase abbreviation. Null = no section. */
 export function getTeamCoaching(
   abbreviation: string,
