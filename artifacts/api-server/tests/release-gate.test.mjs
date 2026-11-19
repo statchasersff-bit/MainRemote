@@ -59,6 +59,34 @@ for (const policy of ["house", "provider"]) {
   });
 }
 
+describe("team overview injuries = player pages' current status", () => {
+  let server;
+  before(async () => {
+    server = await startServer({ SC_SCORING_TOTALS: "house" });
+  });
+  after(async () => server && (await server.stop()));
+
+  test("no overview row shows a game designation the player's own page has expired", async () => {
+    const strip = (h) => h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    let rows = 0;
+    for (const team of ["det", "lv", "sea", "min", "kc", "lar", "chi", "bal"]) {
+      const html = (await body(server.origin, `/team/${team}`)).text;
+      const list = /<ul class="sct-ovw-inj-list">([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? "";
+      for (const li of list.matchAll(/<li class="sct-ovw-inj-row">([\s\S]*?)<\/li>/g)) {
+        const slug = /\/nfl\/players\/([^/]+)\//.exec(li[1])?.[1];
+        const status = /sct-ovw-status"[^>]*>([^<]*)</.exec(li[1])?.[1]?.trim().toLowerCase();
+        if (!slug || !status) continue;
+        rows++;
+        if (["questionable", "doubtful", "out"].includes(status)) {
+          const page = strip((await body(server.origin, `/player/${slug}/injury`)).text);
+          assert.doesNotMatch(page, /No injury designation for Week/, `${team} ${slug}: overview says ${status}`);
+        }
+      }
+    }
+    assert.ok(rows > 0, "some injury rows checked");
+  });
+});
+
 describe("scoring audit endpoint access", () => {
   test("production with no key configured: 404", async () => {
     const s = await startServer({ NODE_ENV: "production", SC_AUDIT_KEY: "" });
