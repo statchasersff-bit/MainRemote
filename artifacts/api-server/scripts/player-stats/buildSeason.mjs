@@ -34,6 +34,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { collect, definitions, LAST_WEEK, placesOf, useCache } from "./buildWeeks.mjs";
 import { coverage } from "./coverage.mjs";
+import { nowIso, updateMeta } from "../lib/dataset-meta.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const APP = path.resolve(here, "..", "..");
@@ -197,7 +198,18 @@ async function main() {
   }
 
   console.log(`collecting nflverse weeks for ${season}`);
-  const collected = await collect([season]);
+  let collected;
+  try {
+    collected = await collect([season]);
+  } catch (err) {
+    // A failed download: the tables on disk stay, and ingestion does not advance.
+    if (!check) updateMeta("player_stats", season, { lastFailureAt: nowIso(), lastFailure: String(err?.message ?? err).slice(0, 200) });
+    throw err;
+  }
+  const fetchedAt = nowIso();
+  let wrote = 0;
+  let kept = 0;
+  let cov = null;
 
   for (const position of POSITIONS) {
     const template = JSON.parse(fs.readFileSync(path.join(DATA, `${position}_${templateSeason}.json`), "utf8"));
@@ -218,22 +230,42 @@ async function main() {
       const held = (t) => t?.coverage?.gamesIncluded ?? null;
       if (held(onDisk) !== null && held(table) !== null && held(table) < held(onDisk)) {
         console.log(`${path.basename(file)}: kept (disk holds ${held(onDisk)} final games, built ${held(table)})`);
+        kept++;
         continue;
       }
       if (lastWeek(table.weeks) < lastWeek(onDisk.weeks) && !(held(table) !== null && held(onDisk) === null)) {
         console.log(`${path.basename(file)}: kept (disk has weeks ${onDisk.weeks}, built ${table.weeks})`);
+        kept++;
         continue;
       }
     }
     fs.writeFileSync(`${file}.tmp`, `${JSON.stringify(table, null, 2)}\n`);
     fs.renameSync(`${file}.tmp`, file);
     console.log(`${path.basename(file)}: ${table.rows.length} rows, weeks ${table.weeks}`);
+    wrote++;
+    cov = table.coverage;
     if (!table.coverage.complete) {
       // Non-zero exit so the daily chain records it (live-refresh.ts logs a
       // failed step), but the file is still written: it is the newest data.
       console.error(`${path.basename(file)}: INCOMPLETE - missing final games: ${table.coverage.missing.join(", ")}`);
       process.exitCode = 2;
     }
+  }
+  if (!check) {
+    // Ingested (every nflverse file answered) and aggregated only when a table
+    // was written; a run whose tables were all kept advances neither.
+    updateMeta("player_stats", season, {
+      source: "nflverse weekly stats (github.com/nflverse/nflverse-data)",
+      lastIngestedAt: wrote > 0 && cov?.complete ? fetchedAt : undefined,
+      lastAggregatedAt: wrote > 0 ? fetchedAt : undefined,
+      latestCompletedGame: cov?.latestIncludedGame ?? undefined,
+      throughWeek: cov?.throughWeek ?? undefined,
+      complete: cov ? cov.complete : undefined,
+      missingGames: cov ? cov.missing : undefined,
+      lastFailureAt: kept > 0 || (cov && !cov.complete) ? fetchedAt : undefined,
+      lastFailure: kept > 0 ? `${kept} table(s) kept: the build held fewer games than disk` : cov && !cov.complete ? `incomplete: ${cov.missing.join(", ")}` : undefined,
+      provenance: "buildSeason.mjs run",
+    });
   }
 }
 

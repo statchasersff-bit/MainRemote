@@ -39,7 +39,8 @@ import { loadGameLogs } from "../lib/player/data";
 import { seasonYear } from "../lib/seo";
 import { requireIngestSecret } from "../lib/ingest-auth";
 import { availableMemMb } from "../lib/mem";
-import { datasetReport } from "../lib/data-coverage";
+import { dataHealth, datasetReport } from "../lib/data-coverage";
+import { unattributedScoring } from "../lib/player/scoring";
 import { getAvailableSeasons } from "../lib/player/data";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
@@ -1578,6 +1579,29 @@ router.get("/ingest/health", (_req, res) => {
         maxAgeMs: ALERT_MAX_AGE_MS,
       },
     });
+});
+
+/**
+ * GET /api/data/health - the player-data counterpart of /api/ingest/health
+ * (Phase 1.1): 503 with reasons when game logs or stats tables are missing a
+ * final game past the grace window, disagree with each other, failed their
+ * last run, have gone stale, or a current-season game total differs from the
+ * scoring rules with no known cause. Point the same uptime monitor at it.
+ */
+router.get("/data/health", (_req, res) => {
+  try {
+    const season = getAvailableSeasons()[0];
+    if (!season) {
+      res.status(503).set("Cache-Control", "no-store").json({ ok: false, reasons: ["no game-log season on disk"] });
+      return;
+    }
+    const nowMs = Date.now();
+    const verdict = dataHealth(season, nowMs, { unattributedScoring: unattributedScoring(season) });
+    res.status(verdict.ok ? 200 : 503).set("Cache-Control", "no-store").json({ season, ...verdict });
+  } catch (err) {
+    logger.error({ err }, "data health check failed");
+    res.status(503).set("Cache-Control", "no-store").json({ ok: false, reasons: ["data health check failed"] });
+  }
 });
 
 /** The newest week with any rows in a season's game-log file, or 0. */

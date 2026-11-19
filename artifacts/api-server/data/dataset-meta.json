@@ -1,0 +1,234 @@
+{
+  "datasets": {
+    "game_logs": {
+      "2009": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2009_17_CIN_NYJ",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:54:37Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2010": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2010_17_STL_SEA",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:54:45Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2011": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2011_17_DAL_NYG",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:54:52Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2012": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2012_17_DAL_WAS",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:00Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2013": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2013_17_PHI_DAL",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:08Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2014": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2014_17_CIN_PIT",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:15Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2015": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2015_17_MIN_GB",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:23Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2016": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2016_17_GB_DET",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:31Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2017": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2017_17_JAX_TEN",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:38Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2018": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2018_17_IND_TEN",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:46Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2019": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2019_17_SF_SEA",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:55:54Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2020": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2020_17_WAS_PHI",
+        "throughWeek": 17,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:02Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2021": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2021_18_LAC_LV",
+        "throughWeek": 18,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:10Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2022": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2022_18_DET_GB",
+        "throughWeek": 18,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:18Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2023": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2023_18_BUF_MIA",
+        "throughWeek": 18,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:27Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2024": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2024_18_MIN_DET",
+        "throughWeek": 18,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:35Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2025": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-05T03:42:10Z",
+        "lastAggregatedAt": "2026-11-05T03:42:10Z",
+        "latestCompletedGame": "2025_18_BAL_PIT",
+        "throughWeek": 18,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (318ab10)",
+        "lastCorrectionAt": "2026-11-19T02:56:43Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      },
+      "2026": {
+        "source": "Sleeper weekly stats (api.sleeper.com/stats/nfl)",
+        "lastIngestedAt": "2026-11-18T14:25:32Z",
+        "lastAggregatedAt": "2026-11-18T14:25:32Z",
+        "latestCompletedGame": "2026_10_LAC_BAL",
+        "throughWeek": 10,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from git history: last commit changing the file at or before 073300e (8bb9692)",
+        "lastCorrectionAt": "2026-11-19T02:56:48Z",
+        "lastCorrection": "scoring-event backfill (fields added, no stored total changed)"
+      }
+    },
+    "player_stats": {
+      "2026": {
+        "source": "nflverse weekly stats (github.com/nflverse/nflverse-data)",
+        "lastIngestedAt": "2026-11-19T02:00:46Z",
+        "lastAggregatedAt": "2026-11-19T02:00:46Z",
+        "latestCompletedGame": "2026_10_LAC_BAL",
+        "throughWeek": 10,
+        "complete": true,
+        "missingGames": [],
+        "provenance": "seeded from the 2026-11-19 buildSeason.mjs run (table coverage.checkedAt), which predates this file"
+      }
+    }
+  }
+}

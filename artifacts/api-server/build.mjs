@@ -15,6 +15,19 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
+  // The published build's stamp (Phase 1.1): /api/status reports it as the
+  // last successful build, which a data file's mtime is not.
+  const writeBuildInfo = async () => {
+    let commit = null;
+    try {
+      const { execFileSync } = await import("node:child_process");
+      commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: artifactDir }).toString().trim();
+    } catch {
+      commit = null;
+    }
+    await writeFile(path.join(distDir, "build-info.json"), JSON.stringify({ builtAt: new Date().toISOString(), commit }));
+  };
+
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     platform: "node",
@@ -120,6 +133,7 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+  await writeBuildInfo();
 }
 
 /**

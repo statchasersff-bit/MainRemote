@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { DATA_DIR as SC_DATA_DIR } from "./paths.mjs";
 import { seasonsFromArgs } from "./season.mjs";
 import { scoreGameLogStats } from '../scoring/house-rules.mjs';
+import { nowIso, updateMeta } from '../lib/dataset-meta.mjs';
+import { coverage } from '../player-stats/coverage.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,6 +75,13 @@ function extractPlayerStats(statsObj, position) {
     if (s[key]) base[key] = s[key];
   }
   if (s.pts_std != null) base.pts_std = s.pts_std;
+  // Provider-only plays (defense/special teams by an offensive player, kicking
+  // by a non-kicker): kept to name a reconciliation residual, never scored.
+  const px = {};
+  for (const [k, v] of Object.entries(s)) {
+    if (v && typeof v === 'number' && (/^(idp_|blk_|st_ff|st_fum_rec|st_tkl|xp_blkd|fg_blkd)/.test(k) || (k === 'kick_pts' && position !== 'K'))) px[k] = v;
+  }
+  if (Object.keys(px).length) base.px = px;
   // A quarterback who caught a pass keeps his receiving line.
   if (position === 'QB' && (s.rec || s.rec_yd || s.rec_td)) {
     base.rec_tgt = s.rec_tgt || 0;
@@ -137,6 +146,12 @@ function extractPlayerStats(statsObj, position) {
       fgm_lng: s.fgm_lng || 0,
       xpm: s.xpm || 0,
       xpa: s.xpa || 0,
+      // Distance bands for the house kicker rule (0-39 / 40-49 / 50+).
+      fgm_0_19: s.fgm_0_19 || 0,
+      fgm_20_29: s.fgm_20_29 || 0,
+      fgm_30_39: s.fgm_30_39 || 0,
+      fgm_40_49: s.fgm_40_49 || 0,
+      fgm_50p: s.fgm_50p || 0,
     };
   }
 
@@ -223,6 +238,8 @@ async function main() {
 
     if (failedWeeks === REGULAR_WEEKS) {
       console.warn(`  Every week failed for ${season}; leaving the file on disk alone.`);
+      updateMeta('game_logs', season, { lastFailureAt: nowIso(), lastFailure: 'every week failed' });
+      process.exitCode = 1;
       continue;
     }
     // A season with no games yet - every March to September, when the
@@ -234,6 +251,21 @@ async function main() {
       continue;
     }
     for (const rows of Object.values(seasonData)) rows.sort((a, b) => a.week - b.week);
+    // Never replace a file that holds more final games than this build does
+    // (Phase 1.1): a partial or broken fetch keeps the last good dataset.
+    const held = (data) => {
+      const present = new Set();
+      for (const rows of Object.values(data)) for (const r of rows) if (r.team) present.add(`${r.week}:${r.team}`);
+      try { return coverage(season, present).gamesIncluded; } catch { return null; }
+    };
+    const before = held(previous);
+    const after = held(seasonData);
+    if (before !== null && after !== null && after < before) {
+      console.warn(`  Built ${after} final games, disk holds ${before}; keeping the file on disk.`);
+      updateMeta('game_logs', season, { lastFailureAt: nowIso(), lastFailure: `build held ${after} final games, disk ${before}; kept disk` });
+      process.exitCode = 1;
+      continue;
+    }
     // Written beside the target and renamed over it, so the server never reads
     // a half-written file.
     fs.writeFileSync(`${outFile}.tmp`, JSON.stringify(seasonData, null, 0));
@@ -241,6 +273,31 @@ async function main() {
     const playerIds = Object.keys(seasonData).length;
     const totalEntries = Object.values(seasonData).reduce((sum, arr) => sum + arr.length, 0);
     console.log(`Wrote ${outFile}: ${playerIds} players, ${totalEntries} week entries`);
+    // Freshness metadata (scripts/lib/dataset-meta.mjs): ingestion advances
+    // only when every week answered; the aggregation always does.
+    const present = new Set();
+    for (const rows of Object.values(seasonData)) for (const r of rows) if (r.team) present.add(`${r.week}:${r.team}`);
+    let cov = null;
+    try {
+      cov = coverage(season, present);
+    } catch {
+      cov = null;
+    }
+    const at = nowIso();
+    updateMeta('game_logs', season, {
+      source: 'Sleeper weekly stats (api.sleeper.com/stats/nfl)',
+      lastAggregatedAt: at,
+      lastIngestedAt: failedWeeks === 0 ? at : undefined,
+      lastFailureAt: failedWeeks > 0 ? at : undefined,
+      lastFailure: failedWeeks > 0 ? `${failedWeeks} week(s) failed; their rows kept from disk` : undefined,
+      latestCompletedGame: cov?.latestIncludedGame ?? undefined,
+      throughWeek: cov?.throughWeek ?? undefined,
+      complete: cov ? cov.complete : undefined,
+      missingGames: cov ? cov.missing : undefined,
+      provenance: 'buildGameLogs.js run',
+    });
+    // A partial failure keeps the old rows and records itself in the metadata
+    // (lastFailureAt, which /api/data/health reports); the run still succeeds.
   }
 
   console.log('\nDone! Game logs saved to data/game_logs/');

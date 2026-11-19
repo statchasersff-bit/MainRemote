@@ -15,7 +15,8 @@
 
 import fs from "node:fs";
 import { dataPath } from "./data-dir";
-import { gameLogUpdatedMs, loadGameLogs } from "./player/data";
+import { loadGameLogs } from "./player/data";
+import { buildInfo, datasetMeta } from "./dataset-meta";
 import { getTeamByAbbreviation } from "./team/teams";
 import { getStatsTable, type StatsPosition } from "./player-stats/stats-data";
 
@@ -158,7 +159,8 @@ export function crossCheck(season: number): { checked: number; mismatches: Total
 export function datasetReport(season: number, nowMs = Date.now()) {
   const games = slateGames(season);
   const logs = coverage(games, gameLogPresence(season));
-  const logMs = gameLogUpdatedMs(season);
+  const logMeta = datasetMeta("game_logs", season);
+  const statsMeta = datasetMeta("player_stats", season);
   const tables = (["QB", "RB", "WR", "TE"] as StatsPosition[]).map((position) => {
     const t = getStatsTable(position, season);
     return {
@@ -174,13 +176,30 @@ export function datasetReport(season: number, nowMs = Date.now()) {
   return {
     season,
     checkedAt: new Date(nowMs).toISOString(),
+    // Freshness from data/dataset-meta.json, never a file's mtime (Phase 1.1).
     gameLogs: {
       source: "Sleeper weekly stats (scripts/player/buildGameLogs.js)",
-      updatedAt: logMs ? new Date(logMs).toISOString() : null,
+      lastIngestedAt: logMeta?.lastIngestedAt ?? null,
+      lastAggregatedAt: logMeta?.lastAggregatedAt ?? null,
+      lastCorrectionAt: logMeta?.lastCorrectionAt ?? null,
+      lastCorrection: logMeta?.lastCorrection ?? null,
+      lastFailureAt: logMeta?.lastFailureAt ?? null,
+      lastFailure: logMeta?.lastFailure ?? null,
+      provenance: logMeta?.provenance ?? null,
+      latestCompletedGame: logs.latestIncludedGame,
       coverage: logs,
       state: logs.complete ? "complete" : "incomplete",
     },
-    statsTables: { source: "nflverse weekly stats (scripts/player-stats/buildSeason.mjs)", tables },
+    statsTables: {
+      source: "nflverse weekly stats (scripts/player-stats/buildSeason.mjs)",
+      lastIngestedAt: statsMeta?.lastIngestedAt ?? null,
+      lastAggregatedAt: statsMeta?.lastAggregatedAt ?? null,
+      lastFailureAt: statsMeta?.lastFailureAt ?? null,
+      lastFailure: statsMeta?.lastFailure ?? null,
+      provenance: statsMeta?.provenance ?? null,
+      tables,
+    },
+    build: buildInfo(),
     crossCheck: {
       playersChecked: check.checked,
       mismatches: check.mismatches.length,
@@ -188,4 +207,57 @@ export function datasetReport(season: number, nowMs = Date.now()) {
     },
     ok: logs.complete && tables.every((t) => t.state !== "incomplete" && t.state !== "missing") && check.mismatches.length === 0,
   };
+}
+
+/* ------------------------------------------------------------ data health */
+
+/** Hours after kickoff a final game may be absent before it counts as missing. */
+export const MISSING_GAME_GRACE_H = Number(process.env["DATA_ALERT_GAME_GRACE_H"]) > 0 ? Number(process.env["DATA_ALERT_GAME_GRACE_H"]) : 36;
+/** In season, a last successful ingestion older than this is stale (the refresh is a weekly hand-run chain). */
+export const STALE_INGEST_H = Number(process.env["DATA_ALERT_MAX_AGE_H"]) > 0 ? Number(process.env["DATA_ALERT_MAX_AGE_H"]) : 8 * 24;
+
+function kickoffMs(g: SlateGame): number {
+  // Eastern time; -05:00 in the season's back half, a one-hour error at most earlier.
+  const ms = Date.parse(`${g.gameday}T${g.gametime ?? "13:00"}:00-05:00`);
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+/**
+ * The alerting verdict for GET /api/data/health (Phase 1.1): unhealthy only
+ * for a condition a person should act on, so an uptime monitor can page on a
+ * 503 the way it does for /api/ingest/health. A final game is "missing" only
+ * once MISSING_GAME_GRACE_H has passed since kickoff, so Monday night's game
+ * does not page before Tuesday's refresh has had its chance.
+ */
+export function dataHealth(
+  season: number,
+  nowMs: number,
+  inputs: {
+    report?: ReturnType<typeof datasetReport>;
+    games?: SlateGame[];
+    unattributedScoring?: number;
+  } = {},
+): { ok: boolean; reasons: string[] } {
+  const report = inputs.report ?? datasetReport(season, nowMs);
+  const games = inputs.games ?? slateGames(season);
+  const due = new Set(games.filter((g) => g.final && nowMs - kickoffMs(g) > MISSING_GAME_GRACE_H * 3600_000).map((g) => g.gameId));
+  const reasons: string[] = [];
+  const overdue = (missing: string[] | undefined | null) => (missing ?? []).filter((id) => due.has(id));
+  const logMissing = overdue(report.gameLogs.coverage.missing);
+  if (logMissing.length) reasons.push(`game logs missing final games: ${logMissing.join(", ")}`);
+  for (const t of report.statsTables.tables) {
+    if (t.state === "missing") reasons.push(`${t.position} stats table missing`);
+    const m = overdue(t.coverage?.missing);
+    if (m.length) reasons.push(`${t.position} stats table missing final games: ${m.join(", ")}`);
+  }
+  if (report.crossCheck.mismatches > 0) reasons.push(`${report.crossCheck.mismatches} player totals differ between player pages and stats tables`);
+  const inSeason = games.some((g) => g.final) && games.some((g) => !g.final);
+  const age = (at: string | null) => (at ? nowMs - Date.parse(at) : Infinity);
+  if (inSeason && age(report.gameLogs.lastIngestedAt) > STALE_INGEST_H * 3600_000) reasons.push(`game logs not ingested successfully in ${STALE_INGEST_H}h`);
+  if (inSeason && age(report.statsTables.lastIngestedAt) > STALE_INGEST_H * 3600_000) reasons.push(`stats tables not ingested successfully in ${STALE_INGEST_H}h`);
+  const newer = (fail: string | null, ok: string | null) => fail && (!ok || Date.parse(fail) > Date.parse(ok));
+  if (newer(report.gameLogs.lastFailureAt, report.gameLogs.lastIngestedAt)) reasons.push(`game-log ingestion failed: ${report.gameLogs.lastFailure}`);
+  if (newer(report.statsTables.lastFailureAt, report.statsTables.lastIngestedAt)) reasons.push(`stats-table build failed: ${report.statsTables.lastFailure}`);
+  if ((inputs.unattributedScoring ?? 0) > 0) reasons.push(`${inputs.unattributedScoring} ${season} game totals differ from the scoring rules with no known cause`);
+  return { ok: reasons.length === 0, reasons };
 }
