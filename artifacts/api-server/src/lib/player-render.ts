@@ -1005,7 +1005,10 @@ function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): str
   return (
     `<div class="scp-breakdown">` +
     `<p class="scp-detail-label">${escapeHtml(
-      `How the ${num(total)} points scored (${SCORING_LABELS[format]})`,
+      // A kicker's line scores the same in every format: no format named.
+      entry.stats.fga != null || entry.stats.xpa != null
+        ? `How the ${num(total)} points scored`
+        : `How the ${num(total)} points scored (${SCORING_LABELS[format]})`,
     )}</p>` +
     `<ul class="scp-breakdown-list">${items}</ul>${sourceNote}</div>`
   );

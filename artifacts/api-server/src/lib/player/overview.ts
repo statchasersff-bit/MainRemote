@@ -132,10 +132,11 @@ function more(href: string, text: string, attrs = ""): string {
 /**
  * The scoring word for a fantasy total. A quarterback's points are the same
  * in every format the site offers (the formats differ only per reception),
- * so his read "fantasy points", never "PPR points".
+ * so his read "fantasy points", never "PPR points". A kicker's likewise
+ * (Phase 1 cleanup, 2026-11-19).
  */
 function scoringWord(pos: string, format: PlayerPageData["format"]): string {
-  return pos === "QB" ? "fantasy" : SCORING_SHORT[format];
+  return pos === "QB" || pos === "K" ? "fantasy" : SCORING_SHORT[format];
 }
 
 /* ------------------------------------------------------ position rules */
