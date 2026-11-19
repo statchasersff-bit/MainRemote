@@ -20,6 +20,7 @@
 
 import { loadAdvancedStats, loadFantasyOutlook2026 } from "./data";
 import type { FantasyOutlook2026, OutlookKeyStats } from "./types";
+import { tableLastWeek, withHousePoints } from "../player-stats/house-points";
 
 /** Below this many games a player is neither in the field nor ranked. */
 export const MIN_GAMES = 6;
@@ -52,7 +53,12 @@ function currentLine(
   playerId: string | null,
 ): { table: AdvancedTable; stats: OutlookKeyStats; week: number } | null {
   if (!playerId || !position) return null;
-  const table = loadAdvancedStats(position, season) as AdvancedTable | null;
+  const rawTable = loadAdvancedStats(position, season) as AdvancedTable | null;
+  // FPTS in the player pages' PPR, not the file's Standard (house-points.ts).
+  const table =
+    rawTable && Array.isArray((rawTable as { rows?: unknown }).rows)
+      ? ({ ...rawTable, rows: withHousePoints((rawTable as { rows: Record<string, unknown>[] }).rows, [season], tableLastWeek(rawTable as { week?: unknown })) } as AdvancedTable)
+      : rawTable;
   if (!table || !Array.isArray(table.rows)) return null;
   const week = num(table.week);
   if (week === null || week < 1) return null;

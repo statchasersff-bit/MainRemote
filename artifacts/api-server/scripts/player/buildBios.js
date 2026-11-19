@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { DATA_DIR as SC_DATA_DIR } from "./paths.mjs";
+import { entryPoints } from "../scoring/house-rules.mjs";
 
 const DATA_DIR = SC_DATA_DIR;
 const PLAYERS_FILE = path.resolve(DATA_DIR, 'players.json');
@@ -35,27 +36,8 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function getFantasyPoints(stats, format) {
-  let pts = 0;
-  pts += (stats.pass_yd ?? 0) * 0.04;
-  pts += (stats.pass_td ?? 0) * 4;
-  pts += (stats.pass_int ?? 0) * -1;
-  pts += (stats.rush_yd ?? 0) * 0.1;
-  pts += (stats.rush_td ?? 0) * 6;
-  pts += (stats.rec_yd ?? 0) * 0.1;
-  pts += (stats.rec_td ?? 0) * 6;
-  pts += (stats.fgm ?? 0) * 3;
-  pts += (stats.xpm ?? 0) * 1;
-  if (format === 'ppr') pts += (stats.rec ?? 0) * 1;
-  else if (format === 'half') pts += (stats.rec ?? 0) * 0.5;
-  return Math.round(pts * 100) / 100;
-}
-
-function getEntryPoints(stats, format) {
-  if (format === 'ppr') return stats.pts_ppr ?? getFantasyPoints(stats, format);
-  if (format === 'half') return stats.pts_half_ppr ?? getFantasyPoints(stats, format);
-  return getFantasyPoints(stats, format);
-}
+// The house rules, mirrored from src/lib/scoring/house-rules.ts.
+const getEntryPoints = entryPoints;
 
 function hasParticipation(stats, position) {
   if ((stats.off_snp ?? 0) > 0) return true;

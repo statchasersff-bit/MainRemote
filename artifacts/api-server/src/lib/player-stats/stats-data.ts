@@ -40,6 +40,8 @@ import { dataPath } from "../data-dir";
 import { logger } from "../logger";
 import { atLeast, type GradeOptions } from "./scores/percentiles";
 import { loadIndexedSlugs, loadPlayers } from "../player/data";
+import { DEFAULT_SCORING_FORMAT, SCORING_LABELS } from "../scoring/house-rules";
+import { housePointsFor, withHousePoints } from "./house-points";
 import {
   computeQbCompositeScores,
   isQualifiedQb,
@@ -161,6 +163,12 @@ export interface StatsTable {
   week: number | null;
   /** "1-17" when the table is cut to the fantasy season. */
   weeks: string | null;
+  /**
+   * Which final games the table holds (scripts/player-stats/coverage.mjs,
+   * audit WEB-032). Null for a table built before 2026-11-19 or a snapshot
+   * season, which make no claim past `weeks`.
+   */
+  coverage: TableCoverage | null;
   /** ISO timestamp the feed was built at. */
   updatedAt: string | null;
   groups: StatsGroup[];
@@ -303,6 +311,7 @@ const FEED_GROUPS: Record<StatsPosition, Array<{ label: string; keys: string[] }
  * regardless of which file is open. Verbatim from the standalone app.
  */
 const COLUMN_LABELS: Record<string, string> = {
+  fantasyPoints: `${SCORING_LABELS[DEFAULT_SCORING_FORMAT]} FPTS`,
   airYards: "Air Yds",
   airYardsPerAttempt: "AY / Att",
   completedAirYardsPerCompletion: "AY / Cmp",
@@ -334,7 +343,8 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   position: "Player position.",
   age: "Player age during the season.",
   games: "Games played.",
-  fantasyPoints: "Total fantasy points scored.",
+  fantasyPoints:
+    "Total fantasy points, PPR: the same per-game totals as the player pages (1 per reception, 0.1 per rushing/receiving yard, 0.04 per passing yard, 6 per rushing/receiving TD, 4 per passing TD, -1 per interception, -2 per fumble lost, 2 per two-point conversion).",
   totalYards: "Total yards from scrimmage (rushing + receiving).",
   snapPct: "Snap share - share of the team’s offensive snaps played.",
 
@@ -829,7 +839,37 @@ interface RawColumn {
   defaultVisible: boolean;
 }
 
+export interface TableCoverage {
+  throughWeek: number;
+  partialWeek: number | null;
+  gamesIncluded: number;
+  gamesFinal: number;
+  missing: string[];
+  latestFinalGame: string | null;
+  latestIncludedGame: string | null;
+  complete: boolean;
+  checkedAt: string | null;
+}
+
+function readCoverage(raw: unknown): TableCoverage | null {
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw as Record<string, unknown>;
+  if (typeof c["throughWeek"] !== "number" || typeof c["gamesIncluded"] !== "number") return null;
+  return {
+    throughWeek: c["throughWeek"] as number,
+    partialWeek: typeof c["partialWeek"] === "number" ? (c["partialWeek"] as number) : null,
+    gamesIncluded: c["gamesIncluded"] as number,
+    gamesFinal: typeof c["gamesFinal"] === "number" ? (c["gamesFinal"] as number) : 0,
+    missing: Array.isArray(c["missing"]) ? (c["missing"] as unknown[]).map(String) : [],
+    latestFinalGame: typeof c["latestFinalGame"] === "string" ? (c["latestFinalGame"] as string) : null,
+    latestIncludedGame: typeof c["latestIncludedGame"] === "string" ? (c["latestIncludedGame"] as string) : null,
+    complete: c["complete"] === true,
+    checkedAt: typeof c["checkedAt"] === "string" ? (c["checkedAt"] as string) : null,
+  };
+}
+
 interface RawTable {
+  coverage?: unknown;
   updated_at?: string;
   season?: number;
   week?: number;
@@ -861,6 +901,25 @@ export function compareValues(a: unknown, b: unknown, desc: boolean): number {
 }
 
 const tableCache = new Map<string, StatsTable>();
+
+/** Which seasons a table's rows span: the season, or the multi-season span. */
+function tableSeasons(season: StatsSeason): number[] {
+  if (season !== "all") return [season];
+  // The span seasonLabel("all") prints: the table's own rows when they say,
+  // else the finished seasons on disk.
+  getStatsSeasons();
+  const finished = getStatsSeasons().filter((y): y is number => y !== "all" && !inProgressCache.has(y));
+  const [first, last] = allSpanCache ?? [finished[0], finished[finished.length - 1]];
+  if (first == null || last == null) return [];
+  const out: number[] = [];
+  for (let y = first; y <= last; y++) out.push(y);
+  return out;
+}
+
+/** The house PPR total for one row (house-points.ts), for the checks. */
+export function housePoints(playerId: string | null, season: StatsSeason, lastWeek: number): number | null {
+  return housePointsFor(playerId, tableSeasons(season), lastWeek);
+}
 
 /** The identity columns, printed as the pinned cells rather than as metrics. */
 const PINNED = new Set(["rank", "playerName", "team", "playerId"]);
@@ -901,8 +960,10 @@ export function getStatsTable(
     return null;
   }
 
-  const feedRows = Array.isArray(raw.rows) ? raw.rows : [];
   const feedColumns = Array.isArray(raw.columns) ? raw.columns : [];
+  const lastWeek = typeof raw.week === "number" && raw.week > 0 ? raw.week : 17;
+  // FPTS re-scored to the player pages' PPR (house-points.ts, WEB-031/036).
+  const feedRows = withHousePoints(Array.isArray(raw.rows) ? raw.rows : [], tableSeasons(season), lastWeek);
   if (feedRows.length === 0) return null;
 
   const system = SCORE_SYSTEMS[position];
@@ -1043,6 +1104,7 @@ export function getStatsTable(
     seasonLabel: seasonLabel(season),
     week: typeof raw.week === "number" ? raw.week : null,
     weeks: typeof raw.weeks === "string" ? raw.weeks : null,
+    coverage: readCoverage(raw.coverage),
     updatedAt: typeof raw.updated_at === "string" ? raw.updated_at : null,
     groups,
     rows,

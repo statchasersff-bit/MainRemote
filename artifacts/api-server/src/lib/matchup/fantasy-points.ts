@@ -10,7 +10,9 @@
  * Pure: a stat line and a format in, a number rounded to one decimal out.
  */
 
-export type ScoringFormat = "ppr" | "half" | "standard";
+import { scoreLine, roundPoints, type ScoringFormat } from "../scoring/house-rules";
+
+export type { ScoringFormat };
 
 /**
  * The counting stats scoring reads. Every field is optional: a receiver has
@@ -32,24 +34,31 @@ export interface FantasyStatLine {
   twoPtPassed?: number;
 }
 
-const PER_RECEPTION: Record<ScoringFormat, number> = { ppr: 1, half: 0.5, standard: 0 };
-
+/**
+ * The house rules (lib/scoring/house-rules.ts), the same function the player
+ * pages, FPA and the stats tables score with: -1 per interception (mak,
+ * 2026-09-30, overriding the recap build spec's -2), -2 per fumble lost, 2 per
+ * two-point conversion.
+ */
 export function fantasyPoints(stats: FantasyStatLine, format: ScoringFormat): number {
-  const n = (value: number | undefined): number =>
-    typeof value === "number" && Number.isFinite(value) ? value : 0;
-  const points =
-    n(stats.passYds) * 0.04 +
-    n(stats.passTd) * 4 -
-    // −1 per interception, as the player pages and the Sleeper logs charge (mak,
-    // 2026-09-30, overriding the recap build spec's −2).
-    n(stats.passInt) * 1 +
-    (n(stats.rushYds) + n(stats.recYds)) * 0.1 +
-    (n(stats.rushTd) + n(stats.recTd)) * 6 +
-    n(stats.rec) * PER_RECEPTION[format] -
-    n(stats.fumblesLost) * 2 +
-    (n(stats.twoPtScored) + n(stats.twoPtPassed)) * 2;
-  // Rounded through an integer so 24.28 prints 24.3 and 0.1 * 3 is not 0.30000000000000004.
-  return Math.round(points * 10) / 10;
+  return roundPoints(
+    scoreLine(
+      {
+        passYd: stats.passYds,
+        passTd: stats.passTd,
+        passInt: stats.passInt,
+        rushYd: stats.rushYds,
+        rushTd: stats.rushTd,
+        rec: stats.rec,
+        recYd: stats.recYds,
+        recTd: stats.recTd,
+        fumLost: stats.fumblesLost,
+        twoPt: (stats.twoPtScored ?? 0) + (stats.twoPtPassed ?? 0),
+      },
+      format,
+    ),
+    1,
+  );
 }
 
 /* ---------------------------------------------------------------- kickers */

@@ -18,6 +18,7 @@
  */
 
 import { logger } from "../logger";
+import { RECEPTION_POINTS, scoreLine } from "../scoring/house-rules";
 
 export const FANTASY_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
 export type FantasyPosition = (typeof FANTASY_POSITIONS)[number];
@@ -156,11 +157,6 @@ function num(value: string | undefined): number {
  *
  * Half-PPR adds 0.5 a reception, PPR adds 1.
  */
-const RECEPTION_POINTS: Record<ScoringFormat, number> = {
-  standard: 0,
-  half: 0.5,
-  ppr: 1,
-};
 
 export interface ScoredPlayerWeek {
   season: number;
@@ -182,23 +178,23 @@ export function scoreRow(get: (col: string) => string | undefined): {
 } {
   const g = (c: string) => num(get(c));
 
-  const base =
-    g("passing_yards") * 0.04 +
-    g("passing_tds") * 4 +
-    g("passing_interceptions") * -1 +
-    (g("sack_fumbles_lost") +
-      g("rushing_fumbles_lost") +
-      g("receiving_fumbles_lost")) *
-      -2 +
-    g("rushing_yards") * 0.1 +
-    g("rushing_tds") * 6 +
-    g("receiving_yards") * 0.1 +
-    g("receiving_tds") * 6 +
-    (g("passing_2pt_conversions") +
-      g("rushing_2pt_conversions") +
-      g("receiving_2pt_conversions")) *
-      2 +
-    g("special_teams_tds") * 6;
+  // The house rules (lib/scoring/house-rules.ts); the reception is added below.
+  const base = scoreLine(
+    {
+      passYd: g("passing_yards"),
+      passTd: g("passing_tds"),
+      passInt: g("passing_interceptions"),
+      fumLost: g("sack_fumbles_lost") + g("rushing_fumbles_lost") + g("receiving_fumbles_lost"),
+      rushYd: g("rushing_yards"),
+      rushTd: g("rushing_tds"),
+      recYd: g("receiving_yards"),
+      recTd: g("receiving_tds"),
+      twoPt:
+        g("passing_2pt_conversions") + g("rushing_2pt_conversions") + g("receiving_2pt_conversions"),
+      otherTd: g("special_teams_tds"),
+    },
+    "standard",
+  );
 
   const receptions = g("receptions");
 

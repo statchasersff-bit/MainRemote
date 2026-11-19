@@ -24,6 +24,8 @@ import { dataPath } from "../data-dir";
 import { defaultThresholds, passesThresholds, type StatsPosition } from "../player-stats/stats-data";
 import { loadAdvancedStats, type CollegeProfile } from "./data";
 import type { GameLogEntry } from "./types";
+import { tableLastWeek, withHousePoints } from "../player-stats/house-points";
+import { DEFAULT_SCORING_FORMAT, formatMetricLabel, type ScoringFormat } from "../scoring/house-rules";
 
 /** One season of weekly games, for the career sections. */
 export interface LogSeason {
@@ -106,6 +108,27 @@ function loadToolTable(pos: string, season: number): Table | null {
   }
   tableCache.set(key, table);
   return table;
+}
+
+/** "Fantasy points per target" -> "PPR points per target", on every metric list. */
+function relabel(card: AdvCard | null, format: ScoringFormat): AdvCard | null {
+  if (!card) return card;
+  const fix = <M extends { label: string }>(list: M[] | undefined): M[] | undefined =>
+    list?.map((m) => ({ ...m, label: formatMetricLabel(m.label, format) }));
+  const out = { ...card, metrics: fix(card.metrics)! } as AdvCard & Record<string, unknown>;
+  for (const k of Object.keys(card) as Array<keyof AdvCard>) {
+    const v = card[k];
+    if (k !== "metrics" && Array.isArray(v) && v.every((x) => x && typeof x === "object" && "label" in (x as object))) {
+      out[k as string] = fix(v as Array<{ label: string }>);
+    }
+  }
+  return out;
+}
+
+/** FPTS in the player pages' PPR, not the file's Standard (house-points.ts). */
+function rescored(table: Table | null, season: number, format: ScoringFormat): Table | null {
+  if (!table || !Array.isArray(table.rows)) return table;
+  return { ...table, rows: withHousePoints(table.rows, [season], tableLastWeek(table as { week?: unknown }), format) };
 }
 
 export function resetStatsTabCaches(): void {
@@ -438,12 +461,15 @@ export function statsTabAdvanced(
   position: string | null,
   leagueSeason: number,
   playedThisSeason: boolean,
+  format: ScoringFormat = DEFAULT_SCORING_FORMAT,
 ): StatsTabAdvanced {
   const pos = position ?? "";
   if (!["QB", "RB", "WR", "TE"].includes(pos)) return { current: null, last: null };
   const lower = pos.toLowerCase();
-  const curTable = playedThisSeason ? loadToolTable(lower, leagueSeason) : null;
-  const lastTable = loadAdvancedStats(lower, leagueSeason - 1) as Table | null;
+  // FPTS in the page's format (the ?format= selector), so the per-target and
+  // per-opportunity rates and their labels move with it.
+  const curTable = playedThisSeason ? rescored(loadToolTable(lower, leagueSeason), leagueSeason, format) : null;
+  const lastTable = rescored(loadAdvancedStats(lower, leagueSeason - 1) as Table | null, leagueSeason - 1, format);
   // One list for both seasons: this season's six, then last season's that are
   // not among them, so the advanced table's rows line up year over year.
   const all: MetricDef[] = [];
@@ -452,5 +478,5 @@ export function statsTabAdvanced(
   }
   const current = curTable ? buildCard(curTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null;
   const last = buildCard(lastTable, playerId, pos, () => lastDefs(pos), all);
-  return { current, last };
+  return { current: relabel(current, format), last: relabel(last, format) };
 }

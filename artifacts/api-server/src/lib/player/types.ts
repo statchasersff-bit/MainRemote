@@ -44,6 +44,18 @@ export interface GameLogStats {
   pass_sack_yds?: number;
   fum?: number;
   fum_lost?: number;
+  /**
+   * Scoring events backfilled 2026-11-19 (scripts/player/backfillScoringEvents.mjs)
+   * so a stored total reconciles with its stat line: two-point conversions,
+   * kick/punt return and fumble-recovery TDs, and Sleeper's Standard total.
+   * Passing fields are now kept for non-QBs who threw (a trick-play TD).
+   */
+  pass_2pt?: number;
+  rush_2pt?: number;
+  rec_2pt?: number;
+  st_td?: number;
+  fum_rec_td?: number;
+  pts_std?: number | null;
   /** Derived in enrichWithTeamMetrics(), not present in the source data. */
   target_share?: number | null;
   team_pass_rate?: number | null;
@@ -64,6 +76,8 @@ export interface GameLogEntry {
   stats: GameLogStats;
   pos_rank?: number | null;
   opp_rank_vs_pos?: number | null;
+  /** Where opp_rank_vs_pos came from (ranks.ts OppRankSource). */
+  opp_rank_source?: "fpa-current" | "fpa-archive" | "gamelog";
   game_status?: "active" | "bye" | "out" | null;
   score?: GameScore | null;
 }

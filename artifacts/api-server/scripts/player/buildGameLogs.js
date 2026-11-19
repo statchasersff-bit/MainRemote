@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { DATA_DIR as SC_DATA_DIR } from "./paths.mjs";
 import { seasonsFromArgs } from "./season.mjs";
+import { scoreGameLogStats } from '../scoring/house-rules.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,22 +44,9 @@ async function fetchWeekStats(season, week) {
   return res.json();
 }
 
-function computePprPoints(s) {
-  let pts = 0;
-  pts += (s.pass_yd || 0) * 0.04;
-  pts += (s.pass_td || 0) * 4;
-  pts += (s.pass_int || 0) * -1;
-  pts += (s.rush_yd || 0) * 0.1;
-  pts += (s.rush_td || 0) * 6;
-  pts += (s.rec || 0) * 1;
-  pts += (s.rec_yd || 0) * 0.1;
-  pts += (s.rec_td || 0) * 6;
-  pts += (s.fum_lost || 0) * -2;
-  pts += (s.pass_2pt || 0) * 2;
-  pts += (s.rush_2pt || 0) * 2;
-  pts += (s.rec_2pt || 0) * 2;
-  return Math.round(pts * 100) / 100;
-}
+// The house rules, mirrored from src/lib/scoring/house-rules.ts. Only a
+// fallback: Sleeper's stored totals use the same settings.
+const computePprPoints = (s) => scoreGameLogStats(s, 'ppr');
 
 function extractPlayerStats(statsObj, position) {
   const s = statsObj || {};
@@ -78,6 +66,28 @@ function extractPlayerStats(statsObj, position) {
     fum: s.fum || 0,
     fum_lost: s.fum_lost || 0,
   };
+  // Scoring events the per-position lines below leave out (2026-11-19, audit
+  // WEB-036): without them a stored total cannot be reconciled with its stat
+  // line. Kept only when non-zero so most lines are unchanged.
+  for (const key of ['pass_2pt', 'rush_2pt', 'rec_2pt', 'st_td', 'fum_rec_td', 'st_fum_rec', 'idp_ff']) {
+    if (s[key]) base[key] = s[key];
+  }
+  if (s.pts_std != null) base.pts_std = s.pts_std;
+  // A quarterback who caught a pass keeps his receiving line.
+  if (position === 'QB' && (s.rec || s.rec_yd || s.rec_td)) {
+    base.rec_tgt = s.rec_tgt || 0;
+    base.rec = s.rec || 0;
+    base.rec_yd = s.rec_yd || 0;
+    base.rec_td = s.rec_td || 0;
+  }
+  // A non-QB who threw (a trick-play TD pass) keeps his passing line.
+  if (position !== 'QB' && (s.pass_att || s.pass_yd || s.pass_td || s.pass_int)) {
+    base.pass_att = s.pass_att || 0;
+    base.pass_cmp = s.pass_cmp || 0;
+    base.pass_yd = s.pass_yd || 0;
+    base.pass_td = s.pass_td || 0;
+    base.pass_int = s.pass_int || 0;
+  }
 
   if (position === 'QB') {
     return {

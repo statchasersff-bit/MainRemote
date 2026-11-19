@@ -20,6 +20,7 @@ import { hasParticipation, leagueWeeksLogged, teamCode } from "./ranks";
 import { loadDepthCharts, loadGameLogs, loadIndexedSlugs } from "./data";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { GameLogStats, Player } from "./types";
+import { formatMetricLabel } from "../scoring/house-rules";
 
 /* ------------------------------------------------------------------ meters */
 
@@ -209,7 +210,7 @@ export function overviewMeters(
     const below = pool.filter((v) => v < value).length;
     meters.push({
       key: def.key,
-      label: def.label,
+      label: formatMetricLabel(def.label, format),
       value: def.print(value),
       percentile: Math.round((below / pool.length) * 100),
     });
