@@ -252,6 +252,40 @@ export function gameAvailability(
 }
 
 /**
+ * One player's line on the club's official report for `week`, by name, for a
+ * player the roster index does not carry (team-page depth charts list every
+ * position; the index only skill players). Null when the report does not
+ * have the club yet; `{ onReport: false }` when it does and he is not on it.
+ */
+export function reportLine(
+  team: NflTeam,
+  season: number,
+  week: number,
+  name: string,
+  practice?: PracticeDoc | null,
+): { onReport: boolean; gameStatus: string | null; practice: string | null } | null {
+  const report = reportFor(season, week, team, practice);
+  if (!report) return null;
+  const row = report.get(availabilityKey(name));
+  if (!row) return { onReport: false, gameStatus: null, practice: null };
+  const gs = row.gameStatus && GAME.has(row.gameStatus.toLowerCase())
+    ? row.gameStatus.charAt(0).toUpperCase() + row.gameStatus.slice(1).toLowerCase()
+    : null;
+  return { onReport: true, gameStatus: gs, practice: practiceLine(row) };
+}
+
+/** The club's last game week before `week`, from the stored logs; null when none. */
+export function clubPreviousWeek(team: NflTeam, season: number, week: number, logs?: Record<string, GameLogEntry[]>): number | null {
+  const weeks = teamWeeks(season, logs).get(team.code.toUpperCase()) ?? [];
+  return [...weeks].filter((w) => w < week).pop() ?? null;
+}
+
+/** A reserve-list status (IR, PUP, NFI, suspension, ...), not a game designation. */
+export function isReserveStatus(status: string | null | undefined): boolean {
+  return RESERVE.has((status ?? "").trim().toLowerCase());
+}
+
+/**
  * The roster as the page should read it for this game: each player's
  * `injuryStatus` replaced by his game-specific status ("Pending" when it is
  * not confirmed), and his availability attached.

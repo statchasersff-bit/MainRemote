@@ -22,7 +22,6 @@ import { escapeHtml, searchKey } from "../render";
 import { headshotImg } from "../headshot-html";
 import { loadGameLogs, loadPlayers } from "../player/data";
 import { getEntryPoints } from "../player/scoring";
-import { currentInjuries, currentStatuses } from "./current-injuries";
 import { hasParticipation } from "../player/ranks";
 import type { GameLogEntry } from "../player/types";
 import type { TeamPageData } from "./team-data";
@@ -458,13 +457,9 @@ export function backfield(data: TeamPageData, view: UsageView | null): Backfield
   const byId = new Map(roster.map((p) => [p.id, p]));
   const byName = new Map(roster.map((p) => [searchKey(p.name), p]));
   const live = (u: UsagePlayer) => (u.sleeperId ? byId.get(u.sleeperId) : undefined) ?? byName.get(searchKey(u.name));
-  // This week's status by the shared rule (currentStatuses), not the raw
-  // roster field, so an expired Out does not skip a back who is playing.
-  const current = currentStatuses(data);
-  const status = (u: UsagePlayer) => {
-    const p = live(u);
-    return p ? current.get(p.id) ?? "" : "";
-  };
+  // The roster carries this week's statuses (current-injuries.ts, applied in
+  // team-data.ts), so an expired Out does not skip a back who is playing.
+  const status = (u: UsagePlayer) => live(u)?.injuryStatus ?? "";
   const out = (u: UsagePlayer) => UNAVAILABLE.test(status(u));
   const [rb1, ...rest] = view.rbs;
   const skipped: Backfield["skipped"] = [];
@@ -537,8 +532,8 @@ function contributorsCard(data: TeamPageData, view: UsageView | null, usageHref:
 
 function injuriesCard(data: TeamPageData, depthHref: string | null): string {
   if (!data.roster) return "";
-  // This week's statuses only (current-injuries.ts), as the player pages.
-  const rows = currentInjuries(data);
+  // Already this week's statuses (current-injuries.ts via team-data.ts).
+  const rows = data.injuries;
   const body = rows.length
     ? `<ul class="sct-ovw-inj-list">` +
       rows
@@ -556,7 +551,8 @@ function injuriesCard(data: TeamPageData, depthHref: string | null): string {
         .join("") +
       `</ul>`
     : `<p class="sct-ovw-meta">${e(`No ${data.team.nickname} skill-position players carry an injury designation right now.`)}</p>`;
-  return panel("injuries", "Injuries & Availability", body + moreLink(depthHref, "Depth chart"));
+  const fresh = data.injuryFreshness?.note ? `<p class="sct-ovw-note">${e(data.injuryFreshness.note)}</p>` : "";
+  return panel("injuries", "Injuries & Availability", body + fresh + moreLink(depthHref, "Depth chart"));
 }
 
 /* ----------------------------------------------------------------- trends */

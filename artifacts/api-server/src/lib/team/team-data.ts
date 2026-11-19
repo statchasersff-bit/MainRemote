@@ -47,6 +47,7 @@ import {
   restoreDepthCharts,
   type TeamDepthCharts,
 } from "./depth-charts";
+import { currentDepthCharts, currentRoster, injuryFreshness, type InjuryFreshness } from "./current-injuries";
 
 /** Stories shown before "View more" reveals the rest. */
 export const TEAM_NEWS_VISIBLE = 10;
@@ -70,10 +71,19 @@ export interface TeamPageData {
   /** Newest story's timestamp - the page's "last updated" for this team. */
   newsUpdatedAtMs: number | null;
 
+  /** Statuses for the club's NEXT game (current-injuries.ts): what every hub surface prints. */
   roster: TeamRoster | null;
+  /**
+   * The roster as the index holds it, week-less statuses included: only for a
+   * caller that applies the availability rule itself for a specific game (the
+   * matchup preview, matchup/preview.ts), so it is not applied twice.
+   */
+  sourceRoster: TeamRoster | null;
   injuries: DepthChartEntry[];
   /** Epoch ms the roster/injury snapshot was pulled. 0 when there is none. */
   rosterFetchedAt: number;
+  /** The injury components' freshness and their one-line note (current-injuries.ts). */
+  injuryFreshness: InjuryFreshness;
   /**
    * The depth-charts tool's four views for this team, for the Depth Chart tab.
    * Pushed by the WordPress plugin; null when the document has no entry.
@@ -230,9 +240,12 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     ]);
 
   const news = settled(newsResult) ?? [];
-  const roster = getTeamRoster(team.abbreviation);
   const profile = settled(profileResult);
   const schedule = settled(scheduleResult);
+  // Current-week statuses, once, for every hub surface (current-injuries.ts):
+  // Sleeper's injury_status and the depth feed's codes carry no week.
+  const sourceRoster = getTeamRoster(team.abbreviation);
+  const roster = currentRoster(team, state.season, schedule, sourceRoster);
   const postseason = settled(postseasonResult);
 
   const newsUpdatedAtMs = news.reduce<number | null>((newest, item) => {
@@ -249,9 +262,11 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     news,
     newsUpdatedAtMs,
     roster,
+    sourceRoster,
     injuries: injuryWatch(roster),
     rosterFetchedAt: rosterFetchedAt(),
-    depthCharts: getTeamDepthCharts(team.abbreviation),
+    injuryFreshness: injuryFreshness(team, state.season, schedule, rosterFetchedAt()),
+    depthCharts: currentDepthCharts(team, state.season, schedule, getTeamDepthCharts(team.abbreviation), roster),
     schedule,
     postseason,
     profile:
