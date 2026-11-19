@@ -47,7 +47,29 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
+/**
+ * Questions cut 2026-11-19 (Team Pages Phase 1 finalization): spending vs cap
+ * space and highest-paid vs biggest cap hit were the same figures twice;
+ * "save by cutting" repeated "most cap space if released"; dead money,
+ * a release's timing and "Net if cut" were glossary entries identical on all
+ * 32 hubs; the "where can I see" closer was navigation.
+ */
+const CONTRACT_REPEATS = [
+  /^How much are the .* spending against /,
+  /^Who are the highest-paid /,
+  /^How much could the .* save by cutting /,
+  /^What is dead money on /,
+  /^What happens to the .* salary cap when /,
+  /^What is the difference between a pre-June 1 /,
+  /^What does "Net if cut" mean/,
+  /^Where can I see every /,
+];
+
 export function contractsFaq(team: NflTeam, v: ContractsView): FaqItem[] {
+  return allContractsFaq(team, v).filter((q) => !CONTRACT_REPEATS.some((re) => re.test(q.question)));
+}
+
+function allContractsFaq(team: NflTeam, v: ContractsView): FaqItem[] {
   const nick = team.nickname;
   const poss = /s$/.test(nick) ? `${nick}'` : `${nick}'s`;
   // "New England" reads as the club; "New York" and "Los Angeles" do not.

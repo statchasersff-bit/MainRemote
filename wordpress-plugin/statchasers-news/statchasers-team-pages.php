@@ -1446,8 +1446,8 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
  * clause after the colon: "Stats 2026" here, "Stats 2026: Offense, Defense &
  * NFL Rankings" in the <title>.
  *
- * The hub (no section) is "New England Patriots Fantasy Football Outlook &
- * Stats 2026", mirroring teamHubHeading(). The Outlook has no heading of its
+ * The hub (no section) is "New England Patriots 2026 Stats, Schedule &
+ * Fantasy Outlook", mirroring teamHubHeading(). The Outlook has no heading of its
  * own: the hub opens on it, so `/outlook/` 301s to the hub (see
  * statchasers_team_outlook_redirect()) and the hub's heading is the Outlook's.
  *
@@ -1473,9 +1473,14 @@ function statchasers_team_heading( string $slug, string $section ): string {
 		'news'        => 'News',
 	);
 
-	// The hub's phrase mirrors teamHubHeading(). It was "Team Hub", which says
-	// nothing a reader searches for.
-	$phrase = $phrases[ $section ] ?? 'Fantasy Football Outlook & Stats';
+	// The hub mirrors teamHubHeading(): "{Team} 2026 Stats, Schedule &
+	// Fantasy Outlook" since mak's Team Pages Phase 1 finalization
+	// (2026-11-19), when the hub began opening on the season overview. It was
+	// "{Team} Fantasy Football Outlook & Stats 2026", and "Team Hub" before.
+	if ( ! isset( $phrases[ $section ] ) ) {
+		return sprintf( '%s %s Stats, Schedule & Fantasy Outlook', $row[0], STATCHASERS_TEAM_SEASON );
+	}
+	$phrase = $phrases[ $section ];
 
 	// The depth chart and the schedule carry no year (UNDATED_SECTION_HEADINGS
 	// in the API): "Buffalo Bills Depth Chart" and "Buffalo Bills Schedule"

@@ -1128,8 +1128,10 @@ describe("tab FAQs", () => {
         `one FAQ block on the ${id} tail`,
       );
       // Out of the panel: the tail is a sibling of it, after the panels.
+      // The archived preseason questions (2026-11-19) are the one FAQ that
+      // stays in the panel: they belong to the archived take, not the tab.
       assert.equal(
-        doc.querySelector(`#${id} .sct-faq`),
+        [...doc.querySelectorAll(`#${id} .sct-faq`)].find((el) => !el.closest("#preseason-outlook")) ?? null,
         null,
         `${id}: the questions left the panel`,
       );
@@ -1232,7 +1234,10 @@ describe("tab FAQs", () => {
     }));
     // Markup that says something the page does not is the whole reason schema
     // gets a page penalized, so this is equality rather than a spot check.
-    assert.deepEqual(asked, entries);
+    // The tails' questions: in season the archived preseason questions sit in
+    // the panel and are deliberately not in the FAQPage (2026-11-19).
+    assert.deepEqual(asked, faqEntries(doc, ".sct-faq-tail"));
+    assert.ok(entries.length >= asked.length);
   });
 
   test("embedded, the questions ship as data for the host to place", async () => {
@@ -1268,7 +1273,8 @@ describe("tab FAQs", () => {
         answer: entry.a,
       }));
       const { doc } = await dom(path);
-      assert.deepEqual(carried, faqEntries(doc));
+      // The tails' questions (the archived preseason ones are kept out, 2026-11-19).
+      assert.deepEqual(carried, faqEntries(doc, ".sct-faq-tail"));
     }
   });
 
@@ -2187,9 +2193,9 @@ describe("the Stats heading", () => {
       return found[0].replace(/&amp;/g, "&");
     };
     const expected = {
-      "": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      "": /^New England Patriots 2\d{3} Stats, Schedule & Fantasy Outlook$/,
       // Still asked for by anything holding the old spelling: it gets the hub.
-      "&section=outlook": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      "&section=outlook": /^New England Patriots 2\d{3} Stats, Schedule & Fantasy Outlook$/,
       "&section=stats": /^New England Patriots Stats 2\d{3}$/,
       "&section=schedule": /^New England Patriots Schedule$/,
       "&section=depth-chart": /^New England Patriots Depth Chart$/,
@@ -2205,7 +2211,7 @@ describe("the Stats heading", () => {
     const tab = doc.querySelector('.sct-nav-link[data-sct-panel-id="outlook"]');
     assert.match(
       tab.getAttribute("data-sct-heading"),
-      /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      /^New England Patriots 2\d{3} Stats, Schedule & Fantasy Outlook$/,
       "the Outlook tab hands the host the hub's heading",
     );
   });
@@ -2761,13 +2767,15 @@ describe("draft tab FAQ (mak, 2026-11-02)", () => {
     assert.equal(faq.querySelector("h2").textContent, "New England Patriots Draft Picks & History FAQ");
     const items = [...faq.querySelectorAll(".sct-faq-item")];
     const qs = items.map((d) => d.querySelector("h3.sct-faq-q").textContent);
-    assert.ok(qs.length >= 12 && qs.length <= 16, `${qs.length} questions`);
+    // Trimmed to distinct questions 2026-11-19 (Team Pages Phase 1 finalization).
+    assert.ok(qs.length >= 5 && qs.length <= 9, `${qs.length} questions`);
     const capital = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8")).teams.ne;
     const history = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8")).teams.ne;
     // The pick count and the pick-by-round list come from the capital file.
     assert.equal(qs[0], "How many picks do the Patriots have in the 2027 NFL Draft?");
     assert.ok(items[0].textContent.includes(`currently hold ${capital.holds.length} picks in the 2027 NFL Draft`));
-    const byRound = [...items[1].querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
+    // The pick list is the count's answer now, not a question of its own.
+    const byRound = [...items[0].querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
     assert.equal(byRound.length, new Set(capital.holds.map((h) => h.round)).size);
     assert.equal(byRound[0], "Round 1: Patriots' own pick");
     // The first-round list is the last five classes' Round 1 picks, newest first.
@@ -2776,13 +2784,15 @@ describe("draft tab FAQ (mak, 2026-11-02)", () => {
     const lines = [...r1.querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
     assert.deepEqual(lines, firsts.map((p) => `${p.season}: ${p.name}, ${{ OT: "offensive tackle", QB: "quarterback", DB: "defensive back", OL: "offensive lineman" }[p.position]}, Pick No. ${p.pick}`));
     // The class count is the history file's.
+    // The class-count question was cut as a repeat of the class lists (2026-11-19).
     const total = history.filter((p) => p.season >= 2022).length;
-    assert.ok(faq.textContent.includes(`The Patriots selected ${total} players from the 2022 through 2026 NFL Drafts.`));
-    assert.ok(qs.includes("When did the Patriots draft Drake Maye?"));
+    assert.ok(!faq.textContent.includes(`The Patriots selected ${total} players from the 2022 through 2026 NFL Drafts.`));
+    assert.ok(!qs.includes("When did the Patriots draft Drake Maye?"), "per-player draft dates repeat the class lists");
+    assert.ok(!qs.some((q) => /^What draft picks|^How many extra|^Where can I see/.test(q)), "repeats removed");
     assert.ok(qs.includes("Do the Patriots have a first-round pick in the 2027 NFL Draft?"));
     // In the FAQPage (mak approved 2026-11-02), list answers as lines.
     const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
-    assert.ok(ld.includes("What draft picks do the Patriots have in 2027?"));
+    assert.ok(ld.includes("How many picks do the Patriots have in the 2027 NFL Draft?"));
     assert.ok(ld.includes("- Round 1: Patriots' own pick"));
   });
 });
@@ -3097,7 +3107,7 @@ describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () 
   test("the Outlook keeps its heading's words and adds the short phone title; the stamp marks its season part", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const head = doc.querySelector("#outlook-premium .sct-up-head");
-    assert.match(head.querySelector("h2.sct-tfo-title").textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/, "the heading is unchanged");
+    assert.match(head.querySelector("h2.sct-tfo-title").textContent, /^New England Patriots (Fantasy Football Outlook & Stats \d{4}|\d{4} Preseason Fantasy Outlook)$/, "the heading (archived in season since 2026-11-19)");
     assert.ok(head.querySelector(".sct-up-head-text.has-phone-title"), "the phone title is wired");
     assert.match(head.querySelector("p.sct-up-m-title[aria-hidden=true]").textContent, /^\d{4} Fantasy Outlook$/);
     const stamp = head.querySelector(".sct-tfo-stamp");
@@ -3146,6 +3156,82 @@ describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () 
   });
 });
 
+describe("the Season Overview (Team Pages Phase 1, 2026-11-19)", () => {
+  test("in season the default panel opens on the overview, the preseason outlook archived under it", async () => {
+    const { doc } = await dom("/team/detroit-lions");
+    const panel = doc.getElementById("outlook");
+    assert.ok(panel.classList.contains("is-default"), "still the hub's default panel, same id");
+    const ovw = panel.querySelector("#team-overview.sct-ovw");
+    assert.ok(ovw, "the overview renders");
+    assert.equal(panel.firstElementChild, ovw, "it is what the panel opens on");
+    const h2s = [...panel.querySelectorAll("h2")];
+    assert.ok(h2s[0].classList.contains("sct-ovw-title"), "the overview's heading is the panel's first, so ?h1=1 promotes it");
+    assert.match(h2s[0].textContent, /^Detroit Lions \d{4} Season Overview$/);
+    const tab = doc.querySelector("#outlook-tab");
+    assert.equal(tab.textContent, "Overview");
+    assert.equal(tab.getAttribute("href"), "/team/detroit-lions/", "the address is unchanged");
+    for (const id of ["last", "next", "division", "players", "injuries", "perf"]) {
+      assert.ok(ovw.querySelector(`.sct-ovw-${id}`), `the ${id} panel`);
+    }
+    const archive = panel.querySelector("details#preseason-outlook");
+    assert.ok(archive, "the archive");
+    assert.equal(archive.hasAttribute("open"), false, "closed by default");
+    assert.match(archive.querySelector("summary").textContent, /Preseason Fantasy Outlook.*Archived/);
+    assert.ok(archive.querySelector("#outlook-premium"), "the outlook itself is kept, inside the archive");
+    assert.ok(archive.querySelector(".sct-ovw-archive-note"), "labeled as written before the season");
+    assert.equal(ovw.querySelector("#outlook-premium, .sct-tfo-card"), null, "no preseason card in the overview");
+  });
+
+  test("the FAQPage is exactly the visible questions; the preseason ones live in the archive, outside it", async () => {
+    const { doc } = await dom("/team/detroit-lions");
+    const visible = [...doc.querySelectorAll(".sct-faq-tail .sct-faq-q")].map((q) => q.textContent);
+    const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((x) => JSON.parse(x.textContent));
+    const faq = ld.filter((x) => x["@type"] === "FAQPage");
+    assert.equal(faq.length, 1, "one FAQPage");
+    assert.deepEqual(faq[0].mainEntity.map((q) => q.name), visible, "schema = the tails' questions, in order");
+    const season = [...doc.querySelectorAll('[data-sct-faq-for="outlook"] .sct-faq-q')].map((q) => q.textContent);
+    assert.ok(season.length >= 6 && season.length <= 8, `${season.length} season questions`);
+    assert.ok(!season.some((q) => /draft|worth drafting|sleeper|WR2 behind/i.test(q)), "no draft-season question");
+    const archived = [...doc.querySelectorAll("#preseason-outlook .sct-faq-q")].map((q) => q.textContent);
+    assert.ok(archived.length > 0, "the preseason questions are kept in the archive");
+    for (const q of archived) assert.ok(!visible.includes(q) && !faq[0].mainEntity.some((m) => m.name === q), `${q} is not in the active FAQ`);
+  });
+
+  test("contributors carry the player pages' own box-score totals", async () => {
+    const { doc } = await dom("/team/detroit-lions");
+    const logs = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "player", "game_logs", "2026.json"), "utf8"));
+    const rows = (logs["9221"] ?? []).filter((r) => (r.team ?? "").toLowerCase() === "det");
+    const recYd = rows.reduce((s, r) => s + (r.stats.rec_yd ?? 0), 0);
+    const gibbs = [...doc.querySelectorAll(".sct-ovw-p")].find((li) => /Jahmyr Gibbs/.test(li.textContent));
+    assert.ok(gibbs, "Gibbs is listed");
+    assert.match(gibbs.querySelector(".sct-ovw-line").textContent, new RegExp(`${recYd.toLocaleString("en-US")} yds`));
+  });
+
+  test("the backfield line comes from usage and availability, never the preseason handcuff", async () => {
+    const { doc } = await dom("/team/detroit-lions");
+    const line = doc.querySelector(".sct-ovw-backfield");
+    assert.ok(line, "the backfield line");
+    const roster = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team-roster.json"), "utf8"));
+    const text = line.textContent;
+    const m = /Next in line: ([^,]+),/.exec(text);
+    if (m) {
+      const all = JSON.stringify(roster);
+      const at = all.indexOf(`"name":"${m[1]}"`);
+      const entry = at >= 0 ? all.slice(at, at + 400) : "";
+      assert.doesNotMatch(entry, /"injuryStatus":"(IR|Out|PUP)"/, `${m[1]} is available`);
+    }
+  });
+
+  test("?h1=1 promotes the overview heading to the hub's H1, wording unchanged", async () => {
+    const { doc } = await dom("/embed/team/detroit-lions?h1=1");
+    const h1s = [...doc.querySelectorAll("h1")];
+    assert.equal(h1s.length, 1);
+    assert.ok(h1s[0].classList.contains("sct-ovw-title"));
+    assert.ok(h1s[0].closest("#team-overview"));
+    assert.match(h1s[0].textContent, /^Detroit Lions \d{4} Stats, Schedule & Fantasy Outlook$/, "the hub H1 (mak, 2026-11-19)");
+  });
+});
+
 describe("the Fantasy Outlook tab (mak's brief, 2026-11-05; the old block removed the same day)", () => {
   test("the premium block is the tab: its header carries the panel's H2, the outlook's words, groups and cards", async () => {
     const { doc } = await dom("/team/new-england-patriots");
@@ -3154,10 +3240,13 @@ describe("the Fantasy Outlook tab (mak's brief, 2026-11-05; the old block remove
     assert.ok(neu, "the block renders");
     assert.equal(panel.querySelector(".sct-outlook-stamp, .sct-outlook-player, .sct-outlook-facts"), null, "the old block is gone");
     assert.equal(neu.querySelector(".sct-cp-flag"), null, "no comparison flag");
-    const h2s = [...panel.querySelectorAll("h2")];
-    assert.equal(h2s.length, 1, "one panel heading");
+    // In season the panel opens on the Season Overview and this block sits
+    // in the closed preseason archive under it (2026-11-19), so the block's
+    // own heading is counted inside the block.
+    const h2s = [...neu.querySelectorAll("h2")];
+    assert.equal(h2s.length, 1, "one block heading");
     assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-tfo-title"));
-    assert.match(h2s[0].textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/);
+    assert.match(h2s[0].textContent, /^New England Patriots (Fantasy Football Outlook & Stats \d{4}|\d{4} Preseason Fantasy Outlook)$/);
     // mak, 2026-11-05 PM: the Outlook wears the shared premium tab header
     // (the Coaching page's), the stamp as its dek line.
     const head = neu.querySelector("header.sct-up-head.sct-tfo-head");
@@ -3202,7 +3291,7 @@ describe("the Fantasy Outlook tab (mak's brief, 2026-11-05; the old block remove
         if (photo) assert.match(photo.getAttribute("src"), /\/news-image\//);
       }
     }
-    assert.equal(panel.querySelectorAll("h3").length, groups.length, "H3s are the groups");
+    assert.equal(neu.querySelectorAll("h3").length, groups.length, "H3s are the groups");
     assert.ok(faqEntries(doc, tailOf("outlook")).length > 0, "the Outlook FAQ still renders");
     assert.doesNotMatch(neu.innerHTML, /\u2014/);
     const ids = [...doc.querySelectorAll("[id]")].map((el) => el.id);
@@ -3358,11 +3447,12 @@ describe("contracts tab", () => {
     assert.ok(faq, "the FAQ block is the Contracts tail");
     assert.equal(faq.querySelector("h2").textContent, "New England Patriots Contracts & Salary Cap FAQ");
     const qs = [...faq.querySelectorAll("h3.sct-faq-q")].map((h) => h.textContent);
-    assert.ok(qs.length >= 10 && qs.length <= 14, `${qs.length} questions`);
+    // Trimmed to distinct, club-specific questions 2026-11-19.
+    assert.ok(qs.length >= 4 && qs.length <= 7, `${qs.length} questions`);
     assert.equal(qs[0], "How much salary cap space do the Patriots have in 2026?");
     assert.ok(qs.includes("How much dead money do the Patriots have in 2026?"));
-    assert.ok(qs.includes("Who are the highest-paid Patriots in 2026?"));
-    assert.ok(qs.includes('What does "Net if cut" mean for a Patriots contract?'));
+    assert.ok(!qs.includes("Who are the highest-paid Patriots in 2026?"), "repeats the biggest cap hit");
+    assert.ok(!qs.includes('What does "Net if cut" mean for a Patriots contract?'), "a glossary entry, the same on every hub");
     // Every figure in the answers is the view's own: the cap-space answer
     // carries the data attribute's number, and the largest cap hit opens
     // the biggest-hit answer.

@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.57
+Stable tag: 1.10.58
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.58 =
+* Team hubs: the hub H1 is "{Team} 2026 Stats, Schedule & Fantasy Outlook" (mirrors the API's teamHubHeading), now that the hub opens on the current-season overview. Upload together with the API deploy that changes teamHubHeading, the overview and the season FAQ (the tool-mode H1 comes from the API, this one is the theme-mode mirror). Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.
 
 = 1.10.57 =
 * Advanced player stats page (UI refinement brief, 2026-11-18): this page's hero only, the intro's leading tightens to 1.55 and the phone H1 is 26-30px instead of the site's 20-24px (statchasers_player_stats_hero_css(), printed with the page's own stylesheet, so no other page changes). The rest of the refinement (shorter intro, leader cards, controls, table) is in the API deploy. Player pages (profile refinement brief, 2026-11-18): Divi's 58px top padding becomes 24px above 560px (phones keep 0), so the player search sits about 24px under the site header instead of 82px; needs the API deploy that drops the search's own top margin. Team pages (2026-11-18): the same 24px above 560px, mirrored in team.css so it lands with the API deploy too. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.

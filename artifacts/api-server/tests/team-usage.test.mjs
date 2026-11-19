@@ -79,7 +79,9 @@ describe("placement", () => {
     assert.ok(tabs.indexOf("stats") > tabs.indexOf("usage"));
     assert.equal(doc.getElementById("usage"), null, "the Usage panel is not printed on the hub");
     const labels = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
-    assert.deepEqual(labels.slice(0, 2), ["Outlook", "Usage"]);
+    // "Overview" in season, "Outlook" before it (Team Pages Phase 1, 2026-11-19).
+    assert.match(labels[0], /^(Overview|Outlook)$/);
+    assert.equal(labels[1], "Usage");
   });
 
   test("the tab links to the section's own address", async () => {
@@ -814,5 +816,36 @@ describe("the premium comparison blocks (mak's brief, 2026-11-05)", () => {
       assert.ok(cols >= 1 && cols <= 3);
       assert.equal(prm.querySelectorAll(".sct-us-sit-row:not(.is-head)").length, 6);
     }
+  });
+});
+
+/**
+ * The Usage table's yards are the box score's (2026-11-19, Team Pages Phase 1
+ * audit): Gibbs read 375 receiving yards here and 384 on his profile because
+ * buildUsage.mjs skipped nflverse's lateral_*_yards (St. Brown's 4-yard catch,
+ * lateral to Gibbs for 9, DET wk 4). Every RB/WR/TE row must match the player
+ * pages' game logs for the same club and weeks. Quarterbacks are left out:
+ * a passer catching his own deflection is a reception in play-by-play and not
+ * in Sleeper's box score.
+ */
+describe("Usage yards match the player pages", () => {
+  test("receptions, receiving and rushing yards equal the game logs, laterals included", () => {
+    const logsFile = path.join(APP_DIR, "data", "player", "game_logs", `${usage.season}.json`);
+    if (!fs.existsSync(logsFile)) return;
+    const logs = JSON.parse(fs.readFileSync(logsFile, "utf8"));
+    const norm = (c) => String(c ?? "").toLowerCase().replace(/^lar$/, "la");
+    const off = [];
+    for (const [club, team] of Object.entries(usage.teams)) {
+      for (const p of team.players) {
+        if (p.pos === "QB" || !p.sleeperId || !logs[p.sleeperId] || p.recYards == null) continue;
+        const rows = logs[p.sleeperId].filter((r) => r.week <= usage.throughWeek && norm(r.team) === norm(club));
+        if (rows.length === 0) continue;
+        const sum = (k) => rows.reduce((s, r) => s + (r.stats?.[k] ?? 0), 0);
+        if (sum("rec") !== p.receptions || sum("rec_yd") !== p.recYards || sum("rush_yd") !== p.rushYards) {
+          off.push(`${club} ${p.name}: rec ${p.receptions}/${sum("rec")} recYd ${p.recYards}/${sum("rec_yd")} rushYd ${p.rushYards}/${sum("rush_yd")}`);
+        }
+      }
+    }
+    assert.deepEqual(off, [], "usage vs game logs");
   });
 });

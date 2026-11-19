@@ -487,6 +487,18 @@ export async function buildUsage(season) {
       }
     }
 
+    // Laterals (2026-11-19): the official box score credits the yards after a
+    // lateral to the player who took it - receiving yards on a pass play,
+    // rushing yards on a run - with no extra target, catch or carry. nflverse
+    // keeps those yards out of receiving_yards / rushing_yards (they sit in
+    // lateral_*_yards), so without this the table ran short of the player
+    // pages' Sleeper box score (DET 2026 wk 4: St. Brown 4-yd catch, lateral to
+    // Gibbs for 9; Usage 375 rec yds vs 384 on his profile).
+    const latRec = r.lateral_receiver_player_id;
+    if (latRec && latRec !== "NA") playerAcc(c, latRec).recYards += num(r.lateral_receiving_yards) ?? 0;
+    const latRush = r.lateral_rusher_player_id;
+    if (latRush && latRush !== "NA") playerAcc(c, latRush).rushYards += num(r.lateral_rushing_yards) ?? 0;
+
     // Carries (scrambles included as carries, as the box score counts them).
     if (isRush || r.qb_scramble === "1") {
       const runner = r.rusher_player_id;
