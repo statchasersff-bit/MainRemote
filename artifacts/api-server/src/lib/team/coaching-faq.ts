@@ -238,33 +238,36 @@ export function coachingFaq(
     const field: string[] = [];
     const leans: Array<{ name: string; d: number }> = [];
     if (shotgun.current != null) {
-      field.push(`lined up in shotgun on ${f1(shotgun.current)}% of snaps`);
+      field.push(`lined up in shotgun on ${f1(shotgun.current)}% of snaps${shotgun.nflAvg != null ? ` (NFL average ${f1(shotgun.nflAvg)}%)` : ""}`);
       if (shotgun.nflAvg != null) leans.push({ name: "shotgun", d: shotgun.current - shotgun.nflAvg });
     }
     if (motion.current != null) {
-      field.push(`used pre-snap motion on ${f1(motion.current)}%`);
+      field.push(`used pre-snap motion on ${f1(motion.current)}%${motion.nflAvg != null ? ` (${f1(motion.nflAvg)}%)` : ""}`);
       if (motion.nflAvg != null) leans.push({ name: "motion", d: motion.current - motion.nflAvg });
     }
     if (pa.current != null) {
-      field.push(`play action on ${f1(pa.current)}% of dropbacks`);
+      field.push(`play action on ${f1(pa.current)}% of dropbacks${pa.nflAvg != null ? ` (${f1(pa.nflAvg)}%)` : ""}`);
       if (pa.nflAvg != null) leans.push({ name: "play action", d: pa.current - pa.nflAvg });
     }
+    // One sentence of comparison after the figures (Team Pages Phase 2B,
+    // 2026-11-19): it used to trail the list as ", below it on motion",
+    // which read as broken. 2 points either way counts as above or below.
     const above = leans.filter((l) => l.d >= 2).map((l) => l.name);
     const below = leans.filter((l) => l.d <= -2).map((l) => l.name);
-    const compare =
-      leans.length === 0
-        ? ""
-        : above.length === leans.length
-          ? ", above the league average on all three"
-          : below.length === leans.length
-            ? ", below the league average on all three"
-            : above.length === 0 && below.length === 0
-              ? ", close to the league average on all three"
-              : `, ${[above.length ? `above the league average on ${list(above)}` : "", below.length ? `below it on ${list(below)}` : ""].filter(Boolean).join(" and ")}`;
+    const close = leans.filter((l) => Math.abs(l.d) < 2).map((l) => l.name);
+    const all = leans.length === 3 ? "all three" : list(leans.map((l) => l.name));
+    const parts = [
+      above.length ? `above the league average on ${above.length === leans.length ? all : list(above)}` : "",
+      below.length ? `below the league average on ${below.length === leans.length ? all : list(below)}` : "",
+      close.length ? `close to it on ${close.length === leans.length ? all : list(close)}` : "",
+    ].filter(Boolean);
+    if (parts.length && /^close/.test(parts[0])) parts[0] = parts[0].replace("close to it", "close to the league average");
+    const compareLine = parts.length ? `That is ${list(parts)}.` : null;
     ask(
       `What offensive scheme do the ${nick} run under ${caller}?`,
       `${surPoss} ${nick} offense comes out of the ${tree}.`,
-      field.length ? `On the field in ${season}, the ${nick} have ${list(field)}${compare}.` : null,
+      field.length ? `On the field in ${season}, the ${nick} have ${list(field)}.` : null,
+      compareLine,
     );
   }
 

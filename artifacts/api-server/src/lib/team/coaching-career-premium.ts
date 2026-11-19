@@ -398,8 +398,13 @@ function chart(c: TeamCoaching, stops: Stop[]): string {
   return (
     `<figure class="sct-cc-chart" aria-label="${e(`${possessive} offenses by stop: points per game, ${x0}-${x1}`)}">` +
     `<div class="sct-cc-scroll" tabindex="0">` +
-    chartSvg(stops, colors, league, 800, 250, false) +
-    chartSvg(stops, colors, league, 720, 240, true) +
+    // One desktop/tablet drawing (Team Pages Phase 2B, 2026-11-19): the
+    // 720-wide layout, which the narrow tier needed so its labels never
+    // shrink, serves every width above 560px (at 1280 it renders at about
+    // 1.05x). It keeps the is-wide hook. The two phone drawings stay: SVG
+    // text scales with the drawing, and one phone drawing cannot keep 12px
+    // labels legible from a 320px screen to a 560px one.
+    chartSvg(stops, colors, league, 720, 240, true).replace('class="sct-cc-svg is-narrow"', 'class="sct-cc-svg is-wide"') +
     chartSvg(stops, colors, league, 320, 168, true, "s") +
     chartSvg(stops, colors, league, 440, 190, true, "m") +
     `</div>` +

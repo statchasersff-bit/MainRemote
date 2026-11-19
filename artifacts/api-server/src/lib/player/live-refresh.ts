@@ -441,14 +441,13 @@ export function refreshDailyData(): Promise<void> {
           ? { name: "fpa", ok: true }
           : { name: "fpa", ok: false, error: "FPA ingest failed; see the log and /api/status fpa" },
       );
-      // The team hubs' Usage report. nflverse posts a week by about
-      // Wednesday; the builder refuses to write fewer weeks than disk.
-      await step("team usage", "team/buildUsage.mjs", [season]);
-      // The Coaching tab's computed layer: every generated entry's tendency
-      // numbers, score states and prose re-derive from the same nflverse
-      // feeds. --force all regenerates every non-hand-written entry (the
-      // builder preserves entries it did not generate, i.e. the Bills).
-      await step("team coaching", "team/buildCoaching.mjs", [season, "--force", "all"]);
+      // The team hubs' Usage report and the Coaching tab's computed layer,
+      // together (Team Pages Phase 2B, 2026-11-19): one play-by-play
+      // download, both builders staged, and both files published only when
+      // they agree on the completed-through week and data fingerprint, so
+      // the two tabs never describe different games. A refusal or mismatch
+      // publishes neither (scripts/team/refreshTeamMetrics.mjs).
+      await step("team usage + coaching", "team/refreshTeamMetrics.mjs", [season]);
       // The Stats tab, whole: the Efficiency / Pass Rush ladders AND the
       // box-score sheet every other ladder on the tab reads (since 2026-10-26
       // the tab reads this one file, never the stats provider, so it is one

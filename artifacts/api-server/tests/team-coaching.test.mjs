@@ -685,7 +685,10 @@ describe("premium career block (mak's brief, 2026-11-05; the design since the sa
     assert.equal(cc.querySelectorAll(".sct-cc-chart table").length, 0);
     assert.equal(cc.querySelectorAll("#coaching-seasons-premium tr.sct-cs-row").length, seasons.length);
     for (const g of svg.querySelectorAll(".sct-cc-pt")) assert.match(g.getAttribute("aria-label"), /^\d{4}.* · \d+(\.\d)? PPG/);
-    assert.ok(cc.querySelector(".sct-cc-svg.is-narrow"), "a narrow chart for the scrolling tiers");
+    // One desktop drawing since Phase 2B (2026-11-19): the narrow layout, at every width above 560px.
+    assert.equal(cc.querySelector(".sct-cc-svg.is-narrow"), null, "no second desktop copy");
+    assert.equal(cc.querySelectorAll(".sct-cc-svg").length, 3, "one desktop drawing and two phone drawings");
+    assert.equal(cc.querySelector(".sct-cc-svg.is-wide").getAttribute("viewBox"), "0 0 720 240");
     // The stat stack beside the chart (compact pass, 2026-11-08): the callouts' figures, the rank and the current stop.
     const kv = Object.fromEntries([...cc.querySelectorAll(".sct-cc-sum .sct-cc-kv")].map((d) => [d.querySelector("dt").textContent, d.querySelector("b").textContent]));
     assert.equal(kv["Peak PPG"], peak.toFixed(1));
@@ -778,5 +781,35 @@ describe("design polish (mak, 2026-10-05)", () => {
     const card = doc.querySelector("#coaching-premium .sct-cp-profile");
     assert.ok(!card.textContent.includes("McDaniels remains New England's offensive play-caller"));
     assert.equal(card.querySelector(".sct-cp-cont-note").textContent, "Same play-caller as 2025 · Strong historical baseline");
+  });
+});
+
+describe("cross-tab: Coaching, Usage and Stats (Team Pages Phase 2B, 2026-11-19)", () => {
+  test("the Coaching page prints the usage file's value and rank for every shared metric", async () => {
+    const label = { passRate: "Pass rate (all downs)", rzPassRate: "Red-zone pass rate", proe: "Pass rate over expected", pace: "Neutral pace" };
+    for (const [slug, club] of [["new-england-patriots", "ne"], ["detroit-lions", "det"], ["atlanta-falcons", "atl"]]) {
+      const { doc } = await page(`/team/${slug}/coaching/`);
+      const rows = [...doc.querySelectorAll("table.sct-cp-table tbody tr:not(.sct-cp-group-row)")];
+      for (const [key, name] of Object.entries(label)) {
+        const tr = rows.find((r) => r.querySelector("th .sct-co-tlabel").textContent === name);
+        const env = usage.teams[club].env[key];
+        const shown = Number(tr.querySelector(".is-now").textContent.replace("−", "-").replace(/[%s]/g, ""));
+        assert.equal(shown, env.value, `${slug} ${key} value`);
+        assert.match(tr.querySelector(".sct-cp-nfl-rank").textContent, new RegExp(`^${env.tied ? "T-" : ""}${env.rank}(st|nd|rd|th) `), `${slug} ${key} rank`);
+      }
+    }
+  });
+
+  test("the measurement note states the shared data-through week", async () => {
+    const { doc } = await page("/team/new-england-patriots/coaching/");
+    const stamp = doc.querySelector(".sct-cp-how .sct-cp-stamp").textContent;
+    assert.match(stamp, new RegExp(`^Data through Week ${usage.snapshot.throughWeek} of 2026`));
+    assert.match(stamp, /same games and the same definitions/);
+  });
+
+  test("the Stats tab's Play Mix says it is a box-score split, not the Usage/Coaching pass rate", async () => {
+    const { doc } = await page("/team/new-england-patriots/stats/");
+    const cap = doc.querySelector(".sct-sp-mix .sct-sp-mix-caption").textContent;
+    assert.match(cap, /^Box-score split: pass attempts and sacks vs\. rushing attempts \(scrambles and kneels count as runs\)\.$/);
   });
 });

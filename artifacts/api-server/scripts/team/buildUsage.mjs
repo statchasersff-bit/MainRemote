@@ -87,6 +87,7 @@ import readline from "node:readline";
 import { Readable } from "node:stream";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
+import { addSnap, computeThroughWeek, newRateAcc, publishRates, rankPublished } from "./team-rate-metrics.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(here, "..", "..", "data");
@@ -101,6 +102,13 @@ const club = (t) => (t ? (TEAM_FIX[t] ?? t).toLowerCase() : null);
 /* -------------------------------------------------------------------- CSV */
 
 let cacheDir = null;
+/**
+ * The completed-week cutoff (team-rate-metrics.mjs), shared with the
+ * coaching builder: every weekly source stops at it. `--through N` pins it
+ * (refreshTeamMetrics.mjs); otherwise computed from the schedule and pbp.
+ */
+let THROUGH = Infinity;
+let throughArg = null;
 
 function splitCsv(line) {
   const out = [];
@@ -209,6 +217,12 @@ function rankOf(values, value, asc = false) {
 
 export async function buildUsage(season) {
   const regular = (r) => (r.season_type ?? r.game_type) === "REG";
+  THROUGH = throughArg ?? (await computeThroughWeek(rows, season));
+  console.log(`  ${season} complete through Week ${THROUGH}`);
+  const past = (w) => w == null || w > THROUGH;
+  // The shared team rates (pass, red-zone, inside-10, PROE, pace).
+  const rateAccs = new Map();
+  const rateAcc = (c) => ensure(rateAccs, c, newRateAcc);
 
   // ---- ids
   const sleeperByGsis = new Map();
@@ -345,6 +359,8 @@ export async function buildUsage(season) {
     const c = club(r.posteam);
     if (!c) continue;
     const week = num(r.week);
+    if (past(week)) continue;
+    addSnap(rateAcc(c), r);
     const playType = r.play_type;
     const isPass = r.pass === "1";
     const isRush = r.rush === "1";
@@ -555,6 +571,7 @@ export async function buildUsage(season) {
     const gsis = gsisByPfr.get(r.pfr_player_id);
     const c = club(r.team);
     const week = num(r.week);
+    if (past(week)) continue;
     const off = num(r.offense_snaps) ?? 0;
     const share = num(r.offense_pct);
     if (!c || week == null) continue;
@@ -583,6 +600,7 @@ export async function buildUsage(season) {
   for await (const r of rows(`${FFOPP}/ep_weekly_${season}.csv`)) {
     const c = club(r.posteam);
     if (!c || !r.player_id) continue;
+    if (past(num(r.week))) continue;
     const e = ensure(xfp, `${c}|${r.player_id}`, () => ({ xfp: 0, fp: 0, games: 0 }));
     const x = num(r.total_fantasy_points_exp) ?? 0;
     e.xfp += x;
@@ -596,6 +614,7 @@ export async function buildUsage(season) {
   try {
     for await (const r of rows(`${NFLVERSE}/pfr_advstats/advstats_week_rush_${season}.csv`)) {
       if (!regular(r)) continue;
+      if (past(num(r.week))) continue;
       const gsis = gsisByPfr.get(r.pfr_player_id);
       if (!gsis) continue;
       const e = ensure(yac, gsis, () => ({ carries: 0, yac: 0 }));
@@ -786,10 +805,18 @@ export async function buildUsage(season) {
     };
   }
   const allOf = (k) => Object.values(envRaw).map((e) => e[k]);
-  const envEntry = (c, k, places, asc = false) => ({
-    value: round(envRaw[c][k], places),
-    rank: rankOf(allOf(k), envRaw[c][k], asc),
-  });
+  // The shared metrics: published (one decimal) and ranked over the
+  // published values, the coaching builder's rule (team-rate-metrics.mjs).
+  const pub = new Map([...rateAccs].map(([c, a]) => [c, publishRates(a)]));
+  const SHARED = new Set(["passRate", "rzPassRate", "in10PassRate", "proe", "pace"]);
+  const envEntry = (c, k, places, asc = false) => {
+    if (SHARED.has(k)) {
+      const value = pub.get(c)?.[k] ?? null;
+      const { rank, tied } = rankPublished([...pub.values()].map((p) => p[k]), value, k);
+      return { value, rank, ...(tied ? { tied: true } : {}) };
+    }
+    return { value: round(envRaw[c][k], places), rank: rankOf(allOf(k), envRaw[c][k], asc) };
+  };
 
   const out = {};
   for (const [c, t] of teams) {
@@ -848,10 +875,19 @@ export async function buildUsage(season) {
     };
   }
 
+  const allAccs = [...rateAccs.values()];
   return {
     season,
     throughWeek,
     weeks,
+    // Shared with the coaching file: same season, cutoff and fingerprint =
+    // built from the same games (refreshTeamMetrics.mjs checks it).
+    snapshot: {
+      season,
+      throughWeek: THROUGH,
+      fingerprint: `${allAccs.reduce((n, a) => n + a.snaps, 0)}:${allAccs.reduce((n, a) => n + a.pass, 0)}`,
+      definitions: "team-rate-metrics/1",
+    },
     builtAt: new Date().toISOString(),
     rbWoppPool,
     sources: [
@@ -874,12 +910,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
   const at = process.argv.indexOf("--cache");
   if (at > 0) cacheDir = path.resolve(process.argv[at + 1]);
+  const thAt = process.argv.indexOf("--through");
+  if (thAt > 0) throughArg = Number(process.argv[thAt + 1]);
+  const outAt = process.argv.indexOf("--out");
 
-  const file = path.join(DATA, "team", `usage_${season}.json`);
+  const liveFile = path.join(DATA, "team", `usage_${season}.json`);
+  const file = outAt > 0 ? path.join(path.resolve(process.argv[outAt + 1]), `usage_${season}.json`) : liveFile;
   const doc = await buildUsage(season);
   let onDisk = 0;
   try {
-    onDisk = JSON.parse(fs.readFileSync(file, "utf8")).throughWeek ?? 0;
+    onDisk = JSON.parse(fs.readFileSync(liveFile, "utf8")).throughWeek ?? 0;
   } catch {
     /* first build */
   }

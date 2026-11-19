@@ -703,7 +703,8 @@ function metricsFor(row: UsageRow, view: UsageView): Metric[] {
     { label: "Sack rate", value: fmt(p.sackRate, "%"), pct: q.sackRate ?? null },
     {
       label: "Team pass rate inside the 10",
-      value: fmt(in10.value, "%", 0),
+      // One decimal, the shared team-rate precision (team-rate-metrics.mjs).
+      value: fmt(in10.value, "%", 1),
       pct: in10.rank != null ? Math.round((100 * (32 - in10.rank)) / 31) : null,
     },
   ];

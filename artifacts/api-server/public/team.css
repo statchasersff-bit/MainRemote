@@ -25956,3 +25956,14 @@ ul.sct-faq-list li {
   align-items: center;
   min-height: 32px;
 }
+
+/* Career chart, Phase 2B (2026-11-19): one desktop drawing (the 720-wide
+   layout, class is-wide) at every width above 560px; it takes the narrow
+   tier's minimum width there, so the column scrolls rather than shrink the
+   labels. Phones keep their two drawings. */
+@container premium (max-width: 899px) {
+  :is(.sct, #sct-table-armour) .sct-cc-svg.is-wide {
+    display: block;
+    min-width: 600px;
+  }
+}

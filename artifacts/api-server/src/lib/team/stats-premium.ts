@@ -247,8 +247,11 @@ export function renderStatsPremium(input: StatsPremiumInput): string {
 
   const pace = innerPanel("pace", ICON.layers, "Snaps, Attempts & Scores", "Run/pass mix and scoring, ranked most to least", input.pace, input);
   const mixes =
-    (input.balance ? mix("Play Mix (Offense)", `${team.fullName}'s offensive play distribution.`, input.balance) : "") +
-    (input.balanceFaced ? mix("Play Mix (Defense)", "Play distribution faced on defense.", input.balanceFaced) : "");
+    // A box-score split, not the Usage and Coaching pass rate (Team Pages
+    // Phase 2B, 2026-11-19): attempts + sacks against rushing attempts, so a
+    // scramble or a kneel is a run here and a pass (or nothing) there.
+    (input.balance ? mix("Play Mix (Offense)", "Box-score split: pass attempts and sacks vs. rushing attempts (scrambles and kneels count as runs).", input.balance) : "") +
+    (input.balanceFaced ? mix("Play Mix (Defense)", "Box-score split faced on defense: pass attempts and sacks vs. rushing attempts.", input.balanceFaced) : "");
 
   const sections: string[] = [];
   if (overview) sections.push(`<div class="sct-sp-grid">${overview}</div>`);

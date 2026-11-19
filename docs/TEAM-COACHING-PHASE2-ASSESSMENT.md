@@ -214,7 +214,7 @@ Divi sim on the live NE coaching page at 320/390/768/1280: no overflow, no
 duplicate ids, one H1, FAQ and disclosure work, no console errors, no small
 targets.
 
-## 11. Still open
+## 11. Still open (as of Phase 2; see section 12 for what 2B closed)
 
 - Usage tab vs Coaching tab: the two builders define pass and red-zone plays
   differently, so the Usage tab can show a different red-zone rate/rank
@@ -228,3 +228,95 @@ targets.
   and the team header hero, identical on the unmodified production page.
 - FAQ scheme answer reads "... play action on 20.3% of dropbacks, below it
   on motion." (pre-existing wording in coaching-faq.ts).
+
+## 12. Phase 2B (2026-11-19): shared definitions, coordinated refresh, cleanup
+
+### Overlapping metrics, before
+
+| | Usage builder (before) | Coaching builder (before) |
+|---|---|---|
+| Season / weeks | REG; every week in the pbp file | REG; every week in the pbp file; "through Week N" read from the usage file on disk |
+| Counted snap | play_type pass/run, not 2pt/kneel/spike, AND flagged `pass`=1 or `rush`=1 | play_type pass/run, not 2pt/kneel/spike (unflagged snaps counted) |
+| Pass | `pass`=1 (dropbacks: sacks and scrambles are passes) | same |
+| Red zone | yardline_100 <= 20 at the snap | same |
+| PROE | mean `pass_oe` over the counted snaps | mean `pass_oe` over its counted snaps |
+| Pace | neutral (wp 0.2-0.8, >2:00 in half), same drive, gaps <= 60s, before the kneel filter | identical code |
+| Precision | pass rate and RZ rate whole numbers; PROE, pace 1 dp | pass rate 1 dp; RZ rate whole number |
+| Rank | on the raw value | on the rounded value (whole-number RZ manufactured ties) |
+| Postseason | excluded | excluded |
+
+### After: one module
+
+`scripts/team/team-rate-metrics.mjs` defines the counted snap (flagged pass or
+designed run; the unflagged snaps are not classifiable as a call), the five
+rates (pass, red-zone, inside-10, PROE, pace), one decimal everywhere, ranks
+over the published values (ties share the better rank, pace fastest first),
+snap-weighted league rates, and the completed-week cutoff (the last week with
+every scheduled game in the pbp). Both builders call it; neither carries its
+own copy.
+
+### Files rebuilt
+
+`data/team/usage_2026.json` and `data/team/coaching_2026.json` (2025 comparison
+values recomputed with the same rules), through Week 10, fingerprint
+18376:11093, by `scripts/team/refreshTeamMetrics.mjs`. Before: 30 club/metric
+values differed between the two files (rounding and the snap definition);
+after: 0, and every rank agrees. NE red-zone: Usage "65%, 3rd" / Coaching
+"T-1st" before, both 64.9% T-2nd after.
+
+### Coordinated refresh
+
+`refreshTeamMetrics.mjs` downloads the pbp once, runs both builders into a
+staging directory, and publishes both only when their snapshots (season,
+completed-through week, fingerprint, definitions) match; a refusal or a
+mismatch leaves the live files untouched. The daily chain (live-refresh.ts)
+calls it in place of the two separate steps. The Coaching page prints the
+snapshot's week and build date in "How these are measured".
+
+### Intentional differences
+
+- Stats tab "Play Mix": box-score split (attempts + sacks vs rushing
+  attempts; scrambles and kneels are runs). Now captioned as such.
+- Coaching per-club "Thru Wk N": the club's last played week (a bye team
+  reads one week earlier than the league snapshot), by design.
+- Coaching-only metrics (early-down, no-huddle, shotgun, motion,
+  play-action, fourth down, score state) are not reported by Usage.
+
+### Cross-tab checks (all 32 clubs)
+
+Usage = Coaching for pass rate, RZ rate, PROE, pace (values and ranks);
+Coaching current PPG and rank = Stats tab points per game and rank;
+committed snapshots equal. Tests: tests/team-rate-metrics.test.mjs and the
+"cross-tab" block in tests/team-coaching.test.mjs.
+
+### Chart
+
+One desktop drawing (the 720-wide layout, `is-wide`) at every width above
+560px instead of two; the two phone drawings stay (SVG text scales with the
+drawing). NE: 4 copies 47.1KB / 539 nodes -> 3 copies 35.8KB / 413 nodes.
+
+### Cleanup
+
+FAQ scheme answer rewritten (figures with their NFL averages, then one
+comparison sentence). League averages at the row's precision. Keyboard:
+every disclosure, the chart points, Show all toggles, FAQ and definition
+popovers reached by Tab and opened by Enter/Space at 390 and 1280.
+
+### Layout shift
+
+docs/CLS-SITE-HEADER-2026-11-19.md: the 0.285 desktop shift is
+`#et-main-area` moving 361px when Divi's late header CSS lands, identical on
+the unmodified production page; handed to the WordPress/Divi workstream.
+
+### Measurements (390x844 and 1280, heading-to-heading)
+
+| Club | Width | Panel before Phase 2 -> after 2B | Page | Nodes |
+|---|---|---|---|---|
+| NE | 390 | 3,751 -> 3,514 (-6%) | 5,323 -> 4,538 (-15%) | 2,825 -> 2,659 |
+| NE | 1280 | 4,158 -> 3,548 (-15%) | 5,491 -> 4,458 (-19%) | |
+| DET | 390 | 3,657 -> 3,325 (-9%) | 5,208 -> 4,348 (-17%) | 1,380 -> 1,293 |
+| DET | 1280 | 3,695 -> 3,326 (-10%) | 5,028 -> 4,237 (-16%) | |
+| ATL | 390 | 3,462 -> 3,193 (-8%) | 5,035 -> 4,217 (-16%) | 1,109 -> 1,030 |
+| ATL | 1280 | 3,537 -> 3,192 (-10%) | 4,869 -> 4,102 (-16%) | |
+
+HTML: NE 218.5 -> 200.1KB, DET 141.6 -> 130.8KB, ATL 129.0 -> 119.2KB.

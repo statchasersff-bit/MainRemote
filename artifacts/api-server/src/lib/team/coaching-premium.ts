@@ -38,7 +38,7 @@ import {
   type RowView,
 } from "./coaching-render";
 import { headshotImg } from "../headshot-html";
-import { coachPhoto, getCoachingStaff, reliabilityRating, type TeamCoaching, type TendencyRow } from "./coaching";
+import { coachPhoto, coachingStamp, getCoachingStaff, reliabilityRating, type TeamCoaching, type TendencyRow } from "./coaching";
 import type { NflTeam } from "./teams";
 import type { UsageView } from "./usage";
 
@@ -304,13 +304,18 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   // set of figures printed up to three times; they are one table now, with
   // shotgun back as a row, the NFL average and a league rank on every row,
   // and the identity sentence as the summary over it.
+  const stamp = coachingStamp(season);
   const how =
     `<details class="sct-cp-how"><summary>How these are measured</summary>` +
     `<p>Select a metric for its definition. Changes are percentage points (pts) between the two seasons; pace is seconds between snaps, and fewer is faster. ` +
     `NFL rank is among all ${views[0]?.v.of ?? 32} offenses in ${season}${through ? ` through Week ${through}` : ""}, from the same play-by-play and definitions: 1st is the highest rate, or the fastest pace; equal values share a rank (T-). ` +
     `In the bar, the hollow dot is ${e(priorYear)}, the filled dot ${season}, the tick the NFL average; the gold row is each group's biggest change of 3 pts or a second of pace.` +
     (newCaller ? ` ${e(priorYear)} was called by the previous staff, so a change here is a change of play-caller as much as a trend.` : "") +
-    `</p><p>${e(FORMATIONS_NOTE)}</p></details>`;
+    `</p>` +
+    (stamp.throughWeek != null
+      ? `<p class="sct-cp-stamp">${e(`Data through Week ${stamp.throughWeek} of ${season}: every completed regular-season game to that week${stamp.builtAt ? `, built ${stamp.builtAt}` : ""}. The Usage tab's team rates come from the same games and the same definitions.`)}</p>`
+      : "") +
+    `<p>${e(FORMATIONS_NOTE)}</p></details>`;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
     premiumTabHead({
