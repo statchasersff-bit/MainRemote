@@ -196,7 +196,8 @@ function renderKpis(data: PlayerPageData, deps: PremiumLogDeps): string {
     `<small class="scp-glp-kpi-c">${escapeHtml(caption)}</small>` +
     `</span>` +
     `</div>`;
-  const scope = `Regular season · ${SCORING_LABELS[data.format]}`;
+  // A kicker scores the same in every format: no format named (Phase 1 cleanup).
+  const scope = data.player.position === "K" ? "Regular season" : `Regular season · ${SCORING_LABELS[data.format]}`;
   return (
     `<div class="scp-glp-kpis">` +
     card(ICON.calendar, String(s.played.length), s.played.length === 1 ? "Game" : "Games", scope) +

@@ -390,13 +390,14 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
   // By points per game where that rank exists, by points scored until it does.
   const ppgRank = season?.posFinishPpg ?? data.seasonRank;
   const rank = ppgRank ?? season?.posFinishTotal ?? data.seasonRankTotal;
+  const fmtWord = player.position === "K" ? "" : `${SCORING_SHORT[format]} `;
   // The rank's own basis, in its tooltip: until he has played four games
   // there is no per-game rank and the figure is his rank by points scored
   // (UI brief, 2026-11-18: the tooltip said "per game" either way).
   const rankTitle =
     ppgRank != null
-      ? `${data.season} position rank by ${SCORING_SHORT[format]} fantasy points per game`
-      : `${data.season} position rank by total ${SCORING_SHORT[format]} fantasy points (per-game rank from four games played)`;
+      ? `${data.season} position rank by ${fmtWord}fantasy points per game`
+      : `${data.season} position rank by total ${fmtWord}fantasy points (per-game rank from four games played)`;
   const pos = player.position ?? "";
   const ranked = played && pos && rank != null;
 
@@ -404,7 +405,7 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
     {
       value: played && stats ? num(stats.ppg) : DASH,
       unit: "PPG",
-      title: `${SCORING_SHORT[format]} fantasy points per game`,
+      title: fmtWord ? `${fmtWord}fantasy points per game` : "Fantasy points per game (a kicker scores the same in every format)",
       lead: true,
     },
     // "QB17" says what it is; only the dash needs the word.
@@ -632,12 +633,23 @@ const BOARD_LABEL = ["FPPG", "POS RANK", "ROSTERED"];
  * reading. Dashes where a figure does not exist (never 0.0 for a player who
  * has not played).
  */
+/**
+ * The scoring format to name beside a fantasy figure, or "" when the format
+ * does not change it: a kicker scores the same in Standard, Half-PPR and PPR
+ * (lib/scoring/house-rules.ts), so "FPPG · PPR" implied a difference there is
+ * none (Phase 1 cleanup, 2026-11-19).
+ */
+export function formatTag(data: Pick<PlayerPageData, "player" | "format">): string {
+  return data.player.position === "K" ? "" : SCORING_SHORT[data.format];
+}
+
 function renderBoard(data: PlayerPageData): string {
+  const tag = formatTag(data);
   return (
     `<div class="scp-pboard-wrap">` +
     // The phone's caption (mak's mobile brief, 2026-11-05): the scoring named
     // once here, so the FPPG label drops its own " · PPR" at that width.
-    `<p class="scp-pm-fan-cap">${escapeHtml(`Fantasy · ${SCORING_SHORT[data.format]}`)}</p>` +
+    `<p class="scp-pm-fan-cap">${escapeHtml(tag ? `Fantasy · ${tag}` : "Fantasy points")}</p>` +
     `<p class="scp-pboard-cap">${escapeHtml(`${data.season} Fantasy Season`)}</p>` +
     `<div class="scp-pboard">` +
     headerBoard(data)
@@ -645,7 +657,7 @@ function renderBoard(data: PlayerPageData): string {
         (c, i) =>
           `<span class="scp-pstat${c.lead ? " is-lead" : ""}">` +
           `<b>${escapeHtml(c.value)}</b>` +
-          `<abbr title="${escapeHtml(c.title)}">${i === 0 ? `${BOARD_LABEL[0]}<span class="scp-pstat-fmt"> · ${escapeHtml(SCORING_SHORT[data.format])}</span>` : escapeHtml(BOARD_LABEL[i] ?? c.unit)}</abbr>` +
+          `<abbr title="${escapeHtml(c.title)}">${i === 0 ? `${BOARD_LABEL[0]}${tag ? `<span class="scp-pstat-fmt"> · ${escapeHtml(tag)}</span>` : ""}` : escapeHtml(BOARD_LABEL[i] ?? c.unit)}</abbr>` +
           `</span>`,
       )
       .join("") +
