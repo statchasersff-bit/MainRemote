@@ -39,6 +39,8 @@ import { loadGameLogs } from "../lib/player/data";
 import { seasonYear } from "../lib/seo";
 import { requireIngestSecret } from "../lib/ingest-auth";
 import { availableMemMb } from "../lib/mem";
+import { datasetReport } from "../lib/data-coverage";
+import { getAvailableSeasons } from "../lib/player/data";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -1338,6 +1340,18 @@ router.get("/status", (_req, res) => {
         // serves an empty player index and a rankings board with no rows, and
         // looks healthy doing it. This is the line that says so out loud.
         data: dataDirStatus(),
+        // Per-dataset freshness and completeness against the schedule's final
+        // games, plus a hub-vs-stats-table cross-check (audit WEB-032). Its
+        // own try: a failure here reports itself, not a 500.
+        datasets: (() => {
+          try {
+            const season = getAvailableSeasons()[0];
+            return season ? datasetReport(season, nowMs) : null;
+          } catch (err) {
+            logger.error({ err }, "dataset report failed");
+            return { ok: false, error: "dataset report failed" };
+          }
+        })(),
         // The resized headshot/logo derivatives the news cards point at.
         images: { ...imageCacheStatus(), versions: imageVersionsStatus() },
         ingest: {

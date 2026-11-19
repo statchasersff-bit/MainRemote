@@ -33,6 +33,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { collect, definitions, LAST_WEEK, placesOf, useCache } from "./buildWeeks.mjs";
+import { coverage } from "./coverage.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const APP = path.resolve(here, "..", "..");
@@ -111,12 +112,23 @@ function buildTable(position, season, template, collected) {
     row.rank = i + 1;
   });
 
+  // What the build holds, game by game, against the stored slate's finals.
+  const present = new Set();
+  for (const key of collected.tally.teamWeek.keys()) {
+    const [y, w, t] = key.split(":");
+    if (Number(y) === season) present.add(`${w}:${t}`);
+  }
+  const cov = coverage(season, present, { lastWeek: LAST_WEEK });
+
   return {
     updated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
     season,
     week: lastWeek,
     table: template.table,
-    weeks: `1-${lastWeek}`,
+    // Complete weeks only: a week with a final game missing is not "through"
+    // (audit WEB-032). The partial week is in `coverage` and on the page.
+    weeks: cov.throughWeek > 0 ? `1-${Math.min(lastWeek, cov.throughWeek)}` : null,
+    coverage: { ...cov, checkedAt: new Date().toISOString().replace(/\.\d+Z$/, "Z") },
     // The server shrinks the qualifiers to the weeks played, and keeps this
     // season out of the multi-season table's label.
     inProgress: lastWeek < LAST_WEEK,
@@ -201,7 +213,14 @@ async function main() {
     const lastWeek = (weeks) => Number(String(weeks ?? "").split("-").pop()) || 0;
     if (fs.existsSync(file)) {
       const onDisk = JSON.parse(fs.readFileSync(file, "utf8"));
-      if (lastWeek(table.weeks) < lastWeek(onDisk.weeks)) {
+      // Nor fewer final games: a partial re-download must not replace a
+      // complete table (and never with zeroes).
+      const held = (t) => t?.coverage?.gamesIncluded ?? null;
+      if (held(onDisk) !== null && held(table) !== null && held(table) < held(onDisk)) {
+        console.log(`${path.basename(file)}: kept (disk holds ${held(onDisk)} final games, built ${held(table)})`);
+        continue;
+      }
+      if (lastWeek(table.weeks) < lastWeek(onDisk.weeks) && !(held(table) !== null && held(onDisk) === null)) {
         console.log(`${path.basename(file)}: kept (disk has weeks ${onDisk.weeks}, built ${table.weeks})`);
         continue;
       }
@@ -209,6 +228,12 @@ async function main() {
     fs.writeFileSync(`${file}.tmp`, `${JSON.stringify(table, null, 2)}\n`);
     fs.renameSync(`${file}.tmp`, file);
     console.log(`${path.basename(file)}: ${table.rows.length} rows, weeks ${table.weeks}`);
+    if (!table.coverage.complete) {
+      // Non-zero exit so the daily chain records it (live-refresh.ts logs a
+      // failed step), but the file is still written: it is the newest data.
+      console.error(`${path.basename(file)}: INCOMPLETE - missing final games: ${table.coverage.missing.join(", ")}`);
+      process.exitCode = 2;
+    }
   }
 }
 

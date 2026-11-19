@@ -122,6 +122,8 @@ export function formatCell(value: unknown, column: StatsColumn): string | null {
   const n = typeof value === "number" ? value : Number.parseFloat(String(value));
   if (Number.isNaN(n)) return null;
   if (column.type === "number") return withCommas(n);
+  // Fantasy points print to one place, as on the player pages (rounding.ts).
+  if (column.key === "fantasyPoints") return n.toFixed(1);
   if (column.label.includes("%")) return n.toFixed(1);
   if (Math.abs(n) >= 100) return n.toFixed(1);
   return n.toFixed(2);
@@ -775,6 +777,24 @@ function renderRow(
   );
 }
 
+/**
+ * What the table does NOT hold yet (audit WEB-032): a week with a final game
+ * not in the data says so beside the week range, which counts complete weeks
+ * only. Nothing when coverage is complete or unknown.
+ */
+function coverageNote(table: StatsTable): string {
+  const c = table.coverage;
+  if (!c || c.complete) return "";
+  const games = (n: number) => `${n} game${n === 1 ? "" : "s"}`;
+  const missing = c.missing.map((id) => {
+    const [, , away, home] = id.split("_");
+    return away && home ? `${away} at ${home}` : id;
+  });
+  const which = missing.length <= 3 ? `: ${missing.join(", ")}` : "";
+  const partial = c.partialWeek !== null ? `Week ${c.partialWeek} partial, ` : "";
+  return `<span class="sca-meta-incomplete">${escapeHtml(`${partial}${games(c.missing.length)} not yet included${which}`)}</span>`;
+}
+
 function renderTable(table: StatsTable, options: StatsRenderOptions): string {
   const shown = table.rows.filter((row) => row.shownByDefault).length;
   let rank = 0;
@@ -793,6 +813,7 @@ function renderTable(table: StatsTable, options: StatsRenderOptions): string {
       : table.week !== null && table.season !== "all"
         ? `<span>through week ${table.week}</span>`
         : "",
+    coverageNote(table),
     updated && table.updatedAt
       ? `<span class="sca-meta-updated">Updated <time datetime="${escapeHtml(
           table.updatedAt,

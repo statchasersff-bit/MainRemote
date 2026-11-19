@@ -988,6 +988,12 @@ body.sca-page {
   margin-left: auto;
 }
 
+/* A final game the table does not hold yet (2026-11-19, audit WEB-032). */
+.sca-meta-incomplete {
+  color: #9a3b00;
+  font-weight: 700;
+}
+
 /* † on a column still covering weeks 1-18, and in the footnote naming it. */
 .sca-fs {
   margin-left: 1px;
