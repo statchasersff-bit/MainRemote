@@ -12,12 +12,14 @@
  */
 
 import type { GameLogStats } from "./types";
+import { loadGameLogs } from "./data";
 import {
   HOUSE_RULES,
   RECEPTION_POINTS,
   SCORING_FORMATS as HOUSE_FORMATS,
   SCORING_LABELS as HOUSE_LABELS,
   scoreLine,
+  scoringTotalsSource,
   type ScoringFormat as HouseFormat,
   type ScoringLine,
 } from "../scoring/house-rules";
@@ -55,9 +57,35 @@ export function toScoringLine(stats: GameLogStats): ScoringLine {
     fumLost: stats.fum_lost,
     twoPt: (stats.pass_2pt ?? 0) + (stats.rush_2pt ?? 0) + (stats.rec_2pt ?? 0),
     otherTd: (stats.st_td ?? 0) + (stats.fum_rec_td ?? 0),
-    fgm: stats.fgm,
-    xpm: stats.xpm,
+    ...kickerLine(stats),
   };
+}
+
+/**
+ * A kicker's game in the house rule's distance bands, or null when the log
+ * holds made field goals but no distances (scripts/player/
+ * backfillScoringEvents.mjs adds them). Mirrors kickerBands() in
+ * scripts/scoring/house-rules.mjs.
+ */
+export function kickerBands(stats: GameLogStats): Pick<ScoringLine, "fg0_39" | "fg40_49" | "fg50p" | "xpm" | "kMiss"> | null {
+  const v = (k: keyof GameLogStats): number => {
+    const x = stats[k];
+    return typeof x === "number" && Number.isFinite(x) ? x : 0;
+  };
+  const banded = v("fgm_0_19") + v("fgm_20_29") + v("fgm_30_39") + v("fgm_40_49") + v("fgm_50p");
+  if (v("fgm") > 0 && banded === 0) return null;
+  return {
+    fg0_39: v("fgm_0_19") + v("fgm_20_29") + v("fgm_30_39"),
+    fg40_49: v("fgm_40_49"),
+    fg50p: v("fgm_50p"),
+    xpm: v("xpm"),
+    kMiss: Math.max(0, v("fga") - v("fgm")) + Math.max(0, v("xpa") - v("xpm")),
+  };
+}
+
+function kickerLine(stats: GameLogStats): Partial<ScoringLine> {
+  if (stats.fga == null && stats.xpa == null && stats.fgm == null && stats.xpm == null) return {};
+  return kickerBands(stats) ?? {};
 }
 
 /**
@@ -71,6 +99,9 @@ export function getFantasyPoints(
   stats: GameLogStats,
   format: ScoringFormat,
 ): number {
+  // A kicker line with no distance bands cannot be scored by the house rule:
+  // the provider's total stands (a kicker scores the same in every format).
+  if ((stats.fgm ?? 0) > 0 && !kickerBands(stats)) return stats.pts_std ?? stats.pts_ppr;
   return Math.round(scoreLine(toScoringLine(stats), format) * 100) / 100;
 }
 
@@ -90,6 +121,7 @@ export function getEntryPoints(
   stats: GameLogStats,
   format: ScoringFormat,
 ): number {
+  if (scoringTotalsSource() === "house") return getFantasyPoints(stats, format);
   if (format === "ppr") return stats.pts_ppr;
   if (format === "half" && stats.pts_half_ppr != null) return stats.pts_half_ppr;
   if (format === "standard" && stats.pts_std != null) return stats.pts_std;
@@ -141,8 +173,14 @@ export function pointsBreakdown(
   }
   add("Receiving yards", stats.rec_yd ?? 0, HOUSE_RULES.recYd, "yds");
   add("Receiving TD", stats.rec_td ?? 0, HOUSE_RULES.recTd, "TD");
-  add("Field goals", stats.fgm ?? 0, HOUSE_RULES.fgm, "FG");
-  add("Extra points", stats.xpm ?? 0, HOUSE_RULES.xpm, "XP");
+  const k = kickerBands(stats);
+  if (k) {
+    add("Field goals, 0-39 yds", k.fg0_39 ?? 0, HOUSE_RULES.fg0_39, "FG");
+    add("Field goals, 40-49 yds", k.fg40_49 ?? 0, HOUSE_RULES.fg40_49, "FG");
+    add("Field goals, 50+ yds", k.fg50p ?? 0, HOUSE_RULES.fg50p, "FG");
+    add("Extra points", k.xpm ?? 0, HOUSE_RULES.xpm, "XP");
+    add("Missed kicks", k.kMiss ?? 0, HOUSE_RULES.kMiss, "missed");
+  }
   // From the log's own fumble column (kept since 2026-11-04): -2 a lost ball
   // in every format, the way Sleeper's stored points count it.
   add("Fumbles lost", stats.fum_lost ?? 0, HOUSE_RULES.fumLost, "lost");
@@ -155,4 +193,58 @@ export function pointsBreakdown(
   add("Return / fumble-recovery TD", (stats.st_td ?? 0) + (stats.fum_rec_td ?? 0), HOUSE_RULES.otherTd, "TD");
 
   return rows;
+}
+
+/** Plays Sleeper scores that the house rule does not, in words. */
+const PROVIDER_PLAY_WORDS: Array<[RegExp, string]> = [
+  [/blk_kick|blk_/, "blocked kick"],
+  [/_ff$/, "forced fumble"],
+  [/fum_rec/, "fumble recovery"],
+  [/_int$/, "interception"],
+  [/safe/, "safety"],
+  [/tkl/, "special-teams tackle"],
+  [/kick_pts/, "a kick by a non-kicker"],
+];
+
+/**
+ * Why a stored (provider) total differs from the house-rule total for one
+ * game, in words; null when they agree. The same classification as
+ * scripts/player/scoringReconciliationReport.mjs. Never a guess: an
+ * unattributed difference says so.
+ */
+export function explainResidual(stats: GameLogStats, residual: number): { label: string; detail: string } | null {
+  if (Math.abs(residual) < 0.05) return null;
+  const words = new Set<string>();
+  const keys = [...Object.keys(stats.px ?? {}), ...(stats.st_fum_rec ? ["st_fum_rec"] : []), ...(stats.idp_ff ? ["idp_ff"] : [])];
+  for (const k of keys) for (const [re, w] of PROVIDER_PLAY_WORDS) if (re.test(k)) { words.add(w); break; }
+  const fum = stats.fum ?? 0;
+  if (fum > 0 && Math.abs(residual + fum) < 0.05) {
+    return { label: "Provider fumble penalty", detail: `-1 per fumble in the source's pre-2022 scoring; not a StatChasers rule` };
+  }
+  if (words.size) {
+    return { label: "Provider-only scoring", detail: `${[...words].join(", ")}: scored by the source, not by StatChasers rules` };
+  }
+  if ((stats.fum_rec_td ?? 0) > 0 && residual < 0) {
+    return { label: "Fumble-recovery TD", detail: "scored by StatChasers rules, not by the source" };
+  }
+  return { label: "Unattributed difference", detail: "between the source total and the stat line" };
+}
+
+/**
+ * Current-season games whose stored total differs from the house rule with
+ * no known cause (explainResidual says "Unattributed"), for /api/data/health.
+ * Kickers with no distance bands are counted as missing input, not here.
+ */
+export function unattributedScoring(season: number): number {
+  let n = 0;
+  for (const games of Object.values(loadGameLogs(season))) {
+    for (const g of games) {
+      const s = g.stats;
+      if (s.pts_ppr == null) continue;
+      if ((s.fgm ?? 0) > 0 && !kickerBands(s)) continue;
+      const why = explainResidual(s, Math.round((s.pts_ppr - getFantasyPoints(s, "ppr")) * 100) / 100);
+      if (why?.label === "Unattributed difference") n++;
+    }
+  }
+  return n;
 }

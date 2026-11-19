@@ -74,12 +74,25 @@ export interface KickerLine {
   xpAtt: number;
 }
 
-/** 0–39 yards 3, 40–49 4, 50+ 5; a made extra point 1; any miss −1. Same in every format. */
+/**
+ * The house kicker rule (lib/scoring/house-rules.ts): 0-39 yards 3, 40-49 4,
+ * 50+ 5; a made extra point 1; any miss -1. Same in every format.
+ */
 export function kickerPoints(line: KickerLine): number {
-  const made = line.fgMade.reduce((sum, yards) => sum + (yards >= 50 ? 5 : yards >= 40 ? 4 : 3), 0);
-  const misses =
-    Math.max(0, line.fgAtt - line.fgMade.length) + Math.max(0, line.xpAtt - line.xpMade);
-  return Math.round((made + line.xpMade - misses) * 10) / 10;
+  const band = (lo: number, hi: number) => line.fgMade.filter((y) => y >= lo && y <= hi).length;
+  return roundPoints(
+    scoreLine(
+      {
+        fg0_39: band(0, 39),
+        fg40_49: band(40, 49),
+        fg50p: band(50, 200),
+        xpm: line.xpMade,
+        kMiss: Math.max(0, line.fgAtt - line.fgMade.length) + Math.max(0, line.xpAtt - line.xpMade),
+      },
+      "standard",
+    ),
+    1,
+  );
 }
 
 /* ------------------------------------------------------ defense / special teams */

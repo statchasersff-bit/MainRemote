@@ -17,8 +17,11 @@
  *   turnover  -2 per fumble lost (a fumble recovered by the offense is 0)
  *   2-pt      2 per conversion, thrown, run or caught
  *   other TD  6 per kick/punt return or fumble-recovery touchdown
- *   kicking   3 per field goal, 1 per extra point (the player hub's flat rule;
- *             the matchup pages' distance-tiered kicker scoring is separate)
+ *   kicking   field goal 0-39 yds 3, 40-49 4, 50+ 5; extra point 1; any
+ *             missed field goal or extra point -1. The same in every format.
+ *             (Phase 1.1, 2026-11-19: the matchup pages' kickerPoints() and
+ *             Sleeper's stored totals already used this; the player hub's
+ *             flat 3 per field goal, 1 per extra point was the outlier.)
  *
  * -1 per interception is mak's rule (2026-09-30). nflverse's own
  * fantasy_points column charges -2 and was what the stats tables printed until
@@ -59,8 +62,12 @@ export const HOUSE_RULES = {
   fumLost: -2,
   twoPt: 2,
   otherTd: 6,
-  fgm: 3,
+  /** Field goals by distance, extra points, and any miss. */
+  fg0_39: 3,
+  fg40_49: 4,
+  fg50p: 5,
   xpm: 1,
+  kMiss: -1,
 } as const;
 
 /** The scoring events. Every field optional: a missing one is a zero. */
@@ -78,8 +85,13 @@ export interface ScoringLine {
   twoPt?: number;
   /** Kick/punt return and fumble-recovery touchdowns. */
   otherTd?: number;
-  fgm?: number;
+  /** Made field goals by distance band. */
+  fg0_39?: number;
+  fg40_49?: number;
+  fg50p?: number;
   xpm?: number;
+  /** Missed field goals plus missed extra points. */
+  kMiss?: number;
 }
 
 const n = (value: number | undefined | null): number =>
@@ -100,8 +112,11 @@ export function scoreLine(line: ScoringLine, format: ScoringFormat): number {
     n(line.fumLost) * r.fumLost +
     n(line.twoPt) * r.twoPt +
     n(line.otherTd) * r.otherTd +
-    n(line.fgm) * r.fgm +
-    n(line.xpm) * r.xpm
+    n(line.fg0_39) * r.fg0_39 +
+    n(line.fg40_49) * r.fg40_49 +
+    n(line.fg50p) * r.fg50p +
+    n(line.xpm) * r.xpm +
+    n(line.kMiss) * r.kMiss
   );
 }
 
@@ -128,4 +143,25 @@ export function pointsLabel(format: ScoringFormat, unit?: "game" | "target" | "t
  */
 export function formatMetricLabel(label: string, format: ScoringFormat): string {
   return label.replace(/^Fantasy points per /, `${SCORING_LABELS[format]} points per `);
+}
+
+/**
+ * Which total the pages print for a game (Phase 1.1, a POLICY SWITCH awaiting
+ * mak's decision; see docs/SCORING-RECONCILIATION.md):
+ *
+ *   provider  (default) Sleeper's stored per-game total, as the pages have
+ *             always printed. Agrees with the house rule in 94.3% of all
+ *             player-weeks 2009-2026 and in every 2026 week except provider-
+ *             only plays (a blocked kick or special-teams fumble recovery by an
+ *             offensive player).
+ *   house     the house rule computed from the stat line, every season the
+ *             same. Changes 3,018 historical player-seasons, mostly pre-2022
+ *             quarterbacks (the source's -1 per fumble).
+ *
+ * Reversible: an environment variable, no data rewritten. The provider total
+ * stays stored as pts_ppr / pts_half_ppr / pts_std either way.
+ */
+export type TotalsSource = "provider" | "house";
+export function scoringTotalsSource(): TotalsSource {
+  return process.env["SC_SCORING_TOTALS"]?.trim().toLowerCase() === "house" ? "house" : "provider";
 }

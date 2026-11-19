@@ -51,7 +51,14 @@ export function withHousePoints<R extends Record<string, unknown>>(
   return rows.map((row) => {
     if (!("fantasyPoints" in row)) return row;
     const id = row["playerId"] == null ? null : String(row["playerId"]);
-    return { ...row, fantasyPoints: housePointsFor(id, seasons, lastWeek, format) };
+    // The feed's own figure is kept beside it (fantasyPointsSource): the
+    // grades are defined on it (stats-data.ts GRADE_FPTS) and must not move
+    // because the displayed column changed format.
+    return {
+      ...row,
+      fantasyPointsSource: "fantasyPointsSource" in row ? row["fantasyPointsSource"] : row["fantasyPoints"],
+      fantasyPoints: housePointsFor(id, seasons, lastWeek, format),
+    };
   });
 }
 

@@ -68,7 +68,7 @@ export const RB_SCORE_CATEGORIES: RbScoreCategory[] = [
     label: 'Production',
     shortLabel: 'Prod',
     description:
-      'Production (0-100): what the workload turns into. Scrimmage Yds/G 33%, Y/C 28%, Y/R 22%, FPTS/G 17% (the 30/25/20/15 split, scaled to 100%). Ranked vs. qualified RBs.',
+      'Production (0-100): what the workload turns into. Scrimmage Yds/G 33%, Y/C 28%, Y/R 22%, Standard FPTS/G 17% (source scoring) (the 30/25/20/15 split, scaled to 100%). Ranked vs. qualified RBs.',
   },
   {
     key: 'explosivenessScore',

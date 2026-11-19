@@ -56,6 +56,17 @@ export interface GameLogStats {
   st_td?: number;
   fum_rec_td?: number;
   pts_std?: number | null;
+  /** Made field goals by distance (Sleeper's bands), backfilled 2026-11-19. */
+  fgm_0_19?: number;
+  fgm_20_29?: number;
+  fgm_30_39?: number;
+  fgm_40_49?: number;
+  fgm_50p?: number;
+  /** Provider-only scoring events (not house rules), kept to name residuals. */
+  st_fum_rec?: number;
+  idp_ff?: number;
+  /** Every other provider-only play, by Sleeper key (backfillScoringEvents.mjs). */
+  px?: Record<string, number>;
   /** Derived in enrichWithTeamMetrics(), not present in the source data. */
   target_share?: number | null;
   team_pass_rate?: number | null;

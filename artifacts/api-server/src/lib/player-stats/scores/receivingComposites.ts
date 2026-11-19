@@ -161,10 +161,10 @@ const PRODUCTION: Weights = {
 };
 
 const PRODUCTION_DESCRIPTION =
-  'Production (0-100): per-game output. Rec Yds/G 25%, Rec/G 20%, FPTS/G 15%, YPRR 10%, Success% 10%, Y/R 10%, YAC/G 5%, YBC/G 5%.';
+  'Production (0-100): per-game output. Rec Yds/G 25%, Rec/G 20%, Standard FPTS/G 15% (source scoring), YPRR 10%, Success% 10%, Y/R 10%, YAC/G 5%, YBC/G 5%.';
 // No routes yet: YPRR drops out and the rest are reweighted (see GradeOptions.omit).
 const PRODUCTION_IN_PROGRESS_DESCRIPTION =
-  'Production (0-100), season in progress: per-game output. Rec Yds/G 25%, Rec/G 20%, FPTS/G 15%, YPRR 10% (left out until routes are published, the rest reweighted), Success% 10%, Y/R 10%, YAC/G 5%, YBC/G 5%.';
+  'Production (0-100), season in progress: per-game output. Rec Yds/G 25%, Rec/G 20%, Standard FPTS/G 15% (source scoring), YPRR 10% (left out until routes are published, the rest reweighted), Success% 10%, Y/R 10%, YAC/G 5%, YBC/G 5%.';
 
 /** A position's categories with the tooltips for a season in progress. */
 export function inProgressCategories(categories: ReceivingScoreCategory[]): ReceivingScoreCategory[] {

@@ -42,6 +42,7 @@ import { atLeast, type GradeOptions } from "./scores/percentiles";
 import { loadIndexedSlugs, loadPlayers } from "../player/data";
 import { DEFAULT_SCORING_FORMAT, SCORING_LABELS } from "../scoring/house-rules";
 import { housePointsFor, withHousePoints } from "./house-points";
+import { datasetMeta } from "../dataset-meta";
 import {
   computeQbCompositeScores,
   isQualifiedQb,
@@ -977,7 +978,15 @@ export function getStatsTable(
       ? Math.min(1, raw.week / 17)
       : 1;
   const q = (n: number): number => atLeast(n, scale);
-  const scores = system.compute(feedRows, {
+  // The grades read the feed's own FPTS (Standard, the source's scoring), as
+  // they always have: the displayed column is PPR since 2026-11-19, but a
+  // grade's meaning is a product decision (Phase 1.1 report), and PPR would
+  // also count receptions twice in the WR/TE production grade, which weights
+  // Rec/G on its own. GRADE_FPTS names the input in the tooltips.
+  const gradeRows = feedRows.map((row) =>
+    "fantasyPointsSource" in row ? { ...row, fantasyPoints: row["fantasyPointsSource"] } : row,
+  );
+  const scores = system.compute(gradeRows, {
     scale,
     omit: new Set(Array.isArray(raw.unavailable) ? raw.unavailable : []),
   });
@@ -1105,7 +1114,11 @@ export function getStatsTable(
     week: typeof raw.week === "number" ? raw.week : null,
     weeks: typeof raw.weeks === "string" ? raw.weeks : null,
     coverage: readCoverage(raw.coverage),
-    updatedAt: typeof raw.updated_at === "string" ? raw.updated_at : null,
+    // The last successful ingestion when the dataset metadata records one
+    // (Phase 1.1), else the builder's own stamp - never the file's mtime.
+    updatedAt:
+      (typeof season === "number" ? datasetMeta("player_stats", season)?.lastIngestedAt : null) ??
+      (typeof raw.updated_at === "string" ? raw.updated_at : null),
     groups,
     rows,
     cards,

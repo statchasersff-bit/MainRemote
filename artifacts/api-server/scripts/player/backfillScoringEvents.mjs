@@ -21,6 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DATA_DIR } from "./paths.mjs";
+import { nowIso, updateMeta } from "../lib/dataset-meta.mjs";
 
 const LOGS = path.join(DATA_DIR, "game_logs");
 const BASE = process.env.SC_SLEEPER_STATS_BASE?.trim() || "https://api.sleeper.com/stats/nfl";
@@ -29,6 +30,9 @@ const EVENT_KEYS = ["pass_2pt", "rush_2pt", "rec_2pt", "st_td", "fum_rec_td"];
 // kept so the reconciliation check can name the residual instead of guessing.
 const INFO_KEYS = ["st_fum_rec", "idp_ff"];
 const REC_KEYS = ["rec_tgt", "rec", "rec_yd", "rec_td"];
+// Kicker distance bands (2026-11-19, Phase 1.1): the house kicker rule scores
+// by distance, which the logs could not do with fgm alone.
+const KICK_KEYS = ["fgm_0_19", "fgm_20_29", "fgm_30_39", "fgm_40_49", "fgm_50p"];
 const PASS_KEYS = ["pass_att", "pass_cmp", "pass_yd", "pass_td", "pass_int"];
 const dry = process.argv.includes("--dry");
 const seasons = process.argv.slice(2).filter((a) => /^\d{4}$/.test(a)).map(Number);
@@ -90,6 +94,28 @@ for (const season of seasons.length ? seasons : all) {
           touched = true;
         }
       }
+      // Every other provider-only play (Phase 1.1): defensive and special-teams
+      // plays by an offensive player, and kicking by a non-kicker. Kept in one
+      // map so the reconciliation can name a residual; never scored by the
+      // house rule.
+      const px = {};
+      for (const [k, v] of Object.entries(s)) {
+        if (!v || typeof v !== "number") continue;
+        if (/^(idp_|blk_|st_ff|st_fum_rec|st_tkl|xp_blkd|fg_blkd)/.test(k) || (k === "kick_pts" && st.fga == null)) px[k] = v;
+      }
+      const had = JSON.stringify(st.px ?? null);
+      if (Object.keys(px).length) st.px = px;
+      else delete st.px;
+      if (JSON.stringify(st.px ?? null) !== had) touched = true;
+      if (st.fga != null || st.xpa != null) {
+        for (const key of KICK_KEYS) {
+          const v = s[key] || 0;
+          if (st[key] !== v) {
+            st[key] = v;
+            touched = true;
+          }
+        }
+      }
       // A quarterback who caught a pass keeps his receiving line.
       if (st.rec == null && (s.rec || s.rec_yd || s.rec_td)) {
         for (const key of REC_KEYS) st[key] = s[key] || 0;
@@ -117,5 +143,12 @@ for (const season of seasons.length ? seasons : all) {
       (corrections.length ? `, ${corrections.length} later Sleeper corrections left alone` : ""),
   );
   for (const c of corrections.slice(0, 10)) console.log(`   ${c}`);
-  if (!dry && changed > 0) fs.writeFileSync(file, JSON.stringify(logs));
+  if (!dry && changed > 0) {
+    fs.writeFileSync(file, JSON.stringify(logs));
+    // A correction, not an ingestion: lastIngestedAt is left alone.
+    updateMeta("game_logs", season, {
+      lastCorrectionAt: nowIso(),
+      lastCorrection: "scoring-event backfill (fields added, no stored total changed)",
+    });
+  }
 }

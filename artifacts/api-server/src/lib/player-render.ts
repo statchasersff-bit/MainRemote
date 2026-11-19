@@ -69,6 +69,7 @@ import type {
   PlayerPageData,
 } from "./player/player-data";
 import {
+  explainResidual,
   pointsBreakdown,
   SCORING_LABELS,
   SCORING_SHORT,
@@ -967,21 +968,12 @@ function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): str
   const modeled = parts.reduce((sum, part) => sum + part.points, 0);
   const remainder = Math.round((total - modeled) * 100) / 100;
 
-  // What is left once the modeled events (fumbles lost among them, from the
-  // log since 2026-11-04) are out: a positive even remainder is two-point
-  // conversions, which score nothing else at these values; anything else is
-  // named for what it can be rather than folded into a line it is not.
-  const twoPt = remainder > 0 && Math.abs(remainder / 2 - Math.round(remainder / 2)) < 0.01;
-  const rows = [
-    ...parts,
-    ...(Math.abs(remainder) >= 0.05
-      ? [
-          twoPt
-            ? { label: "Two-point conversions", detail: `${Math.round(remainder / 2)} conv`, points: remainder }
-            : { label: "Other scoring", detail: "return yards or a return TD", points: remainder },
-        ]
-      : []),
-  ];
+  // What is left once the house-rule events are out is named from the stored
+  // provider-only plays (explainResidual), never guessed (Phase 1.1: an even
+  // remainder used to be labeled "two-point conversions", which the
+  // breakdown now models).
+  const why = explainResidual(entry.stats, remainder);
+  const rows = [...parts, ...(why ? [{ label: why.label, detail: why.detail, points: remainder }] : [])];
 
   const items = rows
     .map(
