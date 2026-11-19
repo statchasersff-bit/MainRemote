@@ -142,6 +142,21 @@ describe("scoring audit endpoint access", () => {
     }
   });
 
+  test("no NODE_ENV (how the deployment starts) and no key: 404; development: open", async () => {
+    const s = await startServer({ NODE_ENV: "", SC_AUDIT_KEY: "" });
+    try {
+      assert.equal((await body(s.origin, "/api/scoring/audit?player=kirk-cousins&season=2021")).status, 404);
+    } finally {
+      await s.stop();
+    }
+    const d = await startServer({ NODE_ENV: "development", SC_AUDIT_KEY: "" });
+    try {
+      assert.equal((await body(d.origin, "/api/scoring/audit?player=kirk-cousins&season=2021")).status, 200);
+    } finally {
+      await d.stop();
+    }
+  });
+
   test("with a key: 404 without it, 200 with it, and no data beyond the public pages", async () => {
     const s = await startServer({ SC_AUDIT_KEY: "test-audit-key" });
     try {

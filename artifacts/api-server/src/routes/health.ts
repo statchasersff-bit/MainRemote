@@ -131,10 +131,12 @@ router.get("/scoring/audit", (req, res) => {
   // the public player pages (per-game stats and totals), but it is a
   // diagnostic, not a product surface. In production it answers only with
   // SC_AUDIT_KEY (header x-sc-audit-key or ?key=), and 404s when no key is
-  // configured; development and tests are open.
+  // configured. Only an explicit NODE_ENV=development (the preview) is open:
+  // the deployment's start script sets no NODE_ENV, and this app treats
+  // anything but "development" as production (app.ts, the SSR caches).
   const key = process.env["SC_AUDIT_KEY"]?.trim();
   const given = String(req.get("x-sc-audit-key") ?? req.query["key"] ?? "");
-  if (key ? given !== key : process.env["NODE_ENV"] === "production") {
+  if (key ? given !== key : process.env["NODE_ENV"] !== "development") {
     res.status(404).set("Cache-Control", "no-store").set("X-Robots-Tag", "noindex").json({ error: "not found" });
     return;
   }
