@@ -11,6 +11,13 @@ import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
 import { cleanupBundles, importModule } from "./helpers/bundle.mjs";
 
+// These fixtures set each week's stored total (pts_ppr) independently of its
+// stat line, so they exercise the provider-total path and pin it; the house
+// path (SC_SCORING_TOTALS=house, the deployed setting) is covered by
+// tests/data-accuracy.test.mjs and the rendered-page verification.
+process.env.SC_SCORING_TOTALS = "provider";
+
+
 const ov = await importModule("lib/player/overview");
 
 after(cleanupBundles);

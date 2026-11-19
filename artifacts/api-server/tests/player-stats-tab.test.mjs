@@ -14,6 +14,13 @@ import { JSDOM } from "jsdom";
 import { cleanupBundles, importModule } from "./helpers/bundle.mjs";
 import { APP_DIR } from "./helpers/server.mjs";
 
+// These fixtures set each week's stored total (pts_ppr) independently of its
+// stat line, so they exercise the provider-total path and pin it; the house
+// path (SC_SCORING_TOTALS=house, the deployed setting) is covered by
+// tests/data-accuracy.test.mjs and the rendered-page verification.
+process.env.SC_SCORING_TOTALS = "provider";
+
+
 const st = await importModule("lib/player/stats-tab");
 
 after(cleanupBundles);
