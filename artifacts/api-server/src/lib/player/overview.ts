@@ -319,7 +319,7 @@ function season(data: PlayerPageData): Season {
  * nothing behind it, prints nothing - the pill already says it.
  */
 function renderAlert(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
+  const status = (data.designation?.injuryStatus ?? "").trim();
   if (!status) return "";
   const part = (data.designation?.injuryBodyPart ?? "").trim();
   const practice = (data.designation?.practice ?? "").trim();
@@ -446,7 +446,7 @@ function renderNext(data: PlayerPageData, s: Season): string {
   if (s.next.length === 0) return "";
   const pos = s.pos;
   const out = (() => {
-    const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
+    const status = (data.designation?.injuryStatus ?? "").trim();
     return status !== "" && designationSeverity(status) === "out";
   })();
   let first = true;
@@ -580,7 +580,7 @@ function outlookParagraph(data: PlayerPageData, s: Season, rank: number | null):
 
   // 5. What is ahead: how the next four grade, never a promise. A player
   // ruled out gets his status instead: the schedule is moot until he returns.
-  const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
+  const status = (data.designation?.injuryStatus ?? "").trim();
   const ahead = s.next.filter((g): g is UpcomingGame => !("bye" in g) && Boolean(g.matchup));
   if (status && designationSeverity(status) === "out") {
     const listed = /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "on injured reserve" : `listed ${status.toLowerCase()}`;

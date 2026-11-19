@@ -177,25 +177,9 @@ function ordinal(n: number): string {
 
 /* ------------------------------------------------------------- the scale */
 
-export type MatchupTier = "soft-2" | "soft-1" | "mid" | "tough-1" | "tough-2";
-
-/**
- * Which arm of the diverging scale a rank sits on, and how far along it.
- *
- * Sixes at the ends, and the middle left blank: 1–6, 7–12, then eight ranks
- * of nothing, then 21–26 and 27–32. Symmetric about the league median, and
- * the shape is the point - a defense two places either side of average is not
- * a matchup, so tinting it spends the reader's attention on noise. Only the
- * twelve that are genuinely exploitable and the twelve that are genuinely
- * hard get a color.
- */
-export function matchupTier(rank: number): MatchupTier {
-  if (rank <= 6) return "soft-2";
-  if (rank <= 12) return "soft-1";
-  if (rank <= 20) return "mid";
-  if (rank <= 26) return "tough-1";
-  return "tough-2";
-}
+// The tier scale is shared with the player pages (fpa/matchup-bands.ts).
+export { matchupTier, type MatchupTier } from "./fpa/matchup-bands";
+import { matchupTier, type MatchupTier } from "./fpa/matchup-bands";
 
 const TIER_LABEL: Record<MatchupTier, string> = {
   "soft-2": "Softest (1–6)",

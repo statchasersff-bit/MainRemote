@@ -68,7 +68,7 @@ function bar(icon: string, title: string, note = "", id = "", name = ""): string
 function renderStatus(m: InjuryPremiumModel): string {
   const s = m.status;
   const checked = s.checked
-    ? `<small class="scp-inp-checked">Checked <time datetime="${e(s.checked.iso)}">${e(s.checked.text)}</time>${s.stale ? " · latest report pending" : ""}</small>`
+    ? `<small class="scp-inp-checked">Checked <time datetime="${e(s.checked.iso)}">${e(s.checked.text)}</time>${s.stale ? " · may be out of date, latest report pending" : ""}</small>`
     : "";
   const icon: Record<string, string> = { missed: ICON.calendar, latest: ICON.steth, next: ICON.calendar };
   const kpis = m.cells
@@ -88,6 +88,7 @@ function renderStatus(m: InjuryPremiumModel): string {
     // on desktop and is hidden on phones; mak, 2026-11-06).
     (s.part ? `<p class="scp-inp-now-part">${e(s.part)}</p>` : "") +
     `<p class="scp-inp-now-text">${e(s.answer)}</p>` +
+    (s.note ? `<p class="scp-inp-now-note">${e(s.note)}</p>` : "") +
     checked +
     `</div>` +
     (kpis ? `<div class="scp-inp-kpis">${kpis}</div>` : "") +

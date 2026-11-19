@@ -214,6 +214,18 @@ interface Model {
   season: number;
   week: number;
   preseason: boolean;
+  /**
+   * In season with no game this season (Isiah Pacheco, on IR since Week 1):
+   * the Outlook leads with a current-season status, not the June preseason
+   * piece (audit WEB-030).
+   */
+  noSeasonGames: boolean;
+  /** The ROS board's rank when it is too old to use, for the dated note. */
+  staleRos: RosRank | null;
+  /** On a reserve list (IR, PUP, NFI) or suspended. */
+  reserve: boolean;
+  statusMessage: string | null;
+  seasonMissed: number | null;
   now: SeasonLine | null;
   prior: SeasonLine | null;
   /** The rank everything is judged on: this season's, or last season's before Week 1. */
@@ -279,6 +291,34 @@ function scheduleRead(upcoming: UpcomingGame[], season: UpcomingGame[]): Schedul
   return { next, soft, tough, verdict, playoffs };
 }
 
+/**
+ * One target-share figure and one comparison pool per tab (audit WEB-035,
+ * 2026-11-18: Luther Burden III's Outlook said "19th of 139 WRs" in the
+ * drivers and "18th among 108 qualifying receivers" in the read). When the
+ * usage report ranks him, the drivers' Target share row takes the report's
+ * value and rank - the pool the read and the opportunity section use: players
+ * at his position the report qualifies, with at least minGames() games.
+ * Without a usage rank the row keeps the advanced table's pool, which the
+ * rail's own footnote already describes.
+ */
+function oneTargetSharePool(
+  measures: ReturnType<typeof outlookMeasures>,
+  usage: PlayerPageData["usage"] | null,
+): ReturnType<typeof outlookMeasures> {
+  const r = usage?.ranks.targetShare;
+  const v = usage?.row.targetShare;
+  if (!measures || !r || typeof v !== "number") return measures;
+  return {
+    ...measures,
+    drivers: measures.drivers.map((d) => {
+      if (d.label !== "Target share") return d;
+      const tier = tierOf(r.rank, r.of);
+      const word = (["Heavy", "Moderate", "Low"] as const)[tier === "good" ? 0 : tier === "mid" ? 1 : 2];
+      return { ...d, value: pct(v), rank: r.rank, of: r.of, tier, word };
+    }),
+  };
+}
+
 function model(data: PlayerPageData): Model | null {
   const pos = data.player.position ?? "";
   if (!LEAGUES[pos]) return null;
@@ -288,7 +328,7 @@ function model(data: PlayerPageData): Model | null {
   const prior = seasonLine(data, season - 1, null);
   const preseason = week < 1 || !now;
   const rank = preseason ? prior?.rank ?? null : now?.rank ?? null;
-  const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
+  const status = (data.designation?.injuryStatus ?? "").trim();
   const out = /^(out|ir|pup|injured reserve|doubtful)/i.test(status);
   const questionable = !out && /^questionable/i.test(status) ? "Questionable" : null;
   const part = data.designation?.injuryBodyPart ?? null;
@@ -296,7 +336,10 @@ function model(data: PlayerPageData): Model | null {
   // The chips judge the rest-of-season board's rank when he is on it (the
   // brief: "connect league-fit labels to actual rankings"), else the
   // season-to-date rank the page already prints.
-  const ros = preseason ? null : data.rosRank ?? null;
+  // A stale board (rosBoardStale) never sets current advice: the chips fall
+  // back to the season-to-date rank, and the page says how old the board is.
+  const rosAny = preseason ? null : data.rosRank ?? null;
+  const ros = rosAny && !rosAny.stale ? rosAny : null;
   const fit = ros ? { rank: ros.rank, source: "ros" as const } : rank === null ? null : { rank, source: "season" as const };
   let chips = fit ? fitChips(pos, fit.rank) : null;
   if (chips && out) {
@@ -318,17 +361,25 @@ function model(data: PlayerPageData): Model | null {
     season,
     week,
     preseason,
+    noSeasonGames: week >= 1 && !now,
+    staleRos: rosAny && rosAny.stale ? rosAny : null,
+    reserve: /^(ir|pup|nfi|injured reserve|sus)/i.test(status),
+    statusMessage: data.currentStatus?.message ?? null,
+    seasonMissed: data.injury?.availability?.missedInjury ?? null,
     now,
     prior,
     rank,
     projected: projectedRank(data),
     // The current season's line when he has one (mak, 2026-10-22), else last
     // season's from the outlook record.
-    measures: outlookMeasures(data.fantasyOutlook2026, {
-      season: week >= 1 ? season : undefined,
-      playerId: data.player.id ?? null,
-      position: pos,
-    }),
+    measures: oneTargetSharePool(
+      outlookMeasures(data.fantasyOutlook2026, {
+        season: week >= 1 ? season : undefined,
+        playerId: data.player.id ?? null,
+        position: pos,
+      }),
+      preseason ? null : data.usage ?? null,
+    ),
     chips,
     fit,
     ros,
@@ -567,7 +618,10 @@ function fitsModel(m: Model): FitsModel | null {
   const basis =
     m.fit.source === "ros" && m.ros
       ? `Based on his StatChasers rest-of-season rank, ${m.pos}${m.ros.rank}${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}.`
-      : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.`;
+      : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.` +
+        (m.staleRos
+          ? ` The rest-of-season board (${m.pos}${m.staleRos.rank}) was last updated ${m.staleRos.updatedAt.replace(/, \d{4}$/, "") || "on an unknown date"} and is not used for current advice.`
+          : "");
   return { leagues, chips: m.chips, note: `${basis} ${FIT_ASSUMES[m.pos] ?? ""}`.trim() };
 }
 
@@ -702,10 +756,10 @@ function forwardParagraph(m: Model, depth: PlayerPageData["depth"]): string | nu
     parts.push(`${cap(word(s.tough.length))} of his next ${word(s.next.length)} opponents ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s: ${listWords(s.tough.map(withRank))}.`);
     unsure.push({ text: "difficult upcoming matchups", plural: true });
   } else if (s.verdict === "soft") {
-    parts.push(`${cap(word(s.soft.length))} of his next ${word(s.next.length)} opponents ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s: ${listWords(s.soft.map(withRank))}.`);
+    parts.push(`${cap(word(s.soft.length))} of his next ${word(s.next.length)} opponents ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s: ${listWords(s.soft.map(withRank))}.`);
   } else if (s.verdict === "mixed" && (s.soft.length || s.tough.length)) {
     parts.push(
-      `His next ${word(s.next.length)} matchups are mixed${s.soft.length ? `: ${listWords(s.soft.map(withRank))} ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s` : ""}${
+      `His next ${word(s.next.length)} matchups are mixed${s.soft.length ? `: ${listWords(s.soft.map(withRank))} ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s` : ""}${
         s.tough.length ? `${s.soft.length ? ", while" : ":"} ${listWords(s.tough.map(withRank))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest` : ""
       }.`,
     );
@@ -822,11 +876,37 @@ function supportsThreatens(m: Model, data: PlayerPageData): { supports: string[]
  * projection is the premium block (outlook-projection-premium.ts), which
  * prints from outlookProjectionModel() below.
  */
+/**
+ * In season, no game this season: a short current-season status from the
+ * normalized status record and the shared games-missed count, then the June
+ * piece collapsed as history. No return date, recovery or projection is
+ * claimed - none is in the data (audit WEB-030).
+ */
+function renderSeasonStatus(m: Model, data: PlayerPageData, preseasonBlock: string): string {
+  const games = (n: number) => `${n} game${n === 1 ? "" : "s"}`;
+  const lines: string[] = [`${m.name} has not played in ${m.season}.`];
+  if (m.statusMessage) lines.push(m.statusMessage);
+  if (m.seasonMissed) lines.push(`He has missed ${games(m.seasonMissed)} to injury this season.`);
+  lines.push("No return date has been reported.");
+  const archive = preseasonBlock;
+  // The premium sections' markup (outlook-premium.ts bar()), so the block
+  // wears the navy bar the sections under it do.
+  const title = titleCase(`${m.name} ${m.season} Season Status`);
+  return (
+    `<div class="scp-olp"><section class="scp-olp-sec is-status" aria-labelledby="scp-ol-read-h">` +
+    `<header class="scp-olp-bar"><span class="scp-olp-bar-rule" aria-hidden="true"></span>` +
+    `<div class="scp-olp-bar-text"><h2 class="scp-olp-bar-title" id="scp-ol-read-h">${escapeHtml(title)}</h2></div>` +
+    `<span class="scp-olp-bar-stripes" aria-hidden="true"></span></header>` +
+    `<div class="scp-olp-body"><p class="scp-olp-read">${escapeHtml(lines.join(" "))}</p>${archive}</div>` +
+    `</section></div>`
+  );
+}
+
 function renderRead(m: Model, data: PlayerPageData): string {
   if (!m.preseason) return "";
   const record = data.fantasyOutlook2026;
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  if (preseasonParas.length === 0) return "";
+  if (preseasonParas.length === 0) return m.noSeasonGames ? renderSeasonStatus(m, data, "") : "";
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const prose = preseasonParas.map((p) => escapeHtml(p));
   const byline = `By the StatChasers staff.${published ? ` Published <time datetime="${published.iso}">${published.text}</time>.` : ""}`;
@@ -836,6 +916,12 @@ function renderRead(m: Model, data: PlayerPageData): string {
     `<p>${escapeHtml(rcCopy(m))}</p>` +
     `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}<span class="scp-ol-btn-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
     `</div>`;
+  if (m.noSeasonGames) {
+    // The June piece is history here: its prose only, no league-fit chips
+    // (they would judge a preseason rank as current advice).
+    // The June piece follows, collapsed, as the archive (archiveModel).
+    return renderSeasonStatus(m, data, "");
+  }
   const fits = renderFits(m);
 
   return (
@@ -1153,8 +1239,10 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
     up.push(b("The red-zone role.", `${usage.rzCoLead ? "Co-leads" : "Leads"} the ${m.nickname ?? "club"} with ${row.rzTouches} red-zone touches through Week ${usage.throughWeek}.`));
   }
   const s = m.sched;
-  if (s.soft.length > s.tough.length) {
-    up.push(b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s.`));
+  // Not for a player who is out or on a reserve list: a soft schedule is no
+  // upside to a player not expected to play it (audit WEB-034).
+  if (s.soft.length > s.tough.length && !m.injured) {
+    up.push(b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s.`));
   }
   // The drivers are restated here only when there is no catalyst at all - the
   // card is for changes, not a second copy of the strips above.
@@ -1252,12 +1340,12 @@ function scheduleModel(m: Model): ScheduleModel | null {
   });
   const verdict =
     s.verdict === "tough"
-      ? `A difficult stretch: ${word(s.tough.length)} of the next ${word(s.next.length)} are bottom-10 matchups for ${m.pos}s${s.soft.length ? `, with ${word(s.soft.length)} top-10 matchup to break it up` : ""}.`
+      ? `A difficult stretch: ${word(s.tough.length)} of the next ${word(s.next.length)} are bottom-12 matchups for ${m.pos}s${s.soft.length ? `, with ${word(s.soft.length)} top-12 matchup to break it up` : ""}.`
       : s.verdict === "soft"
-        ? `A favorable stretch: ${word(s.soft.length)} of the next ${word(s.next.length)} are top-10 matchups for ${m.pos}s${s.tough.length ? `, against ${word(s.tough.length)} tough one` : ""}.`
+        ? `A favorable stretch: ${word(s.soft.length)} of the next ${word(s.next.length)} are top-12 matchups for ${m.pos}s${s.tough.length ? `, against ${word(s.tough.length)} tough one` : ""}.`
         : s.soft.length || s.tough.length
-          ? `A mixed stretch: ${word(s.soft.length)} top-10 matchup${s.soft.length === 1 ? "" : "s"} and ${word(s.tough.length)} bottom-10 in the next ${word(s.next.length)}.`
-          : `A neutral stretch: none of the next ${word(s.next.length)} is a top-10 or a bottom-10 matchup for ${m.pos}s.`;
+          ? `A mixed stretch: ${word(s.soft.length)} top-12 matchup${s.soft.length === 1 ? "" : "s"} and ${word(s.tough.length)} bottom-12 in the next ${word(s.next.length)}.`
+          : `A neutral stretch: none of the next ${word(s.next.length)} is a top-12 or a bottom-12 matchup for ${m.pos}s.`;
   const playoffs = s.playoffs.length
     ? `Fantasy playoffs (Weeks 15 to 17): ${listWords(
         s.playoffs.map((g) => `${g.homeAway === "away" ? "at" : "vs"} ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`),
@@ -1286,7 +1374,8 @@ export interface ArchiveModel {
 }
 
 function archiveModel(m: Model, data: PlayerPageData): ArchiveModel | null {
-  if (m.preseason) return null;
+  // In season with no game yet, the June piece is history too.
+  if (m.preseason && !m.noSeasonGames) return null;
   const record = data.fantasyOutlook2026;
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const paras = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
@@ -1467,7 +1556,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     if (row && unpaid(m)) parts.push(`his ${one(row.xfpPerGame!)} expected points a game say the role is worth more than the ${one(row.fpPerGame!)} he has scored`);
     if (bestWeek) parts.push(`his ceiling this season is ${one(getEntryPoints(bestWeek.stats, data.format))} ${m.scoring} points (Week ${bestWeek.week}${bestWeek.pos_rank ? `, ${m.pos}${bestWeek.pos_rank}` : ""})`);
     if (top && top.tier === "good") parts.push(`his ${drv(top)} gives him a weekly floor to build on`);
-    if (softUp.length) parts.push(`${matchupList(softUp)} ${softUp.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s`);
+    if (softUp.length) parts.push(`${matchupList(softUp)} ${softUp.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s`);
     pool.push({
       key: "upside",
       q: `What is ${possessive(m.name)} fantasy football upside?`,
@@ -1498,7 +1587,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     pool.push({
       key: "schedule",
       q: `How difficult is ${possessive(m.name)} remaining fantasy schedule?`,
-      a: `${s.verdict === "soft" ? "Favorable" : s.verdict === "tough" ? "Difficult" : "Mixed"}: of his next ${word(s.next.length)} games, ${word(s.soft.length)} ${s.soft.length === 1 ? "comes" : "come"} against a top-10 matchup for ${m.pos}s and ${word(s.tough.length)} against one of the stingiest defenses, by ${m.scoring} points allowed to the position${
+      a: `${s.verdict === "soft" ? "Favorable" : s.verdict === "tough" ? "Difficult" : "Mixed"}: of his next ${word(s.next.length)} games, ${word(s.soft.length)} ${s.soft.length === 1 ? "comes" : "come"} against a top-12 matchup for ${m.pos}s and ${word(s.tough.length)} against one of the stingiest defenses, by ${m.scoring} points allowed to the position${
         s.tough.length > s.soft.length && row && n(row.targetShare) && row.targetShare >= 20 ? `. A ${pct(row.targetShare)} target share is how a receiver plays through tough matchups` : ""
       }.`,
     });
@@ -1508,7 +1597,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     pool.push({
       key: "playoffs",
       q: `Is ${m.name} a good fantasy playoff option?`,
-      a: `His Weeks 15 to 17 opponents are ${listWords(s.playoffs.map((g) => `the ${oppName(g)} (${ordinal(g.matchup!.rank)} in points allowed to ${m.pos}s)`))}; ${soft ? `${word(soft)} of them ${soft === 1 ? "is" : "are"} favorable` : "none of them is a top-10 matchup"}.`,
+      a: `His Weeks 15 to 17 opponents are ${listWords(s.playoffs.map((g) => `the ${oppName(g)} (${ordinal(g.matchup!.rank)} in points allowed to ${m.pos}s)`))}; ${soft ? `${word(soft)} of them ${soft === 1 ? "is" : "are"} favorable` : "none of them is a top-12 matchup"}.`,
     });
   }
   return pool;

@@ -326,7 +326,12 @@ export function buildEntries(season, rows, events, ctx) {
   for (const w of reserveWeeks) {
     if (claimed.has(w)) continue;
     const stint = stints[stints.length - 1];
-    if (stint && w - stint.last <= 1) stint.last = w;
+    // The bye leaves no roster row, so a one-week gap the team did not play
+    // in is the same stint (audit WEB-039, 2026-11-18: Isiah Pacheco's
+    // season-long IR split at the Week 6 bye into two overlapping entries,
+    // "9 games" and "4 games").
+    const byeGap = stint && w - stint.last === 2 && ctx.team && !ctx.playing(stint.last + 1, ctx.team);
+    if (stint && (w - stint.last <= 1 || byeGap)) stint.last = w;
     else stints.push({ first: w, last: w, code: reserve[w] });
   }
   // The game-before origins first, so a play that starts one injury is not
@@ -338,8 +343,10 @@ export function buildEntries(season, rows, events, ctx) {
   }
   const taken = new Set(origins.values());
   const entries = [];
-  for (const stint of stints) {
-    const end = Math.min(Math.max(stint.last, [...ctx.played].some((w) => w > stint.last) ? stint.last : ctx.completedWeek), ctx.completedWeek);
+  for (const [i, stint] of stints.entries()) {
+    // Never past the next stint's start: two entries must not count one week.
+    const nextFirst = stints[i + 1]?.first ?? Infinity;
+    const end = Math.min(Math.max(stint.last, [...ctx.played].some((w) => w > stint.last) ? stint.last : ctx.completedWeek), ctx.completedWeek, nextFirst - 1);
     const missed = [];
     for (let w = stint.first; w <= end; w += 1) {
       if (!ctx.played.has(w) && ctx.team && ctx.playing(w, ctx.team) && !(grid && !grid.has(w))) missed.push(w);

@@ -225,15 +225,45 @@ export function buildOppRanks(
   return ranks;
 }
 
+/**
+ * Opponent ranks from the FPA table - the Fantasy Points Allowed page's own
+ * figures (audit WEB-033). Keyed like buildOppRanks(), "DET:RB". Null when
+ * the table has no row for the position.
+ */
+export function fpaOppRanks(
+  rows: Array<{ team: { code: string } | null; abbr: string; byPos: Record<string, { rank: number } | undefined> }>,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const row of rows) {
+    const code = row.team?.code ?? teamCode(row.abbr);
+    for (const [pos, cell] of Object.entries(row.byPos)) {
+      if (cell && Number.isFinite(cell.rank)) out.set(`${code}:${pos}`, cell.rank);
+    }
+  }
+  return out;
+}
+
+/**
+ * Which table an opponent rank came from:
+ *   fpa-current  the live FPA table: today's season-to-date rank, NOT the
+ *                rank the defense had before that game was played
+ *   fpa-archive  a finished season's FPA archive, weeks 1-17
+ *   gamelog      the game-log fallback (buildOppRanks), only when the FPA
+ *                table is unavailable for that season
+ */
+export type OppRankSource = "fpa-current" | "fpa-archive" | "gamelog";
+
 export function attachOppRanks(
   entries: GameLogEntry[],
   position: string | null,
   oppRanks: Map<string, number>,
+  source: OppRankSource = "gamelog",
 ): GameLogEntry[] {
   if (!position) return entries;
   return entries.map((e) => ({
     ...e,
     opp_rank_vs_pos: oppRanks.get(`${teamCode(e.opp)}:${position}`) ?? null,
+    opp_rank_source: source,
   }));
 }
 

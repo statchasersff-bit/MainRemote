@@ -760,7 +760,22 @@ export interface InjuryPremiumModel {
   season: number;
   out: boolean;
   /** `part`: the designation's body part ("Hamstring") while he carries one, for the phone's status cell. */
-  status: { code: StatusCode; word: string; kind: string; answer: string; part: string | null; checked: { iso: string; text: string } | null; stale: boolean };
+  status: {
+    code: StatusCode;
+    word: string;
+    kind: string;
+    answer: string;
+    part: string | null;
+    checked: { iso: string; text: string } | null;
+    stale: boolean;
+    /**
+     * What the normalized status (current-status.ts) adds: a previous week's
+     * designation as history, a missed last game with no new status, or a
+     * stale feed. Visible body text only - the answer sentence above feeds
+     * the meta description and is unchanged.
+     */
+    note: string | null;
+  };
   cells: StatusCell[];
   practice: { head: string; note: string | null; empty: string | null; weeks: PremiumPracticeWeek[] };
   healthy: string | null;
@@ -772,7 +787,18 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
   const m = model(data, options);
   if (!m) return null;
   const out = m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI";
-  const stale = m.checkedMs > 0 && m.next !== null && m.now - m.checkedMs > STALE_MS;
+  const cs = data.currentStatus;
+  const stale = (m.checkedMs > 0 && m.next !== null && m.now - m.checkedMs > STALE_MS) || cs?.freshness === "stale";
+  const pending = m.code === "ACTIVE" && cs?.kind === "pending";
+  const statusNote = !cs
+    ? null
+    : pending
+      ? cs.message
+      : m.code === "ACTIVE" && cs.prior
+        ? `No current game designation reported. Listed ${cs.prior.status} for Week ${cs.prior.week}.`
+        : cs.freshness === "unavailable" && m.next
+          ? "Current injury report unavailable; this is the last known status."
+          : null;
   const weeks: PremiumPracticeWeek[] = m.practice.map((r) => ({
     week: r.week,
     current: r.current,
@@ -806,12 +832,13 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     out,
     status: {
       code: m.code,
-      word: STATUS_WORD[m.code],
-      kind: STATUS_KIND[m.code],
+      word: pending ? "Status pending" : STATUS_WORD[m.code],
+      kind: pending ? "mid" : STATUS_KIND[m.code],
       answer: statusAnswer(m),
       part: ["Q", "D", "O", "IR", "PUP", "NFI"].includes(m.code) && m.bodyPart ? m.bodyPart : null,
       checked: m.checkedMs > 0 ? { iso: new Date(m.checkedMs).toISOString(), text: stampText(m.checkedMs) } : null,
       stale,
+      note: statusNote,
     },
     cells: statusCells(m, data),
     practice: { head: m.practiceHead, note: m.practiceNote, empty, weeks },

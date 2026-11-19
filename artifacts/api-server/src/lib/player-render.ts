@@ -1052,8 +1052,12 @@ function renderWeekDetail(
       // "ranked 7th in points allowed", not "the 7th-most" - one phrasing that
       // survives rank 1, where "the 1st-most" is not English. The direction is
       // stated under the table rather than in every row.
-      value: `${entry.opp} ranked ${ordinal(entry.opp_rank_vs_pos)} in points ` +
-        `allowed to ${player.position ?? "the position"} that season`,
+      value:
+        entry.opp_rank_source === "fpa-current"
+          ? `${entry.opp} ranks ${ordinal(entry.opp_rank_vs_pos)} in points ` +
+            `allowed to ${player.position ?? "the position"} this season to date (today's rank, not before this game)`
+          : `${entry.opp} ranked ${ordinal(entry.opp_rank_vs_pos)} in points ` +
+            `allowed to ${player.position ?? "the position"} that season`,
     });
   }
 

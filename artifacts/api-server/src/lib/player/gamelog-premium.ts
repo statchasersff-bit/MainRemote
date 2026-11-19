@@ -123,7 +123,9 @@ function difficultyCell(entry: GameLogEntry, deps: PremiumLogDeps, pos: string):
   return (
     `<td class="scp-glp-diff-cell">` +
     `<span class="scp-glp-diff" data-band="${band}" title="${escapeHtml(
-      `${entry.opp} ranked ${deps.ordinal(rank)} in points allowed to ${pos || "this position"} that season - 1st allows the most`,
+      entry.opp_rank_source === "fpa-current"
+        ? `${entry.opp} ranks ${deps.ordinal(rank)} in fantasy points allowed to ${pos || "this position"} this season to date (Fantasy Points Allowed page) - 1st allows the most. Today's rank, not the rank before this game.`
+        : `${entry.opp} ranked ${deps.ordinal(rank)} in points allowed to ${pos || "this position"} that season - 1st allows the most`,
     )}"><b>${escapeHtml(deps.ordinal(rank))}</b><span>${escapeHtml(deps.difficultyWord[band])}</span></span>` +
     `</td>`
   );
@@ -303,11 +305,18 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
       `</tr></tfoot>`
     : "";
 
-  const note = seasonLog.some((entry) => entry.opp_rank_vs_pos)
-    ? `<p class="scp-glp-note">${ICON.info}<span>${escapeHtml(
-        `Opponent rank is fantasy points allowed to ${pos ? `${pos}s` : "the position"} across ${data.logSeason}: 1st allows the most, 32nd the fewest.`,
-      )}</span></p>`
-    : "";
+  // Say which period the rank describes (audit WEB-033): the current
+  // season's is today's season-to-date FPA rank, the same figure as the
+  // Fantasy Points Allowed page, not a pregame snapshot.
+  const source = seasonLog.find((entry) => entry.opp_rank_vs_pos)?.opp_rank_source ?? null;
+  const posWord = pos ? `${pos}s` : "the position";
+  const noteText =
+    source === "fpa-current"
+      ? `Opponent rank is each defense's current ${data.logSeason} rank in ${SCORING_LABELS[data.format]} fantasy points allowed per game to ${posWord}, as on the Fantasy Points Allowed page: 1st allows the most. It is today's season-to-date rank, not the rank before that game. Favorable 1-12, Neutral 13-20, Tough 21-32.`
+      : source === "fpa-archive"
+        ? `Opponent rank is each defense's full ${data.logSeason} rank (weeks 1-17) in ${SCORING_LABELS[data.format]} fantasy points allowed per game to ${posWord}, as on the Fantasy Points Allowed archive: 1st allows the most. Favorable 1-12, Neutral 13-20, Tough 21-32.`
+        : `Opponent rank is fantasy points allowed to ${posWord} across ${data.logSeason}: 1st allows the most, 32nd the fewest.`;
+  const note = source ? `<p class="scp-glp-note">${ICON.info}<span>${escapeHtml(noteText)}</span></p>` : "";
 
   return (
     `<div class="scp-glp-panel">` +

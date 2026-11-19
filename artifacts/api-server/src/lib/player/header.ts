@@ -80,13 +80,9 @@ export const STARTSIT_BASE =
  * per fixture in full green or full red turns a schedule into a traffic light
  * and buries the thing the block is actually for, which is who and when.
  */
-export type MatchupBand = "soft" | "mid" | "tough";
-
-export function matchupBand(rank: number): MatchupBand {
-  if (rank <= 10) return "soft";
-  if (rank >= 23) return "tough";
-  return "mid";
-}
+// One methodology for the site: the FPA page's bands (fpa/matchup-bands.ts).
+export { matchupBand, type MatchupBand } from "../fpa/matchup-bands";
+import { matchupBand, type MatchupBand } from "../fpa/matchup-bands";
 
 /**
  * How severe a designation is, for the pill's accent.
@@ -118,7 +114,7 @@ export function designationSeverity(status: string | null | undefined): string {
  * return date: the feed does not have one and the page does not guess.
  */
 export function rosterDesignation(data: PlayerPageData): string | null {
-  const key = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim().toLowerCase();
+  const key = (data.designation?.injuryStatus ?? "").trim().toLowerCase();
   if (!key) return null;
   if (/^ir\b/.test(key) || key.includes("injured reserve")) return "injured reserve";
   if (/^pup\b/.test(key) || key.includes("physically unable")) return "the PUP list";
@@ -365,10 +361,8 @@ export const CHIP_WORD: Record<MatchupBand, { cls: string; word: string }> = {
  * rosters him. And 100% is reserved for 100%: thirty players sat at 99.0 or
  * above in the week this was written and one of them was in every league.
  */
-function rosteredPct(value: number): string {
-  if (value < 0.5) return "<1%";
-  return `${Math.min(Math.round(value), value >= 100 ? 100 : 99)}%`;
-}
+// Shared with the FAQ (rounding.ts), so the two cannot disagree.
+import { rosteredPct } from "./rounding";
 
 export interface BoardCell {
   /** The figure: "16.5", "QB17", "13%". */
@@ -542,7 +536,7 @@ function injuryPill(status: string, href: string | null): string {
  * classification, no pill. Never "Active" by default.
  */
 function statusPill(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const status = data.designation?.injuryStatus ?? data.player.injury_status ?? "";
+  const status = data.designation?.injuryStatus ?? "";
   if (status.trim()) return injuryPill(status, sectionHref(data, options, "injury"));
   const page = (data as { bioPage?: { status?: string } | null }).bioPage;
   if (page?.status === "active") return `<span class="scp-ptag-status is-good">Active</span>`;

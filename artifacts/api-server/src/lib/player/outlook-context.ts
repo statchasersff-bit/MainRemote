@@ -174,10 +174,31 @@ export interface RosRank {
   /** "October 22, 2026", as the board's meta names it. */
   updatedAt: string;
   updatedAtIso: string | null;
+  /**
+   * Too old to drive current advice (audit WEB-034, 2026-11-18: the board was
+   * last updated October 22 and still set the Outlook's league-fit chips).
+   * In season, older than ROS_STALE_DAYS, or with no date at all.
+   */
+  stale: boolean;
+}
+
+/** In season, a rest-of-season board older than this is not current advice. */
+export const ROS_STALE_DAYS = 7;
+
+/** Is a board updated at `iso` stale at `now`? No date is stale: it cannot be shown to be current. */
+export function rosBoardStale(iso: string | null, now: number, inSeason: boolean): boolean {
+  if (!inSeason) return false;
+  const at = iso ? Date.parse(iso) : NaN;
+  if (!Number.isFinite(at)) return true;
+  return now - at > ROS_STALE_DAYS * 24 * 60 * 60 * 1000;
 }
 
 /** His positional rank on the rest-of-season board, by slug and then by name. */
-export function rosRank(player: Player, season: number): RosRank | null {
+export function rosRank(
+  player: Player,
+  season: number,
+  options: { now?: number; inSeason?: boolean } = {},
+): RosRank | null {
   const pos = player.position;
   if (!pos) return null;
   const board = getRankings(season, "ros");
@@ -186,5 +207,11 @@ export function rosRank(player: Player, season: number): RosRank | null {
   const key = normalizeName(player.name);
   const hit = rows.find((r) => r.slug === player.slug) ?? rows.find((r) => normalizeName(r.name) === key);
   if (!hit) return null;
-  return { rank: hit.rank, position: pos, updatedAt: board.updatedAt, updatedAtIso: board.updatedAtIso };
+  return {
+    rank: hit.rank,
+    position: pos,
+    updatedAt: board.updatedAt,
+    updatedAtIso: board.updatedAtIso,
+    stale: rosBoardStale(board.updatedAtIso, options.now ?? Date.now(), options.inSeason ?? true),
+  };
 }

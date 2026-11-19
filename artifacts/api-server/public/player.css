@@ -12202,6 +12202,17 @@ button.scp-search-opt {
   font-size: 11px;
 }
 
+/* The normalized status's note (2026-11-19, audit WEB-039): last week's
+   designation as history, "status pending", or a stale-feed warning. Shown at
+   every width - unlike the sentence and stamp above it, phones keep it, so a
+   phone never reads a stale status as current. */
+.scp .scp-inp-now-note {
+  margin: 0;
+  color: var(--inp-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .scp .scp-inp-now.is-good {
   border-color: var(--inp-green-line);
   background: linear-gradient(135deg, #f6fdf8 0%, var(--inp-green-light) 100%);

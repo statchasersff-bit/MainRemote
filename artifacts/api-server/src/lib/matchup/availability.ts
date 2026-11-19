@@ -21,17 +21,21 @@
  *      who missed the club's last game and is on the report is "pending"; a
  *      player not on the report has no designation.
  *   3. With no report for this week yet, a Sleeper game designation (Out,
- *      Doubtful, Questionable) is only believed as current when the player
- *      PLAYED in the club's last game (so the designation must be newer than
- *      that game). A player who missed the last game with one is "pending":
- *      his status for this week is unconfirmed, and the page says so instead
- *      of calling him Out or available.
+ *      Doubtful, Questionable) is NOT believed as current: Sleeper's field is
+ *      not tied to a week, and a designation is filed before the game it is
+ *      for, so a player who was Questionable and played still reads
+ *      Questionable the Tuesday after (Luther Burden III, Week 10 to Week 11,
+ *      audit WEB-039, 2026-11-18). A player who missed the last game with one
+ *      is "pending"; one who played has no current designation, and the
+ *      note carries the old one as history. (Until 2026-11-19 a player who
+ *      played kept the designation.)
  *
  * Nothing is inferred from news or headlines.
  */
 
 import { dataPath } from "../data-dir";
 import { loadGameLogs } from "../player/data";
+import type { GameLogEntry } from "../player/types";
 import type { RosterPlayer } from "../team/roster";
 import { readDataJson } from "../team/read-json";
 import type { NflTeam } from "../team/teams";
@@ -68,7 +72,7 @@ interface PracticeRow {
   final: string | null;
   days: Record<string, string>;
 }
-interface PracticeDoc {
+export interface PracticeDoc {
   weeks: Record<string, { teams: Record<string, Record<string, PracticeRow>> }>;
 }
 
@@ -91,8 +95,8 @@ export function availabilityKey(name: string): string {
 }
 
 /** The club's rows on one week's report, by name key; null when the report does not have the club yet. */
-function reportFor(season: number, week: number, team: NflTeam): Map<string, PracticeRow> | null {
-  const wk = practiceDoc(season)?.weeks?.[String(week)];
+function reportFor(season: number, week: number, team: NflTeam, doc?: PracticeDoc | null): Map<string, PracticeRow> | null {
+  const wk = (doc === undefined ? practiceDoc(season) : doc)?.weeks?.[String(week)];
   if (!wk) return null;
   const club = wk.teams?.[team.nickname];
   if (!club || !Object.keys(club).length) return null;
@@ -101,8 +105,8 @@ function reportFor(season: number, week: number, team: NflTeam): Map<string, Pra
 
 /** The club's last game week before `week`, from every player's game log. Cached per season and log object. */
 const lastWeekCache = new WeakMap<object, Map<string, number[]>>();
-function teamWeeks(season: number): Map<string, number[]> {
-  const logs = loadGameLogs(season);
+function teamWeeks(season: number, injected?: Record<string, GameLogEntry[]>): Map<string, number[]> {
+  const logs = injected ?? loadGameLogs(season);
   const hit = lastWeekCache.get(logs);
   if (hit) return hit;
   const weeks = new Map<string, Set<number>>();
@@ -119,8 +123,8 @@ function teamWeeks(season: number): Map<string, number[]> {
   return out;
 }
 
-function playedIn(season: number, playerId: string, week: number): boolean {
-  const g = (loadGameLogs(season)[playerId] ?? []).find((x) => x.week === week);
+function playedIn(season: number, playerId: string, week: number, injected?: Record<string, GameLogEntry[]>): boolean {
+  const g = ((injected ?? loadGameLogs(season))[playerId] ?? []).find((x) => x.week === week);
   if (!g || !g.stats) return false;
   const s = g.stats as unknown as Record<string, number | null | undefined>;
   // A snap on offense, defense or special teams, or a game played at all.
@@ -146,6 +150,15 @@ function kindOf(status: string): AvailabilityKind {
   return "reserve";
 }
 
+export interface AvailabilityOptions {
+  /** False for a game that is not the club's next one. */
+  nextGame?: boolean;
+  /** The season's game logs; the stored file by default. For the tests. */
+  logs?: Record<string, GameLogEntry[]>;
+  /** The season's practice-report store; the stored file by default. For the tests. */
+  practice?: PracticeDoc | null;
+}
+
 /**
  * Availability for every player on a roster, for one game. `weekLabel` is the
  * page's ("Week 11"), for the notes.
@@ -155,22 +168,22 @@ export function gameAvailability(
   season: number,
   week: number,
   roster: RosterPlayer[],
-  options: { nextGame?: boolean } = {},
+  options: AvailabilityOptions = {},
 ): Map<string, Availability> {
   // A game that is not the club's next one has no designations yet: any
   // Out, Doubtful or Questionable on file belongs to an earlier game.
   // Reserve lists still apply.
   const nextGame = options.nextGame !== false;
   const out = new Map<string, Availability>();
-  const report = reportFor(season, week, team);
-  const weeks = teamWeeks(season).get(team.code.toUpperCase()) ?? [];
+  const report = reportFor(season, week, team, options.practice);
+  const weeks = teamWeeks(season, options.logs).get(team.code.toUpperCase()) ?? [];
   const last = [...weeks].filter((w) => w < week).pop() ?? null;
-  const lastReport = last !== null ? reportFor(season, last, team) : null;
+  const lastReport = last !== null ? reportFor(season, last, team, options.practice) : null;
 
   for (const r of roster) {
     const raw = (r.injuryStatus ?? "").trim();
     const lower = raw.toLowerCase();
-    const lastGame = last !== null ? { week: last, played: playedIn(season, r.id, last) } : null;
+    const lastGame = last !== null ? { week: last, played: playedIn(season, r.id, last, options.logs) } : null;
     const prior = lastReport?.get(availabilityKey(r.name))?.gameStatus ?? null;
     const base = { lastGame, priorStatus: prior, practice: null as string | null };
 
@@ -218,8 +231,17 @@ export function gameAvailability(
             `no Week ${week} designation yet.`,
         });
       } else {
-        const status = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-        out.set(r.id, { ...base, kind: kindOf(status), status, source: "sleeper", note: null });
+        // Expired: filed for a game he then played (or for no known game).
+        const was = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+        out.set(r.id, {
+          ...base,
+          kind: "active",
+          status: null,
+          source: "none",
+          note: lastGame
+            ? `Listed ${was} for Week ${lastGame.week} and played; no Week ${week} designation reported yet.`
+            : `No current game designation reported.`,
+        });
       }
       continue;
     }
@@ -239,7 +261,7 @@ export function gameRoster(
   season: number,
   week: number,
   roster: RosterPlayer[],
-  options: { nextGame?: boolean } = {},
+  options: AvailabilityOptions = {},
 ): Array<RosterPlayer & { availability?: Availability }> {
   const map = gameAvailability(team, season, week, roster, options);
   return roster.map((r) => {

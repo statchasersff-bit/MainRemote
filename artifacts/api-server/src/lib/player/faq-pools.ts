@@ -18,6 +18,7 @@ import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { designationSeverity, lastName, matchupBand, STARTSIT_BASE } from "./header";
 import { leagueFit } from "./outlook-tab";
 import { aPos, count, listWords, one, ordinal, tabHref, whole, word, type FaqCandidate } from "./faq-engine";
+import { rosteredPct } from "./rounding";
 
 /* ---------------------------------------------------------------- context */
 
@@ -38,7 +39,7 @@ interface Ctx {
 function ctx(data: PlayerPageData): Ctx {
   const season = data.leagueSeason ?? data.season;
   const log = data.season === season ? data.gameLog ?? [] : [];
-  const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
+  const status = (data.designation?.injuryStatus ?? "").trim();
   return {
     name: data.player.name,
     last: lastName(data.player.name),
@@ -183,7 +184,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
   // 4. Rosterability, league by league (the Outlook tab's calls).
   const fit = leagueFit(data);
   if (fit) {
-    const rostered = data.rosterPct ? ` He is rostered in ${Math.round(data.rosterPct.owned)}% of leagues.` : "";
+    const rostered = data.rosterPct ? ` He is rostered in ${rosteredPct(data.rosterPct.owned)} of leagues.` : "";
     out.push({
       key: "roster",
       q: `Is ${c.name} worth rostering in fantasy football?`,
@@ -424,7 +425,10 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
       key: "last",
       q: `What were ${possessive(c.name)} stats last season?`,
       a: `In ${prev.season}, ${c.name} ${body} in ${count(prev.gamesPlayed, "game")}. That was ${one(prev.points)} ${c.fmt} points (${one(prev.ppg)} per game)` +
-        (prev.finish ? `, ${aPos(c.pos)} ${c.pos}${prev.finish} finish.` : "."),
+        // The finish is by TOTAL points (careerSeasons' finish.total), so it
+        // says so: after "per game" a bare "finish" read as a per-game rank
+        // (audit WEB-035).
+        (prev.finish ? `, ${aPos(c.pos)} ${c.pos}${prev.finish} finish in total points.` : "."),
     });
   }
 

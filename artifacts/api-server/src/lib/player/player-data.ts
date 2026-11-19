@@ -45,6 +45,9 @@ import {
   type UpcomingGame,
 } from "./upcoming";
 import { getTeamSchedule, type ScheduleGame } from "../team/schedule";
+import { currentStatus, displayedStatus, type CurrentStatus } from "./current-status";
+import { currentFpaSeason, getFpaTable } from "../fpa/fpa-data";
+import { seasonAvailability, type SeasonAvailability } from "./games-missed";
 import {
   depthRole,
   overviewMeters,
@@ -87,6 +90,8 @@ import {
 } from "./data";
 import {
   attachOppRanks,
+  fpaOppRanks,
+  type OppRankSource,
   attachRanks,
   buildOppRanks,
   buildSeasonStandings,
@@ -235,6 +240,14 @@ export interface InjuryProfile {
   seasonMissed: number | null;
   /** Every week this season he sat out, injured or not; null with no log. */
   seasonOut: number | null;
+  /**
+   * The shared games played / missed record both counts above come from
+   * (games-missed.ts). Since 2026-11-19 they are counted off the stored logs
+   * and his club's completed weeks, not off the page's padded log, so a
+   * player with no row this season (Isiah Pacheco, on IR all year) is still
+   * counted.
+   */
+  availability: SeasonAvailability;
   /** The most recent week he actually played, for the FAQ. */
   lastPlayedWeek: number | null;
   faq: InjuryFaq[];
@@ -517,6 +530,13 @@ export interface PlayerPageData {
    */
   designation: RosterPlayer | null;
 
+  /**
+   * The normalized current status behind `designation` (current-status.ts):
+   * the game week it is for, reserve list vs game designation vs practice,
+   * the timestamps and a freshness state.
+   */
+  currentStatus: CurrentStatus;
+
   /** Epoch ms the roster snapshot was pulled. 0 when there is none. */
   rosterFetchedAt: number;
 
@@ -602,7 +622,8 @@ async function teamNewsFor(
 }
 
 /**
- * The player's current injury designation, or null.
+ * The player's roster row (with Sleeper's raw, week-less injury_status), or
+ * null. current-status.ts decides what of it is current.
  *
  * Matched on the Sleeper id, which both sides are keyed by, rather than on the
  * name - two players share a name often enough that a name match would
@@ -611,15 +632,14 @@ async function teamNewsFor(
  * The roster only indexes skill positions, so a lineman resolves to null. That
  * is correct: null here means "no designation on file", never "fit".
  */
-function currentDesignation(
+function rosterRowFor(
   player: Player,
   team: NflTeam | null,
 ): RosterPlayer | null {
   if (!team) return null;
   const roster = getTeamRoster(team.abbreviation);
   if (!roster) return null;
-  const match = roster.players.find((row) => row.id === player.id);
-  return match?.injuryStatus ? match : null;
+  return roster.players.find((row) => row.id === player.id) ?? null;
 }
 
 /** Sleeper-backed season production, for the finish timeline. */
@@ -1004,26 +1024,26 @@ function buildInjuryProfile(
   season: number,
   gameLog: GameLogEntry[],
   designation: RosterPlayer | null,
+  teamCode: string | null,
 ): InjuryProfile | null {
   const history = getInjuryHistory(playerId);
   if (!history) return null;
 
   const summary = summarizeInjuries(history);
 
-  // Absences in the season on the page. "out" and not "bye", off a log that
-  // stops at the team's last played game - so this counts games that happened
-  // without him, never games that have not kicked off.
-  const outWeeks = gameLog.filter((entry) => entry.game_status === "out");
-  const injuredIn = (week: number): boolean =>
-    history.nfl.some(
-      (inj) =>
-        inj.season === season &&
-        typeof inj.week === "number" &&
-        week >= inj.week &&
-        week <= inj.week + (inj.gamesMissed ?? 0),
-    );
-  const seasonMissed = gameLog.length > 0 ? outWeeks.filter((entry) => injuredIn(entry.week)).length : null;
-  const seasonOut = gameLog.length > 0 ? outWeeks.length : null;
+  // Absences in the season on the page, from the one shared definition
+  // (games-missed.ts, audit WEB-039): his club's completed games he did not
+  // play, split into injury (an injury record covers the week) and reason
+  // unknown. The same record the Durability Profile reads.
+  const availability = seasonAvailability({
+    season,
+    playerId,
+    currentTeam: teamCode,
+    injuries: history.nfl,
+  });
+  const counted = gameLog.length > 0 || availability.teamGames > 0;
+  const seasonMissed = counted ? availability.missedInjury : null;
+  const seasonOut = counted ? availability.notPlayed : null;
   const played = gameLog.filter((entry) => entry.game_status === "active");
   const lastPlayedWeek =
     played.length > 0 ? Math.max(...played.map((entry) => entry.week)) : null;
@@ -1038,6 +1058,7 @@ function buildInjuryProfile(
     latest: latestInjury(history.nfl),
     seasonMissed,
     seasonOut,
+    availability,
     lastPlayedWeek,
     faq: injuryFaq({
       name,
@@ -1101,6 +1122,26 @@ export async function getPlayerPageData(
    * re-labeling the active season's log, is the kind of bug that produces a
    * page that is wrong rather than empty.
    */
+  // Opponent ranks from the FPA table, the Fantasy Points Allowed page's own
+  // (audit WEB-033): the live table for the current season, the archive for
+  // a finished one. Fetched before the logs are built because buildLog is
+  // synchronous; the game-log method is only the fallback.
+  const fpaRanks = new Map<number, { ranks: Map<string, number>; source: OppRankSource }>();
+  {
+    const wanted = new Set<number>(seasons.slice(0, 2));
+    if (options.logSeason !== undefined) wanted.add(options.logSeason);
+    for (const year of wanted) {
+      const current = year === currentFpaSeason();
+      const table = await (current
+        ? matchupTable(format)
+        : getFpaTable({ season: year, format, view: "raw" })
+      ).catch(() => null);
+      if (table && table.rows.length && table.season === year) {
+        fpaRanks.set(year, { ranks: fpaOppRanks(table.rows), source: current ? "fpa-current" : "fpa-archive" });
+      }
+    }
+  }
+
   const buildLog = (candidate: number): GameLogEntry[] => {
     const logs = loadGameLogs(candidate);
     const raw = logs[player.id] ?? [];
@@ -1115,7 +1156,8 @@ export async function getPlayerPageData(
             buildWeeklyRanks(candidate, logs, allPlayers, format),
           ),
           player.position,
-          buildOppRanks(candidate, logs, allPlayers, format),
+          fpaRanks.get(candidate)?.ranks ?? buildOppRanks(candidate, logs, allPlayers, format),
+          fpaRanks.get(candidate)?.source ?? "gamelog",
         ),
         player.team,
         candidate,
@@ -1273,7 +1315,23 @@ export async function getPlayerPageData(
   // from it, and two calls could not drift apart but would say the same work
   // twice on every player page.
   const drivers = outlookDrivers(player, outlook2026);
-  const designation = currentDesignation(player, team);
+  // One normalized current status (current-status.ts, audit WEB-039): the
+  // week-aware rule the matchup preview uses, so an expired Questionable is
+  // not carried into the next week. `designation` carries the displayed
+  // status (reserve list or this week's game status) for every consumer.
+  const rosterRow = rosterRowFor(player, team);
+  const status = currentStatus({
+    playerId: player.id,
+    team,
+    season: leagueSeason,
+    games: schedule ? schedule.games.filter((g) => g.seasonType === "regular") : null,
+    rosterRow,
+    rosterFetchedAt: rosterFetchedAt(),
+    now: Date.now(),
+  });
+  const shown = displayedStatus(status);
+  const designation: RosterPlayer | null =
+    rosterRow && shown ? { ...rosterRow, injuryStatus: shown } : null;
 
   const production = productionSeasons(player.id, format);
   const careerRows = careerStatRows(production, careerSeasons, season);
@@ -1376,9 +1434,14 @@ export async function getPlayerPageData(
     injury: buildInjuryProfile(
       player.id,
       player.name,
-      season,
-      gameLog,
+      // The season every label on the injury surfaces names ("2026 games
+      // missed"): the league's, not the page's active season, which for a
+      // player with no 2026 snap is 2025 (Isiah Pacheco read "2026 games
+      // missed 2" off his 2025 log).
+      leagueSeason,
+      season === leagueSeason ? gameLog : [],
       designation,
+      team?.code ?? player.team ?? null,
     ),
 
     news,
@@ -1391,6 +1454,7 @@ export async function getPlayerPageData(
     mateNews,
     weekTopTargets: team ? weekTopTargets(leagueSeason, team.code) : {},
     designation,
+    currentStatus: status,
     rosterFetchedAt: rosterFetchedAt(),
     leagueSeason,
     leagueWeek: leagueWeeksLogged(leagueSeason),
@@ -1408,7 +1472,9 @@ export async function getPlayerPageData(
     depth: depthRole(player, team),
     startingQb: startingQb(player, team, leagueSeason, allPlayers),
     usage: playerUsage(player, team, leagueSeason),
-    rosRank: rosRank(player, leagueSeason),
+    // In season once a week has been logged: before that the board is the
+    // preseason board and its age is not a defect.
+    rosRank: rosRank(player, leagueSeason, { now: Date.now(), inSeason: leagueWeeksLogged(leagueSeason) >= 1 }),
     upcomingSeason: buildUpcoming({
       position: player.position,
       schedule,
@@ -1426,6 +1492,7 @@ export async function getPlayerPageData(
       player.position,
       leagueSeason,
       season === leagueSeason && played.length > 0,
+      format,
     ),
 
     version: "",

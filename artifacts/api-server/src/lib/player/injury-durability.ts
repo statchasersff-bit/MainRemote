@@ -260,6 +260,23 @@ export interface DurabilityModel {
 }
 
 /** The card's inputs for a page's player, or null when he has no profile. */
+/**
+ * An episode still open in the season the page shows counts its games from
+ * the page's own games-missed record (games-missed.ts), not the durability
+ * pack's figure, which is as old as the pack's last refresh: Isiah Pacheco's
+ * read "Still out, 5 games missed so far" while the injury history said 9
+ * (audit WEB-039). Closed and past-season episodes keep the pack's count.
+ */
+function currentSeasonCounts(episodes: RegionEpisode[], data: PlayerPageData): RegionEpisode[] {
+  const avail = data.injury?.availability;
+  if (!avail) return episodes;
+  return episodes.map((ep) => {
+    if (ep.season !== avail.season || !ep.ongoing || ep.week == null) return ep;
+    const start = ep.week;
+    return { ...ep, gamesMissed: avail.weeksMissedInjury.filter((w) => w >= start).length };
+  });
+}
+
 export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
   const gsis = gsisForSleeper(data.player.id);
   if (!gsis) return null;
@@ -273,7 +290,7 @@ export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
       region,
       gamesMissed: stat.gamesMissed,
       severe: stat.severe,
-      episodes: regionEpisodes(slice, injuries, region.key),
+      episodes: currentSeasonCounts(regionEpisodes(slice, injuries, region.key), data),
       color: severityColor(stat.gamesMissed, stat.severe),
     }))
     .sort((a, b) => b.gamesMissed - a.gamesMissed || b.episodes.length - a.episodes.length);
