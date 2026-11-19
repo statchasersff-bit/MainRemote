@@ -772,16 +772,26 @@ describe("embedded mode", () => {
     }
 
     // The Fantasy columns carry no status in the document; each row borrows the
-    // Offense column's for the same player.
+    // Offense column's for the same player. Since 2026-11-19 both read the
+    // CURRENT status (team/current-injuries.ts: a feed Q/D/O stands only as
+    // this week's official report confirms it), so the check is that the two
+    // views agree, not that the feed's raw code survives.
+    const badge = (card) => card?.querySelector(".sct-injury-badge")?.getAttribute("title") ?? null;
+    const offenseCards = [...offense.querySelectorAll(".sct-dpp-card")];
+    let compared = 0;
     for (const pos of ["QB", "RB", "WR", "TE"]) {
       const offenseCol = ne.positions[pos] ?? [];
       for (const player of ne.positions[`FAN_${pos}`] ?? []) {
         const twin = offenseCol.find((o) => o.name === player.name);
-        if (player.status || !twin?.status) continue;
+        if (player.status || !twin) continue;
         const card = [...fantasy.querySelectorAll(".sct-dpp-card")].find((c) => rowName(c) === player.name);
-        assert.ok(card?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
+        const twinCard = offenseCards.find((c) => rowName(c) === player.name);
+        if (!card || !twinCard) continue;
+        assert.equal(badge(card), badge(twinCard), `${player.name}: the Fantasy view's status matches the Offense view's`);
+        compared++;
       }
     }
+    assert.ok(compared > 0, "fantasy and offense cards compared");
 
     // Under the questions: this club's pages, then the fantasy tools, every
     // player name on the chart a crawlable link where a profile exists.
