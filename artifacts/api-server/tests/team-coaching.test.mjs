@@ -51,7 +51,10 @@ describe("placement", () => {
     const ids = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.getAttribute("data-sct-panel-id"));
     assert.deepEqual(ids.slice(0, 4), ["outlook", "usage", "coaching", "stats"]);
     const tabs = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
-    assert.deepEqual(tabs.slice(0, 4), ["Outlook", "Usage", "Coaching", "Stats"]);
+    // The default tab reads "Overview" once the season has a final (Team
+    // Pages Phase 1, 2026-11-19), "Outlook" before it; same id and address.
+    assert.match(tabs[0], /^(Overview|Outlook)$/);
+    assert.deepEqual(tabs.slice(1, 4), ["Usage", "Coaching", "Stats"]);
     // Its own address since mak's coaching brief (2026-11-05): the hub prints
     // no coaching panel, and the tab is a link to /coaching/ (ownsAddress).
     assert.equal(doc.querySelector("#coaching-tab").getAttribute("href"), "/team/buffalo-bills/coaching/");

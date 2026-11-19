@@ -136,7 +136,7 @@ from team + section + season, mirroring `teamSectionHeading()` in the API's
 
 | URL | H1 |
 |-----|-----|
-| `/nfl/teams/new-england-patriots/` | New England Patriots Fantasy Football Outlook & Stats 2026 |
+| `/nfl/teams/new-england-patriots/` | New England Patriots 2026 Stats, Schedule & Fantasy Outlook |
 | `…/outlook/` | 301 to the hub, which opens on the Outlook |
 | `…/stats/` | New England Patriots Stats 2026 |
 | `…/schedule/` | New England Patriots Schedule 2026 |

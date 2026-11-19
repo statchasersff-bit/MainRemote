@@ -23,7 +23,7 @@ import { ensureTeams } from "../teams";
 import { itemTimestamp, type NewsItem } from "../render";
 import { nflState, type NflState } from "./nfl-state";
 import { getTeamProfile, type TeamProfile } from "./profile";
-import { getTeamPostseason, getTeamSchedule, nextGame, type TeamSchedule } from "./schedule";
+import { getTeamPostseason, getTeamSchedule, nextGame, recordThrough, type TeamSchedule } from "./schedule";
 import { getTeamSnapshot, type TeamSnapshot } from "./snapshot";
 import { getTeamStats, type TeamStats } from "./stats";
 import {
@@ -33,13 +33,14 @@ import {
   type DepthChartEntry,
   type TeamRoster,
 } from "./roster";
-import type { NflTeam } from "./teams";
+import { TEAMS, type NflTeam } from "./teams";
 import { coachingVersion } from "./coaching";
 import { usageVersion } from "./usage";
 import { efficiencyVersion } from "./efficiency";
 import { draftVersion, nextDraftYear } from "./draft";
 import { contractsVersion } from "./contracts";
 import { outlookVersion } from "./outlook";
+import { gameLogUpdatedMs } from "../player/data";
 import {
   depthChartsVersion,
   getTeamDepthCharts,
@@ -120,6 +121,13 @@ export interface TeamPageData {
     rankLabel: string | null;
   } | null;
 
+  /**
+   * The division's regular-season records, from the same slate as `schedule`
+   * (one in-memory read per club), for the overview's division race. Null
+   * when the slate could not be read; no tiebreakers are applied.
+   */
+  division: Array<{ team: NflTeam; wins: number; losses: number; ties: number }> | null;
+
   /** Changes whenever any input changes - used as the render cache key. */
   version: string;
 }
@@ -186,6 +194,17 @@ async function opponentDefense(
   };
 }
 
+/** Every club in this team's division, with its regular-season record from the slate. */
+async function divisionRecords(team: NflTeam, season: number): Promise<TeamPageData["division"]> {
+  const clubs = TEAMS.filter((t) => t.division === team.division);
+  const schedules = await Promise.all(clubs.map((t) => getTeamSchedule(t, season).catch(() => null)));
+  if (schedules.some((s) => s === null)) return null;
+  return clubs.map((t, i) => {
+    const rec = recordThrough((schedules[i] as TeamSchedule).games);
+    return { team: t, wins: rec.wins, losses: rec.losses, ties: rec.ties };
+  });
+}
+
 export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
   // The roster index rides on the news tool's own Sleeper fetch, so this is
   // usually already warm; awaiting it first means the news filter below can use
@@ -222,6 +241,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
   }, null);
 
   const nextOpponentDefense = await opponentDefense(schedule, state.statsSeason);
+  const division = await divisionRecords(team, state.season);
 
   return {
     team,
@@ -244,6 +264,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     snapshot: settled(snapshotResult),
     stats: settled(statsResult),
     nextOpponentDefense,
+    division,
     version: "",
   };
 }
@@ -291,5 +312,8 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     outlookVersion(),
     // The depth-charts plugin's push rewrites its file in place.
     depthChartsVersion(),
+    // The overview's key contributors read the player pages' game logs,
+    // which the live refresh rewrites after each game window.
+    gameLogUpdatedMs(data.state.season) ?? 0,
   ].join("-");
 }

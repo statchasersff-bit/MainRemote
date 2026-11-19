@@ -68,7 +68,7 @@ function splitValue(value: string): { main: string; sub: string } {
 
 /* ------------------------------------------------------------------ header */
 
-function header(team: NflTeam, outlook: TeamOutlook, underway: boolean): string {
+function header(team: NflTeam, outlook: TeamOutlook, underway: boolean, archived = false): string {
   const stamp = [underway ? "Written before Week 1" : "Preseason outlook", ...(outlook.updated ? [`Updated ${outlook.updated}`] : [])];
   return premiumTabHead({
     hook: "sct-tfo-head",
@@ -76,7 +76,7 @@ function header(team: NflTeam, outlook: TeamOutlook, underway: boolean): string 
     art: "outlook",
     // The panel's heading (.sct-h2, its gold rule suppressed by the shared
     // header), printed on a section page too.
-    heading: `<h2 class="sct-h2 sct-up-h2 sct-tfo-title">${e(`${team.fullName} Fantasy Football Outlook & Stats ${outlook.season}`)}</h2>`,
+    heading: `<h2 class="sct-h2 sct-up-h2 sct-tfo-title">${e(archived ? `${team.fullName} ${outlook.season} Preseason Fantasy Outlook` : `${team.fullName} Fantasy Football Outlook & Stats ${outlook.season}`)}</h2>`,
     // Phones show this in the heading's place (mak, 2026-11-14: the team
     // header above already names the club); the heading itself, the page's
     // H1 on the live site, keeps every word for search and screen readers.
@@ -189,7 +189,8 @@ function group(g: OutlookGroup, live: Map<string, RosterPlayer>, team: NflTeam, 
 
 /* ------------------------------------------------------------------ public */
 
-export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: Map<string, RosterPlayer>, underway: boolean): string {
+/** `archived`: the block sits in the hub's preseason archive (2026-11-19) and its title says so. */
+export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: Map<string, RosterPlayer>, underway: boolean, archived = false): string {
   const groups = outlook.groups.map((g, i) => group(g, live, team, i)).join("");
   if (!groups) return "";
   return (
@@ -197,7 +198,7 @@ export function renderOutlookPremium(team: NflTeam, outlook: TeamOutlook, live: 
     // The banner, the summary and the context strip are one framed section,
     // the banner its header, like the groups under it (mak, 2026-11-06).
     `<section class="sct-tfo-intro">` +
-    header(team, outlook, underway) +
+    header(team, outlook, underway, archived) +
     // The card's title on phones only (mak, 2026-11-14: "should be called
     // Preseason Outlook"), where the banner's heading is visually hidden.
     // aria-hidden like the old phone titles: the H2 above names the section.

@@ -55,6 +55,8 @@ import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { renderOutlookPremium } from "./team/outlook-premium";
+import { overviewPhase, renderPreseasonArchive, renderTeamOverview } from "./team/overview";
+import { seasonFaq } from "./team/season-faq";
 import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import { renderPlayerSearch } from "./player-render";
 import { renderTeamHeader } from "./team/team-header";
@@ -236,8 +238,9 @@ const SECTION_HEADINGS: Record<string, string> = {
  * the phrase people type for each of them.
  */
 /**
- * The heading of the hub itself: "Buffalo Bills Fantasy Football Outlook &
- * Stats 2026".
+ * The heading of the hub itself: "Buffalo Bills 2026 Stats, Schedule &
+ * Fantasy Outlook" (since 2026-11-19; "Buffalo Bills Fantasy Football
+ * Outlook & Stats 2026" before).
  *
  * The hub's address is the Outlook's - `/outlook/` 301s here - so this is also
  * the Outlook tab's heading. It replaced the panel's "2026 Fantasy Outlook",
@@ -245,7 +248,9 @@ const SECTION_HEADINGS: Record<string, string> = {
  * H1 of `/outlook/` besides. Mirrored by statchasers_team_heading() in PHP.
  */
 export function teamHubHeading(teamName: string, season: number): string {
-  return `${teamName} Fantasy Football Outlook & Stats ${season}`;
+  // mak's Team Pages Phase 1 finalization (2026-11-19): the hub opens on the
+  // season overview, so the H1 names the season first. Mirrored in PHP.
+  return `${teamName} ${season} Stats, Schedule & Fantasy Outlook`;
 }
 
 /**
@@ -1297,6 +1302,7 @@ function renderOutlook(
   data: TeamPageData,
   faq: FaqSink,
   tail: TailSink,
+  archived = false,
 ): string {
   const outlook = getTeamOutlook(data.team.abbreviation);
   if (!outlook) return "";
@@ -1323,7 +1329,7 @@ function renderOutlook(
   // The tab (mak's brief, 2026-11-05; approved and the old block removed the
   // same day): team/outlook-premium.ts, on the same outlook and the same live
   // roster match. Its header carries the panel's H2.
-  return renderOutlookPremium(data.team, outlook, live, data.state.regularSeasonUnderway);
+  return renderOutlookPremium(data.team, outlook, live, data.state.regularSeasonUnderway, archived);
 }
 
 /* ------------------------------------------------------------- next game */
@@ -2270,7 +2276,8 @@ export function renderTeamPage(
   const depthTail: TailSink = { html: "" };
   const scheduleFaqItems: FaqSink = [];
   const scheduleTail: TailSink = { html: "" };
-  const outlook = renderOutlook(data, outlookFaq, outlookTail);
+  const phase = overviewPhase(data);
+  const outlook = renderOutlook(data, outlookFaq, outlookTail, phase === "season");
   const usageView = buildUsageView(
     team.abbreviation,
     data.state.season,
@@ -2321,11 +2328,51 @@ export function renderTeamPage(
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing.
+  // The default tab, season-aware (mak's Team Pages Phase 1 brief,
+  // 2026-11-19). Before the first regular-season final it is the preseason
+  // outlook, as written. Once the season has a final it opens on the
+  // current-season overview (team/overview.ts) and the outlook moves under
+  // it into a closed, labeled archive: still on the page, never presented as
+  // current analysis. The panel keeps the id "outlook", so the hub's address,
+  // tab hrefs, FAQ tail and title metadata are unchanged.
+  let hubHtml = outlook === "" ? "" : caveat + outlook;
+  let hubLabel = "Outlook";
+  // The next season's preseason with no outlook written yet: the overview
+  // stands in (next game, injuries; every season-to-date block is empty, so
+  // last season's numbers cannot read as current) instead of the hub opening
+  // on another tab.
+  if (phase === "season" || hubHtml === "") {
+    const prefix = options.teamPathPrefix ?? "/team/";
+    const overview = renderTeamOverview(data, usageView, options, now, {
+      usage: usage.html ? sectionPath(prefix, team.slug, "usage") : null,
+      stats: stats ? sectionPath(prefix, team.slug, "stats") : null,
+      depth: depth ? sectionPath(prefix, team.slug, "depth-chart") : null,
+    });
+    if (overview) {
+      const written = getTeamOutlook(team.abbreviation);
+      // The preseason questions go with the take they re-cut: inside the
+      // archive, as markup only. The hub's FAQ - its tail and its FAQPage -
+      // is the season's questions (team/season-faq.ts, 2026-11-19), so the
+      // structured data matches the questions a reader sees under the panel.
+      const archivedFaq = outlookFaq.length
+        ? `<div class="sct-block sct-ovw-archive-faq">` +
+          faqHeading("Preseason Questions") +
+          faqList(outlookFaq, [], "h3") +
+          `</div>`
+        : "";
+      hubHtml = overview + (written && hubHtml ? renderPreseasonArchive(written.season, written.updated, hubHtml + archivedFaq) : "");
+      hubLabel = "Overview";
+      const current = seasonFaq(data, usageView, now);
+      outlookFaq.length = 0;
+      outlookTail.html = faqBlock(faqList(current, outlookFaq, "h3"));
+    }
+  }
+
   const sections: Section[] = [
     {
       id: "outlook",
-      label: "Outlook",
-      html: outlook === "" ? "" : caveat + outlook,
+      label: hubLabel,
+      html: hubHtml,
       faq: outlookFaq,
       tail: outlookTail.html,
     },

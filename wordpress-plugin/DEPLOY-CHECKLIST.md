@@ -99,8 +99,8 @@ to end - `/nfl/teams/new-england-patriots/` and its `/stats/`, `/schedule/`,
 confirm:
 
 - [ ] HTTP **200**.
-- [ ] the H1 is the page's phrase: "New England Patriots Fantasy Football
-      Outlook & Stats 2026" on the hub, "New England Patriots Schedule 2026"
+- [ ] the H1 is the page's phrase: "New England Patriots 2026 Stats,
+      Schedule & Fantasy Outlook" on the hub (since 2026-11-19), "New England Patriots Schedule 2026"
       and so on below it. Exactly one H1, and no `<h2>`
       inside the panel repeating it.
 - [ ] `<title>` matches the H1's phrase and differs across the five.

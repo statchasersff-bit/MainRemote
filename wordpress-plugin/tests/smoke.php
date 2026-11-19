@@ -569,8 +569,8 @@ if ( 'weekstray' === $group ) {
 }
 
 echo "team headings\n";
-is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'hub' );
-is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'outlook is the hub' );
+is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots 2026 Stats, Schedule & Fantasy Outlook', 'hub' );
+is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots 2026 Stats, Schedule & Fantasy Outlook', 'outlook is the hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'news' ), 'New England Patriots News 2026', 'news' );
 is( statchasers_team_heading( 'new-england-patriots', 'depth-chart' ), 'New England Patriots Depth Chart', 'depth chart (no year, 2026-11-03)' );
 

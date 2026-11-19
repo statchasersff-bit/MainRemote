@@ -308,22 +308,37 @@ function historyFaq(team: NflTeam, h: DraftHistoryView, n: Names): FaqItem[] {
   return out;
 }
 
+/**
+ * Questions that restate another answer, cut 2026-11-19 (Team Pages Phase 1
+ * finalization: "retain only distinct, useful information"). The pick
+ * count, the pick list, the extras, the Day 2 extras and the trades were five
+ * questions over one inventory; they are now one answer (the count, then the
+ * picks by round, then what was sent away) plus the first-round question.
+ * The class count, the first-round tally and the per-player "when did they
+ * draft" lines repeat the class lists; the "where can I see" closer was
+ * navigation, not an answer.
+ */
+const DRAFT_REPEATS = [
+  /^What draft picks do the /,
+  /^How many extra draft picks /,
+  /^Do the .* have any extra Day 2 picks/,
+  /^Have the .* traded away any /,
+  /^How many players have the .* drafted over /,
+  /^How many first-round picks have the /,
+  /^When did the .* draft /,
+];
+
 export function draftFaq(team: NflTeam, view: DraftView): FaqItem[] {
   const n = names(team);
   const out: FaqItem[] = [];
   if (view.capital) out.push(...capitalFaq(team, view.capital, n));
   if (view.history) out.push(...historyFaq(team, view.history, n));
-  if (!out.length) return out;
-  const h = view.history;
-  const c = view.capital;
-  out.push({
-    question: `Where can I see the complete ${n.nick} draft history?`,
-    answer: [
-      `The draft tables above show ` +
-        (h ? `every ${team.fullName} pick from the ${h.firstSeason} through ${h.lastSeason} NFL Drafts` : `the ${n.poss} recent draft classes`) +
-        (c ? `, along with the team's current ${c.draftYear} draft pick inventory.` : "."),
-      `Each draft class includes the round, overall pick, player, position, college, roster status, and additional career information where available.`,
-    ],
-  });
-  return out;
+  // The inventory in one answer: the count's sentence, the by-round list and
+  // the traded-away line from the list question, then the compensatory note.
+  const howMany = out.find((q) => q.question.startsWith("How many picks do the "));
+  const which = out.find((q) => q.question.startsWith("What draft picks do the "));
+  if (howMany && which) {
+    howMany.answer = [howMany.answer[0], ...which.answer.slice(1), ...howMany.answer.slice(1)];
+  }
+  return out.filter((q) => !DRAFT_REPEATS.some((re) => re.test(q.question)));
 }
