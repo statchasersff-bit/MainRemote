@@ -1,0 +1,838 @@
+{
+"8205": {
+"grade": "B",
+"score": 66,
+"gradeColor": "#06b6d4",
+"nfl": [
+{
+"season": 2026,
+"week": 1,
+"type": "Injured reserve",
+"bodyPart": "unknown",
+"side": "unknown",
+"severity": "major",
+"gamesMissed": 9,
+"description": "Placed on injured reserve in Week 1; out since Week 1 (9 games missed so far).",
+"report": true,
+"reports": [
+{
+"week": 1,
+"reserve": "injured reserve"
+},
+{
+"week": 2,
+"reserve": "injured reserve"
+},
+{
+"week": 3,
+"reserve": "injured reserve"
+},
+{
+"week": 4,
+"reserve": "injured reserve"
+},
+{
+"week": 5,
+"reserve": "injured reserve"
+},
+{
+"week": 7,
+"reserve": "injured reserve"
+},
+{
+"week": 8,
+"reserve": "injured reserve"
+},
+{
+"week": 9,
+"reserve": "injured reserve"
+},
+{
+"week": 10,
+"reserve": "injured reserve"
+},
+{
+"week": 11,
+"reserve": "injured reserve"
+}
+]
+},
+{
+"season": 2025,
+"week": 8,
+"type": "Knee",
+"bodyPart": "knee",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 3,
+"description": "Hurt during the Week 8 game against the Commanders and listed with a knee injury from Week 9; missed Weeks 9, 11 and 12.",
+"report": true,
+"play": {
+"week": 8,
+"opponent": "WAS",
+"qtr": 4,
+"clock": "04:00",
+"desc": "(Shotgun) 10-I.Pacheco right guard to KC 44 for 9 yards (39-J.Reaves; 23-T.Amos). PENALTY on KC-52-C.Humphrey, Offensive Holding, 10 yards, enforced at KC 40."
+},
+"reports": [
+{
+"week": 9,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 11,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 12,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 13,
+"practice": "Full",
+"status": null
+},
+{
+"week": 14,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2024,
+"week": 18,
+"type": "Ribs",
+"bodyPart": "chest",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with a chest injury from Week 18; missed Week 18.",
+"report": true,
+"reports": [
+{
+"week": 18,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 20,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2024,
+"week": 3,
+"type": "Ankle",
+"bodyPart": "ankle",
+"side": "unknown",
+"severity": "major",
+"gamesMissed": 9,
+"description": "Out of the lineup with an ankle injury from Week 3, on the injury report from Week 11; missed Weeks 3 through 12 (9 games).",
+"report": true,
+"reports": [
+{
+"week": 11,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 12,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 13,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 18,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 18 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 18,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2023,
+"week": 17,
+"type": "Concussion",
+"bodyPart": "head",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a concussion from Week 17 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 17,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2023,
+"week": 13,
+"type": "Shoulder",
+"bodyPart": "shoulder",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 2,
+"description": "Hurt during the Week 13 game against the Packers and listed with a shoulder injury from Week 14; missed Weeks 14 and 15.",
+"report": true,
+"play": {
+"week": 13,
+"opponent": "GB",
+"qtr": 3,
+"clock": "13:40",
+"desc": "(Shotgun) 10-I.Pacheco up the middle to KC 34 for 3 yards (97-K.Clark)."
+},
+"reports": [
+{
+"week": 14,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 15,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 16,
+"practice": "Full",
+"status": null
+},
+{
+"week": 17,
+"practice": "Limited",
+"status": "Questionable"
+},
+{
+"week": 18,
+"practice": "Limited",
+"status": "Questionable"
+},
+{
+"week": 19,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 4,
+"type": "Abdomen",
+"bodyPart": "abdomen",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with an abdomen injury from Week 4 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 4,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 3,
+"type": "Hamstring",
+"bodyPart": "hamstring",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a hamstring injury from Week 3 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 3,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2022,
+"week": 22,
+"type": "Wrist",
+"bodyPart": "wrist",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a wrist injury from Week 22 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 22,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 14,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 14 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 14,
+"practice": "Full",
+"status": null
+},
+{
+"week": 15,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 14,
+"type": "Shoulder",
+"bodyPart": "shoulder",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a shoulder injury from Week 14 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 14,
+"practice": "Full",
+"status": null
+},
+{
+"week": 15,
+"practice": "Full",
+"status": null
+},
+{
+"week": 16,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 11,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 11 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 11,
+"practice": "Full",
+"status": null
+}
+]
+}
+],
+"college": [
+{
+"year": 2019,
+"significance": "low",
+"description": "While at Rutgers, he suffered a deep cut on his foot while removing athletic tape after a game. He played the next week but had to sit out the following matchup."
+}
+]
+},
+"12519": {
+"grade": "A+",
+"score": 100,
+"gradeColor": "#22c55e",
+"nfl": [
+{
+"season": 2025,
+"week": 17,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Hurt during the Week 17 game against the 49ers and listed with a quad injury from Week 18 and played through it without missing time.",
+"report": true,
+"play": {
+"week": 17,
+"opponent": "SF",
+"qtr": 4,
+"clock": "00:04",
+"desc": "(Shotgun) 18-C.Williams pass incomplete short left to 20-J.Walker [94-Y.Gross-Matos]."
+},
+"reports": [
+{
+"week": 18,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2025,
+"week": 16,
+"type": "Ankle",
+"bodyPart": "ankle",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with an ankle injury from Week 16; missed Week 16.",
+"report": true,
+"reports": [
+{
+"week": 16,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 17,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2025,
+"week": 9,
+"type": "Concussion",
+"bodyPart": "head",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with a concussion from Week 9; missed Week 9.",
+"report": true,
+"reports": [
+{
+"week": 9,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 10,
+"practice": "Full",
+"status": null
+}
+]
+}
+],
+"college": []
+},
+"8205_before_2026_11_19": {
+"grade": "B",
+"score": 66,
+"gradeColor": "#06b6d4",
+"nfl": [
+{
+"season": 2026,
+"week": 7,
+"type": "Injured reserve",
+"bodyPart": "unknown",
+"side": "unknown",
+"severity": "major",
+"gamesMissed": 4,
+"description": "Placed on injured reserve in Week 7; out since Week 7 (4 games missed so far).",
+"report": true,
+"reports": [
+{
+"week": 7,
+"reserve": "injured reserve"
+},
+{
+"week": 8,
+"reserve": "injured reserve"
+},
+{
+"week": 9,
+"reserve": "injured reserve"
+},
+{
+"week": 10,
+"reserve": "injured reserve"
+},
+{
+"week": 11,
+"reserve": "injured reserve"
+}
+]
+},
+{
+"season": 2026,
+"week": 1,
+"type": "Injured reserve",
+"bodyPart": "unknown",
+"side": "unknown",
+"severity": "major",
+"gamesMissed": 9,
+"description": "Placed on injured reserve in Week 1; missed Weeks 1 through 10 (9 games).",
+"report": true,
+"reports": [
+{
+"week": 1,
+"reserve": "injured reserve"
+},
+{
+"week": 2,
+"reserve": "injured reserve"
+},
+{
+"week": 3,
+"reserve": "injured reserve"
+},
+{
+"week": 4,
+"reserve": "injured reserve"
+},
+{
+"week": 5,
+"reserve": "injured reserve"
+}
+]
+},
+{
+"season": 2025,
+"week": 8,
+"type": "Knee",
+"bodyPart": "knee",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 3,
+"description": "Hurt during the Week 8 game against the Commanders and listed with a knee injury from Week 9; missed Weeks 9, 11 and 12.",
+"report": true,
+"play": {
+"week": 8,
+"opponent": "WAS",
+"qtr": 4,
+"clock": "04:00",
+"desc": "(Shotgun) 10-I.Pacheco right guard to KC 44 for 9 yards (39-J.Reaves; 23-T.Amos). PENALTY on KC-52-C.Humphrey, Offensive Holding, 10 yards, enforced at KC 40."
+},
+"reports": [
+{
+"week": 9,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 11,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 12,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 13,
+"practice": "Full",
+"status": null
+},
+{
+"week": 14,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2024,
+"week": 18,
+"type": "Ribs",
+"bodyPart": "chest",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with a chest injury from Week 18; missed Week 18.",
+"report": true,
+"reports": [
+{
+"week": 18,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 20,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2024,
+"week": 3,
+"type": "Ankle",
+"bodyPart": "ankle",
+"side": "unknown",
+"severity": "major",
+"gamesMissed": 9,
+"description": "Out of the lineup with an ankle injury from Week 3, on the injury report from Week 11; missed Weeks 3 through 12 (9 games).",
+"report": true,
+"reports": [
+{
+"week": 11,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 12,
+"practice": "Limited",
+"status": "Out"
+},
+{
+"week": 13,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 18,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 18 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 18,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2023,
+"week": 17,
+"type": "Concussion",
+"bodyPart": "head",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a concussion from Week 17 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 17,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2023,
+"week": 13,
+"type": "Shoulder",
+"bodyPart": "shoulder",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 2,
+"description": "Hurt during the Week 13 game against the Packers and listed with a shoulder injury from Week 14; missed Weeks 14 and 15.",
+"report": true,
+"play": {
+"week": 13,
+"opponent": "GB",
+"qtr": 3,
+"clock": "13:40",
+"desc": "(Shotgun) 10-I.Pacheco up the middle to KC 34 for 3 yards (97-K.Clark)."
+},
+"reports": [
+{
+"week": 14,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 15,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 16,
+"practice": "Full",
+"status": null
+},
+{
+"week": 17,
+"practice": "Limited",
+"status": "Questionable"
+},
+{
+"week": 18,
+"practice": "Limited",
+"status": "Questionable"
+},
+{
+"week": 19,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 4,
+"type": "Abdomen",
+"bodyPart": "abdomen",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with an abdomen injury from Week 4 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 4,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2023,
+"week": 3,
+"type": "Hamstring",
+"bodyPart": "hamstring",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a hamstring injury from Week 3 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 3,
+"practice": "Limited",
+"status": "Questionable"
+}
+]
+},
+{
+"season": 2022,
+"week": 22,
+"type": "Wrist",
+"bodyPart": "wrist",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a wrist injury from Week 22 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 22,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 14,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 14 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 14,
+"practice": "Full",
+"status": null
+},
+{
+"week": 15,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 14,
+"type": "Shoulder",
+"bodyPart": "shoulder",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a shoulder injury from Week 14 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 14,
+"practice": "Full",
+"status": null
+},
+{
+"week": 15,
+"practice": "Full",
+"status": null
+},
+{
+"week": 16,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2022,
+"week": 11,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Listed on the injury report with a quad injury from Week 11 and played through it without missing time.",
+"report": true,
+"reports": [
+{
+"week": 11,
+"practice": "Full",
+"status": null
+}
+]
+}
+],
+"college": [
+{
+"year": 2019,
+"significance": "low",
+"description": "While at Rutgers, he suffered a deep cut on his foot while removing athletic tape after a game. He played the next week but had to sit out the following matchup."
+}
+]
+}
+}

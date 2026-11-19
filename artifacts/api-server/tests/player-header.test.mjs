@@ -273,10 +273,12 @@ describe("player header", () => {
       const chip = header(state({ upcoming: [game] })).querySelector(".scp-mchip");
       return [chip.className.split(" ")[1], text(chip)];
     };
-    assert.deepEqual(band(10), ["is-good", "10th vs. QBs, favorable"]);
-    assert.deepEqual(band(11), ["is-mid", "11th vs. QBs, neutral"]);
-    assert.deepEqual(band(22), ["is-mid", "22nd vs. QBs, neutral"]);
-    assert.deepEqual(band(23), ["is-bad", "23rd vs. QBs, tough"]);
+    // The FPA page's scale since 2026-11-19 (fpa/matchup-bands.ts, audit
+    // WEB-033): 1-12 favorable, 13-20 neutral, 21-32 tough.
+    assert.deepEqual(band(12), ["is-good", "12th vs. QBs, favorable"]);
+    assert.deepEqual(band(13), ["is-mid", "13th vs. QBs, neutral"]);
+    assert.deepEqual(band(20), ["is-mid", "20th vs. QBs, neutral"]);
+    assert.deepEqual(band(21), ["is-bad", "21st vs. QBs, tough"]);
   });
 
   test("before Week 1: last season final, and the second button is the outlook", () => {

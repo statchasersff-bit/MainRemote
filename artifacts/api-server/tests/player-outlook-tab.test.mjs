@@ -448,9 +448,9 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   test("the FAQ answers from the same model: buy low on the gap, the schedule's verdict, the quarterback", () => {
     const faq = Object.fromEntries([...doc.querySelectorAll(".scp-ol-faq details")].map((d) => [d.querySelector("summary").textContent, d.textContent]));
     assert.match(faq["Should I buy low or sell high on Michael Wilson?"], /buy-low candidate on the numbers: 19\.4 expected PPR points a game against 13\.6 scored/);
-    assert.match(faq["How difficult is Michael Wilson's remaining fantasy schedule?"], /^.*Difficult: of his next four games, zero come against a top-10 matchup/);
+    assert.match(faq["How difficult is Michael Wilson's remaining fantasy schedule?"], /^.*Difficult: of his next four games, one comes against a top-12 matchup for WRs and three against one of the stingiest defenses/);
     assert.match(faq["What is Michael Wilson's fantasy football upside?"], /19\.4 expected points a game/);
-    assert.doesNotMatch(faq["What is Michael Wilson's fantasy football upside?"], /top-10 matchup/);
+    assert.doesNotMatch(faq["What is Michael Wilson's fantasy football upside?"], /top-1[02] matchup/);
     assert.match(faq["Who is Michael Wilson's quarterback?"], /Gardner Minshew II is the Cardinals' listed starting quarterback now/);
     assert.match(faq["Is Michael Wilson a good fantasy playoff option?"], /Jets .*Saints .*Raiders .*one of them is favorable/);
   });

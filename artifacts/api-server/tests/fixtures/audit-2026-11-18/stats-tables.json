@@ -1,0 +1,89 @@
+{
+"qb": {
+"updated_at": "2026-11-18T05:32:56Z",
+"week": 10,
+"weeks": "1-10",
+"rows": [
+{
+"playerId": "1166",
+"playerName": "Kirk Cousins",
+"games": 10,
+"fantasyPoints": 187.7,
+"targets": null,
+"receptions": null,
+"receivingYards": null,
+"passingYards": 2547,
+"interceptions": 9
+},
+{
+"playerId": "6797",
+"playerName": "Justin Herbert",
+"games": 9,
+"fantasyPoints": 96.9,
+"targets": null,
+"receptions": null,
+"receivingYards": null,
+"passingYards": 1720,
+"interceptions": 11
+},
+{
+"playerId": "4881",
+"playerName": "Lamar Jackson",
+"games": 5,
+"fantasyPoints": 79.1,
+"targets": null,
+"receptions": null,
+"receivingYards": null,
+"passingYards": 967,
+"interceptions": 1
+}
+]
+},
+"rb": {
+"updated_at": "2026-11-18T05:32:56Z",
+"week": 10,
+"weeks": "1-10",
+"rows": [
+{
+"playerId": "9221",
+"playerName": "Jahmyr Gibbs",
+"games": 9,
+"fantasyPoints": 212.4,
+"targets": 53,
+"receptions": 41,
+"receivingYards": 384,
+"passingYards": null,
+"interceptions": null
+}
+]
+},
+"wr": {
+"updated_at": "2026-11-18T05:32:56Z",
+"week": 10,
+"weeks": "1-10",
+"rows": [
+{
+"playerId": "7547",
+"playerName": "Amon-Ra St. Brown",
+"games": 9,
+"fantasyPoints": 118.4,
+"targets": 91,
+"receptions": 65,
+"receivingYards": 755,
+"passingYards": null,
+"interceptions": null
+},
+{
+"playerId": "12519",
+"playerName": "Luther Burden III",
+"games": 9,
+"fantasyPoints": 87.3,
+"targets": 65,
+"receptions": 49,
+"receivingYards": 644,
+"passingYards": null,
+"interceptions": null
+}
+]
+}
+}
