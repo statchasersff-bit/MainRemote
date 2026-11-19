@@ -85,6 +85,30 @@ describe("team overview injuries = player pages' current status", () => {
     }
     assert.ok(rows > 0, "some injury rows checked");
   });
+
+  test("the overview FAQ's injury answer names exactly the panel's players", async () => {
+    for (const team of ["det", "lv", "sea", "min", "kc", "lar", "chi", "bal"]) {
+      const html = (await body(server.origin, `/team/${team}`)).text;
+      const list = /<ul class="sct-ovw-inj-list">([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? "";
+      // The name element, a link or plain text when the player has no page.
+      const panel = [...list.matchAll(/class="[^"]*sct-ovw-inj-name[^"]*"[^>]*>([^<]+)</g)].map((m) => m[1].trim());
+      let answer = "";
+      for (const b of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+        const j = JSON.parse(b[1]);
+        for (const x of j["@graph"] ?? [j]) {
+          if (x["@type"] !== "FAQPage") continue;
+          for (const q of x.mainEntity ?? []) if (/injured right now/.test(q.name)) answer = q.acceptedAnswer.text;
+        }
+      }
+      if (!panel.length) {
+        assert.doesNotMatch(answer, /On the current injury report/, `${team}: FAQ lists injuries the panel does not`);
+        continue;
+      }
+      for (const name of panel.slice(0, 6)) assert.ok(answer.includes(name), `${team}: FAQ omits ${name}`);
+      const named = [...answer.matchAll(/([A-Z][\w.'-]+(?: [A-Z][\w.'-]+)+) \((?:QB|RB|WR|TE|K)/g)].map((m) => m[1]);
+      for (const n of named) assert.ok(panel.includes(n), `${team}: FAQ names ${n}, not in the panel`);
+    }
+  });
 });
 
 describe("scoring audit endpoint access", () => {

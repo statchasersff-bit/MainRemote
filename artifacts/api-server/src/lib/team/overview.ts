@@ -22,8 +22,7 @@ import { escapeHtml, searchKey } from "../render";
 import { headshotImg } from "../headshot-html";
 import { loadGameLogs, loadPlayers } from "../player/data";
 import { getEntryPoints } from "../player/scoring";
-import { gameRoster } from "../matchup/availability";
-import { nextGameWeek } from "../player/current-status";
+import { currentInjuries, currentStatuses } from "./current-injuries";
 import { hasParticipation } from "../player/ranks";
 import type { GameLogEntry } from "../player/types";
 import type { TeamPageData } from "./team-data";
@@ -536,34 +535,10 @@ function contributorsCard(data: TeamPageData, view: UsageView | null, usageHref:
 
 /* --------------------------------------------------------------- injuries */
 
-/**
- * Each roster player's status for the club's next game, by the rule the player
- * pages and the matchup preview use (matchup/availability.ts gameRoster):
- * reserve lists stand, a Questionable/Doubtful/Out counts only for this week,
- * and a player who missed the last game with no new status is "Pending". A
- * designation filed for a game he then played has expired (release gate
- * 2026-11-19: Sione Vaki read Questionable here, his page "No injury
- * designation for Week 11"). Keyed by player id; absent = no current status.
- */
-function currentStatuses(data: TeamPageData): Map<string, string> {
-  const roster = data.roster?.players ?? [];
-  const week = nextGameWeek((data.schedule?.games ?? []).filter((g) => g.seasonType === "regular"));
-  const out = new Map<string, string>();
-  if (week === null) {
-    // No game left: only reserve lists are current.
-    for (const r of gameRoster(data.team, data.state.season, 99, roster, { nextGame: false })) if (r.injuryStatus) out.set(r.id, r.injuryStatus);
-    return out;
-  }
-  for (const r of gameRoster(data.team, data.state.season, week, roster)) if (r.injuryStatus) out.set(r.id, r.injuryStatus);
-  return out;
-}
-
 function injuriesCard(data: TeamPageData, depthHref: string | null): string {
   if (!data.roster) return "";
-  const current = currentStatuses(data);
-  const rows = data.injuries
-    .filter((p) => current.has(p.id))
-    .map((p) => ({ ...p, injuryStatus: current.get(p.id) ?? null }));
+  // This week's statuses only (current-injuries.ts), as the player pages.
+  const rows = currentInjuries(data);
   const body = rows.length
     ? `<ul class="sct-ovw-inj-list">` +
       rows

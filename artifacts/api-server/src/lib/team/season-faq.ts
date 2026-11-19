@@ -15,6 +15,7 @@
  */
 
 import type { TeamPageData } from "./team-data";
+import { currentInjuries } from "./current-injuries";
 import type { UsageView } from "./usage";
 import type { OutlookFaq } from "./outlook-faq";
 import { usageTrends } from "./usage-copy";
@@ -127,13 +128,15 @@ export function seasonFaq(data: TeamPageData, view: UsageView | null, now: numbe
     });
   }
 
-  // 5. Current injuries (skill positions), designations only.
-  if (data.roster && data.injuries.length > 0) {
-    const named = data.injuries.slice(0, 6).map((p) => {
+  // 5. Current injuries (skill positions), designations only - this week's,
+  // by the player pages' rule (current-injuries.ts), never an expired one.
+  const injuries = data.roster ? currentInjuries(data) : [];
+  if (data.roster && injuries.length > 0) {
+    const named = injuries.slice(0, 6).map((p) => {
       const status = p.injuryStatus ? STATUS_WORDS[p.injuryStatus] ?? p.injuryStatus.toLowerCase() : "listed";
       return `${p.name} (${p.position}, ${status}${p.injuryBodyPart ? `, ${p.injuryBodyPart.toLowerCase()}` : ""})`;
     });
-    const more = data.injuries.length - named.length;
+    const more = injuries.length - named.length;
     faq.push({
       question: `Which ${nick} players are injured right now?`,
       answer:
