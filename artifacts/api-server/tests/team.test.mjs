@@ -989,7 +989,7 @@ describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders
       assert.equal(new Set(h2s).size, h2s.length, "no heading printed twice");
       const h3s = [...sp.querySelectorAll("h3")].map((h) => h.textContent);
       for (const want of ["Passing", "Rushing", "Efficiency", "Situational & Ball Security", "Pass Defense", "Run Defense", "Efficiency Allowed", "Situational & Takeaways", "Pass Protection", "Pass Rush", "Discipline", "Snaps & Attempts"]) assert.ok(h3s.includes(want), `${path}: H3 "${want}"`);
-      assert.match(sp.querySelector(".sct-up-dek").textContent, /through Week \d+ \(\d+ games\)\.$/, "the dek names the data's week");
+      assert.match(sp.querySelector(".sct-up-dek").textContent, /League data through Week \d+; \w[\w ]* games played: \d+\.$/, "the dek names the league week and the club's games apart");
       // Six snapshot cards, three a side.
       const cards = [...sp.querySelectorAll(".sct-sp-card")];
       assert.equal(cards.length, 6);
@@ -1007,7 +1007,7 @@ describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders
         const mark = r.querySelector(".sct-sp-scale-mark");
         if (mark && r.dataset.dir === "volume") assert.equal(mark.dataset.tier, "none", `${label}: volume is untinted`);
         // Every defensive row says whose figure it is.
-        if (r.closest('[data-unit="defense"]')) assert.match(label, /Allowed|^Sacks$|^Takeaways$|^Opp /, `${path}: defense label "${label}"`);
+        if (r.closest('[data-unit="defense"]')) assert.match(label, /Allowed|^Sacks\/G$|^Takeaways\/G$|^Opp /, `${path}: defense label "${label}"`);
       }
       // A metric printed twice carries one rank (E1): Yds/Play in the
       // Efficiency group and in Season History's live row.
@@ -2311,16 +2311,36 @@ describe("the Stats ladders never mix weeks", () => {
     assert.equal(val("offense", "Passer Rtg"), fixed(team.offense.passerRating, 1));
     assert.equal(val("defense", "Yds/Pass Att Allowed"), fixed(team.defense.yardsPerPassAttempt, 2));
     assert.equal(val("defense", "Yds/Carry Allowed"), fixed(team.defense.yardsPerCarry, 2));
-    assert.equal(val("offense", "Sacks Allowed"), String(team.offense.sacks.value));
-    assert.equal(val("defense", "Sacks"), String(team.defense.sacks.value));
+    // Season totals print per game, the total under the label (Phase 3 readiness).
+    const sample = (unit, label) => drow(doc, unit, label)?.querySelector(".sct-sp-dsample")?.textContent ?? null;
+    assert.equal(sample("offense", "Sacks Allowed/G"), `${team.offense.sacks.value} total`);
+    assert.equal(val("offense", "Sacks Allowed/G"), (team.offense.sacks.value / team.games).toFixed(1));
+    assert.equal(sample("defense", "Sacks/G"), `${team.defense.sacks.value} total`);
+    assert.equal(val("defense", "Sacks/G"), (team.defense.sacks.value / team.games).toFixed(1));
+    // The 4th-down rate with its denominator.
+    assert.equal(sample("offense", "4th Down"), `${team.box.own.fourthDownConversions} of ${team.box.own.fourthDownAttempts}`);
     // Red-zone TD rate with its sample, from the file.
     const rz = drow(doc, "offense", "Red-Zone TD %");
     assert.equal(rz.querySelector(".sct-sp-dvalue").textContent, `${team.redZone.offense.rate.toFixed(1)}%`);
     assert.equal(rz.querySelector(".sct-sp-dsample").textContent, `${team.redZone.offense.trips} trips`);
     // The week: the dek once, the file's snapshot; no panel prints another.
     const tab = doc.querySelector(".sct-sp");
-    assert.match(tab.querySelector(".sct-up-dek").textContent, new RegExp(`through Week ${file.snapshot.throughWeek} \\(${team.games} games\\)`));
+    assert.match(tab.querySelector(".sct-up-dek").textContent, new RegExp(`League data through Week ${file.snapshot.throughWeek}; Patriots games played: ${team.games}\\.`));
     assert.equal((tab.textContent.match(/through Week \d+/gi) ?? []).length - (tab.querySelector(".sct-sp-how")?.textContent.match(/through Week \d+/gi) ?? []).length, 1, "the week once outside the definitions");
+  });
+
+  test("season totals rank per game, so a club past its bye is not a game behind", async () => {
+    const file = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "efficiency_2026.json"), "utf8"));
+    const clubs = Object.entries(file.teams);
+    const rate = (t) => Math.round((t.box.own.giveaways / t.box.own.gamesPlayed) * 10) / 10;
+    const { doc } = await dom("/team/houston-texans/stats/");
+    const row = drow(doc, "offense", "Giveaways/G");
+    const mine = rate(file.teams.hou);
+    assert.equal(row.querySelector(".sct-sp-dvalue").textContent, mine.toFixed(1));
+    const better = clubs.filter(([, t]) => rate(t) < mine).length;
+    const tied = clubs.filter(([, t]) => rate(t) === mine).length > 1;
+    assert.equal(row.querySelector(".sct-sp-rank").firstChild.textContent, `${tied ? "T-" : ""}${better + 1}${["th", "st", "nd", "rd"][(better + 1) % 10] ?? "th"}`.replace(/1[123](st|nd|rd)$/, (m) => m.slice(0, 2) + "th"));
+    assert.equal(row.querySelector(".sct-sp-dsample").textContent, `${file.teams.hou.box.own.giveaways} total`);
   });
 
   test("the NFL average is the mean of the 32 clubs' printed values", async () => {

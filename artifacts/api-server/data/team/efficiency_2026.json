@@ -21,7 +21,7 @@
     "yardsPerCarry": "rushing yards over rushing attempts, scrambles and kneels included",
     "passerRating": "the NFL passer rating formula over the same attempts",
     "sacks": "count: the offense's taken, the defense's made",
-    "redZoneTdRate": "touchdowns over red-zone trips; a trip is a drive with a pass or run snapped at the opponent's 20 or closer (two-point tries excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
+    "redZoneTdRate": "touchdowns over red-zone trips; a trip is a drive with a pass, run, field-goal try or spike snapped at the opponent's 20 or closer (two-point tries and kneel-only drives excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
     "recent": "the club's last three completed regular-season games: points per game for and against (final scores), EPA per play and success rate on the same plays as the EPA rows",
     "ranks": "offense descending, defense ascending; blitz rate and time to throw most to least on both sides; sacks the other way round (offense ascending, defense descending); ties share a rank; percentile = (32 - rank) / 31"
   },
@@ -222,9 +222,9 @@
       },
       "redZone": {
         "offense": {
-          "trips": 34,
+          "trips": 35,
           "td": 15,
-          "rate": 44.1,
+          "rate": 42.9,
           "rank": 31,
           "tied": false
         },
@@ -232,7 +232,7 @@
           "trips": 36,
           "td": 25,
           "rate": 69.4,
-          "rank": 26,
+          "rank": 28,
           "tied": true
         }
       },
@@ -268,6 +268,10 @@
           "passerRating": 81.5263041556145,
           "thirdDownPct": 36.36363636363637,
           "fourthDownPct": 56.25,
+          "thirdDownConversions": 52,
+          "thirdDownAttempts": 143,
+          "fourthDownConversions": 9,
+          "fourthDownAttempts": 16,
           "firstDownsPerGame": 18.8,
           "passAttemptsPerGame": 37.7,
           "rushAttemptsPerGame": 23.7,
@@ -295,6 +299,10 @@
           "passerRating": 110.13791079812208,
           "thirdDownPct": 42.5,
           "fourthDownPct": 46.666666666666664,
+          "thirdDownConversions": 51,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 20.9,
           "passAttemptsPerGame": 28.4,
           "rushAttemptsPerGame": 30.8,
@@ -507,14 +515,14 @@
           "trips": 31,
           "td": 17,
           "rate": 54.8,
-          "rank": 20,
+          "rank": 19,
           "tied": false
         },
         "defense": {
           "trips": 36,
           "td": 25,
           "rate": 69.4,
-          "rank": 26,
+          "rank": 28,
           "tied": true
         }
       },
@@ -550,6 +558,10 @@
           "passerRating": 74.71432552954292,
           "thirdDownPct": 34.42622950819672,
           "fourthDownPct": 28.571428571428573,
+          "thirdDownConversions": 42,
+          "thirdDownAttempts": 122,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 17.8,
           "passAttemptsPerGame": 29.9,
           "rushAttemptsPerGame": 27.8,
@@ -577,6 +589,10 @@
           "passerRating": 100.98559962228518,
           "thirdDownPct": 41.48148148148148,
           "fourthDownPct": 56.25,
+          "thirdDownConversions": 56,
+          "thirdDownAttempts": 135,
+          "fourthDownConversions": 9,
+          "fourthDownAttempts": 16,
           "firstDownsPerGame": 20.4,
           "passAttemptsPerGame": 35.3,
           "rushAttemptsPerGame": 26.9,
@@ -786,18 +802,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 30,
+          "trips": 31,
           "td": 18,
-          "rate": 60,
+          "rate": 58.1,
           "rank": 16,
           "tied": false
         },
         "defense": {
-          "trips": 34,
+          "trips": 37,
           "td": 22,
-          "rate": 64.7,
-          "rank": 20,
-          "tied": false
+          "rate": 59.5,
+          "rank": 17,
+          "tied": true
         }
       },
       "recent": {
@@ -832,6 +848,10 @@
           "passerRating": 91.35698198198199,
           "thirdDownPct": 38.21138211382114,
           "fourthDownPct": 36.36363636363637,
+          "thirdDownConversions": 47,
+          "thirdDownAttempts": 123,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 11,
           "firstDownsPerGame": 18,
           "passAttemptsPerGame": 29.6,
           "rushAttemptsPerGame": 28,
@@ -859,6 +879,10 @@
           "passerRating": 95.60792349726776,
           "thirdDownPct": 36.6412213740458,
           "fourthDownPct": 68.75,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 131,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 16,
           "firstDownsPerGame": 19.1,
           "passAttemptsPerGame": 30.5,
           "rushAttemptsPerGame": 28.3,
@@ -1067,18 +1091,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 35,
+          "trips": 37,
           "td": 24,
-          "rate": 68.6,
-          "rank": 6,
+          "rate": 64.9,
+          "rank": 10,
           "tied": false
         },
         "defense": {
-          "trips": 31,
+          "trips": 32,
           "td": 19,
-          "rate": 61.3,
-          "rank": 17,
-          "tied": false
+          "rate": 59.4,
+          "rank": 15,
+          "tied": true
         }
       },
       "recent": {
@@ -1113,6 +1137,10 @@
           "passerRating": 97.78696498054474,
           "thirdDownPct": 40.95238095238095,
           "fourthDownPct": 83.33333333333333,
+          "thirdDownConversions": 43,
+          "thirdDownAttempts": 105,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 12,
           "firstDownsPerGame": 23,
           "passAttemptsPerGame": 28.555555555555557,
           "rushAttemptsPerGame": 32.55555555555556,
@@ -1140,6 +1168,10 @@
           "passerRating": 86.96847507331378,
           "thirdDownPct": 36.8421052631579,
           "fourthDownPct": 64.28571428571429,
+          "thirdDownConversions": 42,
+          "thirdDownAttempts": 114,
+          "fourthDownConversions": 9,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 21.22222222222222,
           "passAttemptsPerGame": 37.888888888888886,
           "rushAttemptsPerGame": 23.555555555555557,
@@ -1348,10 +1380,10 @@
       },
       "redZone": {
         "offense": {
-          "trips": 31,
+          "trips": 32,
           "td": 21,
-          "rate": 67.7,
-          "rank": 7,
+          "rate": 65.6,
+          "rank": 8,
           "tied": false
         },
         "defense": {
@@ -1394,6 +1426,10 @@
           "passerRating": 90.08138969873663,
           "thirdDownPct": 36.666666666666664,
           "fourthDownPct": 52.38095238095238,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 21,
           "firstDownsPerGame": 21.555555555555557,
           "passAttemptsPerGame": 38.111111111111114,
           "rushAttemptsPerGame": 24.555555555555557,
@@ -1421,6 +1457,10 @@
           "passerRating": 87.55990415335462,
           "thirdDownPct": 46.666666666666664,
           "fourthDownPct": 35.714285714285715,
+          "thirdDownConversions": 56,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 21,
           "passAttemptsPerGame": 34.77777777777778,
           "rushAttemptsPerGame": 28.22222222222222,
@@ -1629,17 +1669,17 @@
       },
       "redZone": {
         "offense": {
-          "trips": 37,
+          "trips": 39,
           "td": 21,
-          "rate": 56.8,
-          "rank": 18,
+          "rate": 53.8,
+          "rank": 21,
           "tied": false
         },
         "defense": {
-          "trips": 25,
+          "trips": 26,
           "td": 14,
-          "rate": 56,
-          "rank": 13,
+          "rate": 53.8,
+          "rank": 12,
           "tied": false
         }
       },
@@ -1675,6 +1715,10 @@
           "passerRating": 87.95405982905983,
           "thirdDownPct": 45.3125,
           "fourthDownPct": 61.111111111111114,
+          "thirdDownConversions": 58,
+          "thirdDownAttempts": 128,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 21.77777777777778,
           "passAttemptsPerGame": 34.666666666666664,
           "rushAttemptsPerGame": 33.666666666666664,
@@ -1702,6 +1746,10 @@
           "passerRating": 93.10897435897436,
           "thirdDownPct": 22.82608695652174,
           "fourthDownPct": 30.76923076923077,
+          "thirdDownConversions": 21,
+          "thirdDownAttempts": 92,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 15.88888888888889,
           "passAttemptsPerGame": 28.88888888888889,
           "rushAttemptsPerGame": 20.555555555555557,
@@ -1956,6 +2004,10 @@
           "passerRating": 117.70833333333333,
           "thirdDownPct": 51.92307692307692,
           "fourthDownPct": 66.66666666666667,
+          "thirdDownConversions": 54,
+          "thirdDownAttempts": 104,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 6,
           "firstDownsPerGame": 23.22222222222222,
           "passAttemptsPerGame": 37.77777777777778,
           "rushAttemptsPerGame": 21.88888888888889,
@@ -1983,6 +2035,10 @@
           "passerRating": 88.34016393442622,
           "thirdDownPct": 46.49122807017544,
           "fourthDownPct": 36.36363636363637,
+          "thirdDownConversions": 53,
+          "thirdDownAttempts": 114,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 11,
           "firstDownsPerGame": 20.22222222222222,
           "passAttemptsPerGame": 33.888888888888886,
           "rushAttemptsPerGame": 24.88888888888889,
@@ -2192,17 +2248,17 @@
       },
       "redZone": {
         "offense": {
-          "trips": 25,
+          "trips": 27,
           "td": 12,
-          "rate": 48,
-          "rank": 28,
+          "rate": 44.4,
+          "rank": 29,
           "tied": false
         },
         "defense": {
-          "trips": 31,
+          "trips": 32,
           "td": 17,
-          "rate": 54.8,
-          "rank": 12,
+          "rate": 53.1,
+          "rank": 10,
           "tied": false
         }
       },
@@ -2238,6 +2294,10 @@
           "passerRating": 91.56991744066048,
           "thirdDownPct": 35.55555555555556,
           "fourthDownPct": 30.76923076923077,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 135,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 17.4,
           "passAttemptsPerGame": 32.3,
           "rushAttemptsPerGame": 25.6,
@@ -2265,6 +2325,10 @@
           "passerRating": 84.58333333333331,
           "thirdDownPct": 38.1294964028777,
           "fourthDownPct": 25,
+          "thirdDownConversions": 53,
+          "thirdDownAttempts": 139,
+          "fourthDownConversions": 2,
+          "fourthDownAttempts": 8,
           "firstDownsPerGame": 19.5,
           "passAttemptsPerGame": 33.5,
           "rushAttemptsPerGame": 27.3,
@@ -2484,7 +2548,7 @@
           "trips": 38,
           "td": 26,
           "rate": 68.4,
-          "rank": 24,
+          "rank": 27,
           "tied": false
         }
       },
@@ -2520,6 +2584,10 @@
           "passerRating": 96.44164513350559,
           "thirdDownPct": 45.11278195488722,
           "fourthDownPct": 64.70588235294117,
+          "thirdDownConversions": 60,
+          "thirdDownAttempts": 133,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 17,
           "firstDownsPerGame": 23.3,
           "passAttemptsPerGame": 38.7,
           "rushAttemptsPerGame": 25.7,
@@ -2547,6 +2615,10 @@
           "passerRating": 104.47530864197532,
           "thirdDownPct": 48.83720930232558,
           "fourthDownPct": 44.44444444444444,
+          "thirdDownConversions": 63,
+          "thirdDownAttempts": 129,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 9,
           "firstDownsPerGame": 22.4,
           "passAttemptsPerGame": 32.4,
           "rushAttemptsPerGame": 29.5,
@@ -2758,15 +2830,15 @@
           "trips": 26,
           "td": 17,
           "rate": 65.4,
-          "rank": 10,
+          "rank": 9,
           "tied": false
         },
         "defense": {
-          "trips": 29,
+          "trips": 30,
           "td": 15,
-          "rate": 51.7,
-          "rank": 8,
-          "tied": false
+          "rate": 50,
+          "rank": 7,
+          "tied": true
         }
       },
       "recent": {
@@ -2801,6 +2873,10 @@
           "passerRating": 84.69076655052264,
           "thirdDownPct": 32.432432432432435,
           "fourthDownPct": 83.33333333333333,
+          "thirdDownConversions": 36,
+          "thirdDownAttempts": 111,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 6,
           "firstDownsPerGame": 18.11111111111111,
           "passAttemptsPerGame": 31.88888888888889,
           "rushAttemptsPerGame": 24.77777777777778,
@@ -2828,6 +2904,10 @@
           "passerRating": 83.34544573643412,
           "thirdDownPct": 41.221374045801525,
           "fourthDownPct": 58.8235294117647,
+          "thirdDownConversions": 54,
+          "thirdDownAttempts": 131,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 17,
           "firstDownsPerGame": 22,
           "passAttemptsPerGame": 38.22222222222222,
           "rushAttemptsPerGame": 27.555555555555557,
@@ -3036,16 +3116,16 @@
       },
       "redZone": {
         "offense": {
-          "trips": 36,
+          "trips": 38,
           "td": 23,
-          "rate": 63.9,
-          "rank": 12,
+          "rate": 60.5,
+          "rank": 15,
           "tied": false
         },
         "defense": {
-          "trips": 31,
+          "trips": 32,
           "td": 21,
-          "rate": 67.7,
+          "rate": 65.6,
           "rank": 22,
           "tied": false
         }
@@ -3082,6 +3162,10 @@
           "passerRating": 106.04575163398692,
           "thirdDownPct": 39.44954128440367,
           "fourthDownPct": 70.58823529411765,
+          "thirdDownConversions": 43,
+          "thirdDownAttempts": 109,
+          "fourthDownConversions": 12,
+          "fourthDownAttempts": 17,
           "firstDownsPerGame": 23.333333333333332,
           "passAttemptsPerGame": 34,
           "rushAttemptsPerGame": 29.333333333333332,
@@ -3109,6 +3193,10 @@
           "passerRating": 94.62976539589442,
           "thirdDownPct": 42.97520661157025,
           "fourthDownPct": 73.33333333333333,
+          "thirdDownConversions": 52,
+          "thirdDownAttempts": 121,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 21,
           "passAttemptsPerGame": 37.888888888888886,
           "rushAttemptsPerGame": 22.88888888888889,
@@ -3318,18 +3406,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 35,
+          "trips": 36,
           "td": 19,
-          "rate": 54.3,
-          "rank": 21,
+          "rate": 52.8,
+          "rank": 22,
           "tied": false
         },
         "defense": {
           "trips": 37,
           "td": 22,
           "rate": 59.5,
-          "rank": 16,
-          "tied": false
+          "rank": 17,
+          "tied": true
         }
       },
       "recent": {
@@ -3364,6 +3452,10 @@
           "passerRating": 96.68918918918918,
           "thirdDownPct": 37.2093023255814,
           "fourthDownPct": 64.70588235294117,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 129,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 17,
           "firstDownsPerGame": 18.2,
           "passAttemptsPerGame": 37,
           "rushAttemptsPerGame": 21.9,
@@ -3391,6 +3483,10 @@
           "passerRating": 79.02621722846442,
           "thirdDownPct": 42.64705882352941,
           "fourthDownPct": 45,
+          "thirdDownConversions": 58,
+          "thirdDownAttempts": 136,
+          "fourthDownConversions": 9,
+          "fourthDownAttempts": 20,
           "firstDownsPerGame": 20.6,
           "passAttemptsPerGame": 35.6,
           "rushAttemptsPerGame": 27.5,
@@ -3602,14 +3698,14 @@
           "trips": 34,
           "td": 21,
           "rate": 61.8,
-          "rank": 14,
+          "rank": 13,
           "tied": false
         },
         "defense": {
           "trips": 25,
           "td": 17,
           "rate": 68,
-          "rank": 23,
+          "rank": 26,
           "tied": false
         }
       },
@@ -3645,6 +3741,10 @@
           "passerRating": 101.78663570691435,
           "thirdDownPct": 38.26086956521739,
           "fourthDownPct": 33.333333333333336,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 115,
+          "fourthDownConversions": 3,
+          "fourthDownAttempts": 9,
           "firstDownsPerGame": 20.11111111111111,
           "passAttemptsPerGame": 35.888888888888886,
           "rushAttemptsPerGame": 24.333333333333332,
@@ -3672,6 +3772,10 @@
           "passerRating": 92.90611814345992,
           "thirdDownPct": 39.66942148760331,
           "fourthDownPct": 53.84615384615385,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 121,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 19.444444444444443,
           "passAttemptsPerGame": 35.111111111111114,
           "rushAttemptsPerGame": 25.77777777777778,
@@ -3884,14 +3988,14 @@
           "trips": 26,
           "td": 16,
           "rate": 61.5,
-          "rank": 15,
+          "rank": 14,
           "tied": false
         },
         "defense": {
           "trips": 26,
           "td": 16,
           "rate": 61.5,
-          "rank": 18,
+          "rank": 19,
           "tied": false
         }
       },
@@ -3927,6 +4031,10 @@
           "passerRating": 67.2418200408998,
           "thirdDownPct": 36.090225563909776,
           "fourthDownPct": 55.55555555555556,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 133,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 18.2,
           "passAttemptsPerGame": 32.6,
           "rushAttemptsPerGame": 28.3,
@@ -3954,6 +4062,10 @@
           "passerRating": 102.36391694725029,
           "thirdDownPct": 31.932773109243698,
           "fourthDownPct": 46.666666666666664,
+          "thirdDownConversions": 38,
+          "thirdDownAttempts": 119,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 18.4,
           "passAttemptsPerGame": 29.7,
           "rushAttemptsPerGame": 27.6,
@@ -4172,7 +4284,7 @@
           "trips": 23,
           "td": 10,
           "rate": 43.5,
-          "rank": 4,
+          "rank": 5,
           "tied": false
         }
       },
@@ -4208,6 +4320,10 @@
           "passerRating": 112.00699745547074,
           "thirdDownPct": 46.846846846846844,
           "fourthDownPct": 57.142857142857146,
+          "thirdDownConversions": 52,
+          "thirdDownAttempts": 111,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 7,
           "firstDownsPerGame": 21,
           "passAttemptsPerGame": 29.11111111111111,
           "rushAttemptsPerGame": 29.555555555555557,
@@ -4235,6 +4351,10 @@
           "passerRating": 81.77777777777777,
           "thirdDownPct": 32.38095238095238,
           "fourthDownPct": 40,
+          "thirdDownConversions": 34,
+          "thirdDownAttempts": 105,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 17.77777777777778,
           "passAttemptsPerGame": 33.333333333333336,
           "rushAttemptsPerGame": 23.444444444444443,
@@ -4446,7 +4566,7 @@
           "trips": 33,
           "td": 22,
           "rate": 66.7,
-          "rank": 9,
+          "rank": 7,
           "tied": false
         },
         "defense": {
@@ -4489,6 +4609,10 @@
           "passerRating": 106.73937360178971,
           "thirdDownPct": 40.36697247706422,
           "fourthDownPct": 53.333333333333336,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 109,
+          "fourthDownConversions": 8,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 20.77777777777778,
           "passAttemptsPerGame": 33.111111111111114,
           "rushAttemptsPerGame": 27.11111111111111,
@@ -4516,6 +4640,10 @@
           "passerRating": 77.44905956112854,
           "thirdDownPct": 36,
           "fourthDownPct": 36.8421052631579,
+          "thirdDownConversions": 45,
+          "thirdDownAttempts": 125,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 19,
           "firstDownsPerGame": 19.11111111111111,
           "passAttemptsPerGame": 35.44444444444444,
           "rushAttemptsPerGame": 26.11111111111111,
@@ -4724,18 +4852,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 20,
+          "trips": 23,
           "td": 10,
-          "rate": 50,
-          "rank": 26,
-          "tied": true
+          "rate": 43.5,
+          "rank": 30,
+          "tied": false
         },
         "defense": {
-          "trips": 35,
+          "trips": 36,
           "td": 19,
-          "rate": 54.3,
-          "rank": 10,
-          "tied": true
+          "rate": 52.8,
+          "rank": 9,
+          "tied": false
         }
       },
       "recent": {
@@ -4770,6 +4898,10 @@
           "passerRating": 71.75127713920818,
           "thirdDownPct": 32.28346456692913,
           "fourthDownPct": 33.333333333333336,
+          "thirdDownConversions": 41,
+          "thirdDownAttempts": 127,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 16.22222222222222,
           "passAttemptsPerGame": 29,
           "rushAttemptsPerGame": 28.666666666666668,
@@ -4797,6 +4929,10 @@
           "passerRating": 92.87825059101652,
           "thirdDownPct": 35.13513513513514,
           "fourthDownPct": 75,
+          "thirdDownConversions": 39,
+          "thirdDownAttempts": 111,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 8,
           "firstDownsPerGame": 19.77777777777778,
           "passAttemptsPerGame": 31.333333333333332,
           "rushAttemptsPerGame": 28.333333333333332,
@@ -5009,14 +5145,14 @@
           "trips": 40,
           "td": 27,
           "rate": 67.5,
-          "rank": 8,
+          "rank": 6,
           "tied": false
         },
         "defense": {
-          "trips": 28,
+          "trips": 30,
           "td": 13,
-          "rate": 46.4,
-          "rank": 5,
+          "rate": 43.3,
+          "rank": 4,
           "tied": false
         }
       },
@@ -5052,6 +5188,10 @@
           "passerRating": 92.70555555555555,
           "thirdDownPct": 41.80327868852459,
           "fourthDownPct": 66.66666666666667,
+          "thirdDownConversions": 51,
+          "thirdDownAttempts": 122,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 23.6,
           "passAttemptsPerGame": 37.5,
           "rushAttemptsPerGame": 28.8,
@@ -5079,6 +5219,10 @@
           "passerRating": 79.38772775991426,
           "thirdDownPct": 30,
           "fourthDownPct": 28.571428571428573,
+          "thirdDownConversions": 36,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 16.7,
           "passAttemptsPerGame": 31.1,
           "rushAttemptsPerGame": 24.7,
@@ -5291,15 +5435,15 @@
           "trips": 38,
           "td": 20,
           "rate": 52.6,
-          "rank": 24,
+          "rank": 23,
           "tied": false
         },
         "defense": {
-          "trips": 40,
+          "trips": 42,
           "td": 28,
-          "rate": 70,
-          "rank": 28,
-          "tied": false
+          "rate": 66.7,
+          "rank": 23,
+          "tied": true
         }
       },
       "recent": {
@@ -5334,6 +5478,10 @@
           "passerRating": 94.90675165250236,
           "thirdDownPct": 43.41085271317829,
           "fourthDownPct": 43.75,
+          "thirdDownConversions": 56,
+          "thirdDownAttempts": 129,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 16,
           "firstDownsPerGame": 19.3,
           "passAttemptsPerGame": 35.3,
           "rushAttemptsPerGame": 24.6,
@@ -5361,6 +5509,10 @@
           "passerRating": 107.34797297297298,
           "thirdDownPct": 45.45454545454545,
           "fourthDownPct": 60,
+          "thirdDownConversions": 55,
+          "thirdDownAttempts": 121,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 10,
           "firstDownsPerGame": 22.5,
           "passAttemptsPerGame": 29.6,
           "rushAttemptsPerGame": 30.7,
@@ -5569,17 +5721,17 @@
       },
       "redZone": {
         "offense": {
-          "trips": 21,
+          "trips": 23,
           "td": 11,
-          "rate": 52.4,
-          "rank": 25,
-          "tied": false
+          "rate": 47.8,
+          "rank": 26,
+          "tied": true
         },
         "defense": {
           "trips": 34,
           "td": 21,
           "rate": 61.8,
-          "rank": 19,
+          "rank": 20,
           "tied": false
         }
       },
@@ -5615,6 +5767,10 @@
           "passerRating": 78.61570247933885,
           "thirdDownPct": 40.17857142857143,
           "fourthDownPct": 42.857142857142854,
+          "thirdDownConversions": 45,
+          "thirdDownAttempts": 112,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 16.444444444444443,
           "passAttemptsPerGame": 26.88888888888889,
           "rushAttemptsPerGame": 26.77777777777778,
@@ -5642,6 +5798,10 @@
           "passerRating": 107.4502743484225,
           "thirdDownPct": 45.370370370370374,
           "fourthDownPct": 83.33333333333333,
+          "thirdDownConversions": 49,
+          "thirdDownAttempts": 108,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 12,
           "firstDownsPerGame": 18.88888888888889,
           "passAttemptsPerGame": 27,
           "rushAttemptsPerGame": 30,
@@ -5853,13 +6013,13 @@
           "trips": 23,
           "td": 11,
           "rate": 47.8,
-          "rank": 29,
-          "tied": false
+          "rank": 26,
+          "tied": true
         },
         "defense": {
-          "trips": 19,
+          "trips": 20,
           "td": 5,
-          "rate": 26.3,
+          "rate": 25,
           "rank": 1,
           "tied": false
         }
@@ -5896,6 +6056,10 @@
           "passerRating": 83.52864583333334,
           "thirdDownPct": 35.483870967741936,
           "fourthDownPct": 55.55555555555556,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 124,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 9,
           "firstDownsPerGame": 15.222222222222221,
           "passAttemptsPerGame": 28.444444444444443,
           "rushAttemptsPerGame": 26.88888888888889,
@@ -5923,6 +6087,10 @@
           "passerRating": 69.54214195183775,
           "thirdDownPct": 31.092436974789916,
           "fourthDownPct": 53.84615384615385,
+          "thirdDownConversions": 37,
+          "thirdDownAttempts": 119,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 15.666666666666666,
           "passAttemptsPerGame": 29.22222222222222,
           "rushAttemptsPerGame": 26.77777777777778,
@@ -6135,15 +6303,15 @@
           "trips": 27,
           "td": 15,
           "rate": 55.6,
-          "rank": 19,
+          "rank": 18,
           "tied": false
         },
         "defense": {
-          "trips": 32,
+          "trips": 33,
           "td": 19,
-          "rate": 59.4,
+          "rate": 57.6,
           "rank": 14,
-          "tied": true
+          "tied": false
         }
       },
       "recent": {
@@ -6178,6 +6346,10 @@
           "passerRating": 93.21062567421792,
           "thirdDownPct": 39.34426229508197,
           "fourthDownPct": 76.92307692307692,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 122,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 19.8,
           "passAttemptsPerGame": 30.9,
           "rushAttemptsPerGame": 27.8,
@@ -6205,6 +6377,10 @@
           "passerRating": 100.43238993710692,
           "thirdDownPct": 39.83739837398374,
           "fourthDownPct": 50,
+          "thirdDownConversions": 49,
+          "thirdDownAttempts": 123,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 10,
           "firstDownsPerGame": 18.9,
           "passAttemptsPerGame": 31.8,
           "rushAttemptsPerGame": 25.9,
@@ -6423,8 +6599,8 @@
           "trips": 35,
           "td": 19,
           "rate": 54.3,
-          "rank": 10,
-          "tied": true
+          "rank": 13,
+          "tied": false
         }
       },
       "recent": {
@@ -6459,6 +6635,10 @@
           "passerRating": 90.19071914480078,
           "thirdDownPct": 42.96875,
           "fourthDownPct": 72.22222222222223,
+          "thirdDownConversions": 55,
+          "thirdDownAttempts": 128,
+          "fourthDownConversions": 13,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 20.333333333333332,
           "passAttemptsPerGame": 38.111111111111114,
           "rushAttemptsPerGame": 25.11111111111111,
@@ -6486,6 +6666,10 @@
           "passerRating": 97.22938144329896,
           "thirdDownPct": 45.08196721311475,
           "fourthDownPct": 42.857142857142854,
+          "thirdDownConversions": 55,
+          "thirdDownAttempts": 122,
+          "fourthDownConversions": 3,
+          "fourthDownAttempts": 7,
           "firstDownsPerGame": 20.77777777777778,
           "passAttemptsPerGame": 32.333333333333336,
           "rushAttemptsPerGame": 29.88888888888889,
@@ -6697,7 +6881,7 @@
           "trips": 27,
           "td": 17,
           "rate": 63,
-          "rank": 13,
+          "rank": 12,
           "tied": false
         },
         "defense": {
@@ -6740,6 +6924,10 @@
           "passerRating": 88.3360745614035,
           "thirdDownPct": 39.682539682539684,
           "fourthDownPct": 80,
+          "thirdDownConversions": 50,
+          "thirdDownAttempts": 126,
+          "fourthDownConversions": 8,
+          "fourthDownAttempts": 10,
           "firstDownsPerGame": 20.333333333333332,
           "passAttemptsPerGame": 33.77777777777778,
           "rushAttemptsPerGame": 28.77777777777778,
@@ -6767,6 +6955,10 @@
           "passerRating": 88.08275058275058,
           "thirdDownPct": 38.793103448275865,
           "fourthDownPct": 33.333333333333336,
+          "thirdDownConversions": 45,
+          "thirdDownAttempts": 116,
+          "fourthDownConversions": 3,
+          "fourthDownAttempts": 9,
           "firstDownsPerGame": 18.444444444444443,
           "passAttemptsPerGame": 31.77777777777778,
           "rushAttemptsPerGame": 27.11111111111111,
@@ -6976,18 +7168,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 28,
+          "trips": 29,
           "td": 11,
-          "rate": 39.3,
+          "rate": 37.9,
           "rank": 32,
           "tied": false
         },
         "defense": {
-          "trips": 35,
+          "trips": 36,
           "td": 24,
-          "rate": 68.6,
-          "rank": 25,
-          "tied": false
+          "rate": 66.7,
+          "rank": 23,
+          "tied": true
         }
       },
       "recent": {
@@ -7022,6 +7214,10 @@
           "passerRating": 96.40758547008548,
           "thirdDownPct": 34.12698412698413,
           "fourthDownPct": 53.84615384615385,
+          "thirdDownConversions": 43,
+          "thirdDownAttempts": 126,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 18.3,
           "passAttemptsPerGame": 31.2,
           "rushAttemptsPerGame": 25.4,
@@ -7049,6 +7245,10 @@
           "passerRating": 101.81128293241697,
           "thirdDownPct": 40.49586776859504,
           "fourthDownPct": 58.8235294117647,
+          "thirdDownConversions": 49,
+          "thirdDownAttempts": 121,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 17,
           "firstDownsPerGame": 21.2,
           "passAttemptsPerGame": 29.1,
           "rushAttemptsPerGame": 31.4,
@@ -7267,7 +7467,7 @@
           "trips": 32,
           "td": 19,
           "rate": 59.4,
-          "rank": 14,
+          "rank": 15,
           "tied": true
         }
       },
@@ -7303,6 +7503,10 @@
           "passerRating": 77.99092409240926,
           "thirdDownPct": 35.9375,
           "fourthDownPct": 33.333333333333336,
+          "thirdDownConversions": 46,
+          "thirdDownAttempts": 128,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 15.777777777777779,
           "passAttemptsPerGame": 33.666666666666664,
           "rushAttemptsPerGame": 23.666666666666668,
@@ -7330,6 +7534,10 @@
           "passerRating": 92.22222222222221,
           "thirdDownPct": 40.6015037593985,
           "fourthDownPct": 73.33333333333333,
+          "thirdDownConversions": 54,
+          "thirdDownAttempts": 133,
+          "fourthDownConversions": 11,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 20.333333333333332,
           "passAttemptsPerGame": 33.333333333333336,
           "rushAttemptsPerGame": 30.666666666666668,
@@ -7541,7 +7749,7 @@
           "trips": 26,
           "td": 12,
           "rate": 46.2,
-          "rank": 30,
+          "rank": 28,
           "tied": false
         },
         "defense": {
@@ -7549,7 +7757,7 @@
           "td": 11,
           "rate": 50,
           "rank": 7,
-          "tied": false
+          "tied": true
         }
       },
       "recent": {
@@ -7584,6 +7792,10 @@
           "passerRating": 85.36490683229813,
           "thirdDownPct": 37.93103448275862,
           "fourthDownPct": 62.5,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 116,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 8,
           "firstDownsPerGame": 19.22222222222222,
           "passAttemptsPerGame": 35.77777777777778,
           "rushAttemptsPerGame": 24,
@@ -7611,6 +7823,10 @@
           "passerRating": 90.625,
           "thirdDownPct": 33.92857142857143,
           "fourthDownPct": 64.28571428571429,
+          "thirdDownConversions": 38,
+          "thirdDownAttempts": 112,
+          "fourthDownConversions": 9,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 19.333333333333332,
           "passAttemptsPerGame": 36,
           "rushAttemptsPerGame": 22.77777777777778,
@@ -7820,18 +8036,18 @@
       },
       "redZone": {
         "offense": {
-          "trips": 30,
+          "trips": 31,
           "td": 16,
-          "rate": 53.3,
-          "rank": 23,
+          "rate": 51.6,
+          "rank": 24,
           "tied": false
         },
         "defense": {
-          "trips": 22,
+          "trips": 24,
           "td": 16,
-          "rate": 72.7,
-          "rank": 30,
-          "tied": false
+          "rate": 66.7,
+          "rank": 23,
+          "tied": true
         }
       },
       "recent": {
@@ -7866,6 +8082,10 @@
           "passerRating": 93.7363387978142,
           "thirdDownPct": 39.37007874015748,
           "fourthDownPct": 50,
+          "thirdDownConversions": 50,
+          "thirdDownAttempts": 127,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 10,
           "firstDownsPerGame": 20.1,
           "passAttemptsPerGame": 30.5,
           "rushAttemptsPerGame": 29.3,
@@ -7893,6 +8113,10 @@
           "passerRating": 76.729302832244,
           "thirdDownPct": 31.884057971014492,
           "fourthDownPct": 85.71428571428571,
+          "thirdDownConversions": 44,
+          "thirdDownAttempts": 138,
+          "fourthDownConversions": 12,
+          "fourthDownAttempts": 14,
           "firstDownsPerGame": 15.1,
           "passAttemptsPerGame": 30.6,
           "rushAttemptsPerGame": 25.7,
@@ -8111,7 +8335,7 @@
           "trips": 28,
           "td": 15,
           "rate": 53.6,
-          "rank": 9,
+          "rank": 11,
           "tied": false
         }
       },
@@ -8147,6 +8371,10 @@
           "passerRating": 115.23042929292929,
           "thirdDownPct": 52,
           "fourthDownPct": 72.72727272727273,
+          "thirdDownConversions": 52,
+          "thirdDownAttempts": 100,
+          "fourthDownConversions": 8,
+          "fourthDownAttempts": 11,
           "firstDownsPerGame": 22.444444444444443,
           "passAttemptsPerGame": 29.333333333333332,
           "rushAttemptsPerGame": 29.22222222222222,
@@ -8174,6 +8402,10 @@
           "passerRating": 91.0309667673716,
           "thirdDownPct": 40.833333333333336,
           "fourthDownPct": 55.55555555555556,
+          "thirdDownConversions": 49,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 18,
           "firstDownsPerGame": 18.444444444444443,
           "passAttemptsPerGame": 36.77777777777778,
           "rushAttemptsPerGame": 24.22222222222222,
@@ -8385,13 +8617,13 @@
           "trips": 30,
           "td": 15,
           "rate": 50,
-          "rank": 26,
-          "tied": true
+          "rank": 25,
+          "tied": false
         },
         "defense": {
-          "trips": 23,
+          "trips": 24,
           "td": 11,
-          "rate": 47.8,
+          "rate": 45.8,
           "rank": 6,
           "tied": false
         }
@@ -8428,6 +8660,10 @@
           "passerRating": 70.19097222222221,
           "thirdDownPct": 36.29032258064516,
           "fourthDownPct": 33.333333333333336,
+          "thirdDownConversions": 45,
+          "thirdDownAttempts": 124,
+          "fourthDownConversions": 4,
+          "fourthDownAttempts": 12,
           "firstDownsPerGame": 18,
           "passAttemptsPerGame": 26.666666666666668,
           "rushAttemptsPerGame": 32.666666666666664,
@@ -8455,6 +8691,10 @@
           "passerRating": 72.65879478827361,
           "thirdDownPct": 34.51327433628319,
           "fourthDownPct": 46.666666666666664,
+          "thirdDownConversions": 39,
+          "thirdDownAttempts": 113,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 15,
           "firstDownsPerGame": 16.11111111111111,
           "passAttemptsPerGame": 34.111111111111114,
           "rushAttemptsPerGame": 22.333333333333332,
@@ -8666,13 +8906,13 @@
           "trips": 24,
           "td": 13,
           "rate": 54.2,
-          "rank": 22,
+          "rank": 20,
           "tied": false
         },
         "defense": {
-          "trips": 35,
+          "trips": 36,
           "td": 23,
-          "rate": 65.7,
+          "rate": 63.9,
           "rank": 21,
           "tied": false
         }
@@ -8709,6 +8949,10 @@
           "passerRating": 80.68379790940767,
           "thirdDownPct": 34.285714285714285,
           "fourthDownPct": 46.15384615384615,
+          "thirdDownConversions": 36,
+          "thirdDownAttempts": 105,
+          "fourthDownConversions": 6,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 16.555555555555557,
           "passAttemptsPerGame": 31.88888888888889,
           "rushAttemptsPerGame": 22.88888888888889,
@@ -8736,6 +8980,10 @@
           "passerRating": 98.63599348534203,
           "thirdDownPct": 44.34782608695652,
           "fourthDownPct": 70,
+          "thirdDownConversions": 51,
+          "thirdDownAttempts": 115,
+          "fourthDownConversions": 7,
+          "fourthDownAttempts": 10,
           "firstDownsPerGame": 22.555555555555557,
           "passAttemptsPerGame": 34.111111111111114,
           "rushAttemptsPerGame": 30.555555555555557,
@@ -8944,9 +9192,9 @@
       },
       "redZone": {
         "offense": {
-          "trips": 22,
+          "trips": 23,
           "td": 13,
-          "rate": 59.1,
+          "rate": 56.5,
           "rank": 17,
           "tied": false
         },
@@ -8954,7 +9202,7 @@
           "trips": 32,
           "td": 23,
           "rate": 71.9,
-          "rank": 29,
+          "rank": 30,
           "tied": false
         }
       },
@@ -8990,6 +9238,10 @@
           "passerRating": 94.96237458193981,
           "thirdDownPct": 33.333333333333336,
           "fourthDownPct": 38.46153846153846,
+          "thirdDownConversions": 40,
+          "thirdDownAttempts": 120,
+          "fourthDownConversions": 5,
+          "fourthDownAttempts": 13,
           "firstDownsPerGame": 18.22222222222222,
           "passAttemptsPerGame": 33.22222222222222,
           "rushAttemptsPerGame": 27,
@@ -9017,6 +9269,10 @@
           "passerRating": 95.46937751004018,
           "thirdDownPct": 39.34426229508197,
           "fourthDownPct": 83.33333333333333,
+          "thirdDownConversions": 48,
+          "thirdDownAttempts": 122,
+          "fourthDownConversions": 10,
+          "fourthDownAttempts": 12,
           "firstDownsPerGame": 20.444444444444443,
           "passAttemptsPerGame": 36.888888888888886,
           "rushAttemptsPerGame": 26.22222222222222,

@@ -80,7 +80,7 @@ import type { TeamPageData } from "./team/team-data";
 import type {
   StatRow,
 } from "./team/stats";
-import { leagueTeamStats, ordinal } from "./team/stats";
+import { leagueTeamStats, ordinal, type TeamStats } from "./team/stats";
 import {
   isOutDesignation,
   nameKeysForTeam,
@@ -981,9 +981,61 @@ function statsDash(
   };
   for (const t of league) for (const r of [...t.offense, ...t.defense, ...t.situational, ...t.volume]) push(r);
   for (const t of Object.values(effDoc.teams)) for (const r of [...eRows(t), ...rzRows(t)]) push(r);
+  // Season totals are ranked per game: at a given week some clubs have had
+  // their bye and some have not (Week 10: 20 clubs on 9 games, 12 on 10), so
+  // a total favors the club with the extra game. The row prints the rate,
+  // its rank among the 32 per-game rates (same rule: published value,
+  // ties share the better rank), and the total as its sample line.
+  const PER_GAME: Record<string, string> = {
+    "pass-td": "Pass TD/G",
+    "rush-td": "Rush TD/G",
+    "sacks-allowed": "Sacks Allowed/G",
+    "sacks-made": "Sacks/G",
+    takeaways: "Takeaways/G",
+    giveaways: "Giveaways/G",
+    "turnover-margin": "TO Margin/G",
+  };
+  const perGame = (r: StatRow): { row: StatRow; total: string } | null => {
+    if (!(r.key in PER_GAME) || r.direction === "volume") return null;
+    const rate = (t: TeamStats): number | null => {
+      const x = [...t.offense, ...t.defense, ...t.situational, ...t.volume].find((y) => y.key === r.key);
+      const v = x ? parse(x.value) : null;
+      return v === null || !t.gamesPlayed ? null : Math.round((v / t.gamesPlayed) * 10) / 10;
+    };
+    const ownRate = rate(stats);
+    if (ownRate === null) return null;
+    const all = league.map(rate).filter((v): v is number => v !== null);
+    const better = all.filter((v) => (r.direction === "low" ? v < ownRate : v > ownRate)).length;
+    const tied = all.filter((v) => v === ownRate).length > 1;
+    const rank = all.length >= 30 ? better + 1 : null;
+    const signed = r.key === "turnover-margin";
+    return {
+      total: `${r.value} total`,
+      row: {
+        ...r,
+        label: PER_GAME[r.key],
+        description: `${r.description}, per game`,
+        value: `${signed && ownRate > 0 ? "+" : ""}${ownRate.toFixed(1)}`,
+        rank,
+        rankLabel: rank === null ? null : `${tied ? "T-" : ""}${ordinal(rank)}`,
+      },
+    };
+  };
+  for (const t of league) {
+    for (const r of [...t.offense, ...t.defense, ...t.situational, ...t.volume]) {
+      if (!(r.key in PER_GAME)) continue;
+      const v = parse(r.value);
+      if (v === null || !t.gamesPlayed) continue;
+      const k = `pg:${r.key}`;
+      if (!values.has(k)) values.set(k, []);
+      values.get(k)!.push(Math.round((v / t.gamesPlayed) * 10) / 10);
+    }
+  }
   const rows = new Map<string, DashRow>();
-  for (const r of [...own, ...eRows(eff), ...rzRows(eff)]) {
-    const vs = values.get(r.key) ?? [];
+  for (const r0 of [...own, ...eRows(eff), ...rzRows(eff)]) {
+    const pg = perGame(r0);
+    const r = pg ? pg.row : r0;
+    const vs = values.get(pg ? `pg:${r0.key}` : r.key) ?? [];
     const places = placesOf(r.value);
     const z = (eff as { redZone?: Record<string, { trips: number }> }).redZone;
     rows.set(r.key, {
@@ -992,7 +1044,11 @@ function statsDash(
       min: vs.length ? Math.min(...vs) : null,
       max: vs.length ? Math.max(...vs) : null,
       places,
-      sample: r.key === "rz-off" ? `${z?.offense?.trips ?? 0} trips` : r.key === "rz-def" ? `${z?.defense?.trips ?? 0} trips` : undefined,
+      sample: pg
+        ? pg.total
+        : r.key === "fourth-down" && typeof eff.box?.own.fourthDownAttempts === "number"
+          ? `${eff.box.own.fourthDownConversions ?? 0} of ${eff.box.own.fourthDownAttempts}`
+          : r.key === "rz-off" ? `${z?.offense?.trips ?? 0} trips` : r.key === "rz-def" ? `${z?.defense?.trips ?? 0} trips` : undefined,
     });
   }
   // Recent form against the season, from the same file.
