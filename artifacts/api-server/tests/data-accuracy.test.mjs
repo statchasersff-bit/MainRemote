@@ -10,6 +10,9 @@
 import test, { before, after, describe } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import http from "node:http";
+import os from "node:os";
+import { execFile } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { importModule, cleanupBundles } from "./helpers/bundle.mjs";
@@ -414,5 +417,242 @@ describe("live data: components agree on the same snapshot", () => {
       const col = t.groups.flatMap((g) => g.columns).find((c) => c.key === "fantasyPoints");
       assert.equal(col.label, "PPR FPTS");
     }
+  });
+});
+
+/* ===================================================== Phase 1.1 (2026-11-19) */
+
+const AUBREY = "11533";
+
+describe("kicker scoring: one distance-tiered rule (Phase 1.1)", () => {
+  test("field goals by distance, extra points, misses: house rule = matchup pages = build mirror", () => {
+    // 25, 44 and 53 yards made, one field goal missed; 3 of 4 extra points.
+    const line = { fgMade: [25, 44, 53], fgAtt: 4, xpMade: 3, xpAtt: 4 };
+    assert.equal(matchupPts.kickerPoints(line), 3 + 4 + 5 - 1 + 3 - 1);
+    const log = { pts_ppr: 0, fgm: 3, fga: 4, xpm: 3, xpa: 4, fgm_20_29: 1, fgm_40_49: 1, fgm_50p: 1 };
+    for (const f of ["standard", "half", "ppr"]) {
+      assert.equal(scoring.getFantasyPoints(log, f), 13, `${f}: a kicker scores the same in every format`);
+      assert.equal(jsRules.scoreGameLogStats(log, f), 13);
+    }
+  });
+
+  test("band edges: 39 is 3, 40 is 4, 49 is 4, 50 is 5", () => {
+    assert.equal(matchupPts.kickerPoints({ fgMade: [39], fgAtt: 1, xpMade: 0, xpAtt: 0 }), 3);
+    assert.equal(matchupPts.kickerPoints({ fgMade: [40], fgAtt: 1, xpMade: 0, xpAtt: 0 }), 4);
+    assert.equal(matchupPts.kickerPoints({ fgMade: [49], fgAtt: 1, xpMade: 0, xpAtt: 0 }), 4);
+    assert.equal(matchupPts.kickerPoints({ fgMade: [50], fgAtt: 1, xpMade: 0, xpAtt: 0 }), 5);
+  });
+
+  test("a missed extra point costs one; a kicker line with no distances keeps the provider total, never a guess", () => {
+    assert.equal(scoring.getFantasyPoints({ pts_ppr: 1, fgm: 0, fga: 0, xpm: 2, xpa: 3 }, "ppr"), 1);
+    assert.equal(scoring.getFantasyPoints({ pts_ppr: 11, pts_std: 11, fgm: 3, fga: 3, xpm: 2, xpa: 2 }, "ppr"), 11);
+  });
+
+  test("Brandon Aubrey 2026: every week's stored total reproduces under the house kicker rule", () => {
+    for (const g of season(2026, AUBREY)) {
+      assert.equal(scoring.getFantasyPoints(g.stats, "ppr"), g.stats.pts_ppr, `week ${g.week}`);
+    }
+  });
+
+  test("the breakdown itemizes a kicker by distance and the lines add up", () => {
+    const g = season(2026, AUBREY).find((e) => (e.stats.fgm_50p ?? 0) > 0) ?? season(2026, AUBREY)[0];
+    const rows = scoring.pointsBreakdown(g.stats, "ppr");
+    assert.equal(Math.round(rows.reduce((n, r) => n + r.points, 0) * 100) / 100, g.stats.pts_ppr);
+  });
+});
+
+describe("historical totals: provider vs house rule, reversible (Phase 1.1)", () => {
+  const cousins21 = () => season(2021, COUSINS);
+  const total = (games, f) => Math.round(games.reduce((n, g) => n + f(g.stats), 0) * 10) / 10;
+
+  test("default: the provider's stored totals, unchanged (Cousins 2021 295.3)", () => {
+    delete process.env.SC_SCORING_TOTALS;
+    assert.equal(total(cousins21(), (s) => scoring.getEntryPoints(s, "ppr")), 295.3);
+  });
+
+  test("SC_SCORING_TOTALS=house: the house rule for every season (Cousins 2021 307.3); unset restores it", () => {
+    process.env.SC_SCORING_TOTALS = "house";
+    try {
+      assert.equal(total(cousins21(), (s) => scoring.getEntryPoints(s, "ppr")), 307.3);
+      assert.equal(total(cousins21(), (s) => jsRules.entryPoints(s, "ppr")), 307.3, "build scripts follow the same switch");
+      // 2026 audited fixtures hold under either policy.
+      assert.equal(total(season(2026, ASB), (s) => scoring.getEntryPoints(s, "ppr")), 183.4);
+      assert.equal(total(season(2026, LAMAR), (s) => scoring.getEntryPoints(s, "ppr")), 80.1);
+    } finally {
+      delete process.env.SC_SCORING_TOTALS;
+    }
+    assert.equal(total(cousins21(), (s) => scoring.getEntryPoints(s, "ppr")), 295.3);
+  });
+
+  test("every difference is named: provider fumble penalty, provider-only plays", () => {
+    const w2 = cousins21().find((g) => g.week === 2).stats;
+    const r = Math.round((w2.pts_ppr - scoring.getFantasyPoints(w2, "ppr")) * 100) / 100;
+    assert.equal(scoring.explainResidual(w2, r).label, "Provider fumble penalty");
+    // St. Brown 2023 Week 14: +1 for a forced fumble on defense. Provider-only:
+    // it is in the stored total and NOT in the house total.
+    const w14 = season(2023, ASB).find((g) => g.week === 14).stats;
+    assert.equal(scoring.getFantasyPoints(w14, "ppr"), 5.1);
+    assert.equal(w14.pts_ppr, 6.1);
+    const why = scoring.explainResidual(w14, 1);
+    assert.equal(why.label, "Provider-only scoring");
+    assert.match(why.detail, /forced fumble/);
+    assert.equal(scoring.explainResidual(w14, 0), null);
+  });
+});
+
+describe("freshness metadata: ingestion is not a file write (Phase 1.1)", () => {
+  const SEASON_T = 2031;
+  let dir, stub, failAll = false, withStd = false;
+  const BUILDER = path.join(HERE, "..", "scripts", "player", "buildGameLogs.js");
+  const BACKFILL = path.join(HERE, "..", "scripts", "player", "backfillScoringEvents.mjs");
+  const exec = (file, args, env) =>
+    new Promise((resolve) => {
+      execFile(process.execPath, [file, ...args], { env: { ...process.env, ...env } }, (err, stdout, stderr) => resolve({ code: err?.code ?? 0, stdout, stderr }));
+    });
+  const meta = () => JSON.parse(fs.readFileSync(path.join(dir, "dataset-meta.json"), "utf8")).datasets.game_logs[String(SEASON_T)];
+
+  before(async () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "sc-meta-"));
+    fs.writeFileSync(path.join(dir, "players.json"), JSON.stringify([{ id: "1", name: "Test Back", position: "RB" }]));
+    stub = http.createServer((req, res) => {
+      const [, week] = req.url.split("?")[0].split("/").slice(-2).map(Number);
+      if (failAll) { res.writeHead(500); res.end(); return; }
+      const rows = week <= 3 ? [{ player_id: "1", team: "ARI", opponent: "LAC", stats: { gp: 1, rush_yd: 10 * week, pts_ppr: week, rush_2pt: week === 2 ? 1 : 0, ...(withStd ? { pts_std: week } : {}) } }] : [];
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(rows));
+    });
+    await new Promise((r) => stub.listen(0, "127.0.0.1", r));
+  });
+  after(async () => {
+    await new Promise((r) => stub.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+  const env = () => ({ SC_PLAYER_DATA_DIR: dir, SC_SLEEPER_STATS_BASE: `http://127.0.0.1:${stub.address().port}` });
+
+  test("a successful build records ingestion and aggregation", async () => {
+    failAll = false;
+    const r = await exec(BUILDER, [String(SEASON_T)], env());
+    assert.equal(r.code, 0, r.stderr);
+    const m = meta();
+    assert.ok(m.lastIngestedAt && m.lastAggregatedAt);
+    assert.equal(m.lastIngestedAt, m.lastAggregatedAt);
+  });
+
+  test("an old dataset rebuilt today by a backfill: correction recorded, ingestion time unchanged", async () => {
+    const before = meta().lastIngestedAt;
+    await new Promise((r) => setTimeout(r, 1100));
+    // The provider now has a field the stored file lacks: the backfill adds it.
+    withStd = true;
+    const r = await exec(BACKFILL, [String(SEASON_T)], env());
+    withStd = false;
+    assert.equal(r.code, 0, r.stderr);
+    const m = meta();
+    assert.equal(m.lastIngestedAt, before, "a backfill is not an ingestion");
+    assert.ok(Date.parse(m.lastCorrectionAt) > Date.parse(before), "the correction is recorded on its own");
+  });
+
+  test("a failed ingestion never advances the last successful ingestion", async () => {
+    const before = meta().lastIngestedAt;
+    failAll = true;
+    const r = await exec(BUILDER, [String(SEASON_T)], env());
+    failAll = false;
+    assert.notEqual(r.code, 0, "every week failing is a failed run");
+    const m = meta();
+    assert.equal(m.lastIngestedAt, before);
+    assert.ok(Date.parse(m.lastFailureAt) >= Date.parse(before));
+    assert.ok(fs.existsSync(path.join(dir, "game_logs", `${SEASON_T}.json`)), "the last good file stays");
+  });
+
+  test("the status report and page labels read the metadata, not the mtime", async () => {
+    const dm = await importModule("lib/dataset-meta");
+    dm.setDatasetMetaForTests({ datasets: { game_logs: { "2026": { lastIngestedAt: "2026-11-18T14:25:32Z", lastCorrectionAt: "2026-11-19T03:00:00Z" } } } });
+    assert.equal(dm.lastIngestedMs("game_logs", 2026), Date.parse("2026-11-18T14:25:32Z"));
+    dm.setDatasetMetaForTests(null);
+  });
+});
+
+describe("Burden: injury history vs current status (Phase 1.1)", () => {
+  test("the Week 9 in-game injury is in the history, from the play-by-play, without an invented body part", () => {
+    const e = INJ["12519_phase1_1"].nfl.filter((x) => x.season === 2026);
+    assert.equal(e.length, 1);
+    assert.equal(e[0].week, 9);
+    assert.equal(e[0].source, "play-by-play");
+    assert.equal(e[0].bodyPart, "unknown");
+    assert.equal(e[0].gamesMissed, 0, "no reason established for any game since, so none counted to injury");
+    assert.match(e[0].description, /Week 10 bye/);
+  });
+
+  test("builder: an in-game injury in the latest game with no report becomes an entry; one a report covers does not duplicate", async () => {
+    const { buildEntries } = await import("../scripts/player/buildInjuryHistory.mjs");
+    const ctx = (extra = {}) => ({ played: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]), playing: (w) => w !== 10, completedWeek: 10, team: "CHI", onReserve: false, current: true, ...extra });
+    const ev = [{ week: 9, opponent: "TB", qtr: 4, clock: "03:48", desc: "(3:48) pass to 10-L.Burden" }];
+    const [e] = buildEntries(2026, [], ev, ctx());
+    assert.equal(e.type, "In-game injury");
+    assert.equal(e.gamesMissed, 0);
+    // A past season: no such entry (the durability grid owns past seasons).
+    assert.equal(buildEntries(2026, [], ev, ctx({ current: false })).length, 0);
+    // Once a report lists him, the report's entry carries the play instead.
+    const rows = [{ week: 11, team: "CHI", term: "Concussion", status: null, primary: true }];
+    const entries = buildEntries(2026, rows, ev, ctx({ completedWeek: 11, playing: () => true, played: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 11]) }));
+    assert.equal(entries.filter((x) => x.type === "In-game injury").length, 0);
+  });
+
+  test("an incomplete history does not change the current status: still no designation for Week 11", () => {
+    const s = status.currentStatus({
+      playerId: BURDEN, team: teams.getTeamByAbbreviation("CHI"), season: 2026,
+      games: [{ week: 11, seasonType: "regular", status: "scheduled", result: null }],
+      rosterRow: { id: BURDEN, name: "Luther Burden III", position: "WR", team: "chi", injuryStatus: "Questionable", injuryBodyPart: "Concussion" },
+      rosterFetchedAt: Date.parse("2026-11-18T05:00:00Z"), now: Date.parse("2026-11-18T12:00:00Z"),
+      deps: { logs: LOGS["2026"], practice: PRACTICE },
+    });
+    assert.equal(s.designation, null);
+  });
+});
+
+describe("data health: alert only on actionable conditions (Phase 1.1)", () => {
+  const games = () => coverageTs.slateGames(2026, SLATE_CSV);
+  const report = (missing = []) => ({
+    gameLogs: { coverage: { missing }, lastIngestedAt: "2026-11-18T14:25:32Z", lastFailureAt: null },
+    statsTables: { tables: [{ position: "QB", state: "complete", coverage: { missing: [] } }], lastIngestedAt: "2026-11-19T02:00:46Z", lastFailureAt: null },
+    crossCheck: { mismatches: 0 },
+  });
+  const mnfKickoff = Date.parse("2026-11-16T20:15:00-05:00");
+
+  test("Monday night not yet ingested on Tuesday morning: no alert (grace window)", () => {
+    const v = coverageTs.dataHealth(2026, mnfKickoff + 12 * 3600_000, { report: report(["2026_10_LAC_BAL"]), games: games() });
+    assert.equal(v.ok, true, v.reasons.join("; "));
+  });
+
+  test("still missing two days later: alert names the game", () => {
+    const v = coverageTs.dataHealth(2026, mnfKickoff + 40 * 3600_000, { report: report(["2026_10_LAC_BAL"]), games: games() });
+    assert.equal(v.ok, false);
+    assert.match(v.reasons.join(";"), /2026_10_LAC_BAL/);
+  });
+
+  test("a failure newer than the last success, a stale feed, a mismatch, an unattributed score: each alerts", () => {
+    const now = Date.parse("2026-11-19T12:00:00Z");
+    const r = report();
+    r.gameLogs.lastFailureAt = "2026-11-19T10:00:00Z";
+    r.gameLogs.lastFailure = "every week failed";
+    assert.match(coverageTs.dataHealth(2026, now, { report: r, games: games() }).reasons.join(";"), /ingestion failed/);
+    const stale = report();
+    stale.gameLogs.lastIngestedAt = "2026-11-01T00:00:00Z";
+    assert.match(coverageTs.dataHealth(2026, now, { report: stale, games: games() }).reasons.join(";"), /not ingested/);
+    const mm = report();
+    mm.crossCheck.mismatches = 2;
+    assert.match(coverageTs.dataHealth(2026, now, { report: mm, games: games() }).reasons.join(";"), /differ between/);
+    assert.match(coverageTs.dataHealth(2026, now, { report: report(), games: games(), unattributedScoring: 1 }).reasons.join(";"), /no known cause/);
+    assert.equal(coverageTs.dataHealth(2026, now, { report: report(), games: games() }).ok, true);
+  });
+});
+
+describe("grades keep their defined input (Phase 1.1)", () => {
+  test("grades read the source FPTS while the column shows PPR", () => {
+    const t = statsData.getStatsTable("WR", 2026);
+    const asb = t.rows.find((r) => r.playerId === ASB);
+    assert.equal(asb.values.fantasyPoints, 183.4 >= 0 ? asb.values.fantasyPoints : 0);
+    assert.notEqual(asb.values.fantasyPointsSource, asb.values.fantasyPoints, "source (Standard) kept beside the PPR column");
+    const prod = t.groups.flatMap((g) => g.columns).find((c) => c.key === "productionScore");
+    assert.match(prod.tooltip, /Standard FPTS\/G/);
   });
 });

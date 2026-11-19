@@ -450,6 +450,46 @@ export function buildEntries(season, rows, events, ctx) {
       reports: [],
     });
   }
+  // Phase 1.1 (2026-11-19, Luther Burden III): an in-game injury in his most
+  // recent game that no report or reserve record covers yet - hurt in Week 9,
+  // the Week 10 bye filed no report, cleared before Week 11's. Without this
+  // the history said nothing while the status said Questionable. Only what
+  // the play-by-play establishes: the game, the clock, the play; no body part.
+  if (ctx.current && ctx.played.size) {
+    const last = Math.max(...ctx.played);
+    const ev = events.find((e) => e.week === last);
+    const explained = entries.some((e) => e.week === last || e.play?.week === last || (e.week <= last && last <= e.week + (e.gamesMissed ?? 0)));
+    if (ev && !explained && !covered.has(last)) {
+      const missed = [];
+      for (let w = last + 1; w <= ctx.completedWeek; w += 1) {
+        if (ctx.played.has(w)) break;
+        if (isGame(w)) missed.push(w);
+      }
+      const byes = [];
+      for (let w = last + 1; w <= ctx.completedWeek; w += 1) if (!isGame(w)) byes.push(w);
+      const since = byes.length ? ` (Week ${byes.join(", ")} bye)` : "";
+      entries.push({
+        season,
+        week: last,
+        type: "In-game injury",
+        bodyPart: "unknown",
+        side: "unknown",
+        severity: "minor",
+        // No report gives a reason for the games since, so none is counted
+        // as missed to injury (games-missed.ts: "reason unknown").
+        gamesMissed: 0,
+        description:
+          `Hurt during the Week ${last} game against the ${TEAM_NAMES[ev.opponent] ?? ev.opponent}` +
+          `${ev.qtr ? ` (Q${ev.qtr}${ev.clock ? `, ${ev.clock}` : ""})` : ""}. ` +
+          `No injury report has listed him since${since}, so no body part is on record.` +
+          (missed.length ? ` He has not played since (${listWeeks(missed, isGame)}); no report gives the reason.` : ""),
+        report: false,
+        source: "play-by-play",
+        play: playOf(ev),
+        reports: [],
+      });
+    }
+  }
   entries.sort((a, b) => b.week - a.week || a.type.localeCompare(b.type));
   return entries;
 }
@@ -641,7 +681,8 @@ function main() {
       const team = [...teamCount].sort((a, b) => b[1] - a[1])[0]?.[0] ?? rows[0]?.team ?? (current ? player.team : null);
       const reserve = reserveByGsis[gsis] ?? {};
       const grid = current ? null : gridByGsis.has(gsis) ? gridSeason(gridByGsis.get(gsis), season, playing, team) : null;
-      if (rows.length === 0 && Object.keys(reserve).length === 0 && !(grid && grid.stints.length)) continue;
+      const hasEvents = current && (v.g ?? []).some((g) => g[0] === season && g[2] === "REG");
+      if (rows.length === 0 && Object.keys(reserve).length === 0 && !(grid && grid.stints.length) && !hasEvents) continue;
       playersSeen += 1;
       const events = (v.g ?? [])
         .filter((g) => g[0] === season && g[2] === "REG")

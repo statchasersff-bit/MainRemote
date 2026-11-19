@@ -46,6 +46,7 @@ import {
 } from "./upcoming";
 import { getTeamSchedule, type ScheduleGame } from "../team/schedule";
 import { currentStatus, displayedStatus, type CurrentStatus } from "./current-status";
+import { lastIngestedMs } from "../dataset-meta";
 import { currentFpaSeason, getFpaTable } from "../fpa/fpa-data";
 import { seasonAvailability, type SeasonAvailability } from "./games-missed";
 import {
@@ -1484,7 +1485,9 @@ export async function getPlayerPageData(
     }),
     seasonClubs: seasonClubs(player.id, logSeasons),
     logCareer,
-    statsUpdatedMs: gameLogUpdatedMs(season),
+    // Last successful Sleeper ingestion (dataset-meta), not the file's mtime:
+    // a backfill must not make old stats read as freshly updated.
+    statsUpdatedMs: lastIngestedMs("game_logs", season),
     statsCopy: loadStatsCopy()[player.slug] ?? null,
     college: loadCollegeStats().players?.[player.id] ?? null,
     statsAdvanced: statsTabAdvanced(

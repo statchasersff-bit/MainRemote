@@ -834,5 +834,104 @@
 "description": "While at Rutgers, he suffered a deep cut on his foot while removing athletic tape after a game. He played the next week but had to sit out the following matchup."
 }
 ]
+},
+"12519_phase1_1": {
+"grade": "A+",
+"score": 100,
+"gradeColor": "#22c55e",
+"nfl": [
+{
+"season": 2026,
+"week": 9,
+"type": "In-game injury",
+"bodyPart": "unknown",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Hurt during the Week 9 game against the Buccaneers (Q4, 03:48). No injury report has listed him since (Week 10 bye), so no body part is on record.",
+"report": false,
+"source": "play-by-play",
+"play": {
+"week": 9,
+"opponent": "TB",
+"qtr": 4,
+"clock": "03:48",
+"desc": "(Shotgun) 18-C.Williams pass short left to 10-L.Burden to CHI 19 for 4 yards (3-R.Bain; 22-K.Scott). FUMBLES (3-R.Bain), RECOVERED by TB-5-I.Melifonwu at CHI 21. 5-I.Melifonwu to CHI 17 for 4 yards (62-J.Thuney\u2026"
+},
+"reports": []
+},
+{
+"season": 2025,
+"week": 17,
+"type": "Quad",
+"bodyPart": "quad",
+"side": "unknown",
+"severity": "minor",
+"gamesMissed": 0,
+"description": "Hurt during the Week 17 game against the 49ers and listed with a quad injury from Week 18 and played through it without missing time.",
+"report": true,
+"play": {
+"week": 17,
+"opponent": "SF",
+"qtr": 4,
+"clock": "00:04",
+"desc": "(Shotgun) 18-C.Williams pass incomplete short left to 20-J.Walker [94-Y.Gross-Matos]."
+},
+"reports": [
+{
+"week": 18,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2025,
+"week": 16,
+"type": "Ankle",
+"bodyPart": "ankle",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with an ankle injury from Week 16; missed Week 16.",
+"report": true,
+"reports": [
+{
+"week": 16,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 17,
+"practice": "Full",
+"status": null
+}
+]
+},
+{
+"season": 2025,
+"week": 9,
+"type": "Concussion",
+"bodyPart": "head",
+"side": "unknown",
+"severity": "moderate",
+"gamesMissed": 1,
+"description": "Listed on the injury report with a concussion from Week 9; missed Week 9.",
+"report": true,
+"reports": [
+{
+"week": 9,
+"practice": "DNP",
+"status": "Out"
+},
+{
+"week": 10,
+"practice": "Full",
+"status": null
+}
+]
+}
+],
+"college": []
 }
 }
