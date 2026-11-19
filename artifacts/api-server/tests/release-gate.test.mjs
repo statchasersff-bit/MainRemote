@@ -86,6 +86,26 @@ describe("team overview injuries = player pages' current status", () => {
     assert.ok(rows > 0, "some injury rows checked");
   });
 
+  test("Detroit / Sione Vaki: the overview agrees with his page about Week-old designations", async () => {
+    const strip = (h) => h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const page = strip((await body(server.origin, "/player/sione-vaki/injury")).text);
+    const html = (await body(server.origin, "/team/det")).text;
+    const list = /<ul class="sct-ovw-inj-list">([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? "";
+    const row = [...list.matchAll(/<li class="sct-ovw-inj-row">([\s\S]*?)<\/li>/g)].find((m) => /sione-vaki/.test(m[1]));
+    if (/No injury designation for Week/.test(page)) {
+      assert.equal(row, undefined, "his page has no designation; the overview lists none");
+      let answer = "";
+      for (const b of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+        for (const x of ((j) => j["@graph"] ?? [j])(JSON.parse(b[1]))) for (const q of x.mainEntity ?? []) if (/injured right now/.test(q.name)) answer = q.acceptedAnswer.text;
+      }
+      assert.doesNotMatch(answer, /Sione Vaki/, "nor does the FAQ");
+    } else if (row) {
+      // A fresh designation: both pages carry it.
+      const status = /sct-ovw-status"[^>]*>([^<]*)</.exec(row[1])?.[1]?.trim();
+      assert.ok(status && page.includes(status), `overview ${status} also on his page`);
+    }
+  });
+
   test("the overview FAQ's injury answer names exactly the panel's players", async () => {
     for (const team of ["det", "lv", "sea", "min", "kc", "lar", "chi", "bal"]) {
       const html = (await body(server.origin, `/team/${team}`)).text;

@@ -24,6 +24,7 @@ import { APP_DIR } from "./helpers/server.mjs";
 
 let render;
 let teams;
+let availability;
 let dir;
 
 // The renderer reaches the database package through the news imports; no
@@ -32,7 +33,7 @@ let dir;
 before(async () => {
   dir = fs.mkdtempSync(path.join(APP_DIR, ".test-bundle-"));
   const entry = path.join(dir, "entry.ts");
-  fs.writeFileSync(entry, `export * as render from "../src/lib/team-render";\nexport * as teams from "../src/lib/team/teams";\n`);
+  fs.writeFileSync(entry, `export * as render from "../src/lib/team-render";\nexport * as teams from "../src/lib/team/teams";\nexport * as availability from "../src/lib/matchup/availability";\n`);
   const outfile = path.join(dir, "module.mjs");
   await build({
     entryPoints: [entry],
@@ -65,6 +66,7 @@ before(async () => {
   const mod = await import(pathToFileURL(outfile).href);
   render = mod.render;
   teams = mod.teams;
+  availability = mod.availability;
 });
 after(() => process.env.KEEP_BUNDLE || fs.rmSync(dir, { recursive: true, force: true }));
 
@@ -226,5 +228,45 @@ describe("season phases", () => {
     assert.equal(tab.textContent, "Overview");
     assert.equal(panel.firstElementChild.id, "team-overview");
     assert.equal(panel.querySelector(".sct-ovw-last, .sct-ovw-next"), null, "no game cards without a schedule");
+  });
+});
+
+/*
+ * Regression (release gate 2026-11-19, carried into the team-hubs
+ * integration): Sleeper's injuryStatus is not tied to a week. Sione Vaki (DET)
+ * was Questionable for Week 10, played, and still read Questionable on the
+ * team overview while his own page said "No injury designation for Week 11".
+ * The shared rule (matchup/availability.ts) is checked here on injected game
+ * logs and practice reports, so it holds on any calendar day.
+ */
+describe("a designation the player then played through has expired", () => {
+  const roster = [
+    { id: "vaki", name: "Sione Vaki", position: "RB", injuryStatus: "Questionable", injuryBodyPart: "Ankle" },
+    { id: "missed", name: "Missed Back", position: "RB", injuryStatus: "Questionable", injuryBodyPart: "Knee" },
+    { id: "ir", name: "Reserve Back", position: "RB", injuryStatus: "IR", injuryBodyPart: "Back" },
+    { id: "healthy", name: "Healthy Back", position: "RB", injuryStatus: null },
+  ];
+  // Detroit played Week 10 (Vaki and the healthy back took snaps); the missed back did not.
+  const logs = {
+    vaki: [{ week: 10, team: "DET", stats: { off_snp: 14, gp: 1 } }],
+    healthy: [{ week: 10, team: "DET", stats: { off_snp: 50, gp: 1 } }],
+    missed: [{ week: 9, team: "DET", stats: { off_snp: 30, gp: 1 } }],
+  };
+  const status = (practice) =>
+    Object.fromEntries(availability.gameRoster(team("det"), 2026, 11, roster, { logs, practice }).map((r) => [r.id, r.injuryStatus]));
+
+  test("no Week 11 report yet: Vaki has no designation, the back who missed is Pending, IR stands", () => {
+    const s = status({ weeks: {} });
+    assert.equal(s.vaki, null, "Questionable for Week 10 and played: expired");
+    assert.equal(s.missed, "Pending");
+    assert.equal(s.ir, "IR");
+    assert.equal(s.healthy, null);
+    const note = availability.gameAvailability(team("det"), 2026, 11, roster, { logs, practice: { weeks: {} } }).get("vaki").note;
+    assert.match(note, /Listed Questionable for Week 10 and played; no Week 11 designation/);
+  });
+
+  test("a Week 11 report that lists him Questionable again is current", () => {
+    const practice = { weeks: { 11: { teams: { Lions: { [availability.availabilityKey("Sione Vaki")]: { name: "Sione Vaki", injury: "Ankle", gameStatus: "Questionable", final: null, days: {} } } } } } };
+    assert.equal(status(practice).vaki, "Questionable");
   });
 });

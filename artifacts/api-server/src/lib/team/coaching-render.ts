@@ -22,6 +22,7 @@
  * chain while everything editorial stays put (see coaching.ts).
  */
 
+import { leagueTendencyValues } from "./coaching";
 import { escapeHtml, TEAM_ACCENTS, TEAM_COLORS } from "../render";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import {
@@ -236,47 +237,67 @@ export function schemeChip(note: string): string | null {
 export interface RowView {
   current: string;
   change: { dir: "up" | "down" | "flat"; text: string };
-  /** The move in the row's unit: points, or seconds for pace (+ = faster). */
+  /** The move in the row's unit: percentage points, or seconds for pace (+ = faster). */
   delta: number | null;
+  /** League rank of the current value among the clubs in the coaching file (1 = highest, or fastest for pace). */
   rank: number | null;
+  /** True when another club has the same value (the rank is shared: "T-3rd"). */
+  tied?: boolean;
+  /** How many clubs the rank is over. */
+  of?: number;
+}
+
+/** Decimal places a stored figure was written with ("60.8%" -> 1, "65%" -> 0). */
+function placesOf(text: string): number {
+  return text.match(/\.(\d+)/)?.[1]?.length ?? 0;
 }
 
 /**
- * A row's current cell, change and league rank. Feed-backed rows read the
- * usage env block live; the rest keep the stored values, with the rank
- * recovered from the stored "- 2nd in NFL" tail.
+ * A row's current cell, change and league rank, all from the coaching file
+ * (Team Pages Phase 2, 2026-11-19).
  *
- * Changes are points or seconds, never a bare number, and the pace row
- * inverts: fewer seconds is "up" and reads "1.1s faster".
+ * Until then four rows (pass rate, PROE, red-zone pass rate, pace) replaced
+ * the current value with the usage file's, which rounds rates to whole
+ * numbers and defines a red-zone run differently, while the prior value
+ * stayed this file's one-decimal figure: NE's pass rate printed "61%" and
+ * "+0.5" against a stored 60.8% (+0.3, under the steady threshold), and its
+ * red-zone rank read 3rd beside a value the coaching builder ranks 1st. Now
+ * both seasons and the rank come from one builder and one definition. `view`
+ * is kept in the signature for the callers; nothing is read from it.
+ *
+ * The change is in percentage points ("pts") for rates and seconds for pace,
+ * where fewer seconds is "up" (faster).
  */
-export function rowView(row: TendencyRow, view: UsageView | null): RowView {
-  const env = row.feed && view ? view.team.env[row.feed] : undefined;
-  const value = env?.value;
-  if (row.feed && row.priorNum != null && value != null) {
-    const delta = value - row.priorNum;
-    if (row.invert) {
-      const dir = Math.abs(delta) < 0.3 ? "flat" : delta < 0 ? "up" : "down";
-      const text = dir === "flat" ? "steady" : `${Math.abs(delta).toFixed(1)}s ${dir === "up" ? "faster" : "slower"}`;
-      return { current: `${value.toFixed(1)}s`, change: { dir, text }, delta: -delta, rank: env?.rank ?? null };
-    }
-    const dir = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
-    const rounded = Math.round(value * 10) / 10;
-    return {
-      current: row.feed === "proe" ? `${signed(rounded)}%` : `${rounded}%`,
-      change: { dir, text: dir === "flat" ? "steady" : `${signed(delta)} pts` },
-      delta,
-      rank: env?.rank ?? null,
-    };
+export function rowView(row: TendencyRow, view: UsageView | null, season?: number): RowView {
+  void view;
+  const now = num(row.current);
+  const prior = num(row.prior);
+  const values = season != null && row.key ? leagueTendencyValues(season, row.key) : [];
+  let rank: number | null = null;
+  let tied = false;
+  if (now != null && values.length >= 2) {
+    const better = (v: number) => (row.invert ? v < now : v > now);
+    rank = values.filter(better).length + 1;
+    tied = values.filter((v) => v === now).length > 1;
   }
-  const m = row.change.text.match(/^([+−-]?\d+(?:\.\d+)?)(?:\s+-\s+(\d+)(?:st|nd|rd|th) in NFL)?$/);
-  if (!m) return { current: row.current, change: row.change, delta: null, rank: null };
-  const delta = Number(m[1].replace("−", "-"));
+  const base = { current: row.current, rank, tied, of: values.length || undefined };
+  if (now == null || prior == null) return { ...base, change: row.change, delta: null };
+  const places = Math.max(placesOf(row.current), placesOf(row.prior));
+  const raw = row.invert ? prior - now : now - prior;
+  const delta = Math.round(raw * 10 ** places) / 10 ** places;
+  const flat = Math.abs(delta) < (row.invert ? 0.3 : 0.5);
+  const dir = flat ? "flat" : delta > 0 ? "up" : "down";
   return {
-    current: row.current,
-    change: { dir: row.change.dir, text: `${signed(delta)} pts` },
+    ...base,
+    change: { dir, text: flat ? "steady" : ptsLabel(delta, places) },
     delta,
-    rank: m[2] ? Number(m[2]) : null,
   };
+}
+
+/** "3rd highest", "T-14th fastest": a rank with the direction it is counted in. */
+export function rankWords(row: TendencyRow, v: RowView): string | null {
+  if (v.rank == null) return null;
+  return `${v.tied ? "T-" : ""}${ordinal(v.rank)} ${row.invert ? "fastest" : "highest"}`;
 }
 
 /** A league standing, only at the edges: top ten, or bottom five. */
@@ -339,9 +360,12 @@ export function changeText(row: TendencyRow, v: RowView): string {
   // A rate's change prints with "%" (60.5% to 58% is -2.5%; mak, 2026-11-15:
   // no "pp" on the coaching page), and pace is written out with no arrow beside the seconds (mak's
   // review, 2026-11-08: an up arrow next to "faster" read as ambiguous).
+  // Rates move in percentage points, printed "pts" (mak, 2026-11-19: Team
+  // Pages Phase 2 supersedes the 2026-11-15 "%" here, which read as a
+  // relative change; "+11.0%" for 54% -> 65% is really +11 points, +20%).
   const size = Math.abs(v.delta).toFixed(1);
   if (row.key === "pace" || row.invert) return `${size} ${size === "1.0" ? "second" : "seconds"} ${v.delta > 0 ? "faster" : "slower"}`;
-  return `${v.delta > 0 ? "+" : "−"}${size}%`;
+  return v.change.text;
 }
 
 /** The brief's two groups (2026-11-05); fourth down moves to Situational Play Calling. */
@@ -427,7 +451,7 @@ export function groupSentence(
 
 /** Every row read once: the views the tendencies, the overview and the sentences share. */
 export function rowViews(c: TeamCoaching, view: UsageView | null): Array<{ row: TendencyRow; v: RowView; i: number }> {
-  return c.tendencies.rows.map((row, i) => ({ row, v: rowView(row, view), i }));
+  return c.tendencies.rows.map((row, i) => ({ row, v: rowView(row, view, seasonOf(c)), i }));
 }
 
 /* ---------------------------------------------------------------- overview */
@@ -1104,6 +1128,12 @@ export function finishRows(c: TeamCoaching): FinishRow[] {
 
 export const signedPts = (d: number) => (d === 0 ? "0" : `${d > 0 ? "+" : "−"}${Math.abs(d)}`);
 
+/** A percentage-point gap with its unit: "+14 pts", "−1 pt", "0 pts". */
+export const ptsLabel = (d: number, places = 0): string => {
+  const size = Math.abs(d).toFixed(places);
+  return `${d === 0 ? "" : d > 0 ? "+" : "−"}${size} ${size === "1" ? "pt" : "pts"}`;
+};
+
 /** The position furthest from league, if it is 3+ points off (the builder's bar). */
 function distLean(c: TeamCoaching): BarRow | null {
   const rows = c.distribution.rows.filter((r) => r.pct != null && r.nfl != null);
@@ -1215,7 +1245,7 @@ export function scoreStateModel(c: TeamCoaching): ScoreStateModel {
       const d = base != null ? (row.share ?? 0) - base : 0;
       // Each row is read against leading by 7+; only a real gap gets gold.
       const flag = i > 0 && Math.abs(d) >= 3;
-      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Baseline" : `${signedPts(d)}%`, baseline: i === 0, flag };
+      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Reference" : ptsLabel(d), baseline: i === 0, flag };
     }),
     verdict,
     context: small ? "Early-season samples remain small." : "Play counts show each bucket's sample.",
@@ -1252,7 +1282,7 @@ export function bottomLineModel(c: TeamCoaching, view: UsageView | null): Bottom
     .filter((s) => !(s.key && SITUATIONAL_KEYS.has(s.key) && small))
     .map((s) => {
       const row = s.key ? c.tendencies.rows.find((r) => r.key === s.key) : undefined;
-      const v = row ? rowView(row, view) : null;
+      const v = row ? rowView(row, view, seasonOf(c)) : null;
       if (!row?.key || !v || v.delta == null || v.change.dir === "flat") return "";
       const name = row.key === "pace" ? "Pace" : CHIP_NAMES[row.key];
       return name ? `${v.delta > 0 ? "↑" : "↓"} ${name}` : "";
@@ -1329,7 +1359,7 @@ export function fantasyReadsModel(c: TeamCoaching, view: UsageView | null): Fant
     .filter((s) => s.key && !SITUATIONAL_KEYS.has(s.key))
     .map((s) => {
       const row = c.tendencies.rows.find((r) => r.key === s.key);
-      const v = row ? rowView(row, view) : null;
+      const v = row ? rowView(row, view, seasonOf(c)) : null;
       const dir = v?.delta == null || v.delta === 0 ? "" : v.delta > 0 ? "↑" : "↓";
       return {
         heading: s.heading,

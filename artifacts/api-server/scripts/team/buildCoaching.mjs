@@ -37,6 +37,15 @@ import readline from "node:readline";
 import { Readable } from "node:stream";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
+import {
+  addSnap,
+  computeThroughWeek,
+  leagueRates,
+  newRateAcc,
+  publishRates,
+  rankPublished,
+  TEAM_RATE_METRICS,
+} from "./team-rate-metrics.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(here, "..", "..", "data");
@@ -61,6 +70,18 @@ const CLUBS = Object.keys(NICKNAMES);
 /* -------------------------------------------------------------------- CSV */
 
 let cacheDir = null;
+/**
+ * The completed-week cutoff for the current season (team-rate-metrics.mjs):
+ * every current-season source stops at it, and the Usage builder uses the
+ * same one, so the two files describe the same games. Set in buildCoaching().
+ */
+let THROUGH = null;
+/** `--through N`: the coordinator's cutoff (refreshTeamMetrics.mjs); computed when absent. */
+let throughArg = null;
+/** `--out <dir>`: write the file there instead of data/team (the coordinator stages both files). */
+let outDir = null;
+let THROUGH_SEASON = null;
+const pastCutoff = (season, week) => season === THROUGH_SEASON && THROUGH != null && (week == null || week > THROUGH);
 /** For importers (backfillFinishNames.mjs): read CSVs from a local cache dir. */
 export const setCacheDir = (dir) => {
   cacheDir = dir;
@@ -222,8 +243,12 @@ async function seasonTendencies(season) {
     }));
 
   const regular = (r) => (r.season_type ?? r.game_type) === "REG";
+  // The shared rates (pass, red-zone, PROE, pace): team-rate-metrics.mjs.
+  const rates = new Map();
+  const rateAcc = (c) => ensure(rates, c, newRateAcc);
   let last = null;
   for await (const r of rows(`${NFLVERSE}/pbp/play_by_play_${season}.csv.gz`)) {
+    if (pastCutoff(season, num(r.week))) continue;
     if (!regular(r)) continue;
     const playType = r.play_type;
 
@@ -242,6 +267,7 @@ async function seasonTendencies(season) {
     if (!c) continue;
     const t = acc(c);
     t.games.add(r.game_id);
+    const cls = addSnap(rateAcc(c), r);
     const wk = num(r.week);
     if (wk != null && wk > t.lastWeek) t.lastWeek = wk;
     const yl = num(r.yardline_100);
@@ -291,9 +317,11 @@ async function seasonTendencies(season) {
     }
     last = { game: r.game_id, club: c, drive: r.fixed_drive, secs: gameSecs, neutral };
 
-    if (r.qb_kneel === "1" || r.qb_spike === "1") continue;
+    // Only the snaps the shared definition counts (flagged pass or rush; no
+    // kneels, spikes or two-point tries): every rate below is over them.
+    if (!cls.counted) continue;
 
-    const isPass = r.pass === "1";
+    const isPass = cls.pass;
     t.plays += 1;
     if (isPass) t.passPlays += 1;
     if (down === 1 || down === 2) {
@@ -334,20 +362,21 @@ async function seasonTendencies(season) {
   };
   for (const [c, t] of teams) {
     for (const k of Object.keys(tot)) tot[k] += t[k];
+    const pub = publishRates(rateAcc(c));
     out[c] = {
       games: t.games.size,
       lastWeek: t.lastWeek || null,
       playsPerGame: round(t.plays / Math.max(1, t.games.size), 1),
-      passRate: round(pct(t.passPlays, t.plays), 1),
+      passRate: pub.passRate,
       earlyDownPassRate: round(pct(t.earlyPass, t.earlyPlays), 1),
-      proe: round(t.proeN ? t.proeSum / t.proeN : null, 1),
-      pace: round(t.paceN ? t.paceSum / t.paceN : null, 1),
+      proe: pub.proe,
+      pace: pub.pace,
       noHuddleRate: round(pct(t.noHuddle, t.plays), 1),
       shotgunRate: round(pct(t.shotgun, t.plays), 1),
       paRate: t.ftnPlays ? round(pct(t.paDropbacks, Math.min(t.dropbacks, t.ftnPlays)), 1) : null,
       motionRate: t.ftnPlays ? round(pct(t.motionPlays, t.ftnPlays), 1) : null,
-      rzPassRate: round(pct(t.rzPass, t.rzPass + t.rzRush), 0),
-      rzPlays: t.rzPass + t.rzRush,
+      rzPassRate: pub.rzPassRate,
+      rzPlays: pub.samples.rzSnaps,
       fourthGoRate: t.fourthShortAll >= 3 ? round(pct(t.fourthShortGo, t.fourthShortAll), 0) : null,
       fourthShortAll: t.fourthShortAll,
       fourthShortGo: t.fourthShortGo,
@@ -360,19 +389,24 @@ async function seasonTendencies(season) {
       defEpaRaw: t.defPlays ? t.defEpaSum / t.defPlays : null,
     };
   }
+  const lg = leagueRates([...rates.values()]);
   const league = {
-    passRate: round(pct(tot.passPlays, tot.plays), 0),
-    earlyDownPassRate: round(pct(tot.earlyPass, tot.earlyPlays), 0),
+    passRate: lg.passRate,
+    earlyDownPassRate: round(pct(tot.earlyPass, tot.earlyPlays), 1),
     proe: 0,
-    pace: round(tot.paceN ? tot.paceSum / tot.paceN : null, 1),
-    noHuddleRate: round(pct(tot.noHuddle, tot.plays), 0),
-    shotgunRate: round(pct(tot.shotgun, tot.plays), 0),
-    paRate: tot.ftnPlays ? round(pct(tot.paDropbacks, Math.min(tot.dropbacks, tot.ftnPlays)), 0) : null,
-    motionRate: tot.ftnPlays ? round(pct(tot.motionPlays, tot.ftnPlays), 0) : null,
-    rzPassRate: round(pct(tot.rzPass, tot.rzPass + tot.rzRush), 0),
+    pace: lg.pace,
+    noHuddleRate: round(pct(tot.noHuddle, tot.plays), 1),
+    shotgunRate: round(pct(tot.shotgun, tot.plays), 1),
+    paRate: tot.ftnPlays ? round(pct(tot.paDropbacks, Math.min(tot.dropbacks, tot.ftnPlays)), 1) : null,
+    motionRate: tot.ftnPlays ? round(pct(tot.motionPlays, tot.ftnPlays), 1) : null,
+    rzPassRate: lg.rzPassRate,
     fourthGoRate: round(pct(tot.fourthShortGo, tot.fourthShortAll), 0),
   };
-  return { teams: out, league, ftnRows };
+  // The data fingerprint both builders print: league counted snaps and pass
+  // snaps under the shared definition. Equal fingerprints = same games.
+  const all = [...rates.values()];
+  const fingerprint = `${all.reduce((n, a) => n + a.snaps, 0)}:${all.reduce((n, a) => n + a.pass, 0)}`;
+  return { teams: out, league, ftnRows, fingerprint };
 }
 
 /* ------------------------------------- player-stat layers, by season */
@@ -417,6 +451,7 @@ export async function seasonPlayers(season, window = null) {
   const seasonPos = await rosterPositions(season);
   for await (const r of rows(`${NFLVERSE}/stats_player/stats_player_week_${season}.csv`)) {
     if (!regular(r) || !r.player_id) continue;
+    if (pastCutoff(season, num(r.week))) continue;
     if (window) {
       const wk = num(r.week);
       if (wk == null || wk < window.from || wk > window.to) continue;
@@ -518,6 +553,7 @@ async function loadScoring() {
     const seasonMap = ensure(bySeason, season, () => new Map());
     const gameMap = ensure(byGame, season, () => new Map());
     const week = num(r.week);
+    if (pastCutoff(season, week)) continue;
     for (const [code, pts] of [
       [r.home_team, hs],
       [r.away_team, as],
@@ -588,7 +624,7 @@ const METRics_SPEC = [
     def: "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is." },
   { key: "shotgunRate", label: "Shotgun rate", sub: "share of offensive snaps", unit: "%", places: 1,
     def: "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun." },
-  { key: "rzPassRate", label: "Red-zone pass rate", sub: "inside the opponent's 20", feed: "rzPassRate", unit: "%", places: 0,
+  { key: "rzPassRate", label: "Red-zone pass rate", sub: "inside the opponent's 20", feed: "rzPassRate", unit: "%", places: 1,
     def: "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season." },
   { key: "fourthGoRate", label: "4th-down go rate", sub: "opponent territory, 2 yds or less", unit: "%", places: 0,
     def: "Share of 4th-and-2-or-less snaps in opponent territory (midfield included) where the offense ran a play instead of punting or attempting a field goal. Snaps wiped out by penalty are removed. Shown as - until a team has had three such snaps." },
@@ -740,7 +776,9 @@ function composeEntry({
       prior: fmt(spec, priorV),
       current: fmt(spec, curV),
       change: { dir, text },
-      nflAvg: avg == null ? "-" : spec.signed ? "0%" : fmt({ ...spec, places: 0 }, avg),
+      // At the row's own precision (Phase 2B, 2026-11-19): a whole-number
+      // average beside one-decimal club values hid the gap ranks are taken on.
+      nflAvg: avg == null ? "-" : spec.signed ? "0%" : fmt(spec, avg),
     };
     if (spec.feed && priorV != null) {
       row.priorNum = priorV;
@@ -1331,14 +1369,18 @@ async function build(season, force) {
   const staffFile = path.join(DATA, "team", `coaching_staff_${season}.json`);
   const staffDoc = JSON.parse(fs.readFileSync(staffFile, "utf8"));
 
-  const outFile = path.join(DATA, "team", `coaching_${season}.json`);
+  const liveFile = path.join(DATA, "team", `coaching_${season}.json`);
+  const outFile = outDir ? path.join(outDir, `coaching_${season}.json`) : liveFile;
   let existing = { teams: {} };
   try {
-    existing = JSON.parse(fs.readFileSync(outFile, "utf8"));
+    existing = JSON.parse(fs.readFileSync(liveFile, "utf8"));
   } catch {
     /* first build */
   }
 
+  THROUGH_SEASON = season;
+  THROUGH = throughArg ?? (await computeThroughWeek(rows, season));
+  console.log(`  ${season} complete through Week ${THROUGH}`);
   console.log(`  tendencies ${season}…`);
   const cur = await seasonTendencies(season);
   console.log(`  tendencies ${season - 1}…`);
@@ -1353,7 +1395,11 @@ async function build(season, force) {
     for (const key of metricKeys) {
       const spec = METRics_SPEC.find((s) => s.key === key);
       const values = Object.values(cur.teams).map((t) => t[key]);
-      ranks[key] = rankOf(values, cur.teams[c][key], Boolean(spec.invert));
+      // The shared metrics rank by the shared rule (published values, ties
+      // share the better rank); the rest by the same rule locally.
+      ranks[key] = TEAM_RATE_METRICS[key]
+        ? rankPublished(values, cur.teams[c][key], key).rank
+        : rankOf(values, cur.teams[c][key], Boolean(spec.invert));
     }
     // Ranked on the unrounded value: at two places several defenses share a
     // figure, and a tie takes the better rank.
@@ -1407,13 +1453,9 @@ async function build(season, force) {
   }
 
   const players = playersBySeason.get(season);
-  const throughWeek = (() => {
-    try {
-      return JSON.parse(fs.readFileSync(path.join(DATA, "team", `usage_${season}.json`), "utf8")).throughWeek;
-    } catch {
-      return Math.max(...Object.values(cur.teams).map((t) => t.games));
-    }
-  })();
+  // The shared completed-week cutoff (it used to be read from the usage
+  // file on disk, which could be from a different run).
+  const throughWeek = THROUGH;
 
   const teams = { ...existing.teams };
   let generated = 0;
@@ -1454,6 +1496,9 @@ async function build(season, force) {
   const doc = {
     season,
     builtAt: new Date().toISOString().slice(0, 10),
+    // Shared with the usage file (team-rate-metrics.mjs): the same season,
+    // cutoff and fingerprint mean the two were built from the same games.
+    snapshot: { season, throughWeek: THROUGH, fingerprint: cur.fingerprint, definitions: "team-rate-metrics/1" },
     sources: [
       "nflverse play-by-play (tendencies, score states, 4th downs, defensive EPA)",
       "FTN Data charting via nflverse, CC-BY-SA 4.0 (play action, motion)",
@@ -1475,6 +1520,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
   const at = process.argv.indexOf("--cache");
   if (at > 0) cacheDir = path.resolve(process.argv[at + 1]);
+  const thAt = process.argv.indexOf("--through");
+  if (thAt > 0) throughArg = Number(process.argv[thAt + 1]);
+  const outAt = process.argv.indexOf("--out");
+  if (outAt > 0) outDir = path.resolve(process.argv[outAt + 1]);
   const forceAt = process.argv.indexOf("--force");
   const force = new Set(forceAt > 0 ? process.argv[forceAt + 1].split(",") : []);
   await build(season, force);

@@ -112,6 +112,8 @@ export type Zone = "DL" | "DM" | "DR" | "SL" | "SM" | "SR";
 export interface RankedValue {
   value: number | null;
   rank: number | null;
+  /** Shares its published value with another club (team-rate-metrics.mjs): the rank is shared. */
+  tied?: boolean;
 }
 
 export interface UsageTeam {

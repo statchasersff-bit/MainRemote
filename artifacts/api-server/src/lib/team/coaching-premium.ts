@@ -23,10 +23,10 @@ import {
   FORMATIONS_NOTE,
   GROUPS,
   KEEP_SUB,
-  atEdge,
   changeText,
   cityOf,
   num,
+  rankWords,
   relNote,
   rowLabel,
   rowViews,
@@ -38,7 +38,7 @@ import {
   type RowView,
 } from "./coaching-render";
 import { headshotImg } from "../headshot-html";
-import { coachPhoto, getCoachingStaff, reliabilityRating, type TeamCoaching, type TendencyRow } from "./coaching";
+import { coachPhoto, coachingStamp, getCoachingStaff, reliabilityRating, type TeamCoaching, type TendencyRow } from "./coaching";
 import type { NflTeam } from "./teams";
 import type { UsageView } from "./usage";
 
@@ -177,72 +177,78 @@ const SHORT_LABEL: Record<string, string> = {
 };
 
 function table(
-  group: Array<{ row: TendencyRow; v: RowView; i: number }>,
+  views: Array<{ row: TendencyRow; v: RowView; i: number }>,
   c: TeamCoaching,
   team: NflTeam,
   priorYear: string,
   season: number,
-  label: string,
 ): string {
-  // The most notable meaningful change: the biggest move of 3+ points (a second of pace) gets the gold row.
-  const notable = group
-    .filter(({ row, v }) => v.delta != null && Math.abs(v.delta) >= (row.key === "pace" ? 1 : 3))
-    .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))[0];
   const callerLast = c.tendencies.priorLabel.match(/\((.+)\)$/)?.[1] ?? "";
-  const rows = group
-    .map(({ row, v, i }) => {
-      // The red-zone rate's sample sits on its own row: this table is the one
-      // place the full red-zone figure prints (mak's review, 2026-11-08).
-      const s = c.tendencies.samples;
-      const subText =
-        row.key === "rzPassRate" && s?.rzPlays
-          ? `${s.rzPlays} plays${s.priorRzPlays != null ? ` (${s.priorRzPlays} in ${priorYear})` : ""}`
-          : row.sub && row.key && KEEP_SUB.has(row.key)
-            ? row.sub
-            : "";
-      const sub = subText ? `<span class="sct-cp-sub">${e(subText)}</span>` : "";
-      const rank = atEdge(v.rank) ? `<span class="sct-cp-rank">${e(ordinal(v.rank as number))}</span>` : "";
-      const chg = changeText(row, v);
-      // Pace at 560px and under reads as the change in seconds per play,
-      // "−1.5s" for 1.5 seconds faster (mak, 2026-11-15), with the words for
-      // screen readers and on hover; the long form stays above that width.
-      const pace = chg.match(/^(\d+(?:\.\d)?) seconds? (faster|slower)$/);
-      const chgHtml = pace
-        ? `<span class="sct-cp-chg-long">${e(chg)}</span><span class="sct-cp-chg-short" title="${e(chg)}"><span aria-hidden="true">${e(`${pace[2] === "faster" ? "−" : "+"}${pace[1]}s`)}</span><span class="sct-visually-hidden">${e(chg)}</span></span>`
-        : e(chg);
-      return (
-        `<tr${row === notable?.row ? ` class="is-notable"` : ""}>` +
-        `<th scope="row" class="sct-cp-td is-metric">${rowLabel(row, `sct-cp-def-${i}`, row.key ? SHORT_LABEL[row.key] : undefined)}${sub}</th>` +
-        `<td class="sct-cp-td is-prior">${e(row.prior)}</td>` +
-        `<td class="sct-cp-td is-now">${e(v.current)}</td>` +
-        `<td class="sct-cp-td is-change"><span class="sct-cp-chg">${dumbbell(row, v, priorYear, season)}` +
-        `<span class="sct-cp-chg-v"><span class="sct-cp-change is-${v.change.dir}">${chgHtml}</span>${rank}</span></span></td>` +
-        `</tr>`
-      );
+  const newCaller = /prev/i.test(callerLast);
+  const through = c.tendencies.samples?.throughWeek;
+  const groupRows = GROUPS.map((g) => ({
+    title: g.title,
+    rows: g.keys.map((k) => views.find((x) => x.row.key === k)).filter((x): x is NonNullable<typeof x> => !!x),
+  })).filter((g) => g.rows.length);
+  const body = groupRows
+    .map(({ title, rows: group }) => {
+      // One gold row per group: its biggest move (3+ points, or a second of pace).
+      const notable = group
+        .filter(({ row, v }) => v.delta != null && Math.abs(v.delta) >= (row.key === "pace" ? 1 : 3))
+        .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))[0];
+      const rows = group
+        .map(({ row, v, i }) => {
+          const s = c.tendencies.samples;
+          const subText =
+            row.key === "rzPassRate" && s?.rzPlays
+              ? `${s.rzPlays} plays${s.priorRzPlays != null ? ` (${s.priorRzPlays} in ${priorYear})` : ""}`
+              : row.sub && row.key && KEEP_SUB.has(row.key)
+                ? row.sub
+                : "";
+          const sub = subText ? `<span class="sct-cp-sub">${e(subText)}</span>` : "";
+          const chg = changeText(row, v);
+          const pace = chg.match(/^(\d+(?:\.\d)?) seconds? (faster|slower)$/);
+          const chgHtml = pace
+            ? `<span class="sct-cp-chg-long">${e(chg)}</span><span class="sct-cp-chg-short" title="${e(chg)}"><span aria-hidden="true">${e(`${pace[2] === "faster" ? "−" : "+"}${pace[1]}s`)}</span><span class="sct-visually-hidden">${e(chg)}</span></span>`
+            : e(chg);
+          const words = rankWords(row, v);
+          const rankTitle = words && v.of ? `${words} of ${v.of} offenses, ${season}${through ? ` through Week ${through}` : ""}` : "";
+          const nfl =
+            `<span class="sct-cp-nfl-avg">${e(row.nflAvg)}</span>` +
+            (words
+              ? `<span class="sct-cp-nfl-rank" title="${e(rankTitle)}">${e(`${v.tied ? "T-" : ""}${ordinal(v.rank as number)}`)}<span class="sct-cp-nfl-dir"> ${row.invert ? "fastest" : "highest"}</span><span class="sct-visually-hidden">${e(` of ${v.of}`)}</span></span>`
+              : "");
+          return (
+            `<tr${row === notable?.row ? ` class="is-notable"` : ""}>` +
+            `<th scope="row" class="sct-cp-td is-metric">${rowLabel(row, `sct-cp-def-${i}`, row.key ? SHORT_LABEL[row.key] : undefined)}${sub}</th>` +
+            `<td class="sct-cp-td is-prior">${e(row.prior)}</td>` +
+            `<td class="sct-cp-td is-now">${e(v.current)}</td>` +
+            `<td class="sct-cp-td is-change"><span class="sct-cp-chg">${dumbbell(row, v, priorYear, season)}` +
+            `<span class="sct-cp-chg-v"><span class="sct-cp-change is-${v.change.dir}">${chgHtml}</span></span></span></td>` +
+            `<td class="sct-cp-td is-nfl">${nfl}</td>` +
+            `</tr>`
+          );
+        })
+        .join("");
+      return `<tr class="sct-cp-group-row"><th scope="colgroup" colspan="5">${e(title)}</th></tr>${rows}`;
     })
     .join("");
   return (
-    `<div class="sct-cp-scroll" tabindex="0" role="region" aria-label="${e(`${team.nickname} ${label.toLowerCase()}, premium comparison`)}">` +
-    `<table class="sct-cp-table is-${label.toLowerCase().replace(/[^a-z]+/g, "-")}">` +
+    `<div class="sct-cp-scroll" tabindex="0" role="region" aria-label="${e(`${team.nickname} offensive tendencies, ${season} vs ${priorYear}`)}">` +
+    // is-play-calling / is-formations-tempo keep the phone table treatment
+    // (short labels, fixed figure columns) the two tables had.
+    `<table class="sct-cp-table is-tendencies is-play-calling is-formations-tempo">` +
     `<thead><tr>` +
     `<th scope="col">Metric</th>` +
-    `<th scope="col" class="is-prior">${e(priorYear)}<span class="sct-cp-th-sub">${e(callerLast || "Prior season")}</span></th>` +
-    `<th scope="col" class="is-now">${season}<span class="sct-cp-th-sub">Current</span></th>` +
-    `<th scope="col">Change<span class="sct-cp-th-sub">vs ${e(priorYear)}<span class="sct-cp-th-tick"> · Tick = NFL Avg</span></span></th>` +
-    `</tr></thead><tbody>${rows}</tbody></table></div>`
+    `<th scope="col" class="is-prior">${e(priorYear)}<span class="sct-cp-th-sub">${e(newCaller ? "Previous staff" : callerLast || "Prior season")}</span></th>` +
+    `<th scope="col" class="is-now">${season}<span class="sct-cp-th-sub">${e(through ? `Thru Wk ${through}` : "Current")}</span></th>` +
+    `<th scope="col">Change<span class="sct-cp-th-sub">${e(newCaller ? "vs previous staff" : `pts vs ${priorYear}`)}</span></th>` +
+    `<th scope="col" class="is-nfl">NFL<span class="sct-cp-th-sub">Avg · rank</span></th>` +
+    `</tr></thead><tbody>${body}</tbody></table></div>`
   );
 }
 
 /* --------------------------------------------------------------- insights */
-
-/** The Offensive Identity strip's four tiles (the review of 2026-11-15): red-zone pass, motion, shotgun, PROE. */
-const IDENTITY_TILES: Array<[string, string, string?]> = [
-  ["rzPassRate", "Red-zone pass"],
-  ["motionRate", "Pre-snap motion"],
-  ["shotgunRate", "Shotgun"],
-  // Phones print the short label (mak, 2026-11-15): one line in a 2x2 tile.
-  ["proe", "Pass rate over expected", "Pass over expected"],
-];
 
 /** Each tendency's move in words, after "Compared with 2025, New England is ...": [up, down]. Pace is seconds, so "up" is faster. */
 const MOVE_WORDS: Record<string, [string, string]> = {
@@ -270,67 +276,13 @@ function identitySentence(all: Array<{ row: TendencyRow; v: RowView }>, team: Nf
     .sort((a, b) => b.size - a.size)
     .slice(0, 3);
   const city = cityOf(team);
-  if (!moved.length) return `${city} looks much like its ${priorYear} offense: no tendency has moved 3 points or more.`;
+  if (!moved.length)
+    return /^the /.test(priorYear)
+      ? `${city} runs much like ${priorYear.replace(/ staff$/, " staff's")} offense: no tendency has moved 3 points or more.`
+      : `${city} looks much like its ${priorYear} offense: no tendency has moved 3 points or more.`;
   const words = moved.map(({ key, d }) => MOVE_WORDS[key]![d > 0 ? 0 : 1]);
   const list = words.length < 2 ? words[0] : `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
   return `Compared with ${priorYear}, ${city} is ${list}.`;
-}
-
-function identityStrip(all: Array<{ row: TendencyRow; v: RowView }>, team: NflTeam, priorYear: string): string {
-  const tiles = IDENTITY_TILES.map(([key, label, short]) => {
-    const x = all.find(({ row }) => row.key === key);
-    if (!x) return "";
-    const chg = changeText(x.row, x.v);
-    return (
-      `<li class="sct-cp-id-tile">` +
-      `<b class="sct-cp-id-v">${e(x.v.current)}</b>` +
-      `<span class="sct-cp-id-k">${short ? `<span class="sct-cp-id-long">${e(label)}</span><span class="sct-cp-id-short">${e(short)}</span>` : e(label)}</span>` +
-      `<span class="sct-cp-id-chg is-${x.v.change.dir}">${e(chg === "steady" ? `Steady vs ${priorYear}` : `${chg} vs ${priorYear}`)}</span>` +
-      `</li>`
-    );
-  }).join("");
-  if (!tiles) return "";
-  return `<ul class="sct-cp-id-tiles">${tiles}</ul><p class="sct-cp-id-line">${e(identitySentence(all, team, priorYear))}</p>`;
-}
-
-/** Shotgun against under center: exhaustive by the row's definition (a snap is logged shotgun or not), so a two-segment donut is honest. */
-function formationVisual(group: Array<{ row: TendencyRow; v: RowView; i: number }>, season: number): string {
-  const sg = group.find(({ row }) => row.key === "shotgunRate");
-  const share = sg ? num(sg.v.current) : null;
-  if (share == null) return "";
-  const avg = sg ? num(sg.row.nflAvg) : null;
-  const r = 34;
-  const circ = 2 * Math.PI * r;
-  const dash = (share / 100) * circ;
-  const under = Math.round((100 - share) * 10) / 10;
-  return (
-    `<aside class="sct-cp-form">` +
-    `<p class="sct-cp-form-title">${e(`Formation Profile (${season})`)}</p>` +
-    `<div class="sct-cp-donut-wrap">` +
-    `<svg class="sct-cp-donut" viewBox="0 0 90 90" width="120" height="120" role="img" aria-label="${e(`Shotgun ${share}% of snaps, under center ${under}%`)}">` +
-    `<circle cx="45" cy="45" r="${r}" class="sct-cp-donut-under"/>` +
-    `<circle cx="45" cy="45" r="${r}" class="sct-cp-donut-sg" stroke-dasharray="${dash.toFixed(1)} ${(circ - dash).toFixed(1)}" transform="rotate(-90 45 45)"/>` +
-    `<text x="45" y="43" text-anchor="middle" class="sct-cp-donut-v">${e(`${share}%`)}</text>` +
-    `<text x="45" y="56" text-anchor="middle" class="sct-cp-donut-l">Shotgun</text>` +
-    `</svg>` +
-    `<ul class="sct-cp-donut-key">` +
-    `<li><i class="sct-cp-sw is-sg"></i><span>Shotgun</span><b>${e(`${share}%`)}</b></li>` +
-    `<li><i class="sct-cp-sw is-under"></i><span>Under Center</span><b>${e(`${under}%`)}</b></li>` +
-    (avg != null ? `<li class="is-avg"><i class="sct-cp-sw is-avg"></i><span>NFL avg shotgun</span><b>${e(`${avg}%`)}</b></li>` : "") +
-    `</ul></div>` +
-    // Phones (mak, 2026-11-15: no donut there): the two shares as figures
-    // over one segmented bar with the NFL average as a tick, then one line.
-    `<div class="sct-cp-seg">` +
-    `<p class="sct-cp-seg-figs"><span class="is-sg"><b>${e(`${share}%`)}</b> Shotgun</span><span class="is-under"><b>${e(`${under}%`)}</b> Under Center</span></p>` +
-    `<span class="sct-cp-seg-bar" role="img" aria-label="${e(`Shotgun ${share}% of snaps, under center ${under}%${avg != null ? `, NFL average shotgun ${avg}%` : ""}`)}">` +
-    `<span class="sct-cp-seg-sg" style="width:${share}%"></span><span class="sct-cp-seg-under"></span>` +
-    (avg != null ? `<span class="sct-cp-seg-avg" style="left:${avg}%"></span>` : "") +
-    `</span>` +
-    (avg != null ? `<p class="sct-cp-seg-note">${e(`NFL avg shotgun: ${avg}%`)}</p>` : "") +
-    `</div>` +
-    `<p class="sct-cp-form-note">Shotgun or not, over every offensive snap; pistol counts as shotgun when the play-by-play logs it so.</p>` +
-    `</aside>`
-  );
 }
 
 /* ----------------------------------------------------------------- public */
@@ -339,52 +291,52 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   const season = seasonOf(c);
   const priorYear = c.tendencies.priorLabel.match(/^\d{4}/)?.[0] ?? c.tendencies.priorLabel;
   const views = rowViews(c, view);
-  const groupOf = (keys: string[]) => keys.map((k) => views.find((x) => x.row.key === k)).filter((x): x is NonNullable<typeof x> => !!x);
-  const calling = groupOf(GROUPS[0]!.keys);
-  const form = groupOf(GROUPS[1]!.keys);
-  const identity = identityStrip([...calling, ...form], team, priorYear);
-  // Each section wears the shared title bar with a one-line subtitle, like
-  // Fantasy Finishes by Season (mak, 2026-11-08).
+  const inTable = views.filter(({ row }) => row.key && GROUPS.some((g) => g.keys.includes(row.key as string)));
   const last = surnameOf(c);
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
+  const newCaller = /prev/i.test(c.tendencies.priorLabel);
+  const through = c.tendencies.samples?.throughWeek;
+  const window = `${season}${through ? ` through Week ${through}` : ""} vs ${priorYear}${newCaller ? ", when the previous staff called plays" : ""}`;
   const section = (title: string, icon: string, sub: string, body: string) =>
     `<section class="sct-cp-section">${usageStyleHead(title, icon, sub)}<div class="sct-cp-section-body">${body}</div></section>`;
+  // Team Pages Phase 2 (2026-11-19): the four identity tiles, the Play
+  // Calling and Formations & Tempo tables and the formation donut were one
+  // set of figures printed up to three times; they are one table now, with
+  // shotgun back as a row, the NFL average and a league rank on every row,
+  // and the identity sentence as the summary over it.
+  const stamp = coachingStamp(season);
+  const how =
+    `<details class="sct-cp-how"><summary>How these are measured</summary>` +
+    `<p>Select a metric for its definition. Changes are percentage points (pts) between the two seasons; pace is seconds between snaps, and fewer is faster. ` +
+    `NFL rank is among all ${views[0]?.v.of ?? 32} offenses in ${season}${through ? ` through Week ${through}` : ""}, from the same play-by-play and definitions: 1st is the highest rate, or the fastest pace; equal values share a rank (T-). ` +
+    `In the bar, the hollow dot is ${e(priorYear)}, the filled dot ${season}, the tick the NFL average; the gold row is each group's biggest change of 3 pts or a second of pace.` +
+    (newCaller ? ` ${e(priorYear)} was called by the previous staff, so a change here is a change of play-caller as much as a trend.` : "") +
+    `</p>` +
+    (stamp.throughWeek != null
+      ? `<p class="sct-cp-stamp">${e(`Data through Week ${stamp.throughWeek} of ${season}: every completed regular-season game to that week${stamp.builtAt ? `, built ${stamp.builtAt}` : ""}. The Usage tab's team rates come from the same games and the same definitions.`)}</p>`
+      : "") +
+    `<p>${e(FORMATIONS_NOTE)}</p></details>`;
   return (
     `<div class="sct-block sct-cp" id="coaching-premium" data-sct-premium="coaching">` +
-    // No outer frame since 2026-11-10 (mak): the header bar, then the card on its own.
     premiumTabHead({
-        hook: "sct-cp-head",
-        icon: "coaching",
-        art: "coaching",
-        heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
-        // Phones show this short title; the heading keeps its words (mak, 2026-11-14).
-        phoneTitle: "Offensive Coaching & Scheme",
-        dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
-      }) +
-      // The four KPI cards went 2026-11-08 (mak): pass rate, red-zone rate,
-      // motion and pace all repeat in the tables below. Coach card only.
-      `<div class="sct-cp-overview is-coach-only">${profileCard(c, team)}</div>` +
-    // Offensive Identity (the review of 2026-11-15): four tiles and one
-    // sentence in place of the Play Calling Key Takeaway and the Formations
-    // & Tempo takeaway, which restated their tables.
-    (identity ? section("Offensive Identity", ICON["trend"]!, `The four tendencies that define ${possessive} offense, ${season} vs ${priorYear}`, identity) : "") +
-    (calling.length
-      ? section("Play Calling", ICON["play"]!, `How often ${last} calls a pass, by situation, ${season} vs ${priorYear}`, table(calling, c, team, priorYear, season, "Play Calling"))
-      : "") +
-    // Shotgun rate prints in the Formation Profile donut, not as a table row
-    // too (the review of 2026-11-15).
-    (form.length
+      hook: "sct-cp-head",
+      icon: "coaching",
+      art: "coaching",
+      heading: `<h2 class="sct-h2 sct-up-h2 sct-cp-h2">Offensive Coaching &amp; Scheme</h2>`,
+      phoneTitle: "Offensive Coaching & Scheme",
+      dek: "Play-calling tendencies, offensive philosophy, formations, and coaching history.",
+    }) +
+    `<div class="sct-cp-overview is-coach-only">${profileCard(c, team)}</div>` +
+    (inTable.length
       ? section(
-          "Formations & Tempo",
-          ICON["grid"]!,
-          `How ${possessive} offense lines up and how fast it plays, ${season} vs ${priorYear}`,
-          `<div class="sct-cp-split">${table(form.filter(({ row }) => row.key !== "shotgunRate"), c, team, priorYear, season, "Formations & Tempo")}${formationVisual(form, season)}</div>`,
+          "Offensive Tendencies",
+          ICON["play"]!,
+          `How ${possessive} offense calls and lines up, ${window}`,
+          `<p class="sct-cp-id-line">${e(identitySentence(inTable, team, newCaller ? `the ${priorYear} staff` : priorYear))}</p>` +
+            table(inTable, c, team, priorYear, season) +
+            how,
         )
       : "") +
-    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>Select a metric for how it is counted. Hollow dot ${e(priorYear)}, filled dot ${season}, tick the NFL average. The gold row is the group's biggest change of 3%+ or a second of pace.</p>` +
-    // The data limits that closed Formations & Personnel, kept when that
-    // section went (mak, 2026-11-08: it repeated Formations & Tempo).
-    `<p class="sct-cp-foot"><span class="sct-cp-foot-icon">${ICON["info"]}</span>${e(FORMATIONS_NOTE)}</p>` +
     `</div>`
   );
 }

@@ -21,6 +21,7 @@ import type { CoachingStaffEntry, TeamCoaching, TendencyRow } from "./coaching";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import { surname, type UsageView } from "./usage";
 import { possessive } from "../player/title-case";
+import { rowView } from "./coaching-render";
 import type { FaqItem } from "./faq-block";
 
 /* ---------------------------------------------------------------- helpers */
@@ -63,13 +64,13 @@ interface RowNums {
  * block - the same source the tendencies table draws its current column
  * from, so the FAQ cannot quote a number the table does not show.
  */
-function rowNums(row: TendencyRow | undefined, view: UsageView | null): RowNums {
+function rowNums(row: TendencyRow | undefined, view: UsageView | null, season?: number): RowNums {
   if (!row) return { prior: null, current: null, nflAvg: null, rank: null };
-  const env = row.feed && view ? view.team.env[row.feed] : undefined;
-  const current = env?.value != null ? Math.round(env.value * 10) / 10 : num(row.current);
-  const m = row.change.text.match(/(\d+)(?:st|nd|rd|th) in NFL/);
-  const rank = env?.rank ?? (m ? Number(m[1]) : null);
-  return { prior: row.priorNum ?? num(row.prior), current, nflAvg: num(row.nflAvg), rank };
+  // The table's own numbers (Team Pages Phase 2, 2026-11-19): both seasons
+  // from the coaching file and the rank over the same 32 offenses, so an
+  // answer can never quote a figure or rank the table does not show.
+  const v = rowView(row, view, season);
+  return { prior: num(row.prior), current: num(row.current), nflAvg: num(row.nflAvg), rank: v.rank };
 }
 
 /** "above", "slightly above", "in line with", ... for a rate against its league average. */
@@ -160,7 +161,7 @@ export function coachingFaq(
   while (called.has(season - stint)) stint += 1;
 
   const row = (key: string) => c.tendencies.rows.find((r) => r.key === key);
-  const nums = (key: string) => rowNums(row(key), view);
+  const nums = (key: string) => rowNums(row(key), view, season);
   // A fourth-down move on fewer than 15 opportunities is not a headline
   // change (mak's coaching brief, 2026-11-05); its own question states the sample.
   const smallFourth = (c.tendencies.samples?.fourthShortAll ?? 15) < 15;
@@ -168,7 +169,7 @@ export function coachingFaq(
   const shiftDir = (key: string): "up" | "down" | null => {
     const r = row(key);
     if (!r) return null;
-    const n = rowNums(r, view);
+    const n = rowNums(r, view, season);
     if (n.prior != null && n.current != null) {
       const d = n.current - n.prior;
       if (r.invert) return d < 0 ? "up" : "down";
@@ -237,33 +238,36 @@ export function coachingFaq(
     const field: string[] = [];
     const leans: Array<{ name: string; d: number }> = [];
     if (shotgun.current != null) {
-      field.push(`lined up in shotgun on ${f1(shotgun.current)}% of snaps`);
+      field.push(`lined up in shotgun on ${f1(shotgun.current)}% of snaps${shotgun.nflAvg != null ? ` (NFL average ${f1(shotgun.nflAvg)}%)` : ""}`);
       if (shotgun.nflAvg != null) leans.push({ name: "shotgun", d: shotgun.current - shotgun.nflAvg });
     }
     if (motion.current != null) {
-      field.push(`used pre-snap motion on ${f1(motion.current)}%`);
+      field.push(`used pre-snap motion on ${f1(motion.current)}%${motion.nflAvg != null ? ` (${f1(motion.nflAvg)}%)` : ""}`);
       if (motion.nflAvg != null) leans.push({ name: "motion", d: motion.current - motion.nflAvg });
     }
     if (pa.current != null) {
-      field.push(`play action on ${f1(pa.current)}% of dropbacks`);
+      field.push(`play action on ${f1(pa.current)}% of dropbacks${pa.nflAvg != null ? ` (${f1(pa.nflAvg)}%)` : ""}`);
       if (pa.nflAvg != null) leans.push({ name: "play action", d: pa.current - pa.nflAvg });
     }
+    // One sentence of comparison after the figures (Team Pages Phase 2B,
+    // 2026-11-19): it used to trail the list as ", below it on motion",
+    // which read as broken. 2 points either way counts as above or below.
     const above = leans.filter((l) => l.d >= 2).map((l) => l.name);
     const below = leans.filter((l) => l.d <= -2).map((l) => l.name);
-    const compare =
-      leans.length === 0
-        ? ""
-        : above.length === leans.length
-          ? ", above the league average on all three"
-          : below.length === leans.length
-            ? ", below the league average on all three"
-            : above.length === 0 && below.length === 0
-              ? ", close to the league average on all three"
-              : `, ${[above.length ? `above the league average on ${list(above)}` : "", below.length ? `below it on ${list(below)}` : ""].filter(Boolean).join(" and ")}`;
+    const close = leans.filter((l) => Math.abs(l.d) < 2).map((l) => l.name);
+    const all = leans.length === 3 ? "all three" : list(leans.map((l) => l.name));
+    const parts = [
+      above.length ? `above the league average on ${above.length === leans.length ? all : list(above)}` : "",
+      below.length ? `below the league average on ${below.length === leans.length ? all : list(below)}` : "",
+      close.length ? `close to it on ${close.length === leans.length ? all : list(close)}` : "",
+    ].filter(Boolean);
+    if (parts.length && /^close/.test(parts[0])) parts[0] = parts[0].replace("close to it", "close to the league average");
+    const compareLine = parts.length ? `That is ${list(parts)}.` : null;
     ask(
       `What offensive scheme do the ${nick} run under ${caller}?`,
       `${surPoss} ${nick} offense comes out of the ${tree}.`,
-      field.length ? `On the field in ${season}, the ${nick} have ${list(field)}${compare}.` : null,
+      field.length ? `On the field in ${season}, the ${nick} have ${list(field)}.` : null,
+      compareLine,
     );
   }
 
@@ -624,11 +628,21 @@ export function coachingFaq(
       : `The ${prior} column on this page is a reference for what changed, not a baseline to project from. The ${season} sample${wk ? `, through Week ${wk},` : ""} is the signal.`,
   );
 
-  // The brief keeps 12-16. The motion question goes first when the list runs
-  // long: the scheme answer already quotes the motion rate.
-  if (out.length > 16) {
-    const at = out.findIndex((q) => /pre-snap motion/.test(q.question));
-    if (at >= 0) out.splice(at, 1);
-  }
-  return out.slice(0, 16);
+  // Trimmed to the questions with distinct answers (mak, Team Pages Phase 2,
+  // 2026-11-19): the rest restated one table row ("How often do the Patriots
+  // use play action?") or another answer (who calls plays / who is the
+  // coordinator; RB targets / WR or TE; the fantasy paragraph above). The
+  // page's FAQPage is built from this list, so it still matches what shows.
+  const DROP = [
+    /^Who calls plays for /,
+    /^Are the .* a pass-heavy offense /,
+    /^How often do the .* use play action\?/,
+    /^How often do the .* pass in the red zone\?/,
+    /^Does .* target running backs often\?/,
+    /^How does the .* offense change when trailing\?/,
+    /^How fast do the .* play on offense\?/,
+    /^How often do the .* use pre-snap motion\?/,
+    /^What does .* offense mean for fantasy football\?/,
+  ];
+  return out.filter((q) => !DROP.some((re) => re.test(q.question)));
 }

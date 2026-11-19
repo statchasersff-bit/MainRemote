@@ -390,12 +390,14 @@ export interface Leader {
  * every player who played for it (a back traded away still led it), with
  * the player pages' own box-score totals.
  */
-export function teamLeaders(data: TeamPageData): { rushing: Leader | null; receiving: Leader | null } {
+export function teamLeaders(data: TeamPageData): { rushing: Leader | null; receiving: Leader | null; passing: Leader | null } {
   const logs = loadGameLogs(data.state.season);
   const club = data.team.abbreviation.toLowerCase();
   const names = new Map(loadPlayers().map((p) => [p.id, p.name]));
   let rushing: Leader | null = null;
   let receiving: Leader | null = null;
+  // Passing (Team Pages Phase 3, the Stats tab's leaders line): yards, TDs, attempts.
+  let passing: Leader | null = null;
   for (const [id, rows] of Object.entries(logs)) {
     const { games, t } = totals(rows, club);
     if (games === 0) continue;
@@ -403,10 +405,12 @@ export function teamLeaders(data: TeamPageData): { rushing: Leader | null; recei
     if (!name) continue;
     const r = { name, yards: t.rush_yd ?? 0, td: t.rush_td ?? 0, count: t.rush_att ?? 0 };
     const c = { name, yards: t.rec_yd ?? 0, td: t.rec_td ?? 0, count: t.rec ?? 0 };
+    const pz = { name, yards: t.pass_yd ?? 0, td: t.pass_td ?? 0, count: t.pass_att ?? 0 };
+    if (pz.yards > (passing?.yards ?? 0)) passing = pz;
     if (r.yards > (rushing?.yards ?? 0)) rushing = r;
     if (c.yards > (receiving?.yards ?? 0)) receiving = c;
   }
-  return { rushing, receiving };
+  return { rushing, receiving, passing };
 }
 
 function contributorRow(c: Contributor, view: UsageView | null): string {

@@ -282,7 +282,10 @@ function rowsFor(
     const high = unit === "offense" ? !def.inverted : !!def.inverted;
     rows.push({
       key: `eff-${unit === "offense" ? "off" : "def"}-${def.key}`,
-      label: unit === "offense" && def.offenseLabel ? def.offenseLabel : def.label,
+      // Defensive efficiency reads "allowed" in its label (Team Pages Phase 3,
+      // 2026-11-19), like the Defense ladder's rows; pass-rush rows keep
+      // theirs (a defense's sacks and blitzes are its own, not allowed).
+      label: unit === "offense" && def.offenseLabel ? def.offenseLabel : unit === "defense" && defs === METRICS ? `${def.label} Allowed` : def.label,
       description: def.describe(unit),
       value: def.format(m.value),
       rank: m.rank,

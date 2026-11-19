@@ -78,7 +78,7 @@ function phoneRow(r: HistoryRow, liveNote: string): string {
     const lg = p.league[pos];
     if (v == null) return `<div class="sct-csp-kv"><dt>${pos} targets</dt><dd>–</dd></div>`;
     const d = lg != null ? Math.round(v - lg) : null;
-    const gap = d == null ? "" : `<span class="sct-csp-gap${d > 0 ? " is-up" : d < 0 ? " is-down" : ""}">${d === 0 ? "level with lg" : `${d > 0 ? "+" : "−"}${Math.abs(d)} vs lg`}</span>`;
+    const gap = d == null ? "" : `<span class="sct-csp-gap${d > 0 ? " is-up" : d < 0 ? " is-down" : ""}">${d === 0 ? "level with lg" : `${d > 0 ? "+" : "−"}${Math.abs(d)} ${Math.abs(d) === 1 ? "pt" : "pts"} vs lg`}</span>`;
     return `<div class="sct-csp-kv${r.lean === pos ? " is-lean" : ""}"><dt>${pos} targets</dt><dd><b>${v}%</b>${gap}</dd></div>`;
   };
   const lb = p.leadBack;
@@ -159,7 +159,7 @@ export function renderSeasonHistoryTable(c: TeamCoaching): string {
     `<th scope="col" class="sct-cs-th is-team">Team</th>` +
     `<th scope="col" class="sct-cs-th is-ppg"><abbr title="Team offensive points per game over the weeks he called">PPG</abbr></th>` +
     `<th scope="col" class="sct-cs-th is-rank"><abbr title="The offense's scoring rank among the 32 clubs; a windowed rank covers the weeks he called only">NFL rank</abbr></th>` +
-    `<th scope="col" class="sct-cs-th is-share">WR target %<span class="sct-cs-th-sub" title="Points above or below the league average">vs lg</span></th>` +
+    `<th scope="col" class="sct-cs-th is-share">WR target %<span class="sct-cs-th-sub" title="Percentage points above or below the league average that season">pts vs lg</span></th>` +
     `<th scope="col" class="sct-cs-th is-share">RB target %</th>` +
     `<th scope="col" class="sct-cs-th is-share">TE target %</th>` +
     `<th scope="col" class="sct-cs-th is-lb">Lead RB %<span class="sct-cs-th-sub" title="The lead back's share of the backfield's carries + 2 × targets">carries + 2×tgt</span></th>` +

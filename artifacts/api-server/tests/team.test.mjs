@@ -981,31 +981,53 @@ describe("the Stats tab (mak's brief, 2026-11-05: teamstats.png; the old ladders
       assert.match(heading.textContent, /Team Stats \d{4}$/);
       assert.equal(doc.querySelectorAll("h1").length, 1);
       assert.equal(sp.querySelectorAll(".sct-h2").length, 1, "one .sct-h2 in the tab: the banner's");
-      // Section headings: Offense, Defense and the bands are H2s; inner panels and play-mix cards H3s.
+      // Team Pages Phase 3 (2026-11-19): A snapshot, B offense, C defense,
+      // D recent form, E detail. Bands are H2s, groups and inner panels H3s.
+      assert.ok(sp.classList.contains("is-dash"), "the dashboard");
       const h2s = [...sp.querySelectorAll("h2")].map((h) => h.textContent);
-      for (const want of ["Offense", "Defense", "Efficiency", "Pass Protection & Pass Rush", "Possession & Discipline", "Pace & Play Style", "Season History"]) assert.ok(h2s.includes(want), `${path}: H2 "${want}" (${h2s.join(" | ")})`);
+      for (const want of ["Team Performance Snapshot", "Recent Form", "Offensive Performance", "Defensive Performance", "Detailed Statistics", "Season History"]) assert.ok(h2s.includes(want), `${path}: H2 "${want}" (${h2s.join(" | ")})`);
       assert.equal(new Set(h2s).size, h2s.length, "no heading printed twice");
       const h3s = [...sp.querySelectorAll("h3")].map((h) => h.textContent);
-      for (const want of ["Offense Efficiency", "Defense Efficiency", "Pass Protection", "Pass Rush", "Turnovers, Downs & Penalties", "Snaps, Attempts & Scores"]) assert.ok(h3s.includes(want), `${path}: H3 "${want}"`);
-      // Rows: label, bar, value, rank. A rank draws the fill; no rank draws an empty track and an unranked pill.
+      for (const want of ["Passing", "Rushing", "Efficiency", "Situational & Ball Security", "Pass Defense", "Run Defense", "Efficiency Allowed", "Situational & Takeaways", "Pass Protection", "Pass Rush", "Discipline", "Snaps & Attempts"]) assert.ok(h3s.includes(want), `${path}: H3 "${want}"`);
+      assert.match(sp.querySelector(".sct-up-dek").textContent, /through Week \d+ \(\d+ games\)\.$/, "the dek names the data's week");
+      // Six snapshot cards, three a side.
+      const cards = [...sp.querySelectorAll(".sct-sp-card")];
+      assert.equal(cards.length, 6);
+      assert.equal(cards.filter((c) => c.dataset.unit === "offense").length, 3);
+      // Grouped rows: label, value, scale (decorative), NFL average, rank.
+      const drows = [...sp.querySelectorAll(".sct-sp-drow")];
+      assert.equal(drows.length, 33, `${path}: grouped rows (${drows.length})`);
+      for (const r of drows) {
+        const label = r.querySelector(".sct-sp-dlabel").firstChild.textContent;
+        assert.ok(r.querySelector(".sct-sp-dvalue").textContent.length > 0, label);
+        assert.equal(r.querySelector(".sct-sp-scale").getAttribute("aria-hidden"), "true");
+        assert.match(r.querySelector(".sct-sp-davg").textContent, /^NFL -?\+?\d/, `${label}: an NFL average`);
+        const rank = r.querySelector(".sct-sp-rank:not(.is-none)");
+        if (rank) assert.match(rank.firstChild.textContent, /^(T-)?\d+(st|nd|rd|th)$/);
+        const mark = r.querySelector(".sct-sp-scale-mark");
+        if (mark && r.dataset.dir === "volume") assert.equal(mark.dataset.tier, "none", `${label}: volume is untinted`);
+        // Every defensive row says whose figure it is.
+        if (r.closest('[data-unit="defense"]')) assert.match(label, /Allowed|^Sacks$|^Takeaways$|^Opp /, `${path}: defense label "${label}"`);
+      }
+      // A metric printed twice carries one rank (E1): Yds/Play in the
+      // Efficiency group and in Season History's live row.
+      const ydsPlay = drows.find((r) => r.querySelector(".sct-sp-dlabel").firstChild.textContent === "Yds/Play");
+      const liveCells = [...sp.querySelectorAll(".sct-sp-h tbody tr.is-current .sct-sp-h-cell")];
+      const histYp = liveCells[2]?.querySelector(".sct-sp-h-rank")?.firstChild.textContent;
+      if (ydsPlay && histYp) assert.equal(ydsPlay.querySelector(".sct-sp-rank").firstChild.textContent, histYp, `${path}: Yds/Play one rank`);
+      // Rows: label, bar, value, rank (the folded detail panels).
       const rows = [...sp.querySelectorAll(".sct-sp-row")];
-      assert.ok(rows.length >= 30, `${path}: rows (${rows.length})`);
+      assert.ok(rows.length >= 8, `${path}: detail rows (${rows.length})`);
       for (const r of rows) {
         const bar = r.querySelector(".sct-sp-bar");
         const rank = r.querySelector(".sct-sp-rank:not(.is-none)");
         assert.equal(bar.getAttribute("aria-hidden"), "true");
-        assert.ok(r.querySelector(".sct-sp-value").textContent.length > 0);
-        if (rank) {
-          assert.match(bar.querySelector(".sct-sp-fill").getAttribute("style"), /^width:\d+(\.\d+)?%$/);
-          assert.match(rank.firstChild.textContent, /^(T-)?\d+(st|nd|rd|th)$/);
-          assert.equal(rank.getAttribute("data-tier"), bar.getAttribute("data-tier"), "pill and bar agree");
-        } else assert.ok(bar.classList.contains("is-empty"));
+        if (rank) assert.equal(rank.getAttribute("data-tier"), bar.getAttribute("data-tier"), "pill and bar agree");
+        else assert.ok(bar.classList.contains("is-empty"));
       }
-      // Volume rows (pace, blitz rate, time to throw) are ranked but never tinted.
-      for (const r of sp.querySelectorAll('[data-kind="pace"] .sct-sp-row')) {
-        const label = r.querySelector(".sct-sp-label").firstChild.textContent;
-        if (/\/G$/.test(label)) assert.equal(r.querySelector(".sct-sp-rank").getAttribute("data-tier"), "none", `${label} is untinted`);
-      }
+      // Sacks print once a side (in the groups), never again in the detail.
+      assert.equal(drows.filter((r) => /^Sacks/.test(r.querySelector(".sct-sp-dlabel").firstChild.textContent)).length, 2);
+      assert.equal(rows.filter((r) => /^Sacks/.test(r.querySelector(".sct-sp-label").firstChild.textContent)).length, 0);
       // The play mix: two shares that sum to 100, pass then run.
       for (const m of sp.querySelectorAll(".sct-sp-mix")) {
         const keys = [...m.querySelectorAll(".sct-sp-mix-key")].map((k) => k.textContent);
@@ -2262,72 +2284,80 @@ describe("the Stats ladders never mix weeks", () => {
     return null;
   };
 
-  test("the play-by-play ladders carry the file's week and the file's numbers", async () => {
+  // Team Pages Phase 3 (2026-11-19): the dashboard's grouped rows.
+  const drow = (doc, unit, label) => {
+    for (const li of doc.querySelectorAll(`.sct-sp-unit[data-unit="${unit}"] .sct-sp-drow`)) {
+      if (li.querySelector(".sct-sp-dlabel")?.firstChild?.textContent?.trim() === label) return li;
+    }
+    return null;
+  };
+
+  test("the dashboard prints the file's numbers and the file's week, once", async () => {
     const { doc } = await dom("/team/new-england-patriots/stats/");
     const heading = doc.querySelector("[data-sct-panel] .sct-h2");
     const season = heading?.textContent.match(/\b(2\d{3})\b/)?.[1];
     assert.ok(season, "the Stats panel names its season");
-
     let file;
     try {
-      file = JSON.parse(
-        fs.readFileSync(path.join(APP_DIR, "data", "team", `efficiency_${season}.json`), "utf8"),
-      );
+      file = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", `efficiency_${season}.json`), "utf8"));
     } catch {
-      // No file for the season: the provider's rows stand in, one source still.
       return;
     }
     const team = file.teams?.ne;
     assert.ok(team, "the file carries the Patriots");
-
-    const efficiency = ladders(doc, "efficiency");
-    const passRush = ladders(doc, "passrush");
-    assert.equal(efficiency.length, 2, "an Efficiency ladder per unit");
-    assert.equal(passRush.length, 2, "Pass Protection and Pass Rush");
-
-    // No panel prints its week since 2026-11-06 (mak); the values below still come from the file.
-    for (const ladder of [...efficiency, ...passRush]) assert.equal(captionWeek(ladder), null, `${titleOf(ladder)}: no week line`);
-
-    // The yardage rows and the sack counts read the FILE, not the provider:
-    // the values on the page are the file's values for this club.
-    const [offEff, defEff] = efficiency;
-    const [protection, rush] = passRush;
-    const fixed = (metric, places) =>
-      metric && typeof metric.value === "number" ? metric.value.toFixed(places) : null;
-    if (team.offense.yardsPerPlay) {
-      assert.equal(cell(offEff, "Yds/Play"), fixed(team.offense.yardsPerPlay, 2));
-      assert.equal(cell(offEff, "Passer Rtg"), fixed(team.offense.passerRating, 1));
-    }
-    if (team.defense.yardsPerPassAttempt) {
-      assert.equal(cell(defEff, "Yds/Pass Att"), fixed(team.defense.yardsPerPassAttempt, 2));
-      assert.equal(cell(defEff, "Yds/Carry"), fixed(team.defense.yardsPerCarry, 2));
-    }
-    if (team.offense.sacks) {
-      assert.equal(cell(protection, "Sacks Allowed"), String(team.offense.sacks.value));
-    }
-    if (team.defense.sacks) {
-      assert.equal(cell(rush, "Sacks"), String(team.defense.sacks.value));
-    }
+    const val = (unit, label) => drow(doc, unit, label)?.querySelector(".sct-sp-dvalue").textContent.trim() ?? null;
+    const fixed = (m, places) => (m && typeof m.value === "number" ? m.value.toFixed(places) : null);
+    assert.equal(val("offense", "Yds/Play"), fixed(team.offense.yardsPerPlay, 2));
+    assert.equal(val("offense", "Passer Rtg"), fixed(team.offense.passerRating, 1));
+    assert.equal(val("defense", "Yds/Pass Att Allowed"), fixed(team.defense.yardsPerPassAttempt, 2));
+    assert.equal(val("defense", "Yds/Carry Allowed"), fixed(team.defense.yardsPerCarry, 2));
+    assert.equal(val("offense", "Sacks Allowed"), String(team.offense.sacks.value));
+    assert.equal(val("defense", "Sacks"), String(team.defense.sacks.value));
+    // Red-zone TD rate with its sample, from the file.
+    const rz = drow(doc, "offense", "Red-Zone TD %");
+    assert.equal(rz.querySelector(".sct-sp-dvalue").textContent, `${team.redZone.offense.rate.toFixed(1)}%`);
+    assert.equal(rz.querySelector(".sct-sp-dsample").textContent, `${team.redZone.offense.trips} trips`);
+    // The week: the dek once, the file's snapshot; no panel prints another.
+    const tab = doc.querySelector(".sct-sp");
+    assert.match(tab.querySelector(".sct-up-dek").textContent, new RegExp(`through Week ${file.snapshot.throughWeek} \\(${team.games} games\\)`));
+    assert.equal((tab.textContent.match(/through Week \d+/gi) ?? []).length - (tab.querySelector(".sct-sp-how")?.textContent.match(/through Week \d+/gi) ?? []).length, 1, "the week once outside the definitions");
   });
 
-  test("no ladder prints a week line (mak, 2026-11-06)", async () => {
+  test("the NFL average is the mean of the 32 clubs' printed values", async () => {
     const { doc } = await dom("/team/new-england-patriots/stats/");
-    const all = [...doc.querySelectorAll(".sct-sp-unit, .sct-sp-panel")];
-    assert.ok(all.length >= 6, `the Stats tab renders its panels (${all.length})`);
-    // The Offense / Defense units print no week since 2026-11-06 (mak); every inner panel does.
-    for (const ladder of all) {
-      assert.equal(captionWeek(ladder), null, `${titleOf(ladder)}: no week line (mak, 2026-11-06)`);
-    }
-    // Within a bucket the two units agree with each other, whatever the
-    // sources say to one another.
-    for (const kind of ["efficiency", "passrush", "possession", "pace", ""]) {
-      const weeks = new Set(
-        all
-          .filter((l) => (l.getAttribute("data-kind") ?? "") === kind)
-          .map(captionWeek),
-      );
-      assert.equal(weeks.size, 1, `one week per bucket (${kind || "production"}): ${[...weeks]}`);
-    }
+    const file = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "efficiency_2026.json"), "utf8"));
+    const clubs = Object.values(file.teams);
+    assert.equal(clubs.length, 32);
+    const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const succ = mean(clubs.map((t) => Number(t.offense.successRate.value.toFixed(1))));
+    assert.equal(drow(doc, "offense", "Success Rate").querySelector(".sct-sp-davg").textContent, `NFL ${succ.toFixed(1)}%`);
+    const ypc = mean(clubs.map((t) => Number(t.defense.yardsPerCarry.value.toFixed(2))));
+    assert.equal(drow(doc, "defense", "Yds/Carry Allowed").querySelector(".sct-sp-davg").textContent, `NFL ${ypc.toFixed(2)}`);
+  });
+
+  test("recent form: three completed games with their play counts, arrows only past the thresholds", async () => {
+    const { doc } = await dom("/team/new-england-patriots/stats/");
+    const file = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "efficiency_2026.json"), "utf8"));
+    const rec = file.teams.ne.recent;
+    const sec = doc.querySelector(".sct-sp-recent");
+    if (!rec) return assert.equal(sec, null);
+    assert.equal(rec.weeks.length, 3);
+    assert.ok(rec.weeks.every((w) => w <= file.snapshot.throughWeek), "completed weeks only");
+    assert.match(sec.querySelector("thead").textContent, new RegExp(`Wks ${rec.weeks.join(", ")}`));
+    assert.match(sec.querySelector(".sct-sp-fine").textContent, new RegExp(`${rec.offPlays} offensive and ${rec.defPlays} defensive plays`));
+    const rows = [...sec.querySelectorAll("tbody tr")];
+    assert.equal(rows.length, 6);
+    const pf = rows[0].querySelectorAll("td");
+    const gap = Math.abs(Number(pf[1].textContent.match(/[\d.]+/)[0]) - Number(pf[0].textContent));
+    assert.equal(pf[1].querySelector("[data-better]").dataset.better === "flat", gap < 3, "points arrow only at 3+");
+    assert.doesNotMatch(sec.textContent, /trend|hot|cold|surging|slump/i, "no narrative from three games");
+  });
+
+  test("no panel prints a week line (mak, 2026-11-06)", async () => {
+    const { doc } = await dom("/team/new-england-patriots/stats/");
+    const all = [...doc.querySelectorAll(".sct-sp-group, .sct-sp-panel, .sct-sp-card")];
+    assert.ok(all.length >= 14, `the Stats tab renders its blocks (${all.length})`);
+    for (const b of all) assert.doesNotMatch(b.textContent, /through Week \d+/i);
   });
 
   /*
