@@ -332,6 +332,9 @@ function cardHead(icon: string, id: string, title: string, extra = ""): string {
 
 function injuryCard(data: TeamPageData): string {
   if (!data.roster) return "";
+  // This week's statuses (current-injuries.ts, applied in team-data.ts): the
+  // same rows as the Overview's Injuries & Availability, never an expired
+  // designation, practice only from this week's official report.
   const rows = data.injuries;
   const body = rows.length
     ? `<ul class="sct-nwp-injuries">` +
@@ -357,7 +360,9 @@ function injuryCard(data: TeamPageData): string {
   return (
     `<section class="sct-nwp-rail-card is-injuries" aria-labelledby="sct-nwp-inj-h">` +
     cardHead(ICON.kit, "sct-nwp-inj-h", "Injury Watch") +
-    `<div class="sct-nwp-rail-body">${body}</div>` +
+    `<div class="sct-nwp-rail-body">${body}` +
+    (data.injuryFreshness?.note ? `<p class="sct-nwp-empty">${e(data.injuryFreshness.note)}</p>` : "") +
+    `</div>` +
     `</section>`
   );
 }

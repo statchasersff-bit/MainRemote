@@ -131,6 +131,49 @@ describe("team overview injuries = player pages' current status", () => {
   });
 });
 
+describe("team News Injury Watch = Overview = player pages (all 32 hubs)", () => {
+  let server;
+  before(async () => {
+    server = await startServer({ SC_SCORING_TOTALS: "house" });
+  });
+  after(async () => server && (await server.stop()));
+
+  const list = (html, ul, li, nameCls, stCls) => {
+    const block = new RegExp(`<ul class="${ul}">([\\s\\S]*?)<\\/ul>`).exec(html)?.[1] ?? "";
+    const out = new Map();
+    for (const m of block.matchAll(new RegExp(`<li class="${li}">([\\s\\S]*?)<\\/li>`, "g"))) {
+      const name = new RegExp(`class="[^"]*${nameCls}[^"]*"[^>]*>([^<]+)<`).exec(m[1])?.[1]?.trim();
+      const status = new RegExp(`${stCls}"[^>]*>([^<]*)<`).exec(m[1])?.[1]?.trim() ?? "";
+      const slug = /\/nfl\/players\/([^/]+)\//.exec(m[1])?.[1] ?? null;
+      if (name) out.set(name, { status, slug });
+    }
+    return out;
+  };
+
+  test("every hub's News Injury Watch rows carry the Overview's status, and none contradicts the player's page", async () => {
+    const teams = ["ari", "atl", "bal", "buf", "car", "chi", "cin", "cle", "dal", "den", "det", "gb", "hou", "ind", "jax", "kc", "lv", "lac", "lar", "mia", "min", "ne", "no", "nyg", "nyj", "phi", "pit", "sf", "sea", "tb", "ten", "was"];
+    const strip = (h) => h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    let compared = 0;
+    for (const team of teams) {
+      const hub = (await body(server.origin, `/team/${team}`)).text;
+      const slug = /<link rel="canonical" href="[^"]*\/team\/([^/"]+)/.exec(hub)?.[1] ?? team;
+      const news = (await body(server.origin, `/team/${slug}/news`)).text;
+      const ov = list(hub, "sct-ovw-inj-list", "sct-ovw-inj-row", "sct-ovw-inj-name", "sct-ovw-status");
+      const nw = list(news, "sct-nwp-injuries", "sct-nwp-injury", "sct-nwp-injury-name", "sct-nwp-status");
+      for (const [name, r] of nw) {
+        assert.ok(ov.has(name), `${team}: ${name} (${r.status}) in Injury Watch but not in the Overview`);
+        assert.equal(r.status, ov.get(name).status, `${team}: ${name}`);
+        compared++;
+        if (r.slug && ["questionable", "doubtful", "out"].includes(r.status.toLowerCase())) {
+          const page = strip((await body(server.origin, `/player/${r.slug}/injury`)).text);
+          assert.doesNotMatch(page, /No injury designation for Week/, `${team}: ${name} reads ${r.status} on the team page`);
+        }
+      }
+    }
+    assert.ok(compared > 30, `compared ${compared}`);
+  });
+});
+
 describe("scoring audit endpoint access", () => {
   test("production with no key configured: 404", async () => {
     const s = await startServer({ NODE_ENV: "production", SC_AUDIT_KEY: "" });

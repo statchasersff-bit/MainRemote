@@ -440,7 +440,9 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       record: page.profile?.record ?? null,
       // Game-specific designations (availability.ts, mak 2026-11-18): a
       // Sleeper "Out" left over from last week is not this week's status.
-      roster: gameRoster(team, season, meeting.week, page.roster?.players ?? [], {
+      // The source roster: gameRoster() applies the rule for THIS meeting's
+      // week itself; page.roster is already normalized for the next game.
+      roster: gameRoster(team, season, meeting.week, (page.sourceRoster ?? page.roster)?.players ?? [], {
         nextGame: isNextGame(page.schedule?.games, meeting.week, meeting.seasonType),
       }),
       ppr: {},

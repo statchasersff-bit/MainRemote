@@ -710,3 +710,75 @@ describe("Phase 1 final decisions (2026-11-19)", () => {
     assert.equal(header.formatTag({ player: { position: "WR" }, format: "ppr" }), "PPR");
   });
 });
+
+/* ======================== Team hubs: one current injury status (2026-11-19) */
+
+describe("team hubs read current-week injury statuses (current-injuries.ts)", () => {
+  let ci, roster;
+  const DETFX = read("det-week11.json");
+  const VAKI = DETFX.vaki.id;
+  const week11 = { games: [{ week: 11, seasonType: "regular", status: "scheduled", result: null }] };
+  const row = (over) => ({
+    id: "x", name: "X", position: "RB", team: "det", depthOrder: 2, depthPosition: "RB", jersey: null, yearsExp: 1,
+    searchRank: 100, status: "Active", injuryStatus: null, injuryBodyPart: null, practice: null, headshot: "", ...over,
+  });
+  const teamRoster = (players) => ({ team: "det", depthChart: { QB: [], RB: players, WR: [], TE: [] }, players, injuries: players.filter((p) => p.injuryStatus), fetchedAt: 1 });
+  const depth = (rows) => ({ fetchedAt: "", season: 2026, views: [], football: [{ key: "def", label: "Defense", formation: null, folded: false, slots: [{ key: "cb", pos: "CB", label: "CB", rows }] }] });
+  const drow = (name, injuryStatus) => ({ rank: 1, name, id: null, injuryStatus, injuryBodyPart: null, headshot: null, movement: null });
+  const det = () => teams.getTeamByAbbreviation("DET");
+  const chi = () => teams.getTeamByAbbreviation("CHI");
+  before(async () => {
+    ci = await importModule("lib/team/current-injuries");
+    roster = await importModule("lib/team/roster");
+  });
+
+  test("Sione Vaki is not Questionable for Week 11: Questionable for Week 10, played, no Week 11 report", () => {
+    const vaki = row({ id: VAKI, name: "Sione Vaki", injuryStatus: "Questionable", injuryBodyPart: "Ankle", practice: "Limited" });
+    const r = ci.currentRoster(det(), 2026, week11, teamRoster([vaki]), { logs: DETFX.logs, practice: { weeks: {} } });
+    const v = r.players.find((p) => p.id === VAKI);
+    assert.equal(v.injuryStatus, null);
+    assert.equal(v.injuryBodyPart, null);
+    assert.equal(v.practice, null, "Sleeper's week-less practice field is not carried");
+    assert.equal(r.injuries.length, 0);
+    assert.equal(roster.injuryWatch(r).length, 0, "the News tab's Injury Watch reads the same list");
+  });
+
+  test("an expired designation does not carry across a bye (Burden: Week 9 Questionable, Week 10 bye)", () => {
+    const burden = row({ id: BURDEN, name: "Luther Burden III", position: "WR", team: "chi", injuryStatus: "Questionable" });
+    const r = ci.currentRoster(chi(), 2026, week11, teamRoster([burden]), { logs: LOGS["2026"], practice: PRACTICE });
+    assert.equal(r.players[0].injuryStatus, null);
+  });
+
+  test("active reserve statuses persist, on the roster and on the depth chart", () => {
+    const r = ci.currentRoster(det(), 2026, week11, teamRoster([row({ id: PACHECO, name: "Isiah Pacheco", injuryStatus: "IR" })]), { logs: DETFX.logs, practice: { weeks: {} } });
+    assert.equal(r.players[0].injuryStatus, "IR");
+    assert.equal(r.injuries.length, 1);
+    const d = ci.currentDepthCharts(det(), 2026, week11, depth([drow("Some Safety", "IR"), drow("Some Corner", "PUP")]), r, { logs: DETFX.logs, practice: { weeks: {} } });
+    assert.deepEqual(d.football[0].slots[0].rows.map((x) => x.injuryStatus), ["IR", "PUP"]);
+  });
+
+  test("an unavailable report invents no designation; the freshness note says so", () => {
+    const d = ci.currentDepthCharts(det(), 2026, week11, depth([drow("Some Corner", "Questionable"), drow("Some End", "Out")]), teamRoster([]), { logs: DETFX.logs, practice: null });
+    assert.deepEqual(d.football[0].slots[0].rows.map((x) => x.injuryStatus), [null, null]);
+    const none = ci.injuryFreshness(det(), 2026, week11, 0, Date.parse("2026-11-19T12:00:00Z"), { practice: { weeks: {} } });
+    assert.equal(none.state, "unavailable");
+    assert.match(none.note, /unavailable; nothing here is a confirmed current status/);
+    const stale = ci.injuryFreshness(det(), 2026, week11, Date.parse("2026-11-15T12:00:00Z"), Date.parse("2026-11-19T12:00:00Z"), { practice: { weeks: {} } });
+    assert.equal(stale.state, "stale");
+    assert.match(stale.note, /may be out of date/);
+    const pending = ci.injuryFreshness(det(), 2026, week11, Date.parse("2026-11-19T08:00:00Z"), Date.parse("2026-11-19T12:00:00Z"), { practice: { weeks: {} } });
+    assert.match(pending.note, /No Week 11 injury report is on file yet/);
+  });
+
+  test("a current official game status stands, and practice is this week's report line", () => {
+    const practice = { weeks: { "11": { teams: { Lions: {
+      a: { name: "Sione Vaki", pos: "RB", injury: "Ankle", gameStatus: "Out", final: "DNP", days: { "2026-11-19": "DNP" } },
+      b: { name: "Some Corner", pos: "CB", injury: "Knee", gameStatus: "Doubtful", final: null, days: {} },
+    } } } } };
+    const r = ci.currentRoster(det(), 2026, week11, teamRoster([row({ id: VAKI, name: "Sione Vaki", injuryStatus: "Questionable", practice: "Limited" })]), { logs: DETFX.logs, practice });
+    assert.equal(r.players[0].injuryStatus, "Out");
+    assert.equal(r.players[0].practice, "DNP Thu");
+    const d = ci.currentDepthCharts(det(), 2026, week11, depth([drow("Some Corner", "Questionable")]), r, { logs: DETFX.logs, practice });
+    assert.equal(d.football[0].slots[0].rows[0].injuryStatus, "Doubtful");
+  });
+});
