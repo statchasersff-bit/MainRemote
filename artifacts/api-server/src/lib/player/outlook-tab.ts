@@ -319,6 +319,17 @@ function oneTargetSharePool(
   };
 }
 
+/**
+ * "On injured reserve, thumb" -> "being on injured reserve (thumb)"; "Out,
+ * ankle" -> "his out (ankle) status". The list it joins starts a sentence, so
+ * "his on injured reserve, thumb status" read "His on injured reserve, ...".
+ */
+function injuredPhrase(injured: string): string {
+  const [what, part] = injured.toLowerCase().split(/,\s*/, 2) as [string, string | undefined];
+  const tail = part ? ` (${part})` : "";
+  return what.startsWith("on ") ? `being ${what}${tail}` : `his ${what}${tail} status`;
+}
+
 function model(data: PlayerPageData): Model | null {
   const pos = data.player.position ?? "";
   if (!LEAGUES[pos]) return null;
@@ -765,7 +776,7 @@ function forwardParagraph(m: Model, depth: PlayerPageData["depth"]): string | nu
     );
   }
   if (m.usage?.ts.confirmed && (m.usage.ts.delta ?? 0) <= -3) unsure.push({ text: "a sliding target share", plural: false });
-  if (m.injured) unsure.unshift({ text: `his ${m.injured.toLowerCase()} status`, plural: false });
+  if (m.injured) unsure.unshift({ text: injuredPhrase(m.injured), plural: false });
   const plural = unsure.length > 1 || unsure.some((x) => x.plural);
   const role = roleTag(m, depth);
   if (depth && depth.order > 1 && !m.injured) {
@@ -855,7 +866,7 @@ function supportsThreatens(m: Model, data: PlayerPageData): { supports: string[]
     if (top && top.tier === "good") supports.push(`${top.label.toLowerCase()} (${top.value} ${top.unit}, ${ordinal(top.rank!)} of ${top.of})`);
   }
 
-  if (m.injured) threatens.push(`his ${m.injured.toLowerCase()} status`);
+  if (m.injured) threatens.push(injuredPhrase(m.injured));
   else if (m.questionable) threatens.push(`a ${m.questionable.toLowerCase()} designation this week`);
   if (m.sched.verdict === "tough") threatens.push(`${word(m.sched.tough.length)} difficult matchups in his next ${word(m.sched.next.length)}`);
   else if (m.sched.tough.length > m.sched.soft.length) threatens.push(`a tough matchup against the ${oppName(m.sched.tough[0]!)} in Week ${m.sched.tough[0]!.week}`);

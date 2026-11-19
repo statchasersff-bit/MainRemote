@@ -656,3 +656,14 @@ describe("grades keep their defined input (Phase 1.1)", () => {
     assert.match(prod.tooltip, /Standard FPTS\/G/);
   });
 });
+
+describe("an injury no report has listed is never 'played through' (Phase 1.1)", () => {
+  test("Burden's Week 9 entry is pending in the Injury tab's events", async () => {
+    const itd = await importModule("lib/player/injury-tab-data");
+    const events = itd.buildEvents(INJ["12519_phase1_1"].nfl, () => "CHI");
+    const wk9 = events.find((e) => e.season === 2026 && e.week === 9);
+    assert.equal(wk9.pending, true);
+    assert.equal(wk9.games, 0);
+    assert.ok(events.filter((e) => e.season < 2026).every((e) => e.pending === false));
+  });
+});

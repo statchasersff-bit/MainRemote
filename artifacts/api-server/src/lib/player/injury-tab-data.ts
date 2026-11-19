@@ -158,6 +158,8 @@ export interface InjuryEvent {
   merged: number;
   /** The play he was hurt on, when the record has it. */
   play: NflInjuryEntry["play"] | null;
+  /** In-game only, no report yet: never described as "played through". */
+  pending: boolean;
   /** The weekly report rows, when the record has them. */
   reports: NonNullable<NflInjuryEntry["reports"]>;
 }
@@ -238,6 +240,7 @@ export function buildEvents(
       side,
       type: (e.type ?? "").trim() || category,
       games,
+      pending: e.source === "play-by-play",
       recordedGames: recorded,
       surgery: /surgery/i.test(text),
       ir: /injured reserve|\bIR\b/.test(text),
@@ -369,7 +372,9 @@ export function riskFactors(
     recentText = `${plural(g, "game")} missed to injury in ${season}`;
   } else if (thisSeason.length) {
     recent = "mid";
-    recentText = `${cap(thisSeason[0]!.type.toLowerCase())} in ${season}; played through`;
+    recentText = thisSeason[0]!.pending
+      ? `${cap(thisSeason[0]!.type.toLowerCase())} in ${season}; no injury report yet`
+      : `${cap(thisSeason[0]!.type.toLowerCase())} in ${season}; played through`;
   } else if (lastSeason.length) {
     recent = "mid";
     const g = lastSeason.reduce((n, e) => n + e.games, 0);

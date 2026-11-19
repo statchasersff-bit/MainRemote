@@ -25,6 +25,11 @@ import { loadInjuries } from "./data";
 export type InjurySeverity = "minor" | "moderate" | "major";
 
 export interface NflInjuryEntry {
+  /**
+   * "play-by-play" for an in-game injury no report has listed yet (Phase 1.1,
+   * buildInjuryHistory.mjs): its games are not known to be "played through".
+   */
+  source?: string;
   season: number;
   week?: number;
   type: string;
