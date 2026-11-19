@@ -90,6 +90,18 @@ describe("Usage and Coaching agree (cross-tab)", () => {
     assert.equal(usage.throughWeek, usage.snapshot.throughWeek);
   });
 
+  test("the Stats tab's efficiency file carries the same snapshot (Team Pages Phase 3)", () => {
+    const eff = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "efficiency_2026.json"), "utf8"));
+    assert.deepEqual(eff.snapshot, usage.snapshot, "Stats, Usage and Coaching count the same games");
+    for (const [abbr, t] of Object.entries(eff.teams)) {
+      for (const unit of ["offense", "defense"]) {
+        const z = t.redZone?.[unit];
+        assert.ok(z && z.td <= z.trips, `${abbr} ${unit} red zone`);
+        if (z.trips) assert.equal(z.rate, Math.round((z.td / z.trips) * 1000) / 10, `${abbr} ${unit} red-zone rate`);
+      }
+    }
+  });
+
   test("every club's pass rate, red-zone pass rate, PROE and pace are the same number in both files", () => {
     const off = [];
     for (const [club, u] of Object.entries(usage.teams)) {

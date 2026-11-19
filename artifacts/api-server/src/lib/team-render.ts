@@ -55,13 +55,13 @@ import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { renderOutlookPremium } from "./team/outlook-premium";
-import { overviewPhase, renderPreseasonArchive, renderTeamOverview } from "./team/overview";
+import { overviewPhase, renderPreseasonArchive, renderTeamOverview, teamLeaders } from "./team/overview";
 import { seasonFaq } from "./team/season-faq";
 import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import { renderPlayerSearch } from "./player-render";
 import { renderTeamHeader } from "./team/team-header";
 import { statsFaq } from "./team/stats-faq";
-import { renderStatsPremium } from "./team/stats-premium";
+import { renderStatsPremium, type DashRow } from "./team/stats-premium";
 import { depthFaq, type FaqEntry, type FaqSlot } from "./team/depth-faq";
 import {
   nameKey,
@@ -80,7 +80,7 @@ import type { TeamPageData } from "./team/team-data";
 import type {
   StatRow,
 } from "./team/stats";
-import { ordinal } from "./team/stats";
+import { leagueTeamStats, ordinal } from "./team/stats";
 import {
   isOutDesignation,
   nameKeysForTeam,
@@ -909,6 +909,7 @@ function renderTeamStats(
     tier: statTier,
     fill: rankFill,
     historyTier,
+    dash: eff && effDoc && stats.source === "file" && stats.season === effDoc.season ? statsDash(data, stats, effDoc, eff) : undefined,
   });
   if (!page) return "";
 
@@ -926,6 +927,114 @@ function renderTeamStats(
   tail.html = faqBlock(questions, seasonNote);
 
   return page;
+}
+
+/**
+ * The Stats dashboard's data (Team Pages Phase 3, 2026-11-19): every row the
+ * tab prints, each with the 32 clubs' published values behind its NFL
+ * average and scale; red-zone TD rate and recent form from the same file;
+ * the offensive leaders from the player pages' game logs, linked.
+ */
+function statsDash(
+  data: TeamPageData,
+  stats: NonNullable<TeamPageData["stats"]>,
+  effDoc: NonNullable<ReturnType<typeof getEfficiencyDoc>>,
+  eff: NonNullable<ReturnType<typeof getEfficiencyDoc>>["teams"][string],
+): NonNullable<Parameters<typeof renderStatsPremium>[0]["dash"]> {
+  const parse = (t: string): number | null => {
+    const m = t.replace(/[−–]/g, "-").match(/-?\d+(?:\.\d+)?/);
+    return m ? Number(m[0]) : null;
+  };
+  const placesOf = (t: string) => t.match(/\.(\d+)/)?.[1]?.length ?? 0;
+  const own = [...stats.offense, ...stats.defense, ...stats.situational, ...stats.volume];
+  const eRows = (t: typeof eff) => [
+    ...efficiencyRows(t, "offense"), ...efficiencyRows(t, "defense"),
+    ...passRushRows(t, "offense"), ...passRushRows(t, "defense"),
+  ];
+  // Red-zone TD rate as StatRows.
+  const rzRows = (t: typeof eff): StatRow[] => {
+    const out: StatRow[] = [];
+    for (const unit of ["offense", "defense"] as const) {
+      const z = (t as { redZone?: Record<string, { trips: number; td: number; rate: number | null; rank: number | null; tied: boolean }> }).redZone?.[unit];
+      if (!z || z.rate === null) continue;
+      out.push({
+        key: unit === "offense" ? "rz-off" : "rz-def",
+        label: unit === "offense" ? "Red-Zone TD %" : "Red-Zone TD % Allowed",
+        description: unit === "offense" ? "Touchdowns per red-zone trip" : "Touchdowns allowed per opponent red-zone trip",
+        value: `${z.rate.toFixed(1)}%`,
+        rank: z.rank,
+        rankLabel: z.rank === null ? null : `${z.tied ? "T-" : ""}${ordinal(z.rank)}`,
+        previousRank: null,
+        direction: unit === "offense" ? "high" : "low",
+        cumulative: false,
+      });
+    }
+    return out;
+  };
+  const league = leagueTeamStats(stats.season);
+  const values = new Map<string, number[]>();
+  const push = (r: StatRow) => {
+    const v = parse(r.value);
+    if (v === null) return;
+    if (!values.has(r.key)) values.set(r.key, []);
+    values.get(r.key)!.push(v);
+  };
+  for (const t of league) for (const r of [...t.offense, ...t.defense, ...t.situational, ...t.volume]) push(r);
+  for (const t of Object.values(effDoc.teams)) for (const r of [...eRows(t), ...rzRows(t)]) push(r);
+  const rows = new Map<string, DashRow>();
+  for (const r of [...own, ...eRows(eff), ...rzRows(eff)]) {
+    const vs = values.get(r.key) ?? [];
+    const places = placesOf(r.value);
+    const z = (eff as { redZone?: Record<string, { trips: number }> }).redZone;
+    rows.set(r.key, {
+      row: r,
+      avg: vs.length >= 22 ? Math.round((vs.reduce((a, b) => a + b, 0) / vs.length) * 10 ** places) / 10 ** places : null,
+      min: vs.length ? Math.min(...vs) : null,
+      max: vs.length ? Math.max(...vs) : null,
+      places,
+      sample: r.key === "rz-off" ? `${z?.offense?.trips ?? 0} trips` : r.key === "rz-def" ? `${z?.defense?.trips ?? 0} trips` : undefined,
+    });
+  }
+  // Recent form against the season, from the same file.
+  const rec = (eff as { recent?: { weeks: number[]; pointsFor: number; pointsAgainst: number; offPlays: number; defPlays: number; epaPlayOff: number; epaPlayDef: number; successOff: number; successDef: number } | null }).recent ?? null;
+  const box = eff.box;
+  const seasonEpa = (unit: "offense" | "defense") => (eff[unit] as unknown as Record<string, { value: number } | null>).epaPlay?.value ?? null;
+  const seasonSucc = (unit: "offense" | "defense") => (eff[unit] as unknown as Record<string, { value: number } | null>).successRate?.value ?? null;
+  const cmp = (season: number | null, last: number, gap: number, higherBetter: boolean): "up" | "down" | "flat" => {
+    if (season === null || Math.abs(last - season) < gap) return "flat";
+    return (last > season) === higherBetter ? "up" : "down";
+  };
+  const sgn = (v: number) => `${v > 0 ? "+" : v < 0 ? "-" : ""}${Math.abs(v).toFixed(2)}`;
+  const recent = rec && box
+    ? {
+        weeks: rec.weeks,
+        offPlays: rec.offPlays,
+        defPlays: rec.defPlays,
+        rows: [
+          { label: "Points scored per game", season: box.own.pointsPerGame?.toFixed(1) ?? "-", last3: rec.pointsFor.toFixed(1), better: cmp(box.own.pointsPerGame ?? null, rec.pointsFor, 3, true) },
+          { label: "Points allowed per game", season: box.opponent.pointsPerGame?.toFixed(1) ?? "-", last3: rec.pointsAgainst.toFixed(1), better: cmp(box.opponent.pointsPerGame ?? null, rec.pointsAgainst, 3, false) },
+          { label: "EPA per play", season: seasonEpa("offense") === null ? "-" : sgn(seasonEpa("offense")!), last3: sgn(rec.epaPlayOff), better: cmp(seasonEpa("offense"), rec.epaPlayOff, 0.05, true) },
+          { label: "EPA per play allowed", season: seasonEpa("defense") === null ? "-" : sgn(seasonEpa("defense")!), last3: sgn(rec.epaPlayDef), better: cmp(seasonEpa("defense"), rec.epaPlayDef, 0.05, false) },
+          { label: "Success rate", season: seasonSucc("offense") === null ? "-" : `${seasonSucc("offense")!.toFixed(1)}%`, last3: `${rec.successOff.toFixed(1)}%`, better: cmp(seasonSucc("offense"), rec.successOff, 3, true) },
+          { label: "Success rate allowed", season: seasonSucc("defense") === null ? "-" : `${seasonSucc("defense")!.toFixed(1)}%`, last3: `${rec.successDef.toFixed(1)}%`, better: cmp(seasonSucc("defense"), rec.successDef, 3, false) },
+        ].map((x) => ({ ...x, sr: x.better === "flat" ? ", about the same as the season" : x.better === "up" ? ", better than the season" : ", worse than the season" })),
+      }
+    : null;
+  const L = teamLeaders(data);
+  const leaders = [
+    L.passing && L.passing.yards > 0 ? { kind: "Passing", name: L.passing.name, line: `${L.passing.yards.toLocaleString("en-US")} yds, ${L.passing.td} TD` } : null,
+    L.rushing && L.rushing.yards > 0 ? { kind: "Rushing", name: L.rushing.name, line: `${L.rushing.yards.toLocaleString("en-US")} yds, ${L.rushing.td} TD` } : null,
+    L.receiving && L.receiving.yards > 0 ? { kind: "Receiving", name: L.receiving.name, line: `${L.receiving.yards.toLocaleString("en-US")} yds, ${L.receiving.td} TD` } : null,
+  ]
+    .filter((x): x is NonNullable<typeof x> => !!x)
+    .map((x) => ({ ...x, href: getPlayerProfileUrl(x.name) }));
+  return {
+    rows,
+    throughWeek: (effDoc as { snapshot?: { throughWeek: number } }).snapshot?.throughWeek ?? effDoc.throughWeek ?? null,
+    games: eff.games ?? null,
+    recent,
+    leaders,
+  };
 }
 
 /* ----------------------------------------------------- fantasy cornerstones */

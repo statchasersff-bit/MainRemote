@@ -1,6 +1,6 @@
 /**
- * Coordinated refresh of the Usage and Coaching files (Team Pages Phase 2B,
- * 2026-11-19).
+ * Coordinated refresh of the Usage, Coaching and Stats (efficiency) files
+ * (Team Pages Phase 2B, 2026-11-19; Stats joined in Phase 3).
  *
  *   node scripts/team/refreshTeamMetrics.mjs <season> [--cache <dir>]
  *
@@ -62,22 +62,27 @@ export async function refreshTeamMetrics(season, cacheArg = null) {
     for (const url of [NFLVERSE_PBP(season), NFLVERSE_PBP(season - 1), NFLDATA_GAMES]) await download(url, cache);
     run("buildUsage.mjs", [String(season), "--cache", cache, "--out", stage]);
     run("buildCoaching.mjs", [String(season), "--cache", cache, "--out", stage, "--force", "all"]);
+    // The Stats tab's file joins them (Team Pages Phase 3, 2026-11-19): same
+    // cutoff, same games, published together or not at all.
+    run("buildEfficiency.mjs", [String(season), "--cache", cache, "--out", stage]);
 
     const usageFile = path.join(stage, `usage_${season}.json`);
     const coachingFile = path.join(stage, `coaching_${season}.json`);
     const u = JSON.parse(fs.readFileSync(usageFile, "utf8")).snapshot;
     const c = JSON.parse(fs.readFileSync(coachingFile, "utf8")).snapshot;
-    const why = snapshotMismatch(u, c);
+    const efficiencyFile = path.join(stage, `efficiency_${season}.json`);
+    const ef = JSON.parse(fs.readFileSync(efficiencyFile, "utf8")).snapshot;
+    const why = snapshotMismatch(u, c) ?? snapshotMismatch(u, ef);
     if (why) throw new Error(`snapshots disagree (${why}): usage ${JSON.stringify(u)} vs coaching ${JSON.stringify(c)}`);
 
     // Both staged and in agreement: move them in, each by rename within
     // data/team so a reader never sees a half-written file.
-    for (const f of [usageFile, coachingFile]) {
+    for (const f of [usageFile, coachingFile, efficiencyFile]) {
       const dest = path.join(DATA, path.basename(f));
       fs.copyFileSync(f, `${dest}.tmp`);
       fs.renameSync(`${dest}.tmp`, dest);
     }
-    console.log(`  team metrics ${season}: published usage + coaching, through Week ${u.throughWeek} (${u.fingerprint})`);
+    console.log(`  team metrics ${season}: published usage + coaching + efficiency, through Week ${u.throughWeek} (${u.fingerprint})`);
     return u;
   } finally {
     fs.rmSync(stage, { recursive: true, force: true });

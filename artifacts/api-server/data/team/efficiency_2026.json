@@ -1,7 +1,13 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-18",
+  "builtAt": "2026-11-19",
   "throughWeek": 10,
+  "snapshot": {
+    "season": 2026,
+    "throughWeek": 10,
+    "fingerprint": "18376:11093",
+    "definitions": "team-rate-metrics/1"
+  },
   "definitions": {
     "play": "regular-season pass or run, not a two-point try, with an EPA value",
     "epaDropback": "qb_dropback = 1: throws, sacks and scrambles",
@@ -15,6 +21,8 @@
     "yardsPerCarry": "rushing yards over rushing attempts, scrambles and kneels included",
     "passerRating": "the NFL passer rating formula over the same attempts",
     "sacks": "count: the offense's taken, the defense's made",
+    "redZoneTdRate": "touchdowns over red-zone trips; a trip is a drive with a pass or run snapped at the opponent's 20 or closer (two-point tries excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
+    "recent": "the club's last three completed regular-season games: points per game for and against (final scores), EPA per play and success rate on the same plays as the EPA rows",
     "ranks": "offense descending, defense ascending; blitz rate and time to throw most to least on both sides; sacks the other way round (offense ascending, defense descending); ties share a rank; percentile = (32 - rank) / 31"
   },
   "teams": {
@@ -183,9 +191,9 @@
         },
         "blitzRate": {
           "value": 33.3,
-          "rank": 13,
+          "rank": 12,
           "tied": false,
-          "pct": 61
+          "pct": 65
         },
         "epaVsBlitz": {
           "value": 0.2,
@@ -211,6 +219,37 @@
           "tied": true,
           "pct": 48
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 34,
+          "td": 15,
+          "rate": 44.1,
+          "rank": 31,
+          "tied": false
+        },
+        "defense": {
+          "trips": 36,
+          "td": 25,
+          "rate": 69.4,
+          "rank": 26,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 14,
+        "pointsAgainst": 27,
+        "offPlays": 160,
+        "defPlays": 201,
+        "epaPlayOff": -0.12,
+        "epaPlayDef": 0.1,
+        "successOff": 37.5,
+        "successDef": 46.3
       },
       "box": {
         "own": {
@@ -463,6 +502,37 @@
           "pct": 48
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 31,
+          "td": 17,
+          "rate": 54.8,
+          "rank": 20,
+          "tied": false
+        },
+        "defense": {
+          "trips": 36,
+          "td": 25,
+          "rate": 69.4,
+          "rank": 26,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 10,
+        "pointsAgainst": 28.3,
+        "offPlays": 173,
+        "defPlays": 176,
+        "epaPlayOff": -0.2,
+        "epaPlayDef": 0.11,
+        "successOff": 35.8,
+        "successDef": 45.5
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -538,7 +608,7 @@
         "plays": 591,
         "dropbacks": 339,
         "rushes": 252,
-        "chartedDropbacks": 289,
+        "chartedDropbacks": 339,
         "epaPlay": {
           "value": 0,
           "rank": 15,
@@ -594,10 +664,10 @@
           "pct": 48
         },
         "blitzRate": {
-          "value": 34.6,
-          "rank": 7,
+          "value": 32.4,
+          "rank": 13,
           "tied": false,
-          "pct": 81
+          "pct": 61
         },
         "epaVsBlitz": {
           "value": 0.1,
@@ -606,10 +676,10 @@
           "pct": 81
         },
         "epaVsFourMan": {
-          "value": 0.02,
-          "rank": 22,
-          "tied": true,
-          "pct": 32
+          "value": 0.01,
+          "rank": 23,
+          "tied": false,
+          "pct": 29
         },
         "timeToThrow": {
           "value": 3.02,
@@ -628,7 +698,7 @@
         "plays": 603,
         "dropbacks": 353,
         "rushes": 250,
-        "chartedDropbacks": 326,
+        "chartedDropbacks": 353,
         "epaPlay": {
           "value": 0.02,
           "rank": 19,
@@ -684,10 +754,10 @@
           "pct": 32
         },
         "blitzRate": {
-          "value": 33.4,
-          "rank": 12,
+          "value": 33.1,
+          "rank": 13,
           "tied": false,
-          "pct": 65
+          "pct": 61
         },
         "epaVsBlitz": {
           "value": -0.04,
@@ -696,10 +766,10 @@
           "pct": 74
         },
         "epaVsFourMan": {
-          "value": 0.14,
-          "rank": 25,
+          "value": 0.13,
+          "rank": 23,
           "tied": true,
-          "pct": 23
+          "pct": 29
         },
         "timeToThrow": {
           "value": 2.85,
@@ -713,6 +783,37 @@
           "tied": false,
           "pct": 32
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 30,
+          "td": 18,
+          "rate": 60,
+          "rank": 16,
+          "tied": false
+        },
+        "defense": {
+          "trips": 34,
+          "td": 22,
+          "rate": 64.7,
+          "rank": 20,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 13.3,
+        "pointsAgainst": 30.7,
+        "offPlays": 167,
+        "defPlays": 183,
+        "epaPlayOff": -0.21,
+        "epaPlayDef": 0.03,
+        "successOff": 36.5,
+        "successDef": 45.9
       },
       "box": {
         "own": {
@@ -964,6 +1065,37 @@
           "pct": 48
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 35,
+          "td": 24,
+          "rate": 68.6,
+          "rank": 6,
+          "tied": false
+        },
+        "defense": {
+          "trips": 31,
+          "td": 19,
+          "rate": 61.3,
+          "rank": 17,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 30,
+        "pointsAgainst": 9.3,
+        "offPlays": 200,
+        "defPlays": 161,
+        "epaPlayOff": 0.08,
+        "epaPlayDef": -0.32,
+        "successOff": 45,
+        "successDef": 36.6
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -1213,6 +1345,37 @@
           "tied": true,
           "pct": 6
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 31,
+          "td": 21,
+          "rate": 67.7,
+          "rank": 7,
+          "tied": false
+        },
+        "defense": {
+          "trips": 26,
+          "td": 20,
+          "rate": 76.9,
+          "rank": 31,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 20,
+        "pointsAgainst": 23.3,
+        "offPlays": 196,
+        "defPlays": 192,
+        "epaPlayOff": -0.03,
+        "epaPlayDef": -0.04,
+        "successOff": 37.8,
+        "successDef": 40.6
       },
       "box": {
         "own": {
@@ -1464,6 +1627,37 @@
           "pct": 74
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 37,
+          "td": 21,
+          "rate": 56.8,
+          "rank": 18,
+          "tied": false
+        },
+        "defense": {
+          "trips": 25,
+          "td": 14,
+          "rate": 56,
+          "rank": 13,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          9
+        ],
+        "pointsFor": 30.3,
+        "pointsAgainst": 21.7,
+        "offPlays": 192,
+        "defPlays": 169,
+        "epaPlayOff": 0.06,
+        "epaPlayDef": -0.06,
+        "successOff": 47.4,
+        "successDef": 38.5
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -1714,6 +1908,37 @@
           "pct": 74
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 37,
+          "td": 27,
+          "rate": 73,
+          "rank": 2,
+          "tied": false
+        },
+        "defense": {
+          "trips": 30,
+          "td": 12,
+          "rate": 40,
+          "rank": 3,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 38.3,
+        "pointsAgainst": 23.7,
+        "offPlays": 187,
+        "defPlays": 182,
+        "epaPlayOff": 0.28,
+        "epaPlayDef": 0.05,
+        "successOff": 56.7,
+        "successDef": 45.6
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -1846,9 +2071,9 @@
         },
         "blitzRate": {
           "value": 33.8,
-          "rank": 10,
+          "rank": 9,
           "tied": false,
-          "pct": 71
+          "pct": 74
         },
         "epaVsBlitz": {
           "value": -0.03,
@@ -1859,7 +2084,7 @@
         "epaVsFourMan": {
           "value": 0.02,
           "rank": 22,
-          "tied": true,
+          "tied": false,
           "pct": 32
         },
         "timeToThrow": {
@@ -1964,6 +2189,37 @@
           "tied": true,
           "pct": 87
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 25,
+          "td": 12,
+          "rate": 48,
+          "rank": 28,
+          "tied": false
+        },
+        "defense": {
+          "trips": 31,
+          "td": 17,
+          "rate": 54.8,
+          "rank": 12,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 18.3,
+        "pointsAgainst": 24.7,
+        "offPlays": 197,
+        "defPlays": 192,
+        "epaPlayOff": -0.08,
+        "epaPlayDef": 0.01,
+        "successOff": 39.1,
+        "successDef": 40.1
       },
       "box": {
         "own": {
@@ -2216,6 +2472,37 @@
           "pct": 58
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 40,
+          "td": 28,
+          "rate": 70,
+          "rank": 4,
+          "tied": true
+        },
+        "defense": {
+          "trips": 38,
+          "td": 26,
+          "rate": 68.4,
+          "rank": 24,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 32.3,
+        "pointsAgainst": 34,
+        "offPlays": 216,
+        "defPlays": 196,
+        "epaPlayOff": 0.09,
+        "epaPlayDef": 0.12,
+        "successOff": 44.4,
+        "successDef": 43.4
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -2466,6 +2753,37 @@
           "pct": 74
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 26,
+          "td": 17,
+          "rate": 65.4,
+          "rank": 10,
+          "tied": false
+        },
+        "defense": {
+          "trips": 29,
+          "td": 15,
+          "rate": 51.7,
+          "rank": 8,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          9
+        ],
+        "pointsFor": 28,
+        "pointsAgainst": 20.3,
+        "offPlays": 173,
+        "defPlays": 204,
+        "epaPlayOff": 0.1,
+        "epaPlayDef": 0.05,
+        "successOff": 39.9,
+        "successDef": 43.1
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -2597,9 +2915,9 @@
         },
         "blitzRate": {
           "value": 34.5,
-          "rank": 8,
+          "rank": 7,
           "tied": false,
-          "pct": 77
+          "pct": 81
         },
         "epaVsBlitz": {
           "value": 0.26,
@@ -2715,6 +3033,37 @@
           "tied": false,
           "pct": 94
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 36,
+          "td": 23,
+          "rate": 63.9,
+          "rank": 12,
+          "tied": false
+        },
+        "defense": {
+          "trips": 31,
+          "td": 21,
+          "rate": 67.7,
+          "rank": 22,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 24.3,
+        "pointsAgainst": 11.3,
+        "offPlays": 186,
+        "defPlays": 152,
+        "epaPlayOff": 0.07,
+        "epaPlayDef": -0.17,
+        "successOff": 48.4,
+        "successDef": 36.2
       },
       "box": {
         "own": {
@@ -2967,6 +3316,37 @@
           "pct": 90
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 35,
+          "td": 19,
+          "rate": 54.3,
+          "rank": 21,
+          "tied": false
+        },
+        "defense": {
+          "trips": 37,
+          "td": 22,
+          "rate": 59.5,
+          "rank": 16,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 27.3,
+        "pointsAgainst": 25.3,
+        "offPlays": 185,
+        "defPlays": 194,
+        "epaPlayOff": 0.04,
+        "epaPlayDef": -0.04,
+        "successOff": 43.2,
+        "successDef": 41.2
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -3188,9 +3568,9 @@
         },
         "blitzRate": {
           "value": 24.6,
-          "rank": 26,
+          "rank": 25,
           "tied": false,
-          "pct": 19
+          "pct": 23
         },
         "epaVsBlitz": {
           "value": 0.17,
@@ -3216,6 +3596,37 @@
           "tied": false,
           "pct": 97
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 34,
+          "td": 21,
+          "rate": 61.8,
+          "rank": 14,
+          "tied": false
+        },
+        "defense": {
+          "trips": 25,
+          "td": 17,
+          "rate": 68,
+          "rank": 23,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          9,
+          10
+        ],
+        "pointsFor": 29.7,
+        "pointsAgainst": 25.3,
+        "offPlays": 181,
+        "defPlays": 198,
+        "epaPlayOff": 0.06,
+        "epaPlayDef": 0.03,
+        "successOff": 39.8,
+        "successDef": 40.9
       },
       "box": {
         "own": {
@@ -3468,6 +3879,37 @@
           "pct": 58
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 26,
+          "td": 16,
+          "rate": 61.5,
+          "rank": 15,
+          "tied": false
+        },
+        "defense": {
+          "trips": 26,
+          "td": 16,
+          "rate": 61.5,
+          "rank": 18,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 18,
+        "pointsAgainst": 30.3,
+        "offPlays": 172,
+        "defPlays": 185,
+        "epaPlayOff": -0.25,
+        "epaPlayDef": 0.03,
+        "successOff": 40.1,
+        "successDef": 41.6
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -3717,6 +4159,37 @@
           "tied": true,
           "pct": 26
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 28,
+          "td": 18,
+          "rate": 64.3,
+          "rank": 11,
+          "tied": false
+        },
+        "defense": {
+          "trips": 23,
+          "td": 10,
+          "rate": 43.5,
+          "rank": 4,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 38.3,
+        "pointsAgainst": 13.3,
+        "offPlays": 179,
+        "defPlays": 169,
+        "epaPlayOff": 0.15,
+        "epaPlayDef": -0.23,
+        "successOff": 48,
+        "successDef": 37.9
       },
       "box": {
         "own": {
@@ -3968,6 +4441,37 @@
           "pct": 26
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 33,
+          "td": 22,
+          "rate": 66.7,
+          "rank": 9,
+          "tied": false
+        },
+        "defense": {
+          "trips": 26,
+          "td": 9,
+          "rate": 34.6,
+          "rank": 2,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 31.3,
+        "pointsAgainst": 17.7,
+        "offPlays": 194,
+        "defPlays": 183,
+        "epaPlayOff": 0.16,
+        "epaPlayDef": -0.16,
+        "successOff": 50.5,
+        "successDef": 37.2
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -4042,7 +4546,7 @@
         "plays": 550,
         "dropbacks": 322,
         "rushes": 228,
-        "chartedDropbacks": 295,
+        "chartedDropbacks": 322,
         "epaPlay": {
           "value": -0.17,
           "rank": 32,
@@ -4098,7 +4602,7 @@
           "pct": 6
         },
         "blitzRate": {
-          "value": 23.7,
+          "value": 24.2,
           "rank": 31,
           "tied": false,
           "pct": 3
@@ -4110,7 +4614,7 @@
           "pct": 35
         },
         "epaVsFourMan": {
-          "value": -0.23,
+          "value": -0.22,
           "rank": 32,
           "tied": false,
           "pct": 0
@@ -4132,7 +4636,7 @@
         "plays": 538,
         "dropbacks": 305,
         "rushes": 233,
-        "chartedDropbacks": 255,
+        "chartedDropbacks": 305,
         "epaPlay": {
           "value": 0.01,
           "rank": 16,
@@ -4188,10 +4692,10 @@
           "pct": 48
         },
         "blitzRate": {
-          "value": 24.7,
-          "rank": 25,
+          "value": 23.9,
+          "rank": 27,
           "tied": false,
-          "pct": 23
+          "pct": 16
         },
         "epaVsBlitz": {
           "value": -0.02,
@@ -4200,10 +4704,10 @@
           "pct": 68
         },
         "epaVsFourMan": {
-          "value": 0.08,
-          "rank": 17,
+          "value": 0.06,
+          "rank": 13,
           "tied": true,
-          "pct": 48
+          "pct": 61
         },
         "timeToThrow": {
           "value": 2.9,
@@ -4217,6 +4721,37 @@
           "tied": true,
           "pct": 6
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 20,
+          "td": 10,
+          "rate": 50,
+          "rank": 26,
+          "tied": true
+        },
+        "defense": {
+          "trips": 35,
+          "td": 19,
+          "rate": 54.3,
+          "rank": 10,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 18,
+        "pointsAgainst": 29.3,
+        "offPlays": 180,
+        "defPlays": 182,
+        "epaPlayOff": -0.17,
+        "epaPlayDef": 0.06,
+        "successOff": 35.6,
+        "successDef": 44
       },
       "box": {
         "own": {
@@ -4469,6 +5004,37 @@
           "pct": 48
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 40,
+          "td": 27,
+          "rate": 67.5,
+          "rank": 8,
+          "tied": false
+        },
+        "defense": {
+          "trips": 28,
+          "td": 13,
+          "rate": 46.4,
+          "rank": 5,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 26,
+        "pointsAgainst": 9.3,
+        "offPlays": 197,
+        "defPlays": 149,
+        "epaPlayOff": 0.09,
+        "epaPlayDef": -0.32,
+        "successOff": 47.7,
+        "successDef": 31.5
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -4720,6 +5286,37 @@
           "pct": 58
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 38,
+          "td": 20,
+          "rate": 52.6,
+          "rank": 24,
+          "tied": false
+        },
+        "defense": {
+          "trips": 40,
+          "td": 28,
+          "rate": 70,
+          "rank": 28,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 22.7,
+        "pointsAgainst": 30.7,
+        "offPlays": 164,
+        "defPlays": 179,
+        "epaPlayOff": -0.08,
+        "epaPlayDef": 0.16,
+        "successOff": 40.9,
+        "successDef": 50.8
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -4953,9 +5550,9 @@
         },
         "epaVsFourMan": {
           "value": 0.14,
-          "rank": 25,
+          "rank": 26,
           "tied": true,
-          "pct": 23
+          "pct": 19
         },
         "timeToThrow": {
           "value": 2.87,
@@ -4969,6 +5566,37 @@
           "tied": false,
           "pct": 0
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 21,
+          "td": 11,
+          "rate": 52.4,
+          "rank": 25,
+          "tied": false
+        },
+        "defense": {
+          "trips": 34,
+          "td": 21,
+          "rate": 61.8,
+          "rank": 19,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 16.7,
+        "pointsAgainst": 22.3,
+        "offPlays": 171,
+        "defPlays": 166,
+        "epaPlayOff": -0.13,
+        "epaPlayDef": -0.03,
+        "successOff": 35.1,
+        "successDef": 43.4
       },
       "box": {
         "own": {
@@ -5101,9 +5729,9 @@
         },
         "blitzRate": {
           "value": 33.7,
-          "rank": 11,
+          "rank": 10,
           "tied": false,
-          "pct": 68
+          "pct": 71
         },
         "epaVsBlitz": {
           "value": -0.2,
@@ -5219,6 +5847,37 @@
           "tied": false,
           "pct": 100
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 23,
+          "td": 11,
+          "rate": 47.8,
+          "rank": 29,
+          "tied": false
+        },
+        "defense": {
+          "trips": 19,
+          "td": 5,
+          "rate": 26.3,
+          "rank": 1,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 17,
+        "pointsAgainst": 17.3,
+        "offPlays": 158,
+        "defPlays": 195,
+        "epaPlayOff": -0.16,
+        "epaPlayDef": -0.08,
+        "successOff": 40.5,
+        "successDef": 42.6
       },
       "box": {
         "own": {
@@ -5471,6 +6130,37 @@
           "pct": 87
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 27,
+          "td": 15,
+          "rate": 55.6,
+          "rank": 19,
+          "tied": false
+        },
+        "defense": {
+          "trips": 32,
+          "td": 19,
+          "rate": 59.4,
+          "rank": 14,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 20.3,
+        "pointsAgainst": 33,
+        "offPlays": 171,
+        "defPlays": 189,
+        "epaPlayOff": -0.08,
+        "epaPlayDef": 0.15,
+        "successOff": 42.7,
+        "successDef": 46
+      },
       "box": {
         "own": {
           "gamesPlayed": 10,
@@ -5721,6 +6411,37 @@
           "pct": 74
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 30,
+          "td": 21,
+          "rate": 70,
+          "rank": 4,
+          "tied": true
+        },
+        "defense": {
+          "trips": 35,
+          "td": 19,
+          "rate": 54.3,
+          "rank": 10,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          9,
+          10
+        ],
+        "pointsFor": 16.7,
+        "pointsAgainst": 19.3,
+        "offPlays": 189,
+        "defPlays": 194,
+        "epaPlayOff": -0.08,
+        "epaPlayDef": -0.01,
+        "successOff": 39.2,
+        "successDef": 37.1
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -5852,9 +6573,9 @@
         },
         "blitzRate": {
           "value": 34.3,
-          "rank": 9,
+          "rank": 8,
           "tied": false,
-          "pct": 74
+          "pct": 77
         },
         "epaVsBlitz": {
           "value": 0.01,
@@ -5970,6 +6691,37 @@
           "tied": true,
           "pct": 26
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 27,
+          "td": 17,
+          "rate": 63,
+          "rank": 13,
+          "tied": false
+        },
+        "defense": {
+          "trips": 20,
+          "td": 16,
+          "rate": 80,
+          "rank": 32,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          9,
+          10
+        ],
+        "pointsFor": 22.3,
+        "pointsAgainst": 18.7,
+        "offPlays": 190,
+        "defPlays": 183,
+        "epaPlayOff": 0.08,
+        "epaPlayDef": -0.08,
+        "successOff": 40,
+        "successDef": 39.3
       },
       "box": {
         "own": {
@@ -6205,9 +6957,9 @@
         },
         "epaVsFourMan": {
           "value": 0.14,
-          "rank": 25,
+          "rank": 26,
           "tied": true,
-          "pct": 23
+          "pct": 19
         },
         "timeToThrow": {
           "value": 2.89,
@@ -6221,6 +6973,37 @@
           "tied": false,
           "pct": 61
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 28,
+          "td": 11,
+          "rate": 39.3,
+          "rank": 32,
+          "tied": false
+        },
+        "defense": {
+          "trips": 35,
+          "td": 24,
+          "rate": 68.6,
+          "rank": 25,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 19,
+        "pointsAgainst": 34.7,
+        "offPlays": 191,
+        "defPlays": 173,
+        "epaPlayOff": -0.05,
+        "epaPlayDef": 0.21,
+        "successOff": 45.5,
+        "successDef": 52
       },
       "box": {
         "own": {
@@ -6455,9 +7238,9 @@
         },
         "epaVsFourMan": {
           "value": 0.08,
-          "rank": 17,
-          "tied": true,
-          "pct": 48
+          "rank": 18,
+          "tied": false,
+          "pct": 45
         },
         "timeToThrow": {
           "value": 2.87,
@@ -6471,6 +7254,37 @@
           "tied": true,
           "pct": 13
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 22,
+          "td": 16,
+          "rate": 72.7,
+          "rank": 3,
+          "tied": false
+        },
+        "defense": {
+          "trips": 32,
+          "td": 19,
+          "rate": 59.4,
+          "rank": 14,
+          "tied": true
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          9
+        ],
+        "pointsFor": 14,
+        "pointsAgainst": 28,
+        "offPlays": 195,
+        "defPlays": 185,
+        "epaPlayOff": -0.14,
+        "epaPlayDef": 0.08,
+        "successOff": 33.3,
+        "successDef": 42.2
       },
       "box": {
         "own": {
@@ -6722,6 +7536,37 @@
           "pct": 87
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 26,
+          "td": 12,
+          "rate": 46.2,
+          "rank": 30,
+          "tied": false
+        },
+        "defense": {
+          "trips": 22,
+          "td": 11,
+          "rate": 50,
+          "rank": 7,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          10
+        ],
+        "pointsFor": 20.3,
+        "pointsAgainst": 18,
+        "offPlays": 176,
+        "defPlays": 183,
+        "epaPlayOff": 0.08,
+        "epaPlayDef": 0.07,
+        "successOff": 43.8,
+        "successDef": 48.1
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -6944,9 +7789,9 @@
         },
         "blitzRate": {
           "value": 24.1,
-          "rank": 27,
+          "rank": 26,
           "tied": false,
-          "pct": 16
+          "pct": 19
         },
         "epaVsBlitz": {
           "value": -0.27,
@@ -6972,6 +7817,37 @@
           "tied": true,
           "pct": 87
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 30,
+          "td": 16,
+          "rate": 53.3,
+          "rank": 23,
+          "tied": false
+        },
+        "defense": {
+          "trips": 22,
+          "td": 16,
+          "rate": 72.7,
+          "rank": 30,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 18.3,
+        "pointsAgainst": 16.7,
+        "offPlays": 166,
+        "defPlays": 179,
+        "epaPlayOff": 0.01,
+        "epaPlayDef": -0.05,
+        "successOff": 41,
+        "successDef": 41.9
       },
       "box": {
         "own": {
@@ -7223,6 +8099,37 @@
           "pct": 13
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 30,
+          "td": 25,
+          "rate": 83.3,
+          "rank": 1,
+          "tied": false
+        },
+        "defense": {
+          "trips": 28,
+          "td": 15,
+          "rate": 53.6,
+          "rank": 9,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          9,
+          10
+        ],
+        "pointsFor": 34.7,
+        "pointsAgainst": 28.7,
+        "offPlays": 192,
+        "defPlays": 181,
+        "epaPlayOff": 0.21,
+        "epaPlayDef": 0.03,
+        "successOff": 51.6,
+        "successDef": 45.3
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -7354,9 +8261,9 @@
         },
         "blitzRate": {
           "value": 33.4,
-          "rank": 12,
+          "rank": 11,
           "tied": false,
-          "pct": 65
+          "pct": 68
         },
         "epaVsBlitz": {
           "value": -0.17,
@@ -7472,6 +8379,37 @@
           "tied": true,
           "pct": 26
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 30,
+          "td": 15,
+          "rate": 50,
+          "rank": 26,
+          "tied": true
+        },
+        "defense": {
+          "trips": 23,
+          "td": 11,
+          "rate": 47.8,
+          "rank": 6,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          9
+        ],
+        "pointsFor": 27.7,
+        "pointsAgainst": 13.3,
+        "offPlays": 181,
+        "defPlays": 164,
+        "epaPlayOff": -0.05,
+        "epaPlayDef": -0.26,
+        "successOff": 43.6,
+        "successDef": 37.8
       },
       "box": {
         "own": {
@@ -7723,6 +8661,37 @@
           "pct": 48
         }
       },
+      "redZone": {
+        "offense": {
+          "trips": 24,
+          "td": 13,
+          "rate": 54.2,
+          "rank": 22,
+          "tied": false
+        },
+        "defense": {
+          "trips": 35,
+          "td": 23,
+          "rate": 65.7,
+          "rank": 21,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          7,
+          8,
+          10
+        ],
+        "pointsFor": 27.7,
+        "pointsAgainst": 36.7,
+        "offPlays": 189,
+        "defPlays": 207,
+        "epaPlayOff": 0.01,
+        "epaPlayDef": 0.17,
+        "successOff": 42.9,
+        "successDef": 55.1
+      },
       "box": {
         "own": {
           "gamesPlayed": 9,
@@ -7854,9 +8823,9 @@
         },
         "blitzRate": {
           "value": 33,
-          "rank": 13,
+          "rank": 12,
           "tied": false,
-          "pct": 61
+          "pct": 65
         },
         "epaVsBlitz": {
           "value": 0.06,
@@ -7972,6 +8941,37 @@
           "tied": false,
           "pct": 29
         }
+      },
+      "redZone": {
+        "offense": {
+          "trips": 22,
+          "td": 13,
+          "rate": 59.1,
+          "rank": 17,
+          "tied": false
+        },
+        "defense": {
+          "trips": 32,
+          "td": 23,
+          "rate": 71.9,
+          "rank": 29,
+          "tied": false
+        }
+      },
+      "recent": {
+        "weeks": [
+          8,
+          9,
+          10
+        ],
+        "pointsFor": 21.3,
+        "pointsAgainst": 17,
+        "offPlays": 178,
+        "defPlays": 203,
+        "epaPlayOff": -0.03,
+        "epaPlayDef": -0.03,
+        "successOff": 45.5,
+        "successDef": 42.9
       },
       "box": {
         "own": {

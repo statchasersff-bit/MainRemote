@@ -87,6 +87,7 @@ import readline from "node:readline";
 import { Readable } from "node:stream";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
+import { addSnap, computeThroughWeek, newRateAcc } from "./team-rate-metrics.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(here, "..", "..", "data");
@@ -110,6 +111,10 @@ const BOX_PLAY_TYPES = new Set(["pass", "run", "qb_kneel", "qb_spike"]);
 /* -------------------------------------------------------------------- CSV */
 
 let cacheDir = null;
+/** `--through N` (refreshTeamMetrics.mjs); otherwise the shared completed-week cutoff. */
+let throughArg = null;
+/** `--out <dir>`: stage the file there instead of data/team. */
+let outDir = null;
 
 function splitCsv(line) {
   const out = [];
@@ -430,6 +435,22 @@ async function build(season) {
   );
   let throughWeek = 0;
   let plays = 0;
+  // Team Pages Phase 3 (2026-11-19): the completed-week cutoff the Usage and
+  // Coaching builders share (team-rate-metrics.mjs); a week counts only when
+  // every scheduled game is in the play-by-play.
+  const CUT = throughArg ?? (await computeThroughWeek(rows, season));
+  console.log(`  ${season} complete through Week ${CUT}`);
+  // The shared snap count, for the snapshot fingerprint the other two files carry.
+  const rateAccs = new Map();
+  // Red-zone trips by drive: `${game}:${drive}` -> {o, d, rz, td}.
+  const drives = new Map();
+  // Per game, per club: points, and the EPA plays on each side, for Recent form.
+  const perGame = new Map();
+  const gameAcc = (c, game, week) => {
+    const k = `${c}|${game}`;
+    if (!perGame.has(k)) perGame.set(k, { c, game, week, offPlays: 0, offEpa: 0, defPlays: 0, defEpa: 0, offSuccess: 0, defSuccess: 0 });
+    return perGame.get(k);
+  };
 
   // FTN charting: rusher count per play. Optional - without it the blitz
   // rows are null and the page leaves them out.
@@ -457,6 +478,7 @@ async function build(season) {
       const att = num(r.attempts);
       const c = club(r.team_abbr);
       if (!week || week < 1 || ttt === null || !att || !c || !teams[c]) continue;
+      if (week > CUT) continue;
       passerWeeks.push({ week, club: c, ttt, att });
     }
     console.log(`  ${passerWeeks.length} passer-weeks`);
@@ -473,6 +495,14 @@ async function build(season) {
   console.log(`  play-by-play ${season}…`);
   for await (const r of rows(`${NFLVERSE}/pbp/play_by_play_${season}.csv.gz`)) {
     if ((r.season_type ?? r.game_type) !== "REG") continue;
+    if ((num(r.week) ?? 99) > CUT) continue;
+    {
+      const pc = club(r.posteam);
+      if (pc && teams[pc]) {
+        if (!rateAccs.has(pc)) rateAccs.set(pc, newRateAcc());
+        addSnap(rateAccs.get(pc), r);
+      }
+    }
     // The final score, from any row of the game: the Points/G rows.
     if (r.game_id && !scores.has(r.game_id)) {
       const home = club(r.home_team);
@@ -527,10 +557,30 @@ async function build(season) {
       }
     }
     if (r.play_type !== "pass" && r.play_type !== "run") continue;
+    // Red-zone trips: a drive with a pass or run snapped at the opponent's 20
+    // or closer; a touchdown when the drive's result is a touchdown.
+    {
+      const yl = num(r.yardline_100);
+      const dk = `${r.game_id}:${r.fixed_drive}`;
+      if (!drives.has(dk)) drives.set(dk, { o, d, rz: false, td: false });
+      const dr = drives.get(dk);
+      if (yl !== null && yl <= 20) dr.rz = true;
+      if (r.fixed_drive_result === "Touchdown") dr.td = true;
+    }
     const epa = num(r.epa);
     if (epa === null) continue;
     tally(teams[o].offense.tally, r, epa);
     tally(teams[d].defense.tally, r, epa);
+    if (wk !== null) {
+      const go = gameAcc(o, r.game_id, wk);
+      go.offPlays += 1;
+      go.offEpa += epa;
+      if (epa > 0) go.offSuccess += 1;
+      const gd = gameAcc(d, r.game_id, wk);
+      gd.defPlays += 1;
+      gd.defEpa += epa;
+      if (epa > 0) gd.defSuccess += 1;
+    }
     if (r.qb_dropback === "1") {
       const n = rushers.get(`${r.game_id}:${r.play_id}`);
       if (n !== undefined) {
@@ -549,6 +599,59 @@ async function build(season) {
     teams[g.home].box.pointsAllowed += g.as;
     teams[g.away].box.points += g.as;
     teams[g.away].box.pointsAllowed += g.hs;
+  }
+
+  // Red-zone touchdown rate: touchdowns over trips, both sides, ranked on the
+  // published (one-decimal) value, ties shared; offense high is better,
+  // defense low is better.
+  const rz = Object.fromEntries(CLUBS.map((c) => [c, { offense: { trips: 0, td: 0 }, defense: { trips: 0, td: 0 } }]));
+  for (const dr of drives.values()) {
+    if (!dr.rz) continue;
+    rz[dr.o].offense.trips += 1;
+    rz[dr.d].defense.trips += 1;
+    if (dr.td) {
+      rz[dr.o].offense.td += 1;
+      rz[dr.d].defense.td += 1;
+    }
+  }
+  const pub1 = (v) => (v == null ? null : Math.round(v * 10) / 10);
+  for (const unit of ["offense", "defense"]) {
+    const vals = CLUBS.map((c) => (rz[c][unit].trips ? pub1((100 * rz[c][unit].td) / rz[c][unit].trips) : null));
+    CLUBS.forEach((c, i) => {
+      const v = vals[i];
+      const better = (x) => x != null && (unit === "offense" ? x > v : x < v);
+      rz[c][unit].rate = v;
+      rz[c][unit].rank = v == null ? null : vals.filter(better).length + 1;
+      rz[c][unit].tied = v != null && vals.filter((x) => x === v).length > 1;
+    });
+  }
+
+  // Recent form: each club's last three completed games against its season,
+  // points and EPA per play on both sides (the play counts are the sample).
+  const recent = {};
+  for (const c of CLUBS) {
+    const games = [...perGame.values()].filter((g) => g.c === c).sort((a, b) => a.week - b.week);
+    const last = games.slice(-3);
+    const sum = (list, k) => list.reduce((n, g) => n + g[k], 0);
+    const pts = last.map((g) => {
+      const sc = scores.get(g.game);
+      if (!sc) return null;
+      return sc.home === c ? [sc.hs, sc.as] : [sc.as, sc.hs];
+    });
+    const ok = pts.every(Boolean) && last.length === 3;
+    recent[c] = ok
+      ? {
+          weeks: last.map((g) => g.week),
+          pointsFor: pub1(pts.reduce((n, p) => n + p[0], 0) / 3),
+          pointsAgainst: pub1(pts.reduce((n, p) => n + p[1], 0) / 3),
+          offPlays: sum(last, "offPlays"),
+          defPlays: sum(last, "defPlays"),
+          epaPlayOff: Math.round((sum(last, "offEpa") / Math.max(1, sum(last, "offPlays"))) * 100) / 100,
+          epaPlayDef: Math.round((sum(last, "defEpa") / Math.max(1, sum(last, "defPlays"))) * 100) / 100,
+          successOff: pub1((100 * sum(last, "offSuccess")) / Math.max(1, sum(last, "offPlays"))),
+          successDef: pub1((100 * sum(last, "defSuccess")) / Math.max(1, sum(last, "defPlays"))),
+        }
+      : null;
   }
 
   let unmatched = 0;
@@ -595,6 +698,10 @@ async function build(season) {
       weeks: [...t.weeks].sort((a, b) => a - b),
       offense: pack(t.offense),
       defense: pack(t.defense),
+      // Phase 3 (2026-11-19): red-zone TD rate by drive, and the last three
+      // completed games beside the season.
+      redZone: rz[c],
+      recent: recent[c],
       // The Stats tab's Production, Turnovers and Snaps ladders (and the
       // history table): the box-score sheet, own and opponent splits.
       box: {
@@ -604,10 +711,18 @@ async function build(season) {
     };
   }
 
+  const allAccs = [...rateAccs.values()];
   const doc = {
     season,
     builtAt: new Date().toISOString().slice(0, 10),
     throughWeek,
+    // Shared with the usage and coaching files (refreshTeamMetrics.mjs).
+    snapshot: {
+      season,
+      throughWeek: CUT,
+      fingerprint: `${allAccs.reduce((n, a) => n + a.snaps, 0)}:${allAccs.reduce((n, a) => n + a.pass, 0)}`,
+      definitions: "team-rate-metrics/1",
+    },
     definitions: {
       play: "regular-season pass or run, not a two-point try, with an EPA value",
       epaDropback: "qb_dropback = 1: throws, sacks and scrambles",
@@ -621,15 +736,18 @@ async function build(season) {
       yardsPerCarry: "rushing yards over rushing attempts, scrambles and kneels included",
       passerRating: "the NFL passer rating formula over the same attempts",
       sacks: "count: the offense's taken, the defense's made",
+      redZoneTdRate: "touchdowns over red-zone trips; a trip is a drive with a pass or run snapped at the opponent's 20 or closer (two-point tries excluded), a touchdown when nflverse's fixed_drive_result is Touchdown; offense high is better, defense low; ranked on the one-decimal value, ties shared",
+      recent: "the club's last three completed regular-season games: points per game for and against (final scores), EPA per play and success rate on the same plays as the EPA rows",
       ranks: "offense descending, defense ascending; blitz rate and time to throw most to least on both sides; sacks the other way round (offense ascending, defense descending); ties share a rank; percentile = (32 - rank) / 31",
     },
     teams: out,
   };
 
-  const file = path.join(DATA, "team", `efficiency_${season}.json`);
+  const liveFile = path.join(DATA, "team", `efficiency_${season}.json`);
+  const file = outDir ? path.join(outDir, `efficiency_${season}.json`) : liveFile;
   let onDisk = 0;
   try {
-    onDisk = JSON.parse(fs.readFileSync(file, "utf8")).throughWeek ?? 0;
+    onDisk = JSON.parse(fs.readFileSync(liveFile, "utf8")).throughWeek ?? 0;
   } catch {
     /* first build */
   }
@@ -649,5 +767,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
   const at = process.argv.indexOf("--cache");
   if (at > 0) cacheDir = path.resolve(process.argv[at + 1]);
+  const thAt = process.argv.indexOf("--through");
+  if (thAt > 0) throughArg = Number(process.argv[thAt + 1]);
+  const outAt = process.argv.indexOf("--out");
+  if (outAt > 0) outDir = path.resolve(process.argv[outAt + 1]);
   await build(season);
 }

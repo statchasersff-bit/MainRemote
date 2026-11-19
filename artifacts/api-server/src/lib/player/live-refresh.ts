@@ -447,12 +447,10 @@ export function refreshDailyData(): Promise<void> {
       // they agree on the completed-through week and data fingerprint, so
       // the two tabs never describe different games. A refusal or mismatch
       // publishes neither (scripts/team/refreshTeamMetrics.mjs).
-      await step("team usage + coaching", "team/refreshTeamMetrics.mjs", [season]);
-      // The Stats tab, whole: the Efficiency / Pass Rush ladders AND the
-      // box-score sheet every other ladder on the tab reads (since 2026-10-26
-      // the tab reads this one file, never the stats provider, so it is one
-      // week throughout). Refuses to roll a hub back to fewer weeks.
-      await step("team efficiency", "team/buildEfficiency.mjs", [season]);
+      // The Stats tab's file joined the coordinated refresh in Phase 3
+      // (2026-11-19): Usage, Coaching and Stats now publish together, on one
+      // completed-week cutoff, or not at all.
+      await step("team usage + coaching + stats", "team/refreshTeamMetrics.mjs", [season]);
       // Then check what the hubs now say: weeks against the games file, the
       // standings feed, head coaches against the research file, and the
       // sentences the 2026-10-03 audit removed. A FAIL here is a page saying

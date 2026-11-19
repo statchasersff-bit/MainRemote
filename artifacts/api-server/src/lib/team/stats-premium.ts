@@ -56,6 +56,39 @@ export interface StatsPremiumInput {
   fill: (rank: number) => string;
   /** The tab's history tier for a cell. */
   historyTier: (row: StatRow) => HistoryTier;
+  /**
+   * Team Pages Phase 3 (2026-11-19). Every row the dashboard can print, keyed
+   * by StatRow.key, with the league distribution it is drawn against; the
+   * snapshot and grouped sections pick from it. Absent when the season has no
+   * file (provider fallback): the tab then prints the original sections.
+   */
+  dash?: {
+    rows: Map<string, DashRow>;
+    /** "Through Week 10" and the club's games, for the dek. */
+    throughWeek: number | null;
+    games: number | null;
+    recent: RecentForm | null;
+    leaders: Array<{ kind: string; name: string; href: string | null; line: string }>;
+  };
+}
+
+/** One row with its league context: the 32 clubs' published values. */
+export interface DashRow {
+  row: StatRow;
+  avg: number | null;
+  min: number | null;
+  max: number | null;
+  /** Decimals the value prints with, for the average. */
+  places: number;
+  /** Extra sample line ("27 trips"), when the row carries one. */
+  sample?: string;
+}
+
+export interface RecentForm {
+  weeks: number[];
+  offPlays: number;
+  defPlays: number;
+  rows: Array<{ label: string; season: string; last3: string; better: "up" | "down" | "flat"; sr: string }>;
 }
 
 const TIER_WORD: Record<Tier, string> = { good: "top tier", mid: "middle tier", poor: "bottom tier", none: "" };
@@ -214,7 +247,231 @@ function history(input: StatsPremiumInput): string {
   );
 }
 
+/* ------------------------------------------------------- Phase 3 dashboard */
+
+const num = (text: string): number | null => {
+  const m = text.replace(/[−–]/g, "-").match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : null;
+};
+
+/**
+ * The league scale: the club's mark between the league's worst and best,
+ * with the NFL average as a tick. Right is always better ("low" rows are
+ * flipped); a volume row has no better end, so it reads least to most and
+ * carries no tier color.
+ */
+function scale(d: DashRow): string {
+  const v = num(d.row.value);
+  if (v === null || d.min === null || d.max === null || d.max === d.min) return `<span class="sct-sp-scale is-empty" aria-hidden="true"></span>`;
+  const flip = d.row.direction === "low";
+  const at = (x: number) => {
+    const p = ((x - d.min!) / (d.max! - d.min!)) * 100;
+    return Math.max(0, Math.min(100, flip ? 100 - p : p)).toFixed(1);
+  };
+  const tier = d.row.direction === "volume" || d.row.rank === null ? "none" : d.row.rank <= 10 ? "good" : d.row.rank <= 22 ? "mid" : "poor";
+  return (
+    `<span class="sct-sp-scale" aria-hidden="true">` +
+    (d.avg !== null ? `<span class="sct-sp-scale-avg" style="left:${at(d.avg)}%"></span>` : "") +
+    `<span class="sct-sp-scale-mark" data-tier="${tier}" style="left:${at(v)}%"></span>` +
+    `</span>`
+  );
+}
+
+const fmtAvg = (d: DashRow): string => {
+  if (d.avg === null) return "";
+  const unit = d.row.value.endsWith("%") ? "%" : d.row.value.endsWith("s") ? "s" : "";
+  const sign = d.row.value.startsWith("+") || d.row.value.startsWith("-") ? (d.avg > 0 ? "+" : "") : "";
+  return `${sign}${d.avg.toFixed(d.places)}${unit}`;
+};
+
+const DIRECTION_WORD: Record<string, string> = { high: "higher is better", low: "lower is better", volume: "ranked most to least" };
+
+function rankPill(d: DashRow, input: StatsPremiumInput): string {
+  const r = d.row;
+  const t = r.rank === null ? "none" : input.tier(r);
+  return r.rankLabel
+    ? `<span class="sct-sp-rank" data-tier="${t}" title="${e(`${r.rankLabel} of 32, ${DIRECTION_WORD[r.direction] ?? ""}`)}">${e(r.rankLabel)}<span class="sct-visually-hidden"> of 32${t !== "none" ? `, ${e(TIER_WORD[t])}` : ""}; ${e(DIRECTION_WORD[r.direction] ?? "")}</span></span>`
+    : `<span class="sct-sp-rank is-none">-<span class="sct-visually-hidden">unranked</span></span>`;
+}
+
+/** A dashboard row: label (+ sample), value, scale, NFL average, rank. */
+function dashRow(d: DashRow, input: StatsPremiumInput): string {
+  const avg = fmtAvg(d);
+  return (
+    `<li class="sct-sp-drow" data-dir="${e(d.row.direction)}">` +
+    `<span class="sct-sp-dlabel">${e(d.row.label)}<span class="sct-visually-hidden">: ${e(d.row.description)}</span>` +
+    (d.sample ? `<span class="sct-sp-dsample">${e(d.sample)}</span>` : "") +
+    `</span>` +
+    `<span class="sct-sp-dvalue">${e(d.row.value)}</span>` +
+    scale(d) +
+    `<span class="sct-sp-davg">${avg ? `<span class="sct-sp-davg-k">NFL</span> ${e(avg)}` : ""}</span>` +
+    rankPill(d, input) +
+    `</li>`
+  );
+}
+
+function group(title: string, keys: string[], input: StatsPremiumInput): string {
+  const rows = keys.map((k) => input.dash!.rows.get(k)).filter((d): d is DashRow => !!d);
+  if (!rows.length) return "";
+  return (
+    `<section class="sct-sp-group">` +
+    `<h3 class="sct-sp-group-title">${e(title)}</h3>` +
+    `<ul class="sct-sp-drows">${rows.map((d) => dashRow(d, input)).join("")}</ul>` +
+    `</section>`
+  );
+}
+
+/** Section A: six cards, offense and defense colored apart. */
+function snapshot(input: StatsPremiumInput): string {
+  const cards: Array<[string, string, "offense" | "defense"]> = [
+    // Offense row then defense row on desktop (three across); phones pair
+    // each offense card with its defense card (team.css order).
+    ["off-points", "Points scored per game", "offense"],
+    ["off-total-yards", "Yards gained per game", "offense"],
+    ["eff-off-epaPlay", "EPA per play", "offense"],
+    ["def-points", "Points allowed per game", "defense"],
+    ["def-total-yards", "Yards allowed per game", "defense"],
+    ["eff-def-epaPlay", "EPA per play allowed", "defense"],
+  ];
+  const items = cards
+    .map(([key, title, unit]) => {
+      const d = input.dash!.rows.get(key);
+      if (!d) return "";
+      const avg = fmtAvg(d);
+      return (
+        `<li class="sct-sp-card" data-unit="${unit}" data-pair="${key.replace(/^(eff-)?(off|def)-/, "")}">` +
+        `<span class="sct-sp-card-k">${e(title)}</span>` +
+        `<span class="sct-sp-card-row"><b class="sct-sp-card-v">${e(d.row.value)}</b>${rankPill(d, input)}</span>` +
+        scale(d) +
+        `<span class="sct-sp-card-avg">${avg ? e(`NFL avg ${avg} · ${DIRECTION_WORD[d.row.direction]}`) : ""}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+  return items
+    ? `<section class="sct-sp-snap">${band(ICON.chart, "Team Performance Snapshot", "Points, yards and expected points per play on both sides of the ball, each against the NFL average.")}<ul class="sct-sp-cards">${items}</ul></section>`
+    : "";
+}
+
+/** Sections B and C: offense and defense, grouped. */
+function unitSection(unit: "offense" | "defense", input: StatsPremiumInput): string {
+  const o = unit === "offense";
+  const k = (base: string) => `${o ? "off" : "def"}-${base}`;
+  const eff = (base: string) => `eff-${o ? "off" : "def"}-${base}`;
+  const groups = o
+    ? [
+        group("Passing", [k("pass-yards"), eff("yardsPerPassAttempt"), eff("epaDropback"), eff("passerRating"), "pass-td", "sacks-allowed"], input),
+        group("Rushing", [k("rush-yards"), eff("yardsPerCarry"), eff("epaRush"), "rush-td"], input),
+        group("Efficiency", [eff("successRate"), eff("explosiveRate"), eff("yardsPerPlay"), k("first-downs")], input),
+        group("Situational & Ball Security", [k("third-down"), "fourth-down", "rz-off", "giveaways"], input),
+      ]
+    : [
+        group("Pass Defense", [k("pass-yards"), eff("yardsPerPassAttempt"), eff("epaDropback"), eff("passerRating"), "sacks-made"], input),
+        group("Run Defense", [k("rush-yards"), eff("yardsPerCarry"), eff("epaRush")], input),
+        group("Efficiency Allowed", [eff("successRate"), eff("explosiveRate"), eff("yardsPerPlay"), k("first-downs")], input),
+        group("Situational & Takeaways", [k("third-down"), "rz-def", "takeaways"], input),
+      ];
+  const body = groups.join("");
+  if (!body) return "";
+  const leaders =
+    o && input.dash!.leaders.length
+      ? `<p class="sct-sp-leaders"><span class="sct-sp-leaders-k">Leaders</span>` +
+        input.dash!.leaders
+          .map((l) => `<span class="sct-sp-leader"><span class="sct-sp-leader-kind">${e(l.kind)}</span> ${l.href ? `<a href="${e(l.href)}" target="_top">${e(l.name)}</a>` : e(l.name)} <span class="sct-sp-leader-line">${e(l.line)}</span></span>`)
+          .join("") +
+        `</p>`
+      : "";
+  return (
+    `<section class="sct-sp-unit" data-unit="${unit}">` +
+    band(o ? ICON.football : ICON.shield, o ? "Offensive Performance" : "Defensive Performance", o ? "Passing, rushing, efficiency and situational play. On every bar the right end is better." : "What opponents managed through the air and on the ground, and the stops and takeaways. On every bar the right end is better.") +
+    leaders +
+    `<div class="sct-sp-groups">${body}</div>` +
+    `</section>`
+  );
+}
+
+/** Section D: the last three completed games beside the season. */
+function recentForm(input: StatsPremiumInput): string {
+  const r = input.dash!.recent;
+  if (!r) return "";
+  const glyph = (b: string) => (b === "up" ? "▲" : b === "down" ? "▼" : "");
+  return (
+    `<section class="sct-sp-recent">` +
+    band(ICON.calendar, "Recent Form", "The last three completed games against the season average.") +
+    `<div class="sct-sp-h-scroll"><table class="sct-sp-rtable"><caption class="sct-visually-hidden">Season averages beside the last three completed games</caption>` +
+    `<thead><tr><th scope="col">Metric</th><th scope="col">Season</th><th scope="col">${e(`Last 3 (Wks ${r.weeks.join(", ")})`)}</th></tr></thead><tbody>` +
+    r.rows
+      .map(
+        (x) =>
+          `<tr><th scope="row">${e(x.label)}</th><td>${e(x.season)}</td>` +
+          `<td><span class="sct-sp-rv" data-better="${x.better}">${e(x.last3)}${glyph(x.better) ? ` <span aria-hidden="true">${glyph(x.better)}</span>` : ""}<span class="sct-visually-hidden">${e(x.sr)}</span></span></td></tr>`,
+      )
+      .join("") +
+    `</tbody></table></div>` +
+    `<p class="sct-sp-fine">${e(`Last three completed games: ${r.offPlays} offensive and ${r.defPlays} defensive plays. Three games is a small sample; an arrow marks a gap of 3+ points, 0.05 EPA or 3 percentage points, ▲ better and ▼ worse.`)}</p>` +
+    `</section>`
+  );
+}
+
 export function renderStatsPremium(input: StatsPremiumInput): string {
+  if (input.dash) return renderStatsDashboard(input);
+  return renderStatsLegacy(input);
+}
+
+/**
+ * The Stats tab since Team Pages Phase 3 (2026-11-19,
+ * docs/TEAM-STATS-PHASE3-ASSESSMENT.md): A snapshot, B offense and C defense
+ * grouped with NFL averages and league scales, D recent form, E the detail
+ * (pass protection and rush, pace and play mix, discipline, history) and a
+ * definitions disclosure. One responsive markup for every width.
+ */
+function renderStatsDashboard(input: StatsPremiumInput): string {
+  const { team, season, heading, note } = input;
+  const d = input.dash!;
+  const passRush =
+    innerPanel("passrush", ICON.helmet, "Pass Protection", "What the offense faced", input.passRush.offense.filter((r) => !/sacks/i.test(r.key)), input) +
+    innerPanel("passrush", ICON.rush, "Pass Rush", "What the defense sent", input.passRush.defense.filter((r) => !/sacks/i.test(r.key)), input);
+  const discipline = innerPanel("possession", ICON.warning, "Discipline", "Team totals", input.possession.filter((r) => r.key === "turnover-margin" || r.key === "penalty-yards"), input);
+  const pace = innerPanel("pace", ICON.layers, "Snaps & Attempts", "Ranked most to least, no better end", input.pace.filter((r) => !/-td$/.test(r.key)), input);
+  const mixes =
+    (input.balance ? mix("Play Mix (Offense)", "Box-score split: pass attempts and sacks vs. rushing attempts (scrambles and kneels count as runs).", input.balance) : "") +
+    (input.balanceFaced ? mix("Play Mix (Defense)", "Box-score split faced on defense: pass attempts and sacks vs. rushing attempts.", input.balanceFaced) : "");
+  // The secondary tables fold (closed, still in the HTML for search and
+  // screen readers); Season History stays open. Sacks print once, in the
+  // Passing / Pass Defense groups.
+  const more =
+    (passRush ? `<div class="sct-sp-grid">${passRush}</div>` : "") +
+    `<div class="sct-sp-grid">${discipline}${pace}</div>` +
+    (mixes ? `<div class="sct-sp-mixes">${mixes}</div>` : "");
+  const detail =
+    (more ? `<details class="sct-sp-more"><summary>More team statistics: pass protection, pass rush, snaps, discipline and play mix</summary>${more}</details>` : "") +
+    history(input);
+  const how =
+    `<details class="sct-sp-how"><summary>How these are measured</summary>` +
+    `<p>${e(`Every figure is ${season} regular season${d.throughWeek ? `, completed games through Week ${d.throughWeek}` : ""}, from the play-by-play (the same games as the Usage and Coaching tabs). Ranks are among all 32 teams on the value as printed: equal figures share a rank (T-). "NFL" is the average of the 32 teams' values. On every scale bar right is better; snaps, attempts, blitz rate and time to throw rank most to least and have no better end.`)}</p>` +
+    `<p>${e("EPA per play is expected points added per pass or run (two-point tries excluded); success rate is the share of plays with positive EPA; explosive plays are 15+ yards on a dropback or 10+ on a run. Red-zone TD % is touchdowns over drives that ran a play at the opponent's 20 or closer. Play Mix is the box-score split, so a scramble counts as a run there and as a pass in the Coaching tab's pass rate.")}</p>` +
+    `</details>`;
+  const head = premiumTabHead({
+    hook: "sct-sp-hero",
+    icon: "stats",
+    art: "stats",
+    heading,
+    phoneTitle: `${season} Team Stats`,
+    dek: `${team.fullName} ${season} offense and defense, ranked against all 32 teams${d.throughWeek ? `, through Week ${d.throughWeek}` : ""}${d.games ? ` (${d.games} games)` : ""}.`,
+  });
+  return (
+    `<div class="sct-sp is-dash">` +
+    (note ? premiumTabFrame(head, `<p class="sct-note sct-sp-note">${e(note)}</p>`) : head) +
+    // Snapshot and recent form share a row on wide screens (team.css).
+    `<div class="sct-sp-top">${snapshot(input)}${recentForm(input)}</div>` +
+    unitSection("offense", input) +
+    unitSection("defense", input) +
+    `<section class="sct-sp-detail">${band(ICON.lines, "Detailed Statistics", "Pass protection and pass rush, snaps and play mix, discipline, five seasons of history and how every figure is measured.")}${detail}${how}</section>` +
+    `</div>`
+  );
+}
+
+function renderStatsLegacy(input: StatsPremiumInput): string {
   const { team, season, heading, note } = input;
 
   const overview =

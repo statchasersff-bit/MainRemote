@@ -427,7 +427,7 @@ const LADDER: Array<{
   {
     key: "points",
     offenseLabel: "Points/G",
-    defenseLabel: "Points/G",
+    defenseLabel: "Points Allowed/G",
     offenseDescription: "Points scored per game",
     defenseDescription: "Points allowed per game",
     pick: (s) => s.pointsPerGame,
@@ -436,7 +436,7 @@ const LADDER: Array<{
   {
     key: "total-yards",
     offenseLabel: "Total Yds/G",
-    defenseLabel: "Total Yds/G",
+    defenseLabel: "Yds Allowed/G",
     offenseDescription: "Total net yards gained per game",
     defenseDescription: "Total net yards allowed per game",
     pick: (s) => s.yardsPerGame,
@@ -445,7 +445,7 @@ const LADDER: Array<{
   {
     key: "yards-per-play",
     offenseLabel: "Yds/Play",
-    defenseLabel: "Yds/Play",
+    defenseLabel: "Yds/Play Allowed",
     offenseDescription: "Net yards gained per offensive play",
     defenseDescription: "Net yards allowed per play",
     pick: (s) => s.yardsPerPlay,
@@ -454,7 +454,7 @@ const LADDER: Array<{
   {
     key: "pass-yards",
     offenseLabel: "Pass Yds/G",
-    defenseLabel: "Pass Yds/G",
+    defenseLabel: "Pass Yds Allowed/G",
     offenseDescription: "Net passing yards gained per game",
     defenseDescription: "Net passing yards allowed per game",
     pick: (s) => s.passYardsPerGame,
@@ -463,7 +463,7 @@ const LADDER: Array<{
   {
     key: "rush-yards",
     offenseLabel: "Rush Yds/G",
-    defenseLabel: "Rush Yds/G",
+    defenseLabel: "Rush Yds Allowed/G",
     offenseDescription: "Rushing yards gained per game",
     defenseDescription: "Rushing yards allowed per game",
     pick: (s) => s.rushYardsPerGame,
@@ -475,7 +475,7 @@ const LADDER: Array<{
   {
     key: "first-downs",
     offenseLabel: "1st Downs/G",
-    defenseLabel: "1st Downs/G",
+    defenseLabel: "1st Downs Allowed/G",
     offenseDescription: "First downs gained per game",
     defenseDescription: "First downs allowed per game",
     pick: (s) => s.firstDownsPerGame,
@@ -484,7 +484,7 @@ const LADDER: Array<{
   {
     key: "yards-per-attempt",
     offenseLabel: "Yds/Pass Att",
-    defenseLabel: "Yds/Pass Att",
+    defenseLabel: "Yds/Pass Att Allowed",
     offenseDescription: "Yards gained per pass attempt",
     defenseDescription: "Yards allowed per pass attempt",
     pick: (s) => s.yardsPerPassAttempt,
@@ -493,7 +493,7 @@ const LADDER: Array<{
   {
     key: "yards-per-carry",
     offenseLabel: "Yds/Carry",
-    defenseLabel: "Yds/Carry",
+    defenseLabel: "Yds/Carry Allowed",
     offenseDescription: "Yards gained per rushing attempt",
     defenseDescription: "Yards allowed per rushing attempt",
     pick: (s) => s.yardsPerRushAttempt,
@@ -502,7 +502,7 @@ const LADDER: Array<{
   {
     key: "passer-rating",
     offenseLabel: "Passer Rtg",
-    defenseLabel: "Passer Rtg",
+    defenseLabel: "Passer Rtg Allowed",
     offenseDescription: "Passer rating produced by this offense",
     defenseDescription: "Passer rating allowed to opposing quarterbacks",
     pick: (s) => s.passerRating,
@@ -511,7 +511,7 @@ const LADDER: Array<{
   {
     key: "third-down",
     offenseLabel: "3rd Down",
-    defenseLabel: "3rd Down",
+    defenseLabel: "Opp 3rd Down",
     offenseDescription: "Third downs converted",
     defenseDescription: "Third downs allowed to convert",
     pick: (s) => s.thirdDownPct,
@@ -703,10 +703,19 @@ function rankMetric(
   teams: TeamSides[],
   def: MetricDef,
 ): Map<string, Ranked> {
+  // Ranked on the PUBLISHED value (Team Pages Phase 3, 2026-11-19), the
+  // rule the Usage and Coaching files follow (scripts/team/team-rate-
+  // metrics.mjs): two clubs that print the same figure share a rank, two that
+  // print different figures never do. Ranking the raw value printed NE's
+  // Yds/Play 5.68 as "8th" here and "T-7th" in the efficiency ladder.
+  const published = (v: number): number => {
+    const m = def.format(v).replace(/[−–]/g, "-").match(/-?\d+(?:\.\d+)?/);
+    return m ? Number(m[0]) : v;
+  };
   const entries: Array<{ espnId: string; value: number }> = [];
   for (const team of teams) {
     const value = def.pick(team[def.split]);
-    if (value !== null) entries.push({ espnId: team.espnId, value });
+    if (value !== null) entries.push({ espnId: team.espnId, value: published(value) });
   }
 
   // A metric only a handful of teams report cannot be ranked out of 32 without
@@ -868,6 +877,17 @@ function leagueFromFile(season: number): LeagueStats | null {
   const league = doc ? buildFromFile(season, doc, version) : null;
   fileLeagues.set(season, { version, league });
   return league;
+}
+
+/**
+ * Every club's Stats rows for a season, from the file (Team Pages Phase 3,
+ * 2026-11-19): the population the tab's NFL averages and scale bars are
+ * taken over. Empty when the season has no file (the provider fallback has
+ * no league view the tab can average).
+ */
+export function leagueTeamStats(season: number): TeamStats[] {
+  const league = leagueFromFile(season);
+  return league ? [...league.byEspnId.values()] : [];
 }
 
 /** The season's league: the file when it has the sheet, the provider otherwise. */

@@ -25967,3 +25967,394 @@ ul.sct-faq-list li {
     min-width: 600px;
   }
 }
+
+/* =========================================================================
+   Team Stats dashboard (Team Pages Phase 3, 2026-11-19;
+   docs/TEAM-STATS-PHASE3-ASSESSMENT.md). One markup for every width:
+   A snapshot cards, B/C grouped offense and defense rows (value, league
+   scale with NFL-average tick, NFL average, rank), D recent form, E detail.
+   On every scale the right end is better; volume rows are neutral.
+   ========================================================================= */
+
+:is(.sct, #sct-table-armour) .sct-sp.is-dash .sct-sp-band {
+  margin-top: 18px;
+}
+
+/* A. Snapshot cards: offense row over defense row (3 across). */
+:is(.sct, #sct-table-armour) .sct-sp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--sp-border-light);
+  border-top: 3px solid var(--sp-navy-800);
+  border-radius: 10px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card[data-unit="defense"] {
+  border-top-color: var(--sp-gold);
+  background: var(--sp-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card-k {
+  color: var(--sp-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card-v {
+  font-family: var(--sc-font-display, "Barlow", sans-serif);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-card-avg {
+  color: var(--sp-muted);
+  font-size: 0.74rem;
+}
+
+/* The league scale: track, NFL-average tick, the club's mark. */
+:is(.sct, #sct-table-armour) .sct-sp-scale {
+  position: relative;
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sp-track);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-scale.is-empty {
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-scale-avg {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--sp-text);
+  opacity: 0.55;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-scale-mark {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--sp-neutral);
+  box-shadow: 0 0 0 1px var(--sp-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-scale-mark[data-tier="good"] { background: var(--sp-green); }
+:is(.sct, #sct-table-armour) .sct-sp-scale-mark[data-tier="poor"] { background: var(--sp-red); }
+:is(.sct, #sct-table-armour) .sct-sp-scale-mark[data-tier="mid"] { background: var(--sp-navy-800); }
+
+/* B/C. Units and groups. */
+:is(.sct, #sct-table-armour) .sct-sp-leaders {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin: 10px 0 0 !important;
+  padding: 8px 12px;
+  border: 1px solid var(--sp-border-light);
+  border-radius: 8px;
+  background: var(--sp-surface);
+  font-size: 0.82rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-leaders-k,
+:is(.sct, #sct-table-armour) .sct-sp-leader-kind {
+  color: var(--sp-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-leaders a {
+  display: inline-block;
+  padding: 4px 0;
+  margin: -4px 0;
+  color: var(--sp-navy-800);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-leaders a:hover { text-decoration: underline; }
+:is(.sct, #sct-table-armour) .sct-sp-leader-line { color: var(--sp-muted); }
+
+:is(.sct, #sct-table-armour) .sct-sp-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-group {
+  min-width: 0;
+  padding: 10px 14px 6px;
+  border: 1px solid var(--sp-border-light);
+  border-radius: 10px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-unit[data-unit="defense"] .sct-sp-group {
+  background: var(--sp-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-group-title {
+  margin: 0 0 4px !important;
+  padding: 0 0 6px !important;
+  border-bottom: 2px solid var(--sp-gold);
+  color: var(--sp-navy-900) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-group-title::after { display: none !important; }
+
+:is(.sct, #sct-table-armour) .sct-sp-drows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* label | value | scale | NFL avg | rank */
+:is(.sct, #sct-table-armour) .sct-sp-drow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) 62px minmax(56px, 1fr) 62px 52px;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-drow:last-child { border-bottom: 0; }
+
+:is(.sct, #sct-table-armour) .sct-sp-dlabel {
+  display: grid;
+  min-width: 0;
+  color: var(--tp-ink, var(--sp-text));
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-dsample {
+  color: var(--sp-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-dvalue {
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-davg {
+  color: var(--sp-muted);
+  font-size: 0.74rem;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-davg-k {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* D. Recent form. */
+:is(.sct, #sct-table-armour) .sct-sp-rtable {
+  width: 100%;
+  margin: 10px 0 0 !important;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-rtable :is(th, td) {
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--sp-border-light) !important;
+  background: none !important;
+  color: var(--tp-ink, var(--sp-text)) !important;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-rtable thead th {
+  color: var(--sp-muted) !important;
+  font-size: 0.7rem;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-rtable :is(th:first-child) { text-align: left; }
+:is(.sct, #sct-table-armour) .sct-sp-rtable tbody th { font-weight: 700 !important; }
+:is(.sct, #sct-table-armour) .sct-sp-rv[data-better="up"] { color: var(--sp-green); font-weight: 800; }
+:is(.sct, #sct-table-armour) .sct-sp-rv[data-better="down"] { color: var(--sp-red); font-weight: 800; }
+
+:is(.sct, #sct-table-armour) .sct-sp-fine {
+  margin: 6px 0 0 !important;
+  color: var(--sp-muted);
+  font-size: 0.74rem;
+}
+
+/* E. Detail + definitions. */
+:is(.sct, #sct-table-armour) .sct-sp-detail .sct-sp-grid,
+:is(.sct, #sct-table-armour) .sct-sp-detail .sct-sp-mixes {
+  margin-top: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-how {
+  margin: 12px 0 0;
+  border-top: 1px solid var(--sp-border-light);
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-how > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--sp-navy-800);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-how > p {
+  margin: 4px 0 8px !important;
+  color: var(--sp-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@container sp (max-width: 949px) {
+  :is(.sct, #sct-table-armour) .sct-sp-groups { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Phones: cards two across (offense beside defense), rows on two lines. */
+@container sp (max-width: 649px) {
+  :is(.sct, #sct-table-armour) .sct-sp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  :is(.sct, #sct-table-armour) .sct-sp-card { padding: 10px; }
+  :is(.sct, #sct-table-armour) .sct-sp-card-v { font-size: 1.4rem; }
+  :is(.sct, #sct-table-armour) .sct-sp-card-avg { font-size: 0.7rem; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="points"][data-unit="offense"] { order: 1; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="points"][data-unit="defense"] { order: 2; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="total-yards"][data-unit="offense"] { order: 3; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="total-yards"][data-unit="defense"] { order: 4; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="epaPlay"][data-unit="offense"] { order: 5; }
+  :is(.sct, #sct-table-armour) .sct-sp-card[data-pair="epaPlay"][data-unit="defense"] { order: 6; }
+  :is(.sct, #sct-table-armour) .sct-sp-group { padding: 8px 10px 4px; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow {
+    grid-template-columns: minmax(0, 1fr) auto 46px;
+    grid-template-areas: "label value rank" "scale scale avg";
+    gap: 4px 8px;
+  }
+  :is(.sct, #sct-table-armour) .sct-sp-dlabel { grid-area: label; }
+  :is(.sct, #sct-table-armour) .sct-sp-dvalue { grid-area: value; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow .sct-sp-rank { grid-area: rank; min-width: 0; padding: 2px 6px; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow .sct-sp-scale { grid-area: scale; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg { grid-area: avg; }
+  :is(.sct, #sct-table-armour) .sct-sp-rtable { font-size: 0.8rem; }
+  :is(.sct, #sct-table-armour) .sct-sp-rtable :is(th, td) { padding: 6px 6px !important; }
+}
+
+/* Phase 3 height pass: the secondary tables fold; phone rows stay on one line. */
+:is(.sct, #sct-table-armour) .sct-sp-more {
+  margin: 10px 0 0;
+  border: 1px solid var(--sp-border-light);
+  border-radius: 10px;
+  background: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-more > summary {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 14px;
+  color: var(--sp-navy-800);
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-sp-more[open] > summary { border-bottom: 1px solid var(--sp-border-light); }
+:is(.sct, #sct-table-armour) .sct-sp-more > :not(summary) { margin: 10px 12px 12px; }
+
+@container sp (max-width: 649px) {
+  :is(.sct, #sct-table-armour) .sct-sp-drow {
+    grid-template-columns: minmax(0, 1fr) auto 52px 40px;
+    grid-template-areas: "label value avg rank";
+    gap: 6px;
+    padding: 5px 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-sp-drow .sct-sp-scale { display: none; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg-k { display: none; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg::before { content: "avg "; font-size: 0.62rem; }
+}
+
+/* Phase 3 desktop density: snapshot (3 cards across) beside recent form;
+   tighter rows and bands. */
+:is(.sct, #sct-table-armour) .sct-sp-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 14px;
+}
+
+@container sp (min-width: 950px) {
+  :is(.sct, #sct-table-armour) .sct-sp-top { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+  :is(.sct, #sct-table-armour) .sct-sp-top .sct-sp-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  :is(.sct, #sct-table-armour) .sct-sp-top .sct-sp-card { padding: 10px 12px; }
+  :is(.sct, #sct-table-armour) .sct-sp-top .sct-sp-card-v { font-size: 1.5rem; }
+  :is(.sct, #sct-table-armour) .sct-sp-top .sct-sp-rtable :is(th, td) { padding: 6px 8px !important; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow { padding: 4px 0; }
+  :is(.sct, #sct-table-armour) .sct-sp.is-dash .sct-sp-band { margin-top: 14px; }
+}
+
+/* Tablets (650-949): groups two across with the compact one-line rows. */
+@container sp (min-width: 650px) and (max-width: 949px) {
+  :is(.sct, #sct-table-armour) .sct-sp-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :is(.sct, #sct-table-armour) .sct-sp-drow {
+    grid-template-columns: minmax(0, 1fr) auto 52px 44px;
+    grid-template-areas: "label value avg rank";
+    gap: 6px;
+    padding: 5px 0;
+  }
+  :is(.sct, #sct-table-armour) .sct-sp-dlabel { grid-area: label; }
+  :is(.sct, #sct-table-armour) .sct-sp-dvalue { grid-area: value; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow .sct-sp-rank { grid-area: rank; min-width: 0; padding: 2px 6px; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg { grid-area: avg; }
+  :is(.sct, #sct-table-armour) .sct-sp-drow .sct-sp-scale { display: none; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg-k { display: none; }
+  :is(.sct, #sct-table-armour) .sct-sp-davg::before { content: "avg "; font-size: 0.62rem; }
+}
