@@ -22,6 +22,7 @@ import { escapeHtml, searchKey } from "../render";
 import { headshotImg } from "../headshot-html";
 import { loadGameLogs, loadPlayers } from "../player/data";
 import { getEntryPoints } from "../player/scoring";
+import { hasParticipation } from "../player/ranks";
 import type { GameLogEntry } from "../player/types";
 import type { TeamPageData } from "./team-data";
 import type { NflTeam } from "./teams";
@@ -298,7 +299,15 @@ export interface Contributor {
   usage: UsagePlayer | null;
 }
 
-function totals(rows: GameLogEntry[], club: string): { games: number; t: Record<string, number> } {
+function totals(
+  rows: GameLogEntry[],
+  club: string,
+  // The player pages' own "played" rule (ranks.ts hasParticipation), for a
+  // contributor's G and PPR/G: the header FPPG and Game Log divide by those
+  // games, so a week he was active for without a snap is not a game here
+  // either (release gate 2026-11-19: Cody White 4.2 here vs 4.7 on his page).
+  position?: string,
+): { games: number; t: Record<string, number> } {
   const t: Record<string, number> = {};
   let games = 0;
   for (const row of rows) {
@@ -306,6 +315,7 @@ function totals(rows: GameLogEntry[], club: string): { games: number; t: Record<
     if (row.game_status === "bye" || row.game_status === "out") continue;
     const s = row.stats as unknown as Record<string, number | undefined>;
     if (!s || !(s.gp ?? s.off_snp ?? s.pts_ppr)) continue;
+    if (position && !hasParticipation(row.stats, position)) continue;
     games += 1;
     for (const [k, v] of Object.entries(s)) if (typeof v === "number") t[k] = (t[k] ?? 0) + v;
     // Fantasy points through the player pages' own scorer, so the overview's
@@ -353,7 +363,7 @@ export function contributors(data: TeamPageData, view: UsageView | null): Contri
     if (!["QB", "RB", "WR", "TE"].includes(player.position)) continue;
     const rows = logs[player.id];
     if (!rows?.length) continue;
-    const { games, t } = totals(rows, club);
+    const { games, t } = totals(rows, club, player.position);
     if (games === 0) continue;
     out.push({ player, games, ppr: t.fantasyPpr ?? 0, t, usage: usageById.get(player.id) ?? null });
   }

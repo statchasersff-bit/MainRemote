@@ -1,0 +1,89 @@
+/**
+ * Release gate (2026-11-19): one scoring model across pages, under the
+ * deployed setting (SC_SCORING_TOTALS=house) and the rollback (unset).
+ *
+ * A team hub's Key Offensive Contributors row and the player's own page must
+ * agree on games and fantasy points per game for the same season and format
+ * (the overview is PPR only). A traded player's team row is team-specific by
+ * design, so the check covers players whose season is with one club.
+ */
+import test, { after, before, describe } from "node:test";
+import assert from "node:assert/strict";
+import { startServer } from "./helpers/server.mjs";
+
+const TEAMS = ["det", "lv", "sea", "min", "kc"];
+
+async function body(origin, path) {
+  const res = await fetch(origin + path, { redirect: "follow", headers: { connection: "close" } });
+  return { status: res.status, text: await res.text() };
+}
+
+function contributors(html) {
+  const out = [];
+  const re = /href="https:\/\/statchasers\.com\/nfl\/players\/([^/]+)\/"[^>]*>[^<]+<\/a>(?:(?!<\/li>)[\s\S])*?sct-ovw-ppg"><b>([\d.]+)<\/b><span>PPR\/G<\/span><span class="sct-ovw-gp">(\d+) G/g;
+  for (const m of html.matchAll(re)) out.push({ slug: m[1], ppg: Number(m[2]), games: Number(m[3]) });
+  return out;
+}
+
+function hub(html) {
+  const ppg = /<b>([\d.]+)<\/b><abbr title="[^"]*">FPPG/.exec(html);
+  const gp = /<abbr title="Games played">GP<\/abbr><\/dt><dd>(\d+)<\/dd>/.exec(html);
+  return { ppg: ppg ? Number(ppg[1]) : null, games: gp ? Number(gp[1]) : null };
+}
+
+for (const policy of ["house", "provider"]) {
+  describe(`team overview = player page (SC_SCORING_TOTALS=${policy})`, () => {
+    let server;
+    before(async () => {
+      server = await startServer(policy === "house" ? { SC_SCORING_TOTALS: "house" } : { SC_SCORING_TOTALS: "" });
+    });
+    after(async () => server && (await server.stop()));
+
+    test("every contributor's G and PPR/G equal the player's own GP and FPPG", async () => {
+      let checked = 0;
+      for (const team of TEAMS) {
+        const page = await body(server.origin, `/team/${team}`);
+        assert.equal(page.status, 200, team);
+        const rows = contributors(page.text);
+        assert.ok(rows.length >= 4, `${team}: contributors found`);
+        for (const r of rows) {
+          const p = hub((await body(server.origin, `/player/${r.slug}`)).text);
+          if (p.games === null) continue;
+          assert.equal(r.games, p.games, `${team} ${r.slug}: games`);
+          assert.equal(r.ppg, p.ppg, `${team} ${r.slug}: PPR/G`);
+          checked++;
+        }
+      }
+      assert.ok(checked >= 20, `checked ${checked}`);
+    });
+  });
+}
+
+describe("scoring audit endpoint access", () => {
+  test("production with no key configured: 404", async () => {
+    const s = await startServer({ NODE_ENV: "production", SC_AUDIT_KEY: "" });
+    try {
+      const r = await body(s.origin, "/api/scoring/audit?player=kirk-cousins&season=2021");
+      assert.equal(r.status, 404);
+    } finally {
+      await s.stop();
+    }
+  });
+
+  test("with a key: 404 without it, 200 with it, and no data beyond the public pages", async () => {
+    const s = await startServer({ SC_AUDIT_KEY: "test-audit-key" });
+    try {
+      assert.equal((await body(s.origin, "/api/scoring/audit?player=kirk-cousins&season=2021")).status, 404);
+      const res = await fetch(`${s.origin}/api/scoring/audit?player=kirk-cousins&season=2021`, { headers: { "x-sc-audit-key": "test-audit-key", connection: "close" } });
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get("x-robots-tag"), "noindex");
+      const j = await res.json();
+      assert.deepEqual(Object.keys(j).sort(), ["displayed", "games", "player", "season", "totals"]);
+      assert.deepEqual(Object.keys(j.player).sort(), ["name", "position", "slug"]);
+      assert.equal(j.totals.ppr.provider, 295.34);
+      assert.equal(j.totals.ppr.house, 307.34);
+    } finally {
+      await s.stop();
+    }
+  });
+});
