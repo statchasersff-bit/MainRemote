@@ -15,6 +15,8 @@
 import { num, type Appearance, type Stats } from "./appearances";
 import type { NflTeam } from "../team/teams";
 import type { Player } from "../player/types";
+import { getEntryPoints } from "../player/scoring";
+import type { GameLogStats } from "../player/types";
 
 export interface GameLeader {
   player: Player;
@@ -130,10 +132,10 @@ export function gameLeaders(list: Appearance[]): GameLeaders | null {
     ),
     fantasy: best(
       list,
-      (s) => num(s, "pts_ppr"),
+      (s) => getEntryPoints(s as unknown as GameLogStats, "ppr"),
       (a) => ({
         // One decimal, and only when there is one: "18.4", but "18" not "18.0".
-        value: String(Math.round(num(a.stats, "pts_ppr") * 10) / 10),
+        value: String(Math.round(getEntryPoints(a.stats as unknown as GameLogStats, "ppr") * 10) / 10),
         unit: "PPR points",
         // Left for the caller to fill with the week's positional finish, which
         // needs the whole league and so is not knowable from this game alone.

@@ -18,6 +18,7 @@ import { getTeamByAbbreviation } from "../team/teams";
 import type { NflTeam } from "../team/teams";
 import type { GameLogEntry, GameLogStats, Player } from "../player/types";
 import type { Meeting } from "./matchup-data";
+import { getEntryPoints } from "../player/scoring";
 
 export type Stats = GameLogEntry["stats"];
 
@@ -117,7 +118,8 @@ function priorAverage(entries: GameLogEntry[], week: number): PriorAverage | nul
     }
     carries += num(entry.stats, "rush_att");
     targets += num(entry.stats, "rec_tgt");
-    points += num(entry.stats, "pts_ppr");
+    // The shared per-game total (SC_SCORING_TOTALS policy), as the player pages.
+    points += getEntryPoints(entry.stats as unknown as GameLogStats, "ppr");
   }
 
   return {
@@ -214,17 +216,9 @@ export function positionFinishes(
     // each format is ranked on its own, since a catch-heavy week can be the
     // WR4 in PPR and the WR9 in standard.
     const stats = entry.stats ?? {};
-    const ppr = num(stats, "pts_ppr");
-    const receptions = num(stats, "rec");
-    const loggedHalf = stats.pts_half_ppr;
-    const points =
-      format === "ppr"
-        ? ppr
-        : format === "half"
-          ? typeof loggedHalf === "number" && Number.isFinite(loggedHalf)
-            ? loggedHalf
-            : ppr - receptions * 0.5
-          : ppr - receptions;
+    // The shared per-game total in each format (player/scoring.ts), so a
+    // finish here ranks the same figure the player pages print.
+    const points = getEntryPoints(stats as unknown as GameLogStats, format === "ppr" ? "ppr" : format === "half" ? "half" : "standard");
     // A player who did not score is not ranked. Hundreds of them tie on zero
     // and printing "WR143" for a receiver who was inactive is noise dressed as
     // a finish.
@@ -266,17 +260,9 @@ function weekPool(season: number, week: number, format: "ppr" | "half" | "standa
     const position = entry ? playerById(id)?.position : null;
     if (!entry || !position) continue;
     const stats = entry.stats ?? {};
-    const ppr = num(stats, "pts_ppr");
-    const receptions = num(stats, "rec");
-    const loggedHalf = stats.pts_half_ppr;
-    const points =
-      format === "ppr"
-        ? ppr
-        : format === "half"
-          ? typeof loggedHalf === "number" && Number.isFinite(loggedHalf)
-            ? loggedHalf
-            : ppr - receptions * 0.5
-          : ppr - receptions;
+    // The shared per-game total in each format (player/scoring.ts), so a
+    // finish here ranks the same figure the player pages print.
+    const points = getEntryPoints(stats as unknown as GameLogStats, format === "ppr" ? "ppr" : format === "half" ? "half" : "standard");
     if (points <= 0) continue;
     const list = pool.get(position) ?? [];
     list.push({ id, points });

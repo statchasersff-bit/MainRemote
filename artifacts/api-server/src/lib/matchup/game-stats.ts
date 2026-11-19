@@ -36,6 +36,8 @@ import { gameLeaders, type GameLeaders } from "./leaders";
 import type { NflTeam } from "../team/teams";
 import type { Player } from "../player/types";
 import type { Meeting } from "./matchup-data";
+import { getEntryPoints } from "../player/scoring";
+import type { GameLogStats } from "../player/types";
 
 /** What every stat row carries, whatever the category. */
 interface RowBase {
@@ -299,18 +301,15 @@ function fantasyRows(list: Appearance[], season: number, week: number): FantasyR
   const standardFinishes = positionFinishes(season, week, "standard");
   return list
     .map((entry) => {
-      const ppr = num(entry.stats, "pts_ppr");
-      const receptions = num(entry.stats, "rec");
-      const logged = entry.stats.pts_half_ppr;
-      const half =
-        typeof logged === "number" && Number.isFinite(logged)
-          ? logged
-          : ppr - receptions * 0.5;
+      // The shared per-game totals (player/scoring.ts getEntryPoints), so the
+      // three formats here are the player pages' figures under the same
+      // SC_SCORING_TOTALS policy.
+      const st = entry.stats as unknown as GameLogStats;
       return {
         ...base(entry),
-        ppr: oneDecimal(ppr),
-        half: oneDecimal(half),
-        standard: oneDecimal(ppr - receptions),
+        ppr: oneDecimal(getEntryPoints(st, "ppr")),
+        half: oneDecimal(getEntryPoints(st, "half")),
+        standard: oneDecimal(getEntryPoints(st, "standard")),
         positionFinish: finishes.get(entry.player.id) ?? null,
         halfFinish: halfFinishes.get(entry.player.id) ?? null,
         standardFinish: standardFinishes.get(entry.player.id) ?? null,

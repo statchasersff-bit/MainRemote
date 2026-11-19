@@ -15,6 +15,8 @@ import { loadGameLogs, loadPlayers } from "../player/data";
 import type { GameLogEntry, Player } from "../player/types";
 import { nameKey, type GamePlayer } from "./game-players";
 import type { XfpRates } from "./fantasy-section";
+import { getEntryPoints } from "../player/scoring";
+import type { GameLogStats } from "../player/types";
 
 export interface LoggedGame {
   /** "W14". */
@@ -51,7 +53,7 @@ function logged(entry: GameLogEntry): LoggedGame {
   return {
     label: `W${entry.week}`,
     week: entry.week,
-    ppr: Math.round(n(s.pts_ppr) * 10) / 10,
+    ppr: Math.round(getEntryPoints(s as unknown as GameLogStats, "ppr") * 10) / 10,
     passInt: n(s.pass_int),
     targets: n(s.rec_tgt),
     carries: n(s.rush_att),

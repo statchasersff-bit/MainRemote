@@ -213,6 +213,9 @@ const PROVIDER_PLAY_WORDS: Array<[RegExp, string]> = [
  * unattributed difference says so.
  */
 export function explainResidual(stats: GameLogStats, residual: number): { label: string; detail: string } | null {
+  if ((stats.fgm ?? 0) > 0 && !kickerBands(stats)) {
+    return { label: "Source total", detail: "no field-goal distances were published for this game, so the source's own total is shown" };
+  }
   if (Math.abs(residual) < 0.05) return null;
   const words = new Set<string>();
   const keys = [...Object.keys(stats.px ?? {}), ...(stats.st_fum_rec ? ["st_fum_rec"] : []), ...(stats.idp_ff ? ["idp_ff"] : [])];
@@ -247,4 +250,15 @@ export function unattributedScoring(season: number): number {
     }
   }
   return n;
+}
+
+/** The provider's stored total for a format (Sleeper's record), or null when none is stored. */
+export function providerPoints(stats: GameLogStats, format: ScoringFormat): number | null {
+  const v = format === "ppr" ? stats.pts_ppr : format === "half" ? stats.pts_half_ppr : stats.pts_std;
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/** A kicker line the house rule cannot score (made field goals, no distances). */
+export function kickerUnscorable(stats: GameLogStats): boolean {
+  return (stats.fgm ?? 0) > 0 && !kickerBands(stats);
 }

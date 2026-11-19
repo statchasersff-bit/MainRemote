@@ -158,3 +158,42 @@ Yes, for every skill-player week 2009-2026: passing, rushing, receiving, fumbles
 | NFL Player Stats tables, FPA | No kicker rows | No kicker rows |
 
 The house kicker rule reproduces the provider's stored kicker totals in 8,537 of 8,562 kicker weeks with distance data (99.7%); of the other 25, 18 are provider-only plays or the fumble penalty and 7 are unexplained fractional differences (listed above).
+
+## Decision 1 (2026-11-19): house rule for displayed totals - verification
+
+mak chose the house rule for every displayed total, provider totals kept as source data. Verified with `SC_SCORING_TOTALS=house` over every stored game, 2009-2026:
+
+- Player-seasons: 10,391; changed: **3,018** (RB 956, WR 1003, QB 672, TE 363, K 24).
+- Pages' TypeScript scoring vs the build scripts' mirror: 0 disagreements.
+- PPR - Half = Half - Standard = 0.5 x receptions: 0 violations (every game except the 33 kicker weeks with no distances, which are excluded and labelled).
+
+| Season | Player-seasons | Changed | Largest change | Net change (all players) | By position |
+|---|---:|---:|---:|---:|---|
+| 2009 | 196 | 112 | 14 | +330 | K 1, QB 33, RB 30, TE 11, WR 37 |
+| 2010 | 253 | 144 | 11 | +358.5 | K 1, QB 38, RB 40, TE 15, WR 50 |
+| 2011 | 319 | 151 | 14 | +379 | K 1, QB 42, RB 47, TE 16, WR 45 |
+| 2012 | 421 | 196 | 15 | +453.1 | K 2, QB 43, RB 59, TE 24, WR 68 |
+| 2013 | 510 | 227 | 12 | +448.2 | K 1, QB 48, RB 75, TE 28, WR 75 |
+| 2014 | 608 | 268 | 13 | +454 | K 2, QB 55, RB 91, TE 32, WR 88 |
+| 2015 | 641 | 262 | 14 | +520 | K 1, QB 54, RB 90, TE 26, WR 91 |
+| 2016 | 635 | 254 | 14 | +452.4 | K 2, QB 53, RB 81, TE 28, WR 90 |
+| 2017 | 649 | 237 | 15 | +468.6 | K 3, QB 52, RB 81, TE 31, WR 70 |
+| 2018 | 664 | 235 | 12 | +495 | QB 52, RB 79, TE 27, WR 77 |
+| 2019 | 662 | 242 | 18 | +500.5 | K 1, QB 53, RB 83, TE 31, WR 74 |
+| 2020 | 702 | 258 | 11 | +517.8 | K 2, QB 56, RB 74, TE 31, WR 95 |
+| 2021 | 748 | 260 | 14 | +564.9 | K 3, QB 61, RB 74, TE 34, WR 88 |
+| 2022 | 694 | 105 | 7 | +106 | QB 31, RB 32, TE 14, WR 28 |
+| 2023 | 674 | 20 | 4 | -27 | QB 1, RB 6, TE 4, WR 9 |
+| 2024 | 675 | 23 | 9 | -37 | K 1, RB 8, TE 3, WR 11 |
+| 2025 | 686 | 12 | 6 | -4.6 | K 2, RB 5, TE 2, WR 3 |
+| 2026 | 654 | 12 | 2 | -13 | K 1, RB 1, TE 6, WR 4 |
+
+What follows the policy: the Game Log, its weekly breakdown, season and career totals, the header FPPG, positional finishes (the season snapshot is recomputed from the logs under `house`), weekly ranks, fantasy efficiency rates, the NFL Player Stats tables' FPTS column, and the matchup pages' fantasy figures. Stats-table grades keep the source's Standard FPTS by decision 2.
+
+Handled explicitly:
+
+- **33 kicker weeks without distances**: the source's own total is shown and the breakdown labels it "Source total: no field-goal distances were published for this game". Never presented as house scoring.
+- **19 unattributed player-weeks**: the house total (from the recorded stat line) is shown; the breakdown adds "Source (Sleeper) total: X (+d; not attributed to any recorded play)".
+- **Provider-only plays** (blocked kicks, forced fumbles, special-teams tackles and recoveries): excluded from house totals; named in the breakdown note.
+- **Original provider totals**: stored unchanged (`pts_ppr` / `pts_half_ppr` / `pts_std`); shown in the breakdown note whenever they differ; full per-game audit at `GET /api/scoring/audit?player=<slug>&season=<year>` (noindex JSON).
+

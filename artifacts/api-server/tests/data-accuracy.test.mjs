@@ -667,3 +667,46 @@ describe("an injury no report has listed is never 'played through' (Phase 1.1)",
     assert.ok(events.filter((e) => e.season < 2026).every((e) => e.pending === false));
   });
 });
+
+describe("Phase 1 final decisions (2026-11-19)", () => {
+  test("house policy: PPR - Half = Half - Standard = half a point per catch, every fixture game", () => {
+    process.env.SC_SCORING_TOTALS = "house";
+    try {
+      for (const y of ["2021", "2023", "2024", "2026"]) {
+        for (const games of Object.values(LOGS[y])) {
+          for (const g of games) {
+            if (scoring.kickerUnscorable(g.stats)) continue;
+            const p = scoring.getEntryPoints(g.stats, "ppr"), h = scoring.getEntryPoints(g.stats, "half"), s = scoring.getEntryPoints(g.stats, "standard");
+            const rec = g.stats.rec ?? 0;
+            assert.ok(Math.abs(p - h - rec / 2) < 0.011 && Math.abs(h - s - rec / 2) < 0.011, `${y} wk ${g.week}`);
+          }
+        }
+      }
+    } finally {
+      delete process.env.SC_SCORING_TOTALS;
+    }
+  });
+
+  test("house policy excludes provider-only plays: St. Brown 2023 sums to 330.9, the provider to 331.9", () => {
+    process.env.SC_SCORING_TOTALS = "house";
+    try {
+      const t = Math.round(season(2023, ASB).reduce((n, g) => n + scoring.getEntryPoints(g.stats, "ppr"), 0) * 10) / 10;
+      assert.equal(t, 330.9);
+    } finally {
+      delete process.env.SC_SCORING_TOTALS;
+    }
+    assert.equal(Math.round(season(2023, ASB).reduce((n, g) => n + scoring.providerPoints(g.stats, "ppr"), 0) * 10) / 10, 331.9);
+  });
+
+  test("a kicker week without distances is labelled as the source's total, never as house scoring", () => {
+    const st = { pts_ppr: 11, pts_std: 11, fgm: 3, fga: 3, xpm: 2, xpa: 2 };
+    assert.equal(scoring.kickerUnscorable(st), true);
+    assert.equal(scoring.explainResidual(st, 0).label, "Source total");
+  });
+
+  test("the kicker header names no scoring format", async () => {
+    const header = await importModule("lib/player/header");
+    assert.equal(header.formatTag({ player: { position: "K" }, format: "ppr" }), "");
+    assert.equal(header.formatTag({ player: { position: "WR" }, format: "ppr" }), "PPR");
+  });
+});

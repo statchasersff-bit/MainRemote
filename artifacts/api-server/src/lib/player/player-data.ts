@@ -47,6 +47,7 @@ import {
 import { getTeamSchedule, type ScheduleGame } from "../team/schedule";
 import { currentStatus, displayedStatus, type CurrentStatus } from "./current-status";
 import { lastIngestedMs } from "../dataset-meta";
+import { scoringTotalsSource } from "../scoring/house-rules";
 import { currentFpaSeason, getFpaTable } from "../fpa/fpa-data";
 import { seasonAvailability, type SeasonAvailability } from "./games-missed";
 import {
@@ -704,6 +705,38 @@ function productionSeasons(
 }
 
 /**
+ * The provider's season snapshot (player_production.json) recomputed from the
+ * game logs under the house rule, when SC_SCORING_TOTALS=house (Phase 1
+ * decision 1, 2026-11-19). The snapshot's totals and finishes are Sleeper's
+ * season scoring, so pre-2022 they carry the provider's -1 per fumble; under
+ * the house policy the season total, rate and both finishes come from the
+ * same per-game totals the game log and career table sum, ranked by
+ * positionalFinish() over every player at the position. Under the provider
+ * policy, unchanged. Counting stats are never touched.
+ */
+function houseProduction(
+  rows: ProductionSeason[],
+  player: Player,
+  format: ScoringFormat,
+  allPlayers: Player[],
+): ProductionSeason[] {
+  if (scoringTotalsSource() !== "house") return rows;
+  return rows.map((row) => {
+    const entries = (loadGameLogs(row.season)[player.id] ?? []).filter((e) => hasParticipation(e.stats, player.position));
+    if (!entries.length) return row;
+    const total = Math.round(entries.reduce((n, e) => n + getEntryPoints(e.stats, format), 0) * 100) / 100;
+    const finish = positionalFinish(player, row.season, format, allPlayers);
+    return {
+      ...row,
+      total,
+      ppg: Math.round((total / entries.length) * 100) / 100,
+      posFinishTotal: finish.total,
+      posFinishPpg: finish.ppg,
+    };
+  });
+}
+
+/**
  * How far either side of the player the peers rail reaches.
  *
  * Three, as the app this page was ported from used: with the player himself
@@ -1334,7 +1367,7 @@ export async function getPlayerPageData(
   const designation: RosterPlayer | null =
     rosterRow && shown ? { ...rosterRow, injuryStatus: shown } : null;
 
-  const production = productionSeasons(player.id, format);
+  const production = houseProduction(productionSeasons(player.id, format), player, format, allPlayers);
   const careerRows = careerStatRows(production, careerSeasons, season);
   const rowTotals = careerTotals(careerRows);
   const currentRow = careerRows.find((row) => row.season === season) ?? null;

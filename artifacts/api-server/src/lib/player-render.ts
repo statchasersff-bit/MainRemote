@@ -39,6 +39,7 @@
  */
 
 import { logger } from "./logger";
+import { scoringTotalsSource } from "./scoring/house-rules";
 import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
 import { assetUrl } from "./asset-origin";
@@ -70,7 +71,9 @@ import type {
 } from "./player/player-data";
 import {
   explainResidual,
+  kickerUnscorable,
   pointsBreakdown,
+  providerPoints,
   SCORING_LABELS,
   SCORING_SHORT,
   type ScoringFormat,
@@ -962,7 +965,7 @@ function playedWeeks(data: PlayerPageData): GameLogEntry[] {
  */
 function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): string {
   const parts = pointsBreakdown(entry.stats, format);
-  if (parts.length === 0) return "";
+  if (parts.length === 0 && !kickerUnscorable(entry.stats)) return "";
 
   const total = fpts(entry, format);
   const modeled = parts.reduce((sum, part) => sum + part.points, 0);
@@ -987,12 +990,24 @@ function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): str
     )
     .join("");
 
+  // Under the house policy the source's own total stays visible when it
+  // differs, with the reason (or "not attributed"), so the provider record is
+  // never hidden (Phase 1 decision 1).
+  let sourceNote = "";
+  const provider = providerPoints(entry.stats, format);
+  if (scoringTotalsSource() === "house" && provider !== null && Math.abs(provider - total) >= 0.05) {
+    const diff = Math.round((provider - total) * 100) / 100;
+    const r = explainResidual(entry.stats, diff);
+    const reason = r && r.label !== "Unattributed difference" ? r.detail : "not attributed to any recorded play";
+    sourceNote = `<p class="scp-breakdown-note">${escapeHtml(`Source (Sleeper) total: ${num(provider)} (${diff > 0 ? "+" : ""}${num(diff)}; ${reason}). StatChasers scoring is shown.`)}</p>`;
+  }
+
   return (
     `<div class="scp-breakdown">` +
     `<p class="scp-detail-label">${escapeHtml(
       `How the ${num(total)} points scored (${SCORING_LABELS[format]})`,
     )}</p>` +
-    `<ul class="scp-breakdown-list">${items}</ul></div>`
+    `<ul class="scp-breakdown-list">${items}</ul>${sourceNote}</div>`
   );
 }
 

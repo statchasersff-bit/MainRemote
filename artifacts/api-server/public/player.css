@@ -3851,6 +3851,15 @@ button.scp-search-opt {
   color: var(--tp-ink, var(--sc-navy));
 }
 
+/* The source's own total when the house rule differs from it (Phase 1
+   decision 1): kept visible, never added to the lines above. */
+.scp-breakdown-note {
+  margin: 6px 0 0;
+  color: #5b6472;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 /* ---- the week-number toggle ---- */
 
 .scp-expand {

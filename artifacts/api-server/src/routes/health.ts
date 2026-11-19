@@ -4,8 +4,9 @@ import { dataDirStatus } from "../lib/data-dir";
 import { fpaSnapshotState } from "../lib/fpa/fpa-data";
 import { playerRefreshStatus } from "../lib/player/live-refresh";
 import { dataHealth } from "../lib/data-coverage";
-import { getAvailableSeasons } from "../lib/player/data";
-import { unattributedScoring } from "../lib/player/scoring";
+import { getAvailableSeasons, getPlayerBySlug, loadGameLogs } from "../lib/player/data";
+import { explainResidual, getFantasyPoints, providerPoints, unattributedScoring } from "../lib/player/scoring";
+import { scoringTotalsSource } from "../lib/scoring/house-rules";
 
 const router: IRouter = Router();
 
@@ -117,6 +118,47 @@ router.get("/data/health", (_req, res) => {
         dailyRebuild: player.enabled && player.daily.enabled ? player.daily : null,
       });
   })();
+});
+
+/**
+ * GET /api/scoring/audit?player=<slug>&season=<year> - every game's stored
+ * provider (Sleeper) totals beside the house-rule totals, with the reason for
+ * any difference (Phase 1 decision 1: the original provider totals stay
+ * viewable). Diagnostic JSON: noindex, not linked from any page.
+ */
+router.get("/scoring/audit", (req, res) => {
+  const slug = String(req.query["player"] ?? "").trim();
+  const season = Number(req.query["season"]);
+  const player = slug ? getPlayerBySlug(slug) : null;
+  if (!player || !Number.isInteger(season)) {
+    res.status(400).set("X-Robots-Tag", "noindex").json({ error: "player=<slug>&season=<year> required" });
+    return;
+  }
+  const formats = ["ppr", "half", "standard"] as const;
+  const games = (loadGameLogs(season)[player.id] ?? []).map((g) => {
+    const s = g.stats;
+    const byFormat = Object.fromEntries(
+      formats.map((f) => {
+        const provider = providerPoints(s, f);
+        const house = getFantasyPoints(s, f);
+        const diff = provider === null ? null : Math.round((provider - house) * 100) / 100;
+        return [f, { provider, house, diff, reason: diff === null ? null : explainResidual(s, diff) }];
+      }),
+    );
+    return { week: g.week, team: g.team, opp: g.opp, ...byFormat } as Record<string, unknown>;
+  });
+  const sum = (f: (typeof formats)[number], k: "provider" | "house") =>
+    Math.round(games.reduce((n: number, g) => n + ((g[f] as { provider: number | null; house: number })[k] ?? 0), 0) * 100) / 100;
+  res
+    .set("Cache-Control", "no-store")
+    .set("X-Robots-Tag", "noindex")
+    .json({
+      player: { slug: player.slug, name: player.name, position: player.position },
+      season,
+      displayed: scoringTotalsSource(),
+      totals: Object.fromEntries(formats.map((f) => [f, { provider: sum(f, "provider"), house: sum(f, "house") }])),
+      games,
+    });
 });
 
 export default router;

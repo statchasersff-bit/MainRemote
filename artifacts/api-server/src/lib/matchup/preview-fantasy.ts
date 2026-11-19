@@ -46,6 +46,7 @@ import { allowPhrase, type Pos, type Preview, type PreviewSide } from "./preview
 import { starters } from "./preview-starters";
 import { loadGameLogs } from "../player/data";
 import { notExpected, PENDING, type Availability } from "./availability";
+import { getEntryPoints } from "../player/scoring";
 
 export const FORMATS: Array<{ id: ScoringFormat; label: string; short: string }> = [
   { id: "ppr", label: "PPR", short: "PPR" },
@@ -166,7 +167,9 @@ function lastGameOf(season: number, r: GameRosterPlayer, f: ScoringFormat): Last
   if (!g || !g.stats) return null;
   const s = g.stats as unknown as Record<string, number | null | undefined>;
   const n = (k: string) => Number(s[k] ?? 0) || 0;
-  const pts = s[FORMAT_PTS[f]];
+  // The shared per-game total for the format (player/scoring.ts).
+  const pts = getEntryPoints(g.stats, f === "std" ? "standard" : f);
+  void FORMAT_PTS;
   return {
     week,
     snaps: n("off_snp"),

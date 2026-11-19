@@ -38,6 +38,8 @@ import { notExpected, PENDING } from "./availability";
 import { allowPhrase, type Preview, type PreviewSide } from "./preview";
 import { gameKeys, type GameKey } from "./preview-keys";
 import { depthTop, starters } from "./preview-starters";
+import { getEntryPoints } from "../player/scoring";
+import type { GameLogStats } from "../player/types";
 
 type GameRosterPlayer = RosterPlayer & { availability?: Availability };
 
@@ -137,7 +139,7 @@ function linesOf(season: number, id: string): Line[] {
         recYds: n("rec_yd"),
         targets: n("rec_tgt"),
         tds: n("rush_td") + n("rec_td"),
-        ppr: n("pts_ppr"),
+        ppr: getEntryPoints(g.stats as unknown as GameLogStats, "ppr"),
         snaps: n("off_snp"),
         teamSnaps: n("tm_off_snp"),
       };
