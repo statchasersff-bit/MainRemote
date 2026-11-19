@@ -173,3 +173,69 @@ same or less height.
 32-club sweep: dashboard on every club, 33 grouped rows + 6 cards, NFL
 average on every row, recent form and linked leaders present, no NaN /
 undefined / em dash, no duplicate IDs, FAQPage equals the visible questions.
+
+## 10. Release readiness (2026-11-19, final)
+
+### Injury-status dependency
+
+The week-aware rule lives in `matchup/availability.ts` and
+`player/current-status.ts` (f0b8e67, scoring line) and, since a930333, in the
+release branch's `team/current-injuries.ts` (currentRoster,
+currentDepthCharts, injuryFreshness) applied once in `getTeamPageData()`.
+Phase 3 carries none of it: e05567b backed out the copy fd3e698 had made.
+The integration branch inherits it from the release. Regression tests there:
+a synthetic Sione Vaki case on injected game logs and practice reports
+(Questionable for Week 10 and played -> no Week 11 designation; missed ->
+Pending; IR stands; a fresh Week 11 report keeps Questionable) and a live DET
+check that the overview, its FAQ and his player page agree.
+
+Raw-status audit (before a930333): overview contributor badges
+(overview.ts injuryBadge), the archived outlook card pin
+(outlook-premium.ts), the News tab Injury Watch (news-premium.ts reading
+data.injuries: DET showed Vaki Questionable) and the Depth Chart tab (the
+depth feed's own week-less Q/D/O codes, depth-faq.ts sentences). a930333
+normalizes data.injuries and the depth charts at the source, so every one of
+these now reads the current status.
+
+### Metric checks (all 32 clubs, integration build)
+
+- Rank, direction, NFL average and scale position of all 33 grouped metrics
+  recomputed from the 32 printed values: 0 mismatches. Defense rows are
+  lower-is-better except Sacks/G and Takeaways/G; volume rows untinted.
+- Season totals were ranked across unequal games (Week 10: 20 clubs on 9
+  games, 12 on 10). Now shown, ranked and averaged per game; total printed
+  under the label.
+- No metric in the 2026 file is null; a missing value prints "-" with an empty
+  scale, an average needs 22+ clubs, red zone / recent form drop out when
+  absent.
+- Dek: "League data through Week N; {Team} games played: G."
+- Recent form = the club's last three games played (byes skipped: HOU 7, 9,
+  10; DEN 7, 8, 9). Arrow copy says it is descriptive, not a significance test.
+- Red zone: trips counted only passes and runs, missing drives that reached
+  the 18 and kicked. Rule now: a pass, run, field-goal try or spike snapped at
+  the 20 or closer; kneel-only drives excluded. Independent pbp recount: 32/32
+  clubs match both sides. Versus nflverse drive_inside20: 20 drives we count
+  (snap at exactly the 20), 9 it counts (8 kneel-only, 1 penalty-only).
+- 4th Down prints its denominator ("10 of 13"; fewest attempts 6).
+- Snapshots: usage, coaching and efficiency carry one snapshot
+  (2026, Week 10, 18376:11093, team-rate-metrics/1); refreshTeamMetrics.mjs
+  now copies all three, then renames all three. Rebuilding on the integration
+  branch reproduces the committed files byte for byte (build stamps aside);
+  the shared definitions and the Usage/Coaching builders are unchanged from
+  Phase 2.
+
+### Tests (clean detached worktrees, symlinked node_modules, one file at a time, env -u INGEST_SECRET)
+
+| Run | Tests | Pass | Fail |
+|---|---|---|---|
+| Phase 2 head 881d857 | 1,635 | 1,620 | 14 |
+| Phase 3 7c074ab | 1,639 | 1,624 | 14 |
+| Release 6d86178 | 1,690 | 1,675 | 14 |
+| Integration 89d4dbe | 1,709 | 1,694 | 14 |
+
+Both pairs: the same 14 failures by file, test name and failure reason
+(matchup Wild Card title; player-outlook-title; player x3 data drift;
+schedule x3 ESPN sweep; table-armour x2; team carson-beck script;
+team-coaching Maye QB rank; team-depth-chart PIT links and MIA PK slot).
+Note: suites must not run in parallel; fpa, fpa-refresh, freshness, ingest
+and ingest-routes write the shared database and fail when two runs overlap.
