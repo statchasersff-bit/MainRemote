@@ -223,7 +223,7 @@ function kickoffMs(g: SlateGame): number {
 }
 
 /**
- * The alerting verdict for GET /api/data/health (Phase 1.1): unhealthy only
+ * The alerting verdict for the player checks in GET /api/data/health (routes/health.ts, Phase 1.1): unhealthy only
  * for a condition a person should act on, so an uptime monitor can page on a
  * 503 the way it does for /api/ingest/health. A final game is "missing" only
  * once MISSING_GAME_GRACE_H has passed since kickoff, so Monday night's game

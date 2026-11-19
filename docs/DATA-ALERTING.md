@@ -2,11 +2,11 @@
 
 ## What exists
 
-The project sends no notifications itself. Its established pattern (docs/INGEST-FIX-CHECKLIST.md, "Monitoring") is a health endpoint that answers **503** when something needs a person, so any uptime checker (Replit's, UptimeRobot, a curl in cron) turns it into a notification. `/api/status` always answers 200 and is for diagnosis. Whether a checker is actually configured against `/api/ingest/health` is not visible from the repository.
+The project sends no notifications itself. Its established pattern (docs/INGEST-FIX-CHECKLIST.md, "Monitoring") is a health endpoint that answers **503** when something needs a person, so an uptime checker turns it into a notification. Two exist: `/api/ingest/health` (the news wire) and `/api/data/health` (src/routes/health.ts: database, data directory, FPA freshness, the daily rebuild's steps). `/api/status` always answers 200 and is for diagnosis. Whether a checker is configured against either endpoint is not visible from the repository.
 
-## Added
+## Added to the existing `GET /api/data/health`
 
-`GET /api/data/health` - 200 or 503 with `reasons`, for the current season:
+The player-data checks below now add `reasons` (and a `playerData` block) to the existing endpoint, so whatever already watches it pages on them too; no new endpoint, no new service:
 
 | Condition | Alerts when |
 |---|---|
@@ -20,7 +20,7 @@ A checker notifies on the 200 -> 503 transition and again on recovery, so a cond
 
 ## Needed (not done here)
 
-Point the existing uptime checker at `https://<deployment>/api/data/health` with the same settings as `/api/ingest/health`. If none is configured, that is the missing dependency: choosing and configuring a checker is an account decision, not a code change.
+Confirm an uptime checker is actually pointed at `https://<deployment>/api/data/health`. If none is, that is the missing dependency: choosing and configuring one is an account decision, not a code change. Note the daily rebuild chain is off (since 2026-10-04), so its step checks are inert until it is re-enabled; the player-data checks above work either way because they read the files and data/dataset-meta.json.
 
 ## Never replace good data
 

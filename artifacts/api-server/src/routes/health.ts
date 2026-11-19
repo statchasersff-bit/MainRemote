@@ -3,6 +3,9 @@ import { HealthCheckResponse } from "@workspace/api-zod";
 import { dataDirStatus } from "../lib/data-dir";
 import { fpaSnapshotState } from "../lib/fpa/fpa-data";
 import { playerRefreshStatus } from "../lib/player/live-refresh";
+import { dataHealth } from "../lib/data-coverage";
+import { getAvailableSeasons } from "../lib/player/data";
+import { unattributedScoring } from "../lib/player/scoring";
 
 const router: IRouter = Router();
 
@@ -42,7 +45,8 @@ function inSeason(nowMs: number): boolean {
  * nothing else alerts on: the database answers, the shipped data directory is
  * there, the FPA table has been refreshed this week in season, and, where the
  * after-game refresh runs (production), the daily rebuild finished recently
- * with every step ok. /api/status is the human-readable detail behind it.
+ * with every step ok, and (Phase 1.1) the player data checks in
+ * data-coverage.ts dataHealth(). /api/status is the human-readable detail.
  */
 router.get("/data/health", (_req, res) => {
   void (async () => {
@@ -85,6 +89,23 @@ router.get("/data/health", (_req, res) => {
       reasons.push(`game-log refresh failing: ${player.lastError.slice(0, 200)}`);
     }
 
+    // Player-data completeness and consistency (Phase 1.1, data-coverage.ts):
+    // overdue missing final games, page vs stats-table mismatches, stale or
+    // failed ingestion per data/dataset-meta.json, and current-season scores
+    // the rules cannot account for. Its own try: a failure here is a reason,
+    // not a 500.
+    let players: { season: number; reasons: string[] } | null = null;
+    try {
+      const season = getAvailableSeasons()[0];
+      if (season) {
+        const verdict = dataHealth(season, nowMs, { unattributedScoring: unattributedScoring(season) });
+        players = { season, reasons: verdict.reasons };
+        reasons.push(...verdict.reasons);
+      }
+    } catch {
+      reasons.push("player data checks failed to run");
+    }
+
     res
       .status(reasons.length ? 503 : 200)
       .set("Cache-Control", "no-store")
@@ -92,6 +113,7 @@ router.get("/data/health", (_req, res) => {
         ok: reasons.length === 0,
         reasons,
         fpaSnapshotAt,
+        playerData: players,
         dailyRebuild: player.enabled && player.daily.enabled ? player.daily : null,
       });
   })();
