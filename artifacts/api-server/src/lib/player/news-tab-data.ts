@@ -306,6 +306,8 @@ export interface NewsContext {
 
 const WORD = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 const count = (n: number, noun: string): string => `${n < 10 ? WORD[n] : n} ${noun}${n === 1 ? "" : "s"}`;
+/** "1 yard", "12 yards": digits kept, the noun agreeing ("ran 1 time for 1 yards", audit 2026-11-20). */
+const digits = (n: number, noun: string, plural = `${noun}s`): string => `${n} ${n === 1 ? noun : plural}`;
 const one = (v: number): string => v.toFixed(1).replace(/^-/, "−");
 
 /** Top finish for the position: QB/TE 12, RB/WR 24 (spec 4.5). */
@@ -446,16 +448,16 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
 
   let line: string;
   if (ctx.pos === "QB") {
-    line = `${ctx.last} completed ${num(s.pass_cmp)} of ${num(s.pass_att)} passes for ${num(s.pass_yd)} yards`;
+    line = `${ctx.last} completed ${num(s.pass_cmp)} of ${num(s.pass_att)} passes for ${digits(num(s.pass_yd), "yard")}`;
     const td = num(s.pass_td), int = num(s.pass_int);
     line += td || int ? ` with ${[td ? count(td, "touchdown") : "", int ? count(int, "interception") : ""].filter(Boolean).join(" and ")}` : "";
     if (num(s.rush_td)) line += `, and added ${num(s.rush_td) === 1 ? "a rushing score" : `${count(num(s.rush_td), "rushing score")}`}`;
-    else if (num(s.rush_yd) >= 20) line += `, and ran for ${num(s.rush_yd)} yards`;
+    else if (num(s.rush_yd) >= 20) line += `, and ran for ${digits(num(s.rush_yd), "yard")}`;
   } else if (ctx.pos === "RB") {
-    line = `${ctx.last} ran ${num(s.rush_att)} times for ${num(s.rush_yd)} yards${num(s.rush_td) ? ` and ${count(num(s.rush_td), "touchdown")}` : ""}`;
-    if (num(s.rec)) line += `, with ${num(s.rec)} catches for ${num(s.rec_yd)} yards`;
+    line = `${ctx.last} ran ${digits(num(s.rush_att), "time")} for ${digits(num(s.rush_yd), "yard")}${num(s.rush_td) ? ` and ${count(num(s.rush_td), "touchdown")}` : ""}`;
+    if (num(s.rec)) line += `, with ${digits(num(s.rec), "catch", "catches")} for ${digits(num(s.rec_yd), "yard")}`;
   } else {
-    line = `${ctx.last} caught ${num(s.rec)} of ${num(s.rec_tgt)} targets for ${num(s.rec_yd)} yards${num(s.rec_td) ? ` and ${count(num(s.rec_td), "touchdown")}` : ""}`;
+    line = `${ctx.last} caught ${num(s.rec)} of ${num(s.rec_tgt)} targets for ${digits(num(s.rec_yd), "yard")}${num(s.rec_td) ? ` and ${count(num(s.rec_td), "touchdown")}` : ""}`;
   }
   line += ` in the ${score}${word} ${where(g)}.`;
 
