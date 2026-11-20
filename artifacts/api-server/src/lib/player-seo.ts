@@ -429,6 +429,11 @@ const POSITION_TITLES: Record<string, string> = {
 export function dataModified(data: PlayerPageData): string | null {
   const last = lastGame(data);
   if (!last) return null;
+  // The schedule is this season's. A player whose newest game is from an
+  // earlier season has no date in it, and looking his week up there dated
+  // 2025's Week 18 by 2026's: 2027-01-03, a dateModified in the future
+  // (44 players, 15 of them future, player-page audit 2026-11-20).
+  if (data.season !== data.leagueSeason) return null;
   const game = data.schedule.find((g) => g.week === last.week && g.kickoffMs !== null);
   if (!game || game.kickoffMs === null) return null;
   const parts = new Intl.DateTimeFormat("en-CA", {
