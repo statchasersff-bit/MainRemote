@@ -21688,3 +21688,69 @@ button.scp-search-opt {
     grid-column: span 3;
   }
 }
+
+@media (max-width: 560px) {
+  /* Overview on phones (mak, 2026-11-20): Season Stats and Weekly
+     Performance keep their cards, icons, gold rule, grid and chart; only the
+     air comes out. Title 14px under the card top, the rule 6px under the
+     title, content 10px under the rule, tighter card and panel padding. */
+  .scp.scp.scp.scp.scp .scp-ovp-sec:is(:has(#scp-ox-season-h), :has(#scp-ox-weekly-h)) {
+    padding: 0 12px 10px !important;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ovp-sec:is(:has(#scp-ox-season-h), :has(#scp-ox-weekly-h)) > .scp-ovp-bar {
+    margin: 14px 2px 10px !important;
+    padding: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ovp-sec:is(:has(#scp-ox-season-h), :has(#scp-ox-weekly-h)) > .scp-ovp-bar::after {
+    margin-top: 6px !important;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ovp-sec:is(:has(#scp-ox-season-h), :has(#scp-ox-weekly-h)) > .scp-ovp-body {
+    padding: 0 !important;
+  }
+
+  /* Season grid: 4px less per cell, numbers unchanged. */
+  .scp.scp.scp.scp.scp .scp-ox .scp-ox-stat {
+    padding: 7px 4px 6px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ox-stat dd {
+    margin-top: 2px;
+  }
+
+  /* Weekly: caption sits right under the rule; the chart keeps its axis
+     room; "Upcoming" starts 10px under the week numbers. */
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow {
+    gap: 10px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-chart {
+    padding: 0;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-cap {
+    margin-bottom: 8px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-next {
+    padding: 10px 0 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-h3 {
+    margin-bottom: 6px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-g {
+    min-height: 36px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ox .scp-ow-note {
+    margin-top: 6px;
+  }
+
+  .scp.scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-weekly-h) a.scp-ox-more {
+    margin-top: 8px;
+  }
+}
