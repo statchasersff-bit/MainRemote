@@ -2034,7 +2034,49 @@ $GLOBALS['wpdb'] = new class {
 		}
 		return 1 === preg_match( '/^' . $regex . '$/s', $name );
 	}
+	/** The LIKE / NOT LIKE clauses on option_name in a query. */
+	private function clauses( $q ) {
+		preg_match_all( "/option_name (NOT )?LIKE '((?:[^'\\\\]|\\\\.)*)'/", $q, $m, PREG_SET_ORDER );
+		$in  = array();
+		$out = array();
+		foreach ( $m as $clause ) {
+			if ( '' === $clause[1] ) {
+				$in[] = $clause[2];
+			} else {
+				$out[] = $clause[2];
+			}
+		}
+		return array( $in, $out );
+	}
+	private function matches( $name, $in, $out ) {
+		$hit = false;
+		foreach ( $in as $p ) { $hit = $hit || $this->like( $p, $name ); }
+		foreach ( $out as $p ) { $hit = $hit && ! $this->like( $p, $name ); }
+		return $hit;
+	}
+	/** 1.10.60's batched sweep: SELECT option_name ... LIMIT, and the expiry rows with no value. */
+	public function get_col( $q ) {
+		list( $in, $out ) = $this->clauses( $q );
+		$names = array();
+		foreach ( $this->rows as $name ) {
+			if ( ! $this->matches( $name, $in, $out ) ) {
+				continue;
+			}
+			if ( false !== strpos( $q, 'LEFT JOIN' ) && in_array( '_transient_' . substr( $name, strlen( '_transient_timeout_' ) ), $this->rows, true ) ) {
+				continue;
+			}
+			$names[] = $name;
+		}
+		return array_slice( $names, 0, 50 );
+	}
 	public function query( $q ) {
+		// 1.10.60: DELETE ... WHERE option_name IN ('a','b',...).
+		if ( preg_match( "/option_name IN \\((.*)\\)/s", $q, $list ) ) {
+			preg_match_all( "/'((?:[^'\\\\]|\\\\.)*)'/", $list[1], $names );
+			$before     = count( $this->rows );
+			$this->rows = array_values( array_diff( $this->rows, $names[1] ) );
+			return $before - count( $this->rows );
+		}
 		// Every sweep is (LIKE OR LIKE ...) AND NOT LIKE AND NOT LIKE ...
 		preg_match_all( "/option_name (NOT )?LIKE '((?:[^'\\\\]|\\\\.)*)'/", $q, $m, PREG_SET_ORDER );
 		$in  = array();

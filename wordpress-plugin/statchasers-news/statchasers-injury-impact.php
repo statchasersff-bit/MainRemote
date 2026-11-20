@@ -98,7 +98,7 @@ function statchasers_scin_fetch( string $page ): ?array {
 	$cache_key  = 'sc_scin_ssr_' . $key;
 	$backup_key = 'sc_scin_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return '' === $cached['html'] ? null : $cached;
 	}
@@ -118,7 +118,7 @@ function statchasers_scin_fetch( string $page ): ?array {
 	// error. Cached as a failure for a minute so a deployment mid-setup costs
 	// one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;

@@ -179,7 +179,7 @@ function statchasers_fpa_fetch( array $args ): ?array {
 	$cache_key  = 'sc_fpa_ssr_' . $key;
 	$backup_key = 'sc_fpa_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
 	}
@@ -207,7 +207,7 @@ function statchasers_fpa_fetch( array $args ): ?array {
 	// a transient error, and retrying every page view will not fix it. Cached as
 	// a failure so a deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			// Held under the fresh key for a minute too: otherwise every view,
 			// and every caller within a view, retries the origin and waits out

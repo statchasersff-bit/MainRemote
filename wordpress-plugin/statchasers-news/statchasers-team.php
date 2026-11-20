@@ -119,7 +119,7 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	$cache_key  = 'sc_team_ssr_' . $key;
 	$backup_key = 'sc_team_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
 	}
@@ -148,7 +148,7 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	// still cached as a failure below, so a mistyped slug costs one request per
 	// TTL rather than one per page view.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			// Held under the fresh key for a minute too: otherwise every view,
 			// and every caller within a view, retries the origin and waits out
@@ -193,7 +193,7 @@ function statchasers_team_index_fetch(): ?array {
 	$cache_key  = 'sc_team_idx_' . $key;
 	$backup_key = 'sc_team_idx_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
 	}
@@ -210,7 +210,7 @@ function statchasers_team_index_fetch(): ?array {
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			// Held under the fresh key for a minute too: otherwise every view,
 			// and every caller within a view, retries the origin and waits out

@@ -81,7 +81,7 @@ function statchasers_rb_handcuffs_fetch(): ?array {
 	$cache_key  = 'sc_rbh_ssr_' . $key;
 	$backup_key = 'sc_rbh_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		$memo = '' === $cached['html'] ? false : $cached;
 		return $memo ?: null;
@@ -102,7 +102,7 @@ function statchasers_rb_handcuffs_fetch(): ?array {
 	// error. Cached as a failure for a minute so a deployment mid-setup costs
 	// one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			// Held under the fresh key for a minute, so the next views do not
 			// each retry the origin and wait out the timeout.

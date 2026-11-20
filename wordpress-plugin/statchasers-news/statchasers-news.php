@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule, the NFL depth charts, the injury risk analysis and the injury database. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.59
+ * Version:           1.10.60
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.59';
+const STATCHASERS_NEWS_VERSION       = '1.10.60';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -254,7 +254,7 @@ function statchasers_news_args( array $atts ): array {
  * @return array{html:string,version:string}|null
  */
 function statchasers_news_fetch_failed( string $cache_key, string $backup_key ): ?array {
-	$backup = get_transient( $backup_key );
+	$backup = statchasers_cache_get( $backup_key );
 	if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 		set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 		return $backup;
@@ -279,7 +279,7 @@ function statchasers_news_fetch( array $args ): ?array {
 	$cache_key  = 'sc_news_ssr_' . $key;
 	$backup_key = 'sc_news_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		// An empty render is a failure remembered for a minute (below).
 		return '' === $cached['html'] ? null : $cached;
@@ -876,21 +876,179 @@ add_filter( 'wp_resource_hints', 'statchasers_news_resource_hints', 10, 2 );
  * day: the backup copies survive a failed refresh for that long, and a
  * refresh that keeps failing keeps serving them. The 1.10.26 upgrade left the
  * player directory on its pre-upgrade render, Sleeper crests and all, with no
- * way to clear it short of WP-CLI. So the first request after an upgrade
- * runs the same sweep `wp eval 'statchasers_news_flush();'` does, and records
- * the version it swept for so it runs once.
+ * way to clear it short of WP-CLI. So after an upgrade the plugin runs the same
+ * sweep `wp eval 'statchasers_news_flush();'` does.
+ *
+ * 1.10.60 (docs/WP-PAGE-CACHE-ORPHANS.md): until then EVERY request between
+ * the upload and the end of the first sweep ran the whole sweep - check the
+ * version, flush, then record it - and those concurrent DELETEs over a 3.8 GB
+ * wp_options timed out on each other's locks (9 at once on 2026-11-20). Now:
+ *
+ *   - One request claims the sweep, atomically (statchasers_news_claim_upgrade):
+ *     every other request sees the claim and carries on without waiting.
+ *   - The claim is a lease. A sweep that dies with its request is taken over
+ *     when the lease runs out, so nothing stays locked.
+ *   - Each claim works for at most STATCHASERS_UPGRADE_BUDGET seconds, after
+ *     the page has been built, in batches (statchasers_flush_transients), and
+ *     only on rows that existed when the upgrade was first claimed
+ *     (option_id ceiling): pages cached under the new version are never swept.
+ *     A sweep that needs more time continues on a later request, at most one
+ *     every STATCHASERS_UPGRADE_PACE seconds.
+ *   - It ends when the sweep completes, or after STATCHASERS_UPGRADE_MAX_RUNS
+ *     claims or STATCHASERS_UPGRADE_MAX_AGE seconds, whichever comes first;
+ *     anything left then expires on its own. So a version change can never
+ *     trigger sweeps indefinitely.
+ *
+ * Deploys that run `wp eval 'statchasers_news_run_upgrade_now();'` finish the
+ * sweep there, and no visitor request does any of it.
  */
+const STATCHASERS_NEWS_OPTION_UPGRADE = 'statchasers_news_upgrade_claim';
+const STATCHASERS_UPGRADE_LEASE       = 120;
+const STATCHASERS_UPGRADE_PACE        = 30;
+const STATCHASERS_UPGRADE_BUDGET      = 0.75;
+const STATCHASERS_UPGRADE_MAX_RUNS    = 400;
+const STATCHASERS_UPGRADE_MAX_AGE     = 6 * HOUR_IN_SECONDS;
+
 add_action(
 	'init',
 	static function (): void {
 		if ( STATCHASERS_NEWS_VERSION === (string) get_option( STATCHASERS_NEWS_OPTION_INSTALLED, '' ) ) {
 			return;
 		}
-		statchasers_news_flush();
-		update_option( STATCHASERS_NEWS_OPTION_INSTALLED, STATCHASERS_NEWS_VERSION, false );
+		$claim = statchasers_news_claim_upgrade( time() );
+		if ( null === $claim ) {
+			return;
+		}
+		// After the page has been sent, so the visitor who drew the claim is not
+		// kept waiting for it; the work itself is capped at the budget.
+		add_action(
+			'shutdown',
+			static function () use ( $claim ): void {
+				statchasers_news_run_upgrade( $claim, microtime( true ) + STATCHASERS_UPGRADE_BUDGET );
+			},
+			// After wp_ob_end_flush_all (priority 1) has sent the page.
+			1000
+		);
 	},
 	20
 );
+
+/**
+ * Claim the upgrade sweep for this request, or null when it is not ours.
+ *
+ * The claim is one row in wp_options, written with a compare-and-set, so two
+ * requests can never both win: the first claim is an INSERT IGNORE, every
+ * later one an UPDATE ... WHERE option_value = <the value we read>. The row
+ * holds the version, when the lease runs out, how many claims there have been,
+ * when the first was made, and the option_id ceiling of the sweep.
+ *
+ * @param int $now Unix time.
+ * @return array|null The claim, when this request holds it.
+ */
+function statchasers_news_claim_upgrade( int $now ): ?array {
+	global $wpdb;
+	$name = STATCHASERS_NEWS_OPTION_UPGRADE;
+	$raw  = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) );
+
+	if ( null === $raw ) {
+		$claim = array(
+			'v'     => STATCHASERS_NEWS_VERSION,
+			'until' => $now + STATCHASERS_UPGRADE_LEASE,
+			'runs'  => 1,
+			'since' => $now,
+			'mark'  => (int) $wpdb->get_var( "SELECT MAX(option_id) FROM {$wpdb->options}" ),
+		);
+		$won = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'off')",
+				$name,
+				wp_json_encode( $claim )
+			)
+		);
+		return 1 === (int) $won ? $claim : null;
+	}
+
+	$held = json_decode( (string) $raw, true );
+	$same = is_array( $held ) && STATCHASERS_NEWS_VERSION === ( $held['v'] ?? '' );
+	if ( $same && (int) ( $held['until'] ?? 0 ) > $now ) {
+		return null; // Somebody holds it, or the sweep is pacing itself.
+	}
+	if ( $same && ( (int) $held['runs'] >= STATCHASERS_UPGRADE_MAX_RUNS || $now - (int) $held['since'] >= STATCHASERS_UPGRADE_MAX_AGE ) ) {
+		// Enough: what is left expires on its own.
+		statchasers_news_finish_upgrade();
+		return null;
+	}
+	$claim = $same
+		? array( 'until' => $now + STATCHASERS_UPGRADE_LEASE, 'runs' => (int) $held['runs'] + 1 ) + $held
+		: array(
+			// A claim left by an older version's sweep: this version starts afresh.
+			'v'     => STATCHASERS_NEWS_VERSION,
+			'until' => $now + STATCHASERS_UPGRADE_LEASE,
+			'runs'  => 1,
+			'since' => $now,
+			'mark'  => (int) $wpdb->get_var( "SELECT MAX(option_id) FROM {$wpdb->options}" ),
+		);
+	$won = $wpdb->query(
+		$wpdb->prepare(
+			"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
+			wp_json_encode( $claim ),
+			$name,
+			$raw
+		)
+	);
+	return 1 === (int) $won ? $claim : null;
+}
+
+/**
+ * Run (part of) the sweep under a claim this request holds.
+ *
+ * @param array $claim    From statchasers_news_claim_upgrade().
+ * @param float $deadline microtime() to stop by; 0 for no limit (WP-CLI).
+ * @return bool True when the sweep is complete.
+ */
+function statchasers_news_run_upgrade( array $claim, float $deadline ): bool {
+	global $wpdb;
+	statchasers_flush_scope( array( 'max_id' => (int) $claim['mark'], 'deadline' => $deadline, 'complete' => true ) );
+	statchasers_news_flush();
+	$scope = statchasers_flush_scope();
+	statchasers_flush_scope( false );
+
+	if ( ! empty( $scope['complete'] ) ) {
+		statchasers_news_finish_upgrade();
+		return true;
+	}
+	// More to do: hand the lease back early, paced, for a later request.
+	$next = array( 'until' => time() + STATCHASERS_UPGRADE_PACE ) + $claim;
+	$wpdb->query(
+		$wpdb->prepare(
+			"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
+			wp_json_encode( $next ),
+			STATCHASERS_NEWS_OPTION_UPGRADE,
+			wp_json_encode( $claim )
+		)
+	);
+	return false;
+}
+
+/** Record this version as swept and drop the claim. */
+function statchasers_news_finish_upgrade(): void {
+	update_option( STATCHASERS_NEWS_OPTION_INSTALLED, STATCHASERS_NEWS_VERSION, false );
+	delete_option( STATCHASERS_NEWS_OPTION_UPGRADE );
+}
+
+/**
+ * The whole sweep, now, for WP-CLI at deploy time:
+ * `wp eval 'statchasers_news_run_upgrade_now();'`. Same claim, no time
+ * budget, still in batches. Returns true when the sweep finished (or there
+ * was nothing to do), false when another process holds the claim.
+ */
+function statchasers_news_run_upgrade_now(): bool {
+	if ( STATCHASERS_NEWS_VERSION === (string) get_option( STATCHASERS_NEWS_OPTION_INSTALLED, '' ) ) {
+		return true;
+	}
+	$claim = statchasers_news_claim_upgrade( time() );
+	return null !== $claim && statchasers_news_run_upgrade( $claim, 0.0 );
+}
 
 /**
  * Clear cached renders. Handy after a deploy: wp eval 'statchasers_news_flush();'

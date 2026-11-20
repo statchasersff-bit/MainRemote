@@ -221,34 +221,159 @@ add_filter( 'rank_math/sitemap/index', 'statchasers_sitemap_drop_dead_players', 
  * @param string $prefix Transient name prefix, e.g. 'sc_team_ssr_'.
  * @param bool   $all    Also delete the `bak_` backups.
  */
-function statchasers_flush_transients( string $prefix, bool $all = false ): void {
+function statchasers_flush_transients( string $prefix, bool $all = false, int $max_id = 0, float $deadline = 0.0 ): bool {
 	global $wpdb;
 
-	$fresh   = $wpdb->esc_like( '_transient_' . $prefix ) . '%';
-	$timeout = $wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%';
-
-	if ( $all ) {
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-				$fresh,
-				$timeout
-			)
-		);
-		return;
+	// Plugin-owned names only: a prefix that is not one of ours never reaches
+	// the DELETE, whatever a caller passes.
+	if ( 0 !== strpos( $prefix, 'sc_' ) || strlen( $prefix ) < 5 ) {
+		return true;
 	}
 
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE ( option_name LIKE %s OR option_name LIKE %s ) AND option_name NOT LIKE %s AND option_name NOT LIKE %s",
-			$fresh,
-			$timeout,
-			$wpdb->esc_like( '_transient_' . $prefix . 'bak_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_' . $prefix . 'bak_' ) . '%'
-		)
-	);
+	// The upgrade sweep (statchasers_news_run_upgrade) bounds every flush it
+	// triggers by a time budget and an option_id ceiling, without the module
+	// flush functions having to pass them along.
+	$scope = statchasers_flush_scope();
+	if ( 0 === $max_id && 0.0 === $deadline && null !== $scope ) {
+		$max_id   = (int) $scope['max_id'];
+		$deadline = (float) $scope['deadline'];
+	}
+	$done = statchasers_flush_transients_run( $prefix, $all, $max_id, $deadline );
+	if ( ! $done && null !== $scope ) {
+		statchasers_flush_scope( array( 'complete' => false ) + $scope );
+	}
+	return $done;
 }
 
+/**
+ * The flush scope for this request: null, or array( max_id, deadline, complete ).
+ * Pass an array to set it, false to clear it; returns the scope as it now is.
+ *
+ * @param array|false|null $set
+ * @return array|null
+ */
+function statchasers_flush_scope( $set = null ): ?array {
+	static $scope = null;
+	if ( false === $set ) {
+		$scope = null;
+	} elseif ( is_array( $set ) ) {
+		$scope = $set;
+	}
+	return $scope;
+}
+
+/** The batched delete behind statchasers_flush_transients(). */
+function statchasers_flush_transients_run( string $prefix, bool $all, int $max_id, float $deadline ): bool {
+	global $wpdb;
+
+	$value_like   = $wpdb->esc_like( '_transient_' . $prefix ) . '%';
+	$backup_like  = $wpdb->esc_like( '_transient_' . $prefix . 'bak_' ) . '%';
+	$timeout_like = $wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%';
+	$tbackup_like = $wpdb->esc_like( '_transient_timeout_' . $prefix . 'bak_' ) . '%';
+	$ceiling      = $max_id > 0 ? $wpdb->prepare( ' AND option_id <= %d', $max_id ) : '';
+
+	// 1.10.60: in small batches, each value deleted TOGETHER with its expiry
+	// row in one statement (docs/WP-PAGE-CACHE-ORPHANS.md). One statement over
+	// thousands of 100-400 KB rows held their locks until it finished, and
+	// concurrent copies of it timed out on each other; deleting expiry rows
+	// apart from their values is what can leave a value that never expires.
+	// The LIKE on a fixed prefix is an index range on option_name.
+	while ( true ) {
+		if ( $deadline > 0 && microtime( true ) >= $deadline ) {
+			return false;
+		}
+		$names = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s" . ( $all ? '' : ' AND option_name NOT LIKE %s' ) . "{$ceiling} LIMIT %d",
+				...( $all ? array( $value_like, STATCHASERS_FLUSH_BATCH ) : array( $value_like, $backup_like, STATCHASERS_FLUSH_BATCH ) )
+			)
+		);
+		if ( empty( $names ) ) {
+			break;
+		}
+		$pair = array();
+		foreach ( $names as $name ) {
+			$pair[] = $name;
+			$pair[] = '_transient_timeout_' . substr( $name, strlen( '_transient_' ) );
+		}
+		$placeholders = implode( ',', array_fill( 0, count( $pair ), '%s' ) );
+		$deleted      = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name IN ({$placeholders})", ...$pair ) );
+		foreach ( $pair as $name ) {
+			wp_cache_delete( $name, 'options' );
+		}
+		if ( false === $deleted || 0 === (int) $deleted ) {
+			// A database error (a lock wait, say), or rows that would not go:
+			// stop rather than retry in a loop; the caller tries again later.
+			return false;
+		}
+	}
+
+	// Expiry rows whose value is already gone: harmless, but nothing reads
+	// them. Only ever rows with no value, so this can never create an orphan.
+	while ( true ) {
+		if ( $deadline > 0 && microtime( true ) >= $deadline ) {
+			return false;
+		}
+		$names = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT t.option_name FROM {$wpdb->options} t LEFT JOIN {$wpdb->options} v ON v.option_name = CONCAT( '_transient_', SUBSTRING( t.option_name, 20 ) )
+				 WHERE t.option_name LIKE %s" . ( $all ? '' : ' AND t.option_name NOT LIKE %s' ) . ' AND v.option_id IS NULL' . str_replace( 'option_id', 't.option_id', $ceiling ) . ' LIMIT %d',
+				...( $all ? array( $timeout_like, STATCHASERS_FLUSH_BATCH ) : array( $timeout_like, $tbackup_like, STATCHASERS_FLUSH_BATCH ) )
+			)
+		);
+		if ( empty( $names ) ) {
+			return true;
+		}
+		$placeholders = implode( ',', array_fill( 0, count( $names ), '%s' ) );
+		$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name IN ({$placeholders})", ...$names ) );
+		if ( false === $deleted || 0 === (int) $deleted ) {
+			return false;
+		}
+		foreach ( $names as $name ) {
+			wp_cache_delete( $name, 'options' );
+		}
+	}
+}
+
+/** Rows per DELETE in statchasers_flush_transients(): about 5-20 MB of cached HTML. */
+const STATCHASERS_FLUSH_BATCH = 50;
+
+/**
+ * Read one of this plugin's cached renders (an `sc_` transient), or false.
+ *
+ * Exactly get_transient(), with one more rule (1.10.60): a value whose expiry
+ * row is missing is treated as a miss. WordPress treats such a value as
+ * permanent, so a cached page that lost its expiry - a race between core's
+ * get_transient() and set_transient() under concurrent regeneration, or a
+ * delete that timed out halfway - was served forever (38 of them on
+ * 2026-11-20: docs/WP-PAGE-CACHE-ORPHANS.md).
+ *
+ * Nothing is deleted here and no extra query runs: get_transient() has just
+ * read the expiry row (it is not autoloaded) and get_option() answers this
+ * from the per-request cache. The caller then fetches and stores the page as
+ * on any miss, and set_transient() itself repairs the pair (a value without
+ * an expiry is deleted and both rows are written again). If that store fails,
+ * the next request simply misses again: one fetch per request, as on any miss,
+ * never a loop.
+ *
+ * Names outside this plugin (`sc_`) are passed straight to get_transient().
+ *
+ * @param string $key Transient name, e.g. 'sc_team_ssr_<md5>'.
+ * @return mixed The cached value, or false.
+ */
+function statchasers_cache_get( string $key ) {
+	$value = get_transient( $key );
+	if ( false === $value ) {
+		return false;
+	}
+	if ( 0 !== strpos( $key, 'sc_' ) || wp_using_ext_object_cache() || wp_installing() ) {
+		return $value;
+	}
+	if ( false === get_option( '_transient_timeout_' . $key ) ) {
+		return false;
+	}
+	return $value;
+}
 /* ------------------------------------------------------- header stability */
 
 /**
