@@ -153,8 +153,13 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.doesNotMatch(text(doc.body), /Typical week|Recent Games|Rest-of-Season Outlook and Availability|Active, no designation/);
   });
 
+  // The career the page data always carries beside a game log. The Stats tab
+  // exists only with it (hasStatsTab), and the Overview links Stats only when
+  // it does (audit 2026-11-20); a kicker's /stats/ 302s back to the profile.
+  const withCareer = (o = {}) => state({ logCareer: [{ season: 2026, weeks: state().gameLog, finish: 17 }], ...o });
+
   test("season stats: the log's totals by position, no PPG, linked to Stats", () => {
-    const doc = render(state(), { playerPathPrefix: "/nfl/players/" });
+    const doc = render(withCareer(), { playerPathPrefix: "/nfl/players/" });
     const sec = doc.querySelector("#scp-ox-season-h").closest("section");
     const labels = [...sec.querySelectorAll(".scp-ox-stat dt")].map(text);
     assert.deepEqual(labels, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "FPTS"]);
@@ -307,7 +312,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
 
   test("career & background: honors, career line, no header facts, links to Stats and Bio", () => {
     const doc = render(
-      state({
+      withCareer({
         bioPage: {
           quick: [
             { label: "Born", value: "Dec 11, 1992" }, { label: "Birthplace", value: "Miami, FL" }, { label: "Age", value: "33" },

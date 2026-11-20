@@ -4068,12 +4068,14 @@ describe("section URLs with nothing behind them", () => {
     for (const player of roster) {
       assert.ok(Array.isArray(player.emptySections), player.slug);
       for (const id of player.emptySections) {
-        assert.ok(["injury", "outlook"].includes(id), `${player.slug}: ${id}`);
+        // Stats and Game Log joined on 2026-11-20 (audit): a kicker has no
+        // Stats tab and a player with no NFL game has neither.
+        assert.ok(["injury", "outlook", "stats", "game-log"].includes(id), `${player.slug}: ${id}`);
       }
     }
   });
 
-  for (const section of ["injury", "outlook"]) {
+  for (const section of ["injury", "outlook", "stats", "game-log"]) {
     test(`an empty ${section} section redirects to the profile, query and all`, async (t) => {
       const player = emptyFor(section);
       if (!player) return t.skip(`no player in this roster lacks ${section}`);
