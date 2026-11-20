@@ -822,11 +822,15 @@ describe("the game log tab", () => {
       assert.ok(table.querySelector(`tr.scp-detail[id="${id}"]`), "and its detail row is in the HTML");
     }
 
-    // Without script, every detail shows and the dead toggle's arrow goes.
-    const noscript = doc.querySelector("#game-log .scp-glp-scroll noscript");
-    assert.ok(noscript, "a noscript fallback");
-    assert.match(noscript.innerHTML, /\.scp-glp-table\[data-scp-expand\] \.scp-detail\{display:table-row\}/);
-    assert.match(noscript.innerHTML, /\.scp-expand-icon\{display:none\}/);
+    // Without script, every detail shows and the dead toggle's arrow goes:
+    // a stylesheet media query, not a <noscript> in the fragment (the season
+    // swap's DOMParser would bring that to life on a scripted page).
+    assert.equal(doc.querySelector("#game-log noscript"), null, "no noscript in the log");
+    const css = fs.readFileSync(path.join(APP_DIR, "public", "player.css"), "utf8");
+    const noScript = css.slice(css.indexOf("@media (scripting: none)"));
+    assert.ok(css.includes("@media (scripting: none)"), "a no-script fallback in player.css");
+    assert.match(noScript, /\.scp-glp-table\[data-scp-expand="js"\] \.scp-detail \{\s*display: table-row;/);
+    assert.match(noScript, /\.scp-expand-icon \{\s*display: none;/);
   });
 
   test("the script changes nothing in the log's markup; it only wires what is there", async () => {
@@ -848,10 +852,25 @@ describe("the game log tab", () => {
       assert.equal(button.getAttribute("aria-expanded"), "false");
       assert.ok(!detail.classList.contains("is-open"));
     }
-    const pts = table.querySelector("thead th.scp-glp-th-pts");
+    // A season change swaps in a fresh log the same way: folded, wired, and no
+    // detail opened by anything the swap parsed (2026-11-20).
+    const chip = [...doc.querySelectorAll("#game-log .scp-season-opt")].find((a) => a.getAttribute("aria-current") !== "true" && !a.classList.contains("is-active"));
+    if (chip) {
+      const oldRoot = doc.querySelector("[data-scp-root]");
+      chip.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+      for (let i = 0; i < 100 && oldRoot.isConnected; i++) await new Promise((r) => setTimeout(r, 50));
+      const swapped = doc.querySelector("#game-log table.scp-glp-table");
+      assert.ok(!oldRoot.isConnected, "the season swapped in place");
+      assert.equal(swapped.getAttribute("data-scp-expand"), "js");
+      assert.equal(doc.querySelectorAll("#game-log noscript, #game-log style").length, 0, "nothing parsed into a live style");
+      for (const d of swapped.querySelectorAll("tr.scp-detail")) assert.ok(!d.classList.contains("is-open"), "every detail still folded");
+      assert.equal(swapped.querySelectorAll("thead tr:last-child th button.scp-sort").length, swapped.querySelectorAll("thead tr:last-child th").length, "one sort button per header after the swap");
+    }
+    const live = doc.querySelector("#game-log table.scp-glp-table");
+    const pts = live.querySelector("thead th.scp-glp-th-pts");
     pts.querySelector("button.scp-sort").click();
     assert.equal(pts.getAttribute("aria-sort"), "descending");
-    assert.equal(table.querySelectorAll("thead button.scp-sort").length, table.querySelectorAll("thead tr:last-child th").length, "no button built twice");
+    assert.equal(live.querySelectorAll("thead button.scp-sort").length, live.querySelectorAll("thead tr:last-child th").length, "no button built twice");
   });
 
   test("the scoring breakdown accounts for the points beside it", async () => {

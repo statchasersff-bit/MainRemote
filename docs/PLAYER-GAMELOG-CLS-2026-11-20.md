@@ -42,8 +42,12 @@ calculation (the script measures nothing), or a responsive table rewrite.
     accessible names the script used to build).
   - The table carries `data-scp-sort="js" data-scp-expand="js"`, so the
     details arrive folded.
-  - Every detail row is still in the HTML. A `<noscript>` rule shows them all
-    and hides the toggle arrow when script is off.
+  - Every detail row is still in the HTML. Without script, player.css shows
+    them all and hides the toggle arrow under `@media (scripting: none)`.
+    That is a media query, not a `<noscript><style>`: the season swap parses
+    the next page with DOMParser, where noscript content is live. The first
+    version used noscript and would have opened every detail after a season
+    change; the functional check caught it.
 - `src/client/player.ts`: `wireSortableLog` and `wireExpandableLog` reuse the
   buttons that are there and only attach the clicks. A table that arrives
   without them (the Stats career table) still gets them built, as before.
@@ -51,7 +55,8 @@ calculation (the script measures nothing), or a responsive table rewrite.
   margin rule, so the hero has its 8 px from the start.
 - `tests/player.test.mjs`: two new tests.
   1. The log ships folded with its buttons, ids, aria attributes and noscript
-     fallback, and the week cells still read as the week number.
+     fallback in player.css (no noscript in the fragment), and the week cells
+     still read as the week number.
   2. The table's markup is identical before and after the real bundle runs
      (so nothing can move), a week opens and closes, a header sorts, and no
      button is built twice.

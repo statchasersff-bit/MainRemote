@@ -6537,6 +6537,18 @@ button.scp-search-opt {
 .scp .scp-glp-table[data-scp-expand="js"] .scp-detail.is-open {
   display: table-row;
 }
+/* Without script (2026-11-20): the log ships folded, so show every week's
+   detail and drop the toggle's arrow - nothing behind a button that cannot
+   work. A media query rather than a <noscript><style>, which the season swap's
+   DOMParser would bring to life on a scripted page. */
+@media (scripting: none) {
+  .scp .scp-glp-table[data-scp-expand="js"] .scp-detail {
+    display: table-row;
+  }
+  .scp .scp-glp-table .scp-expand-icon {
+    display: none;
+  }
+}
 .scp .scp-glp-table tr.scp-glp-row.is-open td,
 .scp .scp-glp-table tr.scp-glp-row.is-open th {
   background: var(--glp-blue-soft);

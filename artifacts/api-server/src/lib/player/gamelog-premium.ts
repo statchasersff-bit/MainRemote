@@ -335,11 +335,11 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
     // them once the page is ready. They used to ship open and be folded by the
     // script after paint, which pulled the whole table up under the reader on
     // phones (CLS about 0.31 on Game Log at 360-430px, 2026-11-20). They are
-    // still all in the HTML. Without script, the noscript rule below shows
-    // every detail, so nothing sits behind a button that cannot work, and the
-    // toggle's arrow is dropped there.
-    `<noscript><style>.scp.scp .scp-glp-table[data-scp-expand] .scp-detail{display:table-row}` +
-    `.scp.scp .scp-glp-table .scp-expand-icon{display:none}</style></noscript>` +
+    // still all in the HTML. Without script, player.css shows every detail
+    // under @media (scripting: none), so nothing sits behind a button that
+    // cannot work. (Not a <noscript><style>: the season swap parses the next
+    // page with DOMParser, where noscript content is live, and would have
+    // opened every detail after a season change.)
     `<table class="scp-glp-table" data-scp-sortable data-scp-expandable data-scp-sort="js" data-scp-expand="js">` +
     `<thead>${head}</thead><tbody>${rows}</tbody>${foot}</table>` +
     `</div>${note}</div>`
