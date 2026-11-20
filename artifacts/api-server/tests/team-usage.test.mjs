@@ -275,11 +275,11 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.deepEqual(boards.map((b) => b.querySelector("h3").textContent), ["Target Distribution", "Rushing Distribution"]);
     assert.deepEqual(
       [...boards[0].querySelectorAll("thead th")].map((th) => th.textContent),
-      ["Player", "Tgt", "Rec", "Yds", "Season share", "Last 3 wk", "Air yds"],
+      ["Player", "Tgt", "Rec", "Yds", "Club share", "Last 3 wk", "Air yds"],
     );
     assert.deepEqual(
       [...boards[1].querySelectorAll("thead th")].map((th) => th.textContent),
-      ["Player", "Car", "Yds", "YPC", "Season share", "Last 3 wk"],
+      ["Player", "Car", "Yds", "YPC", "Club share", "Last 3 wk"],
     );
     const ne = usage.teams.ne;
     // Stevenson's row: carries, yards on those carries, YPC.
@@ -361,7 +361,10 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const ne = usage.teams.ne;
     const maye = ne.players.find((p) => p.name === "Drake Maye");
     const defs = [...doc.querySelectorAll(".sct-us-defs li")].map((li) => li.textContent);
-    assert.equal(defs.length, 6);
+    assert.equal(defs.length, 10);
+    assert.match(defs[6], /^G: games with an offensive snap/);
+    assert.match(defs[7], /Targets come from the play-by-play/);
+    assert.match(defs[8], /^Shares: a player's target and snap share are over the games he played/);
     assert.match(defs[2], new RegExp(`excluding kneel-downs \\(${ne.kneels} this season\\)`));
     assert.match(defs[2], new RegExp(`Maye's official attempts are his ${maye.carries} carries here plus ${maye.kneels} kneels`));
     assert.match(defs[1], new RegExp(`${ne.targets} team targets sit under ${ne.passAttempts} pass attempts`));

@@ -183,6 +183,6 @@ export function injuryFreshness(
   let note: string | null = null;
   if (state === "unavailable") note = "Current injury statuses are unavailable; nothing here is a confirmed current status.";
   else if (state === "stale") note = `Injury statuses as of ${new Date(at!).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} may be out of date.`;
-  else if (week !== null && !reportPublished) note = `No Week ${week} injury report is on file yet: reserve lists, and Pending for players who missed the last game.`;
+  else if (week !== null && !reportPublished) note = `No Week ${week} injury report is on file yet: reserve lists, designations reported since the last game, and Pending for players who missed it.`;
   return { week, reportPublished, rosterFetchedAt: at, state, note };
 }

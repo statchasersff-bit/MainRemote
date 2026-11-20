@@ -194,9 +194,13 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   const othersRow = others.length
     ? `<tr class="sct-up-more"><td colspan="${cols}">${e(`+${others.length} ${others.length === 1 ? "other" : "others"} · ${othersCount} ${othersCount === 1 ? unit : isT ? "targets" : "carries"}`)}</td></tr>`
     : "";
+  // The club's split (mak, 2026-11-20): every player's share of the club's
+  // whole season, games he missed included, so the column adds up to 100%.
+  // Per-player shares elsewhere (and on player pages) are over the games he
+  // played (usage-share.ts).
   const seasonTitle = isT
-    ? `Share of the team's targets through Week ${view.throughWeek}`
-    : `Share of the team's carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}`;
+    ? `Share of the club's season targets through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%; his own share in the games he played is on his player page`
+    : `Share of the club's season carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%`;
   const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
   return (
     `<section class="sct-up-panel sct-up-board" aria-label="${e(isT ? "Target Distribution" : "Rushing Distribution")}">` +
@@ -209,7 +213,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         ? `<th scope="col" class="is-num">Rec</th><th scope="col" class="is-num"><abbr title="Receiving yards">Yds</abbr></th>`
         : `<th scope="col" class="is-num"><abbr title="Rushing yards on these carries">Yds</abbr></th><th scope="col" class="is-num"><abbr title="Yards per carry">YPC</abbr></th>`
       : "") +
-    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Season </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3<span class="sct-up-th-wk"> wk</span></abbr></th>` +
+    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Club </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3<span class="sct-up-th-wk"> wk</span></abbr></th>` +
     (isT ? `<th scope="col" class="is-num is-air"><abbr title="Share of the team's air yards">Air yds</abbr></th>` : "") +
     `</tr></thead><tbody>${rows}${othersRow}</tbody></table></div>` +
     `</div></section>`

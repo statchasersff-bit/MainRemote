@@ -436,6 +436,10 @@ function definitions(view: UsageView, team: NflTeam): string {
     `Situational shares: each back's share of the running backs' carries + targets in that situation, not of snaps; the number of opportunities is printed on every row.`,
     `Passing distribution: the primary passer's attempts with a charted location and depth; the coverage line under the map says how many that is.`,
     `Changes: the snap table compares the club's last three games with its three before them; the trends list and the fantasy table compare the player's own last three games with the three he played before them, and name the weeks.`,
+    `G: games with an offensive snap for the ${team.nickname}. A player page counts every game played, special teams included, so a returner or core special-teamer shows more games there.`,
+    `Targets come from the play-by-play; the player pages use the stats provider's count, which can differ by one or two (a target on a play the play-by-play wipes out by penalty, for example). Targets are not an official NFL statistic.`,
+    `Shares: a player's target and snap share are over the games he played (his targets over the club's targets in those games), the same figures as his player page. The Target and Rushing Distribution boards show each player's share of the club's whole season, games he missed included, so they add up to 100%.`,
+    `Every number here is with the ${team.nickname}: a player traded during the season shows only his games for this club; his player page shows the whole season.`,
   ];
   return xpKey("sct-us-defs", "How these numbers are counted", `<ul class="sct-us-legend is-defs">${items.map((t) => `<li>${e(t)}</li>`).join("")}</ul>`);
 }

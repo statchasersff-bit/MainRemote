@@ -150,6 +150,30 @@ function kindOf(status: string): AvailabilityKind {
   return "reserve";
 }
 
+/**
+ * A Sleeper game designation filed AFTER the club's last game (Team Pages
+ * Phase 4, 2026-11-19). Sleeper's field carries no date, so it is compared
+ * with the last official report: a player who played that game and now
+ * carries a Q/D/Out that report did not give him (a different status, or
+ * not listed) was designated since - an Out announced on Monday for a player
+ * hurt on Sunday. It stands, sourced to Sleeper, until this week's official
+ * report gives a game status. The SAME status as last week's report is the
+ * stale case (Sione Vaki: Questionable for Week 10, played) and expires.
+ * With no previous report to compare against it cannot be dated and expires,
+ * as before.
+ */
+function designatedSinceLastGame(
+  raw: string,
+  prior: string | null,
+  lastGame: { week: number; played: boolean } | null,
+  lastReport: Map<string, PracticeRow> | null,
+): boolean {
+  if (!GAME.has(raw.toLowerCase()) || !lastGame?.played || lastReport === null) return false;
+  return (prior ?? "").trim().toLowerCase() !== raw.trim().toLowerCase();
+}
+
+const capStatus = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
 export interface AvailabilityOptions {
   /** False for a game that is not the club's next one. */
   nextGame?: boolean;
@@ -212,6 +236,18 @@ export function gameAvailability(
           source: "nfl-report",
           note: `Missed Week ${lastGame.week}${row.injury ? ` (${row.injury.toLowerCase()})` : ""}; no Week ${week} game status yet${practice ? ` (practice: ${practice})` : ""}.`,
         });
+      } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
+        // On (or missing from) this week's report with no game status yet,
+        // and designated since the last game: Sleeper's status stands.
+        const status = capStatus(raw);
+        out.set(r.id, {
+          ...base,
+          practice,
+          kind: kindOf(status),
+          status,
+          source: "sleeper",
+          note: `Listed ${status} after Week ${lastGame!.week}; no official Week ${week} game status yet${practice ? ` (practice: ${practice})` : ""}.`,
+        });
       } else {
         out.set(r.id, { ...base, practice, kind: "active", status: null, source: row ? "nfl-report" : "none", note: null });
       }
@@ -229,6 +265,15 @@ export function gameAvailability(
           note:
             `${was === "Out" || raw === "Out" ? "Out" : `Listed ${was}`} for Week ${lastGame.week}${r.injuryBodyPart ? ` (${r.injuryBodyPart.toLowerCase()})` : ""} and did not play; ` +
             `no Week ${week} designation yet.`,
+        });
+      } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
+        const status = capStatus(raw);
+        out.set(r.id, {
+          ...base,
+          kind: kindOf(status),
+          status,
+          source: "sleeper",
+          note: `Listed ${status} after Week ${lastGame!.week}; no official Week ${week} injury report yet.`,
         });
       } else {
         // Expired: filed for a game he then played (or for no known game).

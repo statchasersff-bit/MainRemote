@@ -270,3 +270,65 @@ describe("a designation the player then played through has expired", () => {
     assert.equal(status(practice).vaki, "Questionable");
   });
 });
+
+/*
+ * Team Pages Phase 4 (2026-11-19): the expiry must not clear a designation
+ * filed AFTER the last game. Sleeper carries no date, so the previous week's
+ * official report dates it: the same status as that report is stale (Vaki),
+ * a different status - or a player that report did not list - was designated
+ * since (Woody Marks Out, A.J. Brown Questionable -> Out, Geno Smith
+ * Questionable, all after Week 10, 2026).
+ */
+describe("a designation filed after the last game stands until the official report", () => {
+  const row = (name, gameStatus) => ({ name, pos: "RB", injury: null, gameStatus, final: null, days: {} });
+  const roster = [
+    { id: "stale", name: "Sione Vaki", position: "RB", injuryStatus: "Questionable", injuryBodyPart: "Ankle" },
+    { id: "upgraded", name: "Out Now", position: "WR", injuryStatus: "Out", injuryBodyPart: "Knee" },
+    { id: "unlisted", name: "Newly Hurt", position: "QB", injuryStatus: "Questionable", injuryBodyPart: "Shoulder" },
+    { id: "missed", name: "Missed Back", position: "RB", injuryStatus: "Questionable", injuryBodyPart: "Knee" },
+    { id: "ir", name: "Reserve Back", position: "RB", injuryStatus: "IR", injuryBodyPart: "Back" },
+  ];
+  const played = (id) => [{ week: 10, team: "DET", stats: { off_snp: 30, gp: 1 } }];
+  const logs = { stale: played(), upgraded: played(), unlisted: played(), missed: [{ week: 9, team: "DET", stats: { off_snp: 30, gp: 1 } }], anchor: played() };
+  const week10 = () => {
+    const k = availability.availabilityKey;
+    return { 10: { teams: { Lions: { [k("Sione Vaki")]: row("Sione Vaki", "Questionable"), [k("Out Now")]: row("Out Now", "Questionable"), [k("Missed Back")]: row("Missed Back", "Questionable") } } } };
+  };
+  const statuses = (practice) =>
+    Object.fromEntries(availability.gameRoster(team("det"), 2026, 11, roster, { logs, practice }).map((r) => [r.id, r]));
+
+  test("no Week 11 report: stale expires, new designations stand and say they are not official", () => {
+    const s = statuses({ weeks: week10() });
+    assert.equal(s.stale.injuryStatus, null, "Questionable for Week 10 and played: expired");
+    assert.equal(s.upgraded.injuryStatus, "Out", "Questionable on the Week 10 report, Out since: stands");
+    assert.equal(s.unlisted.injuryStatus, "Questionable", "not on the Week 10 report, designated since: stands");
+    assert.equal(s.upgraded.availability.source, "sleeper");
+    assert.match(s.upgraded.availability.note, /Listed Out after Week 10; no official Week 11 injury report yet/);
+    assert.equal(s.missed.injuryStatus, "Pending");
+    assert.equal(s.ir.injuryStatus, "IR");
+  });
+
+  test("Week 11 report on file without game statuses yet: the same split, with practice", () => {
+    const weeks = week10();
+    weeks[11] = { teams: { Lions: { [availability.availabilityKey("Out Now")]: { ...row("Out Now", null), final: "DNP", days: { "2026-11-18": "DNP" } } } } };
+    const s = statuses({ weeks });
+    assert.equal(s.stale.injuryStatus, null);
+    assert.equal(s.upgraded.injuryStatus, "Out");
+    assert.match(s.upgraded.availability.note, /no official Week 11 game status yet/);
+    assert.equal(s.unlisted.injuryStatus, "Questionable");
+  });
+
+  test("the official game status wins over Sleeper", () => {
+    const weeks = week10();
+    weeks[11] = { teams: { Lions: { [availability.availabilityKey("Out Now")]: row("Out Now", "Doubtful") } } };
+    const s = statuses({ weeks });
+    assert.equal(s.upgraded.injuryStatus, "Doubtful");
+    assert.equal(s.upgraded.availability.source, "nfl-report");
+  });
+
+  test("no previous report to date it against: expires, as before", () => {
+    const s = statuses({ weeks: {} });
+    assert.equal(s.upgraded.injuryStatus, null);
+    assert.equal(s.unlisted.injuryStatus, null);
+  });
+});

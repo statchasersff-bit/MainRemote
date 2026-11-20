@@ -18,6 +18,8 @@ import { dataPath } from "../data-dir";
 import { readDataJson } from "./read-json";
 import { searchKey } from "../render";
 import type { RosterPlayer } from "./roster";
+// Function-only cycle (usage-share reads getUsageDoc at call time).
+import { playedShareAt } from "./usage-share";
 
 /* ------------------------------------------------------------------ types */
 
@@ -68,6 +70,15 @@ export interface UsagePlayer {
   /** Season offensive snaps, the count behind snapShare (files built from 2026-11-05). */
   snaps?: number;
   targetShare: number | null;
+  /**
+   * The file's whole-season shares (missed games in the denominator), kept
+   * when buildUsageView swaps targetShare / snapShare for the games-played
+   * definition the player pages use (usage-share.ts, mak 2026-11-20).
+   */
+  seasonTargetShare?: number | null;
+  seasonSnapShare?: number | null;
+  /** His carries / the club's carries in the games he played (usage-share.ts). */
+  playedCarryShare?: number | null;
   airYardsShare: number | null;
   wopr: number | null;
   adot: number | null;
@@ -341,7 +352,22 @@ export function buildUsageView(
   if (!doc || !team || doc.throughWeek < 1 || team.players.length === 0) return null;
 
   const current = onRoster(roster);
-  const all = team.players;
+  // One share definition with the player pages (mak, 2026-11-20): each
+  // player's target and snap share for THIS club are over the games he
+  // played (usage-share.ts playedShareAt), not the club's whole season. The
+  // whole-season figures stay on the row for the club-split boards.
+  const all = team.players.map((p) => {
+    const ps = playedShareAt(season, { id: p.sleeperId, slug: p.slug }, abbreviation);
+    if (!ps) return p;
+    return {
+      ...p,
+      seasonTargetShare: p.targetShare,
+      seasonSnapShare: p.snapShare,
+      targetShare: ps.targetShare ?? p.targetShare,
+      snapShare: ps.snapShare ?? p.snapShare,
+      playedCarryShare: ps.carryShare,
+    };
+  });
   const here = all.filter(current);
   const byTargets = (a: UsagePlayer, b: UsagePlayer) => b.targets - a.targets;
 

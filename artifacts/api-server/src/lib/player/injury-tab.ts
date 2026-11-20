@@ -794,6 +794,10 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     ? null
     : pending
       ? cs.message
+      // Designated after his last game, not yet on an official report
+      // (Team Pages Phase 4): the note says it is not the official status.
+      : cs.source === "sleeper" && cs.designation
+        ? `Reported after Week ${cs.prior?.week ?? (m.lastPlayedWeek ?? "his last game")}; not yet an official ${m.next ? `Week ${m.next.week} ` : ""}game status.`
       : m.code === "ACTIVE" && cs.prior
         ? `No current game designation reported. Listed ${cs.prior.status} for Week ${cs.prior.week}.`
         : cs.freshness === "unavailable" && m.next
@@ -970,7 +974,9 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
     pool.push({
       key: "why",
       q: `Why isn't ${m.name} playing?`,
-      a: `${m.name} is ${statusWord}${m.bodyPart ? ` with ${article(part)}` : ""}, the designation his club filed${asOf ? ` as of ${asOf}` : ""}.` +
+      a: `${m.name} is ${statusWord}${m.bodyPart ? ` with ${article(part)}` : ""}, ${
+        data.currentStatus?.source === "sleeper" ? "reported since his last game and not yet on the official injury report" : "the designation his club filed"
+      }${asOf ? ` as of ${asOf}` : ""}.` +
         (m.next ? ` That rules him out of Week ${m.next.week}.` : ""),
     });
   }

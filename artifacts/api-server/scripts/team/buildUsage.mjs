@@ -516,7 +516,14 @@ export async function buildUsage(season) {
     if (latRush && latRush !== "NA") playerAcc(c, latRush).rushYards += num(r.lateral_rushing_yards) ?? 0;
 
     // Carries (scrambles included as carries, as the box score counts them).
-    if (isRush || r.qb_scramble === "1") {
+    // Also any official rush attempt nflverse flags as a pass play
+    // (Phase 4, 2026-11-19): a run followed by an illegal forward pass, or an
+    // aborted snap with a pass after it, carries rush=0 / pass=1 but
+    // rush_attempt=1 and a rusher, and the box score credits the carry
+    // (Trevor Lawrence 2026 wk 1, 2 yds; Carson Wentz wk 9). Kneels and
+    // spikes left the loop above. Team play classification (the shared
+    // pass/rush flags) is unchanged.
+    if (isRush || r.qb_scramble === "1" || r.rush_attempt === "1") {
       const runner = r.rusher_player_id;
       if (runner && runner !== "NA") {
         const p = playerAcc(c, runner);
