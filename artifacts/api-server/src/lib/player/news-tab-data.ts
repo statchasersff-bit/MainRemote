@@ -387,7 +387,9 @@ function recapTakeaway(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame, outco
   const fin = e.pos_rank ?? null;
   const v = volume(ctx.pos, e);
   const otherVol = others.length ? others.reduce((a, x) => a + volume(ctx.pos, x).n, 0) / others.length : null;
-  const volHigh = otherVol !== null && otherVol > 0 && v.n >= otherVol * 1.2;
+  // Kicks are counted for the sentence, never as a "volume boost": a kicker's
+  // recap labels stay what they were before kicks were counted.
+  const volHigh = ctx.pos !== "K" && otherVol !== null && otherVol > 0 && v.n >= otherVol * 1.2;
   const opp = g.opponent?.nickname ? `The ${g.opponent.nickname}` : g.opponentName;
   // "his first 25+ point game of 2026": the highest line crossed for the first time.
   const lines = [30, 25, 20].filter((t) => pts >= t);
@@ -482,7 +484,7 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
   const impact = recapImpact(ctx.pos, fin, pts, avg);
   const others = played(ctx).filter((x) => x.week !== e.week);
   const otherVol = others.length ? others.reduce((a, x) => a + volume(ctx.pos, x).n, 0) / others.length : null;
-  const outcome = recapOutcome(ctx.pos, fin, impact, pts, avg, otherVol !== null && otherVol > 0 && volume(ctx.pos, e).n >= otherVol * 1.2);
+  const outcome = recapOutcome(ctx.pos, fin, impact, pts, avg, ctx.pos !== "K" && otherVol !== null && otherVol > 0 && volume(ctx.pos, e).n >= otherVol * 1.2);
   return {
     id: `recap-${ctx.season}-${e.week}`,
     type: "game",
